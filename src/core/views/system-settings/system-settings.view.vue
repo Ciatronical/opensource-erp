@@ -138,6 +138,70 @@
                     </v-card-text>
                 </v-card>
 
+                <!-- Signaturschlüssel der Shop-Erweiterung: gehört der Installation,
+                     nicht einem Mandanten (dev/shop-php-signatur.md). Liegt neben
+                     der settings.ini, nicht in ihr. -->
+                <v-card v-if="signatur" variant="outlined" class="my-4">
+                    <v-card-item>
+                        <v-card-title class="text-subtitle-1">{{ t('SystemSettingsView.signing.title') }}</v-card-title>
+                        <v-card-subtitle class="text-wrap">{{ t('SystemSettingsView.signing.hint') }}</v-card-subtitle>
+                    </v-card-item>
+                    <v-card-text>
+                        <v-alert v-if="!signatur.available" type="warning" variant="tonal" density="compact" class="mb-3">
+                            {{ t('SystemSettingsView.signing.unavailable') }}
+                        </v-alert>
+                        <template v-else>
+                            <v-text-field
+                                v-if="signatur.valid"
+                                :model-value="signatur.public_key"
+                                :label="t('SystemSettingsView.signing.publicKey')"
+                                :hint="t('SystemSettingsView.signing.publicKeyHint')"
+                                persistent-hint
+                                readonly
+                                variant="outlined"
+                                density="compact"
+                                prepend-inner-icon="mdi-shield-key-outline"
+                                class="mb-3"
+                                style="max-width: 70ch"
+                                @focus="$event.target.select()"
+                            >
+                                <template #append-inner>
+                                    <v-btn
+                                        :icon="signaturKopiert ? 'mdi-check' : 'mdi-content-copy'"
+                                        variant="text"
+                                        size="small"
+                                        :title="t('SystemSettingsView.signing.copy')"
+                                        @click="signaturKopieren"
+                                    />
+                                </template>
+                            </v-text-field>
+                            <v-alert v-else-if="signatur.exists" type="error" variant="tonal" density="compact" class="mb-3">
+                                {{ t('SystemSettingsView.signing.invalid') }}
+                            </v-alert>
+                            <div v-else class="text-body-2 mb-3">{{ t('SystemSettingsView.signing.none') }}</div>
+
+                            <div class="text-caption text-medium-emphasis mb-3">
+                                {{ t('SystemSettingsView.file') }}: <code>{{ signatur.file }}</code>
+                            </div>
+
+                            <v-alert v-if="!signatur.writable" type="info" variant="tonal" density="compact" class="mb-3">
+                                {{ t('SystemSettingsView.signing.notWritable') }}
+                                <div class="mt-1"><code>php tools/shop-signing-key.php --create</code></div>
+                            </v-alert>
+                            <v-btn
+                                v-else
+                                :color="signatur.exists ? 'warning' : 'primary'"
+                                variant="tonal"
+                                :prepend-icon="signatur.exists ? 'mdi-key-change' : 'mdi-key-plus'"
+                                :loading="signaturArbeitet"
+                                @click="signaturErzeugen"
+                            >
+                                {{ signatur.exists ? t('SystemSettingsView.signing.replace') : t('SystemSettingsView.signing.create') }}
+                            </v-btn>
+                        </template>
+                    </v-card-text>
+                </v-card>
+
                 <!-- Was die Datei sonst enthält: nur die Namen, die Werte könnten Geheimnisse sein -->
                 <v-card v-if="stand.extra.length" variant="outlined" class="mb-4">
                     <v-card-item>
@@ -204,6 +268,7 @@ import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import PasswordField from '@/core/components/password-field.vue'
 import PathField from '@/core/components/path-field.vue'
 import * as toasts from '@/core/utils/toasts.js'
+import * as alerts from '@/core/utils/alerts.js'
 
 const { t, te } = useI18n()
 const store = oserpStore()
@@ -355,6 +420,61 @@ async function laden() {
         fehler.value = fehlertext(error)
     } finally {
         loading.value = false
+    }
+    await signaturLaden()
+}
+
+// ── Signaturschlüssel der Shop-Erweiterung ──
+
+/** Antwort von getShopSigningKeyStatus, null solange nicht geladen */
+const signatur = ref(null)
+const signaturArbeitet = ref(false)
+const signaturKopiert = ref(false)
+
+async function signaturLaden() {
+    try {
+        signatur.value = await store.adminShopSigningKeyStatus()
+    } catch (error) {
+        // Die übrigen Systemeinstellungen bleiben bedienbar
+        signatur.value = null
+        fehler.value = fehler.value || fehlertext(error)
+    }
+}
+
+/**
+ * Erzeugt das Schlüsselpaar; ein vorhandenes wird nur nach Rückfrage ersetzt —
+ * jedes HugoCMS braucht danach den neuen öffentlichen Schlüssel
+ */
+async function signaturErzeugen() {
+    const ersetzen = !!signatur.value?.exists
+    if (ersetzen) {
+        const frage = await alerts.warning(
+            t('SystemSettingsView.signing.replaceConfirm'),
+            t('SystemSettingsView.signing.replaceTitle'),
+            t('SystemSettingsView.signing.replace'),
+            t('SystemSettingsView.cancel')
+        )
+        if (!frage.isConfirmed) return
+    }
+    signaturArbeitet.value = true
+    signaturKopiert.value = false
+    try {
+        signatur.value = await store.adminCreateShopSigningKey(ersetzen)
+        toasts.success(ersetzen ? t('SystemSettingsView.signing.replaced') : t('SystemSettingsView.signing.created'))
+    } catch (error) {
+        fehler.value = fehlertext(error)
+    } finally {
+        signaturArbeitet.value = false
+    }
+}
+
+async function signaturKopieren() {
+    try {
+        await navigator.clipboard.writeText(signatur.value?.public_key || '')
+        signaturKopiert.value = true
+    } catch {
+        // Ohne Zwischenablage (unsichere Verbindung): Feld markieren und von Hand kopieren
+        signaturKopiert.value = false
     }
 }
 

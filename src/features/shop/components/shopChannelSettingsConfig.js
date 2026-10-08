@@ -33,7 +33,8 @@ const hugoshop = [
 
     { name: "veroeffentlichung", type: "headline", label: "crm_fields.shopPublish" },
 
-    { name: "backend_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBackendUrl", tooltip: "crm_fields.shopBackendUrl_help" },
+    // action: die Karte zeigt unter dem Feld „Verbindung prüfen“ (testShopBackendUrl)
+    { name: "backend_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBackendUrl", tooltip: "crm_fields.shopBackendUrl_help", action: "backendTest" },
     { name: "template_set", type: "dynamic-select", source: "shopTemplateSets", itemTitle: "title", itemValue: "name", fieldstyle: "max-width: 60ch", label: "crm_fields.shopTemplateSet", tooltip: "crm_fields.shopTemplateSet_help" },
     // Veröffentlicht wird immer über HugoCMS (2026-10-07): OSERP schreibt in
     // die Bereitstellung, überträgt an HugoCMS und lässt dort bauen.

@@ -316,3 +316,45 @@ function saveSystemSettings($data) {
 
     resultInfo(true, '', ['changed' => $geaendert, 'reload_fpm' => $datenbankGeaendert]);
 }
+
+// ── Signaturschlüssel der Shop-Erweiterung (dev/shop-php-signatur.md) ──
+//
+// Gehört der Installation, nicht einem Mandanten (S2): ein Schlüsselpaar für
+// alle HugoShops. Deshalb hier und nur für Systemadministratoren — in der
+// Firmenkonfiguration könnte sonst ein Mandant den Schlüssel aller ersetzen.
+
+/**
+ * Stand des Signaturschlüssels
+ *
+ * @return void available, exists, valid, public_key, writable, file
+ * @testdata {}
+ */
+function getShopSigningKeyStatus($data) {
+    requireSystemAdmin();
+
+    resultInfo(true, '', shopSigningStatus());
+}
+
+/**
+ * Erzeugt das Schlüsselpaar der Shop-Erweiterung oder ersetzt es
+ *
+ * Ein ersetzter Schlüssel gilt sofort: HugoCMS weist die Signaturen ab, bis
+ * dort der neue öffentliche Schlüssel eingetragen ist.
+ *
+ * @param bool $data['replace'] vorhandenen Schlüssel ersetzen
+ * @return void Stand wie getShopSigningKeyStatus
+ * @testdata {"replace": false}
+ */
+function createShopSigningKey($data) {
+    requireSystemAdmin();
+
+    $ergebnis = shopSigningCreate(!empty($data['replace']));
+    if (!$ergebnis['ok']) {
+        // Code für die Oberfläche (SystemSettingsView.errors.*), dazu die Datei
+        resultInfo(false, $ergebnis['fehler'], null, shopSigningKeyFile());
+        return;
+    }
+    writeLog('[SHOP] Signaturschlüssel '.(!empty($data['replace']) ? 'ersetzt' : 'erzeugt'), true, DLOG_WRN);
+
+    resultInfo(true, 'SIGNING_KEY_CREATED', shopSigningStatus());
+}

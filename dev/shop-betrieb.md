@@ -268,8 +268,25 @@ dem Webserver, nach jeder Übertragung; Größe weiter über
 (`[shop] images`, `[shop] thumbnails`). Fehlende Produktbilder nennt der Lauf.
 Einzelheiten in `dev/shop-hugocms-trennung.md`.
 
-In dieser Betriebsart **zwei Dateien einmal von Hand** auf den Webserver legen,
-weil HugoCMS kein PHP annimmt: aus `backend/templates-default/shop/standard/kit/static/`
+**Signiert übertragen (empfohlen, seit 2026-10-08):** In den
+Systemeinstellungen (Shop-Erweiterung: Signaturschlüssel) oder mit
+`php tools/shop-signing-key.php --create` ein Schlüsselpaar erzeugen und den
+angezeigten öffentlichen Schlüssel in HugoCMS eintragen (Projekteinstellungen →
+Shop-Anbindung). Dann überträgt der Lauf Weiterleiter und 404-Seite selbst,
+auch nach einem OSERP-Update (`dev/shop-php-signatur.md`).
+
+**Adresse von OpensourceERP für die Webseite** (`backend_url`, seit
+2026-10-08 mit „Verbindung prüfen“ direkt unter dem Feld): Ziel des
+Weiterleiters, also der Shop-Zugang `backend/shop/` — nicht die Adresse von
+HugoCMS (`…/cms-api/`), die in der HugoCMS-Gruppe steht. Der Test prüft in drei
+Schritten: Eingabe (nicht die HugoCMS-Adresse), direkt von OpensourceERP mit dem
+Shop-Schlüssel (öffentliche Aktion `shopPing`, legt keine Sitzung an) und über
+`<Basisadresse>/shop-api/`, wie der Browser. Lokal mit `scripts/dev.sh` ist das
+`http://localhost:8000/shop/` — der Vite-Server auf 5173 leitet `/shop` nicht
+weiter.
+
+Ohne Signaturschlüssel **zwei Dateien einmal von Hand** auf den Webserver legen,
+weil HugoCMS sonst kein PHP annimmt: aus `backend/templates-default/shop/standard/kit/static/`
 die `shop-api/index.php` nach `<webseite>/oserp-shop/static/shop-api/index.php`
 und die `not_found.php` nach `<webseite>/oserp-shop/static/not_found.php`. Ihre
 Konfiguration (`oserp-shop/config.json`) kommt über die Übertragung. Für die

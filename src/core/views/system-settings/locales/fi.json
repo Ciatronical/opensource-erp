@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Virheellinen syöte.",
             "DB_CONNECTION_FAILED": "Uudella tietokantapääsyllä ei saada yhteyttä. Mitään ei tallennettu.",
             "WOULD_LOCK_OUT": "Poistaisit itseltäsi järjestelmähallinnan. Mitään ei tallennettu.",
-            "NO_PERMISSION": "Vain järjestelmänvalvojat saavat muuttaa järjestelmäasetuksia."
+            "NO_PERMISSION": "Vain järjestelmänvalvojat saavat muuttaa järjestelmäasetuksia.",
+            "SIGNING_UNAVAILABLE": "Tämän palvelimen PHP:ssä ei ole sodium-laajennusta.",
+            "SIGNING_KEY_EXISTS": "Allekirjoitusavain on jo olemassa.",
+            "SIGNING_NOT_WRITABLE": "Avaintiedostoa ei voitu kirjoittaa."
+        },
+        "signing": {
+            "title": "Kauppalaajennus: allekirjoitusavain",
+            "hint": "Tällä avaimella OpensourceERP allekirjoittaa kauppapaketin välityspalvelimen ja 404-sivun; HugoCMS hyväksyy ne vain allekirjoitettuina. Yksi avainpari koskee tämän asennuksen kaikkia yrityksiä ja HugoShopeja.",
+            "unavailable": "Tämän palvelimen PHP:ssä ei ole sodium-laajennusta — ilman sitä ei ole allekirjoitusta. Välityspalvelin ja 404-sivu on silloin vietävä verkkopalvelimelle käsin.",
+            "publicKey": "Julkinen avain",
+            "publicKeyHint": "Syötä se HugoCMS:ään kohdassa projektin asetukset → kaupan yhteys → OpensourceERP:n allekirjoitusavain.",
+            "copy": "Kopioi avain",
+            "invalid": "Avaintiedostoa ei voi lukea tai siinä ei ole kelvollista avainta.",
+            "none": "Allekirjoitusavainta ei ole vielä luotu.",
+            "notWritable": "Verkkopalvelin ei saa kirjoittaa tähän hakemistoon. Luo avain palvelimella verkkopalvelimen käyttäjänä:",
+            "create": "Luo avainpari",
+            "replace": "Korvaa avainpari",
+            "replaceTitle": "Korvataanko allekirjoitusavain?",
+            "replaceConfirm": "Aiempi avain lakkaa heti olemasta voimassa. Jokainen HugoCMS hylkää allekirjoitukset, kunnes uusi julkinen avain on syötetty sinne.",
+            "created": "Allekirjoitusavain luotu.",
+            "replaced": "Allekirjoitusavain korvattu — syötä uusi julkinen avain jokaiseen HugoCMS:ään."
         }
     }
 }

@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Nieprawidłowe dane.",
             "DB_CONNECTION_FAILED": "Brak połączenia z nowym dostępem do bazy danych. Nic nie zapisano.",
             "WOULD_LOCK_OUT": "Odebrałbyś sobie administrację systemu. Nic nie zapisano.",
-            "NO_PERMISSION": "Ustawienia systemu mogą zmieniać tylko administratorzy systemu."
+            "NO_PERMISSION": "Ustawienia systemu mogą zmieniać tylko administratorzy systemu.",
+            "SIGNING_UNAVAILABLE": "PHP na tym serwerze nie ma rozszerzenia sodium.",
+            "SIGNING_KEY_EXISTS": "Klucz podpisu już istnieje.",
+            "SIGNING_NOT_WRITABLE": "Nie udało się zapisać pliku klucza."
+        },
+        "signing": {
+            "title": "Rozszerzenie sklepu: klucz podpisu",
+            "hint": "Tym kluczem OpensourceERP podpisuje pośrednika i stronę 404 pakietu sklepu; HugoCMS przyjmuje je tylko podpisane. Jedna para kluczy obowiązuje dla wszystkich firm i wszystkich HugoShopów tej instalacji.",
+            "unavailable": "PHP na tym serwerze nie ma rozszerzenia sodium — bez niego nie ma podpisu. Pośrednika i stronę 404 trzeba wtedy umieścić na serwerze WWW ręcznie.",
+            "publicKey": "Klucz publiczny",
+            "publicKeyHint": "Wpisz go w HugoCMS w ustawieniach projektu → połączenie sklepu → klucz podpisu OpensourceERP.",
+            "copy": "Kopiuj klucz",
+            "invalid": "Pliku klucza nie można odczytać lub nie zawiera prawidłowego klucza.",
+            "none": "Nie utworzono jeszcze klucza podpisu.",
+            "notWritable": "Serwer WWW nie może zapisywać w tym katalogu. Utwórz klucz na serwerze jako użytkownik serwera WWW:",
+            "create": "Utwórz parę kluczy",
+            "replace": "Zastąp parę kluczy",
+            "replaceTitle": "Zastąpić klucz podpisu?",
+            "replaceConfirm": "Dotychczasowy klucz natychmiast przestaje obowiązywać. Każdy HugoCMS odrzuca podpisy, dopóki nie zostanie w nim wpisany nowy klucz publiczny.",
+            "created": "Utworzono klucz podpisu.",
+            "replaced": "Zastąpiono klucz podpisu — wpisz nowy klucz publiczny w każdym HugoCMS."
         }
     }
 }

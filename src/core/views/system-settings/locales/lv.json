@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Nederīga ievade.",
             "DB_CONNECTION_FAILED": "Ar jauno datubāzes piekļuvi savienojums neizdodas. Nekas netika saglabāts.",
             "WOULD_LOCK_OUT": "Jūs atņemtu sev sistēmas administrēšanu. Nekas netika saglabāts.",
-            "NO_PERMISSION": "Sistēmas iestatījumus drīkst mainīt tikai sistēmas administratori."
+            "NO_PERMISSION": "Sistēmas iestatījumus drīkst mainīt tikai sistēmas administratori.",
+            "SIGNING_UNAVAILABLE": "Šī servera PHP nav sodium paplašinājuma.",
+            "SIGNING_KEY_EXISTS": "Paraksta atslēga jau pastāv.",
+            "SIGNING_NOT_WRITABLE": "Atslēgas failu neizdevās ierakstīt."
+        },
+        "signing": {
+            "title": "Veikala paplašinājums: paraksta atslēga",
+            "hint": "Ar šo atslēgu OpensourceERP paraksta veikala pakotnes starpniekserveri un 404 lapu; HugoCMS tos pieņem tikai parakstītus. Viens atslēgu pāris attiecas uz visiem šīs instalācijas uzņēmumiem un HugoShop.",
+            "unavailable": "Šī servera PHP nav sodium paplašinājuma — bez tā paraksta nav. Tad starpniekserveris un 404 lapa jāievieto tīmekļa serverī manuāli.",
+            "publicKey": "Publiskā atslēga",
+            "publicKeyHint": "Ievadiet HugoCMS projekta iestatījumos → veikala savienojums → OpensourceERP paraksta atslēga.",
+            "copy": "Kopēt atslēgu",
+            "invalid": "Atslēgas failu nevar nolasīt vai tajā nav derīgas atslēgas.",
+            "none": "Paraksta atslēga vēl nav izveidota.",
+            "notWritable": "Tīmekļa serveris nedrīkst rakstīt šajā direktorijā. Izveidojiet atslēgu serverī kā tīmekļa servera lietotājs:",
+            "create": "Izveidot atslēgu pāri",
+            "replace": "Aizstāt atslēgu pāri",
+            "replaceTitle": "Aizstāt paraksta atslēgu?",
+            "replaceConfirm": "Iepriekšējā atslēga uzreiz zaudē spēku. Katrs HugoCMS noraidīs parakstus, līdz tajā būs ievadīta jaunā publiskā atslēga.",
+            "created": "Paraksta atslēga izveidota.",
+            "replaced": "Paraksta atslēga aizstāta — ievadiet jauno publisko atslēgu katrā HugoCMS."
         }
     }
 }

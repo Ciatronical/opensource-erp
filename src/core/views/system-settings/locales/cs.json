@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Neplatný vstup.",
             "DB_CONNECTION_FAILED": "S novým přístupem k databázi se nelze připojit. Nic nebylo uloženo.",
             "WOULD_LOCK_OUT": "Odebrali byste si vlastní správu systému. Nic nebylo uloženo.",
-            "NO_PERMISSION": "Nastavení systému smí měnit jen správci systému."
+            "NO_PERMISSION": "Nastavení systému smí měnit jen správci systému.",
+            "SIGNING_UNAVAILABLE": "PHP na tomto serveru nemá rozšíření sodium.",
+            "SIGNING_KEY_EXISTS": "Podpisový klíč již existuje.",
+            "SIGNING_NOT_WRITABLE": "Soubor s klíčem se nepodařilo zapsat."
+        },
+        "signing": {
+            "title": "Rozšíření obchodu: podpisový klíč",
+            "hint": "Tímto klíčem OpensourceERP podepisuje proxy a stránku 404 balíčku obchodu; HugoCMS je přijímá jen podepsané. Jeden pár klíčů platí pro všechny firmy a všechny HugoShopy této instalace.",
+            "unavailable": "PHP na tomto serveru nemá rozšíření sodium — bez něj není podpis možný. Proxy a stránku 404 je pak nutné umístit na webový server ručně.",
+            "publicKey": "Veřejný klíč",
+            "publicKeyHint": "Zadejte v HugoCMS v nastavení projektu → napojení obchodu → podpisový klíč OpensourceERP.",
+            "copy": "Kopírovat klíč",
+            "invalid": "Soubor s klíčem nelze přečíst nebo neobsahuje platný klíč.",
+            "none": "Podpisový klíč zatím nebyl vytvořen.",
+            "notWritable": "Webový server nesmí do tohoto adresáře zapisovat. Vytvořte klíč na serveru jako uživatel webového serveru:",
+            "create": "Vytvořit pár klíčů",
+            "replace": "Nahradit pár klíčů",
+            "replaceTitle": "Nahradit podpisový klíč?",
+            "replaceConfirm": "Dosavadní klíč okamžitě přestane platit. Každé HugoCMS bude podpisy odmítat, dokud v něm nebude zadán nový veřejný klíč.",
+            "created": "Podpisový klíč vytvořen.",
+            "replaced": "Podpisový klíč nahrazen — zadejte nový veřejný klíč v každém HugoCMS."
         }
     }
 }

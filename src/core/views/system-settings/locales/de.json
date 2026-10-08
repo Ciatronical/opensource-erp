@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Ungültige Eingabe.",
             "DB_CONNECTION_FAILED": "Mit dem neuen Datenbankzugang gelingt keine Verbindung. Nichts gespeichert.",
             "WOULD_LOCK_OUT": "Sie würden sich selbst die Systemadministration entziehen. Nichts gespeichert.",
-            "NO_PERMISSION": "Nur Systemadministratoren dürfen die Systemeinstellungen ändern."
+            "NO_PERMISSION": "Nur Systemadministratoren dürfen die Systemeinstellungen ändern.",
+            "SIGNING_UNAVAILABLE": "PHP auf diesem Server hat keine Sodium-Erweiterung.",
+            "SIGNING_KEY_EXISTS": "Es gibt bereits einen Signaturschlüssel.",
+            "SIGNING_NOT_WRITABLE": "Die Schlüsseldatei ließ sich nicht schreiben."
+        },
+        "signing": {
+            "title": "Shop-Erweiterung: Signaturschlüssel",
+            "hint": "Mit diesem Schlüssel signiert OpensourceERP Weiterleiter und 404-Seite des Shop-Pakets; HugoCMS nimmt sie nur signiert an. Ein Schlüsselpaar gilt für alle Firmen und alle HugoShops dieser Installation.",
+            "unavailable": "PHP auf diesem Server hat keine Sodium-Erweiterung — ohne sie gibt es keine Signatur. Weiterleiter und 404-Seite müssen dann von Hand auf den Webserver.",
+            "publicKey": "Öffentlicher Schlüssel",
+            "publicKeyHint": "In HugoCMS unter Projekteinstellungen → Shop-Anbindung → Signaturschlüssel von OpensourceERP eintragen.",
+            "copy": "Schlüssel kopieren",
+            "invalid": "Die Schlüsseldatei ist nicht lesbar oder enthält keinen gültigen Schlüssel.",
+            "none": "Noch kein Signaturschlüssel erzeugt.",
+            "notWritable": "Der Webserver darf in diesem Verzeichnis nicht schreiben. Den Schlüssel auf dem Server als Benutzer des Webservers erzeugen:",
+            "create": "Schlüsselpaar erzeugen",
+            "replace": "Schlüsselpaar ersetzen",
+            "replaceTitle": "Signaturschlüssel ersetzen?",
+            "replaceConfirm": "Der bisherige Schlüssel gilt sofort nicht mehr. Jedes HugoCMS weist die Signaturen ab, bis dort der neue öffentliche Schlüssel eingetragen ist.",
+            "created": "Signaturschlüssel erzeugt.",
+            "replaced": "Signaturschlüssel ersetzt — den neuen öffentlichen Schlüssel in jedem HugoCMS eintragen."
         }
     }
 }

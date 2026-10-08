@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Geçersiz giriş.",
             "DB_CONNECTION_FAILED": "Yeni veritabanı erişimiyle bağlantı kurulamıyor. Hiçbir şey kaydedilmedi.",
             "WOULD_LOCK_OUT": "Kendi sistem yönetiminizi kaldırmış olursunuz. Hiçbir şey kaydedilmedi.",
-            "NO_PERMISSION": "Sistem ayarlarını yalnızca sistem yöneticileri değiştirebilir."
+            "NO_PERMISSION": "Sistem ayarlarını yalnızca sistem yöneticileri değiştirebilir.",
+            "SIGNING_UNAVAILABLE": "Bu sunucudaki PHP'de sodium eklentisi yok.",
+            "SIGNING_KEY_EXISTS": "Zaten bir imza anahtarı var.",
+            "SIGNING_NOT_WRITABLE": "Anahtar dosyası yazılamadı."
+        },
+        "signing": {
+            "title": "Mağaza eklentisi: imza anahtarı",
+            "hint": "OpensourceERP bu anahtarla mağaza paketinin vekil sunucusunu ve 404 sayfasını imzalar; HugoCMS bunları yalnızca imzalı kabul eder. Bir anahtar çifti bu kurulumun tüm firmaları ve tüm HugoShop'ları için geçerlidir.",
+            "unavailable": "Bu sunucudaki PHP'de sodium eklentisi yok — o olmadan imza olmaz. Vekil sunucu ve 404 sayfası bu durumda web sunucusuna elle konulmalıdır.",
+            "publicKey": "Açık anahtar",
+            "publicKeyHint": "HugoCMS'te Proje ayarları → Mağaza bağlantısı → OpensourceERP imza anahtarı altına girin.",
+            "copy": "Anahtarı kopyala",
+            "invalid": "Anahtar dosyası okunamıyor veya geçerli bir anahtar içermiyor.",
+            "none": "Henüz imza anahtarı oluşturulmadı.",
+            "notWritable": "Web sunucusunun bu dizine yazma izni yok. Anahtarı sunucuda web sunucusu kullanıcısı olarak oluşturun:",
+            "create": "Anahtar çifti oluştur",
+            "replace": "Anahtar çiftini değiştir",
+            "replaceTitle": "İmza anahtarı değiştirilsin mi?",
+            "replaceConfirm": "Önceki anahtar hemen geçersiz olur. Her HugoCMS, yeni açık anahtar oraya girilene kadar imzaları reddeder.",
+            "created": "İmza anahtarı oluşturuldu.",
+            "replaced": "İmza anahtarı değiştirildi — yeni açık anahtarı her HugoCMS'e girin."
         }
     }
 }

@@ -412,6 +412,9 @@ export const oserpStore = defineStore('oserpStore', () => {
     const adminSystemSettings = () => adminCall('getSystemSettings');
     /** Speichert geänderte Einträge; values: Abschnitt -> Schlüssel -> Wert */
     const adminSaveSystemSettings = (values) => adminCall('saveSystemSettings', { values });
+    /** Signaturschlüssel der Shop-Erweiterung (dev/shop-php-signatur.md) */
+    const adminShopSigningKeyStatus = () => adminCall('getShopSigningKeyStatus');
+    const adminCreateShopSigningKey = (replace = false) => adminCall('createShopSigningKey', { replace });
     const adminDeleteUser = (id) => adminCall('deleteUser', { id });
     const adminSaveGroup = (group) => adminCall('saveGroup', group);
     const adminDeleteGroup = (id) => adminCall('deleteGroup', { id });
@@ -923,6 +926,8 @@ export const oserpStore = defineStore('oserpStore', () => {
         adminSaveUser,
         adminSystemSettings,
         adminSaveSystemSettings,
+        adminShopSigningKeyStatus,
+        adminCreateShopSigningKey,
         adminDeleteUser,
         adminSaveGroup,
         adminDeleteGroup,

@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Input non valido.",
             "DB_CONNECTION_FAILED": "Nessuna connessione con il nuovo accesso al database. Non è stato salvato nulla.",
             "WOULD_LOCK_OUT": "Ti toglieresti l'amministrazione di sistema. Non è stato salvato nulla.",
-            "NO_PERMISSION": "Solo gli amministratori di sistema possono modificare le impostazioni di sistema."
+            "NO_PERMISSION": "Solo gli amministratori di sistema possono modificare le impostazioni di sistema.",
+            "SIGNING_UNAVAILABLE": "PHP su questo server non ha l’estensione sodium.",
+            "SIGNING_KEY_EXISTS": "Esiste già una chiave di firma.",
+            "SIGNING_NOT_WRITABLE": "Impossibile scrivere il file della chiave."
+        },
+        "signing": {
+            "title": "Estensione negozio: chiave di firma",
+            "hint": "Con questa chiave OpensourceERP firma il proxy e la pagina 404 del pacchetto del negozio; HugoCMS li accetta solo firmati. Una coppia di chiavi vale per tutte le aziende e tutti gli HugoShop di questa installazione.",
+            "unavailable": "PHP su questo server non ha l’estensione sodium: senza di essa niente firma. Il proxy e la pagina 404 vanno allora messi a mano sul server web.",
+            "publicKey": "Chiave pubblica",
+            "publicKeyHint": "Inseritela in HugoCMS in Impostazioni progetto → Collegamento negozio → Chiave di firma di OpensourceERP.",
+            "copy": "Copia chiave",
+            "invalid": "Il file della chiave non è leggibile o non contiene una chiave valida.",
+            "none": "Non è ancora stata creata una chiave di firma.",
+            "notWritable": "Il server web non può scrivere in questa cartella. Create la chiave sul server come utente del server web:",
+            "create": "Crea coppia di chiavi",
+            "replace": "Sostituisci coppia di chiavi",
+            "replaceTitle": "Sostituire la chiave di firma?",
+            "replaceConfirm": "La chiave precedente smette subito di valere. Ogni HugoCMS rifiuta le firme finché non vi viene inserita la nuova chiave pubblica.",
+            "created": "Chiave di firma creata.",
+            "replaced": "Chiave di firma sostituita: inserite la nuova chiave pubblica in ogni HugoCMS."
         }
     }
 }

@@ -69,6 +69,31 @@ function shopCartAndCustomer($db, string $uuid): array {
 }
 
 // ============================================================================
+// VERBINDUNGSTEST
+// ============================================================================
+
+/**
+ * Antwortet mit dem Kanal, zu dem der Shop-Schlüssel gehört
+ *
+ * Für den Verbindungstest der Kanalkarte (testShopBackendUrl): Daran erkennt
+ * OpensourceERP, dass eine Adresse wirklich zu seinem Shop-Zugang führt und
+ * der Schlüssel zu diesem Kanal passt. Gibt nichts preis außer Kennung und
+ * Namen des Kanals, und legt keine Sitzung an — shopPublicDispatch ruft es
+ * vor shopPublicContextUuid auf.
+ */
+function shopPing($db, string $uuid, array $daten, int $kanal) {
+    $zeile = $db->getOne(
+        "SELECT name FROM sales_channel_shop WHERE id = CAST(:kanal AS integer)",
+        [':kanal' => $kanal]
+    );
+    resultInfo(true, '', [
+        'service'      => 'oserp-shop',
+        'channel_id'   => $kanal,
+        'channel_name' => (string)($zeile['name'] ?? ''),
+    ]);
+}
+
+// ============================================================================
 // SITZUNG
 // ============================================================================
 
@@ -408,6 +433,8 @@ function shopPublicActions(): array {
         'sendContactMail', 'submitWiderruf',
         // Webseite
         'resolveRedirect',
+        // Verbindungstest aus der Kanalkarte (testShopBackendUrl) — ohne Sitzung
+        'shopPing',
     ];
 }
 

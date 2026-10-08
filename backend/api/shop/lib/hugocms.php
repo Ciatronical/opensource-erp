@@ -199,20 +199,26 @@ const SHOP_HUGOCMS_RESYNC_SECONDS = 86400;
  */
 const SHOP_HUGOCMS_MANUAL_FILES = ['oserp-shop/static/shop-api/index.php', 'oserp-shop/static/not_found.php'];
 
+// Signaturschlüssel der Installation: lib/signing.php (dev/shop-php-signatur.md)
+require_once __DIR__.'/signing.php';
+
 /**
- * Ruft eine Adresse der Webseite auf, ohne Umleitungen zu folgen
+ * Ruft eine Adresse auf, ohne Umleitungen zu folgen
  *
  * @param string $adresse vollständige Adresse
+ * @param array|null $json Rumpf als JSON (dann POST), null = GET
+ * @param array $kopfzeilen zusätzliche Kopfzeilen, etwa X-Shop-Key
  * @return array status (0 = nicht erreichbar), kopf (Name klein => Wert), rumpf, fehler
  */
-function shopWebsiteProbe(string $adresse): array {
+function shopWebsiteProbe(string $adresse, ?array $json = null, array $kopfzeilen = []): array {
     $kopf = [];
     $ch = curl_init($adresse);
-    curl_setopt_array($ch, [
+    $optionen = [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_CONNECTTIMEOUT => 5,
         CURLOPT_TIMEOUT        => 10,
         CURLOPT_FOLLOWLOCATION => false,
+        CURLOPT_HTTPHEADER     => $kopfzeilen,
         CURLOPT_HEADERFUNCTION => function ($ch, string $zeile) use (&$kopf) {
             $doppelpunkt = strpos($zeile, ':');
             if (false !== $doppelpunkt) {
@@ -220,7 +226,13 @@ function shopWebsiteProbe(string $adresse): array {
             }
             return strlen($zeile);
         },
-    ]);
+    ];
+    if (null !== $json) {
+        $optionen[CURLOPT_POST] = true;
+        $optionen[CURLOPT_POSTFIELDS] = json_encode($json);
+        $optionen[CURLOPT_HTTPHEADER][] = 'Content-Type: application/json';
+    }
+    curl_setopt_array($ch, $optionen);
     $rumpf = curl_exec($ch);
     return [
         'status' => false === $rumpf ? 0 : (int)curl_getinfo($ch, CURLINFO_HTTP_CODE),
@@ -228,6 +240,51 @@ function shopWebsiteProbe(string $adresse): array {
         'rumpf'  => false === $rumpf ? '' : (string)$rumpf,
         'fehler' => false === $rumpf ? curl_error($ch) : '',
     ];
+}
+
+/**
+ * Wer hat auf einen Aufruf von shopPing geantwortet? (testShopBackendUrl)
+ *
+ * Unterschieden an der Form der Antwort: OpensourceERP antwortet mit
+ * success/text/payload, HugoCMS mit ok/error, der Weiterleiter selbst mit
+ * success und den Codes SHOP_PROXY_NOT_CONFIGURED bzw.
+ * SHOP_BACKEND_UNREACHABLE.
+ *
+ * @param array $antwort Ergebnis von shopWebsiteProbe
+ * @param int $kanal erwarteter Kanal
+ * @return array code (OK, OK_OLD, OTHER_CHANNEL, UNREACHABLE, HUGOCMS,
+ *               KEY_REJECTED, PROXY_NOT_CONFIGURED, BACKEND_UNREACHABLE,
+ *               NO_PHP, NOT_FOUND, FOREIGN), name (Kanal), status, fehler
+ */
+function shopShopApiClassify(array $antwort, int $kanal): array {
+    $ergebnis = ['code' => 'FOREIGN', 'name' => '', 'status' => $antwort['status'], 'fehler' => $antwort['fehler']];
+    $json = json_decode($antwort['rumpf'], true);
+    $text = is_array($json) ? (string)($json['text'] ?? '') : '';
+
+    if (0 === $antwort['status']) {
+        $ergebnis['code'] = 'UNREACHABLE';
+    } elseif (str_starts_with(ltrim($antwort['rumpf']), '<?php')) {
+        $ergebnis['code'] = 'NO_PHP';
+    } elseif (is_array($json) && array_key_exists('ok', $json) && is_array($json['error'] ?? null)) {
+        $ergebnis['code'] = 'HUGOCMS';
+    } elseif (is_array($json) && !empty($json['success']) && 'oserp-shop' === ($json['payload']['service'] ?? '')) {
+        $ergebnis['name'] = (string)($json['payload']['channel_name'] ?? '');
+        $ergebnis['code'] = (int)($json['payload']['channel_id'] ?? 0) === $kanal ? 'OK' : 'OTHER_CHANNEL';
+    } elseif ('SHOP_NOT_AUTHORIZED' === $text) {
+        $ergebnis['code'] = 'KEY_REJECTED';
+    } elseif ('SHOP_PROXY_NOT_CONFIGURED' === $text) {
+        $ergebnis['code'] = 'PROXY_NOT_CONFIGURED';
+    } elseif ('SHOP_BACKEND_UNREACHABLE' === $text) {
+        $ergebnis['code'] = 'BACKEND_UNREACHABLE';
+        $ergebnis['fehler'] = (string)($json['debug'] ?? '');
+    } elseif ('API_ACTION_NOT_ALLOWED' === $text) {
+        // OpensourceERP ohne shopPing (älterer Stand): Schlüssel angenommen,
+        // nur den Kanal nennt es nicht
+        $ergebnis['code'] = 'OK_OLD';
+    } elseif (404 === $antwort['status']) {
+        $ergebnis['code'] = 'NOT_FOUND';
+    }
+    return $ergebnis;
 }
 
 /**
@@ -245,7 +302,7 @@ function shopWebsiteProbe(string $adresse): array {
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
  * @return array je Datei: pfad, stand (ok, veraltet, fehlt, kein_php,
- *               nicht_eingerichtet, ungeprueft), text (leer bei ok)
+ *               nicht_eingerichtet, falsches_ziel, ungeprueft), text (leer bei ok)
  */
 function shopWebsiteManualFilesCheck($db, int $kanal): array {
     $basis = rtrim(trim(shopChannelValue($db, $kanal, 'base_url')), '/');
@@ -273,7 +330,9 @@ function shopWebsiteManualFilesCheck($db, int $kanal): array {
         $adresse = $weiterleiter
             ? $basis.'/shop-api/'
             : $basis.'/oserp-shop-pruefung-'.bin2hex(random_bytes(4));
-        $antwort = shopWebsiteProbe($adresse);
+        // Den Weiterleiter mit shopPing: so zeigt die Antwort auch, wohin er
+        // weiterleitet (shopShopApiClassify)
+        $antwort = $weiterleiter ? shopWebsiteProbe($adresse, ['action' => 'shopPing']) : shopWebsiteProbe($adresse);
         $ist = (string)($antwort['kopf']['x-oserp-shop-file'] ?? '');
         $json = json_decode($antwort['rumpf'], true);
 
@@ -283,11 +342,20 @@ function shopWebsiteManualFilesCheck($db, int $kanal): array {
         } elseif ('' !== $ist && ($ist === $soll || '' === $soll)) {
             $stand = 'ok';
             $text = '';
-            // Weiterleiter liegt richtig, findet aber Adresse oder Schlüssel nicht
-            if ($weiterleiter && str_contains($antwort['rumpf'], 'SHOP_PROXY_NOT_CONFIGURED')) {
+            // Weiterleiter liegt richtig — aber erreicht er OpensourceERP?
+            $ziel = $weiterleiter ? shopShopApiClassify($antwort, $kanal)['code'] : 'OK';
+            if ('PROXY_NOT_CONFIGURED' === $ziel) {
                 $stand = 'nicht_eingerichtet';
                 $text = 'Warnung: Der Weiterleiter '.$adresse.' läuft, findet aber oserp-shop/config.json nicht '
                       .'oder unvollständig — Adresse von OpensourceERP und Shop-Schlüssel im Kanal prüfen.';
+            } elseif ('HUGOCMS' === $ziel) {
+                $stand = 'falsches_ziel';
+                $text = 'Warnung: Der Weiterleiter '.$adresse.' erreicht HugoCMS statt OpensourceERP — '
+                      .'„Adresse von OpensourceERP für die Webseite“ in der Kanalkarte prüfen (Verbindung prüfen).';
+            } elseif (in_array($ziel, ['BACKEND_UNREACHABLE', 'KEY_REJECTED', 'OTHER_CHANNEL', 'FOREIGN', 'NOT_FOUND'], true)) {
+                $stand = 'falsches_ziel';
+                $text = 'Warnung: Der Weiterleiter '.$adresse.' erreicht den Shop-Zugang von OpensourceERP nicht ('
+                      .$ziel.') — in der Kanalkarte „Verbindung prüfen“ unter „Adresse von OpensourceERP für die Webseite“.';
             }
         } elseif ('' !== $ist) {
             $stand = 'veraltet';
@@ -386,11 +454,17 @@ function shopHugoCmsStateFile($db, int $kanal): string {
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
  * @param bool $vollstaendig jede Datei abgleichen, auch ohne Änderung seit dem letzten Mal
- * @return array ok, uebertragen, written, deleted, unchanged, buildPending, uebersprungen, fehler
+ * Die PHP-Einstiegspunkte des Pakets gehen signiert mit, sobald HugoCMS sie
+ * annimmt (signedPhp.ready) und diese Installation einen Signaturschlüssel
+ * hat (dev/shop-php-signatur.md). Sonst stehen sie unter uebersprungen.
+ *
+ * @return array ok, uebertragen, written, deleted, unchanged, buildPending, uebersprungen, fehler,
+ *               php (hugocms_bereit, schluessel, gesendet)
  */
 function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     $ergebnis = ['ok' => false, 'uebertragen' => false, 'written' => 0, 'deleted' => 0, 'unchanged' => 0,
-                 'buildPending' => false, 'uebersprungen' => [], 'fehler' => ''];
+                 'buildPending' => false, 'uebersprungen' => [], 'fehler' => '',
+                 'php' => ['hugocms_bereit' => false, 'schluessel' => '' !== shopSigningSecretKey(), 'gesendet' => []]];
 
     $stand = shopHugoCmsCall($db, $kanal, 'shopbuildstatus');
     if (!$stand['ok']) {
@@ -401,6 +475,20 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
 
     $wurzel = shopStagingDir($db, $kanal);
     $liste = shopHugoCmsManifest($wurzel, (array)($stand['data']['areas'] ?? []), (array)($stand['data']['accept'] ?? []));
+
+    // Signierte PHP-Dateien: nur die Pfade, die HugoCMS selbst nennt
+    $signiert = (array)($stand['data']['signedPhp'] ?? []);
+    $ergebnis['php']['hugocms_bereit'] = !empty($signiert['ready']);
+    if ($ergebnis['php']['hugocms_bereit'] && $ergebnis['php']['schluessel']) {
+        foreach ((array)($signiert['paths'] ?? []) as $pfad) {
+            if (in_array($pfad, $liste['uebersprungen'], true) && is_file($wurzel.'/'.$pfad)) {
+                $liste['dateien'][$pfad] = hash_file('sha256', $wurzel.'/'.$pfad);
+                $liste['uebersprungen'] = array_values(array_diff($liste['uebersprungen'], [$pfad]));
+                $ergebnis['php']['gesendet'][] = $pfad;
+            }
+        }
+        ksort($liste['dateien']);
+    }
     $ergebnis['uebersprungen'] = $liste['uebersprungen'];
 
     $fingerabdruck = hash('sha256', json_encode($liste['dateien']).'|'.shopChannelValue($db, $kanal, 'hugocms_url'));
@@ -416,7 +504,9 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     // 1. Abgleich
     $eintraege = [];
     foreach ($liste['dateien'] as $pfad => $pruefsumme) {
-        $eintraege[] = ['path' => $pfad, 'sha256' => $pruefsumme];
+        $eintraege[] = in_array($pfad, $ergebnis['php']['gesendet'], true)
+            ? ['path' => $pfad, 'sha256' => $pruefsumme, 'signature' => shopSigningSign($pfad, $pruefsumme)]
+            : ['path' => $pfad, 'sha256' => $pruefsumme];
     }
     $abgleich = shopHugoCmsCall($db, $kanal, 'shopmanifest', 'POST', 120, [], ['files' => $eintraege]);
     if (!$abgleich['ok']) {
@@ -577,23 +667,54 @@ function shopHugoCmsThumbnails($db, int $kanal): array {
 function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, bool $bauen, bool $erzwingen = false): bool {
     $abgleich = shopHugoCmsSync($db, $kanal, $erzwingen);
 
-    // Nur prüfen, wenn wirklich übertragen wurde — sonst kostete jeder Lauf
-    // zwei Aufrufe der Webseite. Die PHP-Einstiegspunkte des Pakets sind der
-    // erwartete Fall (E9): HugoCMS nimmt kein PHP an, man legt sie von Hand
-    // ab. Ob das geschehen ist und die Kopie aktuell ist, sagt die Prüfung
-    // über die Webseite; gemeldet wird nur, was nicht stimmt. Alles andere,
-    // was HugoCMS ablehnt, wäre ein Befund.
-    if ($abgleich['uebertragen'] && $abgleich['uebersprungen']) {
-        $vonHand = array_values(array_filter($abgleich['uebersprungen'],
-            fn($pfad) => in_array($pfad, SHOP_HUGOCMS_MANUAL_FILES, true)));
-        $sonst = array_values(array_diff($abgleich['uebersprungen'], $vonHand));
-        if ($vonHand) {
-            foreach (shopWebsiteManualFilesCheck($db, $kanal) as $pruefung) {
-                if ('' !== $pruefung['text']) {
-                    $sagen($pruefung['text']);
-                }
+    // PHP-Einstiegspunkte des Pakets (Weiterleiter, 404-Seite): signiert
+    // übertragen (dev/shop-php-signatur.md) oder von Hand abgelegt (E9). Ob sie
+    // auf der Webseite liegen und aktuell sind, sagt die Prüfung über die
+    // Webseite — erst am Ende, nach dem Bau, wenn eine neue Fassung in
+    // public/ angekommen ist. Geprüft wird nur nach einer Übertragung, sonst
+    // kostete jeder Lauf zwei Aufrufe der Webseite; gemeldet wird nur, was
+    // nicht stimmt. Alles andere, was HugoCMS ablehnt, wäre ein Befund.
+    $vonHand = array_values(array_filter($abgleich['uebersprungen'],
+        fn($pfad) => in_array($pfad, SHOP_HUGOCMS_MANUAL_FILES, true)));
+    $pruefen = $abgleich['uebertragen'] && ($vonHand || $abgleich['php']['gesendet']);
+    $abschluss = function (bool $gebaut) use ($db, $kanal, $sagen, $pruefen, $vonHand, $abgleich): bool {
+        if (!$pruefen) {
+            return $gebaut;
+        }
+        $mangel = false;
+        foreach (shopWebsiteManualFilesCheck($db, $kanal) as $pruefung) {
+            if ('' !== $pruefung['text']) {
+                $sagen($pruefung['text']);
+                $mangel = true;
             }
         }
+        // Hinweis, wie der Lauf die Dateien künftig selbst überträgt
+        if ($mangel && $vonHand) {
+            $sagen($abgleich['php']['schluessel']
+                ? 'Diese Dateien überträgt der Lauf selbst, sobald in HugoCMS (Projekteinstellungen → Shop-Anbindung) '
+                  .'der Signaturschlüssel von OpensourceERP hinterlegt ist: '.shopSigningPublicKey()
+                : 'Diese Dateien kann der Lauf selbst übertragen: in OpensourceERP unter Systemeinstellungen '
+                  .'(Shop-Erweiterung: Signaturschlüssel) ein Schlüsselpaar erzeugen und den öffentlichen Schlüssel '
+                  .'in HugoCMS (Projekteinstellungen → Shop-Anbindung) eintragen.');
+        }
+        return $gebaut;
+    };
+    if ($abgleich['php']['gesendet'] && $abgleich['uebertragen']) {
+        $sagen('Signiert an HugoCMS übertragen: '.implode(', ', $abgleich['php']['gesendet']));
+    }
+
+    // HugoCMS nimmt signiertes PHP an, dieser Lauf kann aber nicht signieren:
+    // Weiterleiter und 404-Seite bleiben dann auf dem alten Stand (HugoCMS
+    // löscht sie nicht, ersetzt sie aber auch nicht). Typisch, wenn Cron und
+    // Webserver unter verschiedenen Benutzern laufen und die Schlüsseldatei
+    // (Rechte 0600) dem anderen gehört. Nur nach einer Übertragung, wie die
+    // übrigen Hinweise — der tägliche Abgleich bringt ihn mindestens einmal am Tag.
+    if ($abgleich['uebertragen'] && $abgleich['php']['hugocms_bereit'] && !$abgleich['php']['schluessel']) {
+        $sagen(shopSigningUnreadableText());
+    }
+
+    if ($abgleich['uebertragen'] && $abgleich['uebersprungen']) {
+        $sonst = array_values(array_diff($abgleich['uebersprungen'], $vonHand));
         if ($sonst) {
             $sagen(sprintf('%d Dateien nicht an HugoCMS übertragen — dort nicht angenommen: %s',
                 count($sonst), implode(', ', array_slice($sonst, 0, 5)).(count($sonst) > 5 ? ' …' : '')));
@@ -632,18 +753,18 @@ function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, 
     }
 
     if (!$bauen || (!$bauNoetig && !$erzwingen)) {
-        return false;
+        return $abschluss(false);
     }
 
     $sagen('HugoCMS baut die Webseite …');
     $bau = shopHugoCmsCall($db, $kanal, 'shopbuild', 'POST', 600);
     if (!$bau['ok']) {
         $fehler('Bau in HugoCMS fehlgeschlagen: '.$bau['fehler']);
-        return false;
+        return $abschluss(false);
     }
     if (!empty($bau['data']['paused'])) {
         $sagen('Das Bauen ist in HugoCMS pausiert — der Cron von HugoCMS baut, sobald die Pause endet.');
-        return false;
+        return $abschluss(false);
     }
     foreach (array_slice(explode("\n", trim((string)($bau['data']['output'] ?? ''))), -50) as $zeile) {
         if ('' !== trim($zeile)) {
@@ -652,8 +773,8 @@ function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, 
     }
     if (!empty($bau['data']['success'])) {
         $sagen(sprintf('Webseite in HugoCMS gebaut (%s s).', $bau['data']['seconds'] ?? '?'));
-        return true;
+        return $abschluss(true);
     }
     $fehler('Der Bau in HugoCMS ist fehlgeschlagen (Rückgabewert '.(int)($bau['data']['exitCode'] ?? -1).').');
-    return false;
+    return $abschluss(false);
 }

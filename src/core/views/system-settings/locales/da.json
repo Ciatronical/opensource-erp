@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Ugyldigt input.",
             "DB_CONNECTION_FAILED": "Ingen forbindelse med den nye databaseadgang. Intet gemt.",
             "WOULD_LOCK_OUT": "Du ville fratage dig selv systemadministrationen. Intet gemt.",
-            "NO_PERMISSION": "Kun systemadministratorer må ændre systemindstillingerne."
+            "NO_PERMISSION": "Kun systemadministratorer må ændre systemindstillingerne.",
+            "SIGNING_UNAVAILABLE": "PHP på denne server har ingen sodium-udvidelse.",
+            "SIGNING_KEY_EXISTS": "Der findes allerede en signaturnøgle.",
+            "SIGNING_NOT_WRITABLE": "Nøglefilen kunne ikke skrives."
+        },
+        "signing": {
+            "title": "Butiksudvidelse: signaturnøgle",
+            "hint": "Med denne nøgle signerer OpensourceERP proxyen og 404-siden i butikspakken; HugoCMS accepterer dem kun signeret. Ét nøglepar gælder for alle firmaer og alle HugoShops i denne installation.",
+            "unavailable": "PHP på denne server har ingen sodium-udvidelse — uden den ingen signatur. Proxyen og 404-siden skal så lægges på webserveren manuelt.",
+            "publicKey": "Offentlig nøgle",
+            "publicKeyHint": "Indtast den i HugoCMS under projektindstillinger → butiksforbindelse → signaturnøgle fra OpensourceERP.",
+            "copy": "Kopiér nøgle",
+            "invalid": "Nøglefilen kan ikke læses eller indeholder ingen gyldig nøgle.",
+            "none": "Der er endnu ikke oprettet en signaturnøgle.",
+            "notWritable": "Webserveren må ikke skrive i denne mappe. Opret nøglen på serveren som webserverens bruger:",
+            "create": "Opret nøglepar",
+            "replace": "Erstat nøglepar",
+            "replaceTitle": "Erstat signaturnøgle?",
+            "replaceConfirm": "Den hidtidige nøgle holder straks op med at gælde. Hver HugoCMS afviser signaturerne, indtil den nye offentlige nøgle er indtastet der.",
+            "created": "Signaturnøgle oprettet.",
+            "replaced": "Signaturnøgle erstattet — indtast den nye offentlige nøgle i hver HugoCMS."
         }
     }
 }

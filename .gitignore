@@ -34,6 +34,9 @@ backend/config/api.config.php
 # Neue Konfiguration
 settings.ini
 settings.ini.backup.*
+# Privater Signaturschlüssel der Shop-Erweiterung (tools/shop-signing-key.php)
+backend/config/shop-signing.key
+backend/config/shop-signing.key.tmp
 
 # Docker
 docker/.env

@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Date invalide.",
             "DB_CONNECTION_FAILED": "Nu există conexiune cu noul acces la baza de date. Nimic nu a fost salvat.",
             "WOULD_LOCK_OUT": "V-ați retrage singur administrarea sistemului. Nimic nu a fost salvat.",
-            "NO_PERMISSION": "Doar administratorii de sistem pot modifica setările de sistem."
+            "NO_PERMISSION": "Doar administratorii de sistem pot modifica setările de sistem.",
+            "SIGNING_UNAVAILABLE": "PHP pe acest server nu are extensia sodium.",
+            "SIGNING_KEY_EXISTS": "Există deja o cheie de semnătură.",
+            "SIGNING_NOT_WRITABLE": "Fișierul cheii nu a putut fi scris."
+        },
+        "signing": {
+            "title": "Extensia magazin: cheie de semnătură",
+            "hint": "Cu această cheie OpensourceERP semnează proxy-ul și pagina 404 ale pachetului magazinului; HugoCMS le acceptă doar semnate. O pereche de chei se aplică tuturor firmelor și tuturor HugoShop-urilor acestei instalări.",
+            "unavailable": "PHP pe acest server nu are extensia sodium — fără ea nu există semnătură. Proxy-ul și pagina 404 trebuie atunci puse manual pe serverul web.",
+            "publicKey": "Cheie publică",
+            "publicKeyHint": "Introduceți-o în HugoCMS la Setări proiect → Conexiune magazin → Cheia de semnătură OpensourceERP.",
+            "copy": "Copiază cheia",
+            "invalid": "Fișierul cheii nu poate fi citit sau nu conține o cheie validă.",
+            "none": "Încă nu a fost creată o cheie de semnătură.",
+            "notWritable": "Serverul web nu are voie să scrie în acest director. Creați cheia pe server ca utilizator al serverului web:",
+            "create": "Creează perechea de chei",
+            "replace": "Înlocuiește perechea de chei",
+            "replaceTitle": "Înlocuiți cheia de semnătură?",
+            "replaceConfirm": "Cheia anterioară nu mai este valabilă imediat. Fiecare HugoCMS respinge semnăturile până când este introdusă acolo noua cheie publică.",
+            "created": "Cheia de semnătură a fost creată.",
+            "replaced": "Cheia de semnătură a fost înlocuită — introduceți noua cheie publică în fiecare HugoCMS."
         }
     }
 }

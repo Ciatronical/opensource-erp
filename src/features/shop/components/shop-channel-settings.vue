@@ -24,10 +24,11 @@
                 <v-divider class="mt-1" />
             </div>
 
+            <!-- Normale Hintergrundfarbe mit Rahmen; ob eine Gruppe gerade gilt,
+                 zeigt das Chip im Titel (activeWhen) -->
             <v-card
                 v-else-if="feld.type === 'group'"
-                :variant="istAktiv(feld) ? 'tonal' : 'outlined'"
-                :color="istAktiv(feld) ? 'primary' : undefined"
+                variant="outlined"
                 class="my-3"
             >
                 <v-card-item>
@@ -83,6 +84,37 @@
                         >
                             <div v-for="(zeile, nr) in hugocmsErgebnis.zeilen" :key="nr">{{ zeile }}</div>
                         </v-alert>
+
+                        <!-- Signaturschlüssel dieser Installation: in HugoCMS eintragen,
+                             dann überträgt der Lauf Weiterleiter und 404-Seite selbst
+                             (dev/shop-php-signatur.md) -->
+                        <v-text-field
+                            v-if="signaturSchluessel"
+                            :model-value="signaturSchluessel"
+                            :label="t('crm_fields.shopSigningKey')"
+                            :hint="t('crm_fields.shopSigningKey_help')"
+                            persistent-hint
+                            readonly
+                            variant="outlined"
+                            density="compact"
+                            prepend-inner-icon="mdi-shield-key-outline"
+                            class="mt-4"
+                            style="max-width: 70ch"
+                            @focus="$event.target.select()"
+                        >
+                            <template #append-inner>
+                                <v-btn
+                                    :icon="signaturKopiert ? 'mdi-check' : 'mdi-content-copy'"
+                                    variant="text"
+                                    size="small"
+                                    :title="t('crm_fields.shopSigningKeyCopy')"
+                                    @click="signaturKopieren"
+                                />
+                            </template>
+                        </v-text-field>
+                        <div v-else-if="signaturGeladen" class="text-caption text-medium-emphasis mt-4">
+                            {{ t('crm_fields.shopSigningKeyMissing') }}
+                        </div>
                     </template>
                 </v-card-text>
             </v-card>
@@ -229,6 +261,38 @@ onBeforeUnmount(() => {
 const hugocmsPrueft = ref(false)
 const hugocmsErgebnis = ref(null)
 
+// Öffentlicher Signaturschlüssel dieser Installation — für alle HugoShops
+// derselbe (dev/shop-php-signatur.md, S2)
+const signaturSchluessel = ref('')
+const signaturGeladen = ref(false)
+const signaturKopiert = ref(false)
+
+async function signaturLaden() {
+    try {
+        const antwort = await axios.post('/api/shop/', { action: 'getShopSigningKey' })
+        signaturSchluessel.value = antwort.data?.success ? (antwort.data.payload?.public_key || '') : ''
+    } catch {
+        signaturSchluessel.value = ''
+    } finally {
+        signaturGeladen.value = true
+    }
+}
+
+async function signaturKopieren() {
+    try {
+        await navigator.clipboard.writeText(signaturSchluessel.value)
+        signaturKopiert.value = true
+    } catch {
+        // Ohne Zwischenablage (unsichere Verbindung): Feld markieren und von Hand kopieren
+        signaturKopiert.value = false
+    }
+}
+
+// Nur HugoShops haben die HugoCMS-Gruppe
+if (alleFelder.value.some(feld => feld.name === 'hugocms_url')) {
+    signaturLaden()
+}
+
 /**
  * Prüft die Verbindung zu HugoCMS — mit Adresse und, falls eingetippt,
  * Schlüssel aus dem Formular; ein leeres Schlüsselfeld heißt: der
@@ -270,6 +334,13 @@ function hugocmsBericht(stand) {
     }
     if (stand.running) {
         zeilen.push(t('crm_fields.shopHugoCmsRunning'))
+    }
+
+    // Signierte PHP-Dateien (Weiterleiter, 404-Seite): nimmt HugoCMS sie an?
+    if (stand.signedPhp?.ready) {
+        zeilen.push(stand.oserp_signing_key ? t('crm_fields.shopHugoCmsSignedReady') : t('crm_fields.shopHugoCmsSignedNoKey'))
+    } else if (stand.signedPhp) {
+        zeilen.push(stand.oserp_signing_key ? t('crm_fields.shopHugoCmsSignedMissing') : t('crm_fields.shopHugoCmsSignedNoKey'))
     }
 
     const letzter = stand.last

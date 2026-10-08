@@ -1,8 +1,24 @@
 # Shop: PHP-Dateien des Pakets signiert an HugoCMS übertragen
 
-Stand 2026-10-08. Status: **Entwurf** — betrifft OpensourceERP und HugoCMS
-(`/home/worker/Projekte/hugocms-2026`, eigene Richtlinien: `CLAUDE.md` dort).
-Nimmt E9 aus `dev/shop-hugocms-trennung.md` zurück, sobald umgesetzt.
+Stand 2026-10-08. Status: **umgesetzt** in OpensourceERP und HugoCMS
+(`/home/worker/Projekte/hugocms-2026`, eigene Richtlinien: `CLAUDE.md` dort),
+nicht gegen eine echte Webseite getestet. Löst E9 aus
+`dev/shop-hugocms-trennung.md` ab. Entscheidungen S1–S3 wie vorgeschlagen.
+
+## Einrichten
+
+1. In OpensourceERP als Systemadministrator: Systemeinstellungen → „Shop-Erweiterung:
+   Signaturschlüssel“ → „Schlüsselpaar erzeugen“ (seit 2026-10-08; bewusst nicht
+   in der Firmenkonfiguration, der Schlüssel gehört der Installation). Darf der
+   Webserver nicht in `backend/config/` schreiben, auf dem Server als dessen
+   Benutzer `php tools/shop-signing-key.php --create`. Der öffentliche
+   Schlüssel steht danach in den Systemeinstellungen und, nur lesend, in der
+   Kanalkarte unter Veröffentlichung → HugoCMS.
+2. In HugoCMS: Projekteinstellungen → Shop-Anbindung → „Signaturschlüssel von
+   OpensourceERP“ einfügen und speichern.
+3. In OpensourceERP „Verbindung prüfen“ (Kanalkarte) zeigt danach „überträgt
+   der Lauf signiert“; „Shop-Benutzerschnittstelle installieren“ überträgt die
+   beiden PHP-Dateien mit.
 
 ## Ziel
 
@@ -97,6 +113,17 @@ andere `.php` weiter abgewiesen.
 - **Dokumentation**: `dev/shop-betrieb.md`, `dev/shop-hugocms-trennung.md`
   (E9 abgelöst).
 
+## Läufe ohne lesbaren Schlüssel
+
+Nimmt HugoCMS signiertes PHP an, kann ein Lauf aber nicht signieren (Datei
+fehlt, ist für den Benutzer des Laufs nicht lesbar, ungültig, oder Sodium
+fehlt), meldet der Lauf nach jeder Übertragung eine Warnung mit dem Grund
+(`shopSigningUnreadableText`): Benutzer des Laufs, Eigentümer der Datei. Der
+häufigste Fall: Cron und Webserver laufen unter verschiedenen Benutzern, und
+die Schlüsseldatei (0600) gehört dem, der sie in den Systemeinstellungen
+erzeugt hat. Weiterleiter und 404-Seite bleiben dann stehen — HugoCMS löscht
+sie nie —, werden aber nicht aktualisiert.
+
 ## Grenzen
 
 - Wer den OSERP-Server übernimmt, kann signieren und damit PHP auf den
@@ -104,7 +131,29 @@ andere `.php` weiter abgewiesen.
 - PHP auf der Webseite und die 404-Weiterleitung im Webserver bleiben
   Einrichtung von Hand.
 
-## Entscheidungen (offen)
+## Umsetzung
+
+| Teil | Wo |
+| --- | --- |
+| HugoCMS: Prüfung | `backend/core/Shop/ShopSync.php` (`SIGNED_PHP`, `signatureMessage()`, `allowedPath()`, `manifest()`) |
+| HugoCMS: Schlüssel in der Mount-Datei | `backend/core/MountConfig.php` (`[shop] signing_key`) |
+| HugoCMS: Befehle, Status | `backend/core/Connector.php` (`shopsigningkeyset`, `shopsigningkeydelete`, `signedPhp` in `shopbuildstatus`, `shopKey` in `projectconfig`) |
+| HugoCMS: Oberfläche | `frontend/src/components/ProjectSettingsDialog.vue`, `stores/auth.js`, `i18n/de.js`, `i18n/en.js`; README |
+| OSERP: Schlüssel, Signatur | `backend/api/shop/lib/signing.php` (`shopSigningKeyFile`, `shopSigningPublicKey`, `shopSigningSign`, `shopSigningStatus`, `shopSigningCreate`) |
+| OSERP: Systemeinstellungen | `getShopSigningKeyStatus`, `createShopSigningKey` (`admin/system_settings.php`, nur Systemadministratoren), Karte in `system-settings.view.vue` |
+| OSERP: Abgleich, Lauf | `shopHugoCmsSync` (signierte Einträge), `shopHugoCmsPublish` (Prüfung über die Webseite nach dem Bau, Hinweis zur Einrichtung) |
+| OSERP: Werkzeug | `tools/shop-signing-key.php` |
+| OSERP: Kanalkarte | `getShopSigningKey`, `testShopHugoCms` (`admin.php`), `shop-channel-settings.vue` |
+
+Getestet mit Wegwerf-Skripten gegen den Autoloader von HugoCMS: gültige
+Signatur angenommen und übernommen; eine spätere Lieferung ohne die Datei
+lässt sie stehen (seit 2026-10-08: die PHP-Einstiegspunkte löscht HugoCMS nie,
+nur ersetzen — fehlte einem Lauf der Schlüssel, stünde sonst der Shop still); abgewiesen ohne Schlüssel, ohne Signatur, mit fremdem
+Schlüssel, mit Signatur für eine andere Prüfsumme oder einen anderen Pfad,
+an einem anderen PHP-Pfad und mit verändertem Inhalt. Die Nachricht, die
+OpensourceERP signiert, ist dieselbe, die HugoCMS prüft.
+
+## Entscheidungen (2026-10-08, wie vorgeschlagen)
 
 | Nr. | Frage | Vorschlag |
 | --- | --- | --- |

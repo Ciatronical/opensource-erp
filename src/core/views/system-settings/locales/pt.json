@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Entrada inválida.",
             "DB_CONNECTION_FAILED": "Sem ligação com o novo acesso à base de dados. Nada foi guardado.",
             "WOULD_LOCK_OUT": "Retiraria a si próprio a administração do sistema. Nada foi guardado.",
-            "NO_PERMISSION": "Apenas os administradores do sistema podem alterar as configurações do sistema."
+            "NO_PERMISSION": "Apenas os administradores do sistema podem alterar as configurações do sistema.",
+            "SIGNING_UNAVAILABLE": "O PHP neste servidor não tem a extensão sodium.",
+            "SIGNING_KEY_EXISTS": "Já existe uma chave de assinatura.",
+            "SIGNING_NOT_WRITABLE": "Não foi possível escrever o ficheiro da chave."
+        },
+        "signing": {
+            "title": "Extensão da loja: chave de assinatura",
+            "hint": "Com esta chave o OpensourceERP assina o proxy e a página 404 do pacote da loja; o HugoCMS só os aceita assinados. Um par de chaves vale para todas as empresas e todas as HugoShops desta instalação.",
+            "unavailable": "O PHP neste servidor não tem a extensão sodium — sem ela não há assinatura. O proxy e a página 404 têm então de ser colocados à mão no servidor web.",
+            "publicKey": "Chave pública",
+            "publicKeyHint": "Introduza-a no HugoCMS em Definições do projeto → Ligação à loja → Chave de assinatura do OpensourceERP.",
+            "copy": "Copiar chave",
+            "invalid": "O ficheiro da chave não pode ser lido ou não contém uma chave válida.",
+            "none": "Ainda não foi criada nenhuma chave de assinatura.",
+            "notWritable": "O servidor web não pode escrever nesta pasta. Crie a chave no servidor como utilizador do servidor web:",
+            "create": "Criar par de chaves",
+            "replace": "Substituir par de chaves",
+            "replaceTitle": "Substituir a chave de assinatura?",
+            "replaceConfirm": "A chave anterior deixa de valer de imediato. Cada HugoCMS rejeita as assinaturas até lá ser introduzida a nova chave pública.",
+            "created": "Chave de assinatura criada.",
+            "replaced": "Chave de assinatura substituída — introduza a nova chave pública em cada HugoCMS."
         }
     }
 }

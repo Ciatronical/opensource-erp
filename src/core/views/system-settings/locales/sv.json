@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Ogiltig inmatning.",
             "DB_CONNECTION_FAILED": "Ingen anslutning med den nya databasåtkomsten. Inget sparades.",
             "WOULD_LOCK_OUT": "Du skulle ta ifrån dig själv systemadministrationen. Inget sparades.",
-            "NO_PERMISSION": "Endast systemadministratörer får ändra systeminställningarna."
+            "NO_PERMISSION": "Endast systemadministratörer får ändra systeminställningarna.",
+            "SIGNING_UNAVAILABLE": "PHP på denna server saknar sodium-tillägget.",
+            "SIGNING_KEY_EXISTS": "Det finns redan en signeringsnyckel.",
+            "SIGNING_NOT_WRITABLE": "Nyckelfilen kunde inte skrivas."
+        },
+        "signing": {
+            "title": "Butikstillägg: signeringsnyckel",
+            "hint": "Med denna nyckel signerar OpensourceERP proxyn och 404-sidan i butikspaketet; HugoCMS godtar dem bara signerade. Ett nyckelpar gäller för alla företag och alla HugoShops i denna installation.",
+            "unavailable": "PHP på denna server saknar sodium-tillägget — utan det ingen signatur. Proxyn och 404-sidan måste då läggas på webbservern manuellt.",
+            "publicKey": "Offentlig nyckel",
+            "publicKeyHint": "Ange den i HugoCMS under projektinställningar → butiksanslutning → signeringsnyckel från OpensourceERP.",
+            "copy": "Kopiera nyckel",
+            "invalid": "Nyckelfilen kan inte läsas eller innehåller ingen giltig nyckel.",
+            "none": "Ingen signeringsnyckel har skapats ännu.",
+            "notWritable": "Webbservern får inte skriva i denna katalog. Skapa nyckeln på servern som webbserverns användare:",
+            "create": "Skapa nyckelpar",
+            "replace": "Ersätt nyckelpar",
+            "replaceTitle": "Ersätta signeringsnyckeln?",
+            "replaceConfirm": "Den tidigare nyckeln slutar gälla direkt. Varje HugoCMS avvisar signaturerna tills den nya offentliga nyckeln har angetts där.",
+            "created": "Signeringsnyckel skapad.",
+            "replaced": "Signeringsnyckel ersatt — ange den nya offentliga nyckeln i varje HugoCMS."
         }
     }
 }

@@ -299,6 +299,13 @@ function shopPublicDispatch(array $erlaubteAktionen): void {
     }
 
     try {
+        // Verbindungstest: nur den Kanal nennen, keine Sitzung anlegen —
+        // sonst hinterließe jeder Test eine Zeile in context_hugoshop
+        if ('shopPing' === $aktion) {
+            shopPing($db, '', $daten, $kanal);
+            return;
+        }
+
         $uuid = shopPublicContextUuid($db, $kanal, $fremdeHerkunft);
 
         // Abgeschalteter HugoShop (V16): nichts Neues verkaufen. Was schon

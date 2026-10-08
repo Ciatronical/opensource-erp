@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Neteisinga įvestis.",
             "DB_CONNECTION_FAILED": "Su nauja duomenų bazės prieiga prisijungti nepavyksta. Nieko neišsaugota.",
             "WOULD_LOCK_OUT": "Atimtumėte sau sistemos administravimą. Nieko neišsaugota.",
-            "NO_PERMISSION": "Sistemos nustatymus keisti gali tik sistemos administratoriai."
+            "NO_PERMISSION": "Sistemos nustatymus keisti gali tik sistemos administratoriai.",
+            "SIGNING_UNAVAILABLE": "Šio serverio PHP neturi sodium plėtinio.",
+            "SIGNING_KEY_EXISTS": "Parašo raktas jau yra.",
+            "SIGNING_NOT_WRITABLE": "Nepavyko įrašyti rakto failo."
+        },
+        "signing": {
+            "title": "Parduotuvės plėtinys: parašo raktas",
+            "hint": "Šiuo raktu OpensourceERP pasirašo parduotuvės paketo tarpinį serverį ir 404 puslapį; HugoCMS juos priima tik pasirašytus. Viena raktų pora galioja visoms šio diegimo įmonėms ir visoms HugoShop.",
+            "unavailable": "Šio serverio PHP neturi sodium plėtinio — be jo parašo nėra. Tada tarpinį serverį ir 404 puslapį reikia į žiniatinklio serverį įkelti rankiniu būdu.",
+            "publicKey": "Viešasis raktas",
+            "publicKeyHint": "Įveskite HugoCMS projekto nustatymuose → parduotuvės ryšys → OpensourceERP parašo raktas.",
+            "copy": "Kopijuoti raktą",
+            "invalid": "Rakto failo negalima perskaityti arba jame nėra galiojančio rakto.",
+            "none": "Parašo raktas dar nesukurtas.",
+            "notWritable": "Žiniatinklio serveris negali rašyti į šį katalogą. Sukurkite raktą serveryje kaip žiniatinklio serverio naudotojas:",
+            "create": "Sukurti raktų porą",
+            "replace": "Pakeisti raktų porą",
+            "replaceTitle": "Pakeisti parašo raktą?",
+            "replaceConfirm": "Ankstesnis raktas iš karto nustoja galioti. Kiekviena HugoCMS atmes parašus, kol joje nebus įvestas naujas viešasis raktas.",
+            "created": "Parašo raktas sukurtas.",
+            "replaced": "Parašo raktas pakeistas — įveskite naują viešąjį raktą kiekvienoje HugoCMS."
         }
     }
 }

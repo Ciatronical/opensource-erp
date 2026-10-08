@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Saisie invalide.",
             "DB_CONNECTION_FAILED": "Aucune connexion avec le nouvel accès à la base de données. Rien n'a été enregistré.",
             "WOULD_LOCK_OUT": "Vous vous retireriez l'administration système. Rien n'a été enregistré.",
-            "NO_PERMISSION": "Seuls les administrateurs système peuvent modifier les paramètres système."
+            "NO_PERMISSION": "Seuls les administrateurs système peuvent modifier les paramètres système.",
+            "SIGNING_UNAVAILABLE": "PHP sur ce serveur n’a pas l’extension sodium.",
+            "SIGNING_KEY_EXISTS": "Une clé de signature existe déjà.",
+            "SIGNING_NOT_WRITABLE": "Le fichier de clé n’a pas pu être écrit."
+        },
+        "signing": {
+            "title": "Extension boutique : clé de signature",
+            "hint": "Avec cette clé, OpensourceERP signe le relais et la page 404 du paquet de la boutique ; HugoCMS ne les accepte que signés. Une paire de clés vaut pour toutes les sociétés et tous les HugoShops de cette installation.",
+            "unavailable": "PHP sur ce serveur n’a pas l’extension sodium — sans elle, pas de signature. Le relais et la page 404 doivent alors être déposés à la main sur le serveur web.",
+            "publicKey": "Clé publique",
+            "publicKeyHint": "À saisir dans HugoCMS sous Paramètres du projet → Connexion boutique → Clé de signature d’OpensourceERP.",
+            "copy": "Copier la clé",
+            "invalid": "Le fichier de clé est illisible ou ne contient pas de clé valide.",
+            "none": "Aucune clé de signature n’a encore été créée.",
+            "notWritable": "Le serveur web ne peut pas écrire dans ce répertoire. Créez la clé sur le serveur en tant qu’utilisateur du serveur web :",
+            "create": "Créer une paire de clés",
+            "replace": "Remplacer la paire de clés",
+            "replaceTitle": "Remplacer la clé de signature ?",
+            "replaceConfirm": "L’ancienne clé cesse immédiatement de valoir. Chaque HugoCMS rejette les signatures tant que la nouvelle clé publique n’y a pas été saisie.",
+            "created": "Clé de signature créée.",
+            "replaced": "Clé de signature remplacée — saisissez la nouvelle clé publique dans chaque HugoCMS."
         }
     }
 }

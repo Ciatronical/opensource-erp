@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Entrada no válida.",
             "DB_CONNECTION_FAILED": "No hay conexión con el nuevo acceso a la base de datos. No se guardó nada.",
             "WOULD_LOCK_OUT": "Se quitaría a sí mismo la administración del sistema. No se guardó nada.",
-            "NO_PERMISSION": "Solo los administradores del sistema pueden cambiar la configuración del sistema."
+            "NO_PERMISSION": "Solo los administradores del sistema pueden cambiar la configuración del sistema.",
+            "SIGNING_UNAVAILABLE": "PHP en este servidor no tiene la extensión sodium.",
+            "SIGNING_KEY_EXISTS": "Ya existe una clave de firma.",
+            "SIGNING_NOT_WRITABLE": "No se pudo escribir el archivo de clave."
+        },
+        "signing": {
+            "title": "Extensión de tienda: clave de firma",
+            "hint": "Con esta clave OpensourceERP firma el proxy y la página 404 del paquete de la tienda; HugoCMS solo los acepta firmados. Un par de claves vale para todas las empresas y todas las HugoShops de esta instalación.",
+            "unavailable": "PHP en este servidor no tiene la extensión sodium; sin ella no hay firma. El proxy y la página 404 deben colocarse entonces a mano en el servidor web.",
+            "publicKey": "Clave pública",
+            "publicKeyHint": "Introdúzcala en HugoCMS en ajustes del proyecto → conexión de la tienda → clave de firma de OpensourceERP.",
+            "copy": "Copiar clave",
+            "invalid": "El archivo de clave no se puede leer o no contiene una clave válida.",
+            "none": "Aún no se ha creado ninguna clave de firma.",
+            "notWritable": "El servidor web no puede escribir en este directorio. Cree la clave en el servidor como usuario del servidor web:",
+            "create": "Crear par de claves",
+            "replace": "Sustituir par de claves",
+            "replaceTitle": "¿Sustituir la clave de firma?",
+            "replaceConfirm": "La clave anterior deja de valer de inmediato. Cada HugoCMS rechazará las firmas hasta que se introduzca allí la nueva clave pública.",
+            "created": "Clave de firma creada.",
+            "replaced": "Clave de firma sustituida: introduzca la nueva clave pública en cada HugoCMS."
         }
     }
 }

@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Invalid input.",
             "DB_CONNECTION_FAILED": "No connection with the new database access. Nothing saved.",
             "WOULD_LOCK_OUT": "You would remove your own system administration. Nothing saved.",
-            "NO_PERMISSION": "Only system administrators may change the system settings."
+            "NO_PERMISSION": "Only system administrators may change the system settings.",
+            "SIGNING_UNAVAILABLE": "PHP on this server has no sodium extension.",
+            "SIGNING_KEY_EXISTS": "A signing key already exists.",
+            "SIGNING_NOT_WRITABLE": "The key file could not be written."
+        },
+        "signing": {
+            "title": "Shop extension: signing key",
+            "hint": "OpensourceERP signs the proxy and the 404 page of the shop package with this key; HugoCMS only accepts them signed. One key pair applies to all companies and all HugoShops of this installation.",
+            "unavailable": "PHP on this server has no sodium extension — without it there is no signature. The proxy and the 404 page must then be placed on the web server by hand.",
+            "publicKey": "Public key",
+            "publicKeyHint": "Enter it in HugoCMS under project settings → shop connection → OpensourceERP signing key.",
+            "copy": "Copy key",
+            "invalid": "The key file cannot be read or contains no valid key.",
+            "none": "No signing key created yet.",
+            "notWritable": "The web server may not write to this directory. Create the key on the server as the web server user:",
+            "create": "Create key pair",
+            "replace": "Replace key pair",
+            "replaceTitle": "Replace signing key?",
+            "replaceConfirm": "The previous key stops working immediately. Every HugoCMS rejects the signatures until the new public key has been entered there.",
+            "created": "Signing key created.",
+            "replaced": "Signing key replaced — enter the new public key in every HugoCMS."
         }
     }
 }

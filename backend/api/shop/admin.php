@@ -2501,7 +2501,120 @@ function testShopHugoCms($data) {
         return;
     }
 
-    resultInfo(true, '', $antwort['data']);
+    // Für die Meldung zu den signierten PHP-Dateien: hat diese Installation
+    // einen Signaturschlüssel? (dev/shop-php-signatur.md)
+    resultInfo(true, '', (array)$antwort['data'] + ['oserp_signing_key' => shopSigningPublicKey()]);
+}
+
+/**
+ * Prüft „Adresse von OpensourceERP für die Webseite“ (backend_url)
+ *
+ * Drei Schritte, jeder mit eigenem Ergebnis:
+ *  1. plausibel — gesetzt, http(s), nicht die Adresse von HugoCMS
+ *  2. direkt — Aufruf der Adresse von diesem Server mit dem Shop-Schlüssel
+ *     des Kanals (shopPing): antwortet der Shop-Zugang von OpensourceERP, und
+ *     gehört der Schlüssel zu diesem Kanal?
+ *  3. über die Webseite — <Basisadresse>/shop-api/, also Weiterleiter,
+ *     oserp-shop/config.json und Shop-Zugang zusammen, wie der Browser
+ *
+ * Adressen und Schlüssel dürfen aus dem Formular kommen (noch nicht
+ * gespeichert); leer heißt: der gespeicherte Wert gilt. Schritt 3 prüft, was
+ * auf der Webseite liegt — eine geänderte Adresse kommt erst mit dem
+ * nächsten Lauf dorthin.
+ *
+ * @param int $data['channel_id'] HugoShop
+ * @param string $data['backend_url'] Adresse aus dem Formular (optional)
+ * @param string $data['base_url'] Basisadresse der Webseite aus dem Formular (optional)
+ * @param string $data['hugocms_url'] Adresse von HugoCMS aus dem Formular (optional)
+ * @param string $data['key'] Shop-Schlüssel aus dem Formular (optional)
+ * @return void schritte: Liste aus schritt (plausibel, direkt, webseite), art
+ *              (success, warning, error, info), code, params
+ * @testdata {"channel_id": 1}
+ */
+function testShopBackendUrl($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $kanal = shopHugoshopOfRequest($db, $data);
+    $wert = fn(string $feld) => '' !== trim((string)($data[$feld] ?? ''))
+        ? trim((string)$data[$feld]) : trim(shopChannelValue($db, $kanal, $feld));
+    $adresse = $wert('backend_url');
+    $basis = rtrim($wert('base_url'), '/');
+    $hugocms = rtrim($wert('hugocms_url'), '/');
+    $schluessel = '' !== trim((string)($data['key'] ?? '')) ? trim((string)$data['key'])
+        : shopChannelValue($db, $kanal, 'public_key');
+
+    $schritte = [];
+    $melden = function (string $schritt, string $art, string $code, array $params = []) use (&$schritte) {
+        $schritte[] = ['schritt' => $schritt, 'art' => $art, 'code' => $code, 'params' => $params];
+    };
+    // Ergebnis von shopShopApiClassify als Meldung
+    $bewerten = function (string $schritt, array $ziel) use ($melden) {
+        $art = match ($ziel['code']) {
+            'OK' => 'success',
+            'OK_OLD' => 'warning',
+            default => 'error',
+        };
+        $melden($schritt, $art, $ziel['code'], [
+            'name' => $ziel['name'], 'status' => (string)$ziel['status'], 'error' => (string)$ziel['fehler'],
+        ]);
+    };
+
+    // 1. plausibel
+    $plausibel = true;
+    if ('' === $adresse) {
+        $melden('plausibel', 'error', 'EMPTY');
+        $plausibel = false;
+    } elseif (!preg_match('~^https?://[^/\s]+~i', $adresse)) {
+        $melden('plausibel', 'error', 'INVALID', ['url' => $adresse]);
+        $plausibel = false;
+    } elseif (('' !== $hugocms && rtrim($adresse, '/') === $hugocms) || str_contains($adresse, '/cms-api')) {
+        $melden('plausibel', 'error', 'IS_HUGOCMS', ['url' => $adresse]);
+        $plausibel = false;
+    } else {
+        $melden('plausibel', 'success', 'PLAUSIBLE', ['url' => $adresse]);
+    }
+
+    // 2. direkt von diesem Server
+    if (!$plausibel) {
+        $melden('direkt', 'info', 'SKIPPED');
+    } elseif ('' === $schluessel) {
+        $melden('direkt', 'error', 'NO_KEY');
+    } else {
+        $bewerten('direkt', shopShopApiClassify(
+            shopWebsiteProbe(rtrim($adresse, '/').'/', ['action' => 'shopPing'], ['X-Shop-Key: '.$schluessel]),
+            $kanal
+        ));
+    }
+
+    // 3. über die Webseite
+    if ('' === $basis) {
+        $melden('webseite', 'info', 'NO_BASE');
+    } else {
+        $bewerten('webseite', shopShopApiClassify(
+            shopWebsiteProbe($basis.'/shop-api/', ['action' => 'shopPing']),
+            $kanal
+        ));
+    }
+
+    resultInfo(true, '', ['schritte' => $schritte]);
+}
+
+/**
+ * Öffentlicher Signaturschlüssel dieser Installation (dev/shop-php-signatur.md)
+ *
+ * Zum Eintragen in HugoCMS: erst damit nimmt HugoCMS Weiterleiter und
+ * 404-Seite signiert an. Kein Geheimnis — der private Schlüssel verlässt den
+ * Server nicht. Leer, solange keiner erzeugt ist
+ * (php tools/shop-signing-key.php --create).
+ *
+ * @return void public_key
+ * @testdata {}
+ */
+function getShopSigningKey($data) {
+    permit(['edit_shop_config'], false);
+
+    resultInfo(true, '', ['public_key' => shopSigningPublicKey()]);
 }
 
 /**

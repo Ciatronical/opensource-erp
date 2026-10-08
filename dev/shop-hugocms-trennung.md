@@ -35,7 +35,7 @@ Lieferantenimport). Die Regeln für Arbeiten an HugoCMS stehen in
 | E6 | **Die Medien bleiben auf der Webseiten-Seite**: Produktbilder, Downloads und Vorschaubilder. OSERP kennt nur ihre Dateinamen | 2026-09-24 |
 | E7 | Transport über die HugoCMS-API, von OSERP angestoßen (Weg A unten, vorher Empfehlung R1) | 2026-09-24 |
 | E8 | Die heutige Arbeitsweise bleibt als Betriebsart „lokal" erhalten; „HugoCMS" kommt als zweite Betriebsart hinzu (vorher Empfehlung R2) | 2026-09-24 |
-| E9 | HugoCMS bleibt ohne PHP. Die Paket-Konfiguration wird `oserp-shop/config.json` und reist mit der Übertragung; Weiterleiter und 404-Seite legt man einmal von Hand auf den Webserver | 2026-09-24 |
+| E9 | HugoCMS bleibt ohne PHP. Die Paket-Konfiguration wird `oserp-shop/config.json` und reist mit der Übertragung; Weiterleiter und 404-Seite legt man einmal von Hand auf den Webserver. **Abgelöst am 2026-10-08:** beide gehen signiert mit, sobald in HugoCMS der Signaturschlüssel von OpensourceERP hinterlegt ist (`dev/shop-php-signatur.md`); ohne ihn bleibt es beim Weg von Hand | 2026-09-24 |
 
 ## Ausgangslage
 

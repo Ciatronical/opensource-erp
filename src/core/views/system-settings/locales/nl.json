@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Ongeldige invoer.",
             "DB_CONNECTION_FAILED": "Geen verbinding met de nieuwe databasetoegang. Niets opgeslagen.",
             "WOULD_LOCK_OUT": "U zou uzelf het systeembeheer ontnemen. Niets opgeslagen.",
-            "NO_PERMISSION": "Alleen systeembeheerders mogen de systeeminstellingen wijzigen."
+            "NO_PERMISSION": "Alleen systeembeheerders mogen de systeeminstellingen wijzigen.",
+            "SIGNING_UNAVAILABLE": "PHP op deze server heeft geen sodium-extensie.",
+            "SIGNING_KEY_EXISTS": "Er bestaat al een ondertekeningssleutel.",
+            "SIGNING_NOT_WRITABLE": "Het sleutelbestand kon niet worden geschreven."
+        },
+        "signing": {
+            "title": "Winkeluitbreiding: ondertekeningssleutel",
+            "hint": "Met deze sleutel ondertekent OpensourceERP de proxy en de 404-pagina van het winkelpakket; HugoCMS accepteert ze alleen ondertekend. Eén sleutelpaar geldt voor alle bedrijven en alle HugoShops van deze installatie.",
+            "unavailable": "PHP op deze server heeft geen sodium-extensie — zonder die geen ondertekening. De proxy en de 404-pagina moeten dan handmatig op de webserver worden gezet.",
+            "publicKey": "Openbare sleutel",
+            "publicKeyHint": "Voer hem in HugoCMS in onder Projectinstellingen → Winkelkoppeling → Ondertekeningssleutel van OpensourceERP.",
+            "copy": "Sleutel kopiëren",
+            "invalid": "Het sleutelbestand is niet leesbaar of bevat geen geldige sleutel.",
+            "none": "Er is nog geen ondertekeningssleutel aangemaakt.",
+            "notWritable": "De webserver mag niet in deze map schrijven. Maak de sleutel op de server aan als gebruiker van de webserver:",
+            "create": "Sleutelpaar aanmaken",
+            "replace": "Sleutelpaar vervangen",
+            "replaceTitle": "Ondertekeningssleutel vervangen?",
+            "replaceConfirm": "De vorige sleutel vervalt direct. Elke HugoCMS weigert de handtekeningen tot daar de nieuwe openbare sleutel is ingevoerd.",
+            "created": "Ondertekeningssleutel aangemaakt.",
+            "replaced": "Ondertekeningssleutel vervangen — voer de nieuwe openbare sleutel in elke HugoCMS in."
         }
     }
 }

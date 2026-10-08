@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Ugyldig inndata.",
             "DB_CONNECTION_FAILED": "Ingen tilkobling med den nye databasetilgangen. Ingenting lagret.",
             "WOULD_LOCK_OUT": "Du ville ta fra deg selv systemadministrasjonen. Ingenting lagret.",
-            "NO_PERMISSION": "Bare systemadministratorer kan endre systeminnstillingene."
+            "NO_PERMISSION": "Bare systemadministratorer kan endre systeminnstillingene.",
+            "SIGNING_UNAVAILABLE": "PHP på denne serveren har ingen sodium-utvidelse.",
+            "SIGNING_KEY_EXISTS": "Det finnes allerede en signaturnøkkel.",
+            "SIGNING_NOT_WRITABLE": "Nøkkelfilen kunne ikke skrives."
+        },
+        "signing": {
+            "title": "Butikkutvidelse: signaturnøkkel",
+            "hint": "Med denne nøkkelen signerer OpensourceERP mellomtjeneren og 404-siden i butikkpakken; HugoCMS godtar dem bare signert. Ett nøkkelpar gjelder for alle firmaer og alle HugoShops i denne installasjonen.",
+            "unavailable": "PHP på denne serveren har ingen sodium-utvidelse — uten den ingen signatur. Mellomtjeneren og 404-siden må da legges på webserveren manuelt.",
+            "publicKey": "Offentlig nøkkel",
+            "publicKeyHint": "Legg den inn i HugoCMS under prosjektinnstillinger → butikktilkobling → signaturnøkkel fra OpensourceERP.",
+            "copy": "Kopier nøkkel",
+            "invalid": "Nøkkelfilen kan ikke leses eller inneholder ingen gyldig nøkkel.",
+            "none": "Ingen signaturnøkkel er opprettet ennå.",
+            "notWritable": "Webserveren har ikke lov til å skrive i denne mappen. Opprett nøkkelen på serveren som webserverens bruker:",
+            "create": "Opprett nøkkelpar",
+            "replace": "Erstatt nøkkelpar",
+            "replaceTitle": "Erstatte signaturnøkkelen?",
+            "replaceConfirm": "Den tidligere nøkkelen slutter straks å gjelde. Hver HugoCMS avviser signaturene til den nye offentlige nøkkelen er lagt inn der.",
+            "created": "Signaturnøkkel opprettet.",
+            "replaced": "Signaturnøkkel erstattet — legg inn den nye offentlige nøkkelen i hver HugoCMS."
         }
     }
 }

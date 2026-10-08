@@ -74,7 +74,27 @@
             "INVALID_VALUE": "Vigane sisend.",
             "DB_CONNECTION_FAILED": "Uue andmebaasi ligipääsuga ühendus ei õnnestu. Midagi ei salvestatud.",
             "WOULD_LOCK_OUT": "Võtaksid endalt süsteemihalduse. Midagi ei salvestatud.",
-            "NO_PERMISSION": "Süsteemi seadeid tohivad muuta ainult süsteemiadministraatorid."
+            "NO_PERMISSION": "Süsteemi seadeid tohivad muuta ainult süsteemiadministraatorid.",
+            "SIGNING_UNAVAILABLE": "Selle serveri PHP-l pole sodium-laiendust.",
+            "SIGNING_KEY_EXISTS": "Allkirjavõti on juba olemas.",
+            "SIGNING_NOT_WRITABLE": "Võtmefaili ei õnnestunud kirjutada."
+        },
+        "signing": {
+            "title": "Poe laiendus: allkirjavõti",
+            "hint": "Selle võtmega allkirjastab OpensourceERP poe paketi vahendaja ja 404-lehe; HugoCMS võtab need vastu ainult allkirjastatult. Üks võtmepaar kehtib selle paigalduse kõigile ettevõtetele ja HugoShopidele.",
+            "unavailable": "Selle serveri PHP-l pole sodium-laiendust — ilma selleta allkirja pole. Vahendaja ja 404-leht tuleb siis veebiserverisse käsitsi panna.",
+            "publicKey": "Avalik võti",
+            "publicKeyHint": "Sisestage HugoCMS-is projekti seadetes → poe ühendus → OpensourceERP allkirjavõti.",
+            "copy": "Kopeeri võti",
+            "invalid": "Võtmefaili ei saa lugeda või see ei sisalda kehtivat võtit.",
+            "none": "Allkirjavõtit pole veel loodud.",
+            "notWritable": "Veebiserver ei tohi sellesse kausta kirjutada. Looge võti serveris veebiserveri kasutajana:",
+            "create": "Loo võtmepaar",
+            "replace": "Asenda võtmepaar",
+            "replaceTitle": "Asendada allkirjavõti?",
+            "replaceConfirm": "Senine võti lakkab kohe kehtimast. Iga HugoCMS lükkab allkirjad tagasi, kuni sinna on sisestatud uus avalik võti.",
+            "created": "Allkirjavõti loodud.",
+            "replaced": "Allkirjavõti asendatud — sisestage uus avalik võti igasse HugoCMS-i."
         }
     }
 }
