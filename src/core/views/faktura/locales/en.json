@@ -276,6 +276,7 @@
             "internalNotes": "Internal Notes",
             "publicNotes": "Public Notes",
             "loadError": "Error loading document",
+            "notFound": "The document does not exist (anymore).",
             "confirmDeleteItem": "Do you really want to delete this item?",
             "confirmDeletePayment": "Do you really want to delete this payment?",
             "saved": "Document saved successfully",

@@ -45,6 +45,39 @@ nach `/etc/apache2/conf-available/oserp-defines.conf` geschrieben; der vHost
 Secrets/umgebungsspezifische Teile (DB-Passwort, Asterisk-Config, Borg-Repo)
 markiert der Installer mit `[TODO]` — diese werden vom alten Server migriert.
 
+### Von außen erreichbar machen (DynDNS, Portfreigabe, HTTPS)
+
+Der Installer allein macht OSERP **nicht** aus dem Internet erreichbar — dazu
+muss der Router Port 80 (und 443) an die Maschine weiterleiten. Ablauf:
+
+1. **DynDNS** einrichten: `sudo ./install/dyndns-standalone.sh` (fragt
+   spdyn-Host und Token ab, legt `/etc/oserp/dyndns.conf` + Timer an).
+2. **Installer** laufen lassen. Den öffentlichen Hostnamen übernimmt er aus
+   `dyndns.conf` (oder aus `OSERP_SERVER_NAME=...`) als `ServerName` des vHosts
+   und prüft am Ende, ob `http://<host>/` antwortet.
+3. **Portfreigabe**: Schritt `portforward` versucht es per UPnP; die FRITZ!Box
+   lässt das nur zu, wenn beim Gerät *Selbstständige Portfreigaben erlauben*
+   aktiv ist. Sonst von Hand: *Internet › Freigaben › Portfreigaben › Gerät
+   für Freigaben hinzufügen* → diese Maschine → *HTTP-Server (80)* und
+   *HTTPS-Server (443)*, TCP. Der Installer druckt genau diese Anleitung mit
+   LAN-IP und Router-Adresse, wenn der Test fehlschlägt.
+4. **HTTPS**: Schritt `tls` holt per `certbot certonly --webroot` ein
+   Let's-Encrypt-Zertifikat (Challenge-Webroot `/var/lib/oserp/acme`, per Alias
+   im vHost; `OSERP_TLS_EMAIL=...` für Ablaufwarnungen) und
+   schaltet den `:443`-vHost über `Define OSERP_TLS` frei; `http://<host>` leitet
+   dann um, Aufrufe per LAN-IP bleiben auf HTTP. Verlängerung: `certbot.timer`.
+
+```bash
+sudo ./install/dyndns-standalone.sh            # einmalig: Hostname + Token
+./install/install.sh                           # kompletter Stack
+./install/install.sh --only apache,portforward,tls,healthcheck   # nach Router-Änderung
+```
+
+Die vHost-Vorlage besteht aus `apacheOpensourceErp.conf` (`:80` immer, `:443`
+nur mit Zertifikat) und `apacheOpensourceErp-common.conf` (DocumentRoot, `/api`,
+`/webhook`, `/sse` — einmal für beide). `Define OSERP_SERVER_NAME` und
+`Define OSERP_TLS` stehen neben Pfad und Socket in `oserp-defines.conf`.
+
 ### Vorher in einer VM testen
 
 Nie ungetestet auf der Zielmaschine — `install/test-vm.sh` zieht eine

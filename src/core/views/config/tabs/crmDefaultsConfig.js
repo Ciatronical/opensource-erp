@@ -144,6 +144,7 @@ const crmDefaultsConfig = [
     { name: "email_address", type: "input", inputType: "email", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.emailAddress", tooltip: "crm_fields.emailAddress_help" },
     { name: "email_username", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.emailUsername", tooltip: "crm_fields.emailUsername_help" },
     { name: "email_password", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.emailPassword", tooltip: "crm_fields.emailPassword_help" },
+    { name: "email_autoconfig", type: "component", component: "email-autoconfig" },
 
     { name: "email_imap", type: "headline", label: "crm_fields.emailImap" },
 

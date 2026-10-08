@@ -607,6 +607,93 @@ function tenantClientPdo(array $client) {
 }
 
 /**
+ * kivitendo-Schemastand, den OSERP voraussetzt (höchster release_-Tag der Basisdumps)
+ *
+ * OSERP ist auf dem Schema einer bestimmten kivitendo-Version gebaut; die
+ * Basisdumps backend/upstall/skr03|skr04 tragen in schema_info den Tag dieser
+ * Version (etwa release_4_0_0). Der Wert wird aus dem Dump gelesen, nicht
+ * hardcodiert — ein neuer Dump hebt die Anforderung automatisch mit.
+ *
+ * @return string|null Tag wie 'release_4_0_0', null wenn kein Dump lesbar ist
+ */
+function tenantRequiredKivitendoTag(): ?string {
+    static $tag = false;
+    if ($tag !== false) {
+        return $tag;
+    }
+    $tag = null;
+    foreach (glob(__DIR__ . '/../../upstall/*/company_schema.sql') ?: [] as $dump) {
+        $fh = @fopen($dump, 'r');
+        if (!$fh) {
+            continue;
+        }
+        while (($line = fgets($fh)) !== false) {
+            if (strncmp($line, 'INSERT INTO public.schema_info', 30) === 0
+                && preg_match("/VALUES \\('(release_\\d+_\\d+_\\d+)'/", $line, $m)
+                && ($tag === null || version_compare(str_replace('_', '.', substr($m[1], 8)), str_replace('_', '.', substr($tag, 8)), '>'))) {
+                $tag = $m[1];
+            }
+        }
+        fclose($fh);
+    }
+    return $tag;
+}
+
+/**
+ * kivitendo-Schemastand einer Firmen-Datenbank (höchster release_-Tag in schema_info)
+ *
+ * @param PDO $pdo Verbindung zur Firmen-DB
+ * @return string|null Tag wie 'release_3_7_0', null ohne schema_info (keine kivitendo-DB)
+ */
+function tenantKivitendoSchemaTag(PDO $pdo): ?string {
+    try {
+        $tags = $pdo->query("SELECT tag FROM schema_info WHERE tag ~ '^release_[0-9]+_[0-9]+_[0-9]+$'")->fetchAll(PDO::FETCH_COLUMN);
+    } catch (PDOException $e) {
+        return null;
+    }
+    $best = null;
+    foreach ($tags as $t) {
+        if ($best === null || version_compare(str_replace('_', '.', substr($t, 8)), str_replace('_', '.', substr($best, 8)), '>')) {
+            $best = $t;
+        }
+    }
+    return $best;
+}
+
+/**
+ * Warnt für jeden Mandanten, dessen kivitendo-Schema älter ist als das, was OSERP braucht
+ *
+ * Typischer Fall: eine vorhandene kivitendo-Auth-DB wird im Setup übernommen,
+ * die Firmen-DB stammt aber aus kivitendo 3.7 — dann fehlen Spalten wie
+ * invoice.tax_id, und die Anmeldung scheitert mit einem Datenbankfehler. Das
+ * OSERP-Schema-Update fasst kivitendo-Tabellen nicht an; Abhilfe ist das
+ * kivitendo-eigene Upgrade (dev/kivitendo-upgrade-4.0.sh).
+ *
+ * @param ApiDatabase $authDb Auth-Verbindung
+ * @return array Warnungen (leer = alle Mandanten passen)
+ */
+function tenantKivitendoSchemaWarnings($authDb): array {
+    $required = tenantRequiredKivitendoTag();
+    if ($required === null) {
+        return [];
+    }
+    $warnings = [];
+    foreach ($authDb->getAll('SELECT id, name, dbhost, dbport, dbname, dbuser, dbpasswd FROM auth.clients ORDER BY id', []) as $client) {
+        $pdo = tenantClientPdo($client);
+        if (!$pdo) {
+            continue;
+        }
+        $have = tenantKivitendoSchemaTag($pdo);
+        if ($have !== null && version_compare(str_replace('_', '.', substr($have, 8)), str_replace('_', '.', substr($required, 8)), '<')) {
+            $warnings[] = "Mandant '{$client['name']}' ({$client['dbname']}): kivitendo-Schema "
+                . str_replace('_', '.', substr($have, 8)) . ', OSERP braucht ' . str_replace('_', '.', substr($required, 8))
+                . ' — vor der ersten Anmeldung kivitendo aktualisieren (dev/kivitendo-upgrade-4.0.sh), sonst scheitert die Anmeldung mit "column ... does not exist"';
+        }
+    }
+    return $warnings;
+}
+
+/**
  * Gleicht die Mitarbeiter-Tabelle eines Mandanten mit seinen Benutzern ab
  *
  * Wie kivitendo (SL::DB::Manager::Employee->update_entries_for_authorized_users):

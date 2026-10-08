@@ -398,7 +398,8 @@
                 "saveFirst": "请先保存发票，然后再生成电子发票。"
             },
             "kmStandRequired": "里程数为必填项 — 请在创建发票前输入。",
-            "deliveryAddressOwn": "本单据的收货地址"
+            "deliveryAddressOwn": "本单据的收货地址",
+            "notFound": "该单据不存在（或已被删除）。"
         },
         "workflow": {
             "created": "单据创建成功",

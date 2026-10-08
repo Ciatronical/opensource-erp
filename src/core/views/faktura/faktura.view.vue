@@ -254,7 +254,7 @@
                     :net-amount="accounting.calculatedNetAmount.value"
                     :gross-amount="accounting.calculatedGrossAmount.value"
                     :tax-breakdown="accounting.taxBreakdown.value"
-                    :taxincluded="!!faktura.data.common.taxincluded"
+                    :taxincluded="!!faktura.data.common?.taxincluded"
                     @update:taxincluded="onTaxIncludedChange"
                     :calculate-item-total="accounting.calculateItemTotal"
                     :calculate-totals="accounting.calculateTotals"
@@ -1123,6 +1123,7 @@ import { useSilverDATImport } from './composables/useSilverDATImport.js'
 import { onMounted, onBeforeUnmount, ref, computed, nextTick, defineAsyncComponent, shallowRef, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import * as alerts from '@/core/utils/alerts.js'
+import { DOCUMENT_LIST_ROUTE_NAMES } from '@/core/constants/routes.js'
 import * as toasts from '@/core/utils/toasts.js'
 import { openAppWindow, aagWindowOpen, setAagWindowCarId } from '@/core/utils/aagWindow.js'
 import { hasVehicleId, isKbaValid, buildEsiUrl, buildGutmannUrl } from '@/core/utils/diagLinks.js'
@@ -1953,6 +1954,15 @@ export default defineComponent({
                 }
             } catch (e) {
                 console.error('Faktura-Initialisierung fehlgeschlagen:', e)
+                if (e?.code === 'FAKTURA_NOT_FOUND') {
+                    // Gelöschte oder fremde ID (z. B. altes Lesezeichen): keinen
+                    // halb leeren Beleg zeigen, sondern zurück in die Übersicht
+                    faktura.data = false
+                    alerts.error(t('FakturaView.faktura.notFound'))
+                    const listRoute = DOCUMENT_LIST_ROUTE_NAMES[fakturaType.value]
+                    if (listRoute) router.replace({ name: listRoute })
+                    return
+                }
                 alerts.error(t('FakturaView.faktura.loadError'))
             }
 

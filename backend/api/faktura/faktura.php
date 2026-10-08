@@ -208,12 +208,23 @@ function getFakturaData($data) {
                     ) AS s
                 )
             )
-        ) AS result
+        ) AS result,
+        EXISTS (SELECT 1 FROM {$mainTable} WHERE id = :fakturaID) AS found
 SQL;
 
     //debugQuery($query, ['fakturaID' => $fakturaID], 'Faktura Daten laden');
 
-     echo $company->getOne($query, ['fakturaID' => $fakturaID, 'fakturaType' => $fakturaType])['result'];
+    $row = $company->getOne($query, ['fakturaID' => $fakturaID, 'fakturaType' => $fakturaType]);
+
+    // Unbekannte oder gelöschte ID: die Abfrage liefert sonst success=true mit
+    // common=NULL — die View würde darauf abstürzen. Deshalb als Fehler melden,
+    // damit das Frontend zur Liste zurückführen kann.
+    if (empty($row['found'])) {
+        resultInfo(false, 'FAKTURA_NOT_FOUND', "Dokument {$fakturaID} ({$fakturaType}) nicht gefunden");
+        return;
+    }
+
+    echo $row['result'];
 }
 
 /**
@@ -2420,13 +2431,23 @@ SQL;
     );
 
     // ── 6. LxCars: Fahrzeug-Zuordnung + Fertigstellung + Mängel kopieren ──
-    // Fehler hier dürfen die Konvertierung nicht abbrechen
+    // Nur bei aktiver Erweiterung: ohne LxCars gibt es die Tabellen oe_ext/ar_ext
+    // und oe_defects/ar_defects nicht. Ein SQL-Fehler innerhalb der laufenden
+    // Transaktion bricht diese in PostgreSQL ab — das Commit weiter unten rollt
+    // dann still alles zurück und die Antwort meldet eine ID, die es nicht gibt.
+    // Deshalb zusätzlich ein SAVEPOINT, auf den im Fehlerfall zurückgesetzt wird,
+    // damit die Konvertierung selbst durchkommt.
+
+    $lxcarsActive = isExtensionActive($company, 'lxcars');
+    if ($lxcarsActive) {
+        $company->execute('SAVEPOINT lxcars_copy');
+    }
 
     try {
         $sourceExtTable = ($sourceTable === 'ar') ? 'ar_ext' : (($sourceTable === 'oe') ? 'oe_ext' : null);
         $targetExtTable = ($targetTable === 'ar') ? 'ar_ext' : (($targetTable === 'oe') ? 'oe_ext' : null);
 
-        if ($sourceExtTable && $targetExtTable) {
+        if ($lxcarsActive && $sourceExtTable && $targetExtTable) {
             $sourceExtIdCol = ($sourceExtTable === 'ar_ext') ? 'ar_id' : 'oe_id';
 
             // Fahrzeug + km_stand + fertigstellung laden
@@ -2487,7 +2508,7 @@ SQL;
         $sourceDefectsTable = ($sourceTable === 'ar') ? 'ar_defects' : (($sourceTable === 'oe') ? 'oe_defects' : null);
         $targetDefectsTable = ($targetTable === 'ar') ? 'ar_defects' : (($targetTable === 'oe') ? 'oe_defects' : null);
 
-        if ($sourceDefectsTable && $targetDefectsTable) {
+        if ($lxcarsActive && $sourceDefectsTable && $targetDefectsTable) {
             $srcDefectsIdCol = ($sourceDefectsTable === 'ar_defects') ? 'ar_id' : 'oe_id';
             $tgtDefectsIdCol = ($targetDefectsTable === 'ar_defects') ? 'ar_id' : 'oe_id';
 
@@ -2503,6 +2524,9 @@ SQL;
     } catch (Exception $e) {
         // LxCars-Kopie fehlgeschlagen — Konvertierung trotzdem abschließen
         error_log('LxCars data copy failed: ' . $e->getMessage());
+        if ($lxcarsActive) {
+            $company->execute('ROLLBACK TO SAVEPOINT lxcars_copy');
+        }
     }
 
     // Storno: Neuen Storno-Record auch als bezahlt markieren (paid = amount)

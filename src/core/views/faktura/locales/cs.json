@@ -398,7 +398,8 @@
                 "saveFirst": "Před vygenerováním e-faktury prosím nejprve uložte fakturu."
             },
             "kmStandRequired": "Stav km je povinný — prosím vyplňte před vystavením faktury.",
-            "deliveryAddressOwn": "Dodací adresa tohoto dokladu"
+            "deliveryAddressOwn": "Dodací adresa tohoto dokladu",
+            "notFound": "Dokument (již) neexistuje."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

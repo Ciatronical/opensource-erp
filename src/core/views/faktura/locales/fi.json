@@ -398,7 +398,8 @@
                 "saveFirst": "Tallenna lasku ennen e-laskun luomista."
             },
             "kmStandRequired": "Kilometrilukema on pakollinen — syötä se ennen laskun luomista.",
-            "deliveryAddressOwn": "Tämän tositteen toimitusosoite"
+            "deliveryAddressOwn": "Tämän tositteen toimitusosoite",
+            "notFound": "Asiakirjaa ei (enää) ole olemassa."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

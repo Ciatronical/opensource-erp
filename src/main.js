@@ -142,6 +142,20 @@ if (!store.isDebugMode()) {
   console.warn = () => {}
 }
 
+// Nach einem neuen Build existieren die alten Chunk-Dateien nicht mehr. Ein
+// Tab, der noch die alte index.html hält, bekommt beim nächsten Seitenwechsel
+// dann statt JavaScript die index.html (MIME-Fehler) und bleibt hängen. In dem
+// Fall einmal neu laden — die Sperre in sessionStorage verhindert Endlosschleifen.
+window.addEventListener('vite:preloadError', (event) => {
+  const key = 'oserp-chunk-reload'
+  let reloaded = null
+  try { reloaded = sessionStorage.getItem(key) } catch (e) { /* privater Modus */ }
+  if (reloaded && Date.now() - Number(reloaded) < 30000) return
+  try { sessionStorage.setItem(key, String(Date.now())) } catch (e) { /* ignorieren */ }
+  event.preventDefault()
+  window.location.reload()
+})
+
 // Mount
 //
 // Erst wenn die Sprachdateien der aktiven Sprache da sind — sie werden nicht

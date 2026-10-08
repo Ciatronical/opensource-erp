@@ -398,7 +398,8 @@
                 "saveFirst": "Prieš generuojant e. sąskaitą faktūrą, išsaugokite sąskaitą."
             },
             "kmStandRequired": "Rida yra privaloma — įveskite ją prieš kurdami sąskaitą.",
-            "deliveryAddressOwn": "Šio dokumento pristatymo adresas"
+            "deliveryAddressOwn": "Šio dokumento pristatymo adresas",
+            "notFound": "Dokumentas (jau) neegzistuoja."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

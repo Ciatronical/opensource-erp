@@ -398,7 +398,8 @@
                 "saveFirst": "Lūdzu saglabājiet rēķinu pirms e-rēķina ģenerēšanas."
             },
             "kmStandRequired": "Nobraukums ir obligāts — ievadiet to pirms rēķina izrakstīšanas.",
-            "deliveryAddressOwn": "Šī dokumenta piegādes adrese"
+            "deliveryAddressOwn": "Šī dokumenta piegādes adrese",
+            "notFound": "Dokuments (vairs) nepastāv."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

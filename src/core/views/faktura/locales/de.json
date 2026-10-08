@@ -276,6 +276,7 @@
             "internalNotes": "Interne Notizen",
             "publicNotes": "Öffentliche Notizen",
             "loadError": "Fehler beim Laden des Dokuments",
+            "notFound": "Das Dokument existiert nicht (mehr).",
             "confirmDeleteItem": "Möchten Sie diese Position wirklich löschen?",
             "confirmDeletePayment": "Möchten Sie diese Zahlung wirklich löschen?",
             "saved": "Dokument erfolgreich gespeichert",

@@ -109,8 +109,10 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
             netAmount = roundMoney(netAmount, 2)
         }
 
-        faktura.data.common.netamount = netAmount
-        faktura.data.common.amount = grossAmount
+        if (faktura.data?.common) {
+            faktura.data.common.netamount = netAmount
+            faktura.data.common.amount = grossAmount
+        }
         calculatedNetAmount.value = netAmount
         calculatedGrossAmount.value = grossAmount
     }

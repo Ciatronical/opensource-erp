@@ -398,7 +398,8 @@
                 "saveFirst": "Gem venligst fakturaen, før der genereres en e-faktura."
             },
             "kmStandRequired": "Kilometerstand er påkrævet — angiv det inden fakturaudstedelse.",
-            "deliveryAddressOwn": "Leveringsadresse for dette bilag"
+            "deliveryAddressOwn": "Leveringsadresse for dette bilag",
+            "notFound": "Dokumentet findes ikke (længere)."
         },
         "workflow": {
             "created": "Dokument gennemfoert erstellt",

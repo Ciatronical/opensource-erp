@@ -3,9 +3,19 @@
 #  OpensourceERP — Vollständiger Installer für eine frische Maschine
 # =============================================================================
 #  Richtet den kompletten Stack idempotent ein:
-#    Systempakete · PHP-FPM · Node-Build · PostgreSQL · Apache · SSE · Whisper
-#    · Ollama (lokaler LLM) · ANPR · Kameras (go2rtc + Monitor) · Cronjobs
-#    · Asterisk-Telefonie (Gerüst) · Borg-Backup (Gerüst)
+#    Systempakete · PHP-FPM · Node-Build · PostgreSQL · Apache · Portfreigabe
+#    · HTTPS (Let's Encrypt) · SSE · Whisper · Ollama (lokaler LLM) · ANPR
+#    · Kameras (go2rtc + Monitor) · Cronjobs · DynDNS · Asterisk-Telefonie
+#    (Gerüst) · Borg-Backup (Gerüst)
+#
+#  ERREICHBARKEIT VON AUSSEN (z. B. http://isolierglas.spdns.de):
+#    Der öffentliche Hostname kommt aus OSERP_SERVER_NAME oder — wenn DynDNS
+#    schon eingerichtet ist (install/dyndns-standalone.sh) — aus
+#    /etc/oserp/dyndns.conf. Er landet als ServerName im vHost. Der Schritt
+#    "portforward" versucht die Freigabe von 80/443 per UPnP am Router, der
+#    Schritt "tls" holt ein Let's-Encrypt-Zertifikat. Beides geht NUR, wenn
+#    der Router Port 80 an diese Maschine weiterleitet — der Installer prüft
+#    das und sagt bei Bedarf genau, was in der FRITZ!Box einzutragen ist.
 #
 #  OSERP läuft OHNE kivitendo: Auth-Datenbank, Administrator und erste Firma
 #  legt der Setup-Assistent im Browser an (http://<host>/setup) — oder, für
@@ -25,6 +35,7 @@
 #    ./install/install.sh --only apache,sse
 #    ./install/install.sh --skip cameras,anpr,asterisk,borg
 #    OSERP_USER=work OLLAMA_MODEL=qwen2.5:7b ./install/install.sh
+#    OSERP_SERVER_NAME=firma.spdns.de OSERP_TLS_EMAIL=admin@firma.de ./install/install.sh
 #    # unbeaufsichtigt inkl. Auth-DB, Administrator und erster Firma:
 #    OSERP_DB_PASSWORD=geheim OSERP_ADMIN_LOGIN=admin OSERP_ADMIN_PASSWORD='Start123!' \
 #      OSERP_COMPANY_NAME='Muster GmbH' OSERP_SKR=skr03 ./install/install.sh
@@ -51,6 +62,14 @@ NODE_MAJOR="${NODE_MAJOR:-25}"
 OLLAMA_MODEL="${OLLAMA_MODEL:-qwen2.5:7b}"
 # Externer kivitendo-Installer.
 KIVI_INSTALLER_REPO="${KIVI_INSTALLER_REPO:-https://github.com/Ciatronical/install-kivitendo}"
+# Öffentlicher Hostname (ServerName im vHost, Let's Encrypt). Leer = aus
+# /etc/oserp/dyndns.conf übernehmen, sonst "localhost" (nur LAN).
+OSERP_SERVER_NAME="${OSERP_SERVER_NAME:-}"
+# Mailadresse für Let's Encrypt (Ablauf-Warnungen); leer = ohne Mail registrieren.
+OSERP_TLS_EMAIL="${OSERP_TLS_EMAIL:-}"
+# Öffentliche IPv4 ermitteln (gleiche Quellen wie der DynDNS-Updater).
+CHECKIP_URLS="${CHECKIP_URLS:-https://checkip4.spdyn.de/ https://ipv4.icanhazip.com https://api.ipify.org}"
+DYNDNS_CONF=/etc/oserp/dyndns.conf
 
 # --------------------------------------------------------------------------
 #  Ausgabe
@@ -76,8 +95,8 @@ as_user() { sudo -u "$OSERP_USER" -H bash -lc "$*"; }
 #  Schrittsteuerung
 # --------------------------------------------------------------------------
 ALL_STEPS=(packages php_fpm node_build database config permissions apache \
-           sse whisper fsscanner ollama anpr go2rtc camera_monitor camera_sudoers \
-           cron dyndns asterisk borg kivitendo healthcheck)
+           portforward tls sse whisper fsscanner ollama anpr go2rtc camera_monitor \
+           camera_sudoers cron dyndns asterisk borg kivitendo healthcheck)
 
 declare -A STEP_DESC=(
   [packages]="Systempakete via apt (Apache, PostgreSQL, PHP, Node, LaTeX, ffmpeg, borg, asterisk ...)"
@@ -86,7 +105,9 @@ declare -A STEP_DESC=(
   [database]="PostgreSQL-Rolle mit Passwort vorbereiten (Setup-Assistent bzw. unbeaufsichtigtes Setup)"
   [config]="settings.ini: vorhandene respektieren, sonst per Setup-Assistent/CLI anlegen"
   [permissions]="Verzeichnisrechte für Webserver setzen"
-  [apache]="Apache-Module, vHost, Reload"
+  [apache]="Apache-Module, vHost (ServerName = öffentlicher Hostname), Reload"
+  [portforward]="Ports 80/443 am Router per UPnP freigeben (sonst Anleitung für die FRITZ!Box)"
+  [tls]="HTTPS: Let's-Encrypt-Zertifikat per certbot (nur mit öffentlichem Hostname)"
   [sse]="SSE-Echtzeitserver als systemd-Dienst"
   [whisper]="Whisper-Transkription (venv) als systemd-Dienst"
   [fsscanner]="Eigener Fahrzeugscheinscanner (venv, RapidOCR) als systemd-Dienst"
@@ -153,6 +174,16 @@ if [[ ! -f /etc/os-release ]]; then err "Unbekanntes OS (kein /etc/os-release)."
 info "OS:          ${PRETTY_NAME:-$ID}"
 info "OSERP_ROOT:  $OSERP_ROOT"
 info "OSERP_USER:  $OSERP_USER  (HOME=$OSERP_HOME)"
+# Öffentlicher Hostname: explizit > DynDNS-Config (root, 0600) > localhost
+if [[ -z "$OSERP_SERVER_NAME" ]]; then
+    OSERP_SERVER_NAME="$(sudo grep -oP '(?<=^DYNDNS_HOST=).*' "$DYNDNS_CONF" 2>/dev/null | tr -d '[:space:]' || true)"
+    [[ -n "$OSERP_SERVER_NAME" && "$OSERP_SERVER_NAME" != *BITTE-EINTRAGEN* ]] || OSERP_SERVER_NAME=localhost
+fi
+if [[ "$OSERP_SERVER_NAME" == localhost ]]; then
+    info "ServerName:  localhost (nur LAN — für Zugriff von außen OSERP_SERVER_NAME setzen oder DynDNS einrichten)"
+else
+    info "ServerName:  $OSERP_SERVER_NAME"
+fi
 info "Schritte:    ${SELECTED[*]}"
 
 # =============================================================================
@@ -162,18 +193,37 @@ install_packages() {
     step "Systempakete"
     sudo apt-get update -y
 
-    # Node.js via NodeSource (versionsunabhängig über NODE_MAJOR)
-    if ! command -v node >/dev/null || [[ "$(node -v | sed 's/v\([0-9]*\).*/\1/')" -lt 20 ]]; then
-        info "Node ${NODE_MAJOR}.x via NodeSource einrichten"
+    # Node.js via NodeSource (versionsunabhängig über NODE_MAJOR).
+    # Entscheidend ist das SYSTEM-Node (/usr/bin/node), nicht das aus PATH: ein
+    # nvm-Node im Home des Users ist für sudo (secure_path), cron und systemd
+    # unsichtbar. Ohne diese Prüfung landete hier Ubuntus nodejs 12 ohne npm
+    # und der Build brach mit "npm: Befehl nicht gefunden" ab.
+    local sys_node_major=0
+    if [[ -x /usr/bin/node ]]; then
+        sys_node_major="$(/usr/bin/node -v 2>/dev/null | sed 's/v\([0-9]*\).*/\1/')"
+    fi
+    if [[ "${sys_node_major:-0}" -lt 20 ]]; then
+        info "System-Node fehlt oder ist zu alt (${sys_node_major:-0}) — Node ${NODE_MAJOR}.x via NodeSource einrichten"
         curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | sudo -E bash -
     fi
 
-    # PHP GENERISCH (kein php8.x!) — Meta-Pakete zeigen auf Distro-Default
+    # PHP: KEINE feste Version im Script. Ist schon ein php-CLI da, werden die
+    # Pakete GENAU für dessen Version installiert (php8.3-fpm, php8.3-bcmath ...).
+    # Die generischen Meta-Pakete (php-fpm, php-bcmath) zeigen nämlich auf die
+    # NEUESTE verfügbare Version des Repos (mit sury-PPA z. B. 8.4), nicht auf
+    # die, die "php" auf der Kommandozeile ist — dann fehlen dem FPM der CLI-
+    # Version Module wie bcmath. Nur ohne vorhandenes php greift der Distro-Default.
+    local php_pfx=php
+    if command -v php >/dev/null; then
+        php_pfx="php$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
+        info "Vorhandenes PHP erkannt — Pakete für $php_pfx"
+    fi
     local pkgs=(
         apache2
         postgresql postgresql-contrib
-        php php-fpm php-cli php-pgsql php-mbstring php-xml php-curl php-intl
-        php-zip php-gd php-bcmath
+        "$php_pfx" "$php_pfx"-fpm "$php_pfx"-cli "$php_pfx"-pgsql "$php_pfx"-mbstring
+        "$php_pfx"-xml "$php_pfx"-curl "$php_pfx"-intl "$php_pfx"-zip "$php_pfx"-gd
+        "$php_pfx"-bcmath
         composer
         nodejs
         git curl unzip
@@ -207,12 +257,19 @@ install_packages() {
 #  SCHRITT: php_fpm  — Socket erkennen, Defines für Apache schreiben
 # =============================================================================
 detect_php_fpm_socket() {
-    # Bevorzugt einen real existierenden Socket, sonst aus der PHP-Version ableiten
-    local sock
-    sock="$(ls -1 /run/php/php*-fpm.sock 2>/dev/null | head -n1 || true)"
-    if [[ -z "$sock" ]]; then
-        local ver; ver="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
-        sock="/run/php/php${ver}-fpm.sock"
+    # Socket der PHP-Version, die auch "php" auf der Kommandozeile ist. Liegen
+    # mehrere FPM-Sockets in /run/php (Altlasten wie php7.4 neben php8.3), darf
+    # NICHT der alphabetisch erste gewinnen — der gehört sonst zur alten Version
+    # ohne die benötigten Module. Existiert der passende Socket (noch) nicht,
+    # wird der Pfad trotzdem aus der Version abgeleitet; der FPM-Dienst wird
+    # in setup_php_fpm ohnehin gestartet.
+    local ver sock
+    ver="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
+    sock="/run/php/php${ver}-fpm.sock"
+    if [[ ! -S "$sock" ]]; then
+        local any
+        any="$(ls -1 /run/php/php*-fpm.sock 2>/dev/null | sort -V | tail -n1 || true)"
+        [[ -n "$any" ]] && warn "Kein Socket für PHP $ver gefunden, vorhanden ist nur $any — Dienst php${ver}-fpm wird gestartet" >&2
     fi
     echo "$sock"
 }
@@ -225,15 +282,30 @@ setup_php_fpm() {
     info "PHP $ver — FPM-Dienst $svc — Socket $sock"
     sudo systemctl enable --now "$svc"
 
-    # Apache-Defines (versions-/pfadunabhängig) — einzige Quelle des konkreten Sockets
-    local defs=/etc/apache2/conf-available/oserp-defines.conf
-    sudo tee "$defs" >/dev/null <<EOF
+    write_apache_defines "$sock"
+}
+
+# Apache-Defines (versions-/pfadunabhängig) — einzige Quelle von Socket, Pfad
+# und öffentlichem Hostnamen. "Define OSERP_TLS" bleibt erhalten, wenn schon
+# ein Zertifikat vorhanden ist (Schritt tls), damit ein erneuter php_fpm-Lauf
+# HTTPS nicht abschaltet.
+APACHE_DEFINES=/etc/apache2/conf-available/oserp-defines.conf
+write_apache_defines() {
+    local sock="$1" tls_line=""
+    # /etc/letsencrypt/live ist root-only (0700): Test braucht sudo, sonst
+    # würde ein erneuter Lauf HTTPS stillschweigend abschalten.
+    if sudo test -f "/etc/letsencrypt/live/$OSERP_SERVER_NAME/fullchain.pem"; then
+        tls_line="Define OSERP_TLS"
+    fi
+    sudo tee "$APACHE_DEFINES" >/dev/null <<EOF
 # Automatisch erzeugt von install/install.sh — NICHT von Hand editieren.
 # Wird vom vHost install/apacheOpensourceErp.conf referenziert.
 Define OSERP_ROOT ${OSERP_ROOT}
 Define OSERP_PHP_FPM ${sock}
+Define OSERP_SERVER_NAME ${OSERP_SERVER_NAME}
+${tls_line}
 EOF
-    ok "Apache-Defines geschrieben: $defs"
+    ok "Apache-Defines geschrieben: $APACHE_DEFINES (ServerName $OSERP_SERVER_NAME${tls_line:+, HTTPS aktiv})"
 }
 
 # =============================================================================
@@ -241,6 +313,17 @@ EOF
 # =============================================================================
 node_build() {
     step "Build (npm / vite / sse / composer)"
+    # Vorab prüfen, was der Betriebs-User unter sudo wirklich sieht (secure_path,
+    # kein nvm): klare Meldung statt "npm: Befehl nicht gefunden" mitten im Build.
+    local nv major
+    nv="$(as_user 'command -v npm >/dev/null && node -v' 2>/dev/null || true)"
+    major="${nv#v}"; major="${major%%.*}"
+    if [[ ! "$major" =~ ^[0-9]+$ ]] || (( major < 20 )); then
+        err "Für '$OSERP_USER' ist unter sudo kein npm/node >= 20 erreichbar (gefunden: '${nv:-nichts}')"
+        err "  Bitte zuerst: ./install/install.sh --only packages  (richtet NodeSource ein)"
+        return 1
+    fi
+    ok "Node $nv mit npm im Systempfad"
     as_user "cd '$OSERP_ROOT' && npm install"
     # composer MUSS vor dem Vite-Build laufen: der API-Health-Check im Build
     # prüft die require-Pfade der PHP-Dateien und bricht ab, solange
@@ -262,17 +345,48 @@ node_build() {
 #                     $OSERP_HOME/.oserp-db-password (0600) hinterlegt, damit
 #                     es im Setup-Assistenten eingegeben werden kann.
 #  OSERP_DB_USER      Rolle (Standard: postgres)
+#
+#  Läuft auf der Maschine schon ein kivitendo mit derselben Rolle, ist DESSEN
+#  Passwort (kivitendo.conf) die Wahrheit: es wird übernommen, nicht ersetzt.
+#  Sonst verliert das noch produktive kivitendo den Datenbankzugang, und der
+#  Setup-Assistent (füllt aus kivitendo.conf vor) scheitert mit "password
+#  authentication failed". Reihenfolge: OSERP_DB_PASSWORD > kivitendo.conf >
+#  $OSERP_HOME/.oserp-db-password > neu erzeugen.
+kivitendo_db_password() {   # $1 = Rolle; gibt das Passwort aus, wenn kivitendo dieselbe Rolle nutzt
+    local f sect u p
+    for f in /var/www/kivitendo-erp/config/kivitendo.conf "$OSERP_HOME/kivitendo-erp/config/kivitendo.conf"; do
+        sudo test -r "$f" || continue
+        sect="$(sudo sed -n '/^\[authentication\/database\]/,/^\[/p' "$f")"
+        u="$(awk -F'= *' '/^user/{print $2}' <<<"$sect" | tr -d ' \r')"
+        p="$(awk -F'= *' '/^password/{print $2}' <<<"$sect" | tr -d ' \r')"
+        if [[ "$u" == "$1" && -n "$p" ]]; then
+            echo "$p"
+            return 0
+        fi
+    done
+    return 1
+}
 setup_database() {
     step "PostgreSQL-Rolle"
     sudo systemctl enable --now postgresql
     local role="${OSERP_DB_USER:-postgres}"
     local pwfile="$OSERP_HOME/.oserp-db-password"
+    local kpw
     if [[ -z "${OSERP_DB_PASSWORD:-}" ]]; then
-        if [[ -f "$pwfile" ]]; then
+        if kpw="$(kivitendo_db_password "$role")"; then
+            OSERP_DB_PASSWORD="$kpw"
+            ok "kivitendo gefunden — Passwort der Rolle '$role' aus kivitendo.conf übernommen (kivitendo bleibt lauffähig)"
+            ( umask 077; printf '%s\n' "$OSERP_DB_PASSWORD" > "$pwfile" )
+            sudo chown "$OSERP_USER" "$pwfile"
+        elif [[ -f "$pwfile" ]]; then
             OSERP_DB_PASSWORD="$(cat "$pwfile")"
             ok "Vorhandenes Datenbank-Passwort aus $pwfile übernommen"
         else
-            OSERP_DB_PASSWORD="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 20)"
+            # Kein "tr </dev/urandom | head -c": head schließt die Pipe, tr stirbt
+            # mit SIGPIPE (141) und pipefail bricht den Installer ab. Endliche
+            # Eingabe (64 Bytes) -> base64 -> nur Buchstaben/Ziffern -> kürzen.
+            OSERP_DB_PASSWORD="$(head -c 64 /dev/urandom | base64 -w0 | tr -dc 'A-Za-z0-9')"
+            OSERP_DB_PASSWORD="${OSERP_DB_PASSWORD:0:20}"
             ( umask 077; echo "$OSERP_DB_PASSWORD" > "$pwfile" )
             sudo chown "$OSERP_USER" "$pwfile"
             warn "Datenbank-Passwort für '$role' erzeugt und in $pwfile hinterlegt"
@@ -369,18 +483,178 @@ setup_permissions() {
 # =============================================================================
 setup_apache() {
     step "Apache"
-    sudo a2enmod rewrite proxy proxy_fcgi proxy_http setenvif >/dev/null
-    sudo a2enconf oserp-defines >/dev/null 2>&1 || {
-        warn "oserp-defines noch nicht vorhanden — führe zuerst Schritt php_fpm aus"; }
+    sudo a2enmod rewrite proxy proxy_fcgi proxy_http setenvif ssl headers >/dev/null
+    # Defines immer (neu) schreiben: so greift ein geänderter OSERP_SERVER_NAME
+    # auch bei "--only apache", ohne dass php_fpm erneut laufen muss.
+    write_apache_defines "$(detect_php_fpm_socket)"
+    sudo a2enconf oserp-defines >/dev/null
+    # Gemeinsamer Rumpf (HTTP + HTTPS) liegt NICHT in conf-available, sonst würde
+    # ihn a2enconf global einbinden — die vHosts laden ihn per Include.
+    sudo cp "$OSERP_ROOT/install/apacheOpensourceErp-common.conf" /etc/apache2/oserp-site-common.conf
     sudo cp "$OSERP_ROOT/install/apacheOpensourceErp.conf" \
         /etc/apache2/sites-available/apacheOpensourceErp.conf
     sudo a2ensite apacheOpensourceErp >/dev/null
     sudo a2dissite 000-default >/dev/null 2>&1 || true
     if sudo apache2ctl configtest; then
         sudo systemctl restart apache2
-        ok "Apache läuft — http://localhost"
+        ok "Apache läuft — http://localhost bzw. http://$OSERP_SERVER_NAME"
     else
         err "apache2ctl configtest fehlgeschlagen — vHost/Defines prüfen"
+        return 1
+    fi
+}
+
+# --------------------------------------------------------------------------
+#  Hilfsfunktionen: öffentliche IPv4, Erreichbarkeit von außen
+# --------------------------------------------------------------------------
+public_ipv4() {
+    local url ip
+    for url in $CHECKIP_URLS; do
+        ip="$(curl -4 -fsS --max-time 10 "$url" 2>/dev/null | tr -dc '0-9.')" || ip=''
+        if [[ $ip =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then echo "$ip"; return 0; fi
+    done
+    return 1
+}
+lan_ipv4()  { hostname -I 2>/dev/null | awk '{print $1}'; }
+gateway()   { local g; g="$(ip route 2>/dev/null | awk '/^default/{print $3; exit}')"; [[ -n "$g" ]] && echo "$g"; }
+
+# Prüft, ob http://<OSERP_SERVER_NAME>/ von hier aus antwortet. Hinter einer
+# FRITZ!Box (NAT-Loopback) klappt das genau dann, wenn die Portfreigabe für 80
+# existiert — ein Timeout bedeutet also in aller Regel: keine Freigabe.
+# Gibt 0 zurück, wenn erreichbar; sonst 1 und eine konkrete Anleitung.
+check_public_http() {
+    local host="$OSERP_SERVER_NAME" dns pub code
+    [[ "$host" != localhost ]] || return 1
+    dns="$(getent ahostsv4 "$host" 2>/dev/null | awk 'NR==1{print $1}')"
+    pub="$(public_ipv4 || true)"
+    if [[ -z "$dns" ]]; then
+        err "DNS: '$host' löst nicht auf — DynDNS prüfen (journalctl -t oserp-dyndns)"
+        return 1
+    fi
+    if [[ -n "$pub" && "$dns" != "$pub" ]]; then
+        warn "DNS: $host -> $dns, öffentliche IPv4 ist aber $pub — DynDNS-Update ausstehend?"
+    else
+        ok "DNS: $host -> $dns (öffentliche IPv4 ${pub:-unbekannt})"
+    fi
+    if [[ $pub =~ ^100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\. ]]; then
+        err "Öffentliche IPv4 $pub liegt im Carrier-NAT (DS-Lite): der Anschluss hat keine eigene IPv4,"
+        err "  Portfreigaben sind damit wirkungslos. Beim Provider echte IPv4 beantragen oder IPv6/Tunnel nutzen."
+        return 1
+    fi
+    code="$(curl -4 -s -o /dev/null -w '%{http_code}' --max-time 8 "http://$host/" 2>/dev/null)" || true
+    code="${code:-000}"
+    if [[ "$code" != 000 ]]; then
+        ok "http://$host/ antwortet (HTTP $code) — Portfreigabe 80 ist vorhanden"
+        return 0
+    fi
+    warn "http://$host/ antwortet NICHT (Timeout) — Port 80 wird vom Router nicht an diese Maschine weitergeleitet"
+    todo "Portfreigabe im Router anlegen (FRITZ!Box: http://$(gateway || echo 192.168.178.1)):"
+    todo "  Internet > Freigaben > Portfreigaben > 'Gerät für Freigaben hinzufügen'"
+    todo "  Gerät: $(hostname) ($(lan_ipv4)) — 'Neue Freigabe' > Portfreigabe > Anwendung HTTP-Server (Port 80)"
+    todo "  und noch einmal HTTPS-Server (Port 443), jeweils TCP, an Port 80 bzw. 443 dieser Maschine."
+    todo "  Alternativ: Heimnetz > Netzwerk > Gerät bearbeiten > 'Selbstständige Portfreigaben erlauben',"
+    todo "  dann ./install/install.sh --only portforward,tls"
+    todo "  Gegenprobe von außen (Handy im Mobilfunknetz): http://$host/"
+    return 1
+}
+
+# =============================================================================
+#  SCHRITT: portforward  — 80/443 per UPnP (IGD) am Router freigeben
+# =============================================================================
+#  Best effort: die FRITZ!Box erlaubt UPnP-Freigaben nur für Geräte, bei denen
+#  "Selbstständige Portfreigaben erlauben" aktiv ist. Schlägt es fehl, bleibt
+#  die manuelle Anleitung aus check_public_http. OSERP_UPNP=0 überspringt.
+setup_portforward() {
+    step "Portfreigabe (UPnP)"
+    if [[ "$OSERP_SERVER_NAME" == localhost ]]; then
+        ok "Kein öffentlicher Hostname — übersprungen"
+        return
+    fi
+    if check_public_http >/dev/null 2>&1; then
+        ok "Port 80 ist bereits von außen erreichbar — nichts zu tun"
+        return
+    fi
+    if [[ "${OSERP_UPNP:-1}" != "1" ]]; then
+        warn "UPnP per OSERP_UPNP=0 deaktiviert"; check_public_http || true; return
+    fi
+    command -v upnpc >/dev/null || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y miniupnpc
+    local lan; lan="$(lan_ipv4)"
+    local p failed=0
+    local out
+    for p in 80 443; do
+        out="$(upnpc -e "OSERP $p" -a "$lan" "$p" "$p" TCP 2>&1 || true)"
+        if grep -qE 'is redirected to|ConflictInMappingEntry' <<<"$out"; then
+            ok "UPnP: Port $p -> $lan:$p"
+        else
+            failed=1
+        fi
+    done
+    if [[ $failed -eq 1 ]]; then
+        warn "UPnP-Freigabe nicht möglich (Router erlaubt es für dieses Gerät nicht)"
+    fi
+    check_public_http || true
+}
+
+# =============================================================================
+#  SCHRITT: tls  — Let's-Encrypt-Zertifikat (certbot, webroot) + HTTPS-vHost
+# =============================================================================
+#  Bewusst "certonly --webroot" statt "certbot --apache": der Apache-Plugin-
+#  Parser müsste unsere ${OSERP_*}-Defines auflösen und würde den vHost
+#  umschreiben, den der Installer bei jedem Lauf neu kopiert. So bleibt der
+#  vHost die einzige Quelle: Schalter ist "Define OSERP_TLS" in den Defines.
+#  Verlängerung übernimmt certbot.timer (webroot ist im Renewal gespeichert),
+#  der Deploy-Hook lädt Apache neu. OSERP_TLS=0 überspringt den Schritt.
+#
+#  Webroot für die ACME-Challenge ist /var/lib/oserp/acme, NICHT dist/: certbot
+#  legt dort als root .well-known/ an, und ein root-eigenes Verzeichnis in dist/
+#  würde den nächsten "npm run build" (vite leert dist/) scheitern lassen. Der
+#  vHost mappt /.well-known/acme-challenge/ per Alias dorthin.
+ACME_ROOT=/var/lib/oserp/acme
+setup_tls() {
+    step "HTTPS (Let's Encrypt)"
+    if [[ "$OSERP_SERVER_NAME" == localhost ]]; then
+        ok "Kein öffentlicher Hostname — HTTPS übersprungen (OSERP_SERVER_NAME setzen oder DynDNS einrichten)"
+        return
+    fi
+    if [[ "${OSERP_TLS:-1}" != "1" ]]; then warn "HTTPS per OSERP_TLS=0 übersprungen"; return; fi
+    local live="/etc/letsencrypt/live/$OSERP_SERVER_NAME"
+    if ! sudo test -f "$live/fullchain.pem"; then
+        if ! check_public_http; then
+            warn "Ohne erreichbaren Port 80 kann Let's Encrypt nicht validieren — HTTPS später: ./install/install.sh --only tls"
+            return
+        fi
+        command -v certbot >/dev/null || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y certbot
+        local mail_args=(--register-unsafely-without-email)
+        [[ -n "$OSERP_TLS_EMAIL" ]] && mail_args=(-m "$OSERP_TLS_EMAIL" --no-eff-email)
+        # Selbsttest: liefert Apache den Challenge-Pfad aus dem ACME-Webroot aus?
+        # Wenn nicht, ist der installierte vHost veraltet (ohne Alias).
+        sudo install -d -m 755 "$ACME_ROOT/.well-known/acme-challenge"
+        local probe="oserp-probe-$$"
+        echo ok | sudo tee "$ACME_ROOT/.well-known/acme-challenge/$probe" >/dev/null
+        if ! curl -s --max-time 5 "http://127.0.0.1/.well-known/acme-challenge/$probe" | grep -qx ok; then
+            sudo rm -f "$ACME_ROOT/.well-known/acme-challenge/$probe"
+            err "Apache liefert $ACME_ROOT nicht unter /.well-known/acme-challenge/ aus — vHost veraltet?"
+            err "  Bitte: ./install/install.sh --only apache,tls"
+            return 1
+        fi
+        sudo rm -f "$ACME_ROOT/.well-known/acme-challenge/$probe"
+        if ! sudo certbot certonly --webroot -w "$ACME_ROOT" -d "$OSERP_SERVER_NAME" \
+                --non-interactive --agree-tos "${mail_args[@]}" \
+                --deploy-hook 'systemctl reload apache2'; then
+            err "certbot fehlgeschlagen — Details: sudo tail -50 /var/log/letsencrypt/letsencrypt.log"
+            return 1
+        fi
+    else
+        ok "Zertifikat für $OSERP_SERVER_NAME vorhanden ($live) — Verlängerung über certbot.timer"
+    fi
+    sudo systemctl enable --now certbot.timer >/dev/null 2>&1 || true
+    # HTTPS-vHost scharf schalten: Define OSERP_TLS + Reload
+    write_apache_defines "$(detect_php_fpm_socket)"
+    if sudo apache2ctl configtest; then
+        sudo systemctl reload apache2
+        ok "HTTPS aktiv — https://$OSERP_SERVER_NAME (HTTP leitet um)"
+    else
+        err "apache2ctl configtest fehlgeschlagen — ssl-Modul/Zertifikatpfade prüfen"
         return 1
     fi
 }
@@ -549,106 +823,47 @@ EOF
 #
 #  Bewusst OHNE ddclient: die in Ubuntu 24.04 ausgelieferte Version 3.10.0
 #  wertet weder "usev4=webv4" noch die alte "use=web"-Form korrekt aus und
-#  fällt auf use=ip zurück (ermittelt dann gar keine Adresse). Der Updater
-#  hier ist ein paar Zeilen curl und tut genau das, was gebraucht wird.
+#  fällt auf use=ip zurück (ermittelt dann gar keine Adresse).
 #
-#  Zugangsdaten sind ein Secret und liegen NICHT im Repo, sondern in
-#  /etc/oserp/dyndns.conf (0600, root). Ohne ausgefüllte Datei wird der
-#  Timer nicht aktiviert, der Schritt bleibt aber idempotent.
+#  Updater, Service und Timer gibt es nur EINMAL, in install/dyndns-standalone.sh
+#  (inkl. Fallback-Quellen für die IP-Ermittlung). Dieser Schritt ruft es auf,
+#  sobald /etc/oserp/dyndns.conf ausgefüllt ist; vorher legt er nur die Vorlage
+#  an. Zugangsdaten sind ein Secret und liegen NICHT im Repo (0600, root).
 # =============================================================================
-DYNDNS_CONF=/etc/oserp/dyndns.conf
-
 setup_dyndns() {
     step "DynDNS"
-
     sudo install -d -m 755 /etc/oserp /var/lib/oserp
 
-    if [[ ! -f "$DYNDNS_CONF" ]]; then
+    if ! sudo test -f "$DYNDNS_CONF"; then
         sudo tee "$DYNDNS_CONF" >/dev/null <<'CONF'
 # DynDNS-Zugang — wird von /usr/local/sbin/oserp-dyndns-update gelesen.
-# Platzhalter ersetzen, danach: sudo systemctl enable --now oserp-dyndns.timer
+# Platzhalter ersetzen und dann:  sudo ./install/dyndns-standalone.sh
+# (oder gleich das Script aufrufen, es fragt User/Token ab)
 DYNDNS_HOST=BITTE-EINTRAGEN.spdns.de
 DYNDNS_USER=BITTE-EINTRAGEN
 DYNDNS_PASS=BITTE-EINTRAGEN
 DYNDNS_UPDATE_URL=https://update.spdyn.de/nic/update
 DYNDNS_CHECKIP_URL=https://checkip4.spdyn.de/
+DYNDNS_CHECKIP_FALLBACK_URLS="https://ipv4.icanhazip.com https://api.ipify.org"
 CONF
         sudo chmod 600 "$DYNDNS_CONF"
         info "Vorlage angelegt: $DYNDNS_CONF"
     fi
 
-    sudo tee /usr/local/sbin/oserp-dyndns-update >/dev/null <<'SCRIPT'
-#!/usr/bin/env bash
-# Aktualisiert den DynDNS-A-Record auf die aktuelle öffentliche IPv4.
-# Sendet nur bei tatsächlicher Änderung — unnötige Updates wertet der
-# Anbieter als Missbrauch. Mit --force wird immer gesendet.
-set -euo pipefail
-CONF=/etc/oserp/dyndns.conf
-STATE=/var/lib/oserp/dyndns.ip
-[[ -r $CONF ]] || { logger -t oserp-dyndns "Config $CONF fehlt"; exit 1; }
-# shellcheck disable=SC1090
-source "$CONF"
-
-ip="$(curl -4 -fsS --max-time 15 "$DYNDNS_CHECKIP_URL" | tr -dc '0-9.')"
-if [[ ! $ip =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
-    logger -t oserp-dyndns "Keine gültige IPv4 ermittelt: '$ip'"
-    exit 1
-fi
-
-last="$(cat "$STATE" 2>/dev/null || true)"
-if [[ "$ip" == "$last" && ${1:-} != --force ]]; then
-    exit 0
-fi
-
-resp="$(curl -fsS --max-time 20 -u "$DYNDNS_USER:$DYNDNS_PASS" \
-        "$DYNDNS_UPDATE_URL?hostname=$DYNDNS_HOST&myip=$ip" || echo 'curl-fehler')"
-case "$resp" in
-    good*|nochg*)
-        printf '%s' "$ip" > "$STATE"
-        logger -t oserp-dyndns "$DYNDNS_HOST -> $ip ($(echo "$resp" | head -1))"
-        ;;
-    *)
-        logger -t oserp-dyndns "FEHLER beim Update von $DYNDNS_HOST: $(echo "$resp" | head -1)"
-        exit 1
-        ;;
-esac
-SCRIPT
-    sudo chmod 750 /usr/local/sbin/oserp-dyndns-update
-
-    sudo tee /etc/systemd/system/oserp-dyndns.service >/dev/null <<'UNIT'
-[Unit]
-Description=OSERP DynDNS-Update
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/sbin/oserp-dyndns-update
-UNIT
-
-    sudo tee /etc/systemd/system/oserp-dyndns.timer >/dev/null <<'UNIT'
-[Unit]
-Description=OSERP DynDNS-Update alle 5 Minuten
-
-[Timer]
-OnBootSec=1min
-OnUnitActiveSec=5min
-Unit=oserp-dyndns.service
-
-[Install]
-WantedBy=timers.target
-UNIT
-
-    sudo systemctl daemon-reload
-
     if sudo grep -q "BITTE-EINTRAGEN" "$DYNDNS_CONF"; then
-        todo "DynDNS: Zugangsdaten in $DYNDNS_CONF eintragen, dann:"
-        todo "  sudo systemctl enable --now oserp-dyndns.timer"
-        warn "DynDNS-Timer noch nicht aktiviert (Config enthält Platzhalter)"
+        todo "DynDNS: sudo ./install/dyndns-standalone.sh ausführen (fragt spdyn-Host/Token ab),"
+        todo "  danach ./install/install.sh --only apache,portforward,tls für Hostname + HTTPS"
+        warn "DynDNS noch nicht aktiv (Config enthält Platzhalter)"
+        return
+    fi
+    local host
+    host="$(sudo grep -oP '(?<=^DYNDNS_HOST=).*' "$DYNDNS_CONF" | tr -d '[:space:]')"
+    # Standalone-Script übernimmt die vorhandene Config unverändert (gleicher Host,
+    # keine neuen Zugangsdaten) und schreibt Updater + Units idempotent neu.
+    if sudo DYNDNS_HOST="$host" bash "$OSERP_ROOT/install/dyndns-standalone.sh" </dev/null; then
+        ok "DynDNS aktiv ($host -> $(cat /var/lib/oserp/dyndns.ip 2>/dev/null || echo '?'))"
     else
-        sudo systemctl enable --now oserp-dyndns.timer >/dev/null 2>&1
-        sudo /usr/local/sbin/oserp-dyndns-update --force || warn "Erstes DynDNS-Update fehlgeschlagen — journalctl -t oserp-dyndns"
-        ok "DynDNS aktiv ($(sudo grep -oP '(?<=^DYNDNS_HOST=).*' "$DYNDNS_CONF") -> $(cat /var/lib/oserp/dyndns.ip 2>/dev/null || echo '?'))"
+        warn "DynDNS-Update fehlgeschlagen — journalctl -t oserp-dyndns -n 5"
     fi
 }
 
@@ -728,14 +943,26 @@ healthcheck() {
     # getClients braucht keine gültige Session; alles außer 404 = PHP läuft.
     _chk "API-PHP :80/api"     "[ \"\$(curl -m3 -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{\"action\":\"getClients\"}' http://127.0.0.1/api/)\" != 404 ]"
     want ollama  && _chk "Ollama :11434" "curl -m3 -so /dev/null http://127.0.0.1:11434/"
-    if want dyndns && ! grep -q "BITTE-EINTRAGEN" "$DYNDNS_CONF" 2>/dev/null; then
+    if want dyndns && sudo test -f "$DYNDNS_CONF" && ! sudo grep -q "BITTE-EINTRAGEN" "$DYNDNS_CONF"; then
         _chk "DynDNS-Timer aktiv" "systemctl is-active --quiet oserp-dyndns.timer"
+    fi
+    local url="http://localhost"
+    if [[ "$OSERP_SERVER_NAME" != localhost ]]; then
+        if check_public_http; then
+            url="http://$OSERP_SERVER_NAME"
+            if sudo test -f "/etc/letsencrypt/live/$OSERP_SERVER_NAME/fullchain.pem"; then
+                _chk "HTTPS https://$OSERP_SERVER_NAME" "curl -4 -m8 -so /dev/null https://$OSERP_SERVER_NAME/"
+                url="https://$OSERP_SERVER_NAME"
+            fi
+        else
+            ok_all=0
+        fi
     fi
     echo
     if [[ $ok_all -eq 1 ]]; then
-        ok "Grund-Stack läuft. URL: http://localhost"
+        ok "Grund-Stack läuft. URL: $url"
         if [[ ! -f "$OSERP_ROOT/backend/config/settings.ini" ]]; then
-            info "Nächster Schritt: Setup-Assistent unter http://localhost/setup (Datenbank-Passwort: $OSERP_HOME/.oserp-db-password)"
+            info "Nächster Schritt: Setup-Assistent unter $url/setup (Datenbank-Passwort: $OSERP_HOME/.oserp-db-password)"
         fi
     else
         warn "Einzelne Checks offen — Details siehe oben / journalctl."
@@ -750,6 +977,7 @@ healthcheck() {
 declare -A STEP_FN=(
   [packages]=install_packages [php_fpm]=setup_php_fpm [node_build]=node_build
   [database]=setup_database [config]=setup_config [permissions]=setup_permissions [apache]=setup_apache
+  [portforward]=setup_portforward [tls]=setup_tls
   [sse]=setup_sse [whisper]=setup_whisper [fsscanner]=setup_fsscanner [ollama]=setup_ollama [anpr]=setup_anpr
   [go2rtc]=setup_go2rtc [camera_monitor]=setup_camera_monitor
   [camera_sudoers]=setup_camera_sudoers [cron]=setup_cron [dyndns]=setup_dyndns

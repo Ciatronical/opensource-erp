@@ -677,6 +677,12 @@ function setupInstall(array $p) {
             );
         }
 
+        // Übernommene kivitendo-Mandanten: passt ihr Schema zu OSERP? (sonst klare
+        // Warnung hier statt Datenbankfehler bei der ersten Anmeldung)
+        if ($authMode === 'existing') {
+            $warnings = array_merge($warnings, tenantKivitendoSchemaWarnings($authDb));
+        }
+
         // ── 4. Erste Firma ──
         $clientId = null;
         if (!empty($p['company_create'])) {

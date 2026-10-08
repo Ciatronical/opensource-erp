@@ -398,7 +398,8 @@
                 "saveFirst": "Salvare la fattura prima di generare la fattura elettronica."
             },
             "kmStandRequired": "Il chilometraggio è obbligatorio — inserirlo prima di creare la fattura.",
-            "deliveryAddressOwn": "Indirizzo di consegna di questo documento"
+            "deliveryAddressOwn": "Indirizzo di consegna di questo documento",
+            "notFound": "Il documento non esiste (più)."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

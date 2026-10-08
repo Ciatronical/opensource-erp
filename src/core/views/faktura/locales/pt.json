@@ -398,7 +398,8 @@
                 "saveFirst": "Guarde a fatura antes de gerar uma fatura eletrónica."
             },
             "kmStandRequired": "A quilometragem é obrigatória — insira-a antes de criar a fatura.",
-            "deliveryAddressOwn": "Morada de entrega deste documento"
+            "deliveryAddressOwn": "Morada de entrega deste documento",
+            "notFound": "O documento (já) não existe."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

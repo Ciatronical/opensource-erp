@@ -22,6 +22,24 @@ export const ENTITY_ROUTE_NAMES = Object.freeze({
 });
 
 /**
+ * Abbildung Faktura-Dokumenttyp → Listen-Route
+ *
+ * Ziel, wenn ein Dokument nicht (mehr) existiert und die Faktura-View
+ * den Benutzer zurück in die passende Übersicht schicken muss.
+ */
+export const DOCUMENT_LIST_ROUTE_NAMES = Object.freeze({
+    invoice: 'invoice-list',
+    purchase_invoice: 'invoice-list',
+    invoice_storno: 'invoice-list',
+    credit_note: 'credit-note-list',
+    order: 'order-list',
+    purchase_order: 'order-list',
+    quotation: 'quotation-list',
+    request_quotation: 'quotation-list',
+    delivery_order: 'delivery-order-list'
+});
+
+/**
  * Abbildung kivitendo-`trans_type` → Route-Name für Wiedervorlagen und Aufgaben
  *
  * Verknüpfungen aus Wiedervorlagen/Aufgaben führen in die Bearbeiten-Ansicht,

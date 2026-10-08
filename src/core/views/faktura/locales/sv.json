@@ -398,7 +398,8 @@
                 "saveFirst": "Spara fakturan innan du genererar en e-faktura."
             },
             "kmStandRequired": "Mätarställning krävs — ange den innan fakturan skapas.",
-            "deliveryAddressOwn": "Leveransadress för detta dokument"
+            "deliveryAddressOwn": "Leveransadress för detta dokument",
+            "notFound": "Dokumentet finns inte (längre)."
         },
         "workflow": {
             "created": "Dokument genomford erstellt",

@@ -398,7 +398,8 @@
                 "saveFirst": "Veuillez enregistrer la facture avant de générer une facture électronique."
             },
             "kmStandRequired": "Le kilométrage est obligatoire — veuillez le saisir avant de créer la facture.",
-            "deliveryAddressOwn": "Adresse de livraison de ce document"
+            "deliveryAddressOwn": "Adresse de livraison de ce document",
+            "notFound": "Le document n'existe pas (ou plus)."
         },
         "workflow": {
             "created": "Document cree avec succes",

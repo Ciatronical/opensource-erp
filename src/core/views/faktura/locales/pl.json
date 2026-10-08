@@ -416,7 +416,8 @@
             "bankBookedLocked": "Zaksięgowane przez uzgodnienie bankowe — storno możliwe tylko w module bankowym",
             "bankBookedGoto": "Zaksięgowane przez uzgodnienie bankowe — pokaż/stornuj w module bankowym",
             "bankBookedLock": "Zaksięgowane przez moduł bankowy — zablokowane. Kliknij, aby pokazać/stornować w module bankowym.",
-            "deliveryAddressOwn": "Adres dostawy tego dokumentu"
+            "deliveryAddressOwn": "Adres dostawy tego dokumentu",
+            "notFound": "Dokument (już) nie istnieje."
         },
         "workflow": {
             "created": "Dokument pomyślnie utworzony",

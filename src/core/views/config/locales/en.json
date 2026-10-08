@@ -755,6 +755,16 @@
         "emailUsername_help": "Username for IMAP/SMTP authentication (often same as email address)",
         "emailPassword": "Password",
         "emailPassword_help": "Password for IMAP/SMTP authentication",
+        "emailAutoconfig": {
+            "button": "Detect server settings automatically",
+            "hint": "Looks up the IMAP and SMTP servers for the email address the way Thunderbird does (provider autoconfig, Mozilla ISPDB, DNS). Remember to save afterwards.",
+            "found": "Server settings found and filled in",
+            "foundProvider": "Server settings of {provider} found and filled in",
+            "notFound": "No server settings found — please enter the IMAP and SMTP servers manually",
+            "noSmtp": "no SMTP server found, please enter it manually",
+            "noEncryption": "unencrypted",
+            "error": "The server settings could not be detected"
+        },
         "lxcars": "LXCars",
         "lxcarsApi": "LXCars API URL",
         "lxcarsApi_help": "API endpoint for LXCars integration",

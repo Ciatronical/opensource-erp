@@ -398,7 +398,8 @@
                 "saveFirst": "Palun salvesta arve enne e-arve genereerimist."
             },
             "kmStandRequired": "Läbisõit on kohustuslik — palun sisestage see enne arve koostamist.",
-            "deliveryAddressOwn": "Selle dokumendi tarneaadress"
+            "deliveryAddressOwn": "Selle dokumendi tarneaadress",
+            "notFound": "Dokumenti (enam) ei ole olemas."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

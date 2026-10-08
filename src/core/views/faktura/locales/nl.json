@@ -398,7 +398,8 @@
                 "saveFirst": "Sla de factuur op voordat u een e-factuur genereert."
             },
             "kmStandRequired": "Kilometerstand is verplicht — vul dit in voor het aanmaken van de factuur.",
-            "deliveryAddressOwn": "Afleveradres van dit document"
+            "deliveryAddressOwn": "Afleveradres van dit document",
+            "notFound": "Het document bestaat niet (meer)."
         },
         "workflow": {
             "created": "Document succesvol aangemaakt",

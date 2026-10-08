@@ -398,7 +398,8 @@
                 "saveFirst": "E-fatura oluşturmadan önce lütfen faturayı kaydedin."
             },
             "kmStandRequired": "Kilometre sayacı zorunludur — lütfen fatura oluşturmadan önce girin.",
-            "deliveryAddressOwn": "Bu belgenin teslimat adresi"
+            "deliveryAddressOwn": "Bu belgenin teslimat adresi",
+            "notFound": "Belge (artık) mevcut değil."
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
