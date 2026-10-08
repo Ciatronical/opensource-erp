@@ -1162,58 +1162,90 @@ CREATE TRIGGER trg_crmti_notify
 -- Rufnummer geaendert), waren die zurueckliegenden crmti-Zeilen bis dahin
 -- "unbekannt" (crmti_caller_typ = 'X'/'Y', crmti_caller_id = 0) und blieben es
 -- auch nach Reload, weil die Namensaufloesung nur einmalig zum Anrufzeitpunkt
--- lief. Dieser Trigger loest die noch unaufgeloesten Zeilen erneut ueber
--- SucheNummer auf und aktualisiert Kennung + Anzeigename. Danach zeigt die
--- Anrufliste den neuen Kunden/Lieferanten korrekt an.
+-- lief. Dieser Trigger ordnet die noch unaufgeloesten Zeilen, deren Nummer zu
+-- phone/fax der gerade geschriebenen Zeile passt, diesem Kunden/Lieferanten zu
+-- und aktualisiert Kennung + Anzeigename. Danach zeigt die Anrufliste den
+-- neuen Kunden/Lieferanten korrekt an.
 --
--- Laeuft nur ueber die (per Pruning ~512 Zeilen kleine) Menge unaufgeloester
--- Anrufe und nur beim Anlegen bzw. bei Rufnummern-Aenderung — daher guenstig.
+-- Der Abgleich laeuft als EIN UPDATE ueber die unaufgeloesten Anrufe und
+-- vergleicht nur mit den Nummern der NEW-Zeile (gleiche Suffix-Logik wie in
+-- SucheNummer). Die fruehere Fassung rief SucheNummer fuer JEDEN offenen Anruf
+-- auf (12 Volltabellen-Scans je Aufruf) — bei ~180 offenen Anrufen rund 5 s
+-- pro Kundenspeicherung. Zusaetzlich feuern die Trigger per WHEN-Klausel nur,
+-- wenn sich phone/fax wirklich aendern: saveCV schreibt per UPSERT immer alle
+-- Spalten, und "UPDATE OF phone, fax" allein wuerde damit bei jedem Speichern
+-- ausloesen.
 -- pg_notify('crmti_change', ...) aktualisiert offene Anruflisten live.
 CREATE OR REPLACE FUNCTION backfill_crmti_caller()
     RETURNS trigger
     LANGUAGE plpgsql
 AS $$
 DECLARE
-    r      record;
-    treffer record;
+    fmt   CONSTANT text := '99999999999999999';
+    typ   char(1) := CASE WHEN TG_TABLE_NAME = 'vendor' THEN 'V' ELSE 'C' END;
+    nums  text[]  := ARRAY[]::text[];
+    r     record;
 BEGIN
+    IF NEW.phone ~ '[0-9]' THEN nums := nums || to_number(NEW.phone, fmt)::char(16)::text; END IF;
+    IF NEW.fax   ~ '[0-9]' THEN nums := nums || to_number(NEW.fax,   fmt)::char(16)::text; END IF;
+    IF cardinality(nums) = 0 THEN RETURN NEW; END IF;
+
     FOR r IN
-        SELECT crmti_id, crmti_number, crmti_direction
-        FROM crmti
-        WHERE (crmti_caller_typ IN ('X', 'Y') OR crmti_caller_id = 0 OR crmti_caller_id IS NULL)
-          AND crmti_number ~ '[0-9]'
+        UPDATE crmti c
+           SET crmti_caller_id  = NEW.id,
+               crmti_caller_typ = typ,
+               crmti_src = CASE WHEN c.crmti_direction = 'E' THEN NEW.name ELSE c.crmti_src END,
+               crmti_dst = CASE WHEN c.crmti_direction = 'A' THEN NEW.name ELSE c.crmti_dst END
+          FROM unnest(nums) AS n(p)
+         WHERE (c.crmti_caller_typ IN ('X', 'Y') OR c.crmti_caller_id = 0 OR c.crmti_caller_id IS NULL)
+           AND c.crmti_number ~ '[0-9]'
+           AND kuerze(char_length(to_number(c.crmti_number, fmt)::char(16)), n.p)
+               LIKE kuerze(char_length(n.p), to_number(c.crmti_number, fmt)::char(16)) || '%'
+        RETURNING c.crmti_id
     LOOP
-        treffer := SucheNummer(r.crmti_number);
-        IF treffer.typ IN ('C', 'V') AND treffer.id <> 0 THEN
-            UPDATE crmti
-               SET crmti_caller_id  = treffer.id,
-                   crmti_caller_typ = treffer.typ,
-                   crmti_src = CASE WHEN crmti_direction = 'E' THEN treffer.name ELSE crmti_src END,
-                   crmti_dst = CASE WHEN crmti_direction = 'A' THEN treffer.name ELSE crmti_dst END
-             WHERE crmti_id = r.crmti_id;
-            PERFORM pg_notify('crmti_change', json_build_object(
-                'action', 'backfill',
-                'crmti_id', r.crmti_id
-            )::text);
-        END IF;
+        PERFORM pg_notify('crmti_change', json_build_object(
+            'action', 'backfill',
+            'crmti_id', r.crmti_id
+        )::text);
     END LOOP;
+    RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+    -- Der Abgleich ist Komfort — er darf das Speichern des Stammsatzes nie blockieren.
+    RAISE WARNING 'backfill_crmti_caller(% %): %', TG_TABLE_NAME, NEW.id, SQLERRM;
     RETURN NEW;
 END;
 $$;
 
 -- Trigger auf den kivitendo-Standardspalten phone + fax (customer/vendor bleiben
 -- unveraendert). Zusatznummern liegen in customer_ext/vendor_ext.phone_numbers (JSON)
--- und werden von SucheNummer separat ausgewertet.
+-- und werden von SucheNummer separat ausgewertet. INSERT und UPDATE sind getrennte
+-- Trigger, weil eine WHEN-Klausel mit OLD bei INSERT nicht erlaubt ist.
 DROP TRIGGER IF EXISTS trg_customer_backfill_crmti ON customer;
-CREATE TRIGGER trg_customer_backfill_crmti
-    AFTER INSERT OR UPDATE OF phone, fax ON customer
+DROP TRIGGER IF EXISTS trg_customer_backfill_crmti_ins ON customer;
+CREATE TRIGGER trg_customer_backfill_crmti_ins
+    AFTER INSERT ON customer
     FOR EACH ROW
+    WHEN (NEW.phone ~ '[0-9]' OR NEW.fax ~ '[0-9]')
+    EXECUTE FUNCTION backfill_crmti_caller();
+DROP TRIGGER IF EXISTS trg_customer_backfill_crmti_upd ON customer;
+CREATE TRIGGER trg_customer_backfill_crmti_upd
+    AFTER UPDATE OF phone, fax ON customer
+    FOR EACH ROW
+    WHEN (NEW.phone IS DISTINCT FROM OLD.phone OR NEW.fax IS DISTINCT FROM OLD.fax)
     EXECUTE FUNCTION backfill_crmti_caller();
 
 DROP TRIGGER IF EXISTS trg_vendor_backfill_crmti ON vendor;
-CREATE TRIGGER trg_vendor_backfill_crmti
-    AFTER INSERT OR UPDATE OF phone, fax ON vendor
+DROP TRIGGER IF EXISTS trg_vendor_backfill_crmti_ins ON vendor;
+CREATE TRIGGER trg_vendor_backfill_crmti_ins
+    AFTER INSERT ON vendor
     FOR EACH ROW
+    WHEN (NEW.phone ~ '[0-9]' OR NEW.fax ~ '[0-9]')
+    EXECUTE FUNCTION backfill_crmti_caller();
+DROP TRIGGER IF EXISTS trg_vendor_backfill_crmti_upd ON vendor;
+CREATE TRIGGER trg_vendor_backfill_crmti_upd
+    AFTER UPDATE OF phone, fax ON vendor
+    FOR EACH ROW
+    WHEN (NEW.phone IS DISTINCT FROM OLD.phone OR NEW.fax IS DISTINCT FROM OLD.fax)
     EXECUTE FUNCTION backfill_crmti_caller();
 
 -- =============================================================================
