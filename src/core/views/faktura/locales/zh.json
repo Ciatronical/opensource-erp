@@ -374,7 +374,8 @@
                 "onlyInvoice": "电子发票只能从销售发票生成。",
                 "saveFirst": "请先保存发票，然后再生成电子发票。"
             },
-            "kmStandRequired": "里程数为必填项 — 请在创建发票前输入。"
+            "kmStandRequired": "里程数为必填项 — 请在创建发票前输入。",
+            "deliveryAddressOwn": "本单据的收货地址"
         },
         "workflow": {
             "created": "单据创建成功",

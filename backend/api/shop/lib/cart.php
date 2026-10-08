@@ -614,11 +614,13 @@ function shopShippingCountry($db, ?int $customerId, array $lieferadresse = [], b
     $zeile = $db->getOne(
         "SELECT COALESCE(
                     (SELECT s.shiptocountry FROM shipto s
-                      WHERE s.shipto_id = :shipto_id AND s.trans_id = :kunde_a),
+                      WHERE s.shipto_id = :shipto_id AND s.trans_id = :kunde_a
+                        AND COALESCE(s.module, 'CT') = 'CT'),
                     CASE WHEN :standard = 1 THEN
                         (SELECT s.shiptocountry FROM shipto s
                            JOIN customer_ext ce ON ce.hugoshop_shipto_id = s.shipto_id
-                          WHERE ce.customer_id = :kunde_b AND s.trans_id = :kunde_c)
+                          WHERE ce.customer_id = :kunde_b AND s.trans_id = :kunde_c
+                            AND COALESCE(s.module, 'CT') = 'CT')
                     END,
                     (SELECT c.country FROM customer c WHERE c.id = :kunde_d),
                     '') AS land",

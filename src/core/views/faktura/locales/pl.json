@@ -392,7 +392,8 @@
             "terminalError": "Terminal kartowy: {msg}",
             "bankBookedLocked": "Zaksięgowane przez uzgodnienie bankowe — storno możliwe tylko w module bankowym",
             "bankBookedGoto": "Zaksięgowane przez uzgodnienie bankowe — pokaż/stornuj w module bankowym",
-            "bankBookedLock": "Zaksięgowane przez moduł bankowy — zablokowane. Kliknij, aby pokazać/stornować w module bankowym."
+            "bankBookedLock": "Zaksięgowane przez moduł bankowy — zablokowane. Kliknij, aby pokazać/stornować w module bankowym.",
+            "deliveryAddressOwn": "Adres dostawy tego dokumentu"
         },
         "workflow": {
             "created": "Dokument pomyślnie utworzony",

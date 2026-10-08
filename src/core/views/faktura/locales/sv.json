@@ -374,7 +374,8 @@
                 "onlyInvoice": "E-fakturor kan bara genereras från utgående fakturor.",
                 "saveFirst": "Spara fakturan innan du genererar en e-faktura."
             },
-            "kmStandRequired": "Mätarställning krävs — ange den innan fakturan skapas."
+            "kmStandRequired": "Mätarställning krävs — ange den innan fakturan skapas.",
+            "deliveryAddressOwn": "Leveransadress för detta dokument"
         },
         "workflow": {
             "created": "Dokument genomford erstellt",

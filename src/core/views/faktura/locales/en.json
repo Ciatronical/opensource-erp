@@ -409,7 +409,8 @@
                 "createCustomDescription": "Description",
                 "createCustomKlassen": "Possible defect classes",
                 "createCustomSave": "Create"
-            }
+            },
+            "deliveryAddressOwn": "Delivery address of this document"
         },
         "workflow": {
             "created": "Document created successfully",

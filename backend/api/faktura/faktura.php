@@ -26,6 +26,10 @@ function getFakturaData($data) {
     // Payment chart_link: AR_paid für Verkauf, AP_paid für Einkauf
     $paymentLink = ($mainTable === 'ap') ? '%AP_paid%' : '%AR_paid%';
 
+    // Eigene Lieferadresse des Belegs (dev/shop-adressen.md) — nicht bei
+    // Einkaufsrechnungen: Lieferadressen gehören zum Verkauf
+    $eigeneLieferadresseSql = ($mainTable === 'ap') ? '' : "OR shipto.shipto_id = {$mainTable}.shipto_id";
+
     // Ext-Tabelle für phone_numbers (customer_ext/vendor_ext)
     $extTable = ($cvTable === 'vendor') ? 'vendor_ext' : 'customer_ext';
     $extFk    = ($cvTable === 'vendor') ? 'vendor_id'  : 'customer_id';
@@ -159,7 +163,16 @@ function getFakturaData($data) {
                 (
                     SELECT json_agg(shiptos)
                     FROM (
-                        SELECT shipto.* FROM {$mainTable} JOIN shipto ON {$mainTable}.{$cvColumn} = shipto.trans_id WHERE {$mainTable}.id = :fakturaID AND module = 'CT' ORDER BY shipto.shipto_id ASC
+                        -- Lieferadressen des Kundenstamms (module 'CT') und die
+                        -- eigene Lieferadresse des Belegs, auf die er zeigt (wie
+                        -- in kivitendo: module des Belegs, trans_id = Beleg;
+                        -- Shop-Rechnungen haben immer eine, dev/shop-adressen.md)
+                        SELECT shipto.*, (shipto.module IS DISTINCT FROM 'CT') AS document_own
+                          FROM {$mainTable}
+                          JOIN shipto ON ({$mainTable}.{$cvColumn} = shipto.trans_id AND shipto.module = 'CT')
+                                      {$eigeneLieferadresseSql}
+                         WHERE {$mainTable}.id = :fakturaID
+                         ORDER BY (shipto.module IS DISTINCT FROM 'CT') DESC, shipto.shipto_id ASC
                     ) AS shiptos
                 ),
             'billing_addresses',

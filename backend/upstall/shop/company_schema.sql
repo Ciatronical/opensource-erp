@@ -1984,6 +1984,147 @@ $$;
 COMMENT ON FUNCTION shop_order_state(integer) IS 'Shop: wirksamer und abgeleiteter Bestell- und Lieferstatus einer Rechnung (dev/shop-bestellstatus.md)';
 
 -- ============================================================================
+-- LIEFERADRESSE JE RECHNUNG (dev/shop-adressen.md)
+-- ============================================================================
+
+-- Lieferadressen aus der Zeit der Bridge haben kein Modul (NULL). Faktura und
+-- Kundenverwaltung lesen nur module = 'CT' und zeigen sie deshalb nicht an.
+-- Nachgetragen wird nur, wo trans_id ein Kunde oder Lieferant ist — eine
+-- Zeile ohne solchen Eigentümer bleibt, wie sie ist. Läuft bei jedem
+-- Schema-Update und findet nach dem ersten Mal nichts mehr.
+UPDATE shipto s
+   SET module = 'CT'
+ WHERE s.module IS NULL
+   AND (EXISTS (SELECT 1 FROM customer c WHERE c.id = s.trans_id)
+        OR EXISTS (SELECT 1 FROM vendor v WHERE v.id = s.trans_id));
+
+-- Jede Shop-Rechnung bekommt eine eigene Lieferadresse wie in kivitendo:
+-- eine shipto-Zeile mit module = 'AR' und trans_id = Rechnung. Ändert oder
+-- löscht der Kunde danach eine Adresse in seinem Konto (module 'CT', bei
+-- alten Zeilen aus der Bridge NULL), bleibt die Anschrift der Rechnung stehen.
+--
+-- Quelle in dieser Reihenfolge: p_adresse (eBay), p_quelle (gewählte oder in
+-- der Kasse angelegte Lieferadresse), sonst der Kundenstamm (E1: auch ohne
+-- abweichende Lieferadresse wird die Anschrift festgehalten). Danach zeigt
+-- ar.shipto_id auf die Kopie.
+--
+-- Gäste (E2): die Quelle war nur der Träger der Adresse durch die Kasse und
+-- über PayPal — wiederverwenden kann ein Gast sie nicht. Mit
+-- p_gast_aufraeumen wird sie nach dem Kopieren entfernt, sofern kein anderer
+-- Beleg darauf zeigt.
+DROP FUNCTION IF EXISTS shop_invoice_shipto(integer, integer, jsonb, boolean);
+CREATE FUNCTION shop_invoice_shipto(p_ar_id integer, p_quelle integer DEFAULT NULL,
+                                    p_adresse jsonb DEFAULT NULL,
+                                    p_gast_aufraeumen boolean DEFAULT true)
+RETURNS integer
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_kunde integer;
+    v_neu   integer;
+BEGIN
+    SELECT a.customer_id INTO v_kunde FROM ar a WHERE a.id = p_ar_id;
+    IF NOT FOUND THEN
+        RETURN NULL;
+    END IF;
+
+    IF p_adresse IS NOT NULL THEN
+        INSERT INTO shipto (trans_id, module, shiptoname, shiptostreet, shiptozipcode,
+                            shiptocity, shiptocountry, shiptophone, shiptoemail)
+        VALUES (p_ar_id, 'AR', p_adresse ->> 'name', p_adresse ->> 'street', p_adresse ->> 'zipcode',
+                p_adresse ->> 'city', p_adresse ->> 'country', p_adresse ->> 'phone', p_adresse ->> 'email')
+        RETURNING shipto_id INTO v_neu;
+    ELSIF p_quelle IS NOT NULL THEN
+        INSERT INTO shipto (trans_id, module, shiptoname, shiptodepartment_1, shiptodepartment_2,
+                            shiptocontact, shiptostreet, shiptozipcode, shiptocity, shiptocountry,
+                            shiptophone, shiptofax, shiptoemail)
+        SELECT p_ar_id, 'AR', s.shiptoname, s.shiptodepartment_1, s.shiptodepartment_2,
+               s.shiptocontact, s.shiptostreet, s.shiptozipcode, s.shiptocity, s.shiptocountry,
+               s.shiptophone, s.shiptofax, s.shiptoemail
+          FROM shipto s
+         WHERE s.shipto_id = p_quelle
+        RETURNING shipto_id INTO v_neu;
+    END IF;
+
+    IF v_neu IS NULL THEN
+        INSERT INTO shipto (trans_id, module, shiptoname, shiptodepartment_1, shiptodepartment_2,
+                            shiptocontact, shiptostreet, shiptozipcode, shiptocity, shiptocountry,
+                            shiptophone, shiptofax, shiptoemail)
+        SELECT p_ar_id, 'AR', c.name, c.department_1, c.department_2,
+               c.contact, c.street, c.zipcode, c.city, c.country,
+               c.phone, c.fax, c.email
+          FROM customer c
+         WHERE c.id = v_kunde
+        RETURNING shipto_id INTO v_neu;
+    END IF;
+
+    UPDATE ar SET shipto_id = v_neu WHERE id = p_ar_id;
+
+    IF p_gast_aufraeumen AND p_quelle IS NOT NULL
+       AND EXISTS (SELECT 1 FROM customer_ext ce WHERE ce.customer_id = v_kunde AND ce.hugoshop_guest) THEN
+        UPDATE customer_ext SET hugoshop_shipto_id = NULL
+         WHERE customer_id = v_kunde AND hugoshop_shipto_id = p_quelle;
+        DELETE FROM shipto s
+         WHERE s.shipto_id = p_quelle
+           AND s.trans_id = v_kunde
+           AND COALESCE(s.module, 'CT') = 'CT'
+           AND NOT EXISTS (SELECT 1 FROM ar WHERE ar.shipto_id = p_quelle)
+           AND NOT EXISTS (SELECT 1 FROM oe WHERE oe.shipto_id = p_quelle)
+           AND NOT EXISTS (SELECT 1 FROM delivery_orders d WHERE d.shipto_id = p_quelle);
+    END IF;
+
+    RETURN v_neu;
+END;
+$$;
+
+COMMENT ON FUNCTION shop_invoice_shipto(integer, integer, jsonb, boolean) IS 'Shop: eigene Lieferadresse (shipto, module AR) für eine Rechnung (dev/shop-adressen.md)';
+
+-- Lieferadresse einer eBay-Bestellung aus ihrem Rohdatensatz, in der Form
+-- von p_adresse oben; NULL, wenn die Bestellung keine enthält
+DROP FUNCTION IF EXISTS shop_ebay_ship_to(jsonb);
+CREATE FUNCTION shop_ebay_ship_to(p_roh jsonb)
+RETURNS jsonb
+LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE WHEN z.ziel IS NULL OR z.ziel = 'null'::jsonb THEN NULL ELSE jsonb_build_object(
+        'name',    z.ziel ->> 'fullName',
+        'street',  btrim(COALESCE(z.ziel -> 'contactAddress' ->> 'addressLine1', '') || ' '
+                      || COALESCE(z.ziel -> 'contactAddress' ->> 'addressLine2', '')),
+        'zipcode', z.ziel -> 'contactAddress' ->> 'postalCode',
+        'city',    z.ziel -> 'contactAddress' ->> 'city',
+        'country', z.ziel -> 'contactAddress' ->> 'countryCode',
+        'phone',   z.ziel -> 'primaryPhone' ->> 'phoneNumber',
+        'email',   z.ziel ->> 'email'
+    ) END
+      FROM (SELECT p_roh -> 'fulfillmentStartInstructions' -> 0 -> 'shippingStep' -> 'shipTo' AS ziel) z
+$$;
+
+-- Bestand einmalig nachziehen (E3): Shop-Rechnungen ohne eigene Lieferadresse
+-- bekommen eine Kopie dessen, worauf sie heute zeigen — sonst des
+-- Kundenstamms, bei eBay der Adresse aus dem Rohdatensatz. Was der Kunde
+-- vorher schon geändert hat, lässt sich nicht zurückholen. Läuft bei jedem
+-- Schema-Update, findet nach dem ersten Mal nichts mehr. Ohne Aufräumen der
+-- Gast-Adressen: der Bestand bleibt, wie er ist.
+SELECT shop_invoice_shipto(a.id, a.shipto_id, NULL, false)
+  FROM ar a
+ WHERE a.id IN (SELECT l.ar_id FROM ar_link_hugoshop l WHERE l.ar_id IS NOT NULL)
+   AND NOT EXISTS (SELECT 1 FROM shipto s
+                    WHERE s.shipto_id = a.shipto_id AND s.module = 'AR' AND s.trans_id = a.id);
+
+DO $$
+BEGIN
+    -- ebay_orders gehört der CRM-Basis und fehlt, wenn sie älter ist
+    IF to_regclass('ebay_orders') IS NOT NULL THEN
+        PERFORM shop_invoice_shipto(a.id, a.shipto_id,
+                                    CASE WHEN a.shipto_id IS NULL THEN shop_ebay_ship_to(e.raw) END,
+                                    false)
+           FROM ebay_orders e
+           JOIN ar a ON a.id = e.ar_id
+          WHERE NOT EXISTS (SELECT 1 FROM shipto s
+                             WHERE s.shipto_id = a.shipto_id AND s.module = 'AR' AND s.trans_id = a.id);
+    END IF;
+END;
+$$;
+
+-- ============================================================================
 -- AUFRAEUMEN
 -- ============================================================================
 --

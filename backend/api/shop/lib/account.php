@@ -15,6 +15,12 @@
 // Funktion, die eine shipto_id entgegennimmt, fuehrt sie in der Bedingung mit
 // — ohne das liesse sich durch Hochzaehlen der Kennung jede fremde
 // Lieferadresse lesen, aendern oder loeschen.
+//
+// Dazu gehört immer das Modul: Adressen des Kundenstamms haben module 'CT'
+// (alte Zeilen aus der Bridge NULL). Seit dev/shop-adressen.md hat jede
+// Rechnung ihre eigene Lieferadresse mit module 'AR' und trans_id =
+// Rechnung — ohne den Filter sähe ein Kunde die Lieferadresse der Rechnung,
+// deren Nummer zufällig seiner Kundennummer entspricht.
 
 /**
  * Stammdaten fuer Preisberechnung und Rechnungsstellung
@@ -237,7 +243,7 @@ function customerAddresses($db, int $customerId): array {
                 EXISTS (SELECT 1 FROM ar WHERE ar.customer_id = :customer_id
                                            AND ar.shipto_id = s.shipto_id) AS used
            FROM shipto s
-          WHERE s.trans_id = :customer_id
+          WHERE s.trans_id = :customer_id AND COALESCE(s.module, 'CT') = 'CT'
           ORDER BY s.shipto_id",
         [':customer_id' => $customerId]
     );
@@ -324,7 +330,8 @@ function shiptoRead($db, int $customerId, int $shiptoId): array {
     $adresse = $db->getOne(
         "SELECT shipto_id, shiptoname, shiptostreet, shiptozipcode, shiptocity,
                 shiptocountry, shiptophone, shiptoemail
-           FROM shipto WHERE shipto_id = :shipto_id AND trans_id = :customer_id",
+           FROM shipto WHERE shipto_id = :shipto_id AND trans_id = :customer_id
+                         AND COALESCE(module, 'CT') = 'CT'",
         [':shipto_id' => $shiptoId, ':customer_id' => $customerId]
     );
 
@@ -350,6 +357,7 @@ function shiptoUpdate($db, int $customerId, int $shiptoId, array $adresse): void
                            shiptocity = :city, shiptocountry = :country, shiptophone = :phone,
                            shiptoemail = :email
           WHERE shipto_id = :shipto_id AND trans_id = :customer_id
+            AND COALESCE(module, 'CT') = 'CT'
          RETURNING shipto_id",
         [
             ':name'        => $adresse['name']    ?? '',
@@ -384,6 +392,7 @@ function shiptoUpdate($db, int $customerId, int $shiptoId, array $adresse): void
 function shiptoDelete($db, int $customerId, int $shiptoId): void {
     $zeile = $db->getOne(
         "DELETE FROM shipto WHERE shipto_id = :shipto_id AND trans_id = :customer_id
+            AND COALESCE(module, 'CT') = 'CT'
          RETURNING shipto_id",
         [':shipto_id' => $shiptoId, ':customer_id' => $customerId]
     );
@@ -411,7 +420,8 @@ function shiptoSetDefault($db, int $customerId, int $shiptoId): void {
         "UPDATE customer_ext SET hugoshop_shipto_id = :shipto_id
           WHERE customer_id = :customer_id
             AND EXISTS (SELECT 1 FROM shipto
-                         WHERE shipto_id = :shipto_id AND trans_id = :customer_id)
+                         WHERE shipto_id = :shipto_id AND trans_id = :customer_id
+                           AND COALESCE(module, 'CT') = 'CT')
          RETURNING hugoshop_shipto_id",
         [':shipto_id' => $shiptoId, ':customer_id' => $customerId]
     );
@@ -690,7 +700,8 @@ function checkoutAddresses($db, string $uuid, string $sprache = 'de'): array {
     $daten['shipping_addresses'] = $db->getAll(
         "SELECT shipto_id, shiptoname, shiptostreet, shiptozipcode, shiptocity,
                 shiptocountry, shiptophone, shiptoemail
-           FROM shipto WHERE trans_id = :customer_id ORDER BY shipto_id",
+           FROM shipto WHERE trans_id = :customer_id AND COALESCE(module, 'CT') = 'CT'
+          ORDER BY shipto_id",
         [':customer_id' => $context['customer_id']]
     );
 

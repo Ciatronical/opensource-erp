@@ -374,7 +374,8 @@
                 "onlyInvoice": "Facturile electronice pot fi generate numai din facturi de ieșire.",
                 "saveFirst": "Salvați factura înainte de a genera o factură electronică."
             },
-            "kmStandRequired": "Kilometrajul este obligatoriu — introduceți-l înainte de a crea factura."
+            "kmStandRequired": "Kilometrajul este obligatoriu — introduceți-l înainte de a crea factura.",
+            "deliveryAddressOwn": "Adresa de livrare a acestui document"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

@@ -374,7 +374,8 @@
                 "onlyInvoice": "Le fatture elettroniche possono essere generate solo dalle fatture in uscita.",
                 "saveFirst": "Salvare la fattura prima di generare la fattura elettronica."
             },
-            "kmStandRequired": "Il chilometraggio è obbligatorio — inserirlo prima di creare la fattura."
+            "kmStandRequired": "Il chilometraggio è obbligatorio — inserirlo prima di creare la fattura.",
+            "deliveryAddressOwn": "Indirizzo di consegna di questo documento"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

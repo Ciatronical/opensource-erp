@@ -374,7 +374,8 @@
                 "onlyInvoice": "E-laskuja voidaan luoda vain lähtevistä laskuista.",
                 "saveFirst": "Tallenna lasku ennen e-laskun luomista."
             },
-            "kmStandRequired": "Kilometrilukema on pakollinen — syötä se ennen laskun luomista."
+            "kmStandRequired": "Kilometrilukema on pakollinen — syötä se ennen laskun luomista.",
+            "deliveryAddressOwn": "Tämän tositteen toimitusosoite"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

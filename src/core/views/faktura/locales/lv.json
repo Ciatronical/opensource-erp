@@ -374,7 +374,8 @@
                 "onlyInvoice": "E-rēķinus var ģenerēt tikai no izejošiem rēķiniem.",
                 "saveFirst": "Lūdzu saglabājiet rēķinu pirms e-rēķina ģenerēšanas."
             },
-            "kmStandRequired": "Nobraukums ir obligāts — ievadiet to pirms rēķina izrakstīšanas."
+            "kmStandRequired": "Nobraukums ir obligāts — ievadiet to pirms rēķina izrakstīšanas.",
+            "deliveryAddressOwn": "Šī dokumenta piegādes adrese"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

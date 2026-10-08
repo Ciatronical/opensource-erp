@@ -374,7 +374,8 @@
                 "onlyInvoice": "E-faturalar yalnızca giden faturalardan oluşturulabilir.",
                 "saveFirst": "E-fatura oluşturmadan önce lütfen faturayı kaydedin."
             },
-            "kmStandRequired": "Kilometre sayacı zorunludur — lütfen fatura oluşturmadan önce girin."
+            "kmStandRequired": "Kilometre sayacı zorunludur — lütfen fatura oluşturmadan önce girin.",
+            "deliveryAddressOwn": "Bu belgenin teslimat adresi"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",

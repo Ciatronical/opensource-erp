@@ -6,7 +6,8 @@
 // der die vorhandenen Bausteine aneinanderreiht:
 //
 //   Versandkosten   cartRead() mit Lieferland -> shop_cart_shipping()
-//   Lieferadresse   shiptoCreate()
+//   Lieferadresse   shiptoCreate(), dann shop_invoice_shipto(): eigene Kopie
+//                   der Rechnung (dev/shop-adressen.md)
 //   ar + invoice    hier, aus den Warenkorbzeilen
 //   acc_trans       postArInvoiceToLedger()   (faktura.php)
 //   Verknuepfung    ar_link_hugoshop
@@ -111,6 +112,16 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
         );
 
         $arId = (int)$ar['id'];
+
+        // Eigene Lieferadresse der Rechnung (dev/shop-adressen.md): Kopie der
+        // gewählten Adresse, ohne Lieferadresse des Kundenstamms. Ändert oder
+        // löscht der Kunde später eine Adresse in seinem Konto, bleibt die
+        // Rechnung, wie sie ist. Bei Gästen verschwindet die Quelle danach —
+        // sie war nur der Träger der Adresse durch Kasse und PayPal.
+        $db->getOne(
+            "SELECT shop_invoice_shipto(CAST(:ar_id AS integer), CAST(NULLIF(:quelle, 0) AS integer), NULL, true)",
+            [':ar_id' => $arId, ':quelle' => (int)($shiptoId ?? 0)]
+        );
 
         // Die Positionen stehen bereits in der Datenbank — sie muessen nicht
         // durch PHP. Ein Vorgang statt einer Schleife ueber INSERTs.
