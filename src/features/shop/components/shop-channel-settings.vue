@@ -119,13 +119,40 @@
                 </v-card-text>
             </v-card>
 
-            <ShopConfigField
-                v-else
-                :field="feld"
-                :werte="werte"
-                :quellen="quellen"
-                :gesetzt="gesetzt"
-            />
+            <template v-else>
+                <ShopConfigField
+                    :field="feld"
+                    :werte="werte"
+                    :quellen="quellen"
+                    :gesetzt="gesetzt"
+                />
+
+                <!-- Adresse von OpensourceERP für die Webseite prüfen: plausibel,
+                     direkt von hier, über die Webseite (testShopBackendUrl) -->
+                <div v-if="feld.action === 'backendTest'" class="mb-4">
+                    <v-btn
+                        variant="tonal"
+                        size="small"
+                        prepend-icon="mdi-lan-connect"
+                        :loading="backendPrueft"
+                        @click="backendPruefen"
+                    >
+                        {{ t('crm_fields.shopBackendTest') }}
+                    </v-btn>
+                    <v-alert
+                        v-for="(schritt, nr) in backendErgebnis"
+                        :key="nr"
+                        :type="schritt.art"
+                        variant="tonal"
+                        density="compact"
+                        class="mt-2"
+                        style="max-width: 90ch"
+                    >
+                        <strong>{{ t(`crm_fields.shopBackendTestStep_${schritt.schritt}`) }}:</strong>
+                        {{ t(`crm_fields.shopBackendTest_${schritt.code}`, schritt.params || {}) }}
+                    </v-alert>
+                </div>
+            </template>
         </template>
     </div>
 </template>
@@ -255,6 +282,38 @@ onBeforeUnmount(() => {
         speichern()
     }
 })
+
+// ── Adresse von OpensourceERP für die Webseite ──
+
+const backendPrueft = ref(false)
+/** Liste der Schritte aus testShopBackendUrl, oder eine einzelne Fehlermeldung */
+const backendErgebnis = ref([])
+
+/**
+ * Prüft die Adresse — mit den Werten im Formular, auch wenn sie noch nicht
+ * gespeichert sind; leere Felder heißen: der gespeicherte Wert gilt
+ */
+async function backendPruefen() {
+    backendPrueft.value = true
+    backendErgebnis.value = []
+    try {
+        const antwort = await axios.post('/api/shop/', {
+            action: 'testShopBackendUrl',
+            channel_id: props.channelId,
+            backend_url: werte.backend_url || '',
+            base_url: werte.base_url || '',
+            hugocms_url: werte.hugocms_url || '',
+            key: werte.public_key || '',
+        })
+        backendErgebnis.value = antwort.data?.success
+            ? (antwort.data.payload?.schritte || [])
+            : [{ schritt: 'direkt', art: 'error', code: 'FAILED', params: { error: antwort.data?.debug || antwort.data?.text || '' } }]
+    } catch (e) {
+        backendErgebnis.value = [{ schritt: 'direkt', art: 'error', code: 'FAILED', params: { error: e?.message || '' } }]
+    } finally {
+        backendPrueft.value = false
+    }
+}
 
 // ── HugoCMS ──
 
