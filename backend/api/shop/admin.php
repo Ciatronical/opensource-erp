@@ -238,11 +238,14 @@ function getShopStatus($data) {
 /**
  * Bestellungen des Shops
  *
- * Nur Rechnungen, die über den Shop entstanden sind — erkennbar an der
- * Verknüpfung in ar_link_hugoshop. Rechnungen aus der Faktura bleiben aussen
- * vor; für die gibt es die Belegübersicht.
+ * Nur Rechnungen, die über einen Verkaufskanal entstanden sind — erkennbar an
+ * der Verknüpfung in ar_link_hugoshop (HugoShop) oder ebay_orders (eBay).
+ * Rechnungen aus der Faktura bleiben aussen vor; für die gibt es die
+ * Belegübersicht. Bestell- und Lieferstatus kommen aus shop_order_state()
+ * (dev/shop-bestellstatus.md).
  *
  * @param array $data['open'] Optional true: nur unbezahlte
+ * @param array $data['open_delivery'] Optional true: nur noch nicht (ganz) versandte
  * @param array $data['limit'] Optional Höchstzahl (Vorgabe 100)
  * @return void
  * @testdata {"limit": 20}
@@ -252,26 +255,144 @@ function getShopOrders($data) {
     $db = DbhCompany::begin();
 
     $nurOffene = !empty($data['open']);
+    $nurOffeneLieferung = !empty($data['open_delivery']);
     $limit = (int)($data['limit'] ?? 100);
 
     resultInfo(true, '', ['results' => $db->getAll(
-        "SELECT ar.id AS ar_id, ar.invnumber, ar.transdate, ar.duedate,
+        "WITH bestellung AS (
+             SELECT al.ar_id, al.channel_id, al.uuid, NULL::text AS ebay_order_id
+               FROM ar_link_hugoshop al
+              WHERE al.ar_id IS NOT NULL
+             UNION ALL
+             SELECT e.ar_id, e.channel_id, NULL, e.ebay_order_id
+               FROM ebay_orders e
+              WHERE e.ar_id IS NOT NULL
+         )
+         SELECT ar.id AS ar_id, ar.invnumber, ar.transdate, ar.duedate,
                 TRUNC(ar.amount, 2) AS amount, TRUNC(ar.paid, 2) AS paid,
                 (SELECT name FROM currencies WHERE id = ar.currency_id) AS currency,
                 c.id AS customer_id, c.name AS customer, c.customernumber,
                 ce.hugoshop_guest AS guest,
+                b.channel_id, k.name AS channel_name, k.type AS channel_type,
+                b.ebay_order_id,
                 al.uuid AS ar_link, al.paypal, al.paypal_order_id,
                 al.payment_status, al.payment_reason, al.payment_mtime,
-                (SELECT COUNT(*) FROM invoice WHERE trans_id = ar.id) AS positions
-           FROM ar_link_hugoshop al
-           JOIN ar ON ar.id = al.ar_id
+                (SELECT COUNT(*) FROM invoice WHERE trans_id = ar.id) AS positions,
+                st.order_status, st.order_auto, st.order_manual,
+                st.delivery_status, st.delivery_auto, st.delivery_manual
+           FROM bestellung b
+           JOIN ar ON ar.id = b.ar_id
            JOIN customer c ON c.id = ar.customer_id
            LEFT JOIN customer_ext ce ON ce.customer_id = c.id
-          WHERE NOT :nur_offene OR COALESCE(al.payment_status, '') <> 'COMPLETED'
+           LEFT JOIN ar_link_hugoshop al ON al.uuid = b.uuid
+           LEFT JOIN sales_channel_shop k ON k.id = b.channel_id
+          CROSS JOIN LATERAL shop_order_state(ar.id) st
+          WHERE (NOT :nur_offene OR NOT st.paid)
+            AND (NOT :nur_offene_lieferung
+                 OR (st.delivery_status IN ('open', 'partially_shipped') AND st.order_status <> 'cancelled'))
           ORDER BY ar.id DESC
           LIMIT :limit",
-        [':nur_offene' => $nurOffene, ':limit' => $limit]
+        [':nur_offene' => $nurOffene, ':nur_offene_lieferung' => $nurOffeneLieferung, ':limit' => $limit]
     )]);
+}
+
+/**
+ * Bestell- und Lieferstatus einer einzelnen Rechnung
+ *
+ * Für die Karte der Shop-Erweiterung in der Rechnungsansicht. Ist die
+ * Rechnung keine Shop-Bestellung (weder ar_link_hugoshop noch ebay_orders),
+ * kommt null — die Karte bleibt dann weg.
+ *
+ * @param int $data['ar_id'] Rechnung
+ * @return void results: Kanal, Status wie getShopOrders, zuletzt gemeldeter Lieferstatus — oder null
+ * @testdata {"ar_id": 1}
+ */
+function getShopOrderStatus($data) {
+    permit(['shop_order', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $arId = (int)($data['ar_id'] ?? 0);
+
+    resultInfo(true, '', ['results' => $db->getOne(
+        "WITH bestellung AS (
+             SELECT al.ar_id, al.channel_id, NULL::text AS ebay_order_id
+               FROM ar_link_hugoshop al
+              WHERE al.ar_id = :ar_hugoshop
+             UNION ALL
+             SELECT e.ar_id, e.channel_id, e.ebay_order_id
+               FROM ebay_orders e
+              WHERE e.ar_id = :ar_ebay
+         )
+         SELECT b.ar_id, b.channel_id, k.name AS channel_name, k.type AS channel_type,
+                b.ebay_order_id,
+                st.order_status, st.order_auto, st.order_manual,
+                st.delivery_status, st.delivery_auto, st.delivery_manual,
+                s.delivery_notified, s.delivery_notified_mtime
+           FROM bestellung b
+           LEFT JOIN sales_channel_shop k ON k.id = b.channel_id
+           LEFT JOIN ar_status_shop s ON s.ar_id = b.ar_id
+          CROSS JOIN LATERAL shop_order_state(b.ar_id) st
+          LIMIT 1",
+        [':ar_hugoshop' => $arId, ':ar_ebay' => $arId]
+    ) ?: null]);
+}
+
+/**
+ * Setzt den Bestell- oder Lieferstatus einer Bestellung von Hand
+ *
+ * Ein leerer Status nimmt die Angabe von Hand zurück: dann gilt wieder, was
+ * shop_order_state() ableitet. Ändert sich dabei der Lieferstatus einer
+ * HugoShop-Bestellung, geht die Mail an den Kunden sofort hinaus — sofern
+ * shop_delivery_status_mail eingeschaltet ist (dev/shop-bestellstatus.md).
+ *
+ * @param int $data['ar_id'] Rechnung der Bestellung
+ * @param string $data['kind'] 'order' (Bestellstatus) oder 'delivery' (Lieferstatus)
+ * @param string $data['status'] neuer Status, leer = automatisch
+ * @return void Status der Bestellung (wie getShopOrders) und mail: off, skipped, sent, failed
+ * @testdata {"ar_id": 1, "kind": "delivery", "status": "shipped"}
+ */
+function setShopOrderStatus($data) {
+    permit(['shop_order', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $arId = (int)($data['ar_id'] ?? 0);
+    $art = (string)($data['kind'] ?? '');
+    $status = trim((string)($data['status'] ?? ''));
+
+    $erlaubt = [
+        'order'    => ['open', 'processing', 'completed', 'cancelled'],
+        'delivery' => ['open', 'partially_shipped', 'shipped', 'partially_returned', 'returned', 'cancelled'],
+    ];
+    if (!isset($erlaubt[$art]) || ('' !== $status && !in_array($status, $erlaubt[$art], true))) {
+        resultInfo(false, 'ORDER_STATUS_INVALID', null, 'Diesen Status gibt es nicht.');
+        return;
+    }
+
+    // Nur Bestellungen aus einem Verkaufskanal, nicht jede Rechnung
+    $bestellung = $db->getOne(
+        "SELECT EXISTS (SELECT 1 FROM ar_link_hugoshop WHERE ar_id = :ar_hugoshop)
+             OR EXISTS (SELECT 1 FROM ebay_orders WHERE ar_id = :ar_ebay) AS gefunden",
+        [':ar_hugoshop' => $arId, ':ar_ebay' => $arId]
+    );
+    if (!in_array($bestellung['gefunden'] ?? null, [true, 't', '1', 1], true)) {
+        resultInfo(false, 'ORDER_NOT_FOUND', null, 'Zu dieser Rechnung gibt es keine Shop-Bestellung.');
+        return;
+    }
+
+    $db->execute('order' === $art
+        ? "INSERT INTO ar_status_shop (ar_id, order_status, order_mtime)
+           VALUES (:ar_id, NULLIF(:status, ''), now())
+           ON CONFLICT (ar_id) DO UPDATE SET order_status = EXCLUDED.order_status, order_mtime = now()"
+        : "INSERT INTO ar_status_shop (ar_id, delivery_status, delivery_mtime)
+           VALUES (:ar_id, NULLIF(:status, ''), now())
+           ON CONFLICT (ar_id) DO UPDATE SET delivery_status = EXCLUDED.delivery_status, delivery_mtime = now()",
+        [':ar_id' => $arId, ':status' => $status]
+    );
+
+    $mail = 'delivery' === $art ? shopSendDeliveryStatusMail($db, $arId) : 'skipped';
+
+    $stand = $db->getOne("SELECT * FROM shop_order_state(:ar_id)", [':ar_id' => $arId]) ?: [];
+    resultInfo(true, 'ORDER_STATUS_SAVED', $stand + ['ar_id' => $arId, 'mail' => $mail]);
 }
 
 /**

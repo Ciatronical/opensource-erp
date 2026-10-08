@@ -1875,6 +1875,115 @@ CREATE INDEX IF NOT EXISTS withdrawals_hugoshop_offen_idx
  WHERE processed IS NULL;
 
 -- ============================================================================
+-- BESTELLSTATUS UND LIEFERSTATUS (dev/shop-bestellstatus.md)
+-- ============================================================================
+
+-- Je Bestellung (Rechnung aus HugoShop oder eBay) der von Hand gesetzte
+-- Bestell- und Lieferstatus. NULL heißt automatisch: dann gilt, was
+-- shop_order_state() aus Storno, DHL-Etikett und Zahlung ableitet. Eine Zeile
+-- entsteht erst, wenn jemand einen Status setzt oder eine Mail verschickt wird.
+CREATE TABLE IF NOT EXISTS ar_status_shop
+(
+    ar_id                   integer NOT NULL,
+    order_status            text,
+    order_mtime             timestamp without time zone,
+    delivery_status         text,
+    delivery_mtime          timestamp without time zone,
+    delivery_notified       text,
+    delivery_notified_mtime timestamp without time zone,
+    CONSTRAINT ar_status_shop_pkey PRIMARY KEY (ar_id),
+    CONSTRAINT ar_status_shop_ar_id_fkey FOREIGN KEY (ar_id)
+        REFERENCES ar (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT ar_status_shop_order_status_check
+        CHECK (order_status IN ('open', 'processing', 'completed', 'cancelled')),
+    CONSTRAINT ar_status_shop_delivery_status_check
+        CHECK (delivery_status IN ('open', 'partially_shipped', 'shipped',
+                                   'partially_returned', 'returned', 'cancelled')),
+    CONSTRAINT ar_status_shop_delivery_notified_check
+        CHECK (delivery_notified IN ('open', 'partially_shipped', 'shipped',
+                                     'partially_returned', 'returned', 'cancelled'))
+);
+
+COMMENT ON TABLE  ar_status_shop                   IS 'Shop: Bestell- und Lieferstatus je Rechnung aus einem Verkaufskanal';
+COMMENT ON COLUMN ar_status_shop.order_status      IS 'Von Hand gesetzter Bestellstatus — NULL = automatisch (shop_order_state)';
+COMMENT ON COLUMN ar_status_shop.delivery_status   IS 'Von Hand gesetzter Lieferstatus — NULL = automatisch (shop_order_state)';
+COMMENT ON COLUMN ar_status_shop.delivery_notified IS 'Zuletzt per Mail an den Kunden gemeldeter Lieferstatus';
+
+-- Wirksamer und abgeleiteter Status einer Bestellung
+--
+-- Lieferstatus abgeleitet: storniert → cancelled, DHL-Etikett zur Rechnung
+-- → shipped, sonst open. Bestellstatus abgeleitet aus dem wirksamen
+-- Lieferstatus: storniert oder Lieferung abgebrochen → cancelled, bezahlt
+-- und versandt → completed, Lieferung nicht mehr offen → processing, sonst
+-- open. Von Hand gesetzt hat immer Vorrang.
+--
+-- dhl_shipments und ebay_orders gehören der CRM-Basis und fehlen, wenn sie
+-- älter ist — deshalb über EXECUTE und nur, wenn es sie gibt.
+DROP FUNCTION IF EXISTS shop_order_state(integer);
+CREATE FUNCTION shop_order_state(p_ar_id integer)
+RETURNS TABLE (order_status text, order_auto text, order_manual boolean,
+               delivery_status text, delivery_auto text, delivery_manual boolean,
+               paid boolean)
+LANGUAGE plpgsql STABLE AS $$
+DECLARE
+    v_betrag        numeric;
+    v_gezahlt       numeric;
+    v_storno        boolean;
+    v_bestell_hand  text;
+    v_liefer_hand   text;
+    v_etikett       boolean := false;
+    v_ebay          boolean := false;
+BEGIN
+    SELECT a.amount, COALESCE(a.paid, 0), COALESCE(a.storno, false)
+      INTO v_betrag, v_gezahlt, v_storno
+      FROM ar a WHERE a.id = p_ar_id;
+    IF NOT FOUND THEN
+        RETURN;
+    END IF;
+
+    SELECT s.order_status, s.delivery_status
+      INTO v_bestell_hand, v_liefer_hand
+      FROM ar_status_shop s WHERE s.ar_id = p_ar_id;
+
+    IF to_regclass('dhl_shipments') IS NOT NULL THEN
+        EXECUTE 'SELECT EXISTS (SELECT 1 FROM dhl_shipments
+                                 WHERE record_type = ''invoice'' AND record_id = $1)'
+           INTO v_etikett USING p_ar_id;
+    END IF;
+    IF to_regclass('ebay_orders') IS NOT NULL THEN
+        EXECUTE 'SELECT EXISTS (SELECT 1 FROM ebay_orders WHERE ar_id = $1)'
+           INTO v_ebay USING p_ar_id;
+    END IF;
+
+    -- Bezahlt: eBay kassiert vor dem Import; PayPal meldet COMPLETED (Zeilen
+    -- aus der Zeit vor payment_status: die Payer-Id); sonst die Buchung
+    paid := v_ebay
+         OR (v_betrag > 0 AND v_gezahlt >= v_betrag - 0.005)
+         OR EXISTS (SELECT 1 FROM ar_link_hugoshop l
+                     WHERE l.ar_id = p_ar_id
+                       AND (l.payment_status = 'COMPLETED'
+                            OR (l.payment_status IS NULL AND l.paypal IS NOT NULL)));
+
+    delivery_auto := CASE WHEN v_storno THEN 'cancelled'
+                          WHEN v_etikett THEN 'shipped'
+                          ELSE 'open' END;
+    delivery_manual := v_liefer_hand IS NOT NULL;
+    delivery_status := COALESCE(v_liefer_hand, delivery_auto);
+
+    order_auto := CASE WHEN v_storno OR delivery_status = 'cancelled' THEN 'cancelled'
+                       WHEN paid AND delivery_status = 'shipped' THEN 'completed'
+                       WHEN delivery_status <> 'open' THEN 'processing'
+                       ELSE 'open' END;
+    order_manual := v_bestell_hand IS NOT NULL;
+    order_status := COALESCE(v_bestell_hand, order_auto);
+
+    RETURN NEXT;
+END;
+$$;
+
+COMMENT ON FUNCTION shop_order_state(integer) IS 'Shop: wirksamer und abgeleiteter Bestell- und Lieferstatus einer Rechnung (dev/shop-bestellstatus.md)';
+
+-- ============================================================================
 -- AUFRAEUMEN
 -- ============================================================================
 --
@@ -1998,6 +2107,10 @@ DELETE FROM defaults_oserp WHERE key IN ('shop_sites_dir', 'shop_publish_command
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_job_retention_days', '30') ON CONFLICT (key) DO NOTHING;
 -- Groesse der Vorschaubilder (laengste Seite in Pixeln), fuer alle HugoShops
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnail_size', '200') ON CONFLICT (key) DO NOTHING;
+-- Lieferstatus für den Kunden (dev/shop-bestellstatus.md): Anzeige auf der
+-- Rechnungsseite im Shop und Mail bei Änderung, beides per Vorgabe aus
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_delivery_status_show', '0') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_delivery_status_mail', '0') ON CONFLICT (key) DO NOTHING;
 -- eBay: Adresse von OpensourceERP, unter der eBay die Artikelbilder abholt
 -- (backend/webhook/part-image.php, https) — fuer alle eBay-Kanaele dieselbe.
 -- Der Laeufer arbeitet ohne Webanfrage und kennt die eigene Adresse sonst nicht.
@@ -2125,6 +2238,10 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         ('hugoshop', 'shop_images_link',                      'images_link',                      false),
         ('hugoshop', 'shop_thumbnails_link',                  'thumbnails_link',                  false),
         ('hugoshop', 'shop_downloads_link',                   'downloads_link',                   false),
+        -- Pfad der Rechnungsseite (<shop-invoice>), für den Link in der Mail
+        -- zum Lieferstatus (dev/shop-bestellstatus.md); leer = /rechnung/.
+        -- Den alten Schlüssel gab es nie, die Abschrift findet nichts.
+        ('hugoshop', 'shop_invoice_page',                     'invoice_page',                     false),
         -- HugoShop: Veröffentlichung
         ('hugoshop', 'shop_content_dir',                      'content_dir',                      false),
         ('hugoshop', 'shop_template_set',                     'template_set',                     false),

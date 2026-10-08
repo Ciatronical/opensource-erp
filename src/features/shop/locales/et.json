@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Tellimused",
-            "subtitle": "Mida poe kaudu on tellitud",
+            "subtitle": "Mida müügikanalite kaudu telliti",
             "invnumber": "Arve",
             "date": "Kuupäev",
             "customer": "Klient",
@@ -50,7 +50,18 @@
             "guest": "Külaline",
             "empty": "Tellimusi pole",
             "onlyUnpaid": "Ainult tasumata",
-            "openInvoice": "Ava arve"
+            "openInvoice": "Ava arve",
+            "channel": "Müügikanal",
+            "orderStatus": "Tellimuse olek",
+            "deliveryStatus": "Tarneolek",
+            "onlyOpenDelivery": "Ainult avatud tarned",
+            "paidViaEbay": "Makstud eBay kaudu",
+            "statusAuto": "Automaatne ({status})",
+            "statusManual": "Määratud käsitsi — klõpsake oleku muutmiseks",
+            "statusAutomatic": "Määratud automaatselt — klõpsake oleku muutmiseks",
+            "statusSaved": "Olek salvestatud.",
+            "mailSent": "Olek salvestatud, klienti teavitati e-postiga.",
+            "mailFailed": "Olek salvestatud, kuid kliendile ei õnnestunud e-kirja saata. Järgmine käivitus proovib uuesti."
         },
         "payments": {
             "title": "Ootel maksed",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Kustutada saab ainult välja lülitatud kanalit, millel pole avatud ülesandeid.",
             "SHIPPING_UNFIT": "Ei avaldata",
             "SHIPPING_PART_NOT_OFFERED": "Saatmisartikleid ei pakuta",
-            "NO_FAILED_JOBS": "Ükski valitud töö pole ebaõnnestunud."
+            "NO_FAILED_JOBS": "Ükski valitud töö pole ebaõnnestunud.",
+            "ORDER_STATUS_INVALID": "Sellist olekut ei ole.",
+            "ORDER_NOT_FOUND": "Selle arve kohta ei ole poe tellimust."
+        },
+        "orderStatus": {
+            "open": "Avatud",
+            "processing": "Töötlemisel",
+            "completed": "Lõpetatud",
+            "cancelled": "Tühistatud"
+        },
+        "deliveryStatus": {
+            "open": "Avatud",
+            "partially_shipped": "Osaliselt saadetud",
+            "shipped": "Saadetud",
+            "partially_returned": "Osaliselt tagastatud",
+            "returned": "Tagastatud",
+            "cancelled": "Tühistatud"
+        },
+        "invoiceCard": {
+            "title": "Poe tellimus",
+            "notified": "Kliendile viimati teatatud: {status} {date}",
+            "ebayHint": "eBay tellimus: ostjat ei teavitata e-postiga, seda teeb eBay."
         }
     }
 }

@@ -920,7 +920,14 @@
         "ebayMoved": "eBay est désormais un canal de vente de l'extension boutique. Les réglages se trouvent dans l'onglet Boutique sous « eBay », les annonces dans la carte boutique de l'article.",
         "ebayNeedsShop": "eBay est activé, mais pas l'extension boutique. Sans elle, aucune annonce n'est publiée et aucune commande n'est récupérée — veuillez activer l'extension boutique.",
         "shopStockBinId": "Emplacement de stock pour les ventes",
-        "shopStockBinId_help": "Les marchandises sont sorties de cet emplacement dès qu'une facture est créée depuis HugoShop ou eBay. Le stock vaut pour tous les canaux de vente. Laisser vide si les sorties sont saisies manuellement."
+        "shopStockBinId_help": "Les marchandises sont sorties de cet emplacement dès qu'une facture est créée depuis HugoShop ou eBay. Le stock vaut pour tous les canaux de vente. Laisser vide si les sorties sont saisies manuellement.",
+        "shopOrders": "Commandes",
+        "shopDeliveryStatusShow": "Afficher le statut de livraison sur la page de facture de la boutique",
+        "shopDeliveryStatusShow_help": "Affiche au client le statut de livraison actuel sur la page de facture de sa commande. Uniquement pour les commandes HugoShop.",
+        "shopDeliveryStatusMail": "Informer le client par e-mail lorsque le statut de livraison change",
+        "shopDeliveryStatusMail_help": "Envoie un e-mail au client dès que le statut de livraison change — immédiatement s’il est défini manuellement, à la prochaine exécution s’il vient d’une étiquette DHL. « Ouvert » n’est pas signalé. Uniquement pour les commandes HugoShop.",
+        "shopInvoicePage": "Chemin de la page de facture",
+        "shopInvoicePage_help": "Page du site web contenant la page de facture (<shop-invoice>), p. ex. /rechnung/. L’e-mail du statut de livraison y renvoie, afin que les invités sans compte voient aussi le statut. Vide = /rechnung/."
     },
     "add": "Ajouter",
     "add_fields": {

@@ -205,6 +205,20 @@ export class ShopAccountOrders extends ShopAccountElement {
     `;
   }
 
+  /**
+   * Lieferstatus einer Bestellung (dev/shop-bestellstatus.md) — das Backend
+   * liefert ihn nur für HugoShop-Bestellungen und nur bei eingeschaltetem
+   * shop_delivery_status_show; sonst steht hier nichts.
+   */
+  #deliveryStatusLine(status) {
+    if (!status) return nothing;
+    return html`
+      <div class="order-line" part="delivery-status">
+        ${t('invoice.deliveryStatus')}: <strong>${t(`invoice.deliveryStatus.${status}`)}</strong>
+      </div>
+    `;
+  }
+
   #renderList() {
     if (!this._orders.length) {
       return html`<p class=${this.cls('muted')} part="empty">${t('orders.empty')}</p>`;
@@ -228,6 +242,7 @@ export class ShopAccountOrders extends ShopAccountElement {
               <div class="order-line ${this.cls('muted')}">
                 ${t('orders.positions')}: ${order.positions}
               </div>
+              ${this.#deliveryStatusLine(order.delivery_status)}
               <div class="order-line">
                 <strong>${t('orders.total')}:</strong>
                 <strong>${formatPrice(order.amount)} ${order.currency}</strong>
@@ -248,7 +263,7 @@ export class ShopAccountOrders extends ShopAccountElement {
     const positions = detail.positions || [];
 
     return html`
-      <div class="actions" style="margin-top:0">
+      <div class="actions" style="margin-top:0; margin-bottom:1rem">
         <button
           class=${this.cls('button')}
           part="back"
@@ -270,6 +285,10 @@ export class ShopAccountOrders extends ShopAccountElement {
             <dd>${formatDate(invoice.invdate)}</dd>
             <dt>${t('orders.total')}</dt>
             <dd>${formatPrice(invoice.invtotal)} ${invoice.currency}</dd>
+            ${invoice.delivery_status
+              ? html`<dt>${t('invoice.deliveryStatus')}</dt>
+                  <dd part="delivery-status">${t(`invoice.deliveryStatus.${invoice.delivery_status}`)}</dd>`
+              : nothing}
           </dl>
           ${this.#downloadForm(invoice.id)}
         </div>

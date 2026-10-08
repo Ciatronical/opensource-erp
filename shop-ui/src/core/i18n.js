@@ -249,6 +249,14 @@ const de = {
   'invoice.owner': 'Kontoinhaber',
   'invoice.amount': 'Gesamtbetrag',
   'invoice.deliveryHint': 'Die Lieferung erfolgt nach Zahlungseingang an die folgende Adresse:',
+  // Lieferstatus (dev/shop-bestellstatus.md), nur bei shop_delivery_status_show
+  'invoice.deliveryStatus': 'Lieferstatus',
+  'invoice.deliveryStatus.open': 'Offen',
+  'invoice.deliveryStatus.partially_shipped': 'Teilweise versandt',
+  'invoice.deliveryStatus.shipped': 'Versandt',
+  'invoice.deliveryStatus.partially_returned': 'Teilretour',
+  'invoice.deliveryStatus.returned': 'Retour',
+  'invoice.deliveryStatus.cancelled': 'Abgebrochen',
 
   ACCOUNT_NOT_FOUND: 'Das Kundenkonto mit dieser E-Mail existiert nicht.',
   WRONG_PASSWORD: 'Das Passwort ist falsch.',
@@ -545,6 +553,13 @@ const en = {
   'invoice.owner': 'Account holder',
   'invoice.amount': 'Total',
   'invoice.deliveryHint': 'Delivery will be made to the following address once payment is received:',
+  'invoice.deliveryStatus': 'Delivery status',
+  'invoice.deliveryStatus.open': 'Open',
+  'invoice.deliveryStatus.partially_shipped': 'Partially shipped',
+  'invoice.deliveryStatus.shipped': 'Shipped',
+  'invoice.deliveryStatus.partially_returned': 'Partially returned',
+  'invoice.deliveryStatus.returned': 'Returned',
+  'invoice.deliveryStatus.cancelled': 'Cancelled',
 
   ACCOUNT_NOT_FOUND: 'No account exists for this email address.',
   WRONG_PASSWORD: 'The password is incorrect.',

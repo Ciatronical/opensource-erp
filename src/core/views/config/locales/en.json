@@ -1209,7 +1209,14 @@
             "vendorIntro": "Fetch invoices of {name} automatically from the vendor portal. Demonstrate once, then it runs daily with the document search.",
             "vendorNone": "No portal is set up for this vendor yet. Use “Set up portal” to store credentials and record the flow once.",
             "portalNameDefault": "Portal {name}"
-        }
+        },
+        "shopOrders": "Orders",
+        "shopDeliveryStatusShow": "Show delivery status on the invoice page in the shop",
+        "shopDeliveryStatusShow_help": "Shows the customer the current delivery status on the invoice page of the order. Applies to HugoShop orders only.",
+        "shopDeliveryStatusMail": "Notify customers by email when the delivery status changes",
+        "shopDeliveryStatusMail_help": "Sends the customer an email as soon as the delivery status changes — immediately when set by hand, at the next run when caused by a DHL label. “Open” is not reported. Applies to HugoShop orders only.",
+        "shopInvoicePage": "Invoice page path",
+        "shopInvoicePage_help": "Page of the website with the invoice page (<shop-invoice>), e.g. /rechnung/. The delivery status email links there so that guests without an account can see the status as well. Empty = /rechnung/."
     },
     "add": "Add",
     "add_fields": {

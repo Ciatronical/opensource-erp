@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Ordrer",
-            "subtitle": "Hvad der er bestilt via butikken",
+            "subtitle": "Hvad der er bestilt via salgskanalerne",
             "invnumber": "Faktura",
             "date": "Dato",
             "customer": "Kunde",
@@ -50,7 +50,18 @@
             "guest": "Gæst",
             "empty": "Ingen ordrer",
             "onlyUnpaid": "Kun ubetalte",
-            "openInvoice": "Åbn faktura"
+            "openInvoice": "Åbn faktura",
+            "channel": "Salgskanal",
+            "orderStatus": "Ordrestatus",
+            "deliveryStatus": "Leveringsstatus",
+            "onlyOpenDelivery": "Kun åbne leveringer",
+            "paidViaEbay": "Betalt via eBay",
+            "statusAuto": "Automatisk ({status})",
+            "statusManual": "Sat manuelt — klik for at ændre status",
+            "statusAutomatic": "Fundet automatisk — klik for at ændre status",
+            "statusSaved": "Status gemt.",
+            "mailSent": "Status gemt, kunden har fået besked pr. e-mail.",
+            "mailFailed": "Status gemt, men e-mailen til kunden kunne ikke sendes. Næste kørsel prøver igen."
         },
         "payments": {
             "title": "Afventende betalinger",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Kun en slået-fra kanal uden åbne opgaver kan slettes.",
             "SHIPPING_UNFIT": "Bliver ikke offentliggjort",
             "SHIPPING_PART_NOT_OFFERED": "Fragtvarer udbydes ikke",
-            "NO_FAILED_JOBS": "Ingen af de valgte opgaver er mislykkedes."
+            "NO_FAILED_JOBS": "Ingen af de valgte opgaver er mislykkedes.",
+            "ORDER_STATUS_INVALID": "Denne status findes ikke.",
+            "ORDER_NOT_FOUND": "Der findes ingen butiksordre til denne faktura."
+        },
+        "orderStatus": {
+            "open": "Åben",
+            "processing": "Under behandling",
+            "completed": "Afsluttet",
+            "cancelled": "Annulleret"
+        },
+        "deliveryStatus": {
+            "open": "Åben",
+            "partially_shipped": "Delvist afsendt",
+            "shipped": "Afsendt",
+            "partially_returned": "Delvist returneret",
+            "returned": "Returneret",
+            "cancelled": "Annulleret"
+        },
+        "invoiceCard": {
+            "title": "Butiksordre",
+            "notified": "Senest meddelt kunden: {status} den {date}",
+            "ebayHint": "eBay-ordre: køberen får ingen e-mail, det sørger eBay for."
         }
     }
 }

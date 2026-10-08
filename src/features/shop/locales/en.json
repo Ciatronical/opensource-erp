@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Orders",
-            "subtitle": "What has been ordered through the shop",
+            "subtitle": "What was ordered through the sales channels",
             "invnumber": "Invoice",
             "date": "Date",
             "customer": "Customer",
@@ -50,7 +50,18 @@
             "guest": "Guest",
             "empty": "No orders",
             "onlyUnpaid": "Unpaid only",
-            "openInvoice": "Open invoice"
+            "openInvoice": "Open invoice",
+            "channel": "Sales channel",
+            "orderStatus": "Order status",
+            "deliveryStatus": "Delivery status",
+            "onlyOpenDelivery": "Open deliveries only",
+            "paidViaEbay": "Paid via eBay",
+            "statusAuto": "Automatic ({status})",
+            "statusManual": "Set by hand — click to change the status",
+            "statusAutomatic": "Determined automatically — click to change the status",
+            "statusSaved": "Status saved.",
+            "mailSent": "Status saved, the customer was notified by email.",
+            "mailFailed": "Status saved, but the email to the customer could not be sent. The next run will try again."
         },
         "payments": {
             "title": "Pending payments",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Only a switched-off channel without open jobs can be deleted.",
             "SHIPPING_UNFIT": "Will not be published",
             "SHIPPING_PART_NOT_OFFERED": "Shipping items are not offered",
-            "NO_FAILED_JOBS": "None of the selected jobs has failed."
+            "NO_FAILED_JOBS": "None of the selected jobs has failed.",
+            "ORDER_STATUS_INVALID": "This status does not exist.",
+            "ORDER_NOT_FOUND": "There is no shop order for this invoice."
+        },
+        "orderStatus": {
+            "open": "Open",
+            "processing": "In progress",
+            "completed": "Completed",
+            "cancelled": "Cancelled"
+        },
+        "deliveryStatus": {
+            "open": "Open",
+            "partially_shipped": "Partially shipped",
+            "shipped": "Shipped",
+            "partially_returned": "Partially returned",
+            "returned": "Returned",
+            "cancelled": "Cancelled"
+        },
+        "invoiceCard": {
+            "title": "Shop order",
+            "notified": "Last reported to the customer: {status} on {date}",
+            "ebayHint": "eBay order: the buyer is not notified by email, eBay takes care of that."
         }
     }
 }

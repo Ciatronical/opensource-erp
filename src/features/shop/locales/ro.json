@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Comenzi",
-            "subtitle": "Ce s-a comandat prin magazin",
+            "subtitle": "Ce s-a comandat prin canalele de vânzare",
             "invnumber": "Factură",
             "date": "Dată",
             "customer": "Client",
@@ -50,7 +50,18 @@
             "guest": "Oaspete",
             "empty": "Nicio comandă",
             "onlyUnpaid": "Doar neplătite",
-            "openInvoice": "Deschide factura"
+            "openInvoice": "Deschide factura",
+            "channel": "Canal de vânzare",
+            "orderStatus": "Starea comenzii",
+            "deliveryStatus": "Starea livrării",
+            "onlyOpenDelivery": "Doar livrări deschise",
+            "paidViaEbay": "Plătit prin eBay",
+            "statusAuto": "Automat ({status})",
+            "statusManual": "Setat manual — faceți clic pentru a schimba starea",
+            "statusAutomatic": "Determinat automat — faceți clic pentru a schimba starea",
+            "statusSaved": "Stare salvată.",
+            "mailSent": "Stare salvată, clientul a fost anunțat prin e-mail.",
+            "mailFailed": "Stare salvată, dar e-mailul către client nu a putut fi trimis. Următoarea rulare va încerca din nou."
         },
         "payments": {
             "title": "Plăți în așteptare",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Poate fi șters doar un canal dezactivat, fără sarcini deschise.",
             "SHIPPING_UNFIT": "Nu va fi publicat",
             "SHIPPING_PART_NOT_OFFERED": "Articolele de livrare nu se oferă",
-            "NO_FAILED_JOBS": "Niciuna dintre sarcinile selectate nu a eșuat."
+            "NO_FAILED_JOBS": "Niciuna dintre sarcinile selectate nu a eșuat.",
+            "ORDER_STATUS_INVALID": "Această stare nu există.",
+            "ORDER_NOT_FOUND": "Pentru această factură nu există o comandă din magazin."
+        },
+        "orderStatus": {
+            "open": "Deschisă",
+            "processing": "În lucru",
+            "completed": "Finalizată",
+            "cancelled": "Anulată"
+        },
+        "deliveryStatus": {
+            "open": "Deschisă",
+            "partially_shipped": "Expediată parțial",
+            "shipped": "Expediată",
+            "partially_returned": "Returnată parțial",
+            "returned": "Returnată",
+            "cancelled": "Anulată"
+        },
+        "invoiceCard": {
+            "title": "Comandă din magazin",
+            "notified": "Ultima informare a clientului: {status} la {date}",
+            "ebayHint": "Comandă eBay: cumpărătorul nu primește e-mail, de asta se ocupă eBay."
         }
     }
 }

@@ -920,7 +920,14 @@
         "ebayMoved": "eBay je nyní prodejním kanálem rozšíření obchodu. Nastavení najdete na kartě Obchod v části „eBay“, nabídky v kartě obchodu u položky.",
         "ebayNeedsShop": "eBay je zapnutý, ale rozšíření obchodu ne. Bez něj se nevystavují nabídky ani nestahují objednávky — aktivujte prosím rozšíření obchodu.",
         "shopStockBinId": "Skladové místo pro prodej",
-        "shopStockBinId_help": "Z tohoto skladového místa se zboží vyskladní, jakmile vznikne faktura z HugoShopu nebo z eBay. Zásoba platí pro všechny prodejní kanály. Ponechte prázdné, pokud se vyskladňuje ručně."
+        "shopStockBinId_help": "Z tohoto skladového místa se zboží vyskladní, jakmile vznikne faktura z HugoShopu nebo z eBay. Zásoba platí pro všechny prodejní kanály. Ponechte prázdné, pokud se vyskladňuje ručně.",
+        "shopOrders": "Objednávky",
+        "shopDeliveryStatusShow": "Zobrazit stav doručení na stránce faktury v obchodě",
+        "shopDeliveryStatusShow_help": "Zobrazí zákazníkovi aktuální stav doručení na stránce faktury jeho objednávky. Platí jen pro objednávky HugoShop.",
+        "shopDeliveryStatusMail": "Upozornit zákazníky e-mailem při změně stavu doručení",
+        "shopDeliveryStatusMail_help": "Pošle zákazníkovi e-mail, jakmile se změní stav doručení — při ručním nastavení ihned, při štítku DHL při příštím běhu. „Otevřeno“ se nehlásí. Platí jen pro objednávky HugoShop.",
+        "shopInvoicePage": "Cesta ke stránce faktury",
+        "shopInvoicePage_help": "Stránka webu se stránkou faktury (<shop-invoice>), např. /rechnung/. E-mail o stavu doručení na ni odkazuje, aby stav viděli i hosté bez účtu. Prázdné = /rechnung/."
     },
     "add": "Přidat",
     "add_fields": {

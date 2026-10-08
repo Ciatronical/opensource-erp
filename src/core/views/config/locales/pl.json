@@ -1027,7 +1027,14 @@
         "ebayMoved": "eBay jest teraz kanałem sprzedaży rozszerzenia sklepu. Ustawienia znajdują się na karcie Sklep w sekcji „eBay”, oferty w karcie sklepu artykułu.",
         "ebayNeedsShop": "eBay jest włączony, ale rozszerzenie sklepu nie. Bez niego oferty nie są wystawiane, a zamówienia nie są pobierane — aktywuj rozszerzenie sklepu.",
         "shopStockBinId": "Miejsce magazynowe dla sprzedaży",
-        "shopStockBinId_help": "Towary są wydawane z tego miejsca magazynowego, gdy tylko powstanie faktura z HugoShop lub eBay. Stan dotyczy wszystkich kanałów sprzedaży. Pozostaw puste, jeśli wydanie jest księgowane ręcznie."
+        "shopStockBinId_help": "Towary są wydawane z tego miejsca magazynowego, gdy tylko powstanie faktura z HugoShop lub eBay. Stan dotyczy wszystkich kanałów sprzedaży. Pozostaw puste, jeśli wydanie jest księgowane ręcznie.",
+        "shopOrders": "Zamówienia",
+        "shopDeliveryStatusShow": "Pokazuj status dostawy na stronie faktury w sklepie",
+        "shopDeliveryStatusShow_help": "Pokazuje klientowi aktualny status dostawy na stronie faktury jego zamówienia. Dotyczy tylko zamówień HugoShop.",
+        "shopDeliveryStatusMail": "Powiadamiaj klienta e-mailem o zmianie statusu dostawy",
+        "shopDeliveryStatusMail_help": "Wysyła klientowi e-mail, gdy tylko zmieni się status dostawy — od razu przy ręcznej zmianie, przy etykiecie DHL podczas następnego uruchomienia. „Otwarte” nie jest zgłaszane. Dotyczy tylko zamówień HugoShop.",
+        "shopInvoicePage": "Ścieżka strony faktury",
+        "shopInvoicePage_help": "Strona witryny ze stroną faktury (<shop-invoice>), np. /rechnung/. E-mail o statusie dostawy prowadzi tam, aby także goście bez konta widzieli status. Puste = /rechnung/."
     },
     "add": "Dodaj",
     "add_fields": {

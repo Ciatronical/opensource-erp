@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Tilaukset",
-            "subtitle": "Mitä kaupan kautta on tilattu",
+            "subtitle": "Mitä myyntikanavien kautta tilattiin",
             "invnumber": "Lasku",
             "date": "Päivä",
             "customer": "Asiakas",
@@ -50,7 +50,18 @@
             "guest": "Vieras",
             "empty": "Ei tilauksia",
             "onlyUnpaid": "Vain maksamattomat",
-            "openInvoice": "Avaa lasku"
+            "openInvoice": "Avaa lasku",
+            "channel": "Myyntikanava",
+            "orderStatus": "Tilauksen tila",
+            "deliveryStatus": "Toimitustila",
+            "onlyOpenDelivery": "Vain avoimet toimitukset",
+            "paidViaEbay": "Maksettu eBayn kautta",
+            "statusAuto": "Automaattinen ({status})",
+            "statusManual": "Asetettu käsin — muuta tilaa napsauttamalla",
+            "statusAutomatic": "Määritetty automaattisesti — muuta tilaa napsauttamalla",
+            "statusSaved": "Tila tallennettu.",
+            "mailSent": "Tila tallennettu, asiakkaalle ilmoitettiin sähköpostilla.",
+            "mailFailed": "Tila tallennettu, mutta sähköpostia asiakkaalle ei voitu lähettää. Seuraava ajo yrittää uudelleen."
         },
         "payments": {
             "title": "Odottavat maksut",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Vain pois päältä kytketyn kanavan, jolla ei ole avoimia tehtäviä, voi poistaa.",
             "SHIPPING_UNFIT": "Ei julkaista",
             "SHIPPING_PART_NOT_OFFERED": "Toimitustuotteita ei tarjota",
-            "NO_FAILED_JOBS": "Mikään valituista tehtävistä ei ole epäonnistunut."
+            "NO_FAILED_JOBS": "Mikään valituista tehtävistä ei ole epäonnistunut.",
+            "ORDER_STATUS_INVALID": "Tätä tilaa ei ole.",
+            "ORDER_NOT_FOUND": "Tälle laskulle ei ole kaupan tilausta."
+        },
+        "orderStatus": {
+            "open": "Avoin",
+            "processing": "Käsittelyssä",
+            "completed": "Valmis",
+            "cancelled": "Peruttu"
+        },
+        "deliveryStatus": {
+            "open": "Avoin",
+            "partially_shipped": "Osittain lähetetty",
+            "shipped": "Lähetetty",
+            "partially_returned": "Osittain palautettu",
+            "returned": "Palautettu",
+            "cancelled": "Peruttu"
+        },
+        "invoiceCard": {
+            "title": "Kaupan tilaus",
+            "notified": "Viimeksi ilmoitettu asiakkaalle: {status} {date}",
+            "ebayHint": "eBay-tilaus: ostajalle ei lähetetä sähköpostia, eBay hoitaa sen."
         }
     }
 }

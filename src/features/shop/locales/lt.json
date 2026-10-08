@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Užsakymai",
-            "subtitle": "Kas užsakyta per parduotuvę",
+            "subtitle": "Kas užsakyta per pardavimo kanalus",
             "invnumber": "Sąskaita",
             "date": "Data",
             "customer": "Klientas",
@@ -50,7 +50,18 @@
             "guest": "Svečias",
             "empty": "Užsakymų nėra",
             "onlyUnpaid": "Tik neapmokėti",
-            "openInvoice": "Atverti sąskaitą"
+            "openInvoice": "Atverti sąskaitą",
+            "channel": "Pardavimo kanalas",
+            "orderStatus": "Užsakymo būsena",
+            "deliveryStatus": "Pristatymo būsena",
+            "onlyOpenDelivery": "Tik atviri pristatymai",
+            "paidViaEbay": "Apmokėta per eBay",
+            "statusAuto": "Automatiškai ({status})",
+            "statusManual": "Nustatyta rankiniu būdu — spustelėkite, kad pakeistumėte būseną",
+            "statusAutomatic": "Nustatyta automatiškai — spustelėkite, kad pakeistumėte būseną",
+            "statusSaved": "Būsena išsaugota.",
+            "mailSent": "Būsena išsaugota, klientui pranešta el. paštu.",
+            "mailFailed": "Būsena išsaugota, bet el. laiško klientui išsiųsti nepavyko. Kitas vykdymas bandys dar kartą."
         },
         "payments": {
             "title": "Laukiantys mokėjimai",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Ištrinti galima tik išjungtą kanalą be atvirų užduočių.",
             "SHIPPING_UNFIT": "Nebus paskelbta",
             "SHIPPING_PART_NOT_OFFERED": "Siuntimo prekės nesiūlomos",
-            "NO_FAILED_JOBS": "Nė viena pasirinkta užduotis nenepavyko."
+            "NO_FAILED_JOBS": "Nė viena pasirinkta užduotis nenepavyko.",
+            "ORDER_STATUS_INVALID": "Tokios būsenos nėra.",
+            "ORDER_NOT_FOUND": "Šiai sąskaitai nėra parduotuvės užsakymo."
+        },
+        "orderStatus": {
+            "open": "Atidaryta",
+            "processing": "Vykdoma",
+            "completed": "Užbaigta",
+            "cancelled": "Atšaukta"
+        },
+        "deliveryStatus": {
+            "open": "Atidaryta",
+            "partially_shipped": "Iš dalies išsiųsta",
+            "shipped": "Išsiųsta",
+            "partially_returned": "Iš dalies grąžinta",
+            "returned": "Grąžinta",
+            "cancelled": "Atšaukta"
+        },
+        "invoiceCard": {
+            "title": "Parduotuvės užsakymas",
+            "notified": "Paskutinį kartą pranešta klientui: {status}, {date}",
+            "ebayHint": "eBay užsakymas: pirkėjui el. laiškas nesiunčiamas, tuo pasirūpina eBay."
         }
     }
 }

@@ -920,7 +920,14 @@
         "ebayMoved": "eBay artık mağaza eklentisinin bir satış kanalıdır. Ayarlar Mağaza sekmesinde “eBay” altında, ilanlar ürünün mağaza kartındadır.",
         "ebayNeedsShop": "eBay açık, ancak mağaza eklentisi değil. Eklenti olmadan ilan yayınlanmaz ve sipariş alınmaz — lütfen mağaza eklentisini etkinleştirin.",
         "shopStockBinId": "Satışlar için depo yeri",
-        "shopStockBinId_help": "HugoShop veya eBay'den fatura oluşturulur oluşturulmaz mallar bu depo yerinden düşülür. Stok tüm satış kanalları için geçerlidir. Çıkış elle yapılıyorsa boş bırakın."
+        "shopStockBinId_help": "HugoShop veya eBay'den fatura oluşturulur oluşturulmaz mallar bu depo yerinden düşülür. Stok tüm satış kanalları için geçerlidir. Çıkış elle yapılıyorsa boş bırakın.",
+        "shopOrders": "Siparişler",
+        "shopDeliveryStatusShow": "Mağazadaki fatura sayfasında teslimat durumunu göster",
+        "shopDeliveryStatusShow_help": "Müşteriye siparişinin fatura sayfasında güncel teslimat durumunu gösterir. Yalnızca HugoShop siparişleri için geçerlidir.",
+        "shopDeliveryStatusMail": "Teslimat durumu değiştiğinde müşteriyi e-postayla bilgilendir",
+        "shopDeliveryStatusMail_help": "Teslimat durumu değişir değişmez müşteriye e-posta gönderir — elle ayarlandığında hemen, DHL etiketiyle bir sonraki çalışmada. „Açık“ bildirilmez. Yalnızca HugoShop siparişleri için geçerlidir.",
+        "shopInvoicePage": "Fatura sayfasının yolu",
+        "shopInvoicePage_help": "Web sitesinde fatura sayfasının (<shop-invoice>) bulunduğu sayfa, örn. /rechnung/. Teslimat durumu e-postası buraya bağlantı verir; böylece hesabı olmayan misafirler de durumu görür. Boş = /rechnung/."
     },
     "add": "Ekle",
     "add_fields": {

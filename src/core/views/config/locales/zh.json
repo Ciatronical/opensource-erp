@@ -920,7 +920,14 @@
         "ebayMoved": "eBay 现在是商店扩展的一个销售渠道。设置位于“商店”选项卡的“eBay”下，刊登位于商品的商店卡片中。",
         "ebayNeedsShop": "eBay 已启用，但商店扩展未启用。没有它就不会刊登商品，也不会获取订单——请启用商店扩展。",
         "shopStockBinId": "销售出库库位",
-        "shopStockBinId_help": "一旦由 HugoShop 或 eBay 生成发票，商品即从此库位出库。库存适用于所有销售渠道。如手动出库，请留空。"
+        "shopStockBinId_help": "一旦由 HugoShop 或 eBay 生成发票，商品即从此库位出库。库存适用于所有销售渠道。如手动出库，请留空。",
+        "shopOrders": "订单",
+        "shopDeliveryStatusShow": "在商店的发票页面上显示配送状态",
+        "shopDeliveryStatusShow_help": "在客户订单的发票页面上显示当前配送状态。仅适用于 HugoShop 订单。",
+        "shopDeliveryStatusMail": "配送状态变化时通过电子邮件通知客户",
+        "shopDeliveryStatusMail_help": "配送状态一旦变化即向客户发送电子邮件 — 手动设置时立即发送，因 DHL 标签产生时在下一次运行时发送。“未处理”不会通知。仅适用于 HugoShop 订单。",
+        "shopInvoicePage": "发票页面路径",
+        "shopInvoicePage_help": "网站上包含发票页面（<shop-invoice>）的页面，例如 /rechnung/。配送状态邮件会链接到该页面，使没有账户的访客也能查看状态。留空 = /rechnung/。"
     },
     "add": "添加",
     "add_fields": {

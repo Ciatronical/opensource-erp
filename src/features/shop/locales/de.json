@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Bestellungen",
-            "subtitle": "Was über den Shop bestellt wurde",
+            "subtitle": "Was über die Verkaufskanäle bestellt wurde",
             "invnumber": "Rechnung",
             "date": "Datum",
             "customer": "Kunde",
@@ -50,7 +50,18 @@
             "guest": "Gast",
             "empty": "Keine Bestellungen",
             "onlyUnpaid": "Nur unbezahlte",
-            "openInvoice": "Rechnung öffnen"
+            "openInvoice": "Rechnung öffnen",
+            "channel": "Verkaufskanal",
+            "orderStatus": "Bestellstatus",
+            "deliveryStatus": "Lieferstatus",
+            "onlyOpenDelivery": "Nur offene Lieferungen",
+            "paidViaEbay": "Über eBay bezahlt",
+            "statusAuto": "Automatisch ({status})",
+            "statusManual": "Von Hand gesetzt — Klick ändert den Status",
+            "statusAutomatic": "Automatisch ermittelt — Klick ändert den Status",
+            "statusSaved": "Status gespeichert.",
+            "mailSent": "Status gespeichert, der Kunde wurde per E-Mail benachrichtigt.",
+            "mailFailed": "Status gespeichert, aber die E-Mail an den Kunden ließ sich nicht verschicken. Der nächste Lauf versucht es erneut."
         },
         "payments": {
             "title": "Schwebende Zahlungen",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Nur ein abgeschalteter Kanal ohne offene Aufträge lässt sich löschen.",
             "SHIPPING_UNFIT": "Wird nicht veröffentlicht",
             "SHIPPING_PART_NOT_OFFERED": "Versandartikel werden nicht angeboten",
-            "NO_FAILED_JOBS": "Unter den gewählten Aufträgen ist keiner fehlgeschlagen."
+            "NO_FAILED_JOBS": "Unter den gewählten Aufträgen ist keiner fehlgeschlagen.",
+            "ORDER_STATUS_INVALID": "Diesen Status gibt es nicht.",
+            "ORDER_NOT_FOUND": "Zu dieser Rechnung gibt es keine Shop-Bestellung."
+        },
+        "orderStatus": {
+            "open": "Offen",
+            "processing": "In Bearbeitung",
+            "completed": "Abgeschlossen",
+            "cancelled": "Abgebrochen"
+        },
+        "deliveryStatus": {
+            "open": "Offen",
+            "partially_shipped": "Teilweise versandt",
+            "shipped": "Versandt",
+            "partially_returned": "Teilretour",
+            "returned": "Retour",
+            "cancelled": "Abgebrochen"
+        },
+        "invoiceCard": {
+            "title": "Shop-Bestellung",
+            "notified": "Dem Kunden zuletzt gemeldet: {status} am {date}",
+            "ebayHint": "eBay-Bestellung: der Käufer wird nicht per E-Mail benachrichtigt, das übernimmt eBay."
         }
     }
 }

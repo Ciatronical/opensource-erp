@@ -40,7 +40,7 @@
         },
         "orders": {
             "title": "Objednávky",
-            "subtitle": "Co bylo objednáno přes obchod",
+            "subtitle": "Co bylo objednáno přes prodejní kanály",
             "invnumber": "Faktura",
             "date": "Datum",
             "customer": "Zákazník",
@@ -50,7 +50,18 @@
             "guest": "Host",
             "empty": "Žádné objednávky",
             "onlyUnpaid": "Jen nezaplacené",
-            "openInvoice": "Otevřít fakturu"
+            "openInvoice": "Otevřít fakturu",
+            "channel": "Prodejní kanál",
+            "orderStatus": "Stav objednávky",
+            "deliveryStatus": "Stav doručení",
+            "onlyOpenDelivery": "Jen otevřená doručení",
+            "paidViaEbay": "Zaplaceno přes eBay",
+            "statusAuto": "Automaticky ({status})",
+            "statusManual": "Nastaveno ručně — kliknutím změníte stav",
+            "statusAutomatic": "Zjištěno automaticky — kliknutím změníte stav",
+            "statusSaved": "Stav uložen.",
+            "mailSent": "Stav uložen, zákazník byl upozorněn e-mailem.",
+            "mailFailed": "Stav uložen, ale e-mail zákazníkovi se nepodařilo odeslat. Příští běh to zkusí znovu."
         },
         "payments": {
             "title": "Čekající platby",
@@ -428,7 +439,28 @@
             "CHANNEL_NOT_DELETABLE": "Smazat lze jen vypnutý kanál bez otevřených úloh.",
             "SHIPPING_UNFIT": "Nezveřejní se",
             "SHIPPING_PART_NOT_OFFERED": "Položky dopravy se nenabízejí",
-            "NO_FAILED_JOBS": "Žádná z vybraných úloh neselhala."
+            "NO_FAILED_JOBS": "Žádná z vybraných úloh neselhala.",
+            "ORDER_STATUS_INVALID": "Tento stav neexistuje.",
+            "ORDER_NOT_FOUND": "K této faktuře neexistuje žádná objednávka z obchodu."
+        },
+        "orderStatus": {
+            "open": "Otevřeno",
+            "processing": "Ve zpracování",
+            "completed": "Dokončeno",
+            "cancelled": "Zrušeno"
+        },
+        "deliveryStatus": {
+            "open": "Otevřeno",
+            "partially_shipped": "Částečně odesláno",
+            "shipped": "Odesláno",
+            "partially_returned": "Částečně vráceno",
+            "returned": "Vráceno",
+            "cancelled": "Zrušeno"
+        },
+        "invoiceCard": {
+            "title": "Objednávka z obchodu",
+            "notified": "Naposledy oznámeno zákazníkovi: {status} dne {date}",
+            "ebayHint": "Objednávka eBay: kupující nedostává e-mail, to zajišťuje eBay."
         }
     }
 }
