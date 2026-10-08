@@ -321,7 +321,15 @@
             "phone_private": "Privates Tel.",
             "phoneLabel": "Bezeichnung",
             "phoneNumber": "Numara",
-            "addPhone": "Telefon hinzufügen"
+            "addPhone": "Telefon hinzufügen",
+            "emailLabel": "Bezeichnung",
+            "emailAddress": "E-posta adresi",
+            "addEmail": "E-posta adresi ekle",
+            "openEmail": "E-posta yaz",
+            "urlLabel": "Bezeichnung",
+            "urlAddress": "URL",
+            "addUrl": "URL ekle",
+            "openUrl": "Sayfayı aç"
         },
         "price-rules": {
             "title": "Preisregeln",
@@ -350,7 +358,9 @@
             "bccSameAsEmail": "BCC darf nicht identisch mit der Haupt-E-Mail sein",
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
-            "homepageUnreachable": "Seite ist nicht erreichbar"
+            "homepageUnreachable": "Seite ist nicht erreichbar",
+            "sameAsEmail": "Adres zaten ana e-posta",
+            "duplicateEntry": "Adres zaten mevcut"
         },
         "businessCard": {
             "button": "Kartvizit YZ",

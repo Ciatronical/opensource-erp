@@ -82,8 +82,12 @@ function _createSmtpClient(array $config = null): SmtpClient {
 
 /**
  * Email-Journal-Eintrag erstellen (interne Hilfsfunktion)
+ *
+ * Mit $recordTable/$recordId wird der Eintrag wie in kivitendo über record_links
+ * an den Beleg gehängt (from = Beleg, to = email_journal) — daraus speist sich
+ * die Versandanzeige in der Faktura. Liefert die Journal-ID.
  */
-function _logToEmailJournal(string $from, array $to, array $cc, string $subject, string $body, array $attachments, ?string $recordType): void {
+function _logToEmailJournal(string $from, array $to, array $cc, string $subject, string $body, array $attachments, ?string $recordType, ?string $recordTable = null, ?int $recordId = null, ?int $employeeId = null): int {
     $db = DbhCompany::begin();
 
     // Empfaenger als kommaseparierte Liste
@@ -96,15 +100,16 @@ function _logToEmailJournal(string $from, array $to, array $cc, string $subject,
     }
     $recipients = implode(', ', array_filter($recipientList));
 
-    // Sender-ID (aktueller Mitarbeiter)
-    $senderId = null;
-    if (isset($_SESSION['employee_id']) && $_SESSION['employee_id']) {
+    // Sender-ID: Mitarbeiter aus dem Aufruf (Store), sonst aus der Session
+    $senderId = $employeeId ?: null;
+    if (!$senderId && isset($_SESSION['employee_id']) && $_SESSION['employee_id']) {
         $senderId = (int)$_SESSION['employee_id'];
     }
 
-    $db->execute(
+    $journalRow = $db->getOne(
         "INSERT INTO email_journal (sender_id, \"from\", recipients, subject, body, headers, extended_status, status, record_type)
-         VALUES (:sender_id, :from, :recipients, :subject, :body, '', '', 'sent', :record_type)",
+         VALUES (:sender_id, :from, :recipients, :subject, :body, '', '', 'sent', :record_type)
+         RETURNING id",
         [
             ':sender_id' => $senderId,
             ':from' => $from,
@@ -114,12 +119,19 @@ function _logToEmailJournal(string $from, array $to, array $cc, string $subject,
             ':record_type' => $recordType
         ]
     );
+    $jid = (int)($journalRow['id'] ?? 0);
+
+    // Verknüpfung zum Beleg (kivitendo-Konvention: from = Beleg, to = email_journal)
+    if ($jid && $recordId && in_array($recordTable, ['oe', 'ar', 'ap', 'delivery_orders'], true)) {
+        $db->execute(
+            "INSERT INTO record_links (from_table, from_id, to_table, to_id) VALUES (:ft, :fid, 'email_journal', :tid)",
+            [':ft' => $recordTable, ':fid' => $recordId, ':tid' => $jid]
+        );
+    }
 
     // Anhaenge im Journal speichern
     if (!empty($attachments)) {
-        $journalRow = $db->getOne("SELECT currval(pg_get_serial_sequence('email_journal', 'id')) AS id");
-        if ($journalRow) {
-            $jid = (int)$journalRow['id'];
+        if ($jid) {
             $pos = 0;
             foreach ($attachments as $att) {
                 $content = base64_decode($att['content_base64'] ?? '');
@@ -137,4 +149,6 @@ function _logToEmailJournal(string $from, array $to, array $cc, string $subject,
             }
         }
     }
+
+    return $jid;
 }

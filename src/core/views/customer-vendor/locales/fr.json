@@ -321,7 +321,15 @@
             "phone_private": "Tel. prive",
             "phoneLabel": "Designation",
             "phoneNumber": "Numero",
-            "addPhone": "Ajouter un telephone"
+            "addPhone": "Ajouter un telephone",
+            "emailLabel": "Designation",
+            "emailAddress": "Adresse e-mail",
+            "addEmail": "Ajouter une adresse e-mail",
+            "openEmail": "Écrire un e-mail",
+            "urlLabel": "Designation",
+            "urlAddress": "URL",
+            "addUrl": "Ajouter une URL",
+            "openUrl": "Ouvrir la page"
         },
         "price-rules": {
             "title": "Regles de prix",
@@ -350,7 +358,9 @@
             "bccSameAsEmail": "Le CCI ne peut pas etre identique a l'e-mail principal",
             "bccSameAsCc": "Le CC et le CCI ne peuvent pas etre identiques",
             "homepageInvalid": "URL invalide (ex. exemple.fr)",
-            "homepageUnreachable": "Le site n'est pas accessible"
+            "homepageUnreachable": "Le site n'est pas accessible",
+            "sameAsEmail": "L'adresse est déjà l'e-mail principal",
+            "duplicateEntry": "Adresse en double"
         },
         "businessCard": {
             "button": "Carte de visite IA",

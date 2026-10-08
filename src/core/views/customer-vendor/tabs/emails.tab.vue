@@ -207,6 +207,7 @@
 import { ref, watch, onMounted } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 
 export default {
     name: 'EmailsTab',
@@ -217,6 +218,8 @@ export default {
     },
     setup(props) {
         const { t } = useI18n()
+        const route = useRoute()
+        const router = useRouter()
 
         const emails = ref([])
         const loading = ref(false)
@@ -370,6 +373,14 @@ export default {
         onMounted(() => {
             if (props.emailAddresses.length) {
                 loadEmails()
+            }
+            // Empfänger aus Query vorbelegen (Klick auf eine E-Mail-Adresse in der Kundenkarte)
+            const queryTo = route.query.emailTo
+            if (queryTo) {
+                composeData.value = { to: String(queryTo), subject: '', body: '' }
+                showCompose.value = true
+                const { emailTo, ...rest } = route.query
+                router.replace({ query: rest })
             }
         })
 

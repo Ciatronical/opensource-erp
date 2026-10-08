@@ -167,16 +167,49 @@
             <v-list-item-title>{{ formatPhone(cvProfile.fax) }}</v-list-item-title>
             <v-list-item-subtitle>{{ t('CrmView.fax') }}</v-list-item-subtitle>
         </v-list-item>
-        <v-list-item v-if="cvProfile?.email">
+        <v-list-item v-for="entry in emailEntries" :key="'em-' + entry.email">
             <template #prepend>
                 <v-icon size="small" color="grey-darken-1">mdi-email</v-icon>
             </template>
             <v-list-item-title>
-                <a :href="'mailto:' + cvProfile.email" class="text-decoration-none text-inherit">
-                    {{ cvProfile.email }}
+                <a
+                    :href="'mailto:' + entry.email"
+                    class="text-decoration-none text-inherit"
+                    :title="t('CrmView.sendEmail')"
+                    @click.prevent="onEmailClick(entry.email)"
+                >
+                    {{ entry.email }}
+                </a>
+                <v-btn
+                    icon
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    :title="t('CrmView.sendEmail')"
+                    @click.stop="onEmailClick(entry.email)"
+                >
+                    <v-icon size="default">mdi-email-fast-outline</v-icon>
+                </v-btn>
+            </v-list-item-title>
+            <v-list-item-subtitle>{{ entry.label || t('CrmView.email') }}</v-list-item-subtitle>
+        </v-list-item>
+        <v-list-item v-for="entry in urlEntries" :key="'url-' + entry.url">
+            <template #prepend>
+                <v-icon size="small" color="grey-darken-1">mdi-web</v-icon>
+            </template>
+            <v-list-item-title>
+                <a
+                    :href="normalizeUrl(entry.url)"
+                    target="_blank"
+                    rel="noopener"
+                    class="text-decoration-none text-inherit"
+                    :title="t('CrmView.openWebsite')"
+                >
+                    {{ entry.url }}
+                    <v-icon size="x-small" class="ms-1">mdi-open-in-new</v-icon>
                 </a>
             </v-list-item-title>
-            <v-list-item-subtitle>{{ t('CrmView.email') }}</v-list-item-subtitle>
+            <v-list-item-subtitle>{{ entry.label || t('CrmView.website') }}</v-list-item-subtitle>
         </v-list-item>
     </v-list>
 </template>
@@ -189,6 +222,7 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 import PhoneActionBar from '@/core/components/phone-action-bar.vue'
 import { formatPhone } from '@/core/utils/phoneFormat.js'
 import { usePhoneActions } from '@/core/composables/usePhoneActions.js'
+import { useEmailActions } from '@/core/composables/useEmailActions.js'
 import axios from 'axios'
 import * as toast from '@/core/utils/toasts.js'
 
@@ -203,6 +237,36 @@ function switchToWhatsAppTab(phone) {
 }
 const phoneNumbers = computed(() => cvProfile.value?.phone_numbers ?? []);
 const { formatPhoneForWhatsApp } = usePhoneActions()
+const { isInternalEmailClient, openEmail, normalizeUrl } = useEmailActions()
+
+// Eindeutige Liste aus Hauptwert + weiteren Einträgen (customer_ext/vendor_ext), Reihenfolge wie gepflegt
+function uniqueEntries(main, extra, key) {
+    const seen = new Set()
+    const list = []
+    const add = (value, label) => {
+        const v = (value || '').trim()
+        if (!v || seen.has(v.toLowerCase())) return
+        seen.add(v.toLowerCase())
+        list.push({ [key]: v, label: label || '' })
+    }
+    add(main, '')
+    ;(Array.isArray(extra) ? extra : []).forEach(e => add(e?.[key], e?.label))
+    return list
+}
+
+// Haupt-E-Mail + weitere E-Mail-Adressen, Homepage + weitere URLs
+const emailEntries = computed(() => uniqueEntries(cvProfile.value?.email, cvProfile.value?.emails, 'email'))
+const urlEntries = computed(() => uniqueEntries(cvProfile.value?.homepage, cvProfile.value?.urls, 'url'))
+
+// Interner E-Mail-Client: im Kunden bleiben und den E-Mail-Tab mit vorbelegtem Empfänger öffnen.
+// Sonst (Standard) das externe E-Mail-Programm per mailto:.
+function onEmailClick(email) {
+    if (isInternalEmailClient()) {
+        router.replace({ query: { ...route.query, tab: 'emails', emailTo: email } })
+        return
+    }
+    openEmail(email)
+}
 
 // Adress-Anzeige
 const hasAddress = computed(() => {

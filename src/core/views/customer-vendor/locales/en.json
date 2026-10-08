@@ -351,7 +351,15 @@
             "phone_private": "Private Phone",
             "phoneLabel": "Label",
             "phoneNumber": "Number",
-            "addPhone": "Add phone number"
+            "addPhone": "Add phone number",
+            "emailLabel": "Label",
+            "emailAddress": "E-mail address",
+            "addEmail": "Add e-mail address",
+            "openEmail": "Write e-mail",
+            "urlLabel": "Label",
+            "urlAddress": "URL",
+            "addUrl": "Add URL",
+            "openUrl": "Open page"
         },
         "price-rules": {
             "title": "Price Rules",
@@ -375,7 +383,9 @@
             "bccSameAsEmail": "BCC must not be identical to the main email",
             "bccSameAsCc": "CC and BCC must not be identical",
             "homepageInvalid": "Invalid URL (e.g. example.com)",
-            "homepageUnreachable": "Page is not reachable"
+            "homepageUnreachable": "Page is not reachable",
+            "sameAsEmail": "Address is already the main e-mail",
+            "duplicateEntry": "Duplicate address"
         },
         "taxnumber": {
             "contains_non_digits": "Tax number may only contain digits",

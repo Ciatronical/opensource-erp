@@ -109,7 +109,35 @@ const crmDefaultsConfig = [
     { name: "eletter_folder", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterFolder", tooltip: "crm_fields.eletterFolder_help" },
     { name: "eletter_passwd", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterPassword", tooltip: "crm_fields.eletterPassword_help" },
 
+    { name: "document_dispatch", type: "headline", label: "crm_fields.documentDispatch" },
+
+    {
+        name: "print_auto_send",
+        type: "select",
+        items: [
+            { value: "off", titleKey: "crm_fields.printAutoSendOff" },
+            { value: "email", titleKey: "crm_fields.printAutoSendEmail" },
+            { value: "whatsapp", titleKey: "crm_fields.printAutoSendWhatsapp" },
+            { value: "both", titleKey: "crm_fields.printAutoSendBoth" }
+        ],
+        label: "crm_fields.printAutoSend",
+        tooltip: "crm_fields.printAutoSend_help",
+        fieldstyle: "max-width: 60ch"
+    },
+
     { name: "email_client", type: "headline", label: "crm_fields.emailClient" },
+
+    {
+        name: "email_link_mode",
+        type: "select",
+        items: [
+            { value: "mailto", titleKey: "crm_fields.emailLinkModeMailto" },
+            { value: "internal", titleKey: "crm_fields.emailLinkModeInternal" }
+        ],
+        label: "crm_fields.emailLinkMode",
+        tooltip: "crm_fields.emailLinkMode_help",
+        fieldstyle: "max-width: 60ch"
+    },
 
     { name: "email_credentials", type: "headline", label: "crm_fields.emailCredentials" },
 

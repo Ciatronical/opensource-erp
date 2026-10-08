@@ -38,6 +38,8 @@
         "open": "Open",
         "closed": "Done",
         "obsolete": "Obsolete",
+        "sentEmail": "Sent by e-mail",
+        "sentWhatsapp": "Sent by WhatsApp",
         "noData": "No entries found",
         "loadError": "The list could not be loaded",
         "newPart": "New article",

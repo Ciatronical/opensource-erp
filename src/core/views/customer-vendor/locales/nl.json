@@ -321,7 +321,15 @@
             "phone_private": "Prive tel.",
             "phoneLabel": "Aanduiding",
             "phoneNumber": "Nummer",
-            "addPhone": "Telefoon toevoegen"
+            "addPhone": "Telefoon toevoegen",
+            "emailLabel": "Aanduiding",
+            "emailAddress": "E-mailadres",
+            "addEmail": "E-mailadres toevoegen",
+            "openEmail": "E-mail schrijven",
+            "urlLabel": "Aanduiding",
+            "urlAddress": "URL",
+            "addUrl": "URL toevoegen",
+            "openUrl": "Pagina openen"
         },
         "price-rules": {
             "title": "Prijsregels",
@@ -350,7 +358,9 @@
             "bccSameAsEmail": "BCC mag niet gelijk zijn aan het hoofd-e-mailadres",
             "bccSameAsCc": "CC en BCC mogen niet gelijk zijn",
             "homepageInvalid": "Ongeldige URL (bijv. voorbeeld.nl)",
-            "homepageUnreachable": "Site is niet bereikbaar"
+            "homepageUnreachable": "Site is niet bereikbaar",
+            "sameAsEmail": "Adres is al het hoofd-e-mailadres",
+            "duplicateEntry": "Adres is dubbel"
         },
         "businessCard": {
             "button": "Visitekaartje KI",

@@ -321,7 +321,15 @@
             "phone_private": "Privates Tel.",
             "phoneLabel": "Bezeichnung",
             "phoneNumber": "Numeris",
-            "addPhone": "Telefon hinzufügen"
+            "addPhone": "Telefon hinzufügen",
+            "emailLabel": "Bezeichnung",
+            "emailAddress": "El. pašto adresas",
+            "addEmail": "Pridėti el. pašto adresą",
+            "openEmail": "Rašyti el. laišką",
+            "urlLabel": "Bezeichnung",
+            "urlAddress": "URL",
+            "addUrl": "Pridėti URL",
+            "openUrl": "Atidaryti puslapį"
         },
         "price-rules": {
             "title": "Kainų taisyklės",
@@ -350,7 +358,9 @@
             "bccSameAsEmail": "BCC darf nicht identisch mit der Haupt-E-Mail sein",
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
-            "homepageUnreachable": "Seite ist nicht erreichbar"
+            "homepageUnreachable": "Seite ist nicht erreichbar",
+            "sameAsEmail": "Adresas jau yra pagrindinis el. paštas",
+            "duplicateEntry": "Adresas pasikartoja"
         },
         "businessCard": {
             "button": "Vizitinė kortelė DI",

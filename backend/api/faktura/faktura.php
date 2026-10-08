@@ -169,6 +169,30 @@ function getFakturaData($data) {
                     SELECT json_agg(json_build_object('id', cv.id, 'name', cv.name))
                     FROM {$cvTable} cv
                     JOIN {$mainTable} mt ON mt.{$cvColumn} = cv.id AND mt.id = :fakturaID
+                ),
+            -- Versandprotokoll: E-Mails (email_journal) und WhatsApp-Nachrichten über
+            -- record_links (from = Beleg), DHL-Sendungen über dhl_shipments. Neueste zuerst.
+            'sent_log',
+                (
+                    SELECT COALESCE(json_agg(s ORDER BY s.sent_at DESC), '[]'::json)
+                    FROM (
+                        SELECT 'email' AS channel, ej.sent_on AS sent_at, ej.recipients AS recipient,
+                               ej.subject AS subject, ej.status::text AS status, e.name AS employee_name
+                        FROM record_links rl
+                        JOIN email_journal ej ON ej.id = rl.to_id
+                        LEFT JOIN employee e ON e.id = ej.sender_id
+                        WHERE rl.from_table = '{$mainTable}' AND rl.from_id = :fakturaID AND rl.to_table = 'email_journal'
+                        UNION ALL
+                        SELECT 'whatsapp', wm.itime, wm.phone_number, wm.message_text, wm.status, NULL
+                        FROM record_links rl
+                        JOIN whatsapp_messages wm ON wm.id = rl.to_id
+                        WHERE rl.from_table = '{$mainTable}' AND rl.from_id = :fakturaID AND rl.to_table = 'whatsapp_messages'
+                        UNION ALL
+                        SELECT 'dhl', ds.created_at, ds.shipment_no, ds.product, 'sent', e.name
+                        FROM dhl_shipments ds
+                        LEFT JOIN employee e ON e.id = ds.created_by
+                        WHERE ds.record_type = :fakturaType AND ds.record_id = :fakturaID
+                    ) AS s
                 )
             )
         ) AS result
@@ -176,7 +200,7 @@ SQL;
 
     //debugQuery($query, ['fakturaID' => $fakturaID], 'Faktura Daten laden');
 
-     echo $company->getOne($query, ['fakturaID' => $fakturaID])['result'];
+     echo $company->getOne($query, ['fakturaID' => $fakturaID, 'fakturaType' => $fakturaType])['result'];
 }
 
 /**

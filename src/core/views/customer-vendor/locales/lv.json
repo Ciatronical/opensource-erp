@@ -321,7 +321,15 @@
             "phone_private": "Privates Tel.",
             "phoneLabel": "Bezeichnung",
             "phoneNumber": "Numurs",
-            "addPhone": "Telefon hinzufügen"
+            "addPhone": "Telefon hinzufügen",
+            "emailLabel": "Bezeichnung",
+            "emailAddress": "E-pasta adrese",
+            "addEmail": "Pievienot e-pasta adresi",
+            "openEmail": "Rakstīt e-pastu",
+            "urlLabel": "Bezeichnung",
+            "urlAddress": "URL",
+            "addUrl": "Pievienot URL",
+            "openUrl": "Atvērt lapu"
         },
         "price-rules": {
             "title": "Cenu noteikumi",
@@ -350,7 +358,9 @@
             "bccSameAsEmail": "BCC darf nicht identisch mit der Haupt-E-Mail sein",
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
-            "homepageUnreachable": "Seite ist nicht erreichbar"
+            "homepageUnreachable": "Seite ist nicht erreichbar",
+            "sameAsEmail": "Adrese jau ir galvenais e-pasts",
+            "duplicateEntry": "Adrese dublējas"
         },
         "businessCard": {
             "button": "Vizītkarte MI",

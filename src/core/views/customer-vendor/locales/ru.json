@@ -321,7 +321,15 @@
             "phone_private": "Личный тел.",
             "phoneLabel": "Обозначение",
             "phoneNumber": "Номер",
-            "addPhone": "Добавить телефон"
+            "addPhone": "Добавить телефон",
+            "emailLabel": "Обозначение",
+            "emailAddress": "Адрес электронной почты",
+            "addEmail": "Добавить адрес электронной почты",
+            "openEmail": "Написать письмо",
+            "urlLabel": "Обозначение",
+            "urlAddress": "URL",
+            "addUrl": "Добавить URL",
+            "openUrl": "Открыть страницу"
         },
         "price-rules": {
             "title": "Ценовые правила",
@@ -350,7 +358,9 @@
             "bccSameAsEmail": "Скрытая копия не может совпадать с основным адресом",
             "bccSameAsCc": "Копия и скрытая копия не могут совпадать",
             "homepageInvalid": "Неверный URL-адрес (напр. example.com)",
-            "homepageUnreachable": "Страница недоступна"
+            "homepageUnreachable": "Страница недоступна",
+            "sameAsEmail": "Адрес уже является основным",
+            "duplicateEntry": "Адрес повторяется"
         },
         "businessCard": {
             "button": "Визитка ИИ",

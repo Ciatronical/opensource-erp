@@ -321,7 +321,15 @@
             "phone_private": "Privates Tel.",
             "phoneLabel": "Bezeichnung",
             "phoneNumber": "Număr",
-            "addPhone": "Telefon hinzufügen"
+            "addPhone": "Telefon hinzufügen",
+            "emailLabel": "Bezeichnung",
+            "emailAddress": "Adresă de e-mail",
+            "addEmail": "Adaugă adresă de e-mail",
+            "openEmail": "Scrie e-mail",
+            "urlLabel": "Bezeichnung",
+            "urlAddress": "URL",
+            "addUrl": "Adaugă URL",
+            "openUrl": "Deschide pagina"
         },
         "price-rules": {
             "title": "Preisregeln",
@@ -350,7 +358,9 @@
             "bccSameAsEmail": "BCC darf nicht identisch mit der Haupt-E-Mail sein",
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
-            "homepageUnreachable": "Seite ist nicht erreichbar"
+            "homepageUnreachable": "Seite ist nicht erreichbar",
+            "sameAsEmail": "Adresa este deja e-mailul principal",
+            "duplicateEntry": "Adresă duplicată"
         },
         "businessCard": {
             "button": "Carte de vizită AI",

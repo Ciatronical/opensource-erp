@@ -126,7 +126,11 @@ function searchDocuments($data) {
                 c.customernumber,
                 $amount                          AS amount,
                 ($closed)                        AS closed,
-                COALESCE(d.transaction_description, '') AS description
+                COALESCE(d.transaction_description, '') AS description,
+                (SELECT string_agg(DISTINCT rl.to_table, ',')
+                   FROM record_links rl
+                  WHERE rl.from_table = '$table' AND rl.from_id = d.id
+                    AND rl.to_table IN ('email_journal', 'whatsapp_messages')) AS sent_channels
            FROM $table d
            LEFT JOIN customer c ON c.id = d.customer_id
           WHERE $whereSql

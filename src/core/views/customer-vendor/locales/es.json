@@ -321,7 +321,15 @@
             "phone_private": "Tel. privado",
             "phoneLabel": "Descripción",
             "phoneNumber": "Número",
-            "addPhone": "Añadir teléfono"
+            "addPhone": "Añadir teléfono",
+            "emailLabel": "Descripción",
+            "emailAddress": "Dirección de correo electrónico",
+            "addEmail": "Añadir dirección de correo",
+            "openEmail": "Escribir correo",
+            "urlLabel": "Descripción",
+            "urlAddress": "URL",
+            "addUrl": "Añadir URL",
+            "openUrl": "Abrir página"
         },
         "price-rules": {
             "title": "Reglas de precios",
@@ -350,7 +358,9 @@
             "bccSameAsEmail": "BCC darf nicht identisch mit der Haupt-E-Mail sein",
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
-            "homepageUnreachable": "Seite ist nicht erreichbar"
+            "homepageUnreachable": "Seite ist nicht erreichbar",
+            "sameAsEmail": "La dirección ya es el correo principal",
+            "duplicateEntry": "Dirección duplicada"
         },
         "businessCard": {
             "button": "Tarjeta de visita IA",

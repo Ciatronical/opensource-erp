@@ -172,6 +172,7 @@ CREATE TABLE customer_ext (
     phone_numbers JSONB,
     phone_labels JSONB,
     emails JSONB,
+    urls JSONB,
     keywords TEXT,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE,
@@ -183,7 +184,8 @@ COMMENT ON COLUMN customer_ext.id IS 'Primärschlüssel (automatisch generiert)'
 COMMENT ON COLUMN customer_ext.customer_id IS 'Referenz zum Kunden';
 COMMENT ON COLUMN customer_ext.phone_numbers IS 'JSON-Array mit Telefonnummern';
 COMMENT ON COLUMN customer_ext.phone_labels IS 'JSON-Array mit Bezeichnungen für Telefonnummern';
-COMMENT ON COLUMN customer_ext.emails IS 'JSON-Array mit E-Mail-Adressen';
+COMMENT ON COLUMN customer_ext.emails IS 'JSON-Array mit E-Mail-Adressen [{label, email}]';
+COMMENT ON COLUMN customer_ext.urls IS 'JSON-Array mit Web-Adressen [{label, url}]';
 COMMENT ON COLUMN customer_ext.itime IS 'Zeitstempel der Erstellung';
 COMMENT ON COLUMN customer_ext.mtime IS 'Zeitstempel der letzten Änderung';
 
@@ -200,6 +202,7 @@ CREATE TABLE vendor_ext (
     phone_numbers JSONB,
     phone_labels JSONB,
     emails JSONB,
+    urls JSONB,
     keywords TEXT,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE,
@@ -211,7 +214,8 @@ COMMENT ON COLUMN vendor_ext.id IS 'Primärschlüssel (automatisch generiert)';
 COMMENT ON COLUMN vendor_ext.vendor_id IS 'Referenz zum Lieferanten';
 COMMENT ON COLUMN vendor_ext.phone_numbers IS 'JSON-Array mit Telefonnummern';
 COMMENT ON COLUMN vendor_ext.phone_labels IS 'JSON-Array mit Bezeichnungen für Telefonnummern';
-COMMENT ON COLUMN vendor_ext.emails IS 'JSON-Array mit E-Mail-Adressen';
+COMMENT ON COLUMN vendor_ext.emails IS 'JSON-Array mit E-Mail-Adressen [{label, email}]';
+COMMENT ON COLUMN vendor_ext.urls IS 'JSON-Array mit Web-Adressen [{label, url}]';
 COMMENT ON COLUMN vendor_ext.itime IS 'Zeitstempel der Erstellung';
 COMMENT ON COLUMN vendor_ext.mtime IS 'Zeitstempel der letzten Änderung';
 

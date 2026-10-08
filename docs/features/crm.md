@@ -17,6 +17,7 @@ Das CRM-System verwaltet Kunden, Lieferanten, Kontakte und die gesamte Kommunika
 
 Jeder Kontakt hat:
 - **Stammdaten**: Name, Adresse, Telefon, E-Mail, Steuernummer, USt-IdNr.
+- **Mehrere Telefonnummern, E-Mail-Adressen und URLs**: zusätzlich zu Haupt-Telefon, Haupt-E-Mail und Homepage beliebig viele weitere Einträge, jeweils mit Bezeichnung (z.B. „Buchhaltung", „Bestellungen", „Kundenportal")
 - **Bankverbindung**: IBAN, BIC für SEPA-Zahlungen
 - **Lieferadressen**: Mehrere abweichende Adressen möglich
 - **Ansprechpartner**: Mehrere Kontaktpersonen mit eigenen Telefonnummern/E-Mails
@@ -34,6 +35,17 @@ Jeder Kontakt hat:
 | Dateien | Hochgeladene Dokumente, Bilder |
 | Lieferadressen | Alternative Versandadressen |
 | Preise | Kundenspezifische Preisregeln |
+
+### E-Mail-Adressen und URLs
+
+Alle E-Mail-Adressen und Web-Adressen eines Kunden sind in der Kundenkarte (Erreichbarkeit) und im Bearbeitungsformular direkt klickbar:
+
+- **URLs** öffnen in einem neuen Browser-Tab; fehlt das Schema, wird `https://` ergänzt
+- **E-Mail-Adressen** öffnen je nach Firmenkonfiguration (*CRM → E-Mail-Client → E-Mail-Links öffnen mit*):
+  - **Externes E-Mail-Programm (mailto:)** — Standard; der Browser übergibt die Adresse an das eingerichtete Mailprogramm
+  - **Interner E-Mail-Client** — in der Kundenkarte öffnet sich der E-Mail-Tab mit vorbelegtem Empfänger, im Bearbeitungsformular das Postfach des ERP
+
+Die weiteren Adressen werden in der globalen Suche, in der Kundensuche des Postfachs und beim Abruf der Kunden-E-Mails (E-Mail-Tab) berücksichtigt. Gespeichert werden sie in `customer_ext.emails` / `customer_ext.urls` bzw. `vendor_ext.*` (JSON-Arrays mit `label` und `email` bzw. `url`); die kivitendo-Tabellen bleiben unverändert.
 
 ## Anrufhistorie
 

@@ -323,6 +323,14 @@
             "phoneLabel": "Oznaczenie",
             "phoneNumber": "Numer",
             "addPhone": "Dodaj telefon",
+            "emailLabel": "Oznaczenie",
+            "emailAddress": "Adres e-mail",
+            "addEmail": "Dodaj adres e-mail",
+            "openEmail": "Napisz e-mail",
+            "urlLabel": "Oznaczenie",
+            "urlAddress": "URL",
+            "addUrl": "Dodaj URL",
+            "openUrl": "Otwórz stronę",
             "vendornumber": "Numer dostawcy",
             "hu_notify": "Wysyłaj przypomnienia o przeglądzie",
             "hu_notify_hint": "Dotyczy wszystkich pojazdów tego klienta – także tych dodanych później. Gdy opcja jest wyłączona, przypomnienia o przeglądzie nie są wysyłane i nie można ich włączyć przy pojedynczym pojeździe (ustawienie klienta ma pierwszeństwo)."
@@ -354,7 +362,9 @@
             "bccSameAsEmail": "BCC nie może być identyczne z głównym adresem e-mail",
             "bccSameAsCc": "CC i BCC nie mogą być identyczne",
             "homepageInvalid": "Nieprawidłowy URL (np. przyklad.pl)",
-            "homepageUnreachable": "Strona jest nieosiągalna"
+            "homepageUnreachable": "Strona jest nieosiągalna",
+            "sameAsEmail": "Adres jest już głównym e-mailem",
+            "duplicateEntry": "Adres się powtarza"
         },
         "businessCard": {
             "button": "Wizytówka AI",

@@ -321,7 +321,15 @@
             "phone_private": "Privates Tel.",
             "phoneLabel": "Bezeichnung",
             "phoneNumber": "Číslo",
-            "addPhone": "Telefon hinzufügen"
+            "addPhone": "Telefon hinzufügen",
+            "emailLabel": "Bezeichnung",
+            "emailAddress": "E-mailová adresa",
+            "addEmail": "Přidat e-mailovou adresu",
+            "openEmail": "Napsat e-mail",
+            "urlLabel": "Bezeichnung",
+            "urlAddress": "URL",
+            "addUrl": "Přidat URL",
+            "openUrl": "Otevřít stránku"
         },
         "price-rules": {
             "title": "Preisregeln",
@@ -350,7 +358,9 @@
             "bccSameAsEmail": "BCC darf nicht identisch mit der Haupt-E-Mail sein",
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
-            "homepageUnreachable": "Seite ist nicht erreichbar"
+            "homepageUnreachable": "Seite ist nicht erreichbar",
+            "sameAsEmail": "Adresa je již hlavní e-mail",
+            "duplicateEntry": "Duplicitní adresa"
         },
         "businessCard": {
             "button": "Vizitka KI",

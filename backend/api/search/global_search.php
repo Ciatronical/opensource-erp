@@ -32,7 +32,7 @@ function globalSearch($data) {
 
     // ===== Kunden =====
     $custPhoneCond = '';
-    $custParams = [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':contains3' => $containsQ,
+    $custParams = [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':ext_email' => $containsQ, ':contains3' => $containsQ,
                    ':street' => $containsQ, ':zip' => $prefixQ, ':city' => $containsQ];
     if ($searchPhone) {
         $custPhoneCond = "
@@ -53,6 +53,9 @@ function globalSearch($data) {
            AND (LOWER(customer.name) LIKE LOWER(:contains)
                 OR LOWER(customer.customernumber) LIKE LOWER(:prefix)
                 OR LOWER(customer.email) LIKE LOWER(:contains2)
+                OR EXISTS (SELECT 1 FROM jsonb_array_elements(customer_ext.emails) em
+                           WHERE jsonb_typeof(customer_ext.emails) = 'array'
+                             AND LOWER(em->>'email') LIKE LOWER(:ext_email))
                 OR LOWER(customer_ext.keywords) LIKE LOWER(:contains3)
                 OR LOWER(customer.street) LIKE LOWER(:street)
                 OR customer.zipcode LIKE :zip
@@ -73,7 +76,7 @@ function globalSearch($data) {
 
     // ===== Lieferanten =====
     $venPhoneCond = '';
-    $venParams = [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':contains3' => $containsQ,
+    $venParams = [':contains' => $containsQ, ':prefix' => $prefixQ, ':contains2' => $containsQ, ':ext_email' => $containsQ, ':contains3' => $containsQ,
                   ':street' => $containsQ, ':zip' => $prefixQ, ':city' => $containsQ];
     if ($searchPhone) {
         $venPhoneCond = "
@@ -94,6 +97,9 @@ function globalSearch($data) {
            AND (LOWER(vendor.name) LIKE LOWER(:contains)
                 OR LOWER(vendor.vendornumber) LIKE LOWER(:prefix)
                 OR LOWER(vendor.email) LIKE LOWER(:contains2)
+                OR EXISTS (SELECT 1 FROM jsonb_array_elements(vendor_ext.emails) em
+                           WHERE jsonb_typeof(vendor_ext.emails) = 'array'
+                             AND LOWER(em->>'email') LIKE LOWER(:ext_email))
                 OR LOWER(vendor_ext.keywords) LIKE LOWER(:contains3)
                 OR LOWER(vendor.street) LIKE LOWER(:street)
                 OR vendor.zipcode LIKE :zip

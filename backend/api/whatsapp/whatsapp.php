@@ -703,6 +703,19 @@ function sendWhatsAppLocation($data) {
     resultInfo(true, '', ['wa_message_id' => $waMessageId]);
 }
 
+/**
+ * Dokument (PDF) per genehmigtem Template an einen Kunden senden (Faktura-Versand)
+ *
+ * @param string $data['to'] Telefonnummer
+ * @param int    $data['customer_id'] Kunden-ID (optional)
+ * @param string $data['document_base64'] Datei als Base64
+ * @param string $data['filename'] Dateiname
+ * @param int    $data['template_id'] genehmigtes Dokument-Template
+ * @param array  $data['parameters'] Template-Platzhalter {{1}}, {{2}}, ...
+ * @param string $data['record_table'] Beleg-Tabelle (oe, ar, ap, delivery_orders) für die Versandanzeige (optional)
+ * @param int    $data['record_id'] Beleg-ID (optional)
+ * @testdata {"to": "+491234567890", "customer_id": 1, "document_base64": "...", "filename": "Rechnung_123.pdf", "template_id": 1, "parameters": ["Herr Mueller", "R-123", "137.00"], "record_table": "ar", "record_id": 1}
+ */
 function sendWhatsAppDocument($data) {
     $db = DbhCompany::begin();
     $config = _getWhatsAppConfig();
@@ -722,6 +735,8 @@ function sendWhatsAppDocument($data) {
     $filename = trim($data['filename'] ?? 'Dokument.pdf');
     $templateId = (int)($data['template_id'] ?? 0);
     $parameters = $data['parameters'] ?? [];
+    $recordTable = in_array($data['record_table'] ?? '', ['oe', 'ar', 'ap', 'delivery_orders'], true) ? $data['record_table'] : null;
+    $recordId = (int)($data['record_id'] ?? 0);
 
     // writeLog("=== sendWhatsAppDocument ===");
     // writeLog("to: {$to}, filename: {$filename}, customerId: {$customerId}, templateId: {$templateId}, base64len: " . strlen($documentBase64));
@@ -939,9 +954,10 @@ function sendWhatsAppDocument($data) {
 
     // In DB speichern: message_text = Dateiname (fuer Chat-Anzeige), media_caption = gerenderter Text
     $msgType = $isImage ? 'image' : 'document';
-    $db->execute(
+    $msgRow = $db->getOne(
         "INSERT INTO whatsapp_messages (wa_message_id, direction, phone_number, customer_id, message_type, message_text, media_url, media_mime_type, media_caption, status, itime)
-         VALUES (:wa_id, 'O', :phone, :customer_id, :msg_type, :filename, :media_url, :mime, :caption, 'sent', NOW())",
+         VALUES (:wa_id, 'O', :phone, :customer_id, :msg_type, :filename, :media_url, :mime, :caption, 'sent', NOW())
+         RETURNING id",
         [
             ':wa_id' => $waMessageId,
             ':phone' => $to,
@@ -953,6 +969,15 @@ function sendWhatsAppDocument($data) {
             ':caption' => $renderedText
         ]
     );
+
+    // Verknüpfung zum Beleg — daraus speist sich die Versandanzeige in der Faktura
+    $msgId = (int)($msgRow['id'] ?? 0);
+    if ($msgId && $recordTable && $recordId > 0) {
+        $db->execute(
+            "INSERT INTO record_links (from_table, from_id, to_table, to_id) VALUES (:ft, :fid, 'whatsapp_messages', :tid)",
+            [':ft' => $recordTable, ':fid' => $recordId, ':tid' => $msgId]
+        );
+    }
 
     resultInfo(true, '', [
         'wa_message_id' => $waMessageId,

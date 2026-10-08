@@ -190,9 +190,23 @@
                 <span class="text-no-wrap">{{ formatQty(item.onhand) }}</span>
             </template>
             <template #item.closed="{ item }">
-                <v-chip :color="item.closed ? 'success' : 'warning'" size="x-small" variant="tonal">
-                    {{ t(item.closed ? 'DocumentList.closed' : 'DocumentList.open') }}
-                </v-chip>
+                <span class="d-inline-flex align-center ga-1">
+                    <v-icon
+                        v-if="hasSentChannel(item, 'email_journal')"
+                        size="16"
+                        color="info"
+                        :title="t('DocumentList.sentEmail')"
+                    >mdi-email-check</v-icon>
+                    <v-icon
+                        v-if="hasSentChannel(item, 'whatsapp_messages')"
+                        size="16"
+                        color="green-darken-1"
+                        :title="t('DocumentList.sentWhatsapp')"
+                    >mdi-whatsapp</v-icon>
+                    <v-chip :color="item.closed ? 'success' : 'warning'" size="x-small" variant="tonal">
+                        {{ t(item.closed ? 'DocumentList.closed' : 'DocumentList.open') }}
+                    </v-chip>
+                </span>
             </template>
             <template #item.obsolete="{ item }">
                 <v-chip v-if="item.obsolete" color="grey" size="x-small" variant="tonal">
@@ -353,6 +367,9 @@ export default {
             ]
         )
 
+        // Versandkanäle je Beleg (sent_channels: "email_journal,whatsapp_messages")
+        const hasSentChannel = (item, channel) => String(item.sent_channels || '').split(',').includes(channel)
+
         // "Nur offene" filtert lokal — die Zeilen sind schon da, ein zweiter
         // Server-Roundtrip waere reine Verschwendung.
         const visibleRows = computed(() =>
@@ -425,6 +442,7 @@ export default {
         }
 
         return {
+            hasSentChannel,
             t, te, locale, config, isParts, rows, visibleRows, headers, loading, error,
             search, from, to, openOnly, obsoleteOnly, showAll, shopOnly, notInShop, weightMissing, shippingUnfit, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit,
             formatDate, formatCurrency, formatQty, reset, openRow,

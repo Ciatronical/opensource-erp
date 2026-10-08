@@ -321,7 +321,15 @@
             "phone_private": "私人电话",
             "phoneLabel": "标注",
             "phoneNumber": "号码",
-            "addPhone": "添加电话"
+            "addPhone": "添加电话",
+            "emailLabel": "标注",
+            "emailAddress": "电子邮件地址",
+            "addEmail": "添加电子邮件地址",
+            "openEmail": "写邮件",
+            "urlLabel": "标注",
+            "urlAddress": "网址",
+            "addUrl": "添加网址",
+            "openUrl": "打开页面"
         },
         "price-rules": {
             "title": "价格规则",
@@ -350,7 +358,9 @@
             "bccSameAsEmail": "密送不能与主邮箱相同",
             "bccSameAsCc": "抄送和密送不能相同",
             "homepageInvalid": "无效的 URL（例如 example.com）",
-            "homepageUnreachable": "网页无法访问"
+            "homepageUnreachable": "网页无法访问",
+            "sameAsEmail": "该地址已是主邮箱",
+            "duplicateEntry": "地址重复"
         },
         "businessCard": {
             "button": "名片AI",

@@ -1151,7 +1151,7 @@ function recurringSendInvoiceEmail($db, int $periodicInvoiceId, ?int $employeeId
             // Kopie im Gesendet-Ordner ist Komfort, kein Muss
         }
         try {
-            _logToEmailJournal($from, $toList, [], $subject, $body, $attachments, 'invoice');
+            _logToEmailJournal($from, $toList, [], $subject, $body, $attachments, 'invoice', 'ar', intval($info['ar_id']), $employeeId);
         } catch (\Throwable $e) {
         }
         try {
@@ -1225,6 +1225,7 @@ function recurringSendInvoiceWhatsApp($db, int $periodicInvoiceId, ?int $employe
         sendWhatsAppDocument([
             'to' => $to, 'customer_id' => intval($info['customer_id'] ?? 0), 'document_base64' => base64_encode($pdf),
             'filename' => $filename, 'template_id' => $templateId, 'parameters' => $parameters, 'employee_id' => $employeeId,
+            'record_table' => 'ar', 'record_id' => intval($info['ar_id']),
         ]);
         $res = json_decode(ob_get_clean(), true);
     } catch (\Throwable $e) {

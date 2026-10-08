@@ -482,6 +482,8 @@ Aus einem Beleg heraus erzeugen:
 - Kündigungsfristen mit nächstmöglichem Termin, Pausieren mit Enddatum, Perioden überspringen, Stopp bei überfälligen Kundenrechnungen
 - **Vorschau** vor dem Speichern; Übersicht mit Kennzahlen (fällig, aktiv, monatlicher Umsatz, Kündigungsfristen)
 - Erzeugung per Klick oder Cron, Versand per E-Mail aus Vorlage, Ablage der PDFs
+- **Versandstatus am Beleg** — auf einen Blick, ob und wann der Beleg per E-Mail, WhatsApp oder DHL beim Kunden war, inkl. WhatsApp-Zustellstatus und Verlauf; Zähler-Badges an den Versand-Buttons, Symbole in der Belegliste
+- **Automatischer Versand beim Drucken** — Beleg geht beim Druck zusätzlich per E-Mail/WhatsApp an den Kunden, je Kanal nur einmal *(Schalter)*
 
 ## 6. CRM — Kunden & Lieferanten
 
@@ -502,6 +504,7 @@ Aus einem Beleg heraus erzeugen:
 - **USt-IdNr.-Validierung** über die EU-Schnittstelle **VIES**
 - **PLZ-Lookup** — Ort automatisch aus der Postleitzahl
 - **E-Mail-Validierung** mit Format- **und** DNS-Prüfung (MX/A-Record)
+- **Mehrere E-Mail-Adressen und URLs je Kunde/Lieferant** mit Bezeichnung, klickbar in Kundenkarte und Formular — E-Mail-Links wahlweise über den internen E-Mail-Client oder das externe Mailprogramm (mailto:) *(Schalter)*
 - **Anrede automatisch** aus dem Vornamen (Vornamen-Geschlechts-Tabelle)
 - **Visitenkarte scannen** — KI liest Stammdaten aus, prüft die Domain auf Erreichbarkeit, korrigiert typische OCR-Fehler und validiert die Adresse über Nominatim/OpenStreetMap
 - **Rückwärtssuche zur Telefonnummer** — KI-Websuche nach dem Inhaber

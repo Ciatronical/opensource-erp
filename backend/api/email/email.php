@@ -42,19 +42,24 @@ function searchCvEmails($data) {
     // Kunden suchen
     $customers = $db->getAll(
         "SELECT c.id, c.name, c.customernumber, c.email,
-                (SELECT string_agg(ct.cp_email, ', ') FROM contacts ct WHERE ct.cp_cv_id = c.id AND ct.cp_email IS NOT NULL AND ct.cp_email != '') AS contact_emails
+                (SELECT string_agg(ct.cp_email, ', ') FROM contacts ct WHERE ct.cp_cv_id = c.id AND ct.cp_email IS NOT NULL AND ct.cp_email != '') AS contact_emails,
+                (SELECT string_agg(em->>'email', ', ') FROM customer_ext x CROSS JOIN LATERAL jsonb_array_elements(x.emails) em
+                  WHERE x.customer_id = c.id AND jsonb_typeof(x.emails) = 'array' AND COALESCE(em->>'email', '') != '') AS ext_emails
          FROM customer c
          WHERE NOT COALESCE(c.obsolete, false)
-           AND (LOWER(c.name) LIKE LOWER(:q1) OR LOWER(c.email) LIKE LOWER(:q2) OR LOWER(c.customernumber) LIKE LOWER(:q3))
+           AND (LOWER(c.name) LIKE LOWER(:q1) OR LOWER(c.email) LIKE LOWER(:q2) OR LOWER(c.customernumber) LIKE LOWER(:q3)
+                OR EXISTS (SELECT 1 FROM customer_ext x CROSS JOIN LATERAL jsonb_array_elements(x.emails) em
+                           WHERE x.customer_id = c.id AND jsonb_typeof(x.emails) = 'array' AND LOWER(em->>'email') LIKE LOWER(:q4)))
          ORDER BY c.name LIMIT 10",
-        [':q1' => $containsQ, ':q2' => $containsQ, ':q3' => $containsQ]
+        [':q1' => $containsQ, ':q2' => $containsQ, ':q3' => $containsQ, ':q4' => $containsQ]
     );
 
     foreach ($customers ?: [] as $row) {
         $emails = [];
         if (!empty($row['email'])) $emails[] = $row['email'];
-        if (!empty($row['contact_emails'])) {
-            foreach (explode(', ', $row['contact_emails']) as $e) {
+        foreach (['ext_emails', 'contact_emails'] as $col) {
+            if (empty($row[$col])) continue;
+            foreach (explode(', ', $row[$col]) as $e) {
                 $e = trim($e);
                 if ($e && !in_array($e, $emails)) $emails[] = $e;
             }
@@ -73,19 +78,24 @@ function searchCvEmails($data) {
     // Lieferanten suchen
     $vendors = $db->getAll(
         "SELECT v.id, v.name, v.vendornumber, v.email,
-                (SELECT string_agg(ct.cp_email, ', ') FROM contacts ct WHERE ct.cp_cv_id = v.id AND ct.cp_email IS NOT NULL AND ct.cp_email != '') AS contact_emails
+                (SELECT string_agg(ct.cp_email, ', ') FROM contacts ct WHERE ct.cp_cv_id = v.id AND ct.cp_email IS NOT NULL AND ct.cp_email != '') AS contact_emails,
+                (SELECT string_agg(em->>'email', ', ') FROM vendor_ext x CROSS JOIN LATERAL jsonb_array_elements(x.emails) em
+                  WHERE x.vendor_id = v.id AND jsonb_typeof(x.emails) = 'array' AND COALESCE(em->>'email', '') != '') AS ext_emails
          FROM vendor v
          WHERE NOT COALESCE(v.obsolete, false)
-           AND (LOWER(v.name) LIKE LOWER(:q1) OR LOWER(v.email) LIKE LOWER(:q2) OR LOWER(v.vendornumber) LIKE LOWER(:q3))
+           AND (LOWER(v.name) LIKE LOWER(:q1) OR LOWER(v.email) LIKE LOWER(:q2) OR LOWER(v.vendornumber) LIKE LOWER(:q3)
+                OR EXISTS (SELECT 1 FROM vendor_ext x CROSS JOIN LATERAL jsonb_array_elements(x.emails) em
+                           WHERE x.vendor_id = v.id AND jsonb_typeof(x.emails) = 'array' AND LOWER(em->>'email') LIKE LOWER(:q4)))
          ORDER BY v.name LIMIT 10",
-        [':q1' => $containsQ, ':q2' => $containsQ, ':q3' => $containsQ]
+        [':q1' => $containsQ, ':q2' => $containsQ, ':q3' => $containsQ, ':q4' => $containsQ]
     );
 
     foreach ($vendors ?: [] as $row) {
         $emails = [];
         if (!empty($row['email'])) $emails[] = $row['email'];
-        if (!empty($row['contact_emails'])) {
-            foreach (explode(', ', $row['contact_emails']) as $e) {
+        foreach (['ext_emails', 'contact_emails'] as $col) {
+            if (empty($row[$col])) continue;
+            foreach (explode(', ', $row[$col]) as $e) {
                 $e = trim($e);
                 if ($e && !in_array($e, $emails)) $emails[] = $e;
             }
@@ -286,6 +296,9 @@ function getEmail($data) {
  *   body_html: HTML-Body
  *   body_text: Text-Body (optional, wird aus HTML generiert falls leer)
  *   attachments: Array [{filename, content_base64, content_type}] (optional)
+ *   record_type: email_journal_record_type (optional, z.B. invoice, sales_order)
+ *   record_table / record_id: Beleg (oe, ar, ap, delivery_orders + ID) für die
+ *                 Versandanzeige in der Faktura (optional)
  */
 function sendEmail($data) {
     _emailApiCall(function($data) {
@@ -335,7 +348,13 @@ function sendEmail($data) {
 
         // 3. Email-Journal-Eintrag erstellen
         try {
-            _logToEmailJournal($fromEmail, $to, $cc, $subject, $bodyText ?: $bodyHtml, $attachments, $data['record_type'] ?? null);
+            _logToEmailJournal(
+                $fromEmail, $to, $cc, $subject, $bodyText ?: $bodyHtml, $attachments,
+                $data['record_type'] ?? null,
+                $data['record_table'] ?? null,
+                (int)($data['record_id'] ?? 0) ?: null,
+                (int)($data['employee_id'] ?? 0) ?: null
+            );
         } catch (\Exception $e) {
             error_log('[EMAIL] Journal-Eintrag fehlgeschlagen: ' . $e->getMessage());
         }

@@ -292,7 +292,7 @@
 import { ref, watch, onMounted } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { entityRoute } from '@/core/constants/routes.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 
@@ -302,6 +302,7 @@ export default {
 
     setup() {
         const { t } = useI18n()
+        const route = useRoute()
         const router = useRouter()
 
         const folders = ref([])
@@ -530,6 +531,14 @@ export default {
         onMounted(() => {
             loadFolders()
             loadEmails()
+            // Empfänger aus Query vorbelegen (E-Mail-Link aus dem Kundenstamm, Modus "interner E-Mail-Client")
+            const queryTo = route.query.to
+            if (queryTo) {
+                composeData.value = { to: String(queryTo), cc: '', subject: '', body: '' }
+                showCompose.value = true
+                const { to, ...rest } = route.query
+                router.replace({ query: rest })
+            }
         })
 
         return {

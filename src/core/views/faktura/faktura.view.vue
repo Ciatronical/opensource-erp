@@ -64,7 +64,14 @@
                     @open-gutmann="onOpenGutmann"
                     @open-hgs="onOpenHgs"
                     @open-special="openSpecialDialog"
+                    :sent-email-count="sentCounts.email"
+                    :sent-whatsapp-count="sentCounts.whatsapp"
                 />
+            </section>
+
+            <!-- Versandstatus: wurde der Beleg schon per E-Mail / WhatsApp / DHL verschickt? -->
+            <section class="faktura-section faktura-section--sent" v-if="fakturaId && faktura.data && faktura.data.common">
+                <sent-status-component :entries="sentLog" :auto-send-hint="autoSendHint" />
             </section>
 
             <special-dialog
@@ -1078,6 +1085,7 @@ import FakturaDetailsCard from './cards/faktura.details.card.vue'
 import AdditionalInfoCard from './cards/additional.info.card.vue'
 import VehicleSectionCard from './cards/vehicle.section.card.vue'
 import ActionBarComponent from './components/action.bar.component.vue'
+import SentStatusComponent from './components/sent.status.component.vue'
 import FakturaItemsTableComponent from './components/faktura.items.table.component.vue'
 import EditPartDialog from './dialogs/edit.part.dialog.vue'
 import CreatePartDialog from './dialogs/create.part.dialog.vue'
@@ -1123,6 +1131,7 @@ export default defineComponent({
         AdditionalInfoCard,
         VehicleSectionCard,
         ActionBarComponent,
+        SentStatusComponent,
         FakturaItemsTableComponent,
         EditPartDialog,
         CreatePartDialog,
@@ -2582,6 +2591,15 @@ export default defineComponent({
             } catch (e) {
                 console.error('Fehler beim Drucken:', e)
                 alerts.error(t('FakturaView.faktura.printError'))
+                return
+            } finally {
+                pdfLoading.value = false
+            }
+
+            // Konfigurierter Auto-Versand (E-Mail / WhatsApp) nach erfolgreichem Druck
+            try {
+                pdfLoading.value = true
+                await autoSendAfterPrint()
             } finally {
                 pdfLoading.value = false
             }
@@ -2669,6 +2687,49 @@ export default defineComponent({
             request_quotation: 'email_sender_request_quotation'
         }
 
+        // ===== Versandstatus =====
+        // sent_log kommt mit getFakturaData (record_links → email_journal / whatsapp_messages, dhl_shipments)
+        const sentLog = computed(() => faktura.data?.sent_log || [])
+        const sentCounts = computed(() => ({
+            email: sentLog.value.filter(e => e.channel === 'email').length,
+            whatsapp: sentLog.value.filter(e => e.channel === 'whatsapp').length,
+        }))
+
+        // Haupttabelle des Belegs — Ziel der record_links-Verknüpfung beim Versand
+        const recordTableMap = {
+            invoice: 'ar', credit_note: 'ar', invoice_storno: 'ar',
+            purchase_invoice: 'ap',
+            order: 'oe', purchase_order: 'oe', quotation: 'oe', request_quotation: 'oe',
+            delivery_order: 'delivery_orders'
+        }
+        const recordTable = computed(() => recordTableMap[fakturaType.value] || null)
+
+        /** Versand sofort in der Anzeige eintragen (ohne Neuladen des Belegs) */
+        function addSentLogEntry(entry) {
+            if (!faktura.data) return
+            if (!Array.isArray(faktura.data.sent_log)) faktura.data.sent_log = []
+            faktura.data.sent_log.unshift({
+                sent_at: new Date().toISOString(),
+                status: 'sent',
+                employee_name: oserp.session?.logged_in_employee?.name || '',
+                ...entry
+            })
+        }
+
+        // Auto-Versand beim Drucken (Firmenkonfiguration → CRM → Belegversand): off | email | whatsapp | both
+        const printAutoSend = computed(() => String(oserp.getClientDefaultValue('print_auto_send', 'off') || 'off'))
+        const autoSendChannels = computed(() => {
+            const mode = printAutoSend.value
+            if (mode === 'both') return ['email', 'whatsapp']
+            if (mode === 'email' || mode === 'whatsapp') return [mode]
+            return []
+        })
+        const autoSendHint = computed(() => {
+            if (!autoSendChannels.value.length) return ''
+            const names = autoSendChannels.value.map(ch => t(ch === 'email' ? 'FakturaView.faktura.sent.channelEmail' : 'FakturaView.faktura.sent.channelWhatsapp'))
+            return t('FakturaView.faktura.autoSend.hint', { channels: names.join(' + ') })
+        })
+
         // Mapping fakturaType -> email_journal_record_type enum
         const emailRecordTypeMap = {
             invoice: 'invoice',
@@ -2683,97 +2744,118 @@ export default defineComponent({
         /**
          * Oeffnet den E-Mail-Dialog mit vorausgefuellten Werten aus der Config
          */
-        function sendEmail() {
+        /**
+         * Vorbelegung für den E-Mail-Versand: Empfänger aus Kunde/Kundenstamm,
+         * Betreff, Text und Anhangname — für Dialog und automatischen Versand.
+         */
+        function buildEmailDefaults() {
             const defaults = oserp.session.company_config?.defaults || {}
             const common = faktura.data?.common || {}
             const docTypeLabel = t(`FakturaView.dokumentTypes.${fakturaType.value}`)
             const docNumber = common.invnumber || common.ordnumber || common.quonumber || common.donumber || ''
-
-            // Empfaenger: Kunden-E-Mail; CC/BCC aus dem Kundenstamm (customer.cc / customer.bcc)
-            emailDialogTo.value = contactEmail.value || ''
-            emailDialogCc.value = faktura.data?.customer?.cc || ''
-            emailDialogBcc.value = faktura.data?.customer?.bcc || ''
 
             // Betreff: Dokumenttyp + Nummer, optional mit Vorgangsbeschreibung
             let subject = `${docTypeLabel} ${docNumber}`.trim()
             if (defaults.email_subject_transaction_description && common.transaction_description) {
                 subject += ` - ${common.transaction_description}`
             }
-            emailDialogSubject.value = subject
 
-            // Nachrichtentext
             const customerName = common.customer_name || common.vendor_name || ''
-            emailDialogBody.value = t('FakturaView.dialogs.sendEmail.defaultBody', {
-                type: docTypeLabel,
-                number: docNumber,
-                customer: customerName
-            })
+            return {
+                // Empfaenger: Kunden-E-Mail; CC/BCC aus dem Kundenstamm (customer.cc / customer.bcc)
+                to: contactEmail.value || '',
+                cc: faktura.data?.customer?.cc || '',
+                bcc: faktura.data?.customer?.bcc || '',
+                subject,
+                body: t('FakturaView.dialogs.sendEmail.defaultBody', {
+                    type: docTypeLabel,
+                    number: docNumber,
+                    customer: customerName
+                }),
+                attachmentName: `${docTypeLabel}_${docNumber}.pdf`.replace(/\s+/g, '_')
+            }
+        }
 
-            // Anhang-Name
-            emailDialogAttachmentName.value = `${docTypeLabel}_${docNumber}.pdf`.replace(/\s+/g, '_')
-
+        /**
+         * Oeffnet den E-Mail-Dialog mit vorausgefuellten Werten aus der Config
+         */
+        function sendEmail() {
+            const d = buildEmailDefaults()
+            emailDialogTo.value = d.to
+            emailDialogCc.value = d.cc
+            emailDialogBcc.value = d.bcc
+            emailDialogSubject.value = d.subject
+            emailDialogBody.value = d.body
+            emailDialogAttachmentName.value = d.attachmentName
             emailDialogVisible.value = true
         }
 
         /**
-         * Sendet die E-Mail mit PDF-Anhang
+         * Erzeugt das PDF und schickt die E-Mail über das Backend.
+         * Liefert true bei Erfolg, wirft bei Fehlern (Aufrufer meldet).
+         */
+        async function performEmailSend(emailData, attachmentName) {
+            const pdfBase64 = await faktura.generatePDFBase64(
+                fakturaId.value,
+                fakturaType.value,
+                selectedTemplate.value,
+                selectedPrinter.value?.id ?? null
+            )
+
+            const defaults = oserp.session.company_config?.defaults || {}
+            const senderField = emailSenderFieldMap[fakturaType.value] || ''
+            const fromName = defaults[senderField] || ''
+
+            const splitAddresses = (value) => (value || '').split(/[,;]/)
+                .map(e => ({ email: e.trim(), name: '' }))
+                .filter(e => e.email)
+            const toList = splitAddresses(emailData.to)
+            const ccList = splitAddresses(emailData.cc)
+            const bccList = splitAddresses(emailData.bcc)
+
+            const response = await axios.post('/api/email/', {
+                action: 'sendEmail',
+                from_name: fromName,
+                to: toList,
+                cc: ccList,
+                bcc: bccList,
+                subject: emailData.subject,
+                body_text: emailData.body,
+                body_html: '',
+                record_type: emailRecordTypeMap[fakturaType.value] || null,
+                // Verknüpfung zum Beleg für die Versandanzeige
+                record_table: recordTable.value,
+                record_id: fakturaId.value ? Number(fakturaId.value) : null,
+                attachments: [{
+                    filename: attachmentName,
+                    content_base64: pdfBase64,
+                    content_type: 'application/pdf'
+                }]
+            })
+
+            if (!response.data.success) {
+                throw new Error(response.data.text || t('FakturaView.faktura.emailError'))
+            }
+
+            addSentLogEntry({
+                channel: 'email',
+                recipient: [...toList, ...ccList].map(e => e.email).join(', '),
+                subject: emailData.subject
+            })
+            return true
+        }
+
+        /**
+         * Sendet die E-Mail mit PDF-Anhang (aus dem Dialog)
          */
         async function onEmailSend(emailData) {
             try {
                 pdfLoading.value = true
-
-                // PDF als Base64 generieren
-                const pdfBase64 = await faktura.generatePDFBase64(
-                    fakturaId.value,
-                    fakturaType.value,
-                    selectedTemplate.value,
-                    selectedPrinter.value?.id ?? null
-                )
-
-                const defaults = oserp.session.company_config?.defaults || {}
-                const senderField = emailSenderFieldMap[fakturaType.value] || ''
-                const fromName = defaults[senderField] || ''
-
-                // Empfaenger aufbereiten
-                const toList = emailData.to.split(/[,;]/).map(e => ({
-                    email: e.trim(),
-                    name: ''
-                })).filter(e => e.email)
-
-                const splitAddresses = (value) => (value || '').split(/[,;]/)
-                    .map(e => ({ email: e.trim(), name: '' }))
-                    .filter(e => e.email)
-                const ccList = splitAddresses(emailData.cc)
-                const bccList = splitAddresses(emailData.bcc)
-
-                // E-Mail via Backend senden
-                const response = await axios.post('/api/email/', {
-                    action: 'sendEmail',
-                    from_name: fromName,
-                    to: toList,
-                    cc: ccList,
-                    bcc: bccList,
-                    subject: emailData.subject,
-                    body_text: emailData.body,
-                    body_html: '',
-                    record_type: emailRecordTypeMap[fakturaType.value] || null,
-                    attachments: [{
-                        filename: emailDialogAttachmentName.value,
-                        content_base64: pdfBase64,
-                        content_type: 'application/pdf'
-                    }]
-                })
-
-                if (response.data.success) {
-                    toasts.success(t('FakturaView.faktura.emailSent'))
-                    emailDialogVisible.value = false
-                } else {
-                    const detail = response.data.text || ''
-                    alerts.error(detail || t('FakturaView.faktura.emailError'))
-                }
+                await performEmailSend(emailData, emailDialogAttachmentName.value)
+                toasts.success(t('FakturaView.faktura.emailSent'))
             } catch (e) {
                 console.error('Fehler beim E-Mail-Versand:', e)
-                alerts.error(t('FakturaView.faktura.emailError'))
+                alerts.error(e?.message || t('FakturaView.faktura.emailError'))
             } finally {
                 pdfLoading.value = false
                 emailDialogVisible.value = false
@@ -2937,51 +3019,116 @@ export default defineComponent({
         /**
          * Sendet das Dokument per WhatsApp mit PDF-Anhang
          */
+        /**
+         * Erzeugt das PDF und sendet es als WhatsApp-Template-Nachricht.
+         * Nutzt waSelectedTemplate / waTemplateParams / waDialogAttachmentName.
+         * Liefert true bei Erfolg, wirft bei Fehlern (Aufrufer meldet).
+         */
+        async function performWhatsAppSend(phone) {
+            if (!waSelectedTemplate.value) {
+                throw new Error(t('FakturaView.faktura.whatsappNoTemplate'))
+            }
+
+            const pdfBase64 = await faktura.generatePDFBase64(
+                fakturaId.value,
+                fakturaType.value,
+                selectedTemplate.value,
+                selectedPrinter.value?.id ?? null
+            )
+
+            const common = faktura.data?.common || {}
+            const customerId = common.customer_id || common.vendor_id || 0
+            const paramValues = waTemplateParams.value.map(p => p.value)
+
+            // Template + Dokument in einem Call senden
+            const response = await axios.post('/api/whatsapp/', {
+                action: 'sendWhatsAppDocument',
+                to: phone,
+                customer_id: customerId,
+                document_base64: pdfBase64,
+                filename: waDialogAttachmentName.value,
+                template_id: waSelectedTemplate.value.id,
+                parameters: paramValues,
+                // Verknüpfung zum Beleg für die Versandanzeige
+                record_table: recordTable.value,
+                record_id: fakturaId.value ? Number(fakturaId.value) : null
+            })
+
+            if (!response.data.success) {
+                throw new Error(response.data.text || t('FakturaView.faktura.whatsappError'))
+            }
+
+            addSentLogEntry({
+                channel: 'whatsapp',
+                recipient: phone,
+                subject: waDialogAttachmentName.value
+            })
+            return true
+        }
+
+        /**
+         * Sendet das Dokument per WhatsApp mit PDF-Anhang (aus dem Dialog)
+         */
         async function onWhatsAppSend(waData) {
             try {
                 pdfLoading.value = true
-
-                if (!waSelectedTemplate.value) {
-                    alerts.error(t('FakturaView.faktura.whatsappError'))
-                    return
-                }
-
-                // PDF als Base64 generieren
-                const pdfBase64 = await faktura.generatePDFBase64(
-                    fakturaId.value,
-                    fakturaType.value,
-                    selectedTemplate.value,
-                    selectedPrinter.value?.id ?? null
-                )
-
-                const common = faktura.data?.common || {}
-                const customerId = common.customer_id || common.vendor_id || 0
-                const paramValues = waTemplateParams.value.map(p => p.value)
-
-                // Template + Dokument in einem Call senden
-                const response = await axios.post('/api/whatsapp/', {
-                    action: 'sendWhatsAppDocument',
-                    to: waData.phone,
-                    customer_id: customerId,
-                    document_base64: pdfBase64,
-                    filename: waDialogAttachmentName.value,
-                    template_id: waSelectedTemplate.value.id,
-                    parameters: paramValues
-                })
-
-                if (response.data.success) {
-                    toasts.success(t('FakturaView.faktura.whatsappSent'))
-                    waDialogVisible.value = false
-                } else {
-                    const detail = response.data.text || ''
-                    alerts.error(detail || t('FakturaView.faktura.whatsappError'))
-                }
+                await performWhatsAppSend(waData.phone)
+                toasts.success(t('FakturaView.faktura.whatsappSent'))
             } catch (e) {
                 console.error('Fehler beim WhatsApp-Versand:', e)
-                alerts.error(t('FakturaView.faktura.whatsappError'))
+                alerts.error(e?.message || t('FakturaView.faktura.whatsappError'))
             } finally {
                 pdfLoading.value = false
                 waDialogVisible.value = false
+            }
+        }
+
+        /**
+         * Auto-Versand beim Drucken: schickt den Beleg auf den konfigurierten Kanälen,
+         * aber je Kanal nur einmal — ein zweiter Ausdruck schreibt den Kunden nicht erneut an.
+         * Kanäle ohne Empfängerdaten werden übersprungen und gemeldet.
+         */
+        async function autoSendAfterPrint() {
+            if (!fakturaId.value || !autoSendChannels.value.length) return
+
+            for (const channel of autoSendChannels.value) {
+                const label = t(channel === 'email' ? 'FakturaView.faktura.sent.channelEmail' : 'FakturaView.faktura.sent.channelWhatsapp')
+
+                if (sentLog.value.some(e => e.channel === channel)) {
+                    toasts.info(t('FakturaView.faktura.autoSend.alreadySent', { channel: label }))
+                    continue
+                }
+
+                try {
+                    if (channel === 'email') {
+                        const d = buildEmailDefaults()
+                        if (!d.to) {
+                            toasts.warning(t('FakturaView.faktura.autoSend.noRecipient', { channel: label }))
+                            continue
+                        }
+                        await performEmailSend(d, d.attachmentName)
+                        toasts.success(t('FakturaView.faktura.autoSend.sent', { channel: label, recipient: d.to }))
+                    } else {
+                        const firstMobile = waPhoneOptions.value.find(p => p.mobile)
+                        const phone = firstMobile?.value || ''
+                        if (!phone) {
+                            toasts.warning(t('FakturaView.faktura.autoSend.noRecipient', { channel: label }))
+                            continue
+                        }
+                        const common = faktura.data?.common || {}
+                        const docTypeLabel = t(`FakturaView.dokumentTypes.${fakturaType.value}`)
+                        const docNumber = common.invnumber || common.ordnumber || common.quonumber || common.donumber || ''
+                        const companyName = oserp.session.company_config?.defaults?.company || 'Dokument'
+                        waDialogAttachmentName.value = `${companyName}-${docTypeLabel}-${docNumber}.pdf`.replace(/\s+/g, '_')
+                        await loadWaTemplates()
+                        initTemplateParams(waSelectedTemplate.value)
+                        await performWhatsAppSend(phone)
+                        toasts.success(t('FakturaView.faktura.autoSend.sent', { channel: label, recipient: phone }))
+                    }
+                } catch (e) {
+                    console.error('Auto-Versand fehlgeschlagen:', channel, e)
+                    toasts.error(t('FakturaView.faktura.autoSend.failed', { channel: label, error: e?.message || '' }))
+                }
             }
         }
 
@@ -3209,6 +3356,9 @@ export default defineComponent({
 
         return {
             onRecurringInvoicesCreated,
+            sentLog,
+            sentCounts,
+            autoSendHint,
             t,
             oserp,
             faktura,
@@ -3395,6 +3545,11 @@ export default defineComponent({
 
 .faktura-section:last-child {
     margin-bottom: 0;
+}
+
+.faktura-section--sent {
+    margin-top: -8px;
+    margin-bottom: 16px;
 }
 
 .section-disabled {

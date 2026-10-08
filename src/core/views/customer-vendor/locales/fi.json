@@ -321,7 +321,15 @@
             "phone_private": "Privates Tel.",
             "phoneLabel": "Bezeichnung",
             "phoneNumber": "Numero",
-            "addPhone": "Telefon hinzufügen"
+            "addPhone": "Telefon hinzufügen",
+            "emailLabel": "Bezeichnung",
+            "emailAddress": "Sähköpostiosoite",
+            "addEmail": "Lisää sähköpostiosoite",
+            "openEmail": "Kirjoita sähköposti",
+            "urlLabel": "Bezeichnung",
+            "urlAddress": "URL",
+            "addUrl": "Lisää URL",
+            "openUrl": "Avaa sivu"
         },
         "price-rules": {
             "title": "Preisregeln",
@@ -350,7 +358,9 @@
             "bccSameAsEmail": "BCC darf nicht identisch mit der Haupt-E-Mail sein",
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
-            "homepageUnreachable": "Seite ist nicht erreichbar"
+            "homepageUnreachable": "Seite ist nicht erreichbar",
+            "sameAsEmail": "Osoite on jo pääsähköposti",
+            "duplicateEntry": "Osoite on jo listalla"
         },
         "businessCard": {
             "button": "Käyntikortti tekoäly",

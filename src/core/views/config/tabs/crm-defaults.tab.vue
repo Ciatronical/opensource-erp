@@ -132,7 +132,7 @@
                 <v-col cols="12" md="6">
                     <v-select
                         v-model="crmDefaults[field.name]"
-                        :items="field.items"
+                        :items="selectItems(field)"
                         :label="t(field.label)"
                         :style="field.fieldstyle"
                         hide-details="auto"
@@ -261,6 +261,9 @@ import BelegQuellenConfig from './beleg-quellen.config.vue';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 
 const { t } = useI18n();
+
+// Auswahllisten: Einträge mit titleKey werden übersetzt, feste Titel bleiben wie sie sind
+const selectItems = (field) => (field.items || []).map(i => i.titleKey ? { ...i, title: t(i.titleKey) } : i);
 const oserp = oserpStore();
 
 // Cache für dynamisch geladene Select-Items (z.B. WhatsApp-Templates)

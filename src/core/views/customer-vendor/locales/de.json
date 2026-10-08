@@ -351,7 +351,15 @@
             "phone_private": "Privates Tel.",
             "phoneLabel": "Bezeichnung",
             "phoneNumber": "Nummer",
-            "addPhone": "Telefon hinzufügen"
+            "addPhone": "Telefon hinzufügen",
+            "emailLabel": "Bezeichnung",
+            "emailAddress": "E-Mail-Adresse",
+            "addEmail": "E-Mail-Adresse hinzufügen",
+            "openEmail": "E-Mail schreiben",
+            "urlLabel": "Bezeichnung",
+            "urlAddress": "URL",
+            "addUrl": "URL hinzufügen",
+            "openUrl": "Seite öffnen"
         },
         "price-rules": {
             "title": "Preisregeln",
@@ -380,7 +388,9 @@
             "bccSameAsEmail": "BCC darf nicht identisch mit der Haupt-E-Mail sein",
             "bccSameAsCc": "CC und BCC dürfen nicht identisch sein",
             "homepageInvalid": "Ungültige URL (z.B. beispiel.de)",
-            "homepageUnreachable": "Seite ist nicht erreichbar"
+            "homepageUnreachable": "Seite ist nicht erreichbar",
+            "sameAsEmail": "Adresse ist bereits die Haupt-E-Mail",
+            "duplicateEntry": "Adresse ist doppelt"
         },
         "zugferd": {
             "option_default": "Mandantenvorgabe verwenden",

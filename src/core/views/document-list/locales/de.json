@@ -38,6 +38,8 @@
         "open": "Offen",
         "closed": "Erledigt",
         "obsolete": "Ausgemustert",
+        "sentEmail": "Per E-Mail versendet",
+        "sentWhatsapp": "Per WhatsApp versendet",
         "noData": "Keine Einträge gefunden",
         "loadError": "Die Liste konnte nicht geladen werden",
         "newPart": "Neuer Artikel",

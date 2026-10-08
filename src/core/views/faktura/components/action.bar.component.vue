@@ -205,33 +205,37 @@
                     </template>
                 </v-tooltip>
 
-                <!-- Email -->
-                <v-tooltip location="bottom" :text="t('FakturaView.common.email')">
+                <!-- Email (Badge: schon so oft versendet) -->
+                <v-tooltip location="bottom" :text="sentEmailCount ? t('FakturaView.faktura.sent.tooltipEmail', { n: sentEmailCount }) : t('FakturaView.common.email')">
                     <template #activator="{ props: tip }">
-                        <v-btn
-                            v-bind="tip"
-                            variant="tonal"
-                            color="info"
-                            icon="mdi-email"
-                            size="small"
-                            :disabled="!hasCustomer"
-                            @click="$emit('send-email')"
-                        />
+                        <v-badge :model-value="sentEmailCount > 0" :content="sentEmailCount" color="success" offset-x="4" offset-y="4">
+                            <v-btn
+                                v-bind="tip"
+                                variant="tonal"
+                                color="info"
+                                icon="mdi-email"
+                                size="small"
+                                :disabled="!hasCustomer"
+                                @click="$emit('send-email')"
+                            />
+                        </v-badge>
                     </template>
                 </v-tooltip>
 
-                <!-- WhatsApp -->
-                <v-tooltip location="bottom" text="WhatsApp">
+                <!-- WhatsApp (Badge: schon so oft versendet) -->
+                <v-tooltip location="bottom" :text="sentWhatsappCount ? t('FakturaView.faktura.sent.tooltipWhatsapp', { n: sentWhatsappCount }) : 'WhatsApp'">
                     <template #activator="{ props: tip }">
-                        <v-btn
-                            v-bind="tip"
-                            variant="tonal"
-                            color="green-darken-1"
-                            icon="mdi-whatsapp"
-                            size="small"
-                            :disabled="!hasCustomer"
-                            @click="$emit('send-whatsapp')"
-                        />
+                        <v-badge :model-value="sentWhatsappCount > 0" :content="sentWhatsappCount" color="success" offset-x="4" offset-y="4">
+                            <v-btn
+                                v-bind="tip"
+                                variant="tonal"
+                                color="green-darken-1"
+                                icon="mdi-whatsapp"
+                                size="small"
+                                :disabled="!hasCustomer"
+                                @click="$emit('send-whatsapp')"
+                            />
+                        </v-badge>
                     </template>
                 </v-tooltip>
 
@@ -446,6 +450,15 @@ export default defineComponent({
     components: { VoiceInputButton },
 
     props: {
+        /** Anzahl bisheriger Versendungen je Kanal (Badge an den Versand-Buttons) */
+        sentEmailCount: {
+            type: Number,
+            default: 0
+        },
+        sentWhatsappCount: {
+            type: Number,
+            default: 0
+        },
         printerList: {
             type: Array,
             default: () => []

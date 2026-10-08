@@ -138,6 +138,7 @@ function getCV($data, $withConfig = []) {
     $extFk    = $isVendor ? 'vendor_id'  : 'customer_id';
     $phoneNumbersSelect = "(SELECT phone_numbers FROM $extTable WHERE $extFk = $cv_id)";
     $emailsSelect       = "(SELECT emails FROM $extTable WHERE $extFk = $cv_id)";
+    $urlsSelect         = "(SELECT urls FROM $extTable WHERE $extFk = $cv_id)";
     $keywordsSelect     = "(SELECT keywords FROM $extTable WHERE $extFk = $cv_id)";
     // LxCars: kundenweiter HU-Benachrichtigungs-Ausschluss (nur Kunde). Kunde zaehlt
     // mehr als Fahrzeug — ist dies true, sind alle Fahrzeuge des Kunden ausgeschlossen.
@@ -455,6 +456,7 @@ function getCV($data, $withConfig = []) {
                                         SELECT '$cvSrcLiteral' AS src, t.*,
                                             $phoneNumbersSelect AS phone_numbers,
                                             $emailsSelect AS emails,
+                                            $urlsSelect AS urls,
                                             $keywordsSelect AS keywords,
                                             $huExcludedSelect AS hu_serienbrief_excluded
                                         FROM $cvTable t WHERE t.id = $cv_id
@@ -1051,6 +1053,16 @@ function saveCV($data) {
         unset($data['profile']['emails']);
     }
 
+    // urls vor dem Loop extrahieren und aus profile entfernen — liegt wie
+    // emails in customer_ext/vendor_ext, nicht in der customer-Tabelle.
+    $urls = null;
+    $hasUrls = false;
+    if (array_key_exists('urls', $data['profile'])) {
+        $hasUrls = true;
+        $urls = $data['profile']['urls'];
+        unset($data['profile']['urls']);
+    }
+
     // keywords vor dem Loop extrahieren und aus profile entfernen
     $keywords = null;
     $hasKeywords = false;
@@ -1269,6 +1281,18 @@ function saveCV($data) {
             "INSERT INTO $extTable ($extFk, emails) VALUES (:cid, :em)
              ON CONFLICT ($extFk) DO UPDATE SET emails = :em, mtime = now()",
             [':cid' => $cv_id, ':em' => $emailsJson]
+        );
+    }
+
+    // urls in customer_ext/vendor_ext speichern
+    if ($hasUrls && $cv_id) {
+        $urlsJson = (!empty($urls) && is_array($urls)) ? json_encode($urls) : null;
+        $extTable = ($src === 'V') ? 'vendor_ext' : 'customer_ext';
+        $extFk    = ($src === 'V') ? 'vendor_id'  : 'customer_id';
+        $apiCompanySpace->execute(
+            "INSERT INTO $extTable ($extFk, urls) VALUES (:cid, :ur)
+             ON CONFLICT ($extFk) DO UPDATE SET urls = :ur, mtime = now()",
+            [':cid' => $cv_id, ':ur' => $urlsJson]
         );
     }
 
