@@ -234,6 +234,46 @@ function shopChannelValue($db, int $kanal, string $key, string $default = ''): s
 }
 
 /**
+ * Adresse auf der Shop-Webseite aus einem Adressmuster des Kanals
+ *
+ * Die Muster (products_link, thumbnails_link, …) enthalten %s für den Namen.
+ * Die Widgets der Webseite bekommen so fertige Adressen und kennen selbst
+ * keine Pfade. Fehlt das Muster oder der Name, bleibt die Adresse leer — die
+ * Widgets zeigen dann keinen Link und kein Bild statt eines toten.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @param string $key Muster, etwa 'products_link'
+ * @param string $wert Name, der für %s eingesetzt wird (kodiert)
+ * @param string $anhang hinter die fertige Adresse, etwa '#focus' — nicht in
+ *                       das Muster, sonst stünde es vor einem Schrägstrich am Ende
+ * @return string
+ */
+function shopChannelLink($db, int $kanal, string $key, string $wert, string $anhang = ''): string {
+    $muster = shopChannelValue($db, $kanal, $key);
+    if ('' === trim($wert) || !str_contains($muster, '%s')) {
+        return '';
+    }
+    return str_replace('%s', rawurlencode($wert), $muster).$anhang;
+}
+
+/**
+ * Name der Produktseite eines Artikels, ohne Endung
+ *
+ * Wie die Seite in der Webseite heißt (shopPageFileName): die
+ * Produktseiten-Kennung, sonst die Artikelnummer, klein geschrieben.
+ *
+ * @param string $hyperlink parts_ext.hugoshop_hyperlink
+ * @param string $partnumber Artikelnummer
+ * @return string leer, wenn beides fehlt
+ */
+function shopPageSlug(string $hyperlink, string $partnumber): string {
+    $name = '' !== trim($hyperlink) ? $hyperlink : $partnumber;
+    $name = mb_strtolower(basename(trim($name)));
+    return str_ends_with($name, '.md') ? substr($name, 0, -3) : $name;
+}
+
+/**
  * Ein Einstellungswert eines Kanals als Wahrheitswert
  *
  * @param object $db Company-Datenbankverbindung

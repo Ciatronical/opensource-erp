@@ -133,12 +133,6 @@ function shopLogout($db, string $uuid, array $daten) {
     resultInfo(true, '', ['context' => $neu]);
 }
 
-/** Adresse der Artikelseite im Shop */
-function getProductLink($db, string $uuid, array $daten) {
-    $link = shopProductLink($db, shopVarInt($daten, 'product'));
-    resultInfo(true, '', ['hyperlink' => $link.'#focus']);
-}
-
 // ============================================================================
 // WARENKORB
 // ============================================================================
@@ -411,7 +405,7 @@ function findSpecialTools($db, string $uuid, array $daten, int $kanal) {
 function shopPublicActions(): array {
     return [
         // Sitzung
-        'getContext', 'shopLogin', 'shopLogout', 'getProductLink',
+        'getContext', 'shopLogin', 'shopLogout',
         // Warenkorb
         'getCart', 'inCart', 'deleteCartPos', 'changeQuantity',
         // Konto
@@ -489,8 +483,8 @@ function personalOrders($db, string $uuid, array $daten) {
 }
 
 /** Eine Bestellung des Kunden */
-function personalOrder($db, string $uuid, array $daten) {
-    resultInfo(true, '', customerInvoice($db, shopCustomerId($db, $uuid), shopVarInt($daten, 'id')));
+function personalOrder($db, string $uuid, array $daten, int $kanal) {
+    resultInfo(true, '', customerInvoice($db, shopCustomerId($db, $uuid), shopVarInt($daten, 'id'), $kanal));
 }
 
 /** Zusammenfassung zum Rechnungslink — auch für Gäste ohne Anmeldung */

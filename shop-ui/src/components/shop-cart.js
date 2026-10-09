@@ -6,6 +6,7 @@ import { emit, SHOP_CART_CHANGED } from '../core/bus.js';
 import { toNumber, formatPrice } from '../core/money.js';
 import { normalizeCart, cartTotals } from '../core/cart-data.js';
 import { t } from '../core/i18n.js';
+import { sameOriginHref } from '../core/links.js';
 
 /**
  * <shop-cart billing-page="/rechnung/" canceled-page="/bezahlung-abgebrochen/"></shop-cart>
@@ -37,7 +38,6 @@ export class ShopCart extends ShopElement {
     mode: { type: String },
     checkoutUrl: { type: String, attribute: 'checkout-url' },
     continueUrl: { type: String, attribute: 'continue-url' },
-    productUrl: { type: String, attribute: 'product-url' },
     paypalImage: { type: String, attribute: 'paypal-image' },
     heading: { type: String },
     // Lieferadresse der Kasse ({shipping: …} wie bei invoicing) — der Versand
@@ -102,16 +102,10 @@ export class ShopCart extends ShopElement {
         font-weight: 600;
         margin: 0 0 1rem;
       }
-      /* Als Button ausgezeichnet, weil das Ziel erst per API aufgeloest wird
-         (getProductLink) — sieht aus wie ein Link, ist aber keiner. */
-      .title button {
-        font: inherit;
+      /* Die Adresse der Produktseite kommt fertig aus getCart (products_link
+         des HugoShops) — ein echter Link. */
+      .title a {
         color: inherit;
-        background: none;
-        border: 0;
-        padding: 0;
-        text-align: left;
-        cursor: pointer;
         text-decoration: underline;
         text-underline-offset: 0.2em;
       }
@@ -185,7 +179,6 @@ export class ShopCart extends ShopElement {
     this.mode = 'cart';
     this.checkoutUrl = '/kasse/#focus';
     this.continueUrl = '/';
-    this.productUrl = '/produkt/';
     this.paypalImage = '/images/paypal-de.png';
     this.heading = '';
     this._cart = null;
@@ -337,13 +330,9 @@ export class ShopCart extends ShopElement {
     }
   }
 
-  async #openProduct(pos) {
-    try {
-      const data = await apiRequest('getProductLink', { product: pos.referencedId });
-      if (data && data.hyperlink) window.location.href = this.productUrl + data.hyperlink;
-    } catch (error) {
-      this._message = t(error.code || 'SHOP_API_ERROR');
-    }
+  #openProduct(pos) {
+    // Ohne Muster im HugoShop gibt es keine Adresse — dann bleibt die Seite stehen
+    if (pos.productUrl) window.location.href = sameOriginHref(pos.productUrl);
   }
 
   #cardClick(pos, event) {
@@ -408,13 +397,13 @@ export class ShopCart extends ShopElement {
         @click=${(event) => this.#cardClick(pos, event)}
       >
         <div>
-          ${pos.thumbnail
-            ? html`<img class="thumb" src="/images/thumbnails/${pos.thumbnail}" alt="" loading="lazy">`
+          ${pos.thumbnailUrl
+            ? html`<img class="thumb" src=${sameOriginHref(pos.thumbnailUrl)} alt="" loading="lazy">`
             : html`<div class="thumb thumb-empty"></div>`}
         </div>
         <div>
           <h3 class="title">
-            <button type="button" @click=${() => this.#openProduct(pos)}>${pos.label}</button>
+            ${pos.productUrl ? html`<a href=${sameOriginHref(pos.productUrl)}>${pos.label}</a>` : pos.label}
           </h3>
           ${pos.offered === false
             ? html`<div class="not-offered ${this.cls('alertError')}" role="status">${t('cart.notOffered')}</div>`

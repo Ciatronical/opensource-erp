@@ -44,8 +44,6 @@ function shopSearch($db, int $kanal, string $begriffe, int $limit = 5, int $offs
     }
 
     $gewicht      = shopConfigFloat($db, 'shop_search_weighting', 0.5);
-    $artikelLink  = shopChannelValue($db, $kanal, 'products_link');
-    $bildLink     = shopChannelValue($db, $kanal, 'thumbnails_link');
 
     // Gesucht wird unter den Artikeln mit aktiver Zeile im HugoShop, mit deren
     // Bezeichnung; gewichtet wird mit dem Kanalpreis.
@@ -95,15 +93,18 @@ function shopSearch($db, int $kanal, string $begriffe, int $limit = 5, int $offs
         ]
     );
 
-    return array_map(function ($zeile) use ($artikelLink, $bildLink) {
+    return array_map(function ($zeile) use ($db, $kanal) {
         return [
             'id'          => (int)$zeile['id'],
             'partnumber'  => mb_strtolower((string)$zeile['partnumber']),
             'description' => mb_strtolower((string)$zeile['description']),
             'category'    => $zeile['category'],
             'breadcrumbs' => json_decode((string)$zeile['breadcrumbs'], true) ?: [],
-            'hyperlink'   => shopSearchFormatLink($artikelLink, mb_strtolower((string)$zeile['hyperlink']).'#focus'),
-            'image'       => $zeile['image'] ? shopSearchFormatLink($bildLink, (string)$zeile['image']) : '',
+            // #focus hinter die fertige Adresse, nicht ins Muster — sonst
+            // stünde es vor dem Schrägstrich am Ende von /produkt/%s/
+            'hyperlink'   => shopChannelLink($db, $kanal, 'products_link',
+                                             shopPageSlug((string)$zeile['hyperlink'], (string)$zeile['partnumber']), '#focus'),
+            'image'       => shopChannelLink($db, $kanal, 'thumbnails_link', (string)$zeile['image']),
         ];
     }, $treffer);
 }
@@ -130,21 +131,4 @@ function shopSearchQuery(string $begriffe): string {
     }
 
     return implode(' | ', $teile);
-}
-
-/**
- * Setzt einen Wert in ein Adressmuster ein
- *
- * Ohne Muster bleibt der Wert stehen — dann baut die Oberflaeche die Adresse
- * selbst zusammen.
- *
- * @param string $muster Adressmuster mit %s, oder leer
- * @param string $wert Einzusetzender Wert
- * @return string
- */
-function shopSearchFormatLink(string $muster, string $wert): string {
-    if ('' === $muster || false === strpos($muster, '%s')) {
-        return $wert;
-    }
-    return sprintf($muster, $wert);
 }

@@ -389,6 +389,15 @@ der Kanalkarte nur lesend an, dazu einen Vorschlag für `products_link`,
 liefert `static/` unter `/` aus — bei anderen Sprachen oder eigenen Permalinks
 weicht die Adresse ab, deshalb nur ein Vorschlag).
 
+**Adressmuster in den Widgets** (seit 2026-10-09): Warenkorb, Bestellungen im
+Kundenkonto, Suche und Werkzeugsuche bekommen die Adressen von Produktseite und
+Vorschaubild fertig aus dem Backend (`shopChannelLink`, aus `products_link` und
+`thumbnails_link` des HugoShops; Seitenname wie die Datei, `shopPageSlug`).
+Fehlt ein Muster, zeigen sie keinen Link bzw. kein Bild. Die Aktion
+`getProductLink` und die Attribute `product-url`/`thumbnail-url` sind
+entfallen. Die Pfade der übrigen Seiten (Kasse, Anmeldung, Rechnungsseite …)
+sind Attribute der Shortcodes.
+
 **Gebaut wird in HugoCMS**, mit dem Hugo-Programm aus dessen `hugocms.ini`
 (`[hugo] bin`); `--cleanDestinationDir` stellt dort `[hugo] clean` ein.
 Entwürfe (`draft: true`) baut HugoCMS nicht mit.

@@ -193,18 +193,3 @@ function shopLoginCustomer($db, string $uuid, string $email, string $password): 
 function shopLogoutCustomer($db, string $uuid): void {
     $db->execute("DELETE FROM context_hugoshop WHERE uuid = :uuid", [':uuid' => $uuid]);
 }
-
-/**
- * Adresse der Artikelseite im Shop
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $partsId Artikel
- * @return string Zielseite, klein geschrieben; leer wenn nicht gepflegt
- */
-function shopProductLink($db, int $partsId): string {
-    $zeile = $db->getOne(
-        "SELECT hugoshop_hyperlink FROM parts_ext WHERE parts_id = :parts_id",
-        [':parts_id' => $partsId]
-    );
-    return mb_strtolower((string)($zeile['hugoshop_hyperlink'] ?? ''));
-}

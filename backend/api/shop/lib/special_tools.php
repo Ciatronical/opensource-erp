@@ -40,8 +40,6 @@ function shopFindSpecialTools($db, int $kanal, array $daten): array {
         return $leer;
     }
 
-    $artikelLink = shopChannelValue($db, $kanal, 'products_link');
-    $bildLink    = shopChannelValue($db, $kanal, 'thumbnails_link');
     $zone        = shopConfigValue($db, 'shop_standard_taxzone', 'Inland');
     $brutto      = shopConfigBool($db, 'shop_tax_included', false) ? 1 : 0;
 
@@ -117,7 +115,7 @@ function shopFindSpecialTools($db, int $kanal, array $daten): array {
     ]);
 
     $ergebnis = json_decode((string)($zeile['result'] ?? ''), true) ?: [];
-    $preis = function (?array $angebot) use ($artikelLink, $bildLink, $brutto) {
+    $preis = function (?array $angebot) use ($db, $kanal, $brutto) {
         if (!$angebot) return null;
         $netto = (float)$angebot['price'];
         $satz  = (float)($angebot['taxrate'] ?? 0);
@@ -127,10 +125,9 @@ function shopFindSpecialTools($db, int $kanal, array $daten): array {
             'price_gross' => round($brutto ? $netto : $netto * (1 + $satz), 2),
             'price_net'   => round($brutto ? $netto / (1 + $satz) : $netto, 2),
             'available'   => filter_var($angebot['available'] ?? false, FILTER_VALIDATE_BOOLEAN),
-            'hyperlink'   => !empty($angebot['hyperlink'])
-                ? shopSearchFormatLink($artikelLink, mb_strtolower((string)$angebot['hyperlink']))
-                : '',
-            'image'       => !empty($angebot['image']) ? shopSearchFormatLink($bildLink, (string)$angebot['image']) : '',
+            'hyperlink'   => shopChannelLink($db, $kanal, 'products_link',
+                                             shopPageSlug((string)($angebot['hyperlink'] ?? ''), (string)$angebot['partnumber'])),
+            'image'       => shopChannelLink($db, $kanal, 'thumbnails_link', (string)($angebot['image'] ?? '')),
         ];
     };
 

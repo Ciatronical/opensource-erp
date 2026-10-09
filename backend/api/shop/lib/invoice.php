@@ -335,10 +335,12 @@ function customerInvoices($db, int $customerId): array {
  * @param object $db Company-Datenbankverbindung
  * @param int $customerId Kunde
  * @param int $arId Rechnung
+ * @param int $kanal HugoShop der Anfrage — seine Adressmuster gelten für die
+ *                   Links der Positionen; 0 = ohne Links
  * @return array
  * @throws ApiError INVOICE_NOT_FOUND
  */
-function customerInvoice($db, int $customerId, int $arId): array {
+function customerInvoice($db, int $customerId, int $arId, int $kanal = 0): array {
     $rechnung = $db->getOne(
         "SELECT ar.id, ar.invnumber, ar.transdate AS invdate, ar.duedate,
                 TRUNC(ar.amount, 2) AS invtotal, TRUNC(ar.netamount, 2) AS subtotal,
@@ -364,7 +366,7 @@ function customerInvoice($db, int $customerId, int $arId): array {
 
     return [
         'invoice'   => $rechnung,
-        'positions' => shopInvoicePositions($db, $arId),
+        'positions' => shopInvoicePositions($db, $arId, $kanal),
         'taxes'     => shopInvoiceTaxes($db, $arId),
         'shipping'  => shopInvoiceShippingAddress($db, $arId),
     ];
@@ -373,13 +375,18 @@ function customerInvoice($db, int $customerId, int $arId): array {
 /**
  * Positionen einer Rechnung
  *
+ * Mit Adresse der Produktseite und des Vorschaubilds aus den Mustern des
+ * HugoShops, über den der Kunde gerade fragt (product_url, thumbnail_url).
+ *
  * @param object $db Company-Datenbankverbindung
  * @param int $arId Rechnung
+ * @param int $kanal HugoShop für die Adressen, 0 = keine
  * @return array
  */
-function shopInvoicePositions($db, int $arId): array {
-    return $db->getAll(
+function shopInvoicePositions($db, int $arId, int $kanal = 0): array {
+    $positionen = $db->getAll(
         "SELECT i.parts_id, i.position AS runningnumber, p.partnumber AS number,
+                pe.hugoshop_hyperlink,
                 i.description, TRUNC(i.qty) AS qty, COALESCE(i.unit, p.unit) AS unit,
                 TRUNC(i.discount * 100) AS p_discount,
                 TRUNC(i.fxsellprice, 2) AS sellprice,
@@ -393,6 +400,16 @@ function shopInvoicePositions($db, int $arId): array {
           ORDER BY i.position",
         [':ar_id' => $arId]
     );
+
+    return array_map(function (array $p) use ($db, $kanal): array {
+        $p['product_url'] = $kanal > 0 && null !== $p['parts_id']
+            ? shopChannelLink($db, $kanal, 'products_link',
+                              shopPageSlug((string)$p['hugoshop_hyperlink'], (string)$p['number']), '#focus')
+            : '';
+        $p['thumbnail_url'] = $kanal > 0 ? shopChannelLink($db, $kanal, 'thumbnails_link', (string)$p['thumbnail']) : '';
+        unset($p['hugoshop_hyperlink']);
+        return $p;
+    }, $positionen);
 }
 
 /**

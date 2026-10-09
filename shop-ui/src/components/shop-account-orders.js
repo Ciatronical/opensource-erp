@@ -7,6 +7,7 @@ import { formatPrice } from '../core/money.js';
 import { formatDate } from '../core/dates.js';
 import { cityLine } from '../core/account-data.js';
 import { t } from '../core/i18n.js';
+import { sameOriginHref } from '../core/links.js';
 
 /**
  * <shop-account-orders></shop-account-orders>
@@ -33,8 +34,6 @@ import { t } from '../core/i18n.js';
 export class ShopAccountOrders extends ShopAccountElement {
   static properties = {
     apiUrl: { type: String, attribute: 'api-url' },
-    productUrl: { type: String, attribute: 'product-url' },
-    thumbnailUrl: { type: String, attribute: 'thumbnail-url' },
     _orders: { state: true },
     _detail: { state: true },
     _busy: { state: true },
@@ -102,8 +101,7 @@ export class ShopAccountOrders extends ShopAccountElement {
         font-size: 1.05rem;
         margin: 0 0 0.75rem;
       }
-      /* Sieht aus wie ein Link, ist aber keiner: das Ziel loest erst
-         getProductLink auf. */
+      /* Knopf, der wie ein Link aussieht (Bestellung öffnen) */
       .link-button {
         font: inherit;
         color: inherit;
@@ -127,8 +125,6 @@ export class ShopAccountOrders extends ShopAccountElement {
   constructor() {
     super();
     this.apiUrl = '/shop-api/';
-    this.productUrl = '/produkt/';
-    this.thumbnailUrl = '/images/thumbnails/';
     this._orders = [];
     this._detail = null;
     this._busy = false;
@@ -176,20 +172,6 @@ export class ShopAccountOrders extends ShopAccountElement {
       this._state = 'error';
     } finally {
       this._busy = false;
-    }
-  }
-
-  async #openProduct(partsId) {
-    if (!partsId) return;
-    try {
-      const data = await apiRequest('getProductLink', { product: partsId });
-      // Ohne angehaengten Schraegstrich: getProductLink liefert den Link
-      // inklusive Fragment ('…-t40h#focus'). Das alte account.js haengte
-      // ein '/' an und schob es damit IN das Fragment — die Seite sprang
-      // dann nicht mehr an die richtige Stelle. cart.js machte es richtig.
-      if (data && data.hyperlink) window.location.href = this.productUrl + data.hyperlink;
-    } catch {
-      /* Ohne Ziel bleibt die Seite stehen — besser als ein toter Sprung. */
     }
   }
 
@@ -305,20 +287,20 @@ export class ShopAccountOrders extends ShopAccountElement {
         (position) => `${position.parts_id}-${position.runningnumber}`,
         (position) => html`
           <div class="position" part="position">
-            ${position.thumbnail
+            ${position.thumbnail_url
               ? html`<img
                   class="thumb"
                   part="thumb"
-                  src=${this.thumbnailUrl + position.thumbnail}
+                  src=${sameOriginHref(position.thumbnail_url)}
                   alt=""
                   loading="lazy"
                 />`
               : html`<div></div>`}
             <div>
               <h3>
-                <button class="link-button" @click=${() => this.#openProduct(position.parts_id)}>
-                  ${position.description}
-                </button>
+                ${position.product_url
+                  ? html`<a href=${sameOriginHref(position.product_url)}>${position.description}</a>`
+                  : position.description}
               </h3>
               <div class="order-line">
                 <strong>${t('orders.quantity')}:</strong> ${position.qty}

@@ -548,8 +548,8 @@ function shopYamlList(array $werte): string {
 /**
  * Setzt einen Dateinamen in ein Adressmuster mit %s
  *
- * Ohne Muster bleibt der Name stehen — wie shopSearchFormatLink(), das hier
- * nicht geladen ist (der Laeufer braucht die Suche nicht).
+ * Ohne Muster bleibt der Name stehen. Für die Widgets der Webseite gilt
+ * shopChannelLink() (leer statt des bloßen Namens).
  */
 function shopLink(string $muster, string $wert): string {
     if ('' === $muster || false === strpos($muster, '%s')) {
@@ -585,13 +585,14 @@ function shopNumber($wert, int $stellen = 2): string {
  * @return string
  */
 function shopPageFileName(array $seite): string {
-    $name = $seite['shop']['hyperlink'] !== '' ? $seite['shop']['hyperlink'] : $seite['artikel']['partnumber'];
-    $name = mb_strtolower(basename(trim($name)));
+    // Derselbe Name, unter dem Warenkorb, Bestellungen und Suche die Seite
+    // verlinken (shopPageSlug, shopChannelLink)
+    $name = shopPageSlug((string)$seite['shop']['hyperlink'], (string)$seite['artikel']['partnumber']);
 
     if ('' === $name) {
         throw new ApiError('SHOP_PAGE_NAME_MISSING', 'Weder Produktseite noch Artikelnummer gesetzt');
     }
-    return str_ends_with($name, '.md') ? $name : $name.'.md';
+    return $name.'.md';
 }
 
 /**

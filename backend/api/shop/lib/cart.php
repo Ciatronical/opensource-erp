@@ -209,6 +209,7 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, 
                     ROUND(k.preis * cps.amount / :precision) * :precision AS total_price,
                     ps.buchungsgruppen_id,
                     psh.hugoshop_images ->> 0 AS thumbnail,
+                    kb.channel_id, ps.partnumber, psh.hugoshop_hyperlink,
                     (pc.active AND shop_active_channel_id(kb.channel_id) IS NOT NULL
                          AND shop_part_available(ps.id, kb.channel_id)) IS TRUE AS offered,
                     pss.min_qty,
@@ -247,6 +248,7 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, 
                     tax.chart_id AS taxservice_accno_id, tax.rate AS tax_rate,
                     ch_tax.link AS taxservice_link,
                     psh.hugoshop_images ->> 0 AS thumbnail,
+                    kb.channel_id, ps.partnumber, psh.hugoshop_hyperlink,
                     (pc.active AND shop_active_channel_id(kb.channel_id) IS NOT NULL
                          AND shop_part_available(ps.id, kb.channel_id)) IS TRUE AS offered,
                     pss.min_qty,
@@ -276,6 +278,14 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, 
 
     $summen = cartTotals($db, $cartUuid, $precision, $taxzoneId,
                          $land ?? shopShippingCountry($db, $customerId, [], true));
+
+    // Adressen auf der Webseite aus den Mustern des HugoShops, zu dem der
+    // Warenkorb gehört — die Widgets kennen selbst keine Pfade
+    $positionen = array_map(fn($p) => $p + [
+        'product_url'   => shopChannelLink($db, (int)$p['channel_id'], 'products_link',
+                                           shopPageSlug((string)$p['hugoshop_hyperlink'], (string)$p['partnumber']), '#focus'),
+        'thumbnail_url' => shopChannelLink($db, (int)$p['channel_id'], 'thumbnails_link', (string)$p['thumbnail']),
+    ], $positionen);
 
     $daten = [
         'positions'                => array_map(fn($p) => cartPositionShape($p, $simple), $positionen),
@@ -331,6 +341,10 @@ function cartPositionShape(array $p, bool $simple): array {
         'totalPrice'         => (float)$p['total_price'],
         'buchungsgruppen_id' => $p['buchungsgruppen_id'],
         'thumbnail'          => $p['thumbnail'],
+        // Fertige Adressen auf der Webseite (products_link, thumbnails_link
+        // des HugoShops), leer ohne Muster
+        'productUrl'         => (string)($p['product_url'] ?? ''),
+        'thumbnailUrl'       => (string)($p['thumbnail_url'] ?? ''),
         // false: nicht mehr im Shop angeboten (O2) — der Kauf wird abgelehnt,
         // bis die Position entfernt ist
         'offered'            => in_array($p['offered'] ?? true, [true, 't', 1, '1'], true),

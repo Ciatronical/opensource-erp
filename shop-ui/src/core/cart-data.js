@@ -44,6 +44,10 @@ export function cartPosition(pos) {
     unitPrice: toNumber(pos.unitPrice),
     totalPrice: toNumber(pos.totalPrice),
     thumbnail: pos.thumbnail || null,
+    // Fertige Adressen aus den Mustern des HugoShops (products_link,
+    // thumbnails_link); leer = kein Link bzw. kein Bild
+    productUrl: pos.productUrl || '',
+    thumbnailUrl: pos.thumbnailUrl || '',
     // false: nicht mehr im Shop angeboten (V23) — ältere Backends liefern nichts
     offered: pos.offered !== false,
     // Lieferbedingung ("Versandfertig in 4-8 Wochen") und Mindestabnahme
