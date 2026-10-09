@@ -557,15 +557,67 @@ CREATE OR REPLACE FUNCTION shop_auto_publish_enabled(p_channel_id integer) RETUR
        AND shop_extension_active()
 $$;
 
+-- Dateiname der Produktseite: die Produktseiten-Kennung, sonst die
+-- Artikelnummer, klein, ohne Verzeichnis, mit .md — wie shopPageFileName()
+-- und shopPageSlug() in PHP. NULL, wenn beides fehlt.
+CREATE OR REPLACE FUNCTION shop_page_file_name(p_hyperlink text, p_partnumber text) RETURNS text
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE WHEN n = '' THEN NULL
+                WHEN n LIKE '%.md' THEN n
+                ELSE n || '.md' END
+      FROM (SELECT lower(regexp_replace(btrim(COALESCE(NULLIF(btrim(p_hyperlink), ''), p_partnumber, '')),
+                                        '^.*/', '')) AS n) x
+$$;
+
+-- Produktseite eines Artikels neu schreiben lassen: in jedem eingeschalteten
+-- HugoShop, in dem er angeboten wird und der automatisch neu veröffentlicht
+-- (shop_auto_publish). Ändert sich dabei der Dateiname (neue
+-- Produktseiten-Kennung, neue Artikelnummer ohne Kennung), steht der alte im
+-- param des Auftrags: der Lauf entfernt die Seite unter dem alten Namen,
+-- sonst bliebe sie verwaist mit altem Preis online. Ein eigener remove_part
+-- ginge nicht — shop_queue_job hebt Aufträge der Gegenrichtung für dieselbe
+-- Artikelnummer auf. Gilt nur der erste alte Name: Zwischennamen vor dem
+-- nächsten Lauf gab es auf der Webseite nie.
+CREATE OR REPLACE FUNCTION shop_queue_page_rewrite(p_parts_id integer, p_partnumber text, p_old_file text)
+    RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    kanal integer;
+BEGIN
+    FOR kanal IN
+        SELECT c.id
+          FROM parts_channel_shop pc
+          JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active AND c.type = 'hugoshop'
+         WHERE pc.parts_id = p_parts_id
+           AND pc.active
+           AND shop_auto_publish_enabled(c.id)
+    LOOP
+        PERFORM shop_queue_job('publish_part', p_partnumber, NULL, kanal);
+        IF p_old_file IS NOT NULL THEN
+            UPDATE batchjob_hugoshop
+               SET param = p_old_file
+             WHERE result IS NULL
+               AND function = 'publish_part'
+               AND partnumber = p_partnumber
+               AND channel_id = kanal
+               AND param IS NULL;
+        END IF;
+    END LOOP;
+END;
+$$;
+
 -- Änderung am Artikel (parts gehört kivitendo: hier kommt nur ein Trigger
 -- dazu, die Tabelle selbst bleibt unverändert). Je eingeschaltetem Kanal, in
 -- dem der Artikel angeboten wird:
---   HugoShop  Verkaufspreis oder Buchungsgruppe (Steuersatz) — die Seite
---             trägt den Preis —, dazu „Veraltet“ (obsolete): die Seite zeigt
---             die Verfügbarkeit, und das Gewicht: es entscheidet, ob eine
---             Versandart passt (shop_part_shipping_check), sonst wird die
---             Seite zum Entwurf; nur bei shop_auto_publish
---   Marktplatz zusätzlich Bestand, Beschreibung und Langbeschreibung
+--   HugoShop  alles, was auf der Seite steht oder über sie entscheidet:
+--             Verkaufspreis und Buchungsgruppe (Steuersatz), „Veraltet“,
+--             Gewicht (passt eine Versandart, sonst Entwurf), Bezeichnung
+--             und Langbeschreibung (gelten, solange die Kanalzeile keine
+--             eigenen hat), Einheit, EAN, Artikelnummer, und der Bestand nur
+--             beim Wechsel zwischen vorrätig und nicht vorrätig — die Seite
+--             zeigt nur das. Nur bei shop_auto_publish
+--             (shop_queue_page_rewrite).
+--   Marktplatz Preis, Buchungsgruppe, „Veraltet“, Gewicht, Bestand,
+--              Beschreibung und Langbeschreibung
 CREATE OR REPLACE FUNCTION parts_shop_auto_publish() RETURNS trigger AS $$
 DECLARE
     preis   boolean := OLD.sellprice IS DISTINCT FROM NEW.sellprice
@@ -575,18 +627,62 @@ DECLARE
     sonst   boolean := OLD.onhand IS DISTINCT FROM NEW.onhand
                        OR OLD.description IS DISTINCT FROM NEW.description
                        OR OLD.notes IS DISTINCT FROM NEW.notes;
+    seite   boolean := preis
+                       OR OLD.description IS DISTINCT FROM NEW.description
+                       OR OLD.notes IS DISTINCT FROM NEW.notes
+                       OR OLD.unit IS DISTINCT FROM NEW.unit
+                       OR OLD.ean IS DISTINCT FROM NEW.ean
+                       OR OLD.partnumber IS DISTINCT FROM NEW.partnumber
+                       OR (COALESCE(OLD.onhand, 0) > 0) IS DISTINCT FROM (COALESCE(NEW.onhand, 0) > 0);
+    kennung text;
+    alt     text;
+    neu     text;
 BEGIN
     IF NOT shop_extension_active() THEN
         RETURN NULL;
     END IF;
 
+    -- Marktplätze gleichen immer ab
     PERFORM shop_queue_job('publish_part', NEW.partnumber, NULL, c.id)
        FROM parts_channel_shop pc
-       JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active
+       JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active AND c.type <> 'hugoshop'
       WHERE pc.parts_id = NEW.id
         AND pc.active
-        AND CASE WHEN c.type = 'hugoshop' THEN preis AND shop_auto_publish_enabled(c.id)
-                 ELSE preis OR sonst END;
+        AND (preis OR sonst);
+
+    IF seite THEN
+        SELECT hugoshop_hyperlink INTO kennung FROM parts_ext WHERE parts_id = NEW.id;
+        alt := shop_page_file_name(kennung, OLD.partnumber);
+        neu := shop_page_file_name(kennung, NEW.partnumber);
+        PERFORM shop_queue_page_rewrite(NEW.id, NEW.partnumber,
+                                        CASE WHEN alt IS DISTINCT FROM neu THEN alt END);
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Änderung an den Shop-Angaben eines Artikels (parts_ext: Bilder, Kategorie,
+-- Navigationspfad, technische Daten, Eigenschaften, Downloads, Kennung der
+-- Produktseite): sie stehen nur auf den Seiten der HugoShops. Seite neu, nur
+-- bei shop_auto_publish; eine neue Kennung entfernt die Seite unter dem
+-- alten Namen (shop_queue_page_rewrite). Eine neue Zeile löst nichts aus —
+-- veröffentlicht wird ein Artikel zum ersten Mal vom Benutzer.
+CREATE OR REPLACE FUNCTION parts_ext_shop_auto_publish() RETURNS trigger AS $$
+DECLARE
+    nummer text;
+    alt    text;
+    neu    text;
+BEGIN
+    IF NOT shop_extension_active() THEN
+        RETURN NULL;
+    END IF;
+    SELECT partnumber INTO nummer FROM parts WHERE id = NEW.parts_id;
+    IF nummer IS NULL THEN
+        RETURN NULL;
+    END IF;
+    alt := shop_page_file_name(OLD.hugoshop_hyperlink, nummer);
+    neu := shop_page_file_name(NEW.hugoshop_hyperlink, nummer);
+    PERFORM shop_queue_page_rewrite(NEW.parts_id, nummer, CASE WHEN alt IS DISTINCT FROM neu THEN alt END);
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -754,16 +850,38 @@ $$ LANGUAGE plpgsql;
 -- die alte Fassung.
 DO $$ BEGIN
     DROP TRIGGER IF EXISTS trigger_parts_shop_auto_publish ON parts;
+    -- weight stand bis 2026-10-09 nur in der Funktion, nicht hier — eine
+    -- Gewichtsänderung löste deshalb nie etwas aus
     CREATE TRIGGER trigger_parts_shop_auto_publish
-        AFTER UPDATE OF sellprice, buchungsgruppen_id, obsolete, weight, onhand, description, notes ON parts
+        AFTER UPDATE OF sellprice, buchungsgruppen_id, obsolete, weight, onhand, description, notes,
+                        unit, ean, partnumber ON parts
         FOR EACH ROW
         WHEN (OLD.sellprice IS DISTINCT FROM NEW.sellprice
               OR OLD.buchungsgruppen_id IS DISTINCT FROM NEW.buchungsgruppen_id
               OR OLD.obsolete IS DISTINCT FROM NEW.obsolete
+              OR OLD.weight IS DISTINCT FROM NEW.weight
               OR OLD.onhand IS DISTINCT FROM NEW.onhand
               OR OLD.description IS DISTINCT FROM NEW.description
-              OR OLD.notes IS DISTINCT FROM NEW.notes)
+              OR OLD.notes IS DISTINCT FROM NEW.notes
+              OR OLD.unit IS DISTINCT FROM NEW.unit
+              OR OLD.ean IS DISTINCT FROM NEW.ean
+              OR OLD.partnumber IS DISTINCT FROM NEW.partnumber)
         EXECUTE FUNCTION parts_shop_auto_publish();
+END $$;
+
+DO $$ BEGIN
+    DROP TRIGGER IF EXISTS trigger_parts_ext_shop_auto_publish ON parts_ext;
+    CREATE TRIGGER trigger_parts_ext_shop_auto_publish
+        AFTER UPDATE ON parts_ext
+        FOR EACH ROW
+        WHEN (OLD.hugoshop_hyperlink IS DISTINCT FROM NEW.hugoshop_hyperlink
+              OR OLD.hugoshop_category IS DISTINCT FROM NEW.hugoshop_category
+              OR OLD.hugoshop_breadcrumbs IS DISTINCT FROM NEW.hugoshop_breadcrumbs
+              OR OLD.hugoshop_images IS DISTINCT FROM NEW.hugoshop_images
+              OR OLD.hugoshop_technical_data IS DISTINCT FROM NEW.hugoshop_technical_data
+              OR OLD.hugoshop_properties IS DISTINCT FROM NEW.hugoshop_properties
+              OR OLD.hugoshop_downloads IS DISTINCT FROM NEW.hugoshop_downloads)
+        EXECUTE FUNCTION parts_ext_shop_auto_publish();
 END $$;
 
 DO $$ BEGIN

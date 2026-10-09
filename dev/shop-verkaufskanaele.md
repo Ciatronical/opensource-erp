@@ -505,7 +505,8 @@ der Shop-UI.
 
 | Objekt | Auslöser | Auftrag |
 | --- | --- | --- |
-| `trigger_parts_shop_auto_publish` auf `parts` | Verkaufspreis oder Buchungsgruppe eines im HugoShop angebotenen Artikels | `publish_part` |
+| `trigger_parts_shop_auto_publish` auf `parts` | Verkaufspreis oder Buchungsgruppe eines im HugoShop angebotenen Artikels; seit 2026-10-09 auch „Veraltet“, Gewicht, Bezeichnung, Langbeschreibung, Einheit, EAN, Artikelnummer und der Wechsel zwischen vorrätig und nicht vorrätig | `publish_part` (bei neuem Dateinamen mit dem alten in `param`) |
+| `trigger_parts_ext_shop_auto_publish` auf `parts_ext` (seit 2026-10-09) | Shop-Angaben: Bilder, Kategorie, Navigationspfad, technische Daten, Eigenschaften, Downloads, Kennung der Produktseite | `publish_part` (bei neuer Kennung mit dem alten Dateinamen in `param`) |
 | `trigger_parts_channel_shop_auto_publish` | Aufschlag, Bezeichnung oder Langbeschreibung im HugoShop (nur echte Änderungen — das Speichern der Artikelkarte schreibt jedes Mal alle Zeilen) | `publish_part` |
 | `trigger_defaults_oserp_shop_auto_publish` | `shop_tax_included` umgeschaltet | `publish_all` |
 | `saveShopChannel` (V9) | Kanalvorgaben des HugoShops | `publish_all` |
