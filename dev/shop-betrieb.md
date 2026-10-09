@@ -228,6 +228,72 @@ aufbewahren (Tage)**, gespeichert als `shop_job_retention_days` in
 `defaults_oserp`, Vorgabe 30 Tage. `0` schaltet das Aufräumen im Läufer ab, dann
 bleibt der Knopf. `--no-cleanup` lässt einen einzelnen Lauf nichts löschen.
 
+## Verkaufskanal abschalten
+
+Abgeschaltet wird in der Kanalkarte (Shop-Menü → Verkaufskanäle). Ein Teil
+wirkt sofort beim Speichern, der Rest beim nächsten Lauf. Entscheidungen:
+V16 (HugoShop) und V26 (eBay) in `dev/shop-verkaufskanaele.md`.
+
+### HugoShop
+
+**Sofort** (`shopChannelHugoshopSwitched`, `channels/hugoshop.php`):
+
+- Offene Aufträge, die veröffentlichen würden (`publish_all`, `publish_part`)
+  oder schon fürs Abschalten angelegt waren (`draft_all`, `remove_all`),
+  werden gelöscht — sonst hinterließe aus-an-aus die Seiten veröffentlicht.
+- Ein neuer Auftrag nach „Seiten beim Abschalten des HugoShops“
+  (`channel_off_pages`, Abschnitt Veröffentlichung der Kanalkarte):
+
+  | Einstellung | Auftrag (Name in der Liste) | Wirkung |
+  | --- | --- | --- |
+  | Als Entwurf behalten (Vorgabe) | `draft_all` („Alle Produktseiten als Entwurf“) | Seiten mit `draft: true` neu geschrieben; Hugo veröffentlicht sie nicht mehr, die Dateien bleiben auf der Webseite |
+  | Entfernen | `remove_all` („Alle Produktseiten entfernen“) | Seiten aus der Bereitstellung gelöscht (`shopRemovePage`); bei der Übertragung fehlen sie in der Lieferung, und HugoCMS löscht sie aus der Webseite (es entfernt, was die vorige Lieferung enthielt und die aktuelle nicht) |
+
+**Im Shop**, sobald der Kanal aus ist (`shopClosedActions`, `shopIsOpen`):
+In den Warenkorb legen, Menge ändern, Kasse, Rechnung und Zahlungsbeginn
+antworten mit `SHOP_CLOSED` („Der Shop nimmt derzeit keine Bestellungen an“).
+Erreichbar bleiben Anmeldung, Kundenkonto, Bestellungen, Rechnungsseite und
+PDF, der Rücksprung einer schon begonnenen PayPal-Zahlung, Widerruf, Kontakt
+und Suche.
+
+**Beim nächsten Lauf:** Der Auftrag wird abgearbeitet, an HugoCMS übertragen
+und gebaut. Hat der Kanal keinen Shop-Schlüssel oder keinen HugoCMS-Zugang,
+wird der Auftrag ohne Wirkung erledigt („ok: übersprungen — HugoShop
+abgeschaltet und nicht eingerichtet“), statt dauerhaft ausgesetzt zu bleiben —
+es gibt dann nichts zu veröffentlichen oder zurückzunehmen, und der Kanal
+bleibt löschbar (`shopRunJobs`, `lib/publish.php`). Steht kein Auftrag mehr an,
+lässt der Lauf Paket, Kategorieübersicht und Bau dieses Kanals aus.
+
+**Einschalten:** offene `draft_all`/`remove_all` werden gelöscht,
+`publish_all` schreibt alle Seiten neu.
+
+### eBay
+
+- **Sofort:** offene `publish_all`/`publish_part` werden gelöscht, `remove_all`
+  angelegt — der nächste Lauf beendet damit alle Angebote bei eBay
+  (`shopChannelEbaySwitched`, `channels/ebay.php`).
+- Der Bestellabruf holt keine neuen Bestellungen mehr; er fragt den Schalter
+  selbst ab (`shopEbayActive`).
+- **Einschalten:** offene `remove_all`/`remove_part` werden gelöscht,
+  `publish_all` stellt die angebotenen Artikel neu ein.
+
+### Was bleibt
+
+- Die Zuordnung der Artikel zum Kanal mit Preis, Titel, Beschreibung und
+  Bildern (`parts_channel_shop`) — Grundlage für das Wiedereinschalten.
+- Belege: Rechnungen samt Bestell- und Lieferstatus, Widerrufe,
+  eBay-Bestellungen; sie behalten ihren Kanal.
+- In der Shop-Übersicht erscheint der Kanal nicht mehr bei Kennzahlen und
+  Hinweisen.
+
+### Löschen
+
+Ein Kanal lässt sich nur abgeschaltet löschen, und nur, wenn keine Aufträge
+mehr offen sind und keine Belege an ihm hängen (Rechnungen, Widerrufe,
+eBay-Bestellungen). Ist das nicht so, nennt die Kanalkarte den Grund mit
+Anzahl („3 offene Aufträge, 12 Rechnungen“). Offene Aufträge erledigt der
+nächste Lauf; mit Belegen bleibt der Kanal abgeschaltet stehen.
+
 ## Vorlagensätze
 
 Gesucht wird wie beim Druck: erst `<templates_dir>/shop/<name>/`, dann

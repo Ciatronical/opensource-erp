@@ -19,7 +19,7 @@
         </v-alert>
 
         <template v-for="(feld, index) in felder" :key="feld.name + '-' + index">
-            <div v-if="feld.type === 'headline'" class="text-subtitle-2 text-primary mt-4">
+            <div v-if="feld.type === 'headline'" class="text-subtitle-2 text-primary mt-4 pt-4">
                 {{ t(feld.label) }}
                 <v-divider class="mt-1" />
             </div>

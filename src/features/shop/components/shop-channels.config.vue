@@ -122,7 +122,7 @@
                 </div>
             </v-alert>
 
-            <v-card-text class="pt-0">
+            <v-card-text class="pt-4">
                 <v-row dense>
                     <v-col cols="12" sm="6" md="4" class="py-1">
                         <v-text-field
@@ -145,7 +145,7 @@
                     persistent-hint
                     color="primary"
                     density="compact"
-                    class="mb-2"
+                    class="mb-2 pt-2"
                 />
                 <!-- M3: neue Shop-Artikel automatisch in diesen Kanal aufnehmen -->
                 <v-switch
@@ -159,7 +159,7 @@
                 />
 
                 <v-row dense>
-                    <v-col cols="12" sm="6" md="4" class="py-1">
+                    <v-col cols="12" sm="6" md="4" class="pt-5 pb-1">
                         <v-select
                             v-model="kanal.markup_type"
                             :items="aufschlagArten"

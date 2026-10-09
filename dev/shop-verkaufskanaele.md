@@ -853,7 +853,7 @@ möglich:
 | P6 | Lagerbuchung gegen die echte Datenbank (weitere Trigger auf `inventory`, etwa `check_bin_wh_inventory`) | V28 |
 | P7 | Artikelkarte im Browser: Kanäle, Aufschlag, Vorschau, Texte, Bilder hochladen, umsortieren, übernehmen | Schritt 2, Schritt 5 |
 | P8 | Firmenkonfiguration im Browser: Verkaufskanäle, eBay-Gruppe, Geheimnisse bleiben leer und erhalten, Lagerplatz | Schritt 3, Schritt 5 |
-| P9 | HugoShop abschalten und einschalten, je einmal mit „Entwurf“ und „Entfernen“, in beiden Betriebsarten (lokal, HugoCMS) | V16 |
+| P9 | HugoShop abschalten und einschalten, je einmal mit „Entwurf“ und „Entfernen“, über HugoCMS (die Betriebsart „lokal“ gibt es seit 2026-10-07 nicht mehr) | V16 |
 | P10 | Shop-UI nach dem Abgleich des Webseiten-Pakets: „Shop geschlossen“, „Nicht mehr erhältlich“, Kauf eines abgewählten Artikels | V16, V23 |
 | P11 | PayPal-Sandbox: Kauf mit Kanalaufschlag und Rundung auf ,99, Bruttopreise und Nettopreise in den Stammdaten | V2, Befund Warenkorb |
 | P12 | Bridge (`run.php`), falls noch in Betrieb: neue Artikel erscheinen im HugoShop | V7, V25 |
