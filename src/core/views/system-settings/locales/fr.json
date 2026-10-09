@@ -84,7 +84,7 @@
             "hint": "Avec cette clé, OpensourceERP signe le relais et la page 404 du paquet de la boutique ; HugoCMS ne les accepte que signés. Une paire de clés vaut pour toutes les sociétés et tous les HugoShops de cette installation.",
             "unavailable": "PHP sur ce serveur n’a pas l’extension sodium — sans elle, pas de signature. Le relais et la page 404 doivent alors être déposés à la main sur le serveur web.",
             "publicKey": "Clé publique",
-            "publicKeyHint": "À saisir dans HugoCMS sous Paramètres du projet → Connexion boutique → Clé de signature d’OpensourceERP.",
+            "publicKeyHint": "À saisir dans HugoCMS sous Paramètres du projet → Extension boutique → Clé de signature d’OpensourceERP.",
             "copy": "Copier la clé",
             "invalid": "Le fichier de clé est illisible ou ne contient pas de clé valide.",
             "none": "Aucune clé de signature n’a encore été créée.",

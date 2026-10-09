@@ -84,7 +84,7 @@
             "hint": "Tällä avaimella OpensourceERP allekirjoittaa kauppapaketin välityspalvelimen ja 404-sivun; HugoCMS hyväksyy ne vain allekirjoitettuina. Yksi avainpari koskee tämän asennuksen kaikkia yrityksiä ja HugoShopeja.",
             "unavailable": "Tämän palvelimen PHP:ssä ei ole sodium-laajennusta — ilman sitä ei ole allekirjoitusta. Välityspalvelin ja 404-sivu on silloin vietävä verkkopalvelimelle käsin.",
             "publicKey": "Julkinen avain",
-            "publicKeyHint": "Syötä se HugoCMS:ään kohdassa projektin asetukset → kaupan yhteys → OpensourceERP:n allekirjoitusavain.",
+            "publicKeyHint": "Syötä se HugoCMS:ään kohdassa projektin asetukset → kaupan laajennus → OpensourceERP:n allekirjoitusavain.",
             "copy": "Kopioi avain",
             "invalid": "Avaintiedostoa ei voi lukea tai siinä ei ole kelvollista avainta.",
             "none": "Allekirjoitusavainta ei ole vielä luotu.",

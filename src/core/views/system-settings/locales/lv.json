@@ -84,7 +84,7 @@
             "hint": "Ar šo atslēgu OpensourceERP paraksta veikala pakotnes starpniekserveri un 404 lapu; HugoCMS tos pieņem tikai parakstītus. Viens atslēgu pāris attiecas uz visiem šīs instalācijas uzņēmumiem un HugoShop.",
             "unavailable": "Šī servera PHP nav sodium paplašinājuma — bez tā paraksta nav. Tad starpniekserveris un 404 lapa jāievieto tīmekļa serverī manuāli.",
             "publicKey": "Publiskā atslēga",
-            "publicKeyHint": "Ievadiet HugoCMS projekta iestatījumos → veikala savienojums → OpensourceERP paraksta atslēga.",
+            "publicKeyHint": "Ievadiet HugoCMS projekta iestatījumos → veikala paplašinājums → OpensourceERP paraksta atslēga.",
             "copy": "Kopēt atslēgu",
             "invalid": "Atslēgas failu nevar nolasīt vai tajā nav derīgas atslēgas.",
             "none": "Paraksta atslēga vēl nav izveidota.",

@@ -146,23 +146,6 @@ function shopPathUnder(string $wurzel, string $relativ, bool $anlegen = false): 
 // dort bauen (hugocms.php). Alle Funktionen, die eine Webseite anfassen,
 // bekommen deshalb die Kennung des Kanals ($kanal). Für den ganzen Mandanten
 // gilt nur die Größe der Vorschaubilder.
-//
-// Die Betriebsart „lokal“ (OSERP schreibt in ein Verzeichnis auf diesem Server
-// und baut selbst) gibt es seit 2026-10-07 nicht mehr.
-
-/**
- * Verzeichnis der Webseite eines HugoShops — seine Bereitstellung
- *
- * Alles, was OSERP erzeugt (Seiten, Paket, Kategorieübersicht), landet hier
- * und geht von dort an HugoCMS.
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $kanal HugoShop
- * @return string
- */
-function shopSiteDir($db, int $kanal): string {
-    return shopStagingDir($db, $kanal);
-}
 
 /**
  * Grundname der Dateien, die eine Webseite unter backend/tmp/ hat
@@ -193,7 +176,11 @@ function shopSiteStateFile($db, int $kanal, string $endung): string {
 }
 
 /**
- * Bereitstellungsverzeichnis der Betriebsart HugoCMS
+ * Bereitstellung eines HugoShops
+ *
+ * Alles, was OSERP für die Webseite erzeugt — Produktseiten,
+ * Kategorieübersicht, Paket —, landet hier, in derselben Ordnung wie im
+ * Hugo-Projekt der Webseite, und geht von dort an HugoCMS (hugocms.php).
  *
  * Unter backend/tmp/, je Mandant und HugoShop — neben Sperre und Stand der
  * Veröffentlichung. Es bleibt zwischen den Läufen erhalten: Es ist das Abbild
@@ -222,6 +209,10 @@ function shopStagingDir($db, int $kanal): string {
  *   - Shop-Schlüssel fehlt (ohne ihn nimmt der Shop keine Bestellung an)
  *   - HugoCMS: Adresse ungültig oder Schlüssel fehlt
  *
+ * Nur, was sich hier ohne Aufruf von HugoCMS sagen lässt — die Liste der
+ * Aufträge fragt das für jeden Kanal ab. Ob HugoCMS erreichbar ist und die
+ * Freigaben stimmen, prüft der Lauf selbst (shopRunJobs, shopHugoCmsGrants).
+ *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
  * @return array Gründe als Text, leer = nichts verhindert das Veröffentlichen
@@ -241,12 +232,106 @@ function shopChannelPublishBlockers($db, int $kanal): array {
     return $gruende;
 }
 
-/** Zielverzeichnis der Inhaltsdateien eines HugoShops */
+/**
+ * Verzeichnis der Produktseiten eines HugoShops in seiner Bereitstellung
+ *
+ * Wo es liegt, legt HugoCMS fest (Freigabe „Produktseiten“,
+ * dev/shop-hugocms-verzeichnisse.md) — OSERP hat dafür keine eigene
+ * Einstellung mehr.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @param bool $anlegen fehlendes Verzeichnis anlegen
+ * @return string absoluter Pfad
+ * @throws ApiError SHOP_HUGOCMS_GRANTS, SHOP_PATH_*
+ */
 function shopContentDir($db, int $kanal, bool $anlegen = false): string {
-    // Vorgabe wie im Schema — fehlt die Zeile noch, landeten die Seiten sonst
-    // direkt im Verzeichnis der Webseite
-    return shopPathUnder(shopSiteDir($db, $kanal),
-                         shopChannelValue($db, $kanal, 'content_dir', 'content/de/produkt'), $anlegen);
+    return shopPathUnder(shopStagingDir($db, $kanal), shopHugoCmsGrantsRequired($db, $kanal)['contentDir'], $anlegen);
+}
+
+/**
+ * Zieht die Bereitstellung den Freigaben nach
+ *
+ * Die Bereitstellung ist das Abbild dessen, was die Webseite von OSERP haben
+ * soll. Hat ein Administrator in HugoCMS das Verzeichnis der Produktseiten
+ * oder die Datei der Kategorieübersicht verlegt, liegen die Dateien hier noch
+ * am alten Ort. Sie ziehen um — sonst stünden nur die Seiten der geänderten
+ * Artikel am neuen Ort, und HugoCMS wiese die alten ab. HugoCMS selbst löscht
+ * die Seiten am alten Ort, weil sie aus einer früheren Lieferung stammen.
+ *
+ * Erkannt wird ohne gespeicherten Stand: In der Bereitstellung schreibt nur
+ * OSERP. Jede Markdown-Datei außerhalb des Pakets und außerhalb des
+ * Verzeichnisses der Produktseiten ist eine Produktseite vom alten Ort (sie
+ * liegen alle flach in ihrem Verzeichnis); jede JSON-Datei außerhalb des
+ * Pakets, die nicht die Kategorieübersicht ist, deren alte Fassung. Gibt es
+ * die Datei am neuen Ort schon, ist sie neuer und bleibt.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @param array $freigaben contentDir, categoryGroups, package (shopHugoCmsGrants)
+ * @return array Meldungen für die Ausgabe des Laufs, leer wenn nichts umzog
+ */
+function shopStagingFollowGrants($db, int $kanal, array $freigaben): array {
+    $wurzel = shopStagingDir($db, $kanal);
+    $paket = $freigaben['package'].'/';
+    $seitenZiel = $freigaben['contentDir'];
+    $uebersicht = $freigaben['categoryGroups'];
+
+    $seiten = 0;
+    $uebersichtVerlegt = false;
+    $alteOrte = [];
+    $eintraege = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($wurzel, FilesystemIterator::SKIP_DOTS));
+    foreach ($eintraege as $eintrag) {
+        if (!$eintrag->isFile()) {
+            continue;
+        }
+        $pfad = str_replace('\\', '/', substr($eintrag->getPathname(), strlen($wurzel) + 1));
+        $endung = strtolower(pathinfo($pfad, PATHINFO_EXTENSION));
+        if (str_starts_with($pfad, $paket) || $pfad === $uebersicht) {
+            continue;
+        }
+        if ('md' === $endung && dirname($pfad) !== $seitenZiel) {
+            $ziel = shopPathUnder($wurzel, $seitenZiel, true).'/'.basename($pfad);
+            $alteOrte[dirname($pfad)] = true;
+        } elseif ('json' === $endung) {
+            $ziel = shopPathUnder($wurzel, '.' === dirname($uebersicht) ? '' : dirname($uebersicht), true).'/'.basename($uebersicht);
+            $alteOrte[dirname($pfad)] = true;
+        } else {
+            continue;
+        }
+        if (is_file($ziel)) {
+            unlink($eintrag->getPathname());
+        } elseif (!rename($eintrag->getPathname(), $ziel)) {
+            throw new ApiError('SHOP_WRITE_FAILED', 'Bereitstellung: '.$pfad.' lässt sich nicht verschieben');
+        }
+        if ('md' === $endung) {
+            $seiten++;
+        } else {
+            $uebersichtVerlegt = true;
+        }
+    }
+
+    // Leer gewordene Verzeichnisse am alten Ort entfernen, von innen nach außen
+    foreach (array_keys($alteOrte) as $ort) {
+        for (; '.' !== $ort && '' !== $ort; $ort = dirname($ort)) {
+            if (!@rmdir($wurzel.'/'.$ort)) {
+                break;
+            }
+        }
+    }
+
+    if (!$alteOrte) {
+        return [];
+    }
+    $teile = [];
+    if ($seiten) {
+        $teile[] = sprintf('%d Produktseiten nach %s/', $seiten, $seitenZiel);
+    }
+    if ($uebersichtVerlegt) {
+        $teile[] = 'Kategorieübersicht nach '.$uebersicht;
+    }
+    return ['Freigaben in HugoCMS verlegt — Bereitstellung nachgezogen: '.implode(', ', $teile)
+        .'. HugoCMS entfernt die Dateien am alten Ort ('.implode(', ', array_keys($alteOrte)).') bei der Übertragung.'];
 }
 
 // ── Werte fuer die Vorlage ──
@@ -620,16 +705,17 @@ function shopPageAsDraft(string $inhalt): string {
 //
 // Der Vorlagensatz bringt unter kit/ mit, was die Webseite ausser den
 // Produktseiten braucht: Hugo-Layouts, Einstiegspunkte im Docroot (Proxy,
-// 404-Seite) und das Widget-Bundle. Der Laeufer spiegelt es nach
-// <webseite>/oserp-shop/. Die Webseite haengt die Unterordner NACH ihren
-// eigenen ein — so behalten ihre Uebersteuerungen Vorrang. Direkt nach
-// layouts/ kopiert, ueberschriebe das Paket die Dateien der Instanz.
+// 404-Seite) und das Widget-Bundle. Der Laeufer spiegelt es nach oserp-shop/
+// der Bereitstellung; die Übertragung bringt es in die Webseite. Die Webseite
+// haengt die Unterordner NACH ihren eigenen ein — so behalten ihre
+// Uebersteuerungen Vorrang. Direkt nach layouts/ kopiert, ueberschriebe das
+// Paket die Dateien der Instanz.
 //
 // Der Name ist fest: der Proxy findet seine Konfiguration darueber.
 
-/** Verzeichnis des Pakets in der Webseite eines HugoShops */
+/** Verzeichnis des Pakets in der Bereitstellung eines HugoShops */
 function shopKitDir($db, int $kanal, bool $anlegen = false): string {
-    return shopPathUnder(shopSiteDir($db, $kanal), 'oserp-shop', $anlegen);
+    return shopPathUnder(shopStagingDir($db, $kanal), 'oserp-shop', $anlegen);
 }
 
 /**
@@ -696,7 +782,7 @@ function shopKitFiles(string $satz): array {
 }
 
 /**
- * Spiegelt das Paket des Vorlagensatzes in die Webseite
+ * Spiegelt das Paket des Vorlagensatzes in die Bereitstellung
  *
  * Kopiert nur, was sich geaendert hat, und entfernt, was das Paket nicht mehr
  * enthaelt — beides nur innerhalb von oserp-shop/. Die config.json bleibt dabei
@@ -1067,6 +1153,26 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
                 } elseif ($sperren[$kanalId]) {
                     $sagen('Ausgesetzt — die Aufträge bleiben offen, bis die Einrichtung stimmt: '
                         .implode('; ', $sperren[$kanalId]));
+                } else {
+                    // Wohin die Seiten gehören, sagt HugoCMS (Freigaben). Ohne
+                    // sie wird nichts geschrieben: ausgesetzt, auch bei einem
+                    // abgeschalteten Kanal — sonst gälte ein remove_all als
+                    // erledigt, ohne dass HugoCMS die Seiten entfernt hätte.
+                    // Ein Fehler, kein Hinweis: der Shop bleibt auf altem Stand.
+                    $freigaben = shopHugoCmsGrants($db, $kanalId, true);
+                    if ('' !== $freigaben['fehler']) {
+                        $sperren[$kanalId] = [$freigaben['fehler']];
+                        $bilanz['hugocms_gesperrt'][$kanalId] = true;
+                        $fehler('Ausgesetzt — die Aufträge bleiben offen, bis HugoCMS sie annimmt: '.$freigaben['fehler']);
+                    } else {
+                        try {
+                            foreach (shopStagingFollowGrants($db, $kanalId, $freigaben['freigaben']) as $zeile) {
+                                $sagen($zeile);
+                            }
+                        } catch (Throwable $e) {
+                            $fehler('Bereitstellung nicht nachgezogen: '.$e->getMessage());
+                        }
+                    }
                 }
             }
             if ($abgeschaltet[$kanalId]) {
@@ -1590,6 +1696,17 @@ function shopPublishRun($db, ?callable $melden = null, int $limit = 500, ?array 
                 continue;
             }
 
+            // Ohne Freigaben aus HugoCMS weiß der Lauf nicht, wohin Seiten und
+            // Übersicht gehören. Gemeldet einmal je Lauf — bei Aufträgen schon
+            // in shopRunJobs, wo sie ausgesetzt wurden
+            $freigaben = shopHugoCmsGrants($db, $kanal);
+            if ('' !== $freigaben['fehler']) {
+                if (empty($bilanz['hugocms_gesperrt'][$kanal])) {
+                    $fehler('Webseite nicht bearbeitet: '.$freigaben['fehler'], $vorsilbe);
+                }
+                continue;
+            }
+
             // Fehler und Bau dieser Webseite getrennt erfassen: sie gehören in
             // das Ergebnis ihrer Aufträge, nicht nur in die Ausgabe
             $webFehler = [];
@@ -1747,6 +1864,20 @@ function shopPublishSite($db, int $kanal, array $zahlen, bool $bauen, callable $
     }
 
     if ($zahlen['seiten'] + $zahlen['entfernt'] > 0 || $uebersichtFehlt) {
+        // Erwartet der Vorlagensatz die Übersicht anderswo, als HugoCMS sie
+        // freigibt, finden seine Vorlagen sie nicht — die Kategorieseite zeigt
+        // dann nur die alphabetische Liste
+        try {
+            $vorlage = shopCategoryGroupsTemplatePath($db, $kanal);
+            $freigabe = shopHugoCmsGrantsRequired($db, $kanal)['categoryGroups'];
+            if ('' !== $vorlage && $vorlage !== $freigabe) {
+                $sagen(sprintf('Warnung: Der Vorlagensatz erwartet die Kategorieübersicht unter %s, HugoCMS gibt %s frei — '
+                    .'seine Vorlagen finden sie dort nicht. In HugoCMS die Freigabe „Kategorieübersicht“ auf %s setzen '
+                    .'(Projekteinstellungen → Shop-Erweiterung).', $vorlage, $freigabe, $vorlage));
+            }
+        } catch (Throwable $e) {
+            // Vorlagensatz oder Freigaben fehlen: das meldet der nächste Schritt
+        }
         try {
             $übersicht = shopWriteCategoryGroups($db, $kanal);
             if ($übersicht['changed']) {

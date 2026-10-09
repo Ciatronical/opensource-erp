@@ -4,6 +4,20 @@ Stand 2026-09-24. Status: **Schritte 1 bis 4 umgesetzt** (Zugang, Bau,
 Übertragung, Vorschaubilder, Betriebsart), dazu E9 (Paket ohne PHP über
 HugoCMS). Offen: Schritt 5 (Stufe F).
 
+> **Hinweis (2026-10-07):** Die Betriebsart „lokal“ — OpensourceERP schreibt in
+> ein Verzeichnis auf seinem eigenen Server und baut die Webseite selbst — gibt
+> es nicht mehr; veröffentlicht wird nur noch über HugoCMS. Was dieses Dokument
+> darüber sagt (`shop_sites_dir`, `shop_site_dir`, `shop_publish_command_path`,
+> `shop_publish_mode`, `shop_images_dir`, `shop_thumbnails_dir`,
+> `publish_clean_destination`, Bau mit eigenem Hugo-Programm), beschreibt einen
+> früheren Stand. Der laufende Betrieb steht in `dev/shop-betrieb.md`.
+>
+> **Hinweis (2026-10-09):** Das Verzeichnis der Produktseiten stellt
+> OpensourceERP nicht mehr selbst ein (`shop_content_dir` bzw. `content_dir`
+> entfallen), und HugoCMS wertet `[shop] areas` nicht mehr aus: Wohin die
+> Anbindung schreiben darf, legt ein Administrator in HugoCMS als Freigaben
+> fest (`dev/shop-hugocms-verzeichnisse.md`).
+
 Bisher erledigt OSERP die ganze Veröffentlichung selbst: Es schreibt die
 Inhaltsdateien in das Verzeichnis der Webseite und startet Hugo. Künftig laufen
 Webseite und HugoCMS auf einem eigenen Webserver, und HugoCMS übernimmt den Bau.
@@ -229,7 +243,10 @@ Entfernt wurden:
 - `shopSitesRoot`, `shopPublishMode`, `shopPublishProgram`,
   `shopPublishCommand`, `shopThumbnail`, `shopThumbnailFor`,
   `shopKitSetupHints` und der lokale Bau in `shopPublishSite`;
-  `shopSiteDir` ist jetzt die Bereitstellung;
+  `shopSiteDir` war danach nur noch ein Umweg auf die Bereitstellung und ist
+  am 2026-10-09 ganz entfallen (Aufrufe nutzen `shopStagingDir`), ebenso die
+  leeren „Vorgaben aus der settings.ini“ der Firmenkonfiguration
+  (`defaults_oserp_fallbacks`);
 - die Übernahme von Marktplatz-Bildern in einen HugoShop;
 - der Bereich „shop“ der Verzeichnisauswahl (`browseDirectories`) und die
   Ordnerauswahl an den Shop-Feldern.

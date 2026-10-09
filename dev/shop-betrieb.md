@@ -15,36 +15,55 @@ Teile entstanden sind, beschreiben `shop-migration.md` (Fachlogik),
 | Fachschicht | `backend/api/shop/lib/` | Warenkorb, Konto, Suche, Rechnung, Zahlung, Mail, Widerruf, Umleitungen, Veröffentlichung, Kategorien |
 | Webseiten-Paket | `backend/templates-default/shop/standard/kit/` | Shortcodes, Partials, Proxy, 404-Seite, Widget-Bundle |
 | Shop-UI | `shop-ui/` | Widgets der Käuferoberfläche (Lit), eigener Build ins Paket |
-| Läufer | `tools/shop-publish.php` | Aufträge abarbeiten, Paket abgleichen, Kategorien, Webseite bauen |
+| Läufer | `tools/shop-publish.php` | Aufträge abarbeiten, Paket abgleichen, Kategorien, an HugoCMS übertragen und dort bauen lassen |
 | Übernahme | `tools/shop-bridge-settings.php` | Einstellungen einer Bridge-Instanz als SQL ausgeben |
 
-Die Webseite selbst — Hugo-Projekt, Theme, Inhalte — gehört dem Betreiber.
-OpensourceERP schreibt dort nur in das Verzeichnis der Produktseiten und nach
-`oserp-shop/`.
+Die Webseite selbst — Hugo-Projekt, Theme, Inhalte — gehört dem Betreiber und
+liegt bei HugoCMS. Veröffentlicht wird ausschließlich über HugoCMS: OpensourceERP
+erzeugt alles in seiner Bereitstellung unter `backend/tmp/`, überträgt es über
+die Shop-Erweiterung von HugoCMS und lässt die Webseite dort bauen
+(`dev/shop-hugocms-trennung.md`). Wohin es schreiben darf, legt ein
+Administrator in HugoCMS fest — die **Freigaben** in den Projekteinstellungen
+(Produktseiten, Kategorieübersicht, Produkt- und Vorschaubilder; das Paket
+liegt fest in `oserp-shop/`). OpensourceERP zeigt sie in der Kanalkarte nur an
+und übernimmt sie bei jedem Lauf (`dev/shop-hugocms-verzeichnisse.md`).
 
 ## Eine Webseite einrichten
 
-Der Ablauf steht ausführlich in `shop-bridge-abloesung.md` unter Stufe D. Kurz:
-
-1. Erweiterung `shop` beim Mandanten aktivieren, Schema-Update laufen lassen.
-2. Einstellungen in der Firmenkonfiguration unter Shop: Shop-Schlüssel,
-   `shop_backend_url`, Wurzelverzeichnis der Webseiten, Verzeichnis dieser
-   Webseite, Inhaltsordner, Vorlagensatz. Die Shop-Übersicht zeigt, was noch
-   fehlt.
-
-   Den **Shop-Schlüssel** erzeugt der Knopf neben dem Feld: 32 zufällige Byte,
-   hexadezimal. Er wird dabei angezeigt, weil ein Reverse-Proxy im Webserver
-   denselben Wert braucht; der mitgelieferte Proxy bekommt ihn vom Läufer über
-   `oserp-shop/config.json`. Der Schlüssel unterscheidet die Mandanten — zwei
-   Firmen dürfen nicht denselben haben.
-3. Programm zum Bauen: Verzeichnis, in dem `hugo` liegt, in der
-   Shop-Einstellung `shop_publish_command_path` — nur das Verzeichnis, der
-   Dateiname steht fest. Dazu das Kontrollkästchen für
-   `--cleanDestinationDir`. Ohne Programm werden nur Dateien geschrieben.
-4. `php tools/shop-publish.php --client=<id>` einmal von Hand — legt
-   `<webseite>/oserp-shop/` samt `config.php` an.
-5. In der `config.json` der Instanz die Mounts auf `oserp-shop/` setzen.
-6. Cron-Einträge für Läufer und Zahlungsabgleich.
+1. **Erweiterung** `shop` beim Mandanten aktivieren, Schema-Update laufen lassen.
+2. **Firmenkonfiguration → Shop:** die Angaben für den ganzen Mandanten
+   (Rechnungsstellung, Bankverbindung, Lagerplatz, Bestellungen, siehe
+   „Einstellungen“).
+3. **Shop-Menü → Verkaufskanäle:** einen HugoShop anlegen. In seiner Karte:
+   - **Shop-Schlüssel** — der Knopf neben dem Feld erzeugt ihn (32 zufällige
+     Byte, hexadezimal). Er unterscheidet Mandanten und Kanäle; zwei Kanäle
+     dürfen nicht denselben haben. Die Webseite bekommt ihn über
+     `oserp-shop/config.json`, der Browser sieht ihn nie.
+   - **Adresse von OpensourceERP für die Webseite** — der Shop-Zugang
+     `backend/shop/` (etwa `https://erp.example.de/shop/`), mit „Verbindung
+     prüfen“. Der Webserver von OpensourceERP muss `/shop` dorthin geben
+     (Apache: `Alias /shop …/backend/shop`).
+   - Basisadresse, Adressmuster, Vorlagensatz.
+4. **HugoCMS → Projekteinstellungen → Shop-Erweiterung** (nur Administratoren):
+   die Erweiterung einschalten, einen Schlüssel erzeugen und die **Freigaben**
+   prüfen — Verzeichnis der Produktseiten (Vorgabe `content/de/produkt`),
+   Kategorieübersicht (`data/category_groups.json`, so erwartet sie der
+   Vorlagensatz `standard`), Produkt- und Vorschaubilder. Die dort angezeigte
+   Adresse (`…/cms-api/`) und den Schlüssel in der Kanalkarte im Kasten
+   „HugoCMS“ eintragen, „Verbindung prüfen und Freigaben abrufen“. Passen die
+   Adressmuster nicht zu den Freigaben, bietet die Karte einen Vorschlag an.
+5. **Signaturschlüssel:** in den Systemeinstellungen von OpensourceERP erzeugen,
+   den öffentlichen Teil in HugoCMS eintragen (Shop-Erweiterung →
+   Signaturschlüssel). Dann überträgt der Lauf Weiterleiter und 404-Seite
+   selbst; ohne ihn legt man sie von Hand ab (siehe „Einstellungen“).
+6. **Hugo-Konfiguration der Webseite:** die Mounts `oserp-shop/static` →
+   `static`, `oserp-shop/layouts` → `layouts` und `oserp-shop/assets/shop-ui`
+   → `assets/shop-ui`, jeweils **nach** den eigenen Einträgen. Optional
+   `params.shopui` für das Aussehen der Widgets (`kit/layouts/partials/shop-ui-assets.html`).
+7. **Webserver der Webseite:** PHP für `shop-api/index.php` und `not_found.php`,
+   die 404 an `/not_found.php` (nginx: `error_page 404 /not_found.php;`).
+8. **„Shop-Benutzerschnittstelle installieren“** in der Shop-Übersicht, danach
+   die Cron-Einträge für Läufer und Zahlungsabgleich.
 
 ## Der Läufer
 
@@ -56,14 +75,29 @@ php tools/shop-publish.php --list-clients
 
 Ein Lauf tut der Reihe nach:
 
-1. **Aufträge** aus `batchjob_hugoshop` abarbeiten, älteste zuerst.
-2. **Paket abgleichen** — bei jedem Lauf; er vergleicht Prüfsummen und kopiert
-   nur Geändertes nach `<webseite>/oserp-shop/`.
-3. **Kategorieübersicht** erneuern, wenn Seiten geschrieben oder entfernt
-   wurden.
-4. **Bauen**, wenn sich etwas geändert hat und ein gültiges Programm
-   eingestellt ist. Die Befehlszeile setzt die Erweiterung selbst zusammen,
-   siehe unten.
+1. **Freigaben** je HugoShop bei HugoCMS abfragen (`shopbuildstatus`). Ist
+   HugoCMS nicht erreichbar, die Shop-Erweiterung dort ausgeschaltet oder eine
+   Freigabe unbrauchbar, bleiben die Aufträge des Kanals ausgesetzt, und der
+   Lauf meldet einen Fehler. Hat ein Administrator eine Freigabe verlegt, zieht
+   die Bereitstellung nach (`shopStagingFollowGrants`); HugoCMS löscht die
+   Seiten am alten Ort mit der Übertragung, weil sie aus einer früheren
+   Lieferung stammen.
+2. **Aufträge** aus `batchjob_hugoshop` abarbeiten, älteste zuerst. Die Seiten
+   entstehen in der Bereitstellung des HugoShops
+   (`backend/tmp/shop-publish-<db>-<kanal>-staging/`), im Verzeichnis der
+   Freigabe „Produktseiten“.
+3. **Paket abgleichen** — bei jedem Lauf; er vergleicht Prüfsummen und kopiert
+   nur Geändertes nach `oserp-shop/` der Bereitstellung.
+4. **Kategorieübersicht** erneuern, wenn Seiten geschrieben oder entfernt
+   wurden — an den Ort der Freigabe; erwartet der Vorlagensatz sie anderswo,
+   warnt der Lauf.
+5. **An HugoCMS übertragen** — Abgleich, Übertragung, Übernahme
+   (`shopHugoCmsSync`) — und **dort bauen lassen**, wenn sich etwas geändert
+   hat; danach die Vorschaubilder in HugoCMS. Gebaut wird mit dem
+   Hugo-Programm, das HugoCMS eingerichtet hat; OpensourceERP startet kein
+   Programm zum Bauen.
+6. **Prüfung über die Webseite** nach einer Übertragung: Weiterleiter und
+   404-Seite (siehe „Einstellungen“).
 
 Je Mandant läuft nur einer. Zwei Sperren sichern das:
 
@@ -99,7 +133,7 @@ erledigten.
 | `remove_part` | Artikel aus dem Shop nehmen | Inhaltsdatei entfernen |
 | `remove_all` | Abschalten des HugoShop-Kanals bei `shop_channel_off_pages` = `remove` | Seiten aller im HugoShop angebotenen Artikel entfernen; beim Einschalten folgt `publish_all` |
 | `draft_all` | Abschalten des HugoShop-Kanals bei `shop_channel_off_pages` = `draft` (Vorgabe) | Seiten aller im HugoShop angebotenen Artikel als Entwurf (`draft: true`) neu schreiben; Hugo veröffentlicht sie nicht mehr |
-| `sync_kit` | von Hand | Paket abgleichen |
+| `sync_kit` („Shop-Benutzerschnittstelle aktualisieren“) | Knopf „Shop-Benutzerschnittstelle installieren“, sofort oder als Aufgabe | Paket abgleichen, an HugoCMS übertragen, Webseite in jedem Fall bauen |
 | `reconcile_payments` | Läufer mit `--reconcile-payments` | Schwebende PayPal-Zahlungen nachfragen |
 
 Ein Ergebnis beginnt mit `ok:` oder `Fehler:`; Fehler stehen rot in der Liste.
@@ -122,7 +156,8 @@ mit `shop_auto_publish`.
 | Gescheiterte Artikel in `publish_all` | im Ergebnis des Auftrags: `Fehler: <Zahl> Seiten geschrieben, <Zahl> fehlgeschlagen — <erster Grund>` |
 | Fehler am Lauf selbst (Paket, Kategorien, Bau) und seine übrigen Meldungen | Klick auf den Status eines erledigten Auftrags: die vollständige Ausgabe des Laufs, in dem er erledigt wurde, Fehlerzeilen rot |
 | Abgebrochener Lauf | als Hinweis unter der Auftragsliste, mit der Ausgabe des Prozesses |
-| Fehlendes Wurzelverzeichnis, ungültiger Hugo-Pfad | als Hinweis über den Kennzahlen, mit dem Grund im Klartext |
+| Fehlende Einrichtung (Shop-Schlüssel, Adresse oder Schlüssel von HugoCMS) | Aufträge bleiben „ausgesetzt“ (gelbes Zeichen), Hinweis über den Kennzahlen mit dem Grund |
+| HugoCMS weist Produktseiten ab, Weiterleiter nicht erreichbar | Fehler des Laufs: der Auftrag endet mit „Fehler bei der Webseite: …“ |
 | Läufer im Cron | Standardausgabe, Bau-Fehler zusätzlich auf der Fehlerausgabe, Rückgabewert 1 |
 
 Ein `publish_all` gilt nur dann als erledigt, wenn kein Artikel gescheitert
@@ -149,7 +184,8 @@ endet, hinterlässt keine gespeicherte Ausgabe — dann gilt die Meldung
 
 In der Auftragsliste lässt sich jede Zeile ankreuzen, „Alle auswählen" nimmt
 alle, und „Jetzt ausführen" arbeitet die offenen davon ab — in derselben
-Reihenfolge wie der Cron: Aufträge, Paket, Kategorieübersicht, Bau. „Alle
+Reihenfolge wie der Cron: Aufträge, Paket, Kategorieübersicht, Übertragung und
+Bau. „Alle
 sofort veröffentlichen" legt den Auftrag „Alle Produkte" an und führt ihn im
 selben Zug aus. Ein Cron-Eintrag ist damit nicht zwingend nötig.
 
@@ -183,9 +219,9 @@ Lauf dauert.
 
 Voraussetzungen, sonst bleibt es beim Cron:
 
-- Der Webserver-Benutzer muss im Verzeichnis der Webseite schreiben und den
-  Bau-Befehl ausführen dürfen, und `shell_exec()` darf nicht abgeschaltet
-  sein.
+- Der Webserver-Benutzer muss in `backend/tmp/` schreiben (Bereitstellung,
+  Stand, Meldungen) und HugoCMS erreichen dürfen, und `shell_exec()` darf
+  nicht abgeschaltet sein — damit startet „Jetzt ausführen“ den Läufer.
 - Ein Kommandozeilen-PHP muss auffindbar sein. Unter PHP-FPM zeigt
   `PHP_BINARY` auf `php-fpm`; gesucht wird deshalb `php<Version>` und `php`
   neben `PHP_BINDIR` und unter `/usr/bin` (`shopPhpCli()`).
@@ -308,37 +344,60 @@ Datendatei der Kategorieübersicht.
 
 ## Einstellungen
 
-40 Zeilen in `defaults_oserp`, zu ändern unter Einstellungen → Erweiterungen →
-Shop. Fehlt eine nötige, nennt die Fehlermeldung den Feldnamen aus der
-Oberfläche, nicht den Schlüssel.
+**Für den ganzen Mandanten** in der Firmenkonfiguration (Einstellungen →
+Erweiterungen → Shop), gespeichert in `defaults_oserp`. Fehlt eine nötige, nennt
+die Fehlermeldung den Feldnamen aus der Oberfläche, nicht den Schlüssel.
 
 | Gruppe | Einstellungen |
 | --- | --- |
-| Zugang | `shop_public_key`, `shop_allowed_origins`, `shop_backend_url` |
-| Sitzung | `shop_cart_lifetime_hours`, `shop_context_lifetime_hours` |
-| Verkauf | `shop_contact_login`, `shop_target_account`, `shop_incoming_account`, `shop_standard_taxzone`, `shop_standard_currency`, `shop_tax_included`, `shop_active_price_source`, `shop_free_shipping_from` (`shop_shipping_partnumber` entfiel 2026-10-02, siehe dev/shop-versand.md) |
-| Zahlung | Bankverbindung (`shop_payment_*`), PayPal (`shop_paypal_*`) |
-| Adressen der Webseite | `shop_base_url`, `shop_products_link`, `shop_category_link`, `shop_images_link`, `shop_thumbnails_link`, `shop_downloads_link` |
-| Veröffentlichung | `shop_template_set`, `shop_sites_dir`, `shop_site_dir`, `shop_content_dir`, `shop_publish_command_path`, `shop_publish_clean_destination`, `shop_images_dir`, `shop_thumbnails_dir`, `shop_thumbnail_size` |
-| HugoCMS (`dev/shop-hugocms-trennung.md`) | `shop_publish_mode` (`local`/`hugocms`), `shop_hugocms_url`, `shop_hugocms_key` (Geheimnis) |
-| Sonstiges | `shop_search_weighting`, `shop_invoice_mail_subject`, `shop_withdrawal_mail_to` |
+| Zugang | `shop_cart_lifetime_hours`, `shop_context_lifetime_hours` |
+| Rechnungsstellung | `shop_contact_login`, `shop_target_account`, `shop_incoming_account`, `shop_standard_taxzone`, `shop_standard_currency`, `shop_tax_included`, `shop_active_price_source`, `shop_stock_bin_id` |
+| Bankverbindung | `shop_payment_account_owner`, `shop_payment_bank`, `shop_payment_iban`, `shop_payment_bic` |
+| Bestellungen | `shop_delivery_status_show`, `shop_delivery_status_mail` (dev/shop-bestellstatus.md) |
+| Veröffentlichung | `shop_job_retention_days`, `shop_thumbnail_size`, `ebay_public_host` |
+| Suche | `shop_search_weighting` |
 
-**Betriebsart.** `local` (Vorgabe): Die Webseite liegt auf diesem Server,
-OSERP schreibt hinein und baut selbst — alles in diesem Abschnitt gilt so.
-`hugocms`: Die Webseite liegt bei HugoCMS auf einem eigenen Webserver. OSERP
-schreibt dann in die Bereitstellung `backend/tmp/shop-publish-<db>-staging/`,
-überträgt an HugoCMS und lässt dort bauen; Verzeichnis- und Programmfelder
-gelten nicht. Die Vorschaubilder erzeugt HugoCMS aus den Produktbildern auf
-dem Webserver, nach jeder Übertragung; Größe weiter über
-`shop_thumbnail_size`, die Verzeichnisse stehen in der Mount-Datei von HugoCMS
-(`[shop] images`, `[shop] thumbnails`). Fehlende Produktbilder nennt der Lauf.
-Einzelheiten in `dev/shop-hugocms-trennung.md`.
+**Je HugoShop** in seiner Karte (Shop-Menü → Verkaufskanäle), gespeichert in
+`sales_channel_shop.settings`, Geheimnisse in `sales_channel_secret_shop`
+(`shop_channel_setting_keys()`, dev/shop-mehrere-kanaele.md):
+
+| Gruppe | Einstellungen |
+| --- | --- |
+| Zugang der Shop-Webseite | `public_key` (Geheimnis), `allowed_origins` |
+| Adressen der Webseite | `base_url`, `invoice_page`, `products_link`, `category_link`, `images_link`, `thumbnails_link`, `downloads_link` |
+| Veröffentlichung | `backend_url`, `template_set`, `auto_publish`, `channel_off_pages` |
+| HugoCMS | `hugocms_url`, `hugocms_key` (Geheimnis) |
+| Mail | `invoice_mail_subject`, `withdrawal_mail_to` |
+| PayPal | `paypal_sandbox`, `paypal_live_client_id`, `paypal_live_secret`, `paypal_sandbox_client_id`, `paypal_sandbox_secret`, `paypal_payment_method_preference`, `paypal_mock_response` |
+
+Preisvorgaben, Freigrenze und Lieferländer sind Spalten des Kanals
+(`sales_channel_shop`, dev/shop-versand.md); der eBay-Kanal hat eigene Felder.
+
+**Wohin geschrieben wird** (seit 2026-10-09, `dev/shop-hugocms-verzeichnisse.md`)
+legt HugoCMS fest: die Freigaben in den Projekteinstellungen unter
+„Shop-Erweiterung“, gespeichert in der `[shop]`-Sektion der Mount-Datei
+(`content_dir`, `category_groups`, `images`, `thumbnails`). OpensourceERP hat
+dafür keine eigene Einstellung mehr — der Kanalschlüssel `content_dir` ist
+entfallen, das Schema-Update räumt ihn weg. Der Lauf holt die Freigaben zu
+Beginn (`shopHugoCmsGrants`) und legt Seiten und Kategorieübersicht in der
+Bereitstellung genau dort ab; die Pfade laufen dabei durch `shopPathUnder()`
+(kein führender Schrägstrich, kein `..`, auch über Symlinks nicht aus der
+Bereitstellung heraus). „Verbindung prüfen und Freigaben abrufen“ zeigt sie in
+der Kanalkarte nur lesend an, dazu einen Vorschlag für `products_link`,
+`images_link` und `thumbnails_link`, wenn diese nicht zu den Freigaben passen
+(Hugo legt `content/<sprache>/<abschnitt>/` unter `/<abschnitt>/` ab und
+liefert `static/` unter `/` aus — bei anderen Sprachen oder eigenen Permalinks
+weicht die Adresse ab, deshalb nur ein Vorschlag).
+
+**Gebaut wird in HugoCMS**, mit dem Hugo-Programm aus dessen `hugocms.ini`
+(`[hugo] bin`); `--cleanDestinationDir` stellt dort `[hugo] clean` ein.
+Entwürfe (`draft: true`) baut HugoCMS nicht mit.
 
 **Signiert übertragen (empfohlen, seit 2026-10-08):** In den
 Systemeinstellungen (Shop-Erweiterung: Signaturschlüssel) oder mit
 `php tools/shop-signing-key.php --create` ein Schlüsselpaar erzeugen und den
 angezeigten öffentlichen Schlüssel in HugoCMS eintragen (Projekteinstellungen →
-Shop-Anbindung). Dann überträgt der Lauf Weiterleiter und 404-Seite selbst,
+Shop-Erweiterung). Dann überträgt der Lauf Weiterleiter und 404-Seite selbst,
 auch nach einem OSERP-Update (`dev/shop-php-signatur.md`).
 
 **Adresse von OpensourceERP für die Webseite** (`backend_url`, seit
@@ -367,44 +426,6 @@ stimmt: fehlt, veraltet (nach einem OSERP-Update neu kopieren), PHP läuft
 nicht, Weiterleiter ohne `config.json`. Ohne Basisadresse im Kanal oder bei
 nicht erreichbarer Webseite bleibt es beim Hinweis, die Dateien von Hand
 abzulegen.
-
-Wurzelverzeichnis und Programm stehen hier, weil jede Firma ihre eigene
-Webseite hat. Beide sind **absolut**:
-
-| Einstellung | Art | Bezug |
-| --- | --- | --- |
-| `shop_sites_dir` | absolut | Wurzelverzeichnis der Webseiten |
-| `shop_publish_command_path` | absolut | Verzeichnis, in dem `hugo` liegt |
-| `shop_site_dir` | relativ | zum Wurzelverzeichnis |
-| `shop_content_dir`, `shop_images_dir`, `shop_thumbnails_dir` | relativ | zum Verzeichnis der Webseite |
-
-Die relativen Pfade laufen durch `shopPathUnder()`: ein führender Schrägstrich
-wird abgewiesen (früher fiel er weg, und der Wert wurde stillschweigend als
-Unterverzeichnis gelesen), `..` ebenso, und das aufgelöste Verzeichnis muss
-unterhalb des übergeordneten liegen — auch über Symlinks hinweg. Liegt die
-Webseite anderswo, gehört das in `shop_sites_dir`, nicht in ein relatives
-Feld. Das Formular weist einen führenden Schrägstrich schon beim Eintippen
-zurück.
-
-**Wie gebaut wird.** Eingestellt wird nur das Verzeichnis des Programms, nie
-eine Befehlszeile; der Dateiname `hugo` steht fest im Quelltext. Die setzt die Erweiterung vor jedem Bau selbst zusammen — für den
-Läufer wie für „Jetzt ausführen“, beide über `shopPublishCommand()`:
-
-```
-cd '<Verzeichnis der Webseite>' && '<Programm>' [--cleanDestinationDir] 2>&1
-```
-
-Der Pfad wird vorher geprüft (absolutes, vorhandenes Verzeichnis ohne
-Leerraum, darin eine vorhandene und ausführbare Datei `hugo`) und geht maskiert hinein; Argumente lassen sich so nicht
-unterschieben. Ein ungültiger Pfad zählt als Fehler des Laufs und erscheint in
-der Shop-Übersicht als Hinweis.
-
-**In der `settings.ini`** stehen zwei Ergänzungen:
-
-| Eintrag unter `[system]` | Wirkung |
-| --- | --- |
-| `shop_publish_command_path` | Verzeichnis, in dem `hugo` liegt. Rückfall: gilt, wenn die Shop-Einstellung leer ist, und erscheint dort als Vorgabe im leeren Feld. Ein ungültiger Wert in der Shop-Einstellung ist ein Fehler, kein Rückfall. |
-| `shop_sites_dir` | Grenze: das eingestellte Wurzelverzeichnis muss darunter liegen, sonst `SHOP_SITES_DIR_OUTSIDE_LIMIT`. |
 
 ## Wiederkehrende Aufgaben
 
@@ -435,14 +456,14 @@ der Shop-Übersicht als Hinweis.
   geblieben ist.
 - **Shop-UI sofort in die Webseite bringen:** Übersicht der Shop-Erweiterung,
   Karte „Veröffentlichung“, Knopf „Shop-Benutzerschnittstelle installieren“
-  (Recht `edit_shop_config`, Aktion `installShopUi`). Er legt einen Auftrag
-  „Paket abgleichen“ mit `param = install` an und startet den Läufer nur für
-  diesen Auftrag: Paket nach `oserp-shop/` (bzw. an HugoCMS), danach wird die
-  Webseite **in jedem Fall** gebaut, auch wenn das Paket schon aktuell war.
-  Fehlen in der Site-Konfiguration die Mounts `oserp-shop/static`,
-  `oserp-shop/layouts`, `oserp-shop/assets/shop-ui` oder `params.shopui`,
-  steht das als Hinweis in den Meldungen des Laufs; geändert wird die
-  Konfiguration der Webseite nicht.
+  (Recht `edit_shop_config`, Aktion `installShopUi`). Nach einer Rückfrage —
+  sofort oder als Aufgabe für den nächsten Lauf — legt er den Auftrag
+  „Shop-Benutzerschnittstelle aktualisieren“ (`sync_kit`, `param = install`)
+  an; sofort heißt: der Läufer startet nur für diesen Auftrag. Das Paket geht
+  an HugoCMS, danach wird die Webseite **in jedem Fall** gebaut, auch wenn das
+  Paket schon aktuell war. Die Mounts der Hugo-Konfiguration (siehe „Eine
+  Webseite einrichten“) prüft OpensourceERP nicht — fehlen sie, meldet Hugo
+  beim Bau fehlende Shortcodes oder das fehlende Widget-Bündel.
 - **Widgets zeigen `lit$…$`, Klassennamen oder Quelltext als Text:** Das
   Bündel ist beschädigt (früher durch `tools/fix-ws.sh`, siehe
   `shop-ui/README.md`, „Warum `build` ein eigenes Skript ist“).
@@ -452,11 +473,14 @@ der Shop-Übersicht als Hinweis.
 
 | Zeichen | Ursache |
 | --- | --- |
-| Hugo: `template for shortcode "shop-…" not found` | `oserp-shop/` fehlt — Läufer laufen lassen |
+| Hugo: `template for shortcode "shop-…" not found` | Paket nicht übertragen oder Mount `oserp-shop/layouts` fehlt — „Shop-Benutzerschnittstelle installieren“, Hugo-Konfiguration prüfen |
 | Proxy antwortet 503 `SHOP_PROXY_NOT_CONFIGURED` | `oserp-shop/config.json` fehlt oder ist für den Webserver nicht lesbar |
 | 403 `SHOP_NOT_AUTHORIZED` | Der Schlüssel im Proxy passt nicht zu `shop_public_key` |
 | Warenkorb bleibt leer | Der Aufruf kommt nicht von derselben Adresse — Proxy einrichten oder `shop_allowed_origins` setzen |
-| Seiten entstehen nicht | `shop_sites_dir` und `shop_site_dir` prüfen, Schreibrechte, Ausgabe des Läufers lesen |
-| `SHOP_SITES_DIR_OUTSIDE_LIMIT` | Die `settings.ini` grenzt das Wurzelverzeichnis ein, die Einstellung liegt außerhalb |
+| Seiten entstehen nicht | Ausgabe des Laufs lesen; „Inhaltsdateien von HugoCMS nicht angenommen“: eine Freigabe hat sich während des Laufs geändert — der nächste Lauf legt die Dateien an den neuen Ort |
+| Aufträge „ausgesetzt“ (gelbes Zeichen) | Shop-Schlüssel, Adresse oder Schlüssel von HugoCMS fehlen — Kanalkarte; oder HugoCMS ist nicht erreichbar, die Shop-Erweiterung dort ausgeschaltet oder eine Freigabe unbrauchbar — Ausgabe des Laufs, „Verbindung prüfen und Freigaben abrufen“ |
+| Kategorieseite zeigt nur die alphabetische Liste | Der Vorlagensatz erwartet die Kategorieübersicht an einem anderen Ort, als HugoCMS freigibt — Warnung im Lauf; in HugoCMS die Freigabe „Kategorieübersicht“ anpassen |
+| Weiterleiter erreicht HugoCMS statt OpensourceERP | „Adresse von OpensourceERP für die Webseite“ steht auf `…/cms-api/` — Kanalkarte, „Verbindung prüfen“ |
+| Weiterleiter 404, obwohl signiert übertragen | Der Webserver liefert unter der Basisadresse nicht das `public/` dieser Webseite aus, oder die Basisadresse stimmt nicht |
 | „Ein Lauf ist noch unterwegs" | Sperrdatei in `backend/tmp/` — ein vorheriger Lauf hängt |
 | Neue Einstellungen fehlen nach einem Update | Das Schema-Update beim Login prüft Prüfsummen, siehe `shop-veroeffentlichung.md` |

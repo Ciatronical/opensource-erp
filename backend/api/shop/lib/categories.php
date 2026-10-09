@@ -238,11 +238,31 @@ function shopCategoryGroups(array $kategorien, array $regeln): array {
 }
 
 /**
+ * Wo der Vorlagensatz eines HugoShops die Kategorieübersicht erwartet
+ *
+ * Steht in seiner theme.json unter data.category_groups; seine Vorlagen lesen
+ * sie dort (Hugo: site.Data). Nennt er nichts, sieht er keine Übersicht vor.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @param string|null $satz Vorlagensatz statt des eingestellten (Verbindungstest
+ *                          mit noch nicht gespeicherter Auswahl)
+ * @return string Pfad relativ zur Webseite, leer = keine Übersicht
+ * @throws ApiError SHOP_TEMPLATE_SET_INVALID, SHOP_TEMPLATE_SET_MISSING
+ */
+function shopCategoryGroupsTemplatePath($db, int $kanal, ?string $satz = null): string {
+    $satz = $satz ?? shopChannelValue($db, $kanal, 'template_set', 'standard');
+    return trim((string)(shopTemplateInfo(shopTemplateDir($satz))['data']['category_groups'] ?? ''), '/');
+}
+
+/**
  * Zieldatei der Kategorieübersicht
  *
- * Wo sie liegt, sagt der Vorlagensatz (data.category_groups in template.json);
- * nennt er nichts, gibt es keine Übersicht und die Funktion liefert einen
- * leeren Pfad zurück.
+ * Ob es eine gibt, sagt der Vorlagensatz (shopCategoryGroupsTemplatePath);
+ * sieht er keine vor, liefert die Funktion einen leeren Pfad zurück. Wohin sie
+ * gehört, legt HugoCMS fest (Freigabe „Kategorieübersicht“,
+ * dev/shop-hugocms-verzeichnisse.md). Erwartet der Vorlagensatz sie woanders,
+ * meldet das der Lauf (shopPublishSite) und der Verbindungstest der Kanalkarte.
  *
  * Herausgelöst, damit ein Lauf nachsehen kann, ob die Datei fehlt, ohne sie
  * gleich zu schreiben.
@@ -251,21 +271,17 @@ function shopCategoryGroups(array $kategorien, array $regeln): array {
  * @param int $kanal HugoShop — sein Vorlagensatz, seine Webseite
  * @param bool $anlegen Fehlende Verzeichnisse anlegen
  * @return string Pfad, leer wenn der Vorlagensatz keine Übersicht vorsieht
- * @throws ApiError SHOP_PATH_INVALID, SHOP_PATH_MISSING
+ * @throws ApiError SHOP_HUGOCMS_GRANTS, SHOP_PATH_INVALID, SHOP_PATH_MISSING
  */
 function shopCategoryGroupsFile($db, int $kanal, bool $anlegen = false): string {
-    $satz = shopChannelValue($db, $kanal, 'template_set', 'standard');
-    $relativ = trim((string)(shopTemplateInfo(shopTemplateDir($satz))['data']['category_groups'] ?? ''), '/');
-    if ('' === $relativ) {
+    if ('' === shopCategoryGroupsTemplatePath($db, $kanal)) {
         return '';
     }
-    if (str_starts_with(basename($relativ), '.')) {
-        throw new ApiError('SHOP_PATH_INVALID', 'Unbrauchbarer Dateiname für die Kategorieübersicht: '.$relativ);
-    }
+    $relativ = shopHugoCmsGrantsRequired($db, $kanal)['categoryGroups'];
 
     $unterordner = dirname($relativ);
 
-    return shopPathUnder(shopSiteDir($db, $kanal), '.' === $unterordner ? '' : $unterordner, $anlegen)
+    return shopPathUnder(shopStagingDir($db, $kanal), '.' === $unterordner ? '' : $unterordner, $anlegen)
          .'/'.basename($relativ);
 }
 
@@ -313,8 +329,8 @@ function shopCategoryCounts($db, int $kanal): array {
  * Schreibt die Kategorieübersicht in die Webseite
  *
  * Nur wenn der Vorlagensatz in theme.json unter data.category_groups eine
- * Datei nennt, und nur wenn sich ihr Inhalt ändert — jede Änderung löst einen
- * Bau aus. Ohne Kategorien wird die Datei entfernt: das Theme zeigt dann die
+ * Datei vorsieht — an den Ort, den HugoCMS freigibt (shopCategoryGroupsFile) —,
+ * und nur wenn sich ihr Inhalt ändert: jede Änderung löst einen Bau aus. Ohne Kategorien wird die Datei entfernt: das Theme zeigt dann die
  * alphabetische Liste aus der Taxonomie statt einer leeren Übersicht.
  *
  * @param object $db Company-Datenbankverbindung

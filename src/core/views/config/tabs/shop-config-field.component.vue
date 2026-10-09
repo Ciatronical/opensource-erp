@@ -32,11 +32,11 @@
                 v-bind="zusatz(field)"
                 :label="t(field.label)"
                 :type="field.inputType || 'text'"
-                :placeholder="field.type === 'password' ? t(hinterlegt ? 'crm_fields.shopSecretKeep' : 'crm_fields.shopSecretEmpty') : (vorgabe || undefined)"
-                :persistent-placeholder="field.type === 'password' || !!vorgabe"
-                :hint="sichtbar ? t('crm_fields.shopKeyGeneratedHint') : (vorgabe ? t('crm_fields.shopFallbackFromIni') : undefined)"
+                :placeholder="field.type === 'password' ? t(hinterlegt ? 'crm_fields.shopSecretKeep' : 'crm_fields.shopSecretEmpty') : undefined"
+                :persistent-placeholder="field.type === 'password'"
+                :hint="sichtbar ? t('crm_fields.shopKeyGeneratedHint') : undefined"
                 :rules="regeln(field)"
-                :persistent-hint="sichtbar || !!vorgabe"
+                :persistent-hint="sichtbar"
                 :style="field.fieldstyle"
                 hide-details="auto"
                 density="compact"
@@ -81,7 +81,7 @@
     </v-row>
 
     <!-- Auswahl aus company_config -->
-    <v-row v-else-if="field.type === 'dynamic-select'" class="my-4" :data-field-name="field.name">
+    <v-row v-else-if="field.type === 'dynamic-select'" class="pt-4 my-4" :data-field-name="field.name">
         <v-col cols="12" md="6">
             <v-select
                 v-model="werte[field.name]"
@@ -132,21 +132,6 @@ const props = defineProps({
      * Passwortfeld "hinterlegt", auch wenn nichts gespeichert ist.
      */
     gesetzt: { type: Object, default: () => ({}) },
-    /**
-     * Vorgaben aus der settings.ini für leere Felder: Schlüssel -> Wert.
-     *
-     * Erscheinen als Platzhalter, nicht als Wert: der Tab speichert bei jeder
-     * Änderung alle Felder, und ein eingetragener Rückfall wäre danach keiner
-     * mehr.
-     */
-    vorgaben: { type: Object, default: () => ({}) },
-})
-
-/** Die Vorgabe aus der settings.ini — nur solange das Feld leer ist */
-const vorgabe = computed(() => {
-    const wert = props.werte[props.field.name]
-    const leer = wert === undefined || wert === null || String(wert).trim() === ''
-    return leer ? (props.vorgaben[props.field.name] || '') : ''
 })
 
 /** Ist zu diesem Feld ein Wert gespeichert? */

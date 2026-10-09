@@ -67,7 +67,8 @@ function shopHugoCmsErrorText(array $fehler): string {
     $schluessel = (string)($fehler['key'] ?? '');
     $code = (string)($fehler['code'] ?? '');
     $bekannt = [
-        'SHOP-KEY-NOT-SET'     => 'In HugoCMS ist für diese Webseite kein Schlüssel hinterlegt — in den Projekteinstellungen unter „Shop-Anbindung" erzeugen',
+        'SHOP-DISABLED'        => 'In HugoCMS ist die Shop-Erweiterung für diese Webseite ausgeschaltet — in den Projekteinstellungen unter „Shop-Erweiterung" einschalten',
+        'SHOP-KEY-NOT-SET'     => 'In HugoCMS ist für diese Webseite kein Schlüssel hinterlegt — in den Projekteinstellungen unter „Shop-Erweiterung" erzeugen',
         'SHOP-KEY-INVALID'     => 'HugoCMS lehnt den Schlüssel ab — stimmt er mit dem in den Projekteinstellungen erzeugten überein?',
         'SHOP-HTTPS-REQUIRED'  => 'HugoCMS nimmt die Anbindung nur über https an',
         'METHOD-REQUIRED'      => 'Falsche Aufrufart',
@@ -76,7 +77,8 @@ function shopHugoCmsErrorText(array $fehler): string {
         'HUGO-BIN-MISSING'     => 'HugoCMS findet das Hugo-Programm nicht',
         'HUGO-SOURCE-MISSING'  => 'HugoCMS findet das Verzeichnis der Webseite nicht',
         'UNKNOWN-COMMAND'      => 'Diese HugoCMS-Version kennt die Shop-Anbindung noch nicht',
-        'SHOP-PATH-NOT-ALLOWED' => 'HugoCMS nimmt diese Datei nicht an, sie liegt außerhalb der freigegebenen Bereiche',
+        'SHOP-PATH-NOT-ALLOWED' => 'HugoCMS nimmt diese Datei nicht an, sie liegt außerhalb der Freigaben',
+        'SHOP-GRANT-UNUSABLE'  => 'In HugoCMS ist eine Freigabe unbrauchbar eingetragen — in den Projekteinstellungen unter „Shop-Erweiterung" prüfen und speichern',
         'SHOP-FILETYPE-NOT-ALLOWED' => 'HugoCMS nimmt diese Dateiart nicht an',
         'SHOP-HASH-MISMATCH'   => 'Eine Datei kam anders an, als angekündigt',
         'SHOP-SYNC-INCOMPLETE' => 'Die Übertragung war unvollständig',
@@ -176,7 +178,97 @@ function shopHugoCmsCall($db, int $kanal, string $befehl, string $methode = 'GET
     return $ergebnis;
 }
 
-// ── Übertragung und Bau (Betriebsart HugoCMS) ──
+// ── Freigaben (dev/shop-hugocms-verzeichnisse.md) ──
+//
+// Wohin OSERP Produktseiten und Kategorieübersicht schreibt, legt ein
+// Administrator in HugoCMS fest (Projekteinstellungen → Shop-Erweiterung).
+// OSERP hält keine eigene Kopie: Der Lauf fragt die Freigaben bei HugoCMS ab
+// (shopbuildstatus, grants) und legt die Dateien in der Bereitstellung genau
+// dort ab; die Kanalkarte zeigt sie nur an.
+
+/** Freigaben, die OSERP braucht, mit ihren Namen in HugoCMS */
+const SHOP_HUGOCMS_GRANTS = [
+    'contentDir'     => 'Produktseiten',
+    'categoryGroups' => 'Kategorieübersicht',
+    'images'         => 'Produktbilder',
+    'thumbnails'     => 'Vorschaubilder',
+];
+
+/**
+ * Liest die Freigaben aus einer Antwort von shopbuildstatus
+ *
+ * Ein unbrauchbarer Eintrag (HugoCMS meldet ihn als null) ist ein Fehler, kein
+ * Anlass für eine Vorgabe: Sonst schriebe OSERP an einen Ort, den niemand
+ * freigegeben hat.
+ *
+ * @param array $antwort Ergebnis von shopHugoCmsCall
+ * @return array freigaben (contentDir, categoryGroups, images, thumbnails, package),
+ *               fehler (Text, leer wenn brauchbar)
+ */
+function shopHugoCmsGrantsFrom(array $antwort): array {
+    if (!$antwort['ok']) {
+        return ['freigaben' => [], 'fehler' => 'HugoCMS: '.$antwort['fehler']];
+    }
+    $freigaben = $antwort['data']['grants'] ?? null;
+    if (!is_array($freigaben)) {
+        return ['freigaben' => [], 'fehler' => 'HugoCMS meldet keine Freigaben — diese Version kennt die '
+            .'Shop-Erweiterung noch nicht, bitte HugoCMS aktualisieren'];
+    }
+
+    $ergebnis = ['package' => trim((string)($freigaben['package'] ?? 'oserp-shop'), '/')];
+    $unbrauchbar = [];
+    foreach (SHOP_HUGOCMS_GRANTS as $feld => $name) {
+        $wert = is_string($freigaben[$feld] ?? null) ? trim($freigaben[$feld], '/') : '';
+        if ('' === $wert || preg_match('#(^|/)\.#', $wert)) {
+            $unbrauchbar[] = '„'.$name.'“';
+        }
+        $ergebnis[$feld] = $wert;
+    }
+    if ($unbrauchbar) {
+        return ['freigaben' => [], 'fehler' => 'In HugoCMS unbrauchbar eingetragen: Freigabe '.implode(', ', $unbrauchbar)
+            .' — in den Projekteinstellungen unter „Shop-Erweiterung" prüfen und speichern'];
+    }
+    return ['freigaben' => $ergebnis, 'fehler' => ''];
+}
+
+/**
+ * Freigaben eines HugoShops, je Prozess gemerkt
+ *
+ * Seiten, Kategorieübersicht und Abgleich eines Laufs sollen mit denselben
+ * Freigaben arbeiten. Der Lauf fragt deshalb zu Beginn je HugoShop neu ab
+ * ($neu) — eine in HugoCMS verlegte Freigabe gilt so ab dem nächsten Lauf.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @param bool $neu bei HugoCMS neu abfragen
+ * @return array freigaben, fehler — wie shopHugoCmsGrantsFrom()
+ */
+function shopHugoCmsGrants($db, int $kanal, bool $neu = false): array {
+    static $gemerkt = [];
+    $schluessel = spl_object_id($db).':'.$kanal;
+    if ($neu || !isset($gemerkt[$schluessel])) {
+        $gemerkt[$schluessel] = shopHugoCmsGrantsFrom(shopHugoCmsCall($db, $kanal, 'shopbuildstatus'));
+    }
+    return $gemerkt[$schluessel];
+}
+
+/**
+ * Freigaben eines HugoShops oder ein Fehler
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @return array contentDir, categoryGroups, images, thumbnails, package
+ * @throws ApiError SHOP_HUGOCMS_GRANTS
+ */
+function shopHugoCmsGrantsRequired($db, int $kanal): array {
+    $freigaben = shopHugoCmsGrants($db, $kanal);
+    if ('' !== $freigaben['fehler']) {
+        throw new ApiError('SHOP_HUGOCMS_GRANTS', $freigaben['fehler']);
+    }
+    return $freigaben['freigaben'];
+}
+
+// ── Übertragung und Bau ──
 //
 // Der Lauf schreibt alles in die Bereitstellung (shopStagingDir). Von dort geht
 // es in drei Schritten an HugoCMS: Abgleich (Verzeichnis mit Prüfsummen),
@@ -193,9 +285,10 @@ const SHOP_HUGOCMS_PORTION_FILES = 500;
 const SHOP_HUGOCMS_RESYNC_SECONDS = 86400;
 
 /**
- * PHP-Einstiegspunkte des Pakets: in der Betriebsart HugoCMS einmal von Hand
- * auf den Webserver (E9). Ihre Konfiguration kommt als config.json über die
- * Übertragung.
+ * PHP-Einstiegspunkte des Pakets (Weiterleiter, 404-Seite). HugoCMS nimmt sie
+ * nur signiert an (dev/shop-php-signatur.md); ohne Signaturschlüssel legt man
+ * sie von Hand auf den Webserver (E9). Ihre Konfiguration kommt als
+ * config.json über die Übertragung.
  */
 const SHOP_HUGOCMS_MANUAL_FILES = ['oserp-shop/static/shop-api/index.php', 'oserp-shop/static/not_found.php'];
 
@@ -301,10 +394,13 @@ function shopShopApiClassify(array $antwort, int $kanal): array {
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
+ * @param array $signiert Pfade, die dieser Lauf signiert an HugoCMS geliefert
+ *                        hat — dann liegen sie in der Webseite, und „von Hand
+ *                        ablegen“ wäre der falsche Rat
  * @return array je Datei: pfad, stand (ok, veraltet, fehlt, kein_php,
  *               nicht_eingerichtet, falsches_ziel, ungeprueft), text (leer bei ok)
  */
-function shopWebsiteManualFilesCheck($db, int $kanal): array {
+function shopWebsiteManualFilesCheck($db, int $kanal, array $signiert = []): array {
     $basis = rtrim(trim(shopChannelValue($db, $kanal, 'base_url')), '/');
     // Ohne lesbaren Vorlagensatz fehlt der Vergleich — dann zählt nur, ob
     // die Datei antwortet; den Satz selbst meldet die Übertragung
@@ -313,13 +409,19 @@ function shopWebsiteManualFilesCheck($db, int $kanal): array {
     } catch (ApiError $e) {
         $paket = [];
     }
-    $handablage = 'Von Hand auf den Webserver legen (HugoCMS nimmt kein PHP an): ';
-
     $ergebnis = [];
     foreach (SHOP_HUGOCMS_MANUAL_FILES as $pfad) {
         $quelle = $paket[substr($pfad, strlen('oserp-shop/'))] ?? '';
         $soll = '' !== $quelle ? (string)sha1_file($quelle) : '';
         $weiterleiter = str_ends_with($pfad, 'shop-api/index.php');
+        // Signiert geliefert: die Datei liegt in der Webseite. Antwortet sie
+        // trotzdem nicht, liefert der Webserver unter der Basisadresse nicht
+        // dieses public/ aus — oder die Basisadresse stimmt nicht
+        $handablage = in_array($pfad, $signiert, true)
+            ? 'Die Datei ist signiert an HugoCMS geliefert und liegt in der Webseite ('.$pfad
+              .'), wird unter der Basisadresse '.$basis.' aber nicht ausgeliefert — Basisadresse der Webseite in der '
+              .'Kanalkarte prüfen und ob der Webserver dafür das Verzeichnis public/ dieser Webseite ausliefert. Datei: '
+            : 'Von Hand auf den Webserver legen (HugoCMS nimmt kein PHP an): ';
 
         if ('' === $basis) {
             $ergebnis[] = ['pfad' => $pfad, 'stand' => 'ungeprueft',
@@ -389,16 +491,18 @@ function shopWebsiteManualFilesCheck($db, int $kanal): array {
 /**
  * Verzeichnis der Bereitstellung mit Prüfsummen
  *
- * Nur, was HugoCMS annimmt: innerhalb seiner Bereiche und mit erlaubter
- * Endung. Alles andere wird nicht verschickt, sondern gemeldet — vor allem die
- * PHP-Dateien des Pakets, die HugoCMS bewusst nicht schreibt.
+ * Nur, was HugoCMS annimmt, so wie ShopSync::allowedPath() dort prüft:
+ * Markdown im Verzeichnis der Produktseiten, genau die Datei der
+ * Kategorieübersicht, im Paket die angenommenen Endungen. Alles andere wird
+ * nicht verschickt, sondern gemeldet — vor allem die PHP-Dateien des Pakets,
+ * die HugoCMS nur signiert annimmt.
  *
  * @param string $wurzel Bereitstellungsverzeichnis
- * @param array $bereiche von HugoCMS: Verzeichnisse mit / am Ende, sonst Dateien
- * @param array $endungen von HugoCMS angenommene Endungen
+ * @param array $freigaben von HugoCMS: contentDir, categoryGroups, package
+ * @param array $endungen von HugoCMS im Paket angenommene Endungen
  * @return array dateien (Pfad => sha256), uebersprungen (Pfade)
  */
-function shopHugoCmsManifest(string $wurzel, array $bereiche, array $endungen): array {
+function shopHugoCmsManifest(string $wurzel, array $freigaben, array $endungen): array {
     $ergebnis = ['dateien' => [], 'uebersprungen' => []];
     if (!is_dir($wurzel)) {
         return $ergebnis;
@@ -415,13 +519,12 @@ function shopHugoCmsManifest(string $wurzel, array $bereiche, array $endungen): 
         foreach (explode('/', $pfad) as $teil) {
             $versteckt = $versteckt || str_starts_with($teil, '.');
         }
-        $imBereich = false;
-        foreach ($bereiche as $bereich) {
-            $imBereich = $imBereich || (str_ends_with($bereich, '/') ? str_starts_with($pfad, $bereich) : $pfad === $bereich);
-        }
         $endung = strtolower(pathinfo($pfad, PATHINFO_EXTENSION));
+        $angenommen = $pfad === ($freigaben['categoryGroups'] ?? null)
+            || (str_starts_with($pfad, ($freigaben['package'] ?? 'oserp-shop').'/') && in_array($endung, $endungen, true))
+            || (str_starts_with($pfad, ($freigaben['contentDir'] ?? '').'/') && 'md' === $endung);
 
-        if ($versteckt || !$imBereich || !in_array($endung, $endungen, true)) {
+        if ($versteckt || !$angenommen) {
             $ergebnis['uebersprungen'][] = $pfad;
             continue;
         }
@@ -463,7 +566,7 @@ function shopHugoCmsStateFile($db, int $kanal): string {
  */
 function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     $ergebnis = ['ok' => false, 'uebertragen' => false, 'written' => 0, 'deleted' => 0, 'unchanged' => 0,
-                 'buildPending' => false, 'uebersprungen' => [], 'fehler' => '',
+                 'buildPending' => false, 'uebersprungen' => [], 'freigaben' => [], 'fehler' => '',
                  'php' => ['hugocms_bereit' => false, 'schluessel' => '' !== shopSigningSecretKey(), 'gesendet' => []]];
 
     $stand = shopHugoCmsCall($db, $kanal, 'shopbuildstatus');
@@ -473,8 +576,17 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     }
     $ergebnis['buildPending'] = !empty($stand['data']['buildPending']);
 
+    // Dieselbe Antwort nennt die Freigaben — abgeglichen wird nach dem, was
+    // HugoCMS jetzt annimmt
+    $freigaben = shopHugoCmsGrantsFrom($stand);
+    if ('' !== $freigaben['fehler']) {
+        $ergebnis['fehler'] = $freigaben['fehler'];
+        return $ergebnis;
+    }
+    $ergebnis['freigaben'] = $freigaben['freigaben'];
+
     $wurzel = shopStagingDir($db, $kanal);
-    $liste = shopHugoCmsManifest($wurzel, (array)($stand['data']['areas'] ?? []), (array)($stand['data']['accept'] ?? []));
+    $liste = shopHugoCmsManifest($wurzel, $ergebnis['freigaben'], (array)($stand['data']['accept'] ?? []));
 
     // Signierte PHP-Dateien: nur die Pfade, die HugoCMS selbst nennt
     $signiert = (array)($stand['data']['signedPhp'] ?? []);
@@ -565,7 +677,7 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     ]);
 }
 
-// ── Vorschaubilder (Betriebsart HugoCMS) ──
+// ── Vorschaubilder ──
 //
 // Die Produktbilder liegen auf dem Webserver (E6). OSERP nennt nur die Namen
 // und die Größe; verkleinert wird in HugoCMS (backend/core/Shop/ShopThumbnails.php).
@@ -677,30 +789,36 @@ function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, 
     $vonHand = array_values(array_filter($abgleich['uebersprungen'],
         fn($pfad) => in_array($pfad, SHOP_HUGOCMS_MANUAL_FILES, true)));
     $pruefen = $abgleich['uebertragen'] && ($vonHand || $abgleich['php']['gesendet']);
-    $abschluss = function (bool $gebaut) use ($db, $kanal, $sagen, $pruefen, $vonHand, $abgleich): bool {
+    $abschluss = function (bool $gebaut) use ($db, $kanal, $sagen, $fehler, $pruefen, $vonHand, $abgleich): bool {
         if (!$pruefen) {
             return $gebaut;
         }
         $mangel = false;
-        foreach (shopWebsiteManualFilesCheck($db, $kanal) as $pruefung) {
-            if ('' !== $pruefung['text']) {
-                $sagen($pruefung['text']);
-                $mangel = true;
+        foreach (shopWebsiteManualFilesCheck($db, $kanal, $abgleich['php']['gesendet']) as $pruefung) {
+            if ('' === $pruefung['text']) {
+                continue;
             }
+            $mangel = true;
+            // Ohne erreichbaren Weiterleiter gibt es keinen Warenkorb, keine
+            // Kasse, kein Konto: ein Fehler, der Lauf gilt als gescheitert.
+            // Die 404-Seite (Umleitungen) und eine veraltete Kopie bleiben Hinweise.
+            $schwer = str_ends_with($pruefung['pfad'], 'shop-api/index.php')
+                && in_array($pruefung['stand'], ['fehlt', 'kein_php', 'falsches_ziel', 'nicht_eingerichtet'], true);
+            $schwer ? $fehler($pruefung['text']) : $sagen($pruefung['text']);
         }
         // Hinweis, wie der Lauf die Dateien künftig selbst überträgt
         if ($mangel && $vonHand) {
             $sagen($abgleich['php']['schluessel']
-                ? 'Diese Dateien überträgt der Lauf selbst, sobald in HugoCMS (Projekteinstellungen → Shop-Anbindung) '
+                ? 'Diese Dateien überträgt der Lauf selbst, sobald in HugoCMS (Projekteinstellungen → Shop-Erweiterung) '
                   .'der Signaturschlüssel von OpensourceERP hinterlegt ist: '.shopSigningPublicKey()
                 : 'Diese Dateien kann der Lauf selbst übertragen: in OpensourceERP unter Systemeinstellungen '
                   .'(Shop-Erweiterung: Signaturschlüssel) ein Schlüsselpaar erzeugen und den öffentlichen Schlüssel '
-                  .'in HugoCMS (Projekteinstellungen → Shop-Anbindung) eintragen.');
+                  .'in HugoCMS (Projekteinstellungen → Shop-Erweiterung) eintragen.');
         }
         return $gebaut;
     };
     if ($abgleich['php']['gesendet'] && $abgleich['uebertragen']) {
-        $sagen('Signiert an HugoCMS übertragen: '.implode(', ', $abgleich['php']['gesendet']));
+        $sagen('Signiert an HugoCMS geliefert (neu oder unverändert): '.implode(', ', $abgleich['php']['gesendet']));
     }
 
     // HugoCMS nimmt signiertes PHP an, dieser Lauf kann aber nicht signieren:
@@ -715,6 +833,21 @@ function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, 
 
     if ($abgleich['uebertragen'] && $abgleich['uebersprungen']) {
         $sonst = array_values(array_diff($abgleich['uebersprungen'], $vonHand));
+        // Produktseiten und Kategorieübersicht, die HugoCMS nicht annimmt:
+        // sie erscheinen nie auf der Webseite — ein Fehler, kein Hinweis. Die
+        // Bereitstellung folgt den Freigaben zu Beginn des Laufs
+        // (shopStagingFollowGrants); bleibt hier etwas übrig, hat sich eine
+        // Freigabe in HugoCMS während des Laufs geändert.
+        $inhalt = array_values(array_filter($sonst, fn($pfad) => !str_starts_with($pfad, 'oserp-shop/')));
+        $sonst = array_values(array_diff($sonst, $inhalt));
+        if ($inhalt) {
+            $freigaben = $abgleich['freigaben'];
+            $fehler(sprintf('%d Inhaltsdateien von HugoCMS nicht angenommen, sie erscheinen nicht auf der Webseite: %s. '
+                .'HugoCMS gibt der Shop-Anbindung frei: Produktseiten %s, Kategorieübersicht %s '
+                .'(Projekteinstellungen → Shop-Erweiterung). Der nächste Lauf legt die Dateien dorthin.',
+                count($inhalt), implode(', ', array_slice($inhalt, 0, 5)).(count($inhalt) > 5 ? ' …' : ''),
+                ($freigaben['contentDir'] ?? '—').'/', $freigaben['categoryGroups'] ?? '—'));
+        }
         if ($sonst) {
             $sagen(sprintf('%d Dateien nicht an HugoCMS übertragen — dort nicht angenommen: %s',
                 count($sonst), implode(', ', array_slice($sonst, 0, 5)).(count($sonst) > 5 ? ' …' : '')));

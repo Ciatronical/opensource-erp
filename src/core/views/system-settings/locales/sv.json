@@ -84,7 +84,7 @@
             "hint": "Med denna nyckel signerar OpensourceERP proxyn och 404-sidan i butikspaketet; HugoCMS godtar dem bara signerade. Ett nyckelpar gäller för alla företag och alla HugoShops i denna installation.",
             "unavailable": "PHP på denna server saknar sodium-tillägget — utan det ingen signatur. Proxyn och 404-sidan måste då läggas på webbservern manuellt.",
             "publicKey": "Offentlig nyckel",
-            "publicKeyHint": "Ange den i HugoCMS under projektinställningar → butiksanslutning → signeringsnyckel från OpensourceERP.",
+            "publicKeyHint": "Ange den i HugoCMS under projektinställningar → butikstillägg → signeringsnyckel från OpensourceERP.",
             "copy": "Kopiera nyckel",
             "invalid": "Nyckelfilen kan inte läsas eller innehåller ingen giltig nyckel.",
             "none": "Ingen signeringsnyckel har skapats ännu.",

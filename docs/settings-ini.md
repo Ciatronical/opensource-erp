@@ -157,7 +157,13 @@ Datei.
 Die Webseiten der Shop-Erweiterung liegen in HugoCMS und werden dort gebaut;
 Adresse und Schlüssel stehen je HugoShop in der Ansicht „Verkaufskanäle“. Die
 früheren Schlüssel `shop_sites_dir` und `shop_publish_command_path` gibt es
-seit 2026-10-07 nicht mehr — stehen sie noch hier, wirken sie nicht.
+seit 2026-10-07 nicht mehr — stehen sie noch hier, wirken sie nicht und können
+entfernt werden.
+
+Neben der `settings.ini` liegt der private Signaturschlüssel der
+Shop-Erweiterung, `shop-signing.key` (Rechte 0600, nicht im Repository). Erzeugt
+wird er in den Systemeinstellungen oder mit `php tools/shop-signing-key.php
+--create` (`dev/shop-php-signatur.md`).
 
 Alles Weitere zum Shop: `dev/shop-betrieb.md`.
 

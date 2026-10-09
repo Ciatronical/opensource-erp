@@ -84,7 +84,7 @@
             "hint": "OpensourceERP signs the proxy and the 404 page of the shop package with this key; HugoCMS only accepts them signed. One key pair applies to all companies and all HugoShops of this installation.",
             "unavailable": "PHP on this server has no sodium extension — without it there is no signature. The proxy and the 404 page must then be placed on the web server by hand.",
             "publicKey": "Public key",
-            "publicKeyHint": "Enter it in HugoCMS under project settings → shop connection → OpensourceERP signing key.",
+            "publicKeyHint": "Enter it in HugoCMS under project settings → shop extension → OpensourceERP signing key.",
             "copy": "Copy key",
             "invalid": "The key file cannot be read or contains no valid key.",
             "none": "No signing key created yet.",

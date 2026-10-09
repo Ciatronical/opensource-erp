@@ -5,6 +5,20 @@ Schemaänderungen freigegeben (2026-10-01), Schritte 1 bis 6 erledigt. Offen
 sind nur Prüfungen gegen die echten Dienste (eBay, PayPal, HugoCMS mit
 mehreren Webseiten) und die Oberfläche im Browser.
 
+> **Hinweis (2026-10-07):** Die Betriebsart „lokal“ — OpensourceERP schreibt in
+> ein Verzeichnis auf seinem eigenen Server und baut die Webseite selbst — gibt
+> es nicht mehr; veröffentlicht wird nur noch über HugoCMS. Was dieses Dokument
+> darüber sagt (`shop_sites_dir`, `shop_site_dir`, `shop_publish_command_path`,
+> `shop_publish_mode`, `shop_images_dir`, `shop_thumbnails_dir`,
+> `publish_clean_destination`, Bau mit eigenem Hugo-Programm), beschreibt einen
+> früheren Stand. Der laufende Betrieb steht in `dev/shop-betrieb.md`.
+>
+> **Hinweis (2026-10-09):** Das Verzeichnis der Produktseiten stellt
+> OpensourceERP nicht mehr selbst ein (`shop_content_dir` bzw. `content_dir`
+> entfallen), und HugoCMS wertet `[shop] areas` nicht mehr aus: Wohin die
+> Anbindung schreiben darf, legt ein Administrator in HugoCMS als Freigaben
+> fest (`dev/shop-hugocms-verzeichnisse.md`).
+
 Ein Verkaufskanal ist künftig eine **Instanz** einer Kanalart. Kanalarten sind
 HugoShop und eBay, später weitere (etwa Amazon). Je Mandant gibt es beliebig
 viele HugoShops und beliebig viele eBay-Anbindungen.

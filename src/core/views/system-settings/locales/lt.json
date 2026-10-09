@@ -84,7 +84,7 @@
             "hint": "Šiuo raktu OpensourceERP pasirašo parduotuvės paketo tarpinį serverį ir 404 puslapį; HugoCMS juos priima tik pasirašytus. Viena raktų pora galioja visoms šio diegimo įmonėms ir visoms HugoShop.",
             "unavailable": "Šio serverio PHP neturi sodium plėtinio — be jo parašo nėra. Tada tarpinį serverį ir 404 puslapį reikia į žiniatinklio serverį įkelti rankiniu būdu.",
             "publicKey": "Viešasis raktas",
-            "publicKeyHint": "Įveskite HugoCMS projekto nustatymuose → parduotuvės ryšys → OpensourceERP parašo raktas.",
+            "publicKeyHint": "Įveskite HugoCMS projekto nustatymuose → parduotuvės plėtinys → OpensourceERP parašo raktas.",
             "copy": "Kopijuoti raktą",
             "invalid": "Rakto failo negalima perskaityti arba jame nėra galiojančio rakto.",
             "none": "Parašo raktas dar nesukurtas.",

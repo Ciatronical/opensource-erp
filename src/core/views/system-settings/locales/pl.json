@@ -84,7 +84,7 @@
             "hint": "Tym kluczem OpensourceERP podpisuje pośrednika i stronę 404 pakietu sklepu; HugoCMS przyjmuje je tylko podpisane. Jedna para kluczy obowiązuje dla wszystkich firm i wszystkich HugoShopów tej instalacji.",
             "unavailable": "PHP na tym serwerze nie ma rozszerzenia sodium — bez niego nie ma podpisu. Pośrednika i stronę 404 trzeba wtedy umieścić na serwerze WWW ręcznie.",
             "publicKey": "Klucz publiczny",
-            "publicKeyHint": "Wpisz go w HugoCMS w ustawieniach projektu → połączenie sklepu → klucz podpisu OpensourceERP.",
+            "publicKeyHint": "Wpisz go w HugoCMS w ustawieniach projektu → rozszerzenie sklepu → klucz podpisu OpensourceERP.",
             "copy": "Kopiuj klucz",
             "invalid": "Pliku klucza nie można odczytać lub nie zawiera prawidłowego klucza.",
             "none": "Nie utworzono jeszcze klucza podpisu.",

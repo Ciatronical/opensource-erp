@@ -1,10 +1,11 @@
 <!-- src/features/shop/components/shop-channel-settings.vue -->
 <!--
     Einstellungen einer Instanz in der Kanalkarte (dev/shop-mehrere-kanaele.md,
-    Schritt 5): Adressen, Verzeichnisse, Shop-Schlüssel, HugoCMS, PayPal und
-    Mails eines HugoShops; Zugang, Richtlinien und Bestellabruf eines
-    eBay-Kanals. Die Felder stehen in shopChannelSettingsConfig.js und werden
-    wie im Reiter „Shop" über shop-config-field dargestellt.
+    Schritt 5): Adressen, Shop-Schlüssel, HugoCMS (samt seiner Freigaben, nur
+    lesend), PayPal und Mails eines HugoShops; Zugang, Richtlinien und
+    Bestellabruf eines eBay-Kanals. Die Felder stehen in
+    shopChannelSettingsConfig.js und werden wie im Reiter „Shop" über
+    shop-config-field dargestellt.
 
     Gespeichert wird verzögert nach jeder Änderung (saveShopChannelSettings).
     Geheimnisse kommen nie vom Server: das Feld bleibt leer, der Platzhalter
@@ -66,6 +67,7 @@
                     <!-- Verbindung zu HugoCMS prüfen: mit den Werten im Formular,
                          auch wenn sie noch nicht gespeichert sind -->
                     <template v-if="feld.action === 'hugocmsTest'">
+                        <v-divider class="my-4" />
                         <v-btn
                             variant="tonal"
                             size="small"
@@ -85,6 +87,44 @@
                             <div v-for="(zeile, nr) in hugocmsErgebnis.zeilen" :key="nr">{{ zeile }}</div>
                         </v-alert>
 
+                        <!-- Freigaben: legt HugoCMS fest (Projekteinstellungen →
+                             Shop-Erweiterung), hier nur lesend; der Lauf holt sie
+                             bei jeder Übertragung selbst -->
+                        <div v-if="freigaben" class="pt-1 mt-4" style="max-width: 70ch">
+                            <div class="text-subtitle-2">{{ t('crm_fields.shopHugoCmsGrants') }}</div>
+                            <div class="text-caption text-medium-emphasis mb-2">{{ t('crm_fields.shopHugoCmsGrants_help') }}</div>
+                            <v-text-field
+                                v-for="freigabe in FREIGABEN"
+                                :key="freigabe.feld"
+                                :model-value="freigabe.datei ? freigaben[freigabe.feld] : freigaben[freigabe.feld] + '/'"
+                                :label="t(freigabe.label)"
+                                :prepend-inner-icon="freigabe.icon"
+                                readonly
+                                variant="outlined"
+                                density="compact"
+                                hide-details
+                                class="pt-2 mb-2"
+                            />
+                            <!-- Adressmuster passend zu den Freigaben (E5): nur ein
+                                 Vorschlag, die Felder bleiben einstellbar -->
+                            <v-alert
+                                v-if="musterAbweichungen.length"
+                                type="warning"
+                                variant="tonal"
+                                density="compact"
+                                class="mt-2"
+                            >
+                                <div>{{ t('crm_fields.shopLinkSuggestion') }}</div>
+                                <div v-for="abweichung in musterAbweichungen" :key="abweichung.feld">
+                                    {{ t(abweichung.label) }}: {{ abweichung.ist || '—' }} → {{ abweichung.vorschlag }}
+                                </div>
+                                <v-btn size="small" variant="tonal" class="mt-2" @click="musterUebernehmen">
+                                    {{ t('crm_fields.shopLinkSuggestionApply') }}
+                                </v-btn>
+                            </v-alert>
+                        </div>
+
+                        <v-divider class="mt-4" />
                         <!-- Signaturschlüssel dieser Installation: in HugoCMS eintragen,
                              dann überträgt der Lauf Weiterleiter und 404-Seite selbst
                              (dev/shop-php-signatur.md) -->
@@ -319,6 +359,61 @@ async function backendPruefen() {
 
 const hugocmsPrueft = ref(false)
 const hugocmsErgebnis = ref(null)
+/** Freigaben aus HugoCMS, nach „Verbindung prüfen"; null = (noch) keine */
+const freigaben = ref(null)
+
+/** Freigaben in der Reihenfolge der Projekteinstellungen von HugoCMS */
+const FREIGABEN = [
+    { feld: 'contentDir', label: 'crm_fields.shopHugoCmsGrantContentDir', icon: 'mdi-file-document-multiple-outline' },
+    { feld: 'categoryGroups', label: 'crm_fields.shopHugoCmsGrantCategoryGroups', icon: 'mdi-file-tree-outline', datei: true },
+    { feld: 'images', label: 'crm_fields.shopHugoCmsGrantImages', icon: 'mdi-image-multiple-outline' },
+    { feld: 'thumbnails', label: 'crm_fields.shopHugoCmsGrantThumbnails', icon: 'mdi-image-size-select-small' },
+    { feld: 'package', label: 'crm_fields.shopHugoCmsGrantPackage', icon: 'mdi-package-variant-closed' },
+]
+
+/**
+ * Adresse der Produktseiten aus ihrem Verzeichnis: Hugo legt
+ * content/<sprache>/<abschnitt>/x.md unter /<abschnitt>/x/ ab, wenn die
+ * Sprache die Vorgabe ohne eigenes Unterverzeichnis ist. Andere Sprachen und
+ * eigene Permalinks ergeben andere Adressen — deshalb nur ein Vorschlag.
+ */
+function seitenMuster(verzeichnis) {
+    const teile = String(verzeichnis || '').split('/').filter(Boolean)
+    if (teile[0] !== 'content' || teile.length < 2) return ''
+    teile.shift()
+    if (teile.length > 1 && /^[a-z]{2}(-[a-z]{2,4})?$/i.test(teile[0])) teile.shift()
+    return '/' + teile.join('/') + '/%s/'
+}
+
+/** Adresse von Dateien unter static/: Hugo liefert sie unter / aus */
+function statischesMuster(verzeichnis) {
+    const teile = String(verzeichnis || '').split('/').filter(Boolean)
+    if (teile[0] !== 'static' || teile.length < 2) return ''
+    return '/' + teile.slice(1).join('/') + '/%s'
+}
+
+/** Pfad eines Musters, auch wenn es mit Schema und Rechner eingetragen ist */
+function musterPfad(muster) {
+    const wert = String(muster || '').trim()
+    return wert.replace(/^https?:\/\/[^/]+/i, '')
+}
+
+/** Adressmuster, die nicht zu den Freigaben passen, mit Vorschlag (E5) */
+const musterAbweichungen = computed(() => {
+    if (!freigaben.value) return []
+    return [
+        { feld: 'products_link', label: 'crm_fields.shopProductsLink', vorschlag: seitenMuster(freigaben.value.contentDir) },
+        { feld: 'images_link', label: 'crm_fields.shopImagesLink', vorschlag: statischesMuster(freigaben.value.images) },
+        { feld: 'thumbnails_link', label: 'crm_fields.shopThumbnailsLink', vorschlag: statischesMuster(freigaben.value.thumbnails) },
+    ]
+        .map(muster => ({ ...muster, ist: String(werte[muster.feld] || '').trim() }))
+        .filter(muster => muster.vorschlag !== '' && musterPfad(muster.ist) !== muster.vorschlag)
+})
+
+/** Übernimmt die Vorschläge; gespeichert wird wie bei jeder Eingabe */
+function musterUebernehmen() {
+    musterAbweichungen.value.forEach(muster => { werte[muster.feld] = muster.vorschlag })
+}
 
 // Öffentlicher Signaturschlüssel dieser Installation — für alle HugoShops
 // derselbe (dev/shop-php-signatur.md, S2)
@@ -360,18 +455,22 @@ if (alleFelder.value.some(feld => feld.name === 'hugocms_url')) {
 async function hugocmsPruefen() {
     hugocmsPrueft.value = true
     hugocmsErgebnis.value = null
+    freigaben.value = null
     try {
         const antwort = await axios.post('/api/shop/', {
             action: 'testShopHugoCms',
             channel_id: props.channelId,
             url: werte.hugocms_url || '',
             key: werte.hugocms_key || '',
+            template_set: werte.template_set || '',
         })
         if (!antwort.data?.success) {
             hugocmsErgebnis.value = { art: 'error', zeilen: [antwort.data?.debug || antwort.data?.text || t('crm_fields.shopHugoCmsFailed')] }
             return
         }
-        hugocmsErgebnis.value = hugocmsBericht(antwort.data.payload || {})
+        const stand = antwort.data.payload || {}
+        hugocmsErgebnis.value = hugocmsBericht(stand)
+        freigaben.value = !stand.grants_error && stand.grants ? stand.grants : null
     } catch (e) {
         hugocmsErgebnis.value = { art: 'error', zeilen: [e?.message || t('crm_fields.shopHugoCmsFailed')] }
     } finally {
@@ -393,6 +492,21 @@ function hugocmsBericht(stand) {
     }
     if (stand.running) {
         zeilen.push(t('crm_fields.shopHugoCmsRunning'))
+    }
+
+    // Freigaben: ohne sie schreibt der Lauf nichts (Aufträge ausgesetzt)
+    if (stand.grants_error) {
+        zeilen.push(stand.grants_error)
+        art = 'error'
+    } else if (stand.template_category_groups && stand.grants?.categoryGroups
+        && stand.template_category_groups !== stand.grants.categoryGroups) {
+        // Die Vorlagen lesen die Kategorieübersicht nur dort, wo der
+        // Vorlagensatz sie erwartet
+        zeilen.push(t('crm_fields.shopHugoCmsCategoryMismatch', {
+            expected: stand.template_category_groups,
+            granted: stand.grants.categoryGroups,
+        }))
+        if (art === 'success') art = 'warning'
     }
 
     // Signierte PHP-Dateien (Weiterleiter, 404-Seite): nimmt HugoCMS sie an?

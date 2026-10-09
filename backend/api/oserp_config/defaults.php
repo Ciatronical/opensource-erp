@@ -251,17 +251,10 @@ function getDefaults($data) {
         $defaults_oserp = json_decode($result['defaults_oserp'] ?? '{}', true) ?: [];
         $geheimnisse = json_decode($result['defaults_oserp_secrets'] ?? '{}', true) ?: [];
 
-        // Vorgaben aus der settings.ini fuer Einstellungen, die dort als
-        // Rueckfall stehen. Die Oberflaeche zeigt sie im leeren Feld an,
-        // gespeichert werden sie nicht. Zur Zeit gibt es keine (die einzige,
-        // shop_publish_command_path, entfiel 2026-10-07).
-        $vorgaben = [];
-
         resultInfo(true, '', ['results' => [
             'defaults' => $defaults,
             'defaults_oserp' => $defaults_oserp,
             'defaults_oserp_secrets' => $geheimnisse,
-            'defaults_oserp_fallbacks' => (object)$vorgaben
         ]]);
     } catch (Exception $e) {
         resultInfo(false, 'DATABASE_ERROR', $e->getMessage());

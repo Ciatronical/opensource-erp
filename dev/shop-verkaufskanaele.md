@@ -6,6 +6,14 @@ Lagerbuchung bei Verkäufen (V28) und die Verfügbarkeit je Kanal (V29). Entschi
 Inbetriebnahme und die Einrichtung — steht gesammelt unter „Offener Stand
 nach Schritt 5“.
 
+> **Hinweis (2026-10-07):** Die Betriebsart „lokal“ — OpensourceERP schreibt in
+> ein Verzeichnis auf seinem eigenen Server und baut die Webseite selbst — gibt
+> es nicht mehr; veröffentlicht wird nur noch über HugoCMS. Was dieses Dokument
+> darüber sagt (`shop_sites_dir`, `shop_site_dir`, `shop_publish_command_path`,
+> `shop_publish_mode`, `shop_images_dir`, `shop_thumbnails_dir`,
+> `publish_clean_destination`, Bau mit eigenem Hugo-Programm), beschreibt einen
+> früheren Stand. Der laufende Betrieb steht in `dev/shop-betrieb.md`.
+
 **Seit 2026-10-01 gilt zusätzlich `dev/shop-mehrere-kanaele.md`:** mehrere
 Kanäle je Art (V3 und V3a aufgehoben). Wo dieses Dokument von „dem HugoShop"
 oder „dem eBay-Kanal" spricht, ist seither jede Instanz der Art gemeint.

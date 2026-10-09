@@ -5,6 +5,20 @@ Lieferantenimport). Die Bridge (`dev.hugoshop.dev/kivitendo_bridge`) wird nicht
 mehr gepflegt, auch die Shop-UI nicht. Die Erweiterung Shop übernimmt alle
 Aufgaben, die die Bridge bisher erledigt hat.
 
+> **Hinweis (2026-10-07):** Die Betriebsart „lokal“ — OpensourceERP schreibt in
+> ein Verzeichnis auf seinem eigenen Server und baut die Webseite selbst — gibt
+> es nicht mehr; veröffentlicht wird nur noch über HugoCMS. Was dieses Dokument
+> darüber sagt (`shop_sites_dir`, `shop_site_dir`, `shop_publish_command_path`,
+> `shop_publish_mode`, `shop_images_dir`, `shop_thumbnails_dir`,
+> `publish_clean_destination`, Bau mit eigenem Hugo-Programm), beschreibt einen
+> früheren Stand. Der laufende Betrieb steht in `dev/shop-betrieb.md`.
+>
+> **Hinweis (2026-10-09):** Das Verzeichnis der Produktseiten stellt
+> OpensourceERP nicht mehr selbst ein (`shop_content_dir` bzw. `content_dir`
+> entfallen), und HugoCMS wertet `[shop] areas` nicht mehr aus: Wohin die
+> Anbindung schreiben darf, legt ein Administrator in HugoCMS als Freigaben
+> fest (`dev/shop-hugocms-verzeichnisse.md`).
+
 Das Backend ist bereits übernommen (`dev/shop-migration.md`, Stufen 1–7), die
 Erzeugung der Produktseiten entsteht gerade (`dev/shop-veroeffentlichung.md`).
 Dieses Dokument erfasst, was darüber hinaus in der Bridge steckt.

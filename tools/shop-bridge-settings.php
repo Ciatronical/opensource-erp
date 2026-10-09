@@ -10,21 +10,22 @@
 //   php tools/shop-bridge-settings.php <webseite>/bridge-config | psql -d <mandant>
 //
 // Seit es mehrere HugoShops gibt (dev/shop-mehrere-kanaele.md), gehen die
-// Einstellungen der Instanz — Adressen, Verzeichnisse, PayPal, Mails,
-// Freigrenze — in den Verkaufskanal: ohne Namen in den ersten HugoShop,
+// Einstellungen der Instanz — Adressen, PayPal, Mails, Freigrenze — in den
+// Verkaufskanal: ohne Namen in den ersten HugoShop,
 // mit Namen in den HugoShop dieses Namens. Was für den ganzen Mandanten gilt
-// (Konten, Steuerzone, Bankverbindung, Wurzel der Webseiten …), bleibt in
-// defaults_oserp.
+// (Konten, Steuerzone, Bankverbindung …), bleibt in defaults_oserp.
 //
 // Gibt nur aus, schreibt nichts — das Ergebnis gehört gelesen, bevor es in
 // eine Datenbank geht. Es enthält die PayPal-Zugangsdaten im Klartext. Werte,
 // die die Instanz nicht setzt, bleiben heraus; dort gilt, was das Schema
 // angelegt hat.
 //
-// Hervorgegangen aus web/oserp/einstellungen-uebernehmen.php der Bridge,
-// ergänzt um die Einstellungen der Veröffentlichung: Wurzelverzeichnis der
-// Webseiten, Verzeichnis dieser Webseite und Inhaltsordner. Alle drei ergeben
-// sich aus dem Pfad der bridge-config.
+// Hervorgegangen aus web/oserp/einstellungen-uebernehmen.php der Bridge.
+// Veröffentlicht wird über HugoCMS — dessen Adresse und Schlüssel kennt die
+// Bridge nicht, sie gehören von Hand in die Kanalkarte. Den Inhaltsordner der
+// Bridge (KIVI_CONTENT_PATH) nennt das Werkzeug nur: Wohin die Produktseiten
+// gehören, legt HugoCMS fest (Freigabe „Produktseiten“,
+// dev/shop-hugocms-verzeichnisse.md).
 //
 // Die PayPal-Zugangsdaten kommen aus der passwd.php, und zwar BEIDE Paare:
 // dort steht eine Weiche auf $PAYPAL_SANDBOX, in OpensourceERP stehen Test-
@@ -181,8 +182,8 @@ $zuordnung = [
     'shop_search_weighting'                 => wert('HUGOSHOP_SEARCH_WEIGHTING'),
     'shop_invoice_mail_subject'             => wert('KIVI_INVOICE_MAIL_SUBJECT'),
     'shop_withdrawal_mail_to'               => wert('KIVI_WIDERRUF_MAIL_TO'),
-    'shop_content_dir'                      => inhaltsordner(wert('KIVI_CONTENT_PATH'), $verzeichnis),
 ];
+$inhaltsordner = inhaltsordner(wert('KIVI_CONTENT_PATH'), $verzeichnis);
 
 echo "-- Aus $konfig übernommen am ".date('Y-m-d H:i')."\n";
 echo "-- Vor dem Einspielen lesen: die Werte überschreiben, was im Admin-Panel steht.\n";
@@ -193,6 +194,9 @@ echo "--   Adresse von OSERP    — für Proxy und 404-Seite, z.B. https://erp.e
 echo "--   Vorlagensatz         — eigener Vorlagensatz der Instanz, falls es einen gibt\n";
 echo "--   Erlaubte Herkunft    — nur ohne Proxy nötig\n";
 echo "--   HugoCMS          — Adresse und Schlüssel; veröffentlicht wird nur über HugoCMS\n";
+if (null !== $inhaltsordner) {
+    echo "--   In HugoCMS       — Freigabe „Produktseiten“: $inhaltsordner (Projekteinstellungen → Shop-Erweiterung)\n";
+}
 echo "\n";
 
 // Einstellungen der Instanz: Schlüssel im Kanal (ohne Präfix) und ob geheim —
@@ -211,7 +215,6 @@ const INSTANZ = [
     'shop_thumbnails_link'                  => ['thumbnails_link', false],
     'shop_invoice_mail_subject'             => ['invoice_mail_subject', false],
     'shop_withdrawal_mail_to'               => ['withdrawal_mail_to', false],
-    'shop_content_dir'                      => ['content_dir', false],
 ];
 
 $text = fn($wert) => "'".str_replace("'", "''", (string)$wert)."'";

@@ -84,7 +84,7 @@
             "hint": "Mit diesem Schlüssel signiert OpensourceERP Weiterleiter und 404-Seite des Shop-Pakets; HugoCMS nimmt sie nur signiert an. Ein Schlüsselpaar gilt für alle Firmen und alle HugoShops dieser Installation.",
             "unavailable": "PHP auf diesem Server hat keine Sodium-Erweiterung — ohne sie gibt es keine Signatur. Weiterleiter und 404-Seite müssen dann von Hand auf den Webserver.",
             "publicKey": "Öffentlicher Schlüssel",
-            "publicKeyHint": "In HugoCMS unter Projekteinstellungen → Shop-Anbindung → Signaturschlüssel von OpensourceERP eintragen.",
+            "publicKeyHint": "In HugoCMS unter Projekteinstellungen → Shop-Erweiterung → Signaturschlüssel von OpensourceERP eintragen.",
             "copy": "Schlüssel kopieren",
             "invalid": "Die Schlüsseldatei ist nicht lesbar oder enthält keinen gültigen Schlüssel.",
             "none": "Noch kein Signaturschlüssel erzeugt.",

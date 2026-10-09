@@ -84,7 +84,7 @@
             "hint": "Selle võtmega allkirjastab OpensourceERP poe paketi vahendaja ja 404-lehe; HugoCMS võtab need vastu ainult allkirjastatult. Üks võtmepaar kehtib selle paigalduse kõigile ettevõtetele ja HugoShopidele.",
             "unavailable": "Selle serveri PHP-l pole sodium-laiendust — ilma selleta allkirja pole. Vahendaja ja 404-leht tuleb siis veebiserverisse käsitsi panna.",
             "publicKey": "Avalik võti",
-            "publicKeyHint": "Sisestage HugoCMS-is projekti seadetes → poe ühendus → OpensourceERP allkirjavõti.",
+            "publicKeyHint": "Sisestage HugoCMS-is projekti seadetes → poe laiendus → OpensourceERP allkirjavõti.",
             "copy": "Kopeeri võti",
             "invalid": "Võtmefaili ei saa lugeda või see ei sisalda kehtivat võtit.",
             "none": "Allkirjavõtit pole veel loodud.",

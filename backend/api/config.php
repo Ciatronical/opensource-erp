@@ -155,11 +155,6 @@ class OserpConfig {
         // Relativer Name fuer DB-Eintraege (Kivitendo-Stil: 'templates/setname')
         define('OSERP_TEMPLATES_DIR_NAME', $rawTemplatesDir);
 
-        // shop_sites_dir und shop_publish_command_path gibt es nicht mehr
-        // (2026-10-07): die Webseiten der Shop-Erweiterung liegen bei HugoCMS
-        // und werden dort gebaut. Stehen sie noch in der settings.ini, wirken
-        // sie nicht.
-
         // Verzeichnisauswahl: Einstiegspunkte des Auswahldialogs, durch
         // Komma getrennt. Ohne Eintrag leitet browseRootDirs() sie aus der
         // Installation und den eingetragenen Pfaden ab; mit Eintrag gilt

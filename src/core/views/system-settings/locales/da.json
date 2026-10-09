@@ -84,7 +84,7 @@
             "hint": "Med denne nøgle signerer OpensourceERP proxyen og 404-siden i butikspakken; HugoCMS accepterer dem kun signeret. Ét nøglepar gælder for alle firmaer og alle HugoShops i denne installation.",
             "unavailable": "PHP på denne server har ingen sodium-udvidelse — uden den ingen signatur. Proxyen og 404-siden skal så lægges på webserveren manuelt.",
             "publicKey": "Offentlig nøgle",
-            "publicKeyHint": "Indtast den i HugoCMS under projektindstillinger → butiksforbindelse → signaturnøgle fra OpensourceERP.",
+            "publicKeyHint": "Indtast den i HugoCMS under projektindstillinger → butiksudvidelse → signaturnøgle fra OpensourceERP.",
             "copy": "Kopiér nøgle",
             "invalid": "Nøglefilen kan ikke læses eller indeholder ingen gyldig nøgle.",
             "none": "Der er endnu ikke oprettet en signaturnøgle.",

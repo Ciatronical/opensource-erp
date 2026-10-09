@@ -84,7 +84,7 @@
             "hint": "Cu această cheie OpensourceERP semnează proxy-ul și pagina 404 ale pachetului magazinului; HugoCMS le acceptă doar semnate. O pereche de chei se aplică tuturor firmelor și tuturor HugoShop-urilor acestei instalări.",
             "unavailable": "PHP pe acest server nu are extensia sodium — fără ea nu există semnătură. Proxy-ul și pagina 404 trebuie atunci puse manual pe serverul web.",
             "publicKey": "Cheie publică",
-            "publicKeyHint": "Introduceți-o în HugoCMS la Setări proiect → Conexiune magazin → Cheia de semnătură OpensourceERP.",
+            "publicKeyHint": "Introduceți-o în HugoCMS la Setări proiect → Extensie magazin → Cheia de semnătură OpensourceERP.",
             "copy": "Copiază cheia",
             "invalid": "Fișierul cheii nu poate fi citit sau nu conține o cheie validă.",
             "none": "Încă nu a fost creată o cheie de semnătură.",

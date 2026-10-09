@@ -84,7 +84,7 @@
             "hint": "Con questa chiave OpensourceERP firma il proxy e la pagina 404 del pacchetto del negozio; HugoCMS li accetta solo firmati. Una coppia di chiavi vale per tutte le aziende e tutti gli HugoShop di questa installazione.",
             "unavailable": "PHP su questo server non ha l’estensione sodium: senza di essa niente firma. Il proxy e la pagina 404 vanno allora messi a mano sul server web.",
             "publicKey": "Chiave pubblica",
-            "publicKeyHint": "Inseritela in HugoCMS in Impostazioni progetto → Collegamento negozio → Chiave di firma di OpensourceERP.",
+            "publicKeyHint": "Inseritela in HugoCMS in Impostazioni progetto → Estensione negozio → Chiave di firma di OpensourceERP.",
             "copy": "Copia chiave",
             "invalid": "Il file della chiave non è leggibile o non contiene una chiave valida.",
             "none": "Non è ancora stata creata una chiave di firma.",

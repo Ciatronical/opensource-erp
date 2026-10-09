@@ -3,6 +3,20 @@
 Plan für den Erzeuger der Produktseiten. Grundlage ist die Analyse vom
 2026-09-11; der Bestand ist in `dev/shop-migration.md` beschrieben.
 
+> **Hinweis (2026-10-07):** Die Betriebsart „lokal“ — OpensourceERP schreibt in
+> ein Verzeichnis auf seinem eigenen Server und baut die Webseite selbst — gibt
+> es nicht mehr; veröffentlicht wird nur noch über HugoCMS. Was dieses Dokument
+> darüber sagt (`shop_sites_dir`, `shop_site_dir`, `shop_publish_command_path`,
+> `shop_publish_mode`, `shop_images_dir`, `shop_thumbnails_dir`,
+> `publish_clean_destination`, Bau mit eigenem Hugo-Programm), beschreibt einen
+> früheren Stand. Der laufende Betrieb steht in `dev/shop-betrieb.md`.
+>
+> **Hinweis (2026-10-09):** Das Verzeichnis der Produktseiten stellt
+> OpensourceERP nicht mehr selbst ein (`shop_content_dir` bzw. `content_dir`
+> entfallen), und HugoCMS wertet `[shop] areas` nicht mehr aus: Wohin die
+> Anbindung schreiben darf, legt ein Administrator in HugoCMS als Freigaben
+> fest (`dev/shop-hugocms-verzeichnisse.md`).
+
 Nachgeführt am 2026-09-25: Seit den Verkaufskanälen
 (`dev/shop-verkaufskanaele.md`) ist der HugoShop ein Kanal. Ob ein Artikel
 eine Seite bekommt, entscheidet seine aktive HugoShop-Zeile in

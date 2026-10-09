@@ -84,7 +84,7 @@
             "hint": "OpensourceERP 使用此密钥为商店软件包中的代理和 404 页面签名；HugoCMS 只接受已签名的文件。一个密钥对适用于本安装中的所有公司和所有 HugoShop。",
             "unavailable": "此服务器上的 PHP 没有 sodium 扩展 — 没有它就无法签名。代理和 404 页面必须手动放到 Web 服务器上。",
             "publicKey": "公钥",
-            "publicKeyHint": "在 HugoCMS 的“项目设置 → 商店连接 → OpensourceERP 签名密钥”中输入。",
+            "publicKeyHint": "在 HugoCMS 的“项目设置 → 商店扩展 → OpensourceERP 签名密钥”中输入。",
             "copy": "复制密钥",
             "invalid": "密钥文件无法读取或不包含有效密钥。",
             "none": "尚未创建签名密钥。",

@@ -2482,8 +2482,13 @@ function installShopUi($data) {
  * die alten Werte. Leere Angaben fallen auf das Gespeicherte zurück — das
  * Schlüsselfeld ist nach dem Laden immer leer.
  *
+ * Die Antwort trägt auch die Freigaben (grants), die ein Administrator in
+ * HugoCMS festgelegt hat (dev/shop-hugocms-verzeichnisse.md) — die Kanalkarte
+ * zeigt sie nur an — und wo der Vorlagensatz die Kategorieübersicht erwartet.
+ *
  * @param string $data['url'] Adresse aus dem Formular (optional)
  * @param string $data['key'] Schlüssel aus dem Formular (optional)
+ * @param string $data['template_set'] Vorlagensatz aus dem Formular (optional)
  * @param array $data['channel_id'] HugoShop, leer = Standard-HugoShop
  * @return void
  * @testdata {}
@@ -2491,8 +2496,9 @@ function installShopUi($data) {
 function testShopHugoCms($data) {
     permit(['edit_shop_config'], false);
     $db = DbhCompany::begin();
+    $kanal = shopHugoshopOfRequest($db, $data);
 
-    $antwort = shopHugoCmsCall($db, shopHugoshopOfRequest($db, $data), 'shopbuildstatus', 'GET', 20, [
+    $antwort = shopHugoCmsCall($db, $kanal, 'shopbuildstatus', 'GET', 20, [
         'url' => (string)($data['url'] ?? ''),
         'key' => (string)($data['key'] ?? ''),
     ]);
@@ -2501,9 +2507,22 @@ function testShopHugoCms($data) {
         return;
     }
 
+    // Erwartet der Vorlagensatz die Kategorieübersicht anderswo, als HugoCMS
+    // sie freigibt, finden seine Vorlagen sie nicht
+    $satz = trim((string)($data['template_set'] ?? ''));
+    try {
+        $vorlage = shopCategoryGroupsTemplatePath($db, $kanal, '' !== $satz ? $satz : null);
+    } catch (ApiError $e) {
+        $vorlage = '';
+    }
+
     // Für die Meldung zu den signierten PHP-Dateien: hat diese Installation
     // einen Signaturschlüssel? (dev/shop-php-signatur.md)
-    resultInfo(true, '', (array)$antwort['data'] + ['oserp_signing_key' => shopSigningPublicKey()]);
+    resultInfo(true, '', (array)$antwort['data'] + [
+        'oserp_signing_key'        => shopSigningPublicKey(),
+        'grants_error'             => shopHugoCmsGrantsFrom($antwort)['fehler'],
+        'template_category_groups' => $vorlage,
+    ]);
 }
 
 /**

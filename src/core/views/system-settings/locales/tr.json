@@ -84,7 +84,7 @@
             "hint": "OpensourceERP bu anahtarla mağaza paketinin vekil sunucusunu ve 404 sayfasını imzalar; HugoCMS bunları yalnızca imzalı kabul eder. Bir anahtar çifti bu kurulumun tüm firmaları ve tüm HugoShop'ları için geçerlidir.",
             "unavailable": "Bu sunucudaki PHP'de sodium eklentisi yok — o olmadan imza olmaz. Vekil sunucu ve 404 sayfası bu durumda web sunucusuna elle konulmalıdır.",
             "publicKey": "Açık anahtar",
-            "publicKeyHint": "HugoCMS'te Proje ayarları → Mağaza bağlantısı → OpensourceERP imza anahtarı altına girin.",
+            "publicKeyHint": "HugoCMS'te Proje ayarları → Mağaza eklentisi → OpensourceERP imza anahtarı altına girin.",
             "copy": "Anahtarı kopyala",
             "invalid": "Anahtar dosyası okunamıyor veya geçerli bir anahtar içermiyor.",
             "none": "Henüz imza anahtarı oluşturulmadı.",

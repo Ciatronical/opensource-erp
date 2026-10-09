@@ -84,7 +84,7 @@
             "hint": "Tímto klíčem OpensourceERP podepisuje proxy a stránku 404 balíčku obchodu; HugoCMS je přijímá jen podepsané. Jeden pár klíčů platí pro všechny firmy a všechny HugoShopy této instalace.",
             "unavailable": "PHP na tomto serveru nemá rozšíření sodium — bez něj není podpis možný. Proxy a stránku 404 je pak nutné umístit na webový server ručně.",
             "publicKey": "Veřejný klíč",
-            "publicKeyHint": "Zadejte v HugoCMS v nastavení projektu → napojení obchodu → podpisový klíč OpensourceERP.",
+            "publicKeyHint": "Zadejte v HugoCMS v nastavení projektu → rozšíření obchodu → podpisový klíč OpensourceERP.",
             "copy": "Kopírovat klíč",
             "invalid": "Soubor s klíčem nelze přečíst nebo neobsahuje platný klíč.",
             "none": "Podpisový klíč zatím nebyl vytvořen.",

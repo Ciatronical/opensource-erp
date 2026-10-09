@@ -84,7 +84,7 @@
             "hint": "Met deze sleutel ondertekent OpensourceERP de proxy en de 404-pagina van het winkelpakket; HugoCMS accepteert ze alleen ondertekend. Eén sleutelpaar geldt voor alle bedrijven en alle HugoShops van deze installatie.",
             "unavailable": "PHP op deze server heeft geen sodium-extensie — zonder die geen ondertekening. De proxy en de 404-pagina moeten dan handmatig op de webserver worden gezet.",
             "publicKey": "Openbare sleutel",
-            "publicKeyHint": "Voer hem in HugoCMS in onder Projectinstellingen → Winkelkoppeling → Ondertekeningssleutel van OpensourceERP.",
+            "publicKeyHint": "Voer hem in HugoCMS in onder Projectinstellingen → Winkeluitbreiding → Ondertekeningssleutel van OpensourceERP.",
             "copy": "Sleutel kopiëren",
             "invalid": "Het sleutelbestand is niet leesbaar of bevat geen geldige sleutel.",
             "none": "Er is nog geen ondertekeningssleutel aangemaakt.",

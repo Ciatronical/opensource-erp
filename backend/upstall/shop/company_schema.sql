@@ -251,7 +251,6 @@ CREATE OR REPLACE FUNCTION shop_channel_default_settings(p_type text) RETURNS js
     LANGUAGE sql IMMUTABLE AS $$
     SELECT CASE p_type
         WHEN 'hugoshop' THEN jsonb_build_object(
-            'content_dir',                      'content/de/produkt',
             'downloads_link',                   '/downloads/%s',
             'template_set',                     'standard',
             'auto_publish',                     '1',
@@ -2383,8 +2382,8 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         -- zum Lieferstatus (dev/shop-bestellstatus.md); leer = /rechnung/.
         -- Den alten Schlüssel gab es nie, die Abschrift findet nichts.
         ('hugoshop', 'shop_invoice_page',                     'invoice_page',                     false),
-        -- HugoShop: Veröffentlichung
-        ('hugoshop', 'shop_content_dir',                      'content_dir',                      false),
+        -- HugoShop: Veröffentlichung. Das Verzeichnis der Produktseiten legt
+        -- HugoCMS fest (Freigaben, dev/shop-hugocms-verzeichnisse.md)
         ('hugoshop', 'shop_template_set',                     'template_set',                     false),
         ('hugoshop', 'shop_hugocms_url',                      'hugocms_url',                      false),
         ('hugoshop', 'shop_hugocms_key',                      'hugocms_key',                      true),
@@ -2479,6 +2478,15 @@ UPDATE sales_channel_shop
 DELETE FROM defaults_oserp
  WHERE key IN ('shop_site_dir', 'shop_images_dir', 'shop_thumbnails_dir',
                'shop_publish_mode', 'shop_publish_clean_destination');
+
+-- Verzeichnis der Produktseiten entfallen (2026-10-09, E3 in
+-- dev/shop-hugocms-verzeichnisse.md): Es legt HugoCMS fest (Freigabe
+-- „Produktseiten“), der Lauf fragt es dort ab — OSERP hält keine eigene Kopie
+UPDATE sales_channel_shop
+   SET settings = settings - 'content_dir'
+ WHERE type = 'hugoshop'
+   AND settings -> 'content_dir' IS NOT NULL;
+DELETE FROM defaults_oserp WHERE key = 'shop_content_dir';
 
 DROP TRIGGER IF EXISTS trigger_defaults_oserp_shop_channel_sync ON defaults_oserp;
 DROP FUNCTION IF EXISTS defaults_oserp_shop_channel_sync();

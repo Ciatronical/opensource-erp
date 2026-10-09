@@ -84,7 +84,7 @@
             "hint": "Com esta chave o OpensourceERP assina o proxy e a página 404 do pacote da loja; o HugoCMS só os aceita assinados. Um par de chaves vale para todas as empresas e todas as HugoShops desta instalação.",
             "unavailable": "O PHP neste servidor não tem a extensão sodium — sem ela não há assinatura. O proxy e a página 404 têm então de ser colocados à mão no servidor web.",
             "publicKey": "Chave pública",
-            "publicKeyHint": "Introduza-a no HugoCMS em Definições do projeto → Ligação à loja → Chave de assinatura do OpensourceERP.",
+            "publicKeyHint": "Introduza-a no HugoCMS em Definições do projeto → Extensão da loja → Chave de assinatura do OpensourceERP.",
             "copy": "Copiar chave",
             "invalid": "O ficheiro da chave não pode ser lido ou não contém uma chave válida.",
             "none": "Ainda não foi criada nenhuma chave de assinatura.",

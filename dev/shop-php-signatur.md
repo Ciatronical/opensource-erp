@@ -14,8 +14,9 @@ nicht gegen eine echte Webseite getestet. Löst E9 aus
    Benutzer `php tools/shop-signing-key.php --create`. Der öffentliche
    Schlüssel steht danach in den Systemeinstellungen und, nur lesend, in der
    Kanalkarte unter Veröffentlichung → HugoCMS.
-2. In HugoCMS: Projekteinstellungen → Shop-Anbindung → „Signaturschlüssel von
-   OpensourceERP“ einfügen und speichern.
+2. In HugoCMS: Projekteinstellungen → Shop-Erweiterung → „Signaturschlüssel von
+   OpensourceERP“ einfügen und speichern (seit 2026-10-09 heißt der Abschnitt
+   „Shop-Erweiterung“, dev/shop-hugocms-verzeichnisse.md).
 3. In OpensourceERP „Verbindung prüfen“ (Kanalkarte) zeigt danach „überträgt
    der Lauf signiert“; „Shop-Benutzerschnittstelle installieren“ überträgt die
    beiden PHP-Dateien mit.
@@ -87,7 +88,7 @@ Schlüsselwechsel erhalten (`shopSectionRest()`).
 
 ### Oberfläche
 
-In den Einstellungen der Shop-Anbindung ein Feld „Signaturschlüssel von
+In den Einstellungen der Shop-Erweiterung ein Feld „Signaturschlüssel von
 OpensourceERP“ (einfügen, entfernen, Kurzanzeige). Texte in
 `frontend/src/i18n/de.js` und `en.js`, Fehlercodes übersetzt der Client.
 

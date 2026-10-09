@@ -9,7 +9,7 @@
 // signiert hat. Dafür braucht diese Installation ein Ed25519-Schlüsselpaar:
 // Der private Schlüssel liegt in backend/config/shop-signing.key (nicht im
 // Repository, Rechte 0600), den öffentlichen trägt ein Administrator in HugoCMS
-// ein (Projekteinstellungen → Shop-Anbindung → Signaturschlüssel). Ein
+// ein (Projekteinstellungen → Shop-Erweiterung → Signaturschlüssel). Ein
 // Schlüsselpaar gilt für alle Mandanten und alle HugoShops dieser Installation.
 //
 // Üblicher Weg sind die Systemeinstellungen (Abschnitt Shop-Erweiterung). Das
@@ -68,5 +68,5 @@ if ('' === $oeffentlich) {
     exit(1);
 }
 
-echo "Öffentlicher Schlüssel (in HugoCMS unter Projekteinstellungen → Shop-Anbindung eintragen):\n";
+echo "Öffentlicher Schlüssel (in HugoCMS unter Projekteinstellungen → Shop-Erweiterung eintragen):\n";
 echo $oeffentlich, "\n";

@@ -11,6 +11,22 @@
 // Beschriftungen und Hilfetexte sind dieselben (crm_fields.*).
 
 const hugoshop = [
+    // HugoCMS zuerst: ohne Verbindung entsteht keine Webseite, und „Verbindung
+    // prüfen" zeigt die Freigaben, an denen sich die Adressmuster unten
+    // ausrichten. action: die Karte zeigt unter den Feldern „Verbindung prüfen"
+    {
+        name: "hugocms",
+        type: "group",
+        icon: "mdi-web-sync",
+        label: "crm_fields.shopHugoCms",
+        tooltip: "crm_fields.shopHugoCms_help",
+        action: "hugocmsTest",
+        fields: [
+            { name: "hugocms_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopHugoCmsUrl", tooltip: "crm_fields.shopHugoCmsUrl_help" },
+            { name: "hugocms_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopHugoCmsKey", tooltip: "crm_fields.shopHugoCmsKey_help" },
+        ],
+    },
+
     { name: "zugang", type: "headline", label: "crm_fields.shopAccess" },
 
     // Erzeugt wird ein neuer Schlüssel im Browser; er gehört auch in den
@@ -37,9 +53,9 @@ const hugoshop = [
     { name: "backend_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBackendUrl", tooltip: "crm_fields.shopBackendUrl_help", action: "backendTest" },
     { name: "template_set", type: "dynamic-select", source: "shopTemplateSets", itemTitle: "title", itemValue: "name", fieldstyle: "max-width: 60ch", label: "crm_fields.shopTemplateSet", tooltip: "crm_fields.shopTemplateSet_help" },
     // Veröffentlicht wird immer über HugoCMS (2026-10-07): OSERP schreibt in
-    // die Bereitstellung, überträgt an HugoCMS und lässt dort bauen.
-    // content_dir: Ziel der Produktseiten in der Webseite, relativ
-    { name: "content_dir", type: "input", size: 60, fieldstyle: "max-width: 60ch", validate: "relativePath", label: "crm_fields.shopContentDir", tooltip: "crm_fields.shopContentDir_help" },
+    // die Bereitstellung, überträgt an HugoCMS und lässt dort bauen. Wohin
+    // die Produktseiten gehören, legt HugoCMS fest (Freigaben,
+    // dev/shop-hugocms-verzeichnisse.md) — die Gruppe HugoCMS ganz oben zeigt sie an.
     // Seiten bei Preisänderungen automatisch neu schreiben (V22) und was beim
     // Abschalten des HugoShops mit den Seiten geschieht (V16)
     { name: "auto_publish", type: "checkbox", label: "crm_fields.shopAutoPublish", tooltip: "crm_fields.shopAutoPublish_help" },
@@ -50,19 +66,6 @@ const hugoshop = [
             { title: "crm_fields.shopChannelOffPagesRemove", value: "remove" },
         ],
         label: "crm_fields.shopChannelOffPages", tooltip: "crm_fields.shopChannelOffPages_help"
-    },
-    // action: die Karte zeigt unter den Feldern „Verbindung prüfen"
-    {
-        name: "hugocms",
-        type: "group",
-        icon: "mdi-web-sync",
-        label: "crm_fields.shopHugoCms",
-        tooltip: "crm_fields.shopHugoCms_help",
-        action: "hugocmsTest",
-        fields: [
-            { name: "hugocms_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopHugoCmsUrl", tooltip: "crm_fields.shopHugoCmsUrl_help" },
-            { name: "hugocms_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopHugoCmsKey", tooltip: "crm_fields.shopHugoCmsKey_help" },
-        ],
     },
 
     { name: "mail", type: "headline", label: "crm_fields.shopMail" },
