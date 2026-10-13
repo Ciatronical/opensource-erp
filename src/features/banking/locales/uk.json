@@ -569,16 +569,10 @@
         "bookAsCash": "Сплачено готівкою",
         "cashPaymentFor": "Готівковий платіж за",
         "counterAccount": "Кореспондентський рахунок",
-        "counterAccountRequired": "Оберіть кореспондентський рахунок",
         "kassaAccount": "Касовий рахунок",
         "kassaAccountRequired": "Оберіть касовий рахунок",
         "chartAccount": "Рахунок",
-        "noCharts": "Рахунків не знайдено",
         "sourceAR": "Платіж клієнта",
-        "sourceAP": "Платіж постачальнику",
-        "taxIncluded": "Сума брутто · містить {rate} % {kind}: {tax} €, нетто {net} €",
-        "taxKindOut": "ПДВ",
-        "taxKindIn": "вхідний ПДВ",
-        "taxNone": "Рахунок без податкового ключа – податок не виділяється"
+        "sourceAP": "Платіж постачальнику"
     }
 }

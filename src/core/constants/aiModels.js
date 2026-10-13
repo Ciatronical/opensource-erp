@@ -36,6 +36,8 @@ export const AI_ASSISTANTS = [
     { id: 'ai_positions', key: 'ai_positions_ai_model', labelKey: 'aiModels.assistants.aiPositions', prompt: true },
     { id: 'filemanager', key: 'filemanager_ai_model', labelKey: 'aiModels.assistants.filemanager', prompt: true },
     { id: 'special_tools', key: 'special_tools_ai_model', labelKey: 'aiModels.assistants.specialTools', prompt: true },
+    { id: 'gutachten_import', key: 'gutachten_import_ai_model', labelKey: 'aiModels.assistants.gutachtenImport', prompt: true },
+    { id: 'gutachten_review', key: 'gutachten_review_ai_model', labelKey: 'aiModels.assistants.gutachtenReview', prompt: true },
     { id: 'accounting', key: 'accounting_ai_model', labelKey: 'aiModels.assistants.accounting', prompt: false },
     { id: 'business_card', key: 'business_card_ai_model', labelKey: 'aiModels.assistants.businessCard', prompt: false },
     { id: 'phone_search', key: 'phone_search_ai_model', labelKey: 'aiModels.assistants.phoneSearch', prompt: false },

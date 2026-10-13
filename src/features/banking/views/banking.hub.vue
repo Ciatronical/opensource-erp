@@ -277,9 +277,12 @@
                                         :title="t('BankingView.transactions.openInvoice')"
                                         @click.stop.prevent="goToInvoice(a)"
                                     >{{ a.invnumber }}</a>
-                                    <!-- Nur Zuordnungen mit Belegnummer; die reine gl-Verknüpfung
-                                         (z. B. Bank-Bein einer Kartenabrechnung) bleibt unsichtbar -->
                                     <span v-else-if="a.invnumber" class="d-block">{{ a.invnumber }}</span>
+                                    <!-- Dialogbuchung („Auf Konto buchen"): Gegenkonten und Text;
+                                         die reine gl-Verknüpfung einer Kartenabrechnung hat keine -->
+                                    <span v-else-if="a.gl_accounts" class="d-block text-truncate" :title="a.gl_description">
+                                        {{ a.gl_accounts }} · {{ a.gl_description }}
+                                    </span>
                                 </template>
                             </div>
                             <div v-else-if="item.pending_invnumber" class="text-caption text-medium-emphasis">
@@ -333,6 +336,15 @@
                                     @click="openBookingDialog(item)"
                                 />
                                 <v-btn
+                                    v-if="item.match_status === 'unmatched'"
+                                    icon="mdi-swap-horizontal"
+                                    size="x-small"
+                                    variant="text"
+                                    color="primary"
+                                    :title="t('BankingView.chartBooking.title')"
+                                    @click="openChartBookingDialog(item)"
+                                />
+                                <v-btn
                                     v-if="item.match_status === 'unmatched' && item.amount < 0"
                                     icon="mdi-file-document-plus"
                                     size="x-small"
@@ -352,6 +364,15 @@
                                 />
                                 <v-btn v-if="item.match_status === 'unmatched'" icon="mdi-eye-off" size="x-small" variant="text" @click="ignoreTransaction(item)" />
                                 <v-btn v-if="item.match_status === 'ignored'" icon="mdi-undo" size="x-small" variant="text" @click="resetTransaction(item)" />
+                                <v-btn
+                                    v-if="item.match_status === 'booked'"
+                                    icon="mdi-book-open-page-variant-outline"
+                                    size="x-small"
+                                    variant="text"
+                                    color="primary"
+                                    :title="t('BankingView.bookingDetail.title')"
+                                    @click="openDetailDialog(item)"
+                                />
                                 <v-btn
                                     v-if="item.match_status === 'booked'"
                                     icon="mdi-undo"
@@ -380,6 +401,25 @@
                     @ignore="onIgnoreFromDialog"
                     @settlement="onSettlementFromBooking"
                     @create-ap="onCreateApFromBooking"
+                    @book-chart="openChartBookingDialog"
+                />
+
+                <!-- Umsatz ohne Beleg auf ein Konto buchen (Umbuchung, Lohn, Finanzamt …) -->
+                <ChartBookingDialog
+                    v-model="showChartBookingDialog"
+                    :transaction="chartBookingTransaction"
+                    :edit="chartBookingEdit"
+                    @done="onBookingDone"
+                />
+
+                <!-- Gebuchten Vorgang ansehen, ändern, rückgängig machen -->
+                <BookingDetailDialog
+                    v-model="showDetailDialog"
+                    mode="bank"
+                    :bank-transaction-id="detailTransaction?.id ?? null"
+                    @edit="onEditBooking"
+                    @unbook="onUnbookFromDetail"
+                    @open-invoice="onOpenInvoiceFromDetail"
                 />
 
                 <!-- Belege zum Umsatz (aus der Liste, für jeden Status) -->
@@ -423,9 +463,9 @@
                 />
 
                 <!-- Ausgehende Zahlung → Eingangsrechnung anlegen + bezahlen -->
-                <v-dialog v-model="showApDialog" max-width="560">
+                <v-dialog v-model="showApDialog" max-width="780">
                     <v-card v-if="apSource" rounded="lg">
-                        <v-card-title class="text-body-1 font-weight-semibold">{{ t('BankingView.reconciliation.createApTitle') }}</v-card-title>
+                        <v-card-title class="text-body-1 font-weight-semibold">{{ apEdit ? t('BankingView.reconciliation.editApTitle') : t('BankingView.reconciliation.createApTitle') }}</v-card-title>
                         <v-card-subtitle>
                             {{ formatCurrency(Math.abs(apSource.amount)) }} · {{ apSource.remote_name || '—' }} · {{ formatDateShort(apSource.transdate) }}
                         </v-card-subtitle>
@@ -442,28 +482,29 @@
                                 :hint="apVendorSource ? t('BankingView.reconciliation.vendorRecognized', { source: apVendorSourceLabel }) : ''"
                                 persistent-hint
                                 @update:search="onApVendorSearch" />
-                            <v-autocomplete
-                                v-model="apForm.account"
-                                :items="apAccountOptions"
-                                item-title="label" item-value="id" return-object
-                                :label="t('BankingView.reconciliation.expenseAccount') + ' *'"
-                                density="comfortable" variant="outlined"
-                                :loading="apAccountLoading || apSuggesting" no-filter clearable
-                                prepend-inner-icon="mdi-bank-outline"
-                                :hint="apAccountSource ? t('BankingView.reconciliation.accountSource_' + apAccountSource) : ''"
-                                persistent-hint
-                                @update:search="onApAccountSearch" />
-                            <div class="d-flex ga-3">
-                                <v-select
-                                    v-model.number="apForm.rate" :items="apTaxRateOptions"
-                                    :label="t('BankingView.reconciliation.taxRate')"
-                                    density="comfortable" variant="outlined" style="max-width:200px" />
-                                <v-text-field
-                                    v-model="apForm.invnumber"
-                                    :label="t('BankingView.reconciliation.invnumber')"
-                                    density="comfortable" variant="outlined" />
+                            <!-- Aufwandskonto und Steuersatz je Position. „Aufteilen" macht
+                                 aus dem Umsatz eine Splitbuchung (Rechnung 1 190 € = Wareneingang
+                                 + Mahnkosten auf 6436), Summe muss den Umsatz treffen. -->
+                            <div v-if="apAccountSource" class="text-caption text-medium-emphasis mt-2 mb-1">
+                                <v-icon size="14" class="mr-1">mdi-lightbulb-outline</v-icon>
+                                {{ t('BankingView.reconciliation.accountSource_' + apAccountSource) }}
                             </div>
+                            <split-lines
+                                v-model="apForm.lines"
+                                :total="Math.abs(Number(apSource.amount)) || 0"
+                                :search-accounts="searchAccountsForSplit"
+                                :account-title="a => a ? `${a.accno} ${a.description}` : ''"
+                                :account-label="t('BankingView.reconciliation.expenseAccount') + ' *'"
+                                :tax-items="apTaxRateOptions"
+                                :default-tax="defaultRateFor"
+                                class="mt-2"
+                            />
+                            <v-text-field
+                                v-model="apForm.invnumber"
+                                :label="t('BankingView.reconciliation.invnumber')"
+                                density="comfortable" variant="outlined" />
                             <v-file-input
+                                v-if="!apEdit"
                                 v-model="apForm.documents"
                                 :label="t('BankingView.reconciliation.document')"
                                 :hint="t('BankingView.reconciliation.documentHint')"
@@ -474,6 +515,7 @@
                                 prepend-icon="" prepend-inner-icon="mdi-paperclip"
                                 show-size clearable class="mt-3" />
                             <v-alert
+                                v-if="!apEdit"
                                 :type="apDocCount ? 'success' : 'warning'"
                                 variant="tonal" density="compact" class="mt-3">
                                 {{ apDocCount === 0
@@ -483,15 +525,15 @@
                                         : t('BankingView.reconciliation.documentsAttached', { count: apDocCount })) }}
                             </v-alert>
                             <v-alert type="info" variant="tonal" density="compact" class="mt-3">
-                                {{ t('BankingView.reconciliation.createApHint') }}
+                                {{ apEdit ? t('BankingView.reconciliation.editApHint') : t('BankingView.reconciliation.createApHint') }}
                             </v-alert>
                         </v-card-text>
                         <v-card-actions>
                             <v-spacer />
                             <v-btn variant="text" @click="showApDialog = false">{{ t('BankingView.reconciliation.cancel') }}</v-btn>
                             <v-btn color="primary" variant="elevated" :loading="apSaving"
-                                   :disabled="!apForm.vendor_id || !apForm.account" @click="submitAp">
-                                <v-icon start>mdi-check</v-icon>{{ t('BankingView.reconciliation.createApBook') }}
+                                   :disabled="!apForm.vendor_id || !!apLinesProblem" @click="submitAp">
+                                <v-icon start>mdi-check</v-icon>{{ apEdit ? t('BankingView.reconciliation.editApSave') : t('BankingView.reconciliation.createApBook') }}
                             </v-btn>
                         </v-card-actions>
                     </v-card>
@@ -1532,7 +1574,11 @@ import RecipientAutocomplete from '../components/recipient-autocomplete.componen
 import BookingDialog from '../components/booking-dialog.component.vue'
 import TransactionDocuments from '../components/transaction-documents.component.vue'
 import SettlementDialog from '../components/settlement-dialog.component.vue'
+import ChartBookingDialog from '../components/chart-booking-dialog.component.vue'
+import BookingDetailDialog from '../components/booking-detail-dialog.component.vue'
 import PeriodPicker from '../components/kasse.period-picker.component.vue'
+import SplitLines from '../components/split-lines.component.vue'
+import { newLine, linesError } from '../composables/useSplitLines.js'
 import { validateIban, validateBic, normalizeIban } from '@/core/utils/iban.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as alerts from '@/core/utils/alerts.js'
@@ -2437,6 +2483,49 @@ function openBookingDialog(item) {
     showBookingDialog.value = true
 }
 
+// ── Umsatz ohne Beleg auf ein Konto buchen (Dialogbuchung) ───────────────
+const showChartBookingDialog  = ref(false)
+const chartBookingTransaction = ref(null)
+const chartBookingEdit        = ref(null)
+function openChartBookingDialog(item) {
+    showBookingDialog.value = false
+    chartBookingTransaction.value = item
+    chartBookingEdit.value = null
+    showChartBookingDialog.value = true
+}
+
+// ── Gebuchten Vorgang ansehen / ändern ───────────────────────────────────
+const showDetailDialog  = ref(false)
+const detailTransaction = ref(null)
+function openDetailDialog(item) {
+    detailTransaction.value = item
+    showDetailDialog.value = true
+}
+
+// Bearbeiten: Dialogbuchung → „Auf Konto buchen" vorbelegt; Eingangsrechnung aus
+// dem Bankumsatz → AP-Dialog vorbelegt (Lieferant, Positionen, Rechnungsnummer)
+function onEditBooking(booking) {
+    const bt = detailTransaction.value
+    showDetailDialog.value = false
+    if (!bt) return
+    if (booking.head.type === 'gl') {
+        chartBookingTransaction.value = bt
+        chartBookingEdit.value = { gl_id: booking.head.id, description: booking.head.description, lines: booking.lines }
+        showChartBookingDialog.value = true
+    } else if (booking.head.type === 'ap') {
+        openApDialog(bt, null, booking)
+    }
+}
+
+async function onUnbookFromDetail() {
+    showDetailDialog.value = false
+    if (detailTransaction.value) await unbookTransaction(detailTransaction.value)
+}
+
+function onOpenInvoiceFromDetail(booking) {
+    if (booking.head.type === 'ar') goToInvoice({ ar_id: booking.head.id })
+}
+
 // ── Belege zum Umsatz ─────────────────────────────────────────────────────
 const showDocsDialog  = ref(false)
 const docsTransaction = ref(null)
@@ -2477,20 +2566,28 @@ function onCreateApFromBooking(item, contact = null) {
 const showApDialog     = ref(false)
 const apSource         = ref(null)
 const apSaving         = ref(false)
-const apForm           = ref({ vendor_id: null, account: null, rate: 19, invnumber: '', documents: [] })
+const apForm           = ref({ vendor_id: null, lines: [newLine()], invnumber: '', documents: [] })
+// Bearbeiten einer aus dem Umsatz entstandenen Eingangsrechnung (ap_id gesetzt)
+const apEdit           = ref(null)
 // v-file-input liefert je nach Vuetify-Version Array oder einzelne Datei
 const apDocCount       = computed(() => apDocFiles().length)
 const apVendorOptions  = ref([])
 const apVendorLoading  = ref(false)
-const apAccountOptions = ref([])
-const apAccountLoading = ref(false)
+// Der vorbelegte/gewählte Lieferant bleibt immer in der Optionsliste. Beim Öffnen
+// setzt die Autocomplete ihren Suchtext auf den Titel des gewählten Eintrags,
+// und eine Suche danach fand nichts — die Liste war leer und das Feld zeigte
+// statt „Coler" nur noch die nackte ID.
+const apVendorSelected = ref(null)
 let   apVendorTimer    = null
-let   apAccountTimer   = null
+// Steuersatz je Position (value = Prozentsatz fürs Backend, rate = Bruchteil für die Vorschau)
 const apTaxRateOptions = [
-    { title: '19 %', value: 19 },
-    { title: '7 %', value: 7 },
-    { title: '0 % (steuerfrei)', value: 0 }
+    { title: '19 %', value: 19, rate: 0.19 },
+    { title: '7 %',  value: 7,  rate: 0.07 },
+    { title: t('BankingView.split.taxNone'), value: 0, rate: 0 }
 ]
+// Aufteilung prüfbar: null = in Ordnung, sonst Fehlerschlüssel (BankingView.split.*)
+const apLinesProblem = computed(() =>
+    apSource.value ? linesError(Math.abs(Number(apSource.value.amount)) || 0, apForm.value.lines) : 'errorNoLines')
 
 // Woher der vorbelegte Lieferant stammt (iban | rule | history_iban |
 // history_name | name) — als Hinweis unter dem Feld, damit nachvollziehbar ist,
@@ -2505,15 +2602,31 @@ const apVendorSourceLabel = computed(() => {
     return label === key ? apVendorSource.value : label
 })
 
-async function openApDialog(bt, contact = null) {
+async function openApDialog(bt, contact = null, booking = null) {
     apSource.value = bt
-    apForm.value = { vendor_id: null, account: null, rate: 19, invnumber: '', documents: [] }
+    apForm.value = { vendor_id: null, lines: [newLine()], invnumber: '', documents: [] }
     apVendorOptions.value = []
-    apAccountOptions.value = []
+    apVendorSelected.value = null
     apAccountSource.value = null
     apVendorSource.value = null
     apVendorSuggestedId.value = null
+    apEdit.value = null
     showApDialog.value = true
+
+    // Bearbeiten: alles aus der gebuchten Rechnung vorbelegen, keine Erkennung
+    if (booking) {
+        apEdit.value = { ap_id: booking.head.id }
+        apVendorSelected.value = { id: booking.head.partner_id, name: booking.head.partner_name, vendornumber: '' }
+        apVendorOptions.value = [apVendorSelected.value]
+        apVendorSuggestedId.value = booking.head.partner_id
+        apForm.value.vendor_id = booking.head.partner_id
+        apForm.value.invnumber = booking.head.reference || ''
+        apForm.value.lines = booking.lines.map(l => newLine(
+            { id: l.chart_id, accno: l.accno, description: l.description, tax_rate: l.tax_rate },
+            Math.round(Number(l.tax_rate || 0) * 100), Number(l.gross)))
+        if (!apForm.value.lines.length) apForm.value.lines = [newLine()]
+        return
+    }
 
     // Lieferant vorbelegen: aus dem Buchungsdialog mitgegeben oder jetzt
     // ermitteln (Direktaufruf aus der Umsatzliste). Bisher blieb das Feld
@@ -2525,7 +2638,8 @@ async function openApDialog(bt, contact = null) {
         finally { apVendorSuggesting.value = false }
     }
     if (contact?.type === 'vendor' && apSource.value?.id === bt.id) {
-        apVendorOptions.value = [{ id: contact.id, name: contact.name, vendornumber: contact.number }]
+        apVendorSelected.value = { id: contact.id, name: contact.name, vendornumber: contact.number }
+        apVendorOptions.value = [apVendorSelected.value]
         apVendorSuggestedId.value = contact.id
         apVendorSource.value = contact.source
         apForm.value.vendor_id = contact.id
@@ -2537,26 +2651,40 @@ async function openApDialog(bt, contact = null) {
 const apAccountSource = ref(null)
 const apSuggesting = ref(false)
 
-// Sobald ein Lieferant gewählt ist, Aufwandskonto und Steuersatz vorbelegen.
-// Eine bereits getroffene Auswahl wird nicht überschrieben.
+// Sobald ein Lieferant gewählt ist, Aufwandskonto und Steuersatz der ersten
+// Position vorbelegen. Eine bereits getroffene Auswahl wird nicht überschrieben.
 watch(() => apForm.value.vendor_id, async (vendorId) => {
     apAccountSource.value = null
     // Manuell gewählter Lieferant: der Erkennungs-Hinweis gilt nicht mehr
     if (vendorId !== apVendorSuggestedId.value) apVendorSource.value = null
+    apVendorSelected.value = apVendorOptions.value.find(v => v.id === vendorId) || apVendorSelected.value
     if (!vendorId) return
     apSuggesting.value = true
     try {
         const res = await matching.suggestExpenseAccount(vendorId)
-        if (res?.account && !apForm.value.account) {
-            apAccountOptions.value = [res.account]
-            apForm.value.account = res.account
+        const first = apForm.value.lines[0]
+        if (res?.account && first && !first.account) {
+            first.account = res.account
+            first.tax     = res.rate != null ? Math.round(Number(res.rate)) : defaultRateFor(res.account)
             apAccountSource.value = res.account.source
         }
-        if (res?.rate != null) apForm.value.rate = Number(res.rate)
     } finally {
         apSuggesting.value = false
     }
 })
+
+/** Steuersatz eines Kontos (heute gültiger Steuerschlüssel aus searchAccounts), sonst 19 % */
+function defaultRateFor(account) {
+    const r = Number(account?.tax_rate)
+    if (!account || Number.isNaN(r) || account.tax_rate == null) return 19
+    return Math.round(r * 100)
+}
+
+/** Kontensuche für die Positionen: Treffer mit Steuersatz, wie das Backend sie liefert */
+async function searchAccountsForSplit(q) {
+    const rows = await searchAccounts(q)
+    return rows.map(a => ({ id: a.id, accno: a.accno, description: a.description, tax_rate: a.tax_rate }))
+}
 
 /** Datei als reines Base64 (ohne data:-Präfix) lesen */
 function apDocFiles() {
@@ -2574,29 +2702,48 @@ function fileToBase64(file) {
     })
 }
 
+function apVendorTitle(v) {
+    return v.vendornumber ? `${v.name} (${v.vendornumber})` : v.name
+}
+
 function onApVendorSearch(q) {
     clearTimeout(apVendorTimer)
     if (!q || q.length < 2) return
+    // Der Suchtext ist nur der Titel des gewählten Lieferanten: keine Suche
+    if (apVendorSelected.value && apVendorTitle(apVendorSelected.value) === q) return
     apVendorTimer = setTimeout(async () => {
         apVendorLoading.value = true
-        apVendorOptions.value = await searchVendors(q)
+        const rows = await searchVendors(q)
+        const sel  = apVendorSelected.value
+        apVendorOptions.value = sel && !rows.some(r => r.id === sel.id) ? [sel, ...rows] : rows
         apVendorLoading.value = false
     }, 300)
 }
 
-function onApAccountSearch(q) {
-    clearTimeout(apAccountTimer)
-    if (!q || q.length < 1) return
-    apAccountTimer = setTimeout(async () => {
-        apAccountLoading.value = true
-        const rows = await searchAccounts(q)
-        apAccountOptions.value = rows.map(a => ({ id: a.id, accno: a.accno, label: `${a.accno} ${a.description}` }))
-        apAccountLoading.value = false
-    }, 300)
-}
-
 async function submitAp() {
-    if (!apForm.value.vendor_id || !apForm.value.account) return
+    if (!apForm.value.vendor_id || apLinesProblem.value) return
+
+    // Bearbeiten: Positionen, Lieferant und Rechnungsnummer der gebuchten Rechnung ändern
+    if (apEdit.value) {
+        apSaving.value = true
+        try {
+            const res = await matching.updateApFromBankTransaction({
+                bank_transaction_id: apSource.value.id,
+                ap_id: apEdit.value.ap_id,
+                vendor_id: apForm.value.vendor_id,
+                invnumber: apForm.value.invnumber || undefined,
+                lines: apForm.value.lines.map(l => ({ expense_chart_id: l.account.id, gross: Number(l.gross), rate: Number(l.tax ?? 19) }))
+            })
+            alerts.success(t('BankingView.reconciliation.editApSuccess', { gross: formatCurrency(res.gross) }))
+            showApDialog.value = false
+            await loadTransactions()
+        } catch (e) {
+            alerts.error(e.message)
+        } finally {
+            apSaving.value = false
+        }
+        return
+    }
 
     // Ohne Beleg ist die Buchung für eine Betriebsprüfung angreifbar — einmal
     // nachfragen, aber nicht blockieren (Bankgebühren u. Ä. haben keinen).
@@ -2617,8 +2764,12 @@ async function submitAp() {
             bank_transaction_id: apSource.value.id,
             bank_account_id: selectedAccountId.value,
             vendor_id: apForm.value.vendor_id,
-            expense_chart_id: apForm.value.account.id,
-            rate: apForm.value.rate,
+            // je Position Konto, Brutto und Steuersatz — eine Position = ganzer Umsatz
+            lines: apForm.value.lines.map(l => ({
+                expense_chart_id: l.account.id,
+                gross: Number(l.gross),
+                rate:  Number(l.tax ?? 19)
+            })),
             invnumber: apForm.value.invnumber || undefined
         }
         if (belege.length) {
@@ -2629,7 +2780,9 @@ async function submitAp() {
             })))
         }
         const res = await matching.createApFromBankTransaction(payload)
-        alerts.success(t('BankingView.reconciliation.createApSuccess', { gross: formatCurrency(res.gross) }))
+        alerts.success(res.line_count > 1
+            ? t('BankingView.reconciliation.createApSuccessSplit', { gross: formatCurrency(res.gross), n: res.line_count })
+            : t('BankingView.reconciliation.createApSuccess', { gross: formatCurrency(res.gross) }))
         if (res.doc_warning) alerts.error(t('BankingView.reconciliation.documentFailed', { reason: res.doc_warning }))
         showApDialog.value = false
         await loadTransactions()

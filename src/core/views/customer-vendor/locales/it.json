@@ -17,7 +17,9 @@
             "priceRules": "Regole di prezzo",
             "turnover": "Statistiche di fatturato",
             "emails": "E-mail",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Variabili personalizzate",
+            "history": "Viaggio nel tempo"
         },
         "billing": {
             "nameAddressTitle": "Nome e indirizzo",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Crea ordine",
             "saveAndQuotation": "Crea preventivo",
             "delete": "Elimina",
-            "history": "Cronologia",
             "close": "Chiudi",
-            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?"
+            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?",
+            "confirmDeleteVendor": "Eliminare davvero il fornitore «{name}»? Persone di contatto, indirizzi e note verranno rimossi con esso.",
+            "cancel": "Annulla"
         },
         "messages": {
             "saving": "Salvataggio...",
@@ -233,7 +236,10 @@
             "deleteError": "Errore nell'eliminazione del cliente.",
             "deleteContactError": "Fehler beim Löschen des Ansprechpartners",
             "deleteContactErrorTitle": "Fehler",
-            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Errore durante l'eliminazione del fornitore.",
+            "deleted": "Cliente «{name}» eliminato.",
+            "deletedVendor": "Fornitore «{name}» eliminato."
         },
         "duplicate": {
             "title": "Possibile duplicato",
@@ -329,7 +335,13 @@
             "urlLabel": "Descrizione",
             "urlAddress": "URL",
             "addUrl": "Aggiungi URL",
-            "openUrl": "Apri pagina"
+            "openUrl": "Apri pagina",
+            "vendornumber": "Numero fornitore",
+            "hu_notify": "Invia promemoria revisione",
+            "hu_notify_hint": "Vale per tutti i veicoli di questo cliente – anche per quelli creati in futuro. Se l'interruttore è disattivato, non vengono inviati promemoria di revisione e la notifica non può più essere attivata sul singolo veicolo (il cliente ha la precedenza).",
+            "phone_numbers": "Altri numeri di telefono",
+            "emails": "Altri indirizzi e-mail",
+            "urls": "Altri URL"
         },
         "price-rules": {
             "title": "Regole di prezzo",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Modalità test)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Modalità test)"
+        },
+        "customVars": {
+            "title": "Variabili personalizzate",
+            "noConfigs": "Non sono configurate variabili personalizzate per clienti/fornitori."
+        },
+        "easymode": {
+            "label": "Vista della scheda cliente",
+            "easy": "Semplice",
+            "pro": "Tutti i campi",
+            "easyHint": "Solo i campi e le schede scelti per il lavoro quotidiano nella configurazione azienda.",
+            "proHint": "Tutti i campi e le schede del cliente o del fornitore.",
+            "hiddenFilled": "{count} campi nascosti contengono valori:",
+            "showAll": "Mostra tutti i campi"
+        },
+        "history": {
+            "title": "Viaggio nel tempo",
+            "intro": "Chi ha modificato cosa e quando — ogni salvataggio con i campi modificati. Con il cursore torni indietro e vedi com'era l'anagrafica allora.",
+            "count": "{n} evento | {n} eventi",
+            "reload": "Ricarica",
+            "filterEmployee": "Collaboratore",
+            "search": "Cerca",
+            "timeTravel": "Viaggio nel tempo",
+            "today": "Oggi",
+            "backToToday": "Torna a oggi",
+            "stepsBack": "{n} modifica indietro | {n} modifiche indietro",
+            "asOf": "Stato prima della modifica del {time} — differenze rispetto a oggi:",
+            "noDiff": "Nessuna differenza rispetto allo stato attuale.",
+            "empty": "Nessuna modifica ancora registrata. Da ora in avanti ogni salvataggio viene memorizzato.",
+            "noMatch": "Nessun evento corrisponde al filtro.",
+            "unknownEmployee": "Sconosciuto",
+            "created": "creato",
+            "deleted": "eliminato",
+            "yes": "Sì",
+            "no": "No",
+            "tableProfile": "Anagrafica",
+            "tableContact": "Persona di contatto",
+            "tableShipto": "Indirizzo di consegna",
+            "tableBilling": "Indirizzo di fatturazione aggiuntivo",
+            "legacy": {
+                "saved": "salvato",
+                "printed": "stampato",
+                "mailed": "inviato per e-mail",
+                "deleted": "eliminato",
+                "screened": "visualizzato",
+                "posted": "registrato"
+            }
         }
     }
 }

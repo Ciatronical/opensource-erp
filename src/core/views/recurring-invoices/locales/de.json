@@ -173,7 +173,12 @@
             "next": "nächste am {date}",
             "invoiced": "{count} Rechnungen über {amount}",
             "createDue": "{count} fällige erzeugen",
-            "blockedHint": "Angehalten: Der Kunde hat überfällige Rechnungen. Freigabe in der Übersicht."
+            "blockedHint": "Angehalten: Der Kunde hat überfällige Rechnungen. Freigabe in der Übersicht.",
+            "hide": "Verbergen",
+            "hideTitle": "Hinweis in allen Aufträgen ausblenden",
+            "hiddenTitle": "Wiederkehrende Abrechnung ausgeblendet",
+            "hiddenText": "Zum Rückgängigmachen hier klicken. Dauerhaft wieder einschalten: Firmenkonfiguration → Features → Wiederkehrende Rechnungen. Bestehende Abrechnungen laufen weiter.",
+            "hideFailed": "Der Hinweis konnte nicht ausgeblendet werden."
         },
         "dialog": {
             "title": "Wiederkehrende Abrechnung",

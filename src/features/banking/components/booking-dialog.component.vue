@@ -265,10 +265,19 @@
                             </div>
                             <div class="d-flex ga-2 flex-wrap mt-3">
                                 <v-btn
-                                    v-if="isOutgoing"
                                     size="small"
                                     color="primary"
                                     variant="flat"
+                                    prepend-icon="mdi-swap-horizontal"
+                                    @click="bookChart"
+                                >
+                                    {{ t('BankingView.booking.actionBookChart') }}
+                                </v-btn>
+                                <v-btn
+                                    v-if="isOutgoing"
+                                    size="small"
+                                    color="primary"
+                                    variant="tonal"
                                     prepend-icon="mdi-file-document-plus"
                                     @click="createAp"
                                 >
@@ -455,6 +464,15 @@
                     Weroni
                 </v-btn>
                 <v-btn
+                    prepend-icon="mdi-swap-horizontal"
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    @click="bookChart"
+                >
+                    {{ t('BankingView.booking.actionBookChart') }}
+                </v-btn>
+                <v-btn
                     v-if="isOutgoing"
                     prepend-icon="mdi-file-document-plus"
                     color="primary"
@@ -502,7 +520,7 @@ const props = defineProps({
     accountId: { type: Number, required: true }
 })
 
-const emit = defineEmits(['update:modelValue', 'done', 'ignore', 'settlement', 'createAp', 'documents'])
+const emit = defineEmits(['update:modelValue', 'done', 'ignore', 'settlement', 'createAp', 'bookChart', 'documents'])
 
 const { t } = useI18n()
 const matching = useMatching()
@@ -812,6 +830,13 @@ function openSettlement() {
 // anlegen (Hub öffnet den AP-Dialog, der erkannte Lieferant wird vorbelegt).
 function createAp() {
     emit('createAp', props.transaction, contact.value)
+    show.value = false
+}
+
+// Umsatz ohne Beleg (Umbuchung, Lohn, Finanzamt, Privat, Gebühren …): der Hub
+// öffnet den Dialog „Auf Konto buchen" mit demselben Umsatz.
+function bookChart() {
+    emit('bookChart', props.transaction)
     show.value = false
 }
 

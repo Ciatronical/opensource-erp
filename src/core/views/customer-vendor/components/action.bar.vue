@@ -49,23 +49,6 @@
             </v-list-item>
           </v-list>
         </v-menu>
-
-        <v-divider vertical class="mx-2" />
-
-        <!-- History - Icon Button -->
-        <v-tooltip location="bottom">
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              icon
-              variant="text"
-              @click="$emit('show-history')"
-            >
-              <v-icon>mdi-history</v-icon>
-            </v-btn>
-          </template>
-          <span>{{ t('CustomerVendorEditView.actions.history') }}</span>
-        </v-tooltip>
       </div>
 
       <div class="action-bar__right">
@@ -86,7 +69,7 @@ import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'ActionBar',
-  emits: ['save-and-ar-transaction', 'save-and-invoice', 'save-and-order', 'save-and-quotation', 'delete', 'show-history', 'close'],
+  emits: ['save-and-ar-transaction', 'save-and-invoice', 'save-and-order', 'save-and-quotation', 'delete', 'close'],
   setup() {
     const { t } = useI18n()
     return { t }
@@ -96,8 +79,9 @@ export default {
 
 <style scoped>
 .action-bar {
-    background-color: #f5f5f5;
-    border-radius: 8px;
+    background-color: var(--oserp-surface-soft);
+    border-color: var(--oserp-border);
+    border-radius: var(--oserp-radius);
 }
 
 .action-bar__content {
@@ -105,8 +89,8 @@ export default {
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 12px;
-    padding: 12px 16px !important;
+    gap: var(--oserp-gap);
+    padding: var(--oserp-gap) var(--oserp-gap-lg) !important;
 }
 
 .action-bar__left {
@@ -132,10 +116,6 @@ export default {
     .action-bar__left,
     .action-bar__right {
         justify-content: center;
-    }
-
-    .action-bar__left .v-divider {
-        display: none;
     }
 }
 </style>

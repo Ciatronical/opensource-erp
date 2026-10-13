@@ -17,7 +17,9 @@
             "priceRules": "Preisregeln",
             "turnover": "Umsatzstatistik",
             "emails": "E-Mails",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Uživatelské proměnné",
+            "history": "Cesta časem"
         },
         "billing": {
             "nameAddressTitle": "Name & Adresse",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Vytvořit zakázku",
             "saveAndQuotation": "Vytvořit nabídku",
             "delete": "Smazat",
-            "history": "Historie",
             "close": "Zavřít",
-            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?"
+            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?",
+            "confirmDeleteVendor": "Opravdu smazat dodavatele „{name}“? Kontaktní osoby, adresy a poznámky budou odstraněny spolu s ním.",
+            "cancel": "Zrušit"
         },
         "messages": {
             "saving": "Ukládám...",
@@ -233,7 +236,10 @@
             "deleteError": "Fehler beim Löschen des Kunden.",
             "deleteContactError": "Fehler beim Löschen des Ansprechpartners",
             "deleteContactErrorTitle": "Chyba",
-            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Chyba při mazání dodavatele.",
+            "deleted": "Zákazník „{name}“ smazán.",
+            "deletedVendor": "Dodavatel „{name}“ smazán."
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
@@ -329,7 +335,13 @@
             "urlLabel": "Bezeichnung",
             "urlAddress": "URL",
             "addUrl": "Přidat URL",
-            "openUrl": "Otevřít stránku"
+            "openUrl": "Otevřít stránku",
+            "vendornumber": "Číslo dodavatele",
+            "hu_notify": "Zasílat upozornění na STK",
+            "hu_notify_hint": "Platí pro všechna vozidla tohoto zákazníka – i pro vozidla založená v budoucnu. Je-li přepínač vypnutý, žádná upozornění na STK se nezasílají a u jednotlivého vozidla je již nelze zapnout (zákazník má přednost).",
+            "phone_numbers": "Další telefonní čísla",
+            "emails": "Další e-mailové adresy",
+            "urls": "Další URL"
         },
         "price-rules": {
             "title": "Preisregeln",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Testovací režim)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testovací režim)"
+        },
+        "customVars": {
+            "title": "Uživatelské proměnné",
+            "noConfigs": "Pro zákazníky/dodavatele nejsou nakonfigurovány žádné uživatelské proměnné."
+        },
+        "easymode": {
+            "label": "Zobrazení formuláře zákazníka",
+            "easy": "Jednoduché",
+            "pro": "Všechna pole",
+            "easyHint": "Pouze pole a karty, které jsou v konfiguraci firmy zvoleny pro běžnou práci.",
+            "proHint": "Všechna pole a karty zákazníka, resp. dodavatele.",
+            "hiddenFilled": "{count} skrytých polí obsahuje hodnoty:",
+            "showAll": "Zobrazit všechna pole"
+        },
+        "history": {
+            "title": "Cesta časem",
+            "intro": "Kdo co kdy změnil — každé uložení se změněnými poli. Posuvníkem se vrátíte v čase a uvidíte, jak kmenová data tehdy vypadala.",
+            "count": "{n} událost | {n} událostí",
+            "reload": "Načíst znovu",
+            "filterEmployee": "Pracovník",
+            "search": "Hledat",
+            "timeTravel": "Cesta časem",
+            "today": "Dnes",
+            "backToToday": "Zpět na dnešek",
+            "stepsBack": "{n} změna zpět | {n} změn zpět",
+            "asOf": "Stav před změnou z {time} — odchylky od dneška:",
+            "noDiff": "Žádná odchylka od dnešního stavu.",
+            "empty": "Zatím nebyly zaznamenány žádné změny. Od této chvíle se každé uložení zaznamená.",
+            "noMatch": "Filtru neodpovídají žádné události.",
+            "unknownEmployee": "Neznámý",
+            "created": "založeno",
+            "deleted": "smazáno",
+            "yes": "Ano",
+            "no": "Ne",
+            "tableProfile": "Kmenová data",
+            "tableContact": "Kontaktní osoba",
+            "tableShipto": "Dodací adresa",
+            "tableBilling": "Další fakturační adresa",
+            "legacy": {
+                "saved": "uloženo",
+                "printed": "vytištěno",
+                "mailed": "odesláno e-mailem",
+                "deleted": "smazáno",
+                "screened": "zobrazeno",
+                "posted": "zaúčtováno"
+            }
         }
     }
 }

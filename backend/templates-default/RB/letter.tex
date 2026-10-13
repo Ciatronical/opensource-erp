@@ -1,76 +1,106 @@
-% config: use-template-toolkit=1
-% config: tag-style=$( )$
-$( USE KiviLatex )$
-$( USE P )$
-$( SET customer = letter.customer_vendor )$
 \input{inheaders.tex}
-$( KiviLatex.required_packages_for_html )$
+
+% Brief (Brieffunktion, Kontakt → Briefe).
+%
+% Betreff, Anrede und Text pflegt der Benutzer im Briefeditor; die Anrede wird
+% dort aus Ansprechperson bzw. Kunde vorgeschlagen und kann geändert werden.
+% Der Text kommt als HTML aus dem Editor und wird von der Vorlagen-Engine in
+% LaTeX übersetzt (Absätze, Fett, Kursiv, Listen).
+%
+% Das Adressfeld steht an der Position des DIN-5008-Fensters, damit der
+% Brief auch beim Hybridbrief-Dienstleister (PIN AG, LetterXpress) sauber
+% durch das Fensterkuvert gelesen wird.
+%
+% Variablen: letternumber, letter_date, reference, subject, greeting, body,
+%            name, department_1, department_2, cp_givenname, cp_name, street,
+%            zipcode, city, country, customernumber, employee_name,
+%            employee_tel, employee_email, salesman_name, preview
 
 % Variablen, die in settings verwendet werden
-\newcommand{\lxlangcode}{$(template_meta.language.template_code)$}
-\newcommand{\lxmedia}{$(template_meta.media)$}
-\newcommand{\lxcurrency}{}
-\newcommand{\kivicompany}{$(employee_company)$}
+\newcommand{\lxlangcode} {<%template_meta.language.template_code%>}
+\newcommand{\lxmedia} {<%media%>}
+\newcommand{\lxcurrency} {<%currency%>}
+\newcommand{\kivicompany} {<%employee_company%>}
 
 % settings: Einstellungen, Logo, Briefpapier, Kopfzeile, Fusszeile
 \input{insettings.tex}
 
+% Begriffe, die ältere Sprachdateien noch nicht kennen
+\providecommand{\betreff}{Betreff}
+\providecommand{\ihrzeichen}{Ihr Zeichen}
+\providecommand{\brief}{Brief}
+
 % laufende Kopfzeile:
-%\ourhead{}{}{$( KiviLatex.filter(letter.subject) )$}{$( KiviLatex.filter(letter.letternumber) )$}{$( KiviLatex.filter(letter.date.to_kivitendo) )$}
-\ourhead{}{}{}{}{}
+\ourhead{\kundennummer}{<%customernumber%>}{\brief}{<%letternumber%>}{<%letter_date%>}
+
 
 \begin{document}
 
-\fontfamily{cmss}\fontsize{10pt}{12pt}\selectfont
+\ourfont
+\begin{minipage}[t]{8cm}
+  \scriptsize
 
-\vspace*{1cm}
+  {\color{gray}\underline{\firma\ $\cdot$ \strasse\ $\cdot$ \ort}}
+  \normalsize
 
-\begin{minipage}{14cm}
+  \vspace*{0.3cm}
 
-  $( KiviLatex.filter(customer.name) )$
+  <%name%>
 
-  $( KiviLatex.filter(letter.contact.formal_greeting) )$
+  <%if department_1%><%department_1%><%end if%>
 
-  $( KiviLatex.filter(customer.street) )$
+  <%if department_2%><%department_2%><%end if%>
 
-  $( KiviLatex.filter(customer.zipcode) )$ $( KiviLatex.filter(customer.city) )$
+  <%if cp_name%><%cp_givenname%> <%cp_name%><%end if%>
 
-  $( KiviLatex.filter(customer.country) )$
+  <%street%>
 
+  ~
+
+  <%zipcode%> <%city%>
+
+  <%country%>
+\end{minipage}
+\hfill
+\begin{minipage}[t]{6cm}
+  \hfill{\LARGE\textbf{\brief}}
+
+  \vspace*{0.2cm}
+
+  <%if letternumber%>\hfill{\large\textbf{\nr ~<%letternumber%>}}<%end if%>
+  <%if preview%>\hfill{\large\textbf{\color{gray}VORSCHAU}}<%end if%>
+
+  \vspace*{0.2cm}
+
+  \datum:\hfill <%letter_date%>
+
+  <%if customernumber%>\kundennummer:\hfill <%customernumber%><%end if%>
+
+  <%if reference%>\ihrzeichen:\hfill <%reference%><%end if%>
+
+  \ansprechpartner:\hfill <%employee_name%>
+
+  <%if employee_tel%>\textTelefon \hfill <%employee_tel%><%end if%>
+
+  <%if employee_email%>\textEmail \hfill <%employee_email%><%end if%>
 \end{minipage}
 
-\vspace{2.5cm}
-\hfill $( KiviLatex.filter(letter.date.to_kivitendo) )$
+\vspace*{1.5cm}
 
-$( IF letter.reference )$
-\textbf{\ihrzeichen : $( KiviLatex.filter(letter.reference) )$}
-
-\vspace{1cm}
-$( END )$
-
-$( IF letter.subject )$
-\textbf{\betreff : $( KiviLatex.filter(letter.subject) )$}
-
-\vspace{1cm}
-$( END )$
-
-$( KiviLatex.filter(letter.greeting) )$
+<%if subject%>\textbf{<%subject%>}
 
 \vspace{0.5cm}
+<%end if%>
 
-$( KiviLatex.filter_html(letter.body) )$
+<%greeting%>
 
-\vspace{0.5cm}
+\vspace{0.3cm}
 
-\begin{minipage}{6cm}
+<%body%>
 
-\textbf{$( KiviLatex.filter(letter.employee.name) )$}
+\vspace*{0.8cm}
 
-\end{minipage}
-\begin{minipage}{6cm}
-
-\textbf{$( KiviLatex.filter(letter.salesman.name) )$}
-
-\end{minipage}
+\gruesse \\ \\ \\
+  <%employee_name%><%if salesman_name%> \hspace{3cm} <%salesman_name%><%end if%>
 
 \end{document}

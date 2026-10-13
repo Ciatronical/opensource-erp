@@ -24,6 +24,26 @@ Jeder Kontakt hat:
 - **Preisregeln**: Kundenspezifische Rabatte, Preisgruppen
 - **Notizen**: Freitext-Bemerkungen
 
+### Einfacher Modus der Kundenmaske
+
+Die Kundenmaske hat zwei Ansichten, umschaltbar oben rechts im Kopf (wie die Kompaktansicht der Faktura):
+
+- **Einfach** — eine ruhige, einspaltige Maske in Lesebreite. Sie zeigt nur die Felder und Reiter, die in der Firmenkonfiguration freigegeben sind. Karten ohne freigegebenes Feld entfallen ganz. Trägt ein ausgeblendetes Feld bei einem bestehenden Kunden einen Wert (z.B. Rabatt oder Kreditlimit), steht das unten als Hinweis mit Sprung zu „Alle Felder“ — nichts geht unbemerkt verloren.
+- **Alle Felder** — die vollständige zweispaltige Ansicht mit allen Karten und Reitern.
+
+Der Standard kommt aus der Firmenkonfiguration; ohne Eintrag ist der einfache Modus an. Jeder Benutzer kann in der Maske umschalten, seine Wahl wird pro Benutzer gemerkt (`company_employee_config.cv_easymode`). Pflichtfelder fürs Speichern (Name, PLZ, Ort, Straße, Kundentyp) bleiben im einfachen Modus immer sichtbar.
+
+Die Anschrift steht als Block: PLZ und Ort, direkt darunter die Straße, dann das Land. Die PLZ füllt den Ort automatisch.
+
+### Zeitreise (Änderungsverlauf)
+
+Der Reiter **Zeitreise** zeigt, wer wann was am Kunden oder Lieferanten geändert hat. Ein Trigger (`cv_history_log`) schreibt bei jedem Speichern die geänderten Spalten als Diff (alt → neu) mit Mitarbeiter und Zeit in `cv_history_oserp`; erfasst werden Stammdaten (`customer`/`vendor`), die Erweiterungen (`customer_ext`/`vendor_ext`), Ansprechpartner, Lieferadressen und zusätzliche Rechnungsadressen. Die kivitendo-Tabellen bleiben unverändert; die alten kivitendo-Ereignisse aus `history_erp` (gespeichert, gedruckt, gemailt) erscheinen als Vorgeschichte mit.
+
+- Ereignisse sind nach Mitarbeiter filterbar und durchsuchbar; IDs (Zahlungsbedingung, Kundentyp, Verkäufer …) werden als Klartext angezeigt.
+- **Zeitreise-Regler**: aus den Diffs wird der Stand der Stammdaten vor einer gewählten Änderung zurückgerechnet und gegen heute gestellt. Es werden keine Schnappschüsse gespeichert.
+- Der Mitarbeiter kommt aus dem Store (`employee_id` im Speichern-/Löschen-Aufruf) und wird per `set_config('oserp.employee_id')` an den Trigger gereicht; ohne Angabe wird er aus der Anmeldung ermittelt.
+- Der alte kivitendo-„Historie“-Knopf ist entfallen.
+
 ### Tabs im Kontakt
 
 | Tab | Inhalt |
@@ -92,6 +112,7 @@ Chips können angeklickt (zum Kontakt navigieren) oder geschlossen (dismiss) wer
 ## Konfiguration
 
 Unter **Einstellungen > CRM**:
+- **Einfacher Modus → Kunde anlegen / bearbeiten**: Schalter „Einfacher Modus ist Standard“ sowie die im einfachen Modus sichtbaren Felder je Karte und Reiter. Schnellauswahl „Empfehlung“, „Nur Pflichtfelder“, „Alle Felder“; je Karte lassen sich alle Felder auf einmal setzen. Pflichtfelder sind gesperrt und immer sichtbar. Die Auswahl gilt für Kunden und Lieferanten (Felder nur für eine Seite sind markiert). Gespeichert in `defaults_oserp` (`cv_easymode_default`, `cv_easymode_fields`, `cv_easymode_tabs` als JSON-Listen); der Feldkatalog liegt in `src/core/views/customer-vendor/cvFieldCatalog.js`.
 - Infoleiste: Max. Anzahl Anrufe/E-Mails/WhatsApp-Nachrichten
 - Telefonie-Einstellungen
 - E-Mail-Konten
@@ -99,4 +120,4 @@ Unter **Einstellungen > CRM**:
 
 ## Kontakthistorie
 
-Die Karte **Kontakthistorie** im Kunden zeigt alle Berührungspunkte chronologisch in einer Liste: Anrufe (ein- und ausgehend, verpasst, mit Mitschnitt und Transkript), WhatsApp-Nachrichten und E-Mails — jeweils mit Datum, Richtung, Mitarbeiter und Kurztext. Ein Klick öffnet den Vorgang. So ist auf einen Blick klar, wann zuletzt Kontakt bestand und worum es ging.
+Die Karte **Kontakthistorie** im Kunden zeigt alle Berührungspunkte chronologisch in einer Liste: Anrufe (ein- und ausgehend, verpasst, mit Mitschnitt und Transkript), WhatsApp-Nachrichten, [Briefe](briefe.md) (mit Versandwegen E-Mail/Post) und E-Mails — jeweils mit Datum, Richtung, Mitarbeiter und Kurztext. Der Knopf „Brief“ in der Karte beginnt einen neuen Brief an diesen Kunden. Ein Klick öffnet den Vorgang. So ist auf einen Blick klar, wann zuletzt Kontakt bestand und worum es ging.

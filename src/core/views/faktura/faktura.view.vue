@@ -36,6 +36,7 @@
                     @pdf-preview="showPdfPreview"
                     @send-email="sendEmail"
                     @send-whatsapp="sendWhatsApp"
+                    @send-post="openPostalDialog"
                     @create-dhl-label="openDhlDialog"
                     :show-dhl-button="dhlEnabled"
                     @show-on-display="showOnDisplay"
@@ -53,6 +54,9 @@
                     @toggle-compact="compactView = !compactView"
                     @open-vehicle="openVehicleEdit"
                     @import-silverdat="onImportSilverdat"
+                    :show-gutachten-button="!!gutachtenImport"
+                    @import-gutachten="onImportGutachten"
+                    @weroni-review="onWeroniReview"
                     @open-aag="onOpenAag"
                     :aag-loading="aagLoading"
                     :aag-configured="aagConfigured"
@@ -66,13 +70,23 @@
                     @open-special="openSpecialDialog"
                     :sent-email-count="sentCounts.email"
                     :sent-whatsapp-count="sentCounts.whatsapp"
+                    :sent-post-count="sentCounts.post"
                 />
             </section>
 
-            <!-- Versandstatus: wurde der Beleg schon per E-Mail / WhatsApp / DHL verschickt? -->
+            <!-- Versandstatus: wurde der Beleg schon per E-Mail / WhatsApp / Post / DHL verschickt? -->
             <section class="faktura-section faktura-section--sent" v-if="fakturaId && faktura.data && faktura.data.common">
                 <sent-status-component :entries="sentLog" :auto-send-hint="autoSendHint" />
             </section>
+
+            <!-- Postversand (Hybridbrief): Beleg beim Briefdienstleister einliefern -->
+            <postal-dialog-component
+                v-if="fakturaId"
+                v-model="postalDialogVisible"
+                :record-type="fakturaType"
+                :record-id="fakturaId"
+                @sent="onPostalSent"
+            />
 
             <special-dialog
                 v-if="showSpecialButton"
@@ -224,14 +238,15 @@
                 />
             </section>
 
-            <!-- Wiederkehrende Abrechnung (nur bei gespeicherten Verkaufsaufträgen) -->
-            <section class="faktura-section" v-if="fakturaType === 'order' && faktura.data && fakturaId">
-                <recurring-section-card
-                    :oe-id="Number(fakturaId)"
-                    :has-customer="hasCustomer"
-                    @invoices-created="onRecurringInvoicesCreated"
-                />
-            </section>
+            <!-- Wiederkehrende Abrechnung (nur bei gespeicherten Verkaufsaufträgen).
+                 Die Karte rendert ihren Abschnitt selbst: abgeschaltet und ohne
+                 bestehende Abrechnung bleibt kein leerer Abschnitt zurück. -->
+            <recurring-section-card
+                v-if="fakturaType === 'order' && faktura.data && fakturaId"
+                :oe-id="Number(fakturaId)"
+                :has-customer="hasCustomer"
+                @invoices-created="onRecurringInvoicesCreated"
+            />
 
             <!-- Bestell- und Lieferstatus: Komponente der Shop-Erweiterung, nur
                  geladen, wenn sie aktiv ist; erscheint nur bei Rechnungen aus
@@ -961,6 +976,63 @@
             @clear-error="silverdatImport.importError.value = ''"
         />
 
+        <!-- Gutachten-Import: verstecktes Dateifeld – Dateidialog erscheint sofort beim Klick -->
+        <input
+            v-if="gutachtenImport"
+            ref="gutachtenFileInput"
+            type="file"
+            accept=".pdf,image/jpeg,image/png,image/webp"
+            class="d-none"
+            @change="onGutachtenFileSelect"
+        />
+
+        <!-- Gutachten-Import Dialog (KI-Vorschau nach Dateiauswahl) -->
+        <gutachten-import-dialog
+            v-if="gutachtenImport"
+            v-model="gutachtenImport.showDialog.value"
+            :items="gutachtenImport.items.value"
+            :vehicle="gutachtenImport.vehicle.value"
+            :appraisal="gutachtenImport.appraisal.value"
+            :context="gutachtenImport.context.value"
+            :options="gutachtenImport.options.value"
+            :vehicle-action="gutachtenImport.vehicleAction.value"
+            :plate-mismatch="gutachtenImport.plateMismatch.value"
+            :confidence="gutachtenImport.confidence.value"
+            :ai-notes="gutachtenImport.aiNotes.value"
+            :analyzing="gutachtenImport.analyzing.value"
+            :importing="gutachtenImport.importing.value"
+            :import-error="gutachtenImport.importError.value"
+            :file-name="gutachtenImport.fileName.value"
+            :summary="gutachtenImport.summary.value"
+            @do-import="onGutachtenImport"
+            @close="onGutachtenClose"
+            @change-file="onImportGutachten"
+            @reanalyze="gutachtenImport.analyze(fakturaId)"
+            @clear-error="gutachtenImport.importError.value = ''"
+        />
+
+        <!-- Weroni Rechtsprüfung des Gutachtens -->
+        <weroni-review-dialog
+            v-if="gutachtenImport"
+            v-model="weroniDialogVisible"
+            :loading="weroniLoading"
+            :sending="weroniSending"
+            :error="weroniError"
+            :review="weroniData?.review || null"
+            :created-at="weroniData?.created_at || ''"
+            :communicated="weroniData?.communicated || []"
+            :customer="weroniData?.customer || null"
+            :contact-email="contactEmail"
+            :contact-phone="weroniPhone"
+            :order-number="faktura.data?.common?.ordnumber || ''"
+            @rerun="onWeroniRerun"
+            @import-gutachten="weroniDialogVisible = false; onImportGutachten()"
+            @send-email="onWeroniSendEmail"
+            @send-whatsapp="onWeroniSendWhatsApp"
+            @copied="ch => markWeroniCommunicated(ch)"
+            @clear-error="weroniError = ''"
+        />
+
         <!-- KI-Positionsvorschläge Dialog -->
         <suggest-positions-dialog
             v-model="aiDialogVisible"
@@ -1097,11 +1169,14 @@ import AdditionalInfoCard from './cards/additional.info.card.vue'
 import VehicleSectionCard from './cards/vehicle.section.card.vue'
 import ActionBarComponent from './components/action.bar.component.vue'
 import SentStatusComponent from './components/sent.status.component.vue'
+import PostalDialogComponent from '@/core/components/postal/postal.dialog.component.vue'
 import FakturaItemsTableComponent from './components/faktura.items.table.component.vue'
 import EditPartDialog from './dialogs/edit.part.dialog.vue'
 import CreatePartDialog from './dialogs/create.part.dialog.vue'
 import SendEmailDialog from './dialogs/send.email.dialog.vue'
 import SilverdatImportDialog from './dialogs/silverdat.import.dialog.vue'
+import GutachtenImportDialog from './dialogs/gutachten.import.dialog.vue'
+import WeroniReviewDialog from './dialogs/weroni.review.dialog.vue'
 import PaymentSectionCard from './cards/payment.section.card.vue'
 import RecurringSectionCard from './cards/recurring.section.card.vue'
 import HtmlEditorComponent from '@/core/components/html.editor.component.vue'
@@ -1120,6 +1195,7 @@ import { useAccounting } from './composables/useAccounting.js'
 import { useItemManagement } from './composables/useItemManagement.js'
 import { useVehicleSection } from './composables/useVehicleSection.js'
 import { useSilverDATImport } from './composables/useSilverDATImport.js'
+import { useGutachtenImport } from './composables/useGutachtenImport.js'
 import { onMounted, onBeforeUnmount, ref, computed, nextTick, defineAsyncComponent, shallowRef, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import * as alerts from '@/core/utils/alerts.js'
@@ -1147,11 +1223,14 @@ export default defineComponent({
         VehicleSectionCard,
         ActionBarComponent,
         SentStatusComponent,
+        PostalDialogComponent,
         FakturaItemsTableComponent,
         EditPartDialog,
         CreatePartDialog,
         SendEmailDialog,
         SilverdatImportDialog,
+        GutachtenImportDialog,
+        WeroniReviewDialog,
         PaymentSectionCard,
         InvoiceShopStatusCard,
         RecurringSectionCard,
@@ -1350,6 +1429,9 @@ export default defineComponent({
 
         // SilverDAT Import (nur bei aktivem LxCars)
         const silverdatImport = carsStore ? useSilverDATImport({ t }) : null
+
+        // Gutachten-Import (nur bei aktivem LxCars): fremde Gutachten als PDF/Foto per KI
+        const gutachtenImport = carsStore ? useGutachtenImport({ t }) : null
 
         const specialDialogVisible = ref(false)
         const wallDisplayEnabled = computed(() => {
@@ -2386,6 +2468,234 @@ export default defineComponent({
             }
         }
 
+        // ===== Gutachten-Import (PDF/Foto per KI) =====
+
+        const gutachtenFileInput = ref(null)
+
+        // Öffnet sofort den Dateiauswahldialog
+        function onImportGutachten() {
+            if (!gutachtenImport) return
+            gutachtenImport.reset()
+            gutachtenImport.showDialog.value = false
+            const input = gutachtenFileInput.value
+            if (input) {
+                input.value = '' // gleiche Datei erneut wählbar
+                input.click()
+            }
+        }
+
+        // Nach Dateiauswahl: Dialog mit Ladeanzeige öffnen, KI-Analyse läuft im Hintergrund
+        async function onGutachtenFileSelect(event) {
+            if (!gutachtenImport || !fakturaId.value) return
+            const file = event.target?.files?.[0]
+            if (!file) return
+            gutachtenImport.showDialog.value = true
+            await gutachtenImport.onFileSelect(event, fakturaId.value)
+        }
+
+        async function onGutachtenImport(takeOver = false) {
+            if (!gutachtenImport || !fakturaId.value) return
+            try {
+                const result = await gutachtenImport.doImport(fakturaId.value, takeOver)
+                if (!result) return // doImport zeigt Fehler im Dialog
+                // Analyse-Ergebnis vor dem reset() sichern – Grundlage der Weroni-Rechtsprüfung
+                const analysis = gutachtenImport.lastAnalysis.value
+
+                // Kennzeichen gehört einem anderen Kunden: Rückfrage wie beim Schnellanlegen per Kennzeichen
+                if (result.exists_other_owner) {
+                    const answer = await alerts.question(
+                        t('FakturaView.faktura.quickCar.existsOtherOwner', { plate: result.plate, owner: result.owner_name || '?' }),
+                        t('FakturaView.faktura.quickCar.takeOverTitle'),
+                        t('FakturaView.faktura.quickCar.takeOverYes'),
+                        t('FakturaView.faktura.quickCar.takeOverNo')
+                    )
+                    if (answer.isConfirmed) await onGutachtenImport(true)
+                    return
+                }
+
+                gutachtenImport.showDialog.value = false
+                gutachtenImport.reset()
+                toasts.success(t('FakturaView.faktura.gutachten.success', { count: result.count || 0 }))
+                if (result.car_created) {
+                    toasts.success(t('FakturaView.faktura.quickCar.created', { plate: result.plate || '' }))
+                }
+
+                // Beleg (Positionen, Notizen) und Fahrzeugdaten (Verknüpfung, km-Stand) neu laden
+                await faktura.fetchFakturaData(fakturaId.value, fakturaType.value)
+                if (faktura.data) {
+                    fakturaItems.value = (faktura.data.positions || []).map(item => {
+                        let buchungsziel = item.buchungsziel
+                        if (typeof buchungsziel === 'string') {
+                            try { buchungsziel = JSON.parse(buchungsziel) }
+                            catch (e) { buchungsziel = null }
+                        }
+                        return { ...item, buchungsziel, localArticleList: [], localArticleLoading: false }
+                    })
+                    accounting.calculateTotals()
+                }
+                if (vehicle) {
+                    const customerId = faktura.data?.common?.customer_id || faktura.data?.common?.vendor_id
+                    await vehicle.loadVehicleData(customerId)
+                }
+
+                // Weroni prüft das Gutachten und entscheidet – direkt im Anschluss
+                if (analysis) runWeroniReview(analysis, result)
+            } catch (e) {
+                console.error('Gutachten import handler error:', e)
+                if (gutachtenImport) {
+                    gutachtenImport.importError.value = String(e?.message || e)
+                    gutachtenImport.importing.value = false
+                }
+            }
+        }
+
+        function onGutachtenClose() {
+            if (gutachtenImport) {
+                gutachtenImport.showDialog.value = false
+                gutachtenImport.reset()
+            }
+        }
+
+        // ===== Weroni Rechtsprüfung (Gutachten) =====
+
+        const weroniDialogVisible = ref(false)
+        const weroniLoading = ref(false)
+        const weroniSending = ref('')
+        const weroniError = ref('')
+        const weroniData = ref(null)   // {id, created_at, review, communicated, customer, extracted}
+
+        // Handynummer des Kunden für WhatsApp (wie im WhatsApp-Dialog)
+        const weroniPhone = computed(() => {
+            const firstMobile = waPhoneOptions.value.find(p => p.mobile)
+            return firstMobile?.value || ''
+        })
+
+        // Prüfung starten (nach Import oder erneut)
+        async function runWeroniReview(extracted, applyResult = null) {
+            if (!fakturaId.value || !extracted) return
+            weroniDialogVisible.value = true
+            weroniLoading.value = true
+            weroniError.value = ''
+            try {
+                const payload = await faktura.reviewGutachten({
+                    oeId: fakturaId.value,
+                    extracted,
+                    cId: applyResult?.c_id || weroniData.value?.c_id || 0,
+                    storedPath: applyResult?.stored_path || weroniData.value?.stored_path || '',
+                    aiModel: aiModels.requestModel('gutachten_review')
+                })
+                weroniData.value = { ...payload, extracted }
+                // Entscheidung steht jetzt auch in den internen Notizen
+                if (faktura.data?.common) {
+                    const note = `Weroni Rechtsprüfung: ${payload.review?.headline || ''}`
+                    faktura.data.common.intnotes = (faktura.data.common.intnotes ? faktura.data.common.intnotes + '\n\n' : '') + note
+                }
+            } catch (e) {
+                console.error('Weroni review error:', e)
+                weroniError.value = t('FakturaView.faktura.weroni.error') + (e?.message ? ': ' + e.message : '')
+            } finally {
+                weroniLoading.value = false
+            }
+        }
+
+        // Button in der Aktionsleiste: letzte Prüfung zeigen (oder Einstieg zum Import)
+        async function onWeroniReview() {
+            if (!fakturaId.value) return
+            weroniDialogVisible.value = true
+            weroniError.value = ''
+            if (weroniData.value?.review) return
+            weroniLoading.value = true
+            try {
+                const payload = await faktura.getGutachtenReview(fakturaId.value)
+                weroniData.value = payload?.id ? payload : null
+            } catch (e) {
+                console.error('Weroni load error:', e)
+                weroniError.value = t('FakturaView.faktura.weroni.error') + (e?.message ? ': ' + e.message : '')
+            } finally {
+                weroniLoading.value = false
+            }
+        }
+
+        function onWeroniRerun() {
+            const extracted = weroniData.value?.extracted
+            if (extracted) runWeroniReview(extracted)
+        }
+
+        async function markWeroniCommunicated(channel, to = '') {
+            if (!weroniData.value?.id) return
+            try {
+                const res = await faktura.markGutachtenReviewCommunicated(weroniData.value.id, channel, to)
+                weroniData.value = { ...weroniData.value, communicated: res.communicated || [] }
+            } catch (e) {
+                console.error('Weroni mark error:', e)
+            }
+        }
+
+        // E-Mail ohne Beleg-PDF, verknüpft mit dem Auftrag (Versandanzeige)
+        async function onWeroniSendEmail({ channel, to, subject, body }) {
+            if (!body) return
+            let recipient = (to || '').trim()
+            if (!recipient) {
+                const answer = await alerts.prompt(
+                    t('FakturaView.faktura.weroni.askRecipient'),
+                    t('FakturaView.faktura.weroni.toInsurer')
+                )
+                recipient = (answer?.value || '').trim()
+                if (!recipient) return
+            }
+            weroniSending.value = channel
+            try {
+                const defaults = oserp.session.company_config?.defaults || {}
+                const fromName = defaults[emailSenderFieldMap[fakturaType.value] || ''] || ''
+                const toList = recipient.split(/[,;]/).map(e => ({ email: e.trim(), name: '' })).filter(e => e.email)
+                const response = await axios.post('/api/email/', {
+                    action: 'sendEmail',
+                    from_name: fromName,
+                    to: toList,
+                    cc: [],
+                    bcc: [],
+                    subject,
+                    body_text: body,
+                    body_html: '',
+                    record_type: emailRecordTypeMap[fakturaType.value] || null,
+                    record_table: recordTable.value,
+                    record_id: fakturaId.value ? Number(fakturaId.value) : null,
+                    attachments: []
+                })
+                if (!response.data.success) throw new Error(response.data.payload?.message || response.data.text)
+                toasts.success(t('FakturaView.faktura.emailSent'))
+                await markWeroniCommunicated(channel, recipient)
+            } catch (e) {
+                console.error('Weroni email error:', e)
+                alerts.error(e?.message || t('FakturaView.faktura.emailError'))
+            } finally {
+                weroniSending.value = ''
+            }
+        }
+
+        // WhatsApp-Freitext an den Kunden (innerhalb des 24-h-Fensters; sonst meldet das Backend)
+        async function onWeroniSendWhatsApp({ channel, to, body }) {
+            if (!to || !body) return
+            weroniSending.value = channel
+            try {
+                const response = await axios.post('/api/whatsapp/', {
+                    action: 'sendWhatsAppMessage',
+                    to,
+                    message: body,
+                    customer_id: faktura.data?.common?.customer_id || 0,
+                    customer_name: customerName.value || ''
+                })
+                if (!response.data.success) throw new Error(response.data.payload?.message || response.data.payload || response.data.text)
+                toasts.success(t('FakturaView.faktura.weroni.whatsAppSent'))
+                await markWeroniCommunicated(channel, to)
+            } catch (e) {
+                console.error('Weroni WhatsApp error:', e)
+                alerts.error(e?.message || t('FakturaView.faktura.weroni.whatsAppError'))
+            } finally {
+                weroniSending.value = ''
+            }
+        }
+
         // ===== Dokument-Konvertierung (generisch) =====
 
         async function convertAndNavigate(targetType) {
@@ -2720,7 +3030,17 @@ export default defineComponent({
         const sentCounts = computed(() => ({
             email: sentLog.value.filter(e => e.channel === 'email').length,
             whatsapp: sentLog.value.filter(e => e.channel === 'whatsapp').length,
+            post: sentLog.value.filter(e => e.channel === 'post').length,
         }))
+
+        // ===== Postversand (Hybridbrief) =====
+        const postalDialogVisible = ref(false)
+        function openPostalDialog() {
+            postalDialogVisible.value = true
+        }
+        function onPostalSent(entry) {
+            addSentLogEntry({ channel: 'post', recipient: entry.recipient, subject: entry.subject, status: entry.status })
+        }
 
         // Haupttabelle des Belegs — Ziel der record_links-Verknüpfung beim Versand
         const recordTableMap = {
@@ -3384,6 +3704,7 @@ export default defineComponent({
         return {
             onRecurringInvoicesCreated,
             sentLog,
+            postalDialogVisible, openPostalDialog, onPostalSent,
             sentCounts,
             autoSendHint,
             t,
@@ -3523,6 +3844,23 @@ export default defineComponent({
             onImportSilverdat,
             onSilverdatImport,
             onSilverdatClose,
+            gutachtenImport,
+            gutachtenFileInput,
+            onGutachtenFileSelect,
+            onImportGutachten,
+            onGutachtenImport,
+            onGutachtenClose,
+            weroniDialogVisible,
+            weroniLoading,
+            weroniSending,
+            weroniError,
+            weroniData,
+            weroniPhone,
+            onWeroniReview,
+            onWeroniRerun,
+            onWeroniSendEmail,
+            onWeroniSendWhatsApp,
+            markWeroniCommunicated,
             aagLoading,
             onOpenAag,
             // KI-Positionsvorschläge

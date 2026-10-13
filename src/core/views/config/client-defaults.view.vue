@@ -174,12 +174,13 @@
                         <component
                             v-else
                             :is="currentTabComponent"
-                            :defaults="['crm','lxcars','shop','anpr','ai_health','employees'].includes(activeTab) ? undefined : defaults"
+                            :defaults="['crm','lxcars','shop','anpr','ai_health','employees','master_lists'].includes(activeTab) ? undefined : defaults"
                             :crm-defaults="['crm','lxcars','shop','anpr','bank','features','ai_health'].includes(activeTab) ? crmDefaults : undefined"
                             :crm-secrets="activeTab === 'shop' ? crmSecrets : undefined"
                             :search-query="searchQuery"
-                            :open-panel="['add', 'crm', 'shop'].includes(activeTab) ? pendingPanel : undefined"
+                            :open-panel="['add', 'crm', 'shop', 'master_lists'].includes(activeTab) ? pendingPanel : undefined"
                             :extensions="activeTab === 'features' ? availableExtensions : undefined"
+                            :recurring-active="activeTab === 'features' ? recurringActive : undefined"
                             @toggle-extension="onToggleExtension"
                         />
                     </v-card-text>
@@ -358,6 +359,7 @@ import axios from 'axios';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';
 import OverviewTab from './tabs/overview.tab.vue';
 import shopDefaultsConfig from './tabs/shopDefaultsConfig.js';
+import masterLists from './tabs/masterListsConfig.js';
 import * as toasts from '@/core/utils/toasts.js';
 
 // LAZY LOADING: Tabs werden nur bei Bedarf geladen - Performance-Optimierung!
@@ -380,6 +382,7 @@ const AnprTab = defineAsyncComponent(() => import('./tabs/anpr-defaults.tab.vue'
 const AiHealthTab = defineAsyncComponent(() => import('./tabs/ai-health.tab.vue'));
 const EmployeesTab = defineAsyncComponent(() => import('./tabs/employees.tab.vue'));
 const AddTab = defineAsyncComponent(() => import('./tabs/add.tab.vue'));
+const MasterListsTab = defineAsyncComponent(() => import('./tabs/master-lists.tab.vue'));
 
 const { t } = useI18n();
 const route = useRoute();
@@ -419,6 +422,8 @@ const showPalette = ref(false);
 const paletteQuery = ref('');
 // Erweiterungen (Module wie LxCars) — Katalog kommt aus getExtensions
 const availableExtensions = ref([]);
+// Laufende wiederkehrende Abrechnungen — Hinweis im Features-Reiter beim Abschalten
+const recurringActive = ref(0);
 const showExtensionChangeDialog = ref(false);
 const extensionUpdateLoading = ref(false);
 const pendingExtensions = ref([]);
@@ -569,13 +574,14 @@ const tabGroups = computed(() => [
                 keywords: ['crm', 'kunde', 'customer', 'kontakt', 'contact'],
                 // Abschnitte des CRM-Tabs (Überschriften in crmDefaultsConfig.js) — direkt anspringbar via Suche.
                 subsections: [
+                    { key: 'easymode',         title: t('crm_fields.easymode'),           panel: 'easymode',         keywords: ['einfach', 'einfacher modus', 'easy', 'easymode', 'vereinfacht', 'felder', 'kundenmaske', 'kunde anlegen', 'kunde bearbeiten', 'reiter', 'tabs'] },
                     { key: 'brevo',            title: t('crm_fields.brevo'),              panel: 'brevo',            keywords: ['brevo', 'newsletter', 'marketing'] },
                     { key: 'phoneintegration', title: t('crm_fields.phoneIntegration'),   panel: 'phoneintegration', keywords: ['telefon', 'phone', 'anruf', 'tapi'] },
                     { key: 'whatsapp',         title: t('crm_fields.whatsapp'),           panel: 'whatsapp',         keywords: ['whatsapp', 'messenger'] },
                     { key: 'telegram',         title: t('crm_fields.telegram'),           panel: 'telegram',         keywords: ['telegram', 'bot', 'messenger'] },
                     { key: 'payment',          title: t('crm_fields.payment'),            panel: 'payment',          keywords: ['zahlung', 'payment', 'bezahlen'] },
                     { key: 'sumup',            title: t('crm_fields.sumup'),              panel: 'sumup',            keywords: ['sumup', 'kartenleser', 'kartenzahlung', 'ec'] },
-                    { key: 'eletter',          title: t('crm_fields.eletter'),            panel: 'eletter',          keywords: ['eletter', 'brief', 'briefe', 'post'] },
+                    { key: 'eletter',          title: t('crm_fields.eletter'),            panel: 'eletter',          keywords: ['eletter', 'brief', 'briefe', 'post', 'briefversand', 'hybridbrief', 'pin ag', 'pinag', 'letterxpress', 'sftp', 'einschreiben'] },
                     { key: 'document_dispatch', title: t('crm_fields.documentDispatch'),   panel: 'document_dispatch', keywords: ['versand', 'drucken', 'automatisch', 'beleg', 'belegversand', 'auto-versand', 'print'] },
                     { key: 'email_client',     title: t('crm_fields.emailClient'),        panel: 'email_client',     keywords: ['email', 'e-mail', 'mail', 'imap', 'smtp', 'mailserver', 'postausgang', 'posteingang', 'postausgangsserver', 'posteingangsserver', 'mailto', 'e-mail-links'] },
                     { key: 'filemanager',      title: t('crm_fields.filemanager'),        panel: 'filemanager',      keywords: ['datei', 'dateien', 'filemanager', 'dokumente', 'upload'] },
@@ -614,7 +620,7 @@ const tabGroups = computed(() => [
         key: 'features',
         title: t('configGroups.features'),
         items: [
-            { value: 'features', title: t('features'), icon: 'mdi-star', keywords: ['feature', 'funktion', 'modul', 'branche', 'module', 'e-mail', 'email', 'dms', 'dokumente', 'webdav', 'kamera', 'überwachung', 'datev', 'ustva'] },
+            { value: 'features', title: t('features'), icon: 'mdi-star', keywords: ['feature', 'funktion', 'modul', 'branche', 'module', 'e-mail', 'email', 'dms', 'dokumente', 'webdav', 'kamera', 'überwachung', 'datev', 'ustva', 'wiederkehrend', 'abo', 'miete', 'recurring'] },
             ...(store.isLxCars() ? [{ value: 'lxcars', title: 'LxCars', icon: 'mdi-car', keywords: ['lxcars', 'fahrzeug', 'auto', 'werkstatt', 'kfz', 'reifen'] }] : []),
             ...(store.isExtensionEnabled('shop') ? [{
                 value: 'shop', title: 'Shop', icon: 'mdi-storefront',
@@ -646,6 +652,17 @@ const tabGroups = computed(() => [
                     { key: 'taxes',           title: t('add_fields.taxes.title'),           panel: 'taxes',           keywords: ['steuer', 'steuersatz', 'steuersätze', 'tax', 'mwst', 'ust'] },
                     { key: 'bank_accounts',   title: t('add_fields.bank_accounts.title'),   panel: 'bank_accounts',   keywords: ['bank', 'bankkonto', 'bankkonten', 'iban', 'konto'] },
                 ],
+            },
+            {
+                value: 'master_lists',
+                title: t('masterLists.title'),
+                icon: 'mdi-format-list-bulleted-type',
+                keywords: ['stammdaten', 'listen', 'master data', 'system', 'kivitendo',
+                    ...masterLists.flatMap(def => def.keywords)],
+                // Eine Liste je Accordion-Panel — direkt anspringbar via Suche.
+                subsections: masterLists.map(def => ({
+                    key: def.key, title: t(`masterLists.${def.key}.title`), panel: def.key, keywords: def.keywords,
+                })),
             },
         ]
     }
@@ -810,7 +827,8 @@ const currentTabComponent = computed(() => {
         'anpr': AnprTab,
         'ai_health': AiHealthTab,
         'employees': EmployeesTab,
-        'add': AddTab
+        'add': AddTab,
+        'master_lists': MasterListsTab
     };
 
     return componentMap[activeTab.value] || CompanyTab;
@@ -831,6 +849,7 @@ async function loadConfig() {
             defaults.value = result.defaults || {};
             crmDefaults.value = result.defaults_oserp || {};
             crmSecrets.value = result.defaults_oserp_secrets || {};
+            recurringActive.value = Number(result.recurring_active) || 0;
         } else {
             console.error('getDefaults fehlgeschlagen:', response.data);
             defaults.value = {};
@@ -844,7 +863,7 @@ async function loadConfig() {
 
     // Feature-Booleans normalisieren (DB liefert Strings wie 'true'/'false'/'1'/'0')
     // Nicht gesetzt = Standard aktiviert
-    for (const key of ['feature_anpr', 'feature_nvr']) {
+    for (const key of ['feature_anpr', 'feature_nvr', 'feature_recurring']) {
         const v = crmDefaults.value[key];
         crmDefaults.value[key] = (v === null || v === undefined)
             ? true

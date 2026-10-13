@@ -173,7 +173,12 @@
             "next": "next on {date}",
             "invoiced": "{count} invoices totalling {amount}",
             "createDue": "Create {count} due",
-            "blockedHint": "On hold: the customer has overdue invoices. Release in the overview."
+            "blockedHint": "On hold: the customer has overdue invoices. Release in the overview.",
+            "hide": "Hide",
+            "hideTitle": "Hide this hint on all orders",
+            "hiddenTitle": "Recurring billing hidden",
+            "hiddenText": "Click here to undo. To switch it back on permanently: Company configuration → Features → Recurring invoices. Existing billings keep running.",
+            "hideFailed": "The hint could not be hidden."
         },
         "dialog": {
             "title": "Recurring billing",

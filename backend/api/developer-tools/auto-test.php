@@ -28,7 +28,7 @@ function _isDangerousAction($funcName, $folder = '') {
         . 'send|submit|mail|notify|approve|reject|confirm|cancel|merge|assign|link|unlink|mark|'
         . 'import|export|install|upgrade|migrate|reset|clear|clean|cleanup|archive|restore|'
         . 'generate|publish|sync|execute|run|start|stop|restart|pair|toggle|move|rename|'
-        . 'copy|duplicate|sort|convert|transcribe|upload|obsolete|click|play|dial)[A-Z_]/',
+        . 'copy|duplicate|sort|reorder|convert|transcribe|upload|obsolete|click|play|dial)[A-Z_]/',
         $funcName
     );
 }

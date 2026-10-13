@@ -17,7 +17,9 @@
             "priceRules": "Hinnareeglid",
             "turnover": "Käibestatistika",
             "emails": "E-kirjad",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Kohandatud muutujad",
+            "history": "Ajarännak"
         },
         "billing": {
             "nameAddressTitle": "Name & Adresse",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Loo tellimus",
             "saveAndQuotation": "Loo pakkumine",
             "delete": "Kustuta",
-            "history": "Historie",
             "close": "Sulge",
-            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?"
+            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?",
+            "confirmDeleteVendor": "Kas kustutada tarnija „{name}“? Kontaktisikud, aadressid ja märkused eemaldatakse koos sellega.",
+            "cancel": "Loobu"
         },
         "messages": {
             "saving": "Speichert...",
@@ -233,7 +236,10 @@
             "deleteError": "Fehler beim Löschen des Kunden.",
             "deleteContactError": "Fehler beim Löschen des Ansprechpartners",
             "deleteContactErrorTitle": "Viga",
-            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Viga tarnija kustutamisel.",
+            "deleted": "Klient „{name}“ kustutatud.",
+            "deletedVendor": "Tarnija „{name}“ kustutatud."
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
@@ -329,7 +335,13 @@
             "urlLabel": "Bezeichnung",
             "urlAddress": "URL",
             "addUrl": "Lisa URL",
-            "openUrl": "Ava leht"
+            "openUrl": "Ava leht",
+            "vendornumber": "Tarnija number",
+            "hu_notify": "Saada tehnoülevaatuse meeldetuletusi",
+            "hu_notify_hint": "Kehtib kõigile selle kliendi sõidukitele – ka edaspidi lisatavatele. Kui lüliti on väljas, tehnoülevaatuse meeldetuletusi ei saadeta ja neid ei saa üksiku sõiduki juures enam sisse lülitada (kliendi seade on ülimuslik).",
+            "phone_numbers": "Täiendavad telefoninumbrid",
+            "emails": "Täiendavad e-posti aadressid",
+            "urls": "Täiendavad URL-id"
         },
         "price-rules": {
             "title": "Hinnareeglid",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Testirežiim)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testirežiim)"
+        },
+        "customVars": {
+            "title": "Kohandatud muutujad",
+            "noConfigs": "Klientide/tarnijate jaoks pole kohandatud muutujaid seadistatud."
+        },
+        "easymode": {
+            "label": "Kliendivormi vaade",
+            "easy": "Lihtne",
+            "pro": "Kõik väljad",
+            "easyHint": "Ainult väljad ja vahekaardid, mis on ettevõtte seadistuses igapäevatööks valitud.",
+            "proHint": "Kliendi või tarnija kõik väljad ja vahekaardid.",
+            "hiddenFilled": "{count} peidetud välja sisaldab väärtusi:",
+            "showAll": "Näita kõiki välju"
+        },
+        "history": {
+            "title": "Ajarännak",
+            "intro": "Kes mida ja millal muutis — iga salvestamine koos muudetud väljadega. Liuguriga saad ajas tagasi rännata ja näha, millised põhiandmed toona olid.",
+            "count": "{n} sündmus | {n} sündmust",
+            "reload": "Laadi uuesti",
+            "filterEmployee": "Töötaja",
+            "search": "Otsi",
+            "timeTravel": "Ajarännak",
+            "today": "Täna",
+            "backToToday": "Tagasi tänasesse",
+            "stepsBack": "{n} muudatus tagasi | {n} muudatust tagasi",
+            "asOf": "Seis enne muudatust {time} — erinevused tänasest:",
+            "noDiff": "Tänasest seisust erinevusi ei ole.",
+            "empty": "Muudatusi pole veel salvestatud. Alates nüüdsest jäädvustatakse iga salvestamine.",
+            "noMatch": "Ükski sündmus ei vasta filtrile.",
+            "unknownEmployee": "Teadmata",
+            "created": "loodud",
+            "deleted": "kustutatud",
+            "yes": "Jah",
+            "no": "Ei",
+            "tableProfile": "Põhiandmed",
+            "tableContact": "Kontaktisik",
+            "tableShipto": "Tarneaadress",
+            "tableBilling": "Täiendav arveldusaadress",
+            "legacy": {
+                "saved": "salvestatud",
+                "printed": "prinditud",
+                "mailed": "saadetud e-postiga",
+                "deleted": "kustutatud",
+                "screened": "vaadatud",
+                "posted": "kirjendatud"
+            }
         }
     }
 }

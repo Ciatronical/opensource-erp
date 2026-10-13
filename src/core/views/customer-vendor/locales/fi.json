@@ -17,7 +17,9 @@
             "priceRules": "Preisregeln",
             "turnover": "Umsatzstatistik",
             "emails": "E-Mails",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Mukautetut muuttujat",
+            "history": "Aikamatka"
         },
         "billing": {
             "nameAddressTitle": "Name & Adresse",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Luo tilaus",
             "saveAndQuotation": "Luo tarjous",
             "delete": "Poista",
-            "history": "Historie",
             "close": "Sulje",
-            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?"
+            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?",
+            "confirmDeleteVendor": "Poistetaanko toimittaja „{name}“ varmasti? Yhteyshenkilöt, osoitteet ja huomautukset poistetaan samalla.",
+            "cancel": "Peruuta"
         },
         "messages": {
             "saving": "Tallennetaan...",
@@ -233,7 +236,10 @@
             "deleteError": "Fehler beim Löschen des Kunden.",
             "deleteContactError": "Fehler beim Löschen des Ansprechpartners",
             "deleteContactErrorTitle": "Virhe",
-            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Virhe toimittajan poistamisessa.",
+            "deleted": "Asiakas „{name}“ poistettu.",
+            "deletedVendor": "Toimittaja „{name}“ poistettu."
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
@@ -329,7 +335,13 @@
             "urlLabel": "Bezeichnung",
             "urlAddress": "URL",
             "addUrl": "Lisää URL",
-            "openUrl": "Avaa sivu"
+            "openUrl": "Avaa sivu",
+            "vendornumber": "Toimittajanumero",
+            "hu_notify": "Lähetä katsastusmuistutukset",
+            "hu_notify_hint": "Koskee kaikkia tämän asiakkaan ajoneuvoja – myös myöhemmin lisättäviä. Kun kytkin on pois päältä, katsastusmuistutuksia ei lähetetä eikä muistutusta voi enää ottaa käyttöön yksittäiselle ajoneuvolle (asiakkaan asetus on etusijalla).",
+            "phone_numbers": "Muut puhelinnumerot",
+            "emails": "Muut sähköpostiosoitteet",
+            "urls": "Muut URL-osoitteet"
         },
         "price-rules": {
             "title": "Preisregeln",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Testitila)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testitila)"
+        },
+        "customVars": {
+            "title": "Mukautetut muuttujat",
+            "noConfigs": "Asiakkaille/toimittajille ei ole määritetty mukautettuja muuttujia."
+        },
+        "easymode": {
+            "label": "Asiakaslomakkeen näkymä",
+            "easy": "Yksinkertainen",
+            "pro": "Kaikki kentät",
+            "easyHint": "Vain yrityksen asetuksissa arkikäyttöön valitut kentät ja välilehdet.",
+            "proHint": "Kaikki asiakkaan tai toimittajan kentät ja välilehdet.",
+            "hiddenFilled": "{count} piilotettua kenttää sisältää arvoja:",
+            "showAll": "Näytä kaikki kentät"
+        },
+        "history": {
+            "title": "Aikamatka",
+            "intro": "Kuka muutti mitä ja milloin — jokainen tallennus muutettuine kenttineen. Liukusäätimellä matkustat ajassa taaksepäin ja näet, miltä perustiedot silloin näyttivät.",
+            "count": "{n} tapahtuma | {n} tapahtumaa",
+            "reload": "Lataa uudelleen",
+            "filterEmployee": "Työntekijä",
+            "search": "Hae",
+            "timeTravel": "Aikamatka",
+            "today": "Tänään",
+            "backToToday": "Takaisin tähän päivään",
+            "stepsBack": "{n} muutos taaksepäin | {n} muutosta taaksepäin",
+            "asOf": "Tilanne ennen muutosta {time} — erot nykytilaan:",
+            "noDiff": "Ei eroa nykytilaan.",
+            "empty": "Muutoksia ei ole vielä tallennettu. Tästä lähtien jokainen tallennus kirjataan.",
+            "noMatch": "Mikään tapahtuma ei vastaa suodatinta.",
+            "unknownEmployee": "Tuntematon",
+            "created": "luotu",
+            "deleted": "poistettu",
+            "yes": "Kyllä",
+            "no": "Ei",
+            "tableProfile": "Perustiedot",
+            "tableContact": "Yhteyshenkilö",
+            "tableShipto": "Toimitusosoite",
+            "tableBilling": "Lisälaskutusosoite",
+            "legacy": {
+                "saved": "tallennettu",
+                "printed": "tulostettu",
+                "mailed": "lähetetty sähköpostitse",
+                "deleted": "poistettu",
+                "screened": "katsottu",
+                "posted": "kirjattu"
+            }
         }
     }
 }

@@ -19,6 +19,12 @@ const crmDefaultsConfig = [
         fieldstyle: "max-width: 60ch"
     },
 
+    // Einfacher Modus: welche Felder und Reiter die Kunden-/Lieferantenmaske im
+    // einfachen Modus zeigt (Katalog: src/core/views/customer-vendor/cvFieldCatalog.js).
+    // Der Benutzer schaltet in der Maske selbst um; hier steht nur der Firmenstandard.
+    { name: "easymode", type: "headline", label: "crm_fields.easymode" },
+    { name: "cv_easymode", type: "component", component: "cv-easymode" },
+
     // Erweiterungen (LxCars und weitere Module) werden nicht mehr hier gepflegt,
     // sondern im Tab "Features" > Abschnitt "Erweiterungen". Sie liegen in der
     // Tabelle extensions_oserp, nicht in defaults_oserp.
@@ -102,12 +108,60 @@ const crmDefaultsConfig = [
     { name: "belegsuche_time", type: "input", inputType: "time", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.belegsucheTime", tooltip: "crm_fields.belegsucheTime_help" },
     { name: "belegsuche_quellen", type: "component", component: "beleg-quellen" },
 
+    // Briefversand (Hybridbrief): Briefe und Belege elektronisch beim Briefdienstleister
+    // einliefern. PIN AG nimmt PDFs per SFTP/FTPS in einem vorkonfigurierten Ordner an,
+    // LetterXpress über seine REST-API. Felder erscheinen je nach gewähltem Anbieter.
     { name: "eletter", type: "headline", label: "crm_fields.eletter" },
 
-    { name: "eletter_hostname", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterHostname", tooltip: "crm_fields.eletterHostname_help" },
-    { name: "eletter_username", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterUsername", tooltip: "crm_fields.eletterUsername_help" },
-    { name: "eletter_folder", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterFolder", tooltip: "crm_fields.eletterFolder_help" },
-    { name: "eletter_passwd", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterPassword", tooltip: "crm_fields.eletterPassword_help" },
+    {
+        name: "eletter_provider",
+        type: "select",
+        items: [
+            { value: "", titleKey: "crm_fields.eletterProviderNone" },
+            { value: "pinag", titleKey: "crm_fields.eletterProviderPinag" },
+            { value: "letterxpress", titleKey: "crm_fields.eletterProviderLetterxpress" }
+        ],
+        label: "crm_fields.eletterProvider",
+        tooltip: "crm_fields.eletterProvider_help",
+        fieldstyle: "max-width: 60ch"
+    },
+    {
+        name: "eletter_protocol",
+        type: "select",
+        items: [
+            { value: "sftp", titleKey: "crm_fields.eletterProtocolSftp" },
+            { value: "ftps", titleKey: "crm_fields.eletterProtocolFtps" }
+        ],
+        label: "crm_fields.eletterProtocol",
+        tooltip: "crm_fields.eletterProtocol_help",
+        fieldstyle: "max-width: 60ch",
+        showIf: d => d.eletter_provider === "pinag"
+    },
+    { name: "eletter_hostname", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterHostname", tooltip: "crm_fields.eletterHostname_help", showIf: d => d.eletter_provider === "pinag" },
+    { name: "eletter_port", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.eletterPort", tooltip: "crm_fields.eletterPort_help", showIf: d => d.eletter_provider === "pinag" },
+    { name: "eletter_username", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterUsername", tooltip: "crm_fields.eletterUsername_help", showIf: d => d.eletter_provider === "pinag" },
+    { name: "eletter_passwd", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterPassword", tooltip: "crm_fields.eletterPassword_help", showIf: d => d.eletter_provider === "pinag" },
+    { name: "eletter_folder", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterFolder", tooltip: "crm_fields.eletterFolder_help", showIf: d => d.eletter_provider === "pinag" },
+    { name: "eletter_folder_registered", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterFolderRegistered", tooltip: "crm_fields.eletterFolderRegistered_help", showIf: d => d.eletter_provider === "pinag" },
+
+    { name: "eletter_lxp_username", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterLxpUsername", tooltip: "crm_fields.eletterLxpUsername_help", showIf: d => d.eletter_provider === "letterxpress" },
+    { name: "eletter_lxp_apikey", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.eletterLxpApikey", tooltip: "crm_fields.eletterLxpApikey_help", showIf: d => d.eletter_provider === "letterxpress" },
+    {
+        name: "eletter_lxp_mode",
+        type: "select",
+        items: [
+            { value: "test", titleKey: "crm_fields.eletterLxpModeTest" },
+            { value: "live", titleKey: "crm_fields.eletterLxpModeLive" }
+        ],
+        label: "crm_fields.eletterLxpMode",
+        tooltip: "crm_fields.eletterLxpMode_help",
+        fieldstyle: "max-width: 60ch",
+        showIf: d => d.eletter_provider === "letterxpress"
+    },
+
+    { name: "eletter_color", type: "checkbox", label: "crm_fields.eletterColor", tooltip: "crm_fields.eletterColor_help", showIf: d => !!d.eletter_provider },
+    { name: "eletter_duplex", type: "checkbox", label: "crm_fields.eletterDuplex", tooltip: "crm_fields.eletterDuplex_help", showIf: d => !!d.eletter_provider },
+    { name: "eletter_status", type: "component", component: "eletter-status", showIf: d => !!d.eletter_provider },
 
     { name: "document_dispatch", type: "headline", label: "crm_fields.documentDispatch" },
 

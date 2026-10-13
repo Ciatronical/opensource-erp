@@ -569,16 +569,10 @@
         "bookAsCash": "Payé en espèces",
         "cashPaymentFor": "Paiement en espèces pour",
         "counterAccount": "Compte de contrepartie",
-        "counterAccountRequired": "Veuillez sélectionner un compte de contrepartie",
         "kassaAccount": "Compte de caisse",
         "kassaAccountRequired": "Veuillez sélectionner un compte de caisse",
         "chartAccount": "Compte",
-        "noCharts": "Aucun compte trouvé",
         "sourceAR": "Paiement client",
-        "sourceAP": "Paiement fournisseur",
-        "taxIncluded": "Montant TTC · dont {rate} % {kind} : {tax} €, HT {net} €",
-        "taxKindOut": "TVA collectée",
-        "taxKindIn": "TVA déductible",
-        "taxNone": "Compte sans code TVA – aucune taxe n’est extraite"
+        "sourceAP": "Paiement fournisseur"
     }
 }

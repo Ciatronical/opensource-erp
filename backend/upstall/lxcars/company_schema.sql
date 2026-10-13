@@ -1250,6 +1250,26 @@ LANGUAGE sql VOLATILE AS $$
     SELECT COUNT(*)::integer FROM ins
 $$;
 
+-- Weroni Rechtsprüfung eines importierten Gutachtens (Gutachten-Import im
+-- Auftrag): Auszug der KI-Extraktion, Prüfergebnis mit Entscheidung und
+-- Kommunikationsprotokoll. Je Auftrag beliebig viele Läufe, der neueste zählt.
+CREATE TABLE IF NOT EXISTS gutachten_pruefung_lxcars (
+    id            integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    oe_id         integer NOT NULL REFERENCES oe(id) ON DELETE CASCADE,
+    c_id          integer REFERENCES cars_lxcars(c_id) ON DELETE SET NULL,
+    stored_path   text,
+    extracted     jsonb NOT NULL,
+    review        jsonb,
+    verdict       text,
+    ampel         text,
+    ai_model      text,
+    employee_id   integer,
+    communicated  jsonb NOT NULL DEFAULT '[]'::jsonb,
+    created_at    timestamp NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_gutachten_pruefung_lxcars_oe ON public.gutachten_pruefung_lxcars (oe_id);
+
 -- Trigger: Fahrzeug angelegt oder geändert → Profil und Treffer dieses
 -- Fahrzeugs auffrischen. Löschen räumt die Fremdschlüssel-Kaskade auf.
 CREATE OR REPLACE FUNCTION special_tool_profile_sync_lxcars() RETURNS trigger AS $$

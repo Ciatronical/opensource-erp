@@ -244,7 +244,11 @@ function getDefaults($data) {
                                 ('shop_paypal_sandbox_secret'),
                                 ('shop_hugocms_key'),
                                 ('ebay_client_secret'),
-                                ('ebay_refresh_token')) AS k(key)) AS defaults_oserp_secrets"
+                                ('ebay_refresh_token')) AS k(key)) AS defaults_oserp_secrets,
+                (SELECT COUNT(*) FROM periodic_invoices_configs c
+                  WHERE c.active AND NOT COALESCE(c.terminated, false)
+                    AND (c.end_date IS NULL OR c.end_date >= CURRENT_DATE
+                         OR COALESCE(c.extend_automatically_by, 0) > 0)) AS recurring_active"
         );
 
         $defaults = json_decode($result['defaults'] ?? '{}', true) ?: [];
@@ -255,6 +259,9 @@ function getDefaults($data) {
             'defaults' => $defaults,
             'defaults_oserp' => $defaults_oserp,
             'defaults_oserp_secrets' => $geheimnisse,
+            // Laufende wiederkehrende Abrechnungen: der Features-Reiter sagt beim
+            // Abschalten, dass sie weiterlaufen — ohne zweite Abfrage.
+            'recurring_active' => (int)($result['recurring_active'] ?? 0),
         ]]);
     } catch (Exception $e) {
         resultInfo(false, 'DATABASE_ERROR', $e->getMessage());

@@ -6,8 +6,15 @@
     abzurechnen. Mit Einrichtung der Zustand auf einen Blick: Rhythmus,
     nächste Rechnung, bisher erzeugt, offen — und was jetzt fällig ist, lässt
     sich direkt hier erzeugen. Alles Weitere im Dialog.
+
+    Der Hinweis lässt sich mit „Verbergen" firmenweit abschalten (Schalter
+    feature_recurring in defaults_oserp, Firmenkonfiguration → Features).
+    Aufträge mit bestehender Abrechnung zeigen die Karte trotzdem: das sind
+    Daten, keine Werbung. Der Abschnitt gehört der Karte, damit bei
+    abgeschalteter Funktion kein leerer Abschnitt in der Auftragsmaske bleibt.
 -->
 <template>
+    <section v-if="visible" class="faktura-section">
     <v-card variant="outlined" class="faktura-card mb-3 recurring-card" :class="{ 'recurring-card--active': info?.exists }">
         <v-card-text class="d-flex align-center flex-wrap ga-3 py-3">
             <v-icon :color="info?.exists ? 'primary' : 'grey'">mdi-autorenew</v-icon>
@@ -23,6 +30,10 @@
                 </div>
                 <v-btn color="primary" variant="tonal" class="text-none" prepend-icon="mdi-plus" :disabled="!hasCustomer" @click="open">
                     {{ t('RecurringInvoices.card.setup') }}
+                </v-btn>
+                <v-btn variant="text" size="small" class="text-none text-medium-emphasis" prepend-icon="mdi-eye-off-outline"
+                       :title="t('RecurringInvoices.card.hideTitle')" :loading="hiding" @click="hide">
+                    {{ t('RecurringInvoices.card.hide') }}
                 </v-btn>
             </template>
 
@@ -54,11 +65,14 @@
 
         <RecurringConfigDialog v-model="dialogOpen" :oe-id="oeId" @saved="onSaved" @deleted="load" />
     </v-card>
+    </section>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import axios from 'axios'
+import { oserpStore } from '@/core/stores/oserp.store.js'
 import RecurringConfigDialog from '@/core/views/recurring-invoices/components/recurring.config.dialog.vue'
 import * as alerts from '@/core/utils/alerts.js'
 import * as toasts from '@/core/utils/toasts.js'
@@ -73,10 +87,16 @@ const emit = defineEmits(['invoices-created'])
 
 const { t, locale } = useI18n()
 const api = useRecurringInvoices()
+const store = oserpStore()
 
 const info = ref(null)
 const dialogOpen = ref(false)
 const creating = ref(false)
+const hiding = ref(false)
+
+// Abgeschaltet: nur zeigen, wenn dieser Auftrag wirklich eine Abrechnung hat.
+// Solange nichts geladen ist, bleibt die Karte dann unsichtbar statt „lädt …".
+const visible = computed(() => store.isRecurringEnabled() || info.value?.exists === true)
 
 const cfg = computed(() => info.value?.config || {})
 const stats = computed(() => info.value?.stats || {})
@@ -115,6 +135,37 @@ async function createDue() {
         alerts.error(e.message)
     } finally {
         creating.value = false
+    }
+}
+
+/**
+ * Schaltet den Hinweis firmenweit ab (feature_recurring = 0) — ein UPSERT in
+ * defaults_oserp über das vorhandene saveDefaults, kein eigener Endpunkt.
+ * Der Store wird sofort nachgezogen; ein Klick auf die Einblendung macht es
+ * rückgängig, dauerhaft wieder einschalten geht in der Firmenkonfiguration.
+ */
+async function setRecurringFeature(enabled) {
+    const r = await axios.post('/api/oserp_config/', { action: 'saveDefaults', crmData: { feature_recurring: enabled } })
+    if (!r.data?.success) throw new Error(typeof r.data?.payload === 'string' ? r.data.payload : t('RecurringInvoices.card.hideFailed'))
+    if (!store.session.company_config) store.session.company_config = {}
+    if (!store.session.company_config.defaults_oserp) store.session.company_config.defaults_oserp = {}
+    store.session.company_config.defaults_oserp.feature_recurring = enabled ? '1' : '0'
+}
+
+async function hide() {
+    hiding.value = true
+    try {
+        await setRecurringFeature(false)
+        toasts.clickable(
+            t('RecurringInvoices.card.hiddenTitle'),
+            t('RecurringInvoices.card.hiddenText'),
+            () => setRecurringFeature(true).catch(e => alerts.error(e.message)),
+            { timer: 10000 }
+        )
+    } catch (e) {
+        alerts.error(e.message)
+    } finally {
+        hiding.value = false
     }
 }
 

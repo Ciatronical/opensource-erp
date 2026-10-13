@@ -414,7 +414,13 @@
             "saved": "Document updated",
             "saveError": "Document could not be saved",
             "documentScanned": "Document scanned on {date} · stored unalterably",
-            "quantity": "Quantity"
+            "quantity": "Quantity",
+            "lineAccount": "Account",
+            "addLine": "Add line",
+            "removeLine": "Remove line",
+            "linesSumOk": "Lines add up to the document total",
+            "linesSumDiff": "Difference to document total: {diff}",
+            "linesHint": "A line without an account goes to the debit account above. As soon as one line has its own account, approval posts one entry per account and tax rate (split posting) – the lines then have to add up to the document total."
         },
         "upload": {
             "title": "Incoming Invoices",

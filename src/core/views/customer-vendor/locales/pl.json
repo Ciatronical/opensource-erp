@@ -18,7 +18,8 @@
             "turnover": "Statystyki obrotów",
             "emails": "E-maile",
             "whatsapp": "WhatsApp",
-            "customVars": "Zmienne użytkownika"
+            "customVars": "Zmienne użytkownika",
+            "history": "Podróż w czasie"
         },
         "billing": {
             "nameAddressTitle": "Nazwa i adres",
@@ -222,9 +223,10 @@
             "saveAndOrder": "Utwórz zamówienie",
             "saveAndQuotation": "Utwórz ofertę",
             "delete": "Usuń",
-            "history": "Historia",
             "close": "Zamknij",
-            "confirmDelete": "Czy na pewno chcesz usunąć tego klienta?"
+            "confirmDelete": "Czy na pewno chcesz usunąć tego klienta?",
+            "confirmDeleteVendor": "Czy na pewno usunąć dostawcę „{name}”? Osoby kontaktowe, adresy i notatki zostaną usunięte razem z nim.",
+            "cancel": "Anuluj"
         },
         "messages": {
             "saving": "Zapisywanie...",
@@ -234,7 +236,10 @@
             "deleteError": "Błąd podczas usuwania klienta.",
             "deleteContactError": "Błąd podczas usuwania osoby kontaktowej",
             "deleteContactErrorTitle": "Błąd",
-            "autoSaveWarning": "Proszę najpierw wypełnić {fields}, aby zapisać rekord."
+            "autoSaveWarning": "Proszę najpierw wypełnić {fields}, aby zapisać rekord.",
+            "deleteErrorVendor": "Błąd podczas usuwania dostawcy.",
+            "deleted": "Klient „{name}” usunięty.",
+            "deletedVendor": "Dostawca „{name}” usunięty."
         },
         "duplicate": {
             "title": "Możliwy duplikat",
@@ -333,7 +338,10 @@
             "openUrl": "Otwórz stronę",
             "vendornumber": "Numer dostawcy",
             "hu_notify": "Wysyłaj przypomnienia o przeglądzie",
-            "hu_notify_hint": "Dotyczy wszystkich pojazdów tego klienta – także tych dodanych później. Gdy opcja jest wyłączona, przypomnienia o przeglądzie nie są wysyłane i nie można ich włączyć przy pojedynczym pojeździe (ustawienie klienta ma pierwszeństwo)."
+            "hu_notify_hint": "Dotyczy wszystkich pojazdów tego klienta – także tych dodanych później. Gdy opcja jest wyłączona, przypomnienia o przeglądzie nie są wysyłane i nie można ich włączyć przy pojedynczym pojeździe (ustawienie klienta ma pierwszeństwo).",
+            "phone_numbers": "Dodatkowe numery telefonu",
+            "emails": "Dodatkowe adresy e-mail",
+            "urls": "Dodatkowe adresy URL"
         },
         "price-rules": {
             "title": "Reguły cenowe",
@@ -402,6 +410,48 @@
         "customVars": {
             "title": "Zmienne użytkownika",
             "noConfigs": "Dla klientów/dostawców nie skonfigurowano żadnych zmiennych użytkownika."
+        },
+        "easymode": {
+            "label": "Widok formularza klienta",
+            "easy": "Uproszczony",
+            "pro": "Wszystkie pola",
+            "easyHint": "Tylko pola i karty wybrane w konfiguracji firmy do codziennej pracy.",
+            "proHint": "Wszystkie pola i karty klienta lub dostawcy.",
+            "hiddenFilled": "Ukryte pola zawierające wartości: {count}:",
+            "showAll": "Pokaż wszystkie pola"
+        },
+        "history": {
+            "title": "Podróż w czasie",
+            "intro": "Kto, kiedy i co zmienił — każde zapisanie ze zmienionymi polami. Suwakiem cofasz się w czasie i widzisz, jak dane podstawowe wyglądały wtedy.",
+            "count": "{n} zdarzenie | Zdarzeń: {n}",
+            "reload": "Wczytaj ponownie",
+            "filterEmployee": "Pracownik",
+            "search": "Szukaj",
+            "timeTravel": "Podróż w czasie",
+            "today": "Dziś",
+            "backToToday": "Powrót do dziś",
+            "stepsBack": "{n} zmiana wstecz | Zmian wstecz: {n}",
+            "asOf": "Stan przed zmianą z {time} — różnice względem dziś:",
+            "noDiff": "Brak różnic względem stanu dzisiejszego.",
+            "empty": "Nie zarejestrowano jeszcze żadnych zmian. Od teraz każde zapisanie będzie rejestrowane.",
+            "noMatch": "Żadne zdarzenie nie pasuje do filtra.",
+            "unknownEmployee": "Nieznany",
+            "created": "utworzono",
+            "deleted": "usunięto",
+            "yes": "Tak",
+            "no": "Nie",
+            "tableProfile": "Dane podstawowe",
+            "tableContact": "Osoba kontaktowa",
+            "tableShipto": "Adres dostawy",
+            "tableBilling": "Dodatkowy adres do faktury",
+            "legacy": {
+                "saved": "zapisano",
+                "printed": "wydrukowano",
+                "mailed": "wysłano e-mailem",
+                "deleted": "usunięto",
+                "screened": "wyświetlono",
+                "posted": "zaksięgowano"
+            }
         }
     }
 }

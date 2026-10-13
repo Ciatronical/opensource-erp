@@ -509,6 +509,10 @@
     "cameraAndSurveillance": "Kamera & Überwachung",
     "featureAnprDesc": "Kennzeichenerkennung per Kamera (ANPR-Dienst)",
     "featureNvrDesc": "Live-Streams & Objekterkennung (go2rtc + camera-monitor)",
+    "salesFeatures": "Verkauf",
+    "featureRecurring": "Wiederkehrende Rechnungen",
+    "featureRecurringDesc": "Abos, Mieten und Wartungsverträge aus einem Auftrag automatisch abrechnen. Aus: kein Hinweis im Auftrag und kein Menüpunkt unter Verkauf.",
+    "featureRecurringActiveHint": "{count} laufende Abrechnungen werden weiterhin erzeugt und bleiben an ihrem Auftrag sichtbar.",
     "configLoadError": "Konfigurationsfehler",
     "syntaxErrorInConfigFile": "Syntaxfehler in der Konfigurationsdatei",
     "errorDetails": "Fehlerdetails",
@@ -724,15 +728,15 @@
             "error": "Kopplung fehlgeschlagen.",
             "unpaired": "Terminal entkoppelt."
         },
-        "eletter": "eLetter",
-        "eletterHostname": "eLetter Hostname",
-        "eletterHostname_help": "Server-Adresse für eLetter-Service",
-        "eletterUsername": "eLetter Benutzername",
-        "eletterUsername_help": "Benutzername für eLetter-Service",
-        "eletterFolder": "eLetter Ordner",
-        "eletterFolder_help": "Zielordner für eLetter-Dateien",
-        "eletterPassword": "eLetter Passwort",
-        "eletterPassword_help": "Passwort für eLetter-Service",
+        "eletter": "Briefversand (Hybridbrief)",
+        "eletterHostname": "Server",
+        "eletterHostname_help": "Hostname des Einlieferungsservers aus den Zugangsdaten des Anbieters",
+        "eletterUsername": "Benutzername",
+        "eletterUsername_help": "Benutzername für die Einlieferung",
+        "eletterFolder": "Einlieferungsordner",
+        "eletterFolder_help": "Ordner auf dem Server, aus dem der Anbieter die PDFs abholt. Druckoptionen (Farbe, Duplex) sind beim Anbieter je Ordner hinterlegt.",
+        "eletterPassword": "Passwort",
+        "eletterPassword_help": "Passwort für die Einlieferung",
         "emailClient": "E-Mail-Client",
         "emailLinkMode": "E-Mail-Links öffnen mit",
         "emailLinkMode_help": "Legt fest, wie E-Mail-Adressen im Kundenstamm geöffnet werden: im internen E-Mail-Client (Postfach muss eingerichtet sein) oder im externen E-Mail-Programm über einen mailto-Link (Standard)",
@@ -1276,7 +1280,63 @@
         "shopBackendTest_NO_PHP": "Die Webseite liefert den PHP-Quelltext aus, statt ihn auszuführen — PHP ist für die Webseite nicht eingerichtet.",
         "shopBackendTest_NOT_FOUND": "Unter dieser Adresse gibt es nichts (HTTP 404) — stimmt der Pfad, liegt der Weiterleiter auf der Webseite?",
         "shopBackendTest_FOREIGN": "Unerwartete Antwort (HTTP {status}) — dort antwortet nicht der Shop-Zugang von OpensourceERP.",
-        "shopBackendTest_FAILED": "Die Prüfung ist fehlgeschlagen: {error}"
+        "shopBackendTest_FAILED": "Die Prüfung ist fehlgeschlagen: {error}",
+        "eletterProvider": "Briefdienstleister",
+        "eletterProvider_help": "Briefe und Belege werden als PDF elektronisch eingeliefert; der Dienstleister druckt, kuvertiert, frankiert und stellt zu. Ohne Anbieter bleibt „Selbst drucken“ möglich.",
+        "eletterProviderNone": "Kein Anbieter – Briefe selbst drucken",
+        "eletterProviderPinag": "PIN AG / eBrief – Einlieferung per SFTP/FTPS",
+        "eletterProviderLetterxpress": "LetterXpress – REST-API",
+        "eletterProtocol": "Übertragungsweg",
+        "eletterProtocol_help": "Wie die PDFs beim Dienstleister abgelegt werden: SFTP (SSH, Port 22) oder FTPS (FTP mit TLS, Port 21). Steht in den Zugangsdaten des Anbieters.",
+        "eletterPort": "Port",
+        "eletterPort_help": "Leer lassen für den Standardport (SFTP 22, FTPS 21)",
+        "eletterFolderRegistered": "Ordner für Einwurf-Einschreiben (optional)",
+        "eletterFolderRegistered_help": "Hat der Anbieter einen eigenen Ordner für Einschreiben eingerichtet, hier eintragen – sonst ist kein Einschreiben möglich.",
+        "eletterLxpUsername": "LetterXpress-Benutzername",
+        "eletterLxpUsername_help": "Benutzername des LetterXpress-Kontos",
+        "eletterLxpApikey": "LetterXpress API-Schlüssel",
+        "eletterLxpApikey_help": "Im Kundenbereich unter Funktionen → Zugangsdaten → LXP API erzeugen",
+        "eletterLxpMode": "Betriebsmodus",
+        "eletterLxpMode_help": "Test: Aufträge landen in der Postbox des Kontos und werden nicht gedruckt (nach 7 Tagen gelöscht). Live: Aufträge werden sofort gedruckt und versendet – kostenpflichtig.",
+        "eletterLxpModeTest": "Test – nicht drucken (Standard)",
+        "eletterLxpModeLive": "Live – drucken und versenden",
+        "eletterColor": "Farbdruck als Vorgabe",
+        "eletterColor_help": "Vorbelegung im Versanddialog; dort je Sendung änderbar",
+        "eletterDuplex": "Beidseitig drucken als Vorgabe",
+        "eletterDuplex_help": "Vorbelegung im Versanddialog; dort je Sendung änderbar",
+        "eletterStatus": {
+            "title": "Verbindung zum Briefdienstleister",
+            "description": "Prüft Zugangsdaten und Erreichbarkeit mit den gespeicherten Einstellungen.",
+            "saveFirst": "Bitte zuerst die Zugangsdaten eintragen und speichern, dann die Verbindung testen.",
+            "testBtn": "Verbindung testen",
+            "ok": "Verbindung erfolgreich",
+            "failed": "Verbindung fehlgeschlagen",
+            "balance": "Guthaben: {amount}",
+            "mode": "Modus: {mode}",
+            "files": "{n} Datei im Einlieferungsordner | {n} Dateien im Einlieferungsordner",
+            "hintPinag": "PIN AG stellt die Zugangsdaten mit dem Vertrag bereit (eCollect/eBrief). Sendungsverfolgung über das Kundenportal.",
+            "hintLetterxpress": "Konto unter letterxpress.de anlegen, Guthaben aufladen, API-Schlüssel erzeugen. Im Testmodus wird nichts gedruckt."
+        },
+        "eletterProtocolSftp": "SFTP (Port 22) – Standard",
+        "eletterProtocolFtps": "FTPS (Port 21, TLS)",
+        "easymode": "Einfacher Modus",
+        "easymodeCv": "Kunde anlegen / bearbeiten",
+        "easymodeCvIntro": "Im einfachen Modus zeigt die Kundenmaske nur die hier gewählten Felder und Reiter – weniger Formular, mehr Übersicht. Jeder Benutzer kann in der Maske jederzeit auf „Alle Felder“ umschalten; seine Wahl wird gemerkt. Die Auswahl gilt für Kunden und Lieferanten.",
+        "easymodeCvDefault": "Einfacher Modus ist Standard",
+        "easymodeCvDefault_help": "Gilt für alle Benutzer, die in der Kundenmaske noch nicht selbst umgeschaltet haben.",
+        "easymodeCvCount": "{visible} von {total} Feldern sichtbar",
+        "easymodeCvPresets": "Schnellauswahl:",
+        "easymodeCvPresetRecommended": "Empfehlung",
+        "easymodeCvPresetMinimal": "Nur Pflichtfelder",
+        "easymodeCvPresetAll": "Alle Felder",
+        "easymodeCvFields": "Sichtbare Felder je Karte",
+        "easymodeCvAllOfGroup": "Alle",
+        "easymodeCvNone": "Keine",
+        "easymodeCvRequired": "Pflichtfeld – im einfachen Modus immer sichtbar",
+        "easymodeCvOnlyCustomer": "nur Kunde",
+        "easymodeCvOnlyVendor": "nur Lieferant",
+        "easymodeCvTabs": "Sichtbare Reiter",
+        "easymodeCvTabs_help": "Reiter ohne Haken erscheinen erst nach dem Umschalten auf „Alle Felder“. Die Rechnungsadresse bleibt immer sichtbar."
     },
     "add": "Hinzufügen",
     "add_fields": {
@@ -1652,5 +1712,191 @@
         "markedObsolete": "{name} auf obsolet gesetzt",
         "markedActive": "{name} wieder aktiviert"
     },
-    "loadingConfiguration": "Konfiguration wird geladen …"
+    "loadingConfiguration": "Konfiguration wird geladen …",
+    "masterLists": {
+        "title": "Stammdaten-Listen",
+        "description": "Die einfachen Listen, die kivitendo unter „System“ pflegt: Einheiten, Kundentypen, Warengruppen, Preisgruppen, Preisfaktoren, Abteilungen, Zahlungs- und Lieferbedingungen, Sprachen, Projekttypen, Projektstatus und Anreden. Einträge mit Verknüpfungssymbol werden bereits verwendet und lassen sich nicht löschen – setzen Sie sie stattdessen auf ungültig.",
+        "filter": "Liste oder Eintrag suchen …",
+        "reload": "Neu laden",
+        "entries": "{n} Einträge",
+        "obsoleteCount": "{n} ungültig",
+        "obsolete": "Ungültig",
+        "inUse": "Wird verwendet",
+        "inUseHint": "Dieser Eintrag wird bereits in Belegen, Artikeln oder Kunden verwendet. Er kann nicht gelöscht werden; gesperrte Felder bleiben unverändert.",
+        "empty": "Noch keine Einträge.",
+        "noMatch": "Keine Liste passt zur Suche.",
+        "loadFailed": "Stammdaten-Listen konnten nicht geladen werden",
+        "saveFailed": "Speichern fehlgeschlagen",
+        "saved": "Gespeichert",
+        "deleted": "Gelöscht",
+        "deleteFailed": "Löschen fehlgeschlagen",
+        "deleteConfirm": "„{name}“ wirklich löschen?",
+        "duplicate": "Diese Bezeichnung gibt es schon",
+        "required": "Pflichtfeld",
+        "invalidNumber": "Bitte eine Zahl eingeben",
+        "invalidInteger": "Bitte eine ganze Zahl eingeben",
+        "invalidPercent": "Prozentwert zwischen 0 und 99,99",
+        "days": "Tage",
+        "units": {
+            "title": "Einheiten",
+            "description": "Mengeneinheiten für Artikel (Stück, kg, Liter) und Dienstleistungen (Stunde, Minute). Mit Basiseinheit und Faktor rechnet das System um, etwa 1 Stunde = 60 Minuten.",
+            "create_new": "Neue Einheit",
+            "create_title": "Einheit anlegen",
+            "edit_title": "Einheit bearbeiten",
+            "type_dimension": "Ware",
+            "type_service": "Dienstleistung",
+            "factor_help": "Wie viele Basiseinheiten stecken in einer dieser Einheit? Beispiel: Stunde mit Basiseinheit Minute → 60.",
+            "fields": {
+                "name": "Bezeichnung",
+                "type": "Art",
+                "base_unit": "Basiseinheit",
+                "factor": "Faktor"
+            }
+        },
+        "business": {
+            "title": "Kundentypen",
+            "description": "Typen wie Privatkunde, Gewerbekunde oder Händler. Jeder Typ kann einen Standardrabatt und einen eigenen Nummernkreis für Kundennummern mitbringen.",
+            "create_new": "Neuer Kundentyp",
+            "create_title": "Kundentyp anlegen",
+            "edit_title": "Kundentyp bearbeiten",
+            "discount_help": "Rabatt in Prozent, der neuen Kunden dieses Typs vorbelegt wird.",
+            "customernumberinit_help": "Letzte vergebene Kundennummer dieses Typs. Leer lassen, um den allgemeinen Nummernkreis zu verwenden.",
+            "salesman_help": "Kunden dieses Typs stehen als Verkäufer zur Auswahl (Provisionsabrechnung).",
+            "fields": {
+                "description": "Bezeichnung",
+                "discount": "Rabatt",
+                "customernumberinit": "Nummernkreis Kundennummer",
+                "salesman": "Verkäufer"
+            }
+        },
+        "partsgroup": {
+            "title": "Warengruppen",
+            "description": "Gruppen zum Ordnen des Artikelstamms, etwa Reifen, Öle oder Zubehör. Dienen der Suche, Auswertung und dem Shop.",
+            "create_new": "Neue Warengruppe",
+            "create_title": "Warengruppe anlegen",
+            "edit_title": "Warengruppe bearbeiten",
+            "fields": {
+                "partsgroup": "Bezeichnung",
+                "obsolete": "Ungültig"
+            }
+        },
+        "pricegroup": {
+            "title": "Preisgruppen",
+            "description": "Preisstaffeln je Kundengruppe, etwa Endkunde, Händler oder Großhandel. Jeder Artikel kann je Preisgruppe einen eigenen Verkaufspreis haben.",
+            "create_new": "Neue Preisgruppe",
+            "create_title": "Preisgruppe anlegen",
+            "edit_title": "Preisgruppe bearbeiten",
+            "fields": {
+                "pricegroup": "Bezeichnung",
+                "obsolete": "Ungültig"
+            }
+        },
+        "price_factors": {
+            "title": "Preisfaktoren",
+            "description": "Preis bezogen auf eine Menge, etwa „pro 100“ oder „pro 1.000“. Der Positionspreis wird durch den Faktor geteilt.",
+            "create_new": "Neuer Preisfaktor",
+            "create_title": "Preisfaktor anlegen",
+            "edit_title": "Preisfaktor bearbeiten",
+            "factor_help": "Der Einzelpreis gilt für diese Menge, zum Beispiel 100 für „pro 100 Stück“.",
+            "fields": {
+                "description": "Bezeichnung",
+                "factor": "Faktor"
+            }
+        },
+        "department": {
+            "title": "Abteilungen",
+            "description": "Abteilungen oder Filialen, denen Belege zugeordnet werden – für Auswertungen und Berichte.",
+            "create_new": "Neue Abteilung",
+            "create_title": "Abteilung anlegen",
+            "edit_title": "Abteilung bearbeiten",
+            "fields": {
+                "description": "Bezeichnung"
+            }
+        },
+        "payment_terms": {
+            "title": "Zahlungsbedingungen",
+            "description": "Zahlungsziel, Skonto und die Texte, die auf Angeboten, Aufträgen und Rechnungen erscheinen. Platzhalter wie <%netto_date%>, <%skonto_date%>, <%skonto_amount%> und <%total%> werden beim Druck ersetzt.",
+            "create_new": "Neue Zahlungsbedingung",
+            "create_title": "Zahlungsbedingung anlegen",
+            "edit_title": "Zahlungsbedingung bearbeiten",
+            "auto_calculation_help": "Fälligkeits- und Skontodatum werden aus Belegdatum und Tagen berechnet.",
+            "description_long_help": "Text auf Angeboten und Aufträgen.",
+            "description_long_invoice_help": "Text auf Rechnungen. Leer lassen, um den Text für Angebote zu verwenden.",
+            "fields": {
+                "description": "Bezeichnung",
+                "terms_netto": "Zahlungsziel",
+                "terms_skonto": "Skontofrist",
+                "percent_skonto": "Skonto",
+                "auto_calculation": "Fälligkeit automatisch berechnen",
+                "description_long": "Text für Angebote und Aufträge",
+                "description_long_invoice": "Text für Rechnungen",
+                "obsolete": "Ungültig"
+            }
+        },
+        "delivery_terms": {
+            "title": "Lieferbedingungen",
+            "description": "Lieferbedingungen wie „frei Haus“ oder „ab Werk“ mit dem Text, der auf Belegen gedruckt wird.",
+            "create_new": "Neue Lieferbedingung",
+            "create_title": "Lieferbedingung anlegen",
+            "edit_title": "Lieferbedingung bearbeiten",
+            "fields": {
+                "description": "Bezeichnung",
+                "description_long": "Text auf Belegen",
+                "obsolete": "Ungültig"
+            }
+        },
+        "language": {
+            "title": "Belegsprachen",
+            "description": "Sprachen für Belege an Kunden und Lieferanten. Der Vorlagencode wählt die Druckvorlage, der Artikelcode die übersetzte Artikelbeschreibung.",
+            "create_new": "Neue Sprache",
+            "create_title": "Sprache anlegen",
+            "edit_title": "Sprache bearbeiten",
+            "template_code_help": "Suffix der Druckvorlage, z. B. „en“ für invoice_en.tex.",
+            "article_code_help": "Kennung für übersetzte Artikeltexte.",
+            "format_default": "Wie Firmenstandard",
+            "fields": {
+                "description": "Bezeichnung",
+                "template_code": "Vorlagencode",
+                "article_code": "Artikelcode",
+                "output_numberformat": "Zahlenformat",
+                "output_dateformat": "Datumsformat",
+                "output_longdates": "Datum ausgeschrieben",
+                "obsolete": "Ungültig"
+            }
+        },
+        "project_types": {
+            "title": "Projekttypen",
+            "description": "Arten von Projekten, etwa Standard, Festpreis oder Support.",
+            "create_new": "Neuer Projekttyp",
+            "create_title": "Projekttyp anlegen",
+            "edit_title": "Projekttyp bearbeiten",
+            "internal_help": "Interne Projekte erscheinen nicht in der Auswahl für Kundenbelege.",
+            "fields": {
+                "description": "Bezeichnung",
+                "internal": "Intern"
+            }
+        },
+        "project_statuses": {
+            "title": "Projektstatus",
+            "description": "Stationen eines Projekts, etwa Akquise, in Planung, in Bearbeitung, fertiggestellt.",
+            "create_new": "Neuer Projektstatus",
+            "create_title": "Projektstatus anlegen",
+            "edit_title": "Projektstatus bearbeiten",
+            "name_help": "Technischer Schlüssel ohne Leerzeichen, z. B. „running“.",
+            "fields": {
+                "description": "Bezeichnung",
+                "name": "Schlüssel"
+            }
+        },
+        "greetings": {
+            "title": "Anreden",
+            "description": "Anreden für Kunden, Lieferanten und Ansprechpartner, etwa Herr, Frau, Firma.",
+            "create_new": "Neue Anrede",
+            "create_title": "Anrede anlegen",
+            "edit_title": "Anrede bearbeiten",
+            "fields": {
+                "description": "Bezeichnung"
+            }
+        }
+    }
 }

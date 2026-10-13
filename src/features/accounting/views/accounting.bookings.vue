@@ -426,29 +426,96 @@
                         />
                     </v-alert>
 
-                    <!-- Positionen -->
-                    <div v-if="selectedBooking.lines && selectedBooking.lines.length > 0" class="mt-4">
-                        <h3 class="text-subtitle-1 mb-2">{{ t('AccountingView.bookings.lines') }}</h3>
+                    <!-- Positionen. In der Bearbeitung bekommt jede Position ihr eigenes
+                         Sachkonto und ihren Steuersatz: die Freigabe bucht dann je Konto und
+                         Satz ein Bein (Splitbuchung) statt alles auf das Kopfkonto. -->
+                    <div v-if="editMode || (selectedBooking.lines && selectedBooking.lines.length > 0)" class="mt-4">
+                        <div class="d-flex align-center mb-2">
+                            <h3 class="text-subtitle-1">{{ t('AccountingView.bookings.lines') }}</h3>
+                            <v-spacer />
+                            <v-btn v-if="editMode" size="small" variant="text" color="primary"
+                                   prepend-icon="mdi-call-split" class="text-none" @click="addEditLine">
+                                {{ t('AccountingView.bookings.addLine') }}
+                            </v-btn>
+                        </div>
                         <v-table density="compact">
                             <thead>
                                 <tr>
                                     <th>Pos.</th>
                                     <th>{{ t('AccountingView.bookings.description') }}</th>
+                                    <th>{{ t('AccountingView.bookings.lineAccount') }}</th>
                                     <th class="text-end">{{ t('AccountingView.bookings.netAmount') }}</th>
                                     <th class="text-end">{{ t('AccountingView.bookings.taxRate') }}</th>
                                     <th class="text-end">{{ t('AccountingView.bookings.amount') }}</th>
+                                    <th v-if="editMode"></th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody v-if="editMode">
+                                <tr v-for="(line, i) in editLines" :key="i">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>
+                                        <v-text-field v-model="line.description" density="compact"
+                                                      variant="underlined" hide-details />
+                                    </td>
+                                    <td style="min-width: 220px">
+                                        <v-autocomplete
+                                            v-model="line.account_number"
+                                            :items="lineAccountOptions[i] || []"
+                                            item-title="label" item-value="accno"
+                                            density="compact" variant="underlined" hide-details
+                                            no-filter clearable
+                                            :placeholder="editForm.debit_account || '—'"
+                                            :loading="!!lineAccountLoading[i]"
+                                            @update:search="q => onLineAccountSearch(i, q)" />
+                                    </td>
+                                    <td style="width: 120px">
+                                        <v-text-field v-model.number="line.net_amount" type="number" step="0.01"
+                                                      density="compact" variant="underlined" hide-details
+                                                      @update:model-value="recalcLine(line)" />
+                                    </td>
+                                    <td style="width: 90px">
+                                        <v-select v-model.number="line.tax_rate" :items="[19, 7, 0]"
+                                                  density="compact" variant="underlined" hide-details
+                                                  @update:model-value="recalcLine(line)" />
+                                    </td>
+                                    <td class="text-end">{{ formatCurrency(line.gross_amount) }}</td>
+                                    <td>
+                                        <v-btn icon="mdi-close" size="x-small" variant="text"
+                                               :title="t('AccountingView.bookings.removeLine')"
+                                               @click="editLines.splice(i, 1)" />
+                                    </td>
+                                </tr>
+                                <tr v-if="editLines.length">
+                                    <td colspan="5" class="text-end text-caption"
+                                        :class="editLinesDiff === 0 ? 'text-success' : 'text-error'">
+                                        {{ editLinesDiff === 0
+                                            ? t('AccountingView.bookings.linesSumOk')
+                                            : t('AccountingView.bookings.linesSumDiff', { diff: formatCurrency(editLinesDiff) }) }}
+                                    </td>
+                                    <td class="text-end font-weight-medium">{{ formatCurrency(editLinesSum) }}</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                            <tbody v-else>
                                 <tr v-for="line in selectedBooking.lines" :key="line.id">
                                     <td>{{ line.position }}</td>
                                     <td>{{ line.description }}</td>
+                                    <td>
+                                        <span v-if="line.account_number">
+                                            {{ line.account_number }}
+                                            <span class="text-medium-emphasis">{{ line.account_name }}</span>
+                                        </span>
+                                        <span v-else class="text-disabled">{{ selectedBooking.debit_account }}</span>
+                                    </td>
                                     <td class="text-end">{{ formatCurrency(line.net_amount) }}</td>
                                     <td class="text-end">{{ line.tax_rate }}%</td>
                                     <td class="text-end">{{ formatCurrency(line.gross_amount) }}</td>
                                 </tr>
                             </tbody>
                         </v-table>
+                        <p v-if="editMode" class="text-caption text-medium-emphasis mt-1">
+                            {{ t('AccountingView.bookings.linesHint') }}
+                        </p>
                     </div>
                 </v-card-text>
                 <v-card-actions>
@@ -542,6 +609,16 @@ const accountOptions = ref([])
 const accountLoading = ref(false)
 let   accountTimer   = null
 
+// Positionen in der Bearbeitung (Splitbuchung): je Zeile Konto, Netto, Satz
+const editLines          = ref([])
+const lineAccountOptions = ref({})
+const lineAccountLoading = ref({})
+const lineAccountTimers  = {}
+
+const round2 = v => Math.round((Number(v) || 0) * 100) / 100
+const editLinesSum  = computed(() => round2(editLines.value.reduce((a, l) => a + (Number(l.gross_amount) || 0), 0)))
+const editLinesDiff = computed(() => round2((Number(editForm.value.amount) || 0) - editLinesSum.value))
+
 function startEdit() {
     const b = selectedBooking.value
     editForm.value = {
@@ -556,7 +633,52 @@ function startEdit() {
     accountOptions.value = b.debit_account
         ? [{ accno: b.debit_account, label: b.debit_account + ' ' + (b.debit_account_name || '') }]
         : []
+    editLines.value = (b.lines || []).map(l => ({
+        description:    l.description || '',
+        account_number: l.account_number || null,
+        net_amount:     Number(l.net_amount ?? 0),
+        tax_rate:       Number(l.tax_rate ?? b.tax_rate ?? 19),
+        tax_amount:     Number(l.tax_amount ?? 0),
+        gross_amount:   Number(l.gross_amount ?? 0)
+    }))
+    lineAccountOptions.value = Object.fromEntries((b.lines || []).map((l, i) => [i,
+        l.account_number ? [{ accno: l.account_number, label: l.account_number + ' ' + (l.account_name || '') }] : []]))
     editMode.value = true
+}
+
+// Steuer und Brutto einer Position folgen aus Netto und Satz
+function recalcLine(line) {
+    const net = Number(line.net_amount) || 0
+    line.tax_amount   = round2(net * (Number(line.tax_rate) || 0) / 100)
+    line.gross_amount = round2(net + line.tax_amount)
+}
+
+// Neue Position bekommt den noch offenen Rest des Belegbetrags, damit die
+// Aufteilung mit einem Klick aufgeht (Rechnung 1 190 € = 1 180 € Ware + 10 € Mahnkosten).
+function addEditLine() {
+    const rate = Number(editForm.value.tax_rate) || 19
+    const rest = Math.max(0, editLinesDiff.value)
+    const line = {
+        description: '', account_number: null,
+        net_amount: round2(rest / (1 + rate / 100)), tax_rate: rate, tax_amount: 0, gross_amount: 0
+    }
+    recalcLine(line)
+    editLines.value.push(line)
+}
+
+function onLineAccountSearch(i, q) {
+    clearTimeout(lineAccountTimers[i])
+    if (!q || q.length < 1) return
+    const sel = (lineAccountOptions.value[i] || []).find(a => a.accno === editLines.value[i]?.account_number)
+    if (sel && sel.label === q) return
+    lineAccountTimers[i] = setTimeout(async () => {
+        lineAccountLoading.value = { ...lineAccountLoading.value, [i]: true }
+        const rows = await searchAccounts(q)
+        const found = rows.map(a => ({ accno: a.accno, label: a.accno + ' ' + a.description }))
+        lineAccountOptions.value = { ...lineAccountOptions.value,
+            [i]: sel && !found.some(a => a.accno === sel.accno) ? [sel, ...found] : found }
+        lineAccountLoading.value = { ...lineAccountLoading.value, [i]: false }
+    }, 300)
 }
 
 // Brutto ist keine Eingabe, sondern folgt aus Netto + Steuer — sonst kann die
@@ -586,7 +708,8 @@ async function saveEdit() {
         net_amount:    editForm.value.net_amount,
         tax_amount:    editForm.value.tax_amount,
         amount:        editForm.value.amount,
-        tax_rate:      editForm.value.tax_rate
+        tax_rate:      editForm.value.tax_rate,
+        lines:         editLines.value.map((l, i) => ({ position: i + 1, ...l }))
     })
     saving.value = false
     if (!result.success) {

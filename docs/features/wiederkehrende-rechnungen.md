@@ -30,6 +30,12 @@ Am Auftrag wird die Abrechnung angelegt (Karte „Wiederkehrende Abrechnung"):
 
 Eine **Vorschau** zeigt vor dem Speichern, was wann in welcher Höhe berechnet wird — Vorschau, Fälligkeit und Erzeugung rechnen mit denselben Datenbankfunktionen und kommen deshalb immer auf dieselben Perioden.
 
+## Abschalten
+
+Betriebe ohne Abos brauchen den Hinweis im Auftrag nicht. Der Knopf **Verbergen** an der Karte schaltet die Funktion firmenweit ab; die Einblendung danach macht es per Klick rückgängig. Dauerhaft wieder einschalten: **Firmenkonfiguration → Features → Wiederkehrende Rechnungen**.
+
+Abgeschaltet verschwinden nur der Hinweis in den Aufträgen und der Menüpunkt unter Verkauf. Bereits eingerichtete Abrechnungen laufen weiter, ihre Rechnungen entstehen wie gewohnt, und ihre Karte bleibt am Auftrag sichtbar. Der Features-Reiter zeigt beim Abschalten, wie viele Abrechnungen laufen.
+
 ## Übersicht
 
 Die Übersicht zeigt Kennzahlen (jetzt fällig, aktive Abrechnungen, monatlich wiederkehrender Umsatz, Kündigungsfristen in 30 Tagen, angehalten, pausiert) und drei Reiter:

@@ -17,7 +17,9 @@
             "priceRules": "价格规则",
             "turnover": "营业额统计",
             "emails": "电子邮件",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "自定义变量",
+            "history": "时间回溯"
         },
         "billing": {
             "nameAddressTitle": "名称与地址",
@@ -221,9 +223,10 @@
             "saveAndOrder": "录入订单",
             "saveAndQuotation": "录入报价单",
             "delete": "删除",
-            "history": "历史",
             "close": "关闭",
-            "confirmDelete": "确定要删除此客户吗？"
+            "confirmDelete": "确定要删除此客户吗？",
+            "confirmDeleteVendor": "确定删除供应商“{name}”？联系人、地址和备注将一并删除。",
+            "cancel": "取消"
         },
         "messages": {
             "saving": "正在保存...",
@@ -233,7 +236,10 @@
             "deleteError": "删除客户时出错。",
             "deleteContactError": "删除联系人时出错",
             "deleteContactErrorTitle": "错误",
-            "autoSaveWarning": "请先填写 {fields} 以保存记录。"
+            "autoSaveWarning": "请先填写 {fields} 以保存记录。",
+            "deleteErrorVendor": "删除供应商时出错。",
+            "deleted": "客户“{name}”已删除。",
+            "deletedVendor": "供应商“{name}”已删除。"
         },
         "duplicate": {
             "title": "可能的重复",
@@ -329,7 +335,13 @@
             "urlLabel": "标注",
             "urlAddress": "网址",
             "addUrl": "添加网址",
-            "openUrl": "打开页面"
+            "openUrl": "打开页面",
+            "vendornumber": "供应商编号",
+            "hu_notify": "发送年检提醒",
+            "hu_notify_hint": "适用于该客户的所有车辆——包括以后新增的车辆。关闭后将不再发送年检提醒，且无法再在单个车辆上开启提醒（以客户设置为准）。",
+            "phone_numbers": "其他电话号码",
+            "emails": "其他电子邮件地址",
+            "urls": "其他网址"
         },
         "price-rules": {
             "title": "价格规则",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0（测试模式）",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended（测试模式）"
+        },
+        "customVars": {
+            "title": "自定义变量",
+            "noConfigs": "尚未为客户/供应商配置自定义变量。"
+        },
+        "easymode": {
+            "label": "客户表单视图",
+            "easy": "简易",
+            "pro": "全部字段",
+            "easyHint": "只显示在公司配置中为日常工作选中的字段和选项卡。",
+            "proHint": "客户或供应商的全部字段和选项卡。",
+            "hiddenFilled": "{count} 个已隐藏字段含有值：",
+            "showAll": "显示全部字段"
+        },
+        "history": {
+            "title": "时间回溯",
+            "intro": "谁在何时改了什么——每次保存及其改动的字段都有记录。拖动滑块即可回到过去，查看当时的主数据。",
+            "count": "{n} 个事件 | {n} 个事件",
+            "reload": "重新加载",
+            "filterEmployee": "员工",
+            "search": "搜索",
+            "timeTravel": "时间回溯",
+            "today": "今天",
+            "backToToday": "回到今天",
+            "stepsBack": "回退 {n} 次改动 | 回退 {n} 次改动",
+            "asOf": "{time} 改动之前的状态——与今天的差异：",
+            "noDiff": "与今天的状态没有差异。",
+            "empty": "尚未记录任何改动。从现在起每次保存都会被记录。",
+            "noMatch": "没有符合筛选条件的事件。",
+            "unknownEmployee": "未知",
+            "created": "已创建",
+            "deleted": "已删除",
+            "yes": "是",
+            "no": "否",
+            "tableProfile": "主数据",
+            "tableContact": "联系人",
+            "tableShipto": "收货地址",
+            "tableBilling": "附加账单地址",
+            "legacy": {
+                "saved": "已保存",
+                "printed": "已打印",
+                "mailed": "已通过电子邮件发送",
+                "deleted": "已删除",
+                "screened": "已查看",
+                "posted": "已入账"
+            }
         }
     }
 }

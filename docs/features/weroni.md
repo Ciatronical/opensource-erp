@@ -19,6 +19,10 @@ Weroni ist der integrierte KI-Assistent von OpensourceERP. Er hilft bei Fragen z
 - **Aufgaben**: Aktionen im System vorschlagen und nach Bestätigung ausführen
 - **Rückfragen**: Bei kritischen Aktionen wird vor der Ausführung nachgefragt
 
+## Rechtsprüfung von Gutachten (LxCars)
+
+Im Werkstattauftrag prüft Weroni importierte Schadengutachten als digitale Rechtsassistentin: Wirtschaftlichkeit (130-%-Regel, Wiederbeschaffungswert, Restwert), Wertminderung, Nutzungsausfall, Sachverständigenkosten, Haftung und Werkstattrisiko. Sie trifft eine Entscheidung mit Ampel, stellt die Ansprüche des Kunden zusammen und formuliert die Nachricht an den Kunden sowie das Schreiben an die Versicherung. Details: [LxCars → Weroni Rechtsprüfung](lxcars.md#weroni-rechtsprüfung-gutachten).
+
 ## Verwendung
 
 Weroni ist über das Chat-Icon in der Navigationsleiste erreichbar. Nachrichten werden als Konversation gespeichert.

@@ -120,6 +120,55 @@
             <v-divider class="my-6" />
         </template>
 
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- VERKAUF -->
+        <!-- Wiederkehrende Rechnungen: schaltet nur das Angebot ab (Hinweis im
+             Auftrag, Menüpunkt). Bestehende Abrechnungen laufen weiter und
+             bleiben an ihrem Auftrag sichtbar — darum der Hinweis mit Anzahl. -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <template v-if="crmDefaults">
+            <h3 class="text-h6 mb-4">{{ $t('salesFeatures') }}</h3>
+
+            <v-row class="mb-2">
+                <v-col cols="12" md="6">
+                    <v-card
+                        :variant="crmDefaults.feature_recurring ? 'outlined' : 'tonal'"
+                        :color="crmDefaults.feature_recurring ? 'primary' : undefined"
+                        class="feature-card"
+                    >
+                        <v-card-text class="pa-4">
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="d-flex align-center ga-3">
+                                    <v-icon size="32" :color="crmDefaults.feature_recurring ? 'primary' : 'grey'">mdi-autorenew</v-icon>
+                                    <div>
+                                        <div class="text-subtitle-1 font-weight-bold">{{ $t('featureRecurring') }}</div>
+                                        <div class="text-caption text-medium-emphasis">{{ $t('featureRecurringDesc') }}</div>
+                                    </div>
+                                </div>
+                                <v-switch
+                                    v-model="crmDefaults.feature_recurring"
+                                    :true-value="true"
+                                    :false-value="false"
+                                    color="primary"
+                                    hide-details
+                                    density="compact"
+                                    inset
+                                />
+                            </div>
+                            <v-alert
+                                v-if="!crmDefaults.feature_recurring && recurringActive > 0"
+                                type="info" variant="tonal" density="compact" class="mt-3"
+                            >
+                                {{ $t('featureRecurringActiveHint', { count: recurringActive }) }}
+                            </v-alert>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+
+            <v-divider class="my-6" />
+        </template>
+
         <!-- DATEV & UStVA -->
         <h3 class="text-h6 mb-4">{{ $t('datevAndUstva') }}</h3>
 
@@ -552,6 +601,11 @@ const props = defineProps({
     extensions: {
         type: Array,
         default: null
+    },
+    // Anzahl laufender wiederkehrender Abrechnungen (aus getDefaults)
+    recurringActive: {
+        type: Number,
+        default: 0
     }
 });
 

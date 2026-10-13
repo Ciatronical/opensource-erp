@@ -872,6 +872,116 @@ END $$;
 -- WHATSAPP TEMPLATES
 -- ============================================================================
 
+-- ═══════════════════════════════════════════════════════════════
+-- Änderungsverlauf Kunde/Lieferant ("Zeitreise")
+--
+-- Ein Trigger auf den kivitendo-Tabellen customer, vendor, contacts, shipto,
+-- additional_billing_addresses und den Erweiterungen customer_ext/vendor_ext
+-- schreibt je Speichern die geänderten Spalten als Diff ({spalte: {old, new}})
+-- mit Mitarbeiter und Zeit. Die kivitendo-Tabellen bleiben unverändert.
+--
+-- Wer geändert hat, setzt die API vor dem Schreiben per
+--   set_config('oserp.employee_id', …) und set_config('oserp.cv_src', 'C'|'V')
+-- (customer_vendor.php, cvHistoryContext). Ohne Kontext bleibt employee_id
+-- leer und bei contacts/shipto gilt Kunde — beide Tabellen tragen die Seite
+-- nicht selbst.
+-- ═══════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS cv_history_oserp (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    cv_id INTEGER NOT NULL,
+    src CHAR(1) NOT NULL,              -- C Kunde, V Lieferant
+    table_name TEXT NOT NULL,          -- customer, vendor, customer_ext, vendor_ext, contacts, shipto, additional_billing_addresses
+    row_id INTEGER,                    -- cp_id, shipto_id, id der Nebentabelle
+    row_label TEXT,                    -- Name des Ansprechpartners / der Lieferadresse zur Anzeige
+    action TEXT NOT NULL,              -- INSERT, UPDATE, DELETE
+    changes JSONB,                     -- {spalte: {"old": …, "new": …}}
+    employee_id INTEGER,
+    itime TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS cv_history_oserp_cv_idx ON cv_history_oserp (src, cv_id, itime DESC);
+
+CREATE OR REPLACE FUNCTION cv_history_log() RETURNS trigger AS $$
+DECLARE
+    v_old      JSONB := CASE WHEN TG_OP = 'INSERT' THEN '{}'::jsonb ELSE to_jsonb(OLD) END;
+    v_new      JSONB := CASE WHEN TG_OP = 'DELETE' THEN '{}'::jsonb ELSE to_jsonb(NEW) END;
+    v_changes  JSONB;
+    v_cv_id    INTEGER;
+    v_src      CHAR(1);
+    v_row_id   INTEGER;
+    v_label    TEXT;
+    v_employee INTEGER := NULLIF(current_setting('oserp.employee_id', true), '')::INTEGER;
+    v_ctx_src  TEXT    := NULLIF(current_setting('oserp.cv_src', true), '');
+BEGIN
+    -- Diff der sichtbaren Spalten; leere Zeichenkette und NULL gelten als gleich,
+    -- beim Anlegen zählen nur gefüllte Werte (sonst stünde jede leere Spalte drin)
+    SELECT jsonb_object_agg(d.key, jsonb_build_object('old', d.o_val, 'new', d.n_val))
+      INTO v_changes
+      FROM (
+          SELECT COALESCE(o.key, n.key) AS key,
+                 CASE WHEN o.value IN ('""'::jsonb, 'null'::jsonb) THEN NULL ELSE o.value END AS o_val,
+                 CASE WHEN n.value IN ('""'::jsonb, 'null'::jsonb) THEN NULL ELSE n.value END AS n_val
+            FROM jsonb_each(v_old) o
+            FULL JOIN jsonb_each(v_new) n ON o.key = n.key
+      ) d
+     WHERE d.o_val IS DISTINCT FROM d.n_val
+       AND d.key NOT IN ('id', 'itime', 'mtime', 'cp_id', 'shipto_id', 'cp_cv_id', 'trans_id', 'module', 'customer_id', 'vendor_id')
+       AND (TG_OP <> 'INSERT' OR (d.n_val IS NOT NULL AND d.n_val <> 'false'::jsonb AND d.n_val <> '0'::jsonb));
+
+    IF TG_OP <> 'DELETE' AND (v_changes IS NULL OR v_changes = '{}'::jsonb) THEN
+        RETURN NULL;
+    END IF;
+
+    CASE TG_TABLE_NAME
+        WHEN 'customer' THEN
+            v_cv_id := COALESCE(v_new->>'id', v_old->>'id')::INTEGER; v_src := 'C';
+        WHEN 'vendor' THEN
+            v_cv_id := COALESCE(v_new->>'id', v_old->>'id')::INTEGER; v_src := 'V';
+        WHEN 'customer_ext' THEN
+            v_cv_id := COALESCE(v_new->>'customer_id', v_old->>'customer_id')::INTEGER; v_src := 'C';
+        WHEN 'vendor_ext' THEN
+            v_cv_id := COALESCE(v_new->>'vendor_id', v_old->>'vendor_id')::INTEGER; v_src := 'V';
+        WHEN 'contacts' THEN
+            v_cv_id  := COALESCE(v_new->>'cp_cv_id', v_old->>'cp_cv_id')::INTEGER;
+            v_src    := COALESCE(v_ctx_src, 'C');
+            v_row_id := COALESCE(v_new->>'cp_id', v_old->>'cp_id')::INTEGER;
+            v_label  := NULLIF(trim(concat_ws(' ', COALESCE(v_new->>'cp_givenname', v_old->>'cp_givenname'),
+                                                   COALESCE(v_new->>'cp_name', v_old->>'cp_name'))), '');
+        WHEN 'shipto' THEN
+            IF COALESCE(v_new->>'module', v_old->>'module') IS DISTINCT FROM 'CT' THEN
+                RETURN NULL;
+            END IF;
+            v_cv_id  := COALESCE(v_new->>'trans_id', v_old->>'trans_id')::INTEGER;
+            v_src    := COALESCE(v_ctx_src, 'C');
+            v_row_id := COALESCE(v_new->>'shipto_id', v_old->>'shipto_id')::INTEGER;
+            v_label  := NULLIF(concat_ws(', ', COALESCE(v_new->>'shiptoname', v_old->>'shiptoname'),
+                                               COALESCE(v_new->>'shiptocity', v_old->>'shiptocity')), '');
+        WHEN 'additional_billing_addresses' THEN
+            v_cv_id  := COALESCE(v_new->>'customer_id', v_old->>'customer_id')::INTEGER; v_src := 'C';
+            v_row_id := COALESCE(v_new->>'id', v_old->>'id')::INTEGER;
+            v_label  := COALESCE(v_new->>'name', v_old->>'name');
+        ELSE
+            RETURN NULL;
+    END CASE;
+
+    IF v_cv_id IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    INSERT INTO cv_history_oserp (cv_id, src, table_name, row_id, row_label, action, changes, employee_id)
+    VALUES (v_cv_id, v_src, TG_TABLE_NAME, v_row_id, v_label, TG_OP, v_changes, v_employee);
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ DECLARE t TEXT; BEGIN
+    FOREACH t IN ARRAY ARRAY['customer', 'vendor', 'customer_ext', 'vendor_ext', 'contacts', 'shipto', 'additional_billing_addresses'] LOOP
+        IF to_regclass(t) IS NOT NULL AND NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = t || '_cv_history') THEN
+            EXECUTE format('CREATE TRIGGER %I AFTER INSERT OR UPDATE OR DELETE ON %I FOR EACH ROW EXECUTE FUNCTION cv_history_log()', t || '_cv_history', t);
+        END IF;
+    END LOOP;
+END $$;
+
 CREATE TABLE IF NOT EXISTS whatsapp_templates (
     id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name TEXT NOT NULL,
@@ -3559,3 +3669,129 @@ COMMENT ON COLUMN print_template_designs.design IS 'Design-JSON (page, blocks, b
 COMMENT ON COLUMN print_template_designs.version IS 'Laufende Versionsnummer je Vorlagensatz und Belegart';
 COMMENT ON COLUMN print_template_designs.is_current IS 'Genau eine aktuelle Version je Vorlagensatz und Belegart';
 COMMENT ON COLUMN print_template_designs.employee_id IS 'Mitarbeiter, der diese Version gespeichert hat';
+
+-- ============================================================================
+-- BRIEFE UND POSTVERSAND (Hybridbrief)
+-- ============================================================================
+-- Briefe liegen unverändert in kivitendos Tabelle `letter` (Nummernkreis
+-- defaults.letternumber, Ansprechperson cp_id, Kunde oder Lieferant). Was
+-- OS-ERP darüber hinaus braucht, steht daneben:
+--
+-- * letter_templates — Textbausteine (Betreff + Text), die der Benutzer im
+--   Briefeditor wählt und dort auch anlegt.
+-- * postal_dispatches — jede elektronische Einlieferung eines Dokuments bei
+--   einem Briefdienstleister (PIN AG per SFTP/FTPS, LetterXpress per REST)
+--   oder der händische Postversand. Gilt für Briefe UND Belege (Rechnung,
+--   Angebot, Auftrag, Lieferschein): record_table/record_id zeigen auf die
+--   kivitendo-Tabelle, record_type ist die Belegart der Druckvorlage. Das
+--   versendete PDF bleibt als Versandexemplar in der Zeile — ein Kunde
+--   bestreitet gern, was er bekommen hat.
+--
+-- Versand per E-Mail läuft wie bei Belegen über email_journal + record_links
+-- (from_table = 'letter'); kivitendos Trigger räumt die Verknüpfungen beim
+-- Löschen eines Briefs auf.
+
+CREATE TABLE IF NOT EXISTS letter_templates (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name text NOT NULL,
+    subject text,
+    body text,
+    employee_id integer,
+    itime timestamp without time zone DEFAULT now(),
+    mtime timestamp without time zone
+);
+
+COMMENT ON TABLE letter_templates IS 'Textbausteine für Briefe (Betreff und Text mit Platzhaltern)';
+COMMENT ON COLUMN letter_templates.name IS 'Anzeigename in der Vorlagenauswahl des Briefeditors';
+COMMENT ON COLUMN letter_templates.body IS 'Brieftext als HTML (tiptap), Platzhalter <%name%>, <%customernumber%> …';
+
+CREATE TABLE IF NOT EXISTS postal_dispatches (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    record_type text NOT NULL,
+    record_table text NOT NULL,
+    record_id integer NOT NULL,
+    provider text NOT NULL,
+    status text NOT NULL DEFAULT 'queued',
+    provider_job_id text,
+    provider_status text,
+    tracking_code text,
+    tracking_status text,
+    color boolean NOT NULL DEFAULT false,
+    duplex boolean NOT NULL DEFAULT false,
+    registered text,
+    shipping text,
+    pages integer,
+    price numeric(10,2),
+    filename text,
+    pdf bytea,
+    recipient_name text,
+    recipient_address text,
+    error text,
+    employee_id integer,
+    itime timestamp without time zone DEFAULT now(),
+    sent_at timestamp without time zone,
+    mtime timestamp without time zone
+);
+
+COMMENT ON TABLE postal_dispatches IS 'Postversand (Hybridbrief): Einlieferungen von Briefen und Belegen beim Briefdienstleister';
+COMMENT ON COLUMN postal_dispatches.record_type IS 'Belegart der Druckvorlage: letter, invoice, order, quotation, delivery_order …';
+COMMENT ON COLUMN postal_dispatches.record_table IS 'kivitendo-Tabelle des Dokuments: letter, ar, ap, oe, delivery_orders';
+COMMENT ON COLUMN postal_dispatches.provider IS 'pinag (SFTP/FTPS-Einlieferung), letterxpress (REST-API) oder manual (selbst gedruckt und frankiert)';
+COMMENT ON COLUMN postal_dispatches.status IS 'queued | sent (beim Anbieter) | done (zugestellt/abgeschlossen) | canceled | error | manual';
+COMMENT ON COLUMN postal_dispatches.provider_job_id IS 'Auftragsnummer beim Anbieter (LetterXpress printjob id) bzw. Dateiname auf dem SFTP-Server';
+COMMENT ON COLUMN postal_dispatches.provider_status IS 'Status des Anbieters im Original (z. B. queue, hold, done)';
+COMMENT ON COLUMN postal_dispatches.registered IS 'Einschreiben: NULL, r1 (Einwurf) oder r2 (Übergabe)';
+COMMENT ON COLUMN postal_dispatches.shipping IS 'national oder international (nach Land des Empfängers)';
+COMMENT ON COLUMN postal_dispatches.price IS 'Vom Anbieter gemeldeter Preis in EUR (netto), falls bekannt';
+COMMENT ON COLUMN postal_dispatches.pdf IS 'Versandexemplar: genau das PDF, das eingeliefert wurde';
+
+CREATE INDEX IF NOT EXISTS idx_postal_dispatches_record ON postal_dispatches (record_table, record_id);
+CREATE INDEX IF NOT EXISTS idx_postal_dispatches_status ON postal_dispatches (status);
+
+-- ============================================================================
+-- BANK: BUCHUNGSVORLAGEN FÜR UMSÄTZE OHNE BELEG (Dialogbuchung aus dem Bankumsatz)
+-- ============================================================================
+-- Umbuchung zwischen eigenen Konten, Privatentnahme/-einlage, Lohn, Sozial-
+-- versicherung, Finanzamt, Bankgebühren, Darlehen … — Geschäftsvorfälle ohne
+-- Eingangs-/Ausgangsrechnung. Je Vorlage das Gegenkonto für SKR03 und SKR04
+-- (zur Laufzeit über defaults.coa aufgelöst) und ein Erkennungsmuster für
+-- Verwendungszweck/Empfänger. Gebucht wird wie kivitendos Dialogbuchung (gl +
+-- acc_trans), verknüpft über bank_transaction_acc_trans.gl_id.
+CREATE TABLE IF NOT EXISTS bank_booking_templates (
+    id              SERIAL PRIMARY KEY,
+    key             TEXT NOT NULL UNIQUE,
+    label           TEXT NOT NULL,
+    icon            TEXT,
+    direction       TEXT NOT NULL DEFAULT 'any' CHECK (direction IN ('in', 'out', 'any')),
+    accno_skr03     TEXT,
+    accno_skr04     TEXT,
+    keyword_regex   TEXT,
+    sort            INTEGER NOT NULL DEFAULT 100,
+    hit_count       INTEGER NOT NULL DEFAULT 0,
+    active          BOOLEAN NOT NULL DEFAULT TRUE,
+    itime           TIMESTAMP DEFAULT now(),
+    mtime           TIMESTAMP
+);
+
+COMMENT ON TABLE bank_booking_templates IS 'Buchungsvorlagen für Bankumsätze ohne Beleg (Umbuchung, Privat, Lohn, Finanzamt, Gebühren …)';
+COMMENT ON COLUMN bank_booking_templates.key IS 'transfer_own (eigenes Bankkonto) und cash (Kassenkonto) lösen das Konto dynamisch auf, alle anderen über accno_skr03/accno_skr04';
+COMMENT ON COLUMN bank_booking_templates.keyword_regex IS 'Erkennung (case-insensitive, POSIX-Regex) in Verwendungszweck oder Empfängername';
+
+INSERT INTO bank_booking_templates (key, label, icon, direction, accno_skr03, accno_skr04, keyword_regex, sort) VALUES
+    ('transfer_own',       'Umbuchung auf eigenes Bankkonto',          'mdi-bank-transfer',          'any', NULL,   NULL,   NULL, 10),
+    ('cash',               'Bareinzahlung / Barabhebung (Kasse)',      'mdi-cash-register',          'any', NULL,   NULL,   'bareinzahlung|barauszahlung|abhebung|geldautomat|bargeld', 20),
+    ('transfer_transit',   'Geldtransit (Konto außerhalb des Systems)','mdi-swap-horizontal',        'any', '1360', '1460', 'umbuchung|übertrag|uebertrag', 30),
+    ('private_withdrawal', 'Privatentnahme',                           'mdi-account-arrow-right',    'out', '1800', '2100', 'privat', 40),
+    ('private_deposit',    'Privateinlage',                            'mdi-account-arrow-left',     'in',  '1890', '2180', 'privat|einlage', 41),
+    ('wages',              'Lohn / Gehalt',                            'mdi-account-cash',           'out', '1740', '3720', 'lohn|gehalt|verdienst|vergütung|verguetung', 50),
+    ('wage_tax',           'Lohnsteuer (Finanzamt)',                   'mdi-office-building',        'out', '1741', '3730', 'lohnsteuer|lst[ /]', 51),
+    ('social_security',    'Sozialversicherung (Krankenkasse)',        'mdi-hospital-box-outline',   'out', '1742', '3740', 'krankenkasse|sozialvers|beitragsnachweis|gesamtsozial|\mAOK\M|\mTK\M|\mDAK\M|\mIKK\M|\mBKK\M|barmer|knappschaft|minijob', 52),
+    ('vat_prepayment',     'Umsatzsteuer-Vorauszahlung (Finanzamt)',   'mdi-percent',                'out', '1780', '3820', 'umsatzsteuer|\must\M|finanzamt|finanzkasse', 60),
+    ('vat_refund',         'Umsatzsteuer-Erstattung (Finanzamt)',      'mdi-percent',                'in',  '1780', '3820', 'umsatzsteuer|\must\M|finanzamt|finanzkasse|erstattung', 61),
+    ('bank_fees',          'Bankgebühren',                             'mdi-bank',                   'out', '4970', '6855', 'entgelt|gebühr|gebuehr|kontoführung|kontofuehrung|rechnungsabschluss|kontoabschluss', 70),
+    ('bank_interest',      'Zinsen (Aufwand)',                         'mdi-percent-outline',        'out', '2110', '7310', 'zins', 71),
+    ('loan',               'Darlehen (Tilgung)',                       'mdi-home-city-outline',      'any', '0630', '3150', 'tilgung|darlehen|kredit', 80),
+    ('trade_tax',          'Gewerbesteuer',                            'mdi-city',                   'out', '4320', '7610', 'gewerbesteuer', 90),
+    ('vehicle_tax',        'Kfz-Steuer',                               'mdi-car',                    'out', '4510', '7685', 'kfz-?steuer|kraftfahrzeugsteuer', 91),
+    ('other',              'Anderes Konto',                            'mdi-dots-horizontal',        'any', NULL,   NULL,   NULL, 999)
+ON CONFLICT (key) DO NOTHING;

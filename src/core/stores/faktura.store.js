@@ -203,6 +203,95 @@ export const fakturaStore = defineStore('fakturaStore', () => {
 
 
     /**
+     * Gutachten (PDF/Foto) per KI auslesen – Vorschau, speichert nichts
+     *
+     * @param {Object} p {oeId, fileBase64, filename, mimeType, aiModel}
+     * @return {Promise<Object>} {vehicle, appraisal, items, items_net, delta_net, confidence, notes, context}
+     */
+    async function analyzeGutachten({ oeId, fileBase64, filename, mimeType, aiModel }) {
+        const response = await axios.post('/api/faktura/', {
+            action: 'analyzeGutachtenPdf',
+            oe_id: oeId,
+            file_base64: fileBase64,
+            filename,
+            mime_type: mimeType,
+            ai_model: aiModel || ''
+        })
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, response.data.payload?.message || response.data.text)
+        }
+        return response.data.payload
+    }
+
+    /**
+     * Ausgelesenes Gutachten in den Auftrag übernehmen (Fahrzeug, km, Notizen, Positionen, Ablage)
+     *
+     * @param {Object} p {oeId, items, buchungsgruppeId, vehicle, appraisal, options, fileBase64, filename}
+     * @return {Promise<Object>} {count, c_id, car_created, …} oder {exists_other_owner, owner_name, plate}
+     */
+    async function applyGutachten({ oeId, items, buchungsgruppeId, vehicle, appraisal, options, fileBase64, filename }) {
+        const response = await axios.post('/api/faktura/', {
+            action: 'applyGutachtenToOrder',
+            oe_id: oeId,
+            items,
+            buchungsgruppeTeile: buchungsgruppeId,
+            buchungsgruppeArbeit: buchungsgruppeId,
+            vehicle,
+            appraisal,
+            options,
+            file_base64: fileBase64 || '',
+            filename
+        })
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, response.data.payload?.message || response.data.text)
+        }
+        return response.data.payload
+    }
+
+    /**
+     * Weroni Rechtsprüfung des ausgelesenen Gutachtens – Entscheidung, Ansprüche, Kommunikation
+     *
+     * @param {Object} p {oeId, extracted, cId, storedPath, aiModel}
+     * @return {Promise<Object>} {id, created_at, review, communicated, customer}
+     */
+    async function reviewGutachten({ oeId, extracted, cId, storedPath, aiModel }) {
+        const response = await axios.post('/api/faktura/', {
+            action: 'reviewGutachten',
+            oe_id: oeId,
+            extracted,
+            c_id: cId || 0,
+            stored_path: storedPath || '',
+            ai_model: aiModel || ''
+        })
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, response.data.payload?.message || response.data.text)
+        }
+        return response.data.payload
+    }
+
+    /**
+     * Neueste Weroni-Prüfung eines Auftrags ({id: null} wenn keine vorhanden)
+     */
+    async function getGutachtenReview(oeId) {
+        const response = await axios.post('/api/faktura/', { action: 'getGutachtenReview', oe_id: oeId })
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, response.data.payload?.message || response.data.text)
+        }
+        return response.data.payload
+    }
+
+    /**
+     * Protokolliert die Kommunikation der Entscheidung (Kanal + Empfänger)
+     */
+    async function markGutachtenReviewCommunicated(id, channel, to = '') {
+        const response = await axios.post('/api/faktura/', { action: 'markGutachtenReviewCommunicated', id, channel, to })
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, response.data.payload?.message || response.data.text)
+        }
+        return response.data.payload
+    }
+
+    /**
      * Lädt das AAG-Online-Token im Hintergrund vor, damit der langsame Login
      * (~3 s) nicht erst beim Klick auf den AAG-Button anfällt. Bewusst
      * "feuern und vergessen" – Fehler werden ignoriert, der Auftrag darf
@@ -777,6 +866,11 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         replaceFakturaItemArticle,
         saveItemAsNewPart,
         importSilverDATItems,
+        analyzeGutachten,
+        applyGutachten,
+        reviewGutachten,
+        getGutachtenReview,
+        markGutachtenReviewCommunicated,
         warmAagToken,
         updateFakturaItems,
         updateFakturaField,

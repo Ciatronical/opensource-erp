@@ -1,0 +1,51 @@
+/* ═══════════════════════════════════════════════════════════════
+   Design-Tokens
+
+   Eine Stelle für Abstände, Radien, Flächen und Schriftgrößen der
+   Oberfläche. Views und Bausteine (src/core/components/layout/) greifen
+   nur auf diese Variablen zu — nicht auf Vuetify-Farbklassen wie
+   bg-grey-lighten-4 oder feste Pixelwerte in jeder Karte.
+
+   Light ist der Grundzustand, .v-theme--dark überschreibt nur die
+   Flächen und Ränder. Vuetify setzt die Theme-Klasse auf .v-application,
+   alles darunter erbt die Variablen.
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+    /* Abstände */
+    --oserp-gap-xs: 4px;
+    --oserp-gap-sm: 8px;
+    --oserp-gap: 12px;
+    --oserp-gap-lg: 16px;
+    --oserp-gap-xl: 24px;
+    --oserp-page-pad: 16px;
+
+    /* Breite, in der Formulare gut lesbar bleiben (einfacher Modus, Dialoge) */
+    --oserp-content-max: 860px;
+
+    /* Radien */
+    --oserp-radius: 10px;
+    --oserp-radius-sm: 6px;
+
+    /* Flächen und Ränder */
+    --oserp-surface: #ffffff;
+    --oserp-surface-soft: #f5f6f8;
+    --oserp-section-head-bg: #f5f6f8;
+    --oserp-border: rgba(0, 0, 0, 0.12);
+    --oserp-border-soft: rgba(0, 0, 0, 0.08);
+
+    /* Text */
+    --oserp-text-muted: rgba(0, 0, 0, 0.6);
+    --oserp-title-size: clamp(1.35rem, 1.1rem + 1vw, 1.75rem);
+    --oserp-title-weight: 500;
+    --oserp-section-title-size: 1rem;
+    --oserp-section-title-weight: 600;
+}
+
+.v-theme--dark {
+    --oserp-surface: #1e1e1e;
+    --oserp-surface-soft: #262626;
+    --oserp-section-head-bg: rgba(255, 255, 255, 0.05);
+    --oserp-border: rgba(255, 255, 255, 0.14);
+    --oserp-border-soft: rgba(255, 255, 255, 0.08);
+    --oserp-text-muted: rgba(255, 255, 255, 0.7);
+}

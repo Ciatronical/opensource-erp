@@ -21,7 +21,7 @@
  * Zweiter Zweig: eine Bezeichnung, die „Kasse" enthält. Damit werden Nebenkassen
  * gefunden, die im Standardkontenrahmen keine feste Nummer haben. „Sparkasse"
  * und alles mit „Bank" sind ausgenommen — sonst würde jedes Sparkassenkonto zur
- * Kasse.
+ * Kasse; „Krankenkasse" ebenso (1369 „Forderungen gegenüber Krankenkassen").
  *
  * @param string $alias Tabellen-Alias von chart in der aufrufenden Abfrage
  * @return string SQL-Bedingung, in Klammern gefasst
@@ -43,6 +43,7 @@ function kassenkontoBedingung($alias) {
         )
         OR ({$alias}.description ILIKE '%kasse%'
             AND {$alias}.description NOT ILIKE '%sparkasse%'
+            AND {$alias}.description NOT ILIKE '%krankenkasse%'
             AND {$alias}.description NOT ILIKE '%bank%')
     )";
 }

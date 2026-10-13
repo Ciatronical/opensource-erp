@@ -17,7 +17,9 @@
             "priceRules": "Prisregeln",
             "turnover": "Omsattningstatistik",
             "emails": "E-posts",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Användardefinierade variabler",
+            "history": "Tidsresa"
         },
         "billing": {
             "nameAddressTitle": "Name & Adresse",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Skapa order",
             "saveAndQuotation": "Skapa offert",
             "delete": "Radera",
-            "history": "Historik",
             "close": "Stang",
-            "confirmDelete": "Vill du diesen Kundn verkligen radera?"
+            "confirmDelete": "Vill du diesen Kundn verkligen radera?",
+            "confirmDeleteVendor": "Vill du verkligen radera leverantören „{name}“? Kontaktpersoner, adresser och anteckningar tas också bort.",
+            "cancel": "Avbryt"
         },
         "messages": {
             "saving": "Speichert...",
@@ -233,7 +236,10 @@
             "deleteError": "Fel vid Radera des Kundn.",
             "deleteContactError": "Fel vid Radera des Ansprechpartners",
             "deleteContactErrorTitle": "Fehler",
-            "autoSaveWarning": "Forst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Forst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Fel när leverantören skulle raderas.",
+            "deleted": "Kunden „{name}“ raderad.",
+            "deletedVendor": "Leverantören „{name}“ raderad."
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
@@ -329,7 +335,13 @@
             "urlLabel": "Bezeichnung",
             "urlAddress": "URL",
             "addUrl": "Lägg till URL",
-            "openUrl": "Öppna sida"
+            "openUrl": "Öppna sida",
+            "vendornumber": "Leverantörsnummer",
+            "hu_notify": "Skicka besiktningspåminnelse",
+            "hu_notify_hint": "Gäller alla den här kundens fordon – även sådana som läggs upp senare. Är brytaren av skickas inga besiktningspåminnelser och påminnelsen kan inte längre slås på för det enskilda fordonet (kunden har företräde).",
+            "phone_numbers": "Ytterligare telefonnummer",
+            "emails": "Ytterligare e-postadresser",
+            "urls": "Ytterligare URL:er"
         },
         "price-rules": {
             "title": "Prisregeln",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Testläge)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testläge)"
+        },
+        "customVars": {
+            "title": "Användardefinierade variabler",
+            "noConfigs": "Inga användardefinierade variabler är konfigurerade för kunder/leverantörer."
+        },
+        "easymode": {
+            "label": "Kundformulärets vy",
+            "easy": "Enkel",
+            "pro": "Alla fält",
+            "easyHint": "Endast de fält och flikar som valts för det dagliga arbetet i företagskonfigurationen.",
+            "proHint": "Alla fält och flikar för kunden respektive leverantören.",
+            "hiddenFilled": "{count} dolda fält innehåller värden:",
+            "showAll": "Visa alla fält"
+        },
+        "history": {
+            "title": "Tidsresa",
+            "intro": "Vem ändrade vad och när — varje sparning med de ändrade fälten. Med reglaget reser du tillbaka och ser hur stamdata såg ut då.",
+            "count": "{n} händelse | {n} händelser",
+            "reload": "Läs in på nytt",
+            "filterEmployee": "Medarbetare",
+            "search": "Sök",
+            "timeTravel": "Tidsresa",
+            "today": "Idag",
+            "backToToday": "Tillbaka till idag",
+            "stepsBack": "{n} ändring tillbaka | {n} ändringar tillbaka",
+            "asOf": "Läget före ändringen {time} — avvikelser mot idag:",
+            "noDiff": "Ingen avvikelse mot dagens läge.",
+            "empty": "Inga ändringar registrerade än. Från och med nu sparas varje sparning.",
+            "noMatch": "Inga händelser matchar filtret.",
+            "unknownEmployee": "Okänd",
+            "created": "skapad",
+            "deleted": "raderad",
+            "yes": "Ja",
+            "no": "Nej",
+            "tableProfile": "Stamdata",
+            "tableContact": "Kontaktperson",
+            "tableShipto": "Leveransadress",
+            "tableBilling": "Ytterligare fakturaadress",
+            "legacy": {
+                "saved": "sparad",
+                "printed": "utskriven",
+                "mailed": "skickad via e-post",
+                "deleted": "raderad",
+                "screened": "visad",
+                "posted": "bokförd"
+            }
         }
     }
 }

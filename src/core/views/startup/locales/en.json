@@ -135,7 +135,17 @@
         "editNotes": "Edit notes",
         "contactOrigin": "Origin of personal data",
         "showAll": "Show all",
-        "documentFetch": "Document fetch"
+        "documentFetch": "Document fetch",
+        "letter": "Letter",
+        "newLetter": "Write a new letter to this customer/vendor",
+        "openLetter": "Open letter",
+        "letterNumber": "No. {number}",
+        "letterDraft": "Not sent",
+        "letterSentVia": "sent via {channels}",
+        "letterChannel": {
+            "email": "email",
+            "post": "post"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Call",

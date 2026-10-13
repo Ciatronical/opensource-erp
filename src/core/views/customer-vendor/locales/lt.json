@@ -17,7 +17,9 @@
             "priceRules": "Kainų taisyklės",
             "turnover": "Apyvartos statistika",
             "emails": "El. laiškai",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Naudotojo kintamieji",
+            "history": "Kelionė laiku"
         },
         "billing": {
             "nameAddressTitle": "Name & Adresse",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Sukurti užsakymą",
             "saveAndQuotation": "Sukurti pasiūlymą",
             "delete": "Ištrinti",
-            "history": "Historie",
             "close": "Uždaryti",
-            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?"
+            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?",
+            "confirmDeleteVendor": "Tikrai ištrinti tiekėją „{name}“? Kontaktiniai asmenys, adresai ir pastabos bus pašalinti kartu.",
+            "cancel": "Atšaukti"
         },
         "messages": {
             "saving": "Speichert...",
@@ -233,7 +236,10 @@
             "deleteError": "Fehler beim Löschen des Kunden.",
             "deleteContactError": "Fehler beim Löschen des Ansprechpartners",
             "deleteContactErrorTitle": "Klaida",
-            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Klaida trinant tiekėją.",
+            "deleted": "Klientas „{name}“ ištrintas.",
+            "deletedVendor": "Tiekėjas „{name}“ ištrintas."
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
@@ -329,7 +335,13 @@
             "urlLabel": "Bezeichnung",
             "urlAddress": "URL",
             "addUrl": "Pridėti URL",
-            "openUrl": "Atidaryti puslapį"
+            "openUrl": "Atidaryti puslapį",
+            "vendornumber": "Tiekėjo numeris",
+            "hu_notify": "Siųsti techninės apžiūros priminimus",
+            "hu_notify_hint": "Galioja visoms šio kliento transporto priemonėms – taip pat ir sukurtoms ateityje. Jei jungiklis išjungtas, techninės apžiūros priminimai nesiunčiami ir priminimo nebegalima įjungti atskirai transporto priemonei (klientas turi pirmenybę).",
+            "phone_numbers": "Papildomi telefono numeriai",
+            "emails": "Papildomi el. pašto adresai",
+            "urls": "Papildomi URL"
         },
         "price-rules": {
             "title": "Kainų taisyklės",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Bandymo režimas)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Bandymo režimas)"
+        },
+        "customVars": {
+            "title": "Naudotojo kintamieji",
+            "noConfigs": "Klientams / tiekėjams nėra sukonfigūruotų naudotojo kintamųjų."
+        },
+        "easymode": {
+            "label": "Kliento formos rodinys",
+            "easy": "Paprastas",
+            "pro": "Visi laukai",
+            "easyHint": "Tik tie laukai ir kortelės, kurie įmonės konfigūracijoje pasirinkti kasdieniam darbui.",
+            "proHint": "Visi kliento arba tiekėjo laukai ir kortelės.",
+            "hiddenFilled": "{count} paslėpti laukai turi reikšmių:",
+            "showAll": "Rodyti visus laukus"
+        },
+        "history": {
+            "title": "Kelionė laiku",
+            "intro": "Kas, kada ir ką pakeitė — kiekvienas išsaugojimas su pakeistais laukais. Slankikliu galite grįžti atgal ir pamatyti, kaip tuo metu atrodė pagrindiniai duomenys.",
+            "count": "{n} įvykis | {n} įvykiai",
+            "reload": "Įkelti iš naujo",
+            "filterEmployee": "Darbuotojas",
+            "search": "Ieškoti",
+            "timeTravel": "Kelionė laiku",
+            "today": "Šiandien",
+            "backToToday": "Grįžti į šiandieną",
+            "stepsBack": "{n} pakeitimu atgal | {n} pakeitimais atgal",
+            "asOf": "Būsena prieš {time} pakeitimą — skirtumai nuo šiandienos:",
+            "noDiff": "Skirtumų nuo šiandienos būsenos nėra.",
+            "empty": "Pakeitimų dar neužfiksuota. Nuo šiol fiksuojamas kiekvienas išsaugojimas.",
+            "noMatch": "Filtrui neatitinka nė vienas įvykis.",
+            "unknownEmployee": "Nežinomas",
+            "created": "sukurta",
+            "deleted": "ištrinta",
+            "yes": "Taip",
+            "no": "Ne",
+            "tableProfile": "Pagrindiniai duomenys",
+            "tableContact": "Kontaktinis asmuo",
+            "tableShipto": "Pristatymo adresas",
+            "tableBilling": "Papildomas sąskaitos adresas",
+            "legacy": {
+                "saved": "išsaugota",
+                "printed": "išspausdinta",
+                "mailed": "išsiųsta el. paštu",
+                "deleted": "ištrinta",
+                "screened": "peržiūrėta",
+                "posted": "užregistruota"
+            }
         }
     }
 }

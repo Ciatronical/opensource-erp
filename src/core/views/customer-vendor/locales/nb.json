@@ -17,7 +17,9 @@
             "priceRules": "Prisregeln",
             "turnover": "Omsetningstatistik",
             "emails": "E-posts",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Egendefinerte variabler",
+            "history": "Tidsreise"
         },
         "billing": {
             "nameAddressTitle": "Name & Adresse",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Opprett ordre",
             "saveAndQuotation": "Opprett tilbud",
             "delete": "Slett",
-            "history": "Historikk",
             "close": "Lukk",
-            "confirmDelete": "Vil du diesen Kunder virkelig slette?"
+            "confirmDelete": "Vil du diesen Kunder virkelig slette?",
+            "confirmDeleteVendor": "Vil du virkelig slette leverandøren «{name}»? Kontaktpersoner, adresser og notater fjernes også.",
+            "cancel": "Avbryt"
         },
         "messages": {
             "saving": "Speichert...",
@@ -233,7 +236,10 @@
             "deleteError": "Feil ved Slett des Kunder.",
             "deleteContactError": "Feil ved Slett des Ansprechpartners",
             "deleteContactErrorTitle": "Fehler",
-            "autoSaveWarning": "Vennligst foerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Vennligst foerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Feil ved sletting av leverandøren.",
+            "deleted": "Kunde «{name}» slettet.",
+            "deletedVendor": "Leverandør «{name}» slettet."
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
@@ -329,7 +335,13 @@
             "urlLabel": "Bezeichnung",
             "urlAddress": "URL",
             "addUrl": "Legg til URL",
-            "openUrl": "Åpne side"
+            "openUrl": "Åpne side",
+            "vendornumber": "Leverandørnummer",
+            "hu_notify": "Send varsel om EU-kontroll",
+            "hu_notify_hint": "Gjelder alle kjøretøyene til denne kunden – også de som opprettes senere. Er bryteren av, sendes ingen påminnelser om EU-kontroll, og varselet kan ikke lenger slås på for det enkelte kjøretøyet (kunden har forrang).",
+            "phone_numbers": "Flere telefonnumre",
+            "emails": "Flere e-postadresser",
+            "urls": "Flere URL-er"
         },
         "price-rules": {
             "title": "Prisregeln",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Testmodus)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testmodus)"
+        },
+        "customVars": {
+            "title": "Egendefinerte variabler",
+            "noConfigs": "Det er ikke konfigurert noen egendefinerte variabler for kunder/leverandører."
+        },
+        "easymode": {
+            "label": "Visning av kundeskjemaet",
+            "easy": "Enkel",
+            "pro": "Alle felter",
+            "easyHint": "Bare feltene og fanene som er valgt for daglig bruk i firmakonfigurasjonen.",
+            "proHint": "Alle felter og faner for kunden eller leverandøren.",
+            "hiddenFilled": "{count} skjulte felter inneholder verdier:",
+            "showAll": "Vis alle felter"
+        },
+        "history": {
+            "title": "Tidsreise",
+            "intro": "Hvem endret hva og når — hver lagring med de endrede feltene. Med glidebryteren reiser du tilbake og ser hvordan grunndataene så ut da.",
+            "count": "{n} hendelse | {n} hendelser",
+            "reload": "Last inn på nytt",
+            "filterEmployee": "Medarbeider",
+            "search": "Søk",
+            "timeTravel": "Tidsreise",
+            "today": "I dag",
+            "backToToday": "Tilbake til i dag",
+            "stepsBack": "{n} endring tilbake | {n} endringer tilbake",
+            "asOf": "Tilstand før endringen {time} — avvik fra i dag:",
+            "noDiff": "Ingen avvik fra dagens tilstand.",
+            "empty": "Ingen endringer registrert ennå. Fra nå av registreres hver lagring.",
+            "noMatch": "Ingen hendelser passer til filteret.",
+            "unknownEmployee": "Ukjent",
+            "created": "opprettet",
+            "deleted": "slettet",
+            "yes": "Ja",
+            "no": "Nei",
+            "tableProfile": "Grunndata",
+            "tableContact": "Kontaktperson",
+            "tableShipto": "Leveringsadresse",
+            "tableBilling": "Ekstra fakturaadresse",
+            "legacy": {
+                "saved": "lagret",
+                "printed": "skrevet ut",
+                "mailed": "sendt per e-post",
+                "deleted": "slettet",
+                "screened": "vist",
+                "posted": "bokført"
+            }
         }
     }
 }

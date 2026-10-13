@@ -1,8 +1,9 @@
 <!-- src/core/views/faktura/components/sent.status.component.vue -->
 <!--
     Versandstatus eines Belegs: auf einen Blick, ob und wie der Beleg den Kunden
-    erreicht hat (E-Mail, WhatsApp, DHL). Die Einträge kommen aus getFakturaData
-    (sent_log: record_links → email_journal / whatsapp_messages, dhl_shipments).
+    erreicht hat (E-Mail, WhatsApp, Post, DHL). Die Einträge kommen aus getFakturaData
+    (sent_log: record_links → email_journal / whatsapp_messages, dhl_shipments,
+    postal_dispatches).
 -->
 <template>
     <v-card
@@ -56,6 +57,13 @@
                             :color="waStatusMeta(ch.status).color"
                             :title="t(waStatusMeta(ch.status).label)"
                         >{{ waStatusMeta(ch.status).icon }}</v-icon>
+                        <v-icon
+                            v-if="ch.channel === 'post'"
+                            end
+                            size="16"
+                            :color="postStatusMeta(ch.status).color"
+                            :title="t(postStatusMeta(ch.status).label)"
+                        >{{ postStatusMeta(ch.status).icon }}</v-icon>
                         <span v-if="ch.count > 1" class="sent-status__chip-more">+{{ ch.count - 1 }}</span>
                     </v-chip>
                 </div>
@@ -103,12 +111,19 @@
                                     :color="waStatusMeta(e.status).color"
                                     :prepend-icon="waStatusMeta(e.status).icon"
                                 >{{ t(waStatusMeta(e.status).label) }}</v-chip>
+                                <v-chip
+                                    v-if="e.channel === 'post'"
+                                    size="x-small"
+                                    variant="tonal"
+                                    :color="postStatusMeta(e.status).color"
+                                    :prepend-icon="postStatusMeta(e.status).icon"
+                                >{{ t(postStatusMeta(e.status).label) }}</v-chip>
                             </div>
                             <div v-if="e.recipient" class="sent-status__event-line">
                                 <v-icon size="14" class="mr-1">mdi-account-arrow-right-outline</v-icon>{{ e.recipient }}
                             </div>
                             <div v-if="e.subject" class="sent-status__event-line text-medium-emphasis">
-                                <v-icon size="14" class="mr-1">{{ e.channel === 'dhl' ? 'mdi-package-variant' : 'mdi-text-short' }}</v-icon>{{ e.subject }}
+                                <v-icon size="14" class="mr-1">{{ e.channel === 'dhl' ? 'mdi-package-variant' : (e.channel === 'post' ? 'mdi-file-pdf-box' : 'mdi-text-short') }}</v-icon>{{ e.subject }}
                             </div>
                             <div v-if="e.employee_name" class="sent-status__event-line text-medium-emphasis">
                                 <v-icon size="14" class="mr-1">mdi-account-tie</v-icon>{{ e.employee_name }}
@@ -141,6 +156,17 @@ const channelMeta = {
     email:    { icon: 'mdi-email',          color: 'info',           label: 'FakturaView.faktura.sent.channelEmail' },
     whatsapp: { icon: 'mdi-whatsapp',       color: 'green-darken-1', label: 'FakturaView.faktura.sent.channelWhatsapp' },
     dhl:      { icon: 'mdi-truck-delivery', color: 'amber-darken-2', label: 'FakturaView.faktura.sent.channelDhl' },
+    post:     { icon: 'mdi-mailbox-up-outline', color: 'deep-purple', label: 'FakturaView.faktura.sent.channelPost' },
+}
+
+/** Status einer Posteinlieferung (postal_dispatches.status) */
+function postStatusMeta(status) {
+    switch (status) {
+        case 'done':     return { icon: 'mdi-check-all',      color: 'success', label: 'FakturaView.faktura.sent.postDone' }
+        case 'manual':   return { icon: 'mdi-printer-check',  color: 'grey',    label: 'FakturaView.faktura.sent.postManual' }
+        case 'canceled': return { icon: 'mdi-cancel',         color: 'warning', label: 'FakturaView.faktura.sent.postCanceled' }
+        default:         return { icon: 'mdi-mailbox-up-outline', color: 'grey', label: 'FakturaView.faktura.sent.postSent' }
+    }
 }
 
 /** Letzter Versand je Kanal plus Anzahl — die Einträge kommen neueste zuerst */

@@ -208,57 +208,127 @@ function getCashCounterCharts($data) {
 
     $invalidClause = _kasse_invalidClause($db, 'ch');
 
-    // Steuersatz des Kontos (heute gültiger Steuerschlüssel), damit der Dialog
-    // anzeigen kann, wie viel Umsatz-/Vorsteuer im Bruttobetrag steckt.
-    $result = $db->getAll("
-        SELECT ch.id, ch.accno, ch.description, ch.category,
-               COALESCE(tk.rate, 0) AS tax_rate
-        FROM chart ch
-        LEFT JOIN LATERAL (
-            SELECT t.rate
-            FROM taxkeys k JOIN tax t ON t.id = k.tax_id
-            WHERE k.chart_id = ch.id AND k.startdate <= CURRENT_DATE AND t.chart_id IS NOT NULL
-            ORDER BY k.startdate DESC
-            LIMIT 1
-        ) tk ON true
-        WHERE ch.charttype = 'A'
-          {$invalidClause}
-          {$where}
-        ORDER BY
-            CASE ch.category WHEN 'I' THEN 0 WHEN 'E' THEN 1 ELSE 2 END,
-            ch.accno
+    // Steuersatz und Steuerschlüssel des Kontos (heute gültig), damit der Dialog
+    // anzeigen kann, wie viel Umsatz-/Vorsteuer im Bruttobetrag steckt, und die
+    // passende Steuer je Position vorbelegt. Dazu die Liste der heute gültigen
+    // Steuerschlüssel (Vorsteuer für Ausgaben, Umsatzsteuer für Einnahmen), aus
+    // der eine Position auch einen anderen Satz als den Kontostandard bekommen
+    // kann — der Rewe-Bon mit 7 % und 19 % auf demselben Konto. Eine Abfrage.
+    $result = $db->getOne("
+        SELECT json_build_object(
+            'charts', COALESCE((
+                SELECT json_agg(x ORDER BY x.sort, x.accno)
+                FROM (
+                    SELECT ch.id, ch.accno, ch.description, ch.category,
+                           COALESCE(tk.rate, 0)   AS tax_rate,
+                           COALESCE(tk.tax_id, 0) AS tax_id,
+                           CASE ch.category WHEN 'I' THEN 0 WHEN 'E' THEN 1 ELSE 2 END AS sort
+                    FROM chart ch
+                    LEFT JOIN LATERAL (
+                        SELECT t.rate, t.id AS tax_id
+                        FROM taxkeys k JOIN tax t ON t.id = k.tax_id
+                        WHERE k.chart_id = ch.id AND k.startdate <= CURRENT_DATE AND t.chart_id IS NOT NULL
+                        ORDER BY k.startdate DESC
+                        LIMIT 1
+                    ) tk ON true
+                    WHERE ch.charttype = 'A'
+                      {$invalidClause}
+                      {$where}
+                ) x
+            ), '[]'),
+            'taxes', COALESCE((
+                SELECT json_agg(tx ORDER BY tx.kind, tx.usage DESC, tx.rate DESC, tx.taxkey)
+                FROM (
+                    -- Nur Schlüssel, die heute für mindestens ein Konto gelten, sortiert
+                    -- danach, für wie viele Konten sie der aktuelle Standard sind: die
+                    -- Regelsätze stehen so vorn, Sonderfälle (16 %-Konten aus 2020,
+                    -- innergemeinschaftlicher Erwerb, §13b) bleiben wählbar, aber hinten.
+                    SELECT t.id AS tax_id, t.taxkey, t.rate, t.taxdescription,
+                           CASE WHEN tc.link ~ '(^|:)AP_tax($|:)' THEN 'expense' ELSE 'income' END AS kind,
+                           COUNT(k.chart_id) AS usage
+                    FROM tax t
+                    JOIN chart tc ON tc.id = t.chart_id
+                    JOIN taxkeys k ON k.tax_id = t.id
+                                  AND k.startdate = (
+                                      SELECT MAX(k2.startdate) FROM taxkeys k2
+                                      WHERE k2.chart_id = k.chart_id AND k2.startdate <= CURRENT_DATE
+                                  )
+                    WHERE t.rate > 0
+                      AND tc.link ~ '(^|:)(AP|AR)_tax($|:)'
+                    GROUP BY t.id, t.taxkey, t.rate, t.taxdescription, tc.link
+                ) tx
+            ), '[]')
+        )::text AS payload
     ", $params);
 
-    resultInfo(true, '', ['charts' => $result ?: []]);
+    $payload = json_decode($result['payload'] ?? '{}', true) ?: [];
+    resultInfo(true, '', [
+        'charts' => $payload['charts'] ?? [],
+        'taxes'  => $payload['taxes']  ?? [],
+    ]);
 }
 
 /**
- * Steuerschlüssel eines Gegenkontos am Buchungstag (kivitendo: taxkeys).
+ * Konten und Steuerschlüssel aller Positionen einer Kassenbuchung in einer
+ * Abfrage auflösen (kivitendo: taxkeys je Konto und Buchungstag).
  *
- * Liefert null, wenn für das Konto keine Steuer hinterlegt ist (Schlüssel 0,
- * z. B. Nebenkosten des Geldverkehrs) oder der Schlüssel kein Steuerkonto hat.
+ * Je Position gilt für tax_id:
+ *   -1  → Standardschlüssel des Kontos am Buchungstag (Normalfall)
+ *    0  → ausdrücklich ohne Steuer
+ *   >0  → dieser Schlüssel aus der tax-Tabelle (z. B. 7 % statt 19 % auf demselben Konto)
  *
- * @return array|null {taxkey, tax_id, rate, tax_chart_id, tax_chart_link}
+ * @param array  $lines     [{chart_id, tax_id}] in Positionsreihenfolge
+ * @param string $transdate Buchungsdatum
+ * @return array je Position: chart_id, accno, description, link, tax_id, taxkey,
+ *               rate, tax_chart_id, tax_chart_link (Steuerfelder null = keine Steuer)
  */
-function _kasse_taxForChart($db, $chartId, $transdate) {
-    $row = $db->getOne("
-        SELECT k.taxkey_id AS taxkey, t.id AS tax_id, t.rate, t.chart_id AS tax_chart_id, tc.link AS tax_chart_link
-        FROM taxkeys k
-        JOIN tax t ON t.id = k.tax_id
-        LEFT JOIN chart tc ON tc.id = t.chart_id
-        WHERE k.chart_id = :chart_id AND k.startdate <= :transdate::date
-        ORDER BY k.startdate DESC
-        LIMIT 1
-    ", ['chart_id' => $chartId, 'transdate' => $transdate]);
+function _kasse_resolveLineCharts($db, array $lines, $transdate) {
+    $chartIds = []; $taxIds = [];
+    foreach ($lines as $l) {
+        $chartIds[] = intval($l['chart_id'] ?? 0);
+        $taxIds[]   = array_key_exists('tax_id', $l) && $l['tax_id'] !== null && $l['tax_id'] !== ''
+            ? intval($l['tax_id']) : -1;
+    }
 
-    if (!$row || floatval($row['rate']) <= 0 || empty($row['tax_chart_id'])) return null;
-    return [
-        'taxkey'         => intval($row['taxkey']),
-        'tax_id'         => intval($row['tax_id']),
-        'rate'           => floatval($row['rate']),
-        'tax_chart_id'   => intval($row['tax_chart_id']),
-        'tax_chart_link' => (string)($row['tax_chart_link'] ?? ''),
-    ];
+    $rows = $db->getAll("
+        SELECT i.idx, ch.id AS chart_id, ch.accno, ch.description, ch.link,
+               t.id AS tax_id, t.taxkey, t.rate, t.chart_id AS tax_chart_id, tc.link AS tax_chart_link
+        FROM unnest(:chart_ids::int[], :tax_ids::int[]) WITH ORDINALITY AS i(chart_id, tax_id, idx)
+        JOIN chart ch ON ch.id = i.chart_id
+        LEFT JOIN LATERAL (
+            SELECT t.id, t.taxkey, t.rate, t.chart_id
+            FROM tax t
+            WHERE (i.tax_id > 0 AND t.id = i.tax_id)
+               OR (i.tax_id < 0 AND t.id = (
+                      SELECT k.tax_id FROM taxkeys k
+                      WHERE k.chart_id = ch.id AND k.startdate <= :transdate::date
+                      ORDER BY k.startdate DESC LIMIT 1))
+            LIMIT 1
+        ) t ON true
+        LEFT JOIN chart tc ON tc.id = t.chart_id
+        ORDER BY i.idx
+    ", [
+        'chart_ids' => '{' . implode(',', $chartIds) . '}',
+        'tax_ids'   => '{' . implode(',', $taxIds) . '}',
+        'transdate' => $transdate,
+    ]);
+
+    $out = [];
+    foreach ($rows ?: [] as $r) {
+        $hasTax = !empty($r['tax_chart_id']) && floatval($r['rate']) > 0;
+        $out[intval($r['idx']) - 1] = [
+            'chart_id'       => intval($r['chart_id']),
+            'accno'          => $r['accno'],
+            'description'    => $r['description'],
+            'link'           => (string)($r['link'] ?? ''),
+            'tax_id'         => $hasTax ? intval($r['tax_id']) : 0,
+            'taxkey'         => $hasTax ? intval($r['taxkey']) : 0,
+            'rate'           => $hasTax ? floatval($r['rate']) : 0.0,
+            'tax_chart_id'   => $hasTax ? intval($r['tax_chart_id']) : null,
+            'tax_chart_link' => $hasTax ? (string)($r['tax_chart_link'] ?? '') : '',
+        ];
+    }
+    return $out;
 }
 
 /**
@@ -543,6 +613,8 @@ function getCashTransactions($data) {
                 NULL::text      AS partner_name,
                 gc.accno        AS gegenkonto_accno,
                 gc.description  AS gegenkonto_description,
+                sp.split_count,
+                sp.split_lines,
                 {$docCols}
             FROM acc_trans at
             JOIN gl ON gl.id = at.trans_id
@@ -556,6 +628,34 @@ function getCashTransactions($data) {
                 ORDER BY at2.acc_trans_id ASC
                 LIMIT 1
             ) gc ON true
+            LEFT JOIN LATERAL (
+                -- Splitbuchung: alle Gegenkonten ohne die Steuerbeine. Jedes
+                -- Nettobein wird mit dem direkt folgenden Steuerbein zum Brutto
+                -- der Position zusammengefasst — so schreibt kivitendo (und
+                -- createCashTransaction) die Beine, und so hat der Anwender den
+                -- Bon eingegeben.
+                SELECT COUNT(*)::int AS split_count,
+                       json_agg(json_build_object(
+                           'accno',       l.accno,
+                           'description', l.description,
+                           'net',         ABS(l.amount),
+                           'gross',       ABS(l.amount) + CASE WHEN l.next_is_tax THEN ABS(l.next_amount) ELSE 0 END,
+                           'tax_rate',    l.rate
+                       ) ORDER BY l.acc_trans_id) AS split_lines
+                FROM (
+                    SELECT at2.acc_trans_id, at2.amount, c2.accno, c2.description,
+                           COALESCE(tx.rate, 0) AS rate,
+                           c2.link ~ '(^|:)(AP|AR)_tax($|:)' AS is_tax,
+                           LEAD(at2.amount) OVER (ORDER BY at2.acc_trans_id) AS next_amount,
+                           COALESCE(LEAD(c2.link ~ '(^|:)(AP|AR)_tax($|:)') OVER (ORDER BY at2.acc_trans_id), false) AS next_is_tax
+                    FROM acc_trans at2
+                    JOIN chart c2 ON c2.id = at2.chart_id
+                    LEFT JOIN tax tx ON tx.id = at2.tax_id
+                    WHERE at2.trans_id = at.trans_id
+                      AND at2.chart_id <> at.chart_id
+                ) l
+                WHERE NOT l.is_tax
+            ) sp ON true
             {$docJoin}
             WHERE at.chart_id = :chart_id
               AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
@@ -574,6 +674,8 @@ function getCashTransactions($data) {
                 c.name          AS partner_name,
                 gc.accno        AS gegenkonto_accno,
                 gc.description  AS gegenkonto_description,
+                NULL::int       AS split_count,
+                NULL::json      AS split_lines,
                 {$docColsAr}
             FROM acc_trans at
             -- Kein Storno-Filter auf ar/ap: das Kennzeichen storno gehört zur Rechnung,
@@ -615,6 +717,8 @@ function getCashTransactions($data) {
                 v.name          AS partner_name,
                 gc.accno        AS gegenkonto_accno,
                 gc.description  AS gegenkonto_description,
+                NULL::int       AS split_count,
+                NULL::json      AS split_lines,
                 {$docColsAp}
             FROM acc_trans at
             JOIN ap ON ap.id = at.trans_id
@@ -749,10 +853,22 @@ function getCashbookPdf($data) {
                    NULL::text                                   AS partner_name,
                    gk.accno                                     AS gegenkonto_accno,
                    gk.description                               AS gegenkonto_description,
-                   gk.tax_rate                                  AS tax_rate
+                   gk.tax_rate                                  AS tax_rate,
+                   sp.split_count, sp.split_accnos, sp.split_rates
             FROM acc_trans at
             CROSS JOIN p
             JOIN gl ON gl.id = at.trans_id AND (gl.storno IS NULL OR gl.storno = false)
+            -- Splitbuchung: alle Gegenkonten und Steuersätze (ohne Steuerbeine)
+            LEFT JOIN LATERAL (
+                SELECT COUNT(*)::int AS split_count,
+                       string_agg(DISTINCT c2.accno, ', ' ORDER BY c2.accno) AS split_accnos,
+                       string_agg(DISTINCT round(COALESCE(tx.rate, 0) * 100)::int::text, '/') AS split_rates
+                FROM acc_trans at2
+                JOIN chart c2 ON c2.id = at2.chart_id
+                LEFT JOIN tax tx ON tx.id = at2.tax_id
+                WHERE at2.trans_id = at.trans_id AND at2.chart_id <> at.chart_id
+                  AND c2.link !~ '(^|:)(AP|AR)_tax($|:)'
+            ) sp ON true
             LEFT JOIN LATERAL (
                 SELECT c2.accno, c2.description, COALESCE(tx.rate, 0) AS tax_rate
                 FROM acc_trans at2
@@ -768,7 +884,8 @@ function getCashbookPdf($data) {
 
             SELECT at.acc_trans_id, at.transdate, -at.amount AS amount,
                    at.source, ar.invnumber, c.name,
-                   gk.accno, gk.description, 0::numeric
+                   gk.accno, gk.description, 0::numeric,
+                   NULL::int, NULL::text, NULL::text
             FROM acc_trans at
             CROSS JOIN p
             -- Kein Storno-Filter auf ar/ap: das Kennzeichen storno gehört zur Rechnung,
@@ -797,7 +914,8 @@ function getCashbookPdf($data) {
 
             SELECT at.acc_trans_id, at.transdate, -at.amount AS amount,
                    at.source, ap.invnumber, v.name,
-                   gk.accno, gk.description, 0::numeric
+                   gk.accno, gk.description, 0::numeric,
+                   NULL::int, NULL::text, NULL::text
             FROM acc_trans at
             CROSS JOIN p
             JOIN ap ON ap.id = at.trans_id
@@ -907,14 +1025,21 @@ function getCashbookPdf($data) {
         if ($text === '') $text = $amount >= 0 ? 'Bareinnahme' : 'Barausgabe';
 
         $taxRate = (float)($row['tax_rate'] ?? 0);
+        $gegen   = trim(($row['gegenkonto_accno'] ?? '') . ' ' . ($row['gegenkonto_description'] ?? ''));
+        $steuer  = $taxRate > 0 ? ReportPdf::money($taxRate * 100) : '';
+        // Splitbuchung: alle Konten nennen, Steuersätze als 19/7
+        if ((int)($row['split_count'] ?? 0) > 1) {
+            $gegen  = 'Split: ' . $row['split_accnos'];
+            $steuer = (string)$row['split_rates'];
+        }
 
         $pdf->row([
             (string)$row['lfd'],
             _bu_datum($row['transdate']),
             $row['reference'] ?: '',
             ['text' => $text, 'wrap' => true, 'maxLines' => 2],
-            trim(($row['gegenkonto_accno'] ?? '') . ' ' . ($row['gegenkonto_description'] ?? '')),
-            $taxRate > 0 ? ReportPdf::money($taxRate * 100) : '',
+            $gegen,
+            $steuer,
             ReportPdf::money($amount > 0 ? $amount : 0, true),
             ReportPdf::money($amount < 0 ? -$amount : 0, true),
             ReportPdf::money($row['saldo']),
@@ -954,15 +1079,27 @@ function getCashbookPdf($data) {
 /**
  * Manuelle Kassenbuchung anlegen (gl + acc_trans, kivitendo-kompatibel)
  *
+ * Eine Buchung kann auf mehrere Gegenkonten und Steuersätze aufgeteilt werden
+ * (Splitbuchung), genau wie kivitendos Dialogbuchung: ein gl-Kopf, das
+ * Kassenbein mit dem Bruttobetrag, je Position ein Nettobein mit
+ * Steuerschlüssel und direkt dahinter das Steuerbein. Der Rewe-Bon mit 7 %
+ * und 19 % ist damit EINE Buchung mit EINER Belegnummer.
+ *
+ * Ohne `lines` verhält sich die Funktion wie bisher (eine Position aus
+ * counter_chart_id und amount, Steuer nach dem Schlüssel des Kontos).
+ *
  * @param int    $data['cash_register_id']   Kassakonto-ID (= chart.id)
  * @param string $data['transdate']          Buchungsdatum (YYYY-MM-DD)
- * @param float  $data['amount']             Betrag (immer positiv – Typ bestimmt das Vorzeichen)
+ * @param float  $data['amount']             Bruttobetrag gesamt (immer positiv – Typ bestimmt das Vorzeichen);
+ *                                           mit `lines` optional, muss dann der Positionssumme entsprechen
  * @param string $data['type']               income|expense
- * @param int    $data['counter_chart_id']   Gegenkonto-ID aus getCashCounterCharts
+ * @param int    $data['counter_chart_id']   Gegenkonto-ID aus getCashCounterCharts (ohne `lines`)
+ * @param array  $data['lines']              Positionen [{chart_id, gross, tax_id?}] — tax_id: weggelassen =
+ *                                           Standardschlüssel des Kontos, 0 = ohne Steuer, >0 = tax.id
  * @param string $data['description']        Buchungstext (optional)
  * @param string $data['reference']          Belegnummer (optional)
  * @param int    $data['document_id']        Beleg-ID aus uploadCashDocument (optional)
- * @testdata {"cash_register_id": 1, "transdate": "2026-06-04", "amount": 50.00, "type": "expense", "counter_chart_id": 1, "description": "Büromaterial", "reference": "BE-2026-001"}
+ * @testdata {"cash_register_id": 1, "transdate": "2026-06-04", "amount": 50.00, "type": "expense", "lines": [{"chart_id": 1, "gross": 38.00}, {"chart_id": 1, "gross": 12.00, "tax_id": 0}], "description": "Rewe", "reference": "BE-2026-001"}
  */
 function createCashTransaction($data) {
     $db = DbhCompany::begin();
@@ -972,24 +1109,45 @@ function createCashTransaction($data) {
     $amount         = abs(floatval($data['amount'] ?? 0));
     $type           = $data['type'] ?? 'expense';
 
-    if ($registerId <= 0)     { resultInfo(false, 'VALIDATION_ERROR', 'Kassenbuch-ID fehlt'); return; }
-    if ($counterChartId <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Gegenkonto fehlt'); return; }
-    if ($amount <= 0)         { resultInfo(false, 'VALIDATION_ERROR', 'Betrag muss größer 0 sein'); return; }
+    // Positionen: übergeben oder — alte Aufrufform — eine aus Gegenkonto + Betrag
+    $lines = is_array($data['lines'] ?? null) ? array_values($data['lines']) : [];
+    if (!$lines && $counterChartId > 0) {
+        $lines = [['chart_id' => $counterChartId, 'gross' => $amount]];
+    }
+
+    if ($registerId <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Kassenbuch-ID fehlt'); return; }
+    if (!$lines)          { resultInfo(false, 'VALIDATION_ERROR', 'Gegenkonto fehlt'); return; }
+
+    $sum = 0.0;
+    foreach ($lines as $i => $l) {
+        $gross = round(abs(floatval($l['gross'] ?? 0)), 2);
+        if (intval($l['chart_id'] ?? 0) <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Position ' . ($i + 1) . ': Gegenkonto fehlt'); return; }
+        if ($gross <= 0)                       { resultInfo(false, 'VALIDATION_ERROR', 'Position ' . ($i + 1) . ': Betrag muss größer 0 sein'); return; }
+        $lines[$i]['gross'] = $gross;
+        $sum += $gross;
+    }
+    $sum = round($sum, 2);
+    if ($amount <= 0) {
+        $amount = $sum;
+    } elseif (abs($amount - $sum) > 0.005) {
+        resultInfo(false, 'VALIDATION_ERROR',
+            'Die Positionen ergeben ' . number_format($sum, 2, ',', '.') . ' €, der Betrag ist '
+            . number_format($amount, 2, ',', '.') . ' €. Bitte die Aufteilung prüfen.');
+        return;
+    }
 
     $register = _kasse_loadRegister($db, $registerId);
     if (!$register) { resultInfo(false, 'NOT_FOUND', 'Kassenbuch nicht gefunden'); return; }
-
-    $counterChart = $db->getOne(
-        "SELECT id, accno, description, link FROM chart WHERE id = :id",
-        ['id' => $counterChartId]
-    );
-    if (!$counterChart) { resultInfo(false, 'NOT_FOUND', 'Gegenkonto nicht gefunden'); return; }
 
     $transdate   = $data['transdate'] ?? date('Y-m-d');
     $description = trim($data['description'] ?? '') ?: null;
     $reference   = trim($data['reference'] ?? '');
     $documentId  = intval($data['document_id'] ?? 0) ?: null;
     $employeeId  = mitarbeiterId($data);
+
+    // Konten und Steuerschlüssel aller Positionen in einer Abfrage
+    $resolved = _kasse_resolveLineCharts($db, $lines, $transdate);
+    if (count($resolved) !== count($lines)) { resultInfo(false, 'NOT_FOUND', 'Gegenkonto nicht gefunden'); return; }
 
     // Fortlaufende Belegnummer automatisch vergeben, falls keine angegeben wurde
     // (Feld ist im Dialog gesperrt; nur bei manueller Bearbeitung kommt ein Wert).
@@ -1015,30 +1173,13 @@ function createCashTransaction($data) {
     // Vorzeichen (kivitendo-Konvention: Soll = negativ, Haben = positiv):
     // income  → Geld kommt in die Kasse (Soll)  → Kasse negativ, Gegenkonto (Ertrag) positiv
     // expense → Geld verlässt die Kasse (Haben) → Kasse positiv, Gegenkonto (Aufwand) negativ
-    $kasseAmount   = $type === 'expense' ? $amount : -$amount;
-    $counterAmount = -$kasseAmount;
+    $counterSign = $type === 'expense' ? -1 : 1;
+    $kasseAmount = -$counterSign * $amount;
 
-    // Umsatz-/Vorsteuer aus dem Bruttobetrag herausrechnen — nach dem
-    // Steuerschlüssel des Gegenkontos am Buchungstag, genau wie kivitendos
-    // Dialogbuchung (Netto auf das Gegenkonto, Steuer auf das Steuerkonto,
-    // beide mit Steuerschlüssel; die Kasse trägt den Bruttobetrag). Bisher
-    // ging der Bruttobetrag komplett auf das Erlös-/Aufwandskonto: keine
-    // Umsatzsteuer auf Bareinnahmen, keine Vorsteuer aus Barausgaben — und in
-    // der UStVA fehlten diese Buchungen vollständig.
-    $tax       = _kasse_taxForChart($db, $counterChartId, $transdate);
-    $netAmount = $counterAmount;
-    $taxAmount = 0.0;
-    if ($tax) {
-        $netAmount = round($counterAmount / (1 + $tax['rate']), 2);
-        $taxAmount = round($counterAmount - $netAmount, 2);
-    }
-    $taxkey = $tax['taxkey'] ?? 0;
-    $taxId  = $tax['tax_id'] ?? 0;
-
-    // GL-Kopf
+    // GL-Kopf — taxincluded wie kivitendos Dialogbuchung mit Bruttoeingabe
     $glRow = $db->getOne(
-        "INSERT INTO gl (reference, description, transdate, gldate, employee_id)
-         VALUES (:reference, :description, :transdate, :transdate, :employee_id)
+        "INSERT INTO gl (reference, description, transdate, gldate, employee_id, taxincluded)
+         VALUES (:reference, :description, :transdate, :transdate, :employee_id, true)
          RETURNING id",
         [
             'reference'   => $reference,
@@ -1049,54 +1190,53 @@ function createCashTransaction($data) {
     );
     $glId = $glRow['id'];
 
-    // acc_trans: Kassenkonto
-    $db->execute(
-        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, chart_link, tax_id, taxkey)
-         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :chart_link, 0, 0)",
-        [
-            'trans_id'   => $glId,
-            'chart_id'   => $register['chart_id'],
-            'amount'     => $kasseAmount,
-            'transdate'  => $transdate,
-            'source'     => $reference ?? 'Kasse',
-            'chart_link' => $register['chart_link'],
-        ]
-    );
+    // Alle Beine in einem INSERT, Reihenfolge wie kivitendo: Kasse (brutto),
+    // dann je Position Netto auf das Gegenkonto und direkt dahinter die Steuer.
+    // Das Kassenbuch zeigt das erste Nicht-Kassen-Bein als Gegenkonto und
+    // paart jedes Nettobein mit dem folgenden Steuerbein.
+    $legs = [[
+        'chart_id' => $register['chart_id'], 'amount' => $kasseAmount,
+        'chart_link' => $register['chart_link'], 'tax_id' => 0, 'taxkey' => 0,
+    ]];
+    $summary = [];
+    foreach ($lines as $i => $l) {
+        $r     = $resolved[$i];
+        $gross = $counterSign * $l['gross'];
+        // Umsatz-/Vorsteuer aus dem Bruttobetrag herausrechnen (Netto aufs
+        // Gegenkonto, Steuer aufs Steuerkonto, beide mit Steuerschlüssel)
+        $net = $r['rate'] > 0 ? round($gross / (1 + $r['rate']), 2) : $gross;
+        $tax = round($gross - $net, 2);
 
-    // acc_trans: Gegenkonto (Netto) — vor dem Steuerbein, weil das Kassenbuch
-    // das erste Nicht-Kassen-Bein als Gegenkonto anzeigt
-    $db->execute(
-        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, chart_link, tax_id, taxkey)
-         VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :chart_link, :tax_id, :taxkey)",
-        [
-            'trans_id'   => $glId,
-            'chart_id'   => $counterChartId,
-            'amount'     => $netAmount,
-            'transdate'  => $transdate,
-            'source'     => $reference ?? 'Kasse',
-            'chart_link' => $counterChart['link'] ?? '',
-            'tax_id'     => $taxId,
-            'taxkey'     => $taxkey,
-        ]
-    );
-
-    // acc_trans: Steuerkonto (Umsatzsteuer bei Einnahmen, Vorsteuer bei Ausgaben)
-    if (abs($taxAmount) > 0.004) {
-        $db->execute(
-            "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, chart_link, tax_id, taxkey)
-             VALUES (:trans_id, :chart_id, :amount, :transdate, :transdate, :source, :chart_link, :tax_id, :taxkey)",
-            [
-                'trans_id'   => $glId,
-                'chart_id'   => $tax['tax_chart_id'],
-                'amount'     => $taxAmount,
-                'transdate'  => $transdate,
-                'source'     => $reference ?? 'Kasse',
-                'chart_link' => $tax['tax_chart_link'],
-                'tax_id'     => $taxId,
-                'taxkey'     => $taxkey,
-            ]
-        );
+        $legs[] = [
+            'chart_id' => $r['chart_id'], 'amount' => $net,
+            'chart_link' => $r['link'], 'tax_id' => $r['tax_id'], 'taxkey' => $r['taxkey'],
+        ];
+        if (abs($tax) > 0.004) {
+            $legs[] = [
+                'chart_id' => $r['tax_chart_id'], 'amount' => $tax,
+                'chart_link' => $r['tax_chart_link'], 'tax_id' => $r['tax_id'], 'taxkey' => $r['taxkey'],
+            ];
+        }
+        $summary[] = [
+            'accno' => $r['accno'], 'description' => $r['description'],
+            'gross' => $l['gross'], 'net' => abs($net), 'tax' => abs($tax), 'tax_rate' => $r['rate'],
+        ];
     }
+
+    $values = []; $params = ['trans_id' => $glId, 'transdate' => $transdate, 'source' => $reference ?? 'Kasse'];
+    foreach ($legs as $k => $leg) {
+        $values[] = "(:trans_id, :c{$k}, :a{$k}, :transdate, :transdate, :source, :l{$k}, :t{$k}, :k{$k})";
+        $params["c{$k}"] = $leg['chart_id'];
+        $params["a{$k}"] = $leg['amount'];
+        $params["l{$k}"] = $leg['chart_link'];
+        $params["t{$k}"] = $leg['tax_id'];
+        $params["k{$k}"] = $leg['taxkey'];
+    }
+    $db->execute(
+        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, chart_link, tax_id, taxkey)
+         VALUES " . implode(', ', $values),
+        $params
+    );
 
     // Beleg verknüpfen (nur falls Beleg-Tabellen vorhanden)
     if ($documentId && _kasse_documentsEnabled($db)) {
@@ -1108,10 +1248,12 @@ function createCashTransaction($data) {
 
     resultInfo(true, '', [
         'gl_id'    => $glId,
+        'beleg'    => $reference,
         'gross'    => $amount,
-        'net'      => abs($netAmount),
-        'tax'      => abs($taxAmount),
-        'tax_rate' => $tax['rate'] ?? 0,
+        'net'      => round(array_sum(array_column($summary, 'net')), 2),
+        'tax'      => round(array_sum(array_column($summary, 'tax')), 2),
+        'tax_rate' => count($summary) === 1 ? $summary[0]['tax_rate'] : null,
+        'lines'    => $summary,
     ]);
 }
 

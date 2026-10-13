@@ -507,6 +507,10 @@
     "cameraAndSurveillance": "Camera & Surveillance",
     "featureAnprDesc": "License plate recognition via camera (ANPR service)",
     "featureNvrDesc": "Live streams & object detection (go2rtc + camera-monitor)",
+    "salesFeatures": "Sales",
+    "featureRecurring": "Recurring invoices",
+    "featureRecurringDesc": "Bill subscriptions, rents and maintenance contracts automatically from an order. Off: no hint on the order and no menu item under Sales.",
+    "featureRecurringActiveHint": "{count} running billings will still be created and stay visible on their order.",
     "configLoadError": "Configuration Error",
     "syntaxErrorInConfigFile": "Syntax error in configuration file",
     "errorDetails": "Error Details",
@@ -713,15 +717,15 @@
             "error": "Pairing failed.",
             "unpaired": "Terminal unpaired."
         },
-        "eletter": "eLetter",
-        "eletterHostname": "eLetter Hostname",
-        "eletterHostname_help": "Server address for eLetter service",
-        "eletterUsername": "eLetter Username",
-        "eletterUsername_help": "Username for eLetter service",
-        "eletterFolder": "eLetter Folder",
-        "eletterFolder_help": "Target folder for eLetter files",
-        "eletterPassword": "eLetter Password",
-        "eletterPassword_help": "Password for eLetter service",
+        "eletter": "Postal dispatch (hybrid mail)",
+        "eletterHostname": "Server",
+        "eletterHostname_help": "Hostname of the submission server from the provider's access data",
+        "eletterUsername": "Username",
+        "eletterUsername_help": "Username for the submission",
+        "eletterFolder": "Submission folder",
+        "eletterFolder_help": "Folder on the server from which the provider collects the PDFs. Print options (color, duplex) are configured per folder at the provider.",
+        "eletterPassword": "Password",
+        "eletterPassword_help": "Password for the submission",
         "emailClient": "Email Client",
         "emailLinkMode": "Open e-mail links with",
         "emailLinkMode_help": "Defines how e-mail addresses in the customer master data are opened: in the internal e-mail client (mailbox must be set up) or in the external e-mail program via a mailto link (default)",
@@ -1274,7 +1278,63 @@
         "shopBackendTest_NO_PHP": "The website delivers the PHP source instead of executing it — PHP is not set up for the website.",
         "shopBackendTest_NOT_FOUND": "Nothing at this address (HTTP 404) — is the path right, is the proxy on the website?",
         "shopBackendTest_FOREIGN": "Unexpected response (HTTP {status}) — this is not the OpensourceERP shop access.",
-        "shopBackendTest_FAILED": "The test failed: {error}"
+        "shopBackendTest_FAILED": "The test failed: {error}",
+        "eletterProvider": "Mail service provider",
+        "eletterProvider_help": "Letters and documents are submitted electronically as PDF; the provider prints, envelopes, stamps and delivers. Without a provider, “print myself” remains available.",
+        "eletterProviderNone": "No provider – print letters myself",
+        "eletterProviderPinag": "PIN AG / eBrief – submission via SFTP/FTPS",
+        "eletterProviderLetterxpress": "LetterXpress – REST API",
+        "eletterProtocol": "Transfer protocol",
+        "eletterProtocol_help": "How PDFs are placed at the provider: SFTP (SSH, port 22) or FTPS (FTP with TLS, port 21). See the provider's access data.",
+        "eletterPort": "Port",
+        "eletterPort_help": "Leave empty for the default port (SFTP 22, FTPS 21)",
+        "eletterFolderRegistered": "Folder for registered mail (optional)",
+        "eletterFolderRegistered_help": "If the provider has set up a separate folder for registered mail, enter it here – otherwise registered mail is not available.",
+        "eletterLxpUsername": "LetterXpress username",
+        "eletterLxpUsername_help": "Username of the LetterXpress account",
+        "eletterLxpApikey": "LetterXpress API key",
+        "eletterLxpApikey_help": "Create it in the customer area under Functions → Access data → LXP API",
+        "eletterLxpMode": "Operating mode",
+        "eletterLxpMode_help": "Test: jobs go to the account's postbox and are not printed (deleted after 7 days). Live: jobs are printed and dispatched immediately – at a charge.",
+        "eletterLxpModeTest": "Test – do not print (default)",
+        "eletterLxpModeLive": "Live – print and dispatch",
+        "eletterColor": "Color print by default",
+        "eletterColor_help": "Preset in the dispatch dialog; can be changed per letter",
+        "eletterDuplex": "Double-sided by default",
+        "eletterDuplex_help": "Preset in the dispatch dialog; can be changed per letter",
+        "eletterStatus": {
+            "title": "Connection to the mail service provider",
+            "description": "Checks credentials and reachability with the saved settings.",
+            "saveFirst": "Please enter and save the credentials first, then test the connection.",
+            "testBtn": "Test connection",
+            "ok": "Connection successful",
+            "failed": "Connection failed",
+            "balance": "Balance: {amount}",
+            "mode": "Mode: {mode}",
+            "files": "{n} file in the submission folder | {n} files in the submission folder",
+            "hintPinag": "PIN AG provides the access data with the contract (eCollect/eBrief). Tracking via the customer portal.",
+            "hintLetterxpress": "Create an account at letterxpress.de, top up credit, generate an API key. Nothing is printed in test mode."
+        },
+        "eletterProtocolSftp": "SFTP (port 22) – default",
+        "eletterProtocolFtps": "FTPS (port 21, TLS)",
+        "easymode": "Simple mode",
+        "easymodeCv": "Create / edit customer",
+        "easymodeCvIntro": "In simple mode the customer form shows only the fields and tabs chosen here – less form, more overview. Every user can switch to “All fields” in the form at any time; the choice is remembered. The selection applies to customers and vendors.",
+        "easymodeCvDefault": "Simple mode is the default",
+        "easymodeCvDefault_help": "Applies to all users who have not yet switched the view themselves in the customer form.",
+        "easymodeCvCount": "{visible} of {total} fields visible",
+        "easymodeCvPresets": "Quick select:",
+        "easymodeCvPresetRecommended": "Recommended",
+        "easymodeCvPresetMinimal": "Required fields only",
+        "easymodeCvPresetAll": "All fields",
+        "easymodeCvFields": "Visible fields per card",
+        "easymodeCvAllOfGroup": "All",
+        "easymodeCvNone": "None",
+        "easymodeCvRequired": "Required field – always visible in simple mode",
+        "easymodeCvOnlyCustomer": "customer only",
+        "easymodeCvOnlyVendor": "vendor only",
+        "easymodeCvTabs": "Visible tabs",
+        "easymodeCvTabs_help": "Tabs without a tick appear only after switching to “All fields”. The billing address is always visible."
     },
     "add": "Add",
     "add_fields": {
@@ -1652,5 +1712,191 @@
         "markedObsolete": "{name} set to obsolete",
         "markedActive": "{name} reactivated"
     },
-    "loadingConfiguration": "Loading configuration …"
+    "loadingConfiguration": "Loading configuration …",
+    "masterLists": {
+        "title": "Master data lists",
+        "description": "The simple lists kivitendo keeps under “System”: units, types of business, parts groups, price groups, price factors, departments, payment and delivery terms, languages, project types, project statuses and greetings. Entries marked with a link symbol are already in use and cannot be deleted – mark them obsolete instead.",
+        "filter": "Search list or entry …",
+        "reload": "Reload",
+        "entries": "{n} entries",
+        "obsoleteCount": "{n} obsolete",
+        "obsolete": "Obsolete",
+        "inUse": "In use",
+        "inUseHint": "This entry is already used in records, parts or customers. It cannot be deleted; locked fields stay unchanged.",
+        "empty": "No entries yet.",
+        "noMatch": "No list matches your search.",
+        "loadFailed": "Master data lists could not be loaded",
+        "saveFailed": "Saving failed",
+        "saved": "Saved",
+        "deleted": "Deleted",
+        "deleteFailed": "Deleting failed",
+        "deleteConfirm": "Really delete “{name}”?",
+        "duplicate": "This name already exists",
+        "required": "Required",
+        "invalidNumber": "Please enter a number",
+        "invalidInteger": "Please enter a whole number",
+        "invalidPercent": "Percentage between 0 and 99.99",
+        "days": "days",
+        "units": {
+            "title": "Units",
+            "description": "Quantity units for parts (pieces, kg, litres) and services (hour, minute). With a base unit and factor the system converts, e.g. 1 hour = 60 minutes.",
+            "create_new": "New unit",
+            "create_title": "Create unit",
+            "edit_title": "Edit unit",
+            "type_dimension": "Goods",
+            "type_service": "Service",
+            "factor_help": "How many base units make up one of this unit? Example: hour with base unit minute → 60.",
+            "fields": {
+                "name": "Name",
+                "type": "Type",
+                "base_unit": "Base unit",
+                "factor": "Factor"
+            }
+        },
+        "business": {
+            "title": "Types of business",
+            "description": "Types such as private customer, business customer or dealer. Each type can carry a default discount and its own customer number range.",
+            "create_new": "New type of business",
+            "create_title": "Create type of business",
+            "edit_title": "Edit type of business",
+            "discount_help": "Discount in percent preset for new customers of this type.",
+            "customernumberinit_help": "Last customer number issued for this type. Leave empty to use the general number range.",
+            "salesman_help": "Customers of this type are selectable as salesmen (commission).",
+            "fields": {
+                "description": "Name",
+                "discount": "Discount",
+                "customernumberinit": "Customer number range",
+                "salesman": "Salesman"
+            }
+        },
+        "partsgroup": {
+            "title": "Parts groups",
+            "description": "Groups for organising parts, e.g. tyres, oils or accessories. Used for search, reports and the shop.",
+            "create_new": "New parts group",
+            "create_title": "Create parts group",
+            "edit_title": "Edit parts group",
+            "fields": {
+                "partsgroup": "Name",
+                "obsolete": "Obsolete"
+            }
+        },
+        "pricegroup": {
+            "title": "Price groups",
+            "description": "Price tiers per customer group, e.g. retail, dealer or wholesale. Each part can have its own sales price per price group.",
+            "create_new": "New price group",
+            "create_title": "Create price group",
+            "edit_title": "Edit price group",
+            "fields": {
+                "pricegroup": "Name",
+                "obsolete": "Obsolete"
+            }
+        },
+        "price_factors": {
+            "title": "Price factors",
+            "description": "Price per quantity, e.g. “per 100” or “per 1,000”. The line price is divided by the factor.",
+            "create_new": "New price factor",
+            "create_title": "Create price factor",
+            "edit_title": "Edit price factor",
+            "factor_help": "The unit price applies to this quantity, e.g. 100 for “per 100 pieces”.",
+            "fields": {
+                "description": "Name",
+                "factor": "Factor"
+            }
+        },
+        "department": {
+            "title": "Departments",
+            "description": "Departments or branches that records are assigned to – for reports and analysis.",
+            "create_new": "New department",
+            "create_title": "Create department",
+            "edit_title": "Edit department",
+            "fields": {
+                "description": "Name"
+            }
+        },
+        "payment_terms": {
+            "title": "Payment terms",
+            "description": "Due days, cash discount and the texts printed on quotations, orders and invoices. Placeholders such as <%netto_date%>, <%skonto_date%>, <%skonto_amount%> and <%total%> are replaced when printing.",
+            "create_new": "New payment term",
+            "create_title": "Create payment term",
+            "edit_title": "Edit payment term",
+            "auto_calculation_help": "Due date and discount date are calculated from record date and days.",
+            "description_long_help": "Text on quotations and orders.",
+            "description_long_invoice_help": "Text on invoices. Leave empty to use the quotation text.",
+            "fields": {
+                "description": "Name",
+                "terms_netto": "Due in",
+                "terms_skonto": "Discount within",
+                "percent_skonto": "Discount",
+                "auto_calculation": "Calculate due date automatically",
+                "description_long": "Text for quotations and orders",
+                "description_long_invoice": "Text for invoices",
+                "obsolete": "Obsolete"
+            }
+        },
+        "delivery_terms": {
+            "title": "Delivery terms",
+            "description": "Delivery terms such as “free delivery” or “ex works” with the text printed on records.",
+            "create_new": "New delivery term",
+            "create_title": "Create delivery term",
+            "edit_title": "Edit delivery term",
+            "fields": {
+                "description": "Name",
+                "description_long": "Text on records",
+                "obsolete": "Obsolete"
+            }
+        },
+        "language": {
+            "title": "Record languages",
+            "description": "Languages for records sent to customers and vendors. The template code selects the print template, the article code the translated part description.",
+            "create_new": "New language",
+            "create_title": "Create language",
+            "edit_title": "Edit language",
+            "template_code_help": "Suffix of the print template, e.g. “en” for invoice_en.tex.",
+            "article_code_help": "Code for translated part texts.",
+            "format_default": "Company default",
+            "fields": {
+                "description": "Name",
+                "template_code": "Template code",
+                "article_code": "Article code",
+                "output_numberformat": "Number format",
+                "output_dateformat": "Date format",
+                "output_longdates": "Long dates",
+                "obsolete": "Obsolete"
+            }
+        },
+        "project_types": {
+            "title": "Project types",
+            "description": "Kinds of projects, e.g. standard, fixed price or support.",
+            "create_new": "New project type",
+            "create_title": "Create project type",
+            "edit_title": "Edit project type",
+            "internal_help": "Internal projects are not offered on customer records.",
+            "fields": {
+                "description": "Name",
+                "internal": "Internal"
+            }
+        },
+        "project_statuses": {
+            "title": "Project statuses",
+            "description": "Stages of a project, e.g. presales, planning, running, done.",
+            "create_new": "New project status",
+            "create_title": "Create project status",
+            "edit_title": "Edit project status",
+            "name_help": "Technical key without spaces, e.g. “running”.",
+            "fields": {
+                "description": "Name",
+                "name": "Key"
+            }
+        },
+        "greetings": {
+            "title": "Greetings",
+            "description": "Greetings for customers, vendors and contacts, e.g. Mr, Ms, Company.",
+            "create_new": "New greeting",
+            "create_title": "Create greeting",
+            "edit_title": "Edit greeting",
+            "fields": {
+                "description": "Name"
+            }
+        }
+    }
 }

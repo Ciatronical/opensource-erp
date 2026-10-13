@@ -414,7 +414,13 @@
             "saved": "Beleg aktualisiert",
             "saveError": "Beleg konnte nicht gespeichert werden",
             "documentScanned": "Beleg gescannt am {date} · unveränderlich gespeichert",
-            "quantity": "Menge"
+            "quantity": "Menge",
+            "lineAccount": "Sachkonto",
+            "addLine": "Position hinzufügen",
+            "removeLine": "Position entfernen",
+            "linesSumOk": "Positionen ergeben den Belegbetrag",
+            "linesSumDiff": "Differenz zum Belegbetrag: {diff}",
+            "linesHint": "Eine Position ohne Sachkonto läuft auf das Sollkonto oben. Sobald eine Position ein eigenes Konto hat, bucht die Freigabe je Konto und Steuersatz ein eigenes Buchungsbein (Splitbuchung) – die Positionen müssen dann in Summe dem Belegbetrag entsprechen."
         },
         "upload": {
             "title": "Eingangsrechnungen",

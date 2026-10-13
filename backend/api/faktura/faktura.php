@@ -184,7 +184,8 @@ function getFakturaData($data) {
                     JOIN {$mainTable} mt ON mt.{$cvColumn} = cv.id AND mt.id = :fakturaID
                 ),
             -- Versandprotokoll: E-Mails (email_journal) und WhatsApp-Nachrichten über
-            -- record_links (from = Beleg), DHL-Sendungen über dhl_shipments. Neueste zuerst.
+            -- record_links (from = Beleg), DHL-Sendungen über dhl_shipments, Postversand
+            -- über postal_dispatches. Neueste zuerst.
             'sent_log',
                 (
                     SELECT COALESCE(json_agg(s ORDER BY s.sent_at DESC), '[]'::json)
@@ -205,6 +206,13 @@ function getFakturaData($data) {
                         FROM dhl_shipments ds
                         LEFT JOIN employee e ON e.id = ds.created_by
                         WHERE ds.record_type = :fakturaType AND ds.record_id = :fakturaID
+                        UNION ALL
+                        -- Postversand (Hybridbrief): Einlieferungen beim Briefdienstleister
+                        SELECT 'post', COALESCE(pd.sent_at, pd.itime), pd.recipient_name,
+                               concat_ws(' · ', pd.filename, pd.tracking_code), pd.status, e.name
+                        FROM postal_dispatches pd
+                        LEFT JOIN employee e ON e.id = pd.employee_id
+                        WHERE pd.record_table = '{$mainTable}' AND pd.record_id = :fakturaID AND pd.status <> 'error'
                     ) AS s
                 )
             )
@@ -2609,6 +2617,42 @@ function importSilverDATItems($data) {
 
     permit(getPermissionForFakturaType($fakturaType));
 
+    // Atomar importieren: schlägt eine einzige Position fehl, wird nichts
+    // angelegt (kein Teil-Import, der den Beleg inkonsistent zuruecklaesst).
+    $company->beginTransaction();
+    try {
+        $createdIds = _fakturaImportItems($company, $fakturaID, $fakturaType, $items, $buchungsgruppeTeile, $buchungsgruppeArbeit);
+        $company->commit();
+    } catch (\Throwable $e) {
+        $company->rollBack();
+        resultInfo(false, 'IMPORT_FAILED', ['message' => 'Import fehlgeschlagen: ' . $e->getMessage()]);
+        return;
+    }
+
+    if (empty($createdIds)) {
+        resultInfo(false, 'NO_ITEMS_CREATED', ['message' => 'Keine Positionen angelegt']);
+        return;
+    }
+
+    resultInfo(true, 'IMPORTED', ['count' => count($createdIds)]);
+}
+
+/**
+ * Legt Positionen (mit Artikeln) in einem Beleg an — gemeinsamer Kern von
+ * importSilverDATItems (VXS) und applyGutachtenToOrder (Gutachten-PDF).
+ *
+ * Läuft innerhalb der Transaktion des Aufrufers; wirft bei Fehlern, damit
+ * der Aufrufer zurückrollen kann.
+ *
+ * @param object $company   DbhCompany
+ * @param int    $fakturaID Beleg-ID
+ * @param string $fakturaType z.B. 'order'
+ * @param array  $items     {description, partnumber, qty, sellprice, unit, part_type, longdescription}
+ * @param int    $buchungsgruppeTeile  Buchungsgruppe für Ersatzteile
+ * @param int    $buchungsgruppeArbeit Buchungsgruppe für Dienstleistungen
+ * @return array IDs der angelegten Positionen
+ */
+function _fakturaImportItems($company, $fakturaID, $fakturaType, array $items, $buchungsgruppeTeile, $buchungsgruppeArbeit) {
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable = $tableConfig['items_table'];
     $isInvoiceType = in_array($fakturaType, ['invoice', 'purchase_invoice']);
@@ -2618,11 +2662,6 @@ function importSilverDATItems($data) {
     $nextPosition = intval($company->getOne($positionQuery, ['fakturaID' => $fakturaID])['max_position']);
 
     $createdIds = [];
-
-    // Atomar importieren: schlägt eine einzige Position fehl, wird nichts
-    // angelegt (kein Teil-Import, der den Beleg inkonsistent zuruecklaesst).
-    $company->beginTransaction();
-    try {
 
     // Fehlende Einheiten anlegen: SilverDAT liefert Lohn und Lackierung in
     // 'AW' (Arbeitswert), das in einer frischen kivitendo-Datenbank fehlt.
@@ -2800,17 +2839,5 @@ SQL;
         $company->execute($totalsQuery, ['fakturaID' => $fakturaID, 'oeID' => $fakturaID]);
     }
 
-        $company->commit();
-    } catch (\Throwable $e) {
-        $company->rollBack();
-        resultInfo(false, 'IMPORT_FAILED', ['message' => 'Import fehlgeschlagen: ' . $e->getMessage()]);
-        return;
-    }
-
-    if (empty($createdIds)) {
-        resultInfo(false, 'NO_ITEMS_CREATED', ['message' => 'Keine Positionen angelegt']);
-        return;
-    }
-
-    resultInfo(true, 'IMPORTED', ['count' => count($createdIds)]);
+    return $createdIds;
 }

@@ -40,7 +40,7 @@
         </div>
 
         <!-- Dynamische Felder - NUR wenn Config geladen ist! -->
-        <template v-else v-for="field in crmDefaultsConfig" :key="field.name">
+        <template v-else v-for="field in visibleFields" :key="field.name">
             <!-- Überschrift -->
             <v-row v-if="field.type === 'headline'" class="mt-6 mb-2" :data-panel="field.name">
                 <v-col cols="12">
@@ -198,10 +198,24 @@
                 </v-col>
             </v-row>
 
+            <!-- Briefversand: Verbindung zum Briefdienstleister prüfen -->
+            <v-row v-else-if="field.type === 'component' && field.component === 'eletter-status'" class="my-4">
+                <v-col cols="12">
+                    <EletterStatusConfig />
+                </v-col>
+            </v-row>
+
             <!-- Belegsuche: Quellen (Postfach, WhatsApp, Ordner, Portal) -->
             <v-row v-else-if="field.type === 'component' && field.component === 'beleg-quellen'" class="my-4">
                 <v-col cols="12">
                     <BelegQuellenConfig />
+                </v-col>
+            </v-row>
+
+            <!-- Einfacher Modus: Felder und Reiter der Kundenmaske -->
+            <v-row v-else-if="field.type === 'component' && field.component === 'cv-easymode'" class="my-4">
+                <v-col cols="12">
+                    <CvEasymodeConfig :crm-defaults="crmDefaults" />
                 </v-col>
             </v-row>
 
@@ -266,6 +280,8 @@ import WhatsAppProfilePictureConfig from './whatsapp-profile-picture.config.vue'
 import SumupReaderPairingConfig from './sumup-reader-pairing.config.vue';
 import EmailAutoconfigConfig from './email-autoconfig.config.vue';
 import BelegQuellenConfig from './beleg-quellen.config.vue';
+import EletterStatusConfig from './eletter-status.config.vue';
+import CvEasymodeConfig from './cv-easymode.config.vue';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 
 const { t } = useI18n();
@@ -316,6 +332,9 @@ const ebayOhneShop = computed(() =>
 
 // State für Config und Fehler
 const crmDefaultsConfig = ref([]);
+// Felder mit showIf(crmDefaults) erscheinen nur, wenn die Bedingung zutrifft
+// (z. B. Zugangsdaten nur für den gewählten Briefdienstleister)
+const visibleFields = computed(() => crmDefaultsConfig.value.filter(f => !f.showIf || f.showIf(props.crmDefaults)));
 const configError = ref(null);
 const configLoaded = ref(false);
 

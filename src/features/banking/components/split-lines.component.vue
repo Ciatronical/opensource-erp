@@ -38,9 +38,7 @@
                 :label="t('BankingView.split.amount')"
                 density="compact"
                 variant="outlined"
-                hide-details="auto"
-                :hint="hintFor(line)"
-                persistent-hint
+                hide-details
                 prepend-inner-icon="mdi-currency-eur"
                 class="split-line__amount"
                 @focus="e => e.target.select()"
@@ -82,6 +80,12 @@
                 class="split-line__remove"
                 @click="removeLine(i)"
             />
+
+            <!-- Netto/Steuer der Position: eine Zeile unter der ganzen Position,
+                 nicht unter dem schmalen Betragsfeld (dort bräche sie dreizeilig um) -->
+            <div v-if="multi && hintFor(line)" class="split-line__hint text-caption text-medium-emphasis">
+                {{ hintFor(line) }}
+            </div>
         </div>
 
         <div class="split-lines__footer">
@@ -96,7 +100,10 @@
                 {{ multi ? t('BankingView.split.addLine') : t('BankingView.split.split') }}
             </v-btn>
             <v-spacer />
-            <span v-if="multi" class="text-caption" :class="rest === 0 ? 'text-success' : 'text-error'">
+            <span v-if="multi && !(total > 0)" class="text-caption text-medium-emphasis">
+                {{ t('BankingView.split.noTotal') }}
+            </span>
+            <span v-else-if="multi" class="text-caption" :class="rest === 0 ? 'text-success' : 'text-error'">
                 {{ rest === 0
                     ? t('BankingView.split.sumOk', { sum: fmt(sum) })
                     : t('BankingView.split.remainder', { sum: fmt(sum), total: fmt(total), rest: fmt(rest) }) }}
@@ -203,6 +210,9 @@ function flippedTax(taxValue) {
 
 async function addLine() {
     const prev = lines.value[lines.value.length - 1]
+    // Beim Wechsel von einer auf zwei Positionen: ohne Gesamtbetrag stünde in
+    // der ersten Zeile eine „0" — leer ist ehrlicher.
+    if (lines.value.length === 1 && !(props.total > 0)) lines.value[0].gross = ''
     const line = newLine(prev?.account ?? null, prev ? flippedTax(prev.tax) : null, rest.value > 0 ? rest.value : '')
     emit('update:modelValue', [...lines.value, line])
     await nextTick()
@@ -237,14 +247,16 @@ defineExpose({ sum, rest })
 <style scoped>
 .split-line {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     align-items: flex-start;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
-.split-line__account { flex: 1 1 auto; min-width: 0; }
-.split-line__amount  { flex: 0 0 150px; }
-.split-line__tax     { flex: 0 0 150px; }
+.split-line__account { flex: 1 1 200px; min-width: 0; }
+.split-line__amount  { flex: 0 0 180px; }
+.split-line__tax     { flex: 0 0 175px; }
 .split-line__remove  { margin-top: 4px; }
+.split-line__hint    { flex-basis: 100%; margin-top: -4px; padding-left: 4px; }
 .split-lines__footer {
     display: flex;
     align-items: center;
@@ -252,7 +264,6 @@ defineExpose({ sum, rest })
     margin-bottom: 8px;
 }
 @media (max-width: 600px) {
-    .split-line--multi { flex-wrap: wrap; }
     .split-line--multi .split-line__account { flex-basis: 100%; }
     .split-line--multi .split-line__amount,
     .split-line--multi .split-line__tax { flex: 1 1 40%; }

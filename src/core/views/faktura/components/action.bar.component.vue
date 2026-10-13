@@ -239,6 +239,23 @@
                     </template>
                 </v-tooltip>
 
+                <!-- Post (Hybridbrief; Badge: schon so oft eingeliefert) -->
+                <v-tooltip location="bottom" :text="sentPostCount ? t('FakturaView.faktura.sent.tooltipPost', { n: sentPostCount }) : t('FakturaView.faktura.sendPost')">
+                    <template #activator="{ props: tip }">
+                        <v-badge :model-value="sentPostCount > 0" :content="sentPostCount" color="success" offset-x="4" offset-y="4">
+                            <v-btn
+                                v-bind="tip"
+                                variant="tonal"
+                                color="deep-purple"
+                                icon="mdi-mailbox-up-outline"
+                                size="small"
+                                :disabled="!hasCustomer"
+                                @click="$emit('send-post')"
+                            />
+                        </v-badge>
+                    </template>
+                </v-tooltip>
+
                 <!-- DHL Versandetikett -->
                 <v-tooltip v-if="showDhlButton" location="bottom" :text="t('FakturaView.faktura.dhlLabel')">
                     <template #activator="{ props: tip }">
@@ -296,6 +313,36 @@
                             size="small"
                             :disabled="!hasCustomer"
                             @click="$emit('import-silverdat')"
+                        />
+                    </template>
+                </v-tooltip>
+
+                <!-- Gutachten-Import (nur bei Aufträgen mit LxCars) – fremde Gutachten als PDF/Foto -->
+                <v-tooltip v-if="canImportGutachten" location="bottom" :text="t('FakturaView.faktura.importGutachten')">
+                    <template #activator="{ props: tip }">
+                        <v-btn
+                            v-bind="tip"
+                            variant="tonal"
+                            color="deep-orange"
+                            icon="mdi-file-pdf-box"
+                            size="small"
+                            :disabled="!hasCustomer"
+                            @click="$emit('import-gutachten')"
+                        />
+                    </template>
+                </v-tooltip>
+
+                <!-- Weroni Rechtsprüfung des Gutachtens (nur bei Aufträgen mit LxCars) -->
+                <v-tooltip v-if="canImportGutachten" location="bottom" :text="t('FakturaView.faktura.weroniReview')">
+                    <template #activator="{ props: tip }">
+                        <v-btn
+                            v-bind="tip"
+                            variant="tonal"
+                            color="deep-purple"
+                            icon="mdi-scale-balance"
+                            size="small"
+                            :disabled="!hasCustomer"
+                            @click="$emit('weroni-review')"
                         />
                     </template>
                 </v-tooltip>
@@ -459,6 +506,10 @@ export default defineComponent({
             type: Number,
             default: 0
         },
+        sentPostCount: {
+            type: Number,
+            default: 0
+        },
         printerList: {
             type: Array,
             default: () => []
@@ -484,6 +535,10 @@ export default defineComponent({
             default: false
         },
         showClosed: {
+            type: Boolean,
+            default: false
+        },
+        showGutachtenButton: {
             type: Boolean,
             default: false
         },
@@ -561,6 +616,7 @@ export default defineComponent({
         'pdf-preview',
         'send-email',
         'send-whatsapp',
+        'send-post',
         'select-template',
         'show-history',
         'set-followup',
@@ -569,6 +625,8 @@ export default defineComponent({
         'delete',
         'open-vehicle',
         'import-silverdat',
+        'import-gutachten',
+        'weroni-review',
         'open-aag',
         'open-esi',
         'open-gutmann',
@@ -619,6 +677,10 @@ export default defineComponent({
         // SilverDAT Import - bei Aufträgen mit LxCars
         const canImportSilverDAT = computed(() => props.fakturaType === 'order' && props.showVehicleButton)
 
+        // Gutachten-Import - bei Aufträgen mit LxCars, auch ohne verknüpftes Fahrzeug
+        // (das Fahrzeug entsteht aus dem Gutachten)
+        const canImportGutachten = computed(() => props.fakturaType === 'order' && props.showGutachtenButton)
+
         // AAG-Online - bei Aufträgen mit verknüpftem Fahrzeug, nur wenn konfiguriert
         const canOpenAag = computed(() => props.fakturaType === 'order' && props.showVehicleButton && props.aagConfigured)
 
@@ -636,6 +698,7 @@ export default defineComponent({
             canSaveAsDraft,
             canExportXInvoice,
             canImportSilverDAT,
+            canImportGutachten,
             canOpenAag
         }
     }

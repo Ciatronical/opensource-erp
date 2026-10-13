@@ -90,10 +90,10 @@
         </v-card>
       </v-col>
 
-      <!-- Kontakthistorie: Anrufe, WhatsApp und E-Mails chronologisch -->
+      <!-- Kontakthistorie: Anrufe, WhatsApp, Briefe und E-Mails chronologisch -->
       <v-col cols="12" md="6">
         <v-card variant="outlined" rounded="lg" class="d-flex flex-column h-100">
-          <v-card-title class="d-flex align-center bg-grey-lighten-4 py-3">
+          <v-card-title class="d-flex align-center flex-wrap bg-grey-lighten-4 py-3">
             <v-icon color="primary" class="me-2">mdi-history</v-icon>
             {{ $t('CrmView.contactHistory') }}
             <v-spacer />
@@ -116,6 +116,9 @@
               <v-btn value="whatsapp" size="small" :title="$t('CrmView.whatsapp')">
                 <v-icon start size="small">mdi-whatsapp</v-icon>{{ historyCounts.whatsapp }}
               </v-btn>
+              <v-btn value="letter" size="small" :title="$t('CrmView.letter')">
+                <v-icon start size="small">mdi-email-edit-outline</v-icon>{{ historyCounts.letter }}
+              </v-btn>
               <v-btn
                 value="email"
                 size="small"
@@ -135,6 +138,17 @@
               @click="refreshHistory"
             >
               <v-icon>mdi-refresh</v-icon>
+            </v-btn>
+            <!-- Brief an diesen Kunden/Lieferanten schreiben -->
+            <v-btn
+              icon
+              size="small"
+              variant="text"
+              color="primary"
+              :title="$t('CrmView.newLetter')"
+              @click="newLetter"
+            >
+              <v-icon>mdi-email-edit-outline</v-icon>
             </v-btn>
           </v-card-title>
           <v-divider />
@@ -181,6 +195,17 @@
                   @click="playPhoneCall(item.unique_call_id)"
                 >
                   <v-icon>mdi-play-circle</v-icon>
+                </v-btn>
+                <v-btn
+                  v-else-if="item.kind === 'letter'"
+                  icon
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  :title="$t('CrmView.openLetter')"
+                  @click="router.push({ name: 'letter-edit', params: { id: item.id } })"
+                >
+                  <v-icon>mdi-open-in-app</v-icon>
                 </v-btn>
                 <v-btn
                   v-else
@@ -309,7 +334,7 @@ export default {
     const ownAddresses = computed(() => emailAddresses.value.map(a => a.toLowerCase()))
 
     // Alle Einträge auf ein gemeinsames Format bringen:
-    // { key, kind: call|whatsapp|email, ts (ms), direction I|O, missed, summary, detail, ... }
+    // { key, kind: call|whatsapp|letter|email, ts (ms), direction I|O, missed, summary, detail, ... }
     const contactHistory = computed(() => {
       const fromDb = (oserp.customer_vendor?.contact_history ?? []).map(e => {
         const ts = Number(e.ts)
@@ -324,6 +349,21 @@ export default {
             summary: e.name && e.name !== e.number ? e.name : number,
             detail: [number, e.extension].filter(Boolean).join(' · '),
             unique_call_id: e.unique_call_id,
+          }
+        }
+        if (e.kind === 'letter') {
+          // number = Briefnummer, name = Versandwege (email,post), status = draft|sent
+          const channels = (e.name || '').split(',').filter(Boolean).map(ch => t('CrmView.letterChannel.' + ch))
+          return {
+            key: 'letter-' + e.id,
+            kind: 'letter',
+            id: e.id,
+            ts,
+            direction: 'O',
+            missed: false,
+            draft: e.status === 'draft',
+            summary: e.text || t('CrmView.noSubject'),
+            detail: [t('CrmView.letterNumber', { number: e.number }), channels.length ? t('CrmView.letterSentVia', { channels: channels.join(', ') }) : t('CrmView.letterDraft')].join(' · '),
           }
         }
         return {
@@ -352,7 +392,7 @@ export default {
     })
 
     const historyCounts = computed(() => {
-      const c = { call: 0, whatsapp: 0, email: 0 }
+      const c = { call: 0, whatsapp: 0, letter: 0, email: 0 }
       contactHistory.value.forEach(e => { c[e.kind]++ })
       return c
     })
@@ -374,6 +414,7 @@ export default {
 
     function entryColor(item) {
       if (item.missed) return 'error'
+      if (item.kind === 'letter') return item.draft ? 'grey' : 'deep-purple'
       return item.direction === 'I' ? 'success' : 'info'
     }
 
@@ -383,10 +424,12 @@ export default {
         return item.direction === 'I' ? 'mdi-phone-incoming' : 'mdi-phone-outgoing'
       }
       if (item.kind === 'whatsapp') return 'mdi-whatsapp'
+      if (item.kind === 'letter') return item.draft ? 'mdi-email-edit-outline' : 'mdi-email-seal-outline'
       return item.direction === 'I' ? 'mdi-email-arrow-left-outline' : 'mdi-email-arrow-right-outline'
     }
 
     function entryTitle(item) {
+      if (item.kind === 'letter') return item.draft ? t('CrmView.letterDraft') : t('CrmView.outbound')
       const dir = t(item.direction === 'I' ? 'CrmView.inbound' : 'CrmView.outbound')
       return item.missed ? `${dir} · ${t('CrmView.missedCall')}` : dir
     }
@@ -466,8 +509,15 @@ export default {
       if (editRoute.value) router.push(editRoute.value)
     }
 
+    // Neuer Brief an diesen Kunden/Lieferanten (Kontakt → Briefe)
+    function newLetter() {
+      if (!profile.value?.id) return
+      const query = profile.value.src === 'V' ? { vendor_id: String(profile.value.id) } : { customer_id: String(profile.value.id) }
+      router.push({ name: 'letter-new', query })
+    }
+
     return {
-      oserp, router, occurrenceFilter, isCustomer,
+      oserp, router, occurrenceFilter, isCustomer, newLetter,
       contactHistoryHeaders, filteredHistory, historyFilter, historyCounts,
       emailsLoading, emailsNotConfigured, refreshHistory,
       entryColor, entryIcon, entryTitle, formatHistoryDate, playPhoneCall, openContactTab,

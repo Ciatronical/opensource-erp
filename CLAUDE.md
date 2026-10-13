@@ -52,6 +52,11 @@ resultInfo(false, 'ERROR_CODE', 'Nachricht'); // Fehler
 - Validierungen und Datenformatierungen in Vue, nicht im Backend
 - Kein Gendern — generisches Maskulinum verwenden (Kunde, Benutzer, Mitarbeiter)
 
+### Layout (PFLICHT für neue und angefasste Views)
+- Bausteine aus `src/core/components/layout/` verwenden: `page-header` (Seitenkopf) und `section-card` (Abschnittskarte) — kein eigenes `<v-card><v-card-title class="bg-grey-lighten-4">`-Muster mehr
+- Abstände, Radien, Flächen nur über die Tokens in `src/core/styles/tokens.css` (`var(--oserp-…)`), keine Festwerte oder Vuetify-Farbklassen in Views
+- Details: `src/core/components/layout/README.md`
+
 ### Navigation (PFLICHT)
 **Nie Pfad-Strings — immer Route-Namen:**
 ```js

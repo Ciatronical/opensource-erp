@@ -17,7 +17,9 @@
             "priceRules": "Cenu noteikumi",
             "turnover": "Apgrozījuma statistika",
             "emails": "E-pasti",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Lietotāja definētie mainīgie",
+            "history": "Laika ceļojums"
         },
         "billing": {
             "nameAddressTitle": "Name & Adresse",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Izveidot pasūtījumu",
             "saveAndQuotation": "Izveidot piedāvājumu",
             "delete": "Dzēst",
-            "history": "Historie",
             "close": "Aizvērt",
-            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?"
+            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?",
+            "confirmDeleteVendor": "Tiešām dzēst piegādātāju „{name}“? Kontaktpersonas, adreses un piezīmes tiks noņemtas kopā ar to.",
+            "cancel": "Atcelt"
         },
         "messages": {
             "saving": "Speichert...",
@@ -233,7 +236,10 @@
             "deleteError": "Fehler beim Löschen des Kunden.",
             "deleteContactError": "Fehler beim Löschen des Ansprechpartners",
             "deleteContactErrorTitle": "Kļūda",
-            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Kļūda, dzēšot piegādātāju.",
+            "deleted": "Klients „{name}“ dzēsts.",
+            "deletedVendor": "Piegādātājs „{name}“ dzēsts."
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
@@ -329,7 +335,13 @@
             "urlLabel": "Bezeichnung",
             "urlAddress": "URL",
             "addUrl": "Pievienot URL",
-            "openUrl": "Atvērt lapu"
+            "openUrl": "Atvērt lapu",
+            "vendornumber": "Piegādātāja numurs",
+            "hu_notify": "Sūtīt tehniskās apskates paziņojumus",
+            "hu_notify_hint": "Attiecas uz visiem šā klienta transportlīdzekļiem – arī uz turpmāk izveidotajiem. Ja slēdzis ir izslēgts, tehniskās apskates atgādinājumi netiek sūtīti un paziņojumu vairs nevar ieslēgt atsevišķam transportlīdzeklim (klientam ir prioritāte).",
+            "phone_numbers": "Citi telefona numuri",
+            "emails": "Citas e-pasta adreses",
+            "urls": "Citi URL"
         },
         "price-rules": {
             "title": "Cenu noteikumi",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Testa režīms)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testa režīms)"
+        },
+        "customVars": {
+            "title": "Lietotāja definētie mainīgie",
+            "noConfigs": "Klientiem/piegādātājiem nav konfigurēti lietotāja definētie mainīgie."
+        },
+        "easymode": {
+            "label": "Klienta formas skats",
+            "easy": "Vienkāršs",
+            "pro": "Visi lauki",
+            "easyHint": "Tikai lauki un cilnes, kas uzņēmuma konfigurācijā izvēlēti ikdienas darbam.",
+            "proHint": "Visi klienta vai piegādātāja lauki un cilnes.",
+            "hiddenFilled": "{count} paslēpti lauki satur vērtības:",
+            "showAll": "Rādīt visus laukus"
+        },
+        "history": {
+            "title": "Laika ceļojums",
+            "intro": "Kurš, kad un ko mainīja — katra saglabāšana ar mainītajiem laukiem. Ar slīdni ceļojiet atpakaļ un skatiet, kā pamatdati izskatījās toreiz.",
+            "count": "{n} notikums | {n} notikumi",
+            "reload": "Ielādēt no jauna",
+            "filterEmployee": "Darbinieks",
+            "search": "Meklēt",
+            "timeTravel": "Laika ceļojums",
+            "today": "Šodien",
+            "backToToday": "Atpakaļ uz šodienu",
+            "stepsBack": "{n} izmaiņu atpakaļ | {n} izmaiņas atpakaļ",
+            "asOf": "Stāvoklis pirms izmaiņām {time} — atšķirības no šodienas:",
+            "noDiff": "Nav atšķirību no šodienas stāvokļa.",
+            "empty": "Izmaiņas vēl nav reģistrētas. No šī brīža katra saglabāšana tiek fiksēta.",
+            "noMatch": "Neviens notikums neatbilst filtram.",
+            "unknownEmployee": "Nezināms",
+            "created": "izveidots",
+            "deleted": "dzēsts",
+            "yes": "Jā",
+            "no": "Nē",
+            "tableProfile": "Pamatdati",
+            "tableContact": "Kontaktpersona",
+            "tableShipto": "Piegādes adrese",
+            "tableBilling": "Papildu rēķina adrese",
+            "legacy": {
+                "saved": "saglabāts",
+                "printed": "izdrukāts",
+                "mailed": "nosūtīts pa e-pastu",
+                "deleted": "dzēsts",
+                "screened": "apskatīts",
+                "posted": "iegrāmatots"
+            }
         }
     }
 }

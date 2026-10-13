@@ -154,6 +154,42 @@ Technik: Tabelle `bank_transaction_documents` (Umsatz ↔ `accounting_documents`
 
 Ein Bankumsatz kann gegen **mehrere Belege** gebucht werden: eine Sammelüberweisung des Kunden über drei Rechnungen, eine Zahlung an den Lieferanten über zwei Eingangsrechnungen abzüglich einer Gutschrift. In der Zuordnung werden Belege „zur Sammelbuchung hinzugefügt"; die Summe wird gegen den Umsatz geprüft, ein Rest lässt sich als Skonto, Gebühr oder Teilzahlung behandeln. Der Dialog steht für Geldeingänge und Geldausgänge zur Verfügung.
 
+## Auf Konto buchen — Umsätze ohne Beleg
+
+Nicht jeder Umsatz gehört zu einer Rechnung: Umbuchungen zwischen eigenen Konten, Bareinzahlungen, Privatentnahmen, Lohn, Sozialversicherung, Finanzamt, Bankgebühren, Darlehen. Dafür gibt es in der Umsatzliste und im Buchungsdialog **„Auf Konto buchen"**. Der Dialog fragt zuerst **„Was ist das für ein Vorgang?"** und zeigt die Buchungsvorlagen aus der Tabelle `bank_booking_templates` als Auswahl; das passende Gegenkonto (SKR03 oder SKR04) ist je Vorlage hinterlegt und wird zur Laufzeit über den Kontenrahmen des Mandanten aufgelöst.
+
+Das System erkennt den Vorgang vorab:
+
+- **Gegen-IBAN gehört zu einem eigenen Bankkonto** → Umbuchung, Zielkonto vorbelegt. Es entsteht **eine** Buchung Bank A ↔ Bank B. Liegt der Gegenumsatz auf dem Zielkonto schon vor (gleicher Betrag, ±5 Tage), wird er mitgebucht; kommt er erst später, erkennt der Dialog das vorhandene Bankbein und bietet **„Mit dieser Buchung verknüpfen"** an — ohne zweite Buchung. Das Lösen einer Seite lässt die Buchung für die andere stehen.
+- **Vorhandene Buchung auf dem Bankkonto** (z. B. eine Bareinzahlung, die in der Kasse schon gegen die Bank gebucht wurde) → nur verknüpfen.
+- **Muster im Verwendungszweck oder Empfänger** (Lohn, Gehalt, Krankenkasse, Finanzamt, Entgelt …) → Vorlage vorbelegt. Benutzte Vorlagen zählen hoch und gewinnen bei mehreren Treffern.
+
+Für Konten außerhalb des Systems (anderes Unternehmen, Privatkonto) steht **Geldtransit** bzw. **Privatentnahme/Privateinlage** bereit. Jede Vorlage außer der Umbuchung läuft über die Positionen, lässt sich also **aufteilen** (siehe unten) und bekommt bei Bedarf einen Steuerschlüssel (Bankgebühren mit 19 % Vorsteuer). Gebucht wird wie kivitendos Dialogbuchung (`gl` + `acc_trans`), die Verknüpfung zum Umsatz liegt in `bank_transaction_acc_trans.gl_id`; **Rückgängig** entfernt die Buchung samt Kopf.
+
+## Buchung ansehen und ändern
+
+Jeder gebuchte Umsatz hat in der Umsatzliste **„Buchung ansehen"** (Buchsymbol). Der Dialog zeigt je verknüpfter Buchung den Kopf (Dialogbuchung, Eingangs- oder Ausgangsrechnung, Belegnummer, Datum, Partner), die **Positionen so, wie sie eingegeben wurden** (Konto, Brutto, Netto, Steuersatz und -betrag) und aufklappbar **alle Buchungsbeine** mit Soll/Haben, Steuerschlüssel und Text; Beine mit Bankverknüpfung sind markiert.
+
+- **Dialogbuchungen** („Auf Konto buchen") lassen sich mit **Bearbeiten** ändern: Konto(en), Steuer, Text, auch von und zu einer Umbuchung. Der Bruttobetrag ist der Umsatzbetrag. Geändert wird wie in kivitendo: alte Beine löschen, neue schreiben, Verknüpfungen zu den Bankumsätzen neu setzen; verliert die Gegenseite einer Umbuchung ihr Bein, ist ihr Umsatz wieder offen.
+- **Eingangsrechnungen, die aus dem Umsatz entstanden sind**, lassen sich ebenfalls bearbeiten: Lieferant, Rechnungsnummer, Buchungstext und die Aufwandspositionen (Konto, Brutto, Steuersatz). Die Zahlungsbeine bleiben, die Positionssumme muss dem bezahlten Betrag entsprechen (kivitendo AP.pm: Erstbuchungsbeine neu schreiben).
+- **Ausgangsrechnungen** werden angezeigt und per „Rechnung öffnen" in der Faktura bearbeitet.
+- **Buchung rückgängig** bleibt im selben Dialog erreichbar.
+
+Buchungen bis zum kivitendo-Abschlussdatum (`defaults.closedto`) und stornierte Buchungen sind gesperrt.
+
+## Splitbuchung — ein Umsatz, mehrere Konten oder Steuersätze
+
+Eine Lieferantenrechnung enthält oft Posten, die auf verschiedene Konten gehören: ein Ersatzteil als Wareneingang, ein anderes als Kfz-Kosten, oder 10 € Mahnkosten auf 6436 neben der eigentlichen Ware. Im Dialog **„Als Eingangsrechnung buchen"** gibt es dafür **Aufteilen**:
+
+- Die erste Position ist der gewohnte Dialog (Aufwandskonto, Steuersatz). **Aufteilen** macht daraus eine Liste von Positionen mit je Konto, Bruttobetrag und Steuersatz.
+- Jede neue Position übernimmt das Konto der vorherigen und wechselt den Steuersatz (19 % ↔ 7 %) — der häufigste Fall braucht so nur noch den Betrag.
+- Unter der Liste steht, was vom Umsatz noch nicht verteilt ist; der Zauberstab an einer Position trägt den Rest dort ein. Gebucht werden kann erst, wenn die Aufteilung aufgeht.
+- Beim Wählen eines Kontos wird sein Steuerschlüssel aus dem Kontenrahmen vorbelegt (3300 Wareneingang 7 % → 7 %).
+
+Gebucht wird **wie in kivitendos Kreditorenbuchung mit mehreren Zeilen**: je Position ein Aufwandsbein mit Steuerschlüssel und direkt dahinter das Vorsteuerbein, zum Schluss ein Verbindlichkeitsbein über die Summe. `ap.amount`/`netamount` sind die Summen. UStVA, DATEV-Export und Storno arbeiten unverändert auf diesen Beinen.
+
+Dasselbe gilt für die **Kasse** (Bon mit 7 % und 19 %) und für die Positionen eines per **Magisch Buchen** erkannten Belegs — siehe [Buchhaltung](buchhaltung.md).
+
 ## Kartenabrechnungen (Settlements)
 
 Kartendienstleister (Flatpay, Rapyd, SumUp) zahlen gesammelt aus — ein Bankumsatz steht für viele Kartenzahlungen abzüglich Gebühren. Der Reiter **Abgleich** löst das auf:

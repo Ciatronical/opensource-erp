@@ -1,48 +1,32 @@
 <template>
-  <v-card variant="outlined" elevation="1">
-    <v-card-title class="py-2 px-3 bg-grey-lighten-4">
-      <h4 class="text-subtitle-1 mb-0">{{ t('CustomerVendorEditView.billing.communicationTitle') }}</h4>
-    </v-card-title>
-    <v-divider />
-    <v-card-text class="py-2 px-2 px-sm-3">
+  <section-card :title="t('CustomerVendorEditView.billing.communicationTitle')" icon="mdi-phone-message-outline">
       <v-row density="compact">
-        <v-col cols="12" sm="6" class="py-1">
+        <v-col v-if="show('contact')" cols="12" sm="6" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.contact')"
             v-model="localData.contact"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
           />
         </v-col>
-        <v-col cols="12" sm="6" class="py-1">
+        <v-col v-if="show('phone')" cols="12" sm="6" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.phone')"
             v-model="localData.phone"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
             data-field="phone"
           />
         </v-col>
+        <template v-if="show('phone_numbers')">
         <v-col v-for="(entry, idx) in phoneNumbers" :key="'phone-' + idx" cols="12" class="py-0">
           <v-row density="compact">
             <v-col cols="12" sm="4" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.phoneLabel')"
                 v-model="entry.label"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
               />
             </v-col>
             <v-col cols="10" sm="7" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.phoneNumber')"
                 v-model="entry.number"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
               />
             </v-col>
             <v-col cols="2" sm="1" class="py-1 d-flex align-center">
@@ -57,15 +41,13 @@
             {{ t('CustomerVendorEditView.fields.addPhone') }}
           </v-btn>
         </v-col>
+        </template>
 
         <!-- Haupt-E-Mail, CC, BCC -->
-        <v-col cols="12" sm="6" class="py-1">
+        <v-col v-if="show('email')" cols="12" sm="6" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.email')"
             v-model="localData.email"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
             data-field="email"
             :error-messages="emailError"
           >
@@ -85,46 +67,35 @@
             </template>
           </v-text-field>
         </v-col>
-        <v-col cols="12" sm="6" class="py-1">
+        <v-col v-if="show('cc')" cols="12" sm="6" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.cc')"
             v-model="localData.cc"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
             :error-messages="ccErrors"
           />
         </v-col>
-        <v-col cols="12" sm="6" class="py-1">
+        <v-col v-if="show('bcc')" cols="12" sm="6" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.bcc')"
             v-model="localData.bcc"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
             :error-messages="bccErrors"
           />
         </v-col>
 
         <!-- Weitere E-Mail-Adressen (customer_ext/vendor_ext.emails) -->
+        <template v-if="show('emails')">
         <v-col v-for="(entry, idx) in emails" :key="'email-' + idx" cols="12" class="py-0">
           <v-row density="compact">
             <v-col cols="12" sm="4" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.emailLabel')"
                 v-model="entry.label"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
               />
             </v-col>
             <v-col cols="10" sm="7" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.emailAddress')"
                 v-model="entry.email"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
                 type="email"
                 :error-messages="emailEntryErrors(entry, idx)"
                 @blur="checkEmailEntryDns(entry, idx)"
@@ -157,15 +128,13 @@
             {{ t('CustomerVendorEditView.fields.addEmail') }}
           </v-btn>
         </v-col>
+        </template>
 
         <!-- Homepage + weitere URLs (customer_ext/vendor_ext.urls) -->
-        <v-col cols="12" class="py-1">
+        <v-col v-if="show('homepage')" cols="12" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.homepage')"
             v-model="localData.homepage"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
             :error-messages="homepageError"
           >
             <template #append-inner>
@@ -184,24 +153,19 @@
             </template>
           </v-text-field>
         </v-col>
+        <template v-if="show('urls')">
         <v-col v-for="(entry, idx) in urls" :key="'url-' + idx" cols="12" class="py-0">
           <v-row density="compact">
             <v-col cols="12" sm="4" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.urlLabel')"
                 v-model="entry.label"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
               />
             </v-col>
             <v-col cols="10" sm="7" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.urlAddress')"
                 v-model="entry.url"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
                 type="url"
                 :error-messages="urlEntryErrors(entry)"
               >
@@ -233,48 +197,46 @@
             {{ t('CustomerVendorEditView.fields.addUrl') }}
           </v-btn>
         </v-col>
+        </template>
 
         <template v-if="localData.src !== 'V'">
-          <v-col cols="12" sm="6" class="py-1">
+          <v-col v-if="show('invoice_mail')" cols="12" sm="6" class="py-1">
             <v-text-field
               :label="t('CustomerVendorEditView.fields.invoice_mail')"
               v-model="localData.invoice_mail"
-              variant="outlined"
-              density="compact"
-              hide-details="auto"
               :error-messages="invoiceMailError"
             />
           </v-col>
-          <v-col cols="12" sm="6" class="py-1">
+          <v-col v-if="show('delivery_order_mail')" cols="12" sm="6" class="py-1">
             <v-text-field
               :label="t('CustomerVendorEditView.fields.delivery_order_mail')"
               v-model="localData.delivery_order_mail"
-              variant="outlined"
-              density="compact"
-              hide-details="auto"
               :error-messages="deliveryMailError"
             />
           </v-col>
         </template>
       </v-row>
-    </v-card-text>
-  </v-card>
+  </section-card>
 </template>
 
 <script>
 import { computed, ref, watch } from 'vue'
+import SectionCard from '@/core/components/layout/section-card.vue'
 import { useI18n } from 'vue-i18n'
+import { useCvEasymode } from '../composables/useCvEasymode.js'
 import axios from 'axios'
 import { useEmailActions } from '@/core/composables/useEmailActions.js'
 
 export default {
   name: 'CommunicationCard',
+  components: { SectionCard },
   props: {
     modelValue: { type: Object, required: true },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     const { t } = useI18n()
+    const { show } = useCvEasymode()
     const { openEmail, openUrl } = useEmailActions()
     const localData = computed({
       get: () => props.modelValue,
@@ -455,6 +417,7 @@ export default {
     })
 
     return {
+      show,
       localData, t,
       phoneNumbers, addPhoneNumber, removePhoneNumber,
       emails, addEmail, removeEmail, emailEntryErrors, checkEmailEntryDns,
@@ -465,9 +428,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.bg-grey-lighten-4 {
-  background-color: #f5f5f5;
-}
-</style>

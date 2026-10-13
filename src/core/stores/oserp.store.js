@@ -110,6 +110,17 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     /**
+     * Prüft ob wiederkehrende Rechnungen angeboten werden (Standard: true).
+     * Aus: kein Hinweis im Auftrag, kein Menüpunkt — bestehende Abrechnungen
+     * laufen weiter und bleiben an ihrem Auftrag sichtbar.
+     */
+    function isRecurringEnabled() {
+        const v = getClientDefaultValue('feature_recurring', null);
+        if (v === null) return true;
+        return v === true || v === 'true' || v === '1' || v === 1;
+    }
+
+    /**
      * Prüft ob der Benutzer Systemadministrator ist (Benutzer, Gruppen, Firmen verwalten)
      */
     function isAdmin() {
@@ -804,6 +815,7 @@ export const oserpStore = defineStore('oserpStore', () => {
     async function saveCV() {
         const response = await axios.post('/api/customer_vendor/', {
             action: 'saveCV',
+            employee_id: session.logged_in_employee?.id || null,
             profile: customer_vendor.value.profile,
             additional_billing_addresses: customer_vendor.value.additional_billing_addresses,
             contacts: customer_vendor.value.contacts,
@@ -824,6 +836,7 @@ export const oserpStore = defineStore('oserpStore', () => {
     async function deleteCV(id, src = 'C') {
         const response = await axios.post('/api/customer_vendor/', {
             action: 'deleteCV',
+            employee_id: session.logged_in_employee?.id || null,
             id: Number(id),
             src
         });
@@ -909,6 +922,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         isExtensionEnabled,
         isLxCars,
         isAnprEnabled,
+        isRecurringEnabled,
         isNvrEnabled,
         checkPermission,
         permit,

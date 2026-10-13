@@ -617,18 +617,24 @@ function suggestExpenseAccount($data) {
  * Der Bruttobetrag kommt aus dem Bankumsatz; Netto/Steuer werden aus dem
  * gewählten Steuersatz abgeleitet. Aufwandskonto per chart_id oder Kontonummer.
  *
+ * Splitbuchung: Mit `lines` wird der Umsatz auf mehrere Aufwandskonten und/oder
+ * Steuersätze verteilt (Ersatzteil als Wareneingang, ein anderes als Kfz-Kosten).
+ * Die Bruttobeträge der Positionen müssen zusammen den Umsatzbetrag ergeben.
+ * Gebucht wird eine Eingangsrechnung mit mehreren Beinen wie in kivitendo.
+ *
  * @param int    $data['bank_transaction_id'] Bankumsatz (Pflicht)
  * @param int    $data['bank_account_id']     Bankkonto (optional; sonst aus dem Umsatz)
  * @param int    $data['vendor_id']           Lieferant (Pflicht)
- * @param int    $data['expense_chart_id']    Aufwandskonto-ID (oder debit_account)
+ * @param int    $data['expense_chart_id']    Aufwandskonto-ID (oder debit_account; ohne `lines`)
  * @param string $data['debit_account']       Aufwandskonto-Nummer (Alternative)
- * @param float  $data['rate']                Steuersatz 19/7/0 (Default 19)
+ * @param float  $data['rate']                Steuersatz 19/7/0 (Default 19; ohne `lines`)
+ * @param array  $data['lines']               Positionen [{expense_chart_id|debit_account, gross, rate}] (optional)
  * @param string $data['invnumber']           Rechnungsnummer (optional)
  * @param string $data['notes']               Buchungstext (optional)
  * @param array  $data['documents']           Belege [{filename, mime_type, file_base64}, ...] (optional)
  * @param array  $data['document']            ein einzelner Beleg, ältere Form von documents (optional)
  * @param int    $data['document_id']         bereits hochgeladener Beleg (Alternative)
- * @testdata {"bank_transaction_id": 1, "vendor_id": 1000, "debit_account": "5400", "rate": 19}
+ * @testdata {"bank_transaction_id": 1, "vendor_id": 1000, "lines": [{"debit_account": "5400", "gross": 80.00, "rate": 19}, {"debit_account": "6530", "gross": 40.00, "rate": 19}]}
  */
 function createApFromBankTransaction($data) {
     require_once __DIR__ . '/../accounting/incoming_invoice_posting.php';
@@ -639,14 +645,19 @@ function createApFromBankTransaction($data) {
     if ($btId <= 0)     { resultInfo(false, 'VALIDATION_ERROR', 'Kein Bankumsatz angegeben'); return; }
     if ($vendorId <= 0) { resultInfo(false, 'VENDOR_REQUIRED', 'Kein Lieferant gewählt'); return; }
 
-    // Aufwandskonto: id direkt oder aus Kontonummer
-    $expenseChartId = intval($data['expense_chart_id'] ?? 0);
-    if ($expenseChartId <= 0 && !empty($data['debit_account'])) {
-        $row = $db->getOne("SELECT id FROM chart WHERE accno = :a", [':a' => trim($data['debit_account'])]);
-        if (!$row) { resultInfo(false, 'ACCOUNT_REQUIRED', 'Aufwandskonto (' . $data['debit_account'] . ') nicht im Kontenrahmen'); return; }
-        $expenseChartId = intval($row['id']);
+    // Positionen: übergeben oder — alte Aufrufform — eine aus Konto + Satz.
+    // Konten löst _iv_postAp auf (id oder Kontonummer).
+    $lines = is_array($data['lines'] ?? null) ? array_values($data['lines']) : [];
+    if (!$lines) {
+        if (intval($data['expense_chart_id'] ?? 0) <= 0 && trim($data['debit_account'] ?? '') === '') {
+            resultInfo(false, 'ACCOUNT_REQUIRED', 'Kein Aufwandskonto gewählt'); return;
+        }
+        $lines = [[
+            'expense_chart_id' => $data['expense_chart_id'] ?? 0,
+            'debit_account'    => $data['debit_account'] ?? '',
+            'rate'             => $data['rate'] ?? 19,
+        ]];
     }
-    if ($expenseChartId <= 0) { resultInfo(false, 'ACCOUNT_REQUIRED', 'Kein Aufwandskonto gewählt'); return; }
 
     $bt = $db->getOne(
         "SELECT bt.id, bt.amount, bt.transdate, bt.local_bank_account_id, COALESCE(bte.match_status, 'unmatched') AS match_status, bt.remote_name, bt.purpose
@@ -664,29 +675,41 @@ function createApFromBankTransaction($data) {
     );
     if (!$bankAccount) { resultInfo(false, 'NOT_FOUND', 'Bankkonto nicht gefunden'); return; }
 
-    // Brutto aus dem Umsatz, Netto/Steuer aus dem Satz ableiten
-    $gross   = round(abs(floatval($bt['amount'])), 2);
+    // Brutto aus dem Umsatz; eine einzelne Position bekommt ihn ganz, mehrere
+    // müssen ihn in Summe treffen. Netto/Steuer je Position leitet _iv_postAp
+    // aus dem Satz ab.
+    $gross = round(abs(floatval($bt['amount'])), 2);
     if ($gross <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Bankumsatz ohne Betrag'); return; }
-    $ratePct = floatval($data['rate'] ?? 19); if ($ratePct > 0 && $ratePct < 1) $ratePct *= 100;
-    $net     = $ratePct > 0 ? round($gross / (1 + $ratePct / 100), 2) : $gross;
-    $tax     = round($gross - $net, 2);
+    if (count($lines) === 1) {
+        $lines[0]['gross'] = $gross;
+        unset($lines[0]['net'], $lines[0]['tax']);
+    } else {
+        $sum = 0.0;
+        foreach ($lines as $i => $l) {
+            $lines[$i]['gross'] = round(abs(floatval($l['gross'] ?? 0)), 2);
+            unset($lines[$i]['net'], $lines[$i]['tax']);
+            $sum += $lines[$i]['gross'];
+        }
+        if (abs(round($sum, 2) - $gross) > 0.005) {
+            resultInfo(false, 'VALIDATION_ERROR',
+                'Die Positionen ergeben ' . number_format($sum, 2, ',', '.') . ' €, der Umsatz lautet über '
+                . number_format($gross, 2, ',', '.') . ' €. Bitte die Aufteilung prüfen.');
+            return;
+        }
+    }
 
     $invnumber = trim($data['invnumber'] ?? '') ?: ('BANK-' . $btId);
     $notes     = trim($data['notes'] ?? '') ?: trim(($bt['remote_name'] ?? '') . ' · ' . ($bt['purpose'] ?? ''), ' ·');
 
-    // 1) echte Eingangsrechnung anlegen
+    // 1) echte Eingangsrechnung anlegen (ein Bein je Position, wie kivitendo)
     try {
         $apId = _iv_postAp($db, [
-            'vendor_id'        => $vendorId,
-            'expense_chart_id' => $expenseChartId,
-            'invnumber'        => $invnumber,
-            'transdate'        => $bt['transdate'],
-            'duedate'          => $bt['transdate'],
-            'net'              => $net,
-            'tax'              => $tax,
-            'gross'            => $gross,
-            'rate'             => $data['rate'] ?? 19,
-            'notes'            => $notes ?: null,
+            'vendor_id' => $vendorId,
+            'invnumber' => $invnumber,
+            'transdate' => $bt['transdate'],
+            'duedate'   => $bt['transdate'],
+            'notes'     => $notes ?: null,
+            'lines'     => $lines,
         ]);
     } catch (ApiError $e) {
         resultInfo(false, $e->getMessage());
@@ -737,8 +760,12 @@ function createApFromBankTransaction($data) {
     $docWarning = $docWarnings ? implode('; ', $docWarnings) : null;
 
     // 4) Aufwandskonto für diesen Lieferanten merken, damit der Dialog es beim
-    //    nächsten Mal vorbelegt (siehe suggestExpenseAccount).
-    $accno = $db->getOne("SELECT accno FROM chart WHERE id = :id", ['id' => $expenseChartId]);
+    //    nächsten Mal vorbelegt (siehe suggestExpenseAccount). Bei einer
+    //    Splitbuchung zählt das Konto der größten Position.
+    usort($lines, fn($a, $b) => $b['gross'] <=> $a['gross']);
+    $accno = intval($lines[0]['expense_chart_id'] ?? 0) > 0
+        ? $db->getOne("SELECT accno FROM chart WHERE id = :id", ['id' => intval($lines[0]['expense_chart_id'])])
+        : $db->getOne("SELECT accno FROM chart WHERE accno = :a", ['a' => trim($lines[0]['debit_account'] ?? '')]);
     if ($accno) {
         $db->execute(<<<SQL
             INSERT INTO accounting_account_rules
@@ -758,9 +785,10 @@ function createApFromBankTransaction($data) {
     }
 
     resultInfo(true, 'Eingangsrechnung angelegt und bezahlt', [
-        'ap_id'       => $apId,
-        'vendor_id'   => $vendorId,
-        'gross'       => $gross,
+        'ap_id'        => $apId,
+        'vendor_id'    => $vendorId,
+        'gross'        => $gross,
+        'line_count'   => count($lines),
         'document_ids' => $documentIds,
         'doc_warning'  => $docWarning,
     ]);
@@ -796,6 +824,26 @@ function unbookTransaction($data) {
 
     if ($bt['match_status'] !== 'booked') {
         resultInfo(false, 'NOT_BOOKED', 'Umsatz ist nicht gebucht');
+        return;
+    }
+
+    // Dialogbuchung, die noch ein anderer Umsatz nutzt (Umbuchung Bank A ↔ Bank B,
+    // beide Seiten hängen an derselben gl): nur die eigene Verknüpfung lösen,
+    // die Buchung bleibt für die andere Seite stehen.
+    $shared = $db->getOne(<<<SQL
+        SELECT m.gl_id
+        FROM bank_transaction_acc_trans m
+        WHERE m.bank_transaction_id = :id AND m.gl_id IS NOT NULL
+          AND EXISTS (SELECT 1 FROM bank_transaction_acc_trans o
+                      WHERE o.gl_id = m.gl_id AND o.bank_transaction_id <> m.bank_transaction_id)
+        LIMIT 1
+    SQL, ['id' => $btId]);
+    if ($shared) {
+        $db->execute("DELETE FROM bank_transaction_acc_trans WHERE bank_transaction_id = :id", ['id' => $btId]);
+        $db->execute(
+            "WITH u AS (UPDATE bank_transactions SET cleared = false WHERE id = :id) INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id2, 'unmatched') ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status", ['id' => $btId, 'id2' => $btId]
+        );
+        resultInfo(true, 'Verknüpfung gelöst — die Buchung bleibt bestehen, sie gehört noch zu einem weiteren Umsatz');
         return;
     }
 
@@ -904,6 +952,21 @@ function unbookTransaction($data) {
         "DELETE FROM acc_trans WHERE acc_trans_id IN (" . implode(',', $idPlaceholders) . ")",
         $idParams
     );
+
+    // Dialogbuchung (gl) ohne verbliebene Beine: auch den Kopf entfernen, sonst
+    // bliebe eine leere Buchung mit Belegnummer im Journal stehen.
+    $transPlaceholders = []; $transParams = [];
+    foreach (array_keys($shareByTrans + $positiveByTrans + array_flip(array_map(fn($r) => intval($r['trans_id']), $rows))) as $i => $tid) {
+        $transPlaceholders[] = ":g{$i}";
+        $transParams["g{$i}"] = intval($tid);
+    }
+    if ($transPlaceholders) {
+        $db->execute(
+            "DELETE FROM gl WHERE id IN (" . implode(',', $transPlaceholders) . ")
+               AND NOT EXISTS (SELECT 1 FROM acc_trans at WHERE at.trans_id = gl.id)",
+            $transParams
+        );
+    }
 
     // paid je betroffenem Beleg zuruecknehmen. Die trans_id gehoert entweder zu
     // ar ODER zu ap (gemeinsame id-Sequenz).

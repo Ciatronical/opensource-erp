@@ -18,6 +18,7 @@
 | [Lager](lager.md) | Bestandsführung, Scanner-Modus und geführte Inventur |
 | [E-Mail](email.md) | IMAP/SMTP-Integration mit automatischer Kundenzuordnung |
 | [WhatsApp](whatsapp.md) | Business-Messaging über die WhatsApp Business API |
+| [Briefe und Postversand](briefe.md) | Briefe schreiben, Briefe und Belege elektronisch per Post versenden (Hybridbrief) |
 | [Telegram](telegram.md) | Sprachnotizen, Anschlagtafel |
 | [Telefonie (CRMTI)](telefonie-crmti.md) | CTI-Anbindung über Asterisk: Anruferkennung, Mitschnitt |
 | [DHL](dhl.md) | Versandintegration mit Label-Druck |

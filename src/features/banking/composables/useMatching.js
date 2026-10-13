@@ -138,6 +138,44 @@ export function useMatching() {
     // Aus einem offenen Bankumsatz direkt eine Eingangsrechnung anlegen und
     // sofort als bezahlt verbuchen (payload: {bank_transaction_id, vendor_id,
     // expense_chart_id|debit_account, rate, invnumber?, notes?})
+    // ── Umsatz ohne Beleg auf ein Konto buchen (Dialogbuchung) ──────────────
+    async function fetchChartBookingOptions(transactionId) {
+        const response = await axios.post(API_URL, { action: 'getChartBookingOptions', bank_transaction_id: transactionId })
+        if (response.data.success) return response.data.payload
+        throw new Error(response.data.payload || response.data.text)
+    }
+
+    async function bookTransactionToChart(payload) {
+        const response = await axios.post(API_URL, { action: 'bookTransactionToChart', ...payload })
+        if (response.data.success) return response.data.payload
+        throw new Error(typeof response.data.payload === 'string' ? response.data.payload : response.data.text)
+    }
+
+    async function linkTransactionToGl(transactionId, accTransId) {
+        const response = await axios.post(API_URL, { action: 'linkTransactionToGl', bank_transaction_id: transactionId, acc_trans_id: accTransId })
+        if (response.data.success) return response.data.payload
+        throw new Error(typeof response.data.payload === 'string' ? response.data.payload : response.data.text)
+    }
+
+    // ── Gebuchte Vorgänge ansehen und ändern ────────────────────────────────
+    async function fetchBookingDetail(params) {
+        const response = await axios.post(API_URL, { action: 'getBookingDetail', ...params })
+        if (response.data.success) return response.data.payload
+        throw new Error(typeof response.data.payload === 'string' ? response.data.payload : response.data.text)
+    }
+
+    async function updateChartBooking(payload) {
+        const response = await axios.post(API_URL, { action: 'updateChartBooking', ...payload })
+        if (response.data.success) return response.data.payload
+        throw new Error(typeof response.data.payload === 'string' ? response.data.payload : response.data.text)
+    }
+
+    async function updateApFromBankTransaction(payload) {
+        const response = await axios.post(API_URL, { action: 'updateApFromBankTransaction', ...payload })
+        if (response.data.success) return response.data.payload
+        throw new Error(typeof response.data.payload === 'string' ? response.data.payload : response.data.text)
+    }
+
     async function createApFromBankTransaction(payload) {
         const response = await axios.post(API_URL, {
             action: 'createApFromBankTransaction',
@@ -221,6 +259,12 @@ export function useMatching() {
         unmatchTransaction,
         bookMatchedTransactions,
         createApFromBankTransaction,
+        fetchChartBookingOptions,
+        bookTransactionToChart,
+        linkTransactionToGl,
+        fetchBookingDetail,
+        updateChartBooking,
+        updateApFromBankTransaction,
         suggestExpenseAccount,
         suggestTransactionContact,
 

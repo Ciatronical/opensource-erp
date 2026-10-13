@@ -17,7 +17,9 @@
             "priceRules": "Preisregeln",
             "turnover": "Umsatzstatistik",
             "emails": "E-Mails",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Özel değişkenler",
+            "history": "Zaman yolculuğu"
         },
         "billing": {
             "nameAddressTitle": "Name & Adresse",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Sipariş oluştur",
             "saveAndQuotation": "Teklif oluştur",
             "delete": "Sil",
-            "history": "Historie",
             "close": "Kapat",
-            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?"
+            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?",
+            "confirmDeleteVendor": "„{name}“ tedarikçisi gerçekten silinsin mi? İlgili kişiler, adresler ve notlar da kaldırılır.",
+            "cancel": "İptal"
         },
         "messages": {
             "saving": "Kaydediliyor...",
@@ -233,7 +236,10 @@
             "deleteError": "Fehler beim Löschen des Kunden.",
             "deleteContactError": "Fehler beim Löschen des Ansprechpartners",
             "deleteContactErrorTitle": "Hata",
-            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Tedarikçi silinirken hata oluştu.",
+            "deleted": "„{name}“ müşterisi silindi.",
+            "deletedVendor": "„{name}“ tedarikçisi silindi."
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
@@ -329,7 +335,13 @@
             "urlLabel": "Bezeichnung",
             "urlAddress": "URL",
             "addUrl": "URL ekle",
-            "openUrl": "Sayfayı aç"
+            "openUrl": "Sayfayı aç",
+            "vendornumber": "Tedarikçi numarası",
+            "hu_notify": "Muayene bildirimi gönder",
+            "hu_notify_hint": "Bu müşterinin tüm araçları için geçerlidir – ileride eklenecekler dahil. Anahtar kapalıysa muayene hatırlatması gönderilmez ve bildirim tek tek araçlarda artık açılamaz (müşteri ayarı önceliklidir).",
+            "phone_numbers": "Diğer telefon numaraları",
+            "emails": "Diğer e-posta adresleri",
+            "urls": "Diğer URL'ler"
         },
         "price-rules": {
             "title": "Preisregeln",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Test modu)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Test modu)"
+        },
+        "customVars": {
+            "title": "Özel değişkenler",
+            "noConfigs": "Müşteriler/tedarikçiler için özel değişken yapılandırılmamış."
+        },
+        "easymode": {
+            "label": "Müşteri formu görünümü",
+            "easy": "Basit",
+            "pro": "Tüm alanlar",
+            "easyHint": "Yalnızca firma yapılandırmasında günlük iş için seçilen alanlar ve sekmeler.",
+            "proHint": "Müşterinin veya tedarikçinin tüm alanları ve sekmeleri.",
+            "hiddenFilled": "{count} gizli alan değer içeriyor:",
+            "showAll": "Tüm alanları göster"
+        },
+        "history": {
+            "title": "Zaman yolculuğu",
+            "intro": "Kim ne zaman neyi değiştirdi — değiştirilen alanlarıyla birlikte her kayıt. Kaydırıcıyla geriye gidip ana verilerin o zaman nasıl göründüğünü görürsünüz.",
+            "count": "{n} olay | {n} olay",
+            "reload": "Yeniden yükle",
+            "filterEmployee": "Çalışan",
+            "search": "Ara",
+            "timeTravel": "Zaman yolculuğu",
+            "today": "Bugün",
+            "backToToday": "Bugüne dön",
+            "stepsBack": "{n} değişiklik geri | {n} değişiklik geri",
+            "asOf": "{time} tarihli değişiklikten önceki durum — bugüne göre farklar:",
+            "noDiff": "Bugünkü duruma göre fark yok.",
+            "empty": "Henüz değişiklik kaydedilmedi. Bundan sonra her kayıt tutulur.",
+            "noMatch": "Filtreye uyan olay yok.",
+            "unknownEmployee": "Bilinmiyor",
+            "created": "oluşturuldu",
+            "deleted": "silindi",
+            "yes": "Evet",
+            "no": "Hayır",
+            "tableProfile": "Ana veriler",
+            "tableContact": "İlgili kişi",
+            "tableShipto": "Teslimat adresi",
+            "tableBilling": "Ek fatura adresi",
+            "legacy": {
+                "saved": "kaydedildi",
+                "printed": "yazdırıldı",
+                "mailed": "e-posta ile gönderildi",
+                "deleted": "silindi",
+                "screened": "görüntülendi",
+                "posted": "kaydedildi"
+            }
         }
     }
 }

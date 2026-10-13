@@ -190,7 +190,15 @@
                         </template>
 
                         <template #item.gegenkonto="{ item }">
-                            <span v-if="item.gegenkonto_accno" class="text-caption text-medium-emphasis">
+                            <div v-if="item.split_count > 1" class="text-caption text-medium-emphasis">
+                                <v-chip size="x-small" variant="tonal" color="primary" prepend-icon="mdi-call-split" class="mb-1">
+                                    {{ t('BankingView.split.badge', { n: item.split_count }) }}
+                                </v-chip>
+                                <div v-for="(l, k) in item.split_lines" :key="k" class="text-no-wrap" :title="l.description">
+                                    {{ l.accno }} · {{ formatNumber(l.gross) }}<span v-if="l.tax_rate > 0"> · {{ Math.round(l.tax_rate * 100) }}&nbsp;%</span>
+                                </div>
+                            </div>
+                            <span v-else-if="item.gegenkonto_accno" class="text-caption text-medium-emphasis">
                                 {{ item.gegenkonto_accno }}<br>{{ item.gegenkonto_description }}
                             </span>
                             <span v-else class="text-disabled">—</span>
@@ -222,6 +230,16 @@
                         </template>
 
                         <template #item.actions="{ item }">
+                          <div class="d-flex ga-1 justify-end" @click.stop>
+                            <v-btn
+                                v-if="item.source_type === 'gl'"
+                                icon="mdi-pencil"
+                                size="x-small"
+                                variant="text"
+                                color="primary"
+                                :title="t('KasseView.editTransaction')"
+                                @click.stop="openEditTransaction(item.gl_id)"
+                            />
                             <v-btn
                                 v-if="item.source_type === 'gl'"
                                 icon="mdi-delete"
@@ -231,6 +249,7 @@
                                 :title="t('KasseView.delete')"
                                 @click="confirmDelete(item)"
                             />
+                          </div>
                         </template>
 
                         <template #no-data>
@@ -372,10 +391,21 @@
 
         </v-window>
 
+        <!-- ── Dialog: gebuchten Vorgang ansehen (Beine, Positionen) ── -->
+        <BookingDetailDialog
+            v-model="showDetail"
+            mode="cash"
+            :trans-id="detailTransId"
+            :cash-register-id="selectedRegisterId"
+            @edit="b => openEditTransaction(b.head.id)"
+            @delete="b => { showDetail = false; confirmDelete({ gl_id: b.head.id }) }"
+            @open-invoice="b => router.push({ name: 'faktura-invoice-view', params: { id: b.head.id } })"
+        />
+
         <!-- ── Dialog: Neue manuelle Buchung ── -->
-        <v-dialog v-model="showTransactionDialog" max-width="540" persistent>
+        <v-dialog v-model="showTransactionDialog" max-width="760" persistent>
             <v-card>
-                <v-card-title>{{ t('KasseView.newTransaction') }}</v-card-title>
+                <v-card-title>{{ editGlId ? t('KasseView.editTransaction') : t('KasseView.newTransaction') }}</v-card-title>
                 <v-card-text>
                     <v-btn-toggle
                         v-model="txData.type"
@@ -418,21 +448,17 @@
                         @keydown.enter="suggestFromAmount"
                     />
 
-                    <!-- Gegenkonto -->
-                    <v-autocomplete
-                        v-model="txData.counterChartId"
+                    <!-- Gegenkonto bzw. Positionen (Splitbuchung: ein Bon, mehrere
+                         Konten/Steuersätze — kivitendo-Dialogbuchung mit mehreren Zeilen) -->
+                    <split-lines
+                        v-model="txLines"
+                        :total="Number(txData.amount) || 0"
                         :items="filteredCounterCharts"
-                        :item-title="c => `${c.accno} – ${c.description}`"
-                        item-value="id"
-                        :label="t('KasseView.counterAccount')"
-                        density="compact"
-                        variant="outlined"
-                        class="mb-3"
-                        clearable
-                        :no-data-text="t('KasseView.noCharts')"
-                        :hint="taxHint"
-                        :persistent-hint="!!taxHint"
-                        @update:model-value="suggestFromCounter"
+                        :account-label="t('KasseView.counterAccount')"
+                        :tax-items="kasseTaxItems"
+                        :default-tax="c => c.tax_id || 0"
+                        class="mb-1"
+                        @account-change="suggestFromCounter"
                     />
 
                     <v-text-field
@@ -599,6 +625,9 @@ import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import PeriodPicker from '../components/kasse.period-picker.component.vue'
+import SplitLines from '../components/split-lines.component.vue'
+import BookingDetailDialog from '../components/booking-detail-dialog.component.vue'
+import { newLine, linesError } from '../composables/useSplitLines.js'
 import * as alerts from '@/core/utils/alerts.js'
 import { openBase64Pdf } from '@/core/utils/download.js'
 import Swal from 'sweetalert2'
@@ -627,6 +656,7 @@ const loading            = ref(false)
 const registers          = ref([])
 const selectedRegisterId = ref(null)
 const counterCharts      = ref([])    // Gegenkonten (Aufwand/Ertrag)
+const counterTaxes       = ref([])    // heute gültige Steuerschlüssel (Vorsteuer/Umsatzsteuer)
 const transactions       = ref([])
 const txLoading          = ref(false)
 const printing           = ref(false)
@@ -686,11 +716,18 @@ const txData = reactive({
     type:           'income',
     transdate:      new Date().toISOString().slice(0, 10),
     amount:         '',
-    counterChartId: null,
     description:    '',
     reference:      '',
     documentFile:   null,
 })
+// Positionen der Buchung: eine = gewöhnliche Buchung, mehrere = Splitbuchung
+const txLines = ref([newLine()])
+// Bearbeiten statt Anlegen: gl.id der Buchung
+const editGlId = ref(null)
+
+// Gebuchten Vorgang ansehen
+const showDetail    = ref(false)
+const detailTransId = ref(null)
 
 // Belegnummer: standardmäßig gesperrt (automatisch). Per Schloss freigebbar.
 const belegLocked = ref(true)
@@ -720,6 +757,24 @@ const filteredCounterCharts = computed(() => {
     return counterCharts.value
 })
 
+// Steuer je Position: Vorsteuer bei Ausgaben, Umsatzsteuer bei Einnahmen, plus
+// „ohne Steuer" (Geldtransit, steuerfreie Posten). value = tax.id fürs Backend.
+const kasseTaxItems = computed(() => {
+    const kind = txData.type === 'expense' ? 'expense' : 'income'
+    return [
+        ...counterTaxes.value
+            .filter(x => x.kind === kind)
+            // Bezeichnung aus der tax-Tabelle: „19 % Vorsteuer" — und bei gleichem
+            // Satz unterscheidbar (innergemeinschaftlicher Erwerb, §13b)
+            .map(x => ({
+                value: Number(x.tax_id),
+                rate:  Number(x.rate),
+                title: `${Math.round(Number(x.rate) * 100)} % ${x.taxdescription || ''}`.trim(),
+            })),
+        { value: 0, rate: 0, title: t('BankingView.split.taxNone') },
+    ]
+})
+
 // Freitextsuche über Beleg, Buchungstext, Partner, Gegenkonto, Beträge, Datum
 const filteredTransactions = computed(() => {
     const q = (search.value || '').trim().toLowerCase()
@@ -728,6 +783,7 @@ const filteredTransactions = computed(() => {
         const hay = [
             tx.reference, tx.description, tx.partner_name,
             tx.gegenkonto_accno, tx.gegenkonto_description,
+            ...(tx.split_lines || []).map(l => `${l.accno} ${l.description}`),
             formatDateShort(tx.transdate),
             String(tx.amount ?? ''), String(tx.saldo ?? ''),
         ].filter(Boolean).join(' ').toLowerCase()
@@ -786,8 +842,10 @@ const txHeaders = computed(() => {
           value: item => isNaN(Number(item.reference)) ? (item.reference || '') : Number(item.reference) },
         { title: t('KasseView.bookingText'), key: 'description', sortable: true,
           value: item => [item.description, item.partner_name].filter(Boolean).join(' ') },
-        { title: t('KasseView.counterAccount'), key: 'gegenkonto', width: '150px', sortable: true,
-          value: item => [item.gegenkonto_accno, item.gegenkonto_description].filter(Boolean).join(' ') },
+        { title: t('KasseView.counterAccount'), key: 'gegenkonto', width: '170px', sortable: true,
+          value: item => item.split_count > 1
+              ? item.split_lines.map(l => l.accno).join(' ')
+              : [item.gegenkonto_accno, item.gegenkonto_description].filter(Boolean).join(' ') },
         { title: t('KasseView.income'),      key: 'einnahme',    width: '110px', align: 'end', sortable: true,
           value: item => Number(item.amount) > 0 ? Number(item.amount) : null },
         { title: t('KasseView.expense'),     key: 'ausgabe',     width: '110px', align: 'end', sortable: true,
@@ -798,7 +856,7 @@ const txHeaders = computed(() => {
     if (documentsEnabled.value) {
         h.splice(4, 0, { title: '', key: 'document', width: '48px', sortable: false })
     }
-    h.push({ title: '', key: 'actions', width: '48px', sortable: false })
+    h.push({ title: '', key: 'actions', width: '96px', sortable: false })
     return h
 })
 
@@ -865,7 +923,10 @@ async function printCashbook() {
 
 async function loadCharts() {
     const res = await axios.post(API_URL, { action: 'getCashCounterCharts' })
-    if (res.data?.success) counterCharts.value = res.data.payload.charts
+    if (res.data?.success) {
+        counterCharts.value = res.data.payload.charts || []
+        counterTaxes.value  = res.data.payload.taxes  || []
+    }
 }
 
 async function loadTransactions() {
@@ -940,39 +1001,54 @@ function debouncedLoadOpenAp() {
 // ── Neue Buchung ─────────────────────────────────────────────────────────────
 
 function openNewTransaction() {
+    editGlId.value = null
     Object.assign(txData, {
         type:           'income',
         transdate:      new Date().toISOString().slice(0, 10),
         amount:         '',
-        counterChartId: null,
         description:    '',
         reference:      '',
         documentFile:   null,
     })
+    txLines.value = [newLine()]
     belegLocked.value = true
     showTransactionDialog.value = true
     loadNextBeleg()
 }
 
-// Steuerhinweis zum gewählten Gegenkonto: Der Betrag im Dialog ist brutto, das
-// Backend rechnet nach dem Steuerschlüssel des Kontos Umsatz-/Vorsteuer heraus
-// (wie kivitendos Dialogbuchung). Hier sieht man vorab, was auf dem Steuerkonto
-// landet — und ob das Konto überhaupt einen Steuerschlüssel hat.
-const taxHint = computed(() => {
-    const c = counterCharts.value.find(x => x.id === txData.counterChartId)
-    if (!c) return ''
-    const rate = Number(c.tax_rate || 0)
-    if (rate <= 0) return t('KasseView.taxNone')
-    const gross = Number(txData.amount) || 0
-    const net   = Math.round(gross / (1 + rate) * 100) / 100
-    const tax   = Math.round((gross - net) * 100) / 100
-    return t('KasseView.taxIncluded', {
-        rate: Math.round(rate * 100),
-        kind: t(txData.type === 'expense' ? 'KasseView.taxKindIn' : 'KasseView.taxKindOut'),
-        tax:  tax.toFixed(2).replace('.', ','),
-        net:  net.toFixed(2).replace('.', ','),
-    })
-})
+/**
+ * Vorhandene Kassenbuchung zum Ändern in den Dialog laden: Richtung aus dem
+ * Vorzeichen des Kassenbeins, Positionen aus den Beinen (Netto + Steuer = Brutto),
+ * Belegnummer bleibt.
+ */
+async function openEditTransaction(glId) {
+    showDetail.value = false
+    try {
+        const res = await axios.post(API_URL, { action: 'getBookingDetail', trans_id: glId, cash_register_id: selectedRegisterId.value })
+        const b = res.data?.payload?.bookings?.[0]
+        if (!res.data?.success || !b || b.head.type !== 'gl') { alerts.error(apiErrorText(res)); return }
+        if (b.closed_error) { alerts.error(b.closed_error); return }
+        const cashAccno = selectedRegister.value?.chart_accno
+        const cashLeg   = b.legs.find(l => l.accno === cashAccno) || b.legs[0]
+        editGlId.value = glId
+        Object.assign(txData, {
+            type:         Number(cashLeg?.amount) < 0 ? 'income' : 'expense',
+            transdate:    b.head.transdate,
+            amount:       Math.round(b.lines.reduce((s, l) => s + Number(l.gross), 0) * 100) / 100,
+            description:  b.head.description || '',
+            reference:    b.head.reference || '',
+            documentFile: null,
+        })
+        txLines.value = b.lines.map(l => newLine(
+            counterCharts.value.find(c => c.id === l.chart_id) || { id: l.chart_id, accno: l.accno, description: l.description, tax_id: l.tax_id, category: 'E' },
+            Number(l.tax_id) || 0, Number(l.gross)))
+        if (!txLines.value.length) txLines.value = [newLine()]
+        belegLocked.value = true
+        showTransactionDialog.value = true
+    } catch (e) {
+        alerts.error(e.message)
+    }
+}
 
 // Nächste fortlaufende Belegnummer vom Server holen und ins (gesperrte) Feld setzen
 async function loadNextBeleg() {
@@ -994,7 +1070,7 @@ function toggleBelegLock() {
 // kein Gegenkonto gewählt ist (füllt Typ, Gegenkonto und Buchungstext vor).
 async function suggestFromAmount() {
     const amt = Number(txData.amount)
-    if (!amt || amt <= 0 || txData.counterChartId) return
+    if (!amt || amt <= 0 || txLines.value[0].account) return
     try {
         const res = await axios.post(API_URL, {
             action:           'getCashBookingSuggestion',
@@ -1004,19 +1080,21 @@ async function suggestFromAmount() {
         const s = res.data?.payload?.suggestion
         if (!s) return
         if (s.type) txData.type = s.type
-        txData.counterChartId = s.counter_chart_id
+        const acc = counterCharts.value.find(c => c.id === s.counter_chart_id) || null
+        txLines.value[0].account = acc
+        txLines.value[0].tax     = acc ? (acc.tax_id || 0) : null
         if (!txData.description) txData.description = s.description || ''
     } catch (e) { /* Vorschlag ist optional */ }
 }
 
-// Beim manuellen Wählen eines Gegenkontos den letzten Buchungstext dazu vorschlagen.
-async function suggestFromCounter() {
-    if (!txData.counterChartId || txData.description) return
+// Beim manuellen Wählen des (ersten) Gegenkontos den letzten Buchungstext dazu vorschlagen.
+async function suggestFromCounter(index, account) {
+    if (index !== 0 || !account || txData.description) return
     try {
         const res = await axios.post(API_URL, {
             action:           'getCashBookingSuggestion',
             cash_register_id: selectedRegisterId.value,
-            counter_chart_id: txData.counterChartId,
+            counter_chart_id: account.id,
         })
         const s = res.data?.payload?.suggestion
         if (s && s.description && !txData.description) txData.description = s.description
@@ -1026,7 +1104,8 @@ async function suggestFromCounter() {
 async function saveTransaction() {
     const amt = Number(txData.amount)
     if (!amt || amt <= 0) { alerts.error(t('KasseView.amountRequired')); return }
-    if (!txData.counterChartId) { alerts.error(t('KasseView.counterAccountRequired')); return }
+    const lineProblem = linesError(amt, txLines.value)
+    if (lineProblem) { alerts.error(t('BankingView.split.' + lineProblem)); return }
 
     txSaving.value = true
     try {
@@ -1042,20 +1121,27 @@ async function saveTransaction() {
         }
 
         const res = await axios.post(API_URL, {
-            action:           'createCashTransaction',
+            action:           editGlId.value ? 'updateCashTransaction' : 'createCashTransaction',
+            gl_id:            editGlId.value || undefined,
             cash_register_id: selectedRegisterId.value,
             transdate:        txData.transdate,
             amount:           amt,
             type:             txData.type,
-            counter_chart_id: txData.counterChartId,
+            // Positionen (brutto je Konto, tax_id: 0 = ohne Steuer, fehlt = Kontostandard)
+            lines:            txLines.value.map(l => ({
+                chart_id: l.account.id,
+                gross:    Number(l.gross),
+                tax_id:   l.tax === null || l.tax === undefined ? undefined : Number(l.tax),
+            })),
             description:      txData.description || undefined,
             reference:        txData.reference   || undefined,
             document_id:      documentId          || undefined,
         })
 
         if (res.data?.success) {
-            alerts.success(t('KasseView.transactionCreated'))
+            alerts.success(t(editGlId.value ? 'KasseView.transactionUpdated' : 'KasseView.transactionCreated'))
             showTransactionDialog.value = false
+            editGlId.value = null
             await loadRegisters()
             await loadTransactions()
         } else {
@@ -1127,9 +1213,13 @@ function openInvoice(invoice) {
 // Klick auf eine Kassenbuch-Zeile: Kundenrechnung (AR) öffnen.
 // Manuelle Buchungen (gl) und Lieferantenzahlungen (ap) haben keine Kundenrechnung.
 function openCashbookRow(item) {
-    if (item?.source_type === 'ar' && item.gl_id) {
+    if (!item?.gl_id) return
+    if (item.source_type === 'ar') {
         router.push({ name: 'faktura-invoice-view', params: { id: item.gl_id } })
+        return
     }
+    detailTransId.value = item.gl_id
+    showDetail.value = true
 }
 
 async function confirmBookAr() {
@@ -1307,19 +1397,23 @@ watch(activeTab,    (tab) => {
 watch(() => route.query.tab, (tab) => {
     activeTab.value = TABS.includes(tab) ? tab : 'transactions'
 })
-// Typwechsel: gewähltes Gegenkonto nur verwerfen, wenn es nicht mehr passt.
+// Typwechsel: gewählte Gegenkonten nur verwerfen, wenn sie nicht mehr passen.
 // Transferkonten (Geldtransit/Bank, category A) gelten für beide Richtungen.
+// Die Steuer folgt dem Konto (Vorsteuer ↔ Umsatzsteuer sind andere Schlüssel).
 watch(() => txData.type, () => {
-    const c = counterCharts.value.find(x => x.id === txData.counterChartId)
-    if (!c || c.category === 'A') return
-    if ((txData.type === 'expense' && c.category !== 'E') ||
-        (txData.type === 'income'  && c.category !== 'I')) {
-        txData.counterChartId = null
+    for (const line of txLines.value) {
+        const c = line.account
+        if (c && c.category !== 'A' &&
+            ((txData.type === 'expense' && c.category !== 'E') ||
+             (txData.type === 'income'  && c.category !== 'I'))) {
+            line.account = null
+        }
+        line.tax = line.account ? (line.account.tax_id || 0) : null
     }
 })
 // Bei Jahreswechsel im Datum die automatische Belegnummer neu holen (solange gesperrt)
 watch(() => txData.transdate, (nd, od) => {
-    if (showTransactionDialog.value && belegLocked.value && (nd || '').slice(0, 4) !== (od || '').slice(0, 4)) {
+    if (showTransactionDialog.value && !editGlId.value && belegLocked.value && (nd || '').slice(0, 4) !== (od || '').slice(0, 4)) {
         loadNextBeleg()
     }
 })

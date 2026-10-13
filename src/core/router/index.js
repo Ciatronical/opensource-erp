@@ -23,6 +23,8 @@ const CalendarView = () => import('@/core/views/calendar/calendar.view.vue')
 const TasksView = () => import('@/core/views/tasks/tasks.view.vue')
 const EmailView = () => import('@/core/views/email/email.view.vue')
 const WhatsAppView = () => import('@/core/views/whatsapp/whatsapp.view.vue')
+const LettersView = () => import('@/core/views/letters/letters.view.vue')
+const LetterEditView = () => import('@/core/views/letters/letter.edit.view.vue')
 const DatenschutzView = () => import('@/core/views/datenschutz/datenschutz.view.vue')
 const DatenloeschungView = () => import('@/core/views/datenschutz/datenloeschung.view.vue')
 const ArticleEditView = () => import('@/core/views/article/article.edit.view.vue')
@@ -441,6 +443,23 @@ function buildRoutes() {
             ...routePath('routes.whatsapp'),
             name: 'whatsapp',
             component: WhatsAppView,
+        },
+        {
+            // Briefe: Liste, neuer Brief, Brief bearbeiten
+            ...routePath('routes.letters'),
+            name: 'letters',
+            component: LettersView,
+        },
+        {
+            ...routePath('routes.newLetter'),
+            name: 'letter-new',
+            component: LetterEditView,
+        },
+        {
+            ...routePath('routes.editLetter', '/:id(\\d+)'),
+            name: 'letter-edit',
+            component: LetterEditView,
+            props: true,
         },
         {
             // Rechnungen

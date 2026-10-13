@@ -19,6 +19,28 @@ Alle Einstellungen einer Firma liegen in `defaults_oserp` (Schlüssel-Wert) und 
 - **KI-Modellwahl** je Assistent (Fahrzeug-Chat, Weroni, Verkaufstext, Positionsvorschläge, Dokument-Chat, Spezialwerkzeug, Belegerkennung …); am Prompt kann der Benutzer das Modell für seine Sitzung umschalten
 - Gesundheitsprüfung der KI-Dienste (API-Schlüssel, lokales LLM)
 
+## Stammdaten-Listen
+
+Reiter **Werkzeuge → Stammdaten-Listen** in der Firmenkonfiguration: die einfachen Listen, die kivitendo unter „System“ pflegt, an einer Stelle.
+
+| Liste | Felder |
+|---|---|
+| Einheiten | Bezeichnung, Art (Ware/Dienstleistung), Basiseinheit, Umrechnungsfaktor |
+| Kundentypen | Bezeichnung, Rabatt in %, eigener Kundennummernkreis, Verkäufer |
+| Warengruppen, Preisgruppen | Bezeichnung, ungültig |
+| Preisfaktoren | Bezeichnung, Faktor („pro 100“) |
+| Abteilungen, Anreden | Bezeichnung |
+| Zahlungsbedingungen | Zahlungsziel, Skontofrist, Skonto %, automatische Fälligkeit, Texte für Angebote/Aufträge und Rechnungen, ungültig |
+| Lieferbedingungen | Bezeichnung, Belegtext, ungültig |
+| Belegsprachen | Bezeichnung, Vorlagen- und Artikelcode, Zahlen- und Datumsformat, ungültig |
+| Projekttypen, Projektstatus | Bezeichnung, intern bzw. technischer Schlüssel |
+
+- Jede Liste ist ein aufklappbarer Abschnitt mit Suche über alle Listen und Einträge; die Einstellungssuche springt direkt in die Liste
+- Reihenfolge per Drag&Drop (Listen mit Sortierspalte), Bearbeiten im Dialog, Pflichtfeld- und Zahlprüfung im Frontend
+- Einträge, die in Belegen, Artikeln oder Kunden verwendet werden, tragen ein Verknüpfungssymbol: nicht löschbar, bei Einheiten ist die Bezeichnung gesperrt — stattdessen auf ungültig setzen
+- Technik: `backend/api/oserp_config/master_lists.php` mit Whitelist der Tabellen und Spalten (`getMasterLists`, `saveMasterListItem`, `deleteMasterListItem`, `reorderMasterList`), je Vorgang eine Abfrage; Darstellung in `src/core/views/config/tabs/masterListsConfig.js`
+- Noch nicht abgedeckt aus kivitendos System-Menü: benutzerdefinierte Variablen, CSV-Import, Dialogbuchungen korrigieren, Hintergrundjobs
+
 ## Systemeinstellungen
 
 Nur für Systemadministratoren: die `settings.ini` über die Oberfläche bearbeiten (Datenbankzugang, Sitzung, Protokollierung, Zeitzone). Ein geänderter Datenbankzugang wird vor dem Speichern ausprobiert, Werte mit Steuerzeichen werden abgewiesen, vor jedem Schreiben entsteht eine Sicherungskopie.

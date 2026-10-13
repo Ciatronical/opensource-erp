@@ -266,7 +266,7 @@ import Link from '@tiptap/extension-link'
 import { TaskList, TaskItem } from '@tiptap/extension-list'
 import { TableKit } from '@tiptap/extension-table'
 import { Placeholder } from '@tiptap/extensions'
-import { Extension } from '@tiptap/core'
+import { Extension, Node, mergeAttributes } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 /**
@@ -299,6 +299,37 @@ const CtrlClickLink = Extension.create({
                 }
             })
         ]
+    }
+})
+
+/**
+ * Platzhalter als Baustein im Text (z. B. Briefe: Name, Kundennummer, Datum).
+ *
+ * Erscheint im Editor als kleine Pille mit lesbarem Namen und wird als
+ * <span data-placeholder="key">Label</span> gespeichert; beim Drucken setzt
+ * das Backend den Wert ein. Ein Atom: lässt sich als Ganzes löschen, nicht
+ * mitten hinein tippen.
+ */
+const PlaceholderNode = Node.create({
+    name: 'placeholderNode',
+    group: 'inline',
+    inline: true,
+    atom: true,
+    selectable: true,
+    addAttributes() {
+        return {
+            key: { default: '', parseHTML: el => el.getAttribute('data-placeholder') },
+            label: { default: '', parseHTML: el => el.textContent }
+        }
+    },
+    parseHTML() {
+        return [{ tag: 'span[data-placeholder]' }]
+    },
+    renderHTML({ node, HTMLAttributes }) {
+        return ['span', mergeAttributes({ 'data-placeholder': node.attrs.key, class: 'html-editor__placeholder' }, HTMLAttributes, { key: null, label: null }), node.attrs.label]
+    },
+    renderText({ node }) {
+        return '<%' + node.attrs.key + '%>'
     }
 })
 
@@ -356,8 +387,8 @@ export default defineComponent({
             default: 400
         }
     },
-    emits: ['update:modelValue', 'blur'],
-    setup(props, { emit }) {
+    emits: ['update:modelValue', 'blur', 'focus'],
+    setup(props, { emit, expose }) {
         const { t } = useI18n()
         const isFocused = ref(false)
         const linkInputRef = ref(null)
@@ -422,7 +453,8 @@ export default defineComponent({
                 placeholder: () => props.placeholder
             }),
             CtrlClickLink,
-            LinkShortcut
+            LinkShortcut,
+            PlaceholderNode
         ]
 
         if (isFull.value) {
@@ -443,6 +475,7 @@ export default defineComponent({
             },
             onFocus: () => {
                 isFocused.value = true
+                emit('focus')
             },
             onBlur: () => {
                 isFocused.value = false
@@ -480,6 +513,27 @@ export default defineComponent({
             const active = blockTypes.value.find(b => b.isActive())
             return active ? active.label : t('HtmlEditor.paragraph')
         })
+
+        /**
+         * Text an der Cursorposition einfügen (von aussen aufrufbar)
+         */
+        function insertText(text) {
+            if (!editor.value) return
+            editor.value.chain().focus().insertContent(text).run()
+        }
+
+        /**
+         * Platzhalter-Baustein an der Cursorposition einfügen
+         */
+        function insertPlaceholder(key, label) {
+            if (!editor.value) return
+            editor.value.chain().focus().insertContent([
+                { type: 'placeholderNode', attrs: { key, label } },
+                { type: 'text', text: ' ' }
+            ]).run()
+        }
+
+        expose({ insertText, insertPlaceholder, focus: () => editor.value?.commands.focus() })
 
         // Inhalt aktualisieren wenn sich modelValue ändert
         watch(() => props.modelValue, (newValue) => {
@@ -749,5 +803,20 @@ export default defineComponent({
 
 .html-editor--focused .html-editor__label {
     color: rgb(var(--v-theme-primary));
+}
+/* Platzhalter-Baustein (z. B. Name, Datum in Briefen) */
+.html-editor__content :deep(.html-editor__placeholder) {
+    display: inline-block;
+    padding: 0 7px;
+    border-radius: 10px;
+    background: rgba(25, 118, 210, 0.12);
+    color: #0d47a1;
+    font-size: 0.92em;
+    line-height: 1.5;
+    white-space: nowrap;
+    user-select: none;
+}
+.html-editor__content :deep(.html-editor__placeholder.ProseMirror-selectednode) {
+    outline: 2px solid rgba(25, 118, 210, 0.6);
 }
 </style>

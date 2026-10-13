@@ -5,10 +5,12 @@
 // buchen (ap + acc_trans). Erst dadurch ist die Rechnung über Bank/Kasse
 // zahlbar und erscheint in Offenen Posten / USt-Voranmeldung.
 //
-// Buchungssatz (kivitendo-Konvention Soll = negativ, Haben = positiv):
+// Buchungssatz (kivitendo-Konvention Soll = negativ, Haben = positiv), je Position
+// wie in kivitendos AP.pm (Kreditorenbuchung mit mehreren Zeilen):
 //   Aufwandskonto    amount = -netto   (Soll, chart_link 'AP_amount…', taxkey/tax_id)
 //   Vorsteuerkonto   amount = -steuer  (Soll, chart_link 'AP_tax…',    taxkey/tax_id)   [nur falls Steuer > 0]
-//   Verbindlichkeit  amount = +brutto  (Haben, chart_link 'AP',        taxkey 0)
+//   … weitere Positionen (anderes Konto und/oder anderer Steuersatz) …
+//   Verbindlichkeit  amount = +brutto  (Haben, chart_link 'AP',        taxkey 0)         [einmal, Summe]
 //
 // Lieferanten-Regeln (Sammelkreditor + 90%-Schwelle) siehe _iv_resolveVendor().
 
@@ -75,52 +77,132 @@ function _iv_apAccount($db) {
 // ── Eingangsrechnung verbuchen (ap + acc_trans) ───────────────────────────────
 
 /**
+ * Positionen einer Eingangsrechnung normalisieren: Konto auflösen, Netto/Steuer/
+ * Brutto konsistent ableiten, Steuerschlüssel je Satz ermitteln.
+ *
+ * Je Position reicht eine der Angaben gross (brutto) oder net; der Rest folgt
+ * aus dem Satz. Mit net UND tax wird der Satz daraus zurückgerechnet, falls er
+ * fehlt — so bleiben alte Aufrufe mit rate=0 bei vorhandener Steuer korrekt.
+ *
+ * @param array $lines [{expense_chart_id|debit_account, gross?, net?, tax?, rate?}]
+ * @return array je Position: chart_id, link, net, tax, gross, taxInfo
+ * @throws ApiError bei fehlendem Konto oder Betrag
+ */
+function _iv_normalizeLines($db, array $lines) {
+    if (!$lines) throw new ApiError('VALIDATION_ERROR', 'Keine Positionen angegeben');
+
+    // Alle Konten in einer Abfrage (per id oder Kontonummer)
+    $ids = []; $accnos = [];
+    foreach ($lines as $l) {
+        $id = intval($l['expense_chart_id'] ?? 0);
+        if ($id > 0) $ids[] = $id;
+        elseif (trim($l['debit_account'] ?? '') !== '') $accnos[] = trim($l['debit_account']);
+    }
+    $charts = $db->getAll(
+        "SELECT id, accno, link FROM chart
+         WHERE id = ANY(:ids::int[]) OR accno = ANY(:accnos::text[])",
+        [':ids' => '{' . implode(',', $ids) . '}',
+         ':accnos' => '{' . implode(',', array_map(fn($a) => '"' . str_replace('"', '', $a) . '"', $accnos)) . '}']
+    ) ?: [];
+    $byId = []; $byAccno = [];
+    foreach ($charts as $c) { $byId[intval($c['id'])] = $c; $byAccno[$c['accno']] = $c; }
+
+    $taxCache = [];
+    $out = [];
+    foreach (array_values($lines) as $i => $l) {
+        $pos = $i + 1;
+        $id  = intval($l['expense_chart_id'] ?? 0);
+        $acc = trim($l['debit_account'] ?? '');
+        $chart = $id > 0 ? ($byId[$id] ?? null) : ($acc !== '' ? ($byAccno[$acc] ?? null) : null);
+        if (!$chart) {
+            throw new ApiError('ACCOUNT_REQUIRED',
+                $acc !== '' ? "Aufwandskonto ({$acc}) nicht im Kontenrahmen" : "Position {$pos}: Aufwandskonto fehlt");
+        }
+
+        $net   = isset($l['net'])   ? round(floatval($l['net']), 2)   : null;
+        $tax   = isset($l['tax'])   ? round(floatval($l['tax']), 2)   : null;
+        $gross = isset($l['gross']) ? round(floatval($l['gross']), 2) : null;
+        $rate  = $l['rate'] ?? null;
+
+        if ($net === null && $gross !== null && $tax !== null) $net = round($gross - $tax, 2);
+        if ($net === null && $gross === null) throw new ApiError('VALIDATION_ERROR', "Position {$pos}: Betrag (net/gross) fehlt");
+
+        // Satz bei vorhandener Steuer aber fehlendem/0-Satz aus net/tax rückrechnen
+        $ratePct = floatval($rate ?? 0); if ($ratePct > 0 && $ratePct < 1) $ratePct *= 100;
+        if ($ratePct == 0 && $tax !== null && abs($tax) > 0.004 && $net !== null && abs($net) > 0.004) {
+            $ratePct = round($tax / $net * 100);
+        }
+        $ratePct = (int) round($ratePct);
+        if (!isset($taxCache[$ratePct])) $taxCache[$ratePct] = _iv_resolveTax($db, $ratePct);
+        $taxInfo = $taxCache[$ratePct];
+        $r = $taxInfo['rate_pct'] / 100;
+
+        if ($net === null) {
+            // Brutto vorgegeben (Bankumsatz, Bon): Netto herausrechnen
+            $net = $r > 0 ? round($gross / (1 + $r), 2) : $gross;
+            $tax = round($gross - $net, 2);
+        } else {
+            if ($tax === null)   $tax   = $r > 0 ? round($net * $r, 2) : 0.0;
+            if ($gross === null) $gross = round($net + $tax, 2);
+        }
+
+        $out[] = [
+            'chart_id' => intval($chart['id']),
+            'accno'    => $chart['accno'],
+            'link'     => $chart['link'] ?: 'AP_amount',
+            'net'      => $net,
+            'tax'      => $tax,
+            'gross'    => $gross,
+            'taxInfo'  => $taxInfo,
+        ];
+    }
+    return $out;
+}
+
+/**
  * Bucht eine Eingangsrechnung als echte kivitendo-ap (intern, ohne resultInfo).
  *
+ * Mehrere Positionen (Splitbuchung) werden wie in kivitendos AP.pm gebucht:
+ * je Position ein Aufwandsbein mit Steuerschlüssel und direkt dahinter das
+ * Vorsteuerbein, zum Schluss EIN Verbindlichkeitsbein über die Summe.
+ * ap.amount/netamount sind die Summen aller Positionen.
+ *
  * @param array $p {
- *   vendor_id, invnumber, transdate, duedate (optional),
- *   net, tax (optional), gross (optional), rate (Satz, optional wenn tax+net da),
- *   expense_chart_id, notes (optional), employee_id (optional)
+ *   vendor_id, invnumber, transdate, duedate (optional), notes (optional), employee_id (optional),
+ *   lines: [{expense_chart_id|debit_account, gross?|net?, tax?, rate?}, …]
+ *   — oder, alte Aufrufform mit genau einer Position:
+ *   expense_chart_id, net, tax (optional), gross (optional), rate (Satz, optional wenn tax+net da)
  * }
  * @return int Neue ap.id
  * @throws ApiError bei fehlenden Pflichtangaben/Konten.
  */
 function _iv_postAp($db, array $p) {
     $vendorId   = intval($p['vendor_id'] ?? 0);
-    $expenseId  = intval($p['expense_chart_id'] ?? 0);
     $invnumber  = trim($p['invnumber'] ?? '');
     $transdate  = $p['transdate'] ?? date('Y-m-d');
     $duedate    = !empty($p['duedate']) ? $p['duedate'] : $transdate;
     $notes      = trim($p['notes'] ?? '') ?: null;
 
     if ($vendorId <= 0)  throw new ApiError('VALIDATION_ERROR', 'vendor_id fehlt');
-    if ($expenseId <= 0) throw new ApiError('VALIDATION_ERROR', 'expense_chart_id (Aufwandskonto) fehlt');
     if ($invnumber === '') throw new ApiError('VALIDATION_ERROR', 'invnumber (Rechnungsnummer) fehlt');
 
-    // Beträge konsistent ableiten
-    $net   = isset($p['net'])   ? round(floatval($p['net']), 2)   : null;
-    $tax   = isset($p['tax'])   ? round(floatval($p['tax']), 2)   : null;
-    $gross = isset($p['gross']) ? round(floatval($p['gross']), 2) : null;
-    $rate  = $p['rate'] ?? null;
-
-    if ($net === null && $gross !== null && $tax !== null) $net = round($gross - $tax, 2);
-    if ($gross === null && $net !== null && $tax !== null) $gross = round($net + $tax, 2);
-    if ($net === null) throw new ApiError('VALIDATION_ERROR', 'Betrag (net/gross/tax) unvollständig');
-
-    // Steuer ggf. aus dem Satz rechnen
-    $taxInfo = _iv_resolveTax($db, $rate ?? 0);
-    if ($tax === null) {
-        $tax   = $taxInfo['rate_pct'] > 0 ? round($net * $taxInfo['rate_pct'] / 100, 2) : 0.0;
+    // Positionen: übergeben oder — alte Aufrufform — eine aus den Kopffeldern
+    $lines = is_array($p['lines'] ?? null) ? array_values($p['lines']) : [];
+    if (!$lines) {
+        if (intval($p['expense_chart_id'] ?? 0) <= 0) throw new ApiError('VALIDATION_ERROR', 'expense_chart_id (Aufwandskonto) fehlt');
+        if (!isset($p['net']) && !isset($p['gross'])) throw new ApiError('VALIDATION_ERROR', 'Betrag (net/gross/tax) unvollständig');
+        $lines = [[
+            'expense_chart_id' => $p['expense_chart_id'],
+            'net'   => $p['net']   ?? null,
+            'tax'   => $p['tax']   ?? null,
+            'gross' => $p['gross'] ?? null,
+            'rate'  => $p['rate']  ?? null,
+        ]];
     }
-    if ($gross === null) $gross = round($net + $tax, 2);
+    $lines = _iv_normalizeLines($db, $lines);
 
-    // Bei vorhandener Steuer aber rate=0 (nicht übergeben): Satz aus net/tax rückrechnen
-    if (abs($tax) > 0.004 && $taxInfo['rate_pct'] == 0 && abs($net) > 0.004) {
-        $taxInfo = _iv_resolveTax($db, round($tax / $net * 100));
-    }
-
-    $expense = $db->getOne("SELECT id, link FROM chart WHERE id = :id", [':id' => $expenseId]);
-    if (!$expense) throw new ApiError('NOT_FOUND', 'Aufwandskonto nicht gefunden');
+    $net   = round(array_sum(array_column($lines, 'net')), 2);
+    $gross = round(array_sum(array_column($lines, 'gross')), 2);
 
     $apAcc = _iv_apAccount($db);
     if (!$apAcc) throw new ApiError('DATA_ERROR', 'Verbindlichkeitskonto (AP) nicht im Kontenrahmen');
@@ -154,28 +236,37 @@ function _iv_postAp($db, array $p) {
     );
     $apId = intval($apRow['id']);
 
-    $insTrans = function ($chartId, $amount, $chartLink, $taxkey, $taxId) use ($db, $apId, $transdate) {
-        $db->execute(
-            "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, taxkey, tax_id)
-             VALUES (:tid, :cid, :amount, :td, :td, '', '', :clink, :tk, :taxid)",
-            [':tid' => $apId, ':cid' => $chartId, ':amount' => $amount, ':td' => $transdate,
-             ':clink' => $chartLink, ':tk' => $taxkey, ':taxid' => $taxId]
-        );
-    };
-
-    // Aufwand (Soll, negativ) – trägt taxkey/tax_id
-    $insTrans($expenseId, -$net, $expense['link'] ?: 'AP_amount', $taxInfo['taxkey'], $taxInfo['tax_id']);
-
-    // Vorsteuer (Soll, negativ) – nur falls Steuer anfällt. Betrag, nicht
-    // Vorzeichen prüfen: eine Gutschrift (negativer Netto) hat negative
-    // Vorsteuer, und ohne dieses Bein war der Buchungssatz um die Steuer
-    // unausgeglichen (Aufwand + Verbindlichkeit standen, die Vorsteuer fehlte).
-    if (abs($tax) > 0.004 && $taxInfo['vorsteuer_chart_id']) {
-        $insTrans($taxInfo['vorsteuer_chart_id'], -$tax, $taxInfo['vorsteuer_link'], $taxInfo['taxkey'], $taxInfo['tax_id']);
+    // Alle Beine in einem INSERT, Reihenfolge wie kivitendo
+    $legs = [];
+    foreach ($lines as $l) {
+        $ti = $l['taxInfo'];
+        // Aufwand (Soll, negativ) – trägt taxkey/tax_id
+        $legs[] = [$l['chart_id'], -$l['net'], $l['link'], $ti['taxkey'], $ti['tax_id']];
+        // Vorsteuer (Soll, negativ) – nur falls Steuer anfällt. Betrag, nicht
+        // Vorzeichen prüfen: eine Gutschrift (negativer Netto) hat negative
+        // Vorsteuer, und ohne dieses Bein wäre der Buchungssatz um die Steuer
+        // unausgeglichen.
+        if (abs($l['tax']) > 0.004 && $ti['vorsteuer_chart_id']) {
+            $legs[] = [$ti['vorsteuer_chart_id'], -$l['tax'], $ti['vorsteuer_link'], $ti['taxkey'], $ti['tax_id']];
+        }
     }
+    // Verbindlichkeit (Haben, positiv) – kein taxkey, einmal über die Summe
+    $legs[] = [intval($apAcc['id']), $gross, 'AP', 0, 0];
 
-    // Verbindlichkeit (Haben, positiv) – kein taxkey
-    $insTrans(intval($apAcc['id']), $gross, 'AP', 0, 0);
+    $values = []; $params = [':tid' => $apId, ':td' => $transdate];
+    foreach ($legs as $k => [$chartId, $amount, $link, $taxkey, $taxId]) {
+        $values[] = "(:tid, :c{$k}, :a{$k}, :td, :td, '', '', :l{$k}, :k{$k}, :t{$k})";
+        $params[":c{$k}"] = $chartId;
+        $params[":a{$k}"] = $amount;
+        $params[":l{$k}"] = $link;
+        $params[":k{$k}"] = $taxkey;
+        $params[":t{$k}"] = $taxId;
+    }
+    $db->execute(
+        "INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, gldate, source, memo, chart_link, taxkey, tax_id)
+         VALUES " . implode(', ', $values),
+        $params
+    );
 
     return $apId;
 }
@@ -418,7 +509,55 @@ function _iv_postBooking($db, $bookingId, array $opts = []) {
     $expense = $debitAccno !== '' ? $db->getOne("SELECT id FROM chart WHERE accno = :a", [':a' => $debitAccno]) : null;
     if (!$expense)       throw new ApiError('ACCOUNT_REQUIRED', 'Aufwandskonto (' . $debitAccno . ') nicht im Kontenrahmen');
 
-    $apId = _iv_postAp($db, [
+    // Splitbuchung aus dem Staging: Sobald mindestens einer Position ein eigenes
+    // Sachkonto zugewiesen wurde, wird je (Konto, Steuersatz) ein Buchungsbein
+    // geschrieben — Positionen ohne Konto laufen auf das Kopfkonto. Die Summe
+    // der Positionen muss dann den Belegbetrag treffen; sonst bleibt der Beleg
+    // zur Korrektur liegen, statt still mit einer falschen Aufteilung zu buchen.
+    // Reine KI-Positionen ohne Kontozuordnung ändern nichts am bisherigen
+    // Verhalten (eine Position aus den Kopffeldern).
+    $split = $db->getOne(<<<SQL
+        SELECT json_agg(json_build_object(
+                   'debit_account', g.account_number,
+                   'net',   g.net,
+                   'tax',   g.tax,
+                   'gross', g.gross,
+                   'rate',  g.tax_rate
+               ) ORDER BY g.account_number, g.tax_rate DESC) AS lines,
+               round(SUM(g.gross), 2) AS gross_sum
+        FROM (
+            SELECT COALESCE(NULLIF(l.account_number, ''), :head) AS account_number,
+                   COALESCE(l.tax_rate, 0)                       AS tax_rate,
+                   round(SUM(COALESCE(l.net_amount, 0)), 2)      AS net,
+                   round(SUM(COALESCE(l.tax_amount, l.gross_amount - l.net_amount, 0)), 2) AS tax,
+                   round(SUM(COALESCE(l.gross_amount, l.net_amount + COALESCE(l.tax_amount, 0), 0)), 2) AS gross
+            FROM accounting_booking_lines l
+            WHERE l.booking_id = :id
+              AND EXISTS (SELECT 1 FROM accounting_booking_lines x
+                          WHERE x.booking_id = l.booking_id AND NULLIF(x.account_number, '') IS NOT NULL)
+            GROUP BY 1, 2
+        ) g
+    SQL, [':id' => intval($bookingId), ':head' => $debitAccno]);
+
+    $lines = null;
+    if (!empty($split['lines'])) {
+        $grossSum = floatval($split['gross_sum']);
+        if (abs($grossSum - floatval($b['gross'])) > 0.05) {
+            throw new ApiError('LINES_MISMATCH',
+                'Die Positionen ergeben ' . number_format($grossSum, 2, ',', '.') . ' €, der Beleg lautet über '
+                . number_format(floatval($b['gross']), 2, ',', '.') . ' €. Bitte die Aufteilung prüfen.');
+        }
+        $lines = json_decode($split['lines'], true);
+    }
+
+    $apId = _iv_postAp($db, $lines ? [
+        'vendor_id' => $vendorId,
+        'invnumber' => $b['invoice_number'] ?: $b['reference'] ?: ('ER-' . $bookingId),
+        'transdate' => $b['invoice_date'] ?: date('Y-m-d'),
+        'duedate'   => $b['due_date'] ?: null,
+        'notes'     => $b['description'],
+        'lines'     => $lines,
+    ] : [
         'vendor_id'        => $vendorId,
         'expense_chart_id' => intval($expense['id']),
         'invnumber'        => $b['invoice_number'] ?: $b['reference'] ?: ('ER-' . $bookingId),

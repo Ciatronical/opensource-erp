@@ -51,6 +51,9 @@
         "login": "/login",
         "emails": "/emails",
         "whatsapp": "/whatsapp",
+        "letters": "/briefe",
+        "newLetter": "/brief/neu",
+        "editLetter": "/brief/bearbeiten",
         "docs": "/docs",
         "mechanic": "/mechaniker",
         "mechanicOrder": "/mechaniker/auftrag",
@@ -82,7 +85,8 @@
         "title": "Kontakt",
         "callHistory": "Anrufliste",
         "emails": "E-Mails",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "letters": "Briefe"
     },
     "SalesMenu": {
         "title": "Verkauf",

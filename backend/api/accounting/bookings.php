@@ -130,9 +130,13 @@ function getAccountingBooking($data) {
 
     if (!$booking) throw new ApiError('DATA_NOT_FOUND', 'Buchung nicht gefunden');
 
-    // Positionen laden
+    // Positionen laden — mit Bezeichnung des je Position gewählten Sachkontos
+    // (Splitbuchung: Positionen können auf verschiedene Konten laufen)
     $lines = $db->getAll(
-        "SELECT * FROM accounting_booking_lines WHERE booking_id = :id ORDER BY position",
+        "SELECT l.*, ch.description AS account_name
+         FROM accounting_booking_lines l
+         LEFT JOIN chart ch ON ch.accno = l.account_number
+         WHERE l.booking_id = :id ORDER BY l.position",
         [':id' => $bookingId]
     );
 
@@ -265,7 +269,10 @@ function rejectBooking($data) {
  * @param string $data['booking_date']   Buchungsdatum YYYY-MM-DD (optional)
  * @param int    $data['vendor_id']      Lieferant (optional)
  * @param string $data['cost_center']    Kostenstelle (optional)
- * @testdata {"booking_id": 1, "debit_account": "4980", "description": "Reparatur"}
+ * @param array  $data['lines']          Positionen komplett ersetzen (optional, nur vor dem Verbuchen):
+ *                                       [{description, net_amount, tax_rate, tax_amount, gross_amount, account_number}]
+ *                                       — account_number je Position macht die Freigabe zur Splitbuchung
+ * @testdata {"booking_id": 1, "debit_account": "4980", "description": "Reparatur", "lines": [{"description": "Bremsscheiben", "net_amount": 100, "tax_rate": 19, "tax_amount": 19, "gross_amount": 119, "account_number": "3400"}, {"description": "Entsorgung", "net_amount": 10, "tax_rate": 19, "tax_amount": 1.9, "gross_amount": 11.9, "account_number": "4980"}]}
  */
 function updateBooking($data) {
     $db = DbhCompany::begin();
@@ -316,17 +323,51 @@ function updateBooking($data) {
         }
     }
 
-    if (empty($fields)) {
+    // Positionen komplett ersetzen — nur solange der Beleg nicht im Hauptbuch
+    // steht (danach sind sie Teil der gebuchten ap und dürfen nicht abweichen).
+    $lines = is_array($data['lines'] ?? null) ? array_values($data['lines']) : null;
+    if ($lines !== null && $isPosted) {
+        throw new ApiError('ALREADY_POSTED', 'Der Beleg ist bereits im Hauptbuch gebucht — Positionen können nicht mehr geändert werden.');
+    }
+
+    if (empty($fields) && $lines === null) {
         throw new ApiError('VALIDATION_ERROR', 'Keine Felder zum Aktualisieren');
     }
 
-    $fields[] = "mtime = NOW()";
-    $fieldStr = implode(', ', $fields);
+    if ($lines !== null) {
+        $db->execute(<<<SQL
+            WITH weg AS (
+                DELETE FROM accounting_booking_lines WHERE booking_id = :id
+            )
+            INSERT INTO accounting_booking_lines
+                (booking_id, position, description, quantity, unit_price, net_amount, tax_rate, tax_amount, gross_amount, account_number, cost_center)
+            SELECT :id2,
+                   ROW_NUMBER() OVER (ORDER BY COALESCE(l.position, 0)),
+                   l.description,
+                   COALESCE(l.quantity, 1),
+                   l.unit_price,
+                   l.net_amount,
+                   l.tax_rate,
+                   COALESCE(l.tax_amount, l.gross_amount - l.net_amount),
+                   COALESCE(l.gross_amount, l.net_amount + COALESCE(l.tax_amount, 0)),
+                   NULLIF(trim(l.account_number), ''),
+                   l.cost_center
+            FROM json_to_recordset(:lines::json)
+                 AS l(position int, description text, quantity numeric, unit_price numeric, net_amount numeric,
+                      tax_rate numeric, tax_amount numeric, gross_amount numeric,
+                      account_number text, cost_center text)
+        SQL, [':id' => $bookingId, ':id2' => $bookingId, ':lines' => json_encode($lines)]);
+    }
 
-    $db->execute(
-        "UPDATE accounting_bookings SET {$fieldStr} WHERE id = :id",
-        $params
-    );
+    if ($fields) {
+        $fields[] = "mtime = NOW()";
+        $fieldStr = implode(', ', $fields);
+
+        $db->execute(
+            "UPDATE accounting_bookings SET {$fieldStr} WHERE id = :id",
+            $params
+        );
+    }
 
     // Kontenzuordnung als Regel speichern (fuer zukuenftige KI-Vorschlaege)
     if (isset($data['debit_account']) && isset($booking['vendor_id'])) {
@@ -526,9 +567,19 @@ function searchAccounts($data) {
         $params[':link'] = '%' . $link . '%';
     }
 
+    // Mit dem heute gültigen Steuersatz des Kontos, damit ein Dialog beim
+    // Wählen des Kontos den Satz vorbelegen kann (3300 Wareneingang 7 % → 7).
     $accounts = $db->getAll(
-        "SELECT c.id, c.accno, c.description, c.link, c.category
-         FROM chart c WHERE {$where} ORDER BY c.accno LIMIT 20",
+        "SELECT c.id, c.accno, c.description, c.link, c.category,
+                COALESCE(tk.rate, 0) AS tax_rate, COALESCE(tk.tax_id, 0) AS tax_id
+         FROM chart c
+         LEFT JOIN LATERAL (
+             SELECT t.rate, t.id AS tax_id
+             FROM taxkeys k JOIN tax t ON t.id = k.tax_id
+             WHERE k.chart_id = c.id AND k.startdate <= CURRENT_DATE AND t.chart_id IS NOT NULL
+             ORDER BY k.startdate DESC LIMIT 1
+         ) tk ON true
+         WHERE {$where} ORDER BY c.accno LIMIT 20",
         $params
     );
 

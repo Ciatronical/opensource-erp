@@ -227,7 +227,7 @@
         </v-row>
 
         <!-- Eingangsrechnung direkt aus dem Bankumsatz anlegen + bezahlen -->
-        <v-dialog v-model="apDialog" max-width="560">
+        <v-dialog v-model="apDialog" max-width="780">
             <v-card v-if="apSource">
                 <v-card-title>{{ t('BankingView.reconciliation.createApTitle') }}</v-card-title>
                 <v-card-subtitle>
@@ -245,25 +245,22 @@
                         :loading="vendorLoading" no-filter clearable
                         prepend-inner-icon="mdi-domain"
                         @update:search="onVendorSearch" />
-                    <v-autocomplete
-                        v-model="apForm.account"
-                        :items="accountOptions"
-                        item-title="label" item-value="accno" return-object
-                        :label="t('BankingView.reconciliation.expenseAccount') + ' *'"
-                        density="comfortable" variant="outlined"
-                        :loading="accountLoading" no-filter clearable
-                        prepend-inner-icon="mdi-bank-outline"
-                        @update:search="onAccountSearch" />
-                    <div class="d-flex ga-3">
-                        <v-select
-                            v-model.number="apForm.rate" :items="taxRateOptions"
-                            :label="t('BankingView.reconciliation.taxRate')"
-                            density="comfortable" variant="outlined" style="max-width: 200px" />
-                        <v-text-field
-                            v-model="apForm.invnumber"
-                            :label="t('BankingView.reconciliation.invnumber')"
-                            density="comfortable" variant="outlined" />
-                    </div>
+                    <!-- Aufwandskonto und Steuersatz je Position; „Aufteilen" für eine
+                         Splitbuchung (z. B. Wareneingang + Mahnkosten auf 6436) -->
+                    <split-lines
+                        v-model="apForm.lines"
+                        :total="Math.abs(Number(apSource.amount)) || 0"
+                        :search-accounts="searchAccountsForSplit"
+                        :account-title="a => a ? `${a.accno} ${a.description}` : ''"
+                        :account-label="t('BankingView.reconciliation.expenseAccount') + ' *'"
+                        :tax-items="taxRateOptions"
+                        :default-tax="defaultRateFor"
+                        class="mt-2"
+                    />
+                    <v-text-field
+                        v-model="apForm.invnumber"
+                        :label="t('BankingView.reconciliation.invnumber')"
+                        density="comfortable" variant="outlined" />
                     <v-alert type="info" variant="tonal" density="compact">
                         {{ t('BankingView.reconciliation.createApHint') }}
                     </v-alert>
@@ -272,7 +269,7 @@
                     <v-spacer />
                     <v-btn variant="text" @click="apDialog = false">{{ t('BankingView.reconciliation.cancel') }}</v-btn>
                     <v-btn color="primary" variant="elevated" :loading="apSaving"
-                           :disabled="!apForm.vendor_id || !apForm.account" @click="submitAp">
+                           :disabled="!apForm.vendor_id || !!apLinesProblem" @click="submitAp">
                         <v-icon start>mdi-check</v-icon>{{ t('BankingView.reconciliation.createApBook') }}
                     </v-btn>
                 </v-card-actions>
@@ -288,6 +285,8 @@ import { useBanking } from '../composables/useBanking.js'
 import { useMatching } from '../composables/useMatching.js'
 import { useAccounting } from '@/features/accounting/composables/useAccounting.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import SplitLines from '../components/split-lines.component.vue'
+import { newLine, linesError } from '../composables/useSplitLines.js'
 import * as alerts from '@/core/utils/alerts.js'
 
 const { t } = useI18n()
@@ -420,25 +419,35 @@ async function reloadData() {
 const apDialog = ref(false)
 const apSource = ref(null)
 const apSaving = ref(false)
-const apForm = ref({ vendor_id: null, account: null, rate: 19, invnumber: '' })
+const apForm = ref({ vendor_id: null, lines: [newLine()], invnumber: '' })
 const vendorOptions = ref([])
 const vendorLoading = ref(false)
-const accountOptions = ref([])
-const accountLoading = ref(false)
 let vendorTimer = null
-let accountTimer = null
+// Steuersatz je Position (value = Prozentsatz fürs Backend, rate = Bruchteil für die Vorschau)
 const taxRateOptions = [
-    { title: '19 %', value: 19 },
-    { title: '7 %', value: 7 },
-    { title: '0 % (steuerfrei)', value: 0 }
+    { title: '19 %', value: 19, rate: 0.19 },
+    { title: '7 %',  value: 7,  rate: 0.07 },
+    { title: t('BankingView.split.taxNone'), value: 0, rate: 0 }
 ]
+const apLinesProblem = computed(() =>
+    apSource.value ? linesError(Math.abs(Number(apSource.value.amount)) || 0, apForm.value.lines) : 'errorNoLines')
 
 function openApDialog(bt) {
     apSource.value = bt
-    apForm.value = { vendor_id: null, account: null, rate: 19, invnumber: '' }
+    apForm.value = { vendor_id: null, lines: [newLine()], invnumber: '' }
     vendorOptions.value = []
-    accountOptions.value = []
     apDialog.value = true
+}
+
+/** Steuersatz eines Kontos (heute gültiger Steuerschlüssel aus searchAccounts), sonst 19 % */
+function defaultRateFor(account) {
+    if (!account || account.tax_rate == null) return 19
+    return Math.round(Number(account.tax_rate) * 100)
+}
+
+async function searchAccountsForSplit(q) {
+    const rows = await searchAccounts(q)
+    return rows.map(a => ({ id: a.id, accno: a.accno, description: a.description, tax_rate: a.tax_rate }))
 }
 
 function onVendorSearch(q) {
@@ -451,30 +460,24 @@ function onVendorSearch(q) {
     }, 300)
 }
 
-function onAccountSearch(q) {
-    clearTimeout(accountTimer)
-    if (!q || q.length < 1) return
-    accountTimer = setTimeout(async () => {
-        accountLoading.value = true
-        const rows = await searchAccounts(q)
-        accountOptions.value = rows.map(a => ({ id: a.id, accno: a.accno, label: `${a.accno} ${a.description}` }))
-        accountLoading.value = false
-    }, 300)
-}
-
 async function submitAp() {
-    if (!apForm.value.vendor_id || !apForm.value.account) return
+    if (!apForm.value.vendor_id || apLinesProblem.value) return
     apSaving.value = true
     try {
         const res = await matching.createApFromBankTransaction({
             bank_transaction_id: apSource.value.id,
             bank_account_id: selectedAccountId.value,
             vendor_id: apForm.value.vendor_id,
-            expense_chart_id: apForm.value.account.id,
-            rate: apForm.value.rate,
+            lines: apForm.value.lines.map(l => ({
+                expense_chart_id: l.account.id,
+                gross: Number(l.gross),
+                rate:  Number(l.tax ?? 19)
+            })),
             invnumber: apForm.value.invnumber || undefined
         })
-        alerts.success(t('BankingView.reconciliation.createApSuccess', { gross: formatCurrency(res.gross) }))
+        alerts.success(res.line_count > 1
+            ? t('BankingView.reconciliation.createApSuccessSplit', { gross: formatCurrency(res.gross), n: res.line_count })
+            : t('BankingView.reconciliation.createApSuccess', { gross: formatCurrency(res.gross) }))
         apDialog.value = false
         await reloadData()
     } catch (e) {

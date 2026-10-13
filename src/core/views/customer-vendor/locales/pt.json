@@ -17,7 +17,9 @@
             "priceRules": "Regras de preços",
             "turnover": "Estatísticas de vendas",
             "emails": "E-mails",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Variáveis personalizadas",
+            "history": "Viagem no tempo"
         },
         "billing": {
             "nameAddressTitle": "Nome e endereço",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Criar encomenda",
             "saveAndQuotation": "Criar orçamento",
             "delete": "Eliminar",
-            "history": "Histórico",
             "close": "Fechar",
-            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?"
+            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?",
+            "confirmDeleteVendor": "Eliminar realmente o fornecedor «{name}»? As pessoas de contacto, os endereços e as observações são removidos também.",
+            "cancel": "Cancelar"
         },
         "messages": {
             "saving": "A guardar...",
@@ -233,7 +236,10 @@
             "deleteError": "Erro ao eliminar o cliente.",
             "deleteContactError": "Fehler beim Löschen des Ansprechpartners",
             "deleteContactErrorTitle": "Fehler",
-            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Erro ao eliminar o fornecedor.",
+            "deleted": "Cliente «{name}» eliminado.",
+            "deletedVendor": "Fornecedor «{name}» eliminado."
         },
         "duplicate": {
             "title": "Possível duplicado",
@@ -329,7 +335,13 @@
             "urlLabel": "Descrição",
             "urlAddress": "URL",
             "addUrl": "Adicionar URL",
-            "openUrl": "Abrir página"
+            "openUrl": "Abrir página",
+            "vendornumber": "Número de fornecedor",
+            "hu_notify": "Enviar lembretes de inspeção",
+            "hu_notify_hint": "Aplica-se a todos os veículos deste cliente – também aos criados futuramente. Se o interruptor estiver desligado, não são enviados lembretes de inspeção e a notificação deixa de poder ser ativada no veículo individual (o cliente tem prioridade).",
+            "phone_numbers": "Outros números de telefone",
+            "emails": "Outros endereços de e-mail",
+            "urls": "Outros URLs"
         },
         "price-rules": {
             "title": "Regras de preços",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Modo de teste)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Modo de teste)"
+        },
+        "customVars": {
+            "title": "Variáveis personalizadas",
+            "noConfigs": "Não há variáveis personalizadas configuradas para clientes/fornecedores."
+        },
+        "easymode": {
+            "label": "Vista da ficha de cliente",
+            "easy": "Simples",
+            "pro": "Todos os campos",
+            "easyHint": "Só os campos e separadores escolhidos na configuração da empresa para o dia a dia.",
+            "proHint": "Todos os campos e separadores do cliente ou do fornecedor.",
+            "hiddenFilled": "{count} campos ocultos contêm valores:",
+            "showAll": "Mostrar todos os campos"
+        },
+        "history": {
+            "title": "Viagem no tempo",
+            "intro": "Quem alterou o quê e quando — cada gravação com os campos alterados. Com o cursor recua no tempo e vê como estavam os dados mestre nessa altura.",
+            "count": "{n} evento | {n} eventos",
+            "reload": "Recarregar",
+            "filterEmployee": "Colaborador",
+            "search": "Procurar",
+            "timeTravel": "Viagem no tempo",
+            "today": "Hoje",
+            "backToToday": "Voltar a hoje",
+            "stepsBack": "{n} alteração atrás | {n} alterações atrás",
+            "asOf": "Estado antes da alteração de {time} — diferenças em relação a hoje:",
+            "noDiff": "Nenhuma diferença em relação ao estado atual.",
+            "empty": "Ainda não há alterações registadas. A partir de agora, cada gravação fica registada.",
+            "noMatch": "Nenhum evento corresponde ao filtro.",
+            "unknownEmployee": "Desconhecido",
+            "created": "criado",
+            "deleted": "eliminado",
+            "yes": "Sim",
+            "no": "Não",
+            "tableProfile": "Dados mestre",
+            "tableContact": "Pessoa de contacto",
+            "tableShipto": "Endereço de entrega",
+            "tableBilling": "Endereço de faturação adicional",
+            "legacy": {
+                "saved": "guardado",
+                "printed": "impresso",
+                "mailed": "enviado por e-mail",
+                "deleted": "eliminado",
+                "screened": "consultado",
+                "posted": "lançado"
+            }
         }
     }
 }

@@ -17,7 +17,9 @@
             "priceRules": "Regles de prix",
             "turnover": "Statistiques de chiffre d'affaires",
             "emails": "E-mails",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Variables personnalisées",
+            "history": "Voyage dans le temps"
         },
         "billing": {
             "nameAddressTitle": "Nom et adresse",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Saisir une commande",
             "saveAndQuotation": "Saisir un devis",
             "delete": "Supprimer",
-            "history": "Historique",
             "close": "Fermer",
-            "confirmDelete": "Voulez-vous vraiment supprimer ce client ?"
+            "confirmDelete": "Voulez-vous vraiment supprimer ce client ?",
+            "confirmDeleteVendor": "Voulez-vous vraiment supprimer le fournisseur « {name} » ? Les personnes de contact, adresses et remarques seront également supprimées.",
+            "cancel": "Annuler"
         },
         "messages": {
             "saving": "Enregistrement en cours...",
@@ -233,7 +236,10 @@
             "deleteError": "Erreur lors de la suppression du client.",
             "deleteContactError": "Erreur lors de la suppression de la personne de contact",
             "deleteContactErrorTitle": "Erreur",
-            "autoSaveWarning": "Veuillez d'abord remplir {fields} pour enregistrer le jeu de donnees."
+            "autoSaveWarning": "Veuillez d'abord remplir {fields} pour enregistrer le jeu de donnees.",
+            "deleteErrorVendor": "Erreur lors de la suppression du fournisseur.",
+            "deleted": "Client « {name} » supprimé.",
+            "deletedVendor": "Fournisseur « {name} » supprimé."
         },
         "duplicate": {
             "title": "Doublon possible",
@@ -329,7 +335,13 @@
             "urlLabel": "Designation",
             "urlAddress": "URL",
             "addUrl": "Ajouter une URL",
-            "openUrl": "Ouvrir la page"
+            "openUrl": "Ouvrir la page",
+            "vendornumber": "Numéro de fournisseur",
+            "hu_notify": "Envoyer les rappels de contrôle technique",
+            "hu_notify_hint": "S'applique à tous les véhicules de ce client – y compris ceux créés ultérieurement. Si l'option est désactivée, aucun rappel de contrôle technique n'est envoyé et la notification ne peut plus être activée sur un véhicule individuel (le client a la priorité).",
+            "phone_numbers": "Autres numéros de téléphone",
+            "emails": "Autres adresses e-mail",
+            "urls": "Autres URL"
         },
         "price-rules": {
             "title": "Regles de prix",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Mode test)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Mode test)"
+        },
+        "customVars": {
+            "title": "Variables personnalisées",
+            "noConfigs": "Aucune variable personnalisée n'est configurée pour les clients/fournisseurs."
+        },
+        "easymode": {
+            "label": "Affichage de la fiche client",
+            "easy": "Simple",
+            "pro": "Tous les champs",
+            "easyHint": "Uniquement les champs et onglets choisis pour le quotidien dans la configuration de la société.",
+            "proHint": "Tous les champs et onglets du client ou du fournisseur.",
+            "hiddenFilled": "{count} champs masqués contiennent des valeurs :",
+            "showAll": "Afficher tous les champs"
+        },
+        "history": {
+            "title": "Voyage dans le temps",
+            "intro": "Qui a modifié quoi et quand — chaque enregistrement avec les champs modifiés. Avec le curseur, vous remontez le temps et voyez à quoi ressemblaient les données de base à l'époque.",
+            "count": "{n} événement | {n} événements",
+            "reload": "Recharger",
+            "filterEmployee": "Collaborateur",
+            "search": "Rechercher",
+            "timeTravel": "Voyage dans le temps",
+            "today": "Aujourd'hui",
+            "backToToday": "Retour à aujourd'hui",
+            "stepsBack": "{n} modification en arrière | {n} modifications en arrière",
+            "asOf": "État avant la modification du {time} — différences par rapport à aujourd'hui :",
+            "noDiff": "Aucune différence par rapport à l'état actuel.",
+            "empty": "Aucune modification enregistrée pour le moment. Désormais, chaque enregistrement est conservé.",
+            "noMatch": "Aucun événement ne correspond au filtre.",
+            "unknownEmployee": "Inconnu",
+            "created": "créé",
+            "deleted": "supprimé",
+            "yes": "Oui",
+            "no": "Non",
+            "tableProfile": "Données de base",
+            "tableContact": "Personne de contact",
+            "tableShipto": "Adresse de livraison",
+            "tableBilling": "Adresse de facturation supplémentaire",
+            "legacy": {
+                "saved": "enregistré",
+                "printed": "imprimé",
+                "mailed": "envoyé par e-mail",
+                "deleted": "supprimé",
+                "screened": "consulté",
+                "posted": "comptabilisé"
+            }
         }
     }
 }

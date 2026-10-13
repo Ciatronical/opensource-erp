@@ -242,6 +242,29 @@ unter dem Gegenkonto vorab, was im Betrag steckt („enthält 19 % Umsatzsteuer:
 19,00 €, netto 100,00 €"). Konten ohne Steuerschlüssel (etwa Nebenkosten des
 Geldverkehrs) werden brutto gebucht, der Dialog sagt das dazu.
 
+**Splitbuchung in der Kasse.** Ein Supermarkt-Bon hat 7 % auf Lebensmittel und
+19 % auf Getränke, eine Werkstattquittung Teile und Entsorgung auf zwei Konten.
+Im Dialog „Neue Buchung" macht **Aufteilen** aus dem Gegenkonto eine Liste von
+Positionen mit je Konto, Bruttobetrag und Steuer. Die Steuer je Position ist frei
+wählbar (Vorsteuer 19 %/7 % bei Ausgaben, Umsatzsteuer bei Einnahmen, „ohne
+Steuer" für Geldtransit); beim Wählen eines Kontos steht sein Steuerschlüssel
+vor. Der Bon bleibt **eine** Buchung mit **einer** Belegnummer — gebucht wie
+kivitendos Dialogbuchung mit mehreren Zeilen (Kassenbein brutto, je Position
+Netto- und Steuerbein). Im Kassenbuch und im Ausdruck steht die Buchung als
+„Split" mit allen Konten und Sätzen.
+
+**Buchung ansehen und ändern.** Ein Klick auf eine Zeile im Kassenbuch zeigt die
+Buchung mit Positionen und allen Beinen (Soll/Haben, Steuerschlüssel). Manuelle
+Kassenbuchungen lassen sich dort oder über den Stift in der Zeile **bearbeiten**:
+Richtung, Datum, Betrag, Positionen, Text — die Belegnummer bleibt. Die Kasse
+darf dabei nicht ins Minus rutschen, abgeschlossene Zeiträume sind gesperrt.
+Barzahlungen zu Rechnungen werden angezeigt; geändert wird über die Rechnung.
+
+Dieselbe Aufteilung gibt es im Bankmodul beim Buchen eines Umsatzes als
+Eingangsrechnung und bei den Positionen eines per Magisch Buchen erkannten
+Belegs: Bekommt dort eine Position ein eigenes Sachkonto, bucht die Freigabe je
+Konto und Steuersatz ein eigenes Bein.
+
 Die Kasse darf nie ins Minus: Eine Ausgabe wird nur gebucht, wenn der Bestand am
 Buchungstag reicht – geprüft wird chronologisch, nicht gegen den heutigen Saldo.
 

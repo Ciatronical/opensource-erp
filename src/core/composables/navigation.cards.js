@@ -81,9 +81,12 @@ export function useNavigationCards() {
             '-',
             { title: t('ContactMenu.emails'), to: { name: 'emails' } },
             { title: t('ContactMenu.whatsapp'), to: { name: 'whatsapp' } },
-            '-',
-            { title: t('Tafel.title'), to: { name: 'tafel' } }
         ]
+        // Briefe: kivitendo-Rechte für Verkaufs- bzw. Einkaufsbriefe
+        if (oserp.checkPermission('sales_letter_edit') || oserp.checkPermission('purchase_letter_edit')) {
+            contactItems.push({ title: t('ContactMenu.letters'), to: { name: 'letters' } })
+        }
+        contactItems.push('-', { title: t('Tafel.title'), to: { name: 'tafel' } })
         if (oserp.isLxCars()) {
             contactItems.push('-')
             contactItems.push({ title: t('CarView.huSerienbrief'), to: { name: 'hu-serienbrief' } })
@@ -114,8 +117,11 @@ export function useNavigationCards() {
                     { title: t('SalesMenu.manageInvoices'), to: { name: 'invoice-list' } },
                     { title: t('SalesMenu.manageDeliveryOrders'), to: { name: 'delivery-order-list' } },
                     { title: t('SalesMenu.manageCreditNotes'), to: { name: 'credit-note-list' } },
-                    '-',
-                    { title: t('SalesMenu.recurringInvoices'), to: { name: 'recurring-invoices' } }
+                    // Abgeschaltet (Firmenkonfiguration → Features): kein Menüpunkt,
+                    // die Übersicht bleibt über die Karte am Auftrag erreichbar
+                    ...(oserp.isRecurringEnabled()
+                        ? ['-', { title: t('SalesMenu.recurringInvoices'), to: { name: 'recurring-invoices' } }]
+                        : [])
                 ]
             }
         )

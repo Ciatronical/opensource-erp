@@ -18,7 +18,8 @@
             "priceRules": "Price Rules",
             "turnover": "Turnover Statistics",
             "emails": "Emails",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "history": "Time travel"
         },
         "billing": {
             "nameAddressTitle": "Name & Address",
@@ -243,7 +244,6 @@
             "saveAndOrder": "Create Order",
             "saveAndQuotation": "Create Quotation",
             "delete": "Delete",
-            "history": "History",
             "close": "Close",
             "confirmDelete": "Really delete customer \"{name}\"? Contacts, addresses and notes will be removed as well.",
             "confirmDeleteVendor": "Really delete vendor \"{name}\"? Contacts, addresses and notes will be removed as well.",
@@ -359,7 +359,10 @@
             "urlLabel": "Label",
             "urlAddress": "URL",
             "addUrl": "Add URL",
-            "openUrl": "Open page"
+            "openUrl": "Open page",
+            "phone_numbers": "Additional phone numbers",
+            "emails": "Additional e-mail addresses",
+            "urls": "Additional URLs"
         },
         "price-rules": {
             "title": "Price Rules",
@@ -407,6 +410,48 @@
             "help_xrechnung": "Pure XML (XRechnung 3.0, CIUS of EN 16931). Mandatory for public authorities. The field \"Our routing ID at customer\" must be filled — without it the receiving portal will reject the invoice.",
             "help_xrechnung_test": "XRechnung 3.0 in test mode. For initial acceptance tests with administrative portals such as ZRE or OZG-RE. Not booked.",
             "leitweg_hint": "For XRechnung the field \"Our routing ID at customer\" (card \"Numbers & IDs\") must be filled."
+        },
+        "easymode": {
+            "label": "Customer form view",
+            "easy": "Simple",
+            "pro": "All fields",
+            "easyHint": "Only the fields and tabs chosen for everyday work in the company configuration.",
+            "proHint": "Every field and tab of the customer or vendor.",
+            "hiddenFilled": "{count} hidden fields contain values:",
+            "showAll": "Show all fields"
+        },
+        "history": {
+            "title": "Time travel",
+            "intro": "Who changed what and when — every save with its changed fields. Use the slider to travel back and see what the master data looked like.",
+            "count": "{n} event | {n} events",
+            "reload": "Reload",
+            "filterEmployee": "Employee",
+            "search": "Search",
+            "timeTravel": "Time travel",
+            "today": "Today",
+            "backToToday": "Back to today",
+            "stepsBack": "{n} change back | {n} changes back",
+            "asOf": "State before the change of {time} — differences to today:",
+            "noDiff": "No difference to today.",
+            "empty": "No changes recorded yet. From now on every save is kept.",
+            "noMatch": "No events match the filter.",
+            "unknownEmployee": "Unknown",
+            "created": "created",
+            "deleted": "deleted",
+            "yes": "Yes",
+            "no": "No",
+            "tableProfile": "Master data",
+            "tableContact": "Contact",
+            "tableShipto": "Shipping address",
+            "tableBilling": "Additional billing address",
+            "legacy": {
+                "saved": "saved",
+                "printed": "printed",
+                "mailed": "sent by e-mail",
+                "deleted": "deleted",
+                "screened": "viewed",
+                "posted": "posted"
+            }
         }
     }
 }

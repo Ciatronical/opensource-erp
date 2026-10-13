@@ -112,6 +112,30 @@ Beim Erstellen eines Auftrags kann die KI basierend auf den Arbeitsanweisungen p
 - Der Auftrags-/Rechnungshistorie des Kunden (gewichtet nach Alter)
 - Den Fahrzeugdaten
 
+### Gutachten-Import (PDF/Foto)
+
+Fremde Schadengutachten und Kostenvoranschläge ohne Schnittstelle – PDF oder Foto eines beliebigen Sachverständigen, einer Versicherung, aus DAT/Audatex oder einer anderen Werkstatt – liest die KI aus und füllt damit den Auftrag. Nichts muss mehr abgetippt werden.
+
+- Schaltfläche **Gutachten (PDF)** in der Aktionsleiste des Auftrags (nur bei aktivem LxCars); Datei wählen, Claude liest alle Seiten, dann erscheint die Vorschau
+- **Fahrzeug**: Kennzeichen, FIN, Hersteller/Modell, Erstzulassung, Farbe. Hat der Auftrag noch kein Fahrzeug, wird es angelegt und verknüpft; ein verknüpftes Fahrzeug wird nur um leere Felder ergänzt, nie überschrieben. Gehört das Kennzeichen einem anderen Kunden, fragt das System wie beim Schnellanlegen nach
+- **Auftrag**: km-Stand, Gutachten-Nr., Datum, Sachverständiger, Versicherung, Schadennummer und Schadenbeschreibung in die internen Notizen; die Schadennummer zusätzlich als Kundenauftragsnummer (falls leer)
+- **Positionen** wie beim SilverDAT-Import: Ersatzteile (Teilenummer nur, wenn gedruckt), Arbeitslohn in AW/Std mit Verrechnungssatz, Lackierlohn und -material, Nebenkosten (Kleinteile, Entsorgung, Achsvermessung …). Wertminderung, Nutzungsausfall, Gutachterkosten, Restwert und Summenzeilen werden bewusst nicht übernommen
+- Jede Position ist in der Vorschau abwählbar; die Summe der gewählten Positionen wird mit den Reparaturkosten laut Gutachten abgeglichen, Abweichungen über 1 % werden markiert
+- Die Datei wird im Fahrzeugordner unter `gutachten/` abgelegt (ohne Fahrzeug beim Kunden)
+- Modell je Mandant unter **Firmeneinstellungen → KI** (Assistent „Gutachten-Import", Vorgabe Claude Opus 5); im Dialog lässt es sich für die Sitzung umschalten und das Dokument erneut auslesen
+
+### Weroni Rechtsprüfung (Gutachten)
+
+Direkt nach der Übernahme prüft Weroni als digitale Rechtsassistentin der Werkstatt das komplette Gutachten – auch die Teile, die nicht als Positionen in den Auftrag wandern – trifft eine Entscheidung und formuliert die Kommunikation.
+
+- **Prüfpunkte**: Reparaturkosten + Wertminderung gegen Wiederbeschaffungswert, 130-%-Regel, Wiederbeschaffungsaufwand (WBW − Restwert), Abrechnungsart und MwSt./Vorsteuerabzug, Stunden- und Lacksätze, Wertminderung, Nutzungsausfall (Tage, Gruppe, Tagessatz), Sachverständigenkosten, Unkostenpauschale, Restwertangebote, Haftpflicht/Kasko und Quote, Risiken für die Werkstatt (Abtretung, Werkstattrisiko, Kürzungen)
+- **Entscheidung mit Ampel**: Reparatur freigeben (grün), 130-%-Fall mit Auflagen (gelb), wirtschaftlicher Totalschaden oder Rückfrage (rot) – begründet mit Zahlen; wird in die internen Notizen des Auftrags geschrieben
+- **Ansprüche des Kunden** gegenüber der gegnerischen Haftpflicht als Aufstellung mit Beträgen und Rechtsgrundlage; Empfehlung für einen Anwalt, wenn sinnvoll (Kosten trägt im Haftpflichtfall der Gegner)
+- **Kommunikation**: fertiger, editierbarer Text an den Kunden (E-Mail oder WhatsApp, ohne Beleg-PDF) und ein förmliches Schreiben an die Versicherung (Reparaturfreigabe / Kostenübernahme, als E-Mail oder zum Kopieren); jeder Versand wird mit Kanal, Empfänger und Zeit protokolliert
+- Button **Waage** in der Aktionsleiste öffnet die letzte Prüfung jederzeit wieder; „Erneut prüfen" wiederholt sie mit dem gewählten Modell
+- Modell je Mandant unter **Firmeneinstellungen → KI** (Assistent „Weroni Rechtsprüfung (Gutachten)", Vorgabe Claude Opus 5)
+- Hinweis: fachliche Einschätzung, keine Rechtsberatung im Sinne des Rechtsdienstleistungsgesetzes – Weroni sagt das im Kundentext selbst
+
 ## HU-Serienbrief
 
 Automatisierter Versand von Erinnerungsschreiben für fällige Hauptuntersuchungen (TÜV).

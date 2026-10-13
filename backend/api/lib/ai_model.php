@@ -48,6 +48,10 @@ function aiAssistants() {
         'filemanager'      => ['key' => 'filemanager_ai_model',      'default' => 'claude-haiku-4-5'],
         // Motorfamilien über Marken hinweg erkennen braucht Fachwissen — daher Opus
         'special_tools'    => ['key' => 'special_tools_ai_model',    'default' => 'claude-opus-5'],
+        // Fremde Gutachten-PDFs: lange Kalkulationstabellen, oft gescannt — Opus liest am sichersten
+        'gutachten_import' => ['key' => 'gutachten_import_ai_model', 'default' => 'claude-opus-5'],
+        // Weroni Rechtsprüfung des Gutachtens: Abwägung mit Urteilen und Beträgen — Opus
+        'gutachten_review' => ['key' => 'gutachten_review_ai_model', 'default' => 'claude-opus-5'],
 
         // Hintergrundverarbeitung ohne Prompt — nur Mandanteneinstellung
         'accounting'       => ['key' => 'accounting_ai_model',       'default' => 'claude-opus-5'],

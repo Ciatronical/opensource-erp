@@ -651,8 +651,8 @@ function getCV($data, $withConfig = []) {
                                         SELECT * FROM additional_billing_addresses WHERE customer_id = $cv_id ORDER BY id ASC
                                     ) AS additional_billing_addresses
                                 ),
-                            -- Kontakthistorie: Anrufe (crmti) und WhatsApp-Nachrichten in einer
-                            -- chronologischen Liste (neueste zuerst). E-Mails kommen live per IMAP
+                            -- Kontakthistorie: Anrufe (crmti), WhatsApp-Nachrichten und Briefe (letter)
+                            -- in einer chronologischen Liste (neueste zuerst). E-Mails kommen live per IMAP
                             -- (Frontend, getEmails) dazu, da eingehende Mails nicht in der DB liegen.
                             -- Anrufe: direkt dem Kunden/Lieferanten (typ C/V) oder einer seiner
                             -- Ansprechpersonen (typ K, crmti_caller_id = cp_id) zugeordnet.
@@ -711,6 +711,29 @@ function getCV($data, $withConfig = []) {
                                         WHERE hidden = FALSE
                                           AND (customer_id = $cv_id
                                                OR regexp_replace(phone_number, '[^0-9]', '', 'g') IN (SELECT digits FROM cv_phones))
+                                        UNION ALL
+                                        -- Briefe (kivitendo letter): number = Briefnummer, text = Betreff,
+                                        -- name = Versandwege (email, post), status = draft | sent
+                                        SELECT 'letter',
+                                               l.id,
+                                               EXTRACT(EPOCH FROM l.itime) * 1000,
+                                               'O',
+                                               l.letternumber,
+                                               (SELECT string_agg(DISTINCT ch, ',') FROM (
+                                                    SELECT 'email' AS ch FROM record_links rl
+                                                    WHERE rl.from_table = 'letter' AND rl.from_id = l.id AND rl.to_table = 'email_journal'
+                                                    UNION ALL
+                                                    SELECT 'post' FROM postal_dispatches pd
+                                                    WHERE pd.record_table = 'letter' AND pd.record_id = l.id AND pd.status <> 'error'
+                                               ) ch),
+                                               NULL,
+                                               CASE WHEN EXISTS (SELECT 1 FROM record_links rl WHERE rl.from_table = 'letter' AND rl.from_id = l.id AND rl.to_table = 'email_journal')
+                                                      OR EXISTS (SELECT 1 FROM postal_dispatches pd WHERE pd.record_table = 'letter' AND pd.record_id = l.id AND pd.status <> 'error')
+                                                    THEN 'sent' ELSE 'draft' END,
+                                               LEFT(COALESCE(NULLIF(l.subject, ''), l.reference, ''), 200),
+                                               NULL
+                                        FROM letter l
+                                        WHERE l.{$cvTable}_id = $cv_id
                                         ORDER BY ts DESC
                                         LIMIT 100
                                     ) AS h
@@ -1093,6 +1116,8 @@ function saveCV($data) {
     }
 
     $apiCompanySpace->beginTransaction();
+    // Wer speichert, steht im Änderungsverlauf (Trigger cv_history_log)
+    cvHistoryContext($apiCompanySpace, $src, $data['employee_id'] ?? 0);
     $newId = null;
     foreach($data as $tableName => $tableData) {
         if('action' === $tableName) {
@@ -1445,6 +1470,7 @@ function deleteContact($data) {
     }
     // Lösche den Ansprechpartner
     try {
+        cvHistoryContext($apiCompanySpace, $data['src'] ?? 'C', $data['employee_id'] ?? 0);
         $apiCompanySpace->beginTransaction();
         $apiCompanySpace->execute(
             "DELETE FROM contacts WHERE cp_id = :cp_id",
@@ -1531,6 +1557,7 @@ function deleteCV($data) {
     }
 
     try {
+        cvHistoryContext($apiCompanySpace, $isVendor ? 'V' : 'C', $data['employee_id'] ?? 0);
         $apiCompanySpace->beginTransaction();
         // Stammdaten-Anhänge (teils ohne Fremdschlüssel, würden sonst verwaisen)
         $apiCompanySpace->execute("DELETE FROM contacts WHERE cp_cv_id = :cv_id", [':cv_id' => $cv_id]);
@@ -2103,4 +2130,80 @@ function _getCvIdFromViewHistory($db, $cvSrc) {
     }
 
     return null;
+}
+
+/**
+ * Kontext für den Änderungsverlauf (Trigger cv_history_log) setzen
+ *
+ * Der Trigger kennt weder den angemeldeten Mitarbeiter noch bei Ansprechpartnern
+ * und Lieferadressen die Seite (Kunde/Lieferant). Beides geht vor dem Schreiben
+ * als Sitzungsvariable in die Verbindung; sie lebt nur für diesen Request.
+ *
+ * @param DbhCompany $db     Firmen-Verbindung
+ * @param string     $src    'C' Kunde, 'V' Lieferant
+ * @param int        $employeeId Mitarbeiter aus dem Store; 0 = über die Anmeldung ermitteln
+ */
+function cvHistoryContext($db, $src, $employeeId = 0) {
+    $employeeId = intval($employeeId);
+    if (!$employeeId) {
+        $row = $db->getOne("SELECT id FROM employee WHERE login = :login", [':login' => DbhAuth::begin()->getLogin()]);
+        $employeeId = intval($row['id'] ?? 0);
+    }
+    $db->execute(
+        "SELECT set_config('oserp.employee_id', :emp, false), set_config('oserp.cv_src', :src, false)",
+        [':emp' => (string)$employeeId, ':src' => $src === 'V' ? 'V' : 'C']
+    );
+}
+
+/**
+ * Änderungsverlauf eines Kunden/Lieferanten ("Zeitreise")
+ *
+ * Eigene Einträge (cv_history_oserp: Diff je Speichern mit Mitarbeiter) und die
+ * alten kivitendo-Ereignisse aus history_erp (gespeichert, gedruckt, gemailt) in
+ * einer Liste, neueste zuerst. Beschriftungen und Namen zu IDs löst das
+ * Frontend aus dem Store auf.
+ *
+ * @param int    $data['cv_id'] Kunden-/Lieferanten-ID
+ * @param string $data['src']   'C' Kunde, 'V' Lieferant
+ * @param int    $data['limit'] Höchstens so viele Einträge (Standard 500)
+ * @testdata {"action": "getCvHistory", "cv_id": 1, "src": "C"}
+ */
+function getCvHistory($data) {
+    permit(['customer_vendor_edit', 'customer_vendor_all_edit'], false);
+    $db = DbhCompany::begin();
+    $cvId = intval($data['cv_id'] ?? 0);
+    if (!$cvId) {
+        throw new ApiError('MISSING_CV_ID', 'cv_id fehlt');
+    }
+    $src = ($data['src'] ?? 'C') === 'V' ? 'V' : 'C';
+    $limit = max(1, min(2000, intval($data['limit'] ?? 500)));
+
+    $rows = $db->getAll(
+        "SELECT * FROM (
+            SELECT h.id, h.itime, h.table_name, h.row_id, h.row_label, h.action, h.changes,
+                   h.employee_id, e.name AS employee_name, 'oserp' AS source, NULL::text AS what_done
+              FROM cv_history_oserp h
+              LEFT JOIN employee e ON e.id = h.employee_id
+             WHERE h.cv_id = :cv_id AND h.src = :src
+            UNION ALL
+            SELECT k.id, k.itime, 'history_erp', NULL, NULL, k.addition, NULL,
+                   k.employee_id, e.name, 'kivitendo', k.what_done
+              FROM history_erp k
+              LEFT JOIN employee e ON e.id = k.employee_id
+             WHERE k.trans_id = :cv_id AND k.snumbers LIKE :snumbers
+         ) x
+         ORDER BY itime DESC, id DESC
+         LIMIT :limit",
+        [
+            ':cv_id' => $cvId,
+            ':src' => $src,
+            ':snumbers' => ($src === 'V' ? 'vendornumber_' : 'customernumber_') . '%',
+            ':limit' => $limit,
+        ]
+    );
+    foreach ($rows as &$row) {
+        $row['changes'] = is_string($row['changes']) ? json_decode($row['changes'], true) : $row['changes'];
+    }
+    unset($row);
+    resultInfo(true, '', ['results' => $rows]);
 }

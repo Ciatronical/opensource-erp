@@ -122,7 +122,7 @@ function _logToEmailJournal(string $from, array $to, array $cc, string $subject,
     $jid = (int)($journalRow['id'] ?? 0);
 
     // Verknüpfung zum Beleg (kivitendo-Konvention: from = Beleg, to = email_journal)
-    if ($jid && $recordId && in_array($recordTable, ['oe', 'ar', 'ap', 'delivery_orders'], true)) {
+    if ($jid && $recordId && in_array($recordTable, ['oe', 'ar', 'ap', 'delivery_orders', 'letter'], true)) {
         $db->execute(
             "INSERT INTO record_links (from_table, from_id, to_table, to_id) VALUES (:ft, :fid, 'email_journal', :tid)",
             [':ft' => $recordTable, ':fid' => $recordId, ':tid' => $jid]

@@ -4,28 +4,23 @@
     <NavbarView />
     <MessagesView :messages="displayMessages" />
     <v-container class="pt-2 px-2 px-sm-4" fluid>
-        <h1 class="pb-2 text-h5 text-sm-h4 d-flex align-center flex-wrap ga-2">
-            <span>
-                {{ isNewMode
-                    ? (entitySrc === 'V' ? t('CustomerVendorEditView.titleNewVendor') : t('CustomerVendorEditView.titleNewCustomer'))
-                    : (entitySrc === 'V' ? t('CustomerVendorEditView.titleEditVendor') : t('CustomerVendorEditView.titleEditCustomer'))
-                }}
-                <span v-if="!isNewMode"> - {{ cvData.customernumber || cvData.vendornumber }} {{ cvData.name }}</span>
-            </span>
+        <page-header :title="pageTitle" :subtitle="pageSubtitle">
             <v-chip v-if="saving" color="orange" size="small" variant="flat">
                 {{ t('CustomerVendorEditView.messages.saving') }}
             </v-chip>
             <v-chip v-else-if="saved" color="success" size="small" variant="flat">
                 {{ t('CustomerVendorEditView.messages.savedShort') }}
             </v-chip>
-        </h1>
+            <template #actions>
+                <cv-easymode-switch />
+            </template>
+        </page-header>
         <action-bar
             @save-and-ar-transaction="saveAndArTransaction"
             @save-and-invoice="saveAndInvoice"
             @save-and-order="saveAndOrder"
             @save-and-quotation="saveAndQuotation"
             @delete="deleteCustomer"
-            @show-history="showHistory"
             @close="closeView"
         />
         <v-alert v-if="autoSaveWarning" type="warning" variant="tonal" density="compact" class="mb-2" closable>
@@ -40,160 +35,23 @@
                 <v-col cols="auto" md="3" lg="2">
                     <v-list density="compact" class="tabs-list">
                         <v-list-item
-                            value="billing"
-                            :active="tab === 'billing'"
-                            @click="tab = 'billing'"
+                            v-for="item in tabItems"
+                            :key="item.key"
+                            :value="item.key"
+                            :active="tab === item.key"
+                            @click="tab = item.key"
                         >
                             <template #prepend>
-                                <v-icon>mdi-receipt</v-icon>
-                            </template>
-                            <v-list-item-title class="d-none d-md-block">
-                                {{ t('CustomerVendorEditView.tabs.billing') }}
-                            </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item
-                            value="additional-billing"
-                            :active="tab === 'additional-billing'"
-                            @click="tab = 'additional-billing'"
-                        >
-                            <template #prepend>
-                                <v-icon>mdi-receipt-text-plus</v-icon>
+                                <v-icon>{{ item.icon }}</v-icon>
                             </template>
                             <v-list-item-title class="d-none d-md-flex align-center justify-space-between">
-                                <span>{{ t('CustomerVendorEditView.tabs.additionalBilling') }}</span>
+                                <span>{{ t(item.label) }}</span>
                                 <v-badge
-                                    v-if="billingAddresses.length > 0"
-                                    :content="billingAddresses.length"
+                                    v-if="item.count > 0"
+                                    :content="item.count"
                                     color="primary"
                                     inline
                                 />
-                            </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item
-                            value="bank"
-                            :active="tab === 'bank'"
-                            @click="tab = 'bank'"
-                        >
-                            <template #prepend>
-                                <v-icon>mdi-bank</v-icon>
-                            </template>
-                            <v-list-item-title class="d-none d-md-block">
-                                {{ t('CustomerVendorEditView.tabs.bank') }}
-                            </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item
-                            value="shipto"
-                            :active="tab === 'shipto'"
-                            @click="tab = 'shipto'"
-                        >
-                            <template #prepend>
-                                <v-icon>mdi-truck-delivery</v-icon>
-                            </template>
-                            <v-list-item-title class="d-none d-md-flex align-center justify-space-between">
-                                <span>{{ t('CustomerVendorEditView.tabs.shipto') }}</span>
-                                <v-badge
-                                    v-if="shiptos.length > 0"
-                                    :content="shiptos.length"
-                                    color="primary"
-                                    inline
-                                />
-                            </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item
-                            value="contacts"
-                            :active="tab === 'contacts'"
-                            @click="tab = 'contacts'"
-                        >
-                            <template #prepend>
-                                <v-icon>mdi-account-group</v-icon>
-                            </template>
-                            <v-list-item-title class="d-none d-md-flex align-center justify-space-between">
-                                <span>{{ t('CustomerVendorEditView.tabs.contacts') }}</span>
-                                <v-badge
-                                    v-if="contacts.length > 0"
-                                    :content="contacts.length"
-                                    color="primary"
-                                    inline
-                                />
-                            </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item
-                            value="deliveries"
-                            :active="tab === 'deliveries'"
-                            @click="tab = 'deliveries'"
-                        >
-                            <template #prepend>
-                                <v-icon>mdi-package-variant</v-icon>
-                            </template>
-                            <v-list-item-title class="d-none d-md-block">
-                                {{ t('CustomerVendorEditView.tabs.deliveries') }}
-                            </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item
-                            value="notes"
-                            :active="tab === 'notes'"
-                            @click="tab = 'notes'"
-                        >
-                            <template #prepend>
-                                <v-icon>mdi-note-text</v-icon>
-                            </template>
-                            <v-list-item-title class="d-none d-md-block">
-                                {{ t('CustomerVendorEditView.tabs.notes') }}
-                            </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item
-                            value="custom-vars"
-                            :active="tab === 'custom-vars'"
-                            @click="tab = 'custom-vars'"
-                        >
-                            <template #prepend>
-                                <v-icon>mdi-variable</v-icon>
-                            </template>
-                            <v-list-item-title class="d-none d-md-flex align-center justify-space-between">
-                                <span>{{ t('CustomerVendorEditView.tabs.customVars') }}</span>
-                                <v-badge
-                                    v-if="customVars.length > 0"
-                                    :content="customVars.length"
-                                    color="primary"
-                                    inline
-                                />
-                            </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item
-                            v-if="!isNewMode"
-                            value="files"
-                            :active="tab === 'files'"
-                            @click="tab = 'files'"
-                        >
-                            <template #prepend>
-                                <v-icon>mdi-folder-open</v-icon>
-                            </template>
-                            <v-list-item-title class="d-none d-md-block">
-                                {{ t('CustomerVendorEditView.tabs.files') }}
-                            </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item
-                            value="price-rules"
-                            :active="tab === 'price-rules'"
-                            @click="tab = 'price-rules'"
-                        >
-                            <template #prepend>
-                                <v-icon>mdi-tag-multiple</v-icon>
-                            </template>
-                            <v-list-item-title class="d-none d-md-block">
-                                {{ t('CustomerVendorEditView.tabs.priceRules') }}
-                            </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item
-                            value="turnover"
-                            :active="tab === 'turnover'"
-                            @click="tab = 'turnover'"
-                        >
-                            <template #prepend>
-                                <v-icon>mdi-chart-line</v-icon>
-                            </template>
-                            <v-list-item-title class="d-none d-md-block">
-                                {{ t('CustomerVendorEditView.tabs.turnover') }}
                             </v-list-item-title>
                         </v-list-item>
                     </v-list>
@@ -261,6 +119,14 @@
                         </v-window-item>
                         <v-window-item value="turnover">
                             <turnover-tab />
+                        </v-window-item>
+                        <v-window-item v-if="!isNewMode" value="history">
+                            <history-tab
+                                :cv-id="id"
+                                :src="entitySrc"
+                                :profile="cvData"
+                                :active="tab === 'history'"
+                            />
                         </v-window-item>
                     </v-window>
                 </v-col>
@@ -353,10 +219,15 @@ import CustomVarsTab from './tabs/custom-vars.tab.vue'
 import DeliveriesTab from './tabs/deliveries.tab.vue'
 import NotesTab from './tabs/notes.tab.vue'
 const FilesTab = defineAsyncComponent(() => import('./tabs/files.tab.vue'))
+const HistoryTab = defineAsyncComponent(() => import('./tabs/history.tab.vue'))
 import PriceRulesTab from './tabs/price-rules.tab.vue'
 import TurnoverTab from './tabs/turnover.tab.vue'
 import WhatsappTab from './tabs/whatsapp.tab.vue'
 import ActionBar from './components/action.bar.vue'
+import CvEasymodeSwitch from './components/cv.easymode-switch.vue'
+import PageHeader from '@/core/components/layout/page-header.vue'
+import { useCvEasymode } from './composables/useCvEasymode.js'
+import { CV_TABS } from './cvFieldCatalog.js'
 
 export default {
     name: 'CustomerVendorEditView',
@@ -372,10 +243,13 @@ export default {
         DeliveriesTab,
         NotesTab,
         FilesTab,
+        HistoryTab,
         PriceRulesTab,
         TurnoverTab,
         WhatsappTab,
         ActionBar,
+        CvEasymodeSwitch,
+        PageHeader,
     },
     props: {
         id: {
@@ -412,29 +286,57 @@ export default {
         }
         const isNewMode = ref(!props.id)
         const entitySrc = ref(props.src)
+
+        // Seitenkopf: Titel nach Modus, Nummer und Name als Untertitel
+        const pageTitle = computed(() => {
+            const vendor = entitySrc.value === 'V'
+            if (isNewMode.value) return t(vendor ? 'CustomerVendorEditView.titleNewVendor' : 'CustomerVendorEditView.titleNewCustomer')
+            return t(vendor ? 'CustomerVendorEditView.titleEditVendor' : 'CustomerVendorEditView.titleEditCustomer')
+        })
+        const pageSubtitle = computed(() => isNewMode.value
+            ? ''
+            : [cvData.value.customernumber || cvData.value.vendornumber, cvData.value.name].filter(Boolean).join(' · '))
         const saving = ref(false)
         const saved = ref(false)
         const savedCvId = ref(null)
         let savedTimer = null
 
+        const cvData = ref({})
+        const shiptos = ref([])
+        const billingAddresses = ref([])
+        const customVars = ref([])
+        const contacts = ref([])
+
         // Tab aus Query-Parameter oder Default 'billing'
         const tab = ref(route.query.tab || 'billing')
+
+        // Reiter links: im einfachen Modus nur die in der Firmenkonfiguration
+        // freigegebenen; die Zähler kommen aus den jeweiligen Listen.
+        const { easymode, showTab } = useCvEasymode()
+        const tabLists = { billingAddresses, shiptos, contacts, customVars }
+        const tabItems = computed(() => CV_TABS
+            .filter(item => !(item.editOnly && isNewMode.value))
+            .filter(item => showTab(item.key))
+            .map(item => ({
+                ...item,
+                count: item.badge ? (tabLists[item.badge]?.value?.length || 0) : 0,
+            })))
+
+        // Wird der offene Reiter durch den Moduswechsel unsichtbar, zurück zur Rechnungsadresse
+        watch(easymode, () => {
+            if (!tabItems.value.some(item => item.key === tab.value)) tab.value = 'billing'
+        })
 
         // IDs für aufzuklappende Adressen aus Query-Parameter
         const expandShiptoId = ref(route.query.shiptoId ? Number(route.query.shiptoId) : null)
         const expandBillingAddressId = ref(route.query.billingAddressId ? Number(route.query.billingAddressId) : null)
 
-        const cvData = ref({})
-        const shiptos = ref([])
-        const billingAddresses = ref([])
-        const customVars = ref([])
 
         // Duplikat-Warnung State
         const showDuplicateDialog = ref(false)
         const duplicateExact = ref([])
         const duplicatePartial = ref([])
         let duplicateCheckDone = false
-        const contacts = ref([])
 
         // Warnung wenn Auto-Save-Bedingungen nicht erfüllt
         const autoSaveWarning = computed(() => {
@@ -870,10 +772,6 @@ export default {
             }
         }
 
-        const showHistory = () => {
-            // Show history modal
-        }
-
         // ── Pending Changes bei Navigation speichern (sendBeacon) ──
         function flushPendingChanges() {
             const cvId = id.value || savedCvId.value || cvData.value.id
@@ -889,6 +787,7 @@ export default {
 
             const payload = {
                 action: 'saveCV',
+                employee_id: oserpData.session?.logged_in_employee?.id || null,
                 profile: { ...profile, id: Number(cvId) },
                 additional_billing_addresses: billingAddresses.value.map(addr => ({
                     ...addr,
@@ -992,6 +891,9 @@ export default {
             saved,
             displayMessages,
             tab,
+            tabItems,
+            pageTitle,
+            pageSubtitle,
             cvData,
             shiptos,
             billingAddresses,
@@ -1017,7 +919,6 @@ export default {
             saveAndOrder,
             saveAndQuotation,
             deleteCustomer,
-            showHistory,
             onFocusIn,
             onFocusOut,
             autoSaveWarning,

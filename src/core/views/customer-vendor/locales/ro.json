@@ -17,7 +17,9 @@
             "priceRules": "Preisregeln",
             "turnover": "Umsatzstatistik",
             "emails": "E-Mails",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Variabile personalizate",
+            "history": "Călătorie în timp"
         },
         "billing": {
             "nameAddressTitle": "Name & Adresse",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Creează comandă",
             "saveAndQuotation": "Creează ofertă",
             "delete": "Ștergere",
-            "history": "Historie",
             "close": "Închide",
-            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?"
+            "confirmDelete": "Möchten Sie diesen Kunden wirklich löschen?",
+            "confirmDeleteVendor": "Ștergi cu adevărat furnizorul „{name}”? Persoanele de contact, adresele și notele vor fi eliminate odată cu el.",
+            "cancel": "Renunță"
         },
         "messages": {
             "saving": "Se salvează...",
@@ -233,7 +236,10 @@
             "deleteError": "Fehler beim Löschen des Kunden.",
             "deleteContactError": "Fehler beim Löschen des Ansprechpartners",
             "deleteContactErrorTitle": "Eroare",
-            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Bitte zuerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Eroare la ștergerea furnizorului.",
+            "deleted": "Clientul „{name}” a fost șters.",
+            "deletedVendor": "Furnizorul „{name}” a fost șters."
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
@@ -329,7 +335,13 @@
             "urlLabel": "Bezeichnung",
             "urlAddress": "URL",
             "addUrl": "Adaugă URL",
-            "openUrl": "Deschide pagina"
+            "openUrl": "Deschide pagina",
+            "vendornumber": "Număr furnizor",
+            "hu_notify": "Trimite notificări ITP",
+            "hu_notify_hint": "Se aplică tuturor vehiculelor acestui client – și celor create ulterior. Dacă comutatorul este oprit, nu se trimit reamintiri ITP și notificarea nu mai poate fi activată la vehiculul individual (clientul are prioritate).",
+            "phone_numbers": "Alte numere de telefon",
+            "emails": "Alte adrese de e-mail",
+            "urls": "Alte URL-uri"
         },
         "price-rules": {
             "title": "Preisregeln",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Mod test)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Mod test)"
+        },
+        "customVars": {
+            "title": "Variabile personalizate",
+            "noConfigs": "Nu sunt configurate variabile personalizate pentru clienți/furnizori."
+        },
+        "easymode": {
+            "label": "Vizualizarea formularului de client",
+            "easy": "Simplu",
+            "pro": "Toate câmpurile",
+            "easyHint": "Doar câmpurile și filele alese în configurarea firmei pentru munca de zi cu zi.",
+            "proHint": "Toate câmpurile și filele clientului, respectiv ale furnizorului.",
+            "hiddenFilled": "{count} câmpuri ascunse conțin valori:",
+            "showAll": "Afișează toate câmpurile"
+        },
+        "history": {
+            "title": "Călătorie în timp",
+            "intro": "Cine a modificat ce și când — fiecare salvare cu câmpurile modificate. Cu glisorul călătorești înapoi și vezi cum arătau datele de bază atunci.",
+            "count": "{n} eveniment | {n} evenimente",
+            "reload": "Reîncarcă",
+            "filterEmployee": "Angajat",
+            "search": "Caută",
+            "timeTravel": "Călătorie în timp",
+            "today": "Astăzi",
+            "backToToday": "Înapoi la astăzi",
+            "stepsBack": "{n} modificare înapoi | {n} modificări înapoi",
+            "asOf": "Starea dinaintea modificării din {time} — diferențe față de astăzi:",
+            "noDiff": "Nicio diferență față de starea de astăzi.",
+            "empty": "Nicio modificare înregistrată încă. De acum înainte fiecare salvare este reținută.",
+            "noMatch": "Niciun eveniment nu se potrivește filtrului.",
+            "unknownEmployee": "Necunoscut",
+            "created": "creat",
+            "deleted": "șters",
+            "yes": "Da",
+            "no": "Nu",
+            "tableProfile": "Date de bază",
+            "tableContact": "Persoană de contact",
+            "tableShipto": "Adresă de livrare",
+            "tableBilling": "Adresă de facturare suplimentară",
+            "legacy": {
+                "saved": "salvat",
+                "printed": "tipărit",
+                "mailed": "trimis prin e-mail",
+                "deleted": "șters",
+                "screened": "vizualizat",
+                "posted": "înregistrat"
+            }
         }
     }
 }

@@ -17,7 +17,9 @@
             "priceRules": "Prijsregels",
             "turnover": "Omzetstatistieken",
             "emails": "E-mails",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Aangepaste variabelen",
+            "history": "Tijdreis"
         },
         "billing": {
             "nameAddressTitle": "Naam en adres",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Order vastleggen",
             "saveAndQuotation": "Offerte vastleggen",
             "delete": "Verwijderen",
-            "history": "Geschiedenis",
             "close": "Sluiten",
-            "confirmDelete": "Wilt u deze klant echt verwijderen?"
+            "confirmDelete": "Wilt u deze klant echt verwijderen?",
+            "confirmDeleteVendor": "Leverancier „{name}“ echt verwijderen? Contactpersonen, adressen en opmerkingen worden mee verwijderd.",
+            "cancel": "Annuleren"
         },
         "messages": {
             "saving": "Opslaan...",
@@ -233,7 +236,10 @@
             "deleteError": "Fout bij het verwijderen van de klant.",
             "deleteContactError": "Fout bij het verwijderen van de contactpersoon",
             "deleteContactErrorTitle": "Fout",
-            "autoSaveWarning": "Vul eerst {fields} in om het record op te slaan."
+            "autoSaveWarning": "Vul eerst {fields} in om het record op te slaan.",
+            "deleteErrorVendor": "Fout bij het verwijderen van de leverancier.",
+            "deleted": "Klant „{name}“ verwijderd.",
+            "deletedVendor": "Leverancier „{name}“ verwijderd."
         },
         "duplicate": {
             "title": "Mogelijk duplicaat",
@@ -329,7 +335,13 @@
             "urlLabel": "Aanduiding",
             "urlAddress": "URL",
             "addUrl": "URL toevoegen",
-            "openUrl": "Pagina openen"
+            "openUrl": "Pagina openen",
+            "vendornumber": "Leveranciersnummer",
+            "hu_notify": "APK-herinnering versturen",
+            "hu_notify_hint": "Geldt voor alle voertuigen van deze klant – ook voor later aangemaakte. Staat de schakelaar uit, dan worden geen APK-herinneringen verstuurd en kan de herinnering bij het afzonderlijke voertuig niet meer worden ingeschakeld (de klant heeft voorrang).",
+            "phone_numbers": "Extra telefoonnummers",
+            "emails": "Extra e-mailadressen",
+            "urls": "Extra URL's"
         },
         "price-rules": {
             "title": "Prijsregels",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Testmodus)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testmodus)"
+        },
+        "customVars": {
+            "title": "Aangepaste variabelen",
+            "noConfigs": "Er zijn geen aangepaste variabelen voor klanten/leveranciers geconfigureerd."
+        },
+        "easymode": {
+            "label": "Weergave van het klantformulier",
+            "easy": "Eenvoudig",
+            "pro": "Alle velden",
+            "easyHint": "Alleen de velden en tabbladen die in de bedrijfsconfiguratie voor het dagelijkse werk zijn gekozen.",
+            "proHint": "Alle velden en tabbladen van de klant of leverancier.",
+            "hiddenFilled": "{count} verborgen velden bevatten waarden:",
+            "showAll": "Alle velden tonen"
+        },
+        "history": {
+            "title": "Tijdreis",
+            "intro": "Wie heeft wanneer wat gewijzigd — elke opslag met de gewijzigde velden. Met de schuifregelaar reist u terug en ziet u hoe de stamgegevens er toen uitzagen.",
+            "count": "{n} gebeurtenis | {n} gebeurtenissen",
+            "reload": "Opnieuw laden",
+            "filterEmployee": "Medewerker",
+            "search": "Zoeken",
+            "timeTravel": "Tijdreis",
+            "today": "Vandaag",
+            "backToToday": "Terug naar vandaag",
+            "stepsBack": "{n} wijziging terug | {n} wijzigingen terug",
+            "asOf": "Stand vóór de wijziging van {time} — verschillen met vandaag:",
+            "noDiff": "Geen verschil met de huidige stand.",
+            "empty": "Nog geen wijzigingen vastgelegd. Vanaf nu wordt elke opslag bijgehouden.",
+            "noMatch": "Geen gebeurtenissen passen bij het filter.",
+            "unknownEmployee": "Onbekend",
+            "created": "aangemaakt",
+            "deleted": "verwijderd",
+            "yes": "Ja",
+            "no": "Nee",
+            "tableProfile": "Stamgegevens",
+            "tableContact": "Contactpersoon",
+            "tableShipto": "Leveringsadres",
+            "tableBilling": "Extra factuuradres",
+            "legacy": {
+                "saved": "opgeslagen",
+                "printed": "afgedrukt",
+                "mailed": "per e-mail verstuurd",
+                "deleted": "verwijderd",
+                "screened": "weergegeven",
+                "posted": "geboekt"
+            }
         }
     }
 }

@@ -135,7 +135,17 @@
         "editNotes": "Bemerkungen bearbeiten",
         "contactOrigin": "Herkunft der personenbezogenen Daten",
         "showAll": "Alle anzeigen",
-        "documentFetch": "Belegabruf"
+        "documentFetch": "Belegabruf",
+        "letter": "Brief",
+        "newLetter": "Neuen Brief an diesen Kunden/Lieferanten schreiben",
+        "openLetter": "Brief öffnen",
+        "letterNumber": "Nr. {number}",
+        "letterDraft": "Nicht versendet",
+        "letterSentVia": "versendet per {channels}",
+        "letterChannel": {
+            "email": "E-Mail",
+            "post": "Post"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Anrufen",

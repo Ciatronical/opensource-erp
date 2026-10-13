@@ -229,10 +229,19 @@ HAY;
                             bta.gl_id,
                             COALESCE(ar.invnumber, ap.invnumber) AS invnumber,
                             c.name AS customer_name,
-                            v.name AS vendor_name
+                            v.name AS vendor_name,
+                            -- Dialogbuchung („Auf Konto buchen"): Belegnummer, Text und Gegenkonten
+                            gl.reference   AS gl_reference,
+                            gl.description AS gl_description,
+                            (SELECT string_agg(c2.accno, ', ' ORDER BY a2.acc_trans_id)
+                             FROM acc_trans a2 JOIN chart c2 ON c2.id = a2.chart_id
+                             WHERE a2.trans_id = gl.id
+                               AND a2.chart_id <> (SELECT chart_id FROM bank_accounts WHERE id = bt.local_bank_account_id)
+                               AND c2.link !~ '(^|:)(AP|AR)_tax($|:)') AS gl_accounts
                         FROM bank_transaction_acc_trans bta
                         LEFT JOIN ar ON ar.id = bta.ar_id
                         LEFT JOIN ap ON ap.id = bta.ap_id
+                        LEFT JOIN gl ON gl.id = bta.gl_id AND bta.ar_id IS NULL AND bta.ap_id IS NULL
                         LEFT JOIN customer c ON c.id = ar.customer_id
                         LEFT JOIN vendor v ON v.id = ap.vendor_id
                         WHERE bta.bank_transaction_id = bt.id

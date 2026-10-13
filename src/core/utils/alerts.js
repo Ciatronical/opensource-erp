@@ -64,6 +64,26 @@ export const error = (text, title = '', apiError = false, confirmText = 'OK', ca
     return Swal.fire(opts);
 }
 
+/**
+ * Texteingabe abfragen (z. B. eine E-Mail-Adresse). Liefert { isConfirmed, value }.
+ */
+export const prompt = (text, title = '', placeholder = '', confirmText = 'OK', cancelText = 'Abbrechen') => {
+    return Swal.fire({
+        icon: 'question',
+        title: title,
+        text: text,
+        input: 'text',
+        inputPlaceholder: placeholder,
+        showCloseButton: closeBtnEnabled,
+        showCancelButton: cancelBtnEnabled,
+        reverseButtons: reverseBtnsEnabled,
+        confirmButtonText: confirmText,
+        cancelButtonText: cancelText,
+        buttonsStyling: btnsStyling,
+        customClass: customCss,
+    });
+}
+
 export const question = (text, title = '', confirmText = 'OK', cancelText = 'Abbrechen') => {
     return Swal.fire({
         icon: 'question',

@@ -149,6 +149,9 @@ Alle Bankfunktionen liegen in einem Hub mit neun Reitern: **Umsätze · Überwei
 - **Ein Umsatz gegen mehrere Belege**: Rechnungen, Eingangsrechnungen und Gutschriften zur Sammelbuchung hinzufügen, Summe gegen den Umsatz geprüft
 - Rest als Skonto, Gebühr oder Teilzahlung
 - Dialog für Geldeingänge und Geldausgänge
+- **Buchung ansehen und ändern**: je gebuchtem Umsatz Positionen und alle Buchungsbeine (Soll/Haben, Steuerschlüssel); Dialogbuchungen und aus dem Umsatz entstandene Eingangsrechnungen nachträglich änderbar (Konto, Steuer, Lieferant, Rechnungsnummer), Abschlussdatum wird beachtet
+- **Auf Konto buchen** (Umsätze ohne Beleg): Vorlagen für Umbuchung auf eigenes Bankkonto (Gegenumsatz wird mitgebucht oder später verknüpft), Kasse, Geldtransit, Privatentnahme/-einlage, Lohn, Lohnsteuer, Sozialversicherung, Umsatzsteuer-Vorauszahlung/-Erstattung, Bankgebühren, Zinsen, Darlehen, Gewerbe-/Kfz-Steuer; Erkennung über eigene IBAN, vorhandene Buchung und Verwendungszweck
+- **Splitbuchung**: ein Umsatz als Eingangsrechnung auf mehrere Aufwandskonten und Steuersätze (z. B. Wareneingang + Mahnkosten auf 6436); gebucht wie kivitendos Kreditorenbuchung mit mehreren Zeilen
 
 ### 1.8 Kartenabrechnungen / Settlements
 
@@ -313,6 +316,8 @@ Eigene Ansicht, die die UStVA-Kennzahlen aus den tatsächlich gebuchten Vorfäll
 - **Gegenkonten**: Aufwand, Ertrag, Geldtransit sowie Bankkonten (Geld zur/von der Bank bringen)
 - **Kassenbestandsprüfung**: eine Ausgabe darf den verfügbaren Bestand am Buchungstag nicht ins Minus bringen (niedrigster laufender Tagesend-Saldo)
 - **Fortlaufende Belegnummer** je Kassenbuch, Vorschlag im Dialog
+- **Buchung ansehen und ändern**: Klick auf die Zeile zeigt Positionen und Beine; manuelle Kassenbuchungen nachträglich änderbar (Richtung, Datum, Betrag, Positionen, Text), Belegnummer bleibt
+- **Splitbuchung**: ein Bon auf mehrere Gegenkonten und Steuersätze (7 % und 19 %) in einer Buchung mit einer Belegnummer, Steuer je Position wählbar; Kassenbuch und PDF zeigen alle Konten
 - **Buchungsvorschlag aus der Historie** (ohne KI): erkennt wiederkehrende Muster, z. B. „gestern 900 € zur Bank (Geldtransit) → heute 1200 € getippt"
 - **Barzahlung von Ausgangsrechnungen** buchen (Einzahlung)
 - **Barzahlung von Eingangsrechnungen** buchen (Auszahlung an Lieferanten)
@@ -576,6 +581,16 @@ Aus einem Beleg heraus erzeugen:
 - **Webhook** für eingehende Nachrichten
 - Nachrichten als gelesen markieren, ausblenden (Soft-Delete)
 
+### 8.2a Briefe und Postversand (Hybridbrief) *(extern)*
+
+- **Briefe** an Kunden und Lieferanten unter Kontakt → Briefe: Briefnummer aus dem Nummernkreis, Ansprechperson, Betreff, **Anredevorschlag** (Geschlecht/Sprache), Ihr Zeichen, ein oder zwei Unterzeichner, formatierter Text mit **Platzhaltern**
+- **Textbausteine** im Editor anlegen, wählen, aktualisieren; jeder Brief als Vorlage für einen neuen
+- Briefliste mit Volltextsuche (UND-verknüpft), Filter nach Kunde/Lieferant, Versandstatus und Zeitraum
+- **Versand**: PDF (auch Vorschau ungespeichert), E-Mail mit PDF-Anhang und Journal-Verknüpfung, **elektronisch per Post**
+- **Hybridbrief**: Einlieferung bei **PIN AG / eBrief** (SFTP/FTPS) oder **LetterXpress** (REST-API) – Farbe, Duplex, **Einschreiben**, Porto- und Guthabenanzeige vor dem Einliefern, Versandexemplar, Storno (15 Minuten), Status und Sendungsverfolgung per Knopf oder Cron; ohne Anbieter „Selbst drucken" mit Vermerk
+- **Belege per Post**: Rechnungen, Angebote, Aufträge, Lieferscheine aus der Faktura mit demselben Dialog einliefern; Chip „Post" im Versandstatus
+- Briefe in der **Kontakthistorie** des Kunden/Lieferanten neben Anrufen, WhatsApp und E-Mails, mit Versandwegen und eigenem Filter
+
 ### 8.3 Telegram
 
 - **Telegram-Bot-Anbindung** (kostenlos, kein Drittanbieter nötig)
@@ -828,6 +843,7 @@ Zwei sauber getrennte Typen:
 - Einzelwerte werden **automatisch gespeichert** (Deep-Watcher mit Verzögerung)
 - Mitarbeiterbezogene Einstellungen separat speicherbar
 - Stammdaten anlegen: **Buchungsgruppen, Steuerzonen, Steuersätze, Bankkonten**
+- **Stammdaten-Listen** *(Kern)*: Einheiten (mit Basiseinheit und Umrechnungsfaktor), Kundentypen (Rabatt, eigener Kundennummernkreis, Verkäufer), Warengruppen, Preisgruppen, Preisfaktoren, Abteilungen, Zahlungsbedingungen (Zahlungsziel, Skonto, Belegtexte), Lieferbedingungen, Belegsprachen, Projekttypen, Projektstatus und Anreden — anlegen, bearbeiten, per Drag&Drop sortieren, auf ungültig setzen; verwendete Einträge sind gegen Löschen geschützt. Entspricht dem kivitendo-Menü „System“.
 - **Drucker** verwalten (Bezeichnung + Druckbefehl)
 - **Startansicht** wählbar (Menü, CRM, Wall-Display, Anschlagtafel, Mechaniker-Modus)
 
@@ -889,7 +905,7 @@ Was sich sofort ändert:
 - Neues Hauptmenü **Fahrzeuge** (Auftragsliste, Scanliste, Neu anlegen, Verwalten — und bei aktiviertem Mechaniker-Modus zusätzlich „Meine Aufträge")
 - Im Menü **Kontakt** kommt **HU-Benachrichtigungen** dazu
 - In der **globalen Suche** werden Fahrzeuge mitgesucht
-- In der **Faktura** erscheinen zusätzliche Schaltflächen (Fahrzeug, SilverDAT, AAG-Online, ESI[tronic], mega macs, HGS-Data, AU-Beleg)
+- In der **Faktura** erscheinen zusätzliche Schaltflächen (Fahrzeug, SilverDAT, Gutachten-Import, AAG-Online, ESI[tronic], mega macs, HGS-Data, AU-Beleg)
 - Neuer Konfigurations-Tab **LxCars**, zusätzlich **ANPR**
 - Im **Kalender** wird die Werkstattauslastung je Bringetermin-Tag angezeigt
 - Im **Wiki** lassen sich Artikel einer HSN/TSN-Kombination zuordnen
@@ -1085,6 +1101,11 @@ Vereinfachte, tablet-taugliche Ansicht für die Werkstatt. Aktivierung und Mitar
 
 - **VXS-Import**: Kalkulationspositionen aus SilverDAT als Auftrags- bzw. Rechnungspositionen übernehmen (Bulk-Import über einen Dialog)
 
+**Gutachten-Import (PDF/Foto per KI)**
+
+- Fremde Gutachten und Kostenvoranschläge jeder Herkunft als PDF oder Foto auslesen und den Auftrag damit ausfüllen: Fahrzeug (anlegen/verknüpfen/ergänzen), km-Stand, Gutachten- und Schadennummer, Versicherung sowie alle Kalkulationspositionen (Teile, Lohn, Lack, Nebenkosten) – Vorschau mit abwählbaren Positionen und Summenabgleich, Datei wird im Fahrzeugordner abgelegt
+- **Weroni Rechtsprüfung**: prüft das Gutachten nach dem Import vollständig (130-%-Regel, Wiederbeschaffungswert/Restwert, Wertminderung, Nutzungsausfall, Gutachterkosten, Haftung, Werkstattrisiko), entscheidet mit Ampel, stellt die Ansprüche des Kunden auf und formuliert die Kommunikation an Kunde (E-Mail/WhatsApp) und Versicherung – mit Versandprotokoll
+
 ### 16.18 AU / Abgasuntersuchung („Special")
 
 - Erzeugt **AU-Prüfbelege als PDF** auf Basis der amtlichen Vorlagen: Benzin G-Kat, G-Kat OBD, Diesel, Diesel OBD
@@ -1189,7 +1210,7 @@ Automatische Kennzeichenerkennung an der Werkstattzufahrt.
 **Buchhaltung** — Standardkonten · Buchungskonfiguration · DATEV-Prüfung · SEPA/Bank
 **Belege** — Nummernkreise · Belegverknüpfungen · Löschbare Belege · E-Rechnung · Inventur
 **Features** — Features · LxCars *(LxCars)* · ANPR *(Schalter)* · KI und Gesundheit
-**Werkzeuge** — Hinzufügen (Buchungsgruppen, Steuerzonen, Steuersätze, Bankkonten) und weitere
+**Werkzeuge** — Hinzufügen (Buchungsgruppen, Steuerzonen, Steuersätze, Bankkonten) · Stammdaten-Listen (Einheiten, Kundentypen, Warengruppen, Preisgruppen, Preisfaktoren, Abteilungen, Zahlungs-/Lieferbedingungen, Belegsprachen, Projekttypen, Projektstatus, Anreden)
 
 Über allen Tabs liegt eine **Feldsuche** — Eingabe von „iban", „zugferd", „inventur" oder „plakette" springt direkt zum passenden Feld.
 

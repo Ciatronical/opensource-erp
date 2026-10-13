@@ -1,10 +1,8 @@
 <!-- src/core/views/customer-vendor/cards/name.address.card.vue -->
 
 <template>
-  <v-card variant="outlined" elevation="1">
-    <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center flex-wrap ga-2">
-      <h4 class="text-subtitle-1 mb-0">{{ t('CustomerVendorEditView.billing.nameAddressTitle') }}</h4>
-      <v-spacer />
+  <section-card :title="t('CustomerVendorEditView.billing.nameAddressTitle')" icon="mdi-card-account-details-outline">
+    <template #actions>
       <v-btn
         size="small"
         color="primary"
@@ -34,58 +32,44 @@
         style="display:none"
         @change="onBusinessCardSelected"
       />
-    </v-card-title>
-    <v-divider />
-    <v-card-text class="py-2 px-2 px-sm-3">
-      <v-row dense>
-        <v-col cols="12" sm="8" class="py-1">
+    </template>
+      <v-row density="compact">
+        <v-col v-if="show('name')" :cols="12" :sm="show('keywords') ? 8 : 12" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.name')"
             v-model="localData.name"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
+            data-field="name"
             @blur="onNameBlur"
           />
         </v-col>
-        <v-col cols="12" sm="4" class="py-1">
+        <v-col v-if="show('keywords')" cols="12" sm="4" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.keywords')"
             v-model="localData.keywords"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
           />
         </v-col>
 
-        <v-col cols="12" class="py-1">
+        <v-col v-if="show('greeting')" cols="12" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.greeting')"
             v-model="localData.greeting"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
           />
         </v-col>
 
-        <v-col cols="4" sm="3" class="py-1">
+        <!-- Anschrift als Block: PLZ und Ort, direkt darunter die Straße, dann das Land -->
+        <v-col v-if="show('zipcode')" cols="4" sm="3" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.zipcode')"
             v-model="localData.zipcode"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
+            data-field="zipcode"
           />
         </v-col>
-        <v-col cols="8" sm="9" class="py-1">
+        <v-col v-if="show('city')" cols="8" sm="9" class="py-1">
           <v-menu v-model="showCityMenu" :close-on-content-click="true">
             <template #activator="{ props: menuProps }">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.city')"
                 v-model="localData.city"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
                 v-bind="cityChoices.length > 1 ? menuProps : {}"
                 :append-inner-icon="cityChoices.length > 1 ? 'mdi-menu-down' : undefined"
               />
@@ -101,76 +85,56 @@
           </v-menu>
         </v-col>
 
-        <v-col cols="12" class="py-1">
-          <v-text-field
-            :label="t('CustomerVendorEditView.fields.country')"
-            v-model="localData.country"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
-          />
-        </v-col>
-
-        <v-col cols="12" class="py-1">
-          <v-switch
-            :label="t('CustomerVendorEditView.fields.natural_person')"
-            v-model="localData.natural_person"
-            density="compact"
-            hide-details="auto"
-          />
-        </v-col>
-
-        <v-col cols="12" sm="6" class="py-1">
-          <v-text-field
-            :label="t('CustomerVendorEditView.fields.department_1')"
-            v-model="localData.department_1"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
-          />
-        </v-col>
-        <v-col cols="12" sm="6" class="py-1">
-          <v-text-field
-            :label="t('CustomerVendorEditView.fields.department_2')"
-            v-model="localData.department_2"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
-          />
-        </v-col>
-
-        <v-col cols="12" class="py-1">
+        <v-col v-if="show('street')" cols="12" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.street')"
             v-model="localData.street"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
+            data-field="street"
           />
         </v-col>
 
-        <v-col cols="12" sm="6" class="py-1">
+        <v-col v-if="show('country')" cols="12" class="py-1">
+          <v-text-field
+            :label="t('CustomerVendorEditView.fields.country')"
+            v-model="localData.country"
+          />
+        </v-col>
+
+        <v-col v-if="show('natural_person')" cols="12" class="py-1">
+          <v-switch
+            :label="t('CustomerVendorEditView.fields.natural_person')"
+            v-model="localData.natural_person"
+          />
+        </v-col>
+
+        <v-col v-if="show('department_1')" cols="12" sm="6" class="py-1">
+          <v-text-field
+            :label="t('CustomerVendorEditView.fields.department_1')"
+            v-model="localData.department_1"
+          />
+        </v-col>
+        <v-col v-if="show('department_2')" cols="12" sm="6" class="py-1">
+          <v-text-field
+            :label="t('CustomerVendorEditView.fields.department_2')"
+            v-model="localData.department_2"
+          />
+        </v-col>
+
+        <v-col v-if="show('gln')" cols="12" sm="6" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.gln')"
             v-model="localData.gln"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
           />
         </v-col>
 
-        <v-col v-if="localData.src !== 'V'" cols="12" sm="6" class="py-1">
+        <v-col v-if="localData.src !== 'V' && show('commercial_court')" cols="12" sm="6" class="py-1">
           <v-text-field
             :label="t('CustomerVendorEditView.fields.commercial_court')"
             v-model="localData.commercial_court"
-            variant="outlined"
-            density="compact"
-            hide-details="auto"
           />
         </v-col>
       </v-row>
-    </v-card-text>
-  </v-card>
+  </section-card>
 
   <v-dialog v-model="phoneDialog.show" max-width="460" persistent>
     <v-card>
@@ -183,8 +147,6 @@
         <v-text-field
           v-model="phoneDialog.phone"
           :label="t('CustomerVendorEditView.fields.phone')"
-          variant="outlined"
-          density="compact"
           autofocus
           :disabled="phoneSearching"
           @keyup.enter="runPhoneSearch"
@@ -219,11 +181,14 @@
 
 <script>
 import { computed, ref, watch } from 'vue'
+import SectionCard from '@/core/components/layout/section-card.vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
+import { useCvEasymode } from '../composables/useCvEasymode.js'
 
 export default {
   name: 'NameAddressCard',
+  components: { SectionCard },
   props: {
     modelValue: {
       type: Object,
@@ -237,6 +202,7 @@ export default {
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     const { t } = useI18n()
+    const { show } = useCvEasymode()
 
     const localData = computed({
       get: () => props.modelValue,
@@ -568,14 +534,9 @@ export default {
       openBusinessCardPicker, onBusinessCardSelected,
       phoneSearching, phoneDialog,
       openPhoneSearchDialog, runPhoneSearch,
+      show,
       t,
     }
   }
 }
 </script>
-
-<style scoped>
-.bg-grey-lighten-4 {
-  background-color: #f5f5f5;
-}
-</style>

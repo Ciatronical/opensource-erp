@@ -79,6 +79,8 @@
             "aiPositions": "Item suggestions",
             "filemanager": "Document chat (file manager)",
             "specialTools": "Special tool matching",
+            "gutachtenImport": "Appraisal import",
+            "gutachtenReview": "Weroni legal review (appraisal)",
             "accounting": "Document recognition",
             "businessCard": "Business card scan",
             "phoneSearch": "Phone lookup",

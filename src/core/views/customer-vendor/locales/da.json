@@ -17,7 +17,9 @@
             "priceRules": "Prisregeln",
             "turnover": "Omsaetningstatistik",
             "emails": "E-mails",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "customVars": "Brugerdefinerede variabler",
+            "history": "Tidsrejse"
         },
         "billing": {
             "nameAddressTitle": "Name & Adresse",
@@ -221,9 +223,10 @@
             "saveAndOrder": "Opret ordre",
             "saveAndQuotation": "Opret tilbud",
             "delete": "Slet",
-            "history": "Historik",
             "close": "Luk",
-            "confirmDelete": "Vil du diesen Kunder virkelig slette?"
+            "confirmDelete": "Vil du diesen Kunder virkelig slette?",
+            "confirmDeleteVendor": "Vil du virkelig slette leverandøren „{name}“? Kontaktpersoner, adresser og noter fjernes samtidig.",
+            "cancel": "Annullér"
         },
         "messages": {
             "saving": "Speichert...",
@@ -233,7 +236,10 @@
             "deleteError": "Fejl ved Slet des Kunder.",
             "deleteContactError": "Fejl ved Slet des Ansprechpartners",
             "deleteContactErrorTitle": "Fehler",
-            "autoSaveWarning": "Venligst foerst {fields} ausfüllen, um den Datensatz zu speichern."
+            "autoSaveWarning": "Venligst foerst {fields} ausfüllen, um den Datensatz zu speichern.",
+            "deleteErrorVendor": "Fejl ved sletning af leverandøren.",
+            "deleted": "Kunden „{name}“ er slettet.",
+            "deletedVendor": "Leverandøren „{name}“ er slettet."
         },
         "duplicate": {
             "title": "Mögliches Duplikat",
@@ -329,7 +335,13 @@
             "urlLabel": "Bezeichnung",
             "urlAddress": "URL",
             "addUrl": "Tilføj URL",
-            "openUrl": "Åbn side"
+            "openUrl": "Åbn side",
+            "vendornumber": "Leverandørnummer",
+            "hu_notify": "Send synspåmindelser",
+            "hu_notify_hint": "Gælder for alle denne kundes køretøjer – også dem, der oprettes senere. Er kontakten slået fra, sendes der ingen synspåmindelser, og påmindelsen kan ikke længere slås til på det enkelte køretøj (kunden har forrang).",
+            "phone_numbers": "Yderligere telefonnumre",
+            "emails": "Yderligere e-mailadresser",
+            "urls": "Yderligere URL'er"
         },
         "price-rules": {
             "title": "Prisregeln",
@@ -394,6 +406,52 @@
             "option_xrechnung_test": "XRechnung 3.0 (Testtilstand)",
             "option_zugferd": "Factur-X / ZUGFeRD 2.2 extended",
             "option_zugferd_test": "Factur-X / ZUGFeRD extended (Testtilstand)"
+        },
+        "customVars": {
+            "title": "Brugerdefinerede variabler",
+            "noConfigs": "Der er ikke konfigureret nogen brugerdefinerede variabler for kunder/leverandører."
+        },
+        "easymode": {
+            "label": "Visning af kundebilledet",
+            "easy": "Enkel",
+            "pro": "Alle felter",
+            "easyHint": "Kun de felter og faneblade, der er valgt til dagligdagen i firmakonfigurationen.",
+            "proHint": "Alle kundens hhv. leverandørens felter og faneblade.",
+            "hiddenFilled": "{count} skjulte felter indeholder værdier:",
+            "showAll": "Vis alle felter"
+        },
+        "history": {
+            "title": "Tidsrejse",
+            "intro": "Hvem ændrede hvad og hvornår — hver gemning med de ændrede felter. Med skyderen rejser du tilbage og ser, hvordan stamdataene så ud dengang.",
+            "count": "{n} hændelse | {n} hændelser",
+            "reload": "Hent igen",
+            "filterEmployee": "Medarbejder",
+            "search": "Søg",
+            "timeTravel": "Tidsrejse",
+            "today": "I dag",
+            "backToToday": "Tilbage til i dag",
+            "stepsBack": "{n} ændring tilbage | {n} ændringer tilbage",
+            "asOf": "Tilstand før ændringen den {time} — afvigelser fra i dag:",
+            "noDiff": "Ingen afvigelse fra dagens tilstand.",
+            "empty": "Endnu ingen ændringer registreret. Fra nu af gemmes hver gemning.",
+            "noMatch": "Ingen hændelser passer til filteret.",
+            "unknownEmployee": "Ukendt",
+            "created": "oprettet",
+            "deleted": "slettet",
+            "yes": "Ja",
+            "no": "Nej",
+            "tableProfile": "Stamdata",
+            "tableContact": "Kontaktperson",
+            "tableShipto": "Leveringsadresse",
+            "tableBilling": "Yderligere faktureringsadresse",
+            "legacy": {
+                "saved": "gemt",
+                "printed": "udskrevet",
+                "mailed": "sendt pr. e-mail",
+                "deleted": "slettet",
+                "screened": "vist",
+                "posted": "bogført"
+            }
         }
     }
 }

@@ -18,7 +18,8 @@
             "priceRules": "Preisregeln",
             "turnover": "Umsatzstatistik",
             "emails": "E-Mails",
-            "whatsapp": "WhatsApp"
+            "whatsapp": "WhatsApp",
+            "history": "Zeitreise"
         },
         "billing": {
             "nameAddressTitle": "Name & Adresse",
@@ -243,7 +244,6 @@
             "saveAndOrder": "Auftrag erfassen",
             "saveAndQuotation": "Angebot erfassen",
             "delete": "Löschen",
-            "history": "Historie",
             "close": "Schließen",
             "confirmDelete": "Kunde „{name}“ wirklich löschen? Ansprechpartner, Adressen und Notizen werden mit entfernt.",
             "confirmDeleteVendor": "Lieferant „{name}“ wirklich löschen? Ansprechpartner, Adressen und Notizen werden mit entfernt.",
@@ -359,7 +359,10 @@
             "urlLabel": "Bezeichnung",
             "urlAddress": "URL",
             "addUrl": "URL hinzufügen",
-            "openUrl": "Seite öffnen"
+            "openUrl": "Seite öffnen",
+            "phone_numbers": "Weitere Telefonnummern",
+            "emails": "Weitere E-Mail-Adressen",
+            "urls": "Weitere URLs"
         },
         "price-rules": {
             "title": "Preisregeln",
@@ -407,6 +410,48 @@
             "help_xrechnung": "Reines XML (XRechnung 3.0, CIUS der EN 16931). Pflicht bei öffentlichen Auftraggebern (Behörden). Das Feld »Unsere Leitweg-ID beim Kunden« muss gepflegt sein – ohne Leitweg-ID lehnt das Empfangsportal die Rechnung ab.",
             "help_xrechnung_test": "XRechnung 3.0 im Testmodus. Für die Erstabnahme mit Verwaltungsportalen wie ZRE oder OZG-RE. Wird nicht gebucht.",
             "leitweg_hint": "Für XRechnung muss das Feld »Unsere Leitweg-ID beim Kunden« (Karte »Nummern & IDs«) ausgefüllt sein."
+        },
+        "easymode": {
+            "label": "Ansicht der Kundenmaske",
+            "easy": "Einfach",
+            "pro": "Alle Felder",
+            "easyHint": "Nur die Felder und Reiter, die in der Firmenkonfiguration für den Alltag gewählt sind.",
+            "proHint": "Alle Felder und Reiter des Kunden bzw. Lieferanten.",
+            "hiddenFilled": "{count} ausgeblendete Felder enthalten Werte:",
+            "showAll": "Alle Felder anzeigen"
+        },
+        "history": {
+            "title": "Zeitreise",
+            "intro": "Wer hat wann was geändert — jede Speicherung mit den geänderten Feldern. Mit dem Regler reist du zurück und siehst, wie die Stammdaten damals aussahen.",
+            "count": "{n} Ereignis | {n} Ereignisse",
+            "reload": "Neu laden",
+            "filterEmployee": "Mitarbeiter",
+            "search": "Suchen",
+            "timeTravel": "Zeitreise",
+            "today": "Heute",
+            "backToToday": "Zurück zu heute",
+            "stepsBack": "{n} Änderung zurück | {n} Änderungen zurück",
+            "asOf": "Stand vor der Änderung vom {time} — Abweichungen zu heute:",
+            "noDiff": "Keine Abweichung zum heutigen Stand.",
+            "empty": "Noch keine Änderungen aufgezeichnet. Ab jetzt wird jede Speicherung festgehalten.",
+            "noMatch": "Keine Ereignisse passen zum Filter.",
+            "unknownEmployee": "Unbekannt",
+            "created": "angelegt",
+            "deleted": "gelöscht",
+            "yes": "Ja",
+            "no": "Nein",
+            "tableProfile": "Stammdaten",
+            "tableContact": "Ansprechpartner",
+            "tableShipto": "Lieferadresse",
+            "tableBilling": "Zusätzliche Rechnungsadresse",
+            "legacy": {
+                "saved": "gespeichert",
+                "printed": "gedruckt",
+                "mailed": "per E-Mail versendet",
+                "deleted": "gelöscht",
+                "screened": "angezeigt",
+                "posted": "gebucht"
+            }
         }
     }
 }

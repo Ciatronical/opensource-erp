@@ -569,16 +569,10 @@
         "bookAsCash": "Zapłacone gotówką",
         "cashPaymentFor": "Płatność gotówkowa za",
         "counterAccount": "Konto przeciwstawne",
-        "counterAccountRequired": "Wybierz konto przeciwstawne",
         "kassaAccount": "Konto kasowe",
         "kassaAccountRequired": "Wybierz konto kasowe",
         "chartAccount": "Konto",
-        "noCharts": "Nie znaleziono kont",
         "sourceAR": "Płatność klienta",
-        "sourceAP": "Płatność do dostawcy",
-        "taxIncluded": "Kwota brutto · zawiera {rate} % {kind}: {tax} €, netto {net} €",
-        "taxKindOut": "VAT należny",
-        "taxKindIn": "VAT naliczony",
-        "taxNone": "Konto bez klucza podatkowego – podatek nie jest wydzielany"
+        "sourceAP": "Płatność do dostawcy"
     }
 }
