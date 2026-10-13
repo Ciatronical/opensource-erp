@@ -151,6 +151,16 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
             }
             shopSiteTally($bilanz, $kanal, 'seiten');
             $sagen('Seite geschrieben: '.basename($ergebnis['file']));
+            // Neuer Dateiname (Kennung der Produktseite oder Artikelnummer
+            // geändert): die Seite unter dem alten Namen entfernen, sonst
+            // bliebe sie verwaist online (shop_queue_page_rewrite)
+            $alt = basename((string)($auftrag['param'] ?? ''));
+            if ('' !== $alt && $alt !== basename($ergebnis['file']) && shopRemovePage($db, $kanal, $alt)) {
+                shopSiteTally($bilanz, $kanal, 'entfernt');
+                $sagen('Seite unter altem Namen entfernt: '.$alt);
+                shopJobResult($db, $id, 'ok: '.basename($ergebnis['file']).', alte Seite '.$alt.' entfernt');
+                break;
+            }
             shopJobResult($db, $id, 'ok: '.basename($ergebnis['file']));
             break;
 

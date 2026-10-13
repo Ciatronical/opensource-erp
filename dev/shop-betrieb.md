@@ -144,9 +144,12 @@ Jeder Auftrag gehört einem Verkaufskanal (`batchjob_hugoshop.channel_id`,
 Schritt 4). Ist der HugoShop abgeschaltet und steht kein HugoShop-Auftrag an,
 lässt der Lauf Paket, Kategorieübersicht und Bau aus.
 
-`publish_part` und `publish_all` entstehen auch von selbst, wenn sich Preis
-oder Texte ändern (Trigger, dev/shop-verkaufskanaele.md V22) — abschaltbar
-mit `shop_auto_publish`.
+`publish_part` und `publish_all` entstehen auch von selbst, wenn sich am
+Artikel etwas ändert, das auf seiner Seite steht (Trigger,
+dev/shop-verkaufskanaele.md V22) — abschaltbar je HugoShop mit dem
+Kanalschalter `auto_publish`. Bekommt die Seite dabei einen neuen Dateinamen
+(neue Produktseiten-Kennung oder Artikelnummer), trägt der Auftrag den alten
+in `param`, und der Lauf entfernt die Seite unter dem alten Namen.
 
 ### Wo Fehler landen
 
@@ -440,9 +443,9 @@ abzulegen.
 
 - **Artikel veröffentlichen:** In der Artikelkarte „Im Shop anbieten“, den
   HugoShop als Kanal wählen und „Veröffentlichen“; die Seite entsteht beim
-  nächsten Lauf. Ändern sich danach Verkaufspreis, Buchungsgruppe, Aufschlag
-  oder Texte, legt OSERP den Auftrag selbst an (`shop_auto_publish`, V22 in
-  `dev/shop-verkaufskanaele.md`).
+  nächsten Lauf. Ändert sich danach etwas, das auf der Seite steht (Preis,
+  Texte, Bilder, Shop-Angaben, Gewicht, Vorrat …), legt OSERP den Auftrag
+  selbst an (Kanalschalter `auto_publish`, V22 in `dev/shop-verkaufskanaele.md`).
 - **Alles neu schreiben:** „Alle veröffentlichen“ in der Shop-Übersicht —
   nötig nach einem neuen Steuersatz oder einem anderen Vorlagensatz, die keinen
   Auftrag von selbst auslösen.
