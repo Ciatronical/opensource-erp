@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED acceptă doar metode cu decontare imediată. UNRESTRICTED permite și debitarea directă; astfel de plăți rămân inițial în așteptare și trebuie urmărite.",
         "shopLinks": "Adresele site-ului magazinului",
         "shopBaseUrl": "Adresa site-ului magazinului",
-        "shopBaseUrl_help": "Adresa completă, inclusiv https://",
+        "shopBaseUrl_help": "Adresa completă, inclusiv https://. Dacă magazinul se află sub un site, cu cale: https://atelier.example/shop/ — proxy-ul se află atunci sub acea cale (…/shop/shop-api/).",
         "shopProductsLink": "Model de adresă pentru pagina articolului",
         "shopProductsLink_help": "Model cu %s ca marcaj pentru identificatorul articolului.",
         "shopCategoryLink": "Model de adresă pentru pagina categoriei",

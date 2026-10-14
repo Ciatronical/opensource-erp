@@ -5,6 +5,7 @@ import { formatPrice } from '../core/money.js';
 import { sameOriginHref } from '../core/links.js';
 import { t } from '../core/i18n.js';
 import './shop-add-to-cart.js';
+import { shopPath } from '../core/paths.js';
 
 /**
  * <shop-tool-finder cart-url="/warenkorb/"></shop-tool-finder>
@@ -132,7 +133,7 @@ export class ShopToolFinder extends ShopElement {
 
   constructor() {
     super();
-    this.cartUrl = '/warenkorb/#focus';
+    this.cartUrl = shopPath('cart', '#focus');
     this.heading = '';
     this.intro = '';
     this._mode = 'kba';

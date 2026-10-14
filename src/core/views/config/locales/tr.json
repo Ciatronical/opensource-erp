@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED yalnızca anında mahsuplaşan yöntemlere izin verir. UNRESTRICTED otomatik ödemeye de izin verir; bu ödemeler önce beklemede kalır ve takip edilmelidir.",
         "shopLinks": "Mağaza web sitesinin adresleri",
         "shopBaseUrl": "Mağaza web sitesinin adresi",
-        "shopBaseUrl_help": "https:// dahil tam adres",
+        "shopBaseUrl_help": "https:// dahil tam adres. Mağaza bir web sitesinin altındaysa, yol ile: https://atolye.example/shop/ — vekil sunucu o zaman bu yolun altındadır (…/shop/shop-api/).",
         "shopProductsLink": "Ürün sayfası adres kalıbı",
         "shopProductsLink_help": "Ürün tanımlayıcısı için %s yer tutucusunu içeren kalıp.",
         "shopCategoryLink": "Kategori sayfası adres kalıbı",

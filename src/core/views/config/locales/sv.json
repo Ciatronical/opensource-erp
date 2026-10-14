@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED tillåter endast betalsätt som regleras omedelbart. UNRESTRICTED tillåter även autogiro; sådana betalningar är först väntande och måste följas upp.",
         "shopLinks": "Butikswebbplatsens adresser",
         "shopBaseUrl": "Butikswebbplatsens adress",
-        "shopBaseUrl_help": "Fullständig adress inklusive https://",
+        "shopBaseUrl_help": "Fullständig adress inklusive https://. Ligger butiken under en webbplats, med sökväg: https://verkstad.example/shop/ — proxyn ligger då under den sökvägen (…/shop/shop-api/).",
         "shopProductsLink": "Adressmönster för artikelsidan",
         "shopProductsLink_help": "Mönster med %s som platshållare för artikelns identifierare.",
         "shopCategoryLink": "Adressmönster för kategorisidan",

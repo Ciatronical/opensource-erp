@@ -3,6 +3,7 @@ import { ShopElement } from './base.js';
 import { getContext, refreshContext } from './api.js';
 import { on, emit, SHOP_AUTH_CHANGED, SHOP_ACCOUNT_LOADED } from './bus.js';
 import { t } from './i18n.js';
+import { shopPath } from './paths.js';
 
 /**
  * Basisklasse der Konto-Seiten.
@@ -95,7 +96,7 @@ export class ShopAccountElement extends ShopElement {
 
   constructor() {
     super();
-    this.loginUrl = '/login/';
+    this.loginUrl = shopPath('login');
     this.heading = '';
     this._state = 'loading';
     this._error = '';

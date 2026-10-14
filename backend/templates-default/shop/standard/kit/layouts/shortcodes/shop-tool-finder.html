@@ -10,7 +10,7 @@
 */ -}}
 {{- partial "shop-ui-assets.html" . -}}
 <shop-tool-finder
-  cart-url="{{ .Get `cart-url` | default `/warenkorb/#focus` }}"
+  {{- with .Get `cart-url` }} cart-url="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
   {{- with .Get `intro` }} intro="{{ . }}"{{ end }}
   {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-tool-finder>

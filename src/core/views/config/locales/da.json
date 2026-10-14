@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED tillader kun metoder, der afregnes straks. UNRESTRICTED tillader også betalingsservice; sådanne betalinger er først afventende og skal følges op.",
         "shopLinks": "Butikswebstedets adresser",
         "shopBaseUrl": "Butikswebstedets adresse",
-        "shopBaseUrl_help": "Fuld adresse inklusive https://",
+        "shopBaseUrl_help": "Fuld adresse inklusive https://. Ligger shoppen under et websted, med sti: https://vaerksted.example/shop/ — proxyen ligger så under denne sti (…/shop/shop-api/).",
         "shopProductsLink": "Adressemønster for varesiden",
         "shopProductsLink_help": "Mønster med %s som pladsholder for varens kendetegn.",
         "shopCategoryLink": "Adressemønster for kategorisiden",

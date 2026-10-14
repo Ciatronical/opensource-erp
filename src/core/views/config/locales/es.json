@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED solo admite métodos de liquidación inmediata. UNRESTRICTED permite también la domiciliación; esos pagos quedan pendientes y hay que hacerles seguimiento.",
         "shopLinks": "Direcciones del sitio web de la tienda",
         "shopBaseUrl": "Dirección del sitio web de la tienda",
-        "shopBaseUrl_help": "Dirección completa incluyendo https://",
+        "shopBaseUrl_help": "Dirección completa incluyendo https://. Si la tienda está debajo de un sitio web, con ruta: https://taller.example/shop/ — el proxy queda entonces bajo esa ruta (…/shop/shop-api/).",
         "shopProductsLink": "Patrón de dirección de la página de artículo",
         "shopProductsLink_help": "Patrón con %s como marcador del identificador del artículo.",
         "shopCategoryLink": "Patrón de dirección de la página de categoría",

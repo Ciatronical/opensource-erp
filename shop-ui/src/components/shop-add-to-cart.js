@@ -4,6 +4,7 @@ import { apiRequest, getContext } from '../core/api.js';
 import { emit, on, SHOP_CART_CHANGED } from '../core/bus.js';
 import { gtmViewItem, gtmAddToCart } from '../core/gtm.js';
 import { t } from '../core/i18n.js';
+import { shopPath } from '../core/paths.js';
 
 /**
  * <shop-add-to-cart product="1386" button-text="In den Warenkorb"></shop-add-to-cart>
@@ -75,7 +76,7 @@ export class ShopAddToCart extends ShopElement {
     super();
     this.product = '';
     this.buttonText = '';
-    this.cartUrl = '/warenkorb/#focus';
+    this.cartUrl = shopPath('cart', '#focus');
     this.max = 100;
     this._quantity = 1;
     this._busy = false;

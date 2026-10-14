@@ -59,7 +59,20 @@ und übernimmt sie bei jedem Lauf (`dev/shop-hugocms-verzeichnisse.md`).
 6. **Hugo-Konfiguration der Webseite:** die Mounts `oserp-shop/static` →
    `static`, `oserp-shop/layouts` → `layouts` und `oserp-shop/assets/shop-ui`
    → `assets/shop-ui`, jeweils **nach** den eigenen Einträgen. Optional
-   `params.shopui` für das Aussehen der Widgets (`kit/layouts/partials/shop-ui-assets.html`).
+   `params.shopui` für das Aussehen der Widgets und `params.shopui.paths` für
+   die Pfade der Shop-Seiten (`kit/layouts/partials/shop-ui-assets.html`,
+   `shop-ui/README.md` „Pfade der Seiten“).
+   - **Shop unterhalb einer bestehenden Webseite** (etwa eine Werkstatt mit
+     ein paar Artikeln unter `https://werkstatt.example/shop/`): Seiten unter
+     `content/shop/`, `"paths": { "base": "/shop/" }`; in HugoCMS die
+     Freigabe „Produktseiten“ auf `content/shop/produkt`; in der Kanalkarte
+     Adressmuster `/shop/produkt/%s/` und Rechnungsseite `/shop/rechnung/`.
+     Der Weiterleiter bleibt `/shop-api/`.
+   - **Eigene Hugo-Seite unter einem Pfad** (`baseURL` mit `/shop/`): keine
+     Angabe nötig, der Partial leitet die Pfade aus der baseURL ab; in der
+     Kanalkarte die Adresse der Shop-Webseite mit Pfad eintragen
+     (`https://werkstatt.example/shop/`), der Weiterleiter liegt dann unter
+     `/shop/shop-api/`.
 7. **Webserver der Webseite:** PHP für `shop-api/index.php` und `not_found.php`,
    die 404 an `/not_found.php` (nginx: `error_page 404 /not_found.php;`).
 8. **„Shop-Benutzerschnittstelle installieren“** in der Shop-Übersicht, danach
@@ -399,7 +412,9 @@ Vorschaubild fertig aus dem Backend (`shopChannelLink`, aus `products_link` und
 Fehlt ein Muster, zeigen sie keinen Link bzw. kein Bild. Die Aktion
 `getProductLink` und die Attribute `product-url`/`thumbnail-url` sind
 entfallen. Die Pfade der übrigen Seiten (Kasse, Anmeldung, Rechnungsseite …)
-sind Attribute der Shortcodes.
+kommen aus `params.shopui.paths` der Webseite, ersatzweise aus den Vorgaben
+der Widgets; ein Attribut am Shortcode geht vor (seit 2026-10-14,
+`shop-ui/README.md` „Pfade der Seiten“).
 
 **Gebaut wird in HugoCMS**, mit dem Hugo-Programm aus dessen `hugocms.ini`
 (`[hugo] bin`); `--cleanDestinationDir` stellt dort `[hugo] clean` ein.

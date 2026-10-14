@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED допускает только способы с немедленным расчётом. UNRESTRICTED разрешает и прямое дебетование; такие платежи сначала остаются в ожидании и требуют отслеживания.",
         "shopLinks": "Адреса сайта магазина",
         "shopBaseUrl": "Адрес сайта магазина",
-        "shopBaseUrl_help": "Полный адрес, включая https://",
+        "shopBaseUrl_help": "Полный адрес, включая https://. Если магазин находится внутри сайта, с путём: https://masterskaya.example/shop/ — прокси тогда находится под этим путём (…/shop/shop-api/).",
         "shopProductsLink": "Шаблон адреса страницы товара",
         "shopProductsLink_help": "Шаблон с %s в качестве заполнителя идентификатора товара.",
         "shopCategoryLink": "Шаблон адреса страницы категории",

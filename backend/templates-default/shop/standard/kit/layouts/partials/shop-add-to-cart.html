@@ -16,7 +16,7 @@
 {{- partial "shop-ui-assets.html" . -}}
 <shop-add-to-cart
   product="{{ .product }}"
-  cart-url="{{ .cartUrl | default `/warenkorb/#focus` }}"
+  {{- with .cartUrl }} cart-url="{{ . }}"{{ end }}
   {{- with .buttonText }} button-text="{{ . }}"{{ end }}
   {{- with .max }} max="{{ . }}"{{ end }}
   {{- with .class }} class="{{ . }}"{{ end }}></shop-add-to-cart>

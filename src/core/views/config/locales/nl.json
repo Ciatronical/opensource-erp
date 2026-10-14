@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED laat alleen direct afgerekende methoden toe. UNRESTRICTED staat ook incasso toe; zulke betalingen blijven eerst in behandeling en moeten worden opgevolgd.",
         "shopLinks": "Adressen van de webwinkel",
         "shopBaseUrl": "Adres van de webwinkel",
-        "shopBaseUrl_help": "Volledig adres inclusief https://",
+        "shopBaseUrl_help": "Volledig adres inclusief https://. Ligt de winkel onder een website, met pad: https://werkplaats.example/shop/ — de proxy ligt dan onder dat pad (…/shop/shop-api/).",
         "shopProductsLink": "Adrespatroon artikelpagina",
         "shopProductsLink_help": "Patroon met %s als aanduiding voor het kenmerk van het artikel.",
         "shopCategoryLink": "Adrespatroon categoriepagina",

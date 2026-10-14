@@ -6,7 +6,7 @@
 */ -}}
 {{- partial "shop-ui-assets.html" . -}}
 <shop-invoice
-  orders-url="{{ .Get `orders-url` | default `/bestellungen/` }}"
-  continue-url="{{ .Get `continue-url` | default `/kategorien/` }}"
+  {{- with .Get `orders-url` }} orders-url="{{ . }}"{{ end }}
+  {{- with .Get `continue-url` }} continue-url="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
   {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-invoice>

@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED ammette solo metodi con regolamento immediato. UNRESTRICTED consente anche l'addebito diretto; questi pagamenti restano dapprima in sospeso e vanno seguiti.",
         "shopLinks": "Indirizzi del sito del negozio",
         "shopBaseUrl": "Indirizzo del sito del negozio",
-        "shopBaseUrl_help": "Indirizzo completo, https:// compreso",
+        "shopBaseUrl_help": "Indirizzo completo, https:// compreso. Se il negozio sta sotto un sito, con percorso: https://officina.example/shop/ — il proxy sta allora sotto quel percorso (…/shop/shop-api/).",
         "shopProductsLink": "Schema indirizzo pagina articolo",
         "shopProductsLink_help": "Schema con %s come segnaposto per l'identificativo dell'articolo.",
         "shopCategoryLink": "Schema indirizzo pagina categoria",

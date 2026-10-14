@@ -7,6 +7,6 @@
 */ -}}
 {{- partial "shop-ui-assets.html" . -}}
 <shop-contact
-  redirect-url="{{ .Get `redirect-url` | default `/kontakt-danke/` }}"
+  {{- with .Get `redirect-url` }} redirect-url="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
   {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-contact>

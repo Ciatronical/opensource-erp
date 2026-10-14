@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED tillater bare betalingsmåter som gjøres opp umiddelbart. UNRESTRICTED tillater også avtalegiro; slike betalinger er først ventende og må følges opp.",
         "shopLinks": "Butikknettstedets adresser",
         "shopBaseUrl": "Butikknettstedets adresse",
-        "shopBaseUrl_help": "Fullstendig adresse inkludert https://",
+        "shopBaseUrl_help": "Fullstendig adresse inkludert https://. Ligger butikken under et nettsted, med sti: https://verksted.example/shop/ — mellomtjeneren ligger da under denne stien (…/shop/shop-api/).",
         "shopProductsLink": "Adressemønster for varesiden",
         "shopProductsLink_help": "Mønster med %s som plassholder for varens identifikator.",
         "shopCategoryLink": "Adressemønster for kategorisiden",

@@ -14,6 +14,7 @@ import {
 import { gtmBeginCheckout } from '../core/gtm.js';
 import './shop-cart.js';
 import './shop-register.js';
+import { shopPath, apiUrl, sitePath } from '../core/paths.js';
 
 /**
  * <shop-checkout billing-page="/rechnung/" canceled-page="/bezahlung-abgebrochen/"></shop-checkout>
@@ -151,12 +152,12 @@ export class ShopCheckout extends ShopElement {
 
   constructor() {
     super();
-    this.billingPage = '';
-    this.canceledPage = '';
-    this.invoiceUrl = '/rechnung/';
-    this.loginUrl = '/login/';
-    this.dataProtectionUrl = '/datenschutz/';
-    this.paypalImage = '/images/paypal-de.png';
+    this.billingPage = shopPath('invoice');
+    this.canceledPage = shopPath('paymentcanceled');
+    this.invoiceUrl = shopPath('invoice');
+    this.loginUrl = shopPath('login');
+    this.dataProtectionUrl = shopPath('privacy');
+    this.paypalImage = sitePath('images/paypal-de.png');
     this.heading = '';
     this._state = 'loading';
     this._error = '';
@@ -409,7 +410,7 @@ export class ShopCheckout extends ShopElement {
       canceled: this.canceledPage,
       shipto,
     });
-    return `/shop-api/?${query}`;
+    return `${apiUrl()}?${query}`;
   }
 
   // ------------------------------------------------------------- Ausgabe

@@ -4,6 +4,7 @@ import { getContext } from '../core/api.js';
 import { on, SHOP_ACCOUNT_LOADED, SHOP_AUTH_CHANGED } from '../core/bus.js';
 import { greeting } from '../core/account-data.js';
 import { t } from '../core/i18n.js';
+import { shopPath } from '../core/paths.js';
 
 /**
  * <shop-account-nav current="overview"></shop-account-nav>
@@ -76,11 +77,11 @@ export class ShopAccountNav extends ShopElement {
   constructor() {
     super();
     this.current = '';
-    this.overviewUrl = '/persönliche-daten/';
-    this.profileUrl = '/persönliches-profil/';
-    this.addressUrl = '/adressen/';
-    this.orderUrl = '/bestellungen/';
-    this.paymentUrl = '/zahlungsarten/';
+    this.overviewUrl = shopPath('account', '#focus');
+    this.profileUrl = shopPath('profile', '#focus');
+    this.addressUrl = shopPath('addresses', '#focus');
+    this.orderUrl = shopPath('orders', '#focus');
+    this.paymentUrl = shopPath('payment', '#focus');
     this.showPayment = false;
     this._greeting = '';
   }

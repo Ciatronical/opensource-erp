@@ -7,9 +7,9 @@
 */ -}}
 {{- partial "shop-ui-assets.html" . -}}
 <shop-register
-  redirect-url="{{ .Get `redirect-url` | default `/registriert/` }}"
-  login-url="{{ .Get `login-url` | default `/login/` }}"
-  data-protection-url="{{ .Get `data-protection-url` | default `/datenschutz/` }}"
+  {{- with .Get `redirect-url` }} redirect-url="{{ . }}"{{ end }}
+  {{- with .Get `login-url` }} login-url="{{ . }}"{{ end }}
+  {{- with .Get `data-protection-url` }} data-protection-url="{{ . }}"{{ end }}
   {{- with .Get `mode` }} mode="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
   {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-register>

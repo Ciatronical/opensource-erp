@@ -960,7 +960,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED dopuszcza tylko metody rozliczane natychmiast. UNRESTRICTED zezwala także na polecenie zapłaty; takie płatności pozostają najpierw w toku i wymagają śledzenia.",
         "shopLinks": "Adresy witryny sklepu",
         "shopBaseUrl": "Adres witryny sklepu",
-        "shopBaseUrl_help": "Pełny adres wraz z https://",
+        "shopBaseUrl_help": "Pełny adres wraz z https://. Jeśli sklep leży pod stroną, ze ścieżką: https://warsztat.example/shop/ — pośrednik leży wtedy pod tą ścieżką (…/shop/shop-api/).",
         "shopProductsLink": "Wzorzec adresu strony artykułu",
         "shopProductsLink_help": "Wzorzec z %s jako symbolem zastępczym identyfikatora artykułu.",
         "shopCategoryLink": "Wzorzec adresu strony kategorii",

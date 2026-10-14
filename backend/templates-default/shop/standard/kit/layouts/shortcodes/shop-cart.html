@@ -7,10 +7,10 @@
 */ -}}
 {{- partial "shop-ui-assets.html" . -}}
 <shop-cart
-  billing-page="{{ .Get `billing-page` }}"
-  canceled-page="{{ .Get `canceled-page` }}"
+  {{- with .Get `billing-page` }} billing-page="{{ . }}"{{ end }}
+  {{- with .Get `canceled-page` }} canceled-page="{{ . }}"{{ end }}
   invoicing-canceled="{{ .Get `invoicing-canceled` | default `false` }}"
-  checkout-url="{{ .Get `checkout-url` | default `/kasse/#focus` }}"
-  continue-url="{{ .Get `continue-url` | default `/kategorien/` }}"
+  {{- with .Get `checkout-url` }} checkout-url="{{ . }}"{{ end }}
+  {{- with .Get `continue-url` }} continue-url="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
   {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-cart>

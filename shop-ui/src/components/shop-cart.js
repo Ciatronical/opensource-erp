@@ -7,6 +7,7 @@ import { toNumber, formatPrice } from '../core/money.js';
 import { normalizeCart, cartTotals } from '../core/cart-data.js';
 import { t } from '../core/i18n.js';
 import { sameOriginHref } from '../core/links.js';
+import { shopPath, apiUrl, sitePath } from '../core/paths.js';
 
 /**
  * <shop-cart billing-page="/rechnung/" canceled-page="/bezahlung-abgebrochen/"></shop-cart>
@@ -173,13 +174,13 @@ export class ShopCart extends ShopElement {
 
   constructor() {
     super();
-    this.billingPage = '';
-    this.canceledPage = '';
+    this.billingPage = shopPath('invoice');
+    this.canceledPage = shopPath('paymentcanceled');
     this.invoicingCanceled = 'false';
     this.mode = 'cart';
-    this.checkoutUrl = '/kasse/#focus';
-    this.continueUrl = '/';
-    this.paypalImage = '/images/paypal-de.png';
+    this.checkoutUrl = shopPath('checkout', '#focus');
+    this.continueUrl = shopPath('categories');
+    this.paypalImage = sitePath('images/paypal-de.png');
     this.heading = '';
     this._cart = null;
     this._loading = true;
@@ -531,7 +532,7 @@ export class ShopCart extends ShopElement {
       bill: this.billingPage,
       canceled: this.canceledPage,
     });
-    return `/shop-api/?${query}`;
+    return `${apiUrl()}?${query}`;
   }
 }
 

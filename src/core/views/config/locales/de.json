@@ -1085,7 +1085,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED lässt nur sofort abrechnende Zahlungsarten zu. UNRESTRICTED erlaubt auch Lastschrift; solche Zahlungen bleiben zunächst schwebend und müssen nachverfolgt werden.",
         "shopLinks": "Adressen der Shop-Webseite",
         "shopBaseUrl": "Adresse der Shop-Webseite",
-        "shopBaseUrl_help": "Vollständige Adresse einschliesslich https://",
+        "shopBaseUrl_help": "Vollständige Adresse einschließlich https://. Liegt der Shop unterhalb einer Webseite, mit Pfad: https://werkstatt.example/shop/ — der Weiterleiter liegt dann unter diesem Pfad (…/shop/shop-api/).",
         "shopProductsLink": "Adressmuster Artikelseite",
         "shopProductsLink_help": "Muster mit %s als Platzhalter für die Kennung des Artikels.",
         "shopCategoryLink": "Adressmuster Kategorieseite",

@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED n'accepte que les moyens réglés immédiatement. UNRESTRICTED autorise aussi le prélèvement ; ces paiements restent d'abord en attente et doivent être suivis.",
         "shopLinks": "Adresses du site de la boutique",
         "shopBaseUrl": "Adresse du site de la boutique",
-        "shopBaseUrl_help": "Adresse complète, https:// compris",
+        "shopBaseUrl_help": "Adresse complète, https:// compris. Si la boutique se trouve sous un site, avec le chemin : https://atelier.example/shop/ — le relais se trouve alors sous ce chemin (…/shop/shop-api/).",
         "shopProductsLink": "Modèle d'adresse de la fiche article",
         "shopProductsLink_help": "Modèle avec %s comme marqueur de l'identifiant de l'article.",
         "shopCategoryLink": "Modèle d'adresse de la page catégorie",

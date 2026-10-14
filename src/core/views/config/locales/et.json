@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED lubab ainult kohe arveldatavaid makseviise. UNRESTRICTED lubab ka otsekorraldust; sellised maksed jäävad esialgu ootele ja neid tuleb jälgida.",
         "shopLinks": "Poe veebisaidi aadressid",
         "shopBaseUrl": "Poe veebisaidi aadress",
-        "shopBaseUrl_help": "Täielik aadress koos https://",
+        "shopBaseUrl_help": "Täielik aadress koos https://. Kui pood asub veebisaidi all, koos teega: https://tookoda.example/shop/ — vahendaja asub siis selle tee all (…/shop/shop-api/).",
         "shopProductsLink": "Artiklilehe aadressimuster",
         "shopProductsLink_help": "Muster, kus %s on artikli tunnuse kohatäide.",
         "shopCategoryLink": "Kategoorialehe aadressimuster",

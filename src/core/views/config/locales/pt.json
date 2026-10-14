@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED só admite métodos de liquidação imediata. UNRESTRICTED permite também o débito direto; esses pagamentos ficam inicialmente pendentes e têm de ser acompanhados.",
         "shopLinks": "Endereços do site da loja",
         "shopBaseUrl": "Endereço do site da loja",
-        "shopBaseUrl_help": "Endereço completo, incluindo https://",
+        "shopBaseUrl_help": "Endereço completo, incluindo https://. Se a loja estiver abaixo de um site, com caminho: https://oficina.example/shop/ — o proxy fica então sob esse caminho (…/shop/shop-api/).",
         "shopProductsLink": "Padrão de endereço da página do artigo",
         "shopProductsLink_help": "Padrão com %s como marcador do identificador do artigo.",
         "shopCategoryLink": "Padrão de endereço da página de categoria",

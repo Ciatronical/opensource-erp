@@ -438,6 +438,56 @@ Antwort: `getCart` liefert `positions[].unitPrice` als `"9,80"`
 beide Schreibweisen (ein Komma ist der eindeutige Marker) und formatiert erst
 beim Rendern.
 
+## Pfade der Seiten
+
+Die Widgets kennen keine festen Adressen (seit 2026-10-14). Wohin Warenkorb,
+Kasse, Anmeldung und Konto-Seiten verlinken, kommt in dieser Reihenfolge:
+
+1. aus dem Attribut am Shortcode (`{{< shop-cart checkout-url="/kasse/" >}}`),
+2. aus `params.shopui.paths` in der Site-Config,
+3. aus den Vorgaben in `core/paths.js` (`warenkorb/`, `kasse/`, `login/` …),
+   angehängt an den Basispfad des Shops.
+
+Damit lässt sich ein Shop unterhalb einer bestehenden Webseite betreiben —
+eine Werkstatt, die nebenher Verbandskästen verkauft, unter
+`https://werkstatt.example/shop/`:
+
+```json
+"params": { "shopui": { "paths": { "base": "/shop/" } } }
+```
+
+Die Seiten liegen dann unter `content/shop/` (`/shop/warenkorb/`,
+`/shop/kasse/` …). Einzelne Seiten dürfen anders heißen, relativ zu `base`
+oder mit `/` ab der Wurzel:
+
+```json
+"params": { "shopui": { "paths": { "base": "/shop/", "cart": "korb/", "login": "/anmelden/" } } }
+```
+
+Schlüssel: `cart`, `checkout`, `invoice`, `paymentcanceled`, `login`,
+`logout`, `register`, `registered`, `account`, `profile`, `addresses`,
+`orders`, `payment`, `categories`, `searchresults`, `contactthanks`,
+`privacy`, `home`, dazu `base` und `api`.
+
+Liegt die ganze Hugo-Seite unter einem Pfad (`baseURL =
+"https://werkstatt.example/shop/"`), braucht es keine Angabe: der Partial
+`shop-ui-assets.html` leitet `base` aus der baseURL ab. Er legt alles als JSON
+im Attribut `data-shop-ui-paths` des Bundle-Scripts ab; `core/paths.js` liest
+es (`shopPath('cart', '#focus')`, `apiUrl()`, `sitePath('images/…')`).
+Alternativ vor dem Laden des Bundles `window.ShopUIConfig = { paths: {…} }`.
+
+Der Weiterleiter `/shop-api/` und die Bilder liegen in `static/` der
+Hugo-Seite, nicht unter `base` — bei einem Shop unter `/shop/` auf einer
+Seite an der Wurzel bleibt er `/shop-api/`; liegt die Seite selbst unter
+`/shop/`, wird er `/shop/shop-api/` (`api` lässt sich auch setzen). In
+OpensourceERP gehört dann die Adresse mit Pfad in die Kanalkarte („Adresse der
+Shop-Webseite“: `https://werkstatt.example/shop/`), und die Adressmuster
+(`/shop/produkt/%s/` …) sowie der Pfad der Rechnungsseite folgen dem Aufbau
+der Webseite.
+
+Die `#focus`-Anker (Container des mitgelieferten Themes, an den der Browser
+nach dem Sprung scrollt) hängen die Widgets selbst an.
+
 ## Theming: CSS-Framework austauschen
 
 Die Widgets sind an **kein** Framework gebunden. Zwei Dinge sind konfigurierbar:

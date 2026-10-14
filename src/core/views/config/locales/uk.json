@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED допускає лише способи з негайним розрахунком. UNRESTRICTED дозволяє також пряме дебетування; такі платежі спершу залишаються в очікуванні й потребують відстеження.",
         "shopLinks": "Адреси сайту магазину",
         "shopBaseUrl": "Адреса сайту магазину",
-        "shopBaseUrl_help": "Повна адреса, включно з https://",
+        "shopBaseUrl_help": "Повна адреса, включно з https://. Якщо магазин розташований усередині сайту, зі шляхом: https://maisternia.example/shop/ — проксі тоді розташований під цим шляхом (…/shop/shop-api/).",
         "shopProductsLink": "Шаблон адреси сторінки товару",
         "shopProductsLink_help": "Шаблон із %s як заповнювачем ідентифікатора товару.",
         "shopCategoryLink": "Шаблон адреси сторінки категорії",

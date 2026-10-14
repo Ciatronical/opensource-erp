@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED připouští jen okamžitě vypořádané způsoby. UNRESTRICTED povoluje i inkaso; takové platby zůstávají nejprve nevyřízené a je nutné je sledovat.",
         "shopLinks": "Adresy webu obchodu",
         "shopBaseUrl": "Adresa webu obchodu",
-        "shopBaseUrl_help": "Úplná adresa včetně https://",
+        "shopBaseUrl_help": "Úplná adresa včetně https://. Leží-li obchod pod webem, s cestou: https://dilna.example/shop/ — proxy pak leží pod touto cestou (…/shop/shop-api/).",
         "shopProductsLink": "Vzor adresy stránky položky",
         "shopProductsLink_help": "Vzor s %s jako zástupným znakem identifikátoru položky.",
         "shopCategoryLink": "Vzor adresy stránky kategorie",

@@ -16,7 +16,7 @@
  * SHOP_CONTEXT_ERROR wird der Kontext einmal geholt und die Aktion wiederholt.
  */
 
-export const API_URL = '/shop-api/';
+import { apiUrl } from './paths.js';
 
 export class ApiError extends Error {
   constructor(code, data) {
@@ -30,7 +30,7 @@ export class ApiError extends Error {
 async function send(action, payload) {
   let response;
   try {
-    response = await fetch(API_URL, {
+    response = await fetch(apiUrl(), {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },

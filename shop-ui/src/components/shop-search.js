@@ -4,6 +4,7 @@ import { ShopElement } from '../core/base.js';
 import { apiRequest } from '../core/api.js';
 import { t } from '../core/i18n.js';
 import { sameOriginHref, searchTerms } from '../core/links.js';
+import { shopPath } from '../core/paths.js';
 
 /**
  * <shop-search results-url="/suchergebnisse/"></shop-search>
@@ -113,7 +114,7 @@ export class ShopSearch extends ShopElement {
 
   constructor() {
     super();
-    this.resultsUrl = '/suchergebnisse/';
+    this.resultsUrl = shopPath('searchresults');
     this.placeholder = '';
     this.buttonLabel = '';
     this.info = '';

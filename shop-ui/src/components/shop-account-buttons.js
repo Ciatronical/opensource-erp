@@ -3,6 +3,7 @@ import { ShopElement } from '../core/base.js';
 import { apiRequest, getContext, refreshContext, logout } from '../core/api.js';
 import { on, emit, SHOP_AUTH_CHANGED, SHOP_CART_CHANGED } from '../core/bus.js';
 import { t } from '../core/i18n.js';
+import { shopPath } from '../core/paths.js';
 
 /**
  * <shop-account-buttons login-url="/login/" …></shop-account-buttons>
@@ -97,11 +98,11 @@ export class ShopAccountButtons extends ShopElement {
 
   constructor() {
     super();
-    this.loginUrl = '/login/';
-    this.logoutUrl = '/logout/';
-    this.registerUrl = '/registrieren/';
-    this.accountUrl = '/persönliche-daten/';
-    this.cartUrl = '/warenkorb/';
+    this.loginUrl = shopPath('login');
+    this.logoutUrl = shopPath('logout');
+    this.registerUrl = shopPath('register');
+    this.accountUrl = shopPath('account');
+    this.cartUrl = shopPath('cart');
     this.loginLabel = '';
     this.logoutLabel = '';
     this.registerLabel = '';

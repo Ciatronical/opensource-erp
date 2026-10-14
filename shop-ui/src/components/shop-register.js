@@ -5,6 +5,7 @@ import { apiRequest, ApiError, login } from '../core/api.js';
 import { emit, SHOP_AUTH_CHANGED } from '../core/bus.js';
 import { t } from '../core/i18n.js';
 import { passwordInput, passwordFieldStyles } from '../core/password-field.js';
+import { shopPath } from '../core/paths.js';
 
 const EMAIL_PATTERN = /\S+@\S+\.\S+/;
 
@@ -96,9 +97,9 @@ export class ShopRegister extends ShopElement {
   constructor() {
     super();
     this.mode = 'account';
-    this.redirectUrl = '/registriert/';
-    this.loginUrl = '/login/';
-    this.dataProtectionUrl = '/datenschutz/';
+    this.redirectUrl = shopPath('registered');
+    this.loginUrl = shopPath('login');
+    this.dataProtectionUrl = shopPath('privacy');
     this.heading = '';
     this._salutations = [];
     this._loading = true;

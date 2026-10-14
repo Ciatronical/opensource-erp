@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED leidžia tik iš karto atsiskaitomus būdus. UNRESTRICTED leidžia ir tiesioginį debetą; tokie mokėjimai iš pradžių lieka laukiantys ir juos reikia sekti.",
         "shopLinks": "Parduotuvės svetainės adresai",
         "shopBaseUrl": "Parduotuvės svetainės adresas",
-        "shopBaseUrl_help": "Visas adresas su https://",
+        "shopBaseUrl_help": "Visas adresas su https://. Jei parduotuvė yra po svetaine, su keliu: https://dirbtuves.example/shop/ — tarpinis serveris tada yra po šiuo keliu (…/shop/shop-api/).",
         "shopProductsLink": "Prekės puslapio adreso šablonas",
         "shopProductsLink_help": "Šablonas su %s kaip prekės identifikatoriaus vietaženkliu.",
         "shopCategoryLink": "Kategorijos puslapio adreso šablonas",

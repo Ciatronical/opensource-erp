@@ -1,6 +1,7 @@
 import { html, css, nothing } from 'lit';
 import { ShopElement } from '../core/base.js';
-import { apiRequest, API_URL } from '../core/api.js';
+import { apiRequest } from '../core/api.js';
+import { shopPath, apiUrl } from '../core/paths.js';
 import { t } from '../core/i18n.js';
 import { formatPrice } from '../core/money.js';
 import { cityLine } from '../core/account-data.js';
@@ -82,9 +83,9 @@ export class ShopInvoice extends ShopElement {
 
   constructor() {
     super();
-    this.apiUrl = API_URL;
-    this.ordersUrl = '/bestellungen/';
-    this.continueUrl = '/';
+    this.apiUrl = apiUrl();
+    this.ordersUrl = shopPath('orders');
+    this.continueUrl = shopPath('categories');
     this.heading = '';
     this._state = 'loading';
     this._error = '';

@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED atļauj tikai uzreiz norēķinātus veidus. UNRESTRICTED atļauj arī tiešo debetu; šādi maksājumi sākotnēji paliek gaidīšanā un ir jāseko līdzi.",
         "shopLinks": "Veikala vietnes adreses",
         "shopBaseUrl": "Veikala vietnes adrese",
-        "shopBaseUrl_help": "Pilna adrese, ieskaitot https://",
+        "shopBaseUrl_help": "Pilna adrese, ieskaitot https://. Ja veikals atrodas zem vietnes, ar ceļu: https://darbnica.example/shop/ — starpniekserveris tad atrodas zem šī ceļa (…/shop/shop-api/).",
         "shopProductsLink": "Preces lapas adreses paraugs",
         "shopProductsLink_help": "Paraugs ar %s kā preces identifikatora vietturi.",
         "shopCategoryLink": "Kategorijas lapas adreses paraugs",

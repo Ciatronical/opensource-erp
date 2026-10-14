@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED 只允许即时结算的方式。UNRESTRICTED 也允许直接借记；此类付款起初处于待定状态，需要跟进。",
         "shopLinks": "商店网站的地址",
         "shopBaseUrl": "商店网站地址",
-        "shopBaseUrl_help": "包含 https:// 的完整地址",
+        "shopBaseUrl_help": "包含 https:// 的完整地址。如果商店位于某个网站之下，则带路径：https://workshop.example/shop/——代理随后位于该路径之下（…/shop/shop-api/）。",
         "shopProductsLink": "商品页地址模式",
         "shopProductsLink_help": "以 %s 作为商品标识占位符的模式。",
         "shopCategoryLink": "分类页地址模式",

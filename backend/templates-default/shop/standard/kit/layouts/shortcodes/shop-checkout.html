@@ -12,11 +12,11 @@
 */ -}}
 {{- partial "shop-ui-assets.html" . -}}
 <shop-checkout
-  billing-page="{{ .Get `billing-page` }}"
-  canceled-page="{{ .Get `canceled-page` }}"
-  invoice-url="{{ .Get `invoice-url` | default `/rechnung/` }}"
-  login-url="{{ .Get `login-url` | default `/login/` }}"
-  data-protection-url="{{ .Get `data-protection-url` | default `/datenschutz/` }}"
+  {{- with .Get `billing-page` }} billing-page="{{ . }}"{{ end }}
+  {{- with .Get `canceled-page` }} canceled-page="{{ . }}"{{ end }}
+  {{- with .Get `invoice-url` }} invoice-url="{{ . }}"{{ end }}
+  {{- with .Get `login-url` }} login-url="{{ . }}"{{ end }}
+  {{- with .Get `data-protection-url` }} data-protection-url="{{ . }}"{{ end }}
   {{- with .Get `paypal-image` }} paypal-image="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
   {{- with .Get `class` }} class="{{ . }}"{{ end }}></shop-checkout>

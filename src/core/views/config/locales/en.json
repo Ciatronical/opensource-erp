@@ -1083,7 +1083,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED only accepts methods that settle immediately. UNRESTRICTED also allows direct debit; such payments stay pending at first and have to be followed up.",
         "shopLinks": "Shop website addresses",
         "shopBaseUrl": "Shop website address",
-        "shopBaseUrl_help": "Full address including https://",
+        "shopBaseUrl_help": "Full address including https://. If the shop lives below a website, with path: https://workshop.example/shop/ — the proxy is then below that path (…/shop/shop-api/).",
         "shopProductsLink": "Product page address pattern",
         "shopProductsLink_help": "Pattern with %s as placeholder for the product identifier.",
         "shopCategoryLink": "Category page address pattern",

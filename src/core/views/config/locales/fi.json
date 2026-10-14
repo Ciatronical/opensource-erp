@@ -853,7 +853,7 @@
         "shopPaypalPaymentMethodPreference_help": "IMMEDIATE_PAYMENT_REQUIRED sallii vain heti selviävät maksutavat. UNRESTRICTED sallii myös suoraveloituksen; tällaiset maksut jäävät aluksi vireille ja niitä on seurattava.",
         "shopLinks": "Kauppasivuston osoitteet",
         "shopBaseUrl": "Kauppasivuston osoite",
-        "shopBaseUrl_help": "Täydellinen osoite, mukaan lukien https://",
+        "shopBaseUrl_help": "Täydellinen osoite, mukaan lukien https://. Jos kauppa on verkkosivuston alla, polun kanssa: https://korjaamo.example/shop/ — välityspalvelin on silloin tämän polun alla (…/shop/shop-api/).",
         "shopProductsLink": "Tuotesivun osoitemalli",
         "shopProductsLink_help": "Malli, jossa %s on tuotteen tunnisteen paikanvaraaja.",
         "shopCategoryLink": "Kategoriasivun osoitemalli",

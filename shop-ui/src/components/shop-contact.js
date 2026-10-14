@@ -2,6 +2,7 @@ import { html, css, nothing } from 'lit';
 import { ShopElement } from '../core/base.js';
 import { apiRequest } from '../core/api.js';
 import { t } from '../core/i18n.js';
+import { shopPath } from '../core/paths.js';
 
 const EMAIL_PATTERN = /\S+@\S+\.\S+/;
 
@@ -71,7 +72,7 @@ export class ShopContact extends ShopElement {
 
   constructor() {
     super();
-    this.redirectUrl = '/kontakt-danke/';
+    this.redirectUrl = shopPath('contactthanks');
     this.heading = '';
     this._salutations = [];
     this._values = { 'company-name': '', salutation: '', name: '', email: '', phone: '', issue: '' };

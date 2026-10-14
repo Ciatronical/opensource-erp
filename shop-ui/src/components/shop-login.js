@@ -4,6 +4,7 @@ import { apiRequest, login } from '../core/api.js';
 import { emit, SHOP_AUTH_CHANGED } from '../core/bus.js';
 import { t } from '../core/i18n.js';
 import { passwordInput, passwordFieldStyles } from '../core/password-field.js';
+import { shopPath } from '../core/paths.js';
 
 /**
  * <shop-login redirect-url="/" register-url="/registrieren/"></shop-login>
@@ -50,7 +51,8 @@ export class ShopLogin extends ShopElement {
 
   constructor() {
     super();
-    this.redirectUrl = '/';
+    this.redirectUrl = shopPath('home');
+    // Leer = kein Link: nicht jede Webseite hat eine Registrierungsseite
     this.registerUrl = '';
     this.heading = '';
     this._busy = false;

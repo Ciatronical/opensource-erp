@@ -27,13 +27,48 @@
       }}}
 */ -}}
 {{- $cfg := site.Params.shopui | default dict -}}
+{{- /*
+  Pfade der Shop-Seiten (shop-ui/src/core/paths.js): Ein Shop kann unterhalb
+  einer bestehenden Webseite liegen, etwa https://werkstatt.example/shop/.
+
+      "params": { "shopui": { "paths": { "base": "/shop/" } } }
+      "params": { "shopui": { "paths": { "base": "/shop/", "cart": "korb/", "login": "/anmelden/" } } }
+
+  base       Basispfad des Shops ab der Wurzel der Domain. Vorgabe: der Pfad
+             der baseURL — liegt die ganze Hugo-Seite unter /shop/, stimmt er
+             ohne Angabe.
+  api        Adresse des Weiterleiters. Vorgabe: <Pfad der baseURL>shop-api/ —
+             er liegt in static/ der Hugo-Seite, nicht unter base.
+  Seiten     cart, checkout, invoice, paymentcanceled, login, logout, register,
+             registered, account, profile, addresses, orders, payment,
+             categories, searchresults, contactthanks, privacy, home —
+             relativ zu base, oder mit / ab der Wurzel. Ohne Angabe die
+             Vorgaben der Widgets (warenkorb/, kasse/, rechnung/ …).
+  Ein Attribut am Shortcode (cart-url="…") geht allem vor.
+*/ -}}
+{{- $paths := $cfg.paths | default dict -}}
+{{- $site := (urls.Parse site.BaseURL).Path | default "/" -}}
+{{- if not (hasSuffix $site "/") }}{{ $site = printf "%s/" $site }}{{ end -}}
+{{- $base := printf "%v" ($paths.base | default $site) -}}
+{{- if not (hasPrefix $base "/") }}{{ $base = printf "%s%s" $site $base }}{{ end -}}
+{{- if not (hasSuffix $base "/") }}{{ $base = printf "%s/" $base }}{{ end -}}
+{{- $api := printf "%v" ($paths.api | default (printf "%sshop-api/" $site)) -}}
+{{- $pages := dict -}}
+{{- range $key, $value := $paths -}}
+  {{- if not (in (slice "base" "api") $key) -}}
+    {{- $page := printf "%v" $value -}}
+    {{- if not (hasPrefix $page "/") }}{{ $page = printf "%s%s" $base $page }}{{ end -}}
+    {{- $pages = merge $pages (dict $key $page) -}}
+  {{- end -}}
+{{- end -}}
+{{- $pathsJson := jsonify (dict "base" $base "site" $site "api" $api "pages" $pages) -}}
 {{- $theme := $cfg.theme | default "bootstrap5" -}}
 {{- $sheet := $cfg.stylesheet | default "" -}}
 {{- $classes := $cfg.classes | default dict -}}
 {{- $allowUrl := $cfg.allowurltheme | default false -}}
 {{- with resources.Get "shop-ui/shop-widgets.js" -}}
 {{- $js := . | fingerprint "sha256" -}}
-<script type="module" data-shop-ui-theme="{{ $theme }}"{{ with $sheet }} data-shop-ui-stylesheet="{{ . }}"{{ end }}{{ if $classes }} data-shop-ui-classes="{{ jsonify $classes }}"{{ end }}{{ if $allowUrl }} data-shop-ui-allow-url="true"{{ end }} src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}"></script>
+<script type="module" data-shop-ui-theme="{{ $theme }}" data-shop-ui-paths="{{ $pathsJson }}"{{ with $sheet }} data-shop-ui-stylesheet="{{ . }}"{{ end }}{{ if $classes }} data-shop-ui-classes="{{ jsonify $classes }}"{{ end }}{{ if $allowUrl }} data-shop-ui-allow-url="true"{{ end }} src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}"></script>
 {{- else -}}
 {{- warnf "shop-ui: assets/shop-ui/shop-widgets.js nicht gefunden — ist der Mount oserp-shop/assets/shop-ui → assets/shop-ui gesetzt und hat der Läufer von OpensourceERP (tools/shop-publish.php) das Paket übertragen?" -}}
 {{- end -}}

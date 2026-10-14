@@ -8,6 +8,7 @@ import { formatDate } from '../core/dates.js';
 import { cityLine } from '../core/account-data.js';
 import { t } from '../core/i18n.js';
 import { sameOriginHref } from '../core/links.js';
+import { apiUrl } from '../core/paths.js';
 
 /**
  * <shop-account-orders></shop-account-orders>
@@ -124,7 +125,7 @@ export class ShopAccountOrders extends ShopAccountElement {
 
   constructor() {
     super();
-    this.apiUrl = '/shop-api/';
+    this.apiUrl = apiUrl();
     this._orders = [];
     this._detail = null;
     this._busy = false;

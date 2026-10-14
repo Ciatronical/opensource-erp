@@ -4,6 +4,7 @@ import { ShopAccountElement } from '../core/account-base.js';
 import { apiRequest } from '../core/api.js';
 import { billingAddress, shiptoAddressUnderscore, cityLine } from '../core/account-data.js';
 import { t } from '../core/i18n.js';
+import { shopPath } from '../core/paths.js';
 
 /**
  * <shop-account-overview></shop-account-overview>
@@ -41,11 +42,11 @@ export class ShopAccountOverview extends ShopAccountElement {
 
   constructor() {
     super();
-    this.profileUrl = '/persönliches-profil/';
-    this.passwordUrl = '';
-    this.addressUrl = '/adressen/';
-    this.deliveryUrl = '';
-    this.paymentUrl = '/zahlungsarten/';
+    this.profileUrl = shopPath('profile', '#focus');
+    this.passwordUrl = shopPath('profile', '#Passwort');
+    this.addressUrl = shopPath('addresses', '#focus');
+    this.deliveryUrl = shopPath('addresses', '#focus');
+    this.paymentUrl = shopPath('payment', '#focus');
     this._data = null;
   }
 
