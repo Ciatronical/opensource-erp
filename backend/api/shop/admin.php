@@ -1670,11 +1670,35 @@ function deleteShopShippingZone($data) {
 }
 
 /**
+ * Vorschlag für die Adresse des Shop-Zugangs (backend_url eines HugoShops)
+ *
+ * Die Adresse, unter der OpensourceERP gerade aufgerufen wird, mit dem
+ * Shop-Zugang backend/shop/ (Webserver: Alias /shop). Hinter einem
+ * vorgeschalteten Proxy zählen dessen Kopfzeilen; lokal mit dem PHP-Server
+ * aus scripts/dev.sh ist es http://localhost:8000/shop/. Leer ohne
+ * HTTP-Aufruf (Kommandozeile).
+ *
+ * @return string
+ */
+function shopBackendUrlSuggestion(): string {
+    $host = trim((string)($_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? ''));
+    if ('' === $host || !preg_match('/^[A-Za-z0-9.:\[\]-]+$/', $host)) {
+        return '';
+    }
+    $schema = strtolower(trim((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')));
+    if (!in_array($schema, ['http', 'https'], true)) {
+        $schema = !empty($_SERVER['HTTPS']) && 'off' !== strtolower((string)$_SERVER['HTTPS']) ? 'https' : 'http';
+    }
+    return $schema.'://'.$host.'/shop/';
+}
+
+/**
  * Verkaufskanäle mit ihren Vorgaben für die Firmenkonfiguration
  *
  * Alle eingerichteten Kanäle, auch abgeschaltete, mit der Zahl der Artikel,
  * die dort angeboten werden. tax_included sagt der Oberfläche, ob ein fester
- * Aufschlag netto oder brutto gemeint ist.
+ * Aufschlag netto oder brutto gemeint ist. backend_url_suggestion belegt
+ * ein leeres Feld „Adresse des Shop-Zugangs“ in der Kanalkarte vor.
  *
  * @return void
  * @testdata {}
@@ -1684,6 +1708,7 @@ function getShopChannels($data) {
     $db = DbhCompany::begin();
 
     resultInfo(true, '', [
+        'backend_url_suggestion' => shopBackendUrlSuggestion(),
         'channels' => $db->getAll(
             "SELECT c.id AS channel_id, c.type, c.name, c.active, c.sortkey, c.auto_add_parts,
                     c.markup_type, c.markup_value, c.round_99, c.free_shipping_from,
@@ -2526,7 +2551,7 @@ function testShopHugoCms($data) {
 }
 
 /**
- * Prüft „Adresse von OpensourceERP für die Webseite“ (backend_url)
+ * Prüft „Adresse des Shop-Zugangs von OpensourceERP“ (backend_url)
  *
  * Drei Schritte, jeder mit eigenem Ergebnis:
  *  1. plausibel — gesetzt, http(s), nicht die Adresse von HugoCMS

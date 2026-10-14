@@ -282,6 +282,7 @@
                                 :settings="kanal.settings"
                                 :secrets-set="kanal.secrets_set"
                                 :quellen="quellen"
+                                :backend-url-vorschlag="backendUrlVorschlag"
                             />
                         </v-expansion-panel-text>
                     </v-expansion-panel>
@@ -334,6 +335,9 @@ const { t, te } = i18n
 const oserp = oserpStore()
 
 const kanaele = ref([])
+/** Vorschlag für die Adresse des Shop-Zugangs (getShopChannels) — belegt ein leeres Feld vor */
+const backendUrlVorschlag = ref('')
+
 /** Auswahllisten aus getShopChannels */
 const alleLaender = ref([])
 const lieferbedingungen = ref([])
@@ -489,6 +493,7 @@ async function laden() {
             return
         }
         alleLaender.value = antwort.data.payload?.all_countries || []
+        backendUrlVorschlag.value = antwort.data.payload?.backend_url_suggestion || ''
         arten.value = antwort.data.payload?.types || []
         lieferbedingungen.value = antwort.data.payload?.delivery_terms || []
         kanaele.value = (antwort.data.payload?.channels || []).map(alsKanal)

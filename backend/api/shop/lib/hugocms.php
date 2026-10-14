@@ -216,6 +216,9 @@ function shopHugoCmsGrantsFrom(array $antwort): array {
     }
 
     $ergebnis = ['package' => trim((string)($freigaben['package'] ?? 'oserp-shop'), '/')];
+    // Downloads: nur zur Prüfung, nicht zum Schreiben — ein älteres HugoCMS
+    // ohne diese Freigabe bleibt brauchbar, die Prüfung entfällt dann
+    $ergebnis['downloads'] = is_string($freigaben['downloads'] ?? null) ? trim($freigaben['downloads'], '/') : '';
     $unbrauchbar = [];
     foreach (SHOP_HUGOCMS_GRANTS as $feld => $name) {
         $wert = is_string($freigaben[$feld] ?? null) ? trim($freigaben[$feld], '/') : '';
@@ -453,11 +456,11 @@ function shopWebsiteManualFilesCheck($db, int $kanal, array $signiert = []): arr
             } elseif ('HUGOCMS' === $ziel) {
                 $stand = 'falsches_ziel';
                 $text = 'Warnung: Der Weiterleiter '.$adresse.' erreicht HugoCMS statt OpensourceERP — '
-                      .'„Adresse von OpensourceERP für die Webseite“ in der Kanalkarte prüfen (Verbindung prüfen).';
+                      .'„Adresse des Shop-Zugangs von OpensourceERP“ in der Kanalkarte prüfen (Verbindung prüfen).';
             } elseif (in_array($ziel, ['BACKEND_UNREACHABLE', 'KEY_REJECTED', 'OTHER_CHANNEL', 'FOREIGN', 'NOT_FOUND'], true)) {
                 $stand = 'falsches_ziel';
                 $text = 'Warnung: Der Weiterleiter '.$adresse.' erreicht den Shop-Zugang von OpensourceERP nicht ('
-                      .$ziel.') — in der Kanalkarte „Verbindung prüfen“ unter „Adresse von OpensourceERP für die Webseite“.';
+                      .$ziel.') — in der Kanalkarte „Verbindung prüfen“ unter „Adresse des Shop-Zugangs von OpensourceERP“.';
             }
         } elseif ('' !== $ist) {
             $stand = 'veraltet';
@@ -677,6 +680,65 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     ]);
 }
 
+// ── Download-Dateien ──
+//
+// Datenblätter und Anleitungen liegen wie die Bilder auf dem Webserver (E6);
+// die Produktseiten verlinken sie über downloads_link. Ob die Datei da ist,
+// sieht nur HugoCMS: shopdownloads nennt, was in der Freigabe „Downloads“
+// fehlt — sonst fände erst ein Kunde den toten Link.
+
+/**
+ * Dateinamen der Downloads aller im Shop angebotenen Artikel
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @return array Dateinamen, ohne doppelte
+ */
+function shopDownloadSources($db, int $kanal): array {
+    $zeilen = $db->getAll(
+        "SELECT DISTINCT regexp_replace(d.value, '^.*/', '') AS name
+           FROM parts p
+           JOIN parts_channel_shop pc ON pc.parts_id = p.id
+                                     AND pc.channel_id = shop_active_channel_id(CAST(:kanal AS integer))
+                                     AND pc.active
+           JOIN parts_ext pe ON pe.parts_id = p.id
+           CROSS JOIN LATERAL jsonb_each_text(pe.hugoshop_downloads) d
+          WHERE jsonb_typeof(pe.hugoshop_downloads) = 'object'
+            AND btrim(d.value) <> ''
+          ORDER BY 1",
+        [':kanal' => $kanal]
+    );
+    return array_values(array_filter(array_column($zeilen ?: [], 'name'), fn($name) => '' !== (string)$name));
+}
+
+/**
+ * Lässt HugoCMS prüfen, welche Download-Dateien auf der Webseite fehlen
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @return array ok, total, missing, invalid, fehler
+ */
+function shopHugoCmsDownloadsCheck($db, int $kanal): array {
+    $ergebnis = ['ok' => false, 'total' => 0, 'missing' => [], 'invalid' => [], 'fehler' => ''];
+    $namen = shopDownloadSources($db, $kanal);
+    if (!$namen) {
+        $ergebnis['ok'] = true;
+        return $ergebnis;
+    }
+    $antwort = shopHugoCmsCall($db, $kanal, 'shopdownloads', 'POST', 120, [], ['names' => $namen]);
+    if (!$antwort['ok']) {
+        $ergebnis['fehler'] = $antwort['fehler'];
+        return $ergebnis;
+    }
+    return [
+        'ok'      => true,
+        'total'   => (int)($antwort['data']['total'] ?? count($namen)),
+        'missing' => array_values((array)($antwort['data']['missing'] ?? [])),
+        'invalid' => array_values((array)($antwort['data']['invalid'] ?? [])),
+        'fehler'  => '',
+    ];
+}
+
 // ── Vorschaubilder ──
 //
 // Die Produktbilder liegen auf dem Webserver (E6). OSERP nennt nur die Namen
@@ -882,6 +944,27 @@ function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, 
         if ($vorschau['failed']) {
             $fehler(sprintf('%d Vorschaubilder nicht erzeugt (Name ungültig oder Bild nicht lesbar): %s',
                 count($vorschau['failed']), $liste($vorschau['failed'])));
+        }
+
+        // Download-Dateien: fehlt eine, steht ein toter Link auf der
+        // Produktseite — ein Hinweis wie bei fehlenden Produktbildern. Nur,
+        // wenn HugoCMS die Freigabe „Downloads“ kennt.
+        if ('' !== (string)($abgleich['freigaben']['downloads'] ?? '')) {
+            $downloads = shopHugoCmsDownloadsCheck($db, $kanal);
+            if (!$downloads['ok']) {
+                $sagen('Download-Dateien nicht geprüft: '.$downloads['fehler']);
+            } elseif ($downloads['missing'] || $downloads['invalid']) {
+                if ($downloads['missing']) {
+                    $sagen(sprintf('%d Download-Dateien fehlen auf dem Webserver (HugoCMS, Freigabe „Downloads“: %s/): %s',
+                        count($downloads['missing']), $abgleich['freigaben']['downloads'], $liste($downloads['missing'])));
+                }
+                if ($downloads['invalid']) {
+                    $sagen(sprintf('%d Download-Namen unbrauchbar (nur Dateiname, kein Verzeichnis): %s',
+                        count($downloads['invalid']), $liste($downloads['invalid'])));
+                }
+            } elseif ($downloads['total'] > 0) {
+                $sagen(sprintf('Download-Dateien auf dem Webserver: alle %d vorhanden', $downloads['total']));
+            }
         }
     }
 
