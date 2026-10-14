@@ -206,7 +206,34 @@
                                         }) }}
                                     </div>
                                 </td>
-                                <td v-else class="text-warning">{{ t('BankingView.settlement.paymentNoInvoice') }}</td>
+                                <td v-else>
+                                    <!-- Keine Rechnung mit diesem Betrag: Anzahlung oder Teilzahlung.
+                                         Die Zahlung wird einer offenen Rechnung zugeordnet und genau mit
+                                         ihrem Betrag gebucht; der Rest der Rechnung bleibt offen. -->
+                                    <v-autocomplete
+                                        :model-value="assignments[rowKey(p, i)]?.ar_id ?? null"
+                                        :items="assignItems(rowKey(p, i))"
+                                        item-title="label" item-value="ar_id"
+                                        :label="t('BankingView.settlement.assignInvoice')"
+                                        :placeholder="t('BankingView.settlement.assignSearch')"
+                                        :no-data-text="t('BankingView.settlement.assignSearch')"
+                                        density="compact" variant="outlined" hide-details
+                                        no-filter clearable
+                                        :loading="!!assignLoading[rowKey(p, i)]"
+                                        prepend-inner-icon="mdi-receipt-text-outline"
+                                        @update:search="q => searchAssign(rowKey(p, i), q)"
+                                        @update:model-value="arId => assignInvoice(rowKey(p, i), p, arId)"
+                                    />
+                                    <div v-if="assignments[rowKey(p, i)]" class="text-info mt-1">
+                                        <v-icon size="x-small" class="mr-1">mdi-cash-fast</v-icon>{{ assignments[rowKey(p, i)].partial
+                                            ? t('BankingView.settlement.partialPayment', {
+                                                amount: formatCurrency(assignments[rowKey(p, i)].amount),
+                                                open: formatCurrency(assignments[rowKey(p, i)].open_amount),
+                                                rest: formatCurrency(assignments[rowKey(p, i)].open_amount - assignments[rowKey(p, i)].amount) })
+                                            : t('BankingView.settlement.fullPayment', { amount: formatCurrency(assignments[rowKey(p, i)].amount) }) }}
+                                    </div>
+                                    <div v-else class="text-warning text-caption mt-1">{{ t('BankingView.settlement.paymentNoInvoice') }}</div>
+                                </td>
                             </tr>
                         </tbody>
                     </v-table>
@@ -249,12 +276,12 @@
                         {{ formatCurrency(selectedSum) }} / {{ formatCurrency(invoiceInfo.gross) }}
                     </span>
                 </div>
-                <div v-if="selectedArIds.length === 0" class="text-caption text-medium-emphasis mb-3">
+                <div v-if="effectiveArIds.length === 0" class="text-caption text-medium-emphasis mb-3">
                     {{ t('BankingView.settlement.noInvoiceHint') }}
                 </div>
 
                 <v-autocomplete
-                    v-if="selectedArIds.length === 0"
+                    v-if="effectiveArIds.length === 0"
                     v-model="clearingChartId"
                     :items="clearingAccountItems"
                     :label="t('BankingView.settlement.clearingAccount')"
@@ -319,6 +346,7 @@
                         <div class="font-weight-medium">{{ t('BankingView.settlement.previewReplacedTitle') }}</div>
                         <div v-for="r in preview.replaced_payments" :key="r.ar_id">
                             {{ t('BankingView.settlement.previewReplacedLine', { invnumber: r.invnumber, date: formatDate(r.date), amount: formatCurrency(r.amount) }) }}
+                            <span v-if="(r.released_bank_transaction_ids || []).length" class="text-medium-emphasis"> · {{ t('BankingView.settlement.previewReleased') }}</span>
                         </div>
                     </v-alert>
                 </template>
@@ -424,6 +452,12 @@ const clearingChartId = ref(null)
 
 const invoiceCandidates = ref([])
 const selectedArIds = ref([])
+// Zuordnung je Kartenzahlung ohne betragsgleiche Rechnung (Anzahlung/Teilzahlung):
+// Schlüssel = Zahlungscode, Wert = { ar_id, amount, open_amount, partial, invoice }
+const assignments = ref({})
+const assignSearchItems = ref({})
+const assignLoading = ref({})
+const assignTimers = {}
 const invoiceInfo = ref({ found: false, ambiguous: false, gross: 0, unmatched: 0 })
 const invoicesLoading = ref(false)
 // Je Kartenzahlung die zugeordnete Rechnung (API / Transaktionsbericht)
@@ -432,8 +466,72 @@ const showOthers = ref(false)
 // Offene Rechnungen ohne zugeordnete Zahlung (manuelle Wahl)
 const otherCandidates = computed(() => {
     const matched = new Set(paymentRows.value.map(p => p.invoice?.ar_id).filter(Boolean))
+    for (const a of Object.values(assignments.value)) if (a?.ar_id) matched.add(a.ar_id)
     return invoiceCandidates.value.filter(inv => !matched.has(inv.ar_id))
 })
+
+// ── Anzahlung / Teilzahlung: Kartenzahlung einer beliebigen offenen Rechnung zuordnen ──
+function rowKey(p, i) { return p.code || ('row' + i) }
+
+function invoiceLabel(inv) {
+    return `${inv.invnumber} · ${inv.customer_name || ''} · ${t('BankingView.settlement.openShort')} ${formatCurrency(inv.open_amount)}`
+}
+
+// Auswahl: offene Rechnungen der Abrechnung (60 Tage) plus Suchtreffer; die
+// gewählte Rechnung bleibt immer in der Liste
+function assignItems(key) {
+    const own = assignments.value[key]?.invoice
+    const base = (assignSearchItems.value[key]?.length ? assignSearchItems.value[key] : otherCandidates.value)
+    const list = base.map(inv => ({ ...inv, label: invoiceLabel(inv) }))
+    return own && !list.some(x => x.ar_id === own.ar_id) ? [{ ...own, label: invoiceLabel(own) }, ...list] : list
+}
+
+function searchAssign(key, q) {
+    clearTimeout(assignTimers[key])
+    if (!q || q.length < 2) { assignSearchItems.value = { ...assignSearchItems.value, [key]: [] }; return }
+    const own = assignments.value[key]?.invoice
+    if (own && invoiceLabel(own) === q) return
+    assignTimers[key] = setTimeout(async () => {
+        assignLoading.value = { ...assignLoading.value, [key]: true }
+        try {
+            const rows = await settlements.searchOpenInvoices(q)
+            assignSearchItems.value = { ...assignSearchItems.value, [key]: rows }
+        } finally {
+            assignLoading.value = { ...assignLoading.value, [key]: false }
+        }
+    }, 300)
+}
+
+function assignInvoice(key, p, arId) {
+    const next = { ...assignments.value }
+    if (!arId) { delete next[key]; assignments.value = next; return }
+    const inv = assignItems(key).find(x => x.ar_id === arId)
+    if (!inv) return
+    const open = Number(inv.open_amount) || 0
+    // Zahlung größer als offen: nur bis zum offenen Betrag — der Rest wäre eine Überzahlung
+    const amount = Math.min(Number(p.gross) || 0, open)
+    next[key] = { ar_id: arId, amount: Math.round(amount * 100) / 100, open_amount: open, partial: amount < open - 0.005, invoice: inv }
+    assignments.value = next
+}
+
+// Alle zu buchenden Rechnungen: angehakte Treffer plus zugeordnete Anzahlungen
+const effectiveArIds = computed(() => {
+    const ids = [...selectedArIds.value]
+    for (const a of Object.values(assignments.value)) if (a?.ar_id && !ids.includes(a.ar_id)) ids.push(a.ar_id)
+    return ids
+})
+const selectedAmounts = computed(() => {
+    const out = {}
+    for (const a of Object.values(assignments.value)) if (a?.ar_id) out[a.ar_id] = a.amount
+    return out
+})
+// Rechnungen, deren Handzahlung die Abrechnung ersetzt (vom Finder als
+// „bereits von Hand gebucht" gemeldet und vom Anwender angehakt)
+const selectedReplace = computed(() =>
+    invoiceCandidates.value
+        .filter(inv => inv.already_paid && effectiveArIds.value.includes(inv.ar_id))
+        .map(inv => inv.ar_id)
+)
 // Liste mit Checkboxen: ohne Einzelzahlungen alle Kandidaten, sonst nur die
 // uebrigen (und die auch nur, wenn eine Zahlung keinen Treffer hat oder auf Wunsch)
 const manualCandidates = computed(() => {
@@ -449,7 +547,7 @@ const previewCreditSum = computed(() => (preview.value?.legs || []).reduce((s, l
 // Vorschau neu laden, sobald sich im Buchen-Schritt Konten oder Rechnungs-
 // auswahl aendern (kurz entprellt, Checkboxen loesen schnell hintereinander aus).
 let previewTimer = null
-watch([step, feeChartId, clearingChartId, selectedArIds, match], () => {
+watch([step, feeChartId, clearingChartId, selectedArIds, assignments, match], () => {
     clearTimeout(previewTimer)
     if (step.value !== 'book' || !match.value) { preview.value = null; previewError.value = ''; return }
     previewTimer = setTimeout(loadPreview, 250)
@@ -464,8 +562,10 @@ async function loadPreview() {
             settlementLineId: match.value.line_id,
             feeChartId: feeChartId.value,
             clearingChartId: clearingChartId.value,
-            arIds: selectedArIds.value,
+            arIds: effectiveArIds.value,
             arDiffs: selectedDiffs.value,
+            arAmounts: selectedAmounts.value,
+            arReplace: selectedReplace.value,
         })
         previewError.value = ''
     } catch (e) {
@@ -534,11 +634,14 @@ const feeAccountItems = computed(() => {
 
 // Summe der gewaehlten Rechnungen als Kartenbetrag: offener Betrag abzueglich
 // der Abweichung zur Kartenzahlung (die wird separat ausgebucht).
-const selectedSum = computed(() =>
-    invoiceCandidates.value
-        .filter(inv => selectedArIds.value.includes(inv.ar_id))
+const selectedSum = computed(() => {
+    const assigned = Object.values(assignments.value).filter(a => a?.ar_id)
+    const assignedIds = new Set(assigned.map(a => a.ar_id))
+    const exact = invoiceCandidates.value
+        .filter(inv => selectedArIds.value.includes(inv.ar_id) && !assignedIds.has(inv.ar_id))
         .reduce((s, inv) => s + Number(inv.open_amount || 0) - Number(inv.diff || 0), 0)
-)
+    return exact + assigned.reduce((s, a) => s + Number(a.amount || 0), 0)
+})
 // Abweichungen je gewaehlter Rechnung {ar_id: diff} fuer Vorschau + Buchung
 const selectedDiffs = computed(() => {
     const out = {}
@@ -556,7 +659,7 @@ const sumMatches = computed(() =>
 // exakt den Bruttobetrag ergeben, ohne Rechnungen braucht es ein Verrechnungskonto.
 const canBook = computed(() => {
     if (!feeChartId.value) return false
-    if (selectedArIds.value.length > 0) return sumMatches.value
+    if (effectiveArIds.value.length > 0) return sumMatches.value
     return !!clearingChartId.value
 })
 
@@ -627,6 +730,8 @@ async function enterBookStep(m) {
         showOthers.value = false
         // Vorbelegung: alle gefundenen Rechnungen sind angehakt — bestätigen reicht
         selectedArIds.value = (res.invoices || []).map(i => i.ar_id)
+        assignments.value = {}
+        assignSearchItems.value = {}
         invoiceInfo.value = { found: !!res.found, ambiguous: !!res.ambiguous, gross: res.gross, unmatched: res.unmatched_count || 0 }
     } catch (e) {
         invoiceCandidates.value = []
@@ -699,8 +804,10 @@ async function book() {
             settlementLineId: match.value.line_id,
             feeChartId: feeChartId.value,
             clearingChartId: clearingChartId.value,
-            arIds: selectedArIds.value,
+            arIds: effectiveArIds.value,
             arDiffs: selectedDiffs.value,
+            arAmounts: selectedAmounts.value,
+            arReplace: selectedReplace.value,
         })
         alerts.success(t('BankingView.settlement.bookSuccess'))
         emit('booked')
@@ -722,6 +829,8 @@ function reset() {
     clearingChartId.value = null
     invoiceCandidates.value = []
     selectedArIds.value = []
+    assignments.value = {}
+    assignSearchItems.value = {}
     invoiceInfo.value = { found: false, ambiguous: false, gross: 0, unmatched: 0 }
     paymentRows.value = []
     showOthers.value = false

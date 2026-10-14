@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "yalnızca müşteri",
         "easymodeCvOnlyVendor": "yalnızca tedarikçi",
         "easymodeCvTabs": "Görünür sekmeler",
-        "easymodeCvTabs_help": "İşaretlenmemiş sekmeler yalnızca „Tüm alanlar“ görünümüne geçildikten sonra görünür. Fatura adresi her zaman görünür kalır."
+        "easymodeCvTabs_help": "İşaretlenmemiş sekmeler yalnızca „Tüm alanlar“ görünümüne geçildikten sonra görünür. Fatura adresi her zaman görünür kalır.",
+        "emailMaxMessageSize": "En büyük e-posta boyutu (MB)",
+        "emailMaxMessageSize_help": "E-posta başına ek dosya üst sınırı. Aşağıdaki düğmeyle posta sunucusundan belirleyin; ekler bu sınırı aşarsa e-posta iletişim kutusu uyarır.",
+        "emailMaxSize": {
+            "button": "Sınırı posta sunucusundan belirle",
+            "hint": "SMTP sunucusuna ileti başına en büyük boyutu sorar ve PHP sınırı post_max_size değerini dikkate alır. Ardından kaydetmeyi unutmayın.",
+            "result": "Sınır olarak {mb} MB girildi",
+            "smtpLimit": "SMTP sunucusu ileti başına {size} izin veriyor",
+            "noSmtpLimit": "SMTP sunucusu en büyük boyutu bildirmiyor",
+            "phpLimit": "PHP istek başına {size} kabul ediyor (post_max_size)",
+            "phpIsBottleneck": "Daha dar sınır PHP: php.ini içinde post_max_size ve upload_max_filesize değerlerini yükseltip yeniden belirleyin",
+            "error": "Sınır belirlenemedi"
+        }
     },
     "add": "Ekle",
     "add_fields": {

@@ -58,7 +58,7 @@ Jeder gesendete Betrag wird mit Ergebnis, Transaktionscode und Kundenbeleg in `s
 
 ## E-Mail-Versand
 
-Der Button **E-Mail** öffnet einen Dialog mit Empfänger (CC/BCC aus dem Kundenstamm), Betreff und Nachrichtentext; das Beleg-PDF hängt immer an. Über **Weitere Anhänge hinzufügen** lassen sich beliebige zusätzliche Dateien (z. B. AGB, Gutachten, Fotos) mitschicken — mehrere auf einmal, jede als Chip mit Größe entfernbar, gleichnamige Dateien ersetzen sich. Alle Zusatzdateien zusammen dürfen 5 MB nicht überschreiten, sonst bleibt **Senden** gesperrt. Die Anhänge landen wie das PDF im `email_journal` und damit im Versandverlauf des Belegs.
+Der Button **E-Mail** öffnet einen Dialog mit Empfänger (CC/BCC aus dem Kundenstamm), Betreff und Nachrichtentext; das Beleg-PDF hängt immer an. Über **Weitere Anhänge hinzufügen** lassen sich beliebige zusätzliche Dateien (z. B. AGB, Gutachten, Fotos) mitschicken — mehrere auf einmal, jede als Chip mit Größe entfernbar, gleichnamige Dateien ersetzen sich. Überschreiten die Zusatzdateien die in der Firmenkonfiguration hinterlegte **Maximale E-Mail-Größe** (*CRM → E-Mail-Client*, vom Mailserver ermittelbar, siehe [E-Mail](email.md)), zeigt der Dialog eine Warnung mit der tatsächlichen Größe und sperrt **Senden**; ohne Konfiguration gelten 10 MB, immer gekappt durch die PHP-Grenze `post_max_size`. Die Anhänge landen wie das PDF im `email_journal` und damit im Versandverlauf des Belegs.
 
 ## Versandstatus
 

@@ -483,6 +483,7 @@ function testEmailConnection($data) {
                 $results['smtp'] = [
                     'success' => true,
                     'message' => 'SMTP-Verbindung erfolgreich',
+                    'max_message_size' => $smtp->getMaxMessageSize(),
                 ];
             } catch (\Exception $e) {
                 $results['smtp'] = [
@@ -493,5 +494,50 @@ function testEmailConnection($data) {
         }
 
         resultInfo(true, '', $results);
+    }, $data);
+}
+
+/**
+ * Höchstgröße einer E-Mail ermitteln: SMTP-Server (SIZE im EHLO) und PHP
+ * (post_max_size, weil Anhänge als Base64 im JSON-Request liegen).
+ *
+ * Die SMTP-Daten kommen aus dem Formular der Firmenkonfiguration, damit auch
+ * ungespeicherte Eingaben geprüft werden; leere Felder (z.B. das Passwort)
+ * werden aus der gespeicherten Konfiguration ergänzt.
+ *
+ * Rückgabe: smtp_max_bytes (null = Server meldet nichts), php_max_bytes,
+ * recommended_mb = nutzbare Anhanggröße (kleinere Grenze, Base64-Zuschlag
+ * von 37 % abgezogen, auf ganze MB abgerundet).
+ *
+ * @param string $data['email_smtp_host']
+ * @param int    $data['email_smtp_port']
+ * @param string $data['email_smtp_encryption'] ssl | starttls | none
+ * @param string $data['email_username']
+ * @param string $data['email_password']
+ * @testdata {"email_smtp_host": "smtp.example.com", "email_smtp_port": 465, "email_smtp_encryption": "ssl", "email_username": "", "email_password": ""}
+ */
+function detectEmailMaxSize($data) {
+    _emailApiCall(function($data) {
+        $config = _getEmailConfig();
+        foreach (['email_smtp_host', 'email_smtp_port', 'email_smtp_encryption', 'email_username', 'email_password'] as $key) {
+            if (!empty($data[$key])) $config[$key] = $data[$key];
+        }
+
+        $smtp = _createSmtpClient($config);
+        $smtp->testConnection();
+        $smtpMax = $smtp->getMaxMessageSize();
+
+        $phpMax = iniBytes((string)ini_get('post_max_size'));
+        $limits = array_filter([$smtpMax, $phpMax]);
+        $effective = $limits ? min($limits) : 0;
+        // Base64 bläht Anhänge um ein Drittel auf, dazu Kopfzeilen/Trenner
+        $recommendedMb = $effective > 0 ? (int)floor($effective / 1.37 / (1024 * 1024)) : 0;
+
+        resultInfo(true, '', [
+            'smtp_max_bytes' => $smtpMax,
+            'php_max_bytes' => $phpMax,
+            'recommended_mb' => max($recommendedMb, 1),
+            'limited_by' => ($smtpMax && (!$phpMax || $smtpMax <= $phpMax)) ? 'smtp' : 'php',
+        ]);
     }, $data);
 }

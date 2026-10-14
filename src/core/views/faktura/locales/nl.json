@@ -485,7 +485,7 @@
                 "noEmail": "Geen e-mailadres geregistreerd voor deze klant.",
                 "addAttachment": "Extra bijlagen toevoegen",
                 "attachmentHint": "Extra bestanden (max. {max} in totaal), de document-PDF wordt altijd meegestuurd",
-                "attachmentTooLarge": "De extra bijlagen overschrijden {max}. Verwijder bestanden."
+                "attachmentTooLarge": "De extra bijlagen zijn samen {size} en overschrijden de limiet van {max} per e-mail. Verwijder bestanden of pas de limiet aan in de bedrijfsconfiguratie (e-mailclient)."
             },
             "sendWhatsApp": {
                 "title": "Document per WhatsApp versturen",

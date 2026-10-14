@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "tikai klients",
         "easymodeCvOnlyVendor": "tikai piegādātājs",
         "easymodeCvTabs": "Redzamās cilnes",
-        "easymodeCvTabs_help": "Cilnes bez atzīmes parādās tikai pēc pārslēgšanās uz „Visi lauki“. Rēķina adrese vienmēr ir redzama."
+        "easymodeCvTabs_help": "Cilnes bez atzīmes parādās tikai pēc pārslēgšanās uz „Visi lauki“. Rēķina adrese vienmēr ir redzama.",
+        "emailMaxMessageSize": "Maksimālais e-pasta izmērs (MB)",
+        "emailMaxMessageSize_help": "Pielikumu augšējā robeža vienai e-pasta vēstulei. Nosakiet to no pasta servera ar pogu zemāk; e-pasta dialogs brīdina, ja pielikumi pārsniedz robežu.",
+        "emailMaxSize": {
+            "button": "Noteikt robežu no pasta servera",
+            "hint": "Vaicā SMTP serverim maksimālo ziņojuma izmēru un ņem vērā PHP ierobežojumu post_max_size. Pēc tam neaizmirstiet saglabāt.",
+            "result": "Robeža iestatīta uz {mb} MB",
+            "smtpLimit": "SMTP serveris atļauj {size} vienam ziņojumam",
+            "noSmtpLimit": "SMTP serveris nenorāda maksimālo izmēru",
+            "phpLimit": "PHP pieņem {size} vienam pieprasījumam (post_max_size)",
+            "phpIsBottleneck": "PHP ir stingrākā robeža: palieliniet post_max_size un upload_max_filesize failā php.ini un nosakiet vēlreiz",
+            "error": "Robežu neizdevās noteikt"
+        }
     },
     "add": "Pievienot",
     "add_fields": {

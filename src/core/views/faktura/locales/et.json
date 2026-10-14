@@ -485,7 +485,7 @@
                 "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
                 "addAttachment": "Lisa veel manuseid",
                 "attachmentHint": "Lisafailid (max {max} kokku), dokumendi PDF saadetakse alati kaasa",
-                "attachmentTooLarge": "Lisamanused ületavad {max}. Palun eemalda faile."
+                "attachmentTooLarge": "Lisamanuste kogumaht on {size} ja ületab piiri {max} e-kirja kohta. Eemalda faile või muuda piiri ettevõtte seadistuses (e-posti klient)."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

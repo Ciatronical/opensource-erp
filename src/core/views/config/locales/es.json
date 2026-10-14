@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "solo cliente",
         "easymodeCvOnlyVendor": "solo proveedor",
         "easymodeCvTabs": "Pestañas visibles",
-        "easymodeCvTabs_help": "Las pestañas sin marca aparecen solo después de cambiar a «Todos los campos». La dirección de facturación permanece siempre visible."
+        "easymodeCvTabs_help": "Las pestañas sin marca aparecen solo después de cambiar a «Todos los campos». La dirección de facturación permanece siempre visible.",
+        "emailMaxMessageSize": "Tamaño máximo de correo (MB)",
+        "emailMaxMessageSize_help": "Límite de adjuntos por correo. Detéctelo desde el servidor de correo con el botón inferior; el diálogo de correo avisa si los adjuntos superan este límite.",
+        "emailMaxSize": {
+            "button": "Detectar límite desde el servidor",
+            "hint": "Consulta al servidor SMTP su tamaño máximo por mensaje y tiene en cuenta el límite PHP post_max_size. No olvide guardar después.",
+            "result": "{mb} MB registrados como límite",
+            "smtpLimit": "El servidor SMTP permite {size} por mensaje",
+            "noSmtpLimit": "El servidor SMTP no anuncia un tamaño máximo",
+            "phpLimit": "PHP acepta {size} por solicitud (post_max_size)",
+            "phpIsBottleneck": "PHP es el límite más estricto: aumente post_max_size y upload_max_filesize en php.ini y vuelva a detectar",
+            "error": "No se pudo detectar el límite"
+        }
     },
     "add": "Añadir",
     "add_fields": {

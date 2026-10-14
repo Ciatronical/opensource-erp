@@ -485,7 +485,7 @@
                 "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
                 "addAttachment": "Pridėti daugiau priedų",
                 "attachmentHint": "Papildomi failai (iš viso iki {max}), dokumento PDF visada pridedamas",
-                "attachmentTooLarge": "Papildomi priedai viršija {max}. Pašalinkite failus."
+                "attachmentTooLarge": "Papildomų priedų bendras dydis {size} viršija {max} ribą vienam el. laiškui. Pašalinkite failus arba pakeiskite ribą įmonės konfigūracijoje (el. pašto klientas)."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

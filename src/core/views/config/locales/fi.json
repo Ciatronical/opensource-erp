@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "vain asiakas",
         "easymodeCvOnlyVendor": "vain toimittaja",
         "easymodeCvTabs": "Näkyvät välilehdet",
-        "easymodeCvTabs_help": "Välilehdet ilman valintamerkkiä näkyvät vasta, kun on vaihdettu tilaan „Kaikki kentät“. Laskutusosoite on aina näkyvissä."
+        "easymodeCvTabs_help": "Välilehdet ilman valintamerkkiä näkyvät vasta, kun on vaihdettu tilaan „Kaikki kentät“. Laskutusosoite on aina näkyvissä.",
+        "emailMaxMessageSize": "Sähköpostin enimmäiskoko (MB)",
+        "emailMaxMessageSize_help": "Liitteiden yläraja sähköpostia kohden. Hae se postipalvelimelta alla olevalla painikkeella; sähköposti-ikkuna varoittaa, jos liitteet ylittävät rajan.",
+        "emailMaxSize": {
+            "button": "Hae raja postipalvelimelta",
+            "hint": "Kysyy SMTP-palvelimelta viestin enimmäiskokoa ja huomioi PHP-rajan post_max_size. Muista tallentaa sen jälkeen.",
+            "result": "Rajaksi asetettu {mb} MB",
+            "smtpLimit": "SMTP-palvelin sallii {size} viestiä kohden",
+            "noSmtpLimit": "SMTP-palvelin ei ilmoita enimmäiskokoa",
+            "phpLimit": "PHP hyväksyy {size} pyyntöä kohden (post_max_size)",
+            "phpIsBottleneck": "PHP on tiukempi raja: nosta post_max_size ja upload_max_filesize php.ini-tiedostossa ja hae uudelleen",
+            "error": "Rajaa ei voitu hakea"
+        }
     },
     "add": "Lisää",
     "add_fields": {

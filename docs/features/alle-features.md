@@ -163,6 +163,9 @@ Für Sammelauszahlungen von Kartendienstleistern (z. B. Flatpay, Rapyd, SumUp):
 - **Automatischer Vorschlag**: passende Abrechnungszeile zu einem nicht zuordbaren Bankumsatz (Netto-Betrag + Datumsnähe)
 - **Teilmengen-Suche (Subset-Sum)**: findet die Kombination offener Ausgangsrechnungen, die in Summe dem Bruttobetrag der Abrechnungszeile entspricht
 - **Split-Buchung**: Erlöse, Gebühren und Auszahlung in einem Vorgang; Konten je Kreditor merkbar
+- **Anzahlungen und Teilzahlungen**: Eine Kartenzahlung, zu der keine Rechnung mit gleichem Betrag existiert, wird im Dialog einer beliebigen offenen Rechnung zugeordnet (Suche nach Nummer oder Kunde). Gebucht wird genau der Kartenbetrag als Zahlung auf diese Rechnung, der Rest bleibt offen — wie eine Teilzahlung in kivitendo, ohne Verrechnungs- oder Geldtransitkonto. Rechnungen nach dem Auszahlungstag werden nicht angeboten.
+- **Überbuchen von Handzahlungen**: Wurde eine Rechnung schon von Hand als bezahlt gebucht, ersetzt die Kartenabrechnung diese Zahlung. Das gilt auch, wenn an der Handzahlung ein Bankumsatz hängt, der selbst eine Kartenauszahlung ist (z. B. SumUp-Auszahlung als „Zahlungseingang" auf die falsche Rechnung gebucht): Dieser Umsatz wird dabei wieder offen und kann richtig abgerechnet werden.
+- **Keine Dubletten**: Eine Auszahlungskennung (SumUp-PID) wird nur einmal gespeichert, egal wie oft ein Bericht hochgeladen wird
 - **Storno** der Settlement-Buchung
 
 ### 1.8a SumUp-Auszahlungen ohne Datei *(extern)*

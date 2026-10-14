@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "pouze zákazník",
         "easymodeCvOnlyVendor": "pouze dodavatel",
         "easymodeCvTabs": "Viditelné karty",
-        "easymodeCvTabs_help": "Nezaškrtnuté karty se zobrazí až po přepnutí na „Všechna pole“. Fakturační adresa zůstává vždy viditelná."
+        "easymodeCvTabs_help": "Nezaškrtnuté karty se zobrazí až po přepnutí na „Všechna pole“. Fakturační adresa zůstává vždy viditelná.",
+        "emailMaxMessageSize": "Maximální velikost e-mailu (MB)",
+        "emailMaxMessageSize_help": "Horní limit příloh na e-mail. Zjistěte jej od poštovního serveru tlačítkem níže; e-mailový dialog varuje, pokud přílohy tento limit překročí.",
+        "emailMaxSize": {
+            "button": "Zjistit limit od poštovního serveru",
+            "hint": "Zeptá se SMTP serveru na maximální velikost zprávy a zohlední limit PHP post_max_size. Poté nezapomeňte uložit.",
+            "result": "Limit nastaven na {mb} MB",
+            "smtpLimit": "SMTP server povoluje {size} na zprávu",
+            "noSmtpLimit": "SMTP server neuvádí maximální velikost",
+            "phpLimit": "PHP přijímá {size} na požadavek (post_max_size)",
+            "phpIsBottleneck": "PHP je těsnější limit: zvyšte post_max_size a upload_max_filesize v php.ini a zjistěte znovu",
+            "error": "Limit se nepodařilo zjistit"
+        }
     },
     "add": "Přidat",
     "add_fields": {

@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "bare kunde",
         "easymodeCvOnlyVendor": "bare leverandør",
         "easymodeCvTabs": "Synlige faner",
-        "easymodeCvTabs_help": "Faner uten hake vises først etter bytte til «Alle felter». Fakturaadressen er alltid synlig."
+        "easymodeCvTabs_help": "Faner uten hake vises først etter bytte til «Alle felter». Fakturaadressen er alltid synlig.",
+        "emailMaxMessageSize": "Maksimal e-poststørrelse (MB)",
+        "emailMaxMessageSize_help": "Øvre grense for vedlegg per e-post. Hent den fra e-postserveren med knappen nedenfor; e-postdialogen advarer når vedlegg overstiger grensen.",
+        "emailMaxSize": {
+            "button": "Hent grense fra e-postserveren",
+            "hint": "Spør SMTP-serveren om maksimal meldingsstørrelse og tar hensyn til PHP-grensen post_max_size. Husk å lagre etterpå.",
+            "result": "{mb} MB satt som grense",
+            "smtpLimit": "SMTP-serveren tillater {size} per melding",
+            "noSmtpLimit": "SMTP-serveren oppgir ingen maksimal størrelse",
+            "phpLimit": "PHP godtar {size} per forespørsel (post_max_size)",
+            "phpIsBottleneck": "PHP er den strammere grensen: øk post_max_size og upload_max_filesize i php.ini og hent på nytt",
+            "error": "Grensen kunne ikke hentes"
+        }
     },
     "add": "Legg til",
     "add_fields": {

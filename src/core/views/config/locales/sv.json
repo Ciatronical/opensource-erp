@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "endast kund",
         "easymodeCvOnlyVendor": "endast leverantör",
         "easymodeCvTabs": "Synliga flikar",
-        "easymodeCvTabs_help": "Flikar utan bock visas först efter växling till „Alla fält“. Fakturaadressen är alltid synlig."
+        "easymodeCvTabs_help": "Flikar utan bock visas först efter växling till „Alla fält“. Fakturaadressen är alltid synlig.",
+        "emailMaxMessageSize": "Maximal e-poststorlek (MB)",
+        "emailMaxMessageSize_help": "Övre gräns för bilagor per e-post. Hämta den från e-postservern med knappen nedan; e-postdialogen varnar när bilagor överskrider gränsen.",
+        "emailMaxSize": {
+            "button": "Hämta gräns från e-postservern",
+            "hint": "Frågar SMTP-servern om dess maximala meddelandestorlek och tar hänsyn till PHP-gränsen post_max_size. Glöm inte att spara efteråt.",
+            "result": "{mb} MB angivet som gräns",
+            "smtpLimit": "SMTP-servern tillåter {size} per meddelande",
+            "noSmtpLimit": "SMTP-servern anger ingen maxstorlek",
+            "phpLimit": "PHP tar emot {size} per begäran (post_max_size)",
+            "phpIsBottleneck": "PHP är den snävare gränsen: höj post_max_size och upload_max_filesize i php.ini och hämta igen",
+            "error": "Gränsen kunde inte hämtas"
+        }
     },
     "add": "Lagg till",
     "add_fields": {

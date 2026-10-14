@@ -246,7 +246,13 @@
             "previewReplacedLine": "Inv. {invnumber} · {date} · {amount}",
             "paymentsUnmatched": "{count} card payment(s) without a matching invoice – please select below.",
             "otherInvoices": "Other open invoices",
-            "showOtherInvoices": "Show {count} other open invoices"
+            "showOtherInvoices": "Show {count} other open invoices",
+            "assignInvoice": "Assign invoice",
+            "assignSearch": "Type an invoice number or customer",
+            "openShort": "open",
+            "partialPayment": "Partial payment {amount} of {open} – {rest} stays open",
+            "fullPayment": "Payment {amount} settles the invoice",
+            "previewReleased": "the bank transaction linked there becomes open again"
         },
         "transfers": {
             "title": "Transfers",

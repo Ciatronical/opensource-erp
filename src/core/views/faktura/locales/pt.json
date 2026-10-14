@@ -485,7 +485,7 @@
                 "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
                 "addAttachment": "Adicionar mais anexos",
                 "attachmentHint": "Ficheiros adicionais (máx. {max} no total), o PDF do documento é sempre enviado",
-                "attachmentTooLarge": "Os anexos adicionais excedem {max}. Remova ficheiros."
+                "attachmentTooLarge": "Os anexos adicionais totalizam {size} e excedem o limite de {max} por e-mail. Remova ficheiros ou ajuste o limite na configuração da empresa (cliente de e-mail)."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

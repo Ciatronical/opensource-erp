@@ -201,3 +201,9 @@ Kartendienstleister (Flatpay, Rapyd, SumUp) zahlen gesammelt aus — ein Bankums
 - Wurde eine Kartenzahlung schon von Hand als bezahlt gegen das Bankkonto gebucht (ohne verknüpften Bankumsatz), erkennt der Dialog das, schlägt die Rechnung trotzdem vor und ersetzt die Handbuchung beim Buchen durch die Kartenabrechnung – der Betrag steht so nicht doppelt auf dem Bankkonto
 - Weicht eine Kartenzahlung geringfügig vom Rechnungsbetrag ab (bis 2 €, z. B. Tippfehler am Terminal), wird die Rechnung trotzdem zugeordnet; die Differenz wird als eigene Zeile auf das Gebührenkonto gebucht und die Rechnung vollständig ausgeglichen
 - Nach dem Buchen zeigt der Umsatz die ausgeglichenen Rechnungsnummern an; ein Klick öffnet die Rechnung, wie bei jeder anderen Rechnungszahlung
+
+### Anzahlungen, Teilzahlungen und Handzahlungen
+
+- **Anzahlungen und Teilzahlungen**: Eine Kartenzahlung, zu der keine Rechnung mit gleichem Betrag existiert, wird im Dialog einer beliebigen offenen Rechnung zugeordnet (Suche nach Nummer oder Kunde). Gebucht wird genau der Kartenbetrag als Zahlung auf diese Rechnung, der Rest bleibt offen — wie eine Teilzahlung in kivitendo, ohne Verrechnungs- oder Geldtransitkonto. Rechnungen nach dem Auszahlungstag werden nicht angeboten.
+- **Überbuchen von Handzahlungen**: Wurde eine Rechnung schon von Hand als bezahlt gebucht, ersetzt die Kartenabrechnung diese Zahlung. Das gilt auch, wenn an der Handzahlung ein Bankumsatz hängt, der selbst eine Kartenauszahlung ist (z. B. SumUp-Auszahlung als „Zahlungseingang" auf die falsche Rechnung gebucht): Dieser Umsatz wird dabei wieder offen und kann richtig abgerechnet werden.
+- **Keine Dubletten**: Eine Auszahlungskennung (SumUp-PID) wird nur einmal gespeichert, egal wie oft ein Bericht hochgeladen wird

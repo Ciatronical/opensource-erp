@@ -274,16 +274,18 @@ function _settlementStore($db, array $o) {
             FROM jsonb_to_recordset(:lines::jsonb)
                  AS x(payout_date date, period_from date, period_to date, gross numeric, fee numeric, net numeric, reference text, transactions jsonb)
             WHERE x.payout_date IS NOT NULL
+              -- Kennung (SumUp-PID) ist je Anbieter eindeutig: schon vorhanden →
+              -- überspringen, unabhängig davon, welcher Kreditor am Kopf hängt.
+              -- (Vorher zählte der Kreditor mit; derselbe Bericht, einmal ohne
+              -- und einmal mit Kreditor hochgeladen, lag danach doppelt vor.)
               AND (NULLIF(trim(x.reference), '') IS NULL OR NOT EXISTS (
                       SELECT 1 FROM payment_settlement_lines l2
-                      JOIN payment_settlements s2 ON s2.id = l2.settlement_id
-                      WHERE l2.reference = trim(x.reference)
-                        AND s2.vendor_id IS NOT DISTINCT FROM :vid::int))
+                      WHERE upper(l2.reference) = upper(trim(x.reference))))
             ON CONFLICT (settlement_id, payout_date) DO NOTHING
             RETURNING id
          )
          SELECT count(*) AS n FROM neu",
-        ['sid' => $settlementId, 'lines' => json_encode(array_values($lines)), 'vid' => $vendorId]
+        ['sid' => $settlementId, 'lines' => json_encode(array_values($lines))]
     );
     $insertedCount = intval($inserted['n'] ?? 0);
     $skippedCount  = count($lines) - $insertedCount;
@@ -516,15 +518,35 @@ function _settlement_subset_sum($items, $target) {
  * @param int         $arId Rechnung
  * @return array|null {amount, date, acc_trans_ids[]} oder null
  */
+/**
+ * SQL-Bedingung: Bankbein einer Rechnungszahlung, das die Kartenabrechnung
+ * überbuchen darf. Das sind Handzahlungen gegen Bank ohne Bankumsatz UND
+ * Zahlungen, deren verknüpfter Bankumsatz selbst eine Kartenauszahlung ist
+ * (Kennung einer Abrechnungszeile im Verwendungszweck) — der Fall „SumUp-
+ * Auszahlung von Hand als Zahlungseingang auf die falsche Rechnung gebucht".
+ * Echte Überweisungen des Kunden bleiben unangetastet.
+ *
+ * @param string $a Alias der acc_trans-Zeile
+ */
+function _settlementReplaceableBankLeg($a) {
+    return "({$a}.amount < 0 AND {$a}.chart_id IN (SELECT chart_id FROM bank_accounts)
+             AND NOT EXISTS (
+                 SELECT 1 FROM bank_transaction_acc_trans x
+                 JOIN bank_transactions bt2 ON bt2.id = x.bank_transaction_id
+                 WHERE x.acc_trans_id = {$a}.acc_trans_id
+                   AND NOT EXISTS (SELECT 1 FROM payment_settlement_lines l2
+                                   WHERE l2.reference IS NOT NULL AND bt2.purpose ILIKE '%' || l2.reference || '%')))";
+}
+
 function _settlementManualPayment($db, $arId) {
+    $bankCond = _settlementReplaceableBankLeg('a');
     $rows = $db->getAll(
         "SELECT a.acc_trans_id, a.transdate, a.amount,
-                (a.amount < 0 AND a.chart_id IN (SELECT chart_id FROM bank_accounts)) AS is_bank
+                ({$bankCond}) AS is_bank,
+                (SELECT json_agg(DISTINCT x.bank_transaction_id) FROM bank_transaction_acc_trans x WHERE x.acc_trans_id = a.acc_trans_id) AS linked_bts
          FROM acc_trans a
          WHERE a.trans_id = :id
-           AND ((a.amount < 0 AND a.chart_id IN (SELECT chart_id FROM bank_accounts)
-                 AND NOT EXISTS (SELECT 1 FROM bank_transaction_acc_trans x WHERE x.acc_trans_id = a.acc_trans_id))
-             OR (a.amount > 0 AND a.chart_link ~ :ar_link))
+           AND ({$bankCond} OR (a.amount > 0 AND a.chart_link ~ :ar_link))
          ORDER BY a.transdate, a.acc_trans_id",
         ['id' => intval($arId), 'ar_link' => '(^|:)AR($|:)']
     );
@@ -532,7 +554,7 @@ function _settlementManualPayment($db, $arId) {
     if (count($bankLegs) === 0) return null;
     $arLegs = array_filter($rows, fn($r) => !($r['is_bank'] === true || $r['is_bank'] === 't'));
 
-    $ids = []; $sum = 0.0; $date = null;
+    $ids = []; $sum = 0.0; $date = null; $release = [];
     foreach ($bankLegs as $b) {
         $want = round(-(float)$b['amount'], 2);
         $pairId = null;
@@ -546,8 +568,11 @@ function _settlementManualPayment($db, $arId) {
         $ids[] = $pairId;
         $sum  += $want;
         if ($date === null || $b['transdate'] > $date) $date = $b['transdate'];
+        foreach (json_decode($b['linked_bts'] ?? '[]', true) ?: [] as $btId) $release[] = intval($btId);
     }
-    return ['amount' => round($sum, 2), 'date' => $date, 'acc_trans_ids' => $ids];
+    return ['amount' => round($sum, 2), 'date' => $date, 'acc_trans_ids' => $ids,
+            // Kartenauszahlungen, die an der Handzahlung hingen: nach dem Ersetzen wieder offen
+            'release_bank_transaction_ids' => array_values(array_unique($release))];
 }
 
 /**
@@ -618,10 +643,12 @@ function findInvoicesForSettlementLine($data) {
             ['payout' => $line['payout_date']]
         );
         $byId = []; foreach ($pool as $r) $byId[(int)$r['id']] = $r;
-        // Bereits als bezahlt gebuchte Rechnungen, deren Zahlung von Hand gegen das
-        // Bankkonto gebucht wurde (kein Bankumsatz verknuepft): Die Kartenabrechnung
-        // kann diese Handbuchung ersetzen. Erst geladen, wenn eine Zahlung ohne
-        // offene Rechnung bleibt.
+        // Rechnungen mit einer ersetzbaren Zahlung (Handzahlung gegen Bank ohne
+        // Bankumsatz, oder mit einem Bankumsatz, der selbst eine Kartenauszahlung
+        // ist): offener Rest + ersetzbare Zahlung = Kartenbetrag. Auch teilweise
+        // bezahlte Rechnungen — die falsch zugeordnete Auszahlung deckt die
+        // Rechnung selten genau. Erst geladen, wenn eine Zahlung ohne offene
+        // Rechnung bleibt.
         $paidPool = null;
         $loadPaidPool = function () use ($db, $line) {
             return $db->getAll(
@@ -633,13 +660,10 @@ function findInvoicesForSettlementLine($data) {
                  JOIN LATERAL (
                      SELECT SUM(-b.amount) AS amount
                      FROM acc_trans b
-                     WHERE b.trans_id = a.id AND b.amount < 0
-                       AND b.chart_id IN (SELECT chart_id FROM bank_accounts)
-                       AND NOT EXISTS (SELECT 1 FROM bank_transaction_acc_trans x WHERE x.acc_trans_id = b.acc_trans_id)
+                     WHERE b.trans_id = a.id AND " . _settlementReplaceableBankLeg('b') . "
                  ) mp ON mp.amount > 0.005
                  WHERE a.storno IS NOT TRUE
                    AND a.transdate BETWEEN (:payout::date - 60) AND :payout::date
-                   AND (a.amount - COALESCE(a.paid,0)) <= 0.005
                  ORDER BY a.transdate DESC, a.id DESC",
                 ['payout' => $line['payout_date']]
             );
@@ -880,6 +904,16 @@ function _settlementBookingPlan($db, array $data) {
     // Gebuehrenkonto ausgebucht, damit die Rechnung nicht mit Centbetraegen offen bleibt.
     $arDiffs = $data['ar_diffs'] ?? [];
     if (!is_array($arDiffs)) $arDiffs = [];
+    // Teilzahlung je Rechnung {ar_id: betrag}: der Kunde hat nur einen Teil mit
+    // Karte bezahlt (Anzahlung). Gebucht wird genau dieser Betrag als Zahlung,
+    // die Rechnung bleibt mit dem Rest offen — ohne Verrechnungskonto.
+    $arAmounts = $data['ar_amounts'] ?? [];
+    if (!is_array($arAmounts)) $arAmounts = [];
+    // Rechnungen, deren vorhandene Handzahlung ersetzt werden soll (der Dialog
+    // zeigt sie als „bereits von Hand gebucht – wird ersetzt"). Bei voll
+    // bezahlten Rechnungen geschieht das automatisch, bei teilweise bezahlten
+    // nur auf Ansage — sonst würde eine echte Anzahlung gelöscht.
+    $arReplace = array_map('intval', is_array($data['ar_replace'] ?? null) ? $data['ar_replace'] : []);
     $settleList = [];
     if (count($arIds) > 0) {
         $sumCents = 0;
@@ -892,12 +926,23 @@ function _settlementBookingPlan($db, array $data) {
             // gebucht wurde (ohne verknuepften Bankumsatz) — die Handbuchung wird durch
             // diese Kartenabrechnung ersetzt (siehe _settlementManualPayment).
             $absorb = null;
-            if ($pay <= 0.005) {
+            if ($pay <= 0.005 || in_array($arId, $arReplace, true)) {
                 $absorb = _settlementManualPayment($db, $arId);
                 if ($absorb) $pay = round($pay + $absorb['amount'], 2);
             }
             if ($pay <= 0.005) return ['ok' => false, 'code' => 'ALREADY_PAID', 'msg' => 'Rechnung ' . $ar['invnumber'] . ' ist bereits bezahlt'];
+            $openBefore = $pay;
+            $partial = false;
+            $wanted = $arAmounts[$arId] ?? $arAmounts[(string)$arId] ?? null;
+            if ($wanted !== null && $wanted !== '') {
+                $wanted = round((float)$wanted, 2);
+                if ($wanted <= 0.005) return ['ok' => false, 'code' => 'VALIDATION_ERROR', 'msg' => 'Teilzahlung der Rechnung ' . $ar['invnumber'] . ' muss größer 0 sein'];
+                if ($wanted > $pay + 0.005) return ['ok' => false, 'code' => 'VALIDATION_ERROR', 'msg' => 'Teilzahlung der Rechnung ' . $ar['invnumber'] . ' übersteigt den offenen Betrag ' . number_format($pay, 2, ',', '.') . ' €'];
+                $partial = $wanted < $pay - 0.005;
+                $pay = $wanted;
+            }
             $diff = round((float)($arDiffs[$arId] ?? $arDiffs[(string)$arId] ?? 0), 2);
+            if ($partial) $diff = 0.0;   // bei einer Teilzahlung gibt es nichts auszubuchen
             if (abs($diff) > SETTLEMENT_MATCH_TOLERANCE + 0.001 || $diff >= $pay) {
                 return ['ok' => false, 'code' => 'VALIDATION_ERROR', 'msg' => 'Zahlungsdifferenz der Rechnung ' . $ar['invnumber'] . ' zu gross'];
             }
@@ -918,7 +963,8 @@ function _settlementBookingPlan($db, array $data) {
             if (!$fk) return ['ok' => false, 'code' => 'DATA_ERROR', 'msg' => 'Forderungskonto der Rechnung ' . $ar['invnumber'] . ' nicht ermittelbar'];
             $settleList[] = ['ar_id' => $arId, 'invnumber' => $ar['invnumber'], 'pay' => $pay,
                              'fk_chart_id' => intval($fk['chart_id']), 'fk_accno' => $fk['accno'], 'fk_description' => $fk['description'],
-                             'absorb' => $absorb, 'diff' => $diff];
+                             'absorb' => $absorb, 'diff' => $diff,
+                             'partial' => $partial, 'remaining' => round($openBefore - $pay, 2)];
             $sumCents += (int) round(($pay - $diff) * 100);
         }
         if ($sumCents !== (int) round($gross * 100)) {
@@ -940,7 +986,9 @@ function _settlementBookingPlan($db, array $data) {
     if (count($settleList) > 0) {
         foreach ($settleList as $s) {
             $legs[] = ['role' => 'ar', 'chart_id' => $s['fk_chart_id'], 'accno' => $s['fk_accno'], 'description' => $s['fk_description'],
-                       'amount' => $s['pay'], 'memo' => 'Kartenzahlung ' . $line['provider'] . ' Rg ' . $s['invnumber'], 'link' => 'AR_paid', 'ar_id' => $s['ar_id']];
+                       'amount' => $s['pay'],
+                       'memo' => ($s['partial'] ? 'Teilzahlung ' : 'Kartenzahlung ') . $line['provider'] . ' Rg ' . $s['invnumber'],
+                       'link' => 'AR_paid', 'ar_id' => $s['ar_id']];
         }
         // Zahlungsdifferenzen (Rechnung ≠ Kartenzahlung) aufs Gebuehrenkonto:
         // Minderzahlung = Aufwand (Soll, negativ), Mehrzahlung = Ertrag (Haben).
@@ -958,7 +1006,8 @@ function _settlementBookingPlan($db, array $data) {
     foreach ($settleList as $s) {
         if (!empty($s['absorb'])) {
             $replaced[] = ['ar_id' => $s['ar_id'], 'invnumber' => $s['invnumber'],
-                           'amount' => $s['absorb']['amount'], 'date' => $s['absorb']['date']];
+                           'amount' => $s['absorb']['amount'], 'date' => $s['absorb']['date'],
+                           'released_bank_transaction_ids' => $s['absorb']['release_bank_transaction_ids'] ?? []];
         }
     }
 
@@ -977,7 +1026,9 @@ function _settlementBookingPlan($db, array $data) {
  * @param int   $data['clearing_chart_id']   Verrechnungskonto (nur ohne Rechnungen)
  * @param array $data['ar_ids']              auszugleichende Ausgangsrechnungen
  * @param array $data['ar_diffs']            Abweichung je Rechnung {ar_id: Rechnung − Kartenzahlung}, wird aufs Gebuehrenkonto gebucht
- * @testdata {"bank_transaction_id": 1, "settlement_line_id": 1, "fee_chart_id": 100, "ar_ids": [1,2], "ar_diffs": {"2": 0.30}}
+ * @param array $data['ar_amounts']          Teilzahlung je Rechnung {ar_id: Betrag} (Anzahlung; Rest bleibt offen)
+ * @param array $data['ar_replace']          Rechnungen, deren Handzahlung ersetzt wird (auch teilweise bezahlte)
+ * @testdata {"bank_transaction_id": 1, "settlement_line_id": 1, "fee_chart_id": 100, "ar_ids": [1,2], "ar_diffs": {"2": 0.30}, "ar_amounts": {"1": 757.54}, "ar_replace": [2]}
  */
 function previewCardSettlementBooking($data) {
     $db = DbhCompany::begin();
@@ -999,7 +1050,8 @@ function previewCardSettlementBooking($data) {
         'transdate'   => $plan['transdate'],
         'legs'        => $legs,
         'balanced'    => abs(round($balance, 2)) < 0.005,
-        'invoices'    => array_map(fn($s) => ['ar_id' => $s['ar_id'], 'invnumber' => $s['invnumber'], 'pay' => $s['pay']], $plan['settleList']),
+        'invoices'    => array_map(fn($s) => ['ar_id' => $s['ar_id'], 'invnumber' => $s['invnumber'], 'pay' => $s['pay'],
+                                              'partial' => $s['partial'], 'remaining' => $s['remaining']], $plan['settleList']),
         // Manuelle Zahlungen (Bank ohne Bankumsatz), die diese Buchung ersetzt
         'replaced_payments' => $plan['replaced'],
     ]);
@@ -1018,7 +1070,9 @@ function previewCardSettlementBooking($data) {
  * @param int   $data['clearing_chart_id']   Verrechnungskonto (nur ohne Rechnungen)
  * @param array $data['ar_ids']              auszugleichende Ausgangsrechnungen
  * @param array $data['ar_diffs']            Abweichung je Rechnung {ar_id: Rechnung − Kartenzahlung}, wird aufs Gebuehrenkonto gebucht
- * @testdata {"bank_transaction_id": 1, "settlement_line_id": 1, "fee_chart_id": 100, "ar_ids": [1,2], "ar_diffs": {"2": 0.30}}
+ * @param array $data['ar_amounts']          Teilzahlung je Rechnung {ar_id: Betrag} (Anzahlung; Rest bleibt offen)
+ * @param array $data['ar_replace']          Rechnungen, deren Handzahlung ersetzt wird (auch teilweise bezahlte)
+ * @testdata {"bank_transaction_id": 1, "settlement_line_id": 1, "fee_chart_id": 100, "ar_ids": [1,2], "ar_diffs": {"2": 0.30}, "ar_amounts": {"1": 757.54}, "ar_replace": [2]}
  */
 function bookCardSettlementLine($data) {
     $db = DbhCompany::begin();
@@ -1046,10 +1100,20 @@ function bookCardSettlementLine($data) {
     foreach ($plan['settleList'] as $s) {
         if (empty($s['absorb'])) continue;
         foreach ($s['absorb']['acc_trans_ids'] as $accId) {
+            $db->execute("DELETE FROM bank_transaction_acc_trans WHERE acc_trans_id = :at", ['at' => intval($accId)]);
             $db->execute("DELETE FROM acc_trans WHERE acc_trans_id = :at AND trans_id = :ar", ['at' => intval($accId), 'ar' => $s['ar_id']]);
         }
         $db->execute("UPDATE ar SET paid = COALESCE(paid,0) - :dec WHERE id = :id", ['dec' => $s['absorb']['amount'], 'id' => $s['ar_id']]);
         writeLog("bookCardSettlementLine: Handzahlung Rg {$s['invnumber']} vom {$s['absorb']['date']} ueber {$s['absorb']['amount']} durch Kartenabrechnung ersetzt (acc_trans " . implode(',', $s['absorb']['acc_trans_ids']) . ")", true, DLOG_INF);
+        // Hing die Handzahlung an einer Kartenauszahlung (falsche Rechnung), ist
+        // dieser Umsatz jetzt wieder offen und kann richtig abgerechnet werden.
+        foreach ($s['absorb']['release_bank_transaction_ids'] ?? [] as $relBt) {
+            if ($relBt === $btId) continue;
+            $still = $db->getOne("SELECT 1 AS x FROM bank_transaction_acc_trans WHERE bank_transaction_id = :bt LIMIT 1", ['bt' => $relBt]);
+            if ($still) continue;
+            $db->execute("WITH u AS (UPDATE bank_transactions SET cleared = false WHERE id = :id) INSERT INTO bank_transactions_ext (bank_transaction_id, match_status) VALUES (:id2, 'unmatched') ON CONFLICT (bank_transaction_id) DO UPDATE SET match_status = EXCLUDED.match_status", ['id' => $relBt, 'id2' => $relBt]);
+            writeLog("bookCardSettlementLine: Bankumsatz #{$relBt} war als Handzahlung auf Rg {$s['invnumber']} gebucht — wieder offen", true, DLOG_INF);
+        }
     }
 
     $bankAccTransId = null;
@@ -1087,6 +1151,7 @@ function bookCardSettlementLine($data) {
          WHERE id = :id",
         ['gl' => $glId, 'bt' => $btId, 'id' => $lineId,
          'ar' => count($settleList) ? json_encode(array_map(fn($s) => ['ar_id' => $s['ar_id'], 'pay' => $s['pay'], 'diff' => $s['diff'],
+                                                                       'partial' => $s['partial'], 'remaining' => $s['remaining'],
                                                                        'replaced_manual' => $s['absorb']['amount'] ?? null], $settleList)) : null]
     );
     $db->execute(

@@ -701,7 +701,8 @@ export const fakturaStore = defineStore('fakturaStore', () => {
             return response.data.payload;
         }
         else {
-            throw new ApiError('ApiError', response.data.text, 'Error sending SumUp checkout: ' + response.data.text);
+            // Backend liefert den Fehlercode in text und die lesbare SumUp-Meldung in payload
+            throw new ApiError('ApiError', response.data.text, typeof response.data.payload === 'string' ? response.data.payload : response.data.text);
         }
     }
 
@@ -721,7 +722,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
             return response.data.payload;
         }
         else {
-            throw new ApiError('ApiError', response.data.text, 'Error polling SumUp checkout: ' + response.data.text);
+            throw new ApiError('ApiError', response.data.text, typeof response.data.payload === 'string' ? response.data.payload : response.data.text);
         }
     }
 
@@ -741,7 +742,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
             return response.data.payload;
         }
         else {
-            throw new ApiError('ApiError', response.data.text, 'Error terminating SumUp checkout: ' + response.data.text);
+            throw new ApiError('ApiError', response.data.text, typeof response.data.payload === 'string' ? response.data.payload : response.data.text);
         }
     }
 

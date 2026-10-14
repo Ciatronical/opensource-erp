@@ -485,7 +485,7 @@
                 "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
                 "addAttachment": "Başka ek dosya ekle",
                 "attachmentHint": "Ek dosyalar (toplam en fazla {max}), belge PDF'si her zaman gönderilir",
-                "attachmentTooLarge": "Ek dosyalar {max} sınırını aşıyor. Lütfen dosya kaldırın."
+                "attachmentTooLarge": "Ek dosyalar toplam {size} boyutunda ve e-posta başına {max} sınırını aşıyor. Dosya kaldırın veya sınırı şirket yapılandırmasında (e-posta istemcisi) değiştirin."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

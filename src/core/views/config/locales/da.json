@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "kun kunde",
         "easymodeCvOnlyVendor": "kun leverandør",
         "easymodeCvTabs": "Synlige faneblade",
-        "easymodeCvTabs_help": "Faneblade uden flueben vises først efter skift til „Alle felter“. Faktureringsadressen er altid synlig."
+        "easymodeCvTabs_help": "Faneblade uden flueben vises først efter skift til „Alle felter“. Faktureringsadressen er altid synlig.",
+        "emailMaxMessageSize": "Maksimal e-mailstørrelse (MB)",
+        "emailMaxMessageSize_help": "Øvre grænse for vedhæftninger pr. e-mail. Find den hos mailserveren med knappen nedenfor; e-maildialogen advarer, hvis vedhæftninger overstiger grænsen.",
+        "emailMaxSize": {
+            "button": "Find grænse hos mailserveren",
+            "hint": "Spørger SMTP-serveren om dens maksimale beskedstørrelse og tager højde for PHP-grænsen post_max_size. Husk at gemme bagefter.",
+            "result": "{mb} MB indtastet som grænse",
+            "smtpLimit": "SMTP-serveren tillader {size} pr. besked",
+            "noSmtpLimit": "SMTP-serveren oplyser ingen maksimal størrelse",
+            "phpLimit": "PHP accepterer {size} pr. forespørgsel (post_max_size)",
+            "phpIsBottleneck": "PHP er den snævrere grænse: forhøj post_max_size og upload_max_filesize i php.ini, og find igen",
+            "error": "Grænsen kunne ikke findes"
+        }
     },
     "add": "Tilfoej",
     "add_fields": {

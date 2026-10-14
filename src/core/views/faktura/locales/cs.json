@@ -485,7 +485,7 @@
                 "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
                 "addAttachment": "Přidat další přílohy",
                 "attachmentHint": "Další soubory (max. {max} celkem), PDF dokladu se přikládá vždy",
-                "attachmentTooLarge": "Další přílohy přesahují {max}. Odeberte soubory."
+                "attachmentTooLarge": "Další přílohy mají celkem {size} a překračují limit {max} na e-mail. Odeberte soubory nebo upravte limit v konfiguraci firmy (e-mailový klient)."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

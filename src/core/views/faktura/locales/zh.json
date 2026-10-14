@@ -485,7 +485,7 @@
                 "noEmail": "该客户未设置电子邮件地址。",
                 "addAttachment": "添加更多附件",
                 "attachmentHint": "附加文件（总计最多 {max}），单据 PDF 始终随附",
-                "attachmentTooLarge": "附加附件超过 {max}，请移除文件。"
+                "attachmentTooLarge": "附加附件共 {size}，超过每封邮件 {max} 的限制。请移除文件或在公司配置（邮件客户端）中调整限制。"
             },
             "sendWhatsApp": {
                 "title": "通过 WhatsApp 发送单据",

@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "solo cliente",
         "easymodeCvOnlyVendor": "solo fornitore",
         "easymodeCvTabs": "Schede visibili",
-        "easymodeCvTabs_help": "Le schede senza spunta compaiono solo dopo il passaggio a «Tutti i campi». L'indirizzo di fatturazione resta sempre visibile."
+        "easymodeCvTabs_help": "Le schede senza spunta compaiono solo dopo il passaggio a «Tutti i campi». L'indirizzo di fatturazione resta sempre visibile.",
+        "emailMaxMessageSize": "Dimensione massima e-mail (MB)",
+        "emailMaxMessageSize_help": "Limite per gli allegati per e-mail. Rilevalo dal server di posta con il pulsante sotto; la finestra e-mail avvisa se gli allegati superano questo limite.",
+        "emailMaxSize": {
+            "button": "Rileva limite dal server di posta",
+            "hint": "Chiede al server SMTP la dimensione massima per messaggio e considera il limite PHP post_max_size. Ricordarsi di salvare dopo.",
+            "result": "{mb} MB impostati come limite",
+            "smtpLimit": "Il server SMTP consente {size} per messaggio",
+            "noSmtpLimit": "Il server SMTP non annuncia una dimensione massima",
+            "phpLimit": "PHP accetta {size} per richiesta (post_max_size)",
+            "phpIsBottleneck": "PHP è il limite più stretto: aumentare post_max_size e upload_max_filesize in php.ini, poi rilevare di nuovo",
+            "error": "Impossibile rilevare il limite"
+        }
     },
     "add": "Aggiungi",
     "add_fields": {

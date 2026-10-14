@@ -485,7 +485,7 @@
                 "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
                 "addAttachment": "Pievienot vēl pielikumus",
                 "attachmentHint": "Papildu faili (maks. {max} kopā), dokumenta PDF vienmēr tiek pievienots",
-                "attachmentTooLarge": "Papildu pielikumi pārsniedz {max}. Lūdzu, noņemiet failus."
+                "attachmentTooLarge": "Papildu pielikumu kopējais izmērs ir {size} un pārsniedz ierobežojumu {max} vienai e-pasta vēstulei. Noņemiet failus vai mainiet ierobežojumu uzņēmuma konfigurācijā (e-pasta klients)."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

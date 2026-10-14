@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "client uniquement",
         "easymodeCvOnlyVendor": "fournisseur uniquement",
         "easymodeCvTabs": "Onglets visibles",
-        "easymodeCvTabs_help": "Les onglets non cochés n'apparaissent qu'après le passage à « Tous les champs ». L'adresse de facturation reste toujours visible."
+        "easymodeCvTabs_help": "Les onglets non cochés n'apparaissent qu'après le passage à « Tous les champs ». L'adresse de facturation reste toujours visible.",
+        "emailMaxMessageSize": "Taille maximale d'un e-mail (Mo)",
+        "emailMaxMessageSize_help": "Limite des pièces jointes par e-mail. Détectez-la depuis le serveur de messagerie avec le bouton ci-dessous ; le dialogue d'e-mail avertit si les pièces jointes dépassent cette limite.",
+        "emailMaxSize": {
+            "button": "Détecter la limite depuis le serveur",
+            "hint": "Demande au serveur SMTP sa taille maximale par message et tient compte de la limite PHP post_max_size. Pensez à enregistrer ensuite.",
+            "result": "{mb} Mo saisis comme limite",
+            "smtpLimit": "Le serveur SMTP autorise {size} par message",
+            "noSmtpLimit": "Le serveur SMTP n'annonce pas de taille maximale",
+            "phpLimit": "PHP accepte {size} par requête (post_max_size)",
+            "phpIsBottleneck": "PHP est la limite la plus stricte : augmentez post_max_size et upload_max_filesize dans php.ini, puis détectez à nouveau",
+            "error": "La limite n'a pas pu être détectée"
+        }
     },
     "add": "Ajouter",
     "add_fields": {

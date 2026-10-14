@@ -1336,7 +1336,19 @@
         "easymodeCvOnlyCustomer": "customer only",
         "easymodeCvOnlyVendor": "vendor only",
         "easymodeCvTabs": "Visible tabs",
-        "easymodeCvTabs_help": "Tabs without a tick appear only after switching to “All fields”. The billing address is always visible."
+        "easymodeCvTabs_help": "Tabs without a tick appear only after switching to “All fields”. The billing address is always visible.",
+        "emailMaxMessageSize": "Maximum e-mail size (MB)",
+        "emailMaxMessageSize_help": "Upper limit for attachments per e-mail. Detect it from the mail server with the button below; the e-mail dialog warns when attachments exceed this limit.",
+        "emailMaxSize": {
+            "button": "Detect limit from mail server",
+            "hint": "Asks the SMTP server for its maximum message size and takes the PHP limit post_max_size into account. Remember to save afterwards.",
+            "result": "{mb} MB entered as limit",
+            "smtpLimit": "SMTP server allows {size} per message",
+            "noSmtpLimit": "SMTP server does not announce a maximum size",
+            "phpLimit": "PHP accepts {size} per request (post_max_size)",
+            "phpIsBottleneck": "PHP is the tighter limit: raise post_max_size and upload_max_filesize in php.ini, then detect again",
+            "error": "The limit could not be detected"
+        }
     },
     "add": "Add",
     "add_fields": {

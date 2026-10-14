@@ -330,6 +330,16 @@ export function useSettlements() {
         return res.data.payload.match
     }
 
+    // Offene Ausgangsrechnungen suchen (Nummer oder Kunde) — fürs Zuordnen einer
+    // Anzahlung/Teilzahlung zu einer beliebigen Rechnung
+    async function searchOpenInvoices(query) {
+        const res = await axios.post(API_URL, { action: 'getOpenInvoicesForMatching', type: 'ar', search: query })
+        if (!res.data.success) return []
+        return (res.data.payload.invoices || [])
+            .filter(r => Number(r.open_amount) > 0)
+            .map(r => ({ ar_id: r.id, invnumber: r.invnumber, transdate: r.transdate, customer_name: r.customer_name, open_amount: Number(r.open_amount), diff: 0 }))
+    }
+
     async function findInvoices(settlementLineId) {
         const res = await axios.post(API_URL, {
             action: 'findInvoicesForSettlementLine',
@@ -348,7 +358,7 @@ export function useSettlements() {
     }
 
     // Buchungsvorschau: dieselben Parameter wie bookLine, veraendert nichts
-    async function previewBooking({ bankTransactionId, settlementLineId, feeChartId, clearingChartId, arIds, arDiffs }) {
+    async function previewBooking({ bankTransactionId, settlementLineId, feeChartId, clearingChartId, arIds, arDiffs, arAmounts, arReplace }) {
         const res = await axios.post(API_URL, {
             action: 'previewCardSettlementBooking',
             bank_transaction_id: bankTransactionId,
@@ -357,12 +367,14 @@ export function useSettlements() {
             clearing_chart_id: clearingChartId,
             ar_ids: arIds || [],
             ar_diffs: arDiffs || {},
+            ar_amounts: arAmounts || {},
+            ar_replace: arReplace || [],
         })
         if (!res.data.success) throw new Error(res.data.payload || res.data.text)
         return res.data.payload
     }
 
-    async function bookLine({ bankTransactionId, settlementLineId, feeChartId, clearingChartId, arIds, arDiffs }) {
+    async function bookLine({ bankTransactionId, settlementLineId, feeChartId, clearingChartId, arIds, arDiffs, arAmounts, arReplace }) {
         loading.value = true
         try {
             const res = await axios.post(API_URL, {
@@ -372,7 +384,9 @@ export function useSettlements() {
                 fee_chart_id: feeChartId,
                 clearing_chart_id: clearingChartId,
                 ar_ids: arIds || [],
-            ar_diffs: arDiffs || {},
+                ar_diffs: arDiffs || {},
+                ar_amounts: arAmounts || {},
+                ar_replace: arReplace || [],
             })
             if (!res.data.success) throw new Error(res.data.payload || res.data.text)
             return res.data.payload
@@ -392,6 +406,7 @@ export function useSettlements() {
         suggestMatch,
         syncSumupPayouts,
         findInvoices,
+        searchOpenInvoices,
         previewBooking,
         bookLine,
     }

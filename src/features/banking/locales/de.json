@@ -246,7 +246,13 @@
       "previewReplacedLine": "Rg {invnumber} · {date} · {amount}",
       "paymentsUnmatched": "{count} Kartenzahlung(en) ohne passende Rechnung – bitte unten auswählen.",
       "otherInvoices": "Weitere offene Rechnungen",
-      "showOtherInvoices": "{count} weitere offene Rechnungen anzeigen"
+      "showOtherInvoices": "{count} weitere offene Rechnungen anzeigen",
+      "assignInvoice": "Rechnung zuordnen",
+      "assignSearch": "Rechnungsnummer oder Kunde eingeben",
+      "openShort": "offen",
+      "partialPayment": "Teilzahlung {amount} von {open} – Rest {rest} bleibt offen",
+      "fullPayment": "Zahlung {amount} gleicht die Rechnung aus",
+      "previewReleased": "der dort verknüpfte Bankumsatz wird wieder offen"
     },
     "transfers": {
       "title": "Überweisungen",

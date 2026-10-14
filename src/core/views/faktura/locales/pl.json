@@ -503,7 +503,7 @@
                 "noEmail": "Dla tego klienta nie podano adresu e-mail.",
                 "addAttachment": "Dodaj kolejne załączniki",
                 "attachmentHint": "Dodatkowe pliki (maks. {max} łącznie), PDF dokumentu jest zawsze dołączany",
-                "attachmentTooLarge": "Dodatkowe załączniki przekraczają {max}. Usuń pliki."
+                "attachmentTooLarge": "Dodatkowe załączniki mają łącznie {size} i przekraczają limit {max} na e-mail. Usuń pliki lub zmień limit w konfiguracji firmy (klient e-mail)."
             },
             "sendWhatsApp": {
                 "title": "Wyślij dokument przez WhatsApp",

@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "tik klientas",
         "easymodeCvOnlyVendor": "tik tiekėjas",
         "easymodeCvTabs": "Matomos kortelės",
-        "easymodeCvTabs_help": "Nepažymėtos kortelės rodomos tik persijungus į „Visi laukai“. Sąskaitos adresas visada matomas."
+        "easymodeCvTabs_help": "Nepažymėtos kortelės rodomos tik persijungus į „Visi laukai“. Sąskaitos adresas visada matomas.",
+        "emailMaxMessageSize": "Didžiausias el. laiško dydis (MB)",
+        "emailMaxMessageSize_help": "Priedų viršutinė riba vienam el. laiškui. Nustatykite ją iš pašto serverio žemiau esančiu mygtuku; el. laiško dialogas įspėja, jei priedai viršija ribą.",
+        "emailMaxSize": {
+            "button": "Nustatyti ribą iš pašto serverio",
+            "hint": "Klausia SMTP serverio didžiausio laiško dydžio ir atsižvelgia į PHP ribą post_max_size. Po to nepamirškite išsaugoti.",
+            "result": "Riba nustatyta: {mb} MB",
+            "smtpLimit": "SMTP serveris leidžia {size} vienam laiškui",
+            "noSmtpLimit": "SMTP serveris nenurodo didžiausio dydžio",
+            "phpLimit": "PHP priima {size} vienai užklausai (post_max_size)",
+            "phpIsBottleneck": "PHP riba griežtesnė: padidinkite post_max_size ir upload_max_filesize faile php.ini ir nustatykite iš naujo",
+            "error": "Ribos nustatyti nepavyko"
+        }
     },
     "add": "Pridėti",
     "add_fields": {

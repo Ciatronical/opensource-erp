@@ -485,7 +485,7 @@
                 "noEmail": "Aucune adresse e-mail enregistree pour ce client.",
                 "addAttachment": "Ajouter d'autres pièces jointes",
                 "attachmentHint": "Fichiers supplémentaires (max. {max} au total), le PDF du document est toujours joint",
-                "attachmentTooLarge": "Les pièces jointes supplémentaires dépassent {max}. Veuillez retirer des fichiers."
+                "attachmentTooLarge": "Les pièces jointes supplémentaires totalisent {size} et dépassent la limite de {max} par e-mail. Retirez des fichiers ou ajustez la limite dans la configuration de l'entreprise (client e-mail)."
             },
             "sendWhatsApp": {
                 "title": "Envoyer le document par WhatsApp",

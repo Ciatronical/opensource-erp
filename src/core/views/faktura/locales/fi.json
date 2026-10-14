@@ -485,7 +485,7 @@
                 "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
                 "addAttachment": "Lisää liitteitä",
                 "attachmentHint": "Lisätiedostot (enint. {max} yhteensä), asiakirjan PDF lähetetään aina",
-                "attachmentTooLarge": "Lisäliitteet ylittävät {max}. Poista tiedostoja."
+                "attachmentTooLarge": "Lisäliitteiden koko on yhteensä {size} ja ylittää rajan {max} sähköpostia kohden. Poista tiedostoja tai muuta rajaa yrityksen asetuksissa (sähköpostiohjelma)."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

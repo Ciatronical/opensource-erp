@@ -323,6 +323,22 @@ class OserpConfig {
     }
 }
 
+/**
+ * php.ini-Größenangabe ("8M", "64M", "1G", "524288") in Bytes umrechnen
+ */
+function iniBytes(string $value): int {
+    $value = trim($value);
+    if ($value === '' || $value === '-1') return 0;
+    $unit = strtolower(substr($value, -1));
+    $num = (float)$value;
+    switch ($unit) {
+        case 'g': return (int)($num * 1024 * 1024 * 1024);
+        case 'm': return (int)($num * 1024 * 1024);
+        case 'k': return (int)($num * 1024);
+        default: return (int)$num;
+    }
+}
+
 // Konfiguration initialisieren und Konstanten setzen
 try {
     OserpConfig::init();

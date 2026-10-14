@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "alleen klant",
         "easymodeCvOnlyVendor": "alleen leverancier",
         "easymodeCvTabs": "Zichtbare tabbladen",
-        "easymodeCvTabs_help": "Tabbladen zonder vinkje verschijnen pas na het omschakelen naar „Alle velden“. Het factuuradres blijft altijd zichtbaar."
+        "easymodeCvTabs_help": "Tabbladen zonder vinkje verschijnen pas na het omschakelen naar „Alle velden“. Het factuuradres blijft altijd zichtbaar.",
+        "emailMaxMessageSize": "Maximale e-mailgrootte (MB)",
+        "emailMaxMessageSize_help": "Bovengrens voor bijlagen per e-mail. Bepaal deze via de knop hieronder bij de mailserver; het e-maildialoog waarschuwt als bijlagen deze grens overschrijden.",
+        "emailMaxSize": {
+            "button": "Grens bij mailserver bepalen",
+            "hint": "Vraagt de SMTP-server naar zijn maximale berichtgrootte en houdt rekening met de PHP-grens post_max_size. Daarna niet vergeten op te slaan.",
+            "result": "{mb} MB als grens ingevuld",
+            "smtpLimit": "SMTP-server staat {size} per bericht toe",
+            "noSmtpLimit": "SMTP-server meldt geen maximale grootte",
+            "phpLimit": "PHP accepteert {size} per aanvraag (post_max_size)",
+            "phpIsBottleneck": "PHP is de krappere grens: verhoog post_max_size en upload_max_filesize in php.ini en bepaal opnieuw",
+            "error": "De grens kon niet worden bepaald"
+        }
     },
     "add": "Toevoegen",
     "add_fields": {

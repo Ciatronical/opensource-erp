@@ -640,7 +640,7 @@
                 "noEmail": "No email address is stored for this customer.",
                 "addAttachment": "Add further attachments",
                 "attachmentHint": "Additional files (max. {max} in total), the document PDF is always included",
-                "attachmentTooLarge": "The additional attachments exceed {max}. Please remove files."
+                "attachmentTooLarge": "The additional attachments total {size} and exceed the limit of {max} per e-mail. Please remove files or adjust the limit in the company configuration (e-mail client)."
             },
             "dhl": {
                 "title": "Create DHL Shipping Label",

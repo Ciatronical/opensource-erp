@@ -100,7 +100,7 @@ ALL_STEPS=(packages php_fpm node_build database config permissions apache \
 
 declare -A STEP_DESC=(
   [packages]="Systempakete via apt (Apache, PostgreSQL, PHP, Node, LaTeX, ffmpeg, borg, asterisk ...)"
-  [php_fpm]="PHP-FPM-Socket erkennen, FPM aktivieren, Apache-Defines schreiben"
+  [php_fpm]="PHP-FPM-Socket erkennen, FPM aktivieren, PHP-Grenzen (64M) setzen, Apache-Defines schreiben"
   [node_build]="npm install + Vue-Build + SSE-Deps + Composer"
   [database]="PostgreSQL-Rolle mit Passwort vorbereiten (Setup-Assistent bzw. unbeaufsichtigtes Setup)"
   [config]="settings.ini: vorhandene respektieren, sonst per Setup-Assistent/CLI anlegen"
@@ -280,9 +280,25 @@ setup_php_fpm() {
     svc="php${ver}-fpm"
     sock="$(detect_php_fpm_socket)"
     info "PHP $ver — FPM-Dienst $svc — Socket $sock"
+    write_php_limits "$ver"
     sudo systemctl enable --now "$svc"
+    sudo systemctl restart "$svc"
 
     write_apache_defines "$sock"
+}
+
+# PHP-Grenzen für Datei-Anhänge: E-Mail-Anhänge, Belegfotos und Importe kommen
+# als Base64 im JSON-Request an. Die Debian-Vorgabe post_max_size = 8M würde
+# größere Anfragen kommentarlos verwerfen. Eigene Datei in conf.d, damit
+# Paket-Updates der php.ini sie nicht überschreiben.
+write_php_limits() {
+    local ver="$1" ini="/etc/php/$ver/fpm/conf.d/90-oserp.ini"
+    sudo tee "$ini" >/dev/null <<EOF
+; OSERP: Obergrenze für Anfragen mit Datei-Anhängen (install.sh, Schritt php_fpm)
+post_max_size = 64M
+upload_max_filesize = 64M
+EOF
+    info "PHP-Grenzen geschrieben: $ini (post_max_size/upload_max_filesize 64M)"
 }
 
 # Apache-Defines (versions-/pfadunabhängig) — einzige Quelle von Socket, Pfad
@@ -992,24 +1008,29 @@ EOF
         return
     fi
 
-    local acct host pub
+    # Die Storage Box hat eine eingeschränkte Shell: "true" ist dort NICHT erlaubt,
+    # "ls" schon — darum ls als Verbindungstest (sonst scheitert er trotz gültigem Key).
+    local acct host pubfile
     acct="$(borg_env_get BACKUP_USER)"; host="$acct.your-storagebox.de"
-    pub="$(sudo bash -c 'cat /root/.ssh/id_ed25519.pub 2>/dev/null || cat /root/.ssh/id_rsa.pub')"
+    pubfile="$(sudo bash -c 'ls /root/.ssh/id_ed25519.pub /root/.ssh/id_rsa.pub /root/.ssh/id_ecdsa.pub 2>/dev/null | head -1')"
     sudo bash -c "touch /root/.ssh/known_hosts; ssh-keyscan -p23 '$host' 2>/dev/null >> /root/.ssh/known_hosts; sort -u /root/.ssh/known_hosts -o /root/.ssh/known_hosts"
-    if sudo ssh -p23 -o BatchMode=yes -o ConnectTimeout=20 "$acct@$host" true 2>/dev/null; then
+    box_ok() { sudo ssh -p23 -o BatchMode=yes -o ConnectTimeout=20 "$acct@$host" ls >/dev/null 2>&1; }
+    if box_ok; then
         ok "SSH-Zugang zur Storage Box ($acct) funktioniert"
     elif [[ -t 0 ]]; then
-        info "root-Key wird auf der Storage Box eingetragen — es folgt die Passwortabfrage für $acct"
-        if printf '%s\n' "$pub" | sudo ssh -p23 -o ConnectTimeout=20 "$acct@$host" install-ssh-key \
-           && sudo ssh -p23 -o BatchMode=yes -o ConnectTimeout=20 "$acct@$host" true 2>/dev/null; then
+        info "root-Key ($pubfile) wird auf der Storage Box eingetragen — es folgt die Passwortabfrage für $acct"
+        # install-ssh-key hängt additiv an; ist der Key schon drin, meldet es "already configured -> skip it"
+        sudo ssh -p23 -o ConnectTimeout=20 "$acct@$host" install-ssh-key < "$pubfile" || true
+        if box_ok; then
             ok "Key eingetragen, Zugang funktioniert"
         else
-            warn "Key konnte nicht eingetragen werden. Manuell:"
-            todo "  sudo sh -c 'ssh -p23 $acct@$host install-ssh-key < /root/.ssh/id_ed25519.pub'"
+            warn "Zugang zur Storage Box klappt weiterhin nicht (Key: $pubfile). Prüfen:"
+            todo "  sudo ssh -v -p23 $acct@$host ls      # Fehlermeldung ansehen"
+            todo "  sudo sh -c 'ssh -p23 $acct@$host install-ssh-key < $pubfile'"
             return
         fi
     else
-        todo "Borg: root-Key auf der Storage Box eintragen: sudo sh -c 'ssh -p23 $acct@$host install-ssh-key < /root/.ssh/id_ed25519.pub'"
+        todo "Borg: root-Key auf der Storage Box eintragen: sudo sh -c 'ssh -p23 $acct@$host install-ssh-key < $pubfile'"
         return
     fi
 

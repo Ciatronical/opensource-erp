@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "doar client",
         "easymodeCvOnlyVendor": "doar furnizor",
         "easymodeCvTabs": "File vizibile",
-        "easymodeCvTabs_help": "Filele nebifate apar doar după comutarea pe „Toate câmpurile”. Adresa de facturare rămâne întotdeauna vizibilă."
+        "easymodeCvTabs_help": "Filele nebifate apar doar după comutarea pe „Toate câmpurile”. Adresa de facturare rămâne întotdeauna vizibilă.",
+        "emailMaxMessageSize": "Dimensiune maximă e-mail (MB)",
+        "emailMaxMessageSize_help": "Limita atașamentelor per e-mail. Detectați-o de la serverul de e-mail cu butonul de mai jos; dialogul de e-mail avertizează dacă atașamentele depășesc această limită.",
+        "emailMaxSize": {
+            "button": "Detectează limita de la server",
+            "hint": "Întreabă serverul SMTP de dimensiunea maximă per mesaj și ține cont de limita PHP post_max_size. Nu uitați să salvați apoi.",
+            "result": "{mb} MB setați ca limită",
+            "smtpLimit": "Serverul SMTP permite {size} per mesaj",
+            "noSmtpLimit": "Serverul SMTP nu anunță o dimensiune maximă",
+            "phpLimit": "PHP acceptă {size} per cerere (post_max_size)",
+            "phpIsBottleneck": "PHP este limita mai strictă: măriți post_max_size și upload_max_filesize în php.ini, apoi detectați din nou",
+            "error": "Limita nu a putut fi detectată"
+        }
     },
     "add": "Adăugare",
     "add_fields": {

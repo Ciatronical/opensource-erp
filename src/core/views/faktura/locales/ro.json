@@ -485,7 +485,7 @@
                 "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
                 "addAttachment": "Adaugă alte atașamente",
                 "attachmentHint": "Fișiere suplimentare (max. {max} în total), PDF-ul documentului este trimis întotdeauna",
-                "attachmentTooLarge": "Atașamentele suplimentare depășesc {max}. Eliminați fișiere."
+                "attachmentTooLarge": "Atașamentele suplimentare totalizează {size} și depășesc limita de {max} per e-mail. Eliminați fișiere sau ajustați limita în configurația firmei (client e-mail)."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

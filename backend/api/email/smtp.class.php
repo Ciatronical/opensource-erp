@@ -12,6 +12,8 @@ class SmtpClient {
     private string $encryption;
     private string $username;
     private string $password;
+    /** Vom Server per EHLO gemeldete Höchstgröße einer Nachricht in Bytes (RFC 1870), null = nicht gemeldet */
+    private ?int $maxMessageSize = null;
 
     public function __construct(string $host, int $port, string $encryption, string $username, string $password) {
         $this->host = $host;
@@ -78,6 +80,14 @@ class SmtpClient {
         return true;
     }
 
+    /**
+     * Höchstgröße einer Nachricht laut Server (SIZE-Erweiterung im EHLO), Bytes
+     * oder null, wenn der Server nichts meldet. Gültig nach connect()/testConnection().
+     */
+    public function getMaxMessageSize(): ?int {
+        return $this->maxMessageSize;
+    }
+
     // ==================== Interne Methoden ====================
 
     private function connect(): void {
@@ -98,8 +108,8 @@ class SmtpClient {
         stream_set_timeout($this->socket, 15);
         $this->readResponse(220);
 
-        // EHLO
-        $this->sendCommand('EHLO ' . gethostname());
+        // EHLO — die Antwort nennt die Erweiterungen, darunter "SIZE <Bytes>"
+        $this->rememberMaxMessageSize($this->sendCommand('EHLO ' . gethostname()));
 
         // STARTTLS
         if ($this->encryption === 'tls' || $this->encryption === 'starttls') {
@@ -107,7 +117,8 @@ class SmtpClient {
             if (!stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT | STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT)) {
                 throw new \RuntimeException('STARTTLS fehlgeschlagen');
             }
-            $this->sendCommand('EHLO ' . gethostname());
+            // Nach STARTTLS gilt die zweite EHLO-Antwort
+            $this->rememberMaxMessageSize($this->sendCommand('EHLO ' . gethostname()));
         }
 
         // AUTH LOGIN
@@ -115,6 +126,13 @@ class SmtpClient {
             $this->sendCommand('AUTH LOGIN', 334);
             $this->sendCommand(base64_encode($this->username), 334);
             $this->sendCommand(base64_encode($this->password), 235);
+        }
+    }
+
+    /** "250-SIZE 52428800" aus der EHLO-Antwort auswerten */
+    private function rememberMaxMessageSize(string $ehloResponse): void {
+        if (preg_match('/^250[- ]SIZE\s+(\d+)\s*$/mi', $ehloResponse, $m) && (int)$m[1] > 0) {
+            $this->maxMessageSize = (int)$m[1];
         }
     }
 

@@ -203,7 +203,15 @@ function getCompanyConfig($data) {
     $decoded = json_decode($row, true);
     // get() liefert {"success": true, "payload": {"result": {...}}}
     // payload.result enthält unser json_build_object mit 'company_config'
-    resultInfo(true, '', $decoded['payload']['result'] ?? []);
+    $result = $decoded['payload']['result'] ?? [];
+    // Grenzen des PHP-Servers (kein DB-Wissen): der E-Mail-Dialog kappt damit
+    // die Anhanggröße, weil ein größerer JSON-Request von PHP verworfen würde.
+    if (isset($result['company_config'])) {
+        $result['company_config']['php_limits'] = [
+            'post_max_size' => iniBytes((string)ini_get('post_max_size'))
+        ];
+    }
+    resultInfo(true, '', $result);
 }
 
 /**

@@ -1338,7 +1338,19 @@
         "easymodeCvOnlyCustomer": "nur Kunde",
         "easymodeCvOnlyVendor": "nur Lieferant",
         "easymodeCvTabs": "Sichtbare Reiter",
-        "easymodeCvTabs_help": "Reiter ohne Haken erscheinen erst nach dem Umschalten auf „Alle Felder“. Die Rechnungsadresse bleibt immer sichtbar."
+        "easymodeCvTabs_help": "Reiter ohne Haken erscheinen erst nach dem Umschalten auf „Alle Felder“. Die Rechnungsadresse bleibt immer sichtbar.",
+        "emailMaxMessageSize": "Maximale E-Mail-Größe (MB)",
+        "emailMaxMessageSize_help": "Obergrenze für Anhänge je E-Mail. Mit dem Knopf darunter vom Mailserver ermitteln; der E-Mail-Dialog warnt, wenn Anhänge diese Grenze überschreiten.",
+        "emailMaxSize": {
+            "button": "Grenze vom Mailserver ermitteln",
+            "hint": "Fragt den SMTP-Server nach seiner Höchstgröße je Nachricht und berücksichtigt die PHP-Grenze post_max_size. Danach speichern nicht vergessen.",
+            "result": "{mb} MB als Grenze eingetragen",
+            "smtpLimit": "SMTP-Server erlaubt {size} je Nachricht",
+            "noSmtpLimit": "SMTP-Server meldet keine Höchstgröße",
+            "phpLimit": "PHP nimmt {size} je Anfrage an (post_max_size)",
+            "phpIsBottleneck": "PHP ist die engere Grenze: post_max_size und upload_max_filesize in der php.ini erhöhen, dann erneut ermitteln",
+            "error": "Die Grenze konnte nicht ermittelt werden"
+        }
     },
     "add": "Hinzufügen",
     "add_fields": {

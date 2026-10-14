@@ -88,6 +88,13 @@ function _sumupRequest($method, $path, $apiKey, $body = null) {
  */
 function _sumupErrorMessage($res, $fallback) {
     $body = $res['body'] ?? [];
+    if (!is_array($body)) return $fallback;
+    // Cloud API (Reader-Checkout): {"errors":{"detail":"The device is offline.","type":"READER_OFFLINE"}}
+    if (!empty($body['errors']['detail'])) {
+        $type = $body['errors']['type'] ?? '';
+        return $body['errors']['detail'] . ($type ? ' [' . $type . ']' : '');
+    }
+    // Uebrige Endpunkte: {"message": "...", "error_code": "..."}
     return $body['message'] ?? ($body['error_message'] ?? $fallback);
 }
 
@@ -295,7 +302,20 @@ function sumupCheckout($data) {
         return;
     }
 
-    resultInfo(false, 'SUMUP_CHECKOUT_FAILED', 'SumUp (HTTP ' . $res['status'] . '): ' . _sumupErrorMessage($res, 'Checkout fehlgeschlagen'));
+    // Haeufigste Ursache: Terminal offline (WLAN weg, Akku leer). Den Reader-
+    // Status an die Meldung haengen, damit der Benutzer am Geraet nachsehen kann.
+    $hint = '';
+    try {
+        $st = _sumupRequest('GET', "/merchants/{$merchant}/readers/{$readerId}/status", $apiKey);
+        $d = $st['body']['data'] ?? null;
+        if ($st['status'] === 200 && is_array($d)) {
+            $hint = ' – Terminal ' . (($d['status'] ?? '') === 'ONLINE' ? 'online' : 'OFFLINE')
+                  . (isset($d['battery_level']) ? ', Akku ' . round((float)$d['battery_level']) . ' %' : '')
+                  . (!empty($d['connection_type']) ? ', ' . $d['connection_type'] : '');
+        }
+    } catch (\Throwable $e) { /* Hinweis ist optional */ }
+
+    resultInfo(false, 'SUMUP_CHECKOUT_FAILED', 'SumUp (HTTP ' . $res['status'] . '): ' . _sumupErrorMessage($res, 'Checkout fehlgeschlagen') . $hint);
 }
 
 /**

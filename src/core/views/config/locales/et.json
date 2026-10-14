@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "ainult klient",
         "easymodeCvOnlyVendor": "ainult tarnija",
         "easymodeCvTabs": "Nähtavad vahekaardid",
-        "easymodeCvTabs_help": "Märgistamata vahekaardid ilmuvad alles pärast lülitumist valikule „Kõik väljad“. Arveldusaadress jääb alati nähtavaks."
+        "easymodeCvTabs_help": "Märgistamata vahekaardid ilmuvad alles pärast lülitumist valikule „Kõik väljad“. Arveldusaadress jääb alati nähtavaks.",
+        "emailMaxMessageSize": "E-kirja suurim lubatud maht (MB)",
+        "emailMaxMessageSize_help": "Manuste ülempiir e-kirja kohta. Tuvasta see meiliserverist alloleva nupuga; e-kirja dialoog hoiatab, kui manused ületavad piiri.",
+        "emailMaxSize": {
+            "button": "Tuvasta piir meiliserverist",
+            "hint": "Küsib SMTP-serverilt sõnumi suurimat lubatud mahtu ja arvestab PHP piiri post_max_size. Ära unusta pärast salvestada.",
+            "result": "Piiriks määratud {mb} MB",
+            "smtpLimit": "SMTP-server lubab {size} sõnumi kohta",
+            "noSmtpLimit": "SMTP-server ei teata suurimat mahtu",
+            "phpLimit": "PHP võtab vastu {size} päringu kohta (post_max_size)",
+            "phpIsBottleneck": "PHP on kitsam piir: suurenda php.ini failis post_max_size ja upload_max_filesize ning tuvasta uuesti",
+            "error": "Piiri ei õnnestunud tuvastada"
+        }
     },
     "add": "Lisa",
     "add_fields": {

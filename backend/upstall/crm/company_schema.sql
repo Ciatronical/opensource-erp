@@ -3824,3 +3824,20 @@ INSERT INTO bank_booking_templates (key, label, icon, direction, accno_skr03, ac
     ('vehicle_tax',        'Kfz-Steuer',                               'mdi-car',                    'out', '4510', '7685', 'kfz-?steuer|kraftfahrzeugsteuer', 91),
     ('other',              'Anderes Konto',                            'mdi-dots-horizontal',        'any', NULL,   NULL,   NULL, 999)
 ON CONFLICT (key) DO NOTHING;
+
+-- ============================================================================
+-- KARTENABRECHNUNG: doppelte Auszahlungszeilen bereinigen
+-- ============================================================================
+-- Derselbe SumUp-Bericht wurde mehrfach hochgeladen (einmal ohne, einmal mit
+-- Kreditor) — die Dublettenprüfung verglich den Kreditor mit. Je Kennung bleibt
+-- die gebuchte Zeile, sonst die älteste offene; leere Köpfe verschwinden.
+DELETE FROM payment_settlement_lines l
+USING payment_settlement_lines k
+WHERE l.reference IS NOT NULL
+  AND upper(k.reference) = upper(l.reference)
+  AND k.id <> l.id
+  AND l.status = 'open'
+  AND (k.status = 'booked' OR (k.status = 'open' AND k.id < l.id));
+
+DELETE FROM payment_settlements s
+WHERE NOT EXISTS (SELECT 1 FROM payment_settlement_lines l WHERE l.settlement_id = s.id);

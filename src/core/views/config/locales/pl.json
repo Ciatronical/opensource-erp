@@ -1100,7 +1100,19 @@
         "easymodeCvOnlyCustomer": "tylko klient",
         "easymodeCvOnlyVendor": "tylko dostawca",
         "easymodeCvTabs": "Widoczne karty",
-        "easymodeCvTabs_help": "Karty bez zaznaczenia pojawiają się dopiero po przełączeniu na „Wszystkie pola”. Adres do faktury jest zawsze widoczny."
+        "easymodeCvTabs_help": "Karty bez zaznaczenia pojawiają się dopiero po przełączeniu na „Wszystkie pola”. Adres do faktury jest zawsze widoczny.",
+        "emailMaxMessageSize": "Maksymalny rozmiar e-maila (MB)",
+        "emailMaxMessageSize_help": "Górny limit załączników na e-mail. Wykryj go z serwera pocztowego przyciskiem poniżej; okno e-mail ostrzega, gdy załączniki przekraczają ten limit.",
+        "emailMaxSize": {
+            "button": "Wykryj limit z serwera pocztowego",
+            "hint": "Pyta serwer SMTP o maksymalny rozmiar wiadomości i uwzględnia limit PHP post_max_size. Pamiętaj, aby potem zapisać.",
+            "result": "Wpisano limit {mb} MB",
+            "smtpLimit": "Serwer SMTP dopuszcza {size} na wiadomość",
+            "noSmtpLimit": "Serwer SMTP nie podaje maksymalnego rozmiaru",
+            "phpLimit": "PHP przyjmuje {size} na żądanie (post_max_size)",
+            "phpIsBottleneck": "PHP jest ciaśniejszym limitem: zwiększ post_max_size i upload_max_filesize w php.ini i wykryj ponownie",
+            "error": "Nie udało się wykryć limitu"
+        }
     },
     "add": "Dodaj",
     "add_fields": {

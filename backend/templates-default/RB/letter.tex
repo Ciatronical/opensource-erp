@@ -27,6 +27,14 @@
 % settings: Einstellungen, Logo, Briefpapier, Kopfzeile, Fusszeile
 \input{insettings.tex}
 
+% Fett und kursiv zugleich: Computer Modern Sans (cmss) hat keinen
+% fett-kursiven Schnitt, LaTeX fällt dann still auf fett zurück. Latin Modern
+% Sans sieht gleich aus und bringt den Schnitt mit — nur für den Brieftext,
+% Kopf und Fuß aus insettings.tex bleiben unverändert. Bewusst ohne T1-Kodierung:
+% damit würde die Fußzeile (cmss) auf Bitmap-Schriften ausweichen.
+\usepackage{lmodern}
+\renewcommand{\ourfont}{\fontfamily{lmss}\fontsize{10pt}{12pt}\selectfont}
+
 % Begriffe, die ältere Sprachdateien noch nicht kennen
 \providecommand{\ihrzeichen}{Ihr Zeichen}
 \newcommand{\unserzeichen}{\ifthenelse{\equal{\lxlangcode}{EN}}{Our reference}{Unser Zeichen}}

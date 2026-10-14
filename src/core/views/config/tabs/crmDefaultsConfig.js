@@ -234,6 +234,8 @@ const crmDefaultsConfig = [
         tooltip: "crm_fields.emailSmtpEncryption_help",
         fieldstyle: "max-width: 20ch"
     },
+    { name: "email_max_message_size_mb", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.emailMaxMessageSize", tooltip: "crm_fields.emailMaxMessageSize_help" },
+    { name: "email_maxsize_detect", type: "component", component: "email-maxsize" },
 
     { name: "filemanager", type: "headline", label: "crm_fields.filemanager" },
 

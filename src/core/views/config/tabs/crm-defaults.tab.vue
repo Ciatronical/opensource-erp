@@ -191,6 +191,13 @@
                 </v-col>
             </v-row>
 
+            <!-- E-Mail: Höchstgröße je Nachricht vom Mailserver ermitteln -->
+            <v-row v-else-if="field.type === 'component' && field.component === 'email-maxsize'" class="my-4">
+                <v-col cols="12">
+                    <EmailMaxsizeConfig :crm-defaults="crmDefaults" />
+                </v-col>
+            </v-row>
+
             <!-- SumUp Reader koppeln -->
             <v-row v-else-if="field.type === 'component' && field.component === 'sumup-reader-pairing'" class="my-4">
                 <v-col cols="12">
@@ -279,6 +286,7 @@ import WhatsAppTemplatesConfig from './whatsapp-templates.config.vue';
 import WhatsAppProfilePictureConfig from './whatsapp-profile-picture.config.vue';
 import SumupReaderPairingConfig from './sumup-reader-pairing.config.vue';
 import EmailAutoconfigConfig from './email-autoconfig.config.vue';
+import EmailMaxsizeConfig from './email-maxsize.config.vue';
 import BelegQuellenConfig from './beleg-quellen.config.vue';
 import EletterStatusConfig from './eletter-status.config.vue';
 import CvEasymodeConfig from './cv-easymode.config.vue';

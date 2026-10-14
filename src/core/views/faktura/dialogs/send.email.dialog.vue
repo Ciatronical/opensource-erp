@@ -111,10 +111,18 @@
                             prepend-inner-icon="mdi-paperclip-plus"
                             :hint="t('FakturaView.dialogs.sendEmail.attachmentHint', { max: formatSize(maxTotalBytes) })"
                             persistent-hint
-                            :error-messages="sizeExceeded ? t('FakturaView.dialogs.sendEmail.attachmentTooLarge', { max: formatSize(maxTotalBytes) }) : []"
                             :loading="readingFiles"
                             @update:model-value="onFilesSelected"
                         />
+                        <v-alert
+                            v-if="sizeExceeded"
+                            type="warning"
+                            variant="tonal"
+                            density="compact"
+                            class="mt-3"
+                        >
+                            {{ t('FakturaView.dialogs.sendEmail.attachmentTooLarge', { size: formatSize(totalExtraBytes), max: formatSize(maxTotalBytes) }) }}
+                        </v-alert>
                     </v-col>
                 </v-row>
             </v-card-text>
@@ -149,6 +157,7 @@
 
 import { defineComponent, ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { oserpStore } from '@/core/stores/oserp.store'
 
 export default defineComponent({
     name: 'SendEmailDialog',
@@ -218,11 +227,23 @@ export default defineComponent({
         const extraAttachments = ref([])
         const readingFiles = ref(false)
         const fileInputKey = ref(0)
-        // Obergrenze für alle zusätzlichen Dateien zusammen — der Request trägt
-        // zusätzlich das Beleg-PDF und muss unter post_max_size (8 MB) bleiben.
-        const maxTotalBytes = 5 * 1024 * 1024
+        // Obergrenze für alle zusätzlichen Dateien zusammen: Firmenkonfiguration
+        // → E-Mail-Client → Maximale E-Mail-Größe (vom Mailserver ermittelbar),
+        // gekappt durch post_max_size des PHP-Servers, weil Anhänge als Base64
+        // im JSON-Request liegen (Zuschlag 37 %). Ohne Konfiguration 10 MB.
+        const oserp = oserpStore()
+        const BASE64_OVERHEAD = 1.37
+        const maxTotalBytes = computed(() => {
+            const configuredMb = Number(oserp.getClientDefaultValue('email_max_message_size_mb', 0)) || 0
+            const phpPostMax = Number(oserp.session?.company_config?.php_limits?.post_max_size || 0)
+            const limits = [
+                configuredMb > 0 ? configuredMb * 1024 * 1024 : 0,
+                phpPostMax > 0 ? Math.floor(phpPostMax / BASE64_OVERHEAD) : 0
+            ].filter(v => v > 0)
+            return limits.length ? Math.min(...limits) : 10 * 1024 * 1024
+        })
         const totalExtraBytes = computed(() => extraAttachments.value.reduce((sum, a) => sum + (a.size || 0), 0))
-        const sizeExceeded = computed(() => totalExtraBytes.value > maxTotalBytes)
+        const sizeExceeded = computed(() => totalExtraBytes.value > maxTotalBytes.value)
 
         const isValid = computed(() => {
             return emailTo.value && emailTo.value.trim() !== '' &&
@@ -331,6 +352,7 @@ export default defineComponent({
             readingFiles,
             fileInputKey,
             maxTotalBytes,
+            totalExtraBytes,
             sizeExceeded,
             formatSize,
             onFilesSelected,

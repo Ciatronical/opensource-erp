@@ -993,7 +993,19 @@
         "easymodeCvOnlyCustomer": "仅客户",
         "easymodeCvOnlyVendor": "仅供应商",
         "easymodeCvTabs": "可见选项卡",
-        "easymodeCvTabs_help": "未勾选的选项卡只有在切换到“全部字段”后才会显示。账单地址始终可见。"
+        "easymodeCvTabs_help": "未勾选的选项卡只有在切换到“全部字段”后才会显示。账单地址始终可见。",
+        "emailMaxMessageSize": "邮件最大大小（MB）",
+        "emailMaxMessageSize_help": "每封邮件附件的上限。可用下方按钮从邮件服务器检测；附件超过此限制时，邮件对话框会发出警告。",
+        "emailMaxSize": {
+            "button": "从邮件服务器检测限制",
+            "hint": "向 SMTP 服务器查询单封邮件的最大大小，并考虑 PHP 限制 post_max_size。之后请记得保存。",
+            "result": "已将限制设为 {mb} MB",
+            "smtpLimit": "SMTP 服务器允许每封邮件 {size}",
+            "noSmtpLimit": "SMTP 服务器未告知最大大小",
+            "phpLimit": "PHP 每次请求接受 {size}（post_max_size）",
+            "phpIsBottleneck": "PHP 是更严格的限制：请在 php.ini 中提高 post_max_size 和 upload_max_filesize，然后重新检测",
+            "error": "无法检测限制"
+        }
     },
     "add": "添加",
     "add_fields": {

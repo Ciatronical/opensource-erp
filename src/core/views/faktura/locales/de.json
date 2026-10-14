@@ -640,7 +640,7 @@
                 "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
                 "addAttachment": "Weitere Anhänge hinzufügen",
                 "attachmentHint": "Zusätzliche Dateien (max. {max} gesamt), das Beleg-PDF wird immer mitgeschickt",
-                "attachmentTooLarge": "Die zusätzlichen Anhänge überschreiten {max}. Bitte Dateien entfernen."
+                "attachmentTooLarge": "Die zusätzlichen Anhänge sind zusammen {size} groß und überschreiten die Grenze von {max} je E-Mail. Bitte Dateien entfernen oder die Grenze in der Firmenkonfiguration (E-Mail-Client) anpassen."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

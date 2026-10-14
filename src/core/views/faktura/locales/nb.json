@@ -485,7 +485,7 @@
                 "noEmail": "Für diesen Kunder ist ingen E-post-Adresse hinterlegt.",
                 "addAttachment": "Legg til flere vedlegg",
                 "attachmentHint": "Flere filer (maks. {max} totalt), dokument-PDF-en sendes alltid med",
-                "attachmentTooLarge": "De ekstra vedleggene overstiger {max}. Fjern filer."
+                "attachmentTooLarge": "De ekstra vedleggene er totalt {size} og overstiger grensen på {max} per e-post. Fjern filer eller juster grensen i firmakonfigurasjonen (e-postklient)."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

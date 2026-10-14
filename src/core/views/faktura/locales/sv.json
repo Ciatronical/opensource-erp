@@ -485,7 +485,7 @@
                 "noEmail": "Für diesen Kundn ist inga E-post-Adresse hinterlegt.",
                 "addAttachment": "Lägg till fler bilagor",
                 "attachmentHint": "Ytterligare filer (max. {max} totalt), dokumentets PDF bifogas alltid",
-                "attachmentTooLarge": "De ytterligare bilagorna överskrider {max}. Ta bort filer."
+                "attachmentTooLarge": "De ytterligare bilagorna är totalt {size} och överskrider gränsen på {max} per e-post. Ta bort filer eller ändra gränsen i företagskonfigurationen (e-postklient)."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",
