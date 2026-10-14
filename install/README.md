@@ -10,7 +10,7 @@ OpensourceERP ist eine Vue.js-basierte ERP-Anwendung mit PHP/PostgreSQL-Backend.
 
 Für eine **frische Maschine** richtet `install/install.sh` den kompletten Stack
 idempotent ein (Pakete, PHP-FPM, Build, Apache, SSE, Whisper, Ollama, ANPR,
-Kameras, Cron, Asterisk-Gerüst, Borg-Gerüst). **k9o wird nicht benötigt.**
+Kameras, Cron, DynDNS, Borg-Offsite-Backup, Asterisk-Gerüst). **k9o wird nicht benötigt.**
 
 Nach dem Installer legt der **Setup-Assistent im Browser** (`http://<host>/setup`)
 Auth-Datenbank, Administrator und erste Firma an — das Datenbank-Passwort liegt in
@@ -42,8 +42,40 @@ nach `/etc/apache2/conf-available/oserp-defines.conf` geschrieben; der vHost
 `apacheOpensourceErp.conf` referenziert nur diese Variablen. Beim PHP-Update
 (8.3 → 9.0 …) muss nichts angepasst werden.
 
-Secrets/umgebungsspezifische Teile (DB-Passwort, Asterisk-Config, Borg-Repo)
-markiert der Installer mit `[TODO]` — diese werden vom alten Server migriert.
+Secrets/umgebungsspezifische Teile (DB-Passwort, Asterisk-Config) markiert der
+Installer mit `[TODO]` — diese werden vom alten Server migriert.
+
+### Offsite-Backup (Borg auf Hetzner Storage Box)
+
+Der Schritt `borg` richtet das nächtliche, verschlüsselte Backup des ganzen
+Rechners plus PostgreSQL-Dumps ein. **Zugangsdaten stehen nirgends im Repository**:
+der Installer fragt sie im Terminal ab (oder `install/borg-standalone.sh` direkt)
+und legt sie ausschließlich in `/etc/oserp/borg.env` (root, 0600) ab.
+
+```bash
+sudo ./install/borg-standalone.sh            # fragt Konto, Host, Passphrase, Uhrzeit ab
+sudo ./install/borg-standalone.sh --refresh  # Skripte/Cron neu schreiben, Zugang bleibt
+sudo oserp-backup --first                    # Erstsicherung mit Auto-Resume
+sudo oserp-backup --list                     # Archive anzeigen
+sudo oserp-backup-status                     # Status als JSON (borg-uebersicht)
+```
+
+Abgefragt werden: Storage-Box-Konto (bei Hetzner `u123456` oder Subaccount),
+Host (Vorgabe `<konto>.your-storagebox.de`), Port (23), Repository-Verzeichnis
+(Vorgabe = Hostname), Borg-Passphrase (Enter = erzeugen), Mailadresse für
+Fehler und die Uhrzeit des Cron-Laufs (Vorgabe 02:30, nach der DSL-Zwangstrennung).
+Der root-SSH-Key wird erzeugt und per `install-ssh-key` auf der Storage Box
+eingetragen (einmalige Passwortabfrage), das Repository mit `repokey` angelegt,
+der Schlüssel nach `/etc/oserp/borg-key.<repo>.txt` exportiert. Passphrase und
+Schlüssel gehören zusätzlich an einen sicheren Ort — ohne sie gibt es kein Restore.
+
+Angelegt werden `/usr/local/sbin/oserp-backup` (Dumps aller Datenbanken nach
+`/var/backups/oserp/postgresql`, `borg create` von `/` mit Excludes, prune
+7/4/6, compact, Mail bei Exit ≥ 2), `/usr/local/sbin/oserp-backup-status`
+(JSON für die zentrale `borg-uebersicht`, per sudoers ohne Passwort für den
+Betriebs-User) und `/etc/cron.d/oserp-backup`. Was gesichert und ausgeschlossen
+wird, steht als Bash-Arrays in `borg.env`; dort lässt sich auch der nächtliche
+Test-Mandanten-Klon (`BORG_PG_CLONE_SRC/DST`) einschalten.
 
 ### Von außen erreichbar machen (DynDNS, Portfreigabe, HTTPS)
 

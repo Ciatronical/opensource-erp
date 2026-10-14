@@ -256,7 +256,7 @@ PROMPT;
     }
 
     $data = json_decode($response, true);
-    $text = $data['content'][0]['text'] ?? '';
+    $text = aiResponseText($data);
 
     // JSON aus der Antwort extrahieren (auch wenn in Markdown-Codeblock)
     if (preg_match('/\{[\s\S]*\}/', $text, $matches)) {

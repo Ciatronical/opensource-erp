@@ -213,7 +213,7 @@ PROMPT;
     }
 
     $responseData = json_decode($response, true);
-    $assistantMessage = $responseData['content'][0]['text'] ?? '';
+    $assistantMessage = aiResponseText($responseData);
 
     if (empty($assistantMessage)) {
         throw new ApiError('CLAUDE_API_ERROR', 'Leere Antwort von Claude');

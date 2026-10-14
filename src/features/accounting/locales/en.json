@@ -770,7 +770,9 @@
                 "payables": "I owe",
                 "payablesSub": "next due date {date}",
                 "payablesNone": "nothing open",
-                "vat": "VAT {period}"
+                "vat": "VAT {period}",
+                "asOfToday": "as of today, last posting {date}",
+                "asOfDate": "as of {date}"
             },
             "tiles": {
                 "documents": "Check documents",
@@ -818,7 +820,8 @@
                     "paid_but_open": "Paid, account still open",
                     "balance_mismatch": "Balance deviates"
                 }
-            }
+            },
+            "asOf": "As of"
         },
         "run": {
             "back": "Back",

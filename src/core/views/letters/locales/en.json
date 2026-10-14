@@ -27,7 +27,8 @@
         "channel": {
             "email": "Email",
             "post": "Post"
-        }
+        },
+        "subtitle": "Letters to customers and vendors – print, send by email or post"
     },
     "LetterEditView": {
         "titleNew": "New letter",

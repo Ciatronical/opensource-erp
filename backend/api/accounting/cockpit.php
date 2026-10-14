@@ -19,10 +19,15 @@
  * kivitendo beide link = AR_paid:AP_paid). Vorzeichen in acc_trans ist
  * Soll = negativ, deshalb ist der Bestand eines Aktivkontos -SUM(amount).
  *
- * @testdata {}
+ * @param string $data['as_of'] Stichtag YYYY-MM-DD für die Geldkonten-Kacheln (optional, Standard heute).
+ *                              Ohne Stichtag zeigt die Bank-Kachel den Saldo über alle Buchungen bis heute —
+ *                              das ist kein Kontoauszugs-Stand, deshalb steht das Datum mit dabei.
+ * @testdata {"as_of": "2026-06-30"}
  */
 function getAccountingCockpit($data) {
     $db = DbhCompany::begin();
+
+    $asOf = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)($data['as_of'] ?? '')) ? $data['as_of'] : date('Y-m-d');
 
     $kassenkonto = kassenkontoBedingung('c');
     $dunningCtes = dunningCandidateCtes();
@@ -95,13 +100,16 @@ function getAccountingCockpit($data) {
                 FROM acc_trans o
                 WHERE o.chart_id = c.id AND o.ob_transaction IS TRUE
             ) v ON true
-            LEFT JOIN acc_trans t ON t.chart_id = c.id AND t.transdate >= v.ab
+            -- Bis zum Stichtag (Standard heute), damit der Saldo mit einem
+            -- Kontoauszug per Datum vergleichbar ist.
+            LEFT JOIN acc_trans t ON t.chart_id = c.id AND t.transdate >= v.ab AND t.transdate <= :as_of::date
             WHERE c.category = 'A' AND COALESCE(c.link, '') LIKE '%AR_paid%'
             GROUP BY c.id, c.accno, c.description
         ),
         money AS (
             SELECT COALESCE(SUM(g.balance) FILTER (WHERE g.gruppe = 'bank'), 0)     AS bank_balance,
                    COUNT(*) FILTER (WHERE g.gruppe = 'bank')                        AS bank_accounts,
+                   MAX(g.last_transdate) FILTER (WHERE g.gruppe = 'bank')           AS bank_last,
                    COALESCE(SUM(g.balance) FILTER (WHERE g.gruppe = 'kasse'), 0)    AS cash_balance,
                    COUNT(*) FILTER (WHERE g.gruppe = 'kasse')                       AS cash_accounts,
                    MAX(g.last_transdate) FILTER (WHERE g.gruppe = 'kasse')          AS cash_last,
@@ -210,6 +218,9 @@ function getAccountingCockpit($data) {
 
             ROUND(money.bank_balance, 2)                        AS bank_balance,
             money.bank_accounts                                 AS bank_accounts,
+            TO_CHAR(money.bank_last, 'DD.MM.YYYY')              AS bank_last,
+            TO_CHAR(:as_of2::date, 'DD.MM.YYYY')                AS as_of_fmt,
+            (:as_of3::date >= CURRENT_DATE)                     AS as_of_today,
             ROUND(money.cash_balance, 2)                        AS cash_balance,
             money.cash_accounts                                 AS cash_accounts,
             TO_CHAR(money.cash_last, 'DD.MM.YYYY')              AS cash_last,
@@ -264,7 +275,7 @@ function getAccountingCockpit($data) {
         FROM p CROSS JOIN money CROSS JOIN recv CROSS JOIN pay
                CROSS JOIN docs CROSS JOIN book CROSS JOIN bank CROSS JOIN closing
                CROSS JOIN checks CROSS JOIN dunn CROSS JOIN recur
-    SQL, []);
+    SQL, [':as_of' => $asOf, ':as_of2' => $asOf, ':as_of3' => $asOf]);
 
     // Abschluss-Fortschritt: Anteil der bereits zugeordneten Bankumsaetze des
     // Vormonats. Ohne Umsaetze gilt der Monat als fertig, sobald keine Belege
@@ -289,6 +300,9 @@ function getAccountingCockpit($data) {
         'pulse' => [
             'bank_balance'      => floatval($row['bank_balance']),
             'bank_accounts'     => intval($row['bank_accounts']),
+            'bank_last'         => $row['bank_last'],
+            'as_of'             => $row['as_of_fmt'],
+            'as_of_today'       => !empty($row['as_of_today']) && $row['as_of_today'] !== 'f',
             'cash_balance'      => floatval($row['cash_balance']),
             'cash_accounts'     => intval($row['cash_accounts']),
             'cash_last'         => $row['cash_last'],

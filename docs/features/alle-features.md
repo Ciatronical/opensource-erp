@@ -781,9 +781,14 @@ Siehe [Abschnitt 16.13](#1613-anpr--kennzeichenerkennung).
 
 ### 13.2 SumUp *(extern)*
 
-- **Kartenleser koppeln** und entkoppeln
+- **Kartenleser koppeln** und entkoppeln (SumUp Solo, Cloud API)
 - Kopplungsstatus in der Konfiguration
-- **Karten-Checkout**: Betrag direkt an den gekoppelten Reader senden
+- **Karten-Checkout aus der Rechnung**: offener Betrag automatisch beim Öffnen, abweichender Betrag (Anzahlung, Selbstbeteiligung) über das Eingabefeld in der Zahlungskarte, laufender Checkout wird dabei ersetzt
+- **Live-Status** des Terminals (Karte vorlegen, PIN, Trinkgeld, Unterschrift, offline) und Abbruch aus der Rechnung
+- **Keine Sofortbuchung**: Kartenzahlung erscheint als Infozeile in der Zahlungskarte, gebucht wird erst mit der SumUp-Auszahlung im Banking (Abgleich über den Transaktionscode, direkt gegen die Bank)
+- **Vermerk auf dem Ausdruck** „… € mit Karte bezahlt“ samt Restbetrag; **automatischer Druck** in konfigurierbarer Exemplarzahl nach der Zahlung
+- **Kundenbeleg** aus der SumUp-Receipts-API als Belegseite hinter der Rechnung (Rückseite bei Duplexdruck), da der Solo keinen Bondrucker hat
+- Protokoll aller Checkouts (`sumup_checkouts`) für den Abgleich der Sammelauszahlung
 
 ### 13.3 eBay *(extern, Verkaufskanal der Shop-Erweiterung)*
 

@@ -58,6 +58,10 @@ Das Datenbankschema aktualisiert sich selbst: bei Anmeldung und Firmenwechsel wi
 - **Log-Viewer**: das API-Debug-Log im Browser lesen und filtern
 - `php tools/check-api-health.php` (Docblocks und Testdaten), `npm run check:routes` (Routen in allen Sprachen)
 
+## Offsite-Backup (Borg)
+
+Der Installer richtet auf Wunsch ein nächtliches, verschlüsseltes und dedupliziertes Backup des ganzen Servers auf eine Hetzner Storage Box (oder einen anderen SSH-Borg-Server) ein — mit Dumps aller PostgreSQL-Datenbanken, gestaffelter Aufbewahrung (7 täglich, 4 wöchentlich, 6 monatlich), Auto-Resume bei der Erstsicherung nach DSL-Zwangstrennung und Fehlermeldung per E-Mail. Die Zugangsdaten werden bei der Einrichtung abgefragt und liegen nur auf dem Server in `/etc/oserp/borg.env`; ein Status-Helfer liefert den Backup-Stand für eine zentrale Übersicht über alle Installationen. Optional baut der Lauf jede Nacht den Test-Mandanten aus der Produktivdatenbank neu (atomarer Tausch, Bot-Zugänge werden entschärft). Einrichtung: `install/README.md`, Abschnitt „Offsite-Backup“.
+
 ## Dokumentation im System
 
 Dieses Handbuch liegt als Markdown in `docs/features/` und ist im System unter **Dokumentation** lesbar — gegliedert nach Kernsystem und Erweiterungen. Jede Datei trägt Metadaten (Titel, Kurzbeschreibung, Gruppe, Erweiterung, Rubrik), aus denen die Navigation entsteht. Der Knopf **Auf der Website veröffentlichen** überträgt den Feature-Katalog an opensource-erp.dev (siehe `docs/website-schnittstelle.md`).

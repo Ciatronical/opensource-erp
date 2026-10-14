@@ -1662,7 +1662,7 @@ function docChatMessage($data) {
     }
 
     $responseData = json_decode($response, true);
-    $answer = $responseData['content'][0]['text'] ?? '';
+    $answer = aiResponseText($responseData);
 
     if (empty($answer)) {
         throw new ApiError('CLAUDE_API_ERROR', 'Leere Antwort von Claude');

@@ -8,6 +8,51 @@
         </v-card-title>
         <v-divider />
         <v-card-text class="faktura-card__body pa-0">
+            <!-- Kartenterminal (nur wenn SumUp im Mandanten aktiviert ist) -->
+            <div v-if="terminal" class="terminal-bar">
+                <v-icon size="small" class="mr-1" :color="terminalColor">mdi-contactless-payment</v-icon>
+                <span class="terminal-bar__title">{{ t('FakturaView.faktura.terminal.title') }}</span>
+                <v-text-field
+                    :model-value="terminalAmountInput"
+                    :label="t('FakturaView.faktura.terminal.amountLabel')"
+                    :disabled="terminalBusy"
+                    suffix="€"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    autocomplete="off"
+                    class="terminal-bar__amount text-right-input"
+                    @update:model-value="onTerminalAmountInput"
+                    @focus="$event.target.select()"
+                    @keydown.enter.prevent="sendToTerminal"
+                />
+                <v-btn
+                    color="primary"
+                    variant="flat"
+                    size="small"
+                    prepend-icon="mdi-send"
+                    :loading="terminal.status === 'sending'"
+                    :disabled="terminalBusy"
+                    @click="sendToTerminal"
+                >
+                    {{ t('FakturaView.faktura.terminal.send') }}
+                </v-btn>
+                <v-btn
+                    v-if="terminalBusy"
+                    color="error"
+                    variant="text"
+                    size="small"
+                    prepend-icon="mdi-close-circle-outline"
+                    @click="$emit('terminal-cancel')"
+                >
+                    {{ t('FakturaView.faktura.terminal.cancel') }}
+                </v-btn>
+                <v-chip v-if="terminalStatusText" :color="terminalColor" size="small" variant="tonal" class="terminal-bar__status">
+                    <v-progress-circular v-if="terminalBusy" indeterminate size="14" width="2" class="mr-2" />
+                    {{ terminalStatusText }}
+                </v-chip>
+            </div>
+
             <v-table density="compact" class="payment-table">
                 <thead>
                     <tr>
@@ -21,6 +66,18 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- Kartenzahlungen am Terminal: noch nicht gebucht (Buchung mit der SumUp-Auszahlung) -->
+                    <tr v-for="cp in cardPayments" :key="'card-' + (cp.id || cp.transaction_code)" class="payment-table__card-row">
+                        <td>{{ formatCardDate(cp.itime) }}</td>
+                        <td class="text-medium-emphasis">{{ cp.transaction_code }}</td>
+                        <td :colspan="showExchangeRate ? 3 : 2">
+                            <v-icon size="small" color="success" class="mr-1">mdi-contactless-payment</v-icon>
+                            {{ t('FakturaView.faktura.terminal.cardPaymentRow') }}<span v-if="cp.card_type"> ({{ cp.card_type }})</span>
+                            <span class="text-medium-emphasis"> – {{ t('FakturaView.faktura.terminal.pendingPayout') }}</span>
+                        </td>
+                        <td class="text-right">{{ formatNumber(Math.abs(Number(cp.amount) || 0), currentLocale, 2) }}</td>
+                        <td></td>
+                    </tr>
                     <tr v-for="(payment, index) in payments" :key="getPaymentKey(payment, index)">
                         <td>
                             <v-text-field
@@ -162,7 +219,7 @@
                 <tfoot>
                     <tr class="payment-table__footer">
                         <td :colspan="showExchangeRate ? 5 : 4" class="text-right font-weight-bold">
-                            {{ t('FakturaView.faktura.remainingAmount') }}:
+                            {{ t(cardPayments.length ? 'FakturaView.faktura.terminal.openAfterCard' : 'FakturaView.faktura.remainingAmount') }}:
                         </td>
                         <td class="text-right font-weight-bold" :class="remainingAmount > 0 ? 'text-error' : 'text-success'">
                             {{ formatNumber(remainingAmount, currentLocale, 2) }}
@@ -266,9 +323,26 @@ export default defineComponent({
         invnumber: {
             type: String,
             default: ''
+        },
+        /**
+         * Zustand des SumUp-Kartenterminals (null = kein Terminal im Mandanten):
+         * { status: idle|sending|waiting|success|failed|cancelled|timeout,
+         *   amount, readerState, message }
+         */
+        terminal: {
+            type: Object,
+            default: null
+        },
+        /**
+         * Erfolgreiche Kartenzahlungen am Terminal (sumup_checkouts) — nur Anzeige,
+         * mindern den offenen Betrag; gebucht werden sie mit der SumUp-Auszahlung
+         */
+        cardPayments: {
+            type: Array,
+            default: () => []
         }
     },
-    emits: ['update:modelValue', 'save'],
+    emits: ['update:modelValue', 'save', 'terminal-send', 'terminal-cancel'],
     setup(props, { emit }) {
         const { t, locale } = useI18n()
         const router = useRouter()
@@ -471,8 +545,18 @@ export default defineComponent({
                 }
                 return sum + Math.abs(payment.amount || 0)
             }, 0)
-            return Math.round((gross - paidAmount) * 100) / 100
+            const cardPaid = props.cardPayments.reduce((sum, p) => sum + Math.abs(Number(p.amount) || 0), 0)
+            return Math.round((gross - paidAmount - cardPaid) * 100) / 100
         })
+
+        /**
+         * Datum einer Kartenzahlung (ISO-Zeitstempel) im lokalen Kurzformat
+         */
+        function formatCardDate(iso) {
+            if (!iso) return ''
+            const d = new Date(iso)
+            return isNaN(d) ? String(iso).slice(0, 10) : d.toLocaleDateString(currentLocale.value)
+        }
 
         /**
          * Erstellt eine leere Zahlungszeile
@@ -521,8 +605,8 @@ export default defineComponent({
             ensureEmptyRow()
         }, { immediate: true })
 
-        // Watch auf grossAmount - wenn sich der Bruttobetrag ändert, leere Zeile prüfen
-        watch(() => props.grossAmount, () => {
+        // Watch auf grossAmount/Kartenzahlungen - wenn sich der offene Betrag ändert, leere Zeile prüfen
+        watch([() => props.grossAmount, () => props.cardPayments], () => {
             ensureEmptyRow()
         })
 
@@ -871,16 +955,96 @@ export default defineComponent({
             }
         }
 
+        // ===== Kartenterminal =====
+
+        // Betragsfeld: mit dem offenen Betrag vorbelegt, bis der Benutzer selbst tippt.
+        // Nach einem abgeschlossenen Checkout folgt es wieder dem offenen Rest.
+        const terminalAmountInput = ref('')
+        const terminalAmountTouched = ref(false)
+
+        watch(remainingAmount, (value) => {
+            if (!terminalAmountTouched.value) {
+                terminalAmountInput.value = formatNumber(Math.max(value, 0), currentLocale.value, 2)
+            }
+        }, { immediate: true })
+
+        watch(() => props.terminal?.status, (status) => {
+            if (status === 'success' || status === 'idle') {
+                terminalAmountTouched.value = false
+                terminalAmountInput.value = formatNumber(Math.max(remainingAmount.value, 0), currentLocale.value, 2)
+            }
+        })
+
+        function onTerminalAmountInput(value) {
+            terminalAmountTouched.value = true
+            terminalAmountInput.value = value
+        }
+
+        const terminalBusy = computed(() => ['sending', 'waiting'].includes(props.terminal?.status))
+
+        function sendToTerminal() {
+            if (!props.terminal || terminalBusy.value) return
+            const parsed = parseNumber(terminalAmountInput.value, currentLocale.value)
+            if (parsed === null || !Number.isFinite(parsed) || parsed <= 0) {
+                toasts.warning(t('FakturaView.faktura.terminal.invalidAmount'))
+                return
+            }
+            emit('terminal-send', Math.round(Math.abs(parsed) * 100) / 100)
+        }
+
+        const terminalColor = computed(() => {
+            switch (props.terminal?.status) {
+                case 'success': return 'success'
+                case 'failed':
+                case 'timeout': return 'error'
+                case 'cancelled': return 'warning'
+                case 'sending':
+                case 'waiting': return 'primary'
+                default: return 'medium-emphasis'
+            }
+        })
+
+        const terminalStatusText = computed(() => {
+            const tm = props.terminal
+            if (!tm) return ''
+            switch (tm.status) {
+                case 'sending': return t('FakturaView.faktura.terminal.sending')
+                case 'waiting': {
+                    const map = {
+                        WAITING_FOR_CARD: 'card',
+                        WAITING_FOR_PIN: 'pin',
+                        SELECTING_TIP: 'tip',
+                        WAITING_FOR_SIGNATURE: 'signature',
+                        OFFLINE: 'offline'
+                    }
+                    return t('FakturaView.faktura.terminal.' + (map[tm.readerState] || 'waiting'))
+                }
+                case 'success': return t('FakturaView.faktura.terminal.paid', { amount: formatNumber(tm.amount || 0, currentLocale.value, 2) })
+                case 'failed': return tm.message || t('FakturaView.faktura.terminal.failed')
+                case 'cancelled': return t('FakturaView.faktura.terminal.cancelled')
+                case 'timeout': return t('FakturaView.faktura.terminal.timeout')
+                default: return ''
+            }
+        })
+
         return {
             t,
             currentLocale,
             payments,
+            terminalAmountInput,
+            terminalBusy,
+            terminalColor,
+            terminalStatusText,
+            onTerminalAmountInput,
+            sendToTerminal,
             accountRefs,
             amountRefs,
             sourceRefs,
             remainingAmount,
             deleteDialog,
             showExchangeRate: computed(() => props.showExchangeRate),
+            cardPayments: computed(() => props.cardPayments),
+            formatCardDate,
             paymentAccList: computed(() => props.paymentAccList),
             formatNumber,
             getPaymentKey,
@@ -933,6 +1097,39 @@ export default defineComponent({
 
 .faktura-card__body {
     padding: 0 !important;
+}
+
+/* Kartenterminal-Leiste */
+.terminal-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--oserp-gap-sm);
+    padding: var(--oserp-gap) var(--oserp-gap-lg);
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.terminal-bar__title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-right: var(--oserp-gap-sm);
+}
+
+.terminal-bar__amount {
+    max-width: 180px;
+}
+
+.terminal-bar__amount :deep(.v-text-field__suffix) {
+    padding-left: 4px;
+}
+
+.terminal-bar__status {
+    margin-left: auto;
+}
+
+.payment-table :deep(tbody tr.payment-table__card-row td) {
+    background-color: #f1f8f1;
+    font-size: 13px;
 }
 
 /* Payment Table Styling */

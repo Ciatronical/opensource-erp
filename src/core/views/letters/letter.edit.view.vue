@@ -12,22 +12,18 @@
 <template>
     <NavbarView />
 
-    <v-container fluid class="pa-2 pa-md-4 letter-edit">
-        <!-- Kopf mit Aktionen -->
-        <v-row class="mb-2" align="center">
-            <v-col cols="12" lg="5">
-                <h1 class="text-h5 text-md-h4 d-flex align-center flex-wrap ga-2">
-                    <v-icon color="primary">mdi-email-edit-outline</v-icon>
-                    <span v-if="letter.id">{{ t('LetterEditView.titleEdit', { number: letter.letternumber }) }}</span>
-                    <span v-else>{{ t('LetterEditView.titleNew') }}</span>
-                    <v-chip v-if="letter.id && !sentLog.length" size="small" variant="tonal" color="grey" prepend-icon="mdi-pencil-outline">{{ t('LetterEditView.statusDraft') }}</v-chip>
-                    <v-chip v-else-if="sentLog.length" size="small" variant="tonal" color="success" prepend-icon="mdi-send-check-outline">{{ t('LetterEditView.statusSent', { n: sentLog.length }) }}</v-chip>
-                    <!-- Automatisches Speichern: Zustand statt Knopf -->
-                    <v-chip size="small" variant="text" :color="saveState.color" :prepend-icon="saveState.icon" class="text-body-2">{{ saveState.text }}</v-chip>
-                </h1>
-            </v-col>
-            <v-col cols="12" lg="7" class="d-flex flex-wrap ga-2 justify-lg-end">
-                <v-btn variant="text" prepend-icon="mdi-arrow-left" :to="{ name: 'letters' }">{{ t('LetterEditView.backToList') }}</v-btn>
+    <v-container fluid class="pt-2 px-2 px-sm-4 letter-edit">
+        <page-header
+            :title="letter.id ? t('LetterEditView.titleEdit', { number: letter.letternumber }) : t('LetterEditView.titleNew')"
+            :subtitle="cv ? cv.name : ''"
+            :back-to="{ name: 'letters' }"
+            :back-label="t('LetterEditView.backToList')"
+        >
+            <v-chip v-if="letter.id && !sentLog.length" size="small" variant="tonal" prepend-icon="mdi-pencil-outline">{{ t('LetterEditView.statusDraft') }}</v-chip>
+            <v-chip v-else-if="sentLog.length" size="small" variant="tonal" color="success" prepend-icon="mdi-send-check-outline">{{ t('LetterEditView.statusSent', { n: sentLog.length }) }}</v-chip>
+            <!-- Automatisches Speichern: Zustand statt Knopf -->
+            <v-chip size="small" variant="text" :color="saveState.color" :prepend-icon="saveState.icon" class="text-body-2">{{ saveState.text }}</v-chip>
+            <template #actions>
                 <v-btn variant="tonal" color="error" prepend-icon="mdi-file-pdf-box" :loading="pdfLoading" :disabled="!hasRecipient" @click="showPdf">
                     {{ t('LetterEditView.pdf') }}
                 </v-btn>
@@ -48,8 +44,8 @@
                         <v-list-item prepend-icon="mdi-delete-outline" base-color="error" :title="t('LetterEditView.delete')" @click="remove" />
                     </v-list>
                 </v-menu>
-            </v-col>
-        </v-row>
+            </template>
+        </page-header>
 
         <v-alert v-if="sentLog.length" type="info" variant="tonal" density="compact" class="mb-3" icon="mdi-information-outline">
             {{ t('LetterEditView.alreadySentHint') }}
@@ -58,17 +54,12 @@
         <v-row>
             <!-- Empfänger und Rahmendaten -->
             <v-col cols="12" md="4">
-                <v-card variant="outlined" rounded="lg" class="mb-4">
-                    <v-card-title class="d-flex align-center bg-grey-lighten-4 py-3 text-subtitle-1">
-                        <v-icon color="primary" class="me-2">mdi-account-arrow-right-outline</v-icon>
-                        {{ t('LetterEditView.recipient') }}
-                        <v-spacer />
+                <section-card :title="t('LetterEditView.recipient')" icon="mdi-account-arrow-right-outline" class="letter-edit__card">
+                    <template #actions>
                         <v-btn v-if="cv" size="small" variant="text" color="primary" prepend-icon="mdi-swap-horizontal" @click="changeRecipient">
                             {{ t('LetterEditView.changeRecipient') }}
                         </v-btn>
-                    </v-card-title>
-                    <v-divider />
-                    <v-card-text>
+                    </template>
                         <!-- Empfänger suchen -->
                         <template v-if="!cv">
                             <v-btn-toggle v-model="searchType" mandatory density="compact" variant="outlined" color="primary" class="mb-3">
@@ -151,17 +142,13 @@
                                 <v-textarea v-model="letter.intnotes" :label="t('LetterEditView.intnotes')" variant="outlined" density="compact" hide-details rows="2" auto-grow prepend-inner-icon="mdi-note-text-outline" />
                             </v-col>
                         </v-row>
-                    </v-card-text>
-                </v-card>
+                </section-card>
             </v-col>
 
             <!-- Brieftext -->
             <v-col cols="12" md="8">
-                <v-card variant="outlined" rounded="lg" class="mb-4">
-                    <v-card-title class="d-flex align-center bg-grey-lighten-4 py-3 text-subtitle-1">
-                        <v-icon color="primary" class="me-2">mdi-text-box-edit-outline</v-icon>
-                        {{ t('LetterEditView.content') }}
-                        <v-spacer />
+                <section-card :title="t('LetterEditView.content')" icon="mdi-text-box-edit-outline" class="letter-edit__card">
+                    <template #actions>
                         <!-- Textbausteine -->
                         <v-select
                             v-model="selectedTemplateId"
@@ -188,9 +175,7 @@
                                 <v-list-item v-if="selectedTemplateId" prepend-icon="mdi-delete-outline" base-color="error" :title="t('LetterEditView.templateDelete')" @click="deleteTemplate" />
                             </v-list>
                         </v-menu>
-                    </v-card-title>
-                    <v-divider />
-                    <v-card-text>
+                    </template>
                         <v-text-field ref="subjectField" v-model="letter.subject" :label="t('LetterEditView.subject')" variant="outlined" density="compact" hide-details class="mb-3" prepend-inner-icon="mdi-format-title" @focus="insertTarget = 'subject'" />
                         <v-text-field v-model="letter.greeting" :label="t('LetterEditView.greeting')" variant="outlined" density="compact" hide-details class="mb-3" prepend-inner-icon="mdi-hand-wave-outline">
                             <template #append-inner>
@@ -224,19 +209,14 @@
                                 {{ ph.label }}
                             </v-chip>
                         </div>
-                    </v-card-text>
-                </v-card>
+                </section-card>
 
                 <!-- Versandprotokoll -->
-                <v-card v-if="letter.id" variant="outlined" rounded="lg">
-                    <v-card-title class="d-flex align-center bg-grey-lighten-4 py-3 text-subtitle-1">
-                        <v-icon color="primary" class="me-2">mdi-history</v-icon>
-                        {{ t('LetterEditView.dispatchLog') }}
-                        <v-chip v-if="sentLog.length" size="x-small" class="ms-2" variant="tonal" color="success">{{ sentLog.length }}</v-chip>
-                    </v-card-title>
-                    <v-divider />
-                    <v-card-text class="pa-0">
-                        <div v-if="!sentLog.length" class="text-body-2 text-medium-emphasis pa-4">{{ t('LetterEditView.notSent') }}</div>
+                <section-card v-if="letter.id" :title="t('LetterEditView.dispatchLog')" icon="mdi-history" plain>
+                    <template #actions>
+                        <v-chip v-if="sentLog.length" size="x-small" variant="tonal" color="success">{{ sentLog.length }}</v-chip>
+                    </template>
+                        <div v-if="!sentLog.length" class="text-body-2 text-medium-emphasis letter-edit__empty">{{ t('LetterEditView.notSent') }}</div>
                         <v-list v-else density="compact" class="py-0">
                             <v-list-item v-for="e in sentLog" :key="e.channel + '-' + e.id">
                                 <template #prepend>
@@ -261,8 +241,7 @@
                                 </template>
                             </v-list-item>
                         </v-list>
-                    </v-card-text>
-                </v-card>
+                </section-card>
             </v-col>
         </v-row>
 
@@ -318,6 +297,8 @@ import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import PageHeader from '@/core/components/layout/page-header.vue'
+import SectionCard from '@/core/components/layout/section-card.vue'
 import HtmlEditorComponent from '@/core/components/html.editor.component.vue'
 import PostalDialogComponent from '@/core/components/postal/postal.dialog.component.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
@@ -789,4 +770,11 @@ function formatMoney(v) {
 }
 </script>
 
-
+<style scoped>
+.letter-edit__card {
+    margin-bottom: var(--oserp-gap-lg);
+}
+.letter-edit__empty {
+    padding: var(--oserp-gap-lg);
+}
+</style>

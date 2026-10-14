@@ -27,7 +27,8 @@
         "channel": {
             "email": "E-Mail",
             "post": "Post"
-        }
+        },
+        "subtitle": "Briefe an Kunden und Lieferanten – drucken, per E-Mail oder Post versenden"
     },
     "LetterEditView": {
         "titleNew": "Neuer Brief",

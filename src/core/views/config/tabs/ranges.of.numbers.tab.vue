@@ -49,6 +49,7 @@ const props = defineProps({
 const fields = [
     { key: 'customernumber', label: t('customer'), searchTerms: ['kunde', 'customer', 'kundennummer'] },
     { key: 'vendornumber', label: t('vendor'), searchTerms: ['lieferant', 'vendor', 'lieferantennummer'] },
+    { key: 'letternumber', label: t('letter'), searchTerms: ['brief', 'briefe', 'letter', 'briefnummer'] },
     { key: 'invnumber', label: t('invoice'), searchTerms: ['rechnung', 'invoice', 'rechnungsnummer'] },
     { key: 'cnnumber', label: t('creditNote'), searchTerms: ['gutschrift', 'credit', 'cn'] },
     { key: 'soinumber', label: t('salesOrderIntake'), searchTerms: ['auftragseingang', 'intake', 'soi'] },

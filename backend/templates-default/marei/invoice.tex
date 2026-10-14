@@ -200,6 +200,10 @@
   }\\
 
   <%if template_meta.formname != "storno_invoice"%>%
+    <%if card_paid%>%
+      \textbf{<%card_paid%> \currency~\mitKarteBezahlt} (<%card_paid_date%>)<%if card_open%> --- \restbetragKarte ~<%card_open%> \currency<%end card_open%>\\
+    <%end card_paid%>%
+
     <%if payment_terms%>%
       \zahlung ~<%payment_terms%>\\
     <%end payment_terms%>%
@@ -222,5 +226,42 @@
   \closing{\gruesse}
 
 \end{letter}
+
+% Kundenbeleg der Kartenzahlung (SumUp-Terminal ohne Bondrucker): eigene Seite
+% hinter der Rechnung, auf eine gerade Seite geschoben, damit sie beim
+% Duplexdruck auf der Rueckseite landet.
+<%if has_card_receipt%>
+\clearpage
+% Belegseite ohne Briefkopf: Hintergrund-Logo (wallpaper) und Kopf-/Fusszeile abschalten
+\ifdefined\ClearWallPaper\ClearWallPaper\fi
+\pagestyle{empty}
+\ifodd\value{page}\null\clearpage\fi
+\begin{center}\textbf{\Large \belegTitel}\end{center}
+\vspace{4mm}
+<%foreach card_receipt_amount%>
+\noindent
+\begin{tabular}{@{}p{4.5cm}p{10.5cm}@{}}
+\belegHaendler & <%card_receipt_merchant%> \\
+ & <%card_receipt_merchant_address%> \\
+\belegHaendlerNr & <%card_receipt_merchant_code%> \\
+\belegTerminal & <%card_receipt_tid%> \\
+\belegDatum & <%card_receipt_time%> \\
+\belegNr & <%card_receipt_receipt_no%> \\
+\belegTransaktion & <%card_receipt_code%> \\
+\belegGenehmigung & <%card_receipt_auth%> \\[2mm]
+\belegKarte & <%card_receipt_card%> \\
+\belegAnwendung & <%card_receipt_application%> \\
+\belegAID & <%card_receipt_aid%> \\
+\belegEingabe & <%card_receipt_entry%> \\
+\belegPruefung & <%card_receipt_verification%> \\[2mm]
+<%if card_receipt_tip%>\belegTrinkgeld & <%card_receipt_tip%> <%card_receipt_currency%> \\<%end card_receipt_tip%>
+\textbf{\belegBetrag} & \textbf{<%card_receipt_amount%> <%card_receipt_currency%>} \\[2mm]
+\belegStatus & \belegZahlungErfolgt \\
+\end{tabular}
+\vspace{6mm}
+
+<%end card_receipt_amount%>
+\noindent \belegHinweis
+<%end has_card_receipt%>
 
 \end{document}

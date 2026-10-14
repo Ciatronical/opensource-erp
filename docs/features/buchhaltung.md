@@ -223,6 +223,13 @@ Umschalter oben rechts ändert nur die Darstellung, niemals die Buchung.
 <figcaption>Bank, Kasse und offene Posten sind nur Eingänge. Gebucht wird immer ins selbe Hauptbuch — deshalb passen die Berichte zusammen.</figcaption>
 </figure>
 
+**Stichtag im Cockpit.** Die Geldkacheln zeigen einen Stand zu einem Datum, nie
+eine zeitlose Zahl: ohne Angabe „Stand heute" mit der letzten Buchung, mit dem
+Feld **Stichtag** im Cockpit-Kopf den Saldo per diesem Tag — nur so lässt sich die
+Bank-Kachel mit einem Kontoauszug vergleichen. Weicht sie dann vom Auszug ab,
+fehlen Buchungen bis zu diesem Datum (typisch: noch nicht zugeordnete
+Kartenauszahlungen).
+
 **Bank** und **Kasse** haben im Cockpit je eine eigene Kachel und je eine eigene
 Seite. Das ist kein Schönheitsfehler, sondern Absicht: der Bankbestand wird von
 der Bank bestätigt, der Kassenbestand wird gezählt und abgezeichnet. Zwei

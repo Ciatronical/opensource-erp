@@ -5,11 +5,13 @@
 % Betreff, Anrede und Text pflegt der Benutzer im Briefeditor; die Anrede wird
 % dort aus Ansprechperson bzw. Kunde vorgeschlagen und kann geändert werden.
 % Der Text kommt als HTML aus dem Editor und wird von der Vorlagen-Engine in
-% LaTeX übersetzt (Absätze, Fett, Kursiv, Listen).
+% LaTeX übersetzt (Absätze, Fett, Kursiv, Listen). Grußformel und
+% Unterschrift(en) fügt diese Vorlage an.
 %
-% Das Adressfeld steht an der Position des DIN-5008-Fensters, damit der
-% Brief auch beim Hybridbrief-Dienstleister (PIN AG, LetterXpress) sauber
-% durch das Fensterkuvert gelesen wird.
+% Aufbau nach DIN 5008: Anschrift im Fensterbereich (so liest auch der
+% Hybridbrief-Dienstleister die Adresse), rechts daneben der Informationsblock
+% (Ihr Zeichen, Unser Zeichen = Briefnummer, Kunden-Nr., Ansprechpartner,
+% Telefon, E-Mail, Datum), darunter Betreff, Anrede, Text, Gruß.
 %
 % Variablen: letternumber, letter_date, reference, subject, greeting, body,
 %            name, department_1, department_2, cp_givenname, cp_name, street,
@@ -26,18 +28,22 @@
 \input{insettings.tex}
 
 % Begriffe, die ältere Sprachdateien noch nicht kennen
-\providecommand{\betreff}{Betreff}
 \providecommand{\ihrzeichen}{Ihr Zeichen}
-\providecommand{\brief}{Brief}
+\newcommand{\unserzeichen}{\ifthenelse{\equal{\lxlangcode}{EN}}{Our reference}{Unser Zeichen}}
 
-% laufende Kopfzeile:
-\ourhead{\kundennummer}{<%customernumber%>}{\brief}{<%letternumber%>}{<%letter_date%>}
+% Beschriftung im Informationsblock: etwas kleiner und grau, der Wert daneben normal
+\newcommand{\infolabel}[1]{{\footnotesize\color{gray}#1}}
+
+% laufende Kopfzeile (ab Seite 2): Kunden-Nr. und Datum, ohne Belegbezeichnung
+\ourhead{\kundennummer}{<%customernumber%>}{}{}{<%letter_date%>}
 
 
 \begin{document}
 
 \ourfont
-\begin{minipage}[t]{8cm}
+
+% Anschrift im Fensterbereich
+\begin{minipage}[t]{8.5cm}
   \scriptsize
 
   {\color{gray}\underline{\firma\ $\cdot$ \strasse\ $\cdot$ \ort}}
@@ -57,50 +63,60 @@
 
   ~
 
-  <%zipcode%> <%city%>
-
-  <%country%>
+  <%if country%><%country%>-<%end if%><%zipcode%> <%city%>
 \end{minipage}
 \hfill
-\begin{minipage}[t]{6cm}
-  \hfill{\LARGE\textbf{\brief}}
+% Informationsblock
+\begin{minipage}[t]{6.3cm}
+  \vspace*{0.1cm}
+  \begin{tabular}{@{}l@{\hspace{0.5cm}}l@{}}
+    <%if reference%>\infolabel{\ihrzeichen}        & <%reference%> \\[0.08cm]<%end if%>
+    <%if letternumber%>\infolabel{\unserzeichen}   & <%letternumber%> \\[0.08cm]<%end if%>
+    <%if customernumber%>\infolabel{\kundennummer} & <%customernumber%> \\[0.08cm]<%end if%>
+    \infolabel{\ansprechpartner}                   & <%employee_name%> \\[0.08cm]
+    <%if employee_tel%>\infolabel{\textTelefon}    & <%employee_tel%> \\[0.08cm]<%end if%>
+    <%if employee_email%>\infolabel{\textEmail}    & <%employee_email%> \\[0.08cm]<%end if%>
+    \infolabel{\datum}                             & <%letter_date%> \\
+  \end{tabular}
+  <%if preview%>
 
   \vspace*{0.2cm}
-
-  <%if letternumber%>\hfill{\large\textbf{\nr ~<%letternumber%>}}<%end if%>
-  <%if preview%>\hfill{\large\textbf{\color{gray}VORSCHAU}}<%end if%>
-
-  \vspace*{0.2cm}
-
-  \datum:\hfill <%letter_date%>
-
-  <%if customernumber%>\kundennummer:\hfill <%customernumber%><%end if%>
-
-  <%if reference%>\ihrzeichen:\hfill <%reference%><%end if%>
-
-  \ansprechpartner:\hfill <%employee_name%>
-
-  <%if employee_tel%>\textTelefon \hfill <%employee_tel%><%end if%>
-
-  <%if employee_email%>\textEmail \hfill <%employee_email%><%end if%>
+  {\large\textbf{\color{gray}VORSCHAU}}<%end if%>
 \end{minipage}
 
-\vspace*{1.5cm}
+\vspace*{1.6cm}
 
-<%if subject%>\textbf{<%subject%>}
+<%if subject%>{\large\textbf{<%subject%>}}
 
-\vspace{0.5cm}
+\vspace{0.6cm}
 <%end if%>
 
 <%greeting%>
 
-\vspace{0.3cm}
+\vspace{0.35cm}
 
 <%body%>
 
-\vspace*{0.8cm}
+\vspace*{0.9cm}
 
-\gruesse \\ \\ \\
-  <%employee_name%><%if salesman_name%> \hspace{3cm} <%salesman_name%><%end if%>
+\gruesse
+
+\vspace*{1.3cm}
+
+<%if salesman_name%>
+\begin{minipage}[t]{6.5cm}
+  \rule{5.5cm}{0.3pt}\\[0.1cm]
+  <%employee_name%>
+\end{minipage}
+\begin{minipage}[t]{6.5cm}
+  \rule{5.5cm}{0.3pt}\\[0.1cm]
+  <%salesman_name%>
+\end{minipage}
+<%else%>
+\begin{minipage}[t]{6.5cm}
+  \rule{5.5cm}{0.3pt}\\[0.1cm]
+  <%employee_name%>
+\end{minipage}
+<%end if%>
 
 \end{document}

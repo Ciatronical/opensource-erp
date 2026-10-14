@@ -16,11 +16,11 @@ export function useCockpit() {
     const cockpit = ref(null)
     const ustvaYear = ref(null)
 
-    async function fetchCockpit() {
+    async function fetchCockpit(asOf = null) {
         loading.value = true
         error.value = null
         try {
-            const response = await axios.post('/api/accounting/', { action: 'getAccountingCockpit' })
+            const response = await axios.post('/api/accounting/', { action: 'getAccountingCockpit', as_of: asOf || undefined })
             if (response.data.success) {
                 cockpit.value = response.data.payload.results
             } else {

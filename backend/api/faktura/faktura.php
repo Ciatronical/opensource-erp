@@ -214,6 +214,19 @@ function getFakturaData($data) {
                         LEFT JOIN employee e ON e.id = pd.employee_id
                         WHERE pd.record_table = '{$mainTable}' AND pd.record_id = :fakturaID AND pd.status <> 'error'
                     ) AS s
+                ),
+            -- Erfolgreiche Kartenzahlungen am SumUp-Terminal (nur Rechnungen). Sie
+            -- werden NICHT sofort als Zahlung gebucht — die Buchung kommt mit der
+            -- SumUp-Auszahlung im Banking. Hier nur zur Anzeige und damit der
+            -- offene Rest nicht erneut ans Terminal geht.
+            'card_payments',
+                (
+                    SELECT COALESCE(json_agg(sc ORDER BY sc.id), '[]'::json)
+                    FROM (
+                        SELECT sc.id, sc.amount, sc.currency, sc.transaction_code, sc.card_type, sc.itime
+                        FROM sumup_checkouts sc
+                        WHERE sc.trans_id = :fakturaID AND sc.status = 'successful' AND '{$mainTable}' = 'ar'
+                    ) AS sc
                 )
             )
         ) AS result,

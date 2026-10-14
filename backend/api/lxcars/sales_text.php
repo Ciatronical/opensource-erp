@@ -226,7 +226,7 @@ PROMPT;
     }
 
     $responseData   = json_decode($response, true);
-    $generatedText  = $responseData['content'][0]['text'] ?? '';
+    $generatedText  = aiResponseText($responseData);
 
     if (empty($generatedText)) {
         throw new ApiError('CLAUDE_API_ERROR', 'Leere Antwort von Claude');

@@ -709,11 +709,13 @@
         "ecTerminalPassword_help": "Passwort für EC-Karten-Terminal",
         "sumup": "SumUp",
         "sumupEnabled": "SumUp aktivieren",
-        "sumupEnabled_help": "Überträgt den offenen Rechnungsbetrag beim Öffnen einer Rechnung automatisch an das gekoppelte SumUp-Terminal",
+        "sumupEnabled_help": "Schaltet das Kartenterminal in der Rechnung frei: offener Betrag wird beim Öffnen automatisch gesendet, abweichende Beträge (Anzahlung, Selbstbeteiligung) über das Eingabefeld in der Zahlungskarte",
         "sumupApiKey": "SumUp API-Schlüssel",
         "sumupApiKey_help": "Geheimer API-Schlüssel aus dem SumUp-Dashboard (developer.sumup.com → API Keys), beginnt mit sup_sk_",
         "sumupMerchantCode": "Merchant-Code",
         "sumupMerchantCode_help": "Händler-Kennung aus dem SumUp-Profil (z.B. MCXXXXXX)",
+        "sumupPrintCopies": "Exemplare nach Kartenzahlung",
+        "sumupPrintCopies_help": "Anzahl der Rechnungsausdrucke, die nach erfolgreicher Terminalzahlung automatisch auf dem gewählten Drucker erzeugt werden – mit Kartenvermerk und Kundenbeleg (0 = kein automatischer Druck, Standard 2)",
         "sumupPairing": {
             "title": "Terminal koppeln",
             "description": "Verbindet ein SumUp-Terminal (Solo) über die Cloud API mit diesem Account.",
@@ -1898,5 +1900,6 @@
                 "description": "Bezeichnung"
             }
         }
-    }
+    },
+    "letter": "Brief (letzte Nummer, nächster Brief erhält Zähler + 1)"
 }

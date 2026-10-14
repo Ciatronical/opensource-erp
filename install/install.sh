@@ -6,7 +6,7 @@
 #    Systempakete · PHP-FPM · Node-Build · PostgreSQL · Apache · Portfreigabe
 #    · HTTPS (Let's Encrypt) · SSE · Whisper · Ollama (lokaler LLM) · ANPR
 #    · Kameras (go2rtc + Monitor) · Cronjobs · DynDNS · Asterisk-Telefonie
-#    (Gerüst) · Borg-Backup (Gerüst)
+#    (Gerüst) · Borg-Backup (Storage Box, Zugang wird abgefragt)
 #
 #  ERREICHBARKEIT VON AUSSEN (z. B. http://isolierglas.spdns.de):
 #    Der öffentliche Hostname kommt aus OSERP_SERVER_NAME oder — wenn DynDNS
@@ -119,7 +119,7 @@ declare -A STEP_DESC=(
   [cron]="Cronjobs (WhatsApp-Reminder, eBay, Nachbuchen, asanetwork ...)"
   [dyndns]="DynDNS-Updater + systemd-Timer (Zugang in /etc/oserp/dyndns.conf)"
   [asterisk]="Asterisk/CRMTI-Telefonie (Paket + Konfig-Gerüst)"
-  [borg]="Borg-Backup (Paket + Gerüst, Repo-Secrets manuell)"
+  [borg]="Borg-Offsite-Backup auf Storage Box (fragt Zugang ab, Secrets nur in /etc/oserp/borg.env)"
   [kivitendo]="kivitendo via externem Installer (optional, nur mit OSERP_WITH_KIVITENDO=1)"
   [healthcheck]="Abschluss-Checks aller Dienste"
 )
@@ -884,15 +884,44 @@ setup_asterisk() {
 }
 
 # =============================================================================
-#  SCHRITT: borg  (Backup — Paket + Gerüst; Repo/Keys sind Secrets)
+#  SCHRITT: borg  (Offsite-Backup — Zugang wird ABGEFRAGT, nichts davon im Repo)
 # =============================================================================
+#  Das eigentliche Setup macht install/borg-standalone.sh: Storage-Box-Zugang,
+#  Passphrase und Uhrzeit abfragen -> /etc/oserp/borg.env (0600), Backup-Skript
+#  /usr/local/sbin/oserp-backup, Status-Helfer, root-SSH-Key auf dem Server,
+#  Repository anlegen, Cron /etc/cron.d/oserp-backup, Erstsicherung.
+BORG_CONF=/etc/oserp/borg.env
 setup_borg() {
     step "Borg-Backup"
-    command -v borg >/dev/null || sudo apt-get install -y borgbackup
+    command -v borg >/dev/null || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y borgbackup
     ok "borgbackup installiert ($(borg --version 2>/dev/null || echo '?'))"
-    todo "Backup-Ziel ist ein Secret (project_borg_backup_setup): Hetzner-Repo u338100, SSH-Key, Passphrase"
-    todo "  - SSH-Key + BORG_PASSPHRASE einrichten, dann Backup-Cron + Auto-Resume-Supervisor"
-    todo "  - 'borg-uebersicht'-Helfer + prune/keepalive vom alten Setup übernehmen"
+    local standalone="$OSERP_ROOT/install/borg-standalone.sh"
+
+    if sudo test -f "$BORG_CONF" && ! sudo grep -q "BITTE-EINTRAGEN" "$BORG_CONF"; then
+        # Zugang vorhanden: nur Skripte + Cron idempotent neu schreiben
+        if sudo OSERP_USER="$OSERP_USER" bash "$standalone" --refresh </dev/null; then
+            ok "Borg-Backup aktiv (Config $BORG_CONF, Cron /etc/cron.d/oserp-backup)"
+        else
+            warn "Borg-Skripte konnten nicht aktualisiert werden — sudo $standalone --refresh"
+        fi
+        return
+    fi
+
+    if [[ -t 0 && -z "${OSERP_SKIP_BORG_PROMPT:-}" ]]; then
+        echo
+        info "Für das Offsite-Backup werden jetzt die Daten des Borg-Servers (Storage Box) gebraucht."
+        local a
+        read -r -p "Borg-Backup jetzt einrichten? [J/n] " a
+        if [[ ${a:-J} =~ ^[JjYy]$ ]]; then
+            if sudo OSERP_USER="$OSERP_USER" bash "$standalone"; then
+                ok "Borg-Backup eingerichtet"
+                return
+            fi
+            warn "Borg-Einrichtung abgebrochen oder fehlgeschlagen"
+        fi
+    fi
+    todo "Borg-Backup: sudo $standalone ausführen (fragt Storage-Box-Konto, Passphrase, Uhrzeit ab)"
+    todo "  unbeaufsichtigt: BORG_BACKUP_USER=u123456 BORG_REPOSITORY_DIR=$(hostname) BORG_PASSPHRASE=... sudo -E $standalone"
 }
 
 # =============================================================================
@@ -946,6 +975,9 @@ healthcheck() {
     if want dyndns && sudo test -f "$DYNDNS_CONF" && ! sudo grep -q "BITTE-EINTRAGEN" "$DYNDNS_CONF"; then
         _chk "DynDNS-Timer aktiv" "systemctl is-active --quiet oserp-dyndns.timer"
     fi
+    if want borg && sudo test -f "$BORG_CONF"; then
+        _chk "Borg-Backup-Cron"   "test -f /etc/cron.d/oserp-backup && test -x /usr/local/sbin/oserp-backup"
+    fi
     local url="http://localhost"
     if [[ "$OSERP_SERVER_NAME" != localhost ]]; then
         if check_public_http; then
@@ -968,7 +1000,7 @@ healthcheck() {
         warn "Einzelne Checks offen — Details siehe oben / journalctl."
     fi
     echo
-    info "Offene manuelle Schritte oben mit [TODO] markiert (Setup-Assistent, Asterisk, Borg)."
+    info "Offene manuelle Schritte oben mit [TODO] markiert (Setup-Assistent, Asterisk, ggf. Borg)."
 }
 
 # =============================================================================

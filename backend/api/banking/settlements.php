@@ -644,14 +644,33 @@ function findInvoicesForSettlementLine($data) {
                 ['payout' => $line['payout_date']]
             );
         };
+        // (0) Terminal-Checkouts aus der Faktura: Transaktionscode -> Rechnung
+        //     (sumup_checkouts, exakte Zuordnung ohne Betrags- oder Textvergleich)
+        $codes = array_values(array_filter(array_map(fn($t) => (string)($t['code'] ?? ''), $transactions)));
+        $byCode = [];
+        if (count($codes) > 0) {
+            foreach ($db->getAll(
+                "SELECT transaction_code, trans_id FROM sumup_checkouts
+                  WHERE status = 'successful' AND trans_id IS NOT NULL AND transaction_code = ANY(:codes::text[])",
+                ['codes' => '{' . implode(',', array_map(fn($c) => '"' . str_replace('"', '', $c) . '"', $codes)) . '}']
+            ) as $r) {
+                $byCode[$r['transaction_code']] = (int)$r['trans_id'];
+            }
+        }
+
         $used = [];
         $matches = [];
         foreach ($transactions as $tx) {
             $gross = round(floatval($tx['gross'] ?? 0), 2);
             $descr = (string)($tx['description'] ?? '');
             $hit = null;
+            // (0) Checkout aus der Faktura: Transaktionscode fuehrt direkt zur Rechnung
+            $code = (string)($tx['code'] ?? '');
+            if ($code !== '' && isset($byCode[$code]) && isset($byId[$byCode[$code]]) && !isset($used[$byCode[$code]])) {
+                $hit = $byId[$byCode[$code]];
+            }
             // (1) Rechnungsnummer in der SumUp-Beschreibung (Checkout aus dem ERP)
-            if ($descr !== '') {
+            if (!$hit && $descr !== '') {
                 foreach ($pool as $r) {
                     if (isset($used[(int)$r['id']]) || strlen($r['invnumber']) < 4) continue;
                     if (preg_match('/(^|[^[:alnum:]])' . preg_quote($r['invnumber'], '/') . '($|[^[:alnum:]])/', $descr)) { $hit = $r; break; }

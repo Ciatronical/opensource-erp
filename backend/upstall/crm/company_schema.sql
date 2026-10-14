@@ -2819,6 +2819,35 @@ CREATE INDEX IF NOT EXISTS idx_payment_settlements_vendor ON payment_settlements
 
 COMMENT ON TABLE payment_settlements IS 'Hochgeladene Sammelabrechnungen von Kartendienstleistern (Flatpay/Rapyd, SumUp). Datei liegt als accounting_documents beim Kreditor.';
 
+-- ============================================================
+-- SumUp-Terminal: Protokoll der aus der Faktura gestarteten Karten-Checkouts
+-- (Cloud API). Ein Eintrag je an das Terminal gesendetem Betrag; das
+-- Ergebnis (Transaktionscode, Kartentyp) traegt sumupCheckoutStatus() nach.
+-- Der Transaktionscode dient dem spaeteren Abgleich der Sammelauszahlung.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS sumup_checkouts (
+    id                      SERIAL PRIMARY KEY,
+    trans_id                INTEGER,                                -- ar.id der Rechnung (optional)
+    amount                  NUMERIC(15,2) NOT NULL,
+    currency                VARCHAR(3) DEFAULT 'EUR',
+    description             TEXT,
+    client_transaction_id   TEXT NOT NULL,                          -- Kennung aus der Checkout-Antwort
+    checkout_id             TEXT,
+    status                  VARCHAR(20) NOT NULL DEFAULT 'pending'  -- pending | successful | failed | cancelled
+                            CHECK (status IN ('pending', 'successful', 'failed', 'cancelled')),
+    transaction_code        TEXT,                                   -- SumUp-Transaktionscode (z. B. TEENSK4W2K)
+    card_type               TEXT,
+    receipt                 JSONB,                                  -- Kundenbeleg (SumUp Receipts API), wird als Belegseite mitgedruckt
+    employee_id             INTEGER,
+    itime                   TIMESTAMP DEFAULT NOW(),
+    mtime                   TIMESTAMP DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sumup_checkouts_ctid ON sumup_checkouts(client_transaction_id);
+CREATE INDEX IF NOT EXISTS idx_sumup_checkouts_trans ON sumup_checkouts(trans_id);
+
+COMMENT ON TABLE sumup_checkouts IS 'Aus der Faktura an das SumUp-Terminal gesendete Karten-Checkouts mit Ergebnis.';
+
 CREATE TABLE IF NOT EXISTS payment_settlement_lines (
     id                          SERIAL PRIMARY KEY,
     settlement_id               INTEGER NOT NULL REFERENCES payment_settlements(id) ON DELETE CASCADE,

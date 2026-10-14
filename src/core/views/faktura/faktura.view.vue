@@ -311,7 +311,11 @@
                     :gross-amount="accounting.calculatedGrossAmount.value"
                     :show-exchange-rate="accounting.isForeignCurrency.value"
                     :invnumber="faktura.data.common?.invnumber || ''"
+                    :terminal="sumupEnabled ? terminal : null"
+                    :card-payments="cardPayments"
                     @save="() => saveAllItems(true)"
+                    @terminal-send="sendToTerminal"
+                    @terminal-cancel="cancelTerminal"
                 />
             </section>
 
@@ -1196,7 +1200,7 @@ import { useItemManagement } from './composables/useItemManagement.js'
 import { useVehicleSection } from './composables/useVehicleSection.js'
 import { useSilverDATImport } from './composables/useSilverDATImport.js'
 import { useGutachtenImport } from './composables/useGutachtenImport.js'
-import { onMounted, onBeforeUnmount, ref, computed, nextTick, defineAsyncComponent, shallowRef, watch } from 'vue'
+import { onMounted, onBeforeUnmount, ref, reactive, computed, nextTick, defineAsyncComponent, shallowRef, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import * as alerts from '@/core/utils/alerts.js'
 import { DOCUMENT_LIST_ROUTE_NAMES } from '@/core/constants/routes.js'
@@ -1836,41 +1840,192 @@ export default defineComponent({
                 sseSource.close()
                 sseSource = null
             }
+            stopTerminalPolling()
         })
 
-        // SumUp: Beim Öffnen einer noch offenen Rechnung den fälligen Betrag
-        // automatisch an das gekoppelte Kartenterminal senden. Schutz: nur bei
-        // Typ "Rechnung", nur wenn SumUp aktiviert ist und nur wenn noch ein
-        // offener Betrag besteht – sonst würde der Reader bei jedem Ansehen
-        // blockiert bzw. eine bezahlte Rechnung erneut zur Kasse gebeten.
+        // ===== SumUp-Kartenterminal =====
+        //
+        // Ablauf: Betrag an den gekoppelten Reader senden -> Ergebnis per Polling
+        // abfragen -> bei Erfolg Zahlung auf das konfigurierte Kartenkonto buchen
+        // -> Rechnung automatisch mehrfach drucken (Anzahl aus der Konfiguration).
+        // Ohne aktiviertes SumUp (sumup_enabled) passiert hier nichts.
+        const sumupEnabled = computed(() => {
+            const en = oserp.getClientDefaultValue('sumup_enabled', null)
+            return en === true || en === 'true' || en === 't' || en === '1' || en === 1
+        })
+
+        const terminal = reactive({
+            status: 'idle',          // idle | sending | waiting | success | failed | cancelled | timeout
+            amount: 0,
+            readerState: '',
+            message: '',
+            clientTransactionId: null
+        })
+
+        // Erfolgreiche Kartenzahlungen dieser Rechnung (sumup_checkouts). Sie werden
+        // bewusst NICHT sofort gebucht: die Zahlung wird erst mit der SumUp-Auszahlung
+        // im Banking gegen die Rechnung gebucht (ohne Verrechnungskonto). Hier dienen
+        // sie der Anzeige und verhindern, dass der Betrag erneut ans Terminal geht.
+        const cardPayments = computed(() => faktura.data?.card_payments || [])
+        const cardPaidTotal = computed(() => cardPayments.value.reduce((sum, p) => sum + Math.abs(Number(p.amount) || 0), 0))
+
+        const TERMINAL_POLL_MS = 2500
+        const TERMINAL_TIMEOUT_MS = 4 * 60 * 1000
+        let terminalPollTimer = null
+        let terminalPollStarted = 0
+
+        function stopTerminalPolling() {
+            if (terminalPollTimer) {
+                clearTimeout(terminalPollTimer)
+                terminalPollTimer = null
+            }
+        }
+
+        /**
+         * Sendet einen Betrag an das Terminal und startet die Ergebnisabfrage.
+         * Ein noch laufender Checkout (z. B. der automatisch gesendete Rechnungs-
+         * betrag) wird vom Backend vorher am Terminal abgebrochen.
+         *
+         * @param {number} amount Bruttobetrag, der am Terminal kassiert werden soll
+         */
+        async function sendToTerminal(amount) {
+            if (!sumupEnabled.value || fakturaType.value !== 'invoice' || !fakturaId.value) return
+            if (!(amount > 0)) return
+
+            stopTerminalPolling()
+            terminal.status = 'sending'
+            terminal.amount = amount
+            terminal.readerState = ''
+            terminal.message = ''
+            terminal.clientTransactionId = null
+
+            try {
+                toasts.info(t('FakturaView.faktura.terminalSending', { amount: amount.toFixed(2) }))
+                const res = await faktura.sendSumupCheckout(amount, {
+                    fakturaID: fakturaId.value,
+                    description: faktura.data?.common?.invnumber || '',
+                    employeeId: oserp.session?.logged_in_employee?.id || null
+                })
+                terminal.clientTransactionId = res?.client_transaction_id || null
+                terminal.status = 'waiting'
+                toasts.success(t('FakturaView.faktura.terminalSent'))
+                if (terminal.clientTransactionId) {
+                    terminalPollStarted = Date.now()
+                    terminalPollTimer = setTimeout(pollTerminalStatus, TERMINAL_POLL_MS)
+                }
+            } catch (e) {
+                terminal.status = 'failed'
+                terminal.message = e.message || ''
+                toasts.error(t('FakturaView.faktura.terminalError', { msg: e.message || '' }))
+            }
+        }
+
+        /**
+         * Fragt das Zahlungsergebnis ab, bis SumUp ein Endergebnis liefert
+         * oder die Wartezeit abgelaufen ist.
+         */
+        async function pollTerminalStatus() {
+            terminalPollTimer = null
+            if (terminal.status !== 'waiting' || !terminal.clientTransactionId) return
+
+            try {
+                const res = await faktura.getSumupCheckoutStatus(terminal.clientTransactionId)
+                if (terminal.status !== 'waiting') return // zwischenzeitlich abgebrochen
+
+                if (res.status === 'successful') {
+                    await onTerminalPaid(res)
+                    return
+                }
+                if (res.status === 'failed' || res.status === 'cancelled') {
+                    terminal.status = res.status
+                    toasts.warning(t('FakturaView.faktura.terminal.' + res.status))
+                    return
+                }
+                terminal.readerState = res.reader_state || ''
+            } catch (e) {
+                // Vorübergehender Fehler (Netz, SumUp): weiter versuchen
+                console.warn('SumUp-Status:', e.message)
+            }
+
+            if (Date.now() - terminalPollStarted > TERMINAL_TIMEOUT_MS) {
+                terminal.status = 'timeout'
+                toasts.warning(t('FakturaView.faktura.terminal.timeout'))
+                return
+            }
+            terminalPollTimer = setTimeout(pollTerminalStatus, TERMINAL_POLL_MS)
+        }
+
+        /**
+         * Erfolgreiche Kartenzahlung: am Beleg vermerken (sumup_checkouts hat das
+         * Backend bereits geschrieben) und die Rechnung automatisch drucken.
+         * Keine Zahlungsbuchung — die kommt mit der SumUp-Auszahlung im Banking.
+         *
+         * @param {Object} res Ergebnis aus getSumupCheckoutStatus()
+         */
+        async function onTerminalPaid(res) {
+            const amount = Math.round(((res.amount > 0 ? res.amount : terminal.amount) || 0) * 100) / 100
+            terminal.amount = amount
+            terminal.status = 'success'
+
+            if (faktura.data) {
+                faktura.data.card_payments = [...cardPayments.value, {
+                    id: null,
+                    amount,
+                    currency: res.currency || 'EUR',
+                    transaction_code: res.transaction_code || '',
+                    card_type: res.card_type || '',
+                    itime: new Date().toISOString()
+                }]
+            }
+            toasts.success(t('FakturaView.faktura.terminal.paid', { amount: amount.toFixed(2) }))
+
+            const copies = Math.max(0, parseInt(oserp.getClientDefaultValue('sumup_print_copies', 2), 10) || 0)
+            if (copies > 0) {
+                // Noch kein Drucker gewählt, aber nur einer verfügbar: diesen nehmen,
+                // damit der Druck nach der Kartenzahlung nicht an der Auswahl scheitert
+                if (!selectedPrinter.value && printerList.value.length === 1) {
+                    selectPrinter(printerList.value[0])
+                }
+                await printFaktura(copies)
+            }
+        }
+
+        /**
+         * Laufenden Checkout am Terminal abbrechen.
+         */
+        async function cancelTerminal() {
+            stopTerminalPolling()
+            const ctid = terminal.clientTransactionId
+            terminal.status = 'cancelled'
+            if (!ctid) return
+            try {
+                await faktura.terminateSumupCheckout(ctid)
+            } catch (e) {
+                toasts.error(t('FakturaView.faktura.terminalError', { msg: e.message || '' }))
+            }
+        }
+
+        // Beim Öffnen einer noch offenen Rechnung den fälligen Betrag automatisch
+        // an das Terminal senden. Schutz: nur bei Typ "Rechnung", nur wenn SumUp
+        // aktiviert ist und nur wenn noch ein offener Betrag besteht – sonst würde
+        // der Reader bei jedem Ansehen blockiert bzw. eine bezahlte Rechnung
+        // erneut zur Kasse gebeten.
         let terminalCheckoutSent = false
         async function maybeSendInvoiceToTerminal() {
             if (terminalCheckoutSent) return
             if (fakturaType.value !== 'invoice' || !fakturaId.value) return
-
-            const en = oserp.getClientDefaultValue('sumup_enabled', null)
-            const enabled = en === true || en === 'true' || en === 't' || en === '1' || en === 1
-            if (!enabled) return
+            if (!sumupEnabled.value) return
 
             // Bruttobetrag sofort berechnen (Debounce umgehen) und offenen Rest ermitteln
             accounting.flushCalculation()
             const gross = accounting.calculatedGrossAmount.value || 0
             const paid = (paymentList.value || []).reduce((sum, p) => sum + Math.abs(p.amount || 0), 0)
-            const remaining = Math.round((gross - paid) * 100) / 100
-            if (remaining <= 0) return // bereits (vollständig) bezahlt
+            const remaining = Math.round((gross - paid - cardPaidTotal.value) * 100) / 100
+            if (remaining <= 0) return // bereits (vollständig) bezahlt bzw. am Terminal kassiert
 
             terminalCheckoutSent = true
-            try {
-                toasts.info(t('FakturaView.faktura.terminalSending', { amount: remaining.toFixed(2) }))
-                await faktura.sendSumupCheckout(remaining, {
-                    fakturaID: fakturaId.value,
-                    description: faktura.data?.common?.invnumber || ''
-                })
-                toasts.success(t('FakturaView.faktura.terminalSent'))
-            } catch (e) {
-                terminalCheckoutSent = false // bei Fehler erneuter Versuch möglich
-                toasts.error(t('FakturaView.faktura.terminalError', { msg: e.message || '' }))
-            }
+            await sendToTerminal(remaining)
+            if (terminal.status === 'failed') terminalCheckoutSent = false // erneuter Versuch möglich
         }
 
         onMounted(async () => {
@@ -2911,7 +3066,14 @@ export default defineComponent({
             selectedTemplate.value = template.id
         }
 
-        async function printFaktura() {
+        /**
+         * Druckt den Beleg auf dem gewählten Drucker.
+         *
+         * @param {number} copies Anzahl Exemplare (z. B. 2 nach Kartenzahlung); der
+         *                        Klick in der Aktionsleiste übergibt nichts -> 1
+         */
+        async function printFaktura(copies = 1) {
+            const n = Number.isInteger(copies) && copies > 0 ? copies : 1
             if (!selectedPrinter.value) {
                 alerts.warning(t('FakturaView.faktura.selectPrinterFirst'))
                 return
@@ -2922,9 +3084,14 @@ export default defineComponent({
                     fakturaId.value,
                     fakturaType.value,
                     selectedTemplate.value,
-                    selectedPrinter.value.id
+                    selectedPrinter.value.id,
+                    n
                 )
-                alerts.success(t('FakturaView.faktura.printSuccess', { name: selectedPrinter.value.printer_description }))
+                if (n > 1) {
+                    alerts.success(t('FakturaView.faktura.terminal.printed', { copies: n }))
+                } else {
+                    alerts.success(t('FakturaView.faktura.printSuccess', { name: selectedPrinter.value.printer_description }))
+                }
             } catch (e) {
                 console.error('Fehler beim Drucken:', e)
                 alerts.error(t('FakturaView.faktura.printError'))
@@ -3789,6 +3956,11 @@ export default defineComponent({
             onVoiceVehicle,
             exportXInvoice,
             selectPrinter,
+            sumupEnabled,
+            terminal,
+            cardPayments,
+            sendToTerminal,
+            cancelTerminal,
             selectTemplate,
             printFaktura,
             showPdfPreview,

@@ -20,6 +20,18 @@
             <h1 class="text-h6 mb-0">{{ t('AccountingView.menu.title') }}</h1>
             <span class="text-caption text-medium-emphasis">{{ periodLabel }}</span>
             <v-spacer />
+            <!-- Stichtag für die Geldkonten: ohne Datum zählt alles bis heute, was
+                 sich mit keinem Kontoauszug vergleichen lässt. Mit Datum stimmt die
+                 Bank-Kachel mit dem Auszug dieses Tages überein (sofern alles gebucht ist). -->
+            <v-text-field
+                v-model="asOf"
+                type="date"
+                :label="t('AccountingView.cockpit.asOf')"
+                density="compact" variant="outlined" hide-details clearable
+                prepend-inner-icon="mdi-calendar-check-outline"
+                style="max-width: 200px"
+                @update:model-value="load"
+            />
             <v-btn variant="tonal" size="small" class="text-none" @click="paletteRef?.openPalette()">
                 <v-icon start size="small">mdi-magnify</v-icon>
                 {{ t('AccountingView.palette.button') }}
@@ -39,7 +51,7 @@
                 <button class="pulse__cell" @click="router.push({ name: 'banking-overview' })">
                     <div class="pulse__label">{{ label('AccountingView.cockpit.pulse.bank') }}</div>
                     <div class="pulse__value">{{ money(pulse.bank_balance) }}</div>
-                    <div class="pulse__sub">{{ t('AccountingView.cockpit.pulse.bankAccounts', { count: pulse.bank_accounts || 0 }) }}</div>
+                    <div class="pulse__sub">{{ bankSubtitle }}</div>
                 </button>
                 <!-- Eigene Kachel, weil Bargeld eine eigene Kasse hat: der Bestand
                      wird gezählt und abgezeichnet, nicht von einer Bank bestätigt.
@@ -311,11 +323,21 @@ const vatPeriod = computed(() => {
     return months.find(month => month.month === previous.previous_month) || null
 })
 
+// Der Saldo ist immer ein Stand zu einem Datum — das steht dran. Ohne Stichtag
+// ist es „heute" mit der letzten Buchung, sonst der gewählte Tag.
+const asOf = ref('')
+const standText = computed(() => pulse.value.as_of_today || !pulse.value.as_of
+    ? t('AccountingView.cockpit.pulse.asOfToday', { date: pulse.value.bank_last || '—' })
+    : t('AccountingView.cockpit.pulse.asOfDate', { date: pulse.value.as_of }))
+const bankSubtitle = computed(() =>
+    `${t('AccountingView.cockpit.pulse.bankAccounts', { count: pulse.value.bank_accounts || 0 })} · ${standText.value}`)
+
 const cashSubtitle = computed(() => {
     const count = pulse.value.cash_accounts || 0
-    return pulse.value.cash_last
+    const base = pulse.value.cash_last
         ? t('AccountingView.cockpit.pulse.cashSub', { count, date: pulse.value.cash_last })
         : t('AccountingView.cockpit.pulse.cashNone', { count })
+    return pulse.value.as_of_today || !pulse.value.as_of ? base : `${base} · ${standText.value}`
 })
 
 // Bis zu drei Kontennamen liefert das Backend mit; sind es mehr, sagt der Rest
@@ -627,7 +649,7 @@ async function onDrop(event) {
 }
 
 async function load() {
-    await Promise.all([fetchCockpit(), fetchUstvaYear(year.value)])
+    await Promise.all([fetchCockpit(asOf.value || null), fetchUstvaYear(year.value)])
 }
 
 onMounted(() => {

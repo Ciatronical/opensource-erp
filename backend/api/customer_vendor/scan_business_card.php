@@ -353,7 +353,7 @@ PROMPT;
     }
 
     $responseData = json_decode($response, true);
-    $aiText = $responseData['content'][0]['text'] ?? '';
+    $aiText = aiResponseText($responseData);
 
     // Falls die KI einen Markdown-Codeblock zurueckgibt, JSON extrahieren
     if (preg_match('/```(?:json)?\s*(\{[\s\S]*?\})\s*```/', $aiText, $m)) {

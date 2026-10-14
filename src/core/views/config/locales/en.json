@@ -698,11 +698,13 @@
         "ecTerminalPassword_help": "Password for EC card terminal",
         "sumup": "SumUp",
         "sumupEnabled": "Enable SumUp",
-        "sumupEnabled_help": "Automatically sends the outstanding invoice amount to the paired SumUp terminal when an invoice is opened",
+        "sumupEnabled_help": "Enables the card terminal on invoices: the open amount is sent automatically when the invoice is opened, different amounts (deposit, excess) via the input in the payment card",
         "sumupApiKey": "SumUp API key",
         "sumupApiKey_help": "Secret API key from the SumUp dashboard (developer.sumup.com → API Keys), starts with sup_sk_",
         "sumupMerchantCode": "Merchant code",
         "sumupMerchantCode_help": "Merchant identifier from your SumUp profile (e.g. MCXXXXXX)",
+        "sumupPrintCopies": "Copies after card payment",
+        "sumupPrintCopies_help": "Number of invoice printouts created automatically on the selected printer after a successful terminal payment – with card note and customer receipt (0 = no automatic print, default 2)",
         "sumupPairing": {
             "title": "Pair terminal",
             "description": "Connects a SumUp terminal (Solo) to this account via the Cloud API.",
@@ -1898,5 +1900,6 @@
                 "description": "Name"
             }
         }
-    }
+    },
+    "letter": "Letter (last number, next letter gets counter + 1)"
 }

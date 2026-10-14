@@ -7,20 +7,14 @@
 <template>
     <NavbarView />
 
-    <v-container fluid class="pa-2 pa-md-4">
-        <v-row class="mb-2" align="center">
-            <v-col cols="12" md="6">
-                <h1 class="text-h5 text-md-h4 d-flex align-center">
-                    <v-icon class="me-2" color="primary">mdi-email-edit-outline</v-icon>
-                    {{ t('LettersView.title') }}
-                </h1>
-            </v-col>
-            <v-col cols="12" md="6" class="d-flex justify-md-end">
+    <v-container fluid class="pt-2 px-2 px-sm-4">
+        <page-header :title="t('LettersView.title')" :subtitle="t('LettersView.subtitle')">
+            <template #actions>
                 <v-btn color="primary" variant="flat" prepend-icon="mdi-plus" :to="{ name: 'letter-new' }">
                     {{ t('LettersView.newLetter') }}
                 </v-btn>
-            </v-col>
-        </v-row>
+            </template>
+        </page-header>
 
         <!-- Filter -->
         <v-row class="mb-2" dense>
@@ -64,8 +58,8 @@
 
         <v-row>
             <v-col cols="12">
-                <v-card variant="outlined" rounded="lg">
-                    <v-card-text class="pa-0" style="overflow-x: auto;">
+                <section-card plain>
+                    <div style="overflow-x: auto;">
                         <v-data-table-server
                             :headers="headers"
                             :items="letters"
@@ -125,8 +119,8 @@
                                 </div>
                             </template>
                         </v-data-table-server>
-                    </v-card-text>
-                </v-card>
+                    </div>
+                </section-card>
             </v-col>
         </v-row>
     </v-container>
@@ -138,6 +132,8 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import PageHeader from '@/core/components/layout/page-header.vue'
+import SectionCard from '@/core/components/layout/section-card.vue'
 import * as toast from '@/core/utils/toasts.js'
 import { openBase64Pdf } from '@/core/utils/download.js'
 

@@ -107,6 +107,7 @@ import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import Swal from 'sweetalert2'
+import { ApiError } from '@/core/utils/error.js'
 import * as toasts from '@/core/utils/toasts.js'
 import AiModelButton from '@/core/components/ai-model-button.vue'
 
@@ -164,7 +165,7 @@ export default {
                 Swal.fire({
                     icon: 'error',
                     title: t('CarSellDialog.errorGenerate'),
-                    text: err?.message || String(err),
+                    text: err instanceof ApiError ? err.code : (err?.message || String(err)),
                     confirmButtonText: 'OK'
                 })
             } finally {
@@ -181,7 +182,7 @@ export default {
                 Swal.fire({
                     icon: 'error',
                     title: t('CarSellDialog.errorSave'),
-                    text: err?.message || String(err),
+                    text: err instanceof ApiError ? err.code : (err?.message || String(err)),
                     confirmButtonText: 'OK'
                 })
             } finally {

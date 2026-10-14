@@ -121,3 +121,25 @@ function resolveAiModel($config, $assistant, $override = null) {
 
     return $assistants[$assistant]['default'];
 }
+
+/**
+ * Liefert den Antworttext einer Messages-API-Antwort
+ *
+ * Neuere Modelle (z. B. claude-opus-5) stellen dem Text einen
+ * „thinking“-Block voran. Wer nur content[0].text liest, bekommt dann
+ * einen leeren String und meldet „Leere Antwort von Claude“. Hier werden
+ * alle Textblöcke in Reihenfolge zusammengefügt; Blöcke anderer Typen
+ * (thinking, tool_use) werden übersprungen.
+ *
+ * @param array|null $responseData Dekodierte JSON-Antwort der Messages-API
+ * @return string Zusammengefügter Antworttext, leer wenn kein Textblock vorhanden
+ */
+function aiResponseText($responseData) {
+    $parts = [];
+    foreach (($responseData['content'] ?? []) as $block) {
+        if (($block['type'] ?? '') === 'text' && isset($block['text'])) {
+            $parts[] = $block['text'];
+        }
+    }
+    return trim(implode("\n", $parts));
+}

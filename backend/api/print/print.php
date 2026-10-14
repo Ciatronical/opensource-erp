@@ -772,13 +772,17 @@ function printBatchToPrinter($data) {
  * @param int $data['printerId'] ID des Druckers aus der printers-Tabelle
  * @param string $data['templateSet'] Optional: Vorlagen-Set, sonst aus defaults.templates
  * @param string $data['templateName'] Optional: Vorlagendatei, sonst automatisch erkannt
- * @testdata {"fakturaID": 1, "fakturaType": "invoice", "printerId": 1}
+ * @param int $data['copies'] Optional: Anzahl Exemplare (1-10, Standard 1)
+ * @testdata {"fakturaID": 1, "fakturaType": "invoice", "printerId": 1, "copies": 1}
  */
 function printToPrinter($data) {
     $fakturaID = intval($data['fakturaID'] ?? 0);
     $fakturaType = $data['fakturaType'] ?? 'invoice';
     $templateName = $data['templateName'] ?? null;
     $printerId = intval($data['printerId'] ?? 0);
+    // Anzahl Exemplare (z. B. 2 nach Kartenzahlung am Terminal): das PDF wird
+    // einmal erzeugt und mehrfach an den Druckbefehl uebergeben.
+    $copies = min(10, max(1, intval($data['copies'] ?? 1)));
 
     if (!$fakturaID) {
         resultInfo(false, 'VALIDATION_ERROR', 'fakturaID required');
@@ -859,7 +863,11 @@ function printToPrinter($data) {
         $vars['variables']['filename'] ?? null, mitarbeiterId($data));
 
     $cmd = sprintf('%s %s 2>&1', $printer['printer_command'], escapeshellarg($pdfPath));
-    exec($cmd, $output, $returnCode);
+    $returnCode = 0;
+    $output = [];
+    for ($i = 0; $i < $copies && $returnCode === 0; $i++) {
+        exec($cmd, $output, $returnCode);
+    }
 
     $engine->cleanup($pdfPath);
 
@@ -876,7 +884,7 @@ function printToPrinter($data) {
         );
     }
 
-    resultInfo(true, 'PRINTED', ['printer' => $printer['printer_description']]);
+    resultInfo(true, 'PRINTED', ['printer' => $printer['printer_description'], 'copies' => $copies]);
 }
 
 /**
@@ -1041,9 +1049,26 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
                         0 AS amount, 0 AS netamount,";
     }
     elseif ($isArDocument) {
+        // card_paid: Summe der erfolgreichen Kartenzahlungen am SumUp-Terminal
+        // (sumup_checkouts) — erscheint auf dem Ausdruck als "... mit Karte
+        // bezahlt". Gebucht wird die Zahlung erst mit der SumUp-Auszahlung.
         $headColumns = "m.invnumber, m.storno, m.storno_id, m.invnumber_for_credit_note, m.type AS ar_type,
                         m.ordnumber, m.quonumber, m.transdate, m.duedate, m.deliverydate,
-                        m.amount, m.netamount,";
+                        m.amount, m.netamount,
+                        (SELECT COALESCE(SUM(sc.amount), 0)
+                           FROM sumup_checkouts sc
+                          WHERE sc.trans_id = m.id AND sc.status = 'successful'
+                        ) AS card_paid,
+                        (SELECT MAX(sc.itime)::date
+                           FROM sumup_checkouts sc
+                          WHERE sc.trans_id = m.id AND sc.status = 'successful'
+                        ) AS card_paid_date,
+                        (SELECT json_agg(sc.receipt ORDER BY sc.id)
+                           FROM sumup_checkouts sc
+                          WHERE sc.trans_id = m.id
+                            AND sc.status = 'successful'
+                            AND sc.receipt IS NOT NULL
+                        ) AS card_receipts,";
     }
     else {
         $headColumns = "m.ordnumber, m.quonumber, m.transdate, m.reqdate,
@@ -1333,6 +1358,10 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         return number_format(floatval($value), 2, ',', '.');
     };
 
+    $cardPaid = round((float)($head['card_paid'] ?? 0), 2);
+    $cardOpen = round((float)($head['amount'] ?? 0) - $cardPaid, 2);
+    $cardReceipts = buildCardReceipts($head['card_receipts'] ?? null, $fmt);
+
     $isStorno = ($isInvoice || $isCreditNote)
         && (($head['storno'] ?? false) === true
             || ($head['storno'] ?? false) === 't'
@@ -1426,6 +1455,15 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         // Zahlungsbedingungen
         'payment_terms'   => $head['payment_terms'] ?? '',
 
+        // Kartenzahlung am SumUp-Terminal: leer, wenn nichts per Karte bezahlt wurde
+        // (Vorlagen pruefen <%if card_paid%>). card_open = verbleibender Rest.
+        'card_paid'       => $cardPaid > 0 ? $fmt($cardPaid) : '',
+        'card_paid_date'  => $cardPaid > 0 ? formatDate($head['card_paid_date'] ?? '') : '',
+        'card_open'       => ($cardPaid > 0 && $cardOpen > 0) ? $fmt($cardOpen) : '',
+        // Kundenbelege der Terminalzahlungen (eigene Seite hinter der Rechnung,
+        // Schleife <%foreach card_receipt_amount%>)
+        'has_card_receipt' => count($cardReceipts) > 0 ? '1' : '',
+
         // Notizen
         'notes'           => $head['notes'] ?? '',
 
@@ -1509,6 +1547,12 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
 
     // Steuer
     $arrays['taxdescription'] = array_map(function($t) { return $t['taxdescription']; }, $taxes);
+
+    // Kundenbelege (Kartenzahlung am SumUp-Terminal)
+    foreach (['amount', 'tip', 'currency', 'time', 'receipt_no', 'code', 'card', 'application', 'aid',
+              'entry', 'verification', 'tid', 'auth', 'merchant', 'merchant_address', 'merchant_code'] as $k) {
+        $arrays['card_receipt_' . $k] = array_column($cardReceipts, $k);
+    }
     $arrays['tax']            = array_map(function($t) use ($fmt) { return $fmt($t['tax_amount']); }, $taxes);
     $arrays['taxrate']        = array_map(function($t) {
         // Satz aus Dezimalwert (z. B. 0.19) in Prozent (19) ohne unnötige Nachkommastellen
@@ -1549,6 +1593,58 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
 /**
  * Formatiert ein Datum aus der DB (YYYY-MM-DD) nach deutschem Format (DD.MM.YYYY)
  */
+/**
+ * Bereitet die gespeicherten SumUp-Kundenbelege (sumup_checkouts.receipt) fuer
+ * die Belegseite der Rechnungsvorlage auf: Zeitstempel in lokale Zeit, Betraege
+ * im Druckformat, Kartendarstellung "girocard **** 1434".
+ *
+ * @param string|null $json     json_agg der receipt-Spalten
+ * @param callable    $fmt      Zahlenformatierer des Print-Backends
+ * @return array Liste von Belegen mit einheitlichen Schluesseln
+ */
+function buildCardReceipts(?string $json, callable $fmt): array {
+    $list = $json ? json_decode($json, true) : null;
+    if (!is_array($list)) return [];
+
+    $entryModes = ['contactless' => 'kontaktlos', 'chip' => 'Chip', 'magstripe' => 'Magnetstreifen', 'manual' => 'manuell'];
+    $verifications = ['none' => 'ohne', 'pin' => 'PIN', 'signature' => 'Unterschrift', 'consumer_device' => 'Geraet des Kunden'];
+    $out = [];
+    foreach ($list as $r) {
+        if (!is_array($r)) continue;
+        $time = '';
+        if (!empty($r['timestamp'])) {
+            try {
+                $dt = new DateTime($r['timestamp']);
+                $dt->setTimezone(new DateTimeZone(defined('OSERP_DEFAULT_TIMEZONE') ? OSERP_DEFAULT_TIMEZONE : 'Europe/Berlin'));
+                $time = $dt->format('d.m.Y H:i');
+            } catch (\Throwable $e) { $time = (string)$r['timestamp']; }
+        }
+        // "girocard" ist eine Marke in Kleinschreibung, sonst "Visa", "Mastercard"
+        $cardName = strtolower((string)($r['card_application'] ?: ($r['card_type'] ?? '')));
+        if ($cardName !== 'girocard') $cardName = ucfirst($cardName);
+        $tip = (float)($r['tip_amount'] ?? 0);
+        $out[] = [
+            'amount'           => $fmt($r['amount'] ?? 0),
+            'tip'              => $tip > 0 ? $fmt($tip) : '',
+            'currency'         => (string)($r['currency'] ?? 'EUR'),
+            'time'             => $time,
+            'receipt_no'       => (string)($r['receipt_no'] ?? ''),
+            'code'             => (string)($r['transaction_code'] ?? ''),
+            'card'             => trim($cardName . (!empty($r['card_last4']) ? ' **** ' . $r['card_last4'] : '')),
+            'application'      => (string)($r['card_application'] ?? ''),
+            'aid'              => (string)($r['aid'] ?? ''),
+            'entry'            => $entryModes[strtolower((string)($r['entry_mode'] ?? ''))] ?? (string)($r['entry_mode'] ?? ''),
+            'verification'     => $verifications[strtolower((string)($r['verification_method'] ?? ''))] ?? (string)($r['verification_method'] ?? ''),
+            'tid'              => (string)($r['tid'] ?? ''),
+            'auth'             => (string)($r['authorization_code'] ?? ''),
+            'merchant'         => (string)($r['merchant_name'] ?? ''),
+            'merchant_address' => (string)($r['merchant_address'] ?? ''),
+            'merchant_code'    => (string)($r['merchant_code'] ?? ''),
+        ];
+    }
+    return $out;
+}
+
 function formatDate(?string $date): string {
     if (empty($date)) return '';
     $ts = strtotime($date);

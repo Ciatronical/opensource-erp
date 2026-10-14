@@ -61,7 +61,7 @@ Firmenkonfiguration → CRM → **Briefversand (Hybridbrief)**:
 | Farbdruck / beidseitig als Vorgabe | Vorbelegung des Versanddialogs |
 | Verbindung testen | Prüft Anmeldung und – je nach Anbieter – Guthaben oder Einlieferungsordner |
 
-Die Briefvorlage ist `letter.tex` im Vorlagensatz der Firma; fehlt sie oder liegt sie noch in kivitendos Template-Toolkit-Syntax, greift die Master-Vorlage (`templates-default/RB/letter.tex`). Das Adressfeld steht an der DIN-5008-Fensterposition, damit der Dienstleister die Anschrift liest. Rechte: `sales_letter_edit` / `purchase_letter_edit` (kivitendo), Belege per Post mit dem jeweiligen Belegrecht.
+Die **Briefnummer** zählt in der Firmenkonfiguration → Nummernkreise unter „Brief“ (kivitendos `defaults.letternumber`); der nächste Brief erhält Zähler + 1, der Wert ist frei setzbar. Die Briefvorlage ist `letter.tex` im Vorlagensatz der Firma; fehlt sie oder liegt sie noch in kivitendos Template-Toolkit-Syntax, greift die Master-Vorlage (`templates-default/RB/letter.tex`). Das Adressfeld steht an der DIN-5008-Fensterposition, damit der Dienstleister die Anschrift liest. Rechte: `sales_letter_edit` / `purchase_letter_edit` (kivitendo), Belege per Post mit dem jeweiligen Belegrecht.
 
 ## Automatik
 

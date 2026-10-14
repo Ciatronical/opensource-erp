@@ -396,7 +396,7 @@ MSG;
     }
 
     $data = json_decode($response, true);
-    $text = $data['content'][0]['text'] ?? '';
+    $text = aiResponseText($data);
 
     if (preg_match('/\[[\s\S]*\]/', $text, $matches)) {
         $extracted = json_decode($matches[0], true);
@@ -512,7 +512,7 @@ MSG;
     }
 
     $data = json_decode($response, true);
-    $text = $data['content'][0]['text'] ?? '';
+    $text = aiResponseText($data);
 
     // JSON-Array aus der Antwort extrahieren
     if (preg_match('/\[[\s\S]*\]/', $text, $matches)) {

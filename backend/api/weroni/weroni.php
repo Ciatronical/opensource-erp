@@ -644,7 +644,7 @@ function weroniAnalyzeDocument($data) {
     }
 
     $responseData = json_decode($response, true);
-    $analysisText = $responseData['content'][0]['text'] ?? '';
+    $analysisText = aiResponseText($responseData);
 
     // Analyse in DB speichern
     $db->execute(

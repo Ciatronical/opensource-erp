@@ -42,6 +42,20 @@ Jeder Beleg enthält Positionen mit:
 
 Belege können als PDF gedruckt werden. Die Druckvorlagen sind konfigurierbar unter **Einstellungen > Druckvorlagen**.
 
+### Kartenterminal (SumUp Solo) *(extern, Schalter)*
+
+Ist unter *Firmenkonfiguration → CRM → SumUp* ein SumUp Solo über die Cloud API gekoppelt und **SumUp aktivieren** gesetzt, erscheint in der Zahlungskarte jeder Rechnung eine Terminal-Leiste. Für Firmen ohne SumUp ändert sich nichts.
+
+- **Offener Betrag automatisch**: Beim Öffnen einer noch nicht bezahlten Rechnung geht der offene Betrag sofort an das Terminal.
+- **Abweichender Betrag**: Das Eingabefeld ist mit dem offenen Betrag vorbelegt und kann überschrieben werden, z. B. für eine Anzahlung oder die Selbstbeteiligung bei einer Frontscheibe. **An Terminal senden** bricht einen noch laufenden Checkout am Reader ab und startet den neuen Betrag.
+- **Status live**: Die Leiste zeigt, was am Terminal passiert (Karte vorlegen, PIN-Eingabe, Trinkgeld, Unterschrift, offline); **Abbrechen** beendet den Vorgang am Reader. Das Ergebnis wird über die SumUp-Transaktions-API abgefragt, eine öffentlich erreichbare Webhook-URL ist nicht nötig.
+- **Keine Sofortbuchung**: Die Kartenzahlung wird bewusst **nicht** über ein Verrechnungskonto gebucht. Sie erscheint in der Zahlungskarte als grüne Infozeile („Kartenzahlung am Terminal – wird mit der SumUp-Auszahlung im Banking gebucht“) und mindert den angezeigten offenen Betrag, damit der Rest nicht erneut ans Terminal geht. Gebucht wird erst, wenn die SumUp-Sammelauszahlung auf dem Bankkonto eintrifft: Der Abgleich im Banking findet die Rechnung dann über den Transaktionscode des Checkouts exakt (vor Rechnungsnummer- und Betragsvergleich) und bucht direkt gegen die Bank.
+- **Vermerk auf der Rechnung**: Die Druckvorlagen zeigen unter der Summe „109,00 € mit Karte bezahlt (14.10.2026)“, bei Teilzahlung zusätzlich den Restbetrag (Vorlagenvariablen `card_paid`, `card_paid_date`, `card_open`).
+- **Automatischer Druck**: Nach erfolgreicher Zahlung wird die Rechnung auf dem gewählten Drucker in der konfigurierten Anzahl Exemplare gedruckt (Standard 2, 0 schaltet ab). Der konfigurierte Auto-Versand per E-Mail/WhatsApp läuft dabei wie beim manuellen Druck.
+- **Kundenbeleg als Belegseite**: Der Solo hat keinen Bondrucker. Der Kundenbeleg der Kartenzahlung (Händler, Terminal-ID, Datum, Beleg-Nr., Transaktionscode, Genehmigungs-Nr., Karte mit letzten vier Ziffern, AID, Eingabeart, Betrag) kommt aus der SumUp-Receipts-API, wird mit dem Checkout gespeichert und als eigene Seite hinter die Rechnung gedruckt. Die Belegseite kommt ohne Briefkopf, Logo und Fußzeile und wird auf eine gerade Seitenzahl geschoben, damit sie bei Duplexdruck (Druckbefehl z. B. `lpr -o sides=two-sided-long-edge`) auf der Rückseite liegt. Mehrere Kartenzahlungen einer Rechnung ergeben mehrere Belege auf der Seite (Vorlagenschleife `card_receipt_amount`).
+
+Jeder gesendete Betrag wird mit Ergebnis, Transaktionscode und Kundenbeleg in `sumup_checkouts` protokolliert; der Code führt beim Abgleich der SumUp-Sammelauszahlung direkt zur Rechnung.
+
 ## Versandstatus
 
 Direkt unter der Aktionsleiste zeigt jeder gespeicherte Beleg, ob er den Kunden schon erreicht hat:

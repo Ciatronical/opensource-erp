@@ -609,7 +609,7 @@ const tabGroups = computed(() => [
         key: 'documents',
         title: t('configGroups.documents'),
         items: [
-            { value: 'ranges_of_numbers', title: t('rangesOfNumbers'), icon: 'mdi-numeric',              keywords: ['nummer', 'nummernkreis', 'number', 'rechnung', 'invoice', 'auftrag', 'order', 'angebot', 'kunde', 'lieferant', 'artikel', 'dienstleistung', 'erzeugnis'] },
+            { value: 'ranges_of_numbers', title: t('rangesOfNumbers'), icon: 'mdi-numeric',              keywords: ['nummer', 'nummernkreis', 'number', 'rechnung', 'invoice', 'auftrag', 'order', 'angebot', 'kunde', 'lieferant', 'artikel', 'dienstleistung', 'erzeugnis', 'brief', 'briefnummer'] },
             { value: 'record_links',      title: t('recordLinks'),     icon: 'mdi-link-variant',         keywords: ['verknüpfung', 'link', 'beleg', 'record', 'kette'] },
             { value: 'orders_deleteable', title: t('ordersDeleteable'),icon: 'mdi-delete',               keywords: ['löschen', 'delete', 'auftrag', 'order', 'beleg', 'stornieren'] },
             { value: 'einvoice',          title: t('einvoice.tab_title'), icon: 'mdi-file-document-check',keywords: ['erechnung', 'e-rechnung', 'einvoice', 'zugferd', 'xrechnung', 'factur-x', 'xml', 'leitweg'] },

@@ -303,7 +303,10 @@ function saveDefaults($data) {
         // Kollisionen automatisch verhindert.
         $freeNumberRangeFields = [
             'customernumber', 'vendornumber',
-            'articlenumber', 'servicenumber', 'assemblynumber', 'assortmentnumber'
+            'articlenumber', 'servicenumber', 'assemblynumber', 'assortmentnumber',
+            // Briefe (kivitendo letternumber, Spalte ist integer): frei setzbar,
+            // die nächste Briefnummer ist Zähler + 1
+            'letternumber'
         ];
 
         // 1. Speichere DEFAULTS (horizontale Speicherung in 'defaults' Tabelle)
@@ -347,7 +350,10 @@ function saveDefaults($data) {
                 $setClauses = [];
                 $params = [];
                 foreach ($freeData as $field => $value) {
-                    $setClauses[] = "$field = :$field";
+                    // letternumber ist in kivitendo eine integer-Spalte: leer = NULL
+                    $setClauses[] = $field === 'letternumber'
+                        ? "$field = NULLIF(:$field, '')::int"
+                        : "$field = :$field";
                     $params[":$field"] = (string)$value;
                 }
                 $sql = "UPDATE defaults SET " . implode(', ', $setClauses);

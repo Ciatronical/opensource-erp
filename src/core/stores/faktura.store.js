@@ -659,13 +659,14 @@ export const fakturaStore = defineStore('fakturaStore', () => {
      * @param {number} printerId - ID des Druckers
      * @return {Promise<Object>}
      */
-    async function printToPrinter(fakturaID, fakturaType, templateSet = null, printerId) {
+    async function printToPrinter(fakturaID, fakturaType, templateSet = null, printerId, copies = 1) {
         const response = await axios.post('/api/print/', {
             action: 'printToPrinter',
             fakturaID: fakturaID,
             fakturaType: fakturaType,
             templateSet: templateSet,
-            printerId: printerId
+            printerId: printerId,
+            copies: copies
         });
 
         if (response.data.success) {
@@ -679,19 +680,21 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     /**
      * Sendet einen Betrag an das gekoppelte SumUp-Kartenterminal (Cloud API).
      * Liefert synchron nur die Bestätigung, dass der Checkout am Terminal
-     * gestartet wurde – das Zahlungsergebnis kommt bei SumUp asynchron.
+     * gestartet wurde, samt client_transaction_id – das Ergebnis wird mit
+     * getSumupCheckoutStatus() abgefragt.
      *
      * @param {number} amount - Zu kassierender Betrag (brutto)
-     * @param {Object} [opts] - { fakturaID, currency, description }
-     * @return {Promise<Object>}
+     * @param {Object} [opts] - { fakturaID, currency, description, employeeId }
+     * @return {Promise<Object>} { client_transaction_id, reader_name, amount }
      */
-    async function sendSumupCheckout(amount, { fakturaID = null, currency = 'EUR', description = '' } = {}) {
+    async function sendSumupCheckout(amount, { fakturaID = null, currency = 'EUR', description = '', employeeId = null } = {}) {
         const response = await axios.post('/api/payment/', {
             action: 'sumupCheckout',
             amount: amount,
             fakturaID: fakturaID,
             currency: currency,
-            description: description
+            description: description,
+            employee_id: employeeId
         });
 
         if (response.data.success) {
@@ -699,6 +702,46 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         }
         else {
             throw new ApiError('ApiError', response.data.text, 'Error sending SumUp checkout: ' + response.data.text);
+        }
+    }
+
+    /**
+     * Fragt das Ergebnis eines laufenden Terminal-Checkouts ab (Polling).
+     *
+     * @param {string} clientTransactionId - Kennung aus sendSumupCheckout()
+     * @return {Promise<Object>} { status: pending|successful|failed|cancelled, reader_state, transaction_code, card_type, amount }
+     */
+    async function getSumupCheckoutStatus(clientTransactionId) {
+        const response = await axios.post('/api/payment/', {
+            action: 'sumupCheckoutStatus',
+            client_transaction_id: clientTransactionId
+        });
+
+        if (response.data.success) {
+            return response.data.payload;
+        }
+        else {
+            throw new ApiError('ApiError', response.data.text, 'Error polling SumUp checkout: ' + response.data.text);
+        }
+    }
+
+    /**
+     * Bricht den laufenden Checkout am Terminal ab.
+     *
+     * @param {string} clientTransactionId - Kennung aus sendSumupCheckout()
+     * @return {Promise<Object>}
+     */
+    async function terminateSumupCheckout(clientTransactionId) {
+        const response = await axios.post('/api/payment/', {
+            action: 'sumupTerminate',
+            client_transaction_id: clientTransactionId
+        });
+
+        if (response.data.success) {
+            return response.data.payload;
+        }
+        else {
+            throw new ApiError('ApiError', response.data.text, 'Error terminating SumUp checkout: ' + response.data.text);
         }
     }
 
@@ -897,6 +940,8 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         generatePDFBase64,
         printToPrinter,
         sendSumupCheckout,
+        getSumupCheckoutStatus,
+        terminateSumupCheckout,
         data
     };
 });

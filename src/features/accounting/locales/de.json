@@ -770,7 +770,9 @@
                 "payables": "Ich schulde",
                 "payablesSub": "nächste Fälligkeit {date}",
                 "payablesNone": "nichts offen",
-                "vat": "Umsatzsteuer {period}"
+                "vat": "Umsatzsteuer {period}",
+                "asOfToday": "Stand heute, letzte Buchung {date}",
+                "asOfDate": "Stand {date}"
             },
             "tiles": {
                 "documents": "Belege prüfen",
@@ -818,7 +820,8 @@
                     "paid_but_open": "Bezahlt, Konto offen",
                     "balance_mismatch": "Saldo weicht ab"
                 }
-            }
+            },
+            "asOf": "Stichtag"
         },
         "run": {
             "back": "Zurück",
