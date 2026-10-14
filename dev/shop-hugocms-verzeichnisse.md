@@ -60,6 +60,7 @@ fest — der Ort, dem die Webseite gehört —, nicht OpensourceERP:
   | Kategorieübersicht | `data/category_groups.json` | — | diese eine Datei schreiben |
   | Produktbilder | `static/images/products/` | liest sie für die Vorschaubilder | — |
   | Vorschaubilder | `static/images/thumbnails/` | schreibt sie | — |
+  | Downloads (seit 2026-10-14) | `static/downloads/` | prüft für OSERP, ob die Dateien da sind (`shopdownloads`) | — |
   | Paket | `oserp-shop/` (fest, nicht wählbar) | — | `md, json, html, js, css`, PHP nur signiert |
 
   Gespeichert unter `[shop]` (`content_dir`, `category_groups`, `images`,
@@ -134,6 +135,13 @@ Einzelheiten, die beim Umsetzen dazukamen:
 - **Bereitstellung folgt den Freigaben** (`shopStagingFollowGrants`): Die
   Seiten aller Artikel ziehen in der Bereitstellung an den neuen Ort, nicht
   nur die der geänderten — sonst stünden am neuen Ort nur wenige Seiten.
+- **Downloads** (2026-10-14): Datenblätter und Anleitungen bleiben auf der
+  Webseite (E6). Damit tote Links auffallen, prüft HugoCMS nach jeder
+  Übertragung auf Anfrage des Laufs (`shopdownloads`, nur lesen), welche der
+  in den Artikeln genannten Dateien in der Freigabe „Downloads“ fehlen; der
+  Lauf meldet sie wie fehlende Produktbilder. Ein älteres HugoCMS ohne diese
+  Freigabe lässt die Prüfung aus. Die Kanalkarte schlägt aus der Freigabe das
+  Adressmuster `downloads_link` vor.
 - **Kategorieübersicht und Vorlagensatz**: Ob es eine Übersicht gibt, sagt
   weiter der Vorlagensatz (`theme.json`, `data.category_groups`); wohin sie
   kommt, die Freigabe. Weichen beide ab, finden die Vorlagen sie nicht — Lauf

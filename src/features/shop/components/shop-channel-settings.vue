@@ -94,7 +94,7 @@
                             <div class="text-subtitle-2">{{ t('crm_fields.shopHugoCmsGrants') }}</div>
                             <div class="text-caption text-medium-emphasis mb-2">{{ t('crm_fields.shopHugoCmsGrants_help') }}</div>
                             <v-text-field
-                                v-for="freigabe in FREIGABEN"
+                                v-for="freigabe in FREIGABEN.filter(f => !f.optional || typeof freigaben[f.feld] === 'string')"
                                 :key="freigabe.feld"
                                 :model-value="freigabe.datei ? freigaben[freigabe.feld] : freigaben[freigabe.feld] + '/'"
                                 :label="t(freigabe.label)"
@@ -167,7 +167,7 @@
                     :gesetzt="gesetzt"
                 />
 
-                <!-- Adresse von OpensourceERP für die Webseite prüfen: plausibel,
+                <!-- Adresse des Shop-Zugangs von OpensourceERP prüfen: plausibel,
                      direkt von hier, über die Webseite (testShopBackendUrl) -->
                 <div v-if="feld.action === 'backendTest'" class="mb-4">
                     <v-btn
@@ -218,6 +218,8 @@ const props = defineProps({
     secretsSet: { type: Object, default: () => ({}) },
     /** Auswahllisten (Vorlagensätze) */
     quellen: { type: Object, default: () => ({}) },
+    /** Adresse, unter der OpensourceERP gerade läuft, mit Shop-Zugang — für ein leeres backend_url */
+    backendUrlVorschlag: { type: String, default: '' },
 })
 
 const i18n = useI18n()
@@ -277,6 +279,13 @@ let zuletzt = JSON.stringify(nutzdaten())
 let timer = null
 const speichert = ref(false)
 
+// Leere Adresse des Shop-Zugangs: mit der Adresse vorbelegen, unter der
+// OpensourceERP gerade aufgerufen wird. Nach „zuletzt“, damit die Vorbelegung
+// als Änderung zählt und gespeichert wird — sonst stünde sie nur im Formular.
+if ('hugoshop' === props.type && props.backendUrlVorschlag && '' === String(werte.backend_url || '').trim()) {
+    werte.backend_url = props.backendUrlVorschlag
+}
+
 async function speichern() {
     const daten = nutzdaten()
     const stand = JSON.stringify(daten)
@@ -323,7 +332,7 @@ onBeforeUnmount(() => {
     }
 })
 
-// ── Adresse von OpensourceERP für die Webseite ──
+// ── Adresse des Shop-Zugangs von OpensourceERP ──
 
 const backendPrueft = ref(false)
 /** Liste der Schritte aus testShopBackendUrl, oder eine einzelne Fehlermeldung */
@@ -368,6 +377,8 @@ const FREIGABEN = [
     { feld: 'categoryGroups', label: 'crm_fields.shopHugoCmsGrantCategoryGroups', icon: 'mdi-file-tree-outline', datei: true },
     { feld: 'images', label: 'crm_fields.shopHugoCmsGrantImages', icon: 'mdi-image-multiple-outline' },
     { feld: 'thumbnails', label: 'crm_fields.shopHugoCmsGrantThumbnails', icon: 'mdi-image-size-select-small' },
+    // Downloads kennt HugoCMS seit 2026-10-14; ein älteres meldet sie nicht
+    { feld: 'downloads', label: 'crm_fields.shopHugoCmsGrantDownloads', icon: 'mdi-download-outline', optional: true },
     { feld: 'package', label: 'crm_fields.shopHugoCmsGrantPackage', icon: 'mdi-package-variant-closed' },
 ]
 
@@ -405,6 +416,7 @@ const musterAbweichungen = computed(() => {
         { feld: 'products_link', label: 'crm_fields.shopProductsLink', vorschlag: seitenMuster(freigaben.value.contentDir) },
         { feld: 'images_link', label: 'crm_fields.shopImagesLink', vorschlag: statischesMuster(freigaben.value.images) },
         { feld: 'thumbnails_link', label: 'crm_fields.shopThumbnailsLink', vorschlag: statischesMuster(freigaben.value.thumbnails) },
+        { feld: 'downloads_link', label: 'crm_fields.shopDownloadsLink', vorschlag: statischesMuster(freigaben.value.downloads) },
     ]
         .map(muster => ({ ...muster, ist: String(werte[muster.feld] || '').trim() }))
         .filter(muster => muster.vorschlag !== '' && musterPfad(muster.ist) !== muster.vorschlag)

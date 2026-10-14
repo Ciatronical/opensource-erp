@@ -39,10 +39,12 @@ und übernimmt sie bei jedem Lauf (`dev/shop-hugocms-verzeichnisse.md`).
      Byte, hexadezimal). Er unterscheidet Mandanten und Kanäle; zwei Kanäle
      dürfen nicht denselben haben. Die Webseite bekommt ihn über
      `oserp-shop/config.json`, der Browser sieht ihn nie.
-   - **Adresse von OpensourceERP für die Webseite** — der Shop-Zugang
+   - **Adresse des Shop-Zugangs von OpensourceERP** — der Shop-Zugang
      `backend/shop/` (etwa `https://erp.example.de/shop/`), mit „Verbindung
-     prüfen“. Der Webserver von OpensourceERP muss `/shop` dorthin geben
-     (Apache: `Alias /shop …/backend/shop`).
+     prüfen“. Ein leeres Feld belegt die Karte mit der Adresse vor, unter der
+     OpensourceERP gerade aufgerufen wird (`shopBackendUrlSuggestion`, lokal
+     `http://localhost:8000/shop/`). Der Webserver von OpensourceERP muss
+     `/shop` dorthin geben (Apache: `Alias /shop …/backend/shop`).
    - Basisadresse, Adressmuster, Vorlagensatz.
 4. **HugoCMS → Projekteinstellungen → Shop-Erweiterung** (nur Administratoren):
    die Erweiterung einschalten, einen Schlüssel erzeugen und die **Freigaben**
@@ -106,7 +108,9 @@ Ein Lauf tut der Reihe nach:
    warnt der Lauf.
 5. **An HugoCMS übertragen** — Abgleich, Übertragung, Übernahme
    (`shopHugoCmsSync`) — und **dort bauen lassen**, wenn sich etwas geändert
-   hat; danach die Vorschaubilder in HugoCMS. Gebaut wird mit dem
+   hat; danach die Vorschaubilder in HugoCMS und die Prüfung, ob die
+   Download-Dateien der Produktseiten auf der Webseite liegen (Freigabe
+   „Downloads“ in HugoCMS, Hinweis bei fehlenden). Gebaut wird mit dem
    Hugo-Programm, das HugoCMS eingerichtet hat; OpensourceERP startet kein
    Programm zum Bauen.
 6. **Prüfung über die Webseite** nach einer Übertragung: Weiterleiter und
@@ -427,7 +431,7 @@ angezeigten öffentlichen Schlüssel in HugoCMS eintragen (Projekteinstellungen 
 Shop-Erweiterung). Dann überträgt der Lauf Weiterleiter und 404-Seite selbst,
 auch nach einem OSERP-Update (`dev/shop-php-signatur.md`).
 
-**Adresse von OpensourceERP für die Webseite** (`backend_url`, seit
+**Adresse des Shop-Zugangs von OpensourceERP** (`backend_url`, seit
 2026-10-08 mit „Verbindung prüfen“ direkt unter dem Feld): Ziel des
 Weiterleiters, also der Shop-Zugang `backend/shop/` — nicht die Adresse von
 HugoCMS (`…/cms-api/`), die in der HugoCMS-Gruppe steht. Der Test prüft in drei
@@ -507,7 +511,7 @@ abzulegen.
 | Seiten entstehen nicht | Ausgabe des Laufs lesen; „Inhaltsdateien von HugoCMS nicht angenommen“: eine Freigabe hat sich während des Laufs geändert — der nächste Lauf legt die Dateien an den neuen Ort |
 | Aufträge „ausgesetzt“ (gelbes Zeichen) | Shop-Schlüssel, Adresse oder Schlüssel von HugoCMS fehlen — Kanalkarte; oder HugoCMS ist nicht erreichbar, die Shop-Erweiterung dort ausgeschaltet oder eine Freigabe unbrauchbar — Ausgabe des Laufs, „Verbindung prüfen und Freigaben abrufen“ |
 | Kategorieseite zeigt nur die alphabetische Liste | Der Vorlagensatz erwartet die Kategorieübersicht an einem anderen Ort, als HugoCMS freigibt — Warnung im Lauf; in HugoCMS die Freigabe „Kategorieübersicht“ anpassen |
-| Weiterleiter erreicht HugoCMS statt OpensourceERP | „Adresse von OpensourceERP für die Webseite“ steht auf `…/cms-api/` — Kanalkarte, „Verbindung prüfen“ |
+| Weiterleiter erreicht HugoCMS statt OpensourceERP | „Adresse des Shop-Zugangs von OpensourceERP“ steht auf `…/cms-api/` — Kanalkarte, „Verbindung prüfen“ |
 | Weiterleiter 404, obwohl signiert übertragen | Der Webserver liefert unter der Basisadresse nicht das `public/` dieser Webseite aus, oder die Basisadresse stimmt nicht |
 | „Ein Lauf ist noch unterwegs" | Sperrdatei in `backend/tmp/` — ein vorheriger Lauf hängt |
 | Neue Einstellungen fehlen nach einem Update | Das Schema-Update beim Login prüft Prüfsummen, siehe `shop-veroeffentlichung.md` |
