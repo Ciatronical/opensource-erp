@@ -6,7 +6,7 @@
 #    Systempakete · PHP-FPM · Node-Build · PostgreSQL · Apache · Portfreigabe
 #    · HTTPS (Let's Encrypt) · SSE · Whisper · Ollama (lokaler LLM) · ANPR
 #    · Kameras (go2rtc + Monitor) · Cronjobs · DynDNS · Asterisk-Telefonie
-#    (Gerüst) · Borg-Backup (Storage Box, Zugang wird abgefragt)
+#    (Gerüst) · Borg-Backup (storage_backup-Skripte, Zugang wird abgefragt)
 #
 #  ERREICHBARKEIT VON AUSSEN (z. B. http://isolierglas.spdns.de):
 #    Der öffentliche Hostname kommt aus OSERP_SERVER_NAME oder — wenn DynDNS
@@ -119,7 +119,7 @@ declare -A STEP_DESC=(
   [cron]="Cronjobs (WhatsApp-Reminder, eBay, Nachbuchen, asanetwork ...)"
   [dyndns]="DynDNS-Updater + systemd-Timer (Zugang in /etc/oserp/dyndns.conf)"
   [asterisk]="Asterisk/CRMTI-Telefonie (Paket + Konfig-Gerüst)"
-  [borg]="Borg-Offsite-Backup auf Storage Box (fragt Zugang ab, Secrets nur in /etc/oserp/borg.env)"
+  [borg]="Borg-Backup zur Storage Box (install/storage_backup, fragt Zugang ab, backup.env bleibt erhalten)"
   [kivitendo]="kivitendo via externem Installer (optional, nur mit OSERP_WITH_KIVITENDO=1)"
   [healthcheck]="Abschluss-Checks aller Dienste"
 )
@@ -884,44 +884,151 @@ setup_asterisk() {
 }
 
 # =============================================================================
-#  SCHRITT: borg  (Offsite-Backup — Zugang wird ABGEFRAGT, nichts davon im Repo)
+#  SCHRITT: borg  (Backup — dieselben storage_backup-Skripte wie auf allen
+#                  OSERP-Rechnern; Zugang wird ABGEFRAGT, nichts davon im Repo)
 # =============================================================================
-#  Das eigentliche Setup macht install/borg-standalone.sh: Storage-Box-Zugang,
-#  Passphrase und Uhrzeit abfragen -> /etc/oserp/borg.env (0600), Backup-Skript
-#  /usr/local/sbin/oserp-backup, Status-Helfer, root-SSH-Key auf dem Server,
-#  Repository anlegen, Cron /etc/cron.d/oserp-backup, Erstsicherung.
-BORG_CONF=/etc/oserp/borg.env
+#  Kopiert install/storage_backup/* nach /usr/local/sbin/storage_backup, legt
+#  alle Verzeichnisse an, lässt eine vorhandene backup.env unangetastet (sonst
+#  Abfrage im Terminal bzw. Vorlage), root-SSH-Key auf der Storage Box, Cron,
+#  sudoers für borg-status-local.sh, Erstsicherung per backup.sh INIT.
+BORG_DIR=/usr/local/sbin/storage_backup
+BORG_ENV="$BORG_DIR/backup.env"
+BORG_LOG_DIR=/var/log/storage_backup
+OSERP_BACKUP_TIME="${OSERP_BACKUP_TIME:-02:30}"
+
+# ask_value VAR "Frage" Vorgabe [secret]: nur fragen, wenn Wert fehlt
+ask_value() {
+    local var=$1 prompt=$2 def=$3 secret=${4:-}
+    [[ -z ${!var:-} ]] || return 0
+    if [[ -n $secret ]]; then read -r -s -p "$prompt" "$var" || true; echo
+    else read -r -p "$prompt" "$var" || true; fi
+    [[ -n ${!var:-} ]] || printf -v "$var" '%s' "$def"
+}
+borg_env_ready() { sudo test -f "$BORG_ENV" && ! sudo grep -qE 'XXXXXX|meinRechner' "$BORG_ENV"; }
+borg_env_get()   { sudo grep -oP "(?<=^export $1=\")[^\"]*" "$BORG_ENV"; }
+
 setup_borg() {
-    step "Borg-Backup"
+    step "Borg-Backup (storage_backup)"
     command -v borg >/dev/null || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y borgbackup
     ok "borgbackup installiert ($(borg --version 2>/dev/null || echo '?'))"
-    local standalone="$OSERP_ROOT/install/borg-standalone.sh"
+    local src="$OSERP_ROOT/install/storage_backup"
 
-    if sudo test -f "$BORG_CONF" && ! sudo grep -q "BITTE-EINTRAGEN" "$BORG_CONF"; then
-        # Zugang vorhanden: nur Skripte + Cron idempotent neu schreiben
-        if sudo OSERP_USER="$OSERP_USER" bash "$standalone" --refresh </dev/null; then
-            ok "Borg-Backup aktiv (Config $BORG_CONF, Cron /etc/cron.d/oserp-backup)"
-        else
-            warn "Borg-Skripte konnten nicht aktualisiert werden — sudo $standalone --refresh"
+    # --- Verzeichnisse + Skripte (backup.env wird NIE angefasst) ---------------
+    sudo install -d -m 755 "$BORG_DIR" "$BORG_DIR/data/postgresql-dbs" "$BORG_DIR/data/mysql-dbs" "$BORG_LOG_DIR"
+    local f
+    for f in backup.sh borg-status-local.sh borg-uebersicht progress.sh first-backup-supervisor.sh test_borg.sh; do
+        sudo install -m 755 "$src/$f" "$BORG_DIR/$f"
+    done
+    sudo install -m 644 "$src/backup.env.default" "$BORG_DIR/backup.env.default"
+    sudo install -m 644 "$src/README.md" "$BORG_DIR/README.md"
+    sudo ln -sfn "$BORG_DIR/borg-uebersicht" /usr/local/bin/borg-uebersicht
+    ok "Skripte nach $BORG_DIR kopiert (Vorlage: backup.env.default)"
+
+    # --- backup.env: vorhandene bleibt, sonst abfragen oder Vorlage ------------
+    if sudo test -f "$BORG_ENV"; then
+        ok "backup.env vorhanden — bleibt unverändert"
+    else
+        local BACKUP_USER="${BORG_BACKUP_USER:-}" REPOSITORY_DIR="${BORG_REPOSITORY_DIR:-}" \
+              BORG_PASSPHRASE="${BORG_PASSPHRASE:-}" ALERT_EMAIL="${BORG_ALERT_EMAIL:-}" p2=""
+        if [[ -t 0 ]]; then
+            echo
+            info "Zugangsdaten des Borg-Servers (Hetzner Storage Box). Enter beim Konto = später"
+            info "(dann bleibt die Vorlage mit Platzhaltern in $BORG_ENV, oder eine fertige"
+            info "backup.env von einem anderen Rechner wird dorthin kopiert)."
+            ask_value BACKUP_USER "Storage-Box-Konto (u123456 oder Subaccount u123456-sub1): " ""
+            if [[ -n $BACKUP_USER ]]; then
+                ask_value REPOSITORY_DIR "Repository-Verzeichnis unter backups/ [Enter = $(hostname)]: " "$(hostname)"
+                ask_value BORG_PASSPHRASE "Borg-Passphrase [Enter = sicher erzeugen]: " "" secret
+                if [[ -z $BORG_PASSPHRASE ]]; then
+                    BORG_PASSPHRASE="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)"
+                    warn "Passphrase erzeugt — steht in $BORG_ENV. OHNE sie kein Restore, sicher ablegen!"
+                else
+                    ask_value p2 "Passphrase wiederholen: " "" secret
+                    [[ $BORG_PASSPHRASE == "$p2" ]] || { err "Passphrasen stimmen nicht überein."; return 1; }
+                fi
+                ask_value ALERT_EMAIL "E-Mail für Fehlermeldungen [Enter = ${OSERP_TLS_EMAIL:-keine}]: " "$OSERP_TLS_EMAIL"
+            fi
         fi
+        # Vorlage übernehmen, Platzhalter ersetzen (Werte mit sed-Sonderzeichen escapen)
+        esc() { printf '%s' "$1" | sed 's/[&|\\]/\\&/g'; }
+        sed -e "s|^export BORG_PASSPHRASE=.*|export BORG_PASSPHRASE=\"$(esc "${BORG_PASSPHRASE:-XXXXXX}")\"|" \
+            -e "s|^export BACKUP_USER=.*|export BACKUP_USER=\"$(esc "${BACKUP_USER:-uXXXXXX}")\"|" \
+            -e "s|^export REPOSITORY_DIR=.*|export REPOSITORY_DIR=\"$(esc "${REPOSITORY_DIR:-meinRechner}")\"|" \
+            -e "s|^export ALERT_EMAIL=.*|export ALERT_EMAIL=\"$(esc "${ALERT_EMAIL:-info@domain.de}")\"|" \
+            "$src/backup.env.default" | sudo tee "$BORG_ENV" >/dev/null
+        sudo chmod 600 "$BORG_ENV"
+        if borg_env_ready; then ok "backup.env geschrieben: $BORG_ENV (0600)"
+        else warn "backup.env ist eine Vorlage mit Platzhaltern: $BORG_ENV"; fi
+    fi
+
+    # --- sudoers: Betriebs-User darf den Status abfragen (borg-uebersicht) -----
+    echo "$OSERP_USER ALL=(root) NOPASSWD: $BORG_DIR/borg-status-local.sh" | sudo tee /etc/sudoers.d/borg-status >/dev/null
+    sudo chmod 440 /etc/sudoers.d/borg-status
+    sudo visudo -c -f /etc/sudoers.d/borg-status >/dev/null || { sudo rm -f /etc/sudoers.d/borg-status; warn "sudoers borg-status verworfen"; }
+
+    # --- Cron (täglich als root, nach der DSL-Zwangstrennung) ------------------
+    [[ $OSERP_BACKUP_TIME =~ ^([01]?[0-9]|2[0-3]):[0-5][0-9]$ ]] || { warn "OSERP_BACKUP_TIME ungültig ($OSERP_BACKUP_TIME), nehme 02:30"; OSERP_BACKUP_TIME=02:30; }
+    local H="${OSERP_BACKUP_TIME%%:*}" M="${OSERP_BACKUP_TIME##*:}"
+    sudo tee /etc/cron.d/oserp-backup >/dev/null <<EOF
+# OSERP nächtliches Borg-Backup (storage_backup) — erzeugt von install.sh, Zeit $OSERP_BACKUP_TIME
+# Log: $BORG_LOG_DIR/backup.log   Status: borg-uebersicht
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+MAILTO=""
+$((10#$M)) $((10#$H)) * * * root $BORG_DIR/backup.sh >/dev/null 2>&1
+EOF
+    sudo chmod 644 /etc/cron.d/oserp-backup
+    ok "Cron: /etc/cron.d/oserp-backup (täglich $OSERP_BACKUP_TIME als root)"
+
+    # --- root-SSH-Key für die Storage Box --------------------------------------
+    if ! sudo bash -c 'ls /root/.ssh/id_* >/dev/null 2>&1'; then
+        sudo install -d -m 700 /root/.ssh
+        sudo ssh-keygen -q -t ed25519 -N "" -C "storage_backup@$(hostname)" -f /root/.ssh/id_ed25519
+        ok "root-SSH-Key erzeugt: /root/.ssh/id_ed25519"
+    fi
+
+    if ! borg_env_ready; then
+        todo "Borg: $BORG_ENV ausfüllen (oder fertige backup.env hinkopieren), dann: sudo ./install/install.sh --only borg"
         return
     fi
 
-    if [[ -t 0 && -z "${OSERP_SKIP_BORG_PROMPT:-}" ]]; then
-        echo
-        info "Für das Offsite-Backup werden jetzt die Daten des Borg-Servers (Storage Box) gebraucht."
-        local a
-        read -r -p "Borg-Backup jetzt einrichten? [J/n] " a
-        if [[ ${a:-J} =~ ^[JjYy]$ ]]; then
-            if sudo OSERP_USER="$OSERP_USER" bash "$standalone"; then
-                ok "Borg-Backup eingerichtet"
-                return
-            fi
-            warn "Borg-Einrichtung abgebrochen oder fehlgeschlagen"
+    local acct host pub
+    acct="$(borg_env_get BACKUP_USER)"; host="$acct.your-storagebox.de"
+    pub="$(sudo bash -c 'cat /root/.ssh/id_ed25519.pub 2>/dev/null || cat /root/.ssh/id_rsa.pub')"
+    sudo bash -c "touch /root/.ssh/known_hosts; ssh-keyscan -p23 '$host' 2>/dev/null >> /root/.ssh/known_hosts; sort -u /root/.ssh/known_hosts -o /root/.ssh/known_hosts"
+    if sudo ssh -p23 -o BatchMode=yes -o ConnectTimeout=20 "$acct@$host" true 2>/dev/null; then
+        ok "SSH-Zugang zur Storage Box ($acct) funktioniert"
+    elif [[ -t 0 ]]; then
+        info "root-Key wird auf der Storage Box eingetragen — es folgt die Passwortabfrage für $acct"
+        if printf '%s\n' "$pub" | sudo ssh -p23 -o ConnectTimeout=20 "$acct@$host" install-ssh-key \
+           && sudo ssh -p23 -o BatchMode=yes -o ConnectTimeout=20 "$acct@$host" true 2>/dev/null; then
+            ok "Key eingetragen, Zugang funktioniert"
+        else
+            warn "Key konnte nicht eingetragen werden. Manuell:"
+            todo "  sudo sh -c 'ssh -p23 $acct@$host install-ssh-key < /root/.ssh/id_ed25519.pub'"
+            return
         fi
+    else
+        todo "Borg: root-Key auf der Storage Box eintragen: sudo sh -c 'ssh -p23 $acct@$host install-ssh-key < /root/.ssh/id_ed25519.pub'"
+        return
     fi
-    todo "Borg-Backup: sudo $standalone ausführen (fragt Storage-Box-Konto, Passphrase, Uhrzeit ab)"
-    todo "  unbeaufsichtigt: BORG_BACKUP_USER=u123456 BORG_REPOSITORY_DIR=$(hostname) BORG_PASSPHRASE=... sudo -E $standalone"
+
+    # --- Repository / Erstsicherung -------------------------------------------
+    local repo="ssh://$acct@$host:23/./backups/$(borg_env_get REPOSITORY_DIR)"
+    if sudo bash -c "source '$BORG_ENV'; borg info '$repo' >/dev/null 2>&1"; then
+        ok "Repository vorhanden: $repo"
+    elif [[ -t 0 ]]; then
+        local a
+        read -r -p "Repository fehlt. Jetzt anlegen und Erstsicherung im Hintergrund starten (backup.sh INIT)? [J/n] " a
+        if [[ ${a:-J} =~ ^[JjYy]$ ]]; then
+            sudo bash -c "cd '$BORG_DIR' && setsid nohup ./backup.sh INIT >'$BORG_LOG_DIR/run.out' 2>&1 </dev/null &"
+            ok "Erstsicherung läuft im Hintergrund. Verlauf: sudo tail -f $BORG_LOG_DIR/backup.log  |  sudo $BORG_DIR/progress.sh"
+        else
+            todo "Erstsicherung: sudo $BORG_DIR/backup.sh INIT"
+        fi
+    else
+        todo "Erstsicherung: sudo $BORG_DIR/backup.sh INIT"
+    fi
 }
 
 # =============================================================================
@@ -975,8 +1082,8 @@ healthcheck() {
     if want dyndns && sudo test -f "$DYNDNS_CONF" && ! sudo grep -q "BITTE-EINTRAGEN" "$DYNDNS_CONF"; then
         _chk "DynDNS-Timer aktiv" "systemctl is-active --quiet oserp-dyndns.timer"
     fi
-    if want borg && sudo test -f "$BORG_CONF"; then
-        _chk "Borg-Backup-Cron"   "test -f /etc/cron.d/oserp-backup && test -x /usr/local/sbin/oserp-backup"
+    if want borg && borg_env_ready; then
+        _chk "Borg-Backup-Cron"   "test -f /etc/cron.d/oserp-backup && test -x $BORG_DIR/backup.sh"
     fi
     local url="http://localhost"
     if [[ "$OSERP_SERVER_NAME" != localhost ]]; then

@@ -500,7 +500,10 @@
                 "cancel": "Anuluj",
                 "send": "Wyślij",
                 "defaultBody": "Szanowni Państwo,\n\nw załączeniu przesyłamy {type} nr {number}.\n\nZ poważaniem",
-                "noEmail": "Dla tego klienta nie podano adresu e-mail."
+                "noEmail": "Dla tego klienta nie podano adresu e-mail.",
+                "addAttachment": "Dodaj kolejne załączniki",
+                "attachmentHint": "Dodatkowe pliki (maks. {max} łącznie), PDF dokumentu jest zawsze dołączany",
+                "attachmentTooLarge": "Dodatkowe załączniki przekraczają {max}. Usuń pliki."
             },
             "sendWhatsApp": {
                 "title": "Wyślij dokument przez WhatsApp",

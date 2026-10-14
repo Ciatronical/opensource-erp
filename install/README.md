@@ -47,35 +47,29 @@ Installer mit `[TODO]` — diese werden vom alten Server migriert.
 
 ### Offsite-Backup (Borg auf Hetzner Storage Box)
 
-Der Schritt `borg` richtet das nächtliche, verschlüsselte Backup des ganzen
-Rechners plus PostgreSQL-Dumps ein. **Zugangsdaten stehen nirgends im Repository**:
-der Installer fragt sie im Terminal ab (oder `install/borg-standalone.sh` direkt)
-und legt sie ausschließlich in `/etc/oserp/borg.env` (root, 0600) ab.
+Der Schritt `borg` installiert **dieselben `storage_backup`-Skripte wie auf den
+bestehenden OSERP-Rechnern** aus `install/storage_backup/` nach
+`/usr/local/sbin/storage_backup/` und legt alle Verzeichnisse an
+(`data/postgresql-dbs`, `data/mysql-dbs`, `/var/log/storage_backup`). **Zugangsdaten
+stehen nirgends im Repository**: eine vorhandene `backup.env` bleibt unangetastet
+(z. B. von einem anderen Rechner hinkopiert); fehlt sie, fragt der Installer im
+Terminal Storage-Box-Konto, Repository-Verzeichnis, Passphrase (Enter = erzeugen)
+und Alarm-Mail ab und schreibt sie aus `backup.env.default` (root, 0600). Ohne
+Terminal bleibt die Vorlage mit Platzhaltern liegen und der Schritt meldet `[TODO]`.
 
 ```bash
-sudo ./install/borg-standalone.sh            # fragt Konto, Host, Passphrase, Uhrzeit ab
-sudo ./install/borg-standalone.sh --refresh  # Skripte/Cron neu schreiben, Zugang bleibt
-sudo oserp-backup --first                    # Erstsicherung mit Auto-Resume
-sudo oserp-backup --list                     # Archive anzeigen
-sudo oserp-backup-status                     # Status als JSON (borg-uebersicht)
+./install/install.sh --only borg                  # Skripte, Verzeichnisse, Cron, Key, Abfrage
+OSERP_BACKUP_TIME=02:05 ./install/install.sh --only borg   # andere Cron-Uhrzeit (Vorgabe 02:30)
+sudo /usr/local/sbin/storage_backup/backup.sh INIT          # Repository anlegen + Erstsicherung
+borg-uebersicht                                             # Status aller Server
 ```
 
-Abgefragt werden: Storage-Box-Konto (bei Hetzner `u123456` oder Subaccount),
-Host (Vorgabe `<konto>.your-storagebox.de`), Port (23), Repository-Verzeichnis
-(Vorgabe = Hostname), Borg-Passphrase (Enter = erzeugen), Mailadresse für
-Fehler und die Uhrzeit des Cron-Laufs (Vorgabe 02:30, nach der DSL-Zwangstrennung).
-Der root-SSH-Key wird erzeugt und per `install-ssh-key` auf der Storage Box
-eingetragen (einmalige Passwortabfrage), das Repository mit `repokey` angelegt,
-der Schlüssel nach `/etc/oserp/borg-key.<repo>.txt` exportiert. Passphrase und
-Schlüssel gehören zusätzlich an einen sicheren Ort — ohne sie gibt es kein Restore.
-
-Angelegt werden `/usr/local/sbin/oserp-backup` (Dumps aller Datenbanken nach
-`/var/backups/oserp/postgresql`, `borg create` von `/` mit Excludes, prune
-7/4/6, compact, Mail bei Exit ≥ 2), `/usr/local/sbin/oserp-backup-status`
-(JSON für die zentrale `borg-uebersicht`, per sudoers ohne Passwort für den
-Betriebs-User) und `/etc/cron.d/oserp-backup`. Was gesichert und ausgeschlossen
-wird, steht als Bash-Arrays in `borg.env`; dort lässt sich auch der nächtliche
-Test-Mandanten-Klon (`BORG_PG_CLONE_SRC/DST`) einschalten.
+Weiter richtet der Schritt ein: root-SSH-Key (falls keiner da ist) und dessen
+Eintrag auf der Storage Box per `install-ssh-key` (einmalige Passwortabfrage des
+Kontos), `/etc/cron.d/oserp-backup` (täglich als root), die sudoers-Regel für
+`borg-status-local.sh` und `borg-uebersicht` in `/usr/local/bin`. Fehlt das
+Repository, bietet er an, `backup.sh INIT` im Hintergrund zu starten. Details,
+Restore und Statusübersicht: `install/storage_backup/README.md`.
 
 ### Von außen erreichbar machen (DynDNS, Portfreigabe, HTTPS)
 

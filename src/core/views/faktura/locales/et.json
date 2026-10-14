@@ -482,7 +482,10 @@
                 "cancel": "Tühista",
                 "send": "Saada",
                 "defaultBody": "Sehr geehrte Damen und Herren,\n\nanbei erhalten Sie {type} Nr. {number}.\n\nMit freundlichen Grüßen",
-                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt."
+                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
+                "addAttachment": "Lisa veel manuseid",
+                "attachmentHint": "Lisafailid (max {max} kokku), dokumendi PDF saadetakse alati kaasa",
+                "attachmentTooLarge": "Lisamanused ületavad {max}. Palun eemalda faile."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

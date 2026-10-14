@@ -482,7 +482,10 @@
                 "cancel": "Cancelar",
                 "send": "Enviar",
                 "defaultBody": "Sehr geehrte Damen und Herren,\n\nanbei erhalten Sie {type} Nr. {number}.\n\nMit freundlichen Grüßen",
-                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt."
+                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
+                "addAttachment": "Adicionar mais anexos",
+                "attachmentHint": "Ficheiros adicionais (máx. {max} no total), o PDF do documento é sempre enviado",
+                "attachmentTooLarge": "Os anexos adicionais excedem {max}. Remova ficheiros."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

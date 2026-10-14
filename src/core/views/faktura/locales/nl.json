@@ -482,7 +482,10 @@
                 "cancel": "Annuleren",
                 "send": "Versturen",
                 "defaultBody": "Geachte heer/mevrouw,\n\nhierbij ontvangt u {type} nr. {number}.\n\nMet vriendelijke groet",
-                "noEmail": "Geen e-mailadres geregistreerd voor deze klant."
+                "noEmail": "Geen e-mailadres geregistreerd voor deze klant.",
+                "addAttachment": "Extra bijlagen toevoegen",
+                "attachmentHint": "Extra bestanden (max. {max} in totaal), de document-PDF wordt altijd meegestuurd",
+                "attachmentTooLarge": "De extra bijlagen overschrijden {max}. Verwijder bestanden."
             },
             "sendWhatsApp": {
                 "title": "Document per WhatsApp versturen",

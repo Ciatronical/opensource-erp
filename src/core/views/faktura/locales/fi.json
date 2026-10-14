@@ -482,7 +482,10 @@
                 "cancel": "Peruuta",
                 "send": "Lähetä",
                 "defaultBody": "Sehr geehrte Damen und Herren,\n\nanbei erhalten Sie {type} Nr. {number}.\n\nMit freundlichen Grüßen",
-                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt."
+                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
+                "addAttachment": "Lisää liitteitä",
+                "attachmentHint": "Lisätiedostot (enint. {max} yhteensä), asiakirjan PDF lähetetään aina",
+                "attachmentTooLarge": "Lisäliitteet ylittävät {max}. Poista tiedostoja."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

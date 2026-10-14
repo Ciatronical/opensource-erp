@@ -3340,11 +3340,15 @@ export default defineComponent({
                 // Verknüpfung zum Beleg für die Versandanzeige
                 record_table: recordTable.value,
                 record_id: fakturaId.value ? Number(fakturaId.value) : null,
-                attachments: [{
-                    filename: attachmentName,
-                    content_base64: pdfBase64,
-                    content_type: 'application/pdf'
-                }]
+                attachments: [
+                    {
+                        filename: attachmentName,
+                        content_base64: pdfBase64,
+                        content_type: 'application/pdf'
+                    },
+                    // Zusätzliche Dateien aus dem E-Mail-Dialog
+                    ...(emailData.attachments || [])
+                ]
             })
 
             if (!response.data.success) {

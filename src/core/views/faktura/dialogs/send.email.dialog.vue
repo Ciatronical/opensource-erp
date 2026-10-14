@@ -84,11 +84,37 @@
                         />
                     </v-col>
 
-                    <!-- Anhang-Info -->
+                    <!-- Anhänge: Beleg-PDF (fest) + zusätzliche Dateien -->
                     <v-col cols="12">
-                        <v-chip color="primary" variant="tonal" prepend-icon="mdi-paperclip">
-                            {{ attachmentName }}
-                        </v-chip>
+                        <div class="d-flex flex-wrap align-center ga-2 mb-2">
+                            <v-chip color="primary" variant="tonal" prepend-icon="mdi-paperclip">
+                                {{ attachmentName }}
+                            </v-chip>
+                            <v-chip
+                                v-for="(att, idx) in extraAttachments"
+                                :key="att.filename"
+                                variant="tonal"
+                                prepend-icon="mdi-file-outline"
+                                closable
+                                @click:close="removeAttachment(idx)"
+                            >
+                                {{ att.filename }} ({{ formatSize(att.size) }})
+                            </v-chip>
+                        </div>
+                        <v-file-input
+                            :key="fileInputKey"
+                            :label="t('FakturaView.dialogs.sendEmail.addAttachment')"
+                            multiple
+                            variant="outlined"
+                            density="compact"
+                            prepend-icon=""
+                            prepend-inner-icon="mdi-paperclip-plus"
+                            :hint="t('FakturaView.dialogs.sendEmail.attachmentHint', { max: formatSize(maxTotalBytes) })"
+                            persistent-hint
+                            :error-messages="sizeExceeded ? t('FakturaView.dialogs.sendEmail.attachmentTooLarge', { max: formatSize(maxTotalBytes) }) : []"
+                            :loading="readingFiles"
+                            @update:model-value="onFilesSelected"
+                        />
                     </v-col>
                 </v-row>
             </v-card-text>
@@ -188,10 +214,68 @@ export default defineComponent({
         const emailBody = ref('')
         const sending = ref(false)
 
+        // Zusätzliche Anhänge [{filename, content_base64, content_type, size}]
+        const extraAttachments = ref([])
+        const readingFiles = ref(false)
+        const fileInputKey = ref(0)
+        // Obergrenze für alle zusätzlichen Dateien zusammen — der Request trägt
+        // zusätzlich das Beleg-PDF und muss unter post_max_size (8 MB) bleiben.
+        const maxTotalBytes = 5 * 1024 * 1024
+        const totalExtraBytes = computed(() => extraAttachments.value.reduce((sum, a) => sum + (a.size || 0), 0))
+        const sizeExceeded = computed(() => totalExtraBytes.value > maxTotalBytes)
+
         const isValid = computed(() => {
             return emailTo.value && emailTo.value.trim() !== '' &&
-                   emailSubject.value && emailSubject.value.trim() !== ''
+                   emailSubject.value && emailSubject.value.trim() !== '' &&
+                   !sizeExceeded.value && !readingFiles.value
         })
+
+        function formatSize(bytes) {
+            if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+            if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`
+            return `${bytes} B`
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader()
+                // Nur den Base64-Teil, ohne "data:…;base64,"-Präfix
+                reader.onload = () => resolve(String(reader.result).split(',')[1] || '')
+                reader.onerror = reject
+                reader.readAsDataURL(file)
+            })
+        }
+
+        /**
+         * Gewählte Dateien einlesen und an die Anhangliste hängen.
+         * Gleichnamige Dateien werden ersetzt, das Eingabefeld danach geleert.
+         */
+        async function onFilesSelected(files) {
+            const list = Array.isArray(files) ? files : (files ? [files] : [])
+            if (!list.length) return
+            readingFiles.value = true
+            try {
+                for (const file of list) {
+                    const content_base64 = await fileToBase64(file)
+                    const entry = {
+                        filename: file.name,
+                        content_base64,
+                        content_type: file.type || 'application/octet-stream',
+                        size: file.size
+                    }
+                    const existing = extraAttachments.value.findIndex(a => a.filename === file.name)
+                    if (existing >= 0) extraAttachments.value.splice(existing, 1, entry)
+                    else extraAttachments.value.push(entry)
+                }
+            } finally {
+                readingFiles.value = false
+                fileInputKey.value++
+            }
+        }
+
+        function removeAttachment(idx) {
+            extraAttachments.value.splice(idx, 1)
+        }
 
         // Dialog-Felder initialisieren wenn geoeffnet
         watch(() => props.modelValue, (newValue) => {
@@ -201,6 +285,8 @@ export default defineComponent({
                 emailBcc.value = props.initialBcc || ''
                 emailSubject.value = props.initialSubject || ''
                 emailBody.value = props.initialBody || ''
+                extraAttachments.value = []
+                fileInputKey.value++
                 sending.value = false
             }
         })
@@ -214,7 +300,9 @@ export default defineComponent({
                 cc: emailCc.value.trim(),
                 bcc: emailBcc.value.trim(),
                 subject: emailSubject.value.trim(),
-                body: emailBody.value.trim()
+                body: emailBody.value.trim(),
+                // Zusätzliche Anhänge ohne das Anzeige-Feld size
+                attachments: extraAttachments.value.map(({ filename, content_base64, content_type }) => ({ filename, content_base64, content_type }))
             })
         }
 
@@ -239,6 +327,14 @@ export default defineComponent({
             emailBody,
             sending,
             isValid,
+            extraAttachments,
+            readingFiles,
+            fileInputKey,
+            maxTotalBytes,
+            sizeExceeded,
+            formatSize,
+            onFilesSelected,
+            removeAttachment,
             onSend,
             onCancel,
             resetSending

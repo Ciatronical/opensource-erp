@@ -482,7 +482,10 @@
                 "cancel": "Anulare",
                 "send": "Trimite",
                 "defaultBody": "Sehr geehrte Damen und Herren,\n\nanbei erhalten Sie {type} Nr. {number}.\n\nMit freundlichen Grüßen",
-                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt."
+                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
+                "addAttachment": "Adaugă alte atașamente",
+                "attachmentHint": "Fișiere suplimentare (max. {max} în total), PDF-ul documentului este trimis întotdeauna",
+                "attachmentTooLarge": "Atașamentele suplimentare depășesc {max}. Eliminați fișiere."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

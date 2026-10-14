@@ -56,6 +56,10 @@ Ist unter *Firmenkonfiguration → CRM → SumUp* ein SumUp Solo über die Cloud
 
 Jeder gesendete Betrag wird mit Ergebnis, Transaktionscode und Kundenbeleg in `sumup_checkouts` protokolliert; der Code führt beim Abgleich der SumUp-Sammelauszahlung direkt zur Rechnung.
 
+## E-Mail-Versand
+
+Der Button **E-Mail** öffnet einen Dialog mit Empfänger (CC/BCC aus dem Kundenstamm), Betreff und Nachrichtentext; das Beleg-PDF hängt immer an. Über **Weitere Anhänge hinzufügen** lassen sich beliebige zusätzliche Dateien (z. B. AGB, Gutachten, Fotos) mitschicken — mehrere auf einmal, jede als Chip mit Größe entfernbar, gleichnamige Dateien ersetzen sich. Alle Zusatzdateien zusammen dürfen 5 MB nicht überschreiten, sonst bleibt **Senden** gesperrt. Die Anhänge landen wie das PDF im `email_journal` und damit im Versandverlauf des Belegs.
+
 ## Versandstatus
 
 Direkt unter der Aktionsleiste zeigt jeder gespeicherte Beleg, ob er den Kunden schon erreicht hat:

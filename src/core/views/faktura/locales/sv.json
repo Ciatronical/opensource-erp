@@ -482,7 +482,10 @@
                 "cancel": "Avbryt",
                 "send": "Skicka",
                 "defaultBody": "Sehr geehrte Damen und Herren,\n\nanbei erhalten Sie {type} Nr. {number}.\n\nMit freundlichen Grüßen",
-                "noEmail": "Für diesen Kundn ist inga E-post-Adresse hinterlegt."
+                "noEmail": "Für diesen Kundn ist inga E-post-Adresse hinterlegt.",
+                "addAttachment": "Lägg till fler bilagor",
+                "attachmentHint": "Ytterligare filer (max. {max} totalt), dokumentets PDF bifogas alltid",
+                "attachmentTooLarge": "De ytterligare bilagorna överskrider {max}. Ta bort filer."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

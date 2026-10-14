@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+# Uebersicht ueber die borg-Backups aller konfigurierten Server.
+# Ruft je Server das NOPASSWD-Helferskript borg-status-local.sh ab (lokal bzw. per SSH)
+# und rendert eine Statustabelle. Keine Passwoerter noetig.
+#
+#   Konfiguration unten in SERVERS:  "Anzeigename|ssh-ziel"
+#   ssh-ziel = "local"  oder  "user@host"
+#   Weitere Server stehen in /etc/borg-uebersicht.servers (eine Zeile je Server,
+#   gleiches Format) — so bleibt dieses Skript frei von Hostnamen/IPs.
+#
+#   Optionen:  --overdue N   Backup gilt ab N Stunden als ueberfaellig (Default 26)
+#              --mail        Tabelle zusaetzlich per E-Mail an REPORT_MAIL senden
+#                            (leer = ALERT_EMAIL aus backup.env)
+
+HELPER=/usr/local/sbin/storage_backup/borg-status-local.sh
+SSH_OPTS="-o BatchMode=yes -o ConnectTimeout=8"
+OVERDUE_H=26
+REPORT_MAIL=""
+MAIL=0
+
+SERVERS=(
+  "$(hostname)|local"
+  # "zweiter-rechner|work@zweiter-rechner.example.org"
+)
+if [ -r /etc/borg-uebersicht.servers ]; then
+  while IFS= read -r line; do
+    case "$line" in ''|'#'*) continue;; esac
+    SERVERS+=("$line")
+  done < /etc/borg-uebersicht.servers
+fi
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --overdue) OVERDUE_H="$2"; shift 2;;
+    --mail) MAIL=1; shift;;
+    *) shift;;
+  esac
+done
+
+if [ -z "$REPORT_MAIL" ]; then
+  REPORT_MAIL="$(sudo -n grep -oP '(?<=^export ALERT_EMAIL=")[^"]*' /usr/local/sbin/storage_backup/backup.env 2>/dev/null || true)"
+fi
+
+DATA=""
+for s in "${SERVERS[@]}"; do
+  name="${s%%|*}"; tgt="${s##*|}"
+  if [ "$tgt" = "local" ]; then
+    json="$(sudo -n "$HELPER" 2>/dev/null)"
+  else
+    json="$(ssh $SSH_OPTS "$tgt" "sudo -n $HELPER" 2>/dev/null)"
+  fi
+  [ -z "$json" ] && json='{"reachable":false}'
+  DATA+="${name}"$'\t'"${json}"$'\n'
+done
+
+run_render() {  # $1 = EMIT_SUMMARY (1 = zusaetzliche Betreff-Zeile @@SUMMARY)
+OVERDUE_H="$OVERDUE_H" BORG_DATA="$DATA" EMIT_SUMMARY="$1" python3 - <<'PY'
+import sys, os, json, datetime
+
+overdue_h = float(os.environ.get("OVERDUE_H", "26"))
+tty = sys.stdout.isatty()
+def c(code, s):
+    return f"\033[{code}m{s}\033[0m" if tty else s
+
+def human_size(b):
+    b = float(b or 0)
+    for u in ("B","K","M","G","T"):
+        if b < 1024 or u == "T":
+            return (f"{b:.0f}{u}" if u in ("B","K") else f"{b:.1f}{u}")
+        b /= 1024
+
+def parse_iso(s):
+    if not s: return None
+    s = s.strip().replace(" ", "T", 1) if ("T" not in s and " " in s) else s
+    for fmt in (None,):
+        try:
+            return datetime.datetime.fromisoformat(s)
+        except Exception:
+            pass
+    for f in ("%Y-%m-%dT%H:%M:%S.%f","%Y-%m-%dT%H:%M:%S","%Y-%m-%d %H:%M:%S"):
+        try: return datetime.datetime.strptime(s, f)
+        except Exception: pass
+    return None
+
+def human_age(dt):
+    if not dt: return "?"
+    sec = (datetime.datetime.now() - dt).total_seconds()
+    if sec < 0: sec = 0
+    d, r = divmod(int(sec), 86400)
+    h, r = divmod(r, 3600); m, _ = divmod(r, 60)
+    if d: return f"{d}d {h}h"
+    if h: return f"{h}h {m}m"
+    return f"{m}m"
+
+rows = []
+n_ok=n_run=n_over=n_fail=n_unreach=0
+for line in os.environ.get("BORG_DATA","").splitlines():
+    if not line.strip(): continue
+    name, _, js = line.partition("\t")
+    try: d = json.loads(js)
+    except Exception: d = {"reachable": False}
+
+    running = bool(d.get("running"))
+    reachable = bool(d.get("reachable"))
+    result = d.get("last_result","UNKNOWN")
+    last = d.get("last_start") or d.get("last_log_time") or d.get("repo_last_modified") or ""
+    dt = parse_iso(last)
+    age = human_age(dt) if dt else "?"
+    last_disp = dt.strftime("%Y-%m-%d %H:%M") if dt else "—"
+    narch = d.get("n_archives","—")
+    size = human_size(d.get("dedup_size")) if reachable else "—"
+
+    if running:
+        pct = str(d.get("progress_pct","") or "")
+        label = f"LÄUFT {pct}%" if pct else "LÄUFT"
+        sym, col = "●", "36;1"; n_run+=1; age="—"
+    elif not reachable:
+        sym, label, col = "✗", "NICHT ERREICHBAR", "31;1"; n_unreach+=1
+    elif result == "FAIL":
+        sym, label, col = "✗", "FEHLER", "31;1"; n_fail+=1
+    elif dt and (datetime.datetime.now()-dt).total_seconds() > overdue_h*3600:
+        sym, label, col = "⚠", "ÜBERFÄLLIG", "33;1"; n_over+=1
+    else:
+        sym, label, col = "✓", "OK", "32;1"; n_ok+=1
+
+    rows.append((name, d.get("repo",""), last_disp, age, str(narch), size, sym, label, col))
+
+hdr = ("Server","Repo","Letztes Backup","Alter","Arch","Größe","Status")
+w = [len(h) for h in hdr]
+for r in rows:
+    vals = (r[0], r[1], r[2], r[3], r[4], r[5], f"{r[6]} {r[7]}")
+    for i,v in enumerate(vals): w[i]=max(w[i], len(v))
+
+now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+line = "─" * (sum(w)+len(w)*2)
+print()
+print(c("1", f"BORG-BACKUP-ÜBERSICHT").ljust(40) + c("2", now))
+print(line)
+print("  ".join(h.ljust(w[i]) for i,h in enumerate(hdr)))
+print(line)
+for r in rows:
+    status = c(r[8], f"{r[6]} {r[7]}")
+    pad = " " * max(0, w[6]-len(f"{r[6]} {r[7]}"))
+    cells = [r[0].ljust(w[0]), r[1].ljust(w[1]), r[2].ljust(w[2]),
+             r[3].ljust(w[3]), r[4].ljust(w[4]), r[5].ljust(w[5]), status+pad]
+    print("  ".join(cells))
+print(line)
+summ = f"✓ {n_ok} ok    ● {n_run} läuft    ⚠ {n_over} überfällig    ✗ {n_fail+n_unreach} Fehler/offline"
+print(summ)
+print()
+
+if os.environ.get("EMIT_SUMMARY") == "1":
+    problems = n_over + n_fail + n_unreach
+    state = "ALLES OK" if problems == 0 else "PROBLEME"
+    print(f"@@SUMMARY [Backup {state}] {n_ok} ok, {n_run} laeuft, {n_over} ueberfaellig, {n_fail+n_unreach} Fehler/offline")
+PY
+}
+
+if [ "$MAIL" = 1 ]; then
+  OUT="$(run_render 1)"
+  SUBJECT="$(printf '%s\n' "$OUT" | sed -n 's/^@@SUMMARY //p')"
+  [ -z "$SUBJECT" ] && SUBJECT="Borg-Backup-Report $(date +%F)"
+  BODY="$(printf '%s\n' "$OUT" | grep -v '^@@SUMMARY ')"
+  printf '%s\n' "$BODY" | mail -s "$SUBJECT" "$REPORT_MAIL"
+  echo "Report per Mail an $REPORT_MAIL gesendet: $SUBJECT"
+else
+  run_render 0
+fi

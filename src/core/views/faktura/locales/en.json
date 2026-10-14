@@ -637,7 +637,10 @@
                 "cancel": "Cancel",
                 "send": "Send",
                 "defaultBody": "Dear Sir or Madam,\n\nplease find attached {type} No. {number}.\n\nKind regards",
-                "noEmail": "No email address is stored for this customer."
+                "noEmail": "No email address is stored for this customer.",
+                "addAttachment": "Add further attachments",
+                "attachmentHint": "Additional files (max. {max} in total), the document PDF is always included",
+                "attachmentTooLarge": "The additional attachments exceed {max}. Please remove files."
             },
             "dhl": {
                 "title": "Create DHL Shipping Label",

@@ -60,7 +60,7 @@ Das Datenbankschema aktualisiert sich selbst: bei Anmeldung und Firmenwechsel wi
 
 ## Offsite-Backup (Borg)
 
-Der Installer richtet auf Wunsch ein nächtliches, verschlüsseltes und dedupliziertes Backup des ganzen Servers auf eine Hetzner Storage Box (oder einen anderen SSH-Borg-Server) ein — mit Dumps aller PostgreSQL-Datenbanken, gestaffelter Aufbewahrung (7 täglich, 4 wöchentlich, 6 monatlich), Auto-Resume bei der Erstsicherung nach DSL-Zwangstrennung und Fehlermeldung per E-Mail. Die Zugangsdaten werden bei der Einrichtung abgefragt und liegen nur auf dem Server in `/etc/oserp/borg.env`; ein Status-Helfer liefert den Backup-Stand für eine zentrale Übersicht über alle Installationen. Optional baut der Lauf jede Nacht den Test-Mandanten aus der Produktivdatenbank neu (atomarer Tausch, Bot-Zugänge werden entschärft). Einrichtung: `install/README.md`, Abschnitt „Offsite-Backup“.
+Der Installer richtet auf Wunsch das nächtliche, verschlüsselte und deduplizierte Backup des ganzen Servers auf eine Hetzner Storage Box ein — dieselben `storage_backup`-Skripte wie auf allen OSERP-Rechnern: Dumps aller PostgreSQL-Datenbanken, `borg create` von `/` mit Ausschlüssen, gestaffelte Aufbewahrung (7 täglich, 4 wöchentlich, 6 monatlich), Auto-Resume-Wächter für die Erstsicherung nach DSL-Zwangstrennung, Fehlermeldung per E-Mail. Die Zugangsdaten werden bei der Einrichtung abgefragt und liegen nur auf dem Server in `backup.env`; `borg-uebersicht` zeigt den Backup-Stand aller Installationen in einer Tabelle. Optional baut der Lauf jede Nacht den Test-Mandanten aus der Produktivdatenbank neu (Bot-Zugänge werden entschärft). Einrichtung: `install/README.md`, Abschnitt „Offsite-Backup“.
 
 ## Dokumentation im System
 

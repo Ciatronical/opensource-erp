@@ -482,7 +482,10 @@
                 "cancel": "Atšaukti",
                 "send": "Siųsti",
                 "defaultBody": "Sehr geehrte Damen und Herren,\n\nanbei erhalten Sie {type} Nr. {number}.\n\nMit freundlichen Grüßen",
-                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt."
+                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
+                "addAttachment": "Pridėti daugiau priedų",
+                "attachmentHint": "Papildomi failai (iš viso iki {max}), dokumento PDF visada pridedamas",
+                "attachmentTooLarge": "Papildomi priedai viršija {max}. Pašalinkite failus."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

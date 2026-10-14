@@ -482,7 +482,10 @@
                 "cancel": "Avbryt",
                 "send": "Send",
                 "defaultBody": "Sehr geehrte Damen und Herren,\n\nanbei erhalten Sie {type} Nr. {number}.\n\nMit freundlichen Grüßen",
-                "noEmail": "Für diesen Kunder ist ingen E-post-Adresse hinterlegt."
+                "noEmail": "Für diesen Kunder ist ingen E-post-Adresse hinterlegt.",
+                "addAttachment": "Legg til flere vedlegg",
+                "attachmentHint": "Flere filer (maks. {max} totalt), dokument-PDF-en sendes alltid med",
+                "attachmentTooLarge": "De ekstra vedleggene overstiger {max}. Fjern filer."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

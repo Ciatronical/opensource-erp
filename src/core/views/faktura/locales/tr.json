@@ -482,7 +482,10 @@
                 "cancel": "İptal",
                 "send": "Gönder",
                 "defaultBody": "Sehr geehrte Damen und Herren,\n\nanbei erhalten Sie {type} Nr. {number}.\n\nMit freundlichen Grüßen",
-                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt."
+                "noEmail": "Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.",
+                "addAttachment": "Başka ek dosya ekle",
+                "attachmentHint": "Ek dosyalar (toplam en fazla {max}), belge PDF'si her zaman gönderilir",
+                "attachmentTooLarge": "Ek dosyalar {max} sınırını aşıyor. Lütfen dosya kaldırın."
             },
             "sendWhatsApp": {
                 "title": "Dokument per WhatsApp senden",

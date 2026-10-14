@@ -1,0 +1,16 @@
+# ===== NIEMALS einchecken: Zugangsdaten =====
+# Live-Env mit echter BORG_PASSPHRASE + jede Variante/Kopie/Backup davon
+backup.env
+backup.env.*
+# ...aber die Vorlage OHNE echte Passphrase bleibt versioniert:
+!backup.env.default
+
+# ===== Editor-/Backup-/Zustandsdateien =====
+*~
+*.orig
+*.bak
+*.bak.*
+.src_total
+
+# ===== Lokale Daten (DB-Dumps etc.) =====
+data/
