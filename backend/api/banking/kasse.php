@@ -365,9 +365,14 @@ function getNextCashBelegnummer($data) {
  * Zwei Modi:
  *  - counter_chart_id gesetzt → letzte Beschreibung für dieses Gegenkonto.
  *  - amount gesetzt           → letzte (oder betragsähnlichste) frühere Buchung mit
- *                               diesem Betrag; liefert Typ, Gegenkonto und Buchungstext.
+ *                               diesem Betrag; liefert Gegenkonto und Buchungstext.
  *                               Exakter Betrag hat Vorrang; sonst die nächstliegende
  *                               Buchung innerhalb ±50 %.
+ *
+ * Mit type wird nur in Buchungen derselben Richtung gesucht. Der Benutzer hat
+ * Einnahme/Ausgabe schon gewählt — ein Vorschlag aus der Gegenrichtung würde
+ * ein Gegenkonto liefern, das zur gewählten Richtung gar nicht passt (Erlöskonto
+ * bei einer Ausgabe), und die Kasse besteht überwiegend aus Ausgaben.
  *
  * Beispiel: gestern 900 € zur Bank (Geldtransit) → heute 1200 € getippt erkennt
  * „wieder zur Bank"; 60 € für die Putzfrau letzte Woche → 60 € füllt alles vor.
@@ -375,7 +380,8 @@ function getNextCashBelegnummer($data) {
  * @param int    $data['cash_register_id'] Kassakonto-ID (= chart.id)
  * @param float  $data['amount']           Betrag (optional)
  * @param int    $data['counter_chart_id'] Gegenkonto-ID (optional)
- * @testdata {"cash_register_id": 1, "amount": 60}
+ * @param string $data['type']             'income' | 'expense' — Richtung (optional)
+ * @testdata {"cash_register_id": 1, "amount": 60, "type": "expense"}
  */
 function getCashBookingSuggestion($data) {
     $db = DbhCompany::begin();
@@ -410,13 +416,16 @@ function getCashBookingSuggestion($data) {
         ) gegen ON true
         WHERE cash.chart_id = :cash
     ";
+    // Richtung: Einnahme = Geld rein = negativer Kassenbetrag (siehe getCashRegisters)
+    $type = $data['type'] ?? '';
+    if ($type === 'income')  $base .= " AND cash.amount < 0";
+    if ($type === 'expense') $base .= " AND cash.amount > 0";
 
     $select = "
         SELECT gl.description,
                gegen.chart_id   AS counter_chart_id,
                gegen.accno      AS counter_accno,
                gegen.description AS counter_description,
-               CASE WHEN cash.amount < 0 THEN 'income' ELSE 'expense' END AS type,
                ABS(cash.amount) AS amount
     ";
 
@@ -789,33 +798,58 @@ function getCashTransactions($data) {
 }
 
 /**
- * Kassenbuch als PDF drucken — Aufbau und Spalten wie in Lexware.
+ * Kassenbuch eines Zeitraums als Bericht: Kassenkopf, Anfangsbestand, alle
+ * Bewegungen mit laufender Nummer und laufendem Bestand, Summen — und je
+ * Zeile der verknüpfte Beleg sowie die DATEV-Positionen.
  *
- * Ein Kassenbuch ist ein steuerlich relevanter Ausdruck: es muss lückenlos und
- * nachvollziehbar sein. Deshalb aufsteigend nach Datum, mit laufender Nummer,
- * Übertrag (Anfangsbestand) als erster Zeile, Bestand in jeder Zeile und
- * Endbestand plus Unterschriftsfeld am Schluss.
+ * Eine Abfrage für PDF, CSV, DATEV-Buchungsstapel und Export-Paket. Der
+ * Umsatzsteuersatz kommt aus der Gegenbuchung, denn dort hängt der
+ * Steuerschlüssel. Für DATEV liefert jede manuelle Buchung ihre Nettobeine
+ * mit Steuerschlüssel und Bruttobetrag (Netto + folgendes Steuerbein) — eine
+ * Splitbuchung wird so zu mehreren Stapelzeilen mit derselben Belegnummer.
  *
- * @param int    $data['cash_register_id'] Kassakonto-ID (= chart.id)
- * @param string $data['from_date']        Von-Datum (optional)
- * @param string $data['to_date']          Bis-Datum (optional)
- * @param string $data['period_label']     Beschriftung des Zeitraums (optional)
- * @testdata {"cash_register_id": 1, "from_date": "2026-01-01", "to_date": "2026-12-31"}
+ * @return array|null  Bericht (chart_accno, chart_description, company, opening,
+ *                     closing, sum_income, sum_expense, row_count, rows[]) oder
+ *                     null, wenn das Kassenkonto nicht existiert
  */
-function getCashbookPdf($data) {
-    $db = DbhCompany::begin();
-
-    $registerId = intval($data['cash_register_id'] ?? 0);
-    if ($registerId <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Kassenbuch-ID fehlt'); return; }
-
-    $from = !empty($data['from_date']) ? $data['from_date'] : null;
-    $to   = !empty($data['to_date'])   ? $data['to_date']   : null;
-
-    // Eine Abfrage fuer alles: Kassenkopf, Anfangsbestand, alle Bewegungen mit
-    // laufender Nummer und laufendem Bestand sowie die Summen. Der Umsatzsteuer-
-    // satz kommt aus der Gegenbuchung, denn dort hängt der Steuerschlüssel.
+function _kasse_cashbookReport($db, $registerId, $from, $to) {
     $arLinkToken = _kasse_hasLinkToken('c2.link', 'AR');
     $apLinkToken = _kasse_hasLinkToken('c2.link', 'AP');
+
+    // Belegspalten nur, wenn die Belegtabellen existieren (siehe getCashTransactions)
+    $leer      = "NULL::integer AS document_id, NULL::text AS document_name, NULL::text AS document_mime,
+                  NULL::text AS document_hash, NULL::text AS stored_path, NULL::integer AS file_size";
+    $docCols   = $leer; $docJoin   = '';
+    $docColsAp = $leer; $docJoinAp = '';
+    $docColsAr = $leer; $docJoinAr = '';
+    if (_kasse_documentsEnabled($db)) {
+        $docCols = "ad.id AS document_id, ad.original_name AS document_name, ad.mime_type AS document_mime,
+                    ad.file_hash AS document_hash, ad.stored_path, ad.file_size";
+        $docJoin = "LEFT JOIN cash_gl_documents   cgd ON cgd.gl_id = gl.id
+                    LEFT JOIN accounting_documents ad  ON ad.id   = cgd.document_id";
+        $docColsAp = "apd.id AS document_id, apd.original_name AS document_name, apd.mime_type AS document_mime,
+                      apd.file_hash AS document_hash, apd.stored_path, apd.file_size";
+        $docJoinAp = "LEFT JOIN LATERAL (
+                          SELECT d.id, d.original_name, d.mime_type, d.file_hash, d.stored_path, d.file_size
+                          FROM accounting_documents d
+                          WHERE d.ap_id = ap.id AND d.stored_path IS NOT NULL
+                          ORDER BY d.id DESC LIMIT 1
+                      ) apd ON true";
+        $hatArId = $db->getOne(
+            "SELECT 1 AS ok FROM information_schema.columns
+             WHERE table_name = 'accounting_documents' AND column_name = 'ar_id' LIMIT 1"
+        );
+        if ($hatArId) {
+            $docColsAr = "ard.id AS document_id, ard.original_name AS document_name, ard.mime_type AS document_mime,
+                          ard.file_hash AS document_hash, ard.stored_path, ard.file_size";
+            $docJoinAr = "LEFT JOIN LATERAL (
+                              SELECT d.id, d.original_name, d.mime_type, d.file_hash, d.stored_path, d.file_size
+                              FROM accounting_documents d
+                              WHERE d.ar_id = ar.id AND d.stored_path IS NOT NULL
+                              ORDER BY d.id DESC LIMIT 1
+                          ) ard ON true";
+        }
+    }
 
     $report = $db->getOne(<<<SQL
         WITH p AS (
@@ -851,10 +885,13 @@ function getCashbookPdf($data) {
                    COALESCE(NULLIF(at.source, ''), gl.reference) AS reference,
                    gl.description                               AS description,
                    NULL::text                                   AS partner_name,
+                   NULL::text                                   AS invnumber,
                    gk.accno                                     AS gegenkonto_accno,
                    gk.description                               AS gegenkonto_description,
                    gk.tax_rate                                  AS tax_rate,
-                   sp.split_count, sp.split_accnos, sp.split_rates
+                   sp.split_count, sp.split_accnos, sp.split_rates,
+                   dl.datev_lines,
+                   {$docCols}
             FROM acc_trans at
             CROSS JOIN p
             JOIN gl ON gl.id = at.trans_id AND (gl.storno IS NULL OR gl.storno = false)
@@ -877,15 +914,41 @@ function getCashbookPdf($data) {
                 WHERE at2.trans_id = at.trans_id AND at2.chart_id != at.chart_id
                 ORDER BY at2.acc_trans_id ASC LIMIT 1
             ) gk ON true
+            -- DATEV-Positionen: jedes Nettobein mit Steuerschlüssel, Brutto =
+            -- Netto + direkt folgendes Steuerbein (so schreibt createCashTransaction
+            -- die Beine). Automatikkonten (8400, 3400 …) bekommen im Stapel
+            -- keinen BU-Schlüssel, DATEV rechnet die Steuer dort selbst.
+            LEFT JOIN LATERAL (
+                SELECT json_agg(json_build_object(
+                           'accno',     l.accno,
+                           'taxkey',    l.taxkey,
+                           'automatik', l.automatik,
+                           'gross',     ABS(l.amount + CASE WHEN l.next_is_tax THEN l.next_amount ELSE 0 END)
+                       ) ORDER BY l.acc_trans_id) AS datev_lines
+                FROM (
+                    SELECT at2.acc_trans_id, at2.amount, COALESCE(at2.taxkey, 0) AS taxkey,
+                           c2.accno, COALESCE(c2.datevautomatik, false) AS automatik,
+                           c2.link ~ '(^|:)(AP|AR)_tax($|:)' AS is_tax,
+                           COALESCE(LEAD(at2.amount) OVER (ORDER BY at2.acc_trans_id), 0) AS next_amount,
+                           COALESCE(LEAD(c2.link ~ '(^|:)(AP|AR)_tax($|:)') OVER (ORDER BY at2.acc_trans_id), false) AS next_is_tax
+                    FROM acc_trans at2
+                    JOIN chart c2 ON c2.id = at2.chart_id
+                    WHERE at2.trans_id = at.trans_id AND at2.chart_id <> at.chart_id
+                ) l
+                WHERE NOT l.is_tax
+            ) dl ON true
+            {$docJoin}
             WHERE at.chart_id = p.cid
               AND (at.ob_transaction IS NULL OR at.ob_transaction = false)
 
             UNION ALL
 
             SELECT at.acc_trans_id, at.transdate, -at.amount AS amount,
-                   at.source, ar.invnumber, c.name,
+                   at.source, NULL::text, c.name, ar.invnumber,
                    gk.accno, gk.description, 0::numeric,
-                   NULL::int, NULL::text, NULL::text
+                   NULL::int, NULL::text, NULL::text,
+                   NULL::json,
+                   {$docColsAr}
             FROM acc_trans at
             CROSS JOIN p
             -- Kein Storno-Filter auf ar/ap: das Kennzeichen storno gehört zur Rechnung,
@@ -895,6 +958,7 @@ function getCashbookPdf($data) {
             -- und Storno ein Paar, das sich aufhebt und beide Zeilen entfallen.
             JOIN ar ON ar.id = at.trans_id
             JOIN customer c ON c.id = ar.customer_id
+            {$docJoinAr}
             -- Gegenkonto einer Barzahlung ist das Forderungskonto der Rechnung
             -- (Debitoren-Sammelkonto, z. B. 1200) — die Kasse gleicht die Forderung
             -- aus, sie bucht keinen Erlös. Ohne die Rangfolge gewänne je nach
@@ -913,13 +977,16 @@ function getCashbookPdf($data) {
             UNION ALL
 
             SELECT at.acc_trans_id, at.transdate, -at.amount AS amount,
-                   at.source, ap.invnumber, v.name,
+                   at.source, NULL::text, v.name, ap.invnumber,
                    gk.accno, gk.description, 0::numeric,
-                   NULL::int, NULL::text, NULL::text
+                   NULL::int, NULL::text, NULL::text,
+                   NULL::json,
+                   {$docColsAp}
             FROM acc_trans at
             CROSS JOIN p
             JOIN ap ON ap.id = at.trans_id
             JOIN vendor v ON v.id = ap.vendor_id
+            {$docJoinAp}
             -- Spiegelbild zu AR: das Verbindlichkeitskonto der Rechnung
             -- (Kreditoren-Sammelkonto, z. B. 1600/3300), nicht das Aufwandskonto.
             LEFT JOIN LATERAL (
@@ -968,22 +1035,53 @@ function getCashbookPdf($data) {
         FROM numbered n
     SQL, ['chart_id' => $registerId, 'von' => $from, 'bis' => $to]);
 
-    if (!$report || $report['chart_accno'] === null) {
-        resultInfo(false, 'NOT_FOUND', 'Kassenbuch nicht gefunden');
-        return;
+    if (!$report || $report['chart_accno'] === null) return null;
+
+    $report['rows']    = json_decode($report['rows'] ?? '[]', true) ?: [];
+    $report['opening'] = (float)($report['opening'] ?? 0);
+    return $report;
+}
+
+/**
+ * Beschriftung des Zeitraums für Ausdruck, Dateinamen und E-Mail.
+ */
+function _kasse_periodLabel($data, $from, $to) {
+    $zeitraum = trim((string)($data['period_label'] ?? ''));
+    if ($zeitraum !== '') return $zeitraum;
+    return $from || $to
+        ? ($from ? _bu_datum($from) : 'Beginn') . ' bis ' . ($to ? _bu_datum($to) : 'heute')
+        : 'gesamter Buchungsbestand';
+}
+
+/**
+ * Buchungstext einer Kassenbuchzeile: Beschreibung bzw. Rechnungsnummer,
+ * ergänzt um den Partner; leer → „Bareinnahme"/„Barausgabe".
+ */
+function _kasse_rowText(array $row) {
+    $text = trim((string)($row['description'] ?? $row['invnumber'] ?? ''));
+    if ($text === '' && !empty($row['invnumber'])) $text = $row['invnumber'];
+    if (!empty($row['partner_name'])) {
+        $text = $text === '' ? $row['partner_name'] : $text . ' · ' . $row['partner_name'];
     }
+    if ($text === '') $text = (float)$row['amount'] >= 0 ? 'Bareinnahme' : 'Barausgabe';
+    return $text;
+}
 
-    $rows    = json_decode($report['rows'] ?? '[]', true) ?: [];
-    $opening = (float)($report['opening'] ?? 0);
-
+/**
+ * Kassenbuch als PDF rendern — Aufbau und Spalten wie in Lexware.
+ *
+ * Ein Kassenbuch ist ein steuerlich relevanter Ausdruck: es muss lückenlos und
+ * nachvollziehbar sein. Deshalb aufsteigend nach Datum, mit laufender Nummer,
+ * Übertrag (Anfangsbestand) als erster Zeile, Bestand in jeder Zeile und
+ * Endbestand plus Unterschriftsfeld am Schluss.
+ *
+ * @return string PDF-Bytes
+ */
+function _kasse_cashbookPdf(array $report, $from, $zeitraum) {
     require_once __DIR__ . '/../lib/report_pdf.php';
 
-    $zeitraum = trim((string)($data['period_label'] ?? ''));
-    if ($zeitraum === '') {
-        $zeitraum = $from || $to
-            ? ($from ? _bu_datum($from) : 'Beginn') . ' bis ' . ($to ? _bu_datum($to) : 'heute')
-            : 'gesamter Buchungsbestand';
-    }
+    $rows    = $report['rows'];
+    $opening = $report['opening'];
 
     $pdf = new ReportPdf('P', 'mm', 'A4');
     $pdf->reportTitle = 'Kassenbuch';
@@ -1017,13 +1115,7 @@ function getCashbookPdf($data) {
     ], false);
 
     foreach ($rows as $row) {
-        $amount = (float)$row['amount'];
-        $text   = trim((string)($row['description'] ?? ''));
-        if (!empty($row['partner_name'])) {
-            $text = $text === '' ? $row['partner_name'] : $text . ' · ' . $row['partner_name'];
-        }
-        if ($text === '') $text = $amount >= 0 ? 'Bareinnahme' : 'Barausgabe';
-
+        $amount  = (float)$row['amount'];
         $taxRate = (float)($row['tax_rate'] ?? 0);
         $gegen   = trim(($row['gegenkonto_accno'] ?? '') . ' ' . ($row['gegenkonto_description'] ?? ''));
         $steuer  = $taxRate > 0 ? ReportPdf::money($taxRate * 100) : '';
@@ -1037,7 +1129,7 @@ function getCashbookPdf($data) {
             (string)$row['lfd'],
             _bu_datum($row['transdate']),
             $row['reference'] ?: '',
-            ['text' => $text, 'wrap' => true, 'maxLines' => 2],
+            ['text' => _kasse_rowText($row), 'wrap' => true, 'maxLines' => 2],
             $gegen,
             $steuer,
             ReportPdf::money($amount > 0 ? $amount : 0, true),
@@ -1067,10 +1159,39 @@ function getCashbookPdf($data) {
     $pdf->Cell(0,  5, ReportPdf::de('Datum, Unterschrift: ______________________________'), 0, 1);
     $pdf->SetTextColor(0, 0, 0);
 
+    return $pdf->Output('S');
+}
+
+/**
+ * Kassenbuch als PDF drucken.
+ *
+ * @param int    $data['cash_register_id'] Kassakonto-ID (= chart.id)
+ * @param string $data['from_date']        Von-Datum (optional)
+ * @param string $data['to_date']          Bis-Datum (optional)
+ * @param string $data['period_label']     Beschriftung des Zeitraums (optional)
+ * @testdata {"cash_register_id": 1, "from_date": "2026-01-01", "to_date": "2026-12-31"}
+ */
+function getCashbookPdf($data) {
+    $db = DbhCompany::begin();
+
+    $registerId = intval($data['cash_register_id'] ?? 0);
+    if ($registerId <= 0) { resultInfo(false, 'VALIDATION_ERROR', 'Kassenbuch-ID fehlt'); return; }
+
+    $from = !empty($data['from_date']) ? $data['from_date'] : null;
+    $to   = !empty($data['to_date'])   ? $data['to_date']   : null;
+
+    $report = _kasse_cashbookReport($db, $registerId, $from, $to);
+    if (!$report) {
+        resultInfo(false, 'NOT_FOUND', 'Kassenbuch nicht gefunden');
+        return;
+    }
+
+    $pdf = _kasse_cashbookPdf($report, $from, _kasse_periodLabel($data, $from, $to));
+
     resultInfo(true, '', [
         'filename' => 'kassenbuch_' . ($report['chart_accno'] ?? '') . '_' . date('Y-m-d') . '.pdf',
         'mime'     => 'application/pdf',
-        'data'     => base64_encode($pdf->Output('S')),
+        'data'     => base64_encode($pdf),
     ]);
 }
 

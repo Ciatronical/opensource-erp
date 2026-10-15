@@ -731,6 +731,42 @@
     "previousPeriod": "Vorheriger Zeitraum",
     "nextPeriod": "Nächster Zeitraum",
     "editTransaction": "Buchung bearbeiten",
-    "transactionUpdated": "Buchung geändert"
+    "transactionUpdated": "Buchung geändert",
+    "export": {
+      "button": "Exportieren",
+      "pdf": "Kassenbuch als PDF speichern",
+      "csv": "Kassenbuch als CSV speichern",
+      "datev": "DATEV-Paket (ZIP) speichern",
+      "datevHint": "Buchungsstapel, PDF, CSV, Belege und Belegliste"
+    },
+    "send": {
+      "button": "Per E-Mail senden",
+      "title": "Kassenbuch per E-Mail senden",
+      "period": "Zeitraum",
+      "allPeriods": "gesamter Buchungsbestand",
+      "scope": "Umfang",
+      "scopeText": "{rows} Buchungen, {docs} Belege",
+      "sender": "Absender",
+      "notConfigured": "Der E-Mail-Versand ist nicht eingerichtet. Bitte zuerst unter Einstellungen → E-Mail das Postfach hinterlegen.",
+      "to": "Empfänger",
+      "toHint": "Mehrere Adressen mit Komma trennen. Der Empfänger wird für das nächste Mal gemerkt.",
+      "cc": "Kopie (CC)",
+      "subject": "Betreff",
+      "body": "Nachricht",
+      "subjectDefault": "Kassenbuch {period} – {company}",
+      "bodyDefault": "Guten Tag,\n\nanbei das Kassenbuch für {period}.\n\nAnfangsbestand: {opening}\nEndbestand: {closing}\nBuchungen: {rows}\n\nMit freundlichen Grüßen\n{company}",
+      "attachments": "Anhänge",
+      "attachPdf": "Kassenbuch als PDF",
+      "attachCsv": "Kassenbuch als CSV",
+      "attachDatev": "DATEV-Paket (ZIP): Buchungsstapel, PDF, CSV, Belege, Belegliste",
+      "withDocs": "{docs} Belege, {size}",
+      "tooLarge": "Die Anhänge sind {size} groß, viele Mailserver nehmen höchstens {max} an. Besser das Paket herunterladen und anders übergeben.",
+      "downloadInstead": "Paket herunterladen",
+      "sendAnyway": "Trotzdem senden",
+      "datevNotConfigured": "Berater- und Mandantennummer sind nicht hinterlegt (Buchhaltung → DATEV). Der Buchungsstapel trägt Platzhalter.",
+      "send": "Senden",
+      "sent": "Kassenbuch gesendet an {to}",
+      "failed": "Versand fehlgeschlagen"
+    }
   }
 }

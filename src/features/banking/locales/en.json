@@ -731,6 +731,42 @@
         "previousPeriod": "Previous period",
         "nextPeriod": "Next period",
         "editTransaction": "Edit posting",
-        "transactionUpdated": "Posting changed"
+        "transactionUpdated": "Posting changed",
+        "export": {
+            "button": "Export",
+            "pdf": "Save cash book as PDF",
+            "csv": "Save cash book as CSV",
+            "datev": "Save DATEV package (ZIP)",
+            "datevHint": "Posting batch, PDF, CSV, receipts and receipt list"
+        },
+        "send": {
+            "button": "Send by email",
+            "title": "Send cash book by email",
+            "period": "Period",
+            "allPeriods": "all postings",
+            "scope": "Scope",
+            "scopeText": "{rows} postings, {docs} receipts",
+            "sender": "Sender",
+            "notConfigured": "Email sending is not set up. Please configure the mailbox under Settings → Email first.",
+            "to": "Recipient",
+            "toHint": "Separate several addresses with commas. The recipient is remembered for next time.",
+            "cc": "Copy (CC)",
+            "subject": "Subject",
+            "body": "Message",
+            "subjectDefault": "Cash book {period} – {company}",
+            "bodyDefault": "Hello,\n\nplease find attached the cash book for {period}.\n\nOpening balance: {opening}\nClosing balance: {closing}\nPostings: {rows}\n\nKind regards\n{company}",
+            "attachments": "Attachments",
+            "attachPdf": "Cash book as PDF",
+            "attachCsv": "Cash book as CSV",
+            "attachDatev": "DATEV package (ZIP): posting batch, PDF, CSV, receipts, receipt list",
+            "withDocs": "{docs} receipts, {size}",
+            "tooLarge": "The attachments total {size}; many mail servers accept at most {max}. Better download the package and hand it over another way.",
+            "downloadInstead": "Download package",
+            "sendAnyway": "Send anyway",
+            "datevNotConfigured": "Consultant and client numbers are not set (Accounting → DATEV). The posting batch carries placeholders.",
+            "send": "Send",
+            "sent": "Cash book sent to {to}",
+            "failed": "Sending failed"
+        }
     }
 }

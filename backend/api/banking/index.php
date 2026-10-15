@@ -15,6 +15,7 @@ require_once __DIR__.'/banking_ai.php';
 require_once __DIR__.'/direct_debit.php';
 require_once __DIR__.'/fints.php';
 require_once __DIR__.'/kasse.php';
+require_once __DIR__.'/kasse_export.php';
 require_once __DIR__.'/settlements.php';
 require_once __DIR__.'/bank_documents.php';
 require_once __DIR__.'/chart_booking.php';

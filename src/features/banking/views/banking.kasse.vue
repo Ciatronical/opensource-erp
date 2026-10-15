@@ -131,6 +131,27 @@
                         <v-icon start size="small">mdi-printer-outline</v-icon>
                         {{ t('KasseView.print') }}
                     </v-btn>
+
+                    <!-- Export: PDF/CSV zum Speichern, DATEV-Paket (Buchungsstapel + Belege) als ZIP -->
+                    <v-menu>
+                        <template #activator="{ props: menu }">
+                            <v-btn v-bind="menu" variant="tonal" size="small" class="text-none" :loading="exporting">
+                                <v-icon start size="small">mdi-download-outline</v-icon>
+                                {{ t('KasseView.export.button') }}
+                                <v-icon end size="small">mdi-menu-down</v-icon>
+                            </v-btn>
+                        </template>
+                        <v-list density="compact">
+                            <v-list-item prepend-icon="mdi-file-pdf-box" :title="t('KasseView.export.pdf')" @click="downloadPdf" />
+                            <v-list-item prepend-icon="mdi-file-delimited-outline" :title="t('KasseView.export.csv')" @click="downloadCsv" />
+                            <v-list-item prepend-icon="mdi-folder-zip-outline" :title="t('KasseView.export.datev')" :subtitle="t('KasseView.export.datevHint')" @click="downloadDatevPackage" />
+                        </v-list>
+                    </v-menu>
+
+                    <v-btn variant="tonal" size="small" class="text-none" color="primary" @click="showSendDialog = true">
+                        <v-icon start size="small">mdi-email-send-outline</v-icon>
+                        {{ t('KasseView.send.button') }}
+                    </v-btn>
                 </div>
 
                 <!-- Summenleiste (sortier-/filterunabhängig) -->
@@ -402,6 +423,16 @@
             @open-invoice="b => router.push({ name: 'faktura-invoice-view', params: { id: b.head.id } })"
         />
 
+        <!-- ── Dialog: Kassenbuch per E-Mail versenden ── -->
+        <KasseSendDialog
+            v-model="showSendDialog"
+            :register-id="selectedRegisterId"
+            :from-date="fromDate"
+            :to-date="toDate"
+            :period-label="periodMode === 'all' ? '' : periodHint"
+            @download-package="downloadDatevPackage"
+        />
+
         <!-- ── Dialog: Neue manuelle Buchung ── -->
         <v-dialog v-model="showTransactionDialog" max-width="760" persistent>
             <v-card>
@@ -627,9 +658,10 @@ import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import PeriodPicker from '../components/kasse.period-picker.component.vue'
 import SplitLines from '../components/split-lines.component.vue'
 import BookingDetailDialog from '../components/booking-detail-dialog.component.vue'
+import KasseSendDialog from '../components/kasse.send-dialog.component.vue'
 import { newLine, linesError } from '../composables/useSplitLines.js'
 import * as alerts from '@/core/utils/alerts.js'
-import { openBase64Pdf } from '@/core/utils/download.js'
+import { openBase64Pdf, downloadBase64File } from '@/core/utils/download.js'
 import Swal from 'sweetalert2'
 
 const { t } = useI18n()
@@ -660,6 +692,8 @@ const counterTaxes       = ref([])    // heute gültige Steuerschlüssel (Vorste
 const transactions       = ref([])
 const txLoading          = ref(false)
 const printing           = ref(false)
+const exporting          = ref(false)
+const showSendDialog     = ref(false)
 const openingBalance     = ref(0)
 const closingBalance     = ref(0)
 const sumIncome          = ref(0)
@@ -921,6 +955,74 @@ async function printCashbook() {
     }
 }
 
+// ── Export: PDF/CSV speichern, DATEV-Paket als ZIP ─────────────────────────
+// Exportiert wird wie beim Druck immer der volle Zeitraum ohne Typfilter.
+
+function exportParams() {
+    return {
+        cash_register_id: selectedRegisterId.value,
+        from_date:        fromDate.value,
+        to_date:          toDate.value,
+        period_label:     periodMode.value === 'all' ? '' : periodHint.value,
+    }
+}
+
+async function downloadPdf() {
+    if (!selectedRegisterId.value) return
+    exporting.value = true
+    try {
+        const res = await axios.post(API_URL, { action: 'getCashbookPdf', ...exportParams() })
+        if (!res.data?.success) throw new Error(apiErrorText(res))
+        downloadBase64File(res.data.payload.data, res.data.payload.filename, res.data.payload.mime)
+    } catch (e) {
+        alerts.error(e.message)
+    } finally {
+        exporting.value = false
+    }
+}
+
+async function downloadCsv() {
+    if (!selectedRegisterId.value) return
+    exporting.value = true
+    try {
+        const res = await axios.post(API_URL, { action: 'getCashbookCsv', ...exportParams() })
+        if (!res.data?.success) throw new Error(apiErrorText(res))
+        downloadBase64File(res.data.payload.data, res.data.payload.filename, res.data.payload.mime)
+    } catch (e) {
+        alerts.error(e.message)
+    } finally {
+        exporting.value = false
+    }
+}
+
+// Das Paket kommt als Binärantwort (ZIP). Ein Fehler kommt trotzdem als JSON —
+// dann steckt er im Blob und wird hier herausgelesen.
+async function downloadDatevPackage() {
+    if (!selectedRegisterId.value) return
+    exporting.value = true
+    try {
+        const res = await axios.post(API_URL, { action: 'getCashbookDatevPackage', ...exportParams() }, { responseType: 'blob' })
+        if ((res.headers['content-type'] || '').includes('json')) {
+            const j = JSON.parse(await res.data.text())
+            throw new Error(typeof j.payload === 'string' ? j.payload : (j.text || t('KasseView.saveError')))
+        }
+        const name = (res.headers['content-disposition'] || '').match(/filename="([^"]+)"/)?.[1]
+            || `Kassenbuch_${fromDate.value || 'gesamt'}.zip`
+        const url  = window.URL.createObjectURL(res.data)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', name)
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        window.URL.revokeObjectURL(url)
+    } catch (e) {
+        alerts.error(e.message)
+    } finally {
+        exporting.value = false
+    }
+}
+
 async function loadCharts() {
     const res = await axios.post(API_URL, { action: 'getCashCounterCharts' })
     if (res.data?.success) {
@@ -1068,6 +1170,10 @@ function toggleBelegLock() {
 
 // Buchungsvorschlag aus der Historie, sobald ein Betrag eingegeben wurde und noch
 // kein Gegenkonto gewählt ist (füllt Typ, Gegenkonto und Buchungstext vor).
+// Vorschlag nach Betrag: nur aus Buchungen der gewählten Richtung. Die Richtung
+// selbst bleibt, wie der Benutzer sie gesetzt hat — früher sprang sie auf die
+// der ähnlichsten alten Buchung um, und das Erlöskonto war bei der Einnahme
+// plötzlich nicht mehr wählbar, weil der Dialog unbemerkt auf „Ausgabe" stand.
 async function suggestFromAmount() {
     const amt = Number(txData.amount)
     if (!amt || amt <= 0 || txLines.value[0].account) return
@@ -1076,11 +1182,11 @@ async function suggestFromAmount() {
             action:           'getCashBookingSuggestion',
             cash_register_id: selectedRegisterId.value,
             amount:           amt,
+            type:             txData.type,
         })
         const s = res.data?.payload?.suggestion
         if (!s) return
-        if (s.type) txData.type = s.type
-        const acc = counterCharts.value.find(c => c.id === s.counter_chart_id) || null
+        const acc = filteredCounterCharts.value.find(c => c.id === s.counter_chart_id) || null
         txLines.value[0].account = acc
         txLines.value[0].tax     = acc ? (acc.tax_id || 0) : null
         if (!txData.description) txData.description = s.description || ''
@@ -1095,6 +1201,7 @@ async function suggestFromCounter(index, account) {
             action:           'getCashBookingSuggestion',
             cash_register_id: selectedRegisterId.value,
             counter_chart_id: account.id,
+            type:             txData.type,
         })
         const s = res.data?.payload?.suggestion
         if (s && s.description && !txData.description) txData.description = s.description
