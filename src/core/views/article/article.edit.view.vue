@@ -62,9 +62,10 @@
                         <v-divider />
                         <v-card-text class="py-2 px-2 px-sm-3">
                             <v-row dense>
-                                <!-- Artikelnummer: beim Bearbeiten fest, beim Anlegen frei.
-                                     Leer = nächste freie Nummer aus dem Nummernkreis,
-                                     die als Platzhalter angezeigt wird. -->
+                                <!-- Artikelnummer: beim Anlegen leer = nächste freie Nummer aus
+                                     dem Nummernkreis (Platzhalter). Beim Bearbeiten änderbar;
+                                     die Datenbank verlangt Eindeutigkeit, eine vergebene Nummer
+                                     meldet das Speichern am Feld. -->
                                 <v-col cols="12" sm="4" class="py-1">
                                     <v-text-field
                                         v-if="isNewMode"
@@ -80,13 +81,12 @@
                                     />
                                     <v-text-field
                                         v-else
-                                        :model-value="article.partnumber"
+                                        v-model="article.partnumber"
                                         :label="t('ArticleEditView.fields.partnumber')"
+                                        :error-messages="partnumberError"
                                         variant="outlined"
                                         density="compact"
                                         hide-details="auto"
-                                        readonly
-                                        bg-color="grey-lighten-4"
                                         autocomplete="off"
                                     />
                                 </v-col>
@@ -381,6 +381,15 @@ export default defineComponent({
 
         watch(article, onDataChange, { deep: true })
 
+        /** Meldung am Feld der Artikelnummer, wenn sie vergeben ist */
+        const partnumberError = ref('')
+
+        /** Die Artikelnummer geht nur mit, wenn sie nicht leer ist — leer hieße „unverändert“ */
+        function partnumberPayload() {
+            const nummer = String(article.value.partnumber || '').trim()
+            return nummer ? { partnumber: nummer } : {}
+        }
+
         async function saveArticle(partsId = props.id) {
             if (saving.value || !partsId) return
 
@@ -388,9 +397,10 @@ export default defineComponent({
             error.value = ''
 
             try {
-                await axios.post('/api/parts/', {
+                const response = await axios.post('/api/parts/', {
                     action: 'updatePart',
                     parts_id: Number(partsId),
+                    ...partnumberPayload(),
                     description: article.value.description,
                     part_type: article.value.part_type,
                     unit: article.value.unit,
@@ -400,6 +410,11 @@ export default defineComponent({
                     obsolete: article.value.obsolete,
                     weight: weightValue()
                 })
+                // Eine vergebene Artikelnummer meldet das Backend; die übrigen
+                // Felder sind dann ebenfalls nicht gespeichert, bis sie stimmt
+                const code = response.data?.success ? '' : (response.data?.text || '')
+                partnumberError.value = code === 'PARTNUMBER_EXISTS' ? t('ArticleEditView.messages.partnumberExists') : ''
+                if (code && code !== 'PARTNUMBER_EXISTS') error.value = t('ArticleEditView.messages.loadError')
             } catch (e) {
                 console.error('Save article error:', e)
                 error.value = t('ArticleEditView.messages.loadError')
@@ -457,6 +472,7 @@ export default defineComponent({
             const payload = {
                 action: 'updatePart',
                 parts_id: Number(props.id),
+                ...partnumberPayload(),
                 description: article.value.description,
                 part_type: article.value.part_type,
                 unit: article.value.unit,
@@ -677,6 +693,7 @@ export default defineComponent({
             saving,
             loading,
             error,
+            partnumberError,
             unitOptions,
             buchungsgruppen,
             onFocusIn,

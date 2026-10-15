@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "Ajo siirtää välityspalvelimen ja 404-sivun allekirjoitettuina.",
         "shopHugoCmsSignedMissing": "HugoCMS ei vielä tunne OpensourceERP:n allekirjoitusavainta — välityspalvelin ja 404-sivu on vietävä verkkopalvelimelle käsin.",
         "shopHugoCmsSignedNoKey": "Ilman OpensourceERP:n allekirjoitusavainta välityspalvelin ja 404-sivu on vietävä verkkopalvelimelle käsin.",
+        "shopHugoCmsMediaReady": "HugoCMS ottaa vastaan tuotekuvat, pikkukuvat ja lataukset mediakirjastosta — ajo toimittaa ne.",
+        "shopHugoCmsMediaMissing": "Tämä HugoCMS-versio ei vielä ota vastaan mediaa mediakirjastosta — verkkosivuston tuotekuvat ja lataukset pysyvät voimassa, kunnes HugoCMS on päivitetty.",
         "shopBackendTest": "Testaa yhteys",
         "shopBackendTestStep_plausibel": "Syöte",
         "shopBackendTestStep_direkt": "Suoraan OpensourceERP:stä",

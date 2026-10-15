@@ -17,6 +17,7 @@ Teile entstanden sind, beschreiben `shop-migration.md` (Fachlogik),
 | Shop-UI | `shop-ui/` | Widgets der Käuferoberfläche (Lit), eigener Build ins Paket |
 | Läufer | `tools/shop-publish.php` | Aufträge abarbeiten, Paket abgleichen, Kategorien, an HugoCMS übertragen und dort bauen lassen |
 | Übernahme | `tools/shop-bridge-settings.php` | Einstellungen einer Bridge-Instanz als SQL ausgeben |
+| Medienbibliothek | `backend/api/shop/media.php`, `lib/media.php`, Medien in der Artikelkarte | Produktbilder und Downloads zentral für alle Verkaufskanäle (`dev/shop-medienbibliothek.md`); Übernahme vorhandener Medien mit `tools/shop-media-import.php` |
 
 Die Webseite selbst — Hugo-Projekt, Theme, Inhalte — gehört dem Betreiber und
 liegt bei HugoCMS. Veröffentlicht wird ausschließlich über HugoCMS: OpensourceERP
@@ -24,9 +25,12 @@ erzeugt alles in seiner Bereitstellung unter `backend/tmp/`, überträgt es übe
 die Shop-Erweiterung von HugoCMS und lässt die Webseite dort bauen
 (`dev/shop-hugocms-trennung.md`). Wohin es schreiben darf, legt ein
 Administrator in HugoCMS fest — die **Freigaben** in den Projekteinstellungen
-(Produktseiten, Kategorieübersicht, Produkt- und Vorschaubilder; das Paket
-liegt fest in `oserp-shop/`). OpensourceERP zeigt sie in der Kanalkarte nur an
-und übernimmt sie bei jedem Lauf (`dev/shop-hugocms-verzeichnisse.md`).
+(Produktseiten, Kategorieübersicht, Produktbilder, Vorschaubilder, Downloads;
+das Paket liegt fest in `oserp-shop/`). OpensourceERP zeigt sie in der
+Kanalkarte nur an und übernimmt sie bei jedem Lauf
+(`dev/shop-hugocms-verzeichnisse.md`). Produktbilder, Vorschaubilder und
+Downloads kommen aus der Medienbibliothek und gehen mit jeder Lieferung an die
+Webseite (`dev/shop-medienbibliothek.md`).
 
 ## Eine Webseite einrichten
 
@@ -108,9 +112,14 @@ Ein Lauf tut der Reihe nach:
    warnt der Lauf.
 5. **An HugoCMS übertragen** — Abgleich, Übertragung, Übernahme
    (`shopHugoCmsSync`) — und **dort bauen lassen**, wenn sich etwas geändert
-   hat; danach die Vorschaubilder in HugoCMS und die Prüfung, ob die
-   Download-Dateien der Produktseiten auf der Webseite liegen (Freigabe
-   „Downloads“ in HugoCMS, Hinweis bei fehlenden). Gebaut wird mit dem
+   hat. Mit der Lieferung gehen die Medien aus der Medienbibliothek
+   (Produktbilder, Vorschaubilder, Downloads) in ihre Freigaben: als
+   Binärdaten in Stücken, nur was in HugoCMS fehlt oder abweicht; vorher
+   erneuert der Lauf Vorschaubilder, die fehlen oder nicht die eingestellte
+   Größe haben. Danach nennt er, welche in den Artikeln genannten Dateien in
+   der Bibliothek fehlen. Gegen ein HugoCMS ohne Medienübernahme (vor
+   2026-10-15) bleibt es beim alten Verfahren: Vorschaubilder in HugoCMS und
+   die Prüfung der Download-Dateien auf der Webseite. Gebaut wird mit dem
    Hugo-Programm, das HugoCMS eingerichtet hat; OpensourceERP startet kein
    Programm zum Bauen.
 6. **Prüfung über die Webseite** nach einer Übertragung: Weiterleiter und
@@ -396,7 +405,7 @@ Preisvorgaben, Freigrenze und Lieferländer sind Spalten des Kanals
 **Wohin geschrieben wird** (seit 2026-10-09, `dev/shop-hugocms-verzeichnisse.md`)
 legt HugoCMS fest: die Freigaben in den Projekteinstellungen unter
 „Shop-Erweiterung“, gespeichert in der `[shop]`-Sektion der Mount-Datei
-(`content_dir`, `category_groups`, `images`, `thumbnails`). OpensourceERP hat
+(`content_dir`, `category_groups`, `images`, `thumbnails`, `downloads`). OpensourceERP hat
 dafür keine eigene Einstellung mehr — der Kanalschlüssel `content_dir` ist
 entfallen, das Schema-Update räumt ihn weg. Der Lauf holt die Freigaben zu
 Beginn (`shopHugoCmsGrants`) und legt Seiten und Kategorieübersicht in der

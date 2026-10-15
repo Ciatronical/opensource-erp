@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "Käivitus kannab vahendaja ja 404-lehe allkirjastatult üle.",
         "shopHugoCmsSignedMissing": "HugoCMS ei tunne veel OpensourceERP allkirjavõtit — vahendaja ja 404-leht tuleb veebiserverisse käsitsi panna.",
         "shopHugoCmsSignedNoKey": "Ilma OpensourceERP allkirjavõtmeta tuleb vahendaja ja 404-leht veebiserverisse käsitsi panna.",
+        "shopHugoCmsMediaReady": "HugoCMS võtab meediakogust vastu tootepildid, pisipildid ja allalaaditavad failid — käivitus edastab need.",
+        "shopHugoCmsMediaMissing": "See HugoCMS-i versioon ei võta meediakogust veel meediat vastu — veebisaidi tootepildid ja allalaaditavad failid jäävad kehtima, kuni HugoCMS on uuendatud.",
         "shopBackendTest": "Kontrolli ühendust",
         "shopBackendTestStep_plausibel": "Sisend",
         "shopBackendTestStep_direkt": "Otse OpensourceERP-st",

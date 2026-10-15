@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "Körningen överför proxyn och 404-sidan signerade.",
         "shopHugoCmsSignedMissing": "HugoCMS känner ännu inte till signeringsnyckeln från OpensourceERP — proxyn och 404-sidan måste läggas på webbservern manuellt.",
         "shopHugoCmsSignedNoKey": "Utan signeringsnyckel i OpensourceERP måste proxyn och 404-sidan läggas på webbservern manuellt.",
+        "shopHugoCmsMediaReady": "HugoCMS tar emot produktbilder, miniatyrer och nedladdningar från mediebiblioteket — körningen levererar dem.",
+        "shopHugoCmsMediaMissing": "Denna HugoCMS-version tar ännu inte emot medier från mediebiblioteket — produktbilder och nedladdningar på webbplatsen gäller tills HugoCMS är uppdaterat.",
         "shopBackendTest": "Testa anslutning",
         "shopBackendTestStep_plausibel": "Inmatning",
         "shopBackendTestStep_direkt": "Direkt från OpensourceERP",

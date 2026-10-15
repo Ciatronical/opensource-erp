@@ -2623,3 +2623,89 @@ CREATE UNIQUE INDEX IF NOT EXISTS sales_channel_secret_shop_public_key
 CREATE UNIQUE INDEX IF NOT EXISTS sales_channel_shop_ebay_account_key
     ON sales_channel_shop ((settings ->> 'account_id'))
  WHERE type = 'ebay' AND COALESCE(settings ->> 'account_id', '') <> '';
+
+-- ============================================================================
+-- MEDIENBIBLIOTHEK (dev/shop-medienbibliothek.md, 2026-10-15)
+-- ============================================================================
+--
+-- Produktbilder und Downloads liegen in OpensourceERP, zentral für alle
+-- Verkaufskanäle, unter backend/data/<db>/shop/media/{images,downloads};
+-- die Vorschaubilder erzeugt OpensourceERP daneben (thumbnails/). Die Tabelle
+-- trägt, was Dateimanager und Übertragung brauchen, ohne die Dateien bei
+-- jedem Lauf neu zu lesen. Der Dateiname bleibt der Schlüssel (B2): die
+-- Artikel nennen ihn in parts_ext (hugoshop_images, hugoshop_downloads), die
+-- Webseite liefert die Datei unter diesem Namen aus.
+CREATE TABLE IF NOT EXISTS media_shop
+(
+    id               integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    kind             text NOT NULL CHECK (kind IN ('image', 'download')),
+    filename         text NOT NULL,
+    sha256           text NOT NULL,
+    size             bigint NOT NULL,
+    mime             text NOT NULL,
+    width            integer,
+    height           integer,
+    thumbnail_sha256 text,
+    thumbnail_size   integer,
+    itime            timestamp NOT NULL DEFAULT now(),
+    mtime            timestamp NOT NULL DEFAULT now(),
+    CONSTRAINT media_shop_kind_filename_key UNIQUE (kind, filename)
+);
+
+COMMENT ON TABLE  media_shop                  IS 'Medienbibliothek der Shop-Erweiterung: Produktbilder und Downloads (Datei unter backend/data/<db>/shop/media/)';
+COMMENT ON COLUMN media_shop.kind             IS 'image (images/) oder download (downloads/)';
+COMMENT ON COLUMN media_shop.filename         IS 'Dateiname ohne Verzeichnis — der Schlüssel, den die Artikel nennen';
+COMMENT ON COLUMN media_shop.sha256           IS 'Prüfsumme der Datei, für den Abgleich mit der Webseite';
+COMMENT ON COLUMN media_shop.thumbnail_sha256 IS 'Prüfsumme des Vorschaubilds (thumbnails/<filename>), nur bei Bildern';
+COMMENT ON COLUMN media_shop.thumbnail_size   IS 'Größte Seite, mit der das Vorschaubild erzeugt wurde (shop_thumbnail_size)';
+
+-- Welche Artikel eine Datei nennen. Die Namen in parts_ext können aus der
+-- Bridge noch ein Verzeichnis tragen — verglichen wird der Dateiname.
+CREATE OR REPLACE FUNCTION shop_media_usage(p_kind text, p_filename text)
+RETURNS TABLE (parts_id integer, partnumber text, description text)
+    LANGUAGE sql STABLE AS $$
+    SELECT p.id, p.partnumber, p.description
+      FROM parts_ext pe
+      JOIN parts p ON p.id = pe.parts_id
+     WHERE CASE p_kind
+           WHEN 'image' THEN jsonb_typeof(pe.hugoshop_images) = 'array'
+                AND EXISTS (SELECT 1 FROM jsonb_array_elements_text(pe.hugoshop_images) e
+                             WHERE regexp_replace(e, '^.*/', '') = p_filename)
+           WHEN 'download' THEN jsonb_typeof(pe.hugoshop_downloads) = 'object'
+                AND EXISTS (SELECT 1 FROM jsonb_each_text(pe.hugoshop_downloads) d
+                             WHERE regexp_replace(d.value, '^.*/', '') = p_filename)
+           ELSE false END
+     ORDER BY p.partnumber
+$$;
+
+-- Umbenennen: die Verweise der Artikel folgen dem neuen Namen. Die Trigger
+-- auf parts_ext legen dabei die Aufträge an, die Seiten neu zu schreiben.
+-- Liefert die Zahl der geänderten Artikel.
+CREATE OR REPLACE FUNCTION shop_media_rename(p_kind text, p_old text, p_new text)
+RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+    anzahl integer := 0;
+BEGIN
+    IF p_kind = 'image' THEN
+        UPDATE parts_ext pe
+           SET hugoshop_images = (SELECT jsonb_agg(CASE WHEN regexp_replace(x.e, '^.*/', '') = p_old
+                                                        THEN to_jsonb(p_new) ELSE to_jsonb(x.e) END ORDER BY x.o)
+                                    FROM jsonb_array_elements_text(pe.hugoshop_images) WITH ORDINALITY AS x(e, o))
+         WHERE jsonb_typeof(pe.hugoshop_images) = 'array'
+           AND EXISTS (SELECT 1 FROM jsonb_array_elements_text(pe.hugoshop_images) e
+                        WHERE regexp_replace(e, '^.*/', '') = p_old);
+    ELSIF p_kind = 'download' THEN
+        UPDATE parts_ext pe
+           SET hugoshop_downloads = (SELECT jsonb_object_agg(d.key, CASE WHEN regexp_replace(d.value, '^.*/', '') = p_old
+                                                                         THEN p_new ELSE d.value END)
+                                       FROM jsonb_each_text(pe.hugoshop_downloads) d)
+         WHERE jsonb_typeof(pe.hugoshop_downloads) = 'object'
+           AND EXISTS (SELECT 1 FROM jsonb_each_text(pe.hugoshop_downloads) d
+                        WHERE regexp_replace(d.value, '^.*/', '') = p_old);
+    END IF;
+    GET DIAGNOSTICS anzahl = ROW_COUNT;
+
+    UPDATE media_shop SET filename = p_new, mtime = now() WHERE kind = p_kind AND filename = p_old;
+    RETURN anzahl;
+END;
+$$;

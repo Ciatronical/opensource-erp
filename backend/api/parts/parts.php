@@ -202,6 +202,8 @@ function getPart($data) {
  *
  * @param array $data Artikel-Daten
  * @param int $data['parts_id'] ID des Artikels
+ * @param string $data['partnumber'] Artikelnummer, eindeutig; Fehler PARTNUMBER_EXISTS, wenn vergeben.
+ *                                   Offene Aufträge der Shop-Erweiterung folgen der neuen Nummer
  * @param string $data['description'] Beschreibung
  * @param string $data['notes'] Langbeschreibung
  * @param float $data['sellprice'] Verkaufspreis
@@ -226,6 +228,35 @@ function updatePart($data) {
 
     // Nur erlaubte Felder aktualisieren
     $updateData = [];
+
+    // Artikelnummer: eindeutig (parts_partnumber_key1). Geprüft wird vorab,
+    // damit die Oberfläche eine klare Meldung bekommt statt eines
+    // Datenbankfehlers; die Eindeutigkeit selbst sichert die Datenbank.
+    $alteNummer = null;
+    if (isset($data['partnumber'])) {
+        $neueNummer = trim((string)$data['partnumber']);
+        if ('' === $neueNummer) {
+            resultInfo(false, 'VALIDATION_ERROR', ['message' => 'Die Artikelnummer darf nicht leer sein']);
+            return;
+        }
+        $bisher = $company->getOne("SELECT partnumber FROM parts WHERE id = :id", [':id' => $partsId]);
+        if (!$bisher) {
+            resultInfo(false, 'NOT_FOUND', ['message' => 'Artikel nicht gefunden']);
+            return;
+        }
+        if ($neueNummer !== (string)$bisher['partnumber']) {
+            $belegt = $company->getOne(
+                "SELECT id FROM parts WHERE partnumber = :partnumber AND id <> :id",
+                [':partnumber' => $neueNummer, ':id' => $partsId]
+            );
+            if ($belegt) {
+                resultInfo(false, 'PARTNUMBER_EXISTS', ['message' => 'Artikelnummer ist bereits vergeben']);
+                return;
+            }
+            $alteNummer = (string)$bisher['partnumber'];
+            $updateData['partnumber'] = $neueNummer;
+        }
+    }
 
     if (isset($data['description'])) {
         $updateData['description'] = trim($data['description']);
@@ -275,14 +306,36 @@ function updatePart($data) {
     }
 
     // Update mit mtime
-    $company->updateRow(
-        'parts',
-        $updateData,
-        [],
-        'id = :id',
-        [':id' => $partsId],
-        'mtime = NOW()'
-    );
+    try {
+        $company->updateRow(
+            'parts',
+            $updateData,
+            [],
+            'id = :id',
+            [':id' => $partsId],
+            'mtime = NOW()'
+        );
+    } catch (PDOException $e) {
+        // Zwei gleichzeitige Umbenennungen auf dieselbe Nummer: die Datenbank entscheidet
+        if ('23505' === $e->getCode() && null !== $alteNummer) {
+            resultInfo(false, 'PARTNUMBER_EXISTS', ['message' => 'Artikelnummer ist bereits vergeben']);
+            return;
+        }
+        throw $e;
+    }
+
+    // Offene Aufträge der Shop-Erweiterung tragen die Artikelnummer: sie
+    // folgen der neuen, sonst fände der Lauf den Artikel nicht mehr. Nur,
+    // wenn die Erweiterung eingerichtet ist (Tabelle vorhanden).
+    if (null !== $alteNummer) {
+        $tabelle = $company->getOne("SELECT to_regclass('public.batchjob_hugoshop') AS t");
+        if (!empty($tabelle['t'])) {
+            $company->execute(
+                "UPDATE batchjob_hugoshop SET partnumber = :neu WHERE partnumber = :alt AND result IS NULL",
+                [':neu' => $updateData['partnumber'], ':alt' => $alteNummer]
+            );
+        }
+    }
 
     resultInfo(true, 'UPDATED', ['message' => 'Artikel aktualisiert', 'parts_id' => $partsId]);
 }

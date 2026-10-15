@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "Çalışma vekil sunucuyu ve 404 sayfasını imzalı aktarır.",
         "shopHugoCmsSignedMissing": "HugoCMS, OpensourceERP imza anahtarını henüz tanımıyor — vekil sunucu ve 404 sayfası web sunucusuna elle konulmalıdır.",
         "shopHugoCmsSignedNoKey": "OpensourceERP'de imza anahtarı olmadan vekil sunucu ve 404 sayfası web sunucusuna elle konulmalıdır.",
+        "shopHugoCmsMediaReady": "HugoCMS, medya kitaplığındaki ürün görsellerini, küçük resimleri ve indirmeleri kabul ediyor — çalıştırma bunları teslim eder.",
+        "shopHugoCmsMediaMissing": "Bu HugoCMS sürümü medya kitaplığından henüz medya kabul etmiyor — HugoCMS güncellenene kadar web sitesindeki ürün görselleri ve indirmeler geçerli kalır.",
         "shopBackendTest": "Bağlantıyı sına",
         "shopBackendTestStep_plausibel": "Giriş",
         "shopBackendTestStep_direkt": "Doğrudan OpensourceERP'den",

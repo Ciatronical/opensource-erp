@@ -2,7 +2,7 @@
     "name": "standard",
     "title": "Standard (Hugo)",
     "hugo_theme": "hugoshop",
-    "description": "Produktseite für das Hugo-Theme hugoshop. Front Matter für die Suchmaschinen, Warenkorb über den Shortcode shop-add-to-cart.",
+    "description": "Produktseite im Aussehen von sonic24.de: Bildkarussell, Preisblock, Verfügbarkeit, Warenkorb über den Shortcode shop-add-to-cart, Reiter für Beschreibung, Technische Daten, Eigenschaften und Downloads. Front Matter für die Suchmaschinen. Für die Hugo-Themes hugoshop und inter-data.",
     "outputs": {
         "product": "product.md.php"
     },

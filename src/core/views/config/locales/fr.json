@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "L’exécution transfère le relais et la page 404 signés.",
         "shopHugoCmsSignedMissing": "HugoCMS ne connaît pas encore la clé de signature d’OpensourceERP — le relais et la page 404 doivent être déposés à la main sur le serveur web.",
         "shopHugoCmsSignedNoKey": "Sans clé de signature dans OpensourceERP, le relais et la page 404 doivent être déposés à la main sur le serveur web.",
+        "shopHugoCmsMediaReady": "HugoCMS accepte les images produit, les vignettes et les téléchargements de la médiathèque — l'exécution les livre.",
+        "shopHugoCmsMediaMissing": "Cette version de HugoCMS n'accepte pas encore les médias de la médiathèque — les images produit et téléchargements du site web restent de référence jusqu'à la mise à jour de HugoCMS.",
         "shopBackendTest": "Tester la connexion",
         "shopBackendTestStep_plausibel": "Saisie",
         "shopBackendTestStep_direkt": "Directement depuis OpensourceERP",

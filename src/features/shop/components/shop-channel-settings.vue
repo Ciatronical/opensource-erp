@@ -528,6 +528,16 @@ function hugocmsBericht(stand) {
         zeilen.push(stand.oserp_signing_key ? t('crm_fields.shopHugoCmsSignedMissing') : t('crm_fields.shopHugoCmsSignedNoKey'))
     }
 
+    // Medien aus der Bibliothek (dev/shop-medienbibliothek.md): liefert der
+    // Lauf sie mit, oder bleibt es beim Stand auf der Webseite (HugoCMS vor
+    // 2026-10-15)?
+    if (stand.media?.accepted) {
+        zeilen.push(t('crm_fields.shopHugoCmsMediaReady'))
+    } else if (stand.grants && !stand.grants_error) {
+        zeilen.push(t('crm_fields.shopHugoCmsMediaMissing'))
+        if (art === 'success') art = 'warning'
+    }
+
     const letzter = stand.last
     if (letzter?.finishedAt) {
         const wann = new Date(letzter.finishedAt).toLocaleString()

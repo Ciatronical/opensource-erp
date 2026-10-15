@@ -119,26 +119,17 @@
                     />
                 </v-col>
 
-                <!-- Bilder: das erste ist das Vorschaubild in Suche, Warenkorb und Rechnung -->
+                <!-- Medien des Artikels (dev/shop-medienbibliothek.md): Produktbilder
+                     und Downloads aus der zentralen Bibliothek — das erste Bild ist
+                     das Vorschaubild in Suche, Warenkorb und Rechnung. Hochladen,
+                     aus der Bibliothek wählen, Vorschau, Kontextmenü -->
                 <v-col id="abschnitt-shop-bilder" cols="12" class="py-1 sprungziel">
-                    <v-combobox
-                        v-model="daten.images"
-                        :label="t('ShopView.partCard.images')"
-                        :hint="t('ShopView.partCard.imagesHint')"
+                    <ShopPartMedia
+                        v-model:images="daten.images"
+                        v-model:downloads="daten.downloads"
+                        :parts-id="props.partsId"
                         :readonly="!darfBearbeiten"
-                        multiple
-                        chips
-                        closable-chips
-                        variant="outlined"
-                        density="compact"
-                        hide-details="auto"
                     />
-                    <div v-if="vorschau.length" class="d-flex flex-wrap ga-2 mt-2">
-                        <div v-for="(bild, i) in vorschau" :key="bild.name" class="text-center" style="width: 96px;">
-                            <v-img :src="bild.url" width="96" height="96" cover class="rounded border" />
-                            <div v-if="i === 0" class="text-caption">{{ t('ShopView.partCard.thumbnail') }}</div>
-                        </div>
-                    </div>
                 </v-col>
 
                 <!-- Technische Daten, Eigenschaften, Downloads -->
@@ -157,15 +148,6 @@
                         :title="t('ShopView.partCard.properties')"
                         :key-label="t('ShopView.partCard.label')"
                         :value-label="t('ShopView.partCard.value')"
-                        :readonly="!darfBearbeiten"
-                    />
-                </v-col>
-                <v-col cols="12" class="py-1">
-                    <ShopKeyValueEditor
-                        v-model="daten.downloads"
-                        :title="t('ShopView.partCard.downloads')"
-                        :key-label="t('ShopView.partCard.displayName')"
-                        :value-label="t('ShopView.partCard.file')"
                         :readonly="!darfBearbeiten"
                     />
                 </v-col>
@@ -594,6 +576,7 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useShop } from '@/features/shop/composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
 import ShopKeyValueEditor from './shop-key-value.editor.vue'
+import ShopPartMedia from './shop-part-media.vue'
 
 const props = defineProps({
     /** Artikel; leer bei der Neuanlage */
@@ -1073,12 +1056,8 @@ const shopLink = computed(() => {
     return formatLink(linkKanal.value?.products_link || '', ziel.toLowerCase())
 })
 
-const vorschau = computed(() => {
-    const muster = linkKanal.value?.thumbnails_link || ''
-    return ohneLeere(daten.value.images)
-        .map(name => ({ name, url: formatLink(muster, name) }))
-        .filter(bild => bild.url)
-})
+// Bilder und Downloads pflegt ShopPartMedia (dev/shop-medienbibliothek.md)
+// direkt an daten.images und daten.downloads; gespeichert wird mit der Karte
 
 // ── Laden und Speichern ──
 

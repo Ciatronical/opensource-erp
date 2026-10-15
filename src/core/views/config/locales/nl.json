@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "De run zet de proxy en de 404-pagina ondertekend over.",
         "shopHugoCmsSignedMissing": "HugoCMS kent de ondertekeningssleutel van OpensourceERP nog niet — de proxy en de 404-pagina moeten handmatig op de webserver worden gezet.",
         "shopHugoCmsSignedNoKey": "Zonder ondertekeningssleutel in OpensourceERP moeten de proxy en de 404-pagina handmatig op de webserver worden gezet.",
+        "shopHugoCmsMediaReady": "HugoCMS neemt productafbeeldingen, miniaturen en downloads uit de mediabibliotheek aan — de run levert ze mee.",
+        "shopHugoCmsMediaMissing": "Deze HugoCMS-versie neemt nog geen media uit de mediabibliotheek aan — productafbeeldingen en downloads op de website blijven leidend tot HugoCMS is bijgewerkt.",
         "shopBackendTest": "Verbinding testen",
         "shopBackendTestStep_plausibel": "Invoer",
         "shopBackendTestStep_direkt": "Rechtstreeks vanuit OpensourceERP",

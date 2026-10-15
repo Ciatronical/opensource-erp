@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "Vykdymas perkelia tarpinį serverį ir 404 puslapį pasirašytus.",
         "shopHugoCmsSignedMissing": "HugoCMS dar nežino OpensourceERP parašo rakto — tarpinį serverį ir 404 puslapį reikia į žiniatinklio serverį įkelti rankiniu būdu.",
         "shopHugoCmsSignedNoKey": "Be parašo rakto OpensourceERP tarpinį serverį ir 404 puslapį reikia į žiniatinklio serverį įkelti rankiniu būdu.",
+        "shopHugoCmsMediaReady": "HugoCMS priima produktų nuotraukas, miniatiūras ir atsisiuntimus iš medijos bibliotekos — vykdymas juos pateikia.",
+        "shopHugoCmsMediaMissing": "Ši HugoCMS versija dar nepriima medijos iš medijos bibliotekos — svetainės produktų nuotraukos ir atsisiuntimai lieka galioti, kol HugoCMS bus atnaujintas.",
         "shopBackendTest": "Tikrinti ryšį",
         "shopBackendTestStep_plausibel": "Įvestis",
         "shopBackendTestStep_direkt": "Tiesiogiai iš OpensourceERP",

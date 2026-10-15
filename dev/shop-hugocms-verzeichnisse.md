@@ -58,9 +58,9 @@ fest — der Ort, dem die Webseite gehört —, nicht OpensourceERP:
   | --- | --- | --- | --- |
   | Produktseiten | `content/de/produkt/` | — | `.md` schreiben, löschen |
   | Kategorieübersicht | `data/category_groups.json` | — | diese eine Datei schreiben |
-  | Produktbilder | `static/images/products/` | liest sie für die Vorschaubilder | — |
-  | Vorschaubilder | `static/images/thumbnails/` | schreibt sie | — |
-  | Downloads (seit 2026-10-14) | `static/downloads/` | prüft für OSERP, ob die Dateien da sind (`shopdownloads`) | — |
+  | Produktbilder | `static/images/products/` | — | seit 2026-10-15 aus der Medienbibliothek schreiben und löschen (`jpg, jpeg, png, gif, webp`, `dev/shop-medienbibliothek.md`); davor: HugoCMS liest sie für die Vorschaubilder |
+  | Vorschaubilder | `static/images/thumbnails/` | — | seit 2026-10-15 fertig aus der Medienbibliothek schreiben und löschen; davor: HugoCMS schreibt sie |
+  | Downloads (seit 2026-10-14) | `static/downloads/` | — | seit 2026-10-15 aus der Medienbibliothek schreiben und löschen (zusätzlich `pdf, zip, txt`); davor: HugoCMS prüft nur, ob die Dateien da sind (`shopdownloads`) |
   | Paket | `oserp-shop/` (fest, nicht wählbar) | — | `md, json, html, js, css`, PHP nur signiert |
 
   Gespeichert unter `[shop]` (`content_dir`, `category_groups`, `images`,
@@ -135,8 +135,10 @@ Einzelheiten, die beim Umsetzen dazukamen:
 - **Bereitstellung folgt den Freigaben** (`shopStagingFollowGrants`): Die
   Seiten aller Artikel ziehen in der Bereitstellung an den neuen Ort, nicht
   nur die der geänderten — sonst stünden am neuen Ort nur wenige Seiten.
-- **Downloads** (2026-10-14): Datenblätter und Anleitungen bleiben auf der
-  Webseite (E6). Damit tote Links auffallen, prüft HugoCMS nach jeder
+- **Downloads** (2026-10-14, seit 2026-10-15 überholt durch die
+  Medienbibliothek, die auch die Downloads liefert — das Folgende gilt nur
+  noch gegen ein HugoCMS ohne Medienübernahme): Datenblätter und Anleitungen
+  bleiben auf der Webseite (E6). Damit tote Links auffallen, prüft HugoCMS nach jeder
   Übertragung auf Anfrage des Laufs (`shopdownloads`, nur lesen), welche der
   in den Artikeln genannten Dateien in der Freigabe „Downloads“ fehlen; der
   Lauf meldet sie wie fehlende Produktbilder. Ein älteres HugoCMS ohne diese

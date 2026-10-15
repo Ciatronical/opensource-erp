@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "运行以签名方式传输代理和 404 页面。",
         "shopHugoCmsSignedMissing": "HugoCMS 尚不知道 OpensourceERP 的签名密钥 — 代理和 404 页面必须手动放到 Web 服务器上。",
         "shopHugoCmsSignedNoKey": "OpensourceERP 中没有签名密钥时，代理和 404 页面必须手动放到 Web 服务器上。",
+        "shopHugoCmsMediaReady": "HugoCMS 接受媒体库中的产品图片、缩略图和下载文件——运行时会一并交付。",
+        "shopHugoCmsMediaMissing": "此 HugoCMS 版本尚不接受媒体库中的媒体——在 HugoCMS 更新之前，网站上的产品图片和下载文件仍为准。",
         "shopBackendTest": "测试连接",
         "shopBackendTestStep_plausibel": "输入",
         "shopBackendTestStep_direkt": "直接从 OpensourceERP",

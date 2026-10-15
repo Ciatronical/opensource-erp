@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "Rularea transferă proxy-ul și pagina 404 semnate.",
         "shopHugoCmsSignedMissing": "HugoCMS nu cunoaște încă cheia de semnătură OpensourceERP — proxy-ul și pagina 404 trebuie puse manual pe serverul web.",
         "shopHugoCmsSignedNoKey": "Fără cheie de semnătură în OpensourceERP, proxy-ul și pagina 404 trebuie puse manual pe serverul web.",
+        "shopHugoCmsMediaReady": "HugoCMS acceptă imagini de produs, miniaturi și descărcări din biblioteca media — rularea le livrează.",
+        "shopHugoCmsMediaMissing": "Această versiune HugoCMS nu acceptă încă media din biblioteca media — imaginile de produs și descărcările de pe site rămân de referință până la actualizarea HugoCMS.",
         "shopBackendTest": "Verifică conexiunea",
         "shopBackendTestStep_plausibel": "Introducere",
         "shopBackendTestStep_direkt": "Direct din OpensourceERP",

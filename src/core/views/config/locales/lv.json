@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "Palaišana pārsūta starpniekserveri un 404 lapu parakstītus.",
         "shopHugoCmsSignedMissing": "HugoCMS vēl nezina OpensourceERP paraksta atslēgu — starpniekserveris un 404 lapa jāievieto tīmekļa serverī manuāli.",
         "shopHugoCmsSignedNoKey": "Bez paraksta atslēgas OpensourceERP starpniekserveris un 404 lapa jāievieto tīmekļa serverī manuāli.",
+        "shopHugoCmsMediaReady": "HugoCMS pieņem produktu attēlus, sīktēlus un lejupielādes no multivides bibliotēkas — izpilde tos piegādā.",
+        "shopHugoCmsMediaMissing": "Šī HugoCMS versija vēl nepieņem multividi no multivides bibliotēkas — vietnes produktu attēli un lejupielādes paliek noteicošie, līdz HugoCMS tiks atjaunināts.",
         "shopBackendTest": "Pārbaudīt savienojumu",
         "shopBackendTestStep_plausibel": "Ievade",
         "shopBackendTestStep_direkt": "Tieši no OpensourceERP",

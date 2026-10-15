@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "Запуск переносить проксі та сторінку 404 підписаними.",
         "shopHugoCmsSignedMissing": "HugoCMS ще не знає ключ підпису OpensourceERP — проксі та сторінку 404 потрібно розмістити на вебсервері вручну.",
         "shopHugoCmsSignedNoKey": "Без ключа підпису в OpensourceERP проксі та сторінку 404 потрібно розмістити на вебсервері вручну.",
+        "shopHugoCmsMediaReady": "HugoCMS приймає зображення товарів, мініатюри та файли для завантаження з медіатеки — запуск передає їх.",
+        "shopHugoCmsMediaMissing": "Ця версія HugoCMS ще не приймає медіа з медіатеки — зображення товарів і файли для завантаження на сайті залишаються основними, доки HugoCMS не оновлено.",
         "shopBackendTest": "Перевірити з'єднання",
         "shopBackendTestStep_plausibel": "Введення",
         "shopBackendTestStep_direkt": "Безпосередньо з OpensourceERP",

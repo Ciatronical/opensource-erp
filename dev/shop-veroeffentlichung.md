@@ -163,7 +163,7 @@ mitführt, zeigt kivitendos eigene Oberfläche denselben Stand.
 | 1 | Vorlagenauflösung, Satzauswahl, Rendern einer Produktseite in eine Datei, Pfadeinstellungen mit Wurzelgrenze, mitgelieferter Satz `standard` | **erledigt** |
 | 2 | Auftragstabelle, CLI-Läufer, „Veröffentlichen" im Admin-Panel und in der Artikelkarte | **erledigt** |
 | 3 | Bilder, Vorschaubilder, Downloads, Kategorieseiten, Sprachen, Preise inkl. Steuer, Bildadressen aus den Einstellungen | **begonnen:** Preise, Adressen, Vorschaubilder, Downloads, Kategorieübersicht erledigt; Sprachen offen |
-| 4 | Voller Seiteninhalt aus `template.php` (Karussell, Reiter), Umstieg von sonic24, Doku | **erledigt 2026-09-25:** Umstieg von sonic24 (`dev/shop-bridge-abloesung.md`, Stufe D), Doku in `dev/shop-betrieb.md`; Karussell und Reiter in der Produktseite des Satzes `sonic24` — siehe „Produktseite sonic24“ unten. Der Satz `standard` bleibt bei der schlichten Seite |
+| 4 | Voller Seiteninhalt aus `template.php` (Karussell, Reiter), Umstieg von sonic24, Doku | **erledigt 2026-09-25:** Umstieg von sonic24 (`dev/shop-bridge-abloesung.md`, Stufe D), Doku in `dev/shop-betrieb.md`; Karussell und Reiter in der Produktseite des Satzes `sonic24` — siehe „Produktseite sonic24“ unten. Seit 15.10.2026 hat auch der Satz `standard` diesen Aufbau |
 
 ## Produktseite sonic24 (2026-09-25)
 
@@ -176,6 +176,20 @@ Technische Daten, Eigenschaften, Downloads als `nav-tabs` mit
 `table table-striped` — und dieselben Front-Matter-Felder, einschließlich
 `description` in der Form von `run.php` (Artikelnummer, Navigationspfad ohne
 die letzte Station, diese nur, wenn sie vom Titel abweicht).
+
+**Nachtrag (15.10.2026):** Der Satz `standard` ist an diesen Aufbau angeglichen
+(`backend/templates-default/shop/standard/product.md.php`): dasselbe
+Bootstrap-Markup mit Karussell, Preisblock, Abzeichen, Warenkorb, Anfrage-Knopf
+und Reitern. Unterschiede zu `sonic24`, weil sie zu diesem einen Shop gehören:
+keine Marke, kein Firmenlogo, keine Rückgabe- und Versandangaben im Front
+Matter. Dazu drei Dinge, die der Standard schon vorher hatte: ohne
+Steuerschlüssel steht nur ein Preis; `availability` und Abzeichen richten sich
+nach bestellbar **und** Bestand (bestellbar ohne Bestand: gelbes Abzeichen
+„Bestellbar, zurzeit nicht auf Lager“, Warenkorb bleibt); `deliveryTerm`,
+`minQuantity` und `breadcrumbs` im Front Matter. Das Theme `inter-data` bildet
+die Bootstrap-Klassen unter `.produkt-seite` nach (`theme.css`, Reiter und
+Karussell in `ui.js`), damit die Seite dort genauso aussieht wie im Theme
+`hugoshop`.
 
 **Warum:** Eine erste Fassung vom 2026-09-23 verwendete Tailwind-Klassen. Die
 Webseite von sonic24 lädt aber Bootstrap

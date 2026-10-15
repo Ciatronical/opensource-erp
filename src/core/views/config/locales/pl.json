@@ -1061,6 +1061,8 @@
         "shopHugoCmsSignedReady": "Uruchomienie przenosi pośrednika i stronę 404 podpisane.",
         "shopHugoCmsSignedMissing": "HugoCMS nie zna jeszcze klucza podpisu OpensourceERP — pośrednika i stronę 404 trzeba umieścić na serwerze WWW ręcznie.",
         "shopHugoCmsSignedNoKey": "Bez klucza podpisu w OpensourceERP pośrednika i stronę 404 trzeba umieścić na serwerze WWW ręcznie.",
+        "shopHugoCmsMediaReady": "HugoCMS przyjmuje zdjęcia produktów, miniatury i pliki do pobrania z biblioteki mediów — przebieg je dostarcza.",
+        "shopHugoCmsMediaMissing": "Ta wersja HugoCMS nie przyjmuje jeszcze mediów z biblioteki mediów — zdjęcia produktów i pliki do pobrania na stronie pozostają wiążące, dopóki HugoCMS nie zostanie zaktualizowany.",
         "shopBackendTest": "Sprawdź połączenie",
         "shopBackendTestStep_plausibel": "Dane",
         "shopBackendTestStep_direkt": "Bezpośrednio z OpensourceERP",

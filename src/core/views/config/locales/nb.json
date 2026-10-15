@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "Kjøringen overfører mellomtjeneren og 404-siden signert.",
         "shopHugoCmsSignedMissing": "HugoCMS kjenner ennå ikke signaturnøkkelen fra OpensourceERP — mellomtjeneren og 404-siden må legges på webserveren manuelt.",
         "shopHugoCmsSignedNoKey": "Uten signaturnøkkel i OpensourceERP må mellomtjeneren og 404-siden legges på webserveren manuelt.",
+        "shopHugoCmsMediaReady": "HugoCMS tar imot produktbilder, miniatyrbilder og nedlastinger fra mediebiblioteket — kjøringen leverer dem.",
+        "shopHugoCmsMediaMissing": "Denne HugoCMS-versjonen tar ennå ikke imot medier fra mediebiblioteket — produktbilder og nedlastinger på nettstedet gjelder inntil HugoCMS er oppdatert.",
         "shopBackendTest": "Test tilkobling",
         "shopBackendTestStep_plausibel": "Inndata",
         "shopBackendTestStep_direkt": "Direkte fra OpensourceERP",

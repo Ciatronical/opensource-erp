@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "Proxy a stránku 404 přenáší běh podepsané.",
         "shopHugoCmsSignedMissing": "HugoCMS zatím nezná podpisový klíč OpensourceERP — proxy a stránku 404 je nutné umístit na webový server ručně.",
         "shopHugoCmsSignedNoKey": "Bez podpisového klíče v OpensourceERP je nutné proxy a stránku 404 umístit na webový server ručně.",
+        "shopHugoCmsMediaReady": "HugoCMS přijímá obrázky produktů, náhledy a soubory ke stažení z knihovny médií — běh je dodává.",
+        "shopHugoCmsMediaMissing": "Tato verze HugoCMS zatím nepřijímá média z knihovny médií — obrázky produktů a soubory ke stažení na webu zůstávají rozhodující, dokud HugoCMS nebude aktualizováno.",
         "shopBackendTest": "Ověřit spojení",
         "shopBackendTestStep_plausibel": "Zadání",
         "shopBackendTestStep_direkt": "Přímo z OpensourceERP",

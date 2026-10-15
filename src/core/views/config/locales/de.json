@@ -1288,6 +1288,8 @@
         "shopHugoCmsSignedReady": "Weiterleiter und 404-Seite überträgt der Lauf signiert.",
         "shopHugoCmsSignedMissing": "HugoCMS kennt den Signaturschlüssel von OpensourceERP noch nicht — Weiterleiter und 404-Seite müssen von Hand auf den Webserver.",
         "shopHugoCmsSignedNoKey": "Ohne Signaturschlüssel in OpensourceERP müssen Weiterleiter und 404-Seite von Hand auf den Webserver.",
+        "shopHugoCmsMediaReady": "HugoCMS nimmt Produktbilder, Vorschaubilder und Downloads aus der Medienbibliothek an — der Lauf liefert sie mit.",
+        "shopHugoCmsMediaMissing": "Diese HugoCMS-Version nimmt noch keine Medien aus der Medienbibliothek an — Produktbilder und Downloads bleiben auf der Webseite maßgeblich, bis HugoCMS aktualisiert ist.",
         "shopBackendTest": "Verbindung prüfen",
         "shopBackendTestStep_plausibel": "Eingabe",
         "shopBackendTestStep_direkt": "Direkt von OpensourceERP",

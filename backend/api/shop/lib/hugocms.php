@@ -81,6 +81,10 @@ function shopHugoCmsErrorText(array $fehler): string {
         'SHOP-GRANT-UNUSABLE'  => 'In HugoCMS ist eine Freigabe unbrauchbar eingetragen — in den Projekteinstellungen unter „Shop-Erweiterung" prüfen und speichern',
         'SHOP-FILETYPE-NOT-ALLOWED' => 'HugoCMS nimmt diese Dateiart nicht an',
         'SHOP-HASH-MISMATCH'   => 'Eine Datei kam anders an, als angekündigt',
+        'SHOP-MEDIA-INVALID'   => 'HugoCMS lehnt das Stück einer Mediendatei ab',
+        'SHOP-MEDIA-OFFSET'    => 'HugoCMS erwartet das Stück einer Mediendatei an anderer Stelle',
+        'SHOP-MEDIA-SIZE-MISMATCH' => 'Eine Mediendatei ist größer als im Abgleich angekündigt — in der Ansicht „Medien“ abgleichen',
+        'SHOP-CHUNK-TOO-LARGE' => 'HugoCMS nimmt das Stück einer Mediendatei nicht an (zu groß für seine php.ini)',
         'SHOP-SYNC-INCOMPLETE' => 'Die Übertragung war unvollständig',
         'SHOP-SYNC-UNKNOWN'    => 'HugoCMS kennt diese Übertragung nicht (mehr)',
         'SHOP-THUMBNAILS-INVALID'  => 'HugoCMS lehnt die Liste der Bildnamen ab',
@@ -110,9 +114,11 @@ function shopHugoCmsErrorText(array $fehler): string {
  *                      mit noch nicht gespeicherten Eingaben; leere Werte fallen
  *                      auf die Einstellung zurück
  * @param array $daten weitere Felder im Rumpf eines POST, neben cmd
+ * @param array|null $stueck Binärdaten als Datei-Upload (multipart/form-data) statt JSON:
+ *                           feld (Name des Datei-Felds), inhalt (Bytes); $daten gehen als Formularfelder mit
  * @return array ok, status (HTTP), data (Antwort bei Erfolg), fehler (Text, leer bei Erfolg)
  */
-function shopHugoCmsCall($db, int $kanal, string $befehl, string $methode = 'GET', int $zeitgrenze = 20, array $zugang = [], array $daten = []): array {
+function shopHugoCmsCall($db, int $kanal, string $befehl, string $methode = 'GET', int $zeitgrenze = 20, array $zugang = [], array $daten = [], ?array $stueck = null): array {
     $ergebnis = ['ok' => false, 'status' => 0, 'data' => null, 'fehler' => ''];
 
     $eingabe = fn(string $feld, string $schluessel) => '' !== trim((string)($zugang[$feld] ?? ''))
@@ -143,7 +149,17 @@ function shopHugoCmsCall($db, int $kanal, string $befehl, string $methode = 'GET
             'Accept: application/json',
         ],
     ];
-    if ('POST' === $methode) {
+    if ('POST' === $methode && null !== $stueck) {
+        // Mehrteilig: die Felder als Formularfelder, die Bytes als Datei —
+        // cURL setzt Content-Type multipart/form-data samt Grenze selbst
+        $felder = ['cmd' => $befehl];
+        foreach ($daten as $feld => $wert) {
+            $felder[$feld] = (string)$wert;
+        }
+        $felder[(string)$stueck['feld']] = new CURLStringFile((string)$stueck['inhalt'], 'chunk', 'application/octet-stream');
+        $optionen[CURLOPT_POST] = true;
+        $optionen[CURLOPT_POSTFIELDS] = $felder;
+    } elseif ('POST' === $methode) {
         $optionen[CURLOPT_POST] = true;
         $optionen[CURLOPT_POSTFIELDS] = json_encode(['cmd' => $befehl] + $daten, JSON_UNESCAPED_SLASHES);
         $optionen[CURLOPT_HTTPHEADER][] = 'Content-Type: application/json';
@@ -202,7 +218,8 @@ const SHOP_HUGOCMS_GRANTS = [
  * freigegeben hat.
  *
  * @param array $antwort Ergebnis von shopHugoCmsCall
- * @return array freigaben (contentDir, categoryGroups, images, thumbnails, package),
+ * @return array freigaben (contentDir, categoryGroups, images, thumbnails, downloads, package,
+ *               medien (bool: HugoCMS nimmt Medien aus der Bibliothek an), medien_stueck (Bytes je Stück)),
  *               fehler (Text, leer wenn brauchbar)
  */
 function shopHugoCmsGrantsFrom(array $antwort): array {
@@ -219,6 +236,13 @@ function shopHugoCmsGrantsFrom(array $antwort): array {
     // Downloads: nur zur Prüfung, nicht zum Schreiben — ein älteres HugoCMS
     // ohne diese Freigabe bleibt brauchbar, die Prüfung entfällt dann
     $ergebnis['downloads'] = is_string($freigaben['downloads'] ?? null) ? trim($freigaben['downloads'], '/') : '';
+    // Medien aus der Bibliothek (dev/shop-medienbibliothek.md): nimmt HugoCMS
+    // sie an (seit 2026-10-15), kommen Produkt- und Vorschaubilder und
+    // Downloads mit der Lieferung; ein älteres HugoCMS erzeugt die
+    // Vorschaubilder weiter selbst und prüft nur die Downloads
+    $medien = (array)($antwort['data']['media'] ?? []);
+    $ergebnis['medien'] = !empty($medien['accepted']);
+    $ergebnis['medien_stueck'] = (int)($medien['chunkBytes'] ?? 0);
     $unbrauchbar = [];
     foreach (SHOP_HUGOCMS_GRANTS as $feld => $name) {
         $wert = is_string($freigaben[$feld] ?? null) ? trim($freigaben[$feld], '/') : '';
@@ -286,6 +310,9 @@ const SHOP_HUGOCMS_PORTION_FILES = 500;
 
 /** Spätestens nach dieser Zeit wird abgeglichen, auch wenn sich hier nichts geändert hat */
 const SHOP_HUGOCMS_RESYNC_SECONDS = 86400;
+
+/** Größe eines Stücks bei der Übertragung von Medien — HugoCMS nennt seine Grenze, die kleinere gilt */
+const SHOP_HUGOCMS_MEDIA_CHUNK_BYTES = 4_194_304;
 
 /**
  * PHP-Einstiegspunkte des Pakets (Weiterleiter, 404-Seite). HugoCMS nimmt sie
@@ -570,7 +597,9 @@ function shopHugoCmsStateFile($db, int $kanal): string {
 function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     $ergebnis = ['ok' => false, 'uebertragen' => false, 'written' => 0, 'deleted' => 0, 'unchanged' => 0,
                  'buildPending' => false, 'uebersprungen' => [], 'freigaben' => [], 'fehler' => '',
-                 'php' => ['hugocms_bereit' => false, 'schluessel' => '' !== shopSigningSecretKey(), 'gesendet' => []]];
+                 'php' => ['hugocms_bereit' => false, 'schluessel' => '' !== shopSigningSecretKey(), 'gesendet' => []],
+                 'medien' => ['angenommen' => false, 'anzahl' => ['images' => 0, 'thumbnails' => 0, 'downloads' => 0],
+                              'fehlend' => [], 'uebertragen' => 0, 'vorschau_neu' => 0]];
 
     $stand = shopHugoCmsCall($db, $kanal, 'shopbuildstatus');
     if (!$stand['ok']) {
@@ -606,6 +635,20 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     }
     $ergebnis['uebersprungen'] = $liste['uebersprungen'];
 
+    // Medien aus der Bibliothek: in die Freigaben, mit den Prüfsummen aus
+    // media_shop — keine Kopie in der Bereitstellung
+    $medien = shopHugoCmsMediaList($db, $ergebnis['freigaben']);
+    $ergebnis['medien'] = [
+        'angenommen'   => !empty($ergebnis['freigaben']['medien']),
+        'anzahl'       => $medien['anzahl'],
+        'fehlend'      => $medien['fehlend'],
+        'uebertragen'  => 0,
+        'vorschau_neu' => $medien['vorschau_neu'],
+    ];
+    foreach ($medien['dateien'] as $pfad => $datei) {
+        $liste['dateien'][$pfad] = $datei['sha256'];
+    }
+
     $fingerabdruck = hash('sha256', json_encode($liste['dateien']).'|'.shopChannelValue($db, $kanal, 'hugocms_url'));
     $zustand = shopPublishReadState(shopHugoCmsStateFile($db, $kanal));
     $zuletzt = strtotime((string)($zustand['syncedAt'] ?? '')) ?: 0;
@@ -619,6 +662,11 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     // 1. Abgleich
     $eintraege = [];
     foreach ($liste['dateien'] as $pfad => $pruefsumme) {
+        if (isset($medien['dateien'][$pfad])) {
+            // Medien tragen ihre Größe: HugoCMS misst die Stücke daran
+            $eintraege[] = ['path' => $pfad, 'sha256' => $pruefsumme, 'size' => $medien['dateien'][$pfad]['size']];
+            continue;
+        }
         $eintraege[] = in_array($pfad, $ergebnis['php']['gesendet'], true)
             ? ['path' => $pfad, 'sha256' => $pruefsumme, 'signature' => shopSigningSign($pfad, $pruefsumme)]
             : ['path' => $pfad, 'sha256' => $pruefsumme];
@@ -642,7 +690,20 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
         $groesse = 0;
         return $antwort['ok'] ? '' : 'Übertragung: '.$antwort['fehler'];
     };
+    $stueckGroesse = (int)$ergebnis['freigaben']['medien_stueck'] > 0
+        ? max(65536, min(SHOP_HUGOCMS_MEDIA_CHUNK_BYTES, (int)$ergebnis['freigaben']['medien_stueck']))
+        : SHOP_HUGOCMS_MEDIA_CHUNK_BYTES;
     foreach ((array)($abgleich['data']['needed'] ?? []) as $pfad) {
+        if (isset($medien['dateien'][$pfad])) {
+            // Medien: Binärdaten in Stücken, jede Datei für sich — nicht Base64 in der Portion
+            $fehler = shopHugoCmsMediaUpload($db, $kanal, $syncId, $pfad, $medien['dateien'][$pfad], $stueckGroesse);
+            if ('' !== $fehler) {
+                $ergebnis['fehler'] = 'Übertragung der Medien: '.$fehler;
+                return $ergebnis;
+            }
+            $ergebnis['medien']['uebertragen']++;
+            continue;
+        }
         $inhalt = (string)@file_get_contents($wurzel.'/'.$pfad);
         if ($portion && ($groesse + strlen($inhalt) > SHOP_HUGOCMS_PORTION_BYTES || count($portion) >= SHOP_HUGOCMS_PORTION_FILES)) {
             if ('' !== ($fehler = $senden())) {
@@ -680,12 +741,208 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     ]);
 }
 
-// ── Download-Dateien ──
+// ── Medien aus der Bibliothek (dev/shop-medienbibliothek.md) ──
 //
-// Datenblätter und Anleitungen liegen wie die Bilder auf dem Webserver (E6);
-// die Produktseiten verlinken sie über downloads_link. Ob die Datei da ist,
-// sieht nur HugoCMS: shopdownloads nennt, was in der Freigabe „Downloads“
-// fehlt — sonst fände erst ein Kunde den toten Link.
+// Produktbilder, Vorschaubilder und Downloads liegen in der Medienbibliothek
+// (backend/data/<db>/shop/media/) und gehen mit der Lieferung an HugoCMS: in
+// die Freigaben „Produktbilder“, „Vorschaubilder“ und „Downloads“, als
+// Binärdaten in Stücken (shopmediaupload), nicht über die Bereitstellung —
+// dort läge sonst alles doppelt. Die Prüfsummen stammen aus media_shop; was
+// HugoCMS schon hat, fordert es nicht an. Jede Shop-Webseite bekommt alle
+// Medien (B7). Nimmt HugoCMS noch keine Medien an (Version vor 2026-10-15),
+// bleibt es beim alten Verfahren: Vorschaubilder dort, Downloads nur geprüft.
+
+require_once __DIR__.'/../../customer_vendor/filemanager.php';
+require_once __DIR__.'/media.php';
+
+/**
+ * Medien der Bibliothek als Einträge der Lieferung
+ *
+ * Vorher werden Vorschaubilder erneuert, die fehlen oder nicht die
+ * eingestellte Größe haben (shopMediaThumbnailsRefresh).
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param array $freigaben aus shopHugoCmsGrantsFrom (images, thumbnails, downloads, medien)
+ * @return array dateien (Pfad in der Webseite => sha256, size, quelle),
+ *               fehlend (Einträge ohne Datei, „bereich/name“),
+ *               anzahl (images, thumbnails, downloads), vorschau_neu
+ */
+function shopHugoCmsMediaList($db, array $freigaben): array {
+    $ergebnis = ['dateien' => [], 'fehlend' => [], 'anzahl' => ['images' => 0, 'thumbnails' => 0, 'downloads' => 0], 'vorschau_neu' => 0];
+    if (empty($freigaben['medien'])) {
+        return $ergebnis;
+    }
+    $ergebnis['vorschau_neu'] = shopMediaThumbnailsRefresh($db);
+
+    $verzeichnisse = [];
+    foreach (array_keys($ergebnis['anzahl']) as $bereich) {
+        $verzeichnisse[$bereich] = shopMediaDir($db, $bereich);
+    }
+    $zeilen = $db->getAll("SELECT kind, filename, sha256, size, thumbnail_sha256 FROM media_shop ORDER BY kind, filename") ?: [];
+    foreach ($zeilen as $zeile) {
+        $ziele = 'image' === $zeile['kind']
+            ? [['images', $zeile['sha256'], (int)$zeile['size']], ['thumbnails', $zeile['thumbnail_sha256'], null]]
+            : [['downloads', $zeile['sha256'], (int)$zeile['size']]];
+        foreach ($ziele as [$bereich, $pruefsumme, $groesse]) {
+            $freigabe = (string)($freigaben[$bereich] ?? '');
+            if ('' === $freigabe || '' === (string)$pruefsumme) {
+                // Downloads ohne Freigabe in HugoCMS; Bild ohne Vorschaubild
+                continue;
+            }
+            $quelle = $verzeichnisse[$bereich].'/'.$zeile['filename'];
+            if (!is_file($quelle)) {
+                $ergebnis['fehlend'][] = $bereich.'/'.$zeile['filename'];
+                continue;
+            }
+            $groesse ??= (int)filesize($quelle);
+            if ($groesse <= 0) {
+                continue;
+            }
+            $ergebnis['dateien'][$freigabe.'/'.$zeile['filename']] = ['sha256' => $pruefsumme, 'size' => $groesse, 'quelle' => $quelle];
+            $ergebnis['anzahl'][$bereich]++;
+        }
+    }
+    ksort($ergebnis['dateien']);
+    return $ergebnis;
+}
+
+/**
+ * Überträgt eine Mediendatei in Stücken an HugoCMS
+ *
+ * Jedes Stück nennt seinen Versatz; HugoCMS sammelt und legt die Datei mit
+ * dem letzten Stück nach Prüfung der Prüfsumme in ihre Freigabe. Passt der
+ * Versatz dort nicht (Rest einer abgebrochenen Übertragung), beginnt die
+ * Datei einmal von vorn.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @param string $syncId Lieferung aus dem Abgleich
+ * @param string $pfad Pfad in der Webseite
+ * @param array $datei sha256, size, quelle (aus shopHugoCmsMediaList)
+ * @param int $stueckGroesse Bytes je Stück
+ * @return string Fehler, leer bei Erfolg
+ */
+function shopHugoCmsMediaUpload($db, int $kanal, string $syncId, string $pfad, array $datei, int $stueckGroesse): string {
+    $handle = @fopen($datei['quelle'], 'rb');
+    if (false === $handle) {
+        return 'Datei der Bibliothek nicht lesbar: '.$datei['quelle'];
+    }
+    $groesse = (int)$datei['size'];
+    $versatz = 0;
+    $neustart = false;
+    try {
+        while ($versatz < $groesse) {
+            $inhalt = stream_get_contents($handle, min($stueckGroesse, $groesse - $versatz), $versatz);
+            if (false === $inhalt || '' === $inhalt) {
+                return 'Datei kürzer als in der Bibliothek verzeichnet — in der Ansicht „Medien“ abgleichen: '.$pfad;
+            }
+            $antwort = shopHugoCmsCall($db, $kanal, 'shopmediaupload', 'POST', 300, [],
+                ['syncId' => $syncId, 'path' => $pfad, 'offset' => $versatz], ['feld' => 'chunk', 'inhalt' => $inhalt]);
+            if (!$antwort['ok']) {
+                if (!$neustart && 409 === $antwort['status'] && $versatz > 0) {
+                    $neustart = true;
+                    $versatz = 0;
+                    continue;
+                }
+                return $antwort['fehler'].' ('.$pfad.')';
+            }
+            $versatz += strlen($inhalt);
+            if (!empty($antwort['data']['complete'])) {
+                return $versatz >= $groesse ? '' : 'HugoCMS meldet die Datei vor ihrem Ende als vollständig: '.$pfad;
+            }
+            if ((int)($antwort['data']['received'] ?? -1) !== $versatz) {
+                return sprintf('HugoCMS meldet einen anderen Stand (%d statt %d Bytes): %s',
+                    (int)($antwort['data']['received'] ?? -1), $versatz, $pfad);
+            }
+        }
+        return 'HugoCMS hat die Datei nicht als vollständig gemeldet: '.$pfad;
+    } finally {
+        fclose($handle);
+    }
+}
+
+/**
+ * Dateien, die Artikel im Shop nennen, aber in der Bibliothek fehlen
+ *
+ * Sie erscheinen nicht auf der Webseite — ein Hinweis im Lauf, wie früher
+ * „fehlen auf dem Webserver“. Alle Bilder eines Artikels, nicht nur das erste.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @return array image (Namen), download (Namen)
+ */
+function shopMediaMissingInLibrary($db, int $kanal): array {
+    $ergebnis = ['image' => [], 'download' => []];
+    $zeilen = $db->getAll(
+        "WITH kanal AS (SELECT shop_active_channel_id(CAST(:kanal AS integer)) AS id),
+              angeboten AS (
+                  SELECT pe.hugoshop_images, pe.hugoshop_downloads
+                    FROM parts p
+                    JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.active
+                    JOIN kanal k ON k.id = pc.channel_id
+                    JOIN parts_ext pe ON pe.parts_id = p.id
+              ),
+              genannt AS (
+                  SELECT DISTINCT 'image' AS kind, regexp_replace(e, '^.*/', '') AS name
+                    FROM angeboten a CROSS JOIN LATERAL jsonb_array_elements_text(a.hugoshop_images) e
+                   WHERE jsonb_typeof(a.hugoshop_images) = 'array' AND btrim(e) <> ''
+                  UNION
+                  SELECT DISTINCT 'download', regexp_replace(d.value, '^.*/', '')
+                    FROM angeboten a CROSS JOIN LATERAL jsonb_each_text(a.hugoshop_downloads) d
+                   WHERE jsonb_typeof(a.hugoshop_downloads) = 'object' AND btrim(d.value) <> ''
+              )
+         SELECT g.kind, g.name
+           FROM genannt g
+           LEFT JOIN media_shop m ON m.kind = g.kind AND m.filename = g.name
+          WHERE m.id IS NULL
+          ORDER BY 1, 2",
+        [':kanal' => $kanal]
+    ) ?: [];
+    foreach ($zeilen as $zeile) {
+        $ergebnis[$zeile['kind']][] = $zeile['name'];
+    }
+    return $ergebnis;
+}
+
+/**
+ * Meldungen zu den Medien nach einer Übertragung
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @param array $abgleich Ergebnis von shopHugoCmsSync
+ * @param callable $sagen Meldung
+ * @param callable $liste kürzt eine Namensliste für die Ausgabe
+ */
+function shopHugoCmsMediaReport($db, int $kanal, array $abgleich, callable $sagen, callable $liste): void {
+    $medien = $abgleich['medien'];
+    $sagen(sprintf('Medien an HugoCMS: %d Produktbilder, %d Vorschaubilder, %d Downloads in der Lieferung, %d übertragen',
+        $medien['anzahl']['images'], $medien['anzahl']['thumbnails'], $medien['anzahl']['downloads'], $medien['uebertragen']));
+    if ($medien['vorschau_neu'] > 0) {
+        $sagen(sprintf('%d Vorschaubilder neu erzeugt (Größe %d)', $medien['vorschau_neu'], shopConfigInt($db, 'shop_thumbnail_size', 200)));
+    }
+    if ($medien['fehlend']) {
+        $sagen(sprintf('Warnung: %d Einträge der Medienbibliothek ohne Datei — in der Ansicht „Medien“ abgleichen: %s',
+            count($medien['fehlend']), $liste($medien['fehlend'])));
+    }
+    if ('' === (string)($abgleich['freigaben']['downloads'] ?? '')) {
+        $sagen('Downloads nicht übertragen: HugoCMS gibt kein Verzeichnis „Downloads“ frei (Projekteinstellungen → Shop-Erweiterung).');
+    }
+    $fehlt = shopMediaMissingInLibrary($db, $kanal);
+    if ($fehlt['image']) {
+        $sagen(sprintf('%d Produktbilder fehlen in der Medienbibliothek: %s', count($fehlt['image']), $liste($fehlt['image'])));
+    }
+    if ($fehlt['download']) {
+        $sagen(sprintf('%d Download-Dateien fehlen in der Medienbibliothek: %s', count($fehlt['download']), $liste($fehlt['download'])));
+    }
+}
+
+// ── Download-Dateien (HugoCMS ohne Medienübernahme) ──
+//
+// Solange HugoCMS keine Medien aus der Bibliothek annimmt, liegen Datenblätter
+// und Anleitungen wie die Bilder auf dem Webserver (E6); die Produktseiten
+// verlinken sie über downloads_link. Ob die Datei da ist, sieht nur HugoCMS:
+// shopdownloads nennt, was in der Freigabe „Downloads“ fehlt — sonst fände
+// erst ein Kunde den toten Link.
 
 /**
  * Dateinamen der Downloads aller im Shop angebotenen Artikel
@@ -739,10 +996,11 @@ function shopHugoCmsDownloadsCheck($db, int $kanal): array {
     ];
 }
 
-// ── Vorschaubilder ──
+// ── Vorschaubilder (HugoCMS ohne Medienübernahme) ──
 //
-// Die Produktbilder liegen auf dem Webserver (E6). OSERP nennt nur die Namen
-// und die Größe; verkleinert wird in HugoCMS (backend/core/Shop/ShopThumbnails.php).
+// Nimmt HugoCMS keine Medien aus der Bibliothek an, liegen die Produktbilder
+// auf dem Webserver (E6). OSERP nennt dann nur die Namen und die Größe;
+// verkleinert wird in HugoCMS (backend/core/Shop/ShopThumbnails.php).
 
 /** Höchstzahl Abschnitte je Lauf — Schutz gegen eine Antwort, die nie „fertig" meldet */
 const SHOP_HUGOCMS_THUMBNAIL_ROUNDS = 500;
@@ -924,14 +1182,22 @@ function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, 
             $abgleich['written'], $abgleich['deleted'], $abgleich['unchanged'])
         : 'HugoCMS ist auf dem aktuellen Stand — nichts zu übertragen.');
 
-    // Vorschaubilder nur nach einer Übertragung — sonst fragte jeder Lauf alle
-    // Bilder ab. Die Übertragung findet mindestens einmal am Tag statt
-    // (SHOP_HUGOCMS_RESYNC_SECONDS); dann kommen auch Bilder zum Zug, die
-    // inzwischen auf dem Webserver abgelegt wurden.
+    // Medien nur nach einer Übertragung melden — sonst fragte jeder Lauf alle
+    // Namen ab. Die Übertragung findet mindestens einmal am Tag statt
+    // (SHOP_HUGOCMS_RESYNC_SECONDS).
     $bauNoetig = $abgleich['buildPending'];
-    if ($abgleich['uebertragen']) {
+    $liste = fn(array $namen) => implode(', ', array_slice($namen, 0, 5)).(count($namen) > 5 ? ' …' : '');
+    if ($abgleich['uebertragen'] && $abgleich['medien']['angenommen']) {
+        // Medien aus der Bibliothek sind mit der Lieferung gegangen
+        // (dev/shop-medienbibliothek.md): Vorschaubilder kommen fertig von
+        // hier, fehlende Dateien kennt die Bibliothek selbst
+        shopHugoCmsMediaReport($db, $kanal, $abgleich, $sagen, $liste);
+    } elseif ($abgleich['uebertragen']) {
+        // HugoCMS ohne Medienübernahme: Vorschaubilder dort erzeugen, Downloads
+        // nur prüfen — die Medien bleiben auf der Webseite maßgeblich
+        $sagen('HugoCMS nimmt noch keine Medien aus der Medienbibliothek an (Version vor 2026-10-15) — '
+            .'Produktbilder und Downloads bleiben auf der Webseite maßgeblich, bis HugoCMS aktualisiert ist.');
         $vorschau = shopHugoCmsThumbnails($db, $kanal);
-        $liste = fn(array $namen) => implode(', ', array_slice($namen, 0, 5)).(count($namen) > 5 ? ' …' : '');
         if (!$vorschau['ok']) {
             $fehler('Vorschaubilder in HugoCMS fehlgeschlagen: '.$vorschau['fehler']);
         } else {

@@ -954,6 +954,8 @@
         "shopHugoCmsSignedReady": "L’esecuzione trasferisce il proxy e la pagina 404 firmati.",
         "shopHugoCmsSignedMissing": "HugoCMS non conosce ancora la chiave di firma di OpensourceERP: il proxy e la pagina 404 vanno messi a mano sul server web.",
         "shopHugoCmsSignedNoKey": "Senza chiave di firma in OpensourceERP il proxy e la pagina 404 vanno messi a mano sul server web.",
+        "shopHugoCmsMediaReady": "HugoCMS accetta immagini prodotto, miniature e download dalla libreria multimediale — l'esecuzione li consegna.",
+        "shopHugoCmsMediaMissing": "Questa versione di HugoCMS non accetta ancora media dalla libreria multimediale — immagini prodotto e download sul sito web restano validi finché HugoCMS non viene aggiornato.",
         "shopBackendTest": "Verifica connessione",
         "shopBackendTestStep_plausibel": "Inserimento",
         "shopBackendTestStep_direkt": "Direttamente da OpensourceERP",

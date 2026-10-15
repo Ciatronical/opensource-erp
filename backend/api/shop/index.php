@@ -39,8 +39,10 @@ require_once __DIR__.'/lib/redirect.php';
 require_once __DIR__.'/lib/publish.php';
 require_once __DIR__.'/lib/categories.php';
 require_once __DIR__.'/lib/hugocms.php';
-require_once __DIR__.'/../customer_vendor/filemanager.php';   // Datenverzeichnis der Kanalbilder
+require_once __DIR__.'/../customer_vendor/filemanager.php';   // Datenverzeichnis der Kanalbilder und der Medienbibliothek
 require_once __DIR__.'/lib/channel_images.php';
+require_once __DIR__.'/lib/media.php';
 require_once __DIR__.'/admin.php';
+require_once __DIR__.'/media.php';
 
 require_once __DIR__.'/../inc.php'; // muss immer unten stehen
