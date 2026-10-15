@@ -2,169 +2,161 @@
 // backend/api/parts/parts.php
 
 /**
- * Artikel suchen
+ * Artikel für die Positionssuche in der Faktura suchen — klug sortiert
  *
- * @param string $data['term'] Suchbegriff für Artikelsuche
- * @testdata {"term": "a", "taxzone": 4}
+ * Rangstufen (match_tier): 3000 Beschreibung beginnt mit dem Begriff,
+ * 2000 Artikelnummer beginnt mit dem Begriff, 1000 ein Wort der Beschreibung
+ * beginnt mit dem Begriff, 0 Begriff irgendwo enthalten. Darauf kommt eine
+ * logarithmische Gewichtung der Verwendungshäufigkeit aus parts_usage_oserp
+ * (gesamt und in den letzten recent_months Monaten). Bei den Standardgewichten
+ * bleibt die Rangstufe maßgeblich; wer die Häufigkeit stärker will, dreht die
+ * Gewichte in der Firmenkonfiguration hoch — das Frontend schickt sie mit.
+ * Je Artikelart (Ware/Dienstleistung) sind mindestens drei Treffer dabei,
+ * damit z. B. zu „Batte" auch „Batterie prüfen" erscheint.
+ *
+ * @param string $data['term'] Suchbegriff
+ * @param int $data['taxzone'] Steuerzone des Belegs (für das Buchungsziel)
+ * @param int $data['limit'] Anzahl Vorschläge (Standard 12)
+ * @param number $data['usage_weight'] Gewicht Verwendungen gesamt (Standard 40)
+ * @param number $data['recent_weight'] Gewicht Verwendungen zuletzt (Standard 60)
+ * @param int $data['recent_months'] Zeitraum „zuletzt" in Monaten (Standard 12)
+ * @testdata {"term": "batte", "taxzone": 4}
  */
 function findParts($data) {
     $mandant = DbhCompany::begin();
-    $term = $data['term'];
-    $termLike   = "%{$term}%";
-    $termPrefix = "{$term}%";
-    $taxzoneId  = $data['taxzone'];
+    $term = trim((string)($data['term'] ?? ''));
+    if ($term === '') {
+        resultInfo(true, '', ['parts' => []]);
+        return;
+    }
 
-    $query = <<<SQL
-        (
-            SELECT
-                'W' AS part_type,
-                'Waren' AS category,
-                description,
-                partnumber,
-                id,
-                description AS value,
-                part_type,
-                unit,
-                (
-                    SELECT row_to_json(unit_type)
-                    FROM (
-                        SELECT base_unit, factor
-                        FROM units
-                        WHERE units.name = parts.unit
-                    ) AS unit_type
-                ) AS unit_type,
-                partnumber || ' ' || description AS label,
-                sellprice,
-                (
-                    SELECT qty
-                    FROM (
-                        SELECT qty FROM orderitems WHERE parts_id = parts.id AND qty IS NOT NULL
-                        UNION ALL
-                        SELECT qty FROM invoice WHERE parts_id = parts.id AND qty IS NOT NULL
-                    ) AS all_qty
-                    GROUP BY qty
-                    ORDER BY count(qty) DESC, qty DESC
-                    LIMIT 1
-                ) AS qty,
-                (
-                    SELECT row_to_json(buchungsziel)
-                    FROM (
-                        SELECT
-                            c2.id AS income_chart_id,
-                            tk.tax_id,
-                            tx.chart_id AS tax_chart_id,
-                            tx.rate
-                        FROM parts p
-                        LEFT JOIN buchungsgruppen bg ON p.buchungsgruppen_id = bg.id
-                        LEFT JOIN taxzone_charts tc ON bg.id = tc.buchungsgruppen_id
-                        LEFT JOIN chart c1 ON bg.inventory_accno_id = c1.id
-                        LEFT JOIN chart c2 ON tc.income_accno_id = c2.id
-                        LEFT JOIN chart c3 ON tc.expense_accno_id = c3.id
-                        LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
-                        LEFT JOIN tax tx ON tx.id = tk.tax_id
-                        WHERE tc.taxzone_id = :taxzone_id
-                        AND p.id IN (parts.id)
-                        ORDER BY tk.startdate DESC
-                        LIMIT 1
-                    ) AS buchungsziel
-                ) AS buchungsziel
-            FROM parts
-            WHERE (
-                    description ILIKE :term_like
-                OR partnumber ILIKE :term_prefix
-            )
-            AND obsolete = FALSE
-            AND part_type = 'part'
-            ORDER BY (
-                SELECT (
-                    SELECT count(qty)
-                    FROM orderitems
-                    WHERE parts_id = parts.id
-                )
-            ) DESC NULLS LAST
-            LIMIT 5
-        )
-        UNION ALL
-        (
-            SELECT
-                'D' AS part_type,
-                'Dienstleistung' AS category,
-                description,
-                partnumber,
-                id,
-                description AS value,
-                part_type,
-                unit,
-                (
-                    SELECT row_to_json(unit_type)
-                    FROM (
-                        SELECT base_unit, factor
-                        FROM units
-                        WHERE units.name = parts.unit
-                    ) AS unit_type
-                ) AS unit_type,
-                partnumber || ' ' || description AS label,
-                sellprice,
-                (
-                    SELECT qty
-                    FROM (
-                        SELECT qty FROM orderitems WHERE parts_id = parts.id AND qty IS NOT NULL
-                        UNION ALL
-                        SELECT qty FROM invoice WHERE parts_id = parts.id AND qty IS NOT NULL
-                    ) AS all_qty
-                    GROUP BY qty
-                    ORDER BY count(qty) DESC, qty DESC
-                    LIMIT 1
-                ) AS qty,
-                (
-                    SELECT row_to_json(buchungsziel)
-                    FROM (
-                        SELECT
-                            c2.id AS income_chart_id,
-                            tk.tax_id,
-                            tx.chart_id AS tax_chart_id,
-                            tx.rate
-                        FROM parts p
-                        LEFT JOIN buchungsgruppen bg ON p.buchungsgruppen_id = bg.id
-                        LEFT JOIN taxzone_charts tc ON bg.id = tc.buchungsgruppen_id
-                        LEFT JOIN chart c1 ON bg.inventory_accno_id = c1.id
-                        LEFT JOIN chart c2 ON tc.income_accno_id = c2.id
-                        LEFT JOIN chart c3 ON tc.expense_accno_id = c3.id
-                        LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
-                        LEFT JOIN tax tx ON tx.id = tk.tax_id
-                        WHERE tc.taxzone_id = :taxzone_id
-                        AND p.id IN (parts.id)
-                        ORDER BY tk.startdate DESC
-                        LIMIT 1
-                    ) AS buchungsziel
-                ) AS buchungsziel
-            FROM parts
-            WHERE (
-                    description ILIKE :term_like
-                OR partnumber ILIKE :term_prefix
-            )
-            AND obsolete = FALSE
-            AND part_type = 'service'
-            ORDER BY (
-                SELECT (
-                    SELECT count(qty)
-                    FROM orderitems
-                    WHERE parts_id = parts.id
-                )
-            ) DESC NULLS LAST
-            LIMIT 5
-        )
-    SQL;
+    // Wortanfang: Begriff direkt nach Zeichen, das kein Buchstabe/Ziffer ist
+    // (Leerzeichen, Komma, Klammer, Bindestrich …). Regex-Sonderzeichen entschärfen.
+    $termWordRe = '(^|[^[:alnum:]])' . preg_quote($term);
 
     $params = [
-        ':taxzone_id' => $taxzoneId,
-        ':term_like' => $termLike,
-        ':term_prefix' => $termPrefix
+        ':taxzone_id'    => (int)($data['taxzone'] ?? 0),
+        ':term_like'     => "%{$term}%",
+        ':term_prefix'   => "{$term}%",
+        ':term_word_re'  => $termWordRe,
+        ':limit'         => max(1, min(50, (int)($data['limit'] ?? 12))),
+        ':usage_weight'  => max(0, (float)($data['usage_weight'] ?? 40)),
+        ':recent_weight' => max(0, (float)($data['recent_weight'] ?? 60)),
+        ':recent_months' => max(1, min(120, (int)($data['recent_months'] ?? 12)))
     ];
+
+    $query = <<<SQL
+        WITH cfg AS (
+            SELECT :limit::int AS lim,
+                   3 AS min_per_type,
+                   :usage_weight::numeric AS w_usage,
+                   :recent_weight::numeric AS w_recent,
+                   (date_trunc('month', current_date) - make_interval(months => :recent_months::int))::date AS recent_from
+        ),
+        cand AS (
+            SELECT p.id, p.part_type, p.description, p.partnumber, p.unit, p.sellprice, p.buchungsgruppen_id,
+                   CASE
+                       WHEN p.description ILIKE :term_prefix THEN 3000
+                       WHEN p.partnumber  ILIKE :term_prefix THEN 2000
+                       WHEN p.description ~* :term_word_re   THEN 1000
+                       ELSE 0
+                   END AS match_tier
+              FROM parts p
+             WHERE (p.description ILIKE :term_like OR p.partnumber ILIKE :term_prefix)
+               AND p.obsolete = FALSE
+               AND p.part_type IN ('part', 'service')
+        ),
+        scored AS (
+            SELECT c.*,
+                   COALESCE(u.total, 0)::int  AS total_uses,
+                   COALESCE(u.recent, 0)::int AS recent_uses,
+                   c.match_tier
+                   + cfg.w_usage  * ln(1 + COALESCE(u.total, 0))
+                   + cfg.w_recent * ln(1 + COALESCE(u.recent, 0)) AS score
+              FROM cand c
+              CROSS JOIN cfg
+              LEFT JOIN LATERAL (
+                  SELECT sum(uses) AS total,
+                         sum(uses) FILTER (WHERE month >= cfg.recent_from) AS recent
+                    FROM parts_usage_oserp pu
+                   WHERE pu.parts_id = c.id
+              ) u ON TRUE
+        ),
+        ranked AS (
+            SELECT s.*,
+                   row_number() OVER (PARTITION BY part_type ORDER BY score DESC, description) AS rn_type,
+                   row_number() OVER (ORDER BY score DESC, description)                         AS rn_all
+              FROM scored s
+        )
+        SELECT r.id,
+               r.part_type,
+               r.description,
+               r.partnumber,
+               r.description AS value,
+               r.partnumber || ' ' || r.description AS label,
+               r.unit,
+               r.sellprice,
+               r.match_tier,
+               r.total_uses,
+               r.recent_uses,
+               round(r.score) AS score,
+               (
+                   SELECT row_to_json(unit_type)
+                     FROM (SELECT base_unit, factor FROM units WHERE units.name = r.unit) AS unit_type
+               ) AS unit_type,
+               (
+                   -- häufigste Menge dieses Artikels als Vorbelegung
+                   SELECT qty
+                     FROM (
+                         SELECT qty FROM orderitems WHERE parts_id = r.id AND qty IS NOT NULL
+                         UNION ALL
+                         SELECT qty FROM invoice WHERE parts_id = r.id AND qty IS NOT NULL
+                     ) AS all_qty
+                    GROUP BY qty
+                    ORDER BY count(qty) DESC, qty DESC
+                    LIMIT 1
+               ) AS qty,
+               (
+                   SELECT row_to_json(buchungsziel)
+                     FROM (
+                         SELECT c2.id AS income_chart_id,
+                                tk.tax_id,
+                                tx.chart_id AS tax_chart_id,
+                                tx.rate
+                           FROM buchungsgruppen bg
+                           JOIN taxzone_charts tc ON bg.id = tc.buchungsgruppen_id
+                           LEFT JOIN chart c2 ON tc.income_accno_id = c2.id
+                           LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
+                           LEFT JOIN tax tx ON tx.id = tk.tax_id
+                          WHERE bg.id = r.buchungsgruppen_id
+                            AND tc.taxzone_id = :taxzone_id
+                          ORDER BY tk.startdate DESC
+                          LIMIT 1
+                     ) AS buchungsziel
+               ) AS buchungsziel
+          FROM ranked r, cfg
+         WHERE r.rn_all <= cfg.lim OR r.rn_type <= cfg.min_per_type
+         ORDER BY r.score DESC, r.description
+    SQL;
 
     $result = $mandant->getAll($query, $params);
 
     resultInfo(true, '', ['parts' => $result]);
+}
+
+/**
+ * Verwendungsstatistik der Artikel neu aufbauen (parts_usage_oserp)
+ *
+ * Zählt alle Positionen aus orderitems und invoice je Artikel und Belegmonat
+ * neu. Normalerweise pflegen Trigger die Tabelle; der Neuaufbau ist für
+ * Importe oder Zweifel an den Zählern gedacht.
+ *
+ * @testdata {}
+ */
+function rebuildPartsUsage($data) {
+    $mandant = DbhCompany::begin();
+    $row = $mandant->getOne("SELECT rows_built, parts_with_usage, total_uses FROM parts_usage_rebuild()", []);
+    resultInfo(true, '', ['results' => $row]);
 }
 
 /**

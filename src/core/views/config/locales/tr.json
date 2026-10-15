@@ -1000,7 +1000,7 @@
         "emailMaxSize": {
             "button": "Sınırı posta sunucusundan belirle",
             "hint": "SMTP sunucusuna ileti başına en büyük boyutu sorar ve PHP sınırı post_max_size değerini dikkate alır. Ardından kaydetmeyi unutmayın.",
-            "result": "Sınır olarak {mb} MB girildi",
+            "result": "Sınır olarak {mb} MB girildi (dosya boyutu; Base64 iletiyi yaklaşık %37 büyütür)",
             "smtpLimit": "SMTP sunucusu ileti başına {size} izin veriyor",
             "noSmtpLimit": "SMTP sunucusu en büyük boyutu bildirmiyor",
             "phpLimit": "PHP istek başına {size} kabul ediyor (post_max_size)",

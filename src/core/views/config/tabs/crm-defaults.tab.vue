@@ -219,6 +219,13 @@
                 </v-col>
             </v-row>
 
+            <!-- Artikelsuche: Probesuche mit den eingetragenen Gewichten + Statistik neu aufbauen -->
+            <v-row v-else-if="field.type === 'component' && field.component === 'parts-search'" class="my-4">
+                <v-col cols="12">
+                    <PartsSearchConfig :crm-defaults="crmDefaults" />
+                </v-col>
+            </v-row>
+
             <!-- Einfacher Modus: Felder und Reiter der Kundenmaske -->
             <v-row v-else-if="field.type === 'component' && field.component === 'cv-easymode'" class="my-4">
                 <v-col cols="12">
@@ -290,6 +297,7 @@ import EmailMaxsizeConfig from './email-maxsize.config.vue';
 import BelegQuellenConfig from './beleg-quellen.config.vue';
 import EletterStatusConfig from './eletter-status.config.vue';
 import CvEasymodeConfig from './cv-easymode.config.vue';
+import PartsSearchConfig from './parts-search.config.vue';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 
 const { t } = useI18n();

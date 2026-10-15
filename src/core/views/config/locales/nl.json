@@ -1000,7 +1000,7 @@
         "emailMaxSize": {
             "button": "Grens bij mailserver bepalen",
             "hint": "Vraagt de SMTP-server naar zijn maximale berichtgrootte en houdt rekening met de PHP-grens post_max_size. Daarna niet vergeten op te slaan.",
-            "result": "{mb} MB als grens ingevuld",
+            "result": "{mb} MB als grens ingevuld (bestandsgrootte, omdat Base64 het bericht ongeveer 37% groter maakt)",
             "smtpLimit": "SMTP-server staat {size} per bericht toe",
             "noSmtpLimit": "SMTP-server meldt geen maximale grootte",
             "phpLimit": "PHP accepteert {size} per aanvraag (post_max_size)",

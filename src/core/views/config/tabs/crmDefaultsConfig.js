@@ -180,6 +180,17 @@ const crmDefaultsConfig = [
         fieldstyle: "max-width: 60ch"
     },
 
+    // Artikelsuche in den Belegpositionen (parts.php findParts): Rangstufen sind
+    // fest (beginnt mit > Artikelnummer > Wortanfang > enthält), darin zählt die
+    // Verwendungshäufigkeit aus parts_usage_oserp. Standards: src/core/utils/partsSearch.js
+    { name: "parts_search", type: "headline", label: "crm_fields.partsSearch" },
+
+    { name: "parts_search_limit", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 60ch", label: "crm_fields.partsSearchLimit", tooltip: "crm_fields.partsSearchLimit_help" },
+    { name: "parts_search_usage_weight", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 60ch", label: "crm_fields.partsSearchUsageWeight", tooltip: "crm_fields.partsSearchUsageWeight_help" },
+    { name: "parts_search_recent_weight", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 60ch", label: "crm_fields.partsSearchRecentWeight", tooltip: "crm_fields.partsSearchRecentWeight_help" },
+    { name: "parts_search_recent_months", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 60ch", label: "crm_fields.partsSearchRecentMonths", tooltip: "crm_fields.partsSearchRecentMonths_help" },
+    { name: "parts_search_preview", type: "component", component: "parts-search" },
+
     { name: "email_client", type: "headline", label: "crm_fields.emailClient" },
 
     {

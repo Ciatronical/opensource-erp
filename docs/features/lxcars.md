@@ -58,11 +58,14 @@ Werkstattaufträge sind normale Aufträge (Faktura) mit LxCars-Erweiterungen:
 
 Jede Anweisung hat:
 - Beschreibung (Freitext, z.B. "Ölwechsel durchführen")
-- Anweisungsnummer (automatisch, konfigurierbarer Präfix + Zähler)
-- Geplante Minuten (Zeitschätzung)
+- Anweisungsnummer (automatisch, konfigurierbarer Präfix + Zähler; Nummern, die es schon als Artikel gibt, werden übersprungen — Anweisungs- und Artikelnummern fallen nie zusammen)
+- Geplante Minuten — beim Hinzufügen oder Ersetzen automatisch vorbelegt mit der **zuletzt eingetragenen geplanten Zeit** derselben Anweisung: wer bei „Batterie prüfen" 0:20 einträgt, bekommt beim nächsten „Batterie prüfen" wieder 0:20, im selben oder im nächsten Auftrag
 - Zugewiesener Mitarbeiter
+- **Schnellausfüllen** (Blitz-Symbol je Zeile): übernimmt die geplante Zeit als benötigte Zeit und trägt den angemeldeten Mitarbeiter als „Erledigt von" ein — ein Klick, ein Speichern; das Abhaken bleibt beim Benutzer
 - Status: offen / erledigt
 - Timer: Echtzeit-Zeitmessung der tatsächlichen Arbeitszeit
+
+Die Vorschlagsliste beim Eintippen ist klug sortiert wie die Artikelsuche in der Faktura: Anweisungsnummer exakt, Beschreibung beginnt mit dem Begriff, Nummer beginnt mit, Wortanfang, enthalten — darin nach Verwendungshäufigkeit (Gewicht aus **Firmenkonfiguration → Grunddaten → Artikelsuche in Belegen**). Diktierte Sätze finden den Eintrag weiterhin über Einzelwörter.
 
 ## Mechaniker-Modus
 

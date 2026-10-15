@@ -1000,7 +1000,7 @@
         "emailMaxSize": {
             "button": "从邮件服务器检测限制",
             "hint": "向 SMTP 服务器查询单封邮件的最大大小，并考虑 PHP 限制 post_max_size。之后请记得保存。",
-            "result": "已将限制设为 {mb} MB",
+            "result": "已将限制设为 {mb} MB（文件大小，因为 Base64 会使邮件增大约 37%）",
             "smtpLimit": "SMTP 服务器允许每封邮件 {size}",
             "noSmtpLimit": "SMTP 服务器未告知最大大小",
             "phpLimit": "PHP 每次请求接受 {size}（post_max_size）",

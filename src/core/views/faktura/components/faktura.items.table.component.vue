@@ -184,12 +184,22 @@
                                             @transcript="text => onVoicePosition(item, index, text)"
                                         />
                                     </template>
-                                    <template #item="{ props, item: listItem }">
+                                    <!-- Treffer kommen fertig sortiert vom Backend (Rangstufe,
+                                         dann Verwendungshäufigkeit). Darstellung wie gehabt:
+                                         Beschreibung + Artikelnummer, dazu dezent der
+                                         Verwendungszähler rechts und eine gestrichelte Linie
+                                         zwischen den Rangstufen. -->
+                                    <template #item="{ props, item: listItem, index: ai }">
+                                        <div v-if="isTierBreak(item.localArticleList, ai)" class="ac-tier-divider"></div>
                                         <v-list-item
                                             v-bind="props"
-                                            :title="listItem.description"
-                                            :subtitle="listItem.partnumber"
-                                        />
+                                            :title="artOf(listItem).description"
+                                            :subtitle="artOf(listItem).partnumber"
+                                        >
+                                            <template v-if="artOf(listItem).total_uses > 0" #append>
+                                                <span class="ac-uses" :title="usesTitle(artOf(listItem))">{{ artOf(listItem).total_uses }}×</span>
+                                            </template>
+                                        </v-list-item>
                                     </template>
                                 </v-autocomplete>
                                 <!-- Bestehende Position: zuverlässiges Textfeld + EIGENE
@@ -216,17 +226,21 @@
                                             class="ac-suggestions"
                                             :style="suggestionStyle(index)"
                                         >
-                                            <div
-                                                v-for="(art, ai) in item.localArticleList"
-                                                :key="art.id"
-                                                class="ac-suggestion"
-                                                :class="{ 'ac-active': replaceActiveIdx[index] === ai }"
-                                                @mousedown.prevent="chooseReplacement(item, index, art)"
-                                                @mousemove="replaceActiveIdx[index] = ai"
-                                            >
-                                                <div class="ac-suggestion__title">{{ art.description }}</div>
-                                                <div class="ac-suggestion__sub">{{ art.partnumber }}</div>
-                                            </div>
+                                            <template v-for="(art, ai) in item.localArticleList" :key="art.id">
+                                                <div v-if="isTierBreak(item.localArticleList, ai)" class="ac-tier-divider"></div>
+                                                <div
+                                                    class="ac-suggestion"
+                                                    :class="{ 'ac-active': replaceActiveIdx[index] === ai }"
+                                                    @mousedown.prevent="chooseReplacement(item, index, art)"
+                                                    @mousemove="replaceActiveIdx[index] = ai"
+                                                >
+                                                    <div class="ac-suggestion__row">
+                                                        <div class="ac-suggestion__title">{{ art.description }}</div>
+                                                        <span v-if="art.total_uses > 0" class="ac-uses" :title="usesTitle(art)">{{ art.total_uses }}×</span>
+                                                    </div>
+                                                    <div class="ac-suggestion__sub">{{ art.partnumber }}</div>
+                                                </div>
+                                            </template>
                                         </div>
                                     </Teleport>
                                 </div>
@@ -879,6 +893,24 @@ export default defineComponent({
                 // Emitte Search Event an Parent
                 emit('article-search', searchTerm, index, item)
             }, 50)
+        }
+
+        // ── Darstellung der Vorschlagsliste ──
+        // Sortierung und Rangstufe (match_tier) liefert das Backend; hier nur Anzeige.
+
+        /** Artikel aus dem Slot-Objekt der v-autocomplete (Vuetify liefert mal das
+         *  Objekt selbst, mal einen Wrapper mit .raw) */
+        function artOf(listItem) {
+            return listItem?.raw ?? listItem ?? {}
+        }
+
+        /** Gestrichelte Linie, wo die Rangstufe wechselt (z. B. „beginnt mit“ → „enthält“) */
+        function isTierBreak(list, i) {
+            return i > 0 && Array.isArray(list) && list[i - 1]?.match_tier !== list[i]?.match_tier
+        }
+
+        function usesTitle(art) {
+            return t('FakturaView.faktura.usedTimes', { n: art.total_uses, recent: art.recent_uses })
         }
 
         /**
@@ -1565,6 +1597,9 @@ export default defineComponent({
             toggleItemDiscount,
             onLocalArticleSearch,
             onLocalArticleSelect,
+            artOf,
+            isTierBreak,
+            usesTitle,
             onArticleEnter,
             handleEnter,
             formatPartType,
@@ -1626,6 +1661,24 @@ export default defineComponent({
 .ac-suggestion__sub {
     font-size: 0.75rem;
     color: rgba(var(--v-theme-on-surface), 0.6);
+}
+.ac-suggestion__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+/* Verwendungszähler rechts in der Vorschlagszeile */
+.ac-uses {
+    font-size: 0.72rem;
+    color: rgba(var(--v-theme-on-surface), 0.55);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+/* Wechsel der Rangstufe (beginnt mit → Artikelnummer → Wortanfang → enthält) */
+.ac-tier-divider {
+    border-top: 1px dashed rgba(var(--v-border-color), 0.6);
+    margin: 2px 8px;
 }
 
 /* Card Styling */

@@ -9,26 +9,36 @@
  * @return string Formatierte Anweisungsnummer (z.B. "AW-5" oder "5")
  */
 function _getNextInstructionNumber($db) {
-    // Atomar den Zähler erhöhen
+    // Zähler atomar erhöhen und dabei Nummern überspringen, die es schon als
+    // Artikel (parts.partnumber) oder Anweisung gibt — Anweisungs- und
+    // Artikelnummern sollen nie zusammenfallen, sonst findet „5107“ in der
+    // Anweisungs- und in der Positionssuche dasselbe (Migrationserbe, siehe
+    // dev/anweisungsnummern-entkoppeln.sql).
+    // ON CONFLICT DO UPDATE sperrt die Zählerzeile, bevor der SET-Ausdruck mit
+    // defaults_oserp.value rechnet — zwei gleichzeitige Aufrufe bekommen so
+    // verschiedene Nummern.
     $result = $db->getOne(
         "INSERT INTO defaults_oserp (key, value)
          VALUES ('instructionnumber', '101')
          ON CONFLICT (key) DO UPDATE
-         SET value = (COALESCE(regexp_replace(defaults_oserp.value, '[^0-9]', '', 'g')::bigint, 0) + 1)::text,
+         SET value = (
+                 SELECT k.n::text
+                   FROM generate_series(
+                            COALESCE(regexp_replace(defaults_oserp.value, '[^0-9]', '', 'g')::bigint, 0) + 1,
+                            COALESCE(regexp_replace(defaults_oserp.value, '[^0-9]', '', 'g')::bigint, 0) + 1000
+                        ) AS k(n),
+                        (SELECT COALESCE((SELECT trim(value) FROM defaults_oserp WHERE key = 'instructionprefix'), '') AS p) AS pre
+                  WHERE NOT EXISTS (SELECT 1 FROM parts WHERE partnumber = pre.p || k.n)
+                    AND NOT EXISTS (SELECT 1 FROM instructions_lxcars WHERE instruction_number = pre.p || k.n)
+                  ORDER BY k.n
+                  LIMIT 1
+             ),
              mtime = now()
-         RETURNING value",
+         RETURNING COALESCE((SELECT trim(value) FROM defaults_oserp WHERE key = 'instructionprefix'), '') || value AS number",
         []
     );
-    $number = $result['value'];
 
-    // Optionalen Prefix lesen
-    $prefixRow = $db->getOne(
-        "SELECT value FROM defaults_oserp WHERE key = 'instructionprefix'",
-        []
-    );
-    $prefix = $prefixRow ? trim($prefixRow['value'] ?? '') : '';
-
-    return $prefix . $number;
+    return $result['number'];
 }
 
 /**
@@ -57,6 +67,26 @@ function getInstructions($data) {
 }
 
 /**
+ * Geplante Zeit für eine Anweisung: die Planzeit der jüngsten Anweisung mit
+ * demselben Text (letzte Auftragszeile mit planned_minutes > 0). Wer bei
+ * „Batterie prüfen“ 0:20 einträgt, bekommt beim nächsten „Batterie prüfen“
+ * wieder 0:20 — im selben oder im nächsten Auftrag. Noch nie geplant: 0.
+ *
+ * @param object $db Database handle
+ * @param string $description Anweisungstext
+ * @return int Minuten
+ */
+function _plannedMinutesFor($db, $description) {
+    $row = $db->getOne(
+        "SELECT planned_minutes FROM oe_instructions_lxcars
+          WHERE description = :desc AND planned_minutes > 0
+          ORDER BY id DESC LIMIT 1",
+        [':desc' => $description]
+    );
+    return intval($row['planned_minutes'] ?? 0);
+}
+
+/**
  * Kern-Logik: Fügt eine Arbeitsanweisung zu einem Auftrag hinzu
  * Ergänzt automatisch die Master-Tabelle für zukünftiges Autocomplete.
  * WICHTIG: Muss innerhalb einer bestehenden Transaktion aufgerufen werden!
@@ -77,7 +107,7 @@ function _addInstructionToOe($db, $oeId, $description) {
 
     // Prüfen ob Anweisung bereits in Master-Tabelle existiert
     $existing = $db->getOne(
-        "SELECT id, instruction_number, avg_minutes FROM instructions_lxcars
+        "SELECT id, instruction_number FROM instructions_lxcars
          WHERE description = :description",
         [':description' => $description]
     );
@@ -86,31 +116,10 @@ function _addInstructionToOe($db, $oeId, $description) {
     $plannedMinutes = 0;
 
     if ($existing) {
-        // Existiert: usage_count erhöhen, bestehende Nummer + Durchschnitt verwenden
+        // Existiert: usage_count erhöhen, bestehende Nummer; geplante Zeit =
+        // zuletzt benötigte Zeit dieser Anweisung (_plannedMinutesFor)
         $instructionNumber = $existing['instruction_number'];
-        $plannedMinutes = intval($existing['avg_minutes'] ?? 0);
-
-        // Fallback: Wenn kein Master-Durchschnitt, aus historischen actual_minutes berechnen
-        if ($plannedMinutes <= 0) {
-            $hist = $db->getOne(
-                "SELECT ROUND(AVG(actual_minutes)) AS avg_min
-                 FROM oe_instructions_lxcars
-                 WHERE description = :desc AND actual_minutes > 0",
-                [':desc' => $description]
-            );
-            $plannedMinutes = intval($hist['avg_min'] ?? 0);
-            // Master-Tabelle nachziehen
-            if ($plannedMinutes > 0) {
-                $countRow = $db->getOne(
-                    "SELECT COUNT(*) AS cnt FROM oe_instructions_lxcars WHERE description = :desc AND actual_minutes > 0",
-                    [':desc' => $description]
-                );
-                $db->execute(
-                    "UPDATE instructions_lxcars SET avg_minutes = :avg, completed_count = :cnt WHERE id = :id",
-                    [':avg' => $plannedMinutes, ':cnt' => intval($countRow['cnt']), ':id' => $existing['id']]
-                );
-            }
-        }
+        $plannedMinutes = _plannedMinutesFor($db, $description);
 
         $db->execute(
             "UPDATE instructions_lxcars SET usage_count = usage_count + 1 WHERE id = :id",
@@ -386,10 +395,21 @@ function reorderInstructions($data) {
 }
 
 /**
- * Durchsucht die Master-Tabelle für Autocomplete-Vorschläge
+ * Durchsucht die Master-Tabelle für Autocomplete-Vorschläge — klug sortiert
+ * wie die Artikelsuche (parts.php findParts)
+ *
+ * Rangstufen (match_tier): 5000 Anweisungsnummer exakt, 3000 Beschreibung
+ * beginnt mit dem Begriff, 2000 Nummer beginnt mit dem Begriff, 1000 ein Wort
+ * beginnt mit dem Begriff, 500 Begriff irgendwo enthalten, sonst 0. Dazu je
+ * getroffenem Einzelwort 100 (diktierte Sätze wie "professionellen Urlaubscheck
+ * machen" finden den Eintrag "Urlaubscheck") und die logarithmisch gewichtete
+ * Verwendungshäufigkeit (usage_count) — Gewicht wie bei der Artikelsuche aus
+ * der Firmenkonfiguration, das Frontend schickt es mit.
  *
  * @param string $data['query'] Suchbegriff (min. 2 Zeichen)
- * @testdata {"query": "Eingang"}
+ * @param int $data['limit'] Anzahl Vorschläge (Standard 15)
+ * @param number $data['usage_weight'] Gewicht Verwendungshäufigkeit (Standard 40)
+ * @testdata {"query": "Batte"}
  */
 function searchInstructions($data) {
     $db = DbhCompany::begin();
@@ -401,8 +421,7 @@ function searchInstructions($data) {
     }
 
     // Wortweise Suche: ein diktierter Satz ("professionellen Urlaubscheck ...")
-    // soll den bestehenden Einzelwort-Eintrag ("Urlaubscheck") finden. Die volle
-    // Phrase zählt am stärksten, danach die Anzahl getroffener Wörter.
+    // soll den bestehenden Einzelwort-Eintrag ("Urlaubscheck") finden.
     $stop = array_flip([
         'der','die','das','und','oder','ein','eine','einen','einem','einer','eines',
         'mit','ohne','für','von','vom','zum','zur','den','dem','des','auf','aus','bei',
@@ -413,27 +432,45 @@ function searchInstructions($data) {
         return mb_strlen($w) >= 3 && !isset($stop[mb_strtolower($w)]);
     }));
 
-    $params = [':full' => '%' . $query . '%', ':numquery' => $query . '%', ':exact' => $query];
-    $conds  = ['LOWER(description) LIKE LOWER(:full)', 'instruction_number LIKE :numquery'];
-    $scores = ['CASE WHEN LOWER(description) LIKE LOWER(:full) THEN 100 ELSE 0 END'];
+    $params = [
+        ':full'         => '%' . $query . '%',
+        ':prefix'       => $query . '%',
+        ':word_re'      => '(^|[^[:alnum:]])' . preg_quote($query),
+        ':exact'        => $query,
+        ':limit'        => max(1, min(50, (int)($data['limit'] ?? 15))),
+        ':usage_weight' => max(0, (float)($data['usage_weight'] ?? 40)),
+    ];
+    $conds = ['description ILIKE :full', 'instruction_number LIKE :prefix'];
+    $wordHits = ['0'];
     foreach ($words as $i => $w) {
         $p = ':w' . $i;
         $params[$p] = '%' . $w . '%';
-        $conds[]  = "LOWER(description) LIKE LOWER($p)";
-        $scores[] = "CASE WHEN LOWER(description) LIKE LOWER($p) THEN 1 ELSE 0 END";
+        $conds[]    = "description ILIKE $p";
+        $wordHits[] = "CASE WHEN description ILIKE $p THEN 1 ELSE 0 END";
     }
-    $where = implode(' OR ', $conds);
-    $score = implode(' + ', $scores);
+    $where    = implode(' OR ', $conds);
+    $wordHits = implode(' + ', $wordHits);
 
     $rows = $db->getAll(
-        "SELECT id, description, instruction_number, ($score) AS match_score
-         FROM instructions_lxcars
-         WHERE $where
-         ORDER BY
-             CASE WHEN instruction_number = :exact THEN 0 ELSE 1 END,
-             match_score DESC,
-             usage_count DESC, description
-         LIMIT 15",
+        "WITH cand AS (
+             SELECT id, description, instruction_number, usage_count,
+                    CASE
+                        WHEN instruction_number = :exact       THEN 5000
+                        WHEN description ILIKE :prefix         THEN 3000
+                        WHEN instruction_number LIKE :prefix   THEN 2000
+                        WHEN description ~* :word_re           THEN 1000
+                        WHEN description ILIKE :full           THEN 500
+                        ELSE 0
+                    END AS match_tier,
+                    ($wordHits) AS word_hits
+               FROM instructions_lxcars
+              WHERE $where
+         )
+         SELECT id, description, instruction_number, usage_count, match_tier,
+                round(match_tier + word_hits * 100 + :usage_weight::numeric * ln(1 + usage_count)) AS score
+           FROM cand
+          ORDER BY score DESC, description
+          LIMIT :limit::int",
         $params
     );
 
@@ -466,19 +503,20 @@ function replaceInstruction($data) {
     try {
         // Master-Anweisung anhand der Beschreibung ermitteln
         $master = $db->getOne(
-            "SELECT id, instruction_number, avg_minutes FROM instructions_lxcars
+            "SELECT id, instruction_number FROM instructions_lxcars
              WHERE description = :description",
             [':description' => $description]
         );
 
         if ($master) {
-            $plannedMinutes = intval($master['avg_minutes'] ?? 0);
+            // Geplante Zeit = zuletzt benötigte Zeit dieser Anweisung (wie beim Anlegen)
+            $plannedMinutes = _plannedMinutesFor($db, $description);
             // usage_count der Master-Anweisung erhoehen (wie beim Anlegen)
             $db->execute(
                 "UPDATE instructions_lxcars SET usage_count = usage_count + 1 WHERE id = :id",
                 [':id' => $master['id']]
             );
-            // Geplante Zeit nur uebernehmen, wenn im Master hinterlegt — sonst
+            // Geplante Zeit nur uebernehmen, wenn es eine gibt — sonst
             // bereits erfasste Planzeit der Position nicht ueberschreiben.
             if ($plannedMinutes > 0) {
                 $db->execute(

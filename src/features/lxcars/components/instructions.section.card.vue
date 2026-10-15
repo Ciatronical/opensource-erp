@@ -61,6 +61,9 @@
                             <th style="width: 52px; text-align: center">
                                 <v-icon size="small" color="grey" :title="t('FakturaView.faktura.instructions.timerTooltip')">mdi-timer-outline</v-icon>
                             </th>
+                            <th style="width: 36px; text-align: center">
+                                <v-icon size="small" color="grey" :title="t('FakturaView.faktura.instructions.quickFillTooltip')">mdi-lightning-bolt</v-icon>
+                            </th>
                             <th style="width: 200px">
                                 <v-autocomplete
                                     v-model="globalEmployeeId"
@@ -229,6 +232,18 @@
                                         @click="onTimerStart(instruction, index)"
                                     />
                                 </td>
+                                <!-- Schnellausfüllen: Benötigt = Geplant, Erledigt von = ich -->
+                                <td class="text-center" style="width: 36px">
+                                    <v-btn
+                                        icon="mdi-lightning-bolt-outline"
+                                        size="x-small"
+                                        variant="text"
+                                        color="primary"
+                                        :disabled="instruction.done || timerRunning(instruction.id)"
+                                        :title="t('FakturaView.faktura.instructions.quickFillTooltip')"
+                                        @click="onQuickFill(instruction)"
+                                    />
+                                </td>
                                 <!-- Erledigt von -->
                                 <td style="width: 160px">
                                     <v-autocomplete
@@ -310,6 +325,7 @@
                                     </template>
                                 </v-autocomplete>
                             </td>
+                            <td></td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -759,8 +775,16 @@ export default defineComponent({
             return group ? group.logins : null
         })
         const employeeList = computed(() => {
-            if (!lxcarsGroupLogins.value) return allEmployees.value
-            return allEmployees.value.filter(e => lxcarsGroupLogins.value.includes(e.login))
+            const list = !lxcarsGroupLogins.value
+                ? allEmployees.value
+                : allEmployees.value.filter(e => lxcarsGroupLogins.value.includes(e.login))
+            // Angemeldeter Mitarbeiter immer dabei — Schnellausfüllen trägt ihn ein,
+            // sonst stünde nur seine Nummer im Feld
+            const me = oserp.session?.logged_in_employee
+            if (me?.id && !list.some(e => e.id === me.id)) {
+                return [...list, allEmployees.value.find(e => e.id === me.id) || { id: me.id, name: me.name, login: me.login }]
+            }
+            return list
         })
 
         // Duration helpers
@@ -1349,6 +1373,41 @@ export default defineComponent({
             emit('jump-to-positions')
         }
 
+        /**
+         * Schnellausfüllen: benötigte Zeit = geplante Zeit, Erledigt von = der
+         * angemeldete Mitarbeiter — ein Klick, ein Speichern. Das Abhaken bleibt
+         * bewusst beim Benutzer (Häkchen daneben).
+         */
+        async function onQuickFill(instruction) {
+            if (instruction.done || timerRunning(instruction.id)) return
+            const employee = oserp.session?.logged_in_employee
+            if (!employee?.id) {
+                toast.warning(t('FakturaView.faktura.instructions.quickFillNoEmployee'))
+                return
+            }
+            const minutes = parseInt(instruction.planned_minutes) || 0
+            if (minutes <= 0) {
+                toast.warning(t('FakturaView.faktura.instructions.quickFillNoPlanned'))
+                return
+            }
+            const prev = { actual: instruction.actual_minutes, employee: instruction.employee_id }
+            instruction.actual_minutes = minutes
+            instruction._actualDisplay = formatDuration(minutes)
+            instruction._prevActual = minutes
+            instruction.employee_id = employee.id
+            suppressSSEReloadUntil = Date.now() + 2000
+            try {
+                await carsStore.updateInstruction(instruction.id, { actual_minutes: minutes, employee_id: employee.id })
+            } catch (e) {
+                instruction.actual_minutes = prev.actual
+                instruction._actualDisplay = formatDuration(prev.actual || 0)
+                instruction._prevActual = prev.actual || 0
+                instruction.employee_id = prev.employee
+                console.error('Error quick-filling instruction:', e)
+                toast.error(t('FakturaView.faktura.instructions.quickFillError'))
+            }
+        }
+
         async function onFieldUpdate(instruction, field, value) {
             try {
                 await carsStore.updateInstruction(instruction.id, { [field]: value })
@@ -1858,6 +1917,7 @@ export default defineComponent({
             onActualBlur,
             onActualNext,
             onFieldUpdate,
+            onQuickFill,
             globalEmployeeId,
             onGlobalEmployeeChange,
             descriptionRefs,

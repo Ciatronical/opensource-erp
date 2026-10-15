@@ -1000,7 +1000,7 @@
         "emailMaxSize": {
             "button": "Detectar límite desde el servidor",
             "hint": "Consulta al servidor SMTP su tamaño máximo por mensaje y tiene en cuenta el límite PHP post_max_size. No olvide guardar después.",
-            "result": "{mb} MB registrados como límite",
+            "result": "{mb} MB registrados como límite (tamaño de archivo, ya que Base64 aumenta el mensaje en torno al 37 %)",
             "smtpLimit": "El servidor SMTP permite {size} por mensaje",
             "noSmtpLimit": "El servidor SMTP no anuncia un tamaño máximo",
             "phpLimit": "PHP acepta {size} por solicitud (post_max_size)",

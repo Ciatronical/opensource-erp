@@ -38,6 +38,23 @@ Jeder Beleg enthält Positionen mit:
 - Rabatt
 - Steuersatz
 
+### Artikelsuche in den Positionen *(Schalter)*
+
+Beim Tippen in eine Positionszeile erscheint die Vorschlagsliste klug sortiert — die Datenbank liefert sie in einer einzigen Abfrage fertig gereiht:
+
+1. **Beschreibung beginnt mit dem Begriff** („Batte" → „Batterie 12V 74 Ah")
+2. **Artikelnummer beginnt mit dem Begriff**
+3. **Ein Wort der Beschreibung beginnt mit dem Begriff** („Montage Batterie")
+4. **Begriff irgendwo enthalten** („Starterbatterie")
+
+Innerhalb jeder Stufe stehen die **häufig verwendeten Artikel oben**; Verwendungen der letzten zwölf Monate zählen zusätzlich. Je Artikelart (Ware, Dienstleistung) sind immer mindestens drei Treffer dabei. Die Liste zeigt wie gewohnt Beschreibung und Artikelnummer, dezent rechts den Verwendungszähler, eine gestrichelte Linie trennt die Stufen.
+
+Dieselbe Rangfolge gilt für die **Arbeitsanweisungen** im Werkstattauftrag *(LxCars)*: Anweisungsnummer exakt, Beschreibung beginnt mit, Nummer beginnt mit, Wortanfang, enthalten — darin nach Verwendungshäufigkeit mit demselben Gewicht; diktierte Sätze finden weiterhin über Einzelwörter.
+
+Die Häufigkeit kommt aus `parts_usage_oserp` (Verwendungen je Artikel und Belegmonat), die Trigger auf `orderitems` und `invoice` in Echtzeit pflegen — die Suche bleibt dadurch auch bei großen Artikelstämmen im Millisekundenbereich.
+
+**Firmenkonfiguration → Grunddaten → Artikelsuche in Belegen:** Anzahl Vorschläge, Gewicht Verwendungshäufigkeit, Gewicht „zuletzt verwendet", Zeitraum „zuletzt". Eine **Probesuche** zeigt die Wirkung der eingetragenen Gewichte sofort, noch vor dem Speichern; „Neu aufbauen" zählt die Verwendungsstatistik aus den Bestandsdaten neu.
+
 ## Drucken
 
 Belege können als PDF gedruckt werden. Die Druckvorlagen sind konfigurierbar unter **Einstellungen > Druckvorlagen**.

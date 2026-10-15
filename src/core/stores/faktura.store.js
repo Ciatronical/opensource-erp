@@ -4,6 +4,8 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
 import { ApiError } from '@/core/utils/error.js';
+import { oserpStore } from './oserp.store.js';
+import { partsSearchWeights } from '@/core/utils/partsSearch.js';
 
 export const fakturaStore = defineStore('fakturaStore', () => {
     const data = ref(false);
@@ -31,17 +33,22 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     }
 
     /**
-     * Lädt Artikel/Parts für Autocomplete
+     * Artikel für die Positionssuche laden — die Sortierung macht die Datenbank
+     * (Rangstufe nach Treffer-Art, darin Verwendungshäufigkeit, parts.php
+     * findParts). Die Gewichte stehen in der Firmenkonfiguration und liegen im
+     * Store; sie gehen mit, damit das Backend nichts nachlädt.
      *
      * @param {string} term - Suchbegriff
      * @param {number} taxzone - Steuerzone ID
      * @return {Promise<Array>}
      */
     async function fetchParts(term, taxzone) {
+        const oserp = oserpStore();
         const response = await axios.post('/api/parts/', {
             action: 'findParts',
             term: term,
-            taxzone: taxzone
+            taxzone: taxzone,
+            ...partsSearchWeights(key => oserp.getClientDefaultValue(key, null))
         });
 
         if (response.data.success) {

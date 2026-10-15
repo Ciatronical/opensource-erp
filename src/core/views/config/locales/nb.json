@@ -1000,7 +1000,7 @@
         "emailMaxSize": {
             "button": "Hent grense fra e-postserveren",
             "hint": "Spør SMTP-serveren om maksimal meldingsstørrelse og tar hensyn til PHP-grensen post_max_size. Husk å lagre etterpå.",
-            "result": "{mb} MB satt som grense",
+            "result": "{mb} MB satt som grense (filstørrelse, siden Base64 gjør meldingen omtrent 37 % større)",
             "smtpLimit": "SMTP-serveren tillater {size} per melding",
             "noSmtpLimit": "SMTP-serveren oppgir ingen maksimal størrelse",
             "phpLimit": "PHP godtar {size} per forespørsel (post_max_size)",

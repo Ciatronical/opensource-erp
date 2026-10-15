@@ -1000,7 +1000,7 @@
         "emailMaxSize": {
             "button": "Zjistit limit od poštovního serveru",
             "hint": "Zeptá se SMTP serveru na maximální velikost zprávy a zohlední limit PHP post_max_size. Poté nezapomeňte uložit.",
-            "result": "Limit nastaven na {mb} MB",
+            "result": "Limit nastaven na {mb} MB (velikost souborů, protože Base64 zvětší zprávu asi o 37 %)",
             "smtpLimit": "SMTP server povoluje {size} na zprávu",
             "noSmtpLimit": "SMTP server neuvádí maximální velikost",
             "phpLimit": "PHP přijímá {size} na požadavek (post_max_size)",

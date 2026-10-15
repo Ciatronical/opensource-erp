@@ -1000,7 +1000,7 @@
         "emailMaxSize": {
             "button": "Nustatyti ribą iš pašto serverio",
             "hint": "Klausia SMTP serverio didžiausio laiško dydžio ir atsižvelgia į PHP ribą post_max_size. Po to nepamirškite išsaugoti.",
-            "result": "Riba nustatyta: {mb} MB",
+            "result": "Riba nustatyta: {mb} MB (failų dydis, nes Base64 laišką padidina apie 37 %)",
             "smtpLimit": "SMTP serveris leidžia {size} vienam laiškui",
             "noSmtpLimit": "SMTP serveris nenurodo didžiausio dydžio",
             "phpLimit": "PHP priima {size} vienai užklausai (post_max_size)",

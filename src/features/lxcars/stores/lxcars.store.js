@@ -5,6 +5,8 @@ import { ref } from 'vue';
 import axios from 'axios';
 import { ApiError } from '@/core/utils/error.js';
 import { aiModelStore } from '@/core/stores/ai-model.store.js';
+import { oserpStore } from '@/core/stores/oserp.store.js';
+import { partsSearchWeights } from '@/core/utils/partsSearch.js';
 
 export const lxcarsStore = defineStore('lxcarsStore', () => {
     const data = ref(false);
@@ -494,10 +496,17 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         return response.data;
     }
 
+    /**
+     * Master-Anweisungen suchen — sortiert wie die Artikelsuche (Rangstufe,
+     * dann Verwendungshäufigkeit); Gewicht aus der Firmenkonfiguration geht mit.
+     */
     async function searchInstructions(query) {
+        const oserp = oserpStore();
+        const weights = partsSearchWeights(key => oserp.getClientDefaultValue(key, null));
         const response = await axios.post('/api/lxcars/', {
             action: 'searchInstructions',
-            query: query
+            query: query,
+            usage_weight: weights.usage_weight
         });
         if (!response.data.success) {
             throw new ApiError('ApiError', response.data.text, 'Error searching instructions: ' + response.data.text);

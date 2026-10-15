@@ -3841,3 +3841,106 @@ WHERE l.reference IS NOT NULL
 
 DELETE FROM payment_settlements s
 WHERE NOT EXISTS (SELECT 1 FROM payment_settlement_lines l WHERE l.settlement_id = s.id);
+
+-- ═══════════════════════════════════════════════════════════════
+-- ARTIKELSUCHE: VERWENDUNGSHÄUFIGKEIT JE ARTIKEL UND MONAT
+--
+-- Die Positionssuche in der Faktura (parts.php findParts) sortiert Treffer
+-- nach Rangstufe (Beschreibung beginnt mit dem Begriff > Artikelnummer >
+-- Wortanfang > irgendwo enthalten) und darin nach Verwendungshäufigkeit.
+-- Die Verwendungen bei jeder Eingabe aus orderitems/invoice zu zählen wäre
+-- bei großen Artikelstämmen zu teuer — deshalb hält diese Tabelle je Artikel
+-- und Belegmonat einen Zähler, den Trigger auf orderitems und invoice in
+-- Echtzeit pflegen. Die Monatsauflösung erlaubt eine Gewichtung „zuletzt
+-- verwendet" (parts_search_recent_months) ohne Verfall der Zähler.
+-- parts_usage_rebuild() baut die Tabelle aus den Bestandsdaten neu auf
+-- (Erstbefüllung beim Upstall, Knopf in der Firmenkonfiguration).
+-- Gewichte: defaults_oserp parts_search_limit / parts_search_usage_weight /
+-- parts_search_recent_weight / parts_search_recent_months.
+-- ═══════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS parts_usage_oserp (
+    parts_id INTEGER NOT NULL,
+    month DATE NOT NULL,               -- erster Tag des Belegmonats (oe/ar/ap.transdate)
+    uses INTEGER NOT NULL DEFAULT 0,   -- Anzahl Positionen in diesem Monat
+    PRIMARY KEY (parts_id, month)
+);
+
+CREATE OR REPLACE FUNCTION parts_usage_track() RETURNS trigger AS $$
+DECLARE
+    v_trans_id INTEGER := CASE WHEN TG_OP = 'DELETE' THEN OLD.trans_id ELSE NEW.trans_id END;
+    v_old_part INTEGER := CASE WHEN TG_OP = 'INSERT' THEN NULL ELSE OLD.parts_id END;
+    v_new_part INTEGER := CASE WHEN TG_OP = 'DELETE' THEN NULL ELSE NEW.parts_id END;
+    v_month    DATE;
+BEGIN
+    -- Nur ein Artikelwechsel oder Anlegen/Löschen ändert die Zähler
+    IF v_old_part IS NOT DISTINCT FROM v_new_part THEN
+        RETURN NULL;
+    END IF;
+
+    IF TG_TABLE_NAME = 'orderitems' THEN
+        SELECT date_trunc('month', transdate)::date INTO v_month FROM oe WHERE id = v_trans_id;
+    ELSE
+        SELECT date_trunc('month', transdate)::date INTO v_month FROM ar WHERE id = v_trans_id;
+        IF v_month IS NULL THEN
+            SELECT date_trunc('month', transdate)::date INTO v_month FROM ap WHERE id = v_trans_id;
+        END IF;
+    END IF;
+    v_month := COALESCE(v_month, date_trunc('month', current_date)::date);
+
+    IF v_old_part IS NOT NULL THEN
+        UPDATE parts_usage_oserp SET uses = GREATEST(uses - 1, 0)
+         WHERE parts_id = v_old_part AND month = v_month;
+    END IF;
+    IF v_new_part IS NOT NULL THEN
+        INSERT INTO parts_usage_oserp (parts_id, month, uses) VALUES (v_new_part, v_month, 1)
+        ON CONFLICT (parts_id, month) DO UPDATE SET uses = parts_usage_oserp.uses + 1;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ DECLARE t TEXT; BEGIN
+    FOREACH t IN ARRAY ARRAY['orderitems', 'invoice'] LOOP
+        IF to_regclass(t) IS NOT NULL AND NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = t || '_parts_usage') THEN
+            EXECUTE format('CREATE TRIGGER %I AFTER INSERT OR DELETE OR UPDATE OF parts_id ON %I FOR EACH ROW EXECUTE FUNCTION parts_usage_track()', t || '_parts_usage', t);
+        END IF;
+    END LOOP;
+END $$;
+
+-- Zähler komplett aus orderitems (Angebote, Aufträge, Lieferscheine) und
+-- invoice (Verkaufs- und Einkaufsrechnungen) neu aufbauen. Liefert die
+-- Kennzahlen danach — als Funktion, damit sie den Neuaufbau schon sehen.
+DROP FUNCTION IF EXISTS parts_usage_rebuild();
+CREATE OR REPLACE FUNCTION parts_usage_rebuild()
+RETURNS TABLE (rows_built INTEGER, parts_with_usage INTEGER, total_uses BIGINT) AS $$
+BEGIN
+    DELETE FROM parts_usage_oserp;
+    INSERT INTO parts_usage_oserp (parts_id, month, uses)
+    SELECT u.parts_id, u.month, count(*)
+      FROM (
+          SELECT oi.parts_id, date_trunc('month', COALESCE(oe.transdate, current_date))::date AS month
+            FROM orderitems oi
+            LEFT JOIN oe ON oe.id = oi.trans_id
+           WHERE oi.parts_id IS NOT NULL
+          UNION ALL
+          SELECT i.parts_id, date_trunc('month', COALESCE(ar.transdate, ap.transdate, current_date))::date
+            FROM invoice i
+            LEFT JOIN ar ON ar.id = i.trans_id
+            LEFT JOIN ap ON ap.id = i.trans_id
+           WHERE i.parts_id IS NOT NULL
+      ) u
+     GROUP BY u.parts_id, u.month;
+    GET DIAGNOSTICS rows_built = ROW_COUNT;
+    SELECT count(DISTINCT pu.parts_id), COALESCE(sum(pu.uses), 0)
+      INTO parts_with_usage, total_uses
+      FROM parts_usage_oserp pu;
+    RETURN NEXT;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Erstbefüllung: nur wenn die Tabelle noch leer ist (danach pflegen die Trigger)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM parts_usage_oserp) THEN
+        PERFORM parts_usage_rebuild();
+    END IF;
+END $$;

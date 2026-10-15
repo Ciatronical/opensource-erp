@@ -431,6 +431,7 @@ Eine einheitliche Oberfläche für alle Belege:
 ### 5.2 Arbeiten am Beleg
 
 - **Live-Suche** nach Kunden/Lieferanten und Artikeln während der Eingabe
+- **Klug sortierte Artikelvorschläge**: erst Beschreibung beginnt mit dem Begriff, dann Artikelnummer, Wortanfang, enthalten — darin nach Verwendungshäufigkeit (Echtzeit-Zähler je Artikel und Monat per Trigger), Verwendungszähler in der Liste, Gewichte konfigurierbar mit Probesuche *(Schalter)*
 - Positionen anlegen, ändern, löschen, **Bulk-Update mehrerer Positionen in einem Query**
 - **Artikel einer bestehenden Position austauschen**
 - Automatische Positionsnummerierung
@@ -1017,11 +1018,12 @@ Werkstattaufträge sind normale Belege mit LxCars-Erweiterungen (`oe_ext` / `ar_
 
 - Anweisungen je Auftrag anlegen, ändern, löschen, alle löschen
 - **Reihenfolge per Drag & Drop**
-- **Master-Anweisungsliste** als Stammdaten: Autocomplete-Suche, Verwaltungsdialog zum Anlegen/Ändern/Löschen, Prüfung auf doppelte Anweisungsnummern
+- **Master-Anweisungsliste** als Stammdaten: Autocomplete-Suche (sortiert wie die Artikelsuche: beginnt mit > Nummer > Wortanfang > enthält, darin nach Verwendungshäufigkeit), Verwaltungsdialog zum Anlegen/Ändern/Löschen, Prüfung auf doppelte Anweisungsnummern
 - Bestehende Auftragsanweisung durch eine Master-Anweisung **ersetzen**
 - **Nummernkreis** mit konfigurierbarem Präfix und Zähler
-- **Geplante Minuten** je Anweisung
+- **Geplante Minuten** je Anweisung, vorbelegt mit der zuletzt eingetragenen geplanten Zeit derselben Anweisung
 - **Mitarbeiterzuweisung** einzeln oder für alle Anweisungen eines Auftrags
+- **Schnellausfüllen** je Anweisung: benötigte Zeit = geplante Zeit, Erledigt von = angemeldeter Mitarbeiter
 - Status offen/erledigt
 - **Timer**: Start/Stopp je Anweisung, Nettoarbeitszeit wird addiert; der aktuell laufende Timer eines Mitarbeiters ist auftragsübergreifend abrufbar
 

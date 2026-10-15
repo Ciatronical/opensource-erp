@@ -1000,7 +1000,7 @@
         "emailMaxSize": {
             "button": "Detectează limita de la server",
             "hint": "Întreabă serverul SMTP de dimensiunea maximă per mesaj și ține cont de limita PHP post_max_size. Nu uitați să salvați apoi.",
-            "result": "{mb} MB setați ca limită",
+            "result": "{mb} MB setați ca limită (dimensiunea fișierelor, deoarece Base64 mărește mesajul cu circa 37 %)",
             "smtpLimit": "Serverul SMTP permite {size} per mesaj",
             "noSmtpLimit": "Serverul SMTP nu anunță o dimensiune maximă",
             "phpLimit": "PHP acceptă {size} per cerere (post_max_size)",

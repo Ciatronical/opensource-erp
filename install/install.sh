@@ -100,7 +100,7 @@ ALL_STEPS=(packages php_fpm node_build database config permissions apache \
 
 declare -A STEP_DESC=(
   [packages]="Systempakete via apt (Apache, PostgreSQL, PHP, Node, LaTeX, ffmpeg, borg, asterisk ...)"
-  [php_fpm]="PHP-FPM-Socket erkennen, FPM aktivieren, PHP-Grenzen (64M) setzen, Apache-Defines schreiben"
+  [php_fpm]="PHP-FPM-Socket erkennen, FPM aktivieren, PHP-Grenzen (128M) setzen, Apache-Defines schreiben"
   [node_build]="npm install + Vue-Build + SSE-Deps + Composer"
   [database]="PostgreSQL-Rolle mit Passwort vorbereiten (Setup-Assistent bzw. unbeaufsichtigtes Setup)"
   [config]="settings.ini: vorhandene respektieren, sonst per Setup-Assistent/CLI anlegen"
@@ -289,16 +289,19 @@ setup_php_fpm() {
 
 # PHP-Grenzen für Datei-Anhänge: E-Mail-Anhänge, Belegfotos und Importe kommen
 # als Base64 im JSON-Request an. Die Debian-Vorgabe post_max_size = 8M würde
-# größere Anfragen kommentarlos verwerfen. Eigene Datei in conf.d, damit
-# Paket-Updates der php.ini sie nicht überschreiben.
+# größere Anfragen kommentarlos verwerfen. memory_limit muss mitwachsen: der
+# Request liegt als Rohtext, als json_decode-Ergebnis und beim E-Mail-Versand
+# noch einmal als MIME-Nachricht im Speicher (gut das Dreifache der Anfrage).
+# Eigene Datei in conf.d, damit Paket-Updates der php.ini sie nicht überschreiben.
 write_php_limits() {
     local ver="$1" ini="/etc/php/$ver/fpm/conf.d/90-oserp.ini"
     sudo tee "$ini" >/dev/null <<EOF
 ; OSERP: Obergrenze für Anfragen mit Datei-Anhängen (install.sh, Schritt php_fpm)
-post_max_size = 64M
-upload_max_filesize = 64M
+post_max_size = 128M
+upload_max_filesize = 128M
+memory_limit = 512M
 EOF
-    info "PHP-Grenzen geschrieben: $ini (post_max_size/upload_max_filesize 64M)"
+    info "PHP-Grenzen geschrieben: $ini (post_max_size/upload_max_filesize 128M, memory_limit 512M)"
 }
 
 # Apache-Defines (versions-/pfadunabhängig) — einzige Quelle von Socket, Pfad

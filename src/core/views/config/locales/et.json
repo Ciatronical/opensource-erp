@@ -1000,7 +1000,7 @@
         "emailMaxSize": {
             "button": "Tuvasta piir meiliserverist",
             "hint": "Küsib SMTP-serverilt sõnumi suurimat lubatud mahtu ja arvestab PHP piiri post_max_size. Ära unusta pärast salvestada.",
-            "result": "Piiriks määratud {mb} MB",
+            "result": "Piiriks määratud {mb} MB (failimaht, sest Base64 suurendab kirja umbes 37 %)",
             "smtpLimit": "SMTP-server lubab {size} sõnumi kohta",
             "noSmtpLimit": "SMTP-server ei teata suurimat mahtu",
             "phpLimit": "PHP võtab vastu {size} päringu kohta (post_max_size)",
