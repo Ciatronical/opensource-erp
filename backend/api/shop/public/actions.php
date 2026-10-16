@@ -146,7 +146,7 @@ function getCart($db, string $uuid, array $daten) {
     // Seite /warenkorb/ wird auch von Besuchern geoeffnet, die nichts
     // hineingelegt haben.
     if (empty($context['cart_uuid'])) {
-        resultInfo(true, '', ['positions' => [], 'totalSum' => 0.0, 'nettoTotalSum' => 0.0]);
+        resultInfo(true, '', ['positions' => [], 'totalSum' => 0.0, 'nettoTotalSum' => 0.0, 'customer' => null !== $customerId]);
         return;
     }
 
@@ -160,7 +160,9 @@ function getCart($db, string $uuid, array $daten) {
         ? shopShippingCountry($db, $customerId, shopDeliveryAddress($adressen['shipping']))
         : null;
 
-    resultInfo(true, '', cartRead($db, $context['cart_uuid'], $customerId, true, $land));
+    // customer: Kunde (Konto oder Gast) in der Sitzung — nur dann zeigt der
+    // Warenkorb den PayPal-Knopf; ohne Kunden führt der Weg über die Kasse
+    resultInfo(true, '', ['customer' => null !== $customerId] + cartRead($db, $context['cart_uuid'], $customerId, true, $land));
 }
 
 /** Legt einen Artikel in den Warenkorb */
@@ -528,8 +530,21 @@ function shopSendPdf($db, int $arId) {
 // ZAHLUNG
 // ============================================================================
 
-/** Beginnt die Bezahlung und schickt den Kunden zu PayPal */
+/**
+ * Beginnt die Bezahlung und schickt den Kunden zu PayPal
+ *
+ * Der Aufrufer ist der Browser des Kunden (Link im Warenkorb oder in der
+ * Kasse). Ohne Kunden in der Sitzung — Besucher ohne Konto und ohne
+ * Gastangaben — geht es zur Kasse (checkout), wo Anmeldung und Gastformular
+ * stehen; eine JSON-Fehlermeldung brächte den Kunden nicht weiter.
+ */
 function beginPayment($db, string $uuid, array $daten) {
+    $context = shopContextRequire($db, $uuid);
+    if (empty($context['customer_id'])) {
+        shopRedirect((string)shopVar($daten, 'checkout', '') ?: (string)shopVar($daten, 'canceled', ''));
+        return;
+    }
+
     // Lieferadresse (dev/shop-versand.md, Schritt 6). Aus der Kasse: shipto =
     // gespeicherte Adresse, 0 = Rechnungsadresse; eine neue Adresse legt die
     // Kasse vorher an (newDeliveryAddress) und schickt deren Id. Vom Knopf im

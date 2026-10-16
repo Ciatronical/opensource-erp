@@ -62,5 +62,8 @@ export function normalizeCart(data) {
     currency: data.currency || '',
     positions: (data.positions || []).map(cartPosition),
     totals: cartTotals(data),
+    // Kunde (Konto oder Gast) in der Sitzung — Voraussetzung fuer PayPal
+    // direkt aus dem Warenkorb
+    customer: data.customer === true,
   };
 }

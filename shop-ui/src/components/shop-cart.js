@@ -511,12 +511,16 @@ export class ShopCart extends ShopElement {
   #renderActions() {
     if (this.#isCheckout) return nothing;
     // Ohne passende Versandart kein PayPal von hier — in der Kasse laesst sich
-    // die Lieferadresse noch aendern, deshalb bleibt der Weg dorthin offen
+    // die Lieferadresse noch aendern, deshalb bleibt der Weg dorthin offen.
+    // Ohne Kunden in der Sitzung (weder Konto noch Gastangaben) ebenfalls
+    // nicht: das Backend wuesste nicht, wer bezahlt — erst die Kasse mit
+    // Anmeldung oder Gastformular
     const versandOk = this._cart.totals.shippingStatus === 'ok';
+    const kundeDa = this._cart.customer === true;
     return html`
       <div class="actions">
         <a class=${this.cls('buttonPrimary')} href=${this.checkoutUrl}>${t('cart.checkout')}</a>
-        ${versandOk
+        ${versandOk && kundeDa
           ? html`<a class="paypal" href=${this.#paypalUrl()} aria-label=${t('cart.paypal')}>
               <img src=${this.paypalImage} alt=${t('cart.paypal')}>
             </a>`
@@ -525,12 +529,17 @@ export class ShopCart extends ShopElement {
     `;
   }
 
-  /** GET-Einstieg des Backends; die Rueckkehr-Seiten kommen vom Shortcode. */
+  /**
+   * GET-Einstieg des Backends; die Rueckkehr-Seiten kommen vom Shortcode.
+   * checkout: wohin das Backend schickt, wenn doch kein Kunde in der Sitzung
+   * ist (Sitzung inzwischen abgelaufen).
+   */
   #paypalUrl() {
     const query = new URLSearchParams({
       action: 'beginPayment',
       bill: this.billingPage,
       canceled: this.canceledPage,
+      checkout: this.checkoutUrl,
     });
     return `${apiUrl()}?${query}`;
   }

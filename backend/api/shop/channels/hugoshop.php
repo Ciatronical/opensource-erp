@@ -72,6 +72,51 @@ function shopChannelHugoshopPages($db, int $kanal): array {
 }
 
 /**
+ * Entfernt Produktseiten, die zu keinem angebotenen Artikel mehr gehören
+ *
+ * Eine Seite unter einem früheren Namen bleibt sonst für immer in der
+ * Bereitstellung: Den alten Namen merkt sich nur der Trigger beim Umbenennen
+ * (shop_queue_page_rewrite), und der legt bei ausgeschaltetem automatischem
+ * Veröffentlichen keinen Auftrag an. „Alle veröffentlichen“ schreibt nur die
+ * aktuellen Namen. Bei jedem Abgleich ginge die alte Seite wieder an HugoCMS,
+ * und ein Löschen dort hielte nicht.
+ *
+ * Sicher, weil in der Bereitstellung nur OSERP schreibt (wie
+ * shopStagingFollowGrants): Jede Markdown-Datei im Verzeichnis der
+ * Produktseiten ist eine Produktseite von OSERP. Dateien mit „_“ vorn
+ * (_index.md) bleiben trotzdem unberührt. Gelöschte Seiten entfernt HugoCMS
+ * von sich aus, weil sie in seiner vorigen Lieferung standen.
+ *
+ * Seiten im Entwurf (abgeschalteter HugoShop, keine passende Versandart)
+ * gehören zu angebotenen Artikeln und bleiben.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @return array Dateinamen der entfernten Seiten
+ * @throws ApiError SHOP_HUGOCMS_GRANTS, SHOP_PATH_* (Verzeichnis nicht bestimmbar)
+ */
+function shopChannelHugoshopRemoveOrphans($db, int $kanal): array {
+    $verzeichnis = shopContentDir($db, $kanal);
+    if (!is_dir($verzeichnis)) {
+        return [];
+    }
+    $gueltig = array_flip(shopChannelHugoshopPages($db, $kanal));
+
+    $entfernt = [];
+    foreach (glob($verzeichnis.'/*.md') ?: [] as $datei) {
+        $name = basename($datei);
+        if ('_' === $name[0] || isset($gueltig[$name]) || !is_file($datei)) {
+            continue;
+        }
+        if (unlink($datei)) {
+            $entfernt[] = $name;
+        }
+    }
+    sort($entfernt);
+    return $entfernt;
+}
+
+/**
  * Reagiert auf Ein- und Ausschalten des HugoShops (V16)
  *
  * Aus: je nach channel_off_pages des Kanals die Seiten als Entwurf stehen lassen

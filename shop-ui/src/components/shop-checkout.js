@@ -303,7 +303,24 @@ export class ShopCheckout extends ShopElement {
     if (this._busy || this.#shippingBlocked) return;
     this._error = '';
     let shipto = this._selectedId || '0';
-    if (this._account && this._account.registered && this._mode === 'new') {
+
+    // Gast: erst den Kundendatensatz aus dem Gastformular anlegen, wie beim
+    // Kaufen — ohne Kunden in der Sitzung kann das Backend keine Zahlung
+    // beginnen (CUSTOMER_NOT_FOUND). Eine abweichende Lieferadresse legt
+    // registerAccount gleich mit an und meldet ihre Id.
+    if (this._account && !this._account.registered) {
+      const register = this.$('guest');
+      if (!register || !register.validate()) return;
+      this._busy = true;
+      try {
+        const created = await register.register();
+        shipto = String((created && created.shipto_id) || '0');
+      } catch (error) {
+        this._busy = false;
+        this._error = t(error.code || 'SHOP_API_ERROR');
+        return;
+      }
+    } else if (this._account && this._account.registered && this._mode === 'new') {
       const missing = this.#missing();
       if (missing) {
         this._error = t('register.required') + missing;
@@ -408,6 +425,8 @@ export class ShopCheckout extends ShopElement {
       action: 'beginPayment',
       bill: this.billingPage,
       canceled: this.canceledPage,
+      // ohne Kunden in der Sitzung (abgelaufen) zurueck hierher
+      checkout: shopPath('checkout', '#focus'),
       shipto,
     });
     return `${apiUrl()}?${query}`;

@@ -1866,6 +1866,23 @@ function shopPublishSite($db, int $kanal, array $zahlen, bool $bauen, callable $
         $fehler('Paketabgleich fehlgeschlagen: '.$e->getMessage());
     }
 
+    // Verwaiste Produktseiten entfernen (shopChannelHugoshopRemoveOrphans):
+    // vor allem Seiten unter einem früheren Namen, die kein Auftrag mehr
+    // kennt. Zählt wie ein Entfernen — die Übersicht wird neu geschrieben,
+    // und die Übertragung an HugoCMS nimmt die Löschung mit.
+    try {
+        $verwaist = shopChannelHugoshopRemoveOrphans($db, $kanal);
+        if ($verwaist) {
+            $zahlen['entfernt'] += count($verwaist);
+            $bilanz['entfernt'] = ($bilanz['entfernt'] ?? 0) + count($verwaist);
+            $sagen(sprintf('Verwaiste Produktseiten entfernt (%d): %s', count($verwaist),
+                implode(', ', array_slice($verwaist, 0, SHOP_MELDUNGEN_JE_AUFTRAG))
+                .(count($verwaist) > SHOP_MELDUNGEN_JE_AUFTRAG ? ' …' : '')));
+        }
+    } catch (Throwable $e) {
+        $fehler('Verwaiste Produktseiten nicht geprüft: '.$e->getMessage());
+    }
+
     // Die Kategorieübersicht, wenn sich Seiten geändert haben — oder wenn
     // ihre Datei fehlt. Das zweite heilt einen Lauf, in dem der Schritt
     // ausgefallen ist: sonst bliebe die Übersicht weg, bis zufällig wieder
