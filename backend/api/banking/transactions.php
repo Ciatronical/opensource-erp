@@ -309,11 +309,29 @@ HAY;
 
     $transactions = json_decode($result['transactions'] ?? '[]', true) ?: [];
 
+    // Kontostand zum Ende des gefilterten Zeitraums (Anfangssaldo + alle Umsätze
+    // bis dahin) — damit die Kachel beim Blättern durch die Monate den Stand
+    // dieses Monats zeigt und nicht immer den heutigen.
+    $balance = $db->getOne(
+        "SELECT COALESCE(ba.reconciliation_starting_balance, 0)
+                + COALESCE((SELECT SUM(bt.amount) FROM bank_transactions bt
+                            WHERE bt.local_bank_account_id = ba.id
+                              AND (:bal_to::date IS NULL OR bt.transdate <= :bal_to2::date)), 0) AS balance_to,
+                (SELECT MAX(bt.transdate) FROM bank_transactions bt
+                  WHERE bt.local_bank_account_id = ba.id
+                    AND (:bal_to3::date IS NULL OR bt.transdate <= :bal_to4::date)) AS balance_date
+         FROM bank_accounts ba WHERE ba.id = :acc",
+        ['bal_to' => $toDate ?: null, 'bal_to2' => $toDate ?: null, 'bal_to3' => $toDate ?: null, 'bal_to4' => $toDate ?: null, 'acc' => $bankAccountId]
+    );
+
     resultInfo(true, '', [
         'transactions' => $transactions,
         'total' => $count['total'] ?? 0,
         'limit' => $limit,
-        'offset' => $offset
+        'offset' => $offset,
+        'balance_to'   => round(floatval($balance['balance_to'] ?? 0), 2),
+        'balance_date' => $balance['balance_date'] ?? null,
+        'to_date'      => $toDate ?: null,
     ]);
 }
 

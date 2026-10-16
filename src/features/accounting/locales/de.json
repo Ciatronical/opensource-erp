@@ -771,8 +771,10 @@
                 "payablesSub": "nächste Fälligkeit {date}",
                 "payablesNone": "nichts offen",
                 "vat": "Umsatzsteuer {period}",
-                "asOfToday": "Stand heute, letzte Buchung {date}",
-                "asOfDate": "Stand {date}"
+                "asOfToday": "Stand heute, letzter Umsatz {date}",
+                "asOfDate": "Stand {date}",
+                "bankLedger": "Buchhaltung {ledger} · {diff} nicht zugeordnet",
+                "bankLedgerOk": "Buchhaltung {ledger} · stimmt überein"
             },
             "tiles": {
                 "documents": "Belege prüfen",

@@ -84,6 +84,8 @@ Unter **Einstellungen > LxCars > Mechaniker-Modus**:
 - **Timer**: Start/Stopp-Zeitmessung pro Anweisung
 - **Ersatzteil anfordern**: Teile direkt aus dem Auftrag beim Lager/Einkauf anfordern (mit Foto-Upload)
 - **Mängel erfassen**: TÜV-Mängel mit Code und Klasse dokumentieren
+- **AAG-Online / HGS-Data**: Fahrzeug direkt aus dem Auftrag (Kopfzeile) und aus der Fahrzeugansicht an die Portale übergeben
+- **Reifenetiketten drucken**: Sommer-/Winterreifen-Etiketten auch aus der schreibgeschützten Fahrzeugansicht
 
 ### Ersatzteil-Anforderungen
 
@@ -215,3 +217,15 @@ Spezialwerkzeuge werden unter **Lager → Spezialwerkzeug** eingelagert und per 
 ## Eigener Fahrzeugscheinscanner
 
 Statt der externen API fahrzeugschein-scanner.de kann ein Dienst auf dem eigenen Server die Fahrzeugscheine auslesen (RapidOCR, nur CPU, Port 3003 lokal). Umschalter: Firmenkonfiguration → LxCars → „Eigenen Fahrzeugscheinscanner benutzen". Installation: `install/install.sh --only fsscanner`, Beschreibung in `backend/fahrzeugschein-scanner/README.md`.
+
+## Eingangsverzeichnis für Fahrzeugscheine (Dokumentenscanner)
+
+Statt den Fahrzeugschein mit dem Handy zu fotografieren und hochzuladen, legt ein Dokumentenscanner (z. B. ScanSnap iX1600, eine Taste) den Schein flach gescannt direkt auf dem Server ab — die Erkennungsrate ist dadurch deutlich höher als beim geknickten Foto.
+
+- **Verzeichnis je Mandant** mit aktiver LxCars-Erweiterung, Standard `/home/<oserp-benutzer>/Fahrzeugscheine/<db>/` (z. B. `/home/work/Fahrzeugscheine/ap_rebuild`). Das überwachte Verzeichnis steht in Firmenkonfiguration → LxCars im Feld „Überwachtes Verzeichnis“ (vorbelegt, änderbar, kopierbar); der Dienst legt es an.
+- **Sofortige Verarbeitung, kein Cron**: der Dienst `oserp-fahrzeugschein-eingang` überwacht alle Eingangsverzeichnisse per inotify. Eine neue Datei (jpg, jpeg, png, pdf) wird erkannt, sobald der Scanner sie fertig geschrieben hat, durch den konfigurierten Scanner geschickt (eigener Scanner oder fahrzeugschein-scanner.de) und erscheint sofort in der **Scanliste** — auf allen offenen Arbeitsplätzen (SSE), mit Dateiname. Von dort wird wie beim Upload Kunde und Fahrzeug angelegt; das Originalbild wandert mit ins Fahrzeug.
+- **PDF** vom Scanner wird vorab zur Bildseite gerastert (pdftoppm), damit auch hier ein Originalbild entsteht.
+- **Ablage**: erkannte Dateien wandern nach `verarbeitet/` (30 Tage aufbewahrt), nicht erkannte nach `fehler/` mit `<datei>.fehler.txt` als Begründung. Die Firmenkonfiguration zeigt Dienststatus, wartende Dateien, letzte Verarbeitung und die jüngsten Fehler.
+- **Mandanten**: der Dienst liest die Mandantenliste jede Minute neu — wird LxCars für eine Firma aktiviert, legt er ihr Verzeichnis an und überwacht es ab dann; bei Deaktivierung endet die Überwachung, das Verzeichnis bleibt.
+
+Einrichtung: `install/install.sh --only fseingang` (Unit-Vorlage `install/oserp-fahrzeugschein-eingang.service`, Dienst läuft als OSERP-Benutzer mit `php -d ffi.enable=true`, ohne FFI Verzeichnisabfrage im Sekundentakt). Die Scanner-Software speichert direkt in das Verzeichnis (etwa über eine Freigabe des Servers).

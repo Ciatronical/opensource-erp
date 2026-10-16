@@ -771,8 +771,10 @@
                 "payablesSub": "next due date {date}",
                 "payablesNone": "nothing open",
                 "vat": "VAT {period}",
-                "asOfToday": "as of today, last posting {date}",
-                "asOfDate": "as of {date}"
+                "asOfToday": "as of today, last transaction {date}",
+                "asOfDate": "as of {date}",
+                "bankLedger": "Ledger {ledger} · {diff} not assigned",
+                "bankLedgerOk": "Ledger {ledger} · matches"
             },
             "tiles": {
                 "documents": "Check documents",

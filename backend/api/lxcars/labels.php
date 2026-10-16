@@ -122,6 +122,7 @@ function printTyreLabel($data) {
     foreach ($wheels as $wheel) {
         $zpl = "^XA\n";
         $zpl .= "^PW1200\n";   // Etikettenbreite 100mm = 1200 dots (300dpi) erzwingen – Drucker-Reset beim Umzug hatte PRINT WIDTH auf 648 gesetzt (Inhalt sonst zentriert + rechts abgeschnitten)
+        $zpl .= "^LL1800\n";   // Etikettenlänge 150mm = 1800 dots erzwingen – nach Drucker-Reset stand LABEL LENGTH auf 1200, Felder ab y=1200 (Radposition VR/VL/HR/HL) wurden verworfen
         $zpl .= "^LH110,0\n";  // linker Rand ~9mm (110 dots bei 300dpi); y-Ursprung 0
         $zpl .= "^CI28\n";
         $zpl .= "^FO20,200^A0N,190,190^FD" . $cLn . "^FS\n";
@@ -131,8 +132,9 @@ function printTyreLabel($data) {
         $zpl .= "^FO20,1000^A0N,80,80^FD" . $hersteller . "^FS\n";
         $zpl .= "^FO20,1100^A0N,80,80^FD" . $fhzTyp . "^FS\n";
         $zpl .= "^FO20,1200^A0N,80,80^FD" . $hubraumInLiter . "^FS\n";
-        $zpl .= "^FO600,1350^A0N,350,300^FD" . substr($wheel, 0, 1) . "^FS\n";
-        $zpl .= "^FO800,1350^A0N,350,300^FD" . substr($wheel, 1, 1) . "^FS\n";
+        // Radposition (V/H + R/L) unten rechts; mit ^LH110 enden die Zeichenzellen bei x=1170 < ^PW1200
+        $zpl .= "^FO560,1350^A0N,350,300^FD" . substr($wheel, 0, 1) . "^FS\n";
+        $zpl .= "^FO760,1350^A0N,350,300^FD" . substr($wheel, 1, 1) . "^FS\n";
         $zpl .= "^XZ";
 
         $filepath = $dir . '/label_' . $wheel . '.zpl';

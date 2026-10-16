@@ -104,12 +104,12 @@
                         <v-list-item
                             v-for="result in searchResults"
                             :key="result.id"
-                            :active="activeTab === result.tab && (result.type === 'tab' || pendingPanel === result.panel)"
+                            :active="activeTab === result.tab && (result.type === 'tab' || (result.type === 'sub' && pendingPanel === result.panel) || (result.type === 'field' && focusedField === result.field))"
                             @click="goToResult(result)"
                             :prepend-icon="result.icon"
                         >
                             <v-list-item-title>{{ result.title }}</v-list-item-title>
-                            <v-list-item-subtitle v-if="result.type === 'sub'" class="text-caption">
+                            <v-list-item-subtitle v-if="result.type === 'sub' || result.type === 'field'" class="text-caption">
                                 {{ result.parent }}
                             </v-list-item-subtitle>
                         </v-list-item>
@@ -359,6 +359,9 @@ import axios from 'axios';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';
 import OverviewTab from './tabs/overview.tab.vue';
 import shopDefaultsConfig from './tabs/shopDefaultsConfig.js';
+import crmDefaultsConfig from './tabs/crmDefaultsConfig.js';
+import lxcarsDefaultsConfig from './tabs/lxcarsDefaultsConfig.js';
+import anprDefaultsConfig from './tabs/anprDefaultsConfig.js';
 import masterLists from './tabs/masterListsConfig.js';
 import * as toasts from '@/core/utils/toasts.js';
 
@@ -673,6 +676,60 @@ const allTabs = computed(() => tabGroups.value.flatMap(g => g.items));
 
 // Panel, das im Ziel-Tab geöffnet werden soll (Deep-Link aus der Suche).
 const pendingPanel = ref('');
+// Feld, zu dem die Suche zuletzt gesprungen ist (Markierung in der Trefferliste).
+const focusedField = ref('');
+
+/**
+ * Feld-Index für die Suche: jedes Eingabefeld der Formular-Tabs über seine
+ * übersetzte Bezeichnung und seinen Hilfetext — so findet „pause“ die
+ * Pausenzeiten unter LxCars, ohne dass jemand Schlagwortlisten pflegt.
+ * Die Tabs selbst rendern ihre Felder mit data-field-name, dorthin springt
+ * ein Treffer (focusField).
+ */
+const fieldSources = { crm: crmDefaultsConfig, lxcars: lxcarsDefaultsConfig, anpr: anprDefaultsConfig, shop: shopDefaultsConfig };
+const fieldIndex = computed(() => {
+    const out = [];
+    for (const [tabValue, fields] of Object.entries(fieldSources)) {
+        const tab = allTabs.value.find(x => x.value === tabValue);
+        if (!tab) continue;
+        let headline = null;
+        for (const f of fields) {
+            if (f.type === 'headline') { headline = f; continue; }
+            if (!f.label || f.type === 'component' || f.type === 'info') continue;
+            out.push({
+                tab: tab.value,
+                icon: tab.icon,
+                name: f.name,
+                title: t(f.label),
+                help: f.tooltip ? t(f.tooltip) : '',
+                parent: headline ? `${tab.title} › ${t(headline.label)}` : tab.title,
+            });
+        }
+    }
+    return out;
+});
+
+/** Scrollt zum Feld (data-field-name), hebt es kurz hervor und fokussiert die Eingabe. */
+function focusField(name) {
+    focusedField.value = name;
+    let retries = 0;
+    const tryFocus = () => {
+        const el = document.querySelector(`[data-field-name="${name}"]`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.style.transition = 'background 0.3s';
+            el.style.background = '#fff3cd';
+            setTimeout(() => { el.style.background = ''; }, 2000);
+            nextTick(() => {
+                const input = el.querySelector('.v-field__input input, .v-field__input textarea');
+                if (input) input.focus();
+            });
+        } else if (retries++ < 20) {
+            setTimeout(tryFocus, 200);
+        }
+    };
+    setTimeout(tryFocus, 100);
+}
 
 /**
  * Zentraler Such-Index als flache, gerankte Trefferliste.
@@ -681,7 +738,9 @@ const pendingPanel = ref('');
  * (z. B. "Bankkonten" im Tab "Hinzufügen"). Ein Unterbereich-Treffer
  * springt direkt in das passende Accordion-Panel.
  *
- * Ranking: Titel-Anfang (0) < Titel enthält (1) < Keyword (2).
+ * Ranking: Titel-Anfang (0) < Titel enthält (1) < Keyword (2) < Hilfetext eines Feldes (3).
+ * Einzelne Felder (Bezeichnung/Hilfetext, siehe fieldIndex) erscheinen als
+ * eigene Treffer und springen direkt zum Feld.
  */
 function buildResults(rawQuery) {
     const q = (rawQuery || '').trim().toLowerCase();
@@ -710,6 +769,16 @@ function buildResults(rawQuery) {
             }
         }
     }
+    for (const f of fieldIndex.value) {
+        const tl = f.title.toLowerCase();
+        let score = -1;
+        if (tl.startsWith(q)) score = 0;
+        else if (tl.includes(q)) score = 1;
+        else if (f.help.toLowerCase().includes(q)) score = 3;
+        if (score >= 0) {
+            results.push({ id: `${f.tab}#${f.name}`, type: 'field', tab: f.tab, field: f.name, title: f.title, icon: 'mdi-form-textbox', parent: f.parent, score });
+        }
+    }
     return results.sort((a, b) => a.score - b.score);
 }
 
@@ -728,8 +797,12 @@ function goToResult(result) {
     // pendingPanel neu setzen (auch bei gleichem Panel), damit der
     // Watcher im Ziel-Tab erneut feuert und hinscrollt.
     pendingPanel.value = '';
+    focusedField.value = '';
     if (result.type === 'sub' && result.panel) {
         nextTick(() => { pendingPanel.value = result.panel; });
+    }
+    if (result.type === 'field') {
+        focusField(result.field);
     }
 }
 
@@ -1148,25 +1221,7 @@ onMounted(async () => {
     }
     const focusParam = route.query.focus;
     if (focusParam) {
-        let retries = 0;
-        const tryFocus = () => {
-            const el = document.querySelector(`[data-field-name="${focusParam}"]`);
-            if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                // Visuelles Highlight
-                el.style.transition = 'background 0.3s';
-                el.style.background = '#fff3cd';
-                setTimeout(() => { el.style.background = ''; }, 2000);
-                // Vuetify v-select/v-text-field: inneres Input fokussieren
-                nextTick(() => {
-                    const input = el.querySelector('.v-field__input input, .v-field__input textarea');
-                    if (input) input.focus();
-                });
-            } else if (retries++ < 20) {
-                setTimeout(tryFocus, 200);
-            }
-        };
-        setTimeout(tryFocus, 100);
+        focusField(focusParam);
     }
 
     // Watcher erst nach initialem Laden aktivieren

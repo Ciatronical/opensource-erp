@@ -52,6 +52,9 @@
                     <div class="pulse__label">{{ label('AccountingView.cockpit.pulse.bank') }}</div>
                     <div class="pulse__value">{{ money(pulse.bank_balance) }}</div>
                     <div class="pulse__sub">{{ bankSubtitle }}</div>
+                    <!-- Hauptbuch dazu: solange Umsätze nicht zugeordnet sind, weicht es
+                         vom Bankstand ab — die Differenz ist genau die offene Arbeit -->
+                    <div class="pulse__sub">{{ bankLedgerText }}</div>
                 </button>
                 <!-- Eigene Kachel, weil Bargeld eine eigene Kasse hat: der Bestand
                      wird gezählt und abgezeichnet, nicht von einer Bank bestätigt.
@@ -331,6 +334,12 @@ const standText = computed(() => pulse.value.as_of_today || !pulse.value.as_of
     : t('AccountingView.cockpit.pulse.asOfDate', { date: pulse.value.as_of }))
 const bankSubtitle = computed(() =>
     `${t('AccountingView.cockpit.pulse.bankAccounts', { count: pulse.value.bank_accounts || 0 })} · ${standText.value}`)
+const bankLedgerText = computed(() => {
+    const diff = Math.round(((pulse.value.bank_balance || 0) - (pulse.value.bank_ledger_balance || 0)) * 100) / 100
+    return Math.abs(diff) < 0.005
+        ? t('AccountingView.cockpit.pulse.bankLedgerOk', { ledger: money(pulse.value.bank_ledger_balance) })
+        : t('AccountingView.cockpit.pulse.bankLedger', { ledger: money(pulse.value.bank_ledger_balance), diff: money(diff) })
+})
 
 const cashSubtitle = computed(() => {
     const count = pulse.value.cash_accounts || 0

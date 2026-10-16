@@ -8,6 +8,12 @@ const lxcarsDefaultsConfig = [
     // Bilder bleiben auf dem Server. Dienst: oserp-fahrzeugschein-scanner, Port 3003.
     { name: "lxcars_local_scanner", type: "checkbox", label: "crm_fields.lxcarsLocalScanner", tooltip: "crm_fields.lxcarsLocalScanner_help" },
     { name: "lxcars_local_scanner_url", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.lxcarsLocalScannerUrl", tooltip: "crm_fields.lxcarsLocalScannerUrl_help" },
+    // Eingangsverzeichnis für Fahrzeugscheine: ein Dokumentenscanner legt Dateien ab,
+    // der Dienst oserp-fahrzeugschein-eingang erkennt sie sofort und stellt sie in die
+    // Scanliste. Die Komponente trägt das Pfadfeld (lxcars_scan_inbox_dir, vorbelegt
+    // mit dem Standardpfad) und den Status aus dem Herzschlag des Dienstes.
+    { name: "lxcars_scan_inbox", type: "headline", label: "crm_fields.lxcarsScanInbox" },
+    { name: "lxcars_scan_inbox_status", type: "component", component: "scan-inbox-status" },
 
     // KI-Gewichte, lokale KI (Ollama) und OpenAI-Key liegen jetzt im eigenen
     // Tab "KI und Gesundheit" (ai-health.tab.vue). Feature-spezifische KI-Prompts

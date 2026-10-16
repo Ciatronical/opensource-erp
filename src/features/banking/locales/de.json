@@ -26,7 +26,9 @@
       "incomeThisMonth": "Eingänge diesen Monat",
       "expensesThisMonth": "Ausgänge diesen Monat",
       "lastTransaction": "Letzter Umsatz",
-      "viewTransactions": "Umsätze anzeigen"
+      "viewTransactions": "Umsätze anzeigen",
+      "balanceAsOf": "Kontostand per {date}",
+      "balanceLastTx": "letzter Umsatz {date}"
     },
     "transactions": {
       "title": "Umsätze",

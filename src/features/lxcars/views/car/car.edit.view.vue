@@ -35,10 +35,17 @@
                     <v-icon start size="small">mdi-folder-open-outline</v-icon>
                     {{ t('CarEditView.files.button') }}
                 </v-btn>
-                <v-btn v-if="aagAvailable" variant="tonal" size="small" color="indigo" :loading="aagLoading || ktypeLoading" :title="t('CarEditView.aag.tsnTooltip')" @click="openAag">
-                    <v-icon start size="small">mdi-car-search</v-icon>
-                    {{ t('CarEditView.aag.button') }}
-                </v-btn>
+            </template>
+            <!-- Online-Portale auch im Mechanikermodus (Nur-Lese-Ansicht) verfügbar -->
+            <v-btn v-if="aagAvailable" variant="tonal" size="small" color="indigo" :loading="aagLoading || ktypeLoading" :title="t('CarEditView.aag.tsnTooltip')" @click="openAag">
+                <v-icon start size="small">mdi-car-search</v-icon>
+                {{ t('CarEditView.aag.button') }}
+            </v-btn>
+            <v-btn v-if="hgsAvailable" variant="tonal" size="small" color="blue-grey-darken-1" :loading="hgsLoading" :title="t('CarEditView.hgs.tooltip')" @click="openHgs">
+                <v-icon start size="small">mdi-database-search-outline</v-icon>
+                {{ t('CarEditView.hgs.button') }}
+            </v-btn>
+            <template v-if="!readonly">
                 <v-btn v-if="esiAvailable" variant="tonal" size="small" color="teal-darken-1" :title="t('CarEditView.esi.tooltip')" @click="openEsi">
                     <v-icon start size="small">mdi-cog-outline</v-icon>
                     {{ t('CarEditView.esi.button') }}
@@ -46,10 +53,6 @@
                 <v-btn v-if="gutmannAvailable" variant="tonal" size="small" color="cyan-darken-2" :title="t('CarEditView.gutmann.tooltip')" @click="openGutmann">
                     <v-icon start size="small">mdi-lan-connect</v-icon>
                     {{ t('CarEditView.gutmann.button') }}
-                </v-btn>
-                <v-btn v-if="hgsAvailable" variant="tonal" size="small" color="blue-grey-darken-1" :loading="hgsLoading" :title="t('CarEditView.hgs.tooltip')" @click="openHgs">
-                    <v-icon start size="small">mdi-database-search-outline</v-icon>
-                    {{ t('CarEditView.hgs.button') }}
                 </v-btn>
                 <v-btn v-if="isEditMode" variant="tonal" size="small" color="success" @click="openCarRegistration">
                     <v-icon start size="small">mdi-card-account-details</v-icon>
@@ -432,7 +435,7 @@
                                     <v-text-field v-model="car.c_st_z" variant="outlined" density="compact" hide-details maxlength="30" tabindex="15" />
                                 </v-col>
                                 <v-col cols="auto" class="py-1" style="width: 80px">
-                                    <v-btn v-if="isEditMode && !readonly" size="small" variant="tonal" color="orange" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting === 'summer'" @click="onPrintTyreLabel('summer')">
+                                    <v-btn v-if="isEditMode" size="small" variant="tonal" color="orange" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting === 'summer'" @click="onPrintTyreLabel('summer')">
                                         <v-icon size="small">mdi-printer</v-icon>
                                     </v-btn>
                                 </v-col>
@@ -450,7 +453,7 @@
                                     <v-text-field v-model="car.c_wt_z" variant="outlined" density="compact" hide-details maxlength="30" tabindex="18" />
                                 </v-col>
                                 <v-col cols="auto" class="py-1" style="width: 80px">
-                                    <v-btn v-if="isEditMode && !readonly" size="small" variant="tonal" color="blue" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting === 'winter'" @click="onPrintTyreLabel('winter')">
+                                    <v-btn v-if="isEditMode" size="small" variant="tonal" color="blue" :title="t('CarEditView.tyreLabel.tooltip')" :loading="tyreLabelPrinting === 'winter'" @click="onPrintTyreLabel('winter')">
                                         <v-icon size="small">mdi-printer</v-icon>
                                     </v-btn>
                                 </v-col>

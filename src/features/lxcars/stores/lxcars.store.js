@@ -1066,6 +1066,21 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
     }
 
     /**
+     * Status des Eingangsverzeichnisses für Fahrzeugscheine (Dokumentenscanner).
+     * Pfad, Dienstzustand, wartende Dateien, letzte Verarbeitung, Fehler.
+     *
+     * @param {string} dir - Pfad aus dem Konfigurationsfeld (leer = Standard)
+     * @return {Promise<Object>}
+     */
+    async function getScanInboxStatus(dir = '') {
+        const response = await axios.post('/api/lxcars/', { action: 'getScanInboxStatus', dir })
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error loading scan inbox status: ' + response.data.text)
+        }
+        return response.data.payload
+    }
+
+    /**
      * Sucht Kunden anhand des Namens (für Scan-Zuordnung)
      *
      * @param {string} name - Suchbegriff
@@ -1351,6 +1366,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         syncScans,
         mapScanData,
         scanFahrzeugschein,
+        getScanInboxStatus,
         searchCustomerForScan,
         autoMatchCustomerForScan,
         searchCarForScan,

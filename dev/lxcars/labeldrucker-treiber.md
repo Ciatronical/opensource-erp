@@ -82,11 +82,17 @@ Etikett = **100 × 150 mm = 1200 × 1800 dots** (300 dpi). Zwei verstellte Werte
 Direkt im ZPL erzwungen (stromausfallsicher), in `printTyreLabel()` nach `^XA`:
 ```
 ^PW1200      // Etikettenbreite erzwingen (statt gespeicherter 648)
+^LL1800      // Etikettenlänge erzwingen (statt gespeicherter 1200, s. u.)
 ^LH110,0     // ~9 mm linker Rand (110 dots), y-Ursprung 0
 ```
 
 **2. Vertikal (Sensor erkannte 1236 statt 1800 dots → oberer Versatz).**
-Drucker einmalig neu einmessen – druckt nichts ausser 1–2 Vorschub-Etiketten:
+Folge der zu kurzen gespeicherten `LABEL LENGTH 1200`: Felder, deren Ursprung
+unterhalb der Etikettenlänge liegt, verwirft der Drucker komplett – die Radposition
+(`VR`/`VL`/`HR`/`HL`, y = 1350) fehlte deshalb auf dem Ausdruck (Stand 15.10.2026).
+Seit dem `^LL1800` im ZPL ist auch das stromausfallsicher; die Zeichenzellen der
+Radposition liegen mit `^FO560`/`^FO760` + `^LH110` innerhalb der 1200 dots Breite.
+Drucker zusätzlich einmalig neu einmessen – druckt nichts ausser 1–2 Vorschub-Etiketten:
 ```
 printf '~JC' | nc 192.168.178.252 9100
 ```

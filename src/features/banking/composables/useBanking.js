@@ -67,6 +67,7 @@ export function useBanking() {
 
     const transactions = ref([])
     const transactionTotal = ref(0)
+    const transactionBalance = ref({ balance: null, date: null, to_date: null })
 
     async function fetchTransactions(bankAccountId, params = {}) {
         loading.value = true
@@ -80,6 +81,12 @@ export function useBanking() {
             if (response.data.success) {
                 transactions.value = response.data.payload.transactions || []
                 transactionTotal.value = response.data.payload.total || 0
+                // Kontostand zum Ende des Zeitraums (siehe getBankTransactions)
+                transactionBalance.value = {
+                    balance: response.data.payload.balance_to ?? null,
+                    date:    response.data.payload.balance_date ?? null,
+                    to_date: response.data.payload.to_date ?? null,
+                }
             } else {
                 error.value = response.data.text
             }
@@ -293,6 +300,7 @@ export function useBanking() {
         accounts,
         transactions,
         transactionTotal,
+        transactionBalance,
         fintsConfig,
         tanRequired,
         tanChallenge,

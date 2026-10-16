@@ -95,7 +95,7 @@ as_user() { sudo -u "$OSERP_USER" -H bash -lc "$*"; }
 #  Schrittsteuerung
 # --------------------------------------------------------------------------
 ALL_STEPS=(packages php_fpm node_build database config permissions apache \
-           portforward tls sse whisper fsscanner ollama anpr go2rtc camera_monitor \
+           portforward tls sse whisper fsscanner fseingang ollama anpr go2rtc camera_monitor \
            camera_sudoers cron dyndns asterisk borg kivitendo healthcheck)
 
 declare -A STEP_DESC=(
@@ -111,6 +111,7 @@ declare -A STEP_DESC=(
   [sse]="SSE-Echtzeitserver als systemd-Dienst"
   [whisper]="Whisper-Transkription (venv) als systemd-Dienst"
   [fsscanner]="Eigener Fahrzeugscheinscanner (venv, RapidOCR) als systemd-Dienst"
+  [fseingang]="Fahrzeugschein-Eingang: Eingangsverzeichnisse der Mandanten überwachen (inotify) als systemd-Dienst"
   [ollama]="Lokaler LLM (Ollama) + Modell vorladen"
   [anpr]="Kennzeichenerkennung (Python-venv) als systemd-Dienst"
   [go2rtc]="go2rtc Stream-Server als systemd-Dienst"
@@ -731,6 +732,20 @@ setup_fsscanner() {
 }
 
 # =============================================================================
+#  SCHRITT: fseingang  — Eingangsverzeichnis für Fahrzeugscheine (Dokumentenscanner per Samba)
+# =============================================================================
+setup_fseingang() {
+    step "Fahrzeugschein-Eingang (Verzeichnisüberwachung)"
+    # Kein Zusatzpaket: inotify läuft über PHP-FFI (php -d ffi.enable=true in der Unit).
+    if ! php -r 'exit(class_exists("FFI") ? 0 : 1);' 2>/dev/null; then
+        warn "PHP ohne FFI — der Dienst fällt auf eine Verzeichnisabfrage im Sekundentakt zurück"
+    fi
+    install_unit "$OSERP_ROOT/install/oserp-fahrzeugschein-eingang.service" "oserp-fahrzeugschein-eingang.service"
+    sudo systemctl enable --now oserp-fahrzeugschein-eingang.service
+    ok "Fahrzeugschein-Eingang läuft — Verzeichnis je Mandant: $OSERP_HOME/Fahrzeugscheine/<db> (änderbar in Firmenkonfiguration → LxCars)"
+}
+
+# =============================================================================
 #  SCHRITT: ollama  — stock ollama (offizieller Installer), Modell vorladen
 # =============================================================================
 setup_ollama() {
@@ -1141,7 +1156,7 @@ declare -A STEP_FN=(
   [packages]=install_packages [php_fpm]=setup_php_fpm [node_build]=node_build
   [database]=setup_database [config]=setup_config [permissions]=setup_permissions [apache]=setup_apache
   [portforward]=setup_portforward [tls]=setup_tls
-  [sse]=setup_sse [whisper]=setup_whisper [fsscanner]=setup_fsscanner [ollama]=setup_ollama [anpr]=setup_anpr
+  [sse]=setup_sse [whisper]=setup_whisper [fsscanner]=setup_fsscanner [fseingang]=setup_fseingang [ollama]=setup_ollama [anpr]=setup_anpr
   [go2rtc]=setup_go2rtc [camera_monitor]=setup_camera_monitor
   [camera_sudoers]=setup_camera_sudoers [cron]=setup_cron [dyndns]=setup_dyndns
   [asterisk]=setup_asterisk

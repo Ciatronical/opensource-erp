@@ -60,6 +60,10 @@ Unter **Einstellungen > SEPA/Bank**:
 
 **Wichtig**: Die PIN wird **nicht gespeichert** — sie wird bei jeder Verbindung neu abgefragt.
 
+## Kontostand und Zeitraum
+
+Die Kachel **Kontostand** zeigt den aktuellen Stand (Anfangssaldo plus alle Umsätze). Ist in der Umsatzliste ein Zeitraum gewählt, der in der Vergangenheit endet (z. B. Monat Juli), zeigt sie den **Kontostand per Zeitraumende** mit dem Datum des letzten Umsatzes — so lässt sich jeder Monat gegen den Kontoauszug prüfen.
+
 ## Kontoumsätze abrufen
 
 1. Banking-Übersicht öffnen

@@ -72,11 +72,13 @@
         <!-- Statistik-Karten -->
         <v-row class="mb-3">
             <v-col cols="6" sm="3">
-                <v-card variant="tonal" :color="(selectedAccount?.balance ?? 0) >= 0 ? 'primary' : 'error'">
+                <!-- Kontostand: heute, oder zum Ende des gewählten Zeitraums, wenn der
+                     in der Vergangenheit liegt (Monat Juli → Stand 31.07.) -->
+                <v-card variant="tonal" :color="(balanceCard.value ?? 0) >= 0 ? 'primary' : 'error'">
                     <v-card-text class="text-center py-3">
-                        <div class="text-h5 font-weight-bold">{{ formatCurrency(selectedAccount?.balance) }}</div>
-                        <div class="text-body-2">{{ t('BankingView.overview.balance') }}</div>
-                        <div class="text-caption text-disabled mt-1">{{ t('BankingView.overview.lastSync') }}: {{ formatDateShort(selectedAccount?.last_sync ?? selectedAccount?.last_transaction_date) }}</div>
+                        <div class="text-h5 font-weight-bold">{{ formatCurrency(balanceCard.value) }}</div>
+                        <div class="text-body-2">{{ balanceCard.label }}</div>
+                        <div class="text-caption text-disabled mt-1">{{ balanceCard.sub }}</div>
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -268,7 +270,9 @@
                             </v-chip>
                         </template>
                         <template #item.assignments="{ item }">
-                            <div v-if="item.assignments?.length" class="text-caption">
+                            <!-- Feste Breite + Kürzung: lange Buchungstexte drückten sonst die
+                                 Aktionsspalte aus der Tabelle (gebuchte Monate ohne Knöpfe) -->
+                            <div v-if="item.assignments?.length" class="text-caption tx-assignments">
                                 <template v-for="(a, i) in item.assignments" :key="i">
                                     <a
                                         v-if="a.ar_id"
@@ -278,10 +282,11 @@
                                         @click.stop.prevent="goToInvoice(a)"
                                     >{{ a.invnumber }}</a>
                                     <span v-else-if="a.invnumber" class="d-block">{{ a.invnumber }}</span>
-                                    <!-- Dialogbuchung („Auf Konto buchen"): Gegenkonten und Text;
-                                         die reine gl-Verknüpfung einer Kartenabrechnung hat keine -->
-                                    <span v-else-if="a.gl_accounts" class="d-block text-truncate" :title="a.gl_description">
-                                        {{ a.gl_accounts }} · {{ a.gl_description }}
+                                    <!-- Dialogbuchung („Auf Konto buchen"): Gegenkonten; der Text
+                                         steht im Tooltip. Bei Kartenabrechnungen stehen die
+                                         Rechnungen schon da, die gl-Zeile entfällt. -->
+                                    <span v-else-if="a.gl_accounts && !hasInvoiceAssignment(item)" class="d-block text-truncate" :title="a.gl_description">
+                                        {{ a.gl_accounts }}
                                     </span>
                                 </template>
                             </div>
@@ -2380,6 +2385,25 @@ const txSearchHint = computed(() => {
     return null
 })
 
+// Kontostand-Kachel: Zeitraum endet vor heute → Stand zum Zeitraumende aus der
+// Umsatzliste; sonst der aktuelle Stand des Kontos.
+const balanceCard = computed(() => {
+    const b = banking.transactionBalance.value
+    const today = new Date().toISOString().slice(0, 10)
+    if (b?.to_date && b.to_date < today && b.balance !== null) {
+        return {
+            value: b.balance,
+            label: t('BankingView.overview.balanceAsOf', { date: formatDateShort(b.to_date) }),
+            sub:   t('BankingView.overview.balanceLastTx', { date: formatDateShort(b.date) }),
+        }
+    }
+    return {
+        value: selectedAccount.value?.balance,
+        label: t('BankingView.overview.balance'),
+        sub:   t('BankingView.overview.lastSync') + ': ' + formatDateShort(selectedAccount.value?.last_sync ?? selectedAccount.value?.last_transaction_date),
+    }
+})
+
 const displayedTransactions = computed(() => {
     const all = banking.transactions.value
     const q = (txSearch.value || '').trim().toLowerCase()
@@ -2401,6 +2425,9 @@ const displayedTransactions = computed(() => {
 /** Hängt am Umsatz mindestens eine Eingangsrechnung? Nur dort ist ein Beleg Pflicht. */
 function hasApAssignment(tx) {
     return (tx.assignments || []).some(a => a.ap_id)
+}
+function hasInvoiceAssignment(tx) {
+    return (tx.assignments || []).some(a => a.ar_id || a.ap_id)
 }
 
 /** Öffnet die zugeordnete (Ausgangs-)Rechnung aus der Umsatz-Liste */
@@ -3562,4 +3589,6 @@ watch(activeTab, async (tab) => {
 :deep(.tx-booked) {
     opacity: 0.65;
 }
+.tx-assignments { max-width: 150px; }
+.tx-assignments .text-truncate { max-width: 150px; }
 </style>

@@ -2395,18 +2395,46 @@ function scanFahrzeugschein($data) {
         return;
     }
 
+    $run = _scanFahrzeugscheinRun($db, $image, $isPdf);
+    if (!$run['ok']) {
+        resultInfo(false, $run['error'], $run['message']);
+        return;
+    }
+    resultInfo(true, 'OK', $run['payload']);
+}
+
+/**
+ * Kern der Fahrzeugschein-Erkennung ohne HTTP-Antwort — gemeinsam für den Upload
+ * aus der Scanliste (scanFahrzeugschein) und das überwachte Eingangsverzeichnis
+ * (backend/cli/fahrzeugschein-eingang.php, scan_inbox.php).
+ *
+ * Erkennt das Bild über den konfigurierten Scanner, legt Ausschnitte und Original
+ * im tmp-Cache ab (damit die Scanliste sie ohne API wiederfindet), speichert die
+ * Rohdaten in fs_scans_lxcars (Trigger fs_scans_notify → Scanliste live) und
+ * liefert dieselben Daten wie die API-Antwort.
+ *
+ * @param object $db      Company-Datenbankverbindung
+ * @param string $image   Base64-kodiertes Bild oder PDF
+ * @param bool   $isPdf   PDF statt Bild
+ * @param array  $opts    filename  Ursprünglicher Dateiname (Spalte filename der Scanliste)
+ *                        data_dir  Mandanten-Datenverzeichnis (sonst fmDataDir())
+ *                        temp_file Original nach fahrzeuge/0_temp legen (temp_image_id), Standard true
+ *                        id_prefix Präfix der vergebenen Scan-ID (Standard local_/upload_)
+ * @return array {ok: true, payload: [...]} oder {ok: false, error: CODE, message: Text}
+ */
+function _scanFahrzeugscheinRun($db, $image, $isPdf, $opts = []) {
     $cfg = _scanFahrzeugscheinConfig($db);
     if ($cfg['local']) {
         $result = _scanFahrzeugscheinLocal($cfg['local_url'], $image, $isPdf);
     } else {
         if ($cfg['api_key'] === '') {
-            resultInfo(false, 'NO_API_KEY', 'Kein API-Key für den Fahrzeugschein-Scanner konfiguriert (lxcarsapi) — oder "Eigenen Fahrzeugscheinscanner benutzen" aktivieren');
-            return;
+            return ['ok' => false, 'error' => 'NO_API_KEY',
+                'message' => 'Kein API-Key für den Fahrzeugschein-Scanner konfiguriert (lxcarsapi) — oder "Eigenen Fahrzeugscheinscanner benutzen" aktivieren'];
         }
         $result = _scanFahrzeugscheinExternal($cfg['api_key'], $image, $isPdf);
     }
-    if ($result === null) {
-        return; // Fehler wurde bereits gemeldet
+    if (isset($result['error'])) {
+        return ['ok' => false, 'error' => $result['error'], 'message' => $result['message']];
     }
 
     $scanData = $result['data'];
@@ -2424,25 +2452,36 @@ function scanFahrzeugschein($data) {
             unset($scanData[$key]);
         }
     }
-
-    // Original-Bild als Temp-Datei speichern (für späteres Verknüpfen mit c_id)
-    $tempId = null;
-    $tempDir = fmDataDir() . '/fahrzeuge/0_temp';
-    if (!is_dir($tempDir)) {
-        mkdir($tempDir, 0755, true);
+    // Liefert der Scanner kein Gesamtdokument, dient das Original als solches —
+    // so findet saveScanImages beim Anlegen aus der Scanliste immer ein original.jpg
+    if (empty($imageFields['document_img']) && !$isPdf) {
+        $imageFields['document_img'] = $image;
     }
-    $decoded = base64_decode($image);
-    if ($decoded !== false) {
-        $tempId = bin2hex(random_bytes(16));
-        $ext = $isPdf ? 'pdf' : 'jpg';
-        file_put_contents($tempDir . '/' . $tempId . '.' . $ext, $decoded);
+    if (!empty($opts['filename'])) {
+        $scanData['Filename'] = $opts['filename'];
+    }
+
+    // Original als Temp-Datei speichern (für späteres Verknüpfen mit c_id durch den Aufrufer)
+    $tempId = null;
+    if ($opts['temp_file'] ?? true) {
+        $tempDir = ($opts['data_dir'] ?? fmDataDir()) . '/fahrzeuge/0_temp';
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+        $decoded = base64_decode($image);
+        if ($decoded !== false) {
+            $tempId = bin2hex(random_bytes(16));
+            $ext = $isPdf ? 'pdf' : 'jpg';
+            file_put_contents($tempDir . '/' . $tempId . '.' . $ext, $decoded);
+        }
     }
 
     // Scan-ID vergeben (lokaler Scanner liefert keine) und Ausschnitte in tmp cachen,
     // damit die Scan-Liste (getScanDetail) die Bilder ohne API wiederfindet
     $scanId = $scanData['scan_id'] ?? '';
     if (empty($scanId)) {
-        $scanId = ($cfg['local'] ? 'local_' : 'upload_') . bin2hex(random_bytes(8));
+        $prefix = $opts['id_prefix'] ?? ($cfg['local'] ? 'local_' : 'upload_');
+        $scanId = $prefix . bin2hex(random_bytes(8));
         $scanData['scan_id'] = $scanId;
     }
     if (!empty($imageFields)) {
@@ -2455,7 +2494,7 @@ function scanFahrzeugschein($data) {
     // Scan-Rohdaten in fs_scans_lxcars persistieren (gleiche Daten wie bei Listensync)
     _persistScanData($db, $scanData, $result);
 
-    resultInfo(true, 'OK', [
+    return ['ok' => true, 'payload' => [
         'car'   => $mapped['car'],
         'kba'   => $mapped['kba'],
         'owner' => $mapped['owner'],
@@ -2466,12 +2505,12 @@ function scanFahrzeugschein($data) {
         'scan_id' => $scanId,
         'scanner' => $cfg['local'] ? 'local' : 'external',
         'meta' => $result['meta'] ?? null,
-    ]);
+    ]];
 }
 
 /**
  * Upload an die externe API fahrzeugschein-scanner.de (generic-json).
- * Gibt das dekodierte Ergebnis zurück oder null (Fehler wurde gemeldet).
+ * Gibt das dekodierte Ergebnis zurück oder {error, message}.
  */
 function _scanFahrzeugscheinExternal($apiKey, $image, $isPdf) {
     $requestBody = json_encode([
@@ -2497,19 +2536,16 @@ function _scanFahrzeugscheinExternal($apiKey, $image, $isPdf) {
     curl_close($ch);
 
     if ($response === false) {
-        resultInfo(false, 'SCAN_ERROR', 'cURL-Fehler: ' . $curlError);
-        return null;
+        return ['error' => 'SCAN_ERROR', 'message' => 'cURL-Fehler: ' . $curlError];
     }
 
     if ($httpCode !== 200) {
-        resultInfo(false, 'SCAN_API_ERROR', 'API-Fehler (HTTP ' . $httpCode . '): ' . $response);
-        return null;
+        return ['error' => 'SCAN_API_ERROR', 'message' => 'API-Fehler (HTTP ' . $httpCode . '): ' . $response];
     }
 
     $result = json_decode($response, true);
     if (!$result || !isset($result['data'])) {
-        resultInfo(false, 'SCAN_PARSE_ERROR', 'Ungültige API-Antwort');
-        return null;
+        return ['error' => 'SCAN_PARSE_ERROR', 'message' => 'Ungültige API-Antwort'];
     }
     return $result;
 }
@@ -2518,7 +2554,7 @@ function _scanFahrzeugscheinExternal($apiKey, $image, $isPdf) {
  * Upload an den eigenen lokalen Scanner-Dienst (backend/fahrzeugschein-scanner,
  * systemd-Dienst oserp-fahrzeugschein-scanner, lauscht nur auf 127.0.0.1).
  * Antwortformat ist identisch zur externen API (data + <feld>_img + document_img).
- * Gibt das dekodierte Ergebnis zurück oder null (Fehler wurde gemeldet).
+ * Gibt das dekodierte Ergebnis zurück oder {error, message}.
  */
 function _scanFahrzeugscheinLocal($baseUrl, $image, $isPdf) {
     $ch = curl_init($baseUrl . '/scan');
@@ -2535,21 +2571,18 @@ function _scanFahrzeugscheinLocal($baseUrl, $image, $isPdf) {
     curl_close($ch);
 
     if ($response === false || $httpCode === 0) {
-        resultInfo(false, 'SCANNER_UNREACHABLE',
-            'Eigener Fahrzeugscheinscanner nicht erreichbar (' . $curlError . '). Läuft der Dienst oserp-fahrzeugschein-scanner?');
-        return null;
+        return ['error' => 'SCANNER_UNREACHABLE',
+            'message' => 'Eigener Fahrzeugscheinscanner nicht erreichbar (' . $curlError . '). Läuft der Dienst oserp-fahrzeugschein-scanner?'];
     }
 
     $result = json_decode($response, true);
     if ($httpCode === 422) {
-        resultInfo(false, 'NO_DOCUMENT',
-            'Kein Fahrzeugschein erkannt: ' . ($result['message'] ?? 'Bitte das Dokument vollständig und scharf fotografieren.'));
-        return null;
+        return ['error' => 'NO_DOCUMENT',
+            'message' => 'Kein Fahrzeugschein erkannt: ' . ($result['message'] ?? 'Bitte das Dokument vollständig und scharf fotografieren.')];
     }
     if ($httpCode !== 200 || !is_array($result) || empty($result['ok']) || !isset($result['data'])) {
-        resultInfo(false, 'SCAN_API_ERROR',
-            'Eigener Scanner: Fehler (HTTP ' . $httpCode . '): ' . substr((string)$response, 0, 300));
-        return null;
+        return ['error' => 'SCAN_API_ERROR',
+            'message' => 'Eigener Scanner: Fehler (HTTP ' . $httpCode . '): ' . substr((string)$response, 0, 300)];
     }
     return $result;
 }

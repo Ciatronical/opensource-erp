@@ -33,6 +33,31 @@
                         {{ vehiclePlate }}
                     </v-btn>
                     <v-chip v-if="vehicleInfo" size="x-small" variant="text">{{ vehicleInfo }}</v-chip>
+                    <!-- Fahrzeug an Online-Portale übergeben (wie in der Auftrags-Aktionsleiste) -->
+                    <v-btn
+                        v-if="portals.aagAvailable.value"
+                        size="small"
+                        variant="tonal"
+                        color="indigo"
+                        prepend-icon="mdi-car-search"
+                        :loading="portals.aagLoading.value"
+                        :title="t('FakturaView.faktura.openAag')"
+                        @click="portals.openAag"
+                    >
+                        {{ t('CarEditView.aag.button') }}
+                    </v-btn>
+                    <v-btn
+                        v-if="portals.hgsAvailable.value"
+                        size="small"
+                        variant="tonal"
+                        color="blue-grey-darken-1"
+                        prepend-icon="mdi-database-search-outline"
+                        :loading="portals.hgsLoading.value"
+                        :title="t('FakturaView.faktura.openHgs')"
+                        @click="portals.openHgs"
+                    >
+                        {{ t('CarEditView.hgs.button') }}
+                    </v-btn>
                 </div>
             </div>
             <v-btn icon variant="text" color="primary" @click="reloadAll" :title="t('MechanicView.refresh')">
@@ -418,6 +443,7 @@ import InstructionsSectionCard from '@/features/lxcars/components/instructions.s
 import MaengelSectionCard from '@/features/lxcars/components/maengel.section.card.vue'
 import MaintenanceSectionCard from '@/features/lxcars/components/maintenance.section.card.vue'
 import SpecialToolsSectionCard from '@/features/lxcars/components/special-tools.section.card.vue'
+import { useDiagPortals } from '@/features/lxcars/composables/useDiagPortals.js'
 import * as alerts from '@/core/utils/alerts.js'
 
 const props = defineProps({
@@ -484,6 +510,12 @@ const accounting = useAccounting({
 const vehicle = useVehicleSection({
     carsStore, fakturaId, fakturaType, t
 })
+
+// Verknüpftes Fahrzeug des Auftrags (enthält c_2/c_3/c_fin für die Portal-Buttons)
+const selectedCarObj = computed(() =>
+    vehicle?.customerCars?.value?.find(c => c.c_id === vehicle?.selectedCarId?.value) || null
+)
+const portals = useDiagPortals({ carObj: selectedCarObj, oserp, t, warmToken: faktura.warmAagToken })
 
 // Wartung-Validierung beim Abschluss der letzten Anweisung
 const maintenanceIncompleteDialog = ref({ show: false, fields: [] })

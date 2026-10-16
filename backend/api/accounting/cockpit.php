@@ -106,10 +106,23 @@ function getAccountingCockpit($data) {
             WHERE c.category = 'A' AND COALESCE(c.link, '') LIKE '%AR_paid%'
             GROUP BY c.id, c.accno, c.description
         ),
+        -- Kontostand laut Bank: Anfangssaldo + alle abgerufenen Umsätze bis zum
+        -- Stichtag — dieselbe Zahl wie im Bankmodul. Der Hauptbuch-Saldo (acc_trans)
+        -- hinkt hinterher, solange Umsätze nicht zugeordnet sind; die Kachel zeigt
+        -- deshalb den Bankstand und nennt die Buchhaltung samt Differenz dazu.
+        bank_ist AS (
+            SELECT COALESCE(SUM(COALESCE(ba.reconciliation_starting_balance, 0)
+                       + COALESCE((SELECT SUM(bt.amount) FROM bank_transactions bt
+                                   WHERE bt.local_bank_account_id = ba.id AND bt.transdate <= :as_of4::date), 0)), 0) AS balance,
+                   MAX((SELECT MAX(bt.transdate) FROM bank_transactions bt
+                        WHERE bt.local_bank_account_id = ba.id AND bt.transdate <= :as_of5::date)) AS last_transdate
+            FROM bank_accounts ba
+        ),
         money AS (
-            SELECT COALESCE(SUM(g.balance) FILTER (WHERE g.gruppe = 'bank'), 0)     AS bank_balance,
+            SELECT (SELECT balance FROM bank_ist)                                    AS bank_balance,
+                   COALESCE(SUM(g.balance) FILTER (WHERE g.gruppe = 'bank'), 0)     AS bank_ledger_balance,
                    COUNT(*) FILTER (WHERE g.gruppe = 'bank')                        AS bank_accounts,
-                   MAX(g.last_transdate) FILTER (WHERE g.gruppe = 'bank')           AS bank_last,
+                   (SELECT last_transdate FROM bank_ist)                             AS bank_last,
                    COALESCE(SUM(g.balance) FILTER (WHERE g.gruppe = 'kasse'), 0)    AS cash_balance,
                    COUNT(*) FILTER (WHERE g.gruppe = 'kasse')                       AS cash_accounts,
                    MAX(g.last_transdate) FILTER (WHERE g.gruppe = 'kasse')          AS cash_last,
@@ -217,6 +230,7 @@ function getAccountingCockpit($data) {
             EXTRACT(YEAR  FROM CURRENT_DATE)::int               AS current_year,
 
             ROUND(money.bank_balance, 2)                        AS bank_balance,
+            ROUND(money.bank_ledger_balance, 2)                 AS bank_ledger_balance,
             money.bank_accounts                                 AS bank_accounts,
             TO_CHAR(money.bank_last, 'DD.MM.YYYY')              AS bank_last,
             TO_CHAR(:as_of2::date, 'DD.MM.YYYY')                AS as_of_fmt,
@@ -275,7 +289,7 @@ function getAccountingCockpit($data) {
         FROM p CROSS JOIN money CROSS JOIN recv CROSS JOIN pay
                CROSS JOIN docs CROSS JOIN book CROSS JOIN bank CROSS JOIN closing
                CROSS JOIN checks CROSS JOIN dunn CROSS JOIN recur
-    SQL, [':as_of' => $asOf, ':as_of2' => $asOf, ':as_of3' => $asOf]);
+    SQL, [':as_of' => $asOf, ':as_of2' => $asOf, ':as_of3' => $asOf, ':as_of4' => $asOf, ':as_of5' => $asOf]);
 
     // Abschluss-Fortschritt: Anteil der bereits zugeordneten Bankumsaetze des
     // Vormonats. Ohne Umsaetze gilt der Monat als fertig, sobald keine Belege
@@ -298,8 +312,9 @@ function getAccountingCockpit($data) {
             'current_year'   => intval($row['current_year']),
         ],
         'pulse' => [
-            'bank_balance'      => floatval($row['bank_balance']),
-            'bank_accounts'     => intval($row['bank_accounts']),
+            'bank_balance'        => floatval($row['bank_balance']),
+            'bank_ledger_balance' => floatval($row['bank_ledger_balance']),
+            'bank_accounts'       => intval($row['bank_accounts']),
             'bank_last'         => $row['bank_last'],
             'as_of'             => $row['as_of_fmt'],
             'as_of_today'       => !empty($row['as_of_today']) && $row['as_of_today'] !== 'f',

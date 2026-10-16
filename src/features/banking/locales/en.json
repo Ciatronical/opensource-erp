@@ -26,7 +26,9 @@
             "incomeThisMonth": "Income this month",
             "expensesThisMonth": "Expenses this month",
             "lastTransaction": "Last transaction",
-            "viewTransactions": "View transactions"
+            "viewTransactions": "View transactions",
+            "balanceAsOf": "Balance as of {date}",
+            "balanceLastTx": "last transaction {date}"
         },
         "transactions": {
             "title": "Transactions",

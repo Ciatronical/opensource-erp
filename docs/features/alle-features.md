@@ -1172,6 +1172,12 @@ Automatische Kennzeichenerkennung an der Werkstattzufahrt.
 - Fahrzeugscheine auf dem eigenen Server auslesen (RapidOCR, CPU) statt über die externe API
 - Umschalter in der LxCars-Konfiguration, Installation über `install.sh --only fsscanner`
 
+### 16.23 Eingangsverzeichnis für Fahrzeugscheine (Dokumentenscanner)
+
+- Je Mandant mit LxCars ein überwachtes Verzeichnis (Standard `/home/<oserp-benutzer>/Fahrzeugscheine/<db>`, in der Firmenkonfiguration änderbar); ein Dokumentenscanner (ScanSnap) legt den flach gescannten Fahrzeugschein dort ab
+- Dienst `oserp-fahrzeugschein-eingang` erkennt neue Dateien sofort (inotify, kein Cron), schickt sie durch den konfigurierten Scanner und stellt sie live in die Scanliste
+- Erkannte Dateien nach `verarbeitet/`, nicht erkannte nach `fehler/` mit Begründung; Status, Pfad und Fehler in Firmenkonfiguration → LxCars
+
 ## 17. Spezialwerkzeug *(LxCars)*
 
 - Spezialwerkzeuge unter **Lager → Spezialwerkzeug** einlagern: Lagerort, Lagerplatz, Status (verfügbar, verliehen, defekt)

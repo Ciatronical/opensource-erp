@@ -223,12 +223,13 @@ Umschalter oben rechts ändert nur die Darstellung, niemals die Buchung.
 <figcaption>Bank, Kasse und offene Posten sind nur Eingänge. Gebucht wird immer ins selbe Hauptbuch — deshalb passen die Berichte zusammen.</figcaption>
 </figure>
 
-**Stichtag im Cockpit.** Die Geldkacheln zeigen einen Stand zu einem Datum, nie
-eine zeitlose Zahl: ohne Angabe „Stand heute" mit der letzten Buchung, mit dem
-Feld **Stichtag** im Cockpit-Kopf den Saldo per diesem Tag — nur so lässt sich die
-Bank-Kachel mit einem Kontoauszug vergleichen. Weicht sie dann vom Auszug ab,
-fehlen Buchungen bis zu diesem Datum (typisch: noch nicht zugeordnete
-Kartenauszahlungen).
+**Bank-Kachel im Cockpit.** Sie zeigt den **Kontostand laut Bank** (Anfangssaldo
+plus alle abgerufenen Umsätze), also dieselbe Zahl wie das Bankmodul. Darunter
+steht der Saldo laut Buchhaltung und die Differenz: Das ist der Betrag der noch
+nicht zugeordneten Umsätze, also die offene Arbeit. Beide beziehen sich auf ein
+Datum: ohne Angabe „Stand heute" mit dem letzten Umsatz, mit dem Feld
+**Stichtag** im Cockpit-Kopf der Stand per diesem Tag. Stimmen Bank und
+Buchhaltung zum Stichtag überein, ist der Monat abgeglichen.
 
 **Bank** und **Kasse** haben im Cockpit je eine eigene Kachel und je eine eigene
 Seite. Das ist kein Schönheitsfehler, sondern Absicht: der Bankbestand wird von

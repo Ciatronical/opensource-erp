@@ -19,3 +19,8 @@ Server. Vollständige Beschreibung, Installation und Werkzeuge:
 - Verfahren: SIFT-Registrierung auf eine Median-Vorlage des Vordrucks, gelerntes
   Feldlayout (`reference/layout.json`), Erkennung je Ausschnitt mit dem
   PP-OCRv5-Latin-Modell (kein Training, keine externe KI, kein LLM nötig).
+- Eingangsverzeichnis (Dokumentenscanner): Dienst
+  `oserp-fahrzeugschein-eingang` (`backend/cli/fahrzeugschein-eingang.php`, inotify über
+  PHP-FFI) überwacht `/home/<oserp-benutzer>/Fahrzeugscheine/<db>` (änderbar) je Mandant mit LxCars und
+  ruft `_scanFahrzeugscheinRun()` auf — derselbe Weg wie der Upload, Scan-IDs `inbox_…`.
+  Helfer und Status-API in `backend/api/lxcars/scan_inbox.php`.

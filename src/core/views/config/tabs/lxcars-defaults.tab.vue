@@ -153,6 +153,13 @@
                 </v-col>
             </v-row>
 
+            <!-- Eigene Komponente (z. B. Status des Eingangsverzeichnisses) -->
+            <v-row v-else-if="field.type === 'component'" class="my-4" :data-field-name="field.name">
+                <v-col cols="12" md="8">
+                    <component :is="komponenten[field.component]" :werte="crmDefaults" />
+                </v-col>
+            </v-row>
+
             <!-- Dynamic Select (Items aus company_config) -->
             <v-row v-else-if="field.type === 'dynamic-select'" class="my-4" :data-field-name="field.name">
                 <v-col cols="12" md="6">
@@ -186,7 +193,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue';
+import { ref, onMounted, inject, defineAsyncComponent } from 'vue';
 import { VTextField } from 'vuetify/components';
 import { useI18n } from 'vue-i18n';
 import PasswordField from '@/core/components/password-field.vue';
@@ -194,6 +201,11 @@ import { oserpStore } from '@/core/stores/oserp.store.js';
 
 const { t } = useI18n();
 const store = oserpStore();
+
+// Komponenten für Felder vom Typ "component" (lxcarsDefaultsConfig.js, Schlüssel = component)
+const komponenten = {
+    'scan-inbox-status': defineAsyncComponent(() => import('@/features/lxcars/components/scan-inbox-status.component.vue')),
+};
 
 function getDynamicItems(source) {
     return store.session?.[source] || store.session?.company_config?.[source] || [];
