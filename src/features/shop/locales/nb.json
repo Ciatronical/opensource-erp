@@ -509,6 +509,7 @@
             "dropHint": "Dra filer hit for å laste dem opp",
             "uploading": "Laster opp: {done} av {total}",
             "uploadDone": "{count} filer lastet opp",
+            "thumbnailError": "Ingen miniatyrbilde for {name}: {reason}",
             "preview": "Vis",
             "noPreview": "Det finnes ingen forhåndsvisning for denne filen.",
             "download": "Last ned",

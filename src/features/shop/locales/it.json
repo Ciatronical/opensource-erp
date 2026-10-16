@@ -509,6 +509,7 @@
             "dropHint": "Trascina qui i file per caricarli",
             "uploading": "Caricamento: {done} di {total}",
             "uploadDone": "{count} file caricati",
+            "thumbnailError": "Nessuna miniatura per {name}: {reason}",
             "preview": "Visualizza",
             "noPreview": "Nessuna anteprima per questo file.",
             "download": "Scarica",

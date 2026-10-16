@@ -509,6 +509,7 @@
             "dropHint": "Træk filer hertil for at uploade dem",
             "uploading": "Uploader: {done} af {total}",
             "uploadDone": "{count} filer uploadet",
+            "thumbnailError": "Ingen miniature til {name}: {reason}",
             "preview": "Vis",
             "noPreview": "Der er ingen forhåndsvisning af denne fil.",
             "download": "Download",

@@ -79,7 +79,8 @@ function shopMediaPick($data) {
  * @param string $data['path'] Bereich, etwa images:// oder downloads://
  * @param string $data['name'] gewünschter Name; leer = Name der hochgeladenen Datei
  * @param string $data['format'] Zielformat für Bilder (webp, jpg, png); leer = Format beibehalten
- * @return void filename, replaced, media (Zeile aus media_shop), storages, dirname, files
+ * @return void filename, replaced, thumbnail_error (Grund, wenn kein Vorschaubild entstand, sonst leer),
+ *              media (Zeile aus media_shop), storages, dirname, files
  * @testdata {"path": "images://", "name": "", "format": ""}
  */
 function shopMediaUpload($data) {
@@ -113,9 +114,10 @@ function shopMediaUpload($data) {
     $zeile = shopMediaImport($db, $art, (string)$datei['tmp_name'], (string)($data['name'] ?? ''),
         (string)($datei['name'] ?? ''), (string)($data['format'] ?? ''), true);
     resultInfo(true, '', [
-        'filename' => $zeile['filename'],
-        'replaced' => $zeile['replaced'],
-        'media'    => $zeile,
+        'filename'        => $zeile['filename'],
+        'replaced'        => $zeile['replaced'],
+        'thumbnail_error' => $zeile['thumbnail_error'] ?? '',
+        'media'           => $zeile,
     ] + shopMediaListing($db, $pfad['bereich']));
 }
 

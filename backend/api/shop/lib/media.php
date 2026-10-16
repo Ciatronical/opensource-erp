@@ -223,8 +223,16 @@ function shopMediaStore($db, string $art, string $quelle, string $name, bool $ho
     }
     @chmod($ziel, 0664);
 
-    $vorschau = 'image' === $art ? shopMediaThumbnail($db, $name) : null;
-    return shopMediaRegister($db, $art, $name, $vorschau) + ['replaced' => $ersetzt];
+    $vorschau = null;
+    $grund = null;
+    if ('image' === $art) {
+        $vorschau = shopMediaThumbnail($db, $name, 0, $grund);
+        if (null === $vorschau) {
+            writeLog('[SHOP] Kein Vorschaubild zu '.$name.': '.$grund, true, DLOG_WRN);
+        }
+    }
+    // thumbnail_error: warum kein Vorschaubild entstand (leer, wenn eines da ist)
+    return shopMediaRegister($db, $art, $name, $vorschau) + ['replaced' => $ersetzt, 'thumbnail_error' => (string)$grund];
 }
 
 /**
@@ -234,20 +242,33 @@ function shopMediaStore($db, string $art, string $quelle, string $name, bool $ho
  * Größe einpassen, Seitenverhältnis behalten, nie vergrößern, Transparenz
  * erhalten, Format der Quelle. Die Größe ist shop_thumbnail_size.
  *
+ * Scheitert es, nennt $grund die Ursache — der Aufrufer meldet sie (Lauf,
+ * Abgleich, Hochladen) und schreibt sie ins Protokoll. Ein stilles null
+ * ließe auf einem Server ohne GD oder ohne WebP-Unterstützung alle
+ * Vorschaubilder fehlen, ohne dass es jemand sieht.
+ *
  * @param object $db Company-Datenbankverbindung
  * @param string $name Dateiname in images/
  * @param int $groesse größte Seite, 0 = Einstellung
+ * @param string|null $grund Ursache, wenn kein Vorschaubild entstand
  * @return array|null sha256, size (die Größe) — null, wenn kein Vorschaubild
- *                    entstehen kann (GD fehlt, Bildart nicht lesbar)
+ *                    entstehen kann (GD fehlt, Bildart nicht lesbar, Ziel nicht schreibbar)
  */
-function shopMediaThumbnail($db, string $name, int $groesse = 0): ?array {
+function shopMediaThumbnail($db, string $name, int $groesse = 0, ?string &$grund = null): ?array {
+    $grund = null;
     if (!function_exists('imagecreatetruecolor')) {
+        $grund = 'Die PHP-Erweiterung GD fehlt';
         return null;
     }
     $groesse = $groesse > 0 ? $groesse : max(16, min(2000, shopConfigInt($db, 'shop_thumbnail_size', 200)));
     $quelle = shopMediaDir($db, 'images').'/'.$name;
+    if (!is_file($quelle)) {
+        $grund = 'Produktbild fehlt in der Bibliothek';
+        return null;
+    }
     $info = @getimagesize($quelle);
     if (false === $info) {
+        $grund = 'Bild nicht lesbar';
         return null;
     }
     [$breite, $hoehe, $typ] = $info;
@@ -257,11 +278,18 @@ function shopMediaThumbnail($db, string $name, int $groesse = 0): ?array {
 
     $laden = [IMAGETYPE_JPEG => 'imagecreatefromjpeg', IMAGETYPE_PNG => 'imagecreatefrompng',
               IMAGETYPE_GIF => 'imagecreatefromgif', IMAGETYPE_WEBP => 'imagecreatefromwebp'];
-    if (!isset($laden[$typ]) || !function_exists($laden[$typ])) {
+    if (!isset($laden[$typ])) {
+        $grund = 'Bildart wird nicht unterstützt';
+        return null;
+    }
+    if (!function_exists($laden[$typ]) || (IMAGETYPE_WEBP === $typ && !function_exists('imagewebp'))) {
+        $grund = 'GD dieses Servers kann kein '.(IMAGETYPE_WEBP === $typ ? 'WebP' : image_type_to_extension($typ, false))
+            .' (PHP mit entsprechender GD-Unterstützung nötig)';
         return null;
     }
     $bild = @$laden[$typ]($quelle);
     if (false === $bild) {
+        $grund = 'Bild nicht lesbar (beschädigt oder zu groß für den Speicher)';
         return null;
     }
     $klein = imagecreatetruecolor($neuBreite, $neuHoehe);
@@ -270,16 +298,24 @@ function shopMediaThumbnail($db, string $name, int $groesse = 0): ?array {
     imagefill($klein, 0, 0, imagecolorallocatealpha($klein, 0, 0, 0, 127));
     imagecopyresampled($klein, $bild, 0, 0, 0, 0, $neuBreite, $neuHoehe, $breite, $hoehe);
 
-    $ziel = shopMediaDir($db, 'thumbnails', true).'/'.$name;
+    $verzeichnis = shopMediaDir($db, 'thumbnails', true);
+    $ziel = $verzeichnis.'/'.$name;
+    if (!is_writable($verzeichnis) || (is_file($ziel) && !is_writable($ziel))) {
+        imagedestroy($klein);
+        imagedestroy($bild);
+        $grund = 'Verzeichnis der Vorschaubilder nicht schreibbar: '.$verzeichnis;
+        return null;
+    }
     $ok = match ($typ) {
-        IMAGETYPE_JPEG => imagejpeg($klein, $ziel, 85),
-        IMAGETYPE_PNG  => imagepng($klein, $ziel),
-        IMAGETYPE_GIF  => imagegif($klein, $ziel),
-        default        => function_exists('imagewebp') && imagewebp($klein, $ziel, 85),
+        IMAGETYPE_JPEG => @imagejpeg($klein, $ziel, 85),
+        IMAGETYPE_PNG  => @imagepng($klein, $ziel),
+        IMAGETYPE_GIF  => @imagegif($klein, $ziel),
+        default        => @imagewebp($klein, $ziel, 85),
     };
     imagedestroy($klein);
     imagedestroy($bild);
     if (!$ok) {
+        $grund = 'Vorschaubild konnte nicht geschrieben werden: '.$ziel;
         return null;
     }
     @chmod($ziel, 0664);
@@ -590,9 +626,12 @@ function shopMediaSync($db, ?callable $melden = null): array {
             try {
                 $vorschau = null;
                 if ('image' === $art && ($vorschauFehlt || !$unveraendert)) {
-                    $vorschau = shopMediaThumbnail($db, $name, $groesse);
+                    $grund = null;
+                    $vorschau = shopMediaThumbnail($db, $name, $groesse, $grund);
                     if ($vorschau) {
                         $bilanz['vorschau']++;
+                    } else {
+                        $bilanz['unbrauchbar'][] = $bereich.'/'.$name.': kein Vorschaubild — '.$grund;
                     }
                 }
                 shopMediaRegister($db, $art, $name, $vorschau);
@@ -622,20 +661,22 @@ function shopMediaSync($db, ?callable $melden = null): array {
  * Nur die Einträge aus media_shop, kein Lesen der Verzeichnisse.
  *
  * @param object $db Company-Datenbankverbindung
- * @return int erzeugte Vorschaubilder
+ * @return array erzeugt (Zahl), fehlgeschlagen (Dateiname => Grund)
  */
-function shopMediaThumbnailsRefresh($db): int {
+function shopMediaThumbnailsRefresh($db): array {
     $groesse = max(16, min(2000, shopConfigInt($db, 'shop_thumbnail_size', 200)));
     $verzeichnis = shopMediaDir($db, 'thumbnails');
-    $erzeugt = 0;
+    $bilanz = ['erzeugt' => 0, 'fehlgeschlagen' => []];
     foreach ($db->getAll("SELECT filename, thumbnail_size FROM media_shop WHERE kind = 'image' ORDER BY filename") ?: [] as $zeile) {
         if ((int)$zeile['thumbnail_size'] === $groesse && is_file($verzeichnis.'/'.$zeile['filename'])) {
             continue;
         }
-        $vorschau = shopMediaThumbnail($db, $zeile['filename'], $groesse);
+        $grund = null;
+        $vorschau = shopMediaThumbnail($db, $zeile['filename'], $groesse, $grund);
         if (null === $vorschau) {
-            // Quelle nicht lesbar (oder GD fehlt): der Eintrag bleibt, die
-            // Lieferung lässt das Vorschaubild aus
+            // Der Eintrag bleibt, die Lieferung lässt das Vorschaubild aus;
+            // der Lauf nennt den Grund
+            $bilanz['fehlgeschlagen'][$zeile['filename']] = (string)$grund;
             continue;
         }
         $db->execute(
@@ -643,9 +684,13 @@ function shopMediaThumbnailsRefresh($db): int {
               WHERE kind = 'image' AND filename = :name",
             [':sha256' => $vorschau['sha256'], ':groesse' => $vorschau['size'], ':name' => $zeile['filename']]
         );
-        $erzeugt++;
+        $bilanz['erzeugt']++;
     }
-    return $erzeugt;
+    if ($bilanz['fehlgeschlagen']) {
+        writeLog(sprintf('[SHOP] %d Vorschaubilder nicht erzeugt, etwa %s: %s', count($bilanz['fehlgeschlagen']),
+            array_key_first($bilanz['fehlgeschlagen']), reset($bilanz['fehlgeschlagen'])), true, DLOG_WRN);
+    }
+    return $bilanz;
 }
 
 /**

@@ -509,6 +509,7 @@
             "dropHint": "Drop files here to upload them",
             "uploading": "Uploading: {done} of {total}",
             "uploadDone": "{count} files uploaded",
+            "thumbnailError": "No thumbnail for {name}: {reason}",
             "preview": "View",
             "noPreview": "There is no preview for this file.",
             "download": "Download",

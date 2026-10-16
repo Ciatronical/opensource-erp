@@ -509,6 +509,7 @@
             "dropHint": "Déposez des fichiers ici pour les envoyer",
             "uploading": "Envoi : {done} sur {total}",
             "uploadDone": "{count} fichiers envoyés",
+            "thumbnailError": "Pas de vignette pour {name} : {reason}",
             "preview": "Afficher",
             "noPreview": "Aucun aperçu pour ce fichier.",
             "download": "Télécharger",

@@ -509,6 +509,7 @@
             "dropHint": "Arraste arquivos para cá para enviá-los",
             "uploading": "Enviando: {done} de {total}",
             "uploadDone": "{count} arquivos enviados",
+            "thumbnailError": "Sem miniatura para {name}: {reason}",
             "preview": "Ver",
             "noPreview": "Não há pré-visualização para este arquivo.",
             "download": "Baixar",

@@ -509,6 +509,7 @@
             "dropHint": "Vedä tiedostot tähän ladataksesi ne",
             "uploading": "Ladataan: {done}/{total}",
             "uploadDone": "{count} tiedostoa ladattu",
+            "thumbnailError": "Ei pikkukuvaa tiedostolle {name}: {reason}",
             "preview": "Näytä",
             "noPreview": "Tälle tiedostolle ei ole esikatselua.",
             "download": "Lataa",

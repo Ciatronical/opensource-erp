@@ -509,6 +509,7 @@
             "dropHint": "Dateien hierher ziehen, um sie hochzuladen",
             "uploading": "Hochladen: {done} von {total}",
             "uploadDone": "{count} Dateien hochgeladen",
+            "thumbnailError": "Kein Vorschaubild zu {name}: {reason}",
             "preview": "Ansehen",
             "noPreview": "Für diese Datei gibt es keine Vorschau.",
             "download": "Herunterladen",

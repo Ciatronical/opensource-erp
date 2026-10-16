@@ -509,6 +509,7 @@
             "dropHint": "Перетащите файлы сюда, чтобы загрузить",
             "uploading": "Загрузка: {done} из {total}",
             "uploadDone": "Загружено файлов: {count}",
+            "thumbnailError": "Нет миниатюры для {name}: {reason}",
             "preview": "Просмотр",
             "noPreview": "Для этого файла нет предпросмотра.",
             "download": "Скачать",

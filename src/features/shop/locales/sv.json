@@ -509,6 +509,7 @@
             "dropHint": "Dra filer hit för att ladda upp dem",
             "uploading": "Laddar upp: {done} av {total}",
             "uploadDone": "{count} filer uppladdade",
+            "thumbnailError": "Ingen miniatyr för {name}: {reason}",
             "preview": "Visa",
             "noPreview": "Det finns ingen förhandsvisning för den här filen.",
             "download": "Ladda ned",

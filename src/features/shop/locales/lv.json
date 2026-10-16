@@ -509,6 +509,7 @@
             "dropHint": "Velciet failus šeit, lai tos augšupielādētu",
             "uploading": "Augšupielāde: {done} no {total}",
             "uploadDone": "Augšupielādēti faili: {count}",
+            "thumbnailError": "Nav sīktēla failam {name}: {reason}",
             "preview": "Skatīt",
             "noPreview": "Šim failam nav priekšskatījuma.",
             "download": "Lejupielādēt",

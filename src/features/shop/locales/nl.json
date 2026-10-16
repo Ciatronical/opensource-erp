@@ -509,6 +509,7 @@
             "dropHint": "Sleep bestanden hierheen om ze te uploaden",
             "uploading": "Uploaden: {done} van {total}",
             "uploadDone": "{count} bestanden geüpload",
+            "thumbnailError": "Geen miniatuur voor {name}: {reason}",
             "preview": "Bekijken",
             "noPreview": "Voor dit bestand is geen voorbeeld.",
             "download": "Downloaden",

@@ -509,6 +509,7 @@
             "dropHint": "Přetáhněte sem soubory pro nahrání",
             "uploading": "Nahrávání: {done} z {total}",
             "uploadDone": "Nahráno souborů: {count}",
+            "thumbnailError": "Žádný náhled pro {name}: {reason}",
             "preview": "Zobrazit",
             "noPreview": "Pro tento soubor není náhled.",
             "download": "Stáhnout",

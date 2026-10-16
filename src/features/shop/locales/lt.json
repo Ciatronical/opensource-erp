@@ -509,6 +509,7 @@
             "dropHint": "Nutempkite failus čia, kad įkeltumėte",
             "uploading": "Įkeliama: {done} iš {total}",
             "uploadDone": "Įkelta failų: {count}",
+            "thumbnailError": "Nėra miniatiūros failui {name}: {reason}",
             "preview": "Peržiūrėti",
             "noPreview": "Šiam failui peržiūros nėra.",
             "download": "Atsisiųsti",

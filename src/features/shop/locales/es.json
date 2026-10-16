@@ -509,6 +509,7 @@
             "dropHint": "Arrastre archivos aquí para subirlos",
             "uploading": "Subiendo: {done} de {total}",
             "uploadDone": "{count} archivos subidos",
+            "thumbnailError": "Sin miniatura para {name}: {reason}",
             "preview": "Ver",
             "noPreview": "No hay vista previa para este archivo.",
             "download": "Descargar",

@@ -509,6 +509,7 @@
             "dropHint": "Yüklemek için dosyaları buraya sürükleyin",
             "uploading": "Yükleniyor: {done}/{total}",
             "uploadDone": "{count} dosya yüklendi",
+            "thumbnailError": "{name} için küçük resim yok: {reason}",
             "preview": "Görüntüle",
             "noPreview": "Bu dosya için önizleme yok.",
             "download": "İndir",

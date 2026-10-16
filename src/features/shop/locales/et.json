@@ -509,6 +509,7 @@
             "dropHint": "Lohista failid üleslaadimiseks siia",
             "uploading": "Üleslaadimine: {done}/{total}",
             "uploadDone": "{count} faili üles laaditud",
+            "thumbnailError": "{name} pisipilti ei loodud: {reason}",
             "preview": "Vaata",
             "noPreview": "Sellel failil pole eelvaadet.",
             "download": "Laadi alla",

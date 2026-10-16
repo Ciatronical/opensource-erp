@@ -509,6 +509,7 @@
             "dropHint": "Przeciągnij pliki tutaj, aby je przesłać",
             "uploading": "Przesyłanie: {done} z {total}",
             "uploadDone": "Przesłano plików: {count}",
+            "thumbnailError": "Brak miniatury dla {name}: {reason}",
             "preview": "Pokaż",
             "noPreview": "Brak podglądu dla tego pliku.",
             "download": "Pobierz",

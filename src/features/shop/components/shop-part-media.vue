@@ -756,6 +756,12 @@ async function hochladen() {
             zeile.status = 'fertig'
             zeile.percent = 100
             neueNamen.push(antwort.filename)
+            // Datei liegt in der Bibliothek, aber ohne Vorschaubild (GD fehlt,
+            // kein WebP, Verzeichnis nicht schreibbar): sagen, statt es still
+            // zu übergehen — die Webseite zeigt sonst kein Bild in den Listen
+            if (antwort.thumbnail_error) {
+                toast.warning(t('ShopView.media.thumbnailError', { name: antwort.filename, reason: antwort.thumbnail_error }))
+            }
         } catch (e) {
             zeile.status = 'fehler'
             zeile.fehler = fehlertext(e)

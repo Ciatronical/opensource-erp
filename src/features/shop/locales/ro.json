@@ -509,6 +509,7 @@
             "dropHint": "Trageți fișierele aici pentru a le încărca",
             "uploading": "Se încarcă: {done} din {total}",
             "uploadDone": "{count} fișiere încărcate",
+            "thumbnailError": "Fără miniatură pentru {name}: {reason}",
             "preview": "Vizualizează",
             "noPreview": "Nu există previzualizare pentru acest fișier.",
             "download": "Descarcă",

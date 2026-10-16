@@ -599,7 +599,7 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
                  'buildPending' => false, 'uebersprungen' => [], 'freigaben' => [], 'fehler' => '',
                  'php' => ['hugocms_bereit' => false, 'schluessel' => '' !== shopSigningSecretKey(), 'gesendet' => []],
                  'medien' => ['angenommen' => false, 'anzahl' => ['images' => 0, 'thumbnails' => 0, 'downloads' => 0],
-                              'fehlend' => [], 'uebertragen' => 0, 'vorschau_neu' => 0]];
+                              'fehlend' => [], 'uebertragen' => 0, 'vorschau_neu' => 0, 'vorschau_fehler' => []]];
 
     $stand = shopHugoCmsCall($db, $kanal, 'shopbuildstatus');
     if (!$stand['ok']) {
@@ -644,6 +644,7 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
         'fehlend'      => $medien['fehlend'],
         'uebertragen'  => 0,
         'vorschau_neu' => $medien['vorschau_neu'],
+        'vorschau_fehler' => $medien['vorschau_fehler'],
     ];
     foreach ($medien['dateien'] as $pfad => $datei) {
         $liste['dateien'][$pfad] = $datei['sha256'];
@@ -765,14 +766,18 @@ require_once __DIR__.'/media.php';
  * @param array $freigaben aus shopHugoCmsGrantsFrom (images, thumbnails, downloads, medien)
  * @return array dateien (Pfad in der Webseite => sha256, size, quelle),
  *               fehlend (Einträge ohne Datei, „bereich/name“),
- *               anzahl (images, thumbnails, downloads), vorschau_neu
+ *               anzahl (images, thumbnails, downloads), vorschau_neu,
+ *               vorschau_fehler (Dateiname => Grund)
  */
 function shopHugoCmsMediaList($db, array $freigaben): array {
-    $ergebnis = ['dateien' => [], 'fehlend' => [], 'anzahl' => ['images' => 0, 'thumbnails' => 0, 'downloads' => 0], 'vorschau_neu' => 0];
+    $ergebnis = ['dateien' => [], 'fehlend' => [], 'anzahl' => ['images' => 0, 'thumbnails' => 0, 'downloads' => 0],
+                 'vorschau_neu' => 0, 'vorschau_fehler' => []];
     if (empty($freigaben['medien'])) {
         return $ergebnis;
     }
-    $ergebnis['vorschau_neu'] = shopMediaThumbnailsRefresh($db);
+    $vorschau = shopMediaThumbnailsRefresh($db);
+    $ergebnis['vorschau_neu'] = $vorschau['erzeugt'];
+    $ergebnis['vorschau_fehler'] = $vorschau['fehlgeschlagen'];
 
     $verzeichnisse = [];
     foreach (array_keys($ergebnis['anzahl']) as $bereich) {
@@ -919,6 +924,17 @@ function shopHugoCmsMediaReport($db, int $kanal, array $abgleich, callable $sage
         $medien['anzahl']['images'], $medien['anzahl']['thumbnails'], $medien['anzahl']['downloads'], $medien['uebertragen']));
     if ($medien['vorschau_neu'] > 0) {
         $sagen(sprintf('%d Vorschaubilder neu erzeugt (Größe %d)', $medien['vorschau_neu'], shopConfigInt($db, 'shop_thumbnail_size', 200)));
+    }
+    if ($medien['vorschau_fehler']) {
+        // Nach Grund gebündelt: auf einem Server ohne WebP-Unterstützung
+        // wäre es sonst eine Zeile je Bild
+        $nachGrund = [];
+        foreach ($medien['vorschau_fehler'] as $name => $grund) {
+            $nachGrund[$grund][] = $name;
+        }
+        foreach ($nachGrund as $grund => $namen) {
+            $sagen(sprintf('Warnung: %d Vorschaubilder nicht erzeugt — %s: %s', count($namen), $grund, $liste($namen)));
+        }
     }
     if ($medien['fehlend']) {
         $sagen(sprintf('Warnung: %d Einträge der Medienbibliothek ohne Datei — in der Ansicht „Medien“ abgleichen: %s',

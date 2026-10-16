@@ -509,6 +509,7 @@
             "dropHint": "将文件拖到此处上传",
             "uploading": "上传中：{done}/{total}",
             "uploadDone": "已上传 {count} 个文件",
+            "thumbnailError": "{name} 没有缩略图：{reason}",
             "preview": "查看",
             "noPreview": "此文件没有预览。",
             "download": "下载",
