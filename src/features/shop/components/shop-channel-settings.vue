@@ -307,7 +307,18 @@ async function speichern() {
         // sagt danach „hinterlegt"
         alleFelder.value.filter(feld => feld.type === 'password').forEach(feld => { werte[feld.name] = '' })
         zuletzt = JSON.stringify(nutzdaten())
-        toasts.success(t('ShopView.channelConfig.settingsSaved'))
+        // Felder, die das Backend nicht kennt (shop_channel_setting_keys), sind
+        // nicht gespeichert — meist fehlt das Upstall. Beschriftung statt Schlüssel.
+        const abgelehnt = antwort.data.payload?.rejected_keys || []
+        if (abgelehnt.length) {
+            const namen = abgelehnt.map(schluessel => {
+                const feld = alleFelder.value.find(f => f.name === schluessel)
+                return feld ? t(feld.label) : schluessel
+            })
+            toasts.warning(t('ShopView.channelConfig.settingsRejected', { fields: namen.join(', ') }), { timer: 15000 })
+        } else {
+            toasts.success(t('ShopView.channelConfig.settingsSaved'))
+        }
     } catch (e) {
         toasts.error(shopFehler(e?.response?.data, i18n, 'ShopView.channelConfig.settingsSaveError').text)
     } finally {

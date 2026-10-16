@@ -5,7 +5,8 @@
             "shopOrders": "/shop/orders",
             "shopWithdrawals": "/shop/withdrawals",
             "shopChannels": "/shop/sales-channels",
-            "shopShipping": "/shop/shipping-methods"
+            "shopShipping": "/shop/shipping-methods",
+            "shopAssortment": "/shop/assortment"
         },
         "menu": {
             "title": "Shop",
@@ -125,8 +126,8 @@
             "hyperlink": "Product page",
             "hyperlinkHint": "Path of the product page on the shop website, without the base address. Leave empty to use the suggestion.",
             "openInShop": "View in shop",
-            "breadcrumbs": "Navigation path",
-            "breadcrumbsHint": "Steps of the shop navigation in order; confirm each with Enter.",
+            "breadcrumbs": "Place in the product range",
+            "breadcrumbsHint": "Levels from general to specific, confirm each with Enter. Shown as the short description of the item and found by the shop search.",
             "images": "Images",
             "imagesHint": "File names on the shop website; confirm each with Enter. The first image is the thumbnail.",
             "thumbnail": "Thumbnail",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Product page",
             "editChannel": "Sales channel settings",
-            "mediaUpload": "Upload"
+            "mediaUpload": "Upload",
+            "categoryHint": "Groups and categories are maintained in the “Product range” view.",
+            "categoryManage": "Open product range"
         },
         "publish": {
             "title": "Publishing",
@@ -269,7 +272,8 @@
                 "remove_all": "Remove all product pages",
                 "draft_all": "All product pages as draft",
                 "sync_kit": "Update shop user interface",
-                "reconcile_payments": "Reconcile payments"
+                "reconcile_payments": "Reconcile payments",
+                "write_categories": "Write category overview"
             },
             "installUiAsk": "Install the shop user interface now, or schedule it as a job for the next planned run?",
             "installUiChannels": "For which sales channels?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "When an item is newly added to the shop, it is offered in this channel as well.",
             "settings": "Settings of {name}",
             "settingsSaved": "Settings saved.",
+            "settingsRejected": "Not saved: {fields}. The backend does not know these fields yet – the database update of the shop extension is probably missing (log in again).",
             "settingsSaveError": "The settings could not be saved.",
             "newChannel": "New sales channel:",
             "newChannelType": "Type",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Unknown library area.",
             "MEDIA_FORMAT": "This format is not available on the server.",
             "MEDIA_FORMAT_SAME": "The image already has this format.",
-            "MEDIA_CONVERT": "The image could not be converted."
+            "MEDIA_CONVERT": "The image could not be converted.",
+            "ASSORTMENT_NAME_REQUIRED": "Please enter a name.",
+            "ASSORTMENT_NAME_TAKEN": "This name already exists.",
+            "ASSORTMENT_NAME_INVALID": "No address can be built from this name – please use letters or digits.",
+            "ASSORTMENT_NOT_FOUND": "The entry no longer exists. Please reload the view.",
+            "ASSORTMENT_CATEGORY_IN_USE": "The category is still assigned to items."
         },
         "orderStatus": {
             "open": "Open",
@@ -529,6 +539,43 @@
             "uploadHint": "Each name exists only once in the library; a file no article references is replaced. Images can be converted to another format while uploading.",
             "deleteKept": "{name} stays in the library: other articles reference the file.",
             "empty": "No files."
+        },
+        "assortment": {
+            "title": "Product range",
+            "subtitle": "Groups and categories of the shop",
+            "loading": "Loading …",
+            "hint": "The item card picks categories from this list. With the “Standard” template set, the category overview of the website is built from it: groups in this order, categories without a group under “Sonstiges”, top sellers on top. Changes reach the website with the next run.",
+            "groups": "Groups",
+            "categories": "Categories",
+            "newGroup": "New group",
+            "editGroup": "Edit group",
+            "newCategory": "New category",
+            "editCategory": "Edit category",
+            "name": "Name",
+            "group": "Group",
+            "noGroup": "Without group (Sonstiges)",
+            "topseller": "Top seller",
+            "topsellerHint": "Highlighted at the top of the category overview on the website.",
+            "parts": "Items",
+            "partsHint": "Offered / assigned: only offered items appear on the website.",
+            "categoryCount": "Categories: {count}",
+            "search": "Search",
+            "empty": "No categories yet.",
+            "noMatch": "No category matches the selection.",
+            "moveUp": "Move up",
+            "moveDown": "Move down",
+            "edit": "Edit",
+            "delete": "Delete",
+            "cancel": "Cancel",
+            "save": "Save",
+            "saved": "Saved.",
+            "deleted": "Deleted.",
+            "groupNameHint": "This is how the group appears in the category overview on the website.",
+            "categoryNameHint": "The address of the category page is built from the name.",
+            "renameHint": "The new name changes the address of the category page. The product pages of the assigned items ({count}) will be rewritten.",
+            "deleteGroupConfirm": "Delete group “{name}”? Its categories ({count}) remain and will be listed under “Sonstiges”.",
+            "deleteCategoryConfirm": "Delete category “{name}”?",
+            "categoryInUse": "The category “{name}” is still assigned to {count} items and cannot be deleted. Give these items another category first."
         }
     }
 }

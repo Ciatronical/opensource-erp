@@ -62,17 +62,38 @@
             <div class="text-caption text-medium-emphasis mb-2">{{ t('ShopView.partCard.listedHint') }}</div>
 
             <v-row v-if="daten.listed" dense>
-                <!-- Kategorie -->
+                <!-- Kategorie aus dem Sortiment (dev/shop-sortiment.md); die Gruppe
+                     gehört der Kategorie und steht darunter -->
                 <v-col id="abschnitt-shop-angaben" cols="12" sm="6" class="py-1 sprungziel">
-                    <v-text-field
-                        v-model="daten.category"
+                    <v-autocomplete
+                        v-model="daten.category_id"
+                        :items="kategorieAuswahl"
+                        item-value="value"
+                        item-title="title"
                         :label="t('ShopView.partCard.category')"
+                        :hint="t('ShopView.partCard.categoryHint')"
+                        persistent-hint
                         :readonly="!darfBearbeiten"
+                        clearable
                         variant="outlined"
                         density="compact"
                         hide-details="auto"
                         autocomplete="off"
-                    />
+                    >
+                        <!-- Vuetify 4: item ist der Eintrag selbst (kein item.raw mehr) -->
+                        <template #item="{ props: eintrag, item }">
+                            <v-list-item v-bind="eintrag" :subtitle="item.group" />
+                        </template>
+                        <template #append>
+                            <v-btn
+                                icon="mdi-tag-multiple-outline"
+                                size="x-small"
+                                variant="text"
+                                :title="t('ShopView.partCard.categoryManage')"
+                                @click="sortimentOeffnen"
+                            />
+                        </template>
+                    </v-autocomplete>
                 </v-col>
 
                 <!-- Produktseite: leer = Vorschlag der Maske -->
@@ -103,7 +124,8 @@
                     </v-text-field>
                 </v-col>
 
-                <!-- Navigationspfad -->
+                <!-- Einordnung im Sortiment (parts_ext.hugoshop_breadcrumbs): Kurzbeschreibung
+                     der Produktseite und Suchbegriffe, keine Navigation der Webseite -->
                 <v-col cols="12" class="py-1">
                     <v-combobox
                         v-model="daten.breadcrumbs"
@@ -572,6 +594,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useShop } from '@/features/shop/composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
@@ -618,10 +641,54 @@ function kanalEinstellungen(kanal) {
     window.open(ziel.href, '_blank')
 }
 
+/**
+ * Sortiment in einem neuen Reiter: die Karte kann ungespeicherte Änderungen
+ * haben, die beim Verlassen verloren gingen. Kehrt der Benutzer zurück, lädt
+ * die Karte die Auswahl neu (kategorienAuffrischen).
+ */
+function sortimentOeffnen() {
+    window.open(router.resolve({ name: 'shop-assortment' }).href, '_blank')
+}
+
+/**
+ * Lädt die Auswahlliste der Kategorien nach, wenn dieser Reiter wieder
+ * sichtbar wird — eine im Sortiment (anderer Reiter) angelegte oder
+ * umbenannte Kategorie steht sonst erst nach dem Neuladen der Seite zur Wahl.
+ *
+ * Nur die Liste, nicht die Karte: deren ungespeicherte Eingaben bleiben. Die
+ * Reihenfolge ist die von getPartShopData (Gruppe nach Reihenfolge und Name,
+ * ohne Gruppe zuletzt, darin nach Namen). Scheitert der Abruf, bleibt die
+ * bisherige Liste — ein Hinweis darauf brächte nichts.
+ */
+async function kategorienAuffrischen() {
+    if (document.visibilityState !== 'visible' || !darfBearbeiten.value) return
+    try {
+        const antwort = await axios.post('/api/shop/', { action: 'getShopAssortment' })
+        if (!antwort.data?.success) return
+        const { groups = [], categories = [] } = antwort.data.payload || {}
+        const rang = new Map(groups.map((g, i) => [Number(g.id), { i, name: g.name }]))
+        const ohne = groups.length
+        kategorien.value = categories
+            .map(k => ({ id: Number(k.id), name: k.name, group: rang.get(Number(k.group_id))?.name || null,
+                         _rang: rang.get(Number(k.group_id))?.i ?? ohne }))
+            .sort((a, b) => a._rang - b._rang || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+    } catch {
+        // bisherige Liste behalten
+    }
+}
+
+/** Kategorien des Sortiments, kommen mit getPartShopData */
+const kategorien = ref([])
+const kategorieAuswahl = computed(() => kategorien.value.map(k => ({
+    value: Number(k.id),
+    title: k.name,
+    group: k.group || t('ShopView.assortment.noGroup'),
+})))
+
 function leer() {
     return {
         listed: false,
-        category: '',
+        category_id: null,
         hyperlink: '',
         breadcrumbs: [],
         images: [],
@@ -996,7 +1063,7 @@ function nutzdaten(partsId) {
     const d = daten.value
     return {
         parts_id: Number(partsId),
-        category: d.category.trim(),
+        category_id: d.category_id || 0,
         hyperlink: d.hyperlink.trim() || props.suggestedLink,
         breadcrumbs: ohneLeere(d.breadcrumbs),
         images: ohneLeere(d.images),
@@ -1082,6 +1149,7 @@ async function laden() {
     versandarten.value = (versand.methods || []).map(m => ({ ...m, id: Number(m.id), active: WAHR_WERTE.includes(m.active) }))
     lieferbedingungen.value = (versand.delivery_terms || []).map(d => ({ ...d, id: Number(d.id), obsolete: WAHR_WERTE.includes(d.obsolete) }))
     gewichtseinheit.value = versand.weightunit || ''
+    kategorien.value = antwort?.categories || []
     gewicht.value = antwort?.part?.weight === null || antwort?.part?.weight === undefined ? null : Number(antwort.part.weight)
     versandartikelVon.value = antwort?.part?.shipping_method_of || ''
 
@@ -1097,7 +1165,7 @@ async function laden() {
     const zeile = antwort?.part
     daten.value = {
         listed: zeile?.listed === true || zeile?.listed === 't',
-        category: zeile?.hugoshop_category || '',
+        category_id: zeile?.hugoshop_category_id ? Number(zeile.hugoshop_category_id) : null,
         hyperlink: zeile?.hugoshop_hyperlink || '',
         breadcrumbs: alsListe(lies(zeile?.hugoshop_breadcrumbs)),
         images: alsListe(lies(zeile?.hugoshop_images)),
@@ -1187,9 +1255,13 @@ watch(() => props.partsId, (neu, alt) => {
     laden()
 })
 
-onMounted(laden)
+onMounted(() => {
+    laden()
+    document.addEventListener('visibilitychange', kategorienAuffrischen)
+})
 
 onBeforeUnmount(() => {
+    document.removeEventListener('visibilitychange', kategorienAuffrischen)
     if (timer && props.partsId) {
         clearTimeout(timer)
         timer = null

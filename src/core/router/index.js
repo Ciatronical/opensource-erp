@@ -224,6 +224,12 @@ const ShopShippingView = () => {
         ? import('@/features/shop/views/shop.shipping.vue')
         : Promise.resolve(NotFoundView)
 }
+const ShopAssortmentView = () => {
+    const oserp = oserpStore()
+    return oserp.isExtensionEnabled('shop')
+        ? import('@/features/shop/views/shop.assortment.vue')
+        : Promise.resolve(NotFoundView)
+}
 
 // Banking
 const BankingHubView = () => import('@/features/banking/views/banking.hub.vue')
@@ -865,6 +871,12 @@ function buildRoutes() {
             ...routePath('ShopView.routes.shopShipping'),
             name: 'shop-shipping',
             component: ShopShippingView,
+            meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('ShopView.routes.shopAssortment'),
+            name: 'shop-assortment',
+            component: ShopAssortmentView,
             meta: { hideCustomerBar: true },
         },
         // ── Banking ── (alle Funktionen in einem Hub zusammengefasst)

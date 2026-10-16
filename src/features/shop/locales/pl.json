@@ -5,7 +5,8 @@
             "shopOrders": "/sklep/zamowienia",
             "shopWithdrawals": "/sklep/odstapienia",
             "shopChannels": "/sklep/kanaly-sprzedazy",
-            "shopShipping": "/sklep/metody-wysylki"
+            "shopShipping": "/sklep/metody-wysylki",
+            "shopAssortment": "/sklep/asortyment"
         },
         "menu": {
             "title": "Sklep",
@@ -125,8 +126,8 @@
             "hyperlink": "Strona produktu",
             "hyperlinkHint": "Ścieżka strony produktu w witrynie sklepu, bez adresu bazowego. Pozostaw puste, aby użyć propozycji.",
             "openInShop": "Zobacz w sklepie",
-            "breadcrumbs": "Ścieżka nawigacji",
-            "breadcrumbsHint": "Kroki nawigacji sklepu w kolejności; każdy zatwierdź klawiszem Enter.",
+            "breadcrumbs": "Miejsce w asortymencie",
+            "breadcrumbsHint": "Poziomy od ogólnego do szczegółowego, każdy zatwierdź klawiszem Enter. Wyświetlane jako krótki opis artykułu i znajdowane przez wyszukiwarkę sklepu.",
             "images": "Obrazy",
             "imagesHint": "Nazwy plików w witrynie sklepu; każdą zatwierdź klawiszem Enter. Pierwszy obraz jest miniaturą.",
             "thumbnail": "Miniatura",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Strona produktu",
             "editChannel": "Ustawienia kanału sprzedaży",
-            "mediaUpload": "Prześlij"
+            "mediaUpload": "Prześlij",
+            "categoryHint": "Grupy i kategorie są prowadzone w widoku „Asortyment”.",
+            "categoryManage": "Otwórz asortyment"
         },
         "publish": {
             "title": "Publikowanie",
@@ -269,7 +272,8 @@
                 "remove_all": "Usuń wszystkie strony produktów",
                 "draft_all": "Wszystkie strony produktów jako szkic",
                 "sync_kit": "Zaktualizuj interfejs użytkownika sklepu",
-                "reconcile_payments": "Uzgodnij płatności"
+                "reconcile_payments": "Uzgodnij płatności",
+                "write_categories": "Zapisz przegląd kategorii"
             },
             "installUiAsk": "Zainstalować interfejs użytkownika sklepu od razu czy zaplanować jako zadanie na następne zaplanowane uruchomienie?",
             "installUiChannels": "Dla których kanałów sprzedaży?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Gdy artykuł zostanie dodany do sklepu, jest od razu oferowany także w tym kanale.",
             "settings": "Ustawienia: {name}",
             "settingsSaved": "Ustawienia zapisane.",
+            "settingsRejected": "Nie zapisano: {fields}. Backend nie zna jeszcze tych pól – prawdopodobnie brakuje aktualizacji bazy danych rozszerzenia sklepu (zaloguj się ponownie).",
             "settingsSaveError": "Nie udało się zapisać ustawień.",
             "newChannel": "Nowy kanał sprzedaży:",
             "newChannelType": "Rodzaj",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Nieznany obszar biblioteki.",
             "MEDIA_FORMAT": "Ten format nie jest dostępny na serwerze.",
             "MEDIA_FORMAT_SAME": "Obraz ma już ten format.",
-            "MEDIA_CONVERT": "Nie udało się przekonwertować obrazu."
+            "MEDIA_CONVERT": "Nie udało się przekonwertować obrazu.",
+            "ASSORTMENT_NAME_REQUIRED": "Wprowadź nazwę.",
+            "ASSORTMENT_NAME_TAKEN": "Ta nazwa już istnieje.",
+            "ASSORTMENT_NAME_INVALID": "Z tej nazwy nie da się utworzyć adresu – użyj liter lub cyfr.",
+            "ASSORTMENT_NOT_FOUND": "Wpis już nie istnieje. Wczytaj widok ponownie.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategoria jest nadal przypisana do artykułów."
         },
         "orderStatus": {
             "open": "Otwarte",
@@ -529,6 +539,43 @@
             "uploadHint": "Każda nazwa występuje w bibliotece tylko raz; plik, do którego nie odwołuje się żaden artykuł, zostaje zastąpiony. Zdjęcia można przy przesyłaniu przekonwertować na inny format.",
             "deleteKept": "{name} pozostaje w bibliotece: inne artykuły odwołują się do pliku.",
             "empty": "Brak plików."
+        },
+        "assortment": {
+            "title": "Asortyment",
+            "subtitle": "Grupy i kategorie sklepu",
+            "loading": "Wczytywanie …",
+            "hint": "Karta artykułu wybiera kategorie z tej listy. W zestawie szablonów „Standard” powstaje z niej przegląd kategorii na stronie: grupy w tej kolejności, kategorie bez grupy w „Sonstiges”, bestsellery na górze. Zmiany trafiają na stronę przy następnym przebiegu.",
+            "groups": "Grupy",
+            "categories": "Kategorie",
+            "newGroup": "Nowa grupa",
+            "editGroup": "Edytuj grupę",
+            "newCategory": "Nowa kategoria",
+            "editCategory": "Edytuj kategorię",
+            "name": "Nazwa",
+            "group": "Grupa",
+            "noGroup": "Bez grupy (Sonstiges)",
+            "topseller": "Bestseller",
+            "topsellerHint": "Wyróżniona na górze przeglądu kategorii na stronie.",
+            "parts": "Artykuły",
+            "partsHint": "Oferowane / przypisane: na stronie pojawiają się tylko oferowane artykuły.",
+            "categoryCount": "Kategorie: {count}",
+            "search": "Szukaj",
+            "empty": "Brak kategorii.",
+            "noMatch": "Żadna kategoria nie pasuje do wyboru.",
+            "moveUp": "W górę",
+            "moveDown": "W dół",
+            "edit": "Edytuj",
+            "delete": "Usuń",
+            "cancel": "Anuluj",
+            "save": "Zapisz",
+            "saved": "Zapisano.",
+            "deleted": "Usunięto.",
+            "groupNameHint": "Tak grupa wygląda w przeglądzie kategorii na stronie.",
+            "categoryNameHint": "Z nazwy powstaje adres strony kategorii.",
+            "renameHint": "Nowa nazwa zmienia adres strony kategorii. Strony produktów przypisanych artykułów ({count}) zostaną zapisane ponownie.",
+            "deleteGroupConfirm": "Usunąć grupę „{name}”? Jej kategorie ({count}) pozostaną i trafią do „Sonstiges”.",
+            "deleteCategoryConfirm": "Usunąć kategorię „{name}”?",
+            "categoryInUse": "Kategoria „{name}” jest nadal przypisana do {count} artykułów i nie można jej usunąć. Najpierw nadaj tym artykułom inną kategorię."
         }
     }
 }

@@ -258,6 +258,63 @@ function shopChannelLink($db, int $kanal, string $key, string $wert, string $anh
 }
 
 /**
+ * Kategorien der Shop-Webseite: Taxonomie und Adressen aus der Kanalkarte
+ *
+ * category_taxonomy  Schlüssel im Front Matter der Produktseiten, aus dem Hugo
+ *                    die Kategorieseiten bildet. Vorgabe: kategorien.
+ * category_link      Adressmuster der Kategorieseite mit %s für die Kennung.
+ *                    Vorgabe: /<Taxonomie>/%s/. Der Teil vor %s ist die
+ *                    Adresse der Übersicht.
+ * category_title     Bezeichnung der Übersicht in den Brotkrumen der
+ *                    Produktseiten. Vorgabe: Kategorien. Den Titel der
+ *                    Übersichtsseite selbst trägt die Webseite
+ *                    (content/<Taxonomie>/_index.md).
+ *
+ * Beide stehen in der Kanalkarte, weil sie zur Webseite gehören, nicht zum
+ * Vorlagensatz: Eine Webseite mit eigener Themen-Taxonomie (kategorien für
+ * Leistungen und Infos) legt den Shop unter einen eigenen Schlüssel und Pfad,
+ * etwa shopkategorien und /shop/kategorien/%s/ — Hugo ordnet die Taxonomie
+ * über permalinks dem Pfad zu (dev/shop-veroeffentlichung.md).
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @return array taxonomy, pattern (mit %s), index (Adresse der Übersicht),
+ *               title (Bezeichnung der Übersicht)
+ */
+function shopChannelCategoryPaths($db, int $kanal): array {
+    $taxonomie = trim(shopChannelValue($db, $kanal, 'category_taxonomy', 'kategorien'), " /\t");
+    if ('' === $taxonomie) {
+        $taxonomie = 'kategorien';
+    }
+    $muster = trim(shopChannelValue($db, $kanal, 'category_link', '/'.$taxonomie.'/%s/'));
+    if (!str_contains($muster, '%s')) {
+        $muster = rtrim($muster, '/').'/%s/';
+    }
+    $index = substr($muster, 0, (int)strpos($muster, '%s'));
+
+    return [
+        'taxonomy' => $taxonomie,
+        'pattern'  => $muster,
+        'index'    => '' === $index ? '/' : $index,
+        'title'    => trim(shopChannelValue($db, $kanal, 'category_title', 'Kategorien')),
+    ];
+}
+
+/**
+ * Adresse einer Kategorieseite
+ *
+ * Die Kennung ist der Begriff, wie Hugo ihn ablegt (shopHugoPath) — nicht
+ * kodiert, damit die Adresse so aussieht wie die von Hugo erzeugte.
+ *
+ * @param array $pfade aus shopChannelCategoryPaths()
+ * @param string $kennung Kennung der Kategorie
+ * @return string
+ */
+function shopChannelCategoryUrl(array $pfade, string $kennung): string {
+    return str_replace('%s', $kennung, $pfade['pattern']);
+}
+
+/**
  * Name der Produktseite eines Artikels, ohne Endung
  *
  * Wie die Seite in der Webseite heißt (shopPageFileName): die

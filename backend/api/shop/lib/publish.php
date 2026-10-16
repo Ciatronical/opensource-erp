@@ -345,7 +345,8 @@ function shopStagingFollowGrants($db, int $kanal, array $freigaben): array {
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop — Preis, Texte, Angebot und Adressen des Kanals
  * @param int $partsId Artikel
- * @return array artikel, shop, betrieb, versand (shop_part_shipping_check:
+ * @return array artikel, shop (darin taxonomy, categories_url, categories_title,
+ *               category_url aus der Kanalkarte), betrieb, versand (shop_part_shipping_check:
  *               passt eine Versandart in diesem HugoShop)
  * @throws ApiError PART_NOT_FOUND
  */
@@ -376,7 +377,9 @@ function shopPageData($db, int $kanal, int $partsId): array {
                      THEN ROUND(k.preis, 2)
                      ELSE ROUND(k.preis * (1 + COALESCE(st.rate, 0)), 2) END AS price_gross,
                 (COALESCE(pc.active, false) AND shop_active_channel_id(CAST(:kanal_aktiv AS integer)) IS NOT NULL) AS listed,
-                pe.hugoshop_category, pe.hugoshop_hyperlink, pe.hugoshop_breadcrumbs,
+                -- Kategorie aus dem Sortiment (dev/shop-sortiment.md)
+                (SELECT btrim(cs.name) FROM category_shop cs WHERE cs.id = pe.hugoshop_category_id) AS hugoshop_category,
+                pe.hugoshop_hyperlink, pe.hugoshop_breadcrumbs,
                 pe.hugoshop_images, pe.hugoshop_technical_data,
                 pe.hugoshop_properties, pe.hugoshop_downloads,
                 (SELECT company FROM defaults LIMIT 1) AS firma,
@@ -433,6 +436,10 @@ function shopPageData($db, int $kanal, int $partsId): array {
     $bildMuster     = shopChannelValue($db, $kanal, 'images_link');
     $vorschauMuster = shopChannelValue($db, $kanal, 'thumbnails_link');
     $downloadMuster = shopChannelValue($db, $kanal, 'downloads_link', '/downloads/%s');
+    // Taxonomie und Adressen der Kategorien aus der Kanalkarte — die Vorlage
+    // trägt keinen festen Pfad (shopChannelCategoryPaths)
+    $kategoriePfade = shopChannelCategoryPaths($db, $kanal);
+    $kategorie      = trim((string)($zeile['hugoshop_category'] ?? ''));
 
     return [
         'artikel' => [
@@ -460,7 +467,13 @@ function shopPageData($db, int $kanal, int $partsId): array {
         ],
         'shop' => [
             'listed'         => $wahr($zeile['listed']),
-            'category'       => trim((string)($zeile['hugoshop_category'] ?? '')),
+            'category'       => $kategorie,
+            // Schlüssel im Front Matter, Adresse der Übersicht und der Seite
+            // dieser Kategorie — aus der Kanalkarte (category_taxonomy, category_link)
+            'taxonomy'       => $kategoriePfade['taxonomy'],
+            'categories_url' => $kategoriePfade['index'],
+            'categories_title' => $kategoriePfade['title'],
+            'category_url'   => '' === $kategorie ? '' : shopChannelCategoryUrl($kategoriePfade, shopHugoPath($kategorie)),
             'hyperlink'      => (string)($zeile['hugoshop_hyperlink'] ?? ''),
             'breadcrumbs'    => $liste($zeile['hugoshop_breadcrumbs']),
             'images'         => $bilder,
@@ -875,7 +888,11 @@ const SHOP_MELDUNGEN_JE_AUFTRAG = 20;
 // Die Auftragsarten dieser Erweiterung. Nur diese nimmt der Laeufer, und nur
 // diese zeigt die Auftragsliste.
 function shopJobFunctions(): array {
-    return ['publish_part', 'publish_all', 'remove_part', 'remove_all', 'draft_all', 'sync_kit', 'reconcile_payments'];
+    // write_categories: Kategorieübersicht neu schreiben, nachdem sich das
+    // Sortiment geändert hat (Trigger auf category_shop und
+    // category_group_shop, dev/shop-sortiment.md)
+    return ['publish_part', 'publish_all', 'remove_part', 'remove_all', 'draft_all', 'sync_kit',
+            'reconcile_payments', 'write_categories'];
 }
 //
 // Die Tabelle batchjob_hugoshop stammt aus der Bridge, ergaenzt um Kanal,

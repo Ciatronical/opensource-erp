@@ -51,13 +51,15 @@ function shopSearch($db, int $kanal, string $begriffe, int $limit = 5, int $offs
         "WITH im_shop AS (
              SELECT p.id, p.partnumber,
                     COALESCE(NULLIF(pc.title, ''), p.description) AS description,
-                    psh.hugoshop_breadcrumbs, psh.hugoshop_category,
+                    psh.hugoshop_breadcrumbs, btrim(cs.name) AS hugoshop_category,
                     psh.hugoshop_hyperlink, psh.hugoshop_images
                FROM parts p
                JOIN parts_channel_shop pc ON pc.parts_id = p.id
                                          AND pc.channel_id = shop_active_channel_id(CAST(:kanal AS integer))
                                          AND pc.active
                LEFT JOIN parts_ext psh ON psh.parts_id = p.id
+               -- Kategorie aus dem Sortiment (dev/shop-sortiment.md)
+               LEFT JOIN category_shop cs ON cs.id = psh.hugoshop_category_id
          ), gefunden AS (
              SELECT s.id, s.partnumber, s.description,
                     s.hugoshop_breadcrumbs AS breadcrumbs,

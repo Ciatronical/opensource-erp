@@ -365,9 +365,11 @@ Gesucht wird wie beim Druck: erst `<templates_dir>/shop/<name>/`, dann
 `backend/templates-default/shop/<name>/`. Gewählt wird über
 `shop_template_set` — nur ein Name, kein Pfad.
 
-Was ein Satz nicht mitbringt, kommt aus `standard`: Vorlagen (`product.md.php`),
-die Regeln der Kategorieübersicht (`category_groups.php`) und jede Datei des
-Pakets (`kit/`). Ein eigener Satz besteht deshalb nur aus dem, was er ändert;
+Was ein Satz nicht mitbringt, kommt aus `standard`: Vorlagen (`product.md.php`)
+und jede Datei des Pakets (`kit/`). Die Regeln der Kategorieübersicht
+(`category_groups.php`) sind die Ausnahme: nur ein Satz, der sie selbst
+mitbringt (sonic24), gruppiert nach Wortteilen; alle anderen nehmen die Gruppen
+aus der Ansicht „Sortiment“ (dev/shop-sortiment.md). Ein eigener Satz besteht deshalb nur aus dem, was er ändert;
 `theme.json` gehört immer dazu und nennt unter `data.category_groups` die
 Datendatei der Kategorieübersicht.
 
@@ -393,7 +395,7 @@ die Fehlermeldung den Feldnamen aus der Oberfläche, nicht den Schlüssel.
 | Gruppe | Einstellungen |
 | --- | --- |
 | Zugang der Shop-Webseite | `public_key` (Geheimnis), `allowed_origins` |
-| Adressen der Webseite | `base_url`, `invoice_page`, `products_link`, `category_link`, `images_link`, `thumbnails_link`, `downloads_link` |
+| Adressen der Webseite | `base_url`, `invoice_page`, `products_link`, `category_link`, `category_taxonomy`, `category_title`, `images_link`, `thumbnails_link`, `downloads_link` |
 | Veröffentlichung | `backend_url`, `template_set`, `auto_publish`, `channel_off_pages` |
 | HugoCMS | `hugocms_url`, `hugocms_key` (Geheimnis) |
 | Mail | `invoice_mail_subject`, `withdrawal_mail_to` |

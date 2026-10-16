@@ -5,7 +5,8 @@
             "shopOrders": "/pood/tellimused",
             "shopWithdrawals": "/pood/taganemised",
             "shopChannels": "/pood/muugikanalid",
-            "shopShipping": "/pood/tarneviisid"
+            "shopShipping": "/pood/tarneviisid",
+            "shopAssortment": "/pood/sortiment"
         },
         "menu": {
             "title": "Pood",
@@ -125,8 +126,8 @@
             "hyperlink": "Tooteleht",
             "hyperlinkHint": "Tootelehe tee poe veebisaidil ilma baasaadressita. Soovituse kasutamiseks jäta tühjaks.",
             "openInShop": "Vaata poes",
-            "breadcrumbs": "Navigeerimistee",
-            "breadcrumbsHint": "Poe navigeerimise sammud järjekorras; kinnita igaüks Enteriga.",
+            "breadcrumbs": "Paigutus sortimendis",
+            "breadcrumbsHint": "Tasemed üldisest konkreetseni, kinnita igaüks Enteriga. Kuvatakse toote lühikirjeldusena ja poe otsing leiab need.",
             "images": "Pildid",
             "imagesHint": "Failinimed poe veebisaidil; kinnita igaüks Enteriga. Esimene pilt on eelvaatepilt.",
             "thumbnail": "Eelvaatepilt",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Tooteleht",
             "editChannel": "Müügikanali seaded",
-            "mediaUpload": "Laadi üles"
+            "mediaUpload": "Laadi üles",
+            "categoryHint": "Rühmi ja kategooriaid hallatakse vaates „Sortiment“.",
+            "categoryManage": "Ava sortiment"
         },
         "publish": {
             "title": "Avaldamine",
@@ -269,7 +272,8 @@
                 "remove_all": "Eemalda kõik tootelehed",
                 "draft_all": "Kõik tootelehed mustandiks",
                 "sync_kit": "Uuenda poe kasutajaliidest",
-                "reconcile_payments": "Võrdle makseid"
+                "reconcile_payments": "Võrdle makseid",
+                "write_categories": "Kirjuta kategooriate ülevaade"
             },
             "installUiAsk": "Kas poe kasutajaliides paigaldada kohe või planeerida tööna järgmisele plaanitud käivitusele?",
             "installUiChannels": "Milliste müügikanalite jaoks?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Kui toode lisatakse poodi, pakutakse seda kohe ka selles kanalis.",
             "settings": "{name} seaded",
             "settingsSaved": "Seaded salvestatud.",
+            "settingsRejected": "Salvestamata: {fields}. Taustsüsteem ei tunne neid välju veel – tõenäoliselt puudub poe laienduse andmebaasi uuendus (logige uuesti sisse).",
             "settingsSaveError": "Seadeid ei õnnestunud salvestada.",
             "newChannel": "Uus müügikanal:",
             "newChannelType": "Liik",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Tundmatu kogu ala.",
             "MEDIA_FORMAT": "See vorming pole serveris võimalik.",
             "MEDIA_FORMAT_SAME": "Pildil on see vorming juba.",
-            "MEDIA_CONVERT": "Pilti ei õnnestunud teisendada."
+            "MEDIA_CONVERT": "Pilti ei õnnestunud teisendada.",
+            "ASSORTMENT_NAME_REQUIRED": "Sisestage nimi.",
+            "ASSORTMENT_NAME_TAKEN": "See nimi on juba olemas.",
+            "ASSORTMENT_NAME_INVALID": "Sellest nimest ei saa aadressi moodustada – kasutage tähti või numbreid.",
+            "ASSORTMENT_NOT_FOUND": "Kirjet enam ei ole. Laadige vaade uuesti.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategooria on endiselt toodetele määratud."
         },
         "orderStatus": {
             "open": "Avatud",
@@ -529,6 +539,43 @@
             "uploadHint": "Iga nimi on kogus ainult üks kord; fail, millele ükski artikkel ei viita, asendatakse. Pilte saab üleslaadimisel teise vormingusse teisendada.",
             "deleteKept": "{name} jääb kogusse: teised artiklid viitavad failile.",
             "empty": "Faile pole."
+        },
+        "assortment": {
+            "title": "Sortiment",
+            "subtitle": "Poe rühmad ja kategooriad",
+            "loading": "Laadimine …",
+            "hint": "Toote kaart valib kategooriad sellest loendist. Mallikomplekti „Standard“ puhul tekib sellest veebilehe kategooriate ülevaade: rühmad selles järjekorras, rühmata kategooriad jaotises „Sonstiges“, enimmüüdud üleval. Muudatused jõuavad veebilehele järgmise käivitusega.",
+            "groups": "Rühmad",
+            "categories": "Kategooriad",
+            "newGroup": "Uus rühm",
+            "editGroup": "Muuda rühma",
+            "newCategory": "Uus kategooria",
+            "editCategory": "Muuda kategooriat",
+            "name": "Nimi",
+            "group": "Rühm",
+            "noGroup": "Rühmata (Sonstiges)",
+            "topseller": "Enimmüüdud",
+            "topsellerHint": "Esile tõstetud veebilehe kategooriate ülevaate ülaosas.",
+            "parts": "Tooted",
+            "partsHint": "Pakutud / määratud: veebilehel kuvatakse ainult pakutavaid tooteid.",
+            "categoryCount": "Kategooriad: {count}",
+            "search": "Otsi",
+            "empty": "Kategooriaid veel pole.",
+            "noMatch": "Valikuga ei sobi ükski kategooria.",
+            "moveUp": "Üles",
+            "moveDown": "Alla",
+            "edit": "Muuda",
+            "delete": "Kustuta",
+            "cancel": "Loobu",
+            "save": "Salvesta",
+            "saved": "Salvestatud.",
+            "deleted": "Kustutatud.",
+            "groupNameHint": "Nii kuvatakse rühm veebilehe kategooriate ülevaates.",
+            "categoryNameHint": "Nimest moodustub kategoorialehe aadress.",
+            "renameHint": "Uus nimi muudab kategoorialehe aadressi. Määratud toodete ({count}) tootelehed kirjutatakse uuesti.",
+            "deleteGroupConfirm": "Kas kustutada rühm „{name}“? Selle kategooriad ({count}) jäävad alles ja on seejärel jaotises „Sonstiges“.",
+            "deleteCategoryConfirm": "Kas kustutada kategooria „{name}“?",
+            "categoryInUse": "Kategooria „{name}“ on endiselt määratud {count} tootele ja seda ei saa kustutada. Andke toodetele esmalt muu kategooria."
         }
     }
 }

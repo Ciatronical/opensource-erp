@@ -61,6 +61,17 @@
     {{- $pages = merge $pages (dict $key $page) -}}
   {{- end -}}
 {{- end -}}
+{{- /*
+  categories ohne Angabe: die Übersichtsseite der Shop-Taxonomie, wenn die
+  Seite eine nennt ("params": { "shopui": { "taxonomy": "shopkategorien" } }).
+  Ihre Adresse legt die Webseite über permalinks fest — so steht der Pfad
+  (etwa /shop/sortiment/) nur dort und nicht ein zweites Mal hier.
+*/ -}}
+{{- if and (not (isset $pages "categories")) $cfg.taxonomy -}}
+  {{- with site.GetPage (printf "/%s" $cfg.taxonomy) -}}
+    {{- $pages = merge $pages (dict "categories" .RelPermalink) -}}
+  {{- end -}}
+{{- end -}}
 {{- $pathsJson := jsonify (dict "base" $base "site" $site "api" $api "pages" $pages) -}}
 {{- $theme := $cfg.theme | default "bootstrap5" -}}
 {{- $sheet := $cfg.stylesheet | default "" -}}

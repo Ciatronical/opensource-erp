@@ -44,5 +44,6 @@ require_once __DIR__.'/lib/channel_images.php';
 require_once __DIR__.'/lib/media.php';
 require_once __DIR__.'/admin.php';
 require_once __DIR__.'/media.php';
+require_once __DIR__.'/assortment.php';  // Ansicht Sortiment: Gruppen und Kategorien
 
 require_once __DIR__.'/../inc.php'; // muss immer unten stehen

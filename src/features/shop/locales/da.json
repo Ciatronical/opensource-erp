@@ -5,7 +5,8 @@
             "shopOrders": "/butik/ordrer",
             "shopWithdrawals": "/butik/fortrydelser",
             "shopChannels": "/butik/salgskanaler",
-            "shopShipping": "/butik/forsendelsesmaader"
+            "shopShipping": "/butik/forsendelsesmaader",
+            "shopAssortment": "/butik/sortiment"
         },
         "menu": {
             "title": "Butik",
@@ -125,8 +126,8 @@
             "hyperlink": "Produktside",
             "hyperlinkHint": "Sti til produktsiden på butikkens websted, uden basisadresse. Lad feltet stå tomt for at bruge forslaget.",
             "openInShop": "Vis i butikken",
-            "breadcrumbs": "Navigationssti",
-            "breadcrumbsHint": "Trin i butikkens navigation i rækkefølge; bekræft hvert med Enter.",
+            "breadcrumbs": "Placering i sortimentet",
+            "breadcrumbsHint": "Niveauer fra det generelle til det specifikke, bekræft hvert med Enter. Vises som varens korte beskrivelse og findes af butikkens søgning.",
             "images": "Billeder",
             "imagesHint": "Filnavne på butikkens websted; bekræft hvert med Enter. Det første billede er miniaturen.",
             "thumbnail": "Miniature",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Produktside",
             "editChannel": "Indstillinger for salgskanal",
-            "mediaUpload": "Upload"
+            "mediaUpload": "Upload",
+            "categoryHint": "Grupper og kategorier vedligeholdes i visningen „Sortiment“.",
+            "categoryManage": "Åbn sortiment"
         },
         "publish": {
             "title": "Offentliggørelse",
@@ -269,7 +272,8 @@
                 "remove_all": "Fjern alle produktsider",
                 "draft_all": "Alle produktsider som kladde",
                 "sync_kit": "Opdater butikkens brugerflade",
-                "reconcile_payments": "Afstem betalinger"
+                "reconcile_payments": "Afstem betalinger",
+                "write_categories": "Skriv kategorioversigt"
             },
             "installUiAsk": "Skal butikkens brugerflade installeres med det samme eller planlægges som opgave til næste planlagte kørsel?",
             "installUiChannels": "For hvilke salgskanaler?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Når en vare tilføjes shoppen, udbydes den også i denne kanal.",
             "settings": "Indstillinger for {name}",
             "settingsSaved": "Indstillinger gemt.",
+            "settingsRejected": "Ikke gemt: {fields}. Backend kender endnu ikke disse felter – sandsynligvis mangler databaseopdateringen af shop-udvidelsen (log ind igen).",
             "settingsSaveError": "Indstillingerne kunne ikke gemmes.",
             "newChannel": "Ny salgskanal:",
             "newChannelType": "Type",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Ukendt område i biblioteket.",
             "MEDIA_FORMAT": "Dette format er ikke muligt på serveren.",
             "MEDIA_FORMAT_SAME": "Billedet har allerede dette format.",
-            "MEDIA_CONVERT": "Billedet kunne ikke konverteres."
+            "MEDIA_CONVERT": "Billedet kunne ikke konverteres.",
+            "ASSORTMENT_NAME_REQUIRED": "Angiv et navn.",
+            "ASSORTMENT_NAME_TAKEN": "Dette navn findes allerede.",
+            "ASSORTMENT_NAME_INVALID": "Der kan ikke dannes en adresse ud fra dette navn – brug bogstaver eller cifre.",
+            "ASSORTMENT_NOT_FOUND": "Posten findes ikke længere. Genindlæs visningen.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategorien er stadig tildelt varer."
         },
         "orderStatus": {
             "open": "Åben",
@@ -529,6 +539,43 @@
             "uploadHint": "Hvert navn findes kun én gang i biblioteket; en fil, som ingen artikel henviser til, erstattes. Billeder kan konverteres til et andet format under upload.",
             "deleteKept": "{name} bliver i biblioteket: andre artikler henviser til filen.",
             "empty": "Ingen filer."
+        },
+        "assortment": {
+            "title": "Sortiment",
+            "subtitle": "Butikkens grupper og kategorier",
+            "loading": "Indlæser …",
+            "hint": "Varekortet vælger kategorier fra denne liste. Med skabelonsættet „Standard“ dannes webstedets kategorioversigt heraf: grupper i denne rækkefølge, kategorier uden gruppe under „Sonstiges“, topsælgere øverst. Ændringer når webstedet ved næste kørsel.",
+            "groups": "Grupper",
+            "categories": "Kategorier",
+            "newGroup": "Ny gruppe",
+            "editGroup": "Rediger gruppe",
+            "newCategory": "Ny kategori",
+            "editCategory": "Rediger kategori",
+            "name": "Navn",
+            "group": "Gruppe",
+            "noGroup": "Uden gruppe (Sonstiges)",
+            "topseller": "Topsælger",
+            "topsellerHint": "Fremhævet øverst i webstedets kategorioversigt.",
+            "parts": "Varer",
+            "partsHint": "Udbudt / tildelt: kun udbudte varer vises på webstedet.",
+            "categoryCount": "Kategorier: {count}",
+            "search": "Søg",
+            "empty": "Ingen kategorier endnu.",
+            "noMatch": "Ingen kategori passer til valget.",
+            "moveUp": "Flyt op",
+            "moveDown": "Flyt ned",
+            "edit": "Rediger",
+            "delete": "Slet",
+            "cancel": "Annuller",
+            "save": "Gem",
+            "saved": "Gemt.",
+            "deleted": "Slettet.",
+            "groupNameHint": "Sådan vises gruppen i webstedets kategorioversigt.",
+            "categoryNameHint": "Kategorisidens adresse dannes ud fra navnet.",
+            "renameHint": "Det nye navn ændrer kategorisidens adresse. Produktsiderne for de tildelte varer ({count}) skrives igen.",
+            "deleteGroupConfirm": "Slet gruppen „{name}“? Dens kategorier ({count}) bevares og vises derefter under „Sonstiges“.",
+            "deleteCategoryConfirm": "Slet kategorien „{name}“?",
+            "categoryInUse": "Kategorien „{name}“ er stadig tildelt {count} varer og kan ikke slettes. Giv først varerne en anden kategori."
         }
     }
 }

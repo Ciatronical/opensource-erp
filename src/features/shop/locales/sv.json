@@ -5,7 +5,8 @@
             "shopOrders": "/butik/bestallningar",
             "shopWithdrawals": "/butik/angerratt",
             "shopChannels": "/butik/forsaljningskanaler",
-            "shopShipping": "/butik/fraktsatt"
+            "shopShipping": "/butik/fraktsatt",
+            "shopAssortment": "/butik/sortiment"
         },
         "menu": {
             "title": "Butik",
@@ -125,8 +126,8 @@
             "hyperlink": "Produktsida",
             "hyperlinkHint": "Sökväg till produktsidan på butikens webbplats, utan basadress. Lämna tomt för att använda förslaget.",
             "openInShop": "Visa i butiken",
-            "breadcrumbs": "Navigeringsväg",
-            "breadcrumbsHint": "Steg i butikens navigering i ordning; bekräfta vart och ett med Enter.",
+            "breadcrumbs": "Placering i sortimentet",
+            "breadcrumbsHint": "Nivåer från det allmänna till det specifika, bekräfta vart och ett med Enter. Visas som artikelns korta beskrivning och hittas av butikens sökning.",
             "images": "Bilder",
             "imagesHint": "Filnamn på butikens webbplats; bekräfta vart och ett med Enter. Den första bilden är miniatyren.",
             "thumbnail": "Miniatyr",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Produktsida",
             "editChannel": "Inställningar för försäljningskanal",
-            "mediaUpload": "Ladda upp"
+            "mediaUpload": "Ladda upp",
+            "categoryHint": "Grupper och kategorier underhålls i vyn ”Sortiment”.",
+            "categoryManage": "Öppna sortiment"
         },
         "publish": {
             "title": "Publicering",
@@ -269,7 +272,8 @@
                 "remove_all": "Ta bort alla produktsidor",
                 "draft_all": "Alla produktsidor som utkast",
                 "sync_kit": "Uppdatera butikens användargränssnitt",
-                "reconcile_payments": "Stäm av betalningar"
+                "reconcile_payments": "Stäm av betalningar",
+                "write_categories": "Skriv kategoriöversikt"
             },
             "installUiAsk": "Ska butikens användargränssnitt installeras nu eller planeras som uppgift till nästa schemalagda körning?",
             "installUiChannels": "För vilka försäljningskanaler?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "När en artikel läggs till i butiken erbjuds den även i den här kanalen.",
             "settings": "Inställningar för {name}",
             "settingsSaved": "Inställningar sparade.",
+            "settingsRejected": "Inte sparat: {fields}. Backend känner inte till dessa fält ännu – databasuppdateringen för butikstillägget saknas troligen (logga in igen).",
             "settingsSaveError": "Inställningarna kunde inte sparas.",
             "newChannel": "Ny försäljningskanal:",
             "newChannelType": "Typ",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Okänt område i biblioteket.",
             "MEDIA_FORMAT": "Det här formatet är inte möjligt på servern.",
             "MEDIA_FORMAT_SAME": "Bilden har redan det här formatet.",
-            "MEDIA_CONVERT": "Bilden kunde inte konverteras."
+            "MEDIA_CONVERT": "Bilden kunde inte konverteras.",
+            "ASSORTMENT_NAME_REQUIRED": "Ange ett namn.",
+            "ASSORTMENT_NAME_TAKEN": "Namnet finns redan.",
+            "ASSORTMENT_NAME_INVALID": "Ingen adress kan skapas av det här namnet – använd bokstäver eller siffror.",
+            "ASSORTMENT_NOT_FOUND": "Posten finns inte längre. Läs in vyn igen.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategorin är fortfarande tilldelad artiklar."
         },
         "orderStatus": {
             "open": "Öppen",
@@ -529,6 +539,43 @@
             "uploadHint": "Varje namn finns bara en gång i biblioteket; en fil som ingen artikel hänvisar till ersätts. Bilder kan konverteras till ett annat format vid uppladdning.",
             "deleteKept": "{name} stannar i biblioteket: andra artiklar hänvisar till filen.",
             "empty": "Inga filer."
+        },
+        "assortment": {
+            "title": "Sortiment",
+            "subtitle": "Butikens grupper och kategorier",
+            "loading": "Läser in …",
+            "hint": "Artikelkortet väljer kategorier ur den här listan. Med mallsetet ”Standard” skapas webbplatsens kategoriöversikt av den: grupper i den här ordningen, kategorier utan grupp under ”Sonstiges”, toppsäljare överst. Ändringar når webbplatsen vid nästa körning.",
+            "groups": "Grupper",
+            "categories": "Kategorier",
+            "newGroup": "Ny grupp",
+            "editGroup": "Redigera grupp",
+            "newCategory": "Ny kategori",
+            "editCategory": "Redigera kategori",
+            "name": "Namn",
+            "group": "Grupp",
+            "noGroup": "Utan grupp (Sonstiges)",
+            "topseller": "Toppsäljare",
+            "topsellerHint": "Framhävd överst i webbplatsens kategoriöversikt.",
+            "parts": "Artiklar",
+            "partsHint": "Erbjudna / tilldelade: bara erbjudna artiklar visas på webbplatsen.",
+            "categoryCount": "Kategorier: {count}",
+            "search": "Sök",
+            "empty": "Inga kategorier ännu.",
+            "noMatch": "Ingen kategori matchar urvalet.",
+            "moveUp": "Flytta upp",
+            "moveDown": "Flytta ned",
+            "edit": "Redigera",
+            "delete": "Ta bort",
+            "cancel": "Avbryt",
+            "save": "Spara",
+            "saved": "Sparat.",
+            "deleted": "Borttaget.",
+            "groupNameHint": "Så visas gruppen i webbplatsens kategoriöversikt.",
+            "categoryNameHint": "Kategorisidans adress skapas av namnet.",
+            "renameHint": "Det nya namnet ändrar kategorisidans adress. Produktsidorna för de tilldelade artiklarna ({count}) skrivs om.",
+            "deleteGroupConfirm": "Ta bort gruppen ”{name}”? Dess kategorier ({count}) finns kvar och visas sedan under ”Sonstiges”.",
+            "deleteCategoryConfirm": "Ta bort kategorin ”{name}”?",
+            "categoryInUse": "Kategorin ”{name}” är fortfarande tilldelad {count} artiklar och kan inte tas bort. Ge först artiklarna en annan kategori."
         }
     }
 }

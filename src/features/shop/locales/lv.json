@@ -5,7 +5,8 @@
             "shopOrders": "/veikals/pasutijumi",
             "shopWithdrawals": "/veikals/atteikumi",
             "shopChannels": "/veikals/pardosanas-kanali",
-            "shopShipping": "/veikals/piegades-veidi"
+            "shopShipping": "/veikals/piegades-veidi",
+            "shopAssortment": "/veikals/sortiments"
         },
         "menu": {
             "title": "Veikals",
@@ -125,8 +126,8 @@
             "hyperlink": "Produkta lapa",
             "hyperlinkHint": "Produkta lapas ceļš veikala tīmekļa vietnē bez bāzes adreses. Atstājiet tukšu, lai izmantotu ieteikumu.",
             "openInShop": "Skatīt veikalā",
-            "breadcrumbs": "Navigācijas ceļš",
-            "breadcrumbsHint": "Veikala navigācijas soļi secībā; katru apstipriniet ar Enter.",
+            "breadcrumbs": "Vieta sortimentā",
+            "breadcrumbsHint": "Līmeņi no vispārīgā uz konkrēto, katru apstipriniet ar Enter. Tiek rādīti kā preces īsais apraksts, un veikala meklēšana tos atrod.",
             "images": "Attēli",
             "imagesHint": "Failu nosaukumi veikala tīmekļa vietnē; katru apstipriniet ar Enter. Pirmais attēls ir sīktēls.",
             "thumbnail": "Sīktēls",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Produkta lapa",
             "editChannel": "Pārdošanas kanāla iestatījumi",
-            "mediaUpload": "Augšupielādēt"
+            "mediaUpload": "Augšupielādēt",
+            "categoryHint": "Grupas un kategorijas uztur skatā “Sortiments”.",
+            "categoryManage": "Atvērt sortimentu"
         },
         "publish": {
             "title": "Publicēšana",
@@ -269,7 +272,8 @@
                 "remove_all": "Noņemt visas produktu lapas",
                 "draft_all": "Visas produktu lapas kā melnraksts",
                 "sync_kit": "Atjaunināt veikala lietotāja saskarni",
-                "reconcile_payments": "Saskaņot maksājumus"
+                "reconcile_payments": "Saskaņot maksājumus",
+                "write_categories": "Rakstīt kategoriju pārskatu"
             },
             "installUiAsk": "Vai instalēt veikala lietotāja saskarni tūlīt vai ieplānot kā uzdevumu nākamajai plānotajai palaišanai?",
             "installUiChannels": "Kuriem pārdošanas kanāliem?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Kad prece tiek pievienota veikalam, tā uzreiz tiek piedāvāta arī šajā kanālā.",
             "settings": "{name} iestatījumi",
             "settingsSaved": "Iestatījumi saglabāti.",
+            "settingsRejected": "Nav saglabāts: {fields}. Aizmugursistēma vēl nepazīst šos laukus – visticamāk, trūkst veikala paplašinājuma datubāzes atjauninājuma (piesakieties vēlreiz).",
             "settingsSaveError": "Iestatījumus neizdevās saglabāt.",
             "newChannel": "Jauns pārdošanas kanāls:",
             "newChannelType": "Veids",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Nezināma bibliotēkas daļa.",
             "MEDIA_FORMAT": "Šis formāts serverī nav pieejams.",
             "MEDIA_FORMAT_SAME": "Attēls jau ir šajā formātā.",
-            "MEDIA_CONVERT": "Attēlu neizdevās pārveidot."
+            "MEDIA_CONVERT": "Attēlu neizdevās pārveidot.",
+            "ASSORTMENT_NAME_REQUIRED": "Ievadiet nosaukumu.",
+            "ASSORTMENT_NAME_TAKEN": "Šāds nosaukums jau pastāv.",
+            "ASSORTMENT_NAME_INVALID": "No šī nosaukuma nevar izveidot adresi – izmantojiet burtus vai ciparus.",
+            "ASSORTMENT_NOT_FOUND": "Ieraksts vairs nepastāv. Pārlādējiet skatu.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategorija joprojām ir piešķirta precēm."
         },
         "orderStatus": {
             "open": "Atvērts",
@@ -529,6 +539,43 @@
             "uploadHint": "Katrs nosaukums bibliotēkā ir tikai vienu reizi; fails, uz kuru neatsaucas neviena prece, tiek aizstāts. Attēlus augšupielādes laikā var pārveidot citā formātā.",
             "deleteKept": "{name} paliek bibliotēkā: uz failu atsaucas citas preces.",
             "empty": "Nav failu."
+        },
+        "assortment": {
+            "title": "Sortiments",
+            "subtitle": "Veikala grupas un kategorijas",
+            "loading": "Ielādē …",
+            "hint": "Preces kartīte izvēlas kategorijas no šī saraksta. Ar veidņu komplektu “Standard” no tā veidojas vietnes kategoriju pārskats: grupas šādā secībā, kategorijas bez grupas sadaļā “Sonstiges”, pirktākās augšā. Izmaiņas vietnē parādās nākamajā izpildē.",
+            "groups": "Grupas",
+            "categories": "Kategorijas",
+            "newGroup": "Jauna grupa",
+            "editGroup": "Rediģēt grupu",
+            "newCategory": "Jauna kategorija",
+            "editCategory": "Rediģēt kategoriju",
+            "name": "Nosaukums",
+            "group": "Grupa",
+            "noGroup": "Bez grupas (Sonstiges)",
+            "topseller": "Pirktākā",
+            "topsellerHint": "Izcelta vietnes kategoriju pārskata augšā.",
+            "parts": "Preces",
+            "partsHint": "Piedāvātas / piešķirtas: vietnē redzamas tikai piedāvātās preces.",
+            "categoryCount": "Kategorijas: {count}",
+            "search": "Meklēt",
+            "empty": "Kategoriju vēl nav.",
+            "noMatch": "Atlasei neatbilst neviena kategorija.",
+            "moveUp": "Uz augšu",
+            "moveDown": "Uz leju",
+            "edit": "Rediģēt",
+            "delete": "Dzēst",
+            "cancel": "Atcelt",
+            "save": "Saglabāt",
+            "saved": "Saglabāts.",
+            "deleted": "Dzēsts.",
+            "groupNameHint": "Tā grupa redzama vietnes kategoriju pārskatā.",
+            "categoryNameHint": "No nosaukuma veidojas kategorijas lapas adrese.",
+            "renameHint": "Jaunais nosaukums maina kategorijas lapas adresi. Piešķirto preču ({count}) produktu lapas tiks pārrakstītas.",
+            "deleteGroupConfirm": "Dzēst grupu “{name}”? Tās kategorijas ({count}) paliek un pēc tam ir sadaļā “Sonstiges”.",
+            "deleteCategoryConfirm": "Dzēst kategoriju “{name}”?",
+            "categoryInUse": "Kategorija “{name}” joprojām ir piešķirta {count} precēm, un to nevar dzēst. Vispirms piešķiriet šīm precēm citu kategoriju."
         }
     }
 }

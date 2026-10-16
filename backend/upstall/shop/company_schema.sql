@@ -45,6 +45,58 @@ DO $$ BEGIN
 END $$;
 
 -- ============================================================================
+-- SORTIMENT
+-- ============================================================================
+--
+-- Gruppen und Kategorien des Shops, gepflegt in der Ansicht „Sortiment“ der
+-- Shop-Erweiterung (dev/shop-sortiment.md). Ein Artikel wählt seine Kategorie
+-- in der Artikelkarte aus dieser Liste (parts_ext.hugoshop_category_id), die
+-- Gruppe gehört der Kategorie — so gibt es je Kategorie genau eine Gruppe.
+--
+-- Die Kategorieübersicht der Webseite (category_groups.json) entsteht beim
+-- Satz standard aus diesen Tabellen. Ein Vorlagensatz mit eigener
+-- category_groups.php (sonic24) gruppiert weiter nach seinen Wortlisten und
+-- nimmt von hier nur die Kategorien.
+--
+-- Je Mandant ein Sortiment: die Artikeltexte in parts_ext gelten für alle
+-- HugoShops (dev/shop-mehrere-kanaele.md, M6).
+--
+-- Vor parts_ext, das auf category_shop verweist.
+
+CREATE TABLE IF NOT EXISTS category_group_shop
+(
+    id      integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name    text NOT NULL,
+    sortkey integer,
+    itime   timestamp without time zone DEFAULT now(),
+    mtime   timestamp without time zone
+);
+
+COMMENT ON TABLE  category_group_shop         IS 'Shop: Gruppe der Kategorieübersicht (Ansicht Sortiment)';
+COMMENT ON COLUMN category_group_shop.name    IS 'Name der Gruppe, wie er in der Kategorieübersicht der Webseite steht';
+COMMENT ON COLUMN category_group_shop.sortkey IS 'Reihenfolge in der Übersicht, aufsteigend; ohne Wert nach dem Namen';
+
+CREATE TABLE IF NOT EXISTS category_shop
+(
+    id        integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name      text NOT NULL,
+    group_id  integer REFERENCES category_group_shop (id) ON DELETE SET NULL,
+    topseller boolean NOT NULL DEFAULT false,
+    itime     timestamp without time zone DEFAULT now(),
+    mtime     timestamp without time zone
+);
+
+COMMENT ON TABLE  category_shop           IS 'Shop: Kategorie des Sortiments; Artikel verweisen über parts_ext.hugoshop_category_id';
+COMMENT ON COLUMN category_shop.name      IS 'Name der Kategorie — Begriff der Taxonomie auf der Webseite, aus ihm bildet Hugo die Adresse';
+COMMENT ON COLUMN category_shop.group_id  IS 'Gruppe in der Kategorieübersicht; leer = Restgruppe „Sonstiges“';
+COMMENT ON COLUMN category_shop.topseller IS 'Hervorgehoben oben in der Kategorieübersicht';
+
+-- Namen eindeutig ohne Rücksicht auf Groß- und Kleinschreibung: Hugo legt
+-- „Zubehör“ und „zubehör“ auf dieselbe Adresse
+CREATE UNIQUE INDEX IF NOT EXISTS category_group_shop_name_key ON category_group_shop (lower(btrim(name)));
+CREATE UNIQUE INDEX IF NOT EXISTS category_shop_name_key ON category_shop (lower(btrim(name)));
+
+-- ============================================================================
 -- ARTIKELERWEITERUNG
 -- ============================================================================
 --
@@ -66,6 +118,9 @@ CREATE TABLE IF NOT EXISTS parts_ext
     hugoshop_images         jsonb,
     hugoshop_hyperlink      text,
     hugoshop_category       text,
+    -- RESTRICT: eine Kategorie mit Artikeln lässt sich nicht löschen, die
+    -- Ansicht Sortiment sagt, wie viele noch daran hängen
+    hugoshop_category_id    integer REFERENCES category_shop (id) ON DELETE RESTRICT,
     CONSTRAINT parts_ext_parts_id_key UNIQUE (parts_id),
     CONSTRAINT parts_ext_parts_id_fk FOREIGN KEY (parts_id)
         REFERENCES parts (id) ON UPDATE NO ACTION ON DELETE CASCADE
@@ -78,7 +133,8 @@ COMMENT ON COLUMN parts_ext.hugoshop_properties     IS 'JSON-Objekt: Eigenschaft
 COMMENT ON COLUMN parts_ext.hugoshop_downloads      IS 'JSON-Objekt: Anzeigename -> Dateiname (Datenblaetter, Anleitungen)';
 COMMENT ON COLUMN parts_ext.hugoshop_images         IS 'JSON-Array: Bilddateinamen, erstes Bild ist das Vorschaubild';
 COMMENT ON COLUMN parts_ext.hugoshop_hyperlink      IS 'Zielseite im Shop (ohne Basis-URL)';
-COMMENT ON COLUMN parts_ext.hugoshop_category       IS 'Kategorie fuer Suche und Auswertung';
+COMMENT ON COLUMN parts_ext.hugoshop_category       IS 'Abgelöst durch hugoshop_category_id (Sortiment); wird beim Speichern geleert und nur noch einmalig übernommen';
+COMMENT ON COLUMN parts_ext.hugoshop_category_id    IS 'Kategorie des Artikels im Sortiment (category_shop)';
 
 -- Auf einer bestehenden Datenbank legt der Upstall nur fehlende SPALTEN an,
 -- keine Constraints — der eindeutige Index muss deshalb hier nachgezogen
@@ -113,6 +169,28 @@ BEGIN
         ALTER TABLE parts_ext ADD CONSTRAINT parts_ext_parts_id_key UNIQUE (parts_id);
     END IF;
 END $$;
+
+-- Freitext-Kategorien ins Sortiment übernehmen (dev/shop-sortiment.md): jede
+-- noch nicht übernommene wird eine Kategorie ohne Gruppe, der Artikel
+-- verweist auf sie. Beim Speichern leert die Artikelkarte den Freitext —
+-- danach findet dieser Schritt nichts mehr, und eine bewusst entfernte
+-- Kategorie kommt nicht zurück. Ohne Gruppe: die Gruppen legt der Satz
+-- standard in der Ansicht Sortiment fest, sonic24 ermittelt sie selbst.
+INSERT INTO category_shop (name)
+SELECT DISTINCT ON (lower(btrim(pe.hugoshop_category))) btrim(pe.hugoshop_category)
+  FROM parts_ext pe
+ WHERE pe.hugoshop_category_id IS NULL
+   AND btrim(COALESCE(pe.hugoshop_category, '')) <> ''
+   AND NOT EXISTS (SELECT 1 FROM category_shop c
+                    WHERE lower(btrim(c.name)) = lower(btrim(pe.hugoshop_category)))
+ ORDER BY lower(btrim(pe.hugoshop_category)), btrim(pe.hugoshop_category);
+
+UPDATE parts_ext pe
+   SET hugoshop_category_id = c.id
+  FROM category_shop c
+ WHERE pe.hugoshop_category_id IS NULL
+   AND btrim(COALESCE(pe.hugoshop_category, '')) <> ''
+   AND lower(btrim(c.name)) = lower(btrim(pe.hugoshop_category));
 
 -- ============================================================================
 -- VERKAUFSKANÄLE
@@ -875,13 +953,78 @@ DO $$ BEGIN
         AFTER UPDATE ON parts_ext
         FOR EACH ROW
         WHEN (OLD.hugoshop_hyperlink IS DISTINCT FROM NEW.hugoshop_hyperlink
-              OR OLD.hugoshop_category IS DISTINCT FROM NEW.hugoshop_category
+              OR OLD.hugoshop_category_id IS DISTINCT FROM NEW.hugoshop_category_id
               OR OLD.hugoshop_breadcrumbs IS DISTINCT FROM NEW.hugoshop_breadcrumbs
               OR OLD.hugoshop_images IS DISTINCT FROM NEW.hugoshop_images
               OR OLD.hugoshop_technical_data IS DISTINCT FROM NEW.hugoshop_technical_data
               OR OLD.hugoshop_properties IS DISTINCT FROM NEW.hugoshop_properties
               OR OLD.hugoshop_downloads IS DISTINCT FROM NEW.hugoshop_downloads)
         EXECUTE FUNCTION parts_ext_shop_auto_publish();
+END $$;
+
+-- Sortiment (dev/shop-sortiment.md). Eine umbenannte Kategorie hat eine neue
+-- Adresse: die Produktseiten ihrer Artikel tragen Name und Adresse im Front
+-- Matter (Taxonomie, catalogname, cataloglink) und werden neu geschrieben —
+-- dabei schreibt der Lauf auch die Übersicht neu. Alles andere (neue,
+-- gelöschte Kategorie, andere Gruppe, Topseller, Gruppen selbst) steht nur in
+-- der Kategorieübersicht: ein Auftrag write_categories je HugoShop genügt.
+-- Beides nur bei shop_auto_publish, wie jedes automatische Neuschreiben.
+CREATE OR REPLACE FUNCTION category_shop_rename_publish() RETURNS trigger AS $$
+DECLARE
+    artikel record;
+BEGIN
+    IF NOT shop_extension_active() THEN
+        RETURN NULL;
+    END IF;
+    FOR artikel IN
+        SELECT p.id, p.partnumber
+          FROM parts_ext pe
+          JOIN parts p ON p.id = pe.parts_id
+         WHERE pe.hugoshop_category_id = NEW.id
+    LOOP
+        PERFORM shop_queue_page_rewrite(artikel.id, artikel.partnumber, NULL);
+    END LOOP;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION shop_assortment_changed() RETURNS trigger AS $$
+BEGIN
+    IF NOT shop_extension_active() THEN
+        RETURN NULL;
+    END IF;
+    PERFORM shop_queue_job('write_categories', '', NULL, c.id)
+       FROM sales_channel_shop c
+      WHERE c.active
+        AND c.type = 'hugoshop'
+        AND shop_auto_publish_enabled(c.id);
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    DROP TRIGGER IF EXISTS trigger_category_shop_rename_publish ON category_shop;
+    CREATE TRIGGER trigger_category_shop_rename_publish
+        AFTER UPDATE OF name ON category_shop
+        FOR EACH ROW
+        WHEN (OLD.name IS DISTINCT FROM NEW.name)
+        EXECUTE FUNCTION category_shop_rename_publish();
+
+    -- Je Zeile, nicht je Anweisung: eine Anweisung ohne betroffene Zeile
+    -- (die Übernahme oben bei jedem Upstall) soll keinen Auftrag anlegen.
+    -- Mehrere Zeilen ergeben trotzdem nur einen — shop_queue_job legt keinen
+    -- zweiten offenen an.
+    DROP TRIGGER IF EXISTS trigger_category_shop_assortment_changed ON category_shop;
+    CREATE TRIGGER trigger_category_shop_assortment_changed
+        AFTER INSERT OR UPDATE OR DELETE ON category_shop
+        FOR EACH ROW
+        EXECUTE FUNCTION shop_assortment_changed();
+
+    DROP TRIGGER IF EXISTS trigger_category_group_shop_assortment_changed ON category_group_shop;
+    CREATE TRIGGER trigger_category_group_shop_assortment_changed
+        AFTER INSERT OR UPDATE OR DELETE ON category_group_shop
+        FOR EACH ROW
+        EXECUTE FUNCTION shop_assortment_changed();
 END $$;
 
 DO $$ BEGIN
@@ -2493,6 +2636,17 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         ('hugoshop', 'shop_backend_url',                      'backend_url',                      false),
         ('hugoshop', 'shop_products_link',                    'products_link',                    false),
         ('hugoshop', 'shop_category_link',                    'category_link',                    false),
+        -- Schlüssel im Front Matter der Produktseiten, aus dem Hugo die
+        -- Kategorieseiten bildet (Vorgabe kategorien); zusammen mit
+        -- category_link legt er den Shop einer Webseite mit eigener
+        -- Themen-Taxonomie unter /shop/kategorien/. Den alten Schlüssel gab
+        -- es nie, die Abschrift findet nichts.
+        ('hugoshop', 'shop_category_taxonomy',                'category_taxonomy',                false),
+        -- Bezeichnung der Kategorienübersicht in den Brotkrumen der
+        -- Produktseiten (Vorgabe Kategorien), etwa „Sortiment“ — passend zum
+        -- Titel der Übersichtsseite auf der Webseite. Den alten Schlüssel gab
+        -- es nie.
+        ('hugoshop', 'shop_category_title',                   'category_title',                   false),
         ('hugoshop', 'shop_images_link',                      'images_link',                      false),
         ('hugoshop', 'shop_thumbnails_link',                  'thumbnails_link',                  false),
         ('hugoshop', 'shop_downloads_link',                   'downloads_link',                   false),

@@ -5,7 +5,8 @@
             "shopOrders": "/magaza/siparisler",
             "shopWithdrawals": "/magaza/cayma",
             "shopChannels": "/magaza/satis-kanallari",
-            "shopShipping": "/magaza/gonderim-yontemleri"
+            "shopShipping": "/magaza/gonderim-yontemleri",
+            "shopAssortment": "/magaza/urun-yelpazesi"
         },
         "menu": {
             "title": "Mağaza",
@@ -125,8 +126,8 @@
             "hyperlink": "Ürün sayfası",
             "hyperlinkHint": "Mağaza web sitesindeki ürün sayfasının yolu, temel adres olmadan. Öneriyi kullanmak için boş bırakın.",
             "openInShop": "Mağazada görüntüle",
-            "breadcrumbs": "Gezinme yolu",
-            "breadcrumbsHint": "Mağaza gezinmesinin adımları sırayla; her birini Enter ile onaylayın.",
+            "breadcrumbs": "Ürün yelpazesindeki yeri",
+            "breadcrumbsHint": "Genelden özele düzeyler, her birini Enter ile onaylayın. Ürünün kısa açıklaması olarak gösterilir ve mağaza aramasında bulunur.",
             "images": "Görseller",
             "imagesHint": "Mağaza web sitesindeki dosya adları; her birini Enter ile onaylayın. İlk görsel küçük resimdir.",
             "thumbnail": "Küçük resim",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Ürün sayfası",
             "editChannel": "Satış kanalı ayarları",
-            "mediaUpload": "Yükle"
+            "mediaUpload": "Yükle",
+            "categoryHint": "Gruplar ve kategoriler “Ürün yelpazesi” görünümünde yönetilir.",
+            "categoryManage": "Ürün yelpazesini aç"
         },
         "publish": {
             "title": "Yayımlama",
@@ -269,7 +272,8 @@
                 "remove_all": "Tüm ürün sayfalarını kaldır",
                 "draft_all": "Tüm ürün sayfaları taslak olarak",
                 "sync_kit": "Mağaza kullanıcı arayüzünü güncelle",
-                "reconcile_payments": "Ödemeleri mutabık kıl"
+                "reconcile_payments": "Ödemeleri mutabık kıl",
+                "write_categories": "Kategori genel görünümünü yaz"
             },
             "installUiAsk": "Mağaza kullanıcı arayüzü şimdi mi kurulsun, yoksa bir sonraki planlı çalışma için görev olarak mı planlansın?",
             "installUiChannels": "Hangi satış kanalları için?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Bir ürün mağazaya eklendiğinde bu kanalda da sunulur.",
             "settings": "{name} ayarları",
             "settingsSaved": "Ayarlar kaydedildi.",
+            "settingsRejected": "Kaydedilmedi: {fields}. Sunucu bu alanları henüz tanımıyor – mağaza uzantısının veritabanı güncellemesi muhtemelen eksik (yeniden oturum açın).",
             "settingsSaveError": "Ayarlar kaydedilemedi.",
             "newChannel": "Yeni satış kanalı:",
             "newChannelType": "Tür",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Bilinmeyen kitaplık alanı.",
             "MEDIA_FORMAT": "Bu biçim sunucuda kullanılamıyor.",
             "MEDIA_FORMAT_SAME": "Görsel zaten bu biçimde.",
-            "MEDIA_CONVERT": "Görsel dönüştürülemedi."
+            "MEDIA_CONVERT": "Görsel dönüştürülemedi.",
+            "ASSORTMENT_NAME_REQUIRED": "Lütfen bir ad girin.",
+            "ASSORTMENT_NAME_TAKEN": "Bu ad zaten var.",
+            "ASSORTMENT_NAME_INVALID": "Bu addan adres oluşturulamaz – harf veya rakam kullanın.",
+            "ASSORTMENT_NOT_FOUND": "Kayıt artık yok. Lütfen görünümü yeniden yükleyin.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategori hâlâ ürünlere atanmış."
         },
         "orderStatus": {
             "open": "Açık",
@@ -529,6 +539,43 @@
             "uploadHint": "Her ad kitaplıkta yalnızca bir kez bulunur; hiçbir ürünün başvurmadığı bir dosya değiştirilir. Görseller yüklenirken başka bir biçime dönüştürülebilir.",
             "deleteKept": "{name} kitaplıkta kalır: başka ürünler dosyaya başvuruyor.",
             "empty": "Dosya yok."
+        },
+        "assortment": {
+            "title": "Ürün yelpazesi",
+            "subtitle": "Mağazanın grupları ve kategorileri",
+            "loading": "Yükleniyor …",
+            "hint": "Ürün kartı kategorileri bu listeden seçer. “Standard” şablon setiyle web sitesinin kategori genel görünümü bundan oluşur: gruplar bu sırada, grubu olmayan kategoriler “Sonstiges” altında, çok satanlar en üstte. Değişiklikler bir sonraki çalıştırmada web sitesine ulaşır.",
+            "groups": "Gruplar",
+            "categories": "Kategoriler",
+            "newGroup": "Yeni grup",
+            "editGroup": "Grubu düzenle",
+            "newCategory": "Yeni kategori",
+            "editCategory": "Kategoriyi düzenle",
+            "name": "Ad",
+            "group": "Grup",
+            "noGroup": "Grupsuz (Sonstiges)",
+            "topseller": "Çok satan",
+            "topsellerHint": "Web sitesinin kategori genel görünümünde en üstte öne çıkarılır.",
+            "parts": "Ürünler",
+            "partsHint": "Sunulan / atanan: web sitesinde yalnızca sunulan ürünler görünür.",
+            "categoryCount": "Kategoriler: {count}",
+            "search": "Ara",
+            "empty": "Henüz kategori yok.",
+            "noMatch": "Seçime uyan kategori yok.",
+            "moveUp": "Yukarı taşı",
+            "moveDown": "Aşağı taşı",
+            "edit": "Düzenle",
+            "delete": "Sil",
+            "cancel": "İptal",
+            "save": "Kaydet",
+            "saved": "Kaydedildi.",
+            "deleted": "Silindi.",
+            "groupNameHint": "Grup, web sitesinin kategori genel görünümünde böyle görünür.",
+            "categoryNameHint": "Kategori sayfasının adresi addan oluşturulur.",
+            "renameHint": "Yeni ad, kategori sayfasının adresini değiştirir. Atanan ürünlerin ({count}) ürün sayfaları yeniden yazılır.",
+            "deleteGroupConfirm": "“{name}” grubu silinsin mi? Kategorileri ({count}) kalır ve ardından “Sonstiges” altında görünür.",
+            "deleteCategoryConfirm": "“{name}” kategorisi silinsin mi?",
+            "categoryInUse": "“{name}” kategorisi hâlâ {count} ürüne atanmış ve silinemez. Önce bu ürünlere başka bir kategori verin."
         }
     }
 }

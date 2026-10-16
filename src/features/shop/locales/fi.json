@@ -5,7 +5,8 @@
             "shopOrders": "/kauppa/tilaukset",
             "shopWithdrawals": "/kauppa/peruutukset",
             "shopChannels": "/kauppa/myyntikanavat",
-            "shopShipping": "/kauppa/toimitustavat"
+            "shopShipping": "/kauppa/toimitustavat",
+            "shopAssortment": "/kauppa/valikoima"
         },
         "menu": {
             "title": "Kauppa",
@@ -125,8 +126,8 @@
             "hyperlink": "Tuotesivu",
             "hyperlinkHint": "Tuotesivun polku kaupan verkkosivustolla ilman perusosoitetta. Jätä tyhjäksi, niin ehdotusta käytetään.",
             "openInShop": "Näytä kaupassa",
-            "breadcrumbs": "Navigointipolku",
-            "breadcrumbsHint": "Kaupan navigoinnin vaiheet järjestyksessä; vahvista kukin Enterillä.",
+            "breadcrumbs": "Sijoitus valikoimassa",
+            "breadcrumbsHint": "Tasot yleisestä erityiseen, vahvista kukin Enterillä. Näkyvät tuotteen lyhyenä kuvauksena, ja kaupan haku löytää ne.",
             "images": "Kuvat",
             "imagesHint": "Tiedostonimet kaupan verkkosivustolla; vahvista kukin Enterillä. Ensimmäinen kuva on esikatselukuva.",
             "thumbnail": "Esikatselukuva",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Tuotesivu",
             "editChannel": "Myyntikanavan asetukset",
-            "mediaUpload": "Lataa palvelimelle"
+            "mediaUpload": "Lataa palvelimelle",
+            "categoryHint": "Ryhmiä ja kategorioita ylläpidetään näkymässä ”Valikoima”.",
+            "categoryManage": "Avaa valikoima"
         },
         "publish": {
             "title": "Julkaiseminen",
@@ -269,7 +272,8 @@
                 "remove_all": "Poista kaikki tuotesivut",
                 "draft_all": "Kaikki tuotesivut luonnoksiksi",
                 "sync_kit": "Päivitä kaupan käyttöliittymä",
-                "reconcile_payments": "Täsmäytä maksut"
+                "reconcile_payments": "Täsmäytä maksut",
+                "write_categories": "Kirjoita kategoriayleiskatsaus"
             },
             "installUiAsk": "Asennetaanko kaupan käyttöliittymä heti vai ajoitetaanko se tehtäväksi seuraavaan suunniteltuun ajoon?",
             "installUiChannels": "Mille myyntikanaville?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Kun tuote lisätään kauppaan, sitä tarjotaan heti myös tässä kanavassa.",
             "settings": "Kanavan {name} asetukset",
             "settingsSaved": "Asetukset tallennettu.",
+            "settingsRejected": "Ei tallennettu: {fields}. Taustajärjestelmä ei vielä tunne näitä kenttiä – kauppalaajennuksen tietokantapäivitys todennäköisesti puuttuu (kirjaudu uudelleen).",
             "settingsSaveError": "Asetuksia ei voitu tallentaa.",
             "newChannel": "Uusi myyntikanava:",
             "newChannelType": "Tyyppi",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Tuntematon kirjaston alue.",
             "MEDIA_FORMAT": "Tämä muoto ei ole mahdollinen palvelimella.",
             "MEDIA_FORMAT_SAME": "Kuva on jo tässä muodossa.",
-            "MEDIA_CONVERT": "Kuvaa ei voitu muuntaa."
+            "MEDIA_CONVERT": "Kuvaa ei voitu muuntaa.",
+            "ASSORTMENT_NAME_REQUIRED": "Anna nimi.",
+            "ASSORTMENT_NAME_TAKEN": "Tämä nimi on jo olemassa.",
+            "ASSORTMENT_NAME_INVALID": "Tästä nimestä ei voi muodostaa osoitetta – käytä kirjaimia tai numeroita.",
+            "ASSORTMENT_NOT_FOUND": "Merkintää ei enää ole. Lataa näkymä uudelleen.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategoria on yhä liitetty tuotteisiin."
         },
         "orderStatus": {
             "open": "Avoin",
@@ -529,6 +539,43 @@
             "uploadHint": "Jokainen nimi on kirjastossa vain kerran; tiedosto, johon mikään tuote ei viittaa, korvataan. Kuvat voi muuntaa toiseen muotoon ladattaessa.",
             "deleteKept": "{name} jää kirjastoon: muut tuotteet viittaavat tiedostoon.",
             "empty": "Ei tiedostoja."
+        },
+        "assortment": {
+            "title": "Valikoima",
+            "subtitle": "Kaupan ryhmät ja kategoriat",
+            "loading": "Ladataan …",
+            "hint": "Tuotekortti valitsee kategoriat tästä luettelosta. Mallisarjalla ”Standard” siitä muodostuu verkkosivuston kategoriayleiskatsaus: ryhmät tässä järjestyksessä, ryhmättömät kategoriat kohdassa ”Sonstiges”, myydyimmät ylimpänä. Muutokset päivittyvät verkkosivustolle seuraavalla ajolla.",
+            "groups": "Ryhmät",
+            "categories": "Kategoriat",
+            "newGroup": "Uusi ryhmä",
+            "editGroup": "Muokkaa ryhmää",
+            "newCategory": "Uusi kategoria",
+            "editCategory": "Muokkaa kategoriaa",
+            "name": "Nimi",
+            "group": "Ryhmä",
+            "noGroup": "Ilman ryhmää (Sonstiges)",
+            "topseller": "Myydyin",
+            "topsellerHint": "Korostettuna ylimpänä verkkosivuston kategoriayleiskatsauksessa.",
+            "parts": "Tuotteet",
+            "partsHint": "Tarjolla / liitetty: verkkosivustolla näkyvät vain tarjolla olevat tuotteet.",
+            "categoryCount": "Kategoriat: {count}",
+            "search": "Hae",
+            "empty": "Kategorioita ei vielä ole.",
+            "noMatch": "Mikään kategoria ei vastaa valintaa.",
+            "moveUp": "Siirrä ylös",
+            "moveDown": "Siirrä alas",
+            "edit": "Muokkaa",
+            "delete": "Poista",
+            "cancel": "Peruuta",
+            "save": "Tallenna",
+            "saved": "Tallennettu.",
+            "deleted": "Poistettu.",
+            "groupNameHint": "Näin ryhmä näkyy verkkosivuston kategoriayleiskatsauksessa.",
+            "categoryNameHint": "Kategoriasivun osoite muodostetaan nimestä.",
+            "renameHint": "Uusi nimi muuttaa kategoriasivun osoitteen. Liitettyjen tuotteiden ({count}) tuotesivut kirjoitetaan uudelleen.",
+            "deleteGroupConfirm": "Poistetaanko ryhmä ”{name}”? Sen kategoriat ({count}) säilyvät ja näkyvät sen jälkeen kohdassa ”Sonstiges”.",
+            "deleteCategoryConfirm": "Poistetaanko kategoria ”{name}”?",
+            "categoryInUse": "Kategoria ”{name}” on yhä liitetty {count} tuotteeseen eikä sitä voi poistaa. Anna tuotteille ensin toinen kategoria."
         }
     }
 }

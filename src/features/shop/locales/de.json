@@ -5,7 +5,8 @@
             "shopOrders": "/shop/bestellungen",
             "shopWithdrawals": "/shop/widerrufe",
             "shopChannels": "/shop/verkaufskanaele",
-            "shopShipping": "/shop/versandarten"
+            "shopShipping": "/shop/versandarten",
+            "shopAssortment": "/shop/sortiment"
         },
         "menu": {
             "title": "Shop",
@@ -125,8 +126,8 @@
             "hyperlink": "Produktseite",
             "hyperlinkHint": "Pfad der Produktseite auf der Shop-Webseite, ohne Basisadresse. Leer lassen für den Vorschlag.",
             "openInShop": "Im Shop ansehen",
-            "breadcrumbs": "Navigationspfad",
-            "breadcrumbsHint": "Stationen der Shop-Navigation in ihrer Reihenfolge, jeweils mit Enter übernehmen.",
+            "breadcrumbs": "Einordnung im Sortiment",
+            "breadcrumbsHint": "Stufen vom Allgemeinen zum Besonderen, jeweils mit Enter übernehmen. Erscheinen als Kurzbeschreibung des Artikels und werden in der Shop-Suche gefunden.",
             "images": "Bilder",
             "imagesHint": "Dateinamen auf der Shop-Webseite, jeweils mit Enter übernehmen. Das erste Bild ist das Vorschaubild.",
             "thumbnail": "Vorschaubild",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Produktseite",
             "editChannel": "Einstellungen des Verkaufskanals",
-            "mediaUpload": "Hochladen"
+            "mediaUpload": "Hochladen",
+            "categoryHint": "Gruppen und Kategorien werden in der Ansicht „Sortiment“ gepflegt.",
+            "categoryManage": "Sortiment öffnen"
         },
         "publish": {
             "title": "Veröffentlichung",
@@ -269,7 +272,8 @@
                 "remove_all": "Alle Produktseiten entfernen",
                 "draft_all": "Alle Produktseiten als Entwurf",
                 "sync_kit": "Shop-Benutzerschnittstelle aktualisieren",
-                "reconcile_payments": "Zahlungen abgleichen"
+                "reconcile_payments": "Zahlungen abgleichen",
+                "write_categories": "Kategorieübersicht schreiben"
             },
             "installUiAsk": "Soll die Shop-Benutzerschnittstelle sofort installiert oder als Aufgabe für den nächsten geplanten Lauf vorgemerkt werden?",
             "installUiChannels": "Für welche Verkaufskanäle?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Wird ein Artikel neu in den Shop aufgenommen, wird er in diesem Kanal gleich mit angeboten.",
             "settings": "Einstellungen von {name}",
             "settingsSaved": "Einstellungen gespeichert.",
+            "settingsRejected": "Nicht gespeichert: {fields}. Das Backend kennt diese Felder noch nicht – vermutlich fehlt das Datenbank-Update der Shop-Erweiterung (neu anmelden).",
             "settingsSaveError": "Die Einstellungen konnten nicht gespeichert werden.",
             "newChannel": "Neuer Verkaufskanal:",
             "newChannelType": "Art",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Unbekannter Bereich der Bibliothek.",
             "MEDIA_FORMAT": "Dieses Format ist auf dem Server nicht möglich.",
             "MEDIA_FORMAT_SAME": "Das Bild hat dieses Format schon.",
-            "MEDIA_CONVERT": "Das Bild konnte nicht umgewandelt werden."
+            "MEDIA_CONVERT": "Das Bild konnte nicht umgewandelt werden.",
+            "ASSORTMENT_NAME_REQUIRED": "Bitte einen Namen eingeben.",
+            "ASSORTMENT_NAME_TAKEN": "Diesen Namen gibt es schon.",
+            "ASSORTMENT_NAME_INVALID": "Aus diesem Namen entsteht keine Adresse – bitte Buchstaben oder Ziffern verwenden.",
+            "ASSORTMENT_NOT_FOUND": "Der Eintrag existiert nicht mehr. Bitte die Ansicht neu laden.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Die Kategorie ist noch Artikeln zugeordnet."
         },
         "orderStatus": {
             "open": "Offen",
@@ -529,6 +539,43 @@
             "uploadHint": "Jeden Namen gibt es in der Bibliothek nur einmal; eine Datei, die kein Artikel nennt, wird ersetzt. Bilder lassen sich beim Hochladen in ein anderes Format umwandeln.",
             "deleteKept": "{name} bleibt in der Bibliothek: andere Artikel nennen die Datei.",
             "empty": "Keine Dateien."
+        },
+        "assortment": {
+            "title": "Sortiment",
+            "subtitle": "Gruppen und Kategorien des Shops",
+            "loading": "Wird geladen …",
+            "hint": "Die Kategorien wählt die Artikelkarte aus dieser Liste. Beim Vorlagensatz „Standard“ entsteht daraus die Kategorieübersicht der Webseite: Gruppen in dieser Reihenfolge, Kategorien ohne Gruppe unter „Sonstiges“, Topseller oben. Änderungen gehen mit dem nächsten Lauf auf die Webseite.",
+            "groups": "Gruppen",
+            "categories": "Kategorien",
+            "newGroup": "Neue Gruppe",
+            "editGroup": "Gruppe bearbeiten",
+            "newCategory": "Neue Kategorie",
+            "editCategory": "Kategorie bearbeiten",
+            "name": "Name",
+            "group": "Gruppe",
+            "noGroup": "Ohne Gruppe (Sonstiges)",
+            "topseller": "Topseller",
+            "topsellerHint": "Hervorgehoben oben in der Kategorieübersicht der Webseite.",
+            "parts": "Artikel",
+            "partsHint": "Angeboten / zugeordnet: nur angebotene Artikel erscheinen auf der Webseite.",
+            "categoryCount": "Kategorien: {count}",
+            "search": "Suchen",
+            "empty": "Noch keine Kategorien angelegt.",
+            "noMatch": "Keine Kategorie passt zur Auswahl.",
+            "moveUp": "Nach oben",
+            "moveDown": "Nach unten",
+            "edit": "Bearbeiten",
+            "delete": "Löschen",
+            "cancel": "Abbrechen",
+            "save": "Speichern",
+            "saved": "Gespeichert.",
+            "deleted": "Gelöscht.",
+            "groupNameHint": "So steht die Gruppe in der Kategorieübersicht der Webseite.",
+            "categoryNameHint": "Aus dem Namen entsteht die Adresse der Kategorieseite.",
+            "renameHint": "Der neue Name ändert die Adresse der Kategorieseite. Die Produktseiten der zugeordneten Artikel ({count}) werden neu geschrieben.",
+            "deleteGroupConfirm": "Gruppe „{name}“ löschen? Ihre Kategorien ({count}) bleiben und stehen danach unter „Sonstiges“.",
+            "deleteCategoryConfirm": "Kategorie „{name}“ löschen?",
+            "categoryInUse": "Die Kategorie „{name}“ ist noch {count} Artikeln zugeordnet und kann nicht gelöscht werden. Zuerst den Artikeln eine andere Kategorie geben."
         }
     }
 }

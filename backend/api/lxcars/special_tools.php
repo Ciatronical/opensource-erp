@@ -850,14 +850,33 @@ function _stSyncShopArticles($db, int $toolId): array {
 
             // Shop-Angaben, Kanalzeilen aller HugoShops, Aufträge — eine Anweisung.
             // Abgewählte Kanäle liefert sie zurück, damit die Seite entfernt wird.
+            // Die Kategorie gehört zum Sortiment des Shops (category_shop,
+            // dev/shop-sortiment.md): fehlt sie dort, wird sie ohne Gruppe
+            // angelegt. Neu angelegt ist sie nur in kat_neu sichtbar — die
+            // Abfrage danach sieht den Stand vor der Anweisung.
             $rows = $db->getAll(<<<SQL
-                WITH ext AS (
-                    INSERT INTO parts_ext (parts_id, hugoshop_category, hugoshop_hyperlink, hugoshop_breadcrumbs,
+                WITH kat_neu AS (
+                    INSERT INTO category_shop (name)
+                    SELECT btrim(CAST(:category AS text))
+                     WHERE NOT EXISTS (SELECT 1 FROM category_shop
+                                        WHERE lower(btrim(name)) = lower(btrim(CAST(:category_pruefung AS text))))
+                    ON CONFLICT DO NOTHING
+                    RETURNING id
+                ),
+                kat AS (
+                    SELECT id FROM kat_neu
+                    UNION ALL
+                    SELECT id FROM category_shop WHERE lower(btrim(name)) = lower(btrim(CAST(:category_suche AS text)))
+                    LIMIT 1
+                ),
+                ext AS (
+                    INSERT INTO parts_ext (parts_id, hugoshop_category, hugoshop_category_id, hugoshop_hyperlink, hugoshop_breadcrumbs,
                                            hugoshop_technical_data, hugoshop_properties, hugoshop_images, hugoshop_downloads)
-                    VALUES (:parts_id, :category, :slug, CAST(:breadcrumbs AS jsonb),
+                    VALUES (:parts_id, NULL, (SELECT id FROM kat), :slug, CAST(:breadcrumbs AS jsonb),
                             CAST(:technical AS jsonb), CAST(:properties AS jsonb), '[]'::jsonb, '{}'::jsonb)
                     ON CONFLICT (parts_id) DO UPDATE SET
-                        hugoshop_category       = EXCLUDED.hugoshop_category,
+                        hugoshop_category       = NULL,
+                        hugoshop_category_id    = EXCLUDED.hugoshop_category_id,
                         hugoshop_breadcrumbs    = EXCLUDED.hugoshop_breadcrumbs,
                         hugoshop_technical_data = EXCLUDED.hugoshop_technical_data,
                         hugoshop_properties     = parts_ext.hugoshop_properties || EXCLUDED.hugoshop_properties,
@@ -884,7 +903,9 @@ function _stSyncShopArticles($db, int $toolId): array {
             SQL, [
                 ':parts_id'        => $partsId,
                 ':parts_id_vorher' => $partsId,
-                ':category'        => $offer['category'],
+                ':category'          => $offer['category'],
+                ':category_pruefung' => $offer['category'],
+                ':category_suche'    => $offer['category'],
                 ':slug'            => $offer['slug'],
                 ':breadcrumbs'     => json_encode([$offer['category']]),
                 ':technical'       => json_encode($tech, JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE),

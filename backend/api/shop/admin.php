@@ -478,6 +478,8 @@ function setShopWithdrawalProcessed($data) {
  *   shipping   Versandangaben des Artikels (parts_shipping_shop) und die
  *              Auswahllisten dafür: Versandarten, Lieferbedingungen,
  *              Gewichtseinheit (dev/shop-versand.md, Schritt 5)
+ *   categories Auswahlliste der Kategorie aus dem Sortiment: id, name,
+ *              group (dev/shop-sortiment.md)
  *
  * Je HugoShop steht in shipping_message, warum keine Versandart passt (leer =
  * passt) — ohne passende wird die Seite nicht veröffentlicht —, und in
@@ -503,7 +505,7 @@ function getPartShopData($data) {
                                 WHERE x.parts_id = p.id AND x.active) AS listed,
                        pe.hugoshop_breadcrumbs, pe.hugoshop_technical_data, pe.hugoshop_properties,
                        pe.hugoshop_downloads, pe.hugoshop_images, pe.hugoshop_hyperlink,
-                       pe.hugoshop_category, p.weight,
+                       pe.hugoshop_category_id, p.weight,
                        -- Versandartikel: gehört dieser Versandart, wird nie angeboten
                        (SELECT m.description FROM shipping_method_shop m WHERE m.parts_id = p.id) AS shipping_method_of
                   FROM parts p
@@ -525,6 +527,13 @@ function getPartShopData($data) {
                                       FROM delivery_terms d),
                  'weightunit', (SELECT weightunit FROM defaults LIMIT 1)
              )) AS shipping,
+            -- Auswahlliste der Kategorie: das Sortiment, nach Gruppe gegliedert
+            -- (dev/shop-sortiment.md); Kategorien ohne Gruppe zuletzt
+            (SELECT COALESCE(json_agg(json_build_object(
+                        'id', c.id, 'name', c.name, 'group', g.name)
+                        ORDER BY g.sortkey NULLS LAST, lower(g.name) NULLS LAST, lower(c.name)), '[]')
+               FROM category_shop c
+               LEFT JOIN category_group_shop g ON g.id = c.group_id) AS categories,
             -- Reihenfolge wie in der Ansicht „Verkaufskanäle“: umgekehrt
             (SELECT COALESCE(json_agg(k ORDER BY k.sortkey DESC NULLS FIRST, k.channel_id DESC), '[]'::json) FROM (
                 SELECT c.id AS channel_id, c.type, c.name, c.sortkey,
@@ -583,6 +592,7 @@ function getPartShopData($data) {
         'channels'  => $kanaele,
         'tax_rates' => json_decode((string)($zeile['tax_rates'] ?? '{}'), true) ?: (object)[],
         'shipping'  => json_decode((string)($zeile['shipping'] ?? '{}'), true) ?: (object)[],
+        'categories' => json_decode((string)($zeile['categories'] ?? '[]'), true) ?: [],
     ]);
 }
 
@@ -600,7 +610,7 @@ function getPartShopData($data) {
  * Produktseite, wie beim Herausnehmen aus dem Shop.
  *
  * @param array $data['parts_id'] Artikel
- * @param array $data['category'] Kategorie
+ * @param array $data['category_id'] Kategorie aus dem Sortiment (category_shop), leer = keine
  * @param array $data['hyperlink'] Zielseite im Shop
  * @param array $data['breadcrumbs'] JSON-Array
  * @param array $data['images'] JSON-Array
@@ -618,7 +628,7 @@ function getPartShopData($data) {
  *              Losgröße), delivery_term_id (Lieferbedingung). Fehlt das Feld,
  *              bleiben die Angaben unverändert
  * @return void
- * @testdata {"parts_id": 1, "category": "Bremsen", "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}], "shipping": {"shipping_method_id": null, "length": 40, "width": 30, "height": 20, "min_qty": null, "delivery_term_id": null}}
+ * @testdata {"parts_id": 1, "category_id": 1, "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}], "shipping": {"shipping_method_id": null, "length": 40, "width": 30, "height": 20, "min_qty": null, "delivery_term_id": null}}
  */
 function savePartShopData($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
@@ -680,14 +690,17 @@ function savePartShopData($data) {
                    JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.type = 'hugoshop'
                   WHERE pc.parts_id = :parts_id
              ), ext AS (
-                 INSERT INTO parts_ext (parts_id, hugoshop_category, hugoshop_hyperlink,
+                 -- Kategorie aus dem Sortiment; den abgelösten Freitext leeren,
+                 -- sonst übernähme ihn das nächste Upstall wieder
+                 INSERT INTO parts_ext (parts_id, hugoshop_category, hugoshop_category_id, hugoshop_hyperlink,
                                         hugoshop_breadcrumbs, hugoshop_images,
                                         hugoshop_technical_data, hugoshop_properties, hugoshop_downloads)
-                 SELECT p.id, :category, :hyperlink, :breadcrumbs::jsonb, :images::jsonb,
+                 SELECT p.id, NULL, CAST(NULLIF(:category_id, 0) AS integer), :hyperlink, :breadcrumbs::jsonb, :images::jsonb,
                         :technical::jsonb, :properties::jsonb, :downloads::jsonb
                    FROM parts p WHERE p.id = :parts_id
                  ON CONFLICT (parts_id) DO UPDATE SET
-                        hugoshop_category       = EXCLUDED.hugoshop_category,
+                        hugoshop_category       = NULL,
+                        hugoshop_category_id    = EXCLUDED.hugoshop_category_id,
                         hugoshop_hyperlink      = EXCLUDED.hugoshop_hyperlink,
                         hugoshop_breadcrumbs    = EXCLUDED.hugoshop_breadcrumbs,
                         hugoshop_images         = EXCLUDED.hugoshop_images,
@@ -757,7 +770,7 @@ function savePartShopData($data) {
               WHERE v.active",
             [
                 ':parts_id'     => $partsId,
-                ':category'     => $data['category']  ?? null,
+                ':category_id'  => (int)($data['category_id'] ?? 0),
                 ':hyperlink'    => $data['hyperlink'] ?? null,
                 ':breadcrumbs'  => json_encode($data['breadcrumbs']    ?? []),
                 ':images'       => json_encode($data['images']         ?? []),
@@ -776,9 +789,10 @@ function savePartShopData($data) {
             ]
         );
     } catch (PDOException $e) {
-        // Fremdschlüssel: Versandart oder Lieferbedingung gibt es nicht (mehr)
+        // Fremdschlüssel: Kategorie, Versandart oder Lieferbedingung gibt es
+        // nicht (mehr) — etwa in der Ansicht Sortiment gelöscht
         if ('23503' === $e->getCode()) {
-            resultInfo(false, 'VALIDATION_ERROR', null, 'Versandart oder Lieferbedingung gibt es nicht (mehr)');
+            resultInfo(false, 'VALIDATION_ERROR', null, 'Kategorie, Versandart oder Lieferbedingung gibt es nicht (mehr)');
             return;
         }
         throw $e;
@@ -1955,10 +1969,16 @@ function saveShopChannel($data) {
  * neu eingegeben wurde. Ein Vorgang; die Antwort nennt, welche Geheimnisse
  * danach hinterlegt sind.
  *
+ * Schlüssel, die shop_channel_setting_keys() nicht kennt, werden nicht
+ * gespeichert — die Antwort nennt sie unter rejected_keys, und die Kanalkarte
+ * warnt. Häufigste Ursache: ein neues Feld in der Oberfläche, für das das
+ * Upstall der Shop-Erweiterung noch nicht gelaufen ist. Ohne diese Rückmeldung
+ * meldete die Karte „gespeichert“, obwohl der Wert verloren ging.
+ *
  * @param int $data['channel_id'] Kanal
  * @param array $data['settings'] Schlüssel ohne Präfix => Wert, etwa base_url
  * @param array $data['secrets'] Geheimnisse => neuer Wert, etwa public_key
- * @return void secrets_set (Schlüssel => true)
+ * @return void secrets_set (Schlüssel => true), rejected_keys (Liste)
  * @testdata {"channel_id": 1, "settings": {"base_url": "https://shop.example"}, "secrets": {}}
  */
 function saveShopChannelSettings($data) {
@@ -2003,11 +2023,24 @@ function saveShopChannelSettings($data) {
                        FROM (SELECT s.key FROM sales_channel_secret_shop s, kanal
                               WHERE s.channel_id = kanal.id AND s.value <> ''
                              UNION
-                             SELECT key FROM geheim) x) AS secrets_set",
+                             SELECT key FROM geheim) x) AS secrets_set,
+                    -- Nicht zugelassene Schlüssel: Einstellungen ohne passenden
+                    -- offenen Schlüssel, Geheimnisse ohne passenden geheimen
+                    (SELECT COALESCE(json_agg(DISTINCT r.key ORDER BY r.key), '[]')
+                       FROM (SELECT e.key, false AS secret
+                               FROM jsonb_each_text(CAST(:settings_pruefung AS jsonb)) e
+                             UNION ALL
+                             SELECT e.key, true
+                               FROM jsonb_each_text(CAST(:secrets_pruefung AS jsonb)) e
+                              WHERE btrim(e.value) <> '') r
+                      WHERE NOT EXISTS (SELECT 1 FROM erlaubt a
+                                         WHERE a.key = r.key AND a.secret = r.secret)) AS rejected_keys",
             [
-                ':kanal'    => (int)($data['channel_id'] ?? 0),
-                ':settings' => $objekt($data['settings'] ?? []),
-                ':secrets'  => $objekt($data['secrets'] ?? []),
+                ':kanal'             => (int)($data['channel_id'] ?? 0),
+                ':settings'          => $objekt($data['settings'] ?? []),
+                ':secrets'           => $objekt($data['secrets'] ?? []),
+                ':settings_pruefung' => $objekt($data['settings'] ?? []),
+                ':secrets_pruefung'  => $objekt($data['secrets'] ?? []),
             ]
         );
     } catch (PDOException $e) {
@@ -2025,8 +2058,15 @@ function saveShopChannelSettings($data) {
         resultInfo(false, 'CHANNEL_NOT_FOUND', null, 'Diesen Verkaufskanal gibt es nicht');
         return;
     }
+    $abgelehnt = json_decode((string)($zeile['rejected_keys'] ?? '[]'), true) ?: [];
+    if ($abgelehnt) {
+        writeLog('saveShopChannelSettings: Schlüssel nicht zugelassen, nicht gespeichert (Upstall der Shop-Erweiterung ausstehend?): '
+                 .implode(', ', $abgelehnt), true, DLOG_WRN);
+    }
+
     resultInfo(true, 'CHANNEL_SETTINGS_SAVED', [
-        'secrets_set' => json_decode((string)($zeile['secrets_set'] ?? '{}'), true) ?: (object)[],
+        'secrets_set'   => json_decode((string)($zeile['secrets_set'] ?? '{}'), true) ?: (object)[],
+        'rejected_keys' => $abgelehnt,
     ]);
 }
 

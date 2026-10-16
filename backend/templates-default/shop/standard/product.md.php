@@ -25,26 +25,29 @@ $artikel = $seite['artikel'];
 $shop    = $seite['shop'];
 $betrieb = $seite['betrieb'];
 
-// Seiten der Webseite, auf die der Seitenkörper verweist. Die Kategorien sind
-// die Taxonomie der Webseite und liegen an deren Wurzel — auch bei einem Shop
-// unterhalb einer Webseite (params.shopui.paths.base).
-$kontaktpfad   = '/kontakt/';
-$kategoriePfad = '/kategorien/';
+// Seite der Webseite, auf die der Anfrage-Knopf verweist. Taxonomie,
+// Bezeichnung und Adressen der Kategorien kommen dagegen aus der Kanalkarte
+// (shop.taxonomy, shop.categories_title, shop.categories_url,
+// shop.category_url) — eine Webseite mit eigener Themen-Taxonomie legt den
+// Shop so unter shopkategorien und etwa /shop/sortiment/ mit „Sortiment“.
+$kontaktpfad = '/kontakt/';
 
 $titel = $artikel['description'];
 
-// description: Artikelnummer, die Stationen der Navigation ohne die letzte,
-// und die letzte nur, wenn sie vom Titel abweicht
-$stationen = $shop['breadcrumbs'];
-$letzte    = $stationen ? array_pop($stationen) : '';
-$kurz      = implode(' | ', array_merge([$artikel['partnumber']], $stationen));
+// Kurzbeschreibung aus der „Einordnung im Sortiment“ (parts_ext.hugoshop_breadcrumbs):
+// die Stufen ohne die letzte, und die letzte nur, wenn sie vom Titel
+// abweicht. Sie steht als description unter dem Titel der Produktseite und in
+// den Kategorielisten — ohne Artikelnummer. Ohne Stufen entfällt sie.
+//
+// metaDescription behält die Artikelnummer vorn: sie ist nicht sichtbar, und
+// wer bei einer Suchmaschine nach der Nummer sucht, findet die Seite so.
+$stufen = $shop['breadcrumbs'];
+$letzte = $stufen ? array_pop($stufen) : '';
 if ('' !== $letzte && $letzte !== $titel) {
-    $kurz .= ' | '.$letzte;
+    $stufen[] = $letzte;
 }
-
-// Die Kategorie als Adressteil, wie Hugo den Begriff der Taxonomie ablegt:
-// klein, Leerzeichen zu Bindestrichen
-$katalog = mb_strtolower(str_replace(' ', '-', $shop['category']));
+$kurz = implode(' | ', $stufen);
+$meta = implode(' | ', array_merge([$artikel['partnumber']], $stufen));
 
 // Bestellbar: nicht veraltet und im HugoShop nicht als nicht verfügbar
 // markiert (shop_part_available). Der Bestand entscheidet nur über das
@@ -62,9 +65,11 @@ $schutz = fn($wert) => htmlspecialchars((string)$wert, ENT_QUOTES | ENT_SUBSTITU
 ---
 title: <?= shopYaml($titel) ?>
 
+<?php if ($kurz !== ''): ?>
 description: <?= shopYaml($kurz) ?>
 
-metaDescription: <?= shopYaml($kurz) ?>
+<?php endif; ?>
+metaDescription: <?= shopYaml($meta) ?>
 
 productName: <?= shopYaml($titel) ?>
 
@@ -97,15 +102,16 @@ lastmod: <?= shopYaml($artikel['mtime']) ?>
 
 <?php endif; ?>
 category: "Produkt"
-home: "Kategorien"
-homelink: <?= shopYaml($kategoriePfad) ?>
+home: <?= shopYaml($shop['categories_title']) ?>
+
+homelink: <?= shopYaml($shop['categories_url']) ?>
 
 <?php if ($shop['category'] !== ''): ?>
-kategorien: <?= shopYamlList([$shop['category']]) ?>
+<?= $shop['taxonomy'] ?>: <?= shopYamlList([$shop['category']]) ?>
 
 catalogname: <?= shopYaml(ucfirst($shop['category'])) ?>
 
-cataloglink: <?= shopYaml($kategoriePfad.$katalog.'/') ?>
+cataloglink: <?= shopYaml($shop['category_url']) ?>
 
 <?php endif; ?>
 <?php if ($shop['breadcrumbs']): ?>

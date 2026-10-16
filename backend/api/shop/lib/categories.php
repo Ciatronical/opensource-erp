@@ -4,47 +4,147 @@
 // Kategorieübersicht der Webseite. Die Seite je Kategorie erzeugt Hugo selbst
 // aus der Taxonomie im Front Matter der Produktseiten. Was Hugo nicht kann, ist
 // die Übersicht nach Obergruppen; dafür schreibt der Läufer eine Datendatei,
-// die das Theme liest — beim Satz standard data/category_groups.json für das
-// Theme hugoshop.
+// die das Theme liest — beim Satz standard data/category_groups.json.
 //
-// Portiert aus sonic24.de/publish/category_groups.php. Der Algorithmus steht
-// hier; die Regeln (Wortteile, Topseller, Stoppwörter) sind Inhalt des Shops
-// und stehen im Vorlagensatz, in category_groups.php.
+// Zwei Wege zu den Gruppen (dev/shop-sortiment.md):
+//
+//   Sortiment   Gruppen, Zuordnung und Topseller aus category_group_shop und
+//               category_shop, gepflegt in der Ansicht „Sortiment“. Gilt für
+//               den Satz standard und jeden Satz ohne eigene
+//               category_groups.php.
+//   Regeln      Ein Satz mit eigener category_groups.php (sonic24) ermittelt
+//               die Gruppen aus Wortteilen der Kategorienamen — portiert aus
+//               sonic24.de/publish/category_groups.php. Die Kategorien selbst
+//               kommen auch dann aus dem Sortiment.
 
 /**
- * Regeln der Gruppierung
+ * Regeln der Gruppierung eines Vorlagensatzes
  *
- * In Schichten wie das Webseiten-Paket: Vorgaben, darüber category_groups.php
- * des mitgelieferten Satzes standard, darüber die des gewählten Satzes. Ein
- * eigener Satz nennt so nur, was er ändert.
+ * Nur ein Satz mit eigener category_groups.php gruppiert nach Regeln; seine
+ * Angaben liegen über den Vorgaben unten. Ohne Datei gilt das Sortiment.
  *
  * @param string $satz Name des gewählten Satzes
- * @return array
+ * @return array|null null = Gruppen aus dem Sortiment
  * @throws ApiError SHOP_TEMPLATE_SET_INVALID, SHOP_TEMPLATE_SET_MISSING
  */
-function shopCategoryRules(string $satz): array {
-    $regeln = [
+function shopCategoryRules(string $satz): ?array {
+    $datei = shopTemplateDir($satz).'/category_groups.php';
+    if (!is_file($datei)) {
+        return null;
+    }
+    $eigene = (static fn(string $datei) => require $datei)($datei);
+
+    return array_merge([
         'taxonomy'               => 'kategorien',
         'labels'                 => [],
         'topseller'              => [],
-        'stop_words'             => [],
+        // Wörter ohne Aussage, die nie eine Gruppe bilden. Standen bis zum
+        // Sortiment (16.10.2026) in standard/category_groups.php.
+        'stop_words'             => [
+            'und', 'oder', 'mit', 'fuer', 'von', 'zur', 'zum',
+            'der', 'die', 'das', 'den', 'dem', 'des', 'ein', 'eine', 'einer', 'eines',
+            'auf', 'aus', 'bei', 'bis', 'nach', 'vor', 'ueber', 'unter',
+            'als', 'wie', 'nicht', 'nur', 'auch', 'noch', 'schon',
+            'typ', 'art', 'set', 'pro',
+        ],
         'min_cluster_size'       => 3,
         'fallback_min_frequency' => 5,
         'fallback_max_clusters'  => 15,
-        'rest_name'              => 'Sonstiges',
-    ];
+        'rest_name'              => SHOP_CATEGORY_REST_NAME,
+    ], is_array($eigene) ? $eigene : []);
+}
 
-    foreach (array_unique([shopTemplateMasterDir().'/standard', shopTemplateDir($satz)]) as $verzeichnis) {
-        $datei = $verzeichnis.'/category_groups.php';
-        if (is_file($datei)) {
-            $eigene = (static fn(string $datei) => require $datei)($datei);
-            if (is_array($eigene)) {
-                $regeln = array_merge($regeln, $eigene);
-            }
+/** Restgruppe für Kategorien ohne Gruppe — Text der Webseite */
+const SHOP_CATEGORY_REST_NAME = 'Sonstiges';
+
+/**
+ * Eintrag einer Kategorie in der Übersicht
+ *
+ * @param array $kategorie name, productCount
+ * @param string $muster Adressmuster mit %s (shopChannelCategoryPaths)
+ * @return array name, url, productCount
+ */
+function shopCategoryEntry(array $kategorie, string $muster): array {
+    return [
+        'name'         => shopUcfirst($kategorie['name']),
+        'url'          => str_replace('%s', shopHugoPath($kategorie['name']), $muster),
+        'productCount' => (int)$kategorie['productCount'],
+    ];
+}
+
+/**
+ * Eine Gruppe der Übersicht, Kategorien nach Namen sortiert
+ *
+ * @param string $name Name der Gruppe
+ * @param array $liste Kategorien (name, productCount)
+ * @param string $muster Adressmuster mit %s
+ * @return array name, slug (Anker), count, categories
+ */
+function shopCategoryGroupEntry(string $name, array $liste, string $muster): array {
+    usort($liste, fn($a, $b) => strcmp(shopCategoryFold($a['name']), shopCategoryFold($b['name'])));
+    $anker = trim(preg_replace('/[^a-z0-9]+/', '-', str_replace('&', 'und', shopCategoryFold($name))), '-');
+    return [
+        'name'       => $name,
+        'slug'       => $anker,
+        'count'      => count($liste),
+        'categories' => array_map(fn($kategorie) => shopCategoryEntry($kategorie, $muster), $liste),
+    ];
+}
+
+/**
+ * Übersicht aus dem Sortiment
+ *
+ * Gruppen in der Reihenfolge der Ansicht Sortiment (sortkey, dann Name),
+ * Kategorien ohne Gruppe zuletzt in der Restgruppe. Keine Mindestgröße: eine
+ * Gruppe hat jemand bewusst angelegt. Topseller nach Namen.
+ *
+ * @param array $kategorien aus shopCategoryCounts(): name, productCount,
+ *                          group, group_sort, topseller
+ * @param string $muster Adressmuster mit %s
+ * @return array topseller, groups — im Aufbau, den die Themes lesen
+ */
+function shopCategoryGroupsFromAssortment(array $kategorien, string $muster): array {
+    $gruppen = [];
+    $rang = [];
+    $rest = [];
+    foreach ($kategorien as $kategorie) {
+        $gruppe = trim((string)($kategorie['group'] ?? ''));
+        if ('' === $gruppe) {
+            $rest[] = $kategorie;
+            continue;
         }
+        $gruppen[$gruppe][] = $kategorie;
+        $rang[$gruppe] = $kategorie['group_sort'] ?? null;
     }
 
-    return $regeln;
+    $namen = array_keys($gruppen);
+    usort($namen, function ($a, $b) use ($rang) {
+        $ra = $rang[$a];
+        $rb = $rang[$b];
+        if (null !== $ra && null !== $rb && $ra !== $rb) {
+            return $ra <=> $rb;
+        }
+        if ((null === $ra) !== (null === $rb)) {
+            return null === $ra ? 1 : -1;   // ohne Reihenfolge nach hinten
+        }
+        return strcmp(shopCategoryFold((string)$a), shopCategoryFold((string)$b));
+    });
+
+    $ergebnis = [];
+    foreach ($namen as $name) {
+        $ergebnis[] = shopCategoryGroupEntry((string)$name, $gruppen[$name], $muster);
+    }
+    if ($rest) {
+        $ergebnis[] = shopCategoryGroupEntry(SHOP_CATEGORY_REST_NAME, $rest, $muster);
+    }
+
+    $topseller = array_values(array_filter($kategorien, fn($kategorie) => !empty($kategorie['topseller'])));
+    usort($topseller, fn($a, $b) => strcmp(shopCategoryFold($a['name']), shopCategoryFold($b['name'])));
+
+    return [
+        'topseller' => array_map(fn($kategorie) => shopCategoryEntry($kategorie, $muster), $topseller),
+        'groups'    => $ergebnis,
+    ];
 }
 
 /**
@@ -199,17 +299,13 @@ function shopCategoryGroups(array $kategorien, array $regeln): array {
         }
     }
 
-    $taxonomie = trim((string)$regeln['taxonomy'], '/');
-    $eintrag = fn(array $kategorie) => [
-        'name'         => shopUcfirst($kategorie['name']),
-        'url'          => '/'.$taxonomie.'/'.shopHugoPath($kategorie['name']).'/',
-        'productCount' => (int)$kategorie['productCount'],
-    ];
-    $gruppe = function (string $name, array $liste) use ($eintrag) {
-        usort($liste, fn($a, $b) => strcmp(shopCategoryFold($a['name']), shopCategoryFold($b['name'])));
-        $anker = trim(preg_replace('/[^a-z0-9]+/', '-', str_replace('&', 'und', shopCategoryFold($name))), '-');
-        return ['name' => $name, 'slug' => $anker, 'count' => count($liste), 'categories' => array_map($eintrag, $liste)];
-    };
+    // Adresse der Kategorieseite: das Muster der Kanalkarte (category_link,
+    // von shopWriteCategoryGroups eingesetzt); ohne Kanal der Taxonomiename
+    // der Regeln an der Wurzel
+    $muster = (string)($regeln['category_link'] ?? '');
+    if (!str_contains($muster, '%s')) {
+        $muster = '/'.trim((string)$regeln['taxonomy'], '/').'/%s/';
+    }
 
     $ergebnis = [];
     foreach ($gruppen as $name => $liste) {
@@ -217,18 +313,18 @@ function shopCategoryGroups(array $kategorien, array $regeln): array {
             $uebrig = array_merge($uebrig, $liste);
             continue;
         }
-        $ergebnis[] = $gruppe((string)$name, $liste);
+        $ergebnis[] = shopCategoryGroupEntry((string)$name, $liste, $muster);
     }
     usort($ergebnis, fn($a, $b) => $b['count'] <=> $a['count']);
     if ($uebrig) {
-        $ergebnis[] = $gruppe((string)$regeln['rest_name'], $uebrig);
+        $ergebnis[] = shopCategoryGroupEntry((string)$regeln['rest_name'], $uebrig, $muster);
     }
 
     $topseller = [];
     foreach ($regeln['topseller'] as $gesucht) {
         foreach ($kategorien as $kategorie) {
             if (mb_strtolower($kategorie['name'], 'UTF-8') === mb_strtolower((string)$gesucht, 'UTF-8')) {
-                $topseller[] = $eintrag($kategorie);
+                $topseller[] = shopCategoryEntry($kategorie, $muster);
                 break;
             }
         }
@@ -289,26 +385,31 @@ function shopCategoryGroupsFile($db, int $kanal, bool $anlegen = false): string 
  * Kategorien der Artikel im Shop mit Zahl der Artikel
  *
  * Dieselbe Auswahl wie shopListedParts(): was eine Produktseite hat, zählt.
- * Schreibweisen, die Hugo auf dieselbe Adresse legt, werden zusammengezählt —
- * sonst stünde dieselbe Kategorie zweimal in der Übersicht.
+ * Eine Kategorie ohne angebotenen Artikel fehlt — Hugo legt für sie keine
+ * Seite an, ein Eintrag in der Übersicht führte ins Leere. Namen, die Hugo
+ * auf dieselbe Adresse legt, werden zusammengezählt.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
- * @return array Liste aus name und productCount
+ * @return array Liste aus name, productCount und aus dem Sortiment group,
+ *               group_sort, topseller
  */
 function shopCategoryCounts($db, int $kanal): array {
     $zeilen = $db->getAll(
-        "SELECT btrim(pe.hugoshop_category) AS name, count(*) AS product_count
+        "SELECT btrim(c.name) AS name, count(*) AS product_count,
+                g.name AS group_name, g.sortkey AS group_sort, c.topseller
            FROM parts_ext pe
+           JOIN category_shop c ON c.id = pe.hugoshop_category_id
+           LEFT JOIN category_group_shop g ON g.id = c.group_id
            JOIN parts_channel_shop pc ON pc.parts_id = pe.parts_id
                                      AND pc.channel_id = shop_active_channel_id(CAST(:kanal AS integer))
                                      AND pc.active
-          WHERE btrim(COALESCE(pe.hugoshop_category, '')) <> ''
-          GROUP BY btrim(pe.hugoshop_category)
-          ORDER BY btrim(pe.hugoshop_category)",
+          GROUP BY c.id, g.id
+          ORDER BY btrim(c.name)",
         [':kanal' => $kanal]
     );
 
+    $wahr = fn($wert) => true === $wert || 't' === $wert || '1' === $wert || 1 === $wert;
     $kategorien = [];
     foreach ($zeilen as $zeile) {
         $pfad = shopHugoPath((string)$zeile['name']);
@@ -318,7 +419,13 @@ function shopCategoryCounts($db, int $kanal): array {
         if (isset($kategorien[$pfad])) {
             $kategorien[$pfad]['productCount'] += (int)$zeile['product_count'];
         } else {
-            $kategorien[$pfad] = ['name' => (string)$zeile['name'], 'productCount' => (int)$zeile['product_count']];
+            $kategorien[$pfad] = [
+                'name'         => (string)$zeile['name'],
+                'productCount' => (int)$zeile['product_count'],
+                'group'        => (string)($zeile['group_name'] ?? ''),
+                'group_sort'   => null === $zeile['group_sort'] ? null : (int)$zeile['group_sort'],
+                'topseller'    => $wahr($zeile['topseller']),
+            ];
         }
     }
 
@@ -347,8 +454,8 @@ function shopWriteCategoryGroups($db, int $kanal): array {
     }
     $bilanz['file'] = $datei;
 
-    // Derselbe Satz, aus dem shopCategoryGroupsFile() den Pfad nimmt: seine
-    // Regeln bestimmen die Gruppen.
+    // Derselbe Satz, aus dem shopCategoryGroupsFile() den Pfad nimmt: hat er
+    // eigene Regeln, bestimmen sie die Gruppen, sonst das Sortiment.
     $satz = shopChannelValue($db, $kanal, 'template_set', 'standard');
 
     $kategorien = shopCategoryCounts($db, $kanal);
@@ -360,7 +467,16 @@ function shopWriteCategoryGroups($db, int $kanal): array {
         return $bilanz;
     }
 
-    $uebersicht = shopCategoryGroups($kategorien, shopCategoryRules($satz));
+    // Die Adressen der Kategorieseiten folgen der Kanalkarte (category_link),
+    // nicht dem Satz: sie gehören zur Webseite (shopChannelCategoryPaths)
+    $muster = shopChannelCategoryPaths($db, $kanal)['pattern'];
+    $regeln = shopCategoryRules($satz);
+    if (null === $regeln) {
+        $uebersicht = shopCategoryGroupsFromAssortment($kategorien, $muster);
+    } else {
+        $regeln['category_link'] = $muster;
+        $uebersicht = shopCategoryGroups($kategorien, $regeln);
+    }
     $bilanz['categories'] = count($kategorien);
     $bilanz['groups'] = count($uebersicht['groups']);
 

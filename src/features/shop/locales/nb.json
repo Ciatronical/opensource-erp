@@ -5,7 +5,8 @@
             "shopOrders": "/butikk/bestillinger",
             "shopWithdrawals": "/butikk/angrerett",
             "shopChannels": "/butikk/salgskanaler",
-            "shopShipping": "/butikk/fraktmater"
+            "shopShipping": "/butikk/fraktmater",
+            "shopAssortment": "/butikk/sortiment"
         },
         "menu": {
             "title": "Butikk",
@@ -125,8 +126,8 @@
             "hyperlink": "Produktside",
             "hyperlinkHint": "Sti til produktsiden på butikkens nettsted, uten basisadresse. La stå tomt for å bruke forslaget.",
             "openInShop": "Vis i butikken",
-            "breadcrumbs": "Navigasjonssti",
-            "breadcrumbsHint": "Trinn i butikkens navigasjon i rekkefølge; bekreft hvert med Enter.",
+            "breadcrumbs": "Plassering i sortimentet",
+            "breadcrumbsHint": "Nivåer fra det generelle til det spesifikke, bekreft hvert med Enter. Vises som varens korte beskrivelse og blir funnet av butikksøket.",
             "images": "Bilder",
             "imagesHint": "Filnavn på butikkens nettsted; bekreft hvert med Enter. Det første bildet er miniatyrbildet.",
             "thumbnail": "Miniatyrbilde",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Produktside",
             "editChannel": "Innstillinger for salgskanal",
-            "mediaUpload": "Last opp"
+            "mediaUpload": "Last opp",
+            "categoryHint": "Grupper og kategorier vedlikeholdes i visningen «Sortiment».",
+            "categoryManage": "Åpne sortiment"
         },
         "publish": {
             "title": "Publisering",
@@ -269,7 +272,8 @@
                 "remove_all": "Fjern alle produktsider",
                 "draft_all": "Alle produktsider som utkast",
                 "sync_kit": "Oppdater butikkens brukergrensesnitt",
-                "reconcile_payments": "Avstem betalinger"
+                "reconcile_payments": "Avstem betalinger",
+                "write_categories": "Skriv kategorioversikt"
             },
             "installUiAsk": "Skal butikkens brukergrensesnitt installeres nå, eller planlegges som oppgave til neste planlagte kjøring?",
             "installUiChannels": "For hvilke salgskanaler?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Når en vare legges til i butikken, tilbys den også i denne kanalen.",
             "settings": "Innstillinger for {name}",
             "settingsSaved": "Innstillinger lagret.",
+            "settingsRejected": "Ikke lagret: {fields}. Backend kjenner ikke disse feltene ennå – databaseoppdateringen for butikkutvidelsen mangler trolig (logg inn på nytt).",
             "settingsSaveError": "Innstillingene kunne ikke lagres.",
             "newChannel": "Ny salgskanal:",
             "newChannelType": "Type",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Ukjent område i biblioteket.",
             "MEDIA_FORMAT": "Dette formatet er ikke mulig på serveren.",
             "MEDIA_FORMAT_SAME": "Bildet har allerede dette formatet.",
-            "MEDIA_CONVERT": "Bildet kunne ikke konverteres."
+            "MEDIA_CONVERT": "Bildet kunne ikke konverteres.",
+            "ASSORTMENT_NAME_REQUIRED": "Skriv inn et navn.",
+            "ASSORTMENT_NAME_TAKEN": "Dette navnet finnes allerede.",
+            "ASSORTMENT_NAME_INVALID": "Det kan ikke lages en adresse av dette navnet – bruk bokstaver eller sifre.",
+            "ASSORTMENT_NOT_FOUND": "Oppføringen finnes ikke lenger. Last inn visningen på nytt.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategorien er fortsatt tilordnet varer."
         },
         "orderStatus": {
             "open": "Åpen",
@@ -529,6 +539,43 @@
             "uploadHint": "Hvert navn finnes bare én gang i biblioteket; en fil som ingen artikkel viser til, erstattes. Bilder kan konverteres til et annet format under opplasting.",
             "deleteKept": "{name} blir i biblioteket: andre artikler viser til filen.",
             "empty": "Ingen filer."
+        },
+        "assortment": {
+            "title": "Sortiment",
+            "subtitle": "Butikkens grupper og kategorier",
+            "loading": "Laster …",
+            "hint": "Varekortet velger kategorier fra denne listen. Med malsettet «Standard» lages nettstedets kategorioversikt av den: grupper i denne rekkefølgen, kategorier uten gruppe under «Sonstiges», toppselgere øverst. Endringer kommer ut på nettstedet ved neste kjøring.",
+            "groups": "Grupper",
+            "categories": "Kategorier",
+            "newGroup": "Ny gruppe",
+            "editGroup": "Rediger gruppe",
+            "newCategory": "Ny kategori",
+            "editCategory": "Rediger kategori",
+            "name": "Navn",
+            "group": "Gruppe",
+            "noGroup": "Uten gruppe (Sonstiges)",
+            "topseller": "Toppselger",
+            "topsellerHint": "Fremhevet øverst i nettstedets kategorioversikt.",
+            "parts": "Varer",
+            "partsHint": "Tilbudt / tilordnet: bare tilbudte varer vises på nettstedet.",
+            "categoryCount": "Kategorier: {count}",
+            "search": "Søk",
+            "empty": "Ingen kategorier ennå.",
+            "noMatch": "Ingen kategori passer til utvalget.",
+            "moveUp": "Flytt opp",
+            "moveDown": "Flytt ned",
+            "edit": "Rediger",
+            "delete": "Slett",
+            "cancel": "Avbryt",
+            "save": "Lagre",
+            "saved": "Lagret.",
+            "deleted": "Slettet.",
+            "groupNameHint": "Slik vises gruppen i nettstedets kategorioversikt.",
+            "categoryNameHint": "Adressen til kategorisiden lages av navnet.",
+            "renameHint": "Det nye navnet endrer adressen til kategorisiden. Produktsidene for de tilordnede varene ({count}) skrives på nytt.",
+            "deleteGroupConfirm": "Slette gruppen «{name}»? Kategoriene ({count}) beholdes og vises deretter under «Sonstiges».",
+            "deleteCategoryConfirm": "Slette kategorien «{name}»?",
+            "categoryInUse": "Kategorien «{name}» er fortsatt tilordnet {count} varer og kan ikke slettes. Gi først varene en annen kategori."
         }
     }
 }

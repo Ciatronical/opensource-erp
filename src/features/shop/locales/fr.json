@@ -5,7 +5,8 @@
             "shopOrders": "/boutique/commandes",
             "shopWithdrawals": "/boutique/retractations",
             "shopChannels": "/boutique/canaux-de-vente",
-            "shopShipping": "/boutique/modes-d-expedition"
+            "shopShipping": "/boutique/modes-d-expedition",
+            "shopAssortment": "/boutique/assortiment"
         },
         "menu": {
             "title": "Boutique",
@@ -125,8 +126,8 @@
             "hyperlink": "Page produit",
             "hyperlinkHint": "Chemin de la page produit sur le site de la boutique, sans l'adresse de base. Laisser vide pour utiliser la suggestion.",
             "openInShop": "Voir dans la boutique",
-            "breadcrumbs": "Chemin de navigation",
-            "breadcrumbsHint": "Étapes de la navigation de la boutique dans l'ordre ; valider chacune avec Entrée.",
+            "breadcrumbs": "Classement dans l'assortiment",
+            "breadcrumbsHint": "Niveaux du général au particulier ; valider chacun avec Entrée. Affichés comme description courte de l'article et trouvés par la recherche de la boutique.",
             "images": "Images",
             "imagesHint": "Noms de fichiers sur le site de la boutique ; valider chacun avec Entrée. La première image sert de vignette.",
             "thumbnail": "Vignette",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Page produit",
             "editChannel": "Paramètres du canal de vente",
-            "mediaUpload": "Téléverser"
+            "mediaUpload": "Téléverser",
+            "categoryHint": "Les groupes et catégories sont gérés dans la vue « Assortiment ».",
+            "categoryManage": "Ouvrir l’assortiment"
         },
         "publish": {
             "title": "Publication",
@@ -269,7 +272,8 @@
                 "remove_all": "Supprimer toutes les pages produit",
                 "draft_all": "Toutes les pages produit en brouillon",
                 "sync_kit": "Mettre à jour l’interface utilisateur de la boutique",
-                "reconcile_payments": "Rapprocher les paiements"
+                "reconcile_payments": "Rapprocher les paiements",
+                "write_categories": "Écrire l’aperçu des catégories"
             },
             "installUiAsk": "Installer l’interface utilisateur de la boutique maintenant ou la planifier comme tâche pour la prochaine exécution prévue ?",
             "installUiChannels": "Pour quels canaux de vente ?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Lorsqu’un article est ajouté à la boutique, il est aussi proposé dans ce canal.",
             "settings": "Paramètres de {name}",
             "settingsSaved": "Paramètres enregistrés.",
+            "settingsRejected": "Non enregistré : {fields}. Le backend ne connaît pas encore ces champs – la mise à jour de la base de données de l'extension boutique manque probablement (reconnectez-vous).",
             "settingsSaveError": "Les paramètres n’ont pas pu être enregistrés.",
             "newChannel": "Nouveau canal de vente :",
             "newChannelType": "Type",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Zone de bibliothèque inconnue.",
             "MEDIA_FORMAT": "Ce format n'est pas disponible sur le serveur.",
             "MEDIA_FORMAT_SAME": "L'image a déjà ce format.",
-            "MEDIA_CONVERT": "L'image n'a pas pu être convertie."
+            "MEDIA_CONVERT": "L'image n'a pas pu être convertie.",
+            "ASSORTMENT_NAME_REQUIRED": "Veuillez saisir un nom.",
+            "ASSORTMENT_NAME_TAKEN": "Ce nom existe déjà.",
+            "ASSORTMENT_NAME_INVALID": "Aucune adresse ne peut être formée à partir de ce nom – utilisez des lettres ou des chiffres.",
+            "ASSORTMENT_NOT_FOUND": "L’entrée n’existe plus. Veuillez recharger la vue.",
+            "ASSORTMENT_CATEGORY_IN_USE": "La catégorie est encore attribuée à des articles."
         },
         "orderStatus": {
             "open": "Ouvert",
@@ -529,6 +539,43 @@
             "uploadHint": "Chaque nom n'existe qu'une fois dans la médiathèque ; un fichier qu'aucun article ne référence est remplacé. Les images peuvent être converties dans un autre format lors de l'envoi.",
             "deleteKept": "{name} reste dans la médiathèque : d'autres articles référencent le fichier.",
             "empty": "Aucun fichier."
+        },
+        "assortment": {
+            "title": "Assortiment",
+            "subtitle": "Groupes et catégories de la boutique",
+            "loading": "Chargement …",
+            "hint": "La fiche article choisit les catégories dans cette liste. Avec le jeu de modèles « Standard », l’aperçu des catégories du site web en est tiré : groupes dans cet ordre, catégories sans groupe sous « Sonstiges », meilleures ventes en haut. Les modifications arrivent sur le site lors de la prochaine exécution.",
+            "groups": "Groupes",
+            "categories": "Catégories",
+            "newGroup": "Nouveau groupe",
+            "editGroup": "Modifier le groupe",
+            "newCategory": "Nouvelle catégorie",
+            "editCategory": "Modifier la catégorie",
+            "name": "Nom",
+            "group": "Groupe",
+            "noGroup": "Sans groupe (Sonstiges)",
+            "topseller": "Meilleure vente",
+            "topsellerHint": "Mise en avant en haut de l’aperçu des catégories du site web.",
+            "parts": "Articles",
+            "partsHint": "Proposés / attribués : seuls les articles proposés apparaissent sur le site web.",
+            "categoryCount": "Catégories : {count}",
+            "search": "Rechercher",
+            "empty": "Aucune catégorie pour l’instant.",
+            "noMatch": "Aucune catégorie ne correspond à la sélection.",
+            "moveUp": "Monter",
+            "moveDown": "Descendre",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "cancel": "Annuler",
+            "save": "Enregistrer",
+            "saved": "Enregistré.",
+            "deleted": "Supprimé.",
+            "groupNameHint": "C’est ainsi que le groupe apparaît dans l’aperçu des catégories du site web.",
+            "categoryNameHint": "L’adresse de la page de catégorie est formée à partir du nom.",
+            "renameHint": "Le nouveau nom modifie l’adresse de la page de catégorie. Les pages produit des articles attribués ({count}) seront réécrites.",
+            "deleteGroupConfirm": "Supprimer le groupe « {name} » ? Ses catégories ({count}) restent et figurent ensuite sous « Sonstiges ».",
+            "deleteCategoryConfirm": "Supprimer la catégorie « {name} » ?",
+            "categoryInUse": "La catégorie « {name} » est encore attribuée à {count} articles et ne peut pas être supprimée. Donnez d’abord une autre catégorie à ces articles."
         }
     }
 }

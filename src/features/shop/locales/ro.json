@@ -5,7 +5,8 @@
             "shopOrders": "/magazin/comenzi",
             "shopWithdrawals": "/magazin/retrageri",
             "shopChannels": "/magazin/canale-de-vanzare",
-            "shopShipping": "/magazin/metode-de-livrare"
+            "shopShipping": "/magazin/metode-de-livrare",
+            "shopAssortment": "/magazin/sortiment"
         },
         "menu": {
             "title": "Magazin",
@@ -125,8 +126,8 @@
             "hyperlink": "Pagina produsului",
             "hyperlinkHint": "Calea paginii produsului pe site-ul magazinului, fără adresa de bază. Lăsați gol pentru a folosi sugestia.",
             "openInShop": "Vezi în magazin",
-            "breadcrumbs": "Cale de navigare",
-            "breadcrumbsHint": "Pașii navigării din magazin în ordine; confirmați fiecare cu Enter.",
+            "breadcrumbs": "Încadrare în sortiment",
+            "breadcrumbsHint": "Niveluri de la general la specific, confirmați fiecare cu Enter. Apar ca descriere scurtă a articolului și sunt găsite de căutarea din magazin.",
             "images": "Imagini",
             "imagesHint": "Numele fișierelor de pe site-ul magazinului; confirmați fiecare cu Enter. Prima imagine este miniatura.",
             "thumbnail": "Miniatură",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Pagina produsului",
             "editChannel": "Setările canalului de vânzare",
-            "mediaUpload": "Încarcă"
+            "mediaUpload": "Încarcă",
+            "categoryHint": "Grupele și categoriile se gestionează în vizualizarea „Sortiment”.",
+            "categoryManage": "Deschideți sortimentul"
         },
         "publish": {
             "title": "Publicare",
@@ -269,7 +272,8 @@
                 "remove_all": "Eliminați toate paginile de produs",
                 "draft_all": "Toate paginile de produs ca ciornă",
                 "sync_kit": "Actualizează interfața de utilizator a magazinului",
-                "reconcile_payments": "Reconciliază plățile"
+                "reconcile_payments": "Reconciliază plățile",
+                "write_categories": "Scrie prezentarea categoriilor"
             },
             "installUiAsk": "Instalați acum interfața de utilizator a magazinului sau o planificați ca sarcină pentru următoarea rulare programată?",
             "installUiChannels": "Pentru ce canale de vânzare?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Când un articol este adăugat în magazin, este oferit imediat și în acest canal.",
             "settings": "Setări pentru {name}",
             "settingsSaved": "Setări salvate.",
+            "settingsRejected": "Nesalvat: {fields}. Backend-ul nu cunoaște încă aceste câmpuri – probabil lipsește actualizarea bazei de date a extensiei magazin (autentificați-vă din nou).",
             "settingsSaveError": "Setările nu au putut fi salvate.",
             "newChannel": "Canal de vânzare nou:",
             "newChannelType": "Tip",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Zonă necunoscută a bibliotecii.",
             "MEDIA_FORMAT": "Acest format nu este disponibil pe server.",
             "MEDIA_FORMAT_SAME": "Imaginea are deja acest format.",
-            "MEDIA_CONVERT": "Imaginea nu a putut fi convertită."
+            "MEDIA_CONVERT": "Imaginea nu a putut fi convertită.",
+            "ASSORTMENT_NAME_REQUIRED": "Introduceți un nume.",
+            "ASSORTMENT_NAME_TAKEN": "Acest nume există deja.",
+            "ASSORTMENT_NAME_INVALID": "Din acest nume nu se poate forma o adresă – folosiți litere sau cifre.",
+            "ASSORTMENT_NOT_FOUND": "Intrarea nu mai există. Reîncărcați vizualizarea.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Categoria este încă atribuită unor articole."
         },
         "orderStatus": {
             "open": "Deschisă",
@@ -529,6 +539,43 @@
             "uploadHint": "Fiecare nume există o singură dată în bibliotecă; un fișier la care nu face referire niciun articol este înlocuit. Imaginile pot fi convertite în alt format la încărcare.",
             "deleteKept": "{name} rămâne în bibliotecă: alte articole fac referire la fișier.",
             "empty": "Niciun fișier."
+        },
+        "assortment": {
+            "title": "Sortiment",
+            "subtitle": "Grupele și categoriile magazinului",
+            "loading": "Se încarcă …",
+            "hint": "Fișa articolului alege categoriile din această listă. Cu setul de șabloane „Standard” se formează din ea prezentarea categoriilor pe site: grupele în această ordine, categoriile fără grupă la „Sonstiges”, cele mai vândute sus. Modificările ajung pe site la următoarea rulare.",
+            "groups": "Grupe",
+            "categories": "Categorii",
+            "newGroup": "Grupă nouă",
+            "editGroup": "Editare grupă",
+            "newCategory": "Categorie nouă",
+            "editCategory": "Editare categorie",
+            "name": "Nume",
+            "group": "Grupă",
+            "noGroup": "Fără grupă (Sonstiges)",
+            "topseller": "Cel mai vândut",
+            "topsellerHint": "Evidențiată sus în prezentarea categoriilor de pe site.",
+            "parts": "Articole",
+            "partsHint": "Oferite / atribuite: pe site apar doar articolele oferite.",
+            "categoryCount": "Categorii: {count}",
+            "search": "Căutare",
+            "empty": "Încă nu există categorii.",
+            "noMatch": "Nicio categorie nu corespunde selecției.",
+            "moveUp": "Mută în sus",
+            "moveDown": "Mută în jos",
+            "edit": "Editare",
+            "delete": "Ștergere",
+            "cancel": "Anulare",
+            "save": "Salvare",
+            "saved": "Salvat.",
+            "deleted": "Șters.",
+            "groupNameHint": "Așa apare grupa în prezentarea categoriilor de pe site.",
+            "categoryNameHint": "Adresa paginii de categorie se formează din nume.",
+            "renameHint": "Noul nume schimbă adresa paginii de categorie. Paginile de produs ale articolelor atribuite ({count}) vor fi rescrise.",
+            "deleteGroupConfirm": "Ștergeți grupa „{name}”? Categoriile ei ({count}) rămân și apar apoi la „Sonstiges”.",
+            "deleteCategoryConfirm": "Ștergeți categoria „{name}”?",
+            "categoryInUse": "Categoria „{name}” este încă atribuită la {count} articole și nu poate fi ștearsă. Atribuiți mai întâi acestor articole altă categorie."
         }
     }
 }

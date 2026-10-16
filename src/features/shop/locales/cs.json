@@ -5,7 +5,8 @@
             "shopOrders": "/obchod/objednavky",
             "shopWithdrawals": "/obchod/odstoupeni",
             "shopChannels": "/obchod/prodejni-kanaly",
-            "shopShipping": "/obchod/zpusoby-dopravy"
+            "shopShipping": "/obchod/zpusoby-dopravy",
+            "shopAssortment": "/obchod/sortiment"
         },
         "menu": {
             "title": "Obchod",
@@ -125,8 +126,8 @@
             "hyperlink": "Stránka produktu",
             "hyperlinkHint": "Cesta ke stránce produktu na webu obchodu, bez základní adresy. Ponechte prázdné pro použití návrhu.",
             "openInShop": "Zobrazit v obchodě",
-            "breadcrumbs": "Navigační cesta",
-            "breadcrumbsHint": "Kroky navigace obchodu v pořadí; každý potvrďte klávesou Enter.",
+            "breadcrumbs": "Zařazení v sortimentu",
+            "breadcrumbsHint": "Úrovně od obecného ke konkrétnímu, každou potvrďte klávesou Enter. Zobrazují se jako krátký popis položky a vyhledávání v obchodě je najde.",
             "images": "Obrázky",
             "imagesHint": "Názvy souborů na webu obchodu; každý potvrďte klávesou Enter. První obrázek je náhled.",
             "thumbnail": "Náhled",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Stránka produktu",
             "editChannel": "Nastavení prodejního kanálu",
-            "mediaUpload": "Nahrát"
+            "mediaUpload": "Nahrát",
+            "categoryHint": "Skupiny a kategorie se spravují v zobrazení „Sortiment“.",
+            "categoryManage": "Otevřít sortiment"
         },
         "publish": {
             "title": "Zveřejnění",
@@ -269,7 +272,8 @@
                 "remove_all": "Odstranit všechny stránky produktů",
                 "draft_all": "Všechny stránky produktů jako koncept",
                 "sync_kit": "Aktualizovat uživatelské rozhraní obchodu",
-                "reconcile_payments": "Srovnat platby"
+                "reconcile_payments": "Srovnat platby",
+                "write_categories": "Zapsat přehled kategorií"
             },
             "installUiAsk": "Má se uživatelské rozhraní obchodu nainstalovat ihned, nebo naplánovat jako úloha pro příští plánovaný běh?",
             "installUiChannels": "Pro které prodejní kanály?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Je-li položka nově zařazena do obchodu, nabízí se rovnou i v tomto kanálu.",
             "settings": "Nastavení – {name}",
             "settingsSaved": "Nastavení uloženo.",
+            "settingsRejected": "Neuloženo: {fields}. Backend tato pole zatím nezná – pravděpodobně chybí aktualizace databáze rozšíření Shop (znovu se přihlaste).",
             "settingsSaveError": "Nastavení se nepodařilo uložit.",
             "newChannel": "Nový prodejní kanál:",
             "newChannelType": "Druh",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Neznámá oblast knihovny.",
             "MEDIA_FORMAT": "Tento formát není na serveru k dispozici.",
             "MEDIA_FORMAT_SAME": "Obrázek už má tento formát.",
-            "MEDIA_CONVERT": "Obrázek se nepodařilo převést."
+            "MEDIA_CONVERT": "Obrázek se nepodařilo převést.",
+            "ASSORTMENT_NAME_REQUIRED": "Zadejte prosím název.",
+            "ASSORTMENT_NAME_TAKEN": "Tento název už existuje.",
+            "ASSORTMENT_NAME_INVALID": "Z tohoto názvu nelze vytvořit adresu – použijte písmena nebo číslice.",
+            "ASSORTMENT_NOT_FOUND": "Záznam už neexistuje. Načtěte prosím zobrazení znovu.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategorie je stále přiřazena položkám."
         },
         "orderStatus": {
             "open": "Otevřeno",
@@ -529,6 +539,43 @@
             "uploadHint": "Každý název je v knihovně jen jednou; soubor, na který neodkazuje žádný artikl, se nahradí. Obrázky lze při nahrávání převést do jiného formátu.",
             "deleteKept": "{name} zůstává v knihovně: odkazují na něj jiné artikly.",
             "empty": "Žádné soubory."
+        },
+        "assortment": {
+            "title": "Sortiment",
+            "subtitle": "Skupiny a kategorie obchodu",
+            "loading": "Načítá se …",
+            "hint": "Karta položky vybírá kategorie z tohoto seznamu. U sady šablon „Standard“ z něj vzniká přehled kategorií na webu: skupiny v tomto pořadí, kategorie bez skupiny pod „Sonstiges“, nejprodávanější nahoře. Změny se na web dostanou při příštím běhu.",
+            "groups": "Skupiny",
+            "categories": "Kategorie",
+            "newGroup": "Nová skupina",
+            "editGroup": "Upravit skupinu",
+            "newCategory": "Nová kategorie",
+            "editCategory": "Upravit kategorii",
+            "name": "Název",
+            "group": "Skupina",
+            "noGroup": "Bez skupiny (Sonstiges)",
+            "topseller": "Nejprodávanější",
+            "topsellerHint": "Zvýrazněno nahoře v přehledu kategorií na webu.",
+            "parts": "Položky",
+            "partsHint": "Nabízené / přiřazené: na webu se zobrazují jen nabízené položky.",
+            "categoryCount": "Kategorie: {count}",
+            "search": "Hledat",
+            "empty": "Zatím žádné kategorie.",
+            "noMatch": "Výběru neodpovídá žádná kategorie.",
+            "moveUp": "Nahoru",
+            "moveDown": "Dolů",
+            "edit": "Upravit",
+            "delete": "Smazat",
+            "cancel": "Zrušit",
+            "save": "Uložit",
+            "saved": "Uloženo.",
+            "deleted": "Smazáno.",
+            "groupNameHint": "Takto se skupina zobrazí v přehledu kategorií na webu.",
+            "categoryNameHint": "Z názvu vzniká adresa stránky kategorie.",
+            "renameHint": "Nový název mění adresu stránky kategorie. Produktové stránky přiřazených položek ({count}) se přepíší.",
+            "deleteGroupConfirm": "Smazat skupinu „{name}“? Její kategorie ({count}) zůstanou a budou pod „Sonstiges“.",
+            "deleteCategoryConfirm": "Smazat kategorii „{name}“?",
+            "categoryInUse": "Kategorie „{name}“ je stále přiřazena {count} položkám a nelze ji smazat. Nejprve položkám dejte jinou kategorii."
         }
     }
 }

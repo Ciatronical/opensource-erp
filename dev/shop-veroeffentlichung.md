@@ -69,9 +69,10 @@ backend/templates-default/shop/<name>/     mitgeliefert
 Die Kundenkopie hat Vorrang. Gewählt wird über die Einstellung
 `shop_template_set` (nur ein Name, kein Pfad).
 
-Bringt ein Satz eine Datei nicht mit — eine Vorlage, die Regeln der
-Kategorieübersicht, eine Datei des Webseiten-Pakets —, gilt die des
-mitgelieferten Satzes `standard`. Ein eigener Satz enthält so nur, was er
+Bringt ein Satz eine Datei nicht mit — eine Vorlage, eine Datei des
+Webseiten-Pakets —, gilt die des mitgelieferten Satzes `standard`. Ausnahme
+seit 16.10.2026: `category_groups.php` gibt es in `standard` nicht mehr; ohne
+eigene Datei kommen die Gruppen aus dem Sortiment (dev/shop-sortiment.md). Ein eigener Satz enthält so nur, was er
 ändert; `theme.json` gehört immer dazu. Beispiel: `sonic24` besteht aus
 `theme.json` und `category_groups.php`.
 
@@ -79,7 +80,7 @@ mitgelieferten Satzes `standard`. Ein eigener Satz enthält so nur, was er
 | --- | --- |
 | `theme.json` | Name, Beschreibung, passendes Hugo-Theme, Ausgaben mit Zielpfad-Muster |
 | `product.md.php` | Produktseite |
-| `category_groups.php` | Regeln der Kategorieübersicht (Bridge-Ablösung, Stufe C) |
+| `category_groups.php` | Regeln der Kategorieübersicht (Bridge-Ablösung, Stufe C) — nur noch in Sätzen, die nach Wortteilen gruppieren (sonic24); ohne die Datei kommen die Gruppen aus dem Sortiment (dev/shop-sortiment.md) |
 | `_helpers.php` | Maskierung für YAML, Preis- und Zahlenformat |
 
 **Schnittstelle zur Vorlage** ist ein einziges Array, kein Schwarm von
@@ -190,6 +191,69 @@ nach bestellbar **und** Bestand (bestellbar ohne Bestand: gelbes Abzeichen
 die Bootstrap-Klassen unter `.produkt-seite` nach (`theme.css`, Reiter und
 Karussell in `ui.js`), damit die Seite dort genauso aussieht wie im Theme
 `hugoshop`.
+
+**Nachtrag (16.10.2026):** Das Feld „Navigationspfad“ der Artikelkarte heißt
+jetzt „Einordnung im Sortiment“ — es erzeugt keine Navigation, sondern die
+Kurzbeschreibung und Suchbegriffe (Spalte und Schlüssel bleiben
+`hugoshop_breadcrumbs` bzw. `breadcrumbs`). Im Satz `standard` steht die
+Artikelnummer nicht mehr in `description`, der sichtbaren Kurzbeschreibung
+unter dem Titel und in den Kategorielisten; ohne Stufen entfällt
+`description`. `metaDescription` behält die Artikelnummer vorn. Der Satz
+`sonic24` ist unverändert.
+
+## Kategorien unter einem eigenen Pfad (16.10.2026)
+
+Eine Webseite, deren Taxonomie `kategorien` schon die eigenen Themen trägt
+(Leistungen, Infos, Preise), kann die Shop-Kategorien nicht daneben legen.
+Deshalb stehen Taxonomie und Adresse der Kategorien in der **Kanalkarte**, nicht
+im Vorlagensatz:
+
+| Einstellung | Bedeutung | Vorgabe |
+| --- | --- | --- |
+| `category_taxonomy` | Schlüssel im Front Matter der Produktseiten, aus dem Hugo die Kategorieseiten bildet | `kategorien` |
+| `category_link` | Adressmuster der Kategorieseite mit `%s`; der Teil vor `%s` ist die Adresse der Übersicht | `/<Taxonomie>/%s/` |
+| `category_title` | Bezeichnung der Übersicht in den Brotkrumen der Produktseiten (`home` im Front Matter); den Titel der Übersichtsseite trägt die Webseite in `content/<Taxonomie>/_index.md` | `Kategorien` |
+
+**Beispiel „Sortiment“ (16.10.2026):** Kanalkarte `category_link =
+/shop/sortiment/%s/`, `category_title = Sortiment`; Webseite `permalinks`
+auf `/shop/sortiment/` und `/shop/sortiment/:slug/`, Titel „Sortiment“ in
+`content/shopkategorien/_index.md`. `params.shopui.paths.categories` braucht es
+nicht mehr: ohne Angabe nimmt `shop-ui-assets.html` die Adresse der
+Übersichtsseite der Taxonomie aus `params.shopui.taxonomy`.
+
+`shopChannelCategoryPaths()` (lib/config.php) liest beides; `shopPageData()`
+reicht es als `shop.taxonomy`, `shop.categories_url` und `shop.category_url`
+an die Vorlage, die damit den Front-Matter-Schlüssel, `homelink` und
+`cataloglink` schreibt. Die Kategorieübersicht (`category_groups.json`) nimmt
+dasselbe Muster für ihre Adressen; `taxonomy` in `category_groups.php` ist nur
+noch Rückfall ohne Kanal. Seit dem Sortiment (dev/shop-sortiment.md) kommen
+Kategorien und, beim Satz `standard`, auch die Gruppen aus der Datenbank.
+
+**Beispiel autoprofis24-testverkauf:** Kanalkarte `category_taxonomy =
+shopkategorien`, `category_link = /shop/kategorien/%s/`. In der `config.json`
+der Webseite:
+
+```json
+"taxonomies": { "category": "kategorien", "shopcategory": "shopkategorien", "tag": "tags" },
+"permalinks": {
+    "taxonomy": { "shopkategorien": "/shop/kategorien/" },
+    "term":     { "shopkategorien": "/shop/kategorien/:slug/" }
+},
+"params": { "shopui": { "taxonomy": "shopkategorien", "paths": { "categories": "/shop/kategorien/" } } }
+```
+
+Dazu `content/shopkategorien/_index.md` mit dem Titel der Übersicht. Das Theme
+`inter-data` verzweigt in `_default/terms.html` und `_default/term.html` auf
+`params.shopui.taxonomy`: Übersicht mit Topsellern, Gruppenkacheln und
+gruppierten Spalten wie bei sonic24, Begriffsseiten als Liste mit Bild, Titel
+und Beschreibung wie `taxonomy/category.html` von hugoshop. Die Themen-
+Taxonomie der Webseite bleibt unberührt, ihre Layouts (`taxonomy/category.html`)
+haben Vorrang — geprüft mit Hugo 0.164. Nach der Umstellung „Alle
+veröffentlichen“: die Produktseiten bekommen den neuen Schlüssel, der Lauf
+schreibt die Übersicht mit den neuen Adressen.
+
+Hugo-Hinweis: Weil `shop/` zugleich Abschnitt der Produktseiten ist, muss der
+Pfad der Übersicht (`/shop/kategorien/`) frei von eigenen Inhalten bleiben.
 
 **Warum:** Eine erste Fassung vom 2026-09-23 verwendete Tailwind-Klassen. Die
 Webseite von sonic24 lädt aber Bootstrap

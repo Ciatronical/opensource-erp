@@ -841,6 +841,14 @@ const ziele = computed(() => [
         titel: t('ShopView.partsShippingUnfit.title'),
         text: t('ShopView.partsShippingUnfit.subtitle'),
     },
+    // Gruppen und Kategorien (dev/shop-sortiment.md) — lesen auch mit den
+    // Rechten der Artikelpflege
+    ...(oserp.checkPermission('shop_part_edit') || oserp.checkPermission('edit_shop_config') ? [{
+        name: 'shop-assortment',
+        icon: 'mdi-tag-multiple-outline',
+        titel: t('ShopView.assortment.title'),
+        text: t('ShopView.assortment.subtitle'),
+    }] : []),
     // Verkaufskanäle (dev/shop-mehrere-kanaele.md) und Versandarten
     // (dev/shop-versand.md) einrichten — nur mit dem Recht, das ihre API
     // verlangt

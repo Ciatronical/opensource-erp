@@ -5,7 +5,8 @@
             "shopOrders": "/shop/orders",
             "shopWithdrawals": "/shop/withdrawals",
             "shopChannels": "/shop/sales-channels",
-            "shopShipping": "/shop/shipping-methods"
+            "shopShipping": "/shop/shipping-methods",
+            "shopAssortment": "/shop/assortment"
         },
         "menu": {
             "title": "商店",
@@ -125,8 +126,8 @@
             "hyperlink": "商品页面",
             "hyperlinkHint": "商品页面在商店网站上的路径，不含基础地址。留空则使用建议值。",
             "openInShop": "在商店中查看",
-            "breadcrumbs": "导航路径",
-            "breadcrumbsHint": "商店导航的各级，按顺序输入，每项按回车确认。",
+            "breadcrumbs": "在商品系列中的归类",
+            "breadcrumbsHint": "从一般到具体的层级，每项按回车确认。显示为商品的简短描述，并可被商店搜索找到。",
             "images": "图片",
             "imagesHint": "商店网站上的文件名，每项按回车确认。第一张图片为缩略图。",
             "thumbnail": "缩略图",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "产品页面",
             "editChannel": "销售渠道设置",
-            "mediaUpload": "上传"
+            "mediaUpload": "上传",
+            "categoryHint": "分组和分类在“商品系列”视图中维护。",
+            "categoryManage": "打开商品系列"
         },
         "publish": {
             "title": "发布",
@@ -269,7 +272,8 @@
                 "remove_all": "删除所有商品页面",
                 "draft_all": "所有产品页面设为草稿",
                 "sync_kit": "更新商店用户界面",
-                "reconcile_payments": "对账付款"
+                "reconcile_payments": "对账付款",
+                "write_categories": "写入分类概览"
             },
             "installUiAsk": "立即安装商店用户界面，还是将其作为任务安排到下一次计划运行？",
             "installUiChannels": "适用于哪些销售渠道？",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "商品新加入商店时，也会在此渠道中上架。",
             "settings": "{name} 的设置",
             "settingsSaved": "设置已保存。",
+            "settingsRejected": "未保存：{fields}。后端尚不识别这些字段——可能缺少商店扩展的数据库更新（请重新登录）。",
             "settingsSaveError": "无法保存设置。",
             "newChannel": "新销售渠道：",
             "newChannelType": "类型",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "未知的媒体库区域。",
             "MEDIA_FORMAT": "服务器不支持此格式。",
             "MEDIA_FORMAT_SAME": "图片已是此格式。",
-            "MEDIA_CONVERT": "图片无法转换。"
+            "MEDIA_CONVERT": "图片无法转换。",
+            "ASSORTMENT_NAME_REQUIRED": "请输入名称。",
+            "ASSORTMENT_NAME_TAKEN": "此名称已存在。",
+            "ASSORTMENT_NAME_INVALID": "无法从此名称生成地址——请使用字母或数字。",
+            "ASSORTMENT_NOT_FOUND": "该条目已不存在。请重新加载视图。",
+            "ASSORTMENT_CATEGORY_IN_USE": "该分类仍分配给商品。"
         },
         "orderStatus": {
             "open": "未处理",
@@ -529,6 +539,43 @@
             "uploadHint": "每个名称在媒体库中只能存在一次；没有任何商品引用的文件会被替换。上传时可将图片转换为其他格式。",
             "deleteKept": "{name} 保留在媒体库中：其他商品引用了该文件。",
             "empty": "没有文件。"
+        },
+        "assortment": {
+            "title": "商品系列",
+            "subtitle": "商店的分组和分类",
+            "loading": "正在加载 …",
+            "hint": "商品卡片从此列表中选择分类。使用模板集“Standard”时，网站的分类概览由此生成：分组按此顺序排列，无分组的分类归入“Sonstiges”，畅销分类置顶。更改将在下次运行时同步到网站。",
+            "groups": "分组",
+            "categories": "分类",
+            "newGroup": "新建分组",
+            "editGroup": "编辑分组",
+            "newCategory": "新建分类",
+            "editCategory": "编辑分类",
+            "name": "名称",
+            "group": "分组",
+            "noGroup": "无分组（Sonstiges）",
+            "topseller": "畅销",
+            "topsellerHint": "在网站分类概览顶部突出显示。",
+            "parts": "商品",
+            "partsHint": "在售 / 已分配：网站上只显示在售商品。",
+            "categoryCount": "分类：{count}",
+            "search": "搜索",
+            "empty": "尚无分类。",
+            "noMatch": "没有符合筛选的分类。",
+            "moveUp": "上移",
+            "moveDown": "下移",
+            "edit": "编辑",
+            "delete": "删除",
+            "cancel": "取消",
+            "save": "保存",
+            "saved": "已保存。",
+            "deleted": "已删除。",
+            "groupNameHint": "分组在网站分类概览中就是这样显示的。",
+            "categoryNameHint": "分类页面的地址由名称生成。",
+            "renameHint": "新名称会改变分类页面的地址。已分配商品（{count}）的产品页面将被重写。",
+            "deleteGroupConfirm": "删除分组“{name}”？其分类（{count}）将保留，并归入“Sonstiges”。",
+            "deleteCategoryConfirm": "删除分类“{name}”？",
+            "categoryInUse": "分类“{name}”仍分配给 {count} 个商品，无法删除。请先为这些商品指定其他分类。"
         }
     }
 }

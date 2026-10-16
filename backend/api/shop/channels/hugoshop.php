@@ -284,6 +284,25 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
             shopJobResult($db, $id, sprintf('ok: %d kopiert, %d entfernt', $kit['kopiert'], $kit['entfernt']));
             break;
 
+        case 'write_categories':
+            // Sortiment geändert (dev/shop-sortiment.md): nur die Übersicht,
+            // keine Produktseite. Die Übertragung an HugoCMS danach erkennt die
+            // geänderte Datei und baut.
+            $uebersicht = shopWriteCategoryGroups($db, $kanal);
+            if ('' === $uebersicht['file']) {
+                $stand = 'Der Vorlagensatz sieht keine Kategorieübersicht vor';
+            } elseif (!$uebersicht['changed']) {
+                $stand = 'Kategorieübersicht unverändert';
+            } elseif ($uebersicht['categories'] > 0) {
+                $stand = sprintf('Kategorieübersicht geschrieben: %d Kategorien in %d Gruppen',
+                    $uebersicht['categories'], $uebersicht['groups']);
+            } else {
+                $stand = 'Kategorieübersicht entfernt: keine Kategorien';
+            }
+            $sagen($stand);
+            shopJobResult($db, $id, 'ok: '.$stand);
+            break;
+
         case 'reconcile_payments':
             // Gebucht wird nichts (lib/payment.php). Eine gescheiterte
             // Zahlung zählt als Fehler: die Rechnung ist unbezahlt, die

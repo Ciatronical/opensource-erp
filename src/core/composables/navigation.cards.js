@@ -38,6 +38,11 @@ export function useNavigationCards() {
                 { title: t('ShopView.orders.title'), to: { name: 'shop-orders' } },
                 { title: t('ShopView.withdrawals.title'), to: { name: 'shop-withdrawals' } }
             ]
+            // Sortiment: lesen mit den Rechten der Artikelpflege, ändern nur
+            // mit edit_shop_config (backend/api/shop/assortment.php)
+            if (oserp.checkPermission('shop_part_edit') || oserp.checkPermission('edit_shop_config')) {
+                shopItems.push({ title: t('ShopView.assortment.title'), to: { name: 'shop-assortment' } })
+            }
             // Verkaufskanäle einrichten: nur mit dem Recht, das die Kanal-API verlangt
             if (oserp.checkPermission('edit_shop_config')) {
                 shopItems.push('-')

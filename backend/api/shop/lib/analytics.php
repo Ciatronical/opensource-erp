@@ -21,7 +21,7 @@ function analyticsProduct($db, int $kanal, int $partsId): ?array {
     $zeile = $db->getOne(
         "SELECT p.partnumber AS id, COALESCE(NULLIF(pc.title, ''), p.description) AS name,
                 TRUNC(shop_channel_price(p.id, CAST(:kanal AS integer)), 2) AS price,
-                pe.hugoshop_category AS category,
+                (SELECT btrim(cs.name) FROM category_shop cs WHERE cs.id = pe.hugoshop_category_id) AS category,
                 (SELECT c.name FROM currencies c CROSS JOIN defaults d WHERE c.id = d.currency_id) AS currency
            FROM parts p
            LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
@@ -74,7 +74,7 @@ function analyticsPurchase($db, int $kanal, string $arLink): ?array {
 function analyticsPurchaseItems($db, int $kanal, string $arLink): array {
     $zeilen = $db->getAll(
         "SELECT p.partnumber AS id, i.description AS name,
-                pe.hugoshop_category AS category,
+                (SELECT btrim(cs.name) FROM category_shop cs WHERE cs.id = pe.hugoshop_category_id) AS category,
                 TRUNC(i.qty) AS quantity, TRUNC(i.sellprice, 2) AS price,
                 (SELECT name FROM currencies WHERE id = ar.currency_id) AS currency,
                 shop_is_shipping_part(p.id) AS ist_versand

@@ -5,7 +5,8 @@
             "shopOrders": "/parduotuve/uzsakymai",
             "shopWithdrawals": "/parduotuve/atsisakymai",
             "shopChannels": "/parduotuve/pardavimo-kanalai",
-            "shopShipping": "/parduotuve/siuntimo-budai"
+            "shopShipping": "/parduotuve/siuntimo-budai",
+            "shopAssortment": "/parduotuve/asortimentas"
         },
         "menu": {
             "title": "Parduotuvė",
@@ -125,8 +126,8 @@
             "hyperlink": "Prekės puslapis",
             "hyperlinkHint": "Prekės puslapio kelias parduotuvės svetainėje be bazinio adreso. Palikite tuščią, kad būtų naudojamas pasiūlymas.",
             "openInShop": "Žiūrėti parduotuvėje",
-            "breadcrumbs": "Naršymo kelias",
-            "breadcrumbsHint": "Parduotuvės naršymo žingsniai iš eilės; kiekvieną patvirtinkite klavišu Enter.",
+            "breadcrumbs": "Vieta asortimente",
+            "breadcrumbsHint": "Lygiai nuo bendro iki konkretaus, kiekvieną patvirtinkite klavišu Enter. Rodomi kaip trumpas prekės aprašymas, juos randa parduotuvės paieška.",
             "images": "Paveikslėliai",
             "imagesHint": "Failų pavadinimai parduotuvės svetainėje; kiekvieną patvirtinkite klavišu Enter. Pirmasis paveikslėlis yra miniatiūra.",
             "thumbnail": "Miniatiūra",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Produkto puslapis",
             "editChannel": "Pardavimo kanalo nustatymai",
-            "mediaUpload": "Įkelti"
+            "mediaUpload": "Įkelti",
+            "categoryHint": "Grupės ir kategorijos tvarkomos rodinyje „Asortimentas“.",
+            "categoryManage": "Atidaryti asortimentą"
         },
         "publish": {
             "title": "Paskelbimas",
@@ -269,7 +272,8 @@
                 "remove_all": "Pašalinti visus prekių puslapius",
                 "draft_all": "Visi produktų puslapiai kaip juodraščiai",
                 "sync_kit": "Atnaujinti parduotuvės naudotojo sąsają",
-                "reconcile_payments": "Suderinti mokėjimus"
+                "reconcile_payments": "Suderinti mokėjimus",
+                "write_categories": "Rašyti kategorijų apžvalgą"
             },
             "installUiAsk": "Ar įdiegti parduotuvės naudotojo sąsają dabar, ar suplanuoti kaip užduotį kitam planiniam vykdymui?",
             "installUiChannels": "Kuriems pardavimo kanalams?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Kai prekė įtraukiama į parduotuvę, ji iškart siūloma ir šiame kanale.",
             "settings": "{name} nustatymai",
             "settingsSaved": "Nustatymai išsaugoti.",
+            "settingsRejected": "Neišsaugota: {fields}. Serveris dar nežino šių laukų – tikriausiai trūksta parduotuvės plėtinio duomenų bazės atnaujinimo (prisijunkite iš naujo).",
             "settingsSaveError": "Nustatymų išsaugoti nepavyko.",
             "newChannel": "Naujas pardavimo kanalas:",
             "newChannelType": "Rūšis",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Nežinoma bibliotekos sritis.",
             "MEDIA_FORMAT": "Šis formatas serveryje negalimas.",
             "MEDIA_FORMAT_SAME": "Paveikslėlis jau yra šio formato.",
-            "MEDIA_CONVERT": "Paveikslėlio konvertuoti nepavyko."
+            "MEDIA_CONVERT": "Paveikslėlio konvertuoti nepavyko.",
+            "ASSORTMENT_NAME_REQUIRED": "Įveskite pavadinimą.",
+            "ASSORTMENT_NAME_TAKEN": "Toks pavadinimas jau yra.",
+            "ASSORTMENT_NAME_INVALID": "Iš šio pavadinimo negalima sudaryti adreso – naudokite raides arba skaitmenis.",
+            "ASSORTMENT_NOT_FOUND": "Įrašo nebėra. Įkelkite rodinį iš naujo.",
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategorija vis dar priskirta prekėms."
         },
         "orderStatus": {
             "open": "Atidaryta",
@@ -529,6 +539,43 @@
             "uploadHint": "Kiekvienas pavadinimas bibliotekoje yra tik vieną kartą; failas, kurio nenurodo jokia prekė, pakeičiamas. Įkeliant nuotraukas galima konvertuoti į kitą formatą.",
             "deleteKept": "{name} lieka bibliotekoje: failą nurodo kitos prekės.",
             "empty": "Failų nėra."
+        },
+        "assortment": {
+            "title": "Asortimentas",
+            "subtitle": "Parduotuvės grupės ir kategorijos",
+            "loading": "Įkeliama …",
+            "hint": "Prekės kortelė kategorijas renkasi iš šio sąrašo. Naudojant šablonų rinkinį „Standard“ iš jo sudaroma svetainės kategorijų apžvalga: grupės šia tvarka, kategorijos be grupės – skiltyje „Sonstiges“, perkamiausios – viršuje. Pakeitimai svetainėje atsiranda kito vykdymo metu.",
+            "groups": "Grupės",
+            "categories": "Kategorijos",
+            "newGroup": "Nauja grupė",
+            "editGroup": "Redaguoti grupę",
+            "newCategory": "Nauja kategorija",
+            "editCategory": "Redaguoti kategoriją",
+            "name": "Pavadinimas",
+            "group": "Grupė",
+            "noGroup": "Be grupės (Sonstiges)",
+            "topseller": "Perkamiausia",
+            "topsellerHint": "Išryškinta svetainės kategorijų apžvalgos viršuje.",
+            "parts": "Prekės",
+            "partsHint": "Siūlomos / priskirtos: svetainėje rodomos tik siūlomos prekės.",
+            "categoryCount": "Kategorijos: {count}",
+            "search": "Ieškoti",
+            "empty": "Kategorijų dar nėra.",
+            "noMatch": "Pasirinkimą atitinkančių kategorijų nėra.",
+            "moveUp": "Aukštyn",
+            "moveDown": "Žemyn",
+            "edit": "Redaguoti",
+            "delete": "Ištrinti",
+            "cancel": "Atšaukti",
+            "save": "Įrašyti",
+            "saved": "Įrašyta.",
+            "deleted": "Ištrinta.",
+            "groupNameHint": "Taip grupė rodoma svetainės kategorijų apžvalgoje.",
+            "categoryNameHint": "Iš pavadinimo sudaromas kategorijos puslapio adresas.",
+            "renameHint": "Naujas pavadinimas pakeičia kategorijos puslapio adresą. Priskirtų prekių ({count}) prekių puslapiai bus perrašyti.",
+            "deleteGroupConfirm": "Ištrinti grupę „{name}“? Jos kategorijos ({count}) liks ir bus rodomos skiltyje „Sonstiges“.",
+            "deleteCategoryConfirm": "Ištrinti kategoriją „{name}“?",
+            "categoryInUse": "Kategorija „{name}“ vis dar priskirta {count} prekėms ir jos ištrinti negalima. Pirmiausia priskirkite šioms prekėms kitą kategoriją."
         }
     }
 }

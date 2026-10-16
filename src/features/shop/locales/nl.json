@@ -5,7 +5,8 @@
             "shopOrders": "/winkel/bestellingen",
             "shopWithdrawals": "/winkel/herroepingen",
             "shopChannels": "/winkel/verkoopkanalen",
-            "shopShipping": "/winkel/verzendmethoden"
+            "shopShipping": "/winkel/verzendmethoden",
+            "shopAssortment": "/winkel/assortiment"
         },
         "menu": {
             "title": "Winkel",
@@ -125,8 +126,8 @@
             "hyperlink": "Productpagina",
             "hyperlinkHint": "Pad van de productpagina op de winkelwebsite, zonder basisadres. Leeg laten voor het voorstel.",
             "openInShop": "In de winkel bekijken",
-            "breadcrumbs": "Navigatiepad",
-            "breadcrumbsHint": "Stappen van de winkelnavigatie in volgorde; elk met Enter bevestigen.",
+            "breadcrumbs": "Indeling in het assortiment",
+            "breadcrumbsHint": "Niveaus van algemeen naar specifiek, elk met Enter bevestigen. Verschijnen als korte beschrijving van het artikel en worden door de winkelzoekfunctie gevonden.",
             "images": "Afbeeldingen",
             "imagesHint": "Bestandsnamen op de winkelwebsite; elk met Enter bevestigen. De eerste afbeelding is de miniatuur.",
             "thumbnail": "Miniatuur",
@@ -210,7 +211,9 @@
             },
             "sectionPage": "Productpagina",
             "editChannel": "Instellingen van het verkoopkanaal",
-            "mediaUpload": "Uploaden"
+            "mediaUpload": "Uploaden",
+            "categoryHint": "Groepen en categorieën worden beheerd in de weergave „Assortiment”.",
+            "categoryManage": "Assortiment openen"
         },
         "publish": {
             "title": "Publicatie",
@@ -269,7 +272,8 @@
                 "remove_all": "Alle productpagina's verwijderen",
                 "draft_all": "Alle productpagina’s als concept",
                 "sync_kit": "Gebruikersinterface van de winkel bijwerken",
-                "reconcile_payments": "Betalingen afstemmen"
+                "reconcile_payments": "Betalingen afstemmen",
+                "write_categories": "Categorieoverzicht schrijven"
             },
             "installUiAsk": "De gebruikersinterface van de winkel nu installeren of als taak plannen voor de volgende geplande run?",
             "installUiChannels": "Voor welke verkoopkanalen?",
@@ -398,6 +402,7 @@
             "autoAddPartsHint": "Wordt een artikel nieuw in de winkel opgenomen, dan wordt het ook in dit kanaal aangeboden.",
             "settings": "Instellingen van {name}",
             "settingsSaved": "Instellingen opgeslagen.",
+            "settingsRejected": "Niet opgeslagen: {fields}. De backend kent deze velden nog niet – waarschijnlijk ontbreekt de database-update van de winkelextensie (opnieuw aanmelden).",
             "settingsSaveError": "De instellingen konden niet worden opgeslagen.",
             "newChannel": "Nieuw verkoopkanaal:",
             "newChannelType": "Soort",
@@ -451,7 +456,12 @@
             "MEDIA_KIND_INVALID": "Onbekend gebied van de bibliotheek.",
             "MEDIA_FORMAT": "Dit formaat is op de server niet mogelijk.",
             "MEDIA_FORMAT_SAME": "De afbeelding heeft dit formaat al.",
-            "MEDIA_CONVERT": "De afbeelding kon niet worden omgezet."
+            "MEDIA_CONVERT": "De afbeelding kon niet worden omgezet.",
+            "ASSORTMENT_NAME_REQUIRED": "Voer een naam in.",
+            "ASSORTMENT_NAME_TAKEN": "Deze naam bestaat al.",
+            "ASSORTMENT_NAME_INVALID": "Uit deze naam kan geen adres worden gevormd – gebruik letters of cijfers.",
+            "ASSORTMENT_NOT_FOUND": "De vermelding bestaat niet meer. Laad de weergave opnieuw.",
+            "ASSORTMENT_CATEGORY_IN_USE": "De categorie is nog aan artikelen toegewezen."
         },
         "orderStatus": {
             "open": "Open",
@@ -529,6 +539,43 @@
             "uploadHint": "Elke naam komt in de bibliotheek maar één keer voor; een bestand waarnaar geen artikel verwijst, wordt vervangen. Afbeeldingen kunnen bij het uploaden naar een ander formaat worden omgezet.",
             "deleteKept": "{name} blijft in de bibliotheek: andere artikelen verwijzen naar het bestand.",
             "empty": "Geen bestanden."
+        },
+        "assortment": {
+            "title": "Assortiment",
+            "subtitle": "Groepen en categorieën van de winkel",
+            "loading": "Laden …",
+            "hint": "De artikelkaart kiest categorieën uit deze lijst. Met de sjabloonset „Standard” ontstaat hieruit het categorieoverzicht van de website: groepen in deze volgorde, categorieën zonder groep onder „Sonstiges”, topverkopers bovenaan. Wijzigingen komen bij de volgende run op de website.",
+            "groups": "Groepen",
+            "categories": "Categorieën",
+            "newGroup": "Nieuwe groep",
+            "editGroup": "Groep bewerken",
+            "newCategory": "Nieuwe categorie",
+            "editCategory": "Categorie bewerken",
+            "name": "Naam",
+            "group": "Groep",
+            "noGroup": "Zonder groep (Sonstiges)",
+            "topseller": "Topverkoper",
+            "topsellerHint": "Bovenaan uitgelicht in het categorieoverzicht van de website.",
+            "parts": "Artikelen",
+            "partsHint": "Aangeboden / toegewezen: alleen aangeboden artikelen verschijnen op de website.",
+            "categoryCount": "Categorieën: {count}",
+            "search": "Zoeken",
+            "empty": "Nog geen categorieën.",
+            "noMatch": "Geen categorie past bij de selectie.",
+            "moveUp": "Omhoog",
+            "moveDown": "Omlaag",
+            "edit": "Bewerken",
+            "delete": "Verwijderen",
+            "cancel": "Annuleren",
+            "save": "Opslaan",
+            "saved": "Opgeslagen.",
+            "deleted": "Verwijderd.",
+            "groupNameHint": "Zo staat de groep in het categorieoverzicht van de website.",
+            "categoryNameHint": "Uit de naam ontstaat het adres van de categoriepagina.",
+            "renameHint": "De nieuwe naam verandert het adres van de categoriepagina. De productpagina’s van de toegewezen artikelen ({count}) worden opnieuw geschreven.",
+            "deleteGroupConfirm": "Groep „{name}” verwijderen? De categorieën ({count}) blijven en staan daarna onder „Sonstiges”.",
+            "deleteCategoryConfirm": "Categorie „{name}” verwijderen?",
+            "categoryInUse": "De categorie „{name}” is nog aan {count} artikelen toegewezen en kan niet worden verwijderd. Geef deze artikelen eerst een andere categorie."
         }
     }
 }

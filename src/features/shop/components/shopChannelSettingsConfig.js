@@ -43,6 +43,13 @@ const hugoshop = [
     { name: "invoice_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopInvoicePage", tooltip: "crm_fields.shopInvoicePage_help" },
     { name: "products_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopProductsLink", tooltip: "crm_fields.shopProductsLink_help" },
     { name: "category_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopCategoryLink", tooltip: "crm_fields.shopCategoryLink_help" },
+    // Schlüssel im Front Matter, aus dem Hugo die Kategorieseiten bildet; mit
+    // category_link liegt der Shop einer Webseite mit eigener Themen-Taxonomie
+    // unter /shop/kategorien/ (shopChannelCategoryPaths)
+    { name: "category_taxonomy", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.shopCategoryTaxonomy", tooltip: "crm_fields.shopCategoryTaxonomy_help" },
+    // Bezeichnung der Übersicht in den Brotkrumen der Produktseiten
+    // (Vorgabe Kategorien), etwa „Sortiment“
+    { name: "category_title", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.shopCategoryTitle", tooltip: "crm_fields.shopCategoryTitle_help" },
     { name: "thumbnails_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopThumbnailsLink", tooltip: "crm_fields.shopThumbnailsLink_help" },
     { name: "images_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopImagesLink", tooltip: "crm_fields.shopImagesLink_help" },
     { name: "downloads_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopDownloadsLink", tooltip: "crm_fields.shopDownloadsLink_help" },
