@@ -7,7 +7,10 @@
         <v-icon size="64" color="primary" class="mb-4">mdi-timer-sand</v-icon>
         <div class="text-h6 text-grey-darken-1">{{ t('App.loading') }}</div>
       </div>
-      <router-view v-else :key="route.path" />
+      <!-- Schlüssel aus Mandant und Pfad: nach dem Firmenwechsel landet der
+           Benutzer oft auf derselben Seite (Startansicht). Mit dem Pfad allein
+           behielte Vue die Komponente samt den Daten des alten Mandanten -->
+      <router-view v-else :key="`${oserp.session.client}:${route.path}`" />
     </v-main>
     <ToastStack />
   </v-app>
@@ -19,11 +22,13 @@ import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useUserPrefs } from '@/core/composables/useUserPrefs.js'
 import ToastStack from '@/core/components/toast-stack.vue'
+import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const { t } = useI18n()
 useUserPrefs()
 const router = useRouter()
 const route = useRoute()
+const oserp = oserpStore()
 const appReady = ref(false)
 
 provide('appReady', appReady)
