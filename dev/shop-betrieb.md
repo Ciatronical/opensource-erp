@@ -254,6 +254,11 @@ Voraussetzungen, sonst bleibt es beim Cron:
 - Ein Kommandozeilen-PHP muss auffindbar sein. Unter PHP-FPM zeigt
   `PHP_BINARY` auf `php-fpm`; gesucht wird deshalb `php<Version>` und `php`
   neben `PHP_BINDIR` und unter `/usr/bin` (`shopPhpCli()`).
+- Die PHP-Erweiterung GD mit WebP-Unterstützung, im Kommandozeilen-PHP des
+  Laufs wie im PHP des Webservers: Die Medienbibliothek erzeugt daraus die
+  Vorschaubilder und wandelt Bilder um. Fehlt sie, meldet der Lauf
+  „Vorschaubilder nicht erzeugt — GD …“ und das Hochladen warnt. Prüfen mit
+  `php -r 'print_r(gd_info());'` („WebP Support“); Debian/Ubuntu: `php-gd`.
 - Läuft der Cron unter einem anderen Benutzer als der Webserver, müssen beide
   die Dateien in `backend/tmp/` schreiben dürfen — am einfachsten läuft der
   Cron als Webserver-Benutzer.

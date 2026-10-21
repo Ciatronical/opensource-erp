@@ -39,13 +39,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends gnupg \
     libonig-dev \
     libicu-dev \
     libzip-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libwebp-dev \
+    libfreetype-dev \
     unzip \
     postgresql-client-16 \
     ssl-cert \
     && rm -rf /var/lib/apt/lists/*
 
-# PHP-Extensions
-RUN docker-php-ext-install \
+# PHP-Extensions. GD mit JPEG und WebP: die Medienbibliothek der
+# Shop-Erweiterung erzeugt daraus die Vorschaubilder (Produktbilder liegen
+# meist als WebP vor) und wandelt Bilder um — ohne WebP-Unterstützung
+# entstünde kein einziges Vorschaubild.
+RUN docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
+    && docker-php-ext-install \
+    gd \
     pgsql \
     pdo_pgsql \
     mbstring \
