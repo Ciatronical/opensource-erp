@@ -168,7 +168,87 @@ const ebay = [
     },
 ]
 
-const shopChannelSettingsConfig = { hugoshop, ebay }
+// Kleinanzeigen (dev/shop-kleinanzeigen.md): keine Schnittstelle — Konto nur
+// zur Information und für die Anfragen aus dem Postfach, Standort und Vorgaben
+// für die Anzeigen, Verkaufsabschluss, Feed für Sync-Werkzeuge.
+// action kleinanzeigenPanel: Weg zum Board, Anfragen holen, Feed-Adressen.
+const kleinanzeigen = [
+    {
+        name: "kleinanzeigen_konto",
+        type: "group",
+        icon: "mdi-bullhorn-outline",
+        label: "crm_fields.kleinanzeigenAccount",
+        tooltip: "crm_fields.kleinanzeigenAccount_help",
+        action: "kleinanzeigenPanel",
+        fields: [
+            { name: "account_email", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenAccountEmail", tooltip: "crm_fields.kleinanzeigenAccountEmail_help" },
+            { name: "location_zip", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.kleinanzeigenLocationZip", tooltip: "crm_fields.kleinanzeigenLocationZip_help" },
+            { name: "location_city", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.kleinanzeigenLocationCity", tooltip: "crm_fields.kleinanzeigenLocationCity_help" },
+            { name: "lead_mail_folder", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.kleinanzeigenLeadMailFolder", tooltip: "crm_fields.kleinanzeigenLeadMailFolder_help" },
+            // Zugang für den Kleinanzeigen-Dienst (Headless-Browser): meldet
+            // sich mit diesem Konto an und stellt die Anzeigen selbst ein
+            { name: "login_email", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenLoginEmail", tooltip: "crm_fields.kleinanzeigenLoginEmail_help" },
+            { name: "login_password", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenLoginPassword", tooltip: "crm_fields.kleinanzeigenLoginPassword_help" },
+            { name: "contact_name", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.kleinanzeigenContactName", tooltip: "crm_fields.kleinanzeigenContactName_help" },
+        ],
+    },
+
+    { name: "vorgaben", type: "headline", label: "crm_fields.kleinanzeigenDefaults" },
+
+    {
+        name: "price_type", type: "select", fieldstyle: "max-width: 30ch",
+        items: [
+            { title: "ShopView.kleinanzeigen.priceType.fixed", value: "fixed" },
+            { title: "ShopView.kleinanzeigen.priceType.negotiable", value: "negotiable" },
+            { title: "ShopView.kleinanzeigen.priceType.giveaway", value: "giveaway" },
+        ],
+        label: "crm_fields.kleinanzeigenPriceType", tooltip: "crm_fields.kleinanzeigenPriceType_help"
+    },
+    {
+        name: "shipping", type: "select", fieldstyle: "max-width: 30ch",
+        items: [
+            { title: "ShopView.kleinanzeigen.shipping.both", value: "both" },
+            { title: "ShopView.kleinanzeigen.shipping.shipping", value: "shipping" },
+            { title: "ShopView.kleinanzeigen.shipping.pickup", value: "pickup" },
+        ],
+        label: "crm_fields.kleinanzeigenShipping", tooltip: "crm_fields.kleinanzeigenShipping_help"
+    },
+    {
+        name: "default_condition", type: "select", fieldstyle: "max-width: 30ch",
+        items: [
+            { title: "ShopView.kleinanzeigen.condition.new", value: "new" },
+            { title: "ShopView.kleinanzeigen.condition.like_new", value: "like_new" },
+            { title: "ShopView.kleinanzeigen.condition.very_good", value: "very_good" },
+            { title: "ShopView.kleinanzeigen.condition.good", value: "good" },
+            { title: "ShopView.kleinanzeigen.condition.ok", value: "ok" },
+            { title: "ShopView.kleinanzeigen.condition.defective", value: "defective" },
+        ],
+        label: "crm_fields.kleinanzeigenCondition", tooltip: "crm_fields.kleinanzeigenCondition_help"
+    },
+    { name: "default_category", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenCategory", tooltip: "crm_fields.kleinanzeigenCategory_help" },
+    {
+        name: "text_style", type: "select", fieldstyle: "max-width: 30ch",
+        items: [
+            { title: "crm_fields.kleinanzeigenTextStyleFactual", value: "sachlich" },
+            { title: "crm_fields.kleinanzeigenTextStylePromo", value: "werblich" },
+        ],
+        label: "crm_fields.kleinanzeigenTextStyle", tooltip: "crm_fields.kleinanzeigenTextStyle_help"
+    },
+    { name: "text_footer", type: "textarea", rows: 4, fieldstyle: "max-width: 70ch", label: "crm_fields.kleinanzeigenTextFooter", tooltip: "crm_fields.kleinanzeigenTextFooter_help" },
+    { name: "refresh_days", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.kleinanzeigenRefreshDays", tooltip: "crm_fields.kleinanzeigenRefreshDays_help" },
+
+    { name: "verkauf", type: "headline", label: "crm_fields.kleinanzeigenSales" },
+
+    { name: "default_customer_id", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.kleinanzeigenDefaultCustomerId", tooltip: "crm_fields.kleinanzeigenDefaultCustomerId_help" },
+    { name: "employee_login", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.ebayEmployeeLogin", tooltip: "crm_fields.kleinanzeigenEmployeeLogin_help" },
+
+    { name: "feed", type: "headline", label: "crm_fields.kleinanzeigenFeed" },
+
+    // Erzeugt wird ein neuer Schlüssel im Browser; er steht in der Feed-Adresse
+    { name: "feed_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", generate: true, label: "crm_fields.kleinanzeigenFeedKey", tooltip: "crm_fields.kleinanzeigenFeedKey_help" },
+]
+
+const shopChannelSettingsConfig = { hugoshop, ebay, kleinanzeigen }
 
 /** Alle Felder einer Art, Gruppen aufgelöst — für Laden und Speichern */
 export function channelSettingFields(typ) {

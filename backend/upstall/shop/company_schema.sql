@@ -226,12 +226,12 @@ CREATE TABLE IF NOT EXISTS sales_channel_shop
     settings       jsonb,
     itime          timestamp without time zone DEFAULT now(),
     mtime          timestamp without time zone,
-    CONSTRAINT sales_channel_shop_type_check CHECK (type IN ('hugoshop', 'ebay', 'amazon')),
+    CONSTRAINT sales_channel_shop_type_check CHECK (type IN ('hugoshop', 'ebay', 'amazon', 'kleinanzeigen')),
     CONSTRAINT sales_channel_shop_markup_check CHECK (markup_type IN ('none', 'percent', 'amount'))
 );
 
 COMMENT ON TABLE  sales_channel_shop                IS 'Shop: Verkaufskanal, eine Instanz seiner Art';
-COMMENT ON COLUMN sales_channel_shop.type           IS 'Art: hugoshop, ebay oder amazon';
+COMMENT ON COLUMN sales_channel_shop.type           IS 'Art: hugoshop, ebay, amazon oder kleinanzeigen';
 COMMENT ON COLUMN sales_channel_shop.name           IS 'Name der Instanz, eindeutig je Mandant; Pflicht (nachgezogen im Abschnitt INSTANZEN)';
 COMMENT ON COLUMN sales_channel_shop.auto_add_parts IS 'Neue Shop-Artikel (neue parts_ext-Zeile) automatisch in diesen Kanal aufnehmen (M3)';
 COMMENT ON COLUMN sales_channel_shop.markup_type  IS 'Vorgabe für alle Artikel des Kanals: none, percent (Prozent) oder amount (fester Betrag)';
@@ -322,6 +322,24 @@ COMMENT ON COLUMN parts_channel_image_shop.sort     IS 'Reihenfolge, 0 = Hauptbi
 -- (dev/shop-mehrere-kanaele.md).
 ALTER TABLE sales_channel_shop DROP CONSTRAINT IF EXISTS sales_channel_shop_type_key;
 
+-- Neue Kanalart kleinanzeigen (dev/shop-kleinanzeigen.md): die Prüfung der Art
+-- auf bestehenden Datenbanken nachziehen — CREATE TABLE oben greift dort nicht.
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM pg_constraint
+                WHERE conrelid = 'sales_channel_shop'::regclass
+                  AND conname = 'sales_channel_shop_type_check'
+                  AND pg_get_constraintdef(oid) NOT LIKE '%kleinanzeigen%') THEN
+        ALTER TABLE sales_channel_shop DROP CONSTRAINT sales_channel_shop_type_check;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint
+                    WHERE conrelid = 'sales_channel_shop'::regclass
+                      AND conname = 'sales_channel_shop_type_check') THEN
+        ALTER TABLE sales_channel_shop
+            ADD CONSTRAINT sales_channel_shop_type_check
+            CHECK (type IN ('hugoshop', 'ebay', 'amazon', 'kleinanzeigen'));
+    END IF;
+END $$;
+
 -- Vorgaben für die Einstellungen eines neuen Kanals (Grundausstattung und
 -- „Kanal anlegen" in der Kanalkarte). Was hier fehlt, ist leer; die Leser
 -- haben für fehlende Werte dieselben Vorgaben.
@@ -342,6 +360,15 @@ CREATE OR REPLACE FUNCTION shop_channel_default_settings(p_type text) RETURNS js
             'content_language',                 'de-DE',
             'currency',                         'EUR',
             'default_condition',                'NEW')
+        -- Kleinanzeigen (dev/shop-kleinanzeigen.md): Preisart Verhandlungsbasis,
+        -- Abholung und Versand, Anzeigen nach 30 Tagen auffrischen
+        WHEN 'kleinanzeigen' THEN jsonb_build_object(
+            'price_type',                       'negotiable',
+            'shipping',                         'both',
+            'default_condition',                'good',
+            'refresh_days',                     '30',
+            'lead_mail_folder',                 'INBOX',
+            'text_style',                       'sachlich')
         ELSE '{}'::jsonb END
 $$;
 
@@ -363,6 +390,17 @@ SELECT 'ebay', 'eBay', 2, COALESCE((SELECT lower(btrim(value)) IN ('1', 't', 'tr
    AND NOT EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'ebay');
 
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_channels_seeded', '1') ON CONFLICT (key) DO NOTHING;
+
+-- Kleinanzeigen kam später (dev/shop-kleinanzeigen.md): einmal je Mandant ein
+-- abgeschalteter Kanal mit eigenem Merker, damit er in bestehenden
+-- Datenbanken erscheint und ein gelöschter nicht wiederkommt.
+INSERT INTO sales_channel_shop (type, name, sortkey, active, auto_add_parts, settings)
+SELECT 'kleinanzeigen', 'Kleinanzeigen',
+       COALESCE((SELECT max(sortkey) FROM sales_channel_shop), 0) + 1,
+       false, false, shop_channel_default_settings('kleinanzeigen')
+ WHERE NOT EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'shop_kleinanzeigen_seeded')
+   AND NOT EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'kleinanzeigen');
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_kleinanzeigen_seeded', '1') ON CONFLICT (key) DO NOTHING;
 
 -- Name ist Pflicht und eindeutig. Bestehende Kanäle heißen nach ihrer Art;
 -- gibt es eine Art mehrfach, bekommen die weiteren ihre Kennung angehängt.
@@ -2690,7 +2728,31 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         ('ebay',     'ebay_return_policy_id',                 'return_policy_id',                 false),
         ('ebay',     'ebay_merchant_location_key',            'merchant_location_key',            false),
         ('ebay',     'ebay_default_parts_id',                 'default_parts_id',                 false),
-        ('ebay',     'ebay_employee_login',                   'employee_login',                   false)
+        ('ebay',     'ebay_employee_login',                   'employee_login',                   false),
+        -- Kleinanzeigen (dev/shop-kleinanzeigen.md): keine Schnittstelle, die
+        -- Schlüssel gab es nie in defaults_oserp — die Abschrift findet nichts.
+        -- Konto und Standort der Anzeigen
+        ('kleinanzeigen', 'kleinanzeigen_account_email',       'account_email',       false),
+        ('kleinanzeigen', 'kleinanzeigen_location_zip',        'location_zip',        false),
+        ('kleinanzeigen', 'kleinanzeigen_location_city',       'location_city',       false),
+        -- Vorgaben für neue Anzeigen
+        ('kleinanzeigen', 'kleinanzeigen_price_type',          'price_type',          false),
+        ('kleinanzeigen', 'kleinanzeigen_shipping',            'shipping',            false),
+        ('kleinanzeigen', 'kleinanzeigen_default_condition',   'default_condition',   false),
+        ('kleinanzeigen', 'kleinanzeigen_default_category',    'default_category',    false),
+        ('kleinanzeigen', 'kleinanzeigen_text_style',          'text_style',          false),
+        ('kleinanzeigen', 'kleinanzeigen_text_footer',         'text_footer',         false),
+        ('kleinanzeigen', 'kleinanzeigen_refresh_days',        'refresh_days',        false),
+        -- Anfragen aus dem Postfach und Verkaufsabschluss
+        ('kleinanzeigen', 'kleinanzeigen_lead_mail_folder',    'lead_mail_folder',    false),
+        ('kleinanzeigen', 'kleinanzeigen_default_customer_id', 'default_customer_id', false),
+        ('kleinanzeigen', 'kleinanzeigen_employee_login',      'employee_login',      false),
+        -- Feed für Sync-Werkzeuge: der Schlüssel ist ein Geheimnis
+        ('kleinanzeigen', 'kleinanzeigen_feed_key',            'feed_key',            true),
+        -- Kleinanzeigen-Dienst (Headless-Browser): Zugang des Kontos, Name im Anzeigenformular
+        ('kleinanzeigen', 'kleinanzeigen_login_email',         'login_email',         false),
+        ('kleinanzeigen', 'kleinanzeigen_login_password',      'login_password',      true),
+        ('kleinanzeigen', 'kleinanzeigen_contact_name',        'contact_name',        false)
 $$;
 
 -- Abschrift in den Standardkanal der Art: übernimmt die Werte, die bis
@@ -2862,4 +2924,327 @@ BEGIN
     UPDATE media_shop SET filename = p_new, mtime = now() WHERE kind = p_kind AND filename = p_old;
     RETURN anzahl;
 END;
+$$;
+
+-- ============================================================================
+-- Verkaufskanal Kleinanzeigen (dev/shop-kleinanzeigen.md)
+-- ============================================================================
+--
+-- Kleinanzeigen.de hat keine Schnittstelle zum Einstellen von Anzeigen. Der
+-- Kanal ist deshalb ein „assistierter" Kanal: OpensourceERP bereitet jede
+-- Anzeige vollständig vor (Titel, Text, Preis, Bilder, Vorgaben), der
+-- Benutzer stellt sie mit wenigen Klicks ein und meldet zurück, dass sie
+-- online ist. Danach wacht OpensourceERP: Preis- oder Textänderungen, kein
+-- Bestand mehr, Anzeige auffrischen, Anfragen aus dem Postfach, Verkauf mit
+-- Rechnung und Lagerbuchung.
+--
+-- Stand je Artikel in parts_channel_shop:
+--   sync_status  NULL/draft = Entwurf (bereit zum Einstellen), active = online,
+--                reserved = reserviert, ended = Anzeige bei Kleinanzeigen weg.
+--                Verkäufe stehen in kleinanzeigen_sale_shop; ist danach kein
+--                Bestand mehr da, bleibt die Anzeige online, bis der Benutzer
+--                sie gelöscht meldet (todo delete)
+--   external_id  Anzeigennummer bei Kleinanzeigen
+--   sync_data    url, online_since, refreshed_at, posted_hash (Stand der
+--                Anzeige beim Einstellen — weicht der aktuelle ab, ist die
+--                Anzeige zu aktualisieren)
+--   settings     price (Festpreis in ganzen Euro, leer = Kanalpreis),
+--                price_type, shipping, condition, category — leer = Vorgabe
+--                des Kanals
+--
+-- Was zu tun ist (aktualisieren, löschen, auffrischen) leitet
+-- kleinanzeigen_board() live ab — kein Auftrag, kein Läufer nötig.
+
+-- Verkäufe über Kleinanzeigen: je Verkauf eine Zeile, verhindert das Löschen
+-- des Kanals (M5) und liefert die Umsatzzahlen des Boards. ar_id kann fehlen,
+-- wenn ohne Rechnung verkauft wurde (Privatverkauf aus dem Bestand).
+CREATE TABLE IF NOT EXISTS kleinanzeigen_sale_shop
+(
+    id          integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    channel_id  integer NOT NULL REFERENCES sales_channel_shop (id),
+    parts_id    integer REFERENCES parts (id) ON DELETE SET NULL,
+    ar_id       integer REFERENCES ar (id) ON DELETE SET NULL,
+    customer_id integer REFERENCES customer (id) ON DELETE SET NULL,
+    lead_id     integer,
+    qty         numeric(25,5) NOT NULL DEFAULT 1,
+    price       numeric(15,2) NOT NULL DEFAULT 0,
+    payment     text NOT NULL DEFAULT 'cash',
+    buyer_name  text,
+    note        text,
+    sold_at     timestamp without time zone NOT NULL DEFAULT now(),
+    itime       timestamp without time zone DEFAULT now(),
+    CONSTRAINT kleinanzeigen_sale_shop_payment_check CHECK (payment IN ('cash', 'transfer', 'paypal', 'secure'))
+);
+
+COMMENT ON TABLE  kleinanzeigen_sale_shop         IS 'Shop: Verkäufe über Kleinanzeigen — Umsatz, Rechnung, Käufer';
+COMMENT ON COLUMN kleinanzeigen_sale_shop.price   IS 'Erzielter Bruttopreis je Einheit';
+COMMENT ON COLUMN kleinanzeigen_sale_shop.payment IS 'cash (bar), transfer (Überweisung), paypal, secure („Sicher bezahlen“ von Kleinanzeigen)';
+
+CREATE INDEX IF NOT EXISTS kleinanzeigen_sale_shop_channel_idx ON kleinanzeigen_sale_shop (channel_id, sold_at DESC);
+
+-- Anfragen zu Anzeigen, aus den Benachrichtigungs-Mails von Kleinanzeigen
+-- (Postfach des Mandanten, lead_mail_folder des Kanals). mail_uid hält jede
+-- Mail nur einmal fest. parts_id fehlt, wenn sich die Anzeige nicht zuordnen
+-- ließ — die Anfrage bleibt trotzdem sichtbar.
+CREATE TABLE IF NOT EXISTS kleinanzeigen_lead_shop
+(
+    id          integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    channel_id  integer NOT NULL REFERENCES sales_channel_shop (id) ON DELETE CASCADE,
+    parts_id    integer REFERENCES parts (id) ON DELETE SET NULL,
+    ad_id       text,
+    ad_title    text,
+    sender_name text,
+    message     text,
+    mail_uid    text NOT NULL,
+    received_at timestamp without time zone NOT NULL DEFAULT now(),
+    status      text NOT NULL DEFAULT 'open',
+    customer_id integer REFERENCES customer (id) ON DELETE SET NULL,
+    note        text,
+    itime       timestamp without time zone DEFAULT now(),
+    mtime       timestamp without time zone,
+    CONSTRAINT kleinanzeigen_lead_shop_key UNIQUE (channel_id, mail_uid),
+    CONSTRAINT kleinanzeigen_lead_shop_status_check CHECK (status IN ('open', 'answered', 'won', 'lost'))
+);
+
+COMMENT ON TABLE  kleinanzeigen_lead_shop         IS 'Shop: Anfragen zu Kleinanzeigen aus dem Postfach';
+COMMENT ON COLUMN kleinanzeigen_lead_shop.status  IS 'open (unbeantwortet), answered, won (verkauft), lost';
+COMMENT ON COLUMN kleinanzeigen_lead_shop.mail_uid IS 'Ordner:UID der Mail im Postfach — jede Mail nur einmal';
+
+CREATE INDEX IF NOT EXISTS kleinanzeigen_lead_shop_open_idx ON kleinanzeigen_lead_shop (channel_id, status, received_at DESC);
+
+-- Reiner Text aus den Artikelnotizen: kivitendo speichert sie als HTML,
+-- Kleinanzeigen nimmt nur Text. Absätze und Zeilenumbrüche bleiben erhalten.
+CREATE OR REPLACE FUNCTION kleinanzeigen_plain_text(p_html text) RETURNS text
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT btrim(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(
+               replace(replace(replace(replace(replace(replace(
+                   regexp_replace(regexp_replace(COALESCE(p_html, ''),
+                       '<\s*(br|/p|/div|/li|/h[1-6]|/tr)\s*/?>', E'\n', 'gi'),
+                       '<\s*li[^>]*>', E'\n- ', 'gi'),
+                   '&nbsp;', ' '), '&amp;', '&'), '&lt;', '<'), '&gt;', '>'), '&quot;', '"'), '&#39;', ''''),
+               '<[^>]+>', '', 'g'),
+               E'\r', '', 'g'),
+               E'[ \t]+\n', E'\n', 'g'),
+               E'\n{3,}', E'\n\n', 'g'),
+               E'[ \t]{2,}', ' ', 'g'), E' \n')
+$$;
+
+-- Die Anzeige eines Artikels, so wie sie bei Kleinanzeigen einzugeben ist.
+-- Eine Stelle für Titel (65 Zeichen), Text (4000 Zeichen, mit dem Fußtext des
+-- Kanals), Preis in ganzen Euro brutto (Kleinanzeigen kennt keine Cent),
+-- Preisart, Versand, Zustand, Kategorie, Standort und Bilder. hash fasst
+-- zusammen, was der Käufer sieht — gemerkt beim Einstellen (posted_hash),
+-- verglichen danach.
+CREATE OR REPLACE FUNCTION kleinanzeigen_ad(p_parts_id integer, p_channel_id integer) RETURNS jsonb
+    LANGUAGE sql STABLE AS $$
+    WITH einstellung AS (
+        SELECT COALESCE((SELECT lower(btrim(value)) FROM defaults_oserp WHERE key = 'shop_tax_included'), '')
+                   IN ('t', 'true', '1', 'y', 'yes') AS brutto,
+               COALESCE((SELECT value FROM defaults_oserp WHERE key = 'shop_standard_taxzone'), 'Inland') AS zone
+    ), kanal AS (
+        SELECT c.id, c.active AS kanal_an, COALESCE(c.settings, '{}'::jsonb) AS s
+          FROM sales_channel_shop c WHERE c.id = p_channel_id
+    ), artikel AS (
+        SELECT p.id, p.partnumber, p.description, p.notes, p.onhand, p.unit, p.part_type, p.obsolete,
+               pc.id AS pc_id, COALESCE(pc.active, false) AS aktiv, COALESCE(pc.unavailable, false) AS unavailable,
+               pc.sync_status, COALESCE(pc.sync_data, '{}'::jsonb) AS sync_data, pc.external_id, pc.sync_mtime,
+               pc.title AS kanal_titel, pc.description AS kanal_text,
+               COALESCE(pc.settings, '{}'::jsonb) AS ps, k.s, k.kanal_an,
+               shop_channel_price(p.id, k.id) AS preis_basis,
+               shop_tax_rate(p.buchungsgruppen_id, e.zone) AS satz, e.brutto
+          FROM parts p
+          CROSS JOIN kanal k
+          CROSS JOIN einstellung e
+          LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.channel_id = k.id
+         WHERE p.id = p_parts_id
+    ), anzeige AS (
+        SELECT a.*,
+               left(btrim(COALESCE(NULLIF(btrim(a.kanal_titel), ''), a.description, a.partnumber)), 65) AS titel,
+               left(concat_ws(E'\n\n',
+                        NULLIF(kleinanzeigen_plain_text(COALESCE(NULLIF(a.kanal_text, ''), a.notes)), ''),
+                        NULLIF(btrim(a.s ->> 'text_footer'), '')), 4000) AS text,
+               COALESCE(NULLIF(btrim(a.ps ->> 'price'), '')::numeric,
+                        GREATEST(ROUND(CASE WHEN a.brutto THEN a.preis_basis ELSE a.preis_basis * (1 + a.satz) END), 0))
+                   AS preis,
+               COALESCE(NULLIF(a.ps ->> 'price_type', ''), NULLIF(a.s ->> 'price_type', ''), 'fixed') AS preisart,
+               COALESCE(NULLIF(a.ps ->> 'shipping', ''), NULLIF(a.s ->> 'shipping', ''), 'both') AS versand,
+               COALESCE(NULLIF(a.ps ->> 'condition', ''), NULLIF(a.s ->> 'default_condition', ''), '') AS zustand,
+               COALESCE(NULLIF(a.ps ->> 'category', ''), NULLIF(a.s ->> 'default_category', ''), '') AS kategorie
+          FROM artikel a
+    )
+    SELECT jsonb_build_object(
+               'parts_id',    z.id,
+               'partnumber',  z.partnumber,
+               'title',       z.titel,
+               'text',        z.text,
+               'price',       z.preis,
+               -- eigener Preis des Artikels im Kanal (settings.price), sonst leer
+               'own_price',   NULLIF(btrim(z.ps ->> 'price'), '')::numeric,
+               'price_type',  z.preisart,
+               'shipping',    z.versand,
+               'condition',   z.zustand,
+               'category',    z.kategorie,
+               'location',    btrim(concat_ws(' ', z.s ->> 'location_zip', z.s ->> 'location_city')),
+               'onhand',      z.onhand,
+               'unit',        z.unit,
+               'images',      (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                                          'id', i.id, 'filename', i.filename,
+                                          'url', '/webhook/part-image.php?db=' || current_database()
+                                                 || '&id=' || i.parts_id || '&f=' || i.filename)
+                                       ORDER BY i.sort, i.id), '[]'::jsonb)
+                                 FROM parts_channel_image_shop i
+                                WHERE i.parts_id = z.id AND i.channel_id = p_channel_id),
+               'active',      z.aktiv,
+               'sellable',    z.aktiv AND z.kanal_an AND NOT z.obsolete AND NOT z.unavailable AND COALESCE(z.onhand, 0) > 0,
+               'sync_status', COALESCE(z.sync_status, 'draft'),
+               'external_id', z.external_id,
+               'sync_data',   z.sync_data,
+               'sync_mtime',  z.sync_mtime,
+               'hash',        md5(concat_ws('|', z.titel, z.text, z.preis::text, z.preisart, z.versand, z.zustand)),
+               -- Pflichtangaben für eine Anzeige: Titel, Text, mindestens ein Bild
+               'missing',     (SELECT COALESCE(jsonb_agg(f), '[]'::jsonb) FROM (
+                                   SELECT 'title' AS f WHERE btrim(z.titel) = ''
+                                   UNION ALL SELECT 'text' WHERE btrim(z.text) = ''
+                                   UNION ALL SELECT 'image' WHERE NOT EXISTS (SELECT 1 FROM parts_channel_image_shop i
+                                                                                WHERE i.parts_id = z.id AND i.channel_id = p_channel_id)
+                                   UNION ALL SELECT 'location' WHERE btrim(COALESCE(z.s ->> 'location_zip', '')) = ''
+                               ) m)
+           )
+      FROM anzeige z
+$$;
+
+-- Vorschläge: Ware, die Geld bindet und sich nicht bewegt. Bestand mal
+-- Einkaufspreis, gewichtet mit den Monaten ohne Verwendung (parts_usage_oserp,
+-- Positionen in Belegen). Nur Waren mit Bestand, nicht veraltet, keine
+-- Versandartikel, nicht schon in diesem Kanal angeboten. Mit Bild zuerst —
+-- eine Anzeige ohne Bild bringt nichts.
+CREATE OR REPLACE FUNCTION kleinanzeigen_suggestions(p_channel_id integer, p_limit integer)
+RETURNS TABLE (parts_id integer, partnumber text, description text, onhand numeric, unit text,
+               lastcost numeric, sellprice numeric, price numeric, capital numeric,
+               last_use date, idle_months integer, images integer, score numeric)
+    LANGUAGE sql STABLE AS $$
+    WITH einstellung AS (
+        SELECT COALESCE((SELECT lower(btrim(value)) FROM defaults_oserp WHERE key = 'shop_tax_included'), '')
+                   IN ('t', 'true', '1', 'y', 'yes') AS brutto,
+               COALESCE((SELECT value FROM defaults_oserp WHERE key = 'shop_standard_taxzone'), 'Inland') AS zone
+    ), kandidat AS (
+        SELECT p.id, p.partnumber, p.description, p.onhand, p.unit,
+               COALESCE(p.lastcost, 0) AS lastcost, COALESCE(p.sellprice, 0) AS sellprice,
+               ROUND(COALESCE(p.onhand, 0) * COALESCE(p.lastcost, 0), 2) AS kapital,
+               (SELECT max(u.month) FROM parts_usage_oserp u WHERE u.parts_id = p.id AND u.uses > 0) AS letzte,
+               (SELECT count(*)::int FROM parts_channel_image_shop i WHERE i.parts_id = p.id) AS bilder,
+               shop_channel_price(p.id, p_channel_id) AS preis_basis,
+               shop_tax_rate(p.buchungsgruppen_id, e.zone) AS satz, e.brutto
+          FROM parts p
+          CROSS JOIN einstellung e
+         WHERE p.part_type = 'part'
+           AND NOT COALESCE(p.obsolete, false)
+           AND COALESCE(p.onhand, 0) > 0
+           AND NOT shop_is_shipping_part(p.id)
+           AND NOT EXISTS (SELECT 1 FROM parts_channel_shop pc
+                            WHERE pc.parts_id = p.id AND pc.channel_id = p_channel_id AND pc.active)
+    ), bewertet AS (
+        SELECT k.*,
+               GREATEST(0, (EXTRACT(YEAR FROM age(current_date, COALESCE(k.letzte, date_trunc('month', current_date) - interval '12 months'))) * 12
+                          + EXTRACT(MONTH FROM age(current_date, COALESCE(k.letzte, date_trunc('month', current_date) - interval '12 months'))))::int)
+                   AS monate
+          FROM kandidat k
+    )
+    SELECT b.id, b.partnumber, b.description, b.onhand, b.unit, b.lastcost, b.sellprice,
+           GREATEST(ROUND(CASE WHEN b.brutto THEN b.preis_basis ELSE b.preis_basis * (1 + b.satz) END), 0) AS price,
+           b.kapital, b.letzte, b.monate, b.bilder,
+           -- Kapitalbindung gewichtet mit der Liegezeit; ohne Bild hinten an
+           ROUND(GREATEST(b.kapital, 1) * (1 + b.monate / 6.0) * CASE WHEN b.bilder > 0 THEN 1.5 ELSE 1 END, 2) AS score
+      FROM bewertet b
+     ORDER BY score DESC, b.id
+     LIMIT p_limit
+$$;
+
+-- Das Board des Kanals: Kennzahlen und die Listen Entwürfe, Online (mit dem,
+-- was zu tun ist), Verkauft und Anfragen — eine Abfrage für die Ansicht.
+--   todo  update  Preis, Titel oder Text haben sich seit dem Einstellen geändert
+--         delete  nichts mehr da (Bestand 0, abgewählt, veraltet, Kanal aus)
+--         refresh älter als refresh_days — bei Kleinanzeigen zählt Aktualität
+CREATE OR REPLACE FUNCTION kleinanzeigen_board(p_channel_id integer) RETURNS jsonb
+    LANGUAGE sql STABLE AS $$
+    WITH kanal AS (
+        SELECT c.id, c.name, c.active, COALESCE(c.settings, '{}'::jsonb) AS s,
+               GREATEST(COALESCE(NULLIF(btrim(c.settings ->> 'refresh_days'), '')::int, 30), 1) AS refresh_days
+          FROM sales_channel_shop c WHERE c.id = p_channel_id
+    ), zeile AS (
+        SELECT pc.parts_id, pc.active, COALESCE(pc.sync_status, 'draft') AS stand, pc.external_id, pc.sync_mtime,
+               COALESCE(pc.sync_data, '{}'::jsonb) AS d,
+               kleinanzeigen_ad(pc.parts_id, k.id) AS ad, k.refresh_days
+          FROM parts_channel_shop pc
+          CROSS JOIN kanal k
+         WHERE pc.channel_id = k.id
+           AND (pc.active OR COALESCE(pc.sync_status, 'draft') IN ('active', 'reserved'))
+    ), bewertet AS (
+        SELECT z.*,
+               COALESCE((z.d ->> 'online_since')::timestamp, z.sync_mtime) AS online_seit,
+               COALESCE((z.d ->> 'refreshed_at')::timestamp, (z.d ->> 'online_since')::timestamp, z.sync_mtime) AS aufgefrischt,
+               (SELECT count(*) FROM kleinanzeigen_lead_shop l
+                 WHERE l.channel_id = p_channel_id AND l.parts_id = z.parts_id AND l.status = 'open') AS anfragen,
+               CASE WHEN z.stand IN ('active', 'reserved') THEN
+                        CASE WHEN NOT (z.ad ->> 'sellable')::boolean
+                               OR COALESCE((z.d ->> 'sold_out')::boolean, false) THEN 'delete'
+                             WHEN COALESCE(z.d ->> 'posted_hash', '') <> '' AND z.d ->> 'posted_hash' <> z.ad ->> 'hash' THEN 'update'
+                             WHEN COALESCE((z.d ->> 'refreshed_at')::timestamp, (z.d ->> 'online_since')::timestamp, z.sync_mtime)
+                                  < now() - make_interval(days => z.refresh_days) THEN 'refresh'
+                             END
+                    END AS todo
+          FROM zeile z
+    ), karte AS (
+        SELECT b.parts_id,
+               b.ad || jsonb_build_object(
+                   'state', b.stand, 'todo', b.todo, 'leads', b.anfragen,
+                   'online_since', b.online_seit, 'refreshed_at', b.aufgefrischt,
+                   'days_online', CASE WHEN b.online_seit IS NOT NULL THEN EXTRACT(DAY FROM now() - b.online_seit)::int END,
+                   'url', b.d ->> 'url') AS karte,
+               b.stand, b.todo, b.online_seit
+          FROM bewertet b
+    ), verkauf AS (
+        SELECT v.id, v.parts_id, v.ar_id, v.customer_id, v.qty, v.price, v.payment, v.buyer_name, v.sold_at, v.note,
+               p.partnumber, p.description, ar.invnumber, c.name AS customer_name
+          FROM kleinanzeigen_sale_shop v
+          LEFT JOIN parts p ON p.id = v.parts_id
+          LEFT JOIN ar ON ar.id = v.ar_id
+          LEFT JOIN customer c ON c.id = v.customer_id
+         WHERE v.channel_id = p_channel_id
+    )
+    SELECT jsonb_build_object(
+               'channel', (SELECT jsonb_build_object('channel_id', k.id, 'name', k.name, 'active', k.active,
+                                                     'refresh_days', k.refresh_days,
+                                                     'location', btrim(concat_ws(' ', k.s ->> 'location_zip', k.s ->> 'location_city')),
+                                                     'account_email', COALESCE(k.s ->> 'account_email', ''),
+                                                     'lead_last_check', k.s ->> 'lead_last_check')
+                             FROM kanal k),
+               'counts', jsonb_build_object(
+                   'draft',    (SELECT count(*) FROM karte WHERE stand = 'draft'),
+                   'active',   (SELECT count(*) FROM karte WHERE stand IN ('active', 'reserved')),
+                   'todo',     (SELECT count(*) FROM karte WHERE todo IS NOT NULL),
+                   'leads',    (SELECT count(*) FROM kleinanzeigen_lead_shop l WHERE l.channel_id = p_channel_id AND l.status = 'open'),
+                   'sold_30d', (SELECT count(*) FROM verkauf WHERE sold_at >= now() - interval '30 days'),
+                   'revenue_30d', (SELECT COALESCE(sum(qty * price), 0) FROM verkauf WHERE sold_at >= now() - interval '30 days'),
+                   'revenue_total', (SELECT COALESCE(sum(qty * price), 0) FROM verkauf),
+                   'online_value', (SELECT COALESCE(sum((karte ->> 'price')::numeric), 0) FROM karte WHERE stand IN ('active', 'reserved'))),
+               'drafts', (SELECT COALESCE(jsonb_agg(karte ORDER BY parts_id DESC), '[]'::jsonb) FROM karte WHERE stand = 'draft'),
+               'online', (SELECT COALESCE(jsonb_agg(karte ORDER BY (todo IS NULL), online_seit NULLS FIRST), '[]'::jsonb)
+                            FROM karte WHERE stand IN ('active', 'reserved')),
+               'sold', (SELECT COALESCE(jsonb_agg(to_jsonb(v) ORDER BY v.sold_at DESC), '[]'::jsonb)
+                          FROM (SELECT * FROM verkauf ORDER BY sold_at DESC LIMIT 50) v),
+               'leads', (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                                     'id', l.id, 'parts_id', l.parts_id, 'partnumber', p.partnumber,
+                                     'ad_id', l.ad_id, 'ad_title', COALESCE(NULLIF(l.ad_title, ''), p.description),
+                                     'sender_name', l.sender_name, 'message', l.message,
+                                     'received_at', l.received_at, 'status', l.status, 'note', l.note,
+                                     'customer_id', l.customer_id,
+                                     -- aus den Unterhaltungen des Dienstes: Antwort direkt möglich
+                                     'conversation', l.mail_uid LIKE 'conv:%')
+                                 ORDER BY (l.status = 'open') DESC, l.received_at DESC), '[]'::jsonb)
+                           FROM (SELECT * FROM kleinanzeigen_lead_shop l
+                                  WHERE l.channel_id = p_channel_id
+                                  ORDER BY (l.status = 'open') DESC, l.received_at DESC LIMIT 100) l
+                           LEFT JOIN parts p ON p.id = l.parts_id)
+           )
 $$;

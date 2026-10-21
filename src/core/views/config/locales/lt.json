@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP priima {size} vienai užklausai (post_max_size)",
             "phpIsBottleneck": "PHP riba griežtesnė: padidinkite post_max_size ir upload_max_filesize faile php.ini ir nustatykite iš naujo",
             "error": "Ribos nustatyti nepavyko"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Įjungti SumUp",
+        "sumupEnabled_help": "Įjungia kortelių terminalą sąskaitoje faktūroje: suma į terminalą siunčiama per įvesties lauką mokėjimo kortelėje (visa likusi suma, avansas arba franšizė); kai sąskaita faktūra visiškai apmokėta, mygtukas dar kartą atspausdina mokėjimo kvitą",
+        "sumupApiKey": "SumUp API raktas",
+        "sumupApiKey_help": "Slaptas API raktas iš SumUp valdymo skydelio (developer.sumup.com → API Keys), prasideda sup_sk_",
+        "sumupMerchantCode": "Prekybininko kodas",
+        "sumupMerchantCode_help": "Prekybininko identifikatorius iš SumUp profilio (pvz., MCXXXXXX)",
+        "sumupPrintCopies": "Egzemplioriai po mokėjimo kortele",
+        "sumupPrintCopies_help": "Sąskaitų faktūrų spaudinių skaičius, automatiškai sukuriamų pasirinktu spausdintuvu po sėkmingo mokėjimo terminale – su kortelės pastaba ir kliento kvitu (0 = nespausdinti automatiškai, numatytasis 2)",
+        "sumupPairing": {
+            "title": "Susieti terminalą",
+            "description": "Susieja SumUp terminalą (Solo) su šia paskyra per Cloud API.",
+            "saveFirst": "Pirmiausia aukščiau įveskite ir išsaugokite API raktą bei prekybininko kodą, tada susiekite terminalą.",
+            "hint": "Terminale pirmiausia ATSIJUNKITE (Nustatymai → Informacija → Atsijungti) — tik tada atsiras: Ryšiai → Wi-Fi → API → Prisijungti. Čia įveskite rodomą susiejimo kodą.",
+            "codeLabel": "Susiejimo kodas",
+            "pairBtn": "Susieti",
+            "unpairBtn": "Atsieti",
+            "current": "Susietas terminalas: {name}",
+            "none": "Terminalas dar nesusietas.",
+            "success": "Terminalas sėkmingai susietas.",
+            "error": "Susieti nepavyko.",
+            "unpaired": "Terminalas atsietas."
+        },
+        "sumupAutoSend": "Siųsti sumą automatiškai",
+        "sumupAutoSend_help": "Kai sąskaita faktūra sukuriama iš pasiūlymo arba užsakymo, likusi suma iš karto siunčiama į terminalą (numatytoji: įjungta). Atidarant esamas arba apmokėtas sąskaitas faktūras automatiškai niekada nesiunčiama"
     },
     "add": "Pridėti",
     "add_fields": {

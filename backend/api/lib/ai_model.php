@@ -52,6 +52,8 @@ function aiAssistants() {
         'gutachten_import' => ['key' => 'gutachten_import_ai_model', 'default' => 'claude-opus-5'],
         // Weroni Rechtsprüfung des Gutachtens: Abwägung mit Urteilen und Beträgen — Opus
         'gutachten_review' => ['key' => 'gutachten_review_ai_model', 'default' => 'claude-opus-5'],
+        // Kleinanzeigen: Anzeigentexte und Antwortvorschläge — kurze Texte, Haiku reicht
+        'kleinanzeigen'    => ['key' => 'kleinanzeigen_ai_model',    'default' => 'claude-haiku-4-5'],
 
         // Hintergrundverarbeitung ohne Prompt — nur Mandanteneinstellung
         'accounting'       => ['key' => 'accounting_ai_model',       'default' => 'claude-opus-5'],

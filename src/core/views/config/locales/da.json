@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP accepterer {size} pr. forespørgsel (post_max_size)",
             "phpIsBottleneck": "PHP er den snævrere grænse: forhøj post_max_size og upload_max_filesize i php.ini, og find igen",
             "error": "Grænsen kunne ikke findes"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Aktivér SumUp",
+        "sumupEnabled_help": "Aktiverer kortterminalen i fakturaen: send et beløb til terminalen via indtastningsfeltet i betalingskortet (fuldt restbeløb, forudbetaling eller selvrisiko); ved en fuldt betalt faktura udskriver knappen betalingskvitteringen igen",
+        "sumupApiKey": "SumUp API-nøgle",
+        "sumupApiKey_help": "Hemmelig API-nøgle fra SumUp-dashboardet (developer.sumup.com → API Keys), begynder med sup_sk_",
+        "sumupMerchantCode": "Merchant-kode",
+        "sumupMerchantCode_help": "Forhandler-id fra din SumUp-profil (f.eks. MCXXXXXX)",
+        "sumupPrintCopies": "Eksemplarer efter kortbetaling",
+        "sumupPrintCopies_help": "Antal fakturaudskrifter, der automatisk oprettes på den valgte printer efter en gennemført terminalbetaling – med kortnotat og kundekvittering (0 = ingen automatisk udskrift, standard 2)",
+        "sumupPairing": {
+            "title": "Par terminal",
+            "description": "Forbinder en SumUp-terminal (Solo) med denne konto via Cloud API.",
+            "saveFirst": "Indtast og gem først API-nøgle og Merchant-kode ovenfor, og par derefter terminalen.",
+            "hint": "LOG FØRST UD på terminalen (Indstillinger → Om → Log ud) — først derefter vises: Forbindelser → Wi-Fi → API → Forbind. Indtast den viste parringskode her.",
+            "codeLabel": "Parringskode",
+            "pairBtn": "Par",
+            "unpairBtn": "Fjern parring",
+            "current": "Parret terminal: {name}",
+            "none": "Der er endnu ikke parret nogen terminal.",
+            "success": "Terminalen blev parret.",
+            "error": "Parring mislykkedes.",
+            "unpaired": "Parring med terminalen fjernet."
+        },
+        "sumupAutoSend": "Send beløb automatisk",
+        "sumupAutoSend_help": "Når en faktura oprettes fra et tilbud eller en ordre, sendes restbeløbet straks til terminalen (standard: til). Ved åbning af eksisterende eller betalte fakturaer sendes der aldrig automatisk"
     },
     "add": "Tilfoej",
     "add_fields": {

@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP tar emot {size} per begäran (post_max_size)",
             "phpIsBottleneck": "PHP är den snävare gränsen: höj post_max_size och upload_max_filesize i php.ini och hämta igen",
             "error": "Gränsen kunde inte hämtas"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Aktivera SumUp",
+        "sumupEnabled_help": "Aktiverar kortterminalen i fakturan: skicka ett belopp till terminalen via inmatningsfältet i betalningskortet (hela återstående beloppet, förskott eller självrisk); vid en fullt betald faktura skriver knappen ut betalningskvittot igen",
+        "sumupApiKey": "SumUp API-nyckel",
+        "sumupApiKey_help": "Hemlig API-nyckel från SumUp-instrumentpanelen (developer.sumup.com → API Keys), börjar med sup_sk_",
+        "sumupMerchantCode": "Merchant-kod",
+        "sumupMerchantCode_help": "Handlar-ID från din SumUp-profil (t.ex. MCXXXXXX)",
+        "sumupPrintCopies": "Exemplar efter kortbetalning",
+        "sumupPrintCopies_help": "Antal fakturautskrifter som skapas automatiskt på vald skrivare efter en genomförd terminalbetalning – med kortnotering och kundkvitto (0 = ingen automatisk utskrift, standard 2)",
+        "sumupPairing": {
+            "title": "Parkoppla terminal",
+            "description": "Ansluter en SumUp-terminal (Solo) till detta konto via Cloud API.",
+            "saveFirst": "Fyll i och spara API-nyckel och Merchant-kod ovan först, parkoppla sedan terminalen.",
+            "hint": "LOGGA FÖRST UT på terminalen (Inställningar → Om → Logga ut) — först därefter visas: Anslutningar → Wi-Fi → API → Anslut. Ange den visade parkopplingskoden här.",
+            "codeLabel": "Parkopplingskod",
+            "pairBtn": "Parkoppla",
+            "unpairBtn": "Ta bort parkoppling",
+            "current": "Parkopplad terminal: {name}",
+            "none": "Ingen terminal är parkopplad ännu.",
+            "success": "Terminalen har parkopplats.",
+            "error": "Parkopplingen misslyckades.",
+            "unpaired": "Parkopplingen med terminalen har tagits bort."
+        },
+        "sumupAutoSend": "Skicka belopp automatiskt",
+        "sumupAutoSend_help": "När en faktura skapas från en offert eller order skickas det återstående beloppet direkt till terminalen (standard: på). Vid öppning av befintliga eller betalda fakturor skickas aldrig något automatiskt"
     },
     "add": "Lagg till",
     "add_fields": {

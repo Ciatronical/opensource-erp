@@ -316,6 +316,7 @@
                     @save="() => saveAllItems(true)"
                     @terminal-send="sendToTerminal"
                     @terminal-cancel="cancelTerminal"
+                    @terminal-reprint="onTerminalReprint"
                 />
             </section>
 
@@ -1846,12 +1847,19 @@ export default defineComponent({
         // ===== SumUp-Kartenterminal =====
         //
         // Ablauf: Betrag an den gekoppelten Reader senden -> Ergebnis per Polling
-        // abfragen -> bei Erfolg Zahlung auf das konfigurierte Kartenkonto buchen
-        // -> Rechnung automatisch mehrfach drucken (Anzahl aus der Konfiguration).
+        // abfragen -> bei Erfolg Kartenzahlung am Beleg vermerken (keine Buchung,
+        // die kommt mit der SumUp-Auszahlung im Banking) -> Rechnung automatisch
+        // mehrfach drucken (Anzahl aus der Konfiguration).
         // Ohne aktiviertes SumUp (sumup_enabled) passiert hier nichts.
         const sumupEnabled = computed(() => {
             const en = oserp.getClientDefaultValue('sumup_enabled', null)
             return en === true || en === 'true' || en === 't' || en === '1' || en === 1
+        })
+        // Auto-Senden beim Erzeugen einer Rechnung aus Angebot/Auftrag (Standard: ein)
+        const sumupAutoSend = computed(() => {
+            const v = oserp.getClientDefaultValue('sumup_auto_send', null)
+            if (v === null || v === undefined) return true
+            return v === true || v === 'true' || v === 't' || v === '1' || v === 1
         })
 
         const terminal = reactive({
@@ -1883,8 +1891,9 @@ export default defineComponent({
 
         /**
          * Sendet einen Betrag an das Terminal und startet die Ergebnisabfrage.
-         * Ein noch laufender Checkout (z. B. der automatisch gesendete Rechnungs-
-         * betrag) wird vom Backend vorher am Terminal abgebrochen.
+         * Das Backend gleicht offene Checkouts dieser Rechnung vorher mit SumUp
+         * ab: ein inzwischen bezahlter wird übernommen statt erneut kassiert
+         * (already_paid), ein noch laufender am Terminal abgebrochen.
          *
          * @param {number} amount Bruttobetrag, der am Terminal kassiert werden soll
          */
@@ -1906,6 +1915,18 @@ export default defineComponent({
                     description: faktura.data?.common?.invnumber || '',
                     employeeId: oserp.session?.logged_in_employee?.id || null
                 })
+                if (res?.already_paid) {
+                    // Zahlung war schon durch (Seite neu geladen, zweiter Reiter):
+                    // übernehmen und drucken wie nach einer frischen Zahlung
+                    const paid = (res.new_payments || []).reduce((sum, p) => sum + Math.abs(Number(p.amount) || 0), 0)
+                    if (faktura.data) {
+                        faktura.data.card_payments = res.card_payments || []
+                        faktura.data.card_unresolved = 0
+                    }
+                    toasts.info(t('FakturaView.faktura.terminal.alreadyPaid', { amount: paid.toFixed(2) }))
+                    await onTerminalPaid({ amount: paid, status: 'successful' }, false)
+                    return
+                }
                 terminal.clientTransactionId = res?.client_transaction_id || null
                 terminal.status = 'waiting'
                 toasts.success(t('FakturaView.faktura.terminalSent'))
@@ -1960,14 +1981,16 @@ export default defineComponent({
          * Backend bereits geschrieben) und die Rechnung automatisch drucken.
          * Keine Zahlungsbuchung — die kommt mit der SumUp-Auszahlung im Banking.
          *
-         * @param {Object} res Ergebnis aus getSumupCheckoutStatus()
+         * @param {Object}  res       Ergebnis aus getSumupCheckoutStatus()
+         * @param {boolean} addToList Zahlung in card_payments eintragen (false, wenn
+         *                            das Backend die Liste bereits geliefert hat)
          */
-        async function onTerminalPaid(res) {
+        async function onTerminalPaid(res, addToList = true) {
             const amount = Math.round(((res.amount > 0 ? res.amount : terminal.amount) || 0) * 100) / 100
             terminal.amount = amount
             terminal.status = 'success'
 
-            if (faktura.data) {
+            if (faktura.data && addToList) {
                 faktura.data.card_payments = [...cardPayments.value, {
                     id: null,
                     amount,
@@ -2005,27 +2028,62 @@ export default defineComponent({
             }
         }
 
-        // Beim Öffnen einer noch offenen Rechnung den fälligen Betrag automatisch
-        // an das Terminal senden. Schutz: nur bei Typ "Rechnung", nur wenn SumUp
-        // aktiviert ist und nur wenn noch ein offener Betrag besteht – sonst würde
-        // der Reader bei jedem Ansehen blockiert bzw. eine bezahlte Rechnung
-        // erneut zur Kasse gebeten.
-        let terminalCheckoutSent = false
+        /**
+         * Rechnung ist vollständig bezahlt: der Terminal-Knopf druckt den
+         * Zahlungsbeleg (Rechnung mit Kartenvermerk und Kundenbeleg) noch einmal.
+         */
+        async function onTerminalReprint() {
+            toasts.success(t('FakturaView.faktura.terminal.fullyPaid'))
+            await printFaktura(1)
+        }
+
+        /**
+         * Offene Checkouts dieser Rechnung mit SumUp abgleichen (Abfrage im
+         * Browser abgebrochen, Seite verlassen, lokal storniert). Eine dabei
+         * erkannte Zahlung wird übernommen und gemeldet, nicht gedruckt — der
+         * Beleg kommt über den Knopf „Zahlungsbeleg erneut drucken".
+         */
+        async function syncCardPayments() {
+            if (!sumupEnabled.value || fakturaType.value !== 'invoice' || !fakturaId.value) return
+            if (!(Number(faktura.data?.card_unresolved) > 0)) return
+            try {
+                const res = await faktura.syncSumupCheckouts(fakturaId.value)
+                if (faktura.data) {
+                    faktura.data.card_payments = res.card_payments || []
+                    faktura.data.card_unresolved = 0
+                }
+                for (const p of res.new_payments || []) {
+                    toasts.info(t('FakturaView.faktura.terminal.synced', { amount: Math.abs(Number(p.amount) || 0).toFixed(2) }))
+                }
+            } catch (e) {
+                console.warn('SumUp-Abgleich:', e.message)
+            }
+        }
+
+        /**
+         * Auto-Senden: Wurde die Rechnung gerade aus Angebot/Auftrag erzeugt
+         * (Query-Flag converted=1 aus convertAndNavigate), geht der offene Betrag
+         * sofort ans Terminal — sofern SumUp und das Auto-Senden aktiv sind und
+         * noch etwas offen ist. Das Flag wird aus der URL entfernt, damit ein
+         * Neuladen den Betrag nicht erneut sendet.
+         */
         async function maybeSendInvoiceToTerminal() {
-            if (terminalCheckoutSent) return
+            if (route.query.converted !== '1') return
+            const url = new URL(window.location.href)
+            url.searchParams.delete('converted')
+            window.history.replaceState(history.state, '', url.pathname + url.search + url.hash)
+
             if (fakturaType.value !== 'invoice' || !fakturaId.value) return
-            if (!sumupEnabled.value) return
+            if (!sumupEnabled.value || !sumupAutoSend.value) return
 
             // Bruttobetrag sofort berechnen (Debounce umgehen) und offenen Rest ermitteln
             accounting.flushCalculation()
             const gross = accounting.calculatedGrossAmount.value || 0
             const paid = (paymentList.value || []).reduce((sum, p) => sum + Math.abs(p.amount || 0), 0)
             const remaining = Math.round((gross - paid - cardPaidTotal.value) * 100) / 100
-            if (remaining <= 0) return // bereits (vollständig) bezahlt bzw. am Terminal kassiert
+            if (remaining <= 0) return // bereits bezahlt bzw. am Terminal kassiert
 
-            terminalCheckoutSent = true
             await sendToTerminal(remaining)
-            if (terminal.status === 'failed') terminalCheckoutSent = false // erneuter Versuch möglich
         }
 
         onMounted(async () => {
@@ -2170,7 +2228,9 @@ export default defineComponent({
 
                     accounting.calculateTotals()
 
-                    // SumUp: offenen Rechnungsbetrag automatisch ans Terminal senden
+                    // SumUp: offene Checkouts klären, dann ggf. (frisch aus Angebot/
+                    // Auftrag erzeugte Rechnung) den offenen Betrag ans Terminal senden
+                    await syncCardPayments()
                     maybeSendInvoiceToTerminal()
 
                     // Druckvorlagen aus dem parallel gestarteten Call
@@ -2860,7 +2920,10 @@ export default defineComponent({
                 toasts.success(t('FakturaView.workflow.created'))
                 const targetRoute = routeNameMap[result.fakturaType]
                 if (targetRoute) {
-                    router.push({ name: targetRoute, params: { id: result.id } })
+                    // converted=1: die neue Rechnung darf ihren Betrag automatisch ans
+                    // Kartenterminal senden (siehe maybeSendInvoiceToTerminal)
+                    const query = result.fakturaType === 'invoice' ? { converted: '1' } : {}
+                    router.push({ name: targetRoute, params: { id: result.id }, query })
                 }
             } catch (e) {
                 console.error('Fehler bei Dokumentkonvertierung:', e)
@@ -3963,6 +4026,7 @@ export default defineComponent({
             sumupEnabled,
             terminal,
             cardPayments,
+            onTerminalReprint,
             sendToTerminal,
             cancelTerminal,
             selectTemplate,

@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP istek başına {size} kabul ediyor (post_max_size)",
             "phpIsBottleneck": "Daha dar sınır PHP: php.ini içinde post_max_size ve upload_max_filesize değerlerini yükseltip yeniden belirleyin",
             "error": "Sınır belirlenemedi"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "SumUp'ı etkinleştir",
+        "sumupEnabled_help": "Faturada kart terminalini etkinleştirir: ödeme kartındaki giriş alanından tutarı terminale gönderin (açık tutarın tamamı, kapora veya sigorta muafiyeti); fatura tamamen ödenmişse düğme ödeme makbuzunu yeniden yazdırır",
+        "sumupApiKey": "SumUp API anahtarı",
+        "sumupApiKey_help": "SumUp panelindeki gizli API anahtarı (developer.sumup.com → API Keys), sup_sk_ ile başlar",
+        "sumupMerchantCode": "Üye işyeri kodu",
+        "sumupMerchantCode_help": "SumUp profilinizdeki üye işyeri kimliği (örn. MCXXXXXX)",
+        "sumupPrintCopies": "Kart ödemesinden sonra nüsha sayısı",
+        "sumupPrintCopies_help": "Başarılı terminal ödemesinden sonra seçili yazıcıda otomatik oluşturulan fatura çıktısı sayısı – kart notu ve müşteri makbuzuyla birlikte (0 = otomatik yazdırma yok, varsayılan 2)",
+        "sumupPairing": {
+            "title": "Terminali eşleştir",
+            "description": "Bir SumUp terminalini (Solo) Cloud API üzerinden bu hesaba bağlar.",
+            "saveFirst": "Lütfen önce yukarıda API anahtarını ve üye işyeri kodunu girip kaydedin, ardından terminali eşleştirin.",
+            "hint": "Terminalde önce OTURUMU KAPATIN (Ayarlar → Hakkında → Oturumu kapat) — ancak o zaman şu görünür: Bağlantılar → Wi-Fi → API → Bağlan. Görüntülenen eşleştirme kodunu buraya girin.",
+            "codeLabel": "Eşleştirme kodu",
+            "pairBtn": "Eşleştir",
+            "unpairBtn": "Eşleştirmeyi kaldır",
+            "current": "Eşleştirilen terminal: {name}",
+            "none": "Henüz eşleştirilmiş terminal yok.",
+            "success": "Terminal başarıyla eşleştirildi.",
+            "error": "Eşleştirme başarısız oldu.",
+            "unpaired": "Terminal eşleştirmesi kaldırıldı."
+        },
+        "sumupAutoSend": "Tutarı otomatik gönder",
+        "sumupAutoSend_help": "Bir tekliften veya siparişten fatura oluşturulduğunda açık tutar hemen terminale gönderilir (varsayılan: açık). Mevcut veya ödenmiş faturalar açılırken hiçbir zaman otomatik gönderim yapılmaz"
     },
     "add": "Ekle",
     "add_fields": {

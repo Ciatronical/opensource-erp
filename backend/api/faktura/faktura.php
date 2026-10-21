@@ -227,6 +227,15 @@ function getFakturaData($data) {
                         FROM sumup_checkouts sc
                         WHERE sc.trans_id = :fakturaID AND sc.status = 'successful' AND '{$mainTable}' = 'ar'
                     ) AS sc
+                ),
+            -- Checkouts ohne geklärtes Ergebnis (Abfrage im Browser abgebrochen oder
+            -- lokal storniert, ohne dass SumUp befragt wurde): das Frontend gleicht
+            -- sie beim Öffnen per sumupSyncCheckouts mit SumUp ab.
+            'card_unresolved',
+                (
+                    SELECT count(*) FROM sumup_checkouts sc
+                    WHERE sc.trans_id = :fakturaID AND '{$mainTable}' = 'ar'
+                      AND (sc.status = 'pending' OR (sc.status = 'cancelled' AND sc.transaction_code IS NULL))
                 )
             )
         ) AS result,

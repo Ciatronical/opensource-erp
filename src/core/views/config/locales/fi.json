@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP hyväksyy {size} pyyntöä kohden (post_max_size)",
             "phpIsBottleneck": "PHP on tiukempi raja: nosta post_max_size ja upload_max_filesize php.ini-tiedostossa ja hae uudelleen",
             "error": "Rajaa ei voitu hakea"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Ota SumUp käyttöön",
+        "sumupEnabled_help": "Ottaa korttipäätteen käyttöön laskulla: summa lähetetään päätteelle maksukortin syöttökentän kautta (koko avoin summa, ennakkomaksu tai omavastuu); kokonaan maksetulla laskulla painike tulostaa maksukuitin uudelleen",
+        "sumupApiKey": "SumUp API-avain",
+        "sumupApiKey_help": "Salainen API-avain SumUp-hallintapaneelista (developer.sumup.com → API Keys), alkaa merkkijonolla sup_sk_",
+        "sumupMerchantCode": "Kauppiaskoodi",
+        "sumupMerchantCode_help": "Kauppiastunnus SumUp-profiilista (esim. MCXXXXXX)",
+        "sumupPrintCopies": "Kappaleita korttimaksun jälkeen",
+        "sumupPrintCopies_help": "Laskutulosteiden määrä, jotka luodaan automaattisesti valitulla tulostimella onnistuneen päätemaksun jälkeen – korttimaksumerkinnällä ja asiakaskuitilla (0 = ei automaattista tulostusta, oletus 2)",
+        "sumupPairing": {
+            "title": "Yhdistä pääte",
+            "description": "Yhdistää SumUp-päätteen (Solo) tähän tiliin Cloud API:n kautta.",
+            "saveFirst": "Syötä ja tallenna ensin API-avain ja kauppiaskoodi yllä, yhdistä pääte sen jälkeen.",
+            "hint": "KIRJAUDU päätteellä ensin ULOS (Asetukset → Tietoja → Kirjaudu ulos) — vasta sitten näkyviin tulee: Yhteydet → Wi-Fi → API → Yhdistä. Syötä päätteen näyttämä yhdistämiskoodi tähän.",
+            "codeLabel": "Yhdistämiskoodi",
+            "pairBtn": "Yhdistä",
+            "unpairBtn": "Poista yhdistys",
+            "current": "Yhdistetty pääte: {name}",
+            "none": "Päätettä ei ole vielä yhdistetty.",
+            "success": "Pääte yhdistetty onnistuneesti.",
+            "error": "Yhdistäminen epäonnistui.",
+            "unpaired": "Päätteen yhdistys poistettu."
+        },
+        "sumupAutoSend": "Lähetä summa automaattisesti",
+        "sumupAutoSend_help": "Kun lasku luodaan tarjouksesta tai tilauksesta, avoin summa lähetetään heti päätteelle (oletus: käytössä). Olemassa olevia tai maksettuja laskuja avattaessa ei koskaan lähetetä automaattisesti"
     },
     "add": "Lisää",
     "add_fields": {

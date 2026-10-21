@@ -1,0 +1,28 @@
+[Unit]
+Description=OpensourceERP Kleinanzeigen-Dienst (Headless-Chrome als Pseudo-API zu kleinanzeigen.de)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/work/opensource-erp/backend/services/kleinanzeigen
+# Nutzt das venv aus install.sh. Pfad ggf. an die Installation anpassen.
+ExecStart=/home/work/opensource-erp/backend/services/kleinanzeigen/.venv/bin/python kleinanzeigen-worker.py
+Restart=always
+RestartSec=5
+# Chrome braucht HOME für sein Profil
+Environment=HOME=/home/work
+Environment=KA_PORT=3007
+# Shared-Secret — denselben Wert in der Firmenkonfiguration → Shop → Kleinanzeigen-Dienst eintragen
+Environment=KA_TOKEN=a7f3c1e94b2d6e8f0c5a1b3d7e9f2c4a6b8d0e1f3a5c7e9b
+# 1 = unsichtbar (Regelfall; die Anmeldung von Hand läuft über die Fernsteuerung in der Kanalkarte);
+# 0 = sichtbarer Browser auf dem Bildschirm des Servers — nur sinnvoll, wenn jemand davor sitzt
+Environment=KA_HEADLESS=1
+#Environment=DISPLAY=:0
+#Environment=XAUTHORITY=/home/work/.Xauthority
+# Pfad zum Browser, falls nicht google-chrome im PATH
+#Environment=KA_CHROME=/usr/bin/chromium
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,2 @@
+nodriver==0.50.6
+aiohttp>=3.10

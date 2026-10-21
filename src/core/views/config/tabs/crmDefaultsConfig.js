@@ -100,6 +100,7 @@ const crmDefaultsConfig = [
     { name: "sumup_enabled", type: "checkbox", label: "crm_fields.sumupEnabled", tooltip: "crm_fields.sumupEnabled_help" },
     { name: "sumup_api_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.sumupApiKey", tooltip: "crm_fields.sumupApiKey_help" },
     { name: "sumup_merchant_code", type: "input", size: 30, fieldstyle: "max-width: 40ch", label: "crm_fields.sumupMerchantCode", tooltip: "crm_fields.sumupMerchantCode_help" },
+    { name: "sumup_auto_send", type: "checkbox", label: "crm_fields.sumupAutoSend", tooltip: "crm_fields.sumupAutoSend_help" },
     { name: "sumup_print_copies", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.sumupPrintCopies", tooltip: "crm_fields.sumupPrintCopies_help" },
     { name: "sumup_reader_pairing", type: "component", component: "sumup-reader-pairing" },
 

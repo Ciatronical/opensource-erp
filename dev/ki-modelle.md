@@ -36,6 +36,7 @@ benutzt.
 | Spezialwerkzeug-Zuordnung | `special_tools_ai_model` | Opus 5 | ja |
 | Gutachten-Import | `gutachten_import_ai_model` | Opus 5 | ja |
 | Weroni Rechtsprüfung (Gutachten) | `gutachten_review_ai_model` | Opus 5 | ja |
+| Kleinanzeigen (Anzeigentext, Antwort) | `kleinanzeigen_ai_model` | Haiku 4.5 | ja |
 | Belegerkennung | `accounting_ai_model` | Opus 5 | nein |
 | Visitenkarten-Scan | `business_card_ai_model` | Haiku 4.5 | nein |
 | Telefonsuche | `phone_search_ai_model` | Sonnet 5 | nein |

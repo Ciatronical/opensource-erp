@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP accepte {size} par requête (post_max_size)",
             "phpIsBottleneck": "PHP est la limite la plus stricte : augmentez post_max_size et upload_max_filesize dans php.ini, puis détectez à nouveau",
             "error": "La limite n'a pas pu être détectée"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Activer SumUp",
+        "sumupEnabled_help": "Active le terminal de paiement dans la facture : envoyez un montant au terminal via le champ de saisie de la carte Paiement (montant restant dû complet, acompte ou franchise) ; sur une facture entièrement payée, le bouton réimprime le justificatif de paiement",
+        "sumupApiKey": "Clé API SumUp",
+        "sumupApiKey_help": "Clé API secrète du tableau de bord SumUp (developer.sumup.com → API Keys), commence par sup_sk_",
+        "sumupMerchantCode": "Code marchand",
+        "sumupMerchantCode_help": "Identifiant marchand de votre profil SumUp (p. ex. MCXXXXXX)",
+        "sumupPrintCopies": "Exemplaires après paiement par carte",
+        "sumupPrintCopies_help": "Nombre d'impressions de la facture générées automatiquement sur l'imprimante choisie après un paiement réussi au terminal – avec mention du paiement par carte et ticket client (0 = pas d'impression automatique, 2 par défaut)",
+        "sumupPairing": {
+            "title": "Appairer le terminal",
+            "description": "Connecte un terminal SumUp (Solo) à ce compte via la Cloud API.",
+            "saveFirst": "Veuillez d'abord saisir et enregistrer la clé API et le code marchand ci-dessus, puis appairer le terminal.",
+            "hint": "Sur le terminal, commencez par vous DÉCONNECTER (Paramètres → Infos → Se déconnecter) — ce n'est qu'ensuite qu'apparaît : Connexions → Wi-Fi → API → Connecter. Saisissez ici le code d'appairage affiché.",
+            "codeLabel": "Code d'appairage",
+            "pairBtn": "Appairer",
+            "unpairBtn": "Dissocier",
+            "current": "Terminal appairé : {name}",
+            "none": "Aucun terminal n'est encore appairé.",
+            "success": "Terminal appairé avec succès.",
+            "error": "Échec de l'appairage.",
+            "unpaired": "Terminal dissocié."
+        },
+        "sumupAutoSend": "Envoyer le montant automatiquement",
+        "sumupAutoSend_help": "Lorsqu'une facture est créée à partir d'un devis ou d'une commande, le montant restant dû est immédiatement envoyé au terminal (par défaut : activé). À l'ouverture de factures existantes ou payées, aucun envoi automatique n'a lieu"
     },
     "add": "Ajouter",
     "add_fields": {

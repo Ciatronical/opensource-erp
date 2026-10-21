@@ -46,11 +46,14 @@ export function useShop() {
     const loading = ref(false)
     const error = ref(null)
     const errorCode = ref(null)
+    /** Nutzdaten einer Fehlerantwort (Kleinanzeigen-Dienst: Bildschirmfoto, Adresse) */
+    const errorPayload = ref(null)
 
     function fehlerSetzen(antwort) {
         const { code, text } = shopFehler(antwort, i18n)
         errorCode.value = code
         error.value = text
+        errorPayload.value = antwort?.payload ?? null
     }
 
     /**
@@ -64,6 +67,7 @@ export function useShop() {
         loading.value = true
         error.value = null
         errorCode.value = null
+        errorPayload.value = null
         try {
             const response = await axios.post(API_URL, { action, ...params })
             if (response.data?.success === false) {
@@ -78,6 +82,34 @@ export function useShop() {
             loading.value = false
         }
     }
+
+    // ── Kleinanzeigen (dev/shop-kleinanzeigen.md) ──
+    /** Board des Kanals: Kennzahlen, Vorschläge, Entwürfe, Online, Verkauft, Anfragen */
+    const fetchKleinanzeigenBoard = (channel_id) => call('getKleinanzeigenBoard', channel_id ? { channel_id } : {})
+    const fetchKleinanzeigenAd = (parts_id, channel_id) => call('getKleinanzeigenAd', { parts_id, channel_id })
+    const saveKleinanzeigenAd = (daten) => call('saveKleinanzeigenAd', daten)
+    const addKleinanzeigenParts = (parts_ids, channel_id) => call('addKleinanzeigenParts', { parts_ids, channel_id })
+    const setKleinanzeigenAdState = (parts_id, channel_id, state, url = '') =>
+        call('setKleinanzeigenAdState', { parts_id, channel_id, state, url })
+    const sellKleinanzeigenAd = (daten) => call('sellKleinanzeigenAd', daten)
+    const setKleinanzeigenLeadStatus = (lead_id, daten) => call('setKleinanzeigenLeadStatus', { lead_id, ...daten })
+    const importKleinanzeigenLeads = (channel_id) => call('importKleinanzeigenLeads', { channel_id })
+    const generateKleinanzeigenText = (parts_id, channel_id, hint, ai_model) =>
+        call('generateKleinanzeigenText', { parts_id, channel_id, hint, ai_model })
+    const suggestKleinanzeigenReply = (lead_id, ai_model) => call('suggestKleinanzeigenReply', { lead_id, ai_model })
+    const fetchKleinanzeigenImagesZip = (parts_id, channel_id) => call('getKleinanzeigenImagesZip', { parts_id, channel_id })
+    const fetchKleinanzeigenFeedUrl = (channel_id) => call('getKleinanzeigenFeedUrl', { channel_id })
+    // Kleinanzeigen-Dienst (Headless-Browser, dev/shop-kleinanzeigen.md Teil 2)
+    const fetchKleinanzeigenWorkerStatus = (channel_id, check = false) => call('getKleinanzeigenWorkerStatus', { channel_id, check })
+    const loginKleinanzeigen = (channel_id) => call('loginKleinanzeigen', { channel_id })
+    const confirmKleinanzeigenLogin = (channel_id, code) => call('confirmKleinanzeigenLogin', { channel_id, code })
+    const openKleinanzeigenLogin = (channel_id) => call('openKleinanzeigenLogin', { channel_id })
+    const remoteKleinanzeigenBrowser = (channel_id, op, extra = {}) => call('remoteKleinanzeigenBrowser', { channel_id, op, ...extra })
+    const publishKleinanzeigenAd = (parts_id, channel_id) => call('publishKleinanzeigenAd', { parts_id, channel_id })
+    const deleteKleinanzeigenAd = (parts_id, channel_id) => call('deleteKleinanzeigenAd', { parts_id, channel_id })
+    const extendKleinanzeigenAd = (parts_id, channel_id) => call('extendKleinanzeigenAd', { parts_id, channel_id })
+    const syncKleinanzeigenAds = (channel_id) => call('syncKleinanzeigenAds', { channel_id })
+    const replyKleinanzeigenLead = (lead_id, text) => call('replyKleinanzeigenLead', { lead_id, text })
 
     /** Einrichtungsstand: was fehlt, was schränkt ein */
     const fetchStatus = () => call('getShopStatus')
@@ -198,6 +230,7 @@ export function useShop() {
         loading,
         error,
         errorCode,
+        errorPayload,
         publishPart,
         publishAll,
         fetchPublishJobs,
@@ -217,6 +250,28 @@ export function useShop() {
         copyChannelImages,
         fetchStatus,
         fetchOrders,
+        fetchKleinanzeigenBoard,
+        fetchKleinanzeigenAd,
+        saveKleinanzeigenAd,
+        addKleinanzeigenParts,
+        setKleinanzeigenAdState,
+        sellKleinanzeigenAd,
+        setKleinanzeigenLeadStatus,
+        importKleinanzeigenLeads,
+        generateKleinanzeigenText,
+        suggestKleinanzeigenReply,
+        fetchKleinanzeigenImagesZip,
+        fetchKleinanzeigenFeedUrl,
+        fetchKleinanzeigenWorkerStatus,
+        loginKleinanzeigen,
+        confirmKleinanzeigenLogin,
+        openKleinanzeigenLogin,
+        remoteKleinanzeigenBrowser,
+        publishKleinanzeigenAd,
+        deleteKleinanzeigenAd,
+        extendKleinanzeigenAd,
+        syncKleinanzeigenAds,
+        replyKleinanzeigenLead,
         setOrderStatus,
         fetchOrderStatus,
         fetchPendingPayments,

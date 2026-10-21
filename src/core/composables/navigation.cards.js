@@ -43,6 +43,9 @@ export function useNavigationCards() {
             if (oserp.checkPermission('shop_part_edit') || oserp.checkPermission('edit_shop_config')) {
                 shopItems.push({ title: t('ShopView.assortment.title'), to: { name: 'shop-assortment' } })
             }
+            // Kleinanzeigen-Board (dev/shop-kleinanzeigen.md): lesen wie die
+            // Bestellungen, Anzeigen und Verkäufe mit den Rechten der Artikelpflege
+            shopItems.push({ title: t('ShopView.kleinanzeigen.title'), to: { name: 'shop-kleinanzeigen' } })
             // Verkaufskanäle einrichten: nur mit dem Recht, das die Kanal-API verlangt
             if (oserp.checkPermission('edit_shop_config')) {
                 shopItems.push('-')

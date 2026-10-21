@@ -218,6 +218,12 @@ const ShopChannelsView = () => {
         ? import('@/features/shop/views/shop.channels.vue')
         : Promise.resolve(NotFoundView)
 }
+const ShopKleinanzeigenView = () => {
+    const oserp = oserpStore()
+    return oserp.isExtensionEnabled('shop')
+        ? import('@/features/shop/views/shop.kleinanzeigen.vue')
+        : Promise.resolve(NotFoundView)
+}
 const ShopShippingView = () => {
     const oserp = oserpStore()
     return oserp.isExtensionEnabled('shop')
@@ -877,6 +883,13 @@ function buildRoutes() {
             ...routePath('ShopView.routes.shopAssortment'),
             name: 'shop-assortment',
             component: ShopAssortmentView,
+            meta: { hideCustomerBar: true },
+        },
+        // Kleinanzeigen-Board (dev/shop-kleinanzeigen.md)
+        {
+            ...routePath('ShopView.routes.shopKleinanzeigen'),
+            name: 'shop-kleinanzeigen',
+            component: ShopKleinanzeigenView,
             meta: { hideCustomerBar: true },
         },
         // ── Banking ── (alle Funktionen in einem Hub zusammengefasst)

@@ -579,6 +579,17 @@
                                             · {{ t('ShopView.partCard.listingId', { id: kanal.external_id }) }}
                                         </span>
                                         <div v-if="kanal.sync_error" class="text-caption">{{ kanal.sync_error }}</div>
+                                        <!-- Kleinanzeigen: eingestellt wird im Board (dev/shop-kleinanzeigen.md) -->
+                                        <div v-if="kanal.type === 'kleinanzeigen'" class="mt-2">
+                                            <v-btn
+                                                size="small"
+                                                variant="tonal"
+                                                prepend-icon="mdi-bullhorn-outline"
+                                                :to="{ name: 'shop-kleinanzeigen', query: { channel: kanal.channel_id, tab: kanal.sync_status === 'active' || kanal.sync_status === 'reserved' ? 'online' : 'drafts' } }"
+                                            >
+                                                {{ t('ShopView.kleinanzeigen.openBoard') }}
+                                            </v-btn>
+                                        </div>
                                     </v-alert>
                                 </v-col>
                             </v-row>
@@ -802,10 +813,21 @@ function alsKanal(zeile) {
 // braucht nur einen Eintrag hier, keinen Vorlagencode. Leer heißt: Vorgabe
 // aus den Einstellungen des Kanals.
 const EBAY_ZUSTAENDE = ['NEW', 'USED_EXCELLENT', 'USED_GOOD', 'USED_ACCEPTABLE', 'FOR_PARTS_OR_NOT_WORKING']
+const KLEINANZEIGEN_PREISARTEN = ['fixed', 'negotiable', 'giveaway']
+const KLEINANZEIGEN_VERSAND = ['pickup', 'shipping', 'both']
+const KLEINANZEIGEN_ZUSTAENDE = ['new', 'like_new', 'very_good', 'good', 'ok', 'defective']
 const KANAL_FELDER = {
     ebay: [
         { name: 'category_id', label: 'ShopView.partCard.ebayCategory', hint: 'ShopView.partCard.channelDefaultHint' },
         { name: 'condition', label: 'ShopView.partCard.ebayCondition', items: EBAY_ZUSTAENDE, prefix: 'ShopView.ebayCondition.' },
+    ],
+    // Kleinanzeigen (dev/shop-kleinanzeigen.md): Preis in ganzen Euro, leer = Kanalpreis
+    kleinanzeigen: [
+        { name: 'price', label: 'ShopView.kleinanzeigen.ad.price', hint: 'ShopView.kleinanzeigen.ad.priceCardHint' },
+        { name: 'price_type', label: 'ShopView.kleinanzeigen.ad.priceType', items: KLEINANZEIGEN_PREISARTEN, prefix: 'ShopView.kleinanzeigen.priceType.' },
+        { name: 'shipping', label: 'ShopView.kleinanzeigen.ad.shipping', items: KLEINANZEIGEN_VERSAND, prefix: 'ShopView.kleinanzeigen.shipping.' },
+        { name: 'condition', label: 'ShopView.kleinanzeigen.ad.condition', items: KLEINANZEIGEN_ZUSTAENDE, prefix: 'ShopView.kleinanzeigen.condition.' },
+        { name: 'category', label: 'ShopView.kleinanzeigen.ad.category', hint: 'ShopView.partCard.channelDefaultHint' },
     ],
 }
 const kanalFelder = kanal => KANAL_FELDER[kanal.type] || []

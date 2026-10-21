@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP acepta {size} por solicitud (post_max_size)",
             "phpIsBottleneck": "PHP es el límite más estricto: aumente post_max_size y upload_max_filesize en php.ini y vuelva a detectar",
             "error": "No se pudo detectar el límite"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Activar SumUp",
+        "sumupEnabled_help": "Habilita el terminal de tarjeta en la factura: envíe un importe al terminal mediante el campo de entrada de la tarjeta de pago (importe pendiente total, anticipo o franquicia); en una factura pagada por completo, el botón vuelve a imprimir el comprobante de pago",
+        "sumupApiKey": "Clave API de SumUp",
+        "sumupApiKey_help": "Clave API secreta del panel de SumUp (developer.sumup.com → API Keys), empieza por sup_sk_",
+        "sumupMerchantCode": "Código de comerciante",
+        "sumupMerchantCode_help": "Identificador de comerciante de su perfil de SumUp (p. ej. MCXXXXXX)",
+        "sumupPrintCopies": "Ejemplares tras el pago con tarjeta",
+        "sumupPrintCopies_help": "Número de impresiones de la factura que se generan automáticamente en la impresora seleccionada tras un pago correcto en el terminal – con anotación de pago con tarjeta y comprobante del cliente (0 = sin impresión automática, predeterminado 2)",
+        "sumupPairing": {
+            "title": "Vincular terminal",
+            "description": "Conecta un terminal SumUp (Solo) con esta cuenta a través de la Cloud API.",
+            "saveFirst": "Introduzca y guarde primero la clave API y el código de comerciante arriba y, a continuación, vincule el terminal.",
+            "hint": "En el terminal, primero CERRAR SESIÓN (Ajustes → Información → Cerrar sesión) — solo entonces aparece: Conexiones → Wi-Fi → API → Conectar. Introduzca aquí el código de vinculación mostrado.",
+            "codeLabel": "Código de vinculación",
+            "pairBtn": "Vincular",
+            "unpairBtn": "Desvincular",
+            "current": "Terminal vinculado: {name}",
+            "none": "Todavía no hay ningún terminal vinculado.",
+            "success": "Terminal vinculado correctamente.",
+            "error": "Error de vinculación.",
+            "unpaired": "Terminal desvinculado."
+        },
+        "sumupAutoSend": "Enviar importe automáticamente",
+        "sumupAutoSend_help": "Si se crea una factura a partir de un presupuesto o pedido, el importe pendiente se envía inmediatamente al terminal (predeterminado: activado). Al abrir facturas existentes o pagadas nunca se envía automáticamente"
     },
     "add": "Añadir",
     "add_fields": {

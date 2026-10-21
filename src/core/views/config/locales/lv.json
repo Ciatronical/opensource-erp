@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP pieņem {size} vienam pieprasījumam (post_max_size)",
             "phpIsBottleneck": "PHP ir stingrākā robeža: palieliniet post_max_size un upload_max_filesize failā php.ini un nosakiet vēlreiz",
             "error": "Robežu neizdevās noteikt"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Iespējot SumUp",
+        "sumupEnabled_help": "Iespējo karšu termināli rēķinā: summu uz termināli nosūta, izmantojot ievades lauku maksājuma kartītē (visa atlikusī summa, avanss vai pašrisks); ja rēķins ir pilnībā apmaksāts, poga vēlreiz izdrukā maksājuma kvīti",
+        "sumupApiKey": "SumUp API atslēga",
+        "sumupApiKey_help": "Slepenā API atslēga no SumUp paneļa (developer.sumup.com → API Keys), sākas ar sup_sk_",
+        "sumupMerchantCode": "Tirgotāja kods",
+        "sumupMerchantCode_help": "Tirgotāja identifikators no SumUp profila (piem., MCXXXXXX)",
+        "sumupPrintCopies": "Eksemplāri pēc maksājuma ar karti",
+        "sumupPrintCopies_help": "Rēķina izdruku skaits, kas pēc veiksmīga maksājuma terminālī automātiski tiek izveidots uz izvēlētā printera – ar kartes atzīmi un klienta kvīti (0 = bez automātiskas drukas, noklusējums 2)",
+        "sumupPairing": {
+            "title": "Sapārot termināli",
+            "description": "Savieno SumUp termināli (Solo) ar šo kontu, izmantojot Cloud API.",
+            "saveFirst": "Lūdzu, vispirms augstāk ievadiet un saglabājiet API atslēgu un tirgotāja kodu, pēc tam sapārojiet termināli.",
+            "hint": "Terminālī vispirms IZRAKSTIETIES (Iestatījumi → Par → Izrakstīties) — tikai tad parādās: Savienojumi → Wi-Fi → API → Savienot. Ievadiet šeit parādīto sapārošanas kodu.",
+            "codeLabel": "Sapārošanas kods",
+            "pairBtn": "Sapārot",
+            "unpairBtn": "Atvienot",
+            "current": "Sapārotais terminālis: {name}",
+            "none": "Vēl nav sapārots neviens terminālis.",
+            "success": "Terminālis veiksmīgi sapārots.",
+            "error": "Sapārošana neizdevās.",
+            "unpaired": "Terminālis atvienots."
+        },
+        "sumupAutoSend": "Sūtīt summu automātiski",
+        "sumupAutoSend_help": "Ja rēķins tiek izveidots no piedāvājuma vai pasūtījuma, atlikusī summa uzreiz tiek nosūtīta uz termināli (noklusējums: ieslēgts). Atverot esošus vai apmaksātus rēķinus, automātiska sūtīšana nekad nenotiek"
     },
     "add": "Pievienot",
     "add_fields": {

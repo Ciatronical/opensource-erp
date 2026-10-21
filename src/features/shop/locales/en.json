@@ -6,7 +6,8 @@
             "shopWithdrawals": "/shop/withdrawals",
             "shopChannels": "/shop/sales-channels",
             "shopShipping": "/shop/shipping-methods",
-            "shopAssortment": "/shop/assortment"
+            "shopAssortment": "/shop/assortment",
+            "shopKleinanzeigen": "/shop/kleinanzeigen"
         },
         "menu": {
             "title": "Shop",
@@ -207,7 +208,9 @@
                 "ended": "ended",
                 "error": "error",
                 "pending": "being transferred",
-                "none": "not yet transferred"
+                "none": "not yet transferred",
+                "draft": "draft",
+                "reserved": "reserved"
             },
             "sectionPage": "Product page",
             "editChannel": "Sales channel settings",
@@ -283,7 +286,8 @@
         "channels": {
             "hugoshop": "HugoShop",
             "ebay": "eBay",
-            "amazon": "Amazon"
+            "amazon": "Amazon",
+            "kleinanzeigen": "Kleinanzeigen"
         },
         "countryConfig": {
             "title": "Countries",
@@ -461,7 +465,34 @@
             "ASSORTMENT_NAME_TAKEN": "This name already exists.",
             "ASSORTMENT_NAME_INVALID": "No address can be built from this name – please use letters or digits.",
             "ASSORTMENT_NOT_FOUND": "The entry no longer exists. Please reload the view.",
-            "ASSORTMENT_CATEGORY_IN_USE": "The category is still assigned to items."
+            "ASSORTMENT_CATEGORY_IN_USE": "The category is still assigned to items.",
+            "KLEINANZEIGEN_NOT_OFFERED": "The item is not offered in this channel.",
+            "KLEINANZEIGEN_WORKER_OFF": "The Kleinanzeigen service is not enabled (company configuration → shop).",
+            "KLEINANZEIGEN_WORKER_DOWN": "The Kleinanzeigen service is unreachable. Is the service (oserp-kleinanzeigen) running?",
+            "KLEINANZEIGEN_UNAUTHORIZED": "The Kleinanzeigen service rejects the token — company configuration and service must hold the same value.",
+            "KLEINANZEIGEN_NOT_LOGGED_IN": "The service's browser is not logged in to Kleinanzeigen — log in from the channel card.",
+            "KLEINANZEIGEN_NO_LOGIN": "Enter email and password of the Kleinanzeigen account in the channel card.",
+            "KLEINANZEIGEN_BLOCKED": "Kleinanzeigen has temporarily blocked this connection's IP range. The service waits two hours, after which it usually works again — do not retry before.",
+            "KLEINANZEIGEN_CODE_REQUIRED": "Kleinanzeigen requires a verification code. Press “Log in” in the channel card under “Kleinanzeigen service” and enter the code from the email.",
+            "KLEINANZEIGEN_LOGIN_FAILED": "Login to Kleinanzeigen failed — check the credentials in the channel card.",
+            "KLEINANZEIGEN_AD_INCOMPLETE": "The ad is not complete yet.",
+            "KLEINANZEIGEN_FORM_VALIDATION": "Kleinanzeigen rejects the form.",
+            "KLEINANZEIGEN_CAPTCHA": "Kleinanzeigen shows a captcha. Start the service once with a visible browser (KA_HEADLESS=0) and solve it.",
+            "KLEINANZEIGEN_PACKAGE": "Kleinanzeigen offers no free Basis package here — the ad was not posted.",
+            "KLEINANZEIGEN_PAYMENT_REQUIRED": "Kleinanzeigen requires a payment for this ad — not posted automatically.",
+            "KLEINANZEIGEN_CATEGORY": "The category could not be selected — check the category path in the channel or the ad.",
+            "KLEINANZEIGEN_IMAGE_UPLOAD": "The images were not processed by Kleinanzeigen.",
+            "KLEINANZEIGEN_SUBMIT_UNCONFIRMED": "Posting was not confirmed — please check “My ads” on Kleinanzeigen and sync.",
+            "KLEINANZEIGEN_EXTEND_BUTTON_MISSING": "Extending is only possible in the last days before expiry.",
+            "KLEINANZEIGEN_LEAD_NOT_CONVERSATION": "This enquiry came by email — please reply on Kleinanzeigen.",
+            "KLEINANZEIGEN_NO_REPLY_BOX": "No input box found in the conversation.",
+            "KLEINANZEIGEN_NO_AD_ID": "Address or number of the ad is missing.",
+            "KLEINANZEIGEN_NO_CUSTOMER": "The invoice needs a buyer: pick a customer, enter a name or set a cash-sale customer in the channel.",
+            "KLEINANZEIGEN_NO_IMAGES": "The item has no images in this channel.",
+            "KLEINANZEIGEN_LEAD_NOT_FOUND": "This enquiry does not exist.",
+            "EMAIL_NOT_CONFIGURED": "The mailbox is not configured (company configuration → email).",
+            "MISSING_API_KEYS": "The Anthropic API key is not configured (company configuration → AI).",
+            "CLAUDE_API_ERROR": "The AI did not answer."
         },
         "orderStatus": {
             "open": "Open",
@@ -577,6 +608,251 @@
             "deleteGroupConfirm": "Delete group “{name}”? Its categories ({count}) remain and will be listed under “Sonstiges”.",
             "deleteCategoryConfirm": "Delete category “{name}”?",
             "categoryInUse": "The category “{name}” is still assigned to {count} items and cannot be deleted. Give these items another category first."
+        },
+        "kleinanzeigen": {
+            "title": "Kleinanzeigen",
+            "subtitle": "Turn slow stock into cash: prepare ads, post them, keep track of enquiries and sales",
+            "openBoard": "Open Kleinanzeigen board",
+            "auto": {
+                "title": "Post automatically",
+                "on": "Automatic (service)",
+                "down": "Service unreachable",
+                "postHint": "The Kleinanzeigen service logs in with the channel's account and posts the ad — title, text, price, settings and images as shown here.",
+                "postNow": "Post on Kleinanzeigen now",
+                "postBlocked": "Fill in the missing details first.",
+                "updateNow": "Update now",
+                "deleteNow": "Delete now",
+                "refreshNow": "Refresh",
+                "sync": "Sync",
+                "manualFeedback": "Or done by hand on Kleinanzeigen:",
+                "screenshot": "Screenshot from the service",
+                "posted": "Ad posted (no. {id}).",
+                "updated": "Ad updated (no. {id}).",
+                "deleted": "Ad deleted.",
+                "extended": "Ad extended.",
+                "republished": "Ad deleted and reposted — it ranks at the top again.",
+                "synced": "{fetched} ads on Kleinanzeigen, {ended} ended, {reserved} reserved, {active} online.",
+                "reply": "Reply",
+                "sendReply": "Send reply on Kleinanzeigen",
+                "replied": "Reply sent."
+            },
+            "openMyAds": "My ads on Kleinanzeigen",
+            "channelOff": "Channel switched off",
+            "channelOffHint": "The Kleinanzeigen channel is switched off. Online ads count as to be deleted; new ones can be prepared but not posted. Switch it on under Sales channels.",
+            "locationMissing": "The channel has no location (postcode and town). Kleinanzeigen requires one for every ad — enter it under Sales channels.",
+            "tabs": {
+                "suggestions": "Suggestions",
+                "drafts": "Drafts",
+                "online": "Online",
+                "leads": "Enquiries",
+                "sold": "Sold"
+            },
+            "figures": {
+                "online": "Ads online",
+                "onlineValue": "Stock value online",
+                "todo": "To do",
+                "leads": "Open enquiries",
+                "revenue30": "Revenue 30 days",
+                "capital": "Capital in suggestions"
+            },
+            "state": {
+                "draft": "Draft",
+                "active": "Online",
+                "reserved": "Reserved",
+                "ended": "Ended"
+            },
+            "todo": {
+                "update": "Update ad",
+                "delete": "Delete ad",
+                "refresh": "Refresh ad"
+            },
+            "todoHint": {
+                "update": "Price, title or text changed since posting. Edit the ad on Kleinanzeigen (copy text and price below), then press “Updated”.",
+                "delete": "No stock left, the item was deselected or the channel is off. Delete the ad on Kleinanzeigen, then press “Deleted”.",
+                "refresh": "The ad is older than the configured period. New ads rank higher on Kleinanzeigen: delete and repost or bump it, then press “Refreshed”."
+            },
+            "action": {
+                "updated": "Updated",
+                "refreshed": "Refreshed",
+                "reserved": "Reserved",
+                "unreserved": "Available again",
+                "sold": "Sold",
+                "ended": "Deleted"
+            },
+            "stateSaved": {
+                "online": "The ad is marked as online. The board watches it from now on.",
+                "updated": "Marked as updated.",
+                "refreshed": "Marked as refreshed.",
+                "reserved": "Marked as reserved.",
+                "unreserved": "Available again.",
+                "ended": "The ad is marked as deleted.",
+                "draft": "Back to draft.",
+                "removed": "Removed from the channel."
+            },
+            "priceType": {
+                "fixed": "Fixed price",
+                "negotiable": "Negotiable (VB)",
+                "giveaway": "Free"
+            },
+            "shipping": {
+                "pickup": "Pickup only",
+                "shipping": "Shipping only",
+                "both": "Shipping possible"
+            },
+            "condition": {
+                "new": "New",
+                "like_new": "Like new",
+                "very_good": "Very good",
+                "good": "Good",
+                "ok": "Acceptable",
+                "defective": "Defective"
+            },
+            "payment": {
+                "cash": "Cash",
+                "transfer": "Bank transfer",
+                "paypal": "PayPal",
+                "secure": "Secure payment"
+            },
+            "missing": {
+                "title": "Title missing",
+                "text": "Text missing",
+                "image": "No image",
+                "location": "Location missing"
+            },
+            "suggestions": {
+                "title": "What can be turned into cash",
+                "subtitle": "Stocked goods that tie up capital and do not move — sorted by tied-up capital and idle time",
+                "part": "Item",
+                "stock": "Stock",
+                "capital": "Tied-up capital",
+                "lastUse": "Last used",
+                "price": "Price on Kleinanzeigen",
+                "idle": "not for {monate} months",
+                "neverUsed": "never used",
+                "hasImages": "{anzahl} image(s) in a channel",
+                "noImages": "No image yet — ads without images do not sell",
+                "offer": "Offer",
+                "offerSelected": "Offer {anzahl} items",
+                "offered": "{anzahl} items prepared as drafts, {bilder} images copied.",
+                "empty": "No suggestions: either there are no stocked goods, or everything is already on Kleinanzeigen."
+            },
+            "drafts": {
+                "empty": "No drafts. Offer items from the suggestions or select the Kleinanzeigen channel in the item card.",
+                "ready": "Ready to post",
+                "post": "Post",
+                "remove": "Discard",
+                "removeConfirm": "Remove “{titel}” from the Kleinanzeigen channel?"
+            },
+            "online": {
+                "empty": "No ad online yet. Open a draft and post it on Kleinanzeigen.",
+                "days": "for {tage} days",
+                "stock": "Stock: {bestand} {einheit}",
+                "leads": "{anzahl} open enquiry(ies)"
+            },
+            "leads": {
+                "title": "Enquiries",
+                "subtitle": "Kleinanzeigen notifications from the mailbox",
+                "lastCheck": "Last check: {zeit}",
+                "openInbox": "Messages on Kleinanzeigen",
+                "fetch": "Fetch mailbox",
+                "fetched": "{fetched} mails seen, {imported} new enquiries, {matched} matched.",
+                "noMail": "The mailbox is not configured (company configuration → email). Enquiries cannot be fetched without it.",
+                "empty": "No enquiries.",
+                "unknownSender": "Unknown sender",
+                "about": "about",
+                "unassigned": "Not assigned to an ad",
+                "assign": "Assign ad",
+                "replySuggestion": "Suggested reply — paste on Kleinanzeigen",
+                "suggestReply": "Suggest reply",
+                "adGone": "There is no ad for this enquiry any more."
+            },
+            "leadStatus": {
+                "open": "Open",
+                "answered": "Answered",
+                "won": "Sold",
+                "lost": "Closed"
+            },
+            "leadAction": {
+                "answered": "Answered",
+                "lost": "Close",
+                "reopen": "Reopen"
+            },
+            "sold": {
+                "title": "Sales via Kleinanzeigen",
+                "subtitle": "Total: {betrag}",
+                "date": "Date",
+                "empty": "Nothing sold yet.",
+                "noInvoice": "no invoice"
+            },
+            "ad": {
+                "title": "Ad",
+                "adTitle": "Title (max. 65 characters)",
+                "adText": "Text",
+                "price": "Price",
+                "priceCardHint": "Whole euros, empty = channel price",
+                "priceType": "Price type",
+                "shipping": "Shipping",
+                "condition": "Condition",
+                "category": "Category on Kleinanzeigen",
+                "categoryHint": "As a reminder only: e.g. Auto, Rad & Boot › Autoteile & Reifen",
+                "location": "Location",
+                "images": "Images ({anzahl})",
+                "imagesZip": "All images as ZIP",
+                "imagesEdit": "Manage images",
+                "missing": "Still missing for an ad:",
+                "aiHint": "Hint for the AI (condition, specifics, audience)",
+                "aiWrite": "Let AI write it",
+                "aiDone": "Title and text applied — please review.",
+                "howTo": "How the ad gets to Kleinanzeigen",
+                "step1": "Open “Anzeige aufgeben” on Kleinanzeigen (the channel's account).",
+                "openPost": "Post ad",
+                "step2": "Copy title, text and price and paste them there. Choose category, condition and shipping as shown here.",
+                "step3": "Upload the images (download the ZIP below and unpack it, or drag the images one by one).",
+                "step4": "After posting, paste the ad's address here:",
+                "url": "Address or number of the ad",
+                "urlPlaceholder": "https://www.kleinanzeigen.de/s-anzeige/…",
+                "isOnline": "Ad is online",
+                "onlineTitle": "Ad on Kleinanzeigen",
+                "onlineSince": "Online since {datum} ({tage} days)",
+                "adId": "Ad number {id}",
+                "openLeads": "{anzahl} open enquiry(ies)",
+                "openAd": "Open ad",
+                "feedback": "Feedback",
+                "copyHint": "For editing on Kleinanzeigen:",
+                "copy": "Copy",
+                "copyTitle": "Title",
+                "copyText": "Text",
+                "copied": "Copied to the clipboard.",
+                "copyFailed": "The clipboard is not available — please select and copy the text.",
+                "save": "Save",
+                "saved": "Ad saved.",
+                "unsaved": "Changes not saved yet"
+            },
+            "sell": {
+                "title": "Record sale",
+                "qty": "Quantity",
+                "onhand": "Stock: {bestand}",
+                "price": "Price per unit",
+                "priceHint": "Gross price achieved",
+                "payment": "Payment",
+                "total": "Total",
+                "withInvoice": "Create and post invoice",
+                "withInvoiceHint": "Gross invoice, posting to the ledger and stock booking from the shop bin. The payment is booked by cash register or bank like for any invoice.",
+                "buyer": "Buyer",
+                "existingCustomer": "Existing customer",
+                "typeToSearch": "Enter at least 3 characters",
+                "noCustomer": "No customer found",
+                "newName": "Name (new customer)",
+                "email": "Email",
+                "phone": "Phone",
+                "city": "Town",
+                "buyerHint": "Without details the channel's cash-sale customer applies (Sales channels → Kleinanzeigen). A known customer is recognised by email.",
+                "note": "Note",
+                "confirm": "Sold",
+                "done": "Sale recorded.",
+                "doneInvoice": "Sale recorded, invoice {nummer} created.",
+                "notPosted": "The invoice was created but not posted: {grund}"
+            }
         }
     }
 }

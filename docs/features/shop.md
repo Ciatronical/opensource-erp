@@ -1,6 +1,6 @@
 ---
 title: Shop
-summary: Webshop-Anbindung: HugoShop-Webseite, Verkaufskanäle, Versand, PayPal, Widerruf, eBay
+summary: Webshop-Anbindung: HugoShop-Webseite, Verkaufskanäle, Versand, PayPal, Widerruf, eBay, Kleinanzeigen
 group: extension
 extension: shop
 category: Verkauf
@@ -16,7 +16,7 @@ Aktivieren unter **Einstellungen → Features → Erweiterungen → Shop**; dana
 
 ## Verkaufskanäle
 
-Ein Artikel mit „Im Shop anbieten" wird über einen oder mehrere **Verkaufskanäle** angeboten. Kanalarten sind **HugoShop** (eigene Webseite) und **eBay**; je Firma sind beliebig viele Kanäle je Art möglich, jeder mit eigenen Einstellungen.
+Ein Artikel mit „Im Shop anbieten" wird über einen oder mehrere **Verkaufskanäle** angeboten. Kanalarten sind **HugoShop** (eigene Webseite), **eBay** und **Kleinanzeigen**; je Firma sind beliebig viele Kanäle je Art möglich, jeder mit eigenen Einstellungen.
 
 - Je Kanal: Preisaufschlag (Prozent oder Betrag, wahlweise Rundung auf ,99), eigener Titel und Beschreibung je Artikel, eigene Bilderverwaltung, „Momentan nicht verfügbar"
 - Grundpreis ist der Verkaufspreis des Artikels; brutto oder netto je nach Einstellung
@@ -36,6 +36,10 @@ Die Webseite selbst — Hugo-Projekt, Theme, Inhalte — gehört dem Betreiber. 
 ### eBay
 
 Angebote, Bilder, Bestellimport samt Kundenzuordnung, Rechnung und Buchung, Cron-Abruf, Verbindungstest und Statusanzeige. Menge = Lagerbestand; bei 0 bleibt das Angebot als „ausverkauft" stehen.
+
+### Kleinanzeigen
+
+Assistierter Kanal für Kleinanzeigen.de (keine Schnittstelle): Vorschläge aus Ladenhütern, fertig vorbereitete Anzeigen mit KI-Text, Einstellen per Kopieren mit Bilder-ZIP, Wachen über Preis, Bestand und Auffrischen, Anfragen aus dem Postfach, Verkauf mit Rechnung und Lagerbuchung, Feed für Sync-Werkzeuge. Eigene Seite: [Kleinanzeigen](kleinanzeigen.md).
 
 ## Versand
 

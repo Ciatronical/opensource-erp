@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP accetta {size} per richiesta (post_max_size)",
             "phpIsBottleneck": "PHP è il limite più stretto: aumentare post_max_size e upload_max_filesize in php.ini, poi rilevare di nuovo",
             "error": "Impossibile rilevare il limite"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Attiva SumUp",
+        "sumupEnabled_help": "Abilita il terminale di pagamento nella fattura: invia un importo al terminale tramite il campo di inserimento nella scheda pagamento (intero importo residuo, acconto o franchigia); su una fattura interamente pagata il pulsante ristampa la ricevuta di pagamento",
+        "sumupApiKey": "Chiave API SumUp",
+        "sumupApiKey_help": "Chiave API segreta dalla dashboard SumUp (developer.sumup.com → API Keys), inizia con sup_sk_",
+        "sumupMerchantCode": "Codice esercente",
+        "sumupMerchantCode_help": "Identificativo esercente dal profilo SumUp (es. MCXXXXXX)",
+        "sumupPrintCopies": "Copie dopo il pagamento con carta",
+        "sumupPrintCopies_help": "Numero di stampe della fattura generate automaticamente sulla stampante selezionata dopo un pagamento riuscito al terminale – con annotazione del pagamento con carta e ricevuta cliente (0 = nessuna stampa automatica, predefinito 2)",
+        "sumupPairing": {
+            "title": "Associa terminale",
+            "description": "Collega un terminale SumUp (Solo) a questo account tramite la Cloud API.",
+            "saveFirst": "Inserire e salvare prima la chiave API e il codice esercente qui sopra, poi associare il terminale.",
+            "hint": "Sul terminale, prima DISCONNETTERSI (Impostazioni → Info → Disconnetti) — solo allora compare: Connessioni → Wi-Fi → API → Connetti. Inserire qui il codice di associazione visualizzato.",
+            "codeLabel": "Codice di associazione",
+            "pairBtn": "Associa",
+            "unpairBtn": "Dissocia",
+            "current": "Terminale associato: {name}",
+            "none": "Nessun terminale ancora associato.",
+            "success": "Terminale associato correttamente.",
+            "error": "Associazione non riuscita.",
+            "unpaired": "Terminale dissociato."
+        },
+        "sumupAutoSend": "Invia importo automaticamente",
+        "sumupAutoSend_help": "Quando una fattura viene creata da un preventivo o da un ordine, l'importo residuo viene inviato subito al terminale (predefinito: attivo). All'apertura di fatture esistenti o già pagate non viene mai inviato automaticamente"
     },
     "add": "Aggiungi",
     "add_fields": {

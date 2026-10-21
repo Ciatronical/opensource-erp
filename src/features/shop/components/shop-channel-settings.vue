@@ -63,6 +63,8 @@
 
                     <!-- eBay: Verbindungstest, Bestellabruf, Stand dieses Kanals -->
                     <EbayStatusConfig v-if="feld.action === 'ebayPanel'" :channel-id="channelId" class="mt-2" />
+                    <!-- Kleinanzeigen: Board, Anfragen holen, Feed-Adressen -->
+                    <KleinanzeigenStatusConfig v-if="feld.action === 'kleinanzeigenPanel'" :channel-id="channelId" class="mt-2" />
 
                     <!-- Verbindung zu HugoCMS prüfen: mit den Werten im Formular,
                          auch wenn sie noch nicht gespeichert sind -->
@@ -207,10 +209,11 @@ import { shopFehler } from '../composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
 
 const EbayStatusConfig = defineAsyncComponent(() => import('./shop-ebay-status.vue'))
+const KleinanzeigenStatusConfig = defineAsyncComponent(() => import('./shop-kleinanzeigen-status.vue'))
 
 const props = defineProps({
     channelId: { type: Number, required: true },
-    /** Art: hugoshop oder ebay */
+    /** Art: hugoshop, ebay oder kleinanzeigen */
     type: { type: String, required: true },
     /** settings des Kanals, wie getShopChannels sie liefert */
     settings: { type: Object, default: () => ({}) },

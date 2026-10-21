@@ -15,7 +15,7 @@
                 <v-text-field
                     :model-value="terminalAmountInput"
                     :label="t('FakturaView.faktura.terminal.amountLabel')"
-                    :disabled="terminalBusy"
+                    :disabled="terminalBusy || fullyPaid"
                     suffix="€"
                     variant="outlined"
                     density="compact"
@@ -30,12 +30,12 @@
                     color="primary"
                     variant="flat"
                     size="small"
-                    prepend-icon="mdi-send"
+                    :prepend-icon="fullyPaid ? 'mdi-printer' : 'mdi-send'"
                     :loading="terminal.status === 'sending'"
                     :disabled="terminalBusy"
                     @click="sendToTerminal"
                 >
-                    {{ t('FakturaView.faktura.terminal.send') }}
+                    {{ t(fullyPaid ? 'FakturaView.faktura.terminal.reprint' : 'FakturaView.faktura.terminal.send') }}
                 </v-btn>
                 <v-btn
                     v-if="terminalBusy"
@@ -342,7 +342,7 @@ export default defineComponent({
             default: () => []
         }
     },
-    emits: ['update:modelValue', 'save', 'terminal-send', 'terminal-cancel'],
+    emits: ['update:modelValue', 'save', 'terminal-send', 'terminal-cancel', 'terminal-reprint'],
     setup(props, { emit }) {
         const { t, locale } = useI18n()
         const router = useRouter()
@@ -982,8 +982,16 @@ export default defineComponent({
 
         const terminalBusy = computed(() => ['sending', 'waiting'].includes(props.terminal?.status))
 
+        // Vollständig bezahlt (Zahlungen + Kartenzahlungen decken den Bruttobetrag):
+        // das Betragsfeld nimmt nichts mehr an, der Knopf druckt den Zahlungsbeleg erneut.
+        const fullyPaid = computed(() => (props.grossAmount || 0) > 0 && remainingAmount.value <= 0)
+
         function sendToTerminal() {
             if (!props.terminal || terminalBusy.value) return
+            if (fullyPaid.value) {
+                emit('terminal-reprint')
+                return
+            }
             const parsed = parseNumber(terminalAmountInput.value, currentLocale.value)
             if (parsed === null || !Number.isFinite(parsed) || parsed <= 0) {
                 toasts.warning(t('FakturaView.faktura.terminal.invalidAmount'))
@@ -1033,6 +1041,7 @@ export default defineComponent({
             payments,
             terminalAmountInput,
             terminalBusy,
+            fullyPaid,
             terminalColor,
             terminalStatusText,
             onTerminalAmountInput,

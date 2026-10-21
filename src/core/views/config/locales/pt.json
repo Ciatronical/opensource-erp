@@ -1012,7 +1012,32 @@
             "phpLimit": "O PHP aceita {size} por pedido (post_max_size)",
             "phpIsBottleneck": "O PHP é o limite mais apertado: aumente post_max_size e upload_max_filesize no php.ini e detete novamente",
             "error": "Não foi possível detetar o limite"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Ativar SumUp",
+        "sumupEnabled_help": "Ativa o terminal de pagamento na fatura: envie um montante para o terminal através do campo de introdução no cartão de pagamento (montante total em aberto, sinal ou franquia); numa fatura totalmente paga, o botão imprime novamente o comprovativo de pagamento",
+        "sumupApiKey": "Chave API da SumUp",
+        "sumupApiKey_help": "Chave API secreta do painel da SumUp (developer.sumup.com → API Keys), começa por sup_sk_",
+        "sumupMerchantCode": "Código de comerciante",
+        "sumupMerchantCode_help": "Identificador de comerciante do seu perfil SumUp (p. ex. MCXXXXXX)",
+        "sumupPrintCopies": "Exemplares após pagamento com cartão",
+        "sumupPrintCopies_help": "Número de impressões da fatura geradas automaticamente na impressora selecionada após um pagamento bem-sucedido no terminal – com indicação do pagamento com cartão e comprovativo do cliente (0 = sem impressão automática, predefinição 2)",
+        "sumupPairing": {
+            "title": "Emparelhar terminal",
+            "description": "Liga um terminal SumUp (Solo) a esta conta através da Cloud API.",
+            "saveFirst": "Introduza e guarde primeiro a chave API e o código de comerciante acima e, em seguida, emparelhe o terminal.",
+            "hint": "No terminal, primeiro TERMINAR SESSÃO (Definições → Informações → Terminar sessão) — só então aparece: Ligações → Wi-Fi → API → Ligar. Introduza aqui o código de emparelhamento apresentado.",
+            "codeLabel": "Código de emparelhamento",
+            "pairBtn": "Emparelhar",
+            "unpairBtn": "Desemparelhar",
+            "current": "Terminal emparelhado: {name}",
+            "none": "Ainda não há nenhum terminal emparelhado.",
+            "success": "Terminal emparelhado com sucesso.",
+            "error": "Falha no emparelhamento.",
+            "unpaired": "Terminal desemparelhado."
+        },
+        "sumupAutoSend": "Enviar montante automaticamente",
+        "sumupAutoSend_help": "Quando uma fatura é criada a partir de um orçamento ou de uma encomenda, o montante em aberto é enviado imediatamente para o terminal (predefinição: ligado). Ao abrir faturas existentes ou já pagas nunca é enviado automaticamente"
     },
     "add": "Adicionar",
     "add_fields": {

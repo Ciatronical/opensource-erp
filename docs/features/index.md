@@ -45,6 +45,7 @@
 | Feature | Beschreibung |
 |---------|-------------|
 | [Shop](shop.md) | HugoShop-Webseite, Verkaufskanäle, Versand, PayPal, Widerruf, eBay |
+| [Kleinanzeigen](kleinanzeigen.md) | Verkaufskanal Kleinanzeigen.de: Ladenhüter finden, Anzeigen vorbereiten und einstellen, Anfragen und Verkäufe |
 
 ## Einrichtung & Setup
 

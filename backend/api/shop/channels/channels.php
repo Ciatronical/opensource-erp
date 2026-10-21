@@ -22,7 +22,7 @@
 // sie in sales_channel_shop steht.
 
 /** Kanäle mit Modul, in der Reihenfolge der Umsetzung */
-const SHOP_CHANNEL_TYPES = ['hugoshop', 'ebay'];
+const SHOP_CHANNEL_TYPES = ['hugoshop', 'ebay', 'kleinanzeigen'];
 
 foreach (SHOP_CHANNEL_TYPES as $shopKanalArt) {
     require_once __DIR__.'/'.$shopKanalArt.'.php';

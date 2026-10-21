@@ -81,6 +81,7 @@
             "specialTools": "Special tool matching",
             "gutachtenImport": "Appraisal import",
             "gutachtenReview": "Weroni legal review (appraisal)",
+            "kleinanzeigen": "Kleinanzeigen (ad text, reply)",
             "accounting": "Document recognition",
             "businessCard": "Business card scan",
             "phoneSearch": "Phone lookup",

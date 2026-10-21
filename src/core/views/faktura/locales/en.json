@@ -419,7 +419,11 @@
                 "invalidAmount": "Please enter an amount greater than 0",
                 "cardPaymentRow": "Card payment at the terminal",
                 "pendingPayout": "booked with the SumUp payout in banking",
-                "openAfterCard": "Open amount after card payment"
+                "openAfterCard": "Open amount after card payment",
+                "reprint": "Print payment receipt again",
+                "fullyPaid": "Invoice paid in full",
+                "alreadyPaid": "Card payment of {amount} € had already been made – nothing sent again",
+                "synced": "Card payment of {amount} € added from SumUp"
             },
             "paymentBooked": "Payment booked successfully",
             "paymentError": "Error booking payment",

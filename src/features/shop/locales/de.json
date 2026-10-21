@@ -6,7 +6,8 @@
             "shopWithdrawals": "/shop/widerrufe",
             "shopChannels": "/shop/verkaufskanaele",
             "shopShipping": "/shop/versandarten",
-            "shopAssortment": "/shop/sortiment"
+            "shopAssortment": "/shop/sortiment",
+            "shopKleinanzeigen": "/shop/kleinanzeigen"
         },
         "menu": {
             "title": "Shop",
@@ -207,7 +208,9 @@
                 "ended": "beendet",
                 "error": "Fehler",
                 "pending": "wird übertragen",
-                "none": "noch nicht übertragen"
+                "none": "noch nicht übertragen",
+                "draft": "Entwurf",
+                "reserved": "reserviert"
             },
             "sectionPage": "Produktseite",
             "editChannel": "Einstellungen des Verkaufskanals",
@@ -283,7 +286,8 @@
         "channels": {
             "hugoshop": "HugoShop",
             "ebay": "eBay",
-            "amazon": "Amazon"
+            "amazon": "Amazon",
+            "kleinanzeigen": "Kleinanzeigen"
         },
         "countryConfig": {
             "title": "Länder",
@@ -461,7 +465,34 @@
             "ASSORTMENT_NAME_TAKEN": "Diesen Namen gibt es schon.",
             "ASSORTMENT_NAME_INVALID": "Aus diesem Namen entsteht keine Adresse – bitte Buchstaben oder Ziffern verwenden.",
             "ASSORTMENT_NOT_FOUND": "Der Eintrag existiert nicht mehr. Bitte die Ansicht neu laden.",
-            "ASSORTMENT_CATEGORY_IN_USE": "Die Kategorie ist noch Artikeln zugeordnet."
+            "ASSORTMENT_CATEGORY_IN_USE": "Die Kategorie ist noch Artikeln zugeordnet.",
+            "KLEINANZEIGEN_NOT_OFFERED": "Der Artikel wird in diesem Kanal nicht angeboten.",
+            "KLEINANZEIGEN_WORKER_OFF": "Der Kleinanzeigen-Dienst ist nicht eingeschaltet (Firmenkonfiguration → Shop).",
+            "KLEINANZEIGEN_WORKER_DOWN": "Der Kleinanzeigen-Dienst ist nicht erreichbar. Läuft der Dienst (oserp-kleinanzeigen)?",
+            "KLEINANZEIGEN_UNAUTHORIZED": "Der Kleinanzeigen-Dienst lehnt das Token ab — in Firmenkonfiguration und Dienst muss dasselbe stehen.",
+            "KLEINANZEIGEN_NOT_LOGGED_IN": "Der Browser des Dienstes ist nicht bei Kleinanzeigen angemeldet — in der Kanalkarte anmelden.",
+            "KLEINANZEIGEN_NO_LOGIN": "E-Mail und Passwort des Kleinanzeigen-Kontos in der Kanalkarte hinterlegen.",
+            "KLEINANZEIGEN_BLOCKED": "Kleinanzeigen hat den IP-Bereich dieses Anschlusses vorübergehend gesperrt. Der Dienst wartet zwei Stunden, dann klappt es meist wieder — bis dahin nicht wiederholen.",
+            "KLEINANZEIGEN_CODE_REQUIRED": "Kleinanzeigen verlangt einen Bestätigungscode. In der Kanalkarte unter „Kleinanzeigen-Dienst“ auf „Anmelden“ drücken und den Code aus der Mail eintragen.",
+            "KLEINANZEIGEN_LOGIN_FAILED": "Die Anmeldung bei Kleinanzeigen ist fehlgeschlagen — Zugangsdaten in der Kanalkarte prüfen.",
+            "KLEINANZEIGEN_AD_INCOMPLETE": "Die Anzeige ist noch nicht vollständig.",
+            "KLEINANZEIGEN_FORM_VALIDATION": "Kleinanzeigen lehnt das Formular ab.",
+            "KLEINANZEIGEN_CAPTCHA": "Kleinanzeigen zeigt ein Captcha. Den Dienst einmal sichtbar starten (KA_HEADLESS=0) und das Captcha lösen.",
+            "KLEINANZEIGEN_PACKAGE": "Kleinanzeigen bietet hier kein kostenloses Basis-Paket an — die Anzeige wurde nicht eingestellt.",
+            "KLEINANZEIGEN_PAYMENT_REQUIRED": "Kleinanzeigen verlangt eine Zahlung für diese Anzeige — nicht automatisch eingestellt.",
+            "KLEINANZEIGEN_CATEGORY": "Die Kategorie konnte nicht gewählt werden — Kategoriepfad im Kanal oder in der Anzeige prüfen.",
+            "KLEINANZEIGEN_IMAGE_UPLOAD": "Die Bilder wurden bei Kleinanzeigen nicht verarbeitet.",
+            "KLEINANZEIGEN_SUBMIT_UNCONFIRMED": "Das Einstellen wurde nicht bestätigt — bitte „Meine Anzeigen“ bei Kleinanzeigen prüfen und abgleichen.",
+            "KLEINANZEIGEN_EXTEND_BUTTON_MISSING": "Verlängern geht nur in den letzten Tagen vor Ablauf.",
+            "KLEINANZEIGEN_LEAD_NOT_CONVERSATION": "Diese Anfrage kam per E-Mail — bitte bei Kleinanzeigen antworten.",
+            "KLEINANZEIGEN_NO_REPLY_BOX": "Kein Eingabefeld in der Unterhaltung gefunden.",
+            "KLEINANZEIGEN_NO_AD_ID": "Adresse oder Nummer der Anzeige fehlt.",
+            "KLEINANZEIGEN_NO_CUSTOMER": "Für die Rechnung fehlt der Käufer: Kunde wählen, Namen eingeben oder einen Barverkaufskunden im Kanal hinterlegen.",
+            "KLEINANZEIGEN_NO_IMAGES": "Der Artikel hat in diesem Kanal keine Bilder.",
+            "KLEINANZEIGEN_LEAD_NOT_FOUND": "Diese Anfrage gibt es nicht.",
+            "EMAIL_NOT_CONFIGURED": "Das Postfach ist nicht eingerichtet (Firmenkonfiguration → E-Mail).",
+            "MISSING_API_KEYS": "Der Anthropic-API-Schlüssel ist nicht hinterlegt (Firmenkonfiguration → KI).",
+            "CLAUDE_API_ERROR": "Die KI hat nicht geantwortet."
         },
         "orderStatus": {
             "open": "Offen",
@@ -577,6 +608,251 @@
             "deleteGroupConfirm": "Gruppe „{name}“ löschen? Ihre Kategorien ({count}) bleiben und stehen danach unter „Sonstiges“.",
             "deleteCategoryConfirm": "Kategorie „{name}“ löschen?",
             "categoryInUse": "Die Kategorie „{name}“ ist noch {count} Artikeln zugeordnet und kann nicht gelöscht werden. Zuerst den Artikeln eine andere Kategorie geben."
+        },
+        "kleinanzeigen": {
+            "title": "Kleinanzeigen",
+            "subtitle": "Ladenhüter zu Geld machen: Anzeigen vorbereiten, einstellen, Anfragen und Verkäufe im Blick",
+            "openBoard": "Kleinanzeigen-Board öffnen",
+            "auto": {
+                "title": "Automatisch einstellen",
+                "on": "Automatisch (Dienst)",
+                "down": "Dienst nicht erreichbar",
+                "postHint": "Der Kleinanzeigen-Dienst meldet sich mit dem Konto des Kanals an und stellt die Anzeige ein — Titel, Text, Preis, Vorgaben und Bilder wie hier gezeigt.",
+                "postNow": "Jetzt bei Kleinanzeigen einstellen",
+                "postBlocked": "Erst die fehlenden Angaben ergänzen.",
+                "updateNow": "Jetzt aktualisieren",
+                "deleteNow": "Jetzt löschen",
+                "refreshNow": "Auffrischen",
+                "sync": "Abgleichen",
+                "manualFeedback": "Oder von Hand bei Kleinanzeigen erledigt:",
+                "screenshot": "Bildschirmfoto des Dienstes",
+                "posted": "Anzeige eingestellt (Nr. {id}).",
+                "updated": "Anzeige aktualisiert (Nr. {id}).",
+                "deleted": "Anzeige gelöscht.",
+                "extended": "Anzeige verlängert.",
+                "republished": "Anzeige gelöscht und neu eingestellt — sie steht wieder oben.",
+                "synced": "{fetched} Anzeigen bei Kleinanzeigen, {ended} beendet, {reserved} reserviert, {active} online.",
+                "reply": "Antwort",
+                "sendReply": "Antwort bei Kleinanzeigen senden",
+                "replied": "Antwort gesendet."
+            },
+            "openMyAds": "Meine Anzeigen bei Kleinanzeigen",
+            "channelOff": "Kanal abgeschaltet",
+            "channelOffHint": "Der Kleinanzeigen-Kanal ist abgeschaltet. Online-Anzeigen gelten als zu löschen, neue lassen sich vorbereiten, aber nicht einstellen. Einschalten unter Verkaufskanäle.",
+            "locationMissing": "Dem Kanal fehlt der Standort (PLZ und Ort). Kleinanzeigen verlangt ihn für jede Anzeige — unter Verkaufskanäle eintragen.",
+            "tabs": {
+                "suggestions": "Vorschläge",
+                "drafts": "Entwürfe",
+                "online": "Online",
+                "leads": "Anfragen",
+                "sold": "Verkauft"
+            },
+            "figures": {
+                "online": "Anzeigen online",
+                "onlineValue": "Warenwert online",
+                "todo": "Zu tun",
+                "leads": "Offene Anfragen",
+                "revenue30": "Umsatz 30 Tage",
+                "capital": "Kapital in Vorschlägen"
+            },
+            "state": {
+                "draft": "Entwurf",
+                "active": "Online",
+                "reserved": "Reserviert",
+                "ended": "Beendet"
+            },
+            "todo": {
+                "update": "Anzeige aktualisieren",
+                "delete": "Anzeige löschen",
+                "refresh": "Anzeige auffrischen"
+            },
+            "todoHint": {
+                "update": "Preis, Titel oder Text haben sich seit dem Einstellen geändert. Die Anzeige bei Kleinanzeigen bearbeiten (Text und Preis unten kopieren) und danach „Aktualisiert“ drücken.",
+                "delete": "Kein Bestand mehr, der Artikel ist abgewählt oder der Kanal ist aus. Die Anzeige bei Kleinanzeigen löschen und danach „Gelöscht“ drücken.",
+                "refresh": "Die Anzeige ist älter als die eingestellte Frist. Neue Anzeigen stehen bei Kleinanzeigen weiter oben: löschen und neu einstellen oder „nach oben schieben“, danach „Aufgefrischt“ drücken."
+            },
+            "action": {
+                "updated": "Aktualisiert",
+                "refreshed": "Aufgefrischt",
+                "reserved": "Reserviert",
+                "unreserved": "Wieder frei",
+                "sold": "Verkauft",
+                "ended": "Gelöscht"
+            },
+            "stateSaved": {
+                "online": "Die Anzeige ist als online vermerkt. Ab jetzt wacht das Board darüber.",
+                "updated": "Als aktualisiert vermerkt.",
+                "refreshed": "Als aufgefrischt vermerkt.",
+                "reserved": "Als reserviert vermerkt.",
+                "unreserved": "Wieder frei.",
+                "ended": "Die Anzeige ist als gelöscht vermerkt.",
+                "draft": "Zurück auf Entwurf.",
+                "removed": "Aus dem Kanal genommen."
+            },
+            "priceType": {
+                "fixed": "Festpreis",
+                "negotiable": "Verhandlungsbasis (VB)",
+                "giveaway": "Zu verschenken"
+            },
+            "shipping": {
+                "pickup": "Nur Abholung",
+                "shipping": "Nur Versand",
+                "both": "Versand möglich"
+            },
+            "condition": {
+                "new": "Neu",
+                "like_new": "Wie neu",
+                "very_good": "Sehr gut",
+                "good": "Gut",
+                "ok": "In Ordnung",
+                "defective": "Defekt"
+            },
+            "payment": {
+                "cash": "Bar",
+                "transfer": "Überweisung",
+                "paypal": "PayPal",
+                "secure": "Sicher bezahlen"
+            },
+            "missing": {
+                "title": "Titel fehlt",
+                "text": "Text fehlt",
+                "image": "Kein Bild",
+                "location": "Standort fehlt"
+            },
+            "suggestions": {
+                "title": "Was sich zu Geld machen lässt",
+                "subtitle": "Ware mit Bestand, die Kapital bindet und sich nicht bewegt — sortiert nach Kapitalbindung und Liegezeit",
+                "part": "Artikel",
+                "stock": "Bestand",
+                "capital": "Gebundenes Kapital",
+                "lastUse": "Zuletzt verwendet",
+                "price": "Preis bei Kleinanzeigen",
+                "idle": "seit {monate} Monaten nicht",
+                "neverUsed": "nie verwendet",
+                "hasImages": "{anzahl} Bild(er) in einem Kanal",
+                "noImages": "Noch kein Bild — Anzeigen ohne Bild bringen nichts",
+                "offer": "Anbieten",
+                "offerSelected": "{anzahl} Artikel anbieten",
+                "offered": "{anzahl} Artikel als Entwurf vorbereitet, {bilder} Bilder übernommen.",
+                "empty": "Keine Vorschläge: Entweder gibt es keine Ware mit Bestand, oder alles ist schon bei Kleinanzeigen."
+            },
+            "drafts": {
+                "empty": "Keine Entwürfe. Aus den Vorschlägen Artikel anbieten oder in der Artikelkarte den Kanal Kleinanzeigen wählen.",
+                "ready": "Bereit zum Einstellen",
+                "post": "Einstellen",
+                "remove": "Verwerfen",
+                "removeConfirm": "„{titel}“ aus dem Kleinanzeigen-Kanal nehmen?"
+            },
+            "online": {
+                "empty": "Noch keine Anzeige online. Entwürfe öffnen und bei Kleinanzeigen einstellen.",
+                "days": "seit {tage} Tagen",
+                "stock": "Bestand: {bestand} {einheit}",
+                "leads": "{anzahl} offene Anfrage(n)"
+            },
+            "leads": {
+                "title": "Anfragen",
+                "subtitle": "Benachrichtigungen von Kleinanzeigen aus dem Postfach",
+                "lastCheck": "Letzter Abruf: {zeit}",
+                "openInbox": "Nachrichten bei Kleinanzeigen",
+                "fetch": "Postfach abrufen",
+                "fetched": "{fetched} Mails gesehen, {imported} Anfragen neu, {matched} zugeordnet.",
+                "noMail": "Das Postfach ist nicht eingerichtet (Firmenkonfiguration → E-Mail). Ohne Postfach lassen sich Anfragen nicht abrufen.",
+                "empty": "Keine Anfragen.",
+                "unknownSender": "Unbekannter Absender",
+                "about": "zu",
+                "unassigned": "Keiner Anzeige zugeordnet",
+                "assign": "Anzeige zuordnen",
+                "replySuggestion": "Antwortvorschlag — bei Kleinanzeigen einfügen",
+                "suggestReply": "Antwort vorschlagen",
+                "adGone": "Zu dieser Anfrage gibt es keine Anzeige mehr."
+            },
+            "leadStatus": {
+                "open": "Offen",
+                "answered": "Beantwortet",
+                "won": "Verkauft",
+                "lost": "Erledigt"
+            },
+            "leadAction": {
+                "answered": "Beantwortet",
+                "lost": "Erledigt",
+                "reopen": "Wieder öffnen"
+            },
+            "sold": {
+                "title": "Verkäufe über Kleinanzeigen",
+                "subtitle": "Gesamt: {betrag}",
+                "date": "Datum",
+                "empty": "Noch nichts verkauft.",
+                "noInvoice": "ohne Rechnung"
+            },
+            "ad": {
+                "title": "Anzeige",
+                "adTitle": "Titel (höchstens 65 Zeichen)",
+                "adText": "Text",
+                "price": "Preis",
+                "priceCardHint": "Ganze Euro, leer = Preis des Kanals",
+                "priceType": "Preisart",
+                "shipping": "Versand",
+                "condition": "Zustand",
+                "category": "Kategorie bei Kleinanzeigen",
+                "categoryHint": "Nur als Gedächtnisstütze: z. B. Auto, Rad & Boot › Autoteile & Reifen",
+                "location": "Standort",
+                "images": "Bilder ({anzahl})",
+                "imagesZip": "Alle Bilder als ZIP",
+                "imagesEdit": "Bilder pflegen",
+                "missing": "Für eine Anzeige fehlt noch:",
+                "aiHint": "Hinweis für die KI (Zustand, Besonderheiten, Zielgruppe)",
+                "aiWrite": "Text schreiben lassen",
+                "aiDone": "Titel und Text übernommen — bitte prüfen.",
+                "howTo": "So kommt die Anzeige zu Kleinanzeigen",
+                "step1": "Bei Kleinanzeigen „Anzeige aufgeben“ öffnen (Konto des Kanals).",
+                "openPost": "Anzeige aufgeben",
+                "step2": "Titel, Text und Preis kopieren und dort einfügen. Kategorie, Zustand und Versand wie hier angegeben wählen.",
+                "step3": "Bilder hochladen (ZIP unten herunterladen und entpacken, oder die Bilder einzeln ziehen).",
+                "step4": "Nach dem Einstellen die Adresse der Anzeige hier einfügen:",
+                "url": "Adresse oder Nummer der Anzeige",
+                "urlPlaceholder": "https://www.kleinanzeigen.de/s-anzeige/…",
+                "isOnline": "Anzeige ist online",
+                "onlineTitle": "Anzeige bei Kleinanzeigen",
+                "onlineSince": "Online seit {datum} ({tage} Tage)",
+                "adId": "Anzeigennummer {id}",
+                "openLeads": "{anzahl} offene Anfrage(n)",
+                "openAd": "Anzeige öffnen",
+                "feedback": "Rückmeldung",
+                "copyHint": "Zum Bearbeiten bei Kleinanzeigen:",
+                "copy": "Kopieren",
+                "copyTitle": "Titel",
+                "copyText": "Text",
+                "copied": "In die Zwischenablage kopiert.",
+                "copyFailed": "Die Zwischenablage ist nicht erreichbar — bitte den Text markieren und kopieren.",
+                "save": "Speichern",
+                "saved": "Anzeige gespeichert.",
+                "unsaved": "Änderungen noch nicht gespeichert"
+            },
+            "sell": {
+                "title": "Verkauf festhalten",
+                "qty": "Menge",
+                "onhand": "Bestand: {bestand}",
+                "price": "Preis je Einheit",
+                "priceHint": "Erzielter Bruttopreis",
+                "payment": "Zahlart",
+                "total": "Gesamt",
+                "withInvoice": "Rechnung anlegen und buchen",
+                "withInvoiceHint": "Rechnung brutto, Buchung ins Hauptbuch und Lagerbuchung vom Shop-Lagerplatz. Die Zahlung bucht Kasse oder Bank wie bei jeder Rechnung.",
+                "buyer": "Käufer",
+                "existingCustomer": "Bestehender Kunde",
+                "typeToSearch": "Mindestens 3 Zeichen eingeben",
+                "noCustomer": "Kein Kunde gefunden",
+                "newName": "Name (neuer Kunde)",
+                "email": "E-Mail",
+                "phone": "Telefon",
+                "city": "Ort",
+                "buyerHint": "Ohne Angabe gilt der Barverkaufskunde des Kanals (Verkaufskanäle → Kleinanzeigen). Mit E-Mail wird ein bekannter Kunde wiedererkannt.",
+                "note": "Vermerk",
+                "confirm": "Verkauft",
+                "done": "Verkauf festgehalten.",
+                "doneInvoice": "Verkauf festgehalten, Rechnung {nummer} angelegt.",
+                "notPosted": "Die Rechnung wurde angelegt, aber nicht gebucht: {grund}"
+            }
         }
     }
 }

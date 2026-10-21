@@ -24,12 +24,7 @@ function _sumupConfig($db) {
             MAX(value) FILTER (WHERE key = 'sumup_api_key')       AS api_key,
             MAX(value) FILTER (WHERE key = 'sumup_merchant_code') AS merchant_code,
             MAX(value) FILTER (WHERE key = 'sumup_reader_id')     AS reader_id,
-            MAX(value) FILTER (WHERE key = 'sumup_reader_name')   AS reader_name,
-            -- Zuletzt gestarteter, noch offener Checkout (max. 3 Minuten alt):
-            -- wird vor einem neuen Checkout am Terminal abgebrochen.
-            (SELECT client_transaction_id FROM sumup_checkouts
-              WHERE status = 'pending' AND itime > now() - interval '3 minutes'
-              ORDER BY id DESC LIMIT 1) AS pending_client_transaction_id
+            MAX(value) FILTER (WHERE key = 'sumup_reader_name')   AS reader_name
          FROM defaults_oserp
          WHERE key IN ('sumup_enabled', 'sumup_api_key', 'sumup_merchant_code', 'sumup_reader_id', 'sumup_reader_name')"
     );
@@ -210,12 +205,13 @@ function unpairSumupReader($data) {
  * sumupCheckoutStatus() ab (Polling gegen die Transaktions-API — braucht
  * keine öffentlich erreichbare Webhook-URL).
  *
- * Läuft am Terminal noch ein älterer Checkout (z. B. der automatisch beim
- * Öffnen gesendete Rechnungsbetrag), wird er zuerst abgebrochen, damit ein
- * abweichender Betrag (Anzahlung, Selbstbeteiligung) nicht abgewiesen wird.
+ * Offene Checkouts derselben Rechnung werden vorher mit SumUp abgeglichen:
+ * Ist einer davon inzwischen bezahlt, wird nichts gesendet (already_paid);
+ * läuft noch einer, wird er am Terminal abgebrochen, damit ein abweichender
+ * Betrag (Anzahlung, Selbstbeteiligung) nicht abgewiesen wird.
  *
  * @param array $data ['amount' => 99.90, 'currency' => 'EUR', 'description' => 'RG 2026-001', 'fakturaID' => 123]
- * @return void JSON
+ * @return void JSON {sent, client_transaction_id, ...} oder {sent: false, already_paid: true, new_payments, card_payments}
  * @testdata {"amount": 9.90, "currency": "EUR", "description": "Testrechnung", "fakturaID": 1}
  */
 function sumupCheckout($data) {
@@ -258,15 +254,33 @@ function sumupCheckout($data) {
         $body['description'] = $description;
     }
 
-    // Noch offenen Checkout am Terminal verwerfen (best effort, asynchron bei SumUp)
-    $pending = trim($cfg['pending_client_transaction_id'] ?? '');
-    if ($pending !== '') {
-        try { _sumupRequest('POST', "/merchants/{$merchant}/readers/{$readerId}/terminate", $apiKey); }
-        catch (\Throwable $e) { /* ignorieren */ }
-        $db->execute(
-            "UPDATE sumup_checkouts SET status = 'cancelled', mtime = now() WHERE client_transaction_id = :ctid AND status = 'pending'",
-            ['ctid' => $pending]
-        );
+    // Offene Checkouts DIESER Rechnung zuerst mit SumUp abgleichen. Ein Checkout,
+    // der inzwischen bezahlt wurde (Seite neu geladen, zweiter Reiter), darf
+    // weder storniert noch erneut kassiert werden. Checkouts anderer Belege
+    // bleiben unangetastet.
+    $fakturaId = intval($data['fakturaID'] ?? 0) ?: null;
+    if ($fakturaId) {
+        $sync = _sumupSyncInvoiceCheckouts($db, $apiKey, $merchant, $fakturaId);
+        if ($sync['new_successful']) {
+            resultInfo(true, '', [
+                'sent'           => false,
+                'already_paid'   => true,
+                'new_payments'   => $sync['new_successful'],
+                'card_payments'  => $sync['card_payments'],
+            ]);
+            return;
+        }
+        // Noch wirklich laufende Checkouts am Terminal verwerfen (best effort),
+        // damit ein abweichender Betrag (Anzahlung, Selbstbeteiligung) nicht abgewiesen wird.
+        if ($sync['still_pending']) {
+            try { _sumupRequest('POST', "/merchants/{$merchant}/readers/{$readerId}/terminate", $apiKey); }
+            catch (\Throwable $e) { /* ignorieren */ }
+            $db->execute(
+                "UPDATE sumup_checkouts SET status = 'cancelled', mtime = now()
+                  WHERE trans_id = :trans_id AND status = 'pending'",
+                ['trans_id' => $fakturaId]
+            );
+        }
     }
 
     $res = _sumupRequest('POST', "/merchants/{$merchant}/readers/{$readerId}/checkout", $apiKey, $body);
@@ -274,7 +288,6 @@ function sumupCheckout($data) {
     if ($res['status'] >= 200 && $res['status'] <= 299) {
         $resData = $res['body']['data'] ?? $res['body'] ?? [];
         $clientTransactionId = (string)($resData['client_transaction_id'] ?? '');
-        $fakturaId = intval($data['fakturaID'] ?? 0) ?: null;
 
         if ($clientTransactionId !== '') {
             $db->execute(
@@ -344,49 +357,23 @@ function sumupCheckoutStatus($data) {
         return;
     }
 
-    $res = _sumupRequest('GET', 'https://api.sumup.com/v2.1/merchants/' . rawurlencode($merchant)
-        . '/transactions?client_transaction_id=' . rawurlencode($ctid), $apiKey);
+    $tx = _sumupSyncCheckout($db, $apiKey, $merchant, $ctid);
 
-    if ($res['status'] === 200 && is_array($res['body'])) {
-        $tx = $res['body'];
-        $sumupStatus = strtoupper((string)($tx['status'] ?? 'PENDING'));
-        $map = ['SUCCESSFUL' => 'successful', 'FAILED' => 'failed', 'CANCELLED' => 'cancelled', 'REFUNDED' => 'successful'];
-        $status = $map[$sumupStatus] ?? 'pending';
-        $transactionCode = (string)($tx['transaction_code'] ?? '');
-        $cardType = (string)($tx['card']['type'] ?? ($tx['card_type'] ?? ''));
-
-        if ($status !== 'pending') {
-            // Kundenbeleg (Receipts API) mitspeichern: der Solo hat keinen
-            // Bondrucker, der Beleg wird als Seite hinter die Rechnung gedruckt.
-            $receipt = ($status === 'successful') ? _sumupFetchReceipt($apiKey, $merchant, (string)($tx['id'] ?? $transactionCode)) : null;
-            $db->execute(
-                "UPDATE sumup_checkouts
-                    SET status = :status, transaction_code = :code, card_type = :card_type,
-                        receipt = COALESCE(:receipt::jsonb, receipt), mtime = now()
-                  WHERE client_transaction_id = :ctid",
-                [
-                    'status'    => $status,
-                    'code'      => $transactionCode ?: null,
-                    'card_type' => $cardType ?: null,
-                    'receipt'   => $receipt ? json_encode($receipt, JSON_UNESCAPED_UNICODE) : null,
-                    'ctid'      => $ctid,
-                ]
-            );
-        }
-
+    if ($tx['status'] !== 'pending') {
         resultInfo(true, '', [
-            'status'           => $status,
-            'transaction_code' => $transactionCode,
-            'card_type'        => $cardType,
-            'amount'           => round((float)($tx['amount'] ?? 0), 2),
-            'currency'         => (string)($tx['currency'] ?? ''),
-            'timestamp'        => (string)($tx['timestamp'] ?? ''),
+            'status'           => $tx['status'],
+            'transaction_code' => $tx['transaction_code'],
+            'card_type'        => $tx['card_type'],
+            'amount'           => $tx['amount'],
+            'currency'         => $tx['currency'],
+            'timestamp'        => $tx['timestamp'],
             'reader_state'     => '',
         ]);
         return;
     }
 
-    if ($res['status'] !== 404) {
+    $res = $tx['response'];
+    if ($res['status'] !== 404 && $res['status'] !== 200) {
         resultInfo(false, 'SUMUP_STATUS_FAILED', 'SumUp (HTTP ' . $res['status'] . '): ' . _sumupErrorMessage($res, 'Statusabfrage fehlgeschlagen'));
         return;
     }
@@ -404,6 +391,149 @@ function sumupCheckoutStatus($data) {
     }
 
     resultInfo(true, '', ['status' => 'pending', 'reader_state' => $readerState]);
+}
+
+/**
+ * Gleicht einen Checkout mit der SumUp-Transaktions-API ab und schreibt ein
+ * Endergebnis (samt Transaktionscode, Kartentyp und Kundenbeleg) nach
+ * sumup_checkouts. Solange die Zahlung läuft, kennt SumUp die
+ * client_transaction_id noch nicht (404) — dann bleibt der Status 'pending'.
+ *
+ * @param object $db       DbhCompany-Handle
+ * @param string $apiKey   Bearer-Token
+ * @param string $merchant Merchant-Code
+ * @param string $ctid     client_transaction_id aus sumupCheckout()
+ * @return array status (pending|successful|failed|cancelled), transaction_code,
+ *               card_type, amount, currency, timestamp, response (Rohantwort)
+ */
+function _sumupSyncCheckout($db, $apiKey, $merchant, $ctid) {
+    $res = _sumupRequest('GET', 'https://api.sumup.com/v2.1/merchants/' . rawurlencode($merchant)
+        . '/transactions?client_transaction_id=' . rawurlencode($ctid), $apiKey);
+
+    $out = ['status' => 'pending', 'transaction_code' => '', 'card_type' => '', 'amount' => 0.0,
+            'currency' => '', 'timestamp' => '', 'response' => $res];
+    if ($res['status'] !== 200 || !is_array($res['body'])) return $out;
+
+    $tx = $res['body'];
+    $map = ['SUCCESSFUL' => 'successful', 'FAILED' => 'failed', 'CANCELLED' => 'cancelled', 'REFUNDED' => 'successful'];
+    $status = $map[strtoupper((string)($tx['status'] ?? 'PENDING'))] ?? 'pending';
+    $transactionCode = (string)($tx['transaction_code'] ?? '');
+    $cardType = (string)($tx['card']['type'] ?? ($tx['card_type'] ?? ''));
+
+    if ($status !== 'pending') {
+        // Kundenbeleg (Receipts API) mitspeichern: der Solo hat keinen
+        // Bondrucker, der Beleg wird als Seite hinter die Rechnung gedruckt.
+        $receipt = ($status === 'successful') ? _sumupFetchReceipt($apiKey, $merchant, (string)($tx['id'] ?? $transactionCode)) : null;
+        // Ein von SumUp bestätigter Erfolg überschreibt auch ein lokales
+        // 'cancelled'; ein lokales 'cancelled' bleibt bei FAILED erhalten.
+        $db->execute(
+            "UPDATE sumup_checkouts
+                SET status = CASE WHEN status = 'cancelled' AND :status_if_failed = 'failed' THEN 'cancelled' ELSE :status END,
+                    transaction_code = :code, card_type = :card_type,
+                    receipt = COALESCE(:receipt::jsonb, receipt), mtime = now()
+              WHERE client_transaction_id = :ctid",
+            [
+                'status'           => $status,
+                'status_if_failed' => $status,
+                'code'             => $transactionCode ?: null,
+                'card_type'        => $cardType ?: null,
+                'receipt'          => $receipt ? json_encode($receipt, JSON_UNESCAPED_UNICODE) : null,
+                'ctid'             => $ctid,
+            ]
+        );
+    }
+
+    return array_merge($out, [
+        'status'           => $status,
+        'transaction_code' => $transactionCode,
+        'card_type'        => $cardType,
+        'amount'           => round((float)($tx['amount'] ?? 0), 2),
+        'currency'         => (string)($tx['currency'] ?? ''),
+        'timestamp'        => (string)($tx['timestamp'] ?? ''),
+    ]);
+}
+
+/**
+ * Gleicht alle noch nicht abschließend geklärten Checkouts einer Rechnung mit
+ * SumUp ab: 'pending' (Abfrage im Browser abgebrochen, Seite verlassen) und
+ * 'cancelled' ohne Transaktionscode (lokal storniert, Ergebnis nie geholt).
+ * Ein Checkout, zu dem SumUp nach 10 Minuten noch keine Transaktion kennt,
+ * wurde nie am Gerät gestartet und wird als 'failed' geschlossen.
+ *
+ * @param object $db       DbhCompany-Handle
+ * @param string $apiKey   Bearer-Token
+ * @param string $merchant Merchant-Code
+ * @param int    $transId  ar.id der Rechnung
+ * @return array new_successful (dabei neu als bezahlt erkannte Checkouts),
+ *               still_pending (client_transaction_ids, die noch laufen),
+ *               card_payments (alle erfolgreichen Checkouts der Rechnung)
+ */
+function _sumupSyncInvoiceCheckouts($db, $apiKey, $merchant, $transId) {
+    $open = $db->getAll(
+        "SELECT id, client_transaction_id, amount, currency, status,
+                EXTRACT(EPOCH FROM now() - itime) AS age_seconds
+           FROM sumup_checkouts
+          WHERE trans_id = :trans_id
+            AND (status = 'pending' OR (status = 'cancelled' AND transaction_code IS NULL))
+          ORDER BY id",
+        ['trans_id' => $transId]
+    );
+
+    $newSuccessful = [];
+    $stillPending  = [];
+    foreach ($open as $row) {
+        $ctid = $row['client_transaction_id'];
+        try { $tx = _sumupSyncCheckout($db, $apiKey, $merchant, $ctid); }
+        catch (\Throwable $e) { continue; } // SumUp nicht erreichbar: beim nächsten Laden erneut
+        if ($tx['status'] === 'successful') {
+            $newSuccessful[] = [
+                'id'               => (int)$row['id'],
+                'amount'           => round((float)$row['amount'], 2),
+                'currency'         => $row['currency'],
+                'transaction_code' => $tx['transaction_code'],
+                'card_type'        => $tx['card_type'],
+            ];
+        } elseif ($tx['status'] === 'pending') {
+            if ((float)$row['age_seconds'] > 600) {
+                $db->execute("UPDATE sumup_checkouts SET status = 'failed', mtime = now() WHERE id = :id", ['id' => $row['id']]);
+            } elseif ($row['status'] === 'pending') {
+                $stillPending[] = $ctid;
+            }
+        }
+    }
+
+    $cardPayments = $db->getAll(
+        "SELECT id, amount, currency, transaction_code, card_type, itime
+           FROM sumup_checkouts WHERE trans_id = :trans_id AND status = 'successful' ORDER BY id",
+        ['trans_id' => $transId]
+    );
+
+    return ['new_successful' => $newSuccessful, 'still_pending' => $stillPending, 'card_payments' => $cardPayments];
+}
+
+/**
+ * Gleicht die offenen Checkouts einer Rechnung mit SumUp ab (Aufruf beim Öffnen
+ * der Rechnung, wenn getFakturaData card_unresolved > 0 meldet). Liefert die
+ * dabei neu erkannten Zahlungen und die vollständige Liste der Kartenzahlungen.
+ *
+ * @param int $data['fakturaID'] ar.id der Rechnung
+ * @return void JSON {new_payments: [...], card_payments: [...]}
+ * @testdata {"fakturaID": 1}
+ */
+function sumupSyncCheckouts($data) {
+    $db = DbhCompany::begin();
+    $cfg = _sumupConfig($db);
+
+    $apiKey   = trim($cfg['api_key'] ?? '');
+    $merchant = trim($cfg['merchant_code'] ?? '');
+    $transId  = intval($data['fakturaID'] ?? 0);
+    if ($apiKey === '' || $merchant === '' || $transId <= 0) {
+        resultInfo(false, 'SUMUP_NOT_CONFIGURED', 'SumUp ist nicht vollständig konfiguriert.');
+        return;
+    }
+
+    $sync = _sumupSyncInvoiceCheckouts($db, $apiKey, $merchant, $transId);
+    resultInfo(true, '', ['new_payments' => $sync['new_successful'], 'card_payments' => $sync['card_payments']]);
 }
 
 /**

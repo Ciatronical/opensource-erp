@@ -734,6 +734,27 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     }
 
     /**
+     * Gleicht die noch nicht geklärten Checkouts einer Rechnung mit SumUp ab
+     * (Aufruf beim Öffnen, wenn getFakturaData card_unresolved > 0 liefert).
+     *
+     * @param {number} fakturaID - ar.id der Rechnung
+     * @return {Promise<Object>} { new_payments: [...], card_payments: [...] }
+     */
+    async function syncSumupCheckouts(fakturaID) {
+        const response = await axios.post('/api/payment/', {
+            action: 'sumupSyncCheckouts',
+            fakturaID: fakturaID
+        });
+
+        if (response.data.success) {
+            return response.data.payload;
+        }
+        else {
+            throw new ApiError('ApiError', response.data.text, typeof response.data.payload === 'string' ? response.data.payload : response.data.text);
+        }
+    }
+
+    /**
      * Bricht den laufenden Checkout am Terminal ab.
      *
      * @param {string} clientTransactionId - Kennung aus sendSumupCheckout()
@@ -950,6 +971,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         sendSumupCheckout,
         getSumupCheckoutStatus,
         terminateSumupCheckout,
+        syncSumupCheckouts,
         data
     };
 });

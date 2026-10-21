@@ -419,7 +419,11 @@
                 "invalidAmount": "Bitte einen Betrag größer 0 eingeben",
                 "cardPaymentRow": "Kartenzahlung am Terminal",
                 "pendingPayout": "wird mit der SumUp-Auszahlung im Banking gebucht",
-                "openAfterCard": "Offener Betrag nach Kartenzahlung"
+                "openAfterCard": "Offener Betrag nach Kartenzahlung",
+                "reprint": "Zahlungsbeleg erneut drucken",
+                "fullyPaid": "Rechnung vollständig bezahlt",
+                "alreadyPaid": "Kartenzahlung über {amount} € war bereits erfolgt – nichts erneut gesendet",
+                "synced": "Kartenzahlung über {amount} € von SumUp nachgetragen"
             },
             "paymentBooked": "Zahlung erfolgreich gebucht",
             "paymentError": "Fehler beim Buchen der Zahlung",

@@ -322,6 +322,24 @@ Ausführliche Dokumentation: `docs/features/anpr.md`
 
 ---
 
+## 4a. Kleinanzeigen-Dienst (optional)
+
+Nur nötig, wenn der Verkaufskanal Kleinanzeigen automatisch einstellen soll
+(Erweiterung Shop). Ein Headless-Chrome auf dem Server meldet sich mit dem
+Kleinanzeigen-Konto an und dient OpensourceERP als Pseudo-API.
+
+```bash
+sudo apt install -y python3 python3-venv        # und Google Chrome
+cd backend/services/kleinanzeigen && ./install.sh
+sudo cp install/oserp-kleinanzeigen.service /etc/systemd/system/   # KA_TOKEN eintragen!
+sudo systemctl daemon-reload && sudo systemctl enable --now oserp-kleinanzeigen
+```
+
+Danach in **Firmenkonfiguration → Shop → Kleinanzeigen-Dienst** einschalten
+(Adresse `http://127.0.0.1:3007`, dasselbe Token) und in der Kanalkarte unter
+Verkaufskanäle das Kleinanzeigen-Konto hinterlegen und anmelden.
+Ausführlich: `backend/services/kleinanzeigen/README.md`.
+
 ## 4b. SSE-Server (Echtzeit-Benachrichtigungen)
 
 Der SSE-Server liefert Live-Updates (Anrufliste, Kalender, Faktura, WhatsApp …)

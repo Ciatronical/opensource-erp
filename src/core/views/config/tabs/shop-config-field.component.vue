@@ -24,7 +24,7 @@
     </v-row>
 
     <!-- Eingabefeld / Passwort -->
-    <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="mt-5 mb-4" :data-field-name="field.name">
+    <v-row v-else-if="field.type === 'input' || field.type === 'password' || field.type === 'textarea'" class="mt-5 mb-4" :data-field-name="field.name">
         <v-col cols="12" md="6">
             <component
                 :is="feldKomponente(field)"
@@ -106,7 +106,7 @@
 <script setup>
 import { computed, h, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { VIcon, VTextField, VTooltip } from 'vuetify/components'
+import { VIcon, VTextField, VTextarea, VTooltip } from 'vuetify/components'
 import PasswordField from '@/core/components/password-field.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 
@@ -156,6 +156,7 @@ const sichtbar = ref(false)
  */
 function feldKomponente(field) {
     if ('password' === field.type) return PasswordField
+    if ('textarea' === field.type) return VTextarea
     return VTextField
 }
 
@@ -168,6 +169,9 @@ function feldKomponente(field) {
 function zusatz(field) {
     if ('password' === field.type) {
         return { visible: sichtbar.value, 'onUpdate:visible': (wert) => (sichtbar.value = wert) }
+    }
+    if ('textarea' === field.type) {
+        return { rows: field.rows || 3, 'auto-grow': true }
     }
     return {}
 }

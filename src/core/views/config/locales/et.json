@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP võtab vastu {size} päringu kohta (post_max_size)",
             "phpIsBottleneck": "PHP on kitsam piir: suurenda php.ini failis post_max_size ja upload_max_filesize ning tuvasta uuesti",
             "error": "Piiri ei õnnestunud tuvastada"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Aktiveeri SumUp",
+        "sumupEnabled_help": "Lülitab arvel sisse kaarditerminali: summa saadetakse terminali maksekaardi sisestusvälja kaudu (kogu tasumata summa, ettemaks või omavastutus); täielikult tasutud arve puhul prindib nupp maksekviitungi uuesti",
+        "sumupApiKey": "SumUp API võti",
+        "sumupApiKey_help": "Salajane API võti SumUp-i töölaualt (developer.sumup.com → API Keys), algab tähisega sup_sk_",
+        "sumupMerchantCode": "Kaupmehe kood",
+        "sumupMerchantCode_help": "Kaupmehe tunnus SumUp-i profiilist (nt MCXXXXXX)",
+        "sumupPrintCopies": "Eksemplare pärast kaardimakset",
+        "sumupPrintCopies_help": "Arve väljatrükkide arv, mis luuakse pärast edukat terminalimakset automaatselt valitud printeris – koos kaardimakse märkega ja kliendikviitungiga (0 = automaatset printimist ei toimu, vaikimisi 2)",
+        "sumupPairing": {
+            "title": "Seo terminal",
+            "description": "Ühendab SumUp-i terminali (Solo) Cloud API kaudu selle kontoga.",
+            "saveFirst": "Palun sisestage ja salvestage kõigepealt ülal API võti ja kaupmehe kood, seejärel siduge terminal.",
+            "hint": "Logige terminalis kõigepealt VÄLJA (Seaded → Teave → Logi välja) — alles siis ilmub: Ühendused → WiFi → API → Ühenda. Sisestage kuvatud sidumiskood siia.",
+            "codeLabel": "Sidumiskood",
+            "pairBtn": "Seo",
+            "unpairBtn": "Eemalda sidumine",
+            "current": "Seotud terminal: {name}",
+            "none": "Ühtegi terminali pole veel seotud.",
+            "success": "Terminal on edukalt seotud.",
+            "error": "Sidumine ebaõnnestus.",
+            "unpaired": "Terminali sidumine eemaldati."
+        },
+        "sumupAutoSend": "Saada summa automaatselt",
+        "sumupAutoSend_help": "Kui arve luuakse pakkumisest või tellimusest, saadetakse tasumata summa kohe terminali (vaikimisi: sees). Olemasolevate või tasutud arvete avamisel ei saadeta kunagi automaatselt"
     },
     "add": "Lisa",
     "add_fields": {

@@ -936,7 +936,7 @@ async function loadConfig() {
 
     // Feature-Booleans normalisieren (DB liefert Strings wie 'true'/'false'/'1'/'0')
     // Nicht gesetzt = Standard aktiviert
-    for (const key of ['feature_anpr', 'feature_nvr', 'feature_recurring']) {
+    for (const key of ['feature_anpr', 'feature_nvr', 'feature_recurring', 'sumup_auto_send']) {
         const v = crmDefaults.value[key];
         crmDefaults.value[key] = (v === null || v === undefined)
             ? true

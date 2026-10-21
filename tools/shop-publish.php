@@ -34,7 +34,8 @@
 // Firmenkonfiguration (Shop, shop_job_retention_days). Steht dort 0, bleibt
 // alles liegen. --no-cleanup lässt es für diesen Lauf bleiben.
 //
-// --reconcile-payments nimmt den Abgleich schwebender PayPal-Zahlungen als
+// --reconcile-payments nimmt den Abgleich schwebender PayPal-Zahlungen und den
+// Abruf der Kleinanzeigen-Anfragen aus dem Postfach (import_leads) als
 // Auftrag an und arbeitet ihn im selben Lauf ab. Gedacht für einen eigenen,
 // selteneren Cron-Eintrag:
 //   */5 * * * *  php tools/shop-publish.php --client=1 --quiet
@@ -55,6 +56,9 @@ require_once __DIR__.'/../backend/api/shop/lib/payment.php';
 require_once __DIR__.'/../backend/api/shop/lib/publish.php';
 require_once __DIR__.'/../backend/api/shop/lib/categories.php';
 require_once __DIR__.'/../backend/api/shop/lib/hugocms.php';
+// Kleinanzeigen-Dienst: die Bilder der Anzeigen liegen im Datenverzeichnis
+require_once __DIR__.'/../backend/api/customer_vendor/filemanager.php';
+require_once __DIR__.'/../backend/api/shop/lib/channel_images.php';
 // Mails zum Lieferstatus (dev/shop-bestellstatus.md)
 require_once __DIR__.'/../backend/api/email/smtp.class.php';
 require_once __DIR__.'/../backend/api/shop/lib/mail.php';
@@ -149,6 +153,12 @@ try {
         $kanal = shopFirstChannelId($db, 'hugoshop');
         if ($kanal > 0) {
             shopQueueJob($db, 'reconcile_payments', '', null, $kanal);
+        }
+        // Kleinanzeigen: Anfragen aus dem Postfach holen, je eingeschaltetem
+        // Kanal (dev/shop-kleinanzeigen.md) — derselbe Takt wie der Abgleich
+        foreach (shopKleinanzeigenActiveChannels($db) as $kleinanzeigen) {
+            shopQueueJob($db, 'sync_ads', '', null, (int)$kleinanzeigen['id']);
+            shopQueueJob($db, 'import_leads', '', null, (int)$kleinanzeigen['id']);
         }
     }
 } catch (Throwable $e) {

@@ -798,7 +798,7 @@ const kennzahlen = computed(() => {
         key: `kanal-${kanal.channel_id}`,
         channel_id: kanal.channel_id,
         name: kanal.name,
-        icon: kanal.type === 'ebay' ? 'mdi-shopping-outline' : 'mdi-storefront-outline',
+        icon: { ebay: 'mdi-shopping-outline', kleinanzeigen: 'mdi-bullhorn-outline' }[kanal.type] || 'mdi-storefront-outline',
         zahlen: [
             { key: 'parts', wert: kanal.parts, titel: t('ShopView.status.partsOffered') },
             // Warenkörbe und Kundenanmeldungen gibt es nur im HugoShop
@@ -822,6 +822,13 @@ const ziele = computed(() => [
         icon: 'mdi-undo-variant',
         titel: t('ShopView.withdrawals.title'),
         text: t('ShopView.withdrawals.subtitle'),
+    },
+    // Kleinanzeigen-Board (dev/shop-kleinanzeigen.md)
+    {
+        name: 'shop-kleinanzeigen',
+        icon: 'mdi-bullhorn-outline',
+        titel: t('ShopView.kleinanzeigen.title'),
+        text: t('ShopView.kleinanzeigen.subtitle'),
     },
     // Die Artikelliste des Kerns, vorgefiltert auf „Nur im Shop angebotene“
     // mit „Alle Verkaufskanäle“ (Vorgabe der Kanalauswahl)

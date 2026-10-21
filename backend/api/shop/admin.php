@@ -267,6 +267,11 @@ function getShopOrders($data) {
              SELECT e.ar_id, e.channel_id, NULL, e.ebay_order_id
                FROM ebay_orders e
               WHERE e.ar_id IS NOT NULL
+             UNION ALL
+             -- Verkäufe über Kleinanzeigen mit Rechnung (dev/shop-kleinanzeigen.md)
+             SELECT v.ar_id, v.channel_id, NULL, NULL
+               FROM kleinanzeigen_sale_shop v
+              WHERE v.ar_id IS NOT NULL
          )
          SELECT ar.id AS ar_id, ar.invnumber, ar.transdate, ar.duedate,
                 TRUNC(ar.amount, 2) AS amount, TRUNC(ar.paid, 2) AS paid,
@@ -1737,14 +1742,16 @@ function getShopChannels($data) {
                      AND NOT EXISTS (SELECT 1 FROM batchjob_hugoshop b WHERE b.channel_id = c.id AND b.result IS NULL)
                      AND NOT EXISTS (SELECT 1 FROM ar_link_hugoshop a WHERE a.channel_id = c.id)
                      AND NOT EXISTS (SELECT 1 FROM withdrawals_hugoshop w WHERE w.channel_id = c.id)
-                     AND NOT EXISTS (SELECT 1 FROM ebay_orders e WHERE e.channel_id = c.id)) AS deletable,
+                     AND NOT EXISTS (SELECT 1 FROM ebay_orders e WHERE e.channel_id = c.id)
+                     AND NOT EXISTS (SELECT 1 FROM kleinanzeigen_sale_shop v WHERE v.channel_id = c.id)) AS deletable,
                     -- Was das Löschen verhindert, gezählt — für den Hinweis in
                     -- der Kanalkarte, wenn der Kanal abgeschaltet ist
                     json_build_object(
                         'open_jobs',   (SELECT COUNT(*) FROM batchjob_hugoshop b WHERE b.channel_id = c.id AND b.result IS NULL),
                         'invoices',    (SELECT COUNT(*) FROM ar_link_hugoshop a WHERE a.channel_id = c.id),
                         'withdrawals', (SELECT COUNT(*) FROM withdrawals_hugoshop w WHERE w.channel_id = c.id),
-                        'ebay_orders', (SELECT COUNT(*) FROM ebay_orders e WHERE e.channel_id = c.id)
+                        'ebay_orders', (SELECT COUNT(*) FROM ebay_orders e WHERE e.channel_id = c.id),
+                        'kleinanzeigen_sales', (SELECT COUNT(*) FROM kleinanzeigen_sale_shop v WHERE v.channel_id = c.id)
                     ) AS delete_blockers,
                     -- Lieferländer (dev/shop-versand.md, Schritt 7); leer = alle
                     (SELECT COALESCE(json_agg(cc.iso_code ORDER BY cc.iso_code), '[]')

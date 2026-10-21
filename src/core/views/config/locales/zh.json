@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP 每次请求接受 {size}（post_max_size）",
             "phpIsBottleneck": "PHP 是更严格的限制：请在 php.ini 中提高 post_max_size 和 upload_max_filesize，然后重新检测",
             "error": "无法检测限制"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "启用 SumUp",
+        "sumupEnabled_help": "在发票中启用刷卡终端：通过付款卡片中的输入框将金额发送至终端（全部未付金额、预付款或保险自付额）；发票已全额付清时，该按钮将重新打印付款凭证",
+        "sumupApiKey": "SumUp API 密钥",
+        "sumupApiKey_help": "SumUp 控制台中的私密 API 密钥（developer.sumup.com → API Keys），以 sup_sk_ 开头",
+        "sumupMerchantCode": "商户代码",
+        "sumupMerchantCode_help": "SumUp 账户资料中的商户标识（例如 MCXXXXXX）",
+        "sumupPrintCopies": "刷卡支付后的打印份数",
+        "sumupPrintCopies_help": "终端支付成功后在所选打印机上自动生成的发票打印份数 – 含刷卡备注和客户凭证（0 = 不自动打印，默认 2）",
+        "sumupPairing": {
+            "title": "配对终端",
+            "description": "通过 Cloud API 将 SumUp 终端（Solo）与此账户连接。",
+            "saveFirst": "请先在上方填写并保存 API 密钥和商户代码，然后再配对终端。",
+            "hint": "请先在终端上退出登录（设置 → 关于 → 退出登录）— 之后才会显示：连接 → Wi-Fi → API → 连接。在此输入显示的配对码。",
+            "codeLabel": "配对码",
+            "pairBtn": "配对",
+            "unpairBtn": "取消配对",
+            "current": "已配对的终端：{name}",
+            "none": "尚未配对任何终端。",
+            "success": "终端配对成功。",
+            "error": "配对失败。",
+            "unpaired": "终端已取消配对。"
+        },
+        "sumupAutoSend": "自动发送金额",
+        "sumupAutoSend_help": "由报价单或订单生成发票时，未付金额会立即发送至终端（默认：开启）。打开已有或已付清的发票时绝不会自动发送"
     },
     "add": "添加",
     "add_fields": {

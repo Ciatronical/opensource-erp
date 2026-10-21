@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP acceptă {size} per cerere (post_max_size)",
             "phpIsBottleneck": "PHP este limita mai strictă: măriți post_max_size și upload_max_filesize în php.ini, apoi detectați din nou",
             "error": "Limita nu a putut fi detectată"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Activează SumUp",
+        "sumupEnabled_help": "Activează terminalul de plată în factură: trimiteți o sumă la terminal prin câmpul din cardul de plată (suma restantă integrală, avans sau franșiză); la o factură achitată integral, butonul retipărește dovada de plată",
+        "sumupApiKey": "Cheie API SumUp",
+        "sumupApiKey_help": "Cheia API secretă din panoul SumUp (developer.sumup.com → API Keys), începe cu sup_sk_",
+        "sumupMerchantCode": "Cod comerciant",
+        "sumupMerchantCode_help": "Identificatorul comerciantului din profilul dvs. SumUp (de ex. MCXXXXXX)",
+        "sumupPrintCopies": "Exemplare după plata cu cardul",
+        "sumupPrintCopies_help": "Numărul de exemplare ale facturii tipărite automat pe imprimanta aleasă după o plată reușită la terminal – cu mențiunea plății cu cardul și bonul clientului (0 = fără tipărire automată, implicit 2)",
+        "sumupPairing": {
+            "title": "Asociere terminal",
+            "description": "Conectează un terminal SumUp (Solo) la acest cont prin Cloud API.",
+            "saveFirst": "Introduceți și salvați mai întâi cheia API și codul de comerciant de mai sus, apoi asociați terminalul.",
+            "hint": "Pe terminal, DECONECTAȚI-VĂ mai întâi (Setări → Informații → Deconectare) — abia apoi apare: Conexiuni → Wi-Fi → API → Conectare. Introduceți aici codul de asociere afișat.",
+            "codeLabel": "Cod de asociere",
+            "pairBtn": "Asociază",
+            "unpairBtn": "Dezasociază",
+            "current": "Terminal asociat: {name}",
+            "none": "Niciun terminal nu este încă asociat.",
+            "success": "Terminal asociat cu succes.",
+            "error": "Asocierea a eșuat.",
+            "unpaired": "Terminal dezasociat."
+        },
+        "sumupAutoSend": "Trimite suma automat",
+        "sumupAutoSend_help": "Când o factură este creată dintr-o ofertă sau o comandă, suma restantă este trimisă imediat la terminal (implicit: activat). La deschiderea facturilor existente sau achitate nu se trimite niciodată automat"
     },
     "add": "Adăugare",
     "add_fields": {

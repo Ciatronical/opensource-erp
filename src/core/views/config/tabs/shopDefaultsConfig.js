@@ -79,6 +79,15 @@ const shopDefaultsConfig = [
     // eBay-Kanal in seiner Karte
     { name: "ebay_public_host", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayPublicHost", tooltip: "crm_fields.ebayPublicHost_help" },
 
+    // Kleinanzeigen-Dienst (dev/shop-kleinanzeigen.md, Teil 2): Headless-Chrome
+    // auf diesem Server, der die Anzeigen bei kleinanzeigen.de einstellt —
+    // für alle Kleinanzeigen-Kanäle derselbe; Zugang des Kontos je Kanal
+    { name: "kleinanzeigen_worker", type: "headline", label: "crm_fields.kleinanzeigenWorker" },
+
+    { name: "kleinanzeigen_worker_enabled", type: "checkbox", label: "crm_fields.kleinanzeigenWorkerEnabled", tooltip: "crm_fields.kleinanzeigenWorkerEnabled_help" },
+    { name: "kleinanzeigen_worker_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenWorkerUrl", tooltip: "crm_fields.kleinanzeigenWorkerUrl_help" },
+    { name: "kleinanzeigen_worker_token", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenWorkerToken", tooltip: "crm_fields.kleinanzeigenWorkerToken_help" },
+
     { name: "shop_search", type: "headline", label: "crm_fields.shopSearch" },
 
     { name: "shop_search_weighting", type: "input", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.shopSearchWeighting", tooltip: "crm_fields.shopSearchWeighting_help" },

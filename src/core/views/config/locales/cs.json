@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP přijímá {size} na požadavek (post_max_size)",
             "phpIsBottleneck": "PHP je těsnější limit: zvyšte post_max_size a upload_max_filesize v php.ini a zjistěte znovu",
             "error": "Limit se nepodařilo zjistit"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Aktivovat SumUp",
+        "sumupEnabled_help": "Zpřístupní platební terminál ve faktuře: částku lze přes vstupní pole v kartě plateb odeslat na terminál (celá otevřená částka, záloha nebo spoluúčast); u plně uhrazené faktury tlačítko znovu vytiskne doklad o platbě",
+        "sumupApiKey": "API klíč SumUp",
+        "sumupApiKey_help": "Tajný API klíč z portálu SumUp (developer.sumup.com → API Keys), začíná na sup_sk_",
+        "sumupMerchantCode": "Kód obchodníka",
+        "sumupMerchantCode_help": "Identifikátor obchodníka z profilu SumUp (např. MCXXXXXX)",
+        "sumupPrintCopies": "Výtisky po platbě kartou",
+        "sumupPrintCopies_help": "Počet výtisků faktury, které se po úspěšné platbě na terminálu automaticky vytisknou na zvolené tiskárně – s poznámkou o platbě kartou a dokladem pro zákazníka (0 = bez automatického tisku, výchozí 2)",
+        "sumupPairing": {
+            "title": "Spárovat terminál",
+            "description": "Propojí terminál SumUp (Solo) s tímto účtem přes Cloud API.",
+            "saveFirst": "Nejprve prosím výše zadejte a uložte API klíč a kód obchodníka, poté spárujte terminál.",
+            "hint": "Na terminálu se nejprve ODHLASTE (Nastavení → Informace → Odhlásit se) — teprve poté se zobrazí: Připojení → WLAN → API → Připojit. Zobrazený párovací kód zadejte zde.",
+            "codeLabel": "Párovací kód",
+            "pairBtn": "Spárovat",
+            "unpairBtn": "Zrušit párování",
+            "current": "Spárovaný terminál: {name}",
+            "none": "Zatím není spárován žádný terminál.",
+            "success": "Terminál byl úspěšně spárován.",
+            "error": "Párování se nezdařilo.",
+            "unpaired": "Párování terminálu zrušeno."
+        },
+        "sumupAutoSend": "Odesílat částku automaticky",
+        "sumupAutoSend_help": "Je-li faktura vytvořena z nabídky nebo zakázky, otevřená částka se ihned odešle na terminál (výchozí: zapnuto). Při otevření existujících nebo uhrazených faktur se nikdy neodesílá automaticky"
     },
     "add": "Přidat",
     "add_fields": {

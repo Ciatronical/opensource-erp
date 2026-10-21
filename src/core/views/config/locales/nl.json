@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP accepteert {size} per aanvraag (post_max_size)",
             "phpIsBottleneck": "PHP is de krappere grens: verhoog post_max_size en upload_max_filesize in php.ini en bepaal opnieuw",
             "error": "De grens kon niet worden bepaald"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "SumUp inschakelen",
+        "sumupEnabled_help": "Schakelt de betaalterminal in de factuur in: stuur een bedrag via het invoerveld in de betaalkaart naar de terminal (volledig openstaand bedrag, aanbetaling of eigen risico); bij een volledig betaalde factuur drukt de knop het betaalbewijs opnieuw af",
+        "sumupApiKey": "SumUp API-sleutel",
+        "sumupApiKey_help": "Geheime API-sleutel uit het SumUp-dashboard (developer.sumup.com → API Keys), begint met sup_sk_",
+        "sumupMerchantCode": "Merchant-code",
+        "sumupMerchantCode_help": "Handelaarsidentificatie uit uw SumUp-profiel (bijv. MCXXXXXX)",
+        "sumupPrintCopies": "Exemplaren na kaartbetaling",
+        "sumupPrintCopies_help": "Aantal factuurafdrukken dat na een geslaagde terminalbetaling automatisch op de gekozen printer wordt gemaakt – met kaartvermelding en klantbon (0 = geen automatische afdruk, standaard 2)",
+        "sumupPairing": {
+            "title": "Terminal koppelen",
+            "description": "Verbindt een SumUp-terminal (Solo) via de Cloud API met dit account.",
+            "saveFirst": "Vul eerst hierboven de API-sleutel en merchant-code in en sla op, koppel daarna de terminal.",
+            "hint": "Meld u op de terminal eerst AF (Instellingen → Info → Afmelden) — pas daarna verschijnt: Verbindingen → Wifi → API → Verbinden. Voer de getoonde koppelcode hier in.",
+            "codeLabel": "Koppelcode",
+            "pairBtn": "Koppelen",
+            "unpairBtn": "Ontkoppelen",
+            "current": "Gekoppelde terminal: {name}",
+            "none": "Er is nog geen terminal gekoppeld.",
+            "success": "Terminal succesvol gekoppeld.",
+            "error": "Koppelen mislukt.",
+            "unpaired": "Terminal ontkoppeld."
+        },
+        "sumupAutoSend": "Bedrag automatisch sturen",
+        "sumupAutoSend_help": "Wordt een factuur uit een offerte of order aangemaakt, dan gaat het openstaande bedrag direct naar de terminal (standaard: aan). Bij het openen van bestaande of betaalde facturen wordt nooit automatisch verzonden"
     },
     "add": "Toevoegen",
     "add_fields": {

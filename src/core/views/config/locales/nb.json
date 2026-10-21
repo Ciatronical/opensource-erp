@@ -1012,7 +1012,32 @@
             "phpLimit": "PHP godtar {size} per forespørsel (post_max_size)",
             "phpIsBottleneck": "PHP er den strammere grensen: øk post_max_size og upload_max_filesize i php.ini og hent på nytt",
             "error": "Grensen kunne ikke hentes"
-        }
+        },
+        "sumup": "SumUp",
+        "sumupEnabled": "Aktiver SumUp",
+        "sumupEnabled_help": "Aktiverer kortterminalen i fakturaen: send et beløp til terminalen via inntastingsfeltet i betalingskortet (hele utestående beløp, forskudd eller egenandel); ved en fullt betalt faktura skriver knappen ut betalingskvitteringen på nytt",
+        "sumupApiKey": "SumUp API-nøkkel",
+        "sumupApiKey_help": "Hemmelig API-nøkkel fra SumUp-dashbordet (developer.sumup.com → API Keys), begynner med sup_sk_",
+        "sumupMerchantCode": "Merchant-kode",
+        "sumupMerchantCode_help": "Forhandler-ID fra SumUp-profilen din (f.eks. MCXXXXXX)",
+        "sumupPrintCopies": "Eksemplarer etter kortbetaling",
+        "sumupPrintCopies_help": "Antall fakturautskrifter som opprettes automatisk på valgt skriver etter en vellykket terminalbetaling – med kortmerknad og kundekvittering (0 = ingen automatisk utskrift, standard 2)",
+        "sumupPairing": {
+            "title": "Koble til terminal",
+            "description": "Kobler en SumUp-terminal (Solo) til denne kontoen via Cloud API.",
+            "saveFirst": "Fyll inn og lagre API-nøkkel og Merchant-kode ovenfor først, og koble deretter til terminalen.",
+            "hint": "LOGG FØRST UT på terminalen (Innstillinger → Om → Logg ut) — først da vises: Tilkoblinger → Wi-Fi → API → Koble til. Skriv inn den viste paringskoden her.",
+            "codeLabel": "Paringskode",
+            "pairBtn": "Koble til",
+            "unpairBtn": "Koble fra",
+            "current": "Tilkoblet terminal: {name}",
+            "none": "Ingen terminal er koblet til ennå.",
+            "success": "Terminalen ble koblet til.",
+            "error": "Tilkobling mislyktes.",
+            "unpaired": "Terminalen er koblet fra."
+        },
+        "sumupAutoSend": "Send beløp automatisk",
+        "sumupAutoSend_help": "Når en faktura opprettes fra et tilbud eller en ordre, sendes det utestående beløpet straks til terminalen (standard: på). Ved åpning av eksisterende eller betalte fakturaer sendes det aldri automatisk"
     },
     "add": "Legg til",
     "add_fields": {
