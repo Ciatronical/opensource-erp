@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Rozdzielona przecinkami lista adresów, z których witryna może się łączyć. Pozostaw puste, jeśli witryna używa tego samego adresu przez przekaźnik /portal-api/.",
             "backendUrl": "Adres dostępu portalowego OpensourceERP",
             "backendUrl_help": "Witryna przekazuje logowanie, konto, faktury oraz — ze sklepem — koszyk i kasę na ten adres: publiczny dostęp portalowy OpensourceERP (backend/portal/), na przykład https://erp.example.pl/portal/. Nie adres HugoCMS ani adres witryny. Pakiet zapisuje go z kluczem w oserp-portal/config.json. Puste pole jest wstępnie wypełniane adresem, pod którym OpensourceERP jest obecnie wywoływany.",
-            "links": "Adresy witryny",
+            "pages": "Strony witryny",
             "baseUrl": "Adres witryny",
             "baseUrl_help": "Pełny adres wraz z https://. Jeśli portal klienta znajduje się pod witryną, ze ścieżką: https://warsztat.example/klienci/ — przekaźnik znajduje się wtedy pod tą ścieżką (…/klienci/portal-api/).",
             "invoicePage_help": "Strona witryny z shortcode shop-invoice, np. /faktura/. Maile odsyłają tam, aby status widzieli także goście bez konta. Puste = /rechnung/.",
             "templateSet_help": "Określa wygląd pakietu (szablony i shortcode’y). Własne zestawy leżą w katalogu szablonów pod portal/.",
             "grants_help": "Gdzie OpensourceERP może zapisywać, określa HugoCMS (ustawienia projektu → Połączenie OpensourceERP). Tutaj tylko do wglądu; transfer stosuje uprawnienia za każdym razem.",
-            "grantPackage": "Pakiet",
+            "grantPackage": "Pakiet portalu klienta",
             "signingKey_help": "Wpisz w HugoCMS w ustawieniach projektu → Połączenie OpensourceERP. Wtedy OpensourceERP sam przesyła przekaźnik i stronę 404. Dotyczy wszystkich witryn tej instalacji."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "Dostęp portalowy odrzucił klucz — sprawdź klucz witryny; przez witrynę obowiązuje ostatnio przesłany.",
             "PROXY_NOT_CONFIGURED": "Przekaźnik działa, ale nie znajduje oserp-portal/config.json lub plik jest niekompletny — uruchom „Zainstaluj pakiet”.",
             "FOREIGN": "Nieoczekiwana odpowiedź (HTTP {status}) — nie odpowiada tam dostęp portalowy OpensourceERP."
-        }
+        },
+        "hugocmsShopOff": "W HugoCMS sklep internetowy nie jest włączony dla tej witryny — włącz „Sklep internetowy w tej witrynie” w ustawieniach projektu w sekcji „Połączenie OpensourceERP”. Do tego czasu przebieg sklepu nie przesyła stron produktów."
     }
 }

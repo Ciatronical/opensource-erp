@@ -1189,7 +1189,7 @@
         "shopHugoCmsGrantImages": "Product images",
         "shopHugoCmsGrantThumbnails": "Thumbnails",
         "shopHugoCmsGrantDownloads": "Downloads",
-        "shopHugoCmsGrantPackage": "Shop package",
+        "shopHugoCmsGrantPackage": "Customer portal package",
         "shopHugoCmsCategoryMismatch": "The template set expects the category overview at {expected}, HugoCMS grants {granted} — its templates will not find it there. Adjust the “Category overview” grant in HugoCMS.",
         "shopLinkSuggestion": "The address patterns do not match the grants. Suggestion from the grants:",
         "shopLinkSuggestionApply": "Apply suggestion",

@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Imagens de produto",
         "shopHugoCmsGrantThumbnails": "Miniaturas",
         "shopHugoCmsGrantDownloads": "Transferências",
-        "shopHugoCmsGrantPackage": "Pacote da loja",
+        "shopHugoCmsGrantPackage": "Pacote do portal de clientes",
         "shopHugoCmsCategoryMismatch": "O conjunto de modelos espera a vista geral das categorias em {expected}, o HugoCMS autoriza {granted} — os seus modelos não a encontrarão aí. Ajuste a autorização «Vista geral das categorias» no HugoCMS.",
         "shopLinkSuggestion": "Os padrões de endereço não correspondem às autorizações. Proposta com base nas autorizações:",
         "shopLinkSuggestionApply": "Aplicar proposta",

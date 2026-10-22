@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "产品图片",
         "shopHugoCmsGrantThumbnails": "缩略图",
         "shopHugoCmsGrantDownloads": "下载",
-        "shopHugoCmsGrantPackage": "商店包",
+        "shopHugoCmsGrantPackage": "客户门户软件包",
         "shopHugoCmsCategoryMismatch": "模板集期望分类概览位于 {expected}，HugoCMS 授权的是 {granted}——其模板在那里找不到它。请在 HugoCMS 中调整“分类概览”授权。",
         "shopLinkSuggestion": "地址模式与授权不符。根据授权提出的建议：",
         "shopLinkSuggestionApply": "采用建议",

@@ -392,6 +392,12 @@ function hugocmsBericht(stand) {
         art = 'warning'
     }
     if (stand.running) zeilen.push(t('crm_fields.shopHugoCmsRunning'))
+    // Shop auf der Webseite, aber in HugoCMS nicht freigegeben: der Lauf
+    // scheitert dann an den Freigaben — hier schon beim Verbindungstest sagen
+    if (false === stand.onlineShop && stand.features?.shop) {
+        zeilen.push(t('WebsitesView.hugocmsShopOff'))
+        art = 'warning'
+    }
     if (stand.grants_error) {
         zeilen.push(stand.grants_error)
         art = 'error'

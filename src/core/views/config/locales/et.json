@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Tootepildid",
         "shopHugoCmsGrantThumbnails": "Pisipildid",
         "shopHugoCmsGrantDownloads": "Allalaadimised",
-        "shopHugoCmsGrantPackage": "Poe pakett",
+        "shopHugoCmsGrantPackage": "Kliendiportaali pakett",
         "shopHugoCmsCategoryMismatch": "Mallikomplekt ootab kategooriate ülevaadet asukohas {expected}, HugoCMS lubab {granted} — mallid ei leia seda sealt. Kohandage HugoCMS-is luba „Kategooriate ülevaade“.",
         "shopLinkSuggestion": "Aadressimustrid ei vasta lubadele. Ettepanek lubade põhjal:",
         "shopLinkSuggestionApply": "Võta ettepanek üle",

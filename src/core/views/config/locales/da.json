@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Produktbilleder",
         "shopHugoCmsGrantThumbnails": "Miniaturer",
         "shopHugoCmsGrantDownloads": "Downloads",
-        "shopHugoCmsGrantPackage": "Butikspakke",
+        "shopHugoCmsGrantPackage": "Kundeportal-pakke",
         "shopHugoCmsCategoryMismatch": "Skabelonsættet forventer kategorioversigten i {expected}, HugoCMS frigiver {granted} — skabelonerne finder den ikke der. Tilpas frigivelsen „Kategorioversigt“ i HugoCMS.",
         "shopLinkSuggestion": "Adressemønstrene passer ikke til frigivelserne. Forslag ud fra frigivelserne:",
         "shopLinkSuggestionApply": "Overtag forslag",

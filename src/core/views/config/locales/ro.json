@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Imagini de produs",
         "shopHugoCmsGrantThumbnails": "Miniaturi",
         "shopHugoCmsGrantDownloads": "Descărcări",
-        "shopHugoCmsGrantPackage": "Pachetul magazinului",
+        "shopHugoCmsGrantPackage": "Pachetul portalului clienților",
         "shopHugoCmsCategoryMismatch": "Setul de șabloane așteaptă prezentarea categoriilor la {expected}, HugoCMS permite {granted} — șabloanele sale nu o vor găsi acolo. Ajustați în HugoCMS permisiunea „Prezentarea categoriilor”.",
         "shopLinkSuggestion": "Modelele de adresă nu se potrivesc cu permisiunile. Propunere pe baza permisiunilor:",
         "shopLinkSuggestionApply": "Preia propunerea",

@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Imágenes de producto",
         "shopHugoCmsGrantThumbnails": "Miniaturas",
         "shopHugoCmsGrantDownloads": "Descargas",
-        "shopHugoCmsGrantPackage": "Paquete de la tienda",
+        "shopHugoCmsGrantPackage": "Paquete del portal de clientes",
         "shopHugoCmsCategoryMismatch": "El conjunto de plantillas espera el resumen de categorías en {expected}, HugoCMS autoriza {granted}; sus plantillas no lo encontrarán allí. Ajuste la autorización «Resumen de categorías» en HugoCMS.",
         "shopLinkSuggestion": "Los patrones de dirección no coinciden con las autorizaciones. Propuesta a partir de las autorizaciones:",
         "shopLinkSuggestionApply": "Aplicar propuesta",

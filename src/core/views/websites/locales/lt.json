@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Kableliais atskirtas adresų sąrašas, iš kurių svetainė gali kreiptis. Palikite tuščią, jei svetainė naudoja tą patį adresą per peradresavimą /portal-api/.",
             "backendUrl": "OpensourceERP portalo prieigos adresas",
             "backendUrl_help": "Svetainė peradresuoja prisijungimą, paskyrą, sąskaitas ir — su parduotuve — krepšelį ir kasą šiuo adresu: viešoji OpensourceERP portalo prieiga (backend/portal/), pavyzdžiui, https://erp.example.lt/portal/. Ne HugoCMS ir ne svetainės adresas. Paketas jį su raktu įrašo į oserp-portal/config.json. Tuščias laukas užpildomas adresu, kuriuo OpensourceERP šiuo metu pasiekiamas.",
-            "links": "Svetainės adresai",
+            "pages": "Svetainės puslapiai",
             "baseUrl": "Svetainės adresas",
             "baseUrl_help": "Visas adresas su https://. Jei klientų portalas yra po svetaine, su keliu: https://dirbtuve.example/klientai/ — peradresavimas tada yra po šiuo keliu (…/klientai/portal-api/).",
             "invoicePage_help": "Svetainės puslapis su trumpuoju kodu shop-invoice, pvz., /saskaita/. Laiškai nukreipia ten, kad būseną matytų ir svečiai be paskyros. Tuščia = /rechnung/.",
             "templateSet_help": "Nustato paketo išvaizdą (šablonai ir trumpieji kodai). Savi rinkiniai yra šablonų kataloge portal/.",
             "grants_help": "Kur OpensourceERP gali rašyti, nustato HugoCMS (projekto nustatymai → OpensourceERP jungtis). Čia tik peržiūrai; perkėlimas leidimus taiko kiekvieną kartą.",
-            "grantPackage": "Paketas",
+            "grantPackage": "Klientų portalo paketas",
             "signingKey_help": "Įveskite HugoCMS projekto nustatymuose → OpensourceERP jungtis. Tada OpensourceERP pats perkelia peradresavimą ir 404 puslapį. Galioja visoms šio diegimo svetainėms."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "Portalo prieiga atmetė raktą — patikrinkite svetainės raktą; per svetainę galioja paskutinį kartą perkeltas.",
             "PROXY_NOT_CONFIGURED": "Peradresavimas veikia, bet neranda oserp-portal/config.json arba jis neišsamus — paleiskite „Įdiegti paketą“.",
             "FOREIGN": "Netikėtas atsakymas (HTTP {status}) — ten atsako ne OpensourceERP portalo prieiga."
-        }
+        },
+        "hugocmsShopOff": "HugoCMS šiai svetainei internetinė parduotuvė neįjungta — projekto nustatymuose, skiltyje „OpensourceERP jungtis“, įjunkite „Internetinė parduotuvė šioje svetainėje“. Iki tol parduotuvės vykdymas neperkelia produktų puslapių."
     }
 }

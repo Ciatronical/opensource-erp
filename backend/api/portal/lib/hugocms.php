@@ -247,6 +247,13 @@ function portalHugoCmsGrantsFrom(array $antwort, array $pflicht = []): array {
     $medien = (array)($antwort['data']['media'] ?? []);
     $ergebnis['medien'] = !empty($medien['accepted']);
     $ergebnis['medien_stueck'] = (int)($medien['chunkBytes'] ?? 0);
+    // Online-Shop in HugoCMS nicht freigegeben: dann fehlen die Freigaben des
+    // Shops mit Absicht — ein anderer Rat als bei unbrauchbaren Einträgen
+    if ($pflicht && array_key_exists('onlineShop', (array)$antwort['data']) && !$antwort['data']['onlineShop']) {
+        return ['freigaben' => [], 'fehler' => 'In HugoCMS ist der Online-Shop für diese Webseite nicht freigegeben — in den '
+            .'Projekteinstellungen unter „OpensourceERP-Anbindung“ den Schalter „Online-Shop auf dieser Webseite“ einschalten '
+            .'und die Freigaben speichern'];
+    }
     $unbrauchbar = [];
     foreach ($pflicht as $feld => $name) {
         $wert = is_string($freigaben[$feld] ?? null) ? trim($freigaben[$feld], '/') : '';

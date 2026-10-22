@@ -1038,7 +1038,7 @@
         "shopHugoCmsGrantImages": "Zdjęcia produktów",
         "shopHugoCmsGrantThumbnails": "Miniatury",
         "shopHugoCmsGrantDownloads": "Pliki do pobrania",
-        "shopHugoCmsGrantPackage": "Pakiet sklepu",
+        "shopHugoCmsGrantPackage": "Pakiet portalu klienta",
         "shopHugoCmsCategoryMismatch": "Zestaw szablonów oczekuje przeglądu kategorii w {expected}, HugoCMS zezwala na {granted} — jego szablony go tam nie znajdą. Dostosuj w HugoCMS uprawnienie „Przegląd kategorii”.",
         "shopLinkSuggestion": "Wzorce adresów nie pasują do uprawnień. Propozycja na podstawie uprawnień:",
         "shopLinkSuggestionApply": "Przejmij propozycję",

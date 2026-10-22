@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Produktu attēli",
         "shopHugoCmsGrantThumbnails": "Sīktēli",
         "shopHugoCmsGrantDownloads": "Lejupielādes",
-        "shopHugoCmsGrantPackage": "Veikala pakotne",
+        "shopHugoCmsGrantPackage": "Klientu portāla pakotne",
         "shopHugoCmsCategoryMismatch": "Veidņu kopa sagaida kategoriju pārskatu vietā {expected}, HugoCMS atļauj {granted} — tās veidnes to tur neatradīs. HugoCMS pielāgojiet atļauju „Kategoriju pārskats“.",
         "shopLinkSuggestion": "Adrešu paraugi neatbilst atļaujām. Ieteikums pēc atļaujām:",
         "shopLinkSuggestionApply": "Pārņemt ieteikumu",

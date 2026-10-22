@@ -28,6 +28,9 @@ const website = [
 
     { name: "zugang", type: "headline", label: "WebsitesView.fields.access" },
 
+    // Die Adresse der Webseite zuerst: über sie läuft der dritte Prüfschritt
+    // (Weiterleiter /portal-api/), und auf sie beziehen sich die Herkünfte
+    { name: "base_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "WebsitesView.fields.baseUrl", tooltip: "WebsitesView.fields.baseUrl_help" },
     // Erzeugt wird ein neuer Schlüssel im Browser; er gehört auch in den
     // Reverse-Proxy, falls einer den mitgelieferten ersetzt. Je Webseite ein
     // eigener — er bestimmt im öffentlichen Zugang Mandant und Webseite.
@@ -36,9 +39,9 @@ const website = [
     // action: die Karte zeigt unter dem Feld „Verbindung prüfen“ (testWebsiteBackendUrl)
     { name: "backend_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "WebsitesView.fields.backendUrl", tooltip: "WebsitesView.fields.backendUrl_help", action: "backendTest" },
 
-    { name: "adressen", type: "headline", label: "WebsitesView.fields.links" },
+    // Seiten der Webseite, auf die Mails und Nachrichten verlinken
+    { name: "seiten", type: "headline", label: "WebsitesView.fields.pages" },
 
-    { name: "base_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "WebsitesView.fields.baseUrl", tooltip: "WebsitesView.fields.baseUrl_help" },
     // Seite mit <shop-invoice> — Ziel des Links in den Mails; leer = /rechnung/
     { name: "invoice_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopInvoicePage", tooltip: "WebsitesView.fields.invoicePage_help" },
     // Seite mit <portal-activate> — Ziel des Links in der WhatsApp-Nachricht; leer = /freischalten/

@@ -1191,7 +1191,7 @@
         "shopHugoCmsGrantImages": "Produktbilder",
         "shopHugoCmsGrantThumbnails": "Vorschaubilder",
         "shopHugoCmsGrantDownloads": "Downloads",
-        "shopHugoCmsGrantPackage": "Shop-Paket",
+        "shopHugoCmsGrantPackage": "Kundenportal-Paket",
         "shopHugoCmsCategoryMismatch": "Der Vorlagensatz erwartet die Kategorieübersicht unter {expected}, HugoCMS gibt {granted} frei — seine Vorlagen finden sie dort nicht. In HugoCMS die Freigabe „Kategorieübersicht“ anpassen.",
         "shopLinkSuggestion": "Die Adressmuster passen nicht zu den Freigaben. Vorschlag aus den Freigaben:",
         "shopLinkSuggestionApply": "Vorschlag übernehmen",

@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Door komma’s gescheiden lijst van adressen waarvandaan de website mag aanroepen. Leeg laten als de website via de doorstuurder /portal-api/ hetzelfde adres gebruikt.",
             "backendUrl": "Adres van de portaaltoegang van OpensourceERP",
             "backendUrl_help": "De website stuurt aanmelding, account, facturen en — met winkel — winkelwagen en kassa door naar dit adres: de openbare portaaltoegang van OpensourceERP (backend/portal/), bijvoorbeeld https://erp.example.nl/portal/. Niet het adres van HugoCMS en niet dat van de website. Het pakket schrijft het met de sleutel in oserp-portal/config.json. Een leeg veld wordt vooraf ingevuld met het adres waarop OpensourceERP nu wordt aangeroepen.",
-            "links": "Adressen van de website",
+            "pages": "Pagina’s van de website",
             "baseUrl": "Adres van de website",
             "baseUrl_help": "Volledig adres inclusief https://. Staat het klantenportaal onder een website, met pad: https://werkplaats.example/klanten/ — de doorstuurder staat dan onder dat pad (…/klanten/portal-api/).",
             "invoicePage_help": "Pagina van de website met de shortcode shop-invoice, bijv. /factuur/. Mails linken daarheen zodat ook gasten zonder account de status zien. Leeg = /rechnung/.",
             "templateSet_help": "Bepaalt het uiterlijk van het pakket (sjablonen en shortcodes). Eigen sets staan in de sjabloonmap onder portal/.",
             "grants_help": "Waar OpensourceERP mag schrijven, bepaalt HugoCMS (projectinstellingen → OpensourceERP-koppeling). Hier alleen ter inzage; de overdracht past de vrijgaven elke keer toe.",
-            "grantPackage": "Pakket",
+            "grantPackage": "Klantenportaalpakket",
             "signingKey_help": "Invoeren in HugoCMS onder projectinstellingen → OpensourceERP-koppeling. Dan draagt OpensourceERP de doorstuurder en de 404-pagina zelf over. Geldt voor alle websites van deze installatie."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "De portaaltoegang heeft de sleutel geweigerd — sleutel van de website controleren; via de website geldt de laatst overgedragen sleutel.",
             "PROXY_NOT_CONFIGURED": "De doorstuurder werkt, maar vindt oserp-portal/config.json niet of onvolledig — „Pakket installeren“ uitvoeren.",
             "FOREIGN": "Onverwacht antwoord (HTTP {status}) — daar antwoordt niet de portaaltoegang van OpensourceERP."
-        }
+        },
+        "hugocmsShopOff": "In HugoCMS is de webwinkel voor deze website niet vrijgegeven — zet in de projectinstellingen onder „OpensourceERP-koppeling“ de schakelaar „Webwinkel op deze website“ aan. Tot dan draagt de winkelrun geen productpagina’s over."
     }
 }

@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Produktbilder",
         "shopHugoCmsGrantThumbnails": "Miniatyrbilder",
         "shopHugoCmsGrantDownloads": "Nedlastinger",
-        "shopHugoCmsGrantPackage": "Butikkpakke",
+        "shopHugoCmsGrantPackage": "Kundeportal-pakke",
         "shopHugoCmsCategoryMismatch": "Malsettet forventer kategorioversikten i {expected}, HugoCMS frigir {granted} — malene finner den ikke der. Juster frigivelsen «Kategorioversikt» i HugoCMS.",
         "shopLinkSuggestion": "Adressemønstrene passer ikke til frigivelsene. Forslag ut fra frigivelsene:",
         "shopLinkSuggestionApply": "Bruk forslaget",

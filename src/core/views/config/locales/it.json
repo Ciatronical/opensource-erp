@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Immagini prodotto",
         "shopHugoCmsGrantThumbnails": "Miniature",
         "shopHugoCmsGrantDownloads": "Download",
-        "shopHugoCmsGrantPackage": "Pacchetto negozio",
+        "shopHugoCmsGrantPackage": "Pacchetto del portale clienti",
         "shopHugoCmsCategoryMismatch": "Il set di modelli si aspetta la panoramica categorie in {expected}, HugoCMS autorizza {granted}: i suoi modelli non la troveranno lì. Adattate l’autorizzazione «Panoramica categorie» in HugoCMS.",
         "shopLinkSuggestion": "I modelli di indirizzo non corrispondono alle autorizzazioni. Proposta in base alle autorizzazioni:",
         "shopLinkSuggestionApply": "Applica proposta",
