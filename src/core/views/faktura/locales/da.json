@@ -52,6 +52,7 @@
             "email": "E-mail"
         },
         "faktura": {
+            "cashBelegAuto": "Bilagsnummeret tildeles fortløbende af kassen ved gemning",
             "workflow": "Workflow",
             "reuse": "Als neu verwenden",
             "createQuotation": "Tilbud erstellen",

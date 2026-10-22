@@ -52,6 +52,7 @@
             "email": "E-mail"
         },
         "faktura": {
+            "cashBelegAuto": "Numer dowodu nadaje kasa kolejno przy zapisie",
             "workflow": "Przepływ pracy",
             "reuse": "Użyj jako nowy",
             "createQuotation": "Utwórz ofertę",

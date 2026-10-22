@@ -52,6 +52,7 @@
             "email": "E-post"
         },
         "faktura": {
+            "cashBelegAuto": "Kassan tilldelar verifikationsnumret löpande vid sparande",
             "workflow": "Workflow",
             "reuse": "Als neu verwenden",
             "createQuotation": "Offert erstellen",

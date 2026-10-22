@@ -256,6 +256,12 @@ function bookTransactionToChart($data) {
     // Gegenkonto Haben (+); Geldausgang → Bank Haben (+), Gegenkonto Soll (−).
     $counterSign = $amount > 0 ? 1 : -1;
     $transdate   = $bt['transdate'];
+
+    // Eine Transaktion für Belegnummer, GL-Kopf, Beine und Verknüpfung: Der
+    // Belegkreis ist nur innerhalb der Transaktion gegen gleichzeitige
+    // Buchungen gesperrt.
+    $db->beginTransaction();
+    try {
     $beleg       = nextBelegnummer($db, $bt['chart_id'], $transdate);
     $memo        = "Beleg {$beleg} · Dialogbuchung Umsatz #{$btId}";
     $description = trim($data['description'] ?? '') ?: trim(($bt['remote_name'] ?? '') . ' · ' . ($bt['purpose'] ?? ''), ' ·');
@@ -312,6 +318,11 @@ function bookTransactionToChart($data) {
     $tpl = trim($data['template_key'] ?? '');
     if ($tpl !== '') {
         $db->execute("UPDATE bank_booking_templates SET hit_count = hit_count + 1, mtime = now() WHERE key = :k", ['k' => $tpl]);
+    }
+    $db->commit();
+    } catch (\Throwable $e) {
+        $db->rollBack();
+        throw $e;
     }
 
     resultInfo(true, 'Umsatz gebucht', [

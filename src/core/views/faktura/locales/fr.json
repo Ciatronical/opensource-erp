@@ -52,6 +52,7 @@
             "email": "E-mail"
         },
         "faktura": {
+            "cashBelegAuto": "La caisse attribue le numéro de pièce de façon continue à l'enregistrement",
             "workflow": "Workflow",
             "reuse": "Reutiliser comme nouveau",
             "createQuotation": "Creer un devis",

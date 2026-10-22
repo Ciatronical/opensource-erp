@@ -12,15 +12,39 @@
  * und Kalenderjahr. Es wird die höchste bereits vergebene Nummer gesucht; +1 ist
  * die nächste. Gibt es noch keine (z. B. zu Jahresbeginn), wird 1 zurückgegeben.
  *
+ * Die Nummer wird IMMER erst beim Schreiben der Buchung vergeben, nie im Dialog
+ * vorab reserviert: Eine im Browser vorgemerkte Nummer ist beim Speichern längst
+ * veraltet, wenn dazwischen jemand anderes gebucht hat (Kasse: doppelte 393,
+ * vertauschte 391/392/393 im August 2026). Was der Dialog anzeigt, ist nur eine
+ * Vorschau (getNextBelegnummer / getNextCashBelegnummer).
+ *
+ * Gegen gleichzeitige Buchungen sperrt die Funktion den Belegkreis (Konto + Jahr)
+ * mit einem Transaktions-Advisory-Lock. Der Lock gilt bis zum Commit, also muss
+ * die Buchung in derselben Transaktion geschrieben werden — jeder schreibende
+ * Aufrufer öffnet deshalb vorher eine Transaktion. Ohne Transaktion (reine
+ * Vorschau) ist der Lock sofort wieder frei und schadet nicht.
+ *
  * Die höchste Nummer wird aus ALLEN Speicherorten ermittelt, damit pro Konto
  * eine einzige durchgehende Sequenz entsteht:
- *  - gl.reference (numerisch): native kivitendo-Kassenbuchungen (Dialogbuchen)
- *    legen die Belegnummer hier ab.
- *  - acc_trans.source (numerisch): Kassen-/Faktura-Zahlungen legen die Nummer hier ab.
- *    Native Rechnungs-Barzahlungen tragen aber die Rechnungsnummer in source — diese
- *    werden ausgeschlossen (source = ar/ap-invnumber), damit die Sequenz nicht springt.
- *  - acc_trans.memo  ("Beleg N · …"): Bankabstimmungen behalten source='BANK'
+ *  - gl.reference (numerisch): Dialogbuchungen (Kasse, „Auf Konto buchen",
+ *    native kivitendo-Buchungen) legen die Belegnummer hier ab.
+ *  - acc_trans.source (numerisch): Kassen-/Faktura-/Bankzahlungen legen die
+ *    Nummer hier ab. Native Rechnungszahlungen tragen dagegen die Rechnungsnummer
+ *    der EIGENEN Rechnung in source — die zählen nicht mit.
+ *  - acc_trans.memo  („Beleg N · …"): Bankabstimmungen behalten source='BANK'
  *    (von Faktura-Schutz/Storno benötigt) und betten die Nummer ins memo ein.
+ *
+ * Plausibilitätsgrenze: Eine fortlaufende Nummer kann nie größer sein als die
+ * Anzahl der Buchungen des Jahres auf dem Konto (plus Luft für gelöschte
+ * Buchungen). Alles darüber ist keine Belegnummer, sondern eine ins Belegfeld
+ * getippte Rechnungsnummer (252579 → die Kasse vergab 252580) oder ein Datum
+ * („03-2026" → 32026). Solche Werte werden ignoriert, statt die Folge in den
+ * Rechnungsnummernkreis zu ziehen. Der frühere Ansatz, Werte auszuschließen,
+ * die irgendeiner Rechnungsnummer gleichen, war selbst die Fehlerquelle: Nach
+ * dem Sprung auf 252580 wurde genau diese Nummer ausgeschlossen, das Maximum
+ * blieb bei 252579 und zwei Buchungen bekamen dieselbe 252580. Außerdem hätte
+ * jede Lieferantenrechnung mit kleiner Nummer („1222") die Kassenfolge an
+ * dieser Stelle dauerhaft verdoppelt.
  *
  * Die CASE-Ausdrücke verhindern Cast-Fehler bei nicht-numerischem Wert.
  *
@@ -32,30 +56,40 @@
 function nextBelegnummer($db, $chartId, $transdate) {
     $year = intval(substr((string)$transdate, 0, 4)) ?: intval(date('Y'));
 
+    // Belegkreis sperren (Konto, Jahr) — wirkt nur innerhalb einer Transaktion
+    $db->execute("SELECT pg_advisory_xact_lock(:cid::int, :year::int)",
+        ['cid' => $chartId, 'year' => $year]);
+
     $row = $db->getOne("
+        WITH buchungen AS (
+            SELECT at.source, at.memo, at.trans_id, gl.reference,
+                   COUNT(*) OVER () AS anzahl
+            FROM acc_trans at
+            LEFT JOIN gl ON gl.id = at.trans_id
+            WHERE at.chart_id = :cid
+              AND EXTRACT(YEAR FROM at.transdate) = :year
+        ),
+        grenze AS (
+            -- Mehr als (Buchungen + 500) kann eine fortlaufende Nummer nicht sein
+            SELECT COALESCE(MAX(anzahl), 0) + 500 AS max_plausibel FROM buchungen
+        )
         SELECT GREATEST(
-            -- GL-Kassenbuchungen: kivitendo legt die Belegnummer in gl.reference ab.
-            -- Aber OHNE Rechnungsnummern: eine kivitendo-Dialogbuchung mit der
-            -- Rechnungsnummer als Referenz (z. B. Zahlung zu 252401) hat die
-            -- Bank-Belegnummernfolge sonst in den Rechnungsnummernbereich gezogen
-            -- (Beleg 252402 statt 6).
-            COALESCE(MAX(CASE WHEN gl.reference ~ '^[0-9]+$'
-                              AND NOT EXISTS (SELECT 1 FROM ar WHERE invnumber = gl.reference)
-                              AND NOT EXISTS (SELECT 1 FROM ap WHERE invnumber = gl.reference)
-                              THEN gl.reference::bigint END), 0),
-            -- acc_trans.source, aber OHNE native Rechnungsnummern (source = ar/ap-invnumber)
-            COALESCE(MAX(CASE WHEN at.source ~ '^[0-9]+$'
-                              AND NOT EXISTS (SELECT 1 FROM ar WHERE invnumber = at.source)
-                              AND NOT EXISTS (SELECT 1 FROM ap WHERE invnumber = at.source)
-                              THEN at.source::bigint END), 0),
+            COALESCE(MAX(CASE WHEN b.reference ~ '^[0-9]{1,9}$'
+                              AND b.reference::bigint <= g.max_plausibel
+                              THEN b.reference::bigint END), 0),
+            -- source, aber nicht die Rechnungsnummer der eigenen Rechnung
+            COALESCE(MAX(CASE WHEN b.source ~ '^[0-9]{1,9}$'
+                              AND b.source::bigint <= g.max_plausibel
+                              AND NOT EXISTS (SELECT 1 FROM ar WHERE ar.id = b.trans_id AND ar.invnumber = b.source)
+                              AND NOT EXISTS (SELECT 1 FROM ap WHERE ap.id = b.trans_id AND ap.invnumber = b.source)
+                              THEN b.source::bigint END), 0),
             -- Bankabstimmung: Belegnummer als 'Beleg N · …' im memo
-            COALESCE(MAX(CASE WHEN at.memo ~ '^Beleg [0-9]+'
-                              THEN substring(at.memo from '^Beleg ([0-9]+)')::bigint END), 0)
+            COALESCE(MAX(CASE WHEN b.memo ~ '^Beleg [0-9]{1,9}'
+                              AND substring(b.memo from '^Beleg ([0-9]+)')::bigint <= g.max_plausibel
+                              THEN substring(b.memo from '^Beleg ([0-9]+)')::bigint END), 0)
         ) + 1 AS next
-        FROM acc_trans at
-        LEFT JOIN gl ON gl.id = at.trans_id
-        WHERE at.chart_id = :cid
-          AND EXTRACT(YEAR FROM at.transdate) = :year
+        FROM buchungen b CROSS JOIN grenze g
+        GROUP BY g.max_plausibel
     ", ['cid' => $chartId, 'year' => $year]);
 
     return strval(intval($row['next'] ?? 1) ?: 1);

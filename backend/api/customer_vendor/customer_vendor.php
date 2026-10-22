@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__.'/../lib/kontenrahmen.php';  // kassenkontoBedingung()
 // backend/api/customer_vendor/customer_vendor.php
 /**
  * Holt Kunden- oder Lieferanten-Daten mit allen zugehörigen Informationen
@@ -194,6 +195,8 @@ function getCV($data, $withConfig = []) {
     $auth->fetchSessionData();
     // Übergangslösung Rollout: siehe extensionsSelectSql()
     $extensionsSelect = extensionsSelectSql($mandant, true);
+    // Kassenkonten: dort vergibt die Kasse die Belegnummer, das Belegfeld ist gesperrt
+    $kassenkonto = kassenkontoBedingung('chart');
     $query = <<<SQL
            SELECT json_build_object(
                 'logged_in_employee',
@@ -367,7 +370,8 @@ function getCV($data, $withConfig = []) {
                                     SELECT
                                         id,
                                         accno,
-                                        description
+                                        description,
+                                        {$kassenkonto} AS is_cash
                                     FROM chart
                                     WHERE link LIKE '%AP_paid%'
                                 ) AS payment_acc

@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__.'/../lib/kontenrahmen.php';  // kassenkontoBedingung()
+require_once __DIR__.'/../banking/banking_utils.php';  // nextBelegnummer()
 // backend/api/faktura/faktura.php
 
 /**
@@ -1056,6 +1058,82 @@ function saveFakturaItemAsNewPart($data) {
 }
 
 /**
+ * Belegnummern für Barzahlungen eines Belegs vergeben (Faktura-Editor).
+ *
+ * Der Editor schickt je Zahlung zwei Beine (Forderungs-/Verbindlichkeitskonto
+ * und Geldkonto) mit identischem source. Liegt das Geldkonto auf einem
+ * Kassenkonto, ist das Belegfeld eine Kassenbuch-Belegnummer und muss
+ * fortlaufend sein — der Wert aus dem Browser zählt deshalb nicht:
+ *  - Bestehende Zahlungen (acc_trans_id > 0) behalten die im Hauptbuch
+ *    gespeicherte Nummer, auch wenn der Editor etwas anderes schickt.
+ *  - Neue Zahlungen bekommen nextBelegnummer(); mehrere neue in einem
+ *    Speichervorgang zählen lokal hoch, weil noch nichts geschrieben ist.
+ *  - Das Gegenbein wird über acc_trans_id bzw. (bei neuen) über Datum, Betrag,
+ *    Memo und bisherigem source gefunden und bekommt dieselbe Nummer.
+ * Bankzahlungen bleiben unberührt. Muss VOR dem Löschen der alten Zahlungen
+ * laufen, damit deren Nummern beim Ermitteln der nächsten noch mitzählen.
+ *
+ * Hintergrund: Die vom Editor beim Öffnen vorgemerkte Nummer war beim Speichern
+ * oft veraltet (Kassenbuch: 393 doppelt, 391 nach 392/393), und ins Belegfeld
+ * getippte Rechnungsnummern zogen die Folge in den Rechnungsnummernkreis (252580).
+ *
+ * @param object $db          DbhCompany
+ * @param int    $fakturaID   ar.id / ap.id
+ * @param string $paymentLink '%AR_paid%' | '%AP_paid%'
+ * @param array  $entries     paymentEntries aus dem Request
+ * @return array paymentEntries mit gesetztem source für Kassenzahlungen
+ */
+function _faktura_kassenBelegnummern($db, $fakturaID, $paymentLink, array $entries) {
+    if (!$entries) return $entries;
+
+    // Kassenkonten und die bisherigen Kassen-Belegnummern dieses Belegs — eine Abfrage
+    $rows = $db->getAll("
+        SELECT ch.id AS chart_id, at.acc_trans_id, at.source
+        FROM chart ch
+        LEFT JOIN acc_trans at ON at.chart_id = ch.id AND at.trans_id = :tid AND at.chart_link LIKE '{$paymentLink}'
+        WHERE " . kassenkontoBedingung('ch'),
+        ['tid' => $fakturaID]) ?: [];
+    $cashCharts = []; $stored = [];
+    foreach ($rows as $r) {
+        $cashCharts[intval($r['chart_id'])] = true;
+        if ($r['acc_trans_id']) $stored[intval($r['acc_trans_id'])] = trim((string)$r['source']);
+    }
+    if (!$cashCharts) return $entries;
+
+    $assigned = [];   // "chart:jahr" => zuletzt in diesem Speichervorgang vergebene Nummer
+    $done     = [];   // Index => schon nummeriert
+    foreach ($entries as $i => $e) {
+        if (isset($done[$i]) || !isset($cashCharts[intval($e['chart_id'] ?? 0)])) continue;
+        $accTransId = intval($e['acc_trans_id'] ?? 0);
+        if ($accTransId > 0 && !empty($stored[$accTransId])) {
+            $beleg = $stored[$accTransId];
+        } else {
+            $transdate = $e['transdate'] ?? date('Y-m-d');
+            $key  = intval($e['chart_id']) . ':' . substr((string)$transdate, 0, 4);
+            $next = intval(nextBelegnummer($db, intval($e['chart_id']), $transdate));
+            if (isset($assigned[$key]) && $assigned[$key] >= $next) $next = $assigned[$key] + 1;
+            $assigned[$key] = $next;
+            $beleg = strval($next);
+        }
+        $entries[$i]['source'] = $beleg;
+        $done[$i] = true;
+
+        // Gegenbein: gleiche acc_trans_id, sonst gleiches Datum, umgekehrter Betrag, gleiches Memo/source
+        foreach ($entries as $j => $p) {
+            if (isset($done[$j]) || isset($cashCharts[intval($p['chart_id'] ?? 0)])) continue;
+            $same = $accTransId > 0
+                ? intval($p['acc_trans_id'] ?? 0) === $accTransId
+                : (($p['transdate'] ?? null) === ($e['transdate'] ?? null)
+                   && abs(floatval($p['amount'] ?? 0) + floatval($e['amount'] ?? 0)) < 0.005
+                   && ($p['memo'] ?? '') === ($e['memo'] ?? '')
+                   && ($p['source'] ?? '') === ($e['source'] ?? ''));
+            if ($same) { $entries[$j]['source'] = $beleg; $done[$j] = true; break; }
+        }
+    }
+    return $entries;
+}
+
+/**
  * Aktualisiert mehrere Faktura-Positionen in einem Query (Bulk-Update)
  * und verarbeitet die Buchungen für acc_trans
  *
@@ -1229,231 +1307,246 @@ SQL;
         }
     }
 
-    // 2c. Zahlungsbuchungen nur aktualisieren wenn explizit vom Frontend angefordert
-    if ($isInvoiceType && $updatePayments) {
-        // Geschützte, noch gebuchte Bank-Zahlungen behandeln. Pro Zahlung kommen zwei
-        // Beine an (Forderung +Betrag, Bank −Betrag), beide tragen die acc_trans_id des
-        // Bank-Beins → dedupliziert über diese ID.
-        //   - Standard (bank_edit aus): nur das editierbare Memo pflegen, Betrag/Konto/
-        //     Quelle bleiben unangetastet → Bankabstimmung intakt.
-        //   - bank_edit (Schloss im Editor geöffnet): den gebuchten Satz direkt
-        //     bearbeiten. Beide acc_trans-Beine werden in-place aktualisiert (stabile
-        //     acc_trans_id → FK bank_transaction_acc_trans bleibt gültig). Der Bankumsatz
-        //     selbst wird NICHT verändert; Betrag/Konto können dadurch bewusst von der
-        //     Bankabstimmung abweichen (vom Anwender so gewollt, Warnung im Frontend).
+    // Zahlungen und Beträge in einer Transaktion: Die Kassen-Belegnummer ist nur
+    // innerhalb der Transaktion gegen gleichzeitige Buchungen gesperrt, und
+    // gelöschte Zahlungen ohne neu geschriebene wären eine halbe Buchung.
+    $company->beginTransaction();
+    try {
+        // 2c. Zahlungsbuchungen nur aktualisieren wenn explizit vom Frontend angefordert
+        if ($isInvoiceType && $updatePayments) {
+            // Geschützte, noch gebuchte Bank-Zahlungen behandeln. Pro Zahlung kommen zwei
+            // Beine an (Forderung +Betrag, Bank −Betrag), beide tragen die acc_trans_id des
+            // Bank-Beins → dedupliziert über diese ID.
+            //   - Standard (bank_edit aus): nur das editierbare Memo pflegen, Betrag/Konto/
+            //     Quelle bleiben unangetastet → Bankabstimmung intakt.
+            //   - bank_edit (Schloss im Editor geöffnet): den gebuchten Satz direkt
+            //     bearbeiten. Beide acc_trans-Beine werden in-place aktualisiert (stabile
+            //     acc_trans_id → FK bank_transaction_acc_trans bleibt gültig). Der Bankumsatz
+            //     selbst wird NICHT verändert; Betrag/Konto können dadurch bewusst von der
+            //     Bankabstimmung abweichen (vom Anwender so gewollt, Warnung im Frontend).
+            // Barzahlungen: Belegnummer vergibt die Kasse fortlaufend erst jetzt beim
+        // Speichern (siehe _faktura_kassenBelegnummern) — vor dem Löschen unten.
+        $paymentEntries = _faktura_kassenBelegnummern($company, $fakturaID, $paymentLink, $paymentEntries);
+
         $bankMemoUpdates = [];   // acc_trans_id (Bank-Bein) => memo
-        $bankFullEdits   = [];   // acc_trans_id (Bank-Bein) => [amount, transdate, source, memo, bank_chart_id]
-        foreach ($paymentEntries as $entry) {
-            $accTransId = intval($entry['acc_trans_id'] ?? 0);
-            if ($accTransId <= 0 || !in_array($accTransId, $protectedBankIds, true)) {
-                continue;
-            }
-            $amount = floatval($entry['amount']);
-            if (!empty($entry['bank_edit'])) {
-                if (!isset($bankFullEdits[$accTransId])) {
-                    $bankFullEdits[$accTransId] = [
-                        'amount'        => abs($amount),
-                        'transdate'     => $entry['transdate'],
-                        'source'        => $entry['source'] ?? '',
-                        'memo'          => $entry['memo'] ?? '',
-                        'bank_chart_id' => null,
-                    ];
+            $bankFullEdits   = [];   // acc_trans_id (Bank-Bein) => [amount, transdate, source, memo, bank_chart_id]
+            foreach ($paymentEntries as $entry) {
+                $accTransId = intval($entry['acc_trans_id'] ?? 0);
+                if ($accTransId <= 0 || !in_array($accTransId, $protectedBankIds, true)) {
+                    continue;
                 }
-                // Das negative Bein liefert das Geldkonto (Bank) und den Betrag.
-                if ($amount < 0) {
-                    $bankFullEdits[$accTransId]['bank_chart_id'] = intval($entry['chart_id']);
-                    $bankFullEdits[$accTransId]['amount']        = abs($amount);
+                $amount = floatval($entry['amount']);
+                if (!empty($entry['bank_edit'])) {
+                    if (!isset($bankFullEdits[$accTransId])) {
+                        $bankFullEdits[$accTransId] = [
+                            'amount'        => abs($amount),
+                            'transdate'     => $entry['transdate'],
+                            'source'        => $entry['source'] ?? '',
+                            'memo'          => $entry['memo'] ?? '',
+                            'bank_chart_id' => null,
+                        ];
+                    }
+                    // Das negative Bein liefert das Geldkonto (Bank) und den Betrag.
+                    if ($amount < 0) {
+                        $bankFullEdits[$accTransId]['bank_chart_id'] = intval($entry['chart_id']);
+                        $bankFullEdits[$accTransId]['amount']        = abs($amount);
+                    }
+                } else {
+                    $bankMemoUpdates[$accTransId] = $entry['memo'] ?? '';
                 }
-            } else {
-                $bankMemoUpdates[$accTransId] = $entry['memo'] ?? '';
             }
-        }
 
-        foreach ($bankMemoUpdates as $accTransId => $memo) {
-            $company->execute(<<<SQL
-                UPDATE acc_trans
-                SET memo = :memo
-                WHERE acc_trans_id = :acc_trans_id
-SQL, ['memo' => $memo, 'acc_trans_id' => $accTransId]);
-        }
+            foreach ($bankMemoUpdates as $accTransId => $memo) {
+                $company->execute(<<<SQL
+                    UPDATE acc_trans
+                    SET memo = :memo
+                    WHERE acc_trans_id = :acc_trans_id
+    SQL, ['memo' => $memo, 'acc_trans_id' => $accTransId]);
+            }
 
-        foreach ($bankFullEdits as $bankLegId => $edit) {
-            // Gegenbein (Forderung) über das stabile Mapping finden — selber Bankumsatz,
-            // andere acc_trans_id.
-            $counterRow = $company->getOne(<<<SQL
-                SELECT acc_trans_id
-                FROM bank_transaction_acc_trans
-                WHERE bank_transaction_id = (
-                        SELECT bank_transaction_id FROM bank_transaction_acc_trans
-                        WHERE acc_trans_id = :bankLeg LIMIT 1
-                    )
-                  AND acc_trans_id <> :bankLeg
-                LIMIT 1
-SQL, ['bankLeg' => $bankLegId]);
-            $counterId = $counterRow ? intval($counterRow['acc_trans_id']) : null;
-
-            // Fallback für Alt-Buchungen ohne Mapping-Zeile: Gegenbein über das
-            // (noch unveränderte) identische Memo derselben Rechnung finden.
-            if (!$counterId) {
+            foreach ($bankFullEdits as $bankLegId => $edit) {
+                // Gegenbein (Forderung) über das stabile Mapping finden — selber Bankumsatz,
+                // andere acc_trans_id.
                 $counterRow = $company->getOne(<<<SQL
                     SELECT acc_trans_id
-                    FROM acc_trans
-                    WHERE trans_id = :tid
+                    FROM bank_transaction_acc_trans
+                    WHERE bank_transaction_id = (
+                            SELECT bank_transaction_id FROM bank_transaction_acc_trans
+                            WHERE acc_trans_id = :bankLeg LIMIT 1
+                        )
                       AND acc_trans_id <> :bankLeg
-                      AND chart_link NOT LIKE '{$paymentLink}'
-                      AND memo = (SELECT memo FROM acc_trans WHERE acc_trans_id = :bankLeg2)
                     LIMIT 1
-SQL, ['tid' => $fakturaID, 'bankLeg' => $bankLegId, 'bankLeg2' => $bankLegId]);
+    SQL, ['bankLeg' => $bankLegId]);
                 $counterId = $counterRow ? intval($counterRow['acc_trans_id']) : null;
-            }
 
-            $amt = round((float)$edit['amount'], 2);
-
-            // Bank-Bein (negativ). chart_link separat laden (vermeidet doppelte
-            // Named-Parameter) und mit aktualisieren, falls das Geldkonto gewechselt wurde.
-            if (!empty($edit['bank_chart_id'])) {
-                $bankChartLink = $company->getOne(
-                    "SELECT link FROM chart WHERE id = :id",
-                    ['id' => $edit['bank_chart_id']]
-                );
-                $company->execute(<<<SQL
-                    UPDATE acc_trans SET
-                        amount     = :amount,
-                        transdate  = :transdate,
-                        gldate     = :transdate,
-                        source     = :source,
-                        memo       = :memo,
-                        chart_id   = :chart_id,
-                        chart_link = :chart_link
-                    WHERE acc_trans_id = :acc_trans_id
-SQL, [
-                    'amount'       => -$amt,
-                    'transdate'    => $edit['transdate'],
-                    'source'       => (string)$edit['source'],
-                    'memo'         => $edit['memo'],
-                    'chart_id'     => $edit['bank_chart_id'],
-                    'chart_link'   => $bankChartLink['link'] ?? 'AR_paid:AP_paid',
-                    'acc_trans_id' => $bankLegId,
-                ]);
-            }
-
-            // Gegenbein (Forderung, positiv) — Konto/chart_link bleiben unverändert.
-            if ($counterId) {
-                $company->execute(<<<SQL
-                    UPDATE acc_trans SET
-                        amount    = :amount,
-                        transdate = :transdate,
-                        gldate    = :transdate,
-                        source    = :source,
-                        memo      = :memo
-                    WHERE acc_trans_id = :acc_trans_id
-SQL, [
-                    'amount'       => $amt,
-                    'transdate'    => $edit['transdate'],
-                    'source'       => (string)$edit['source'],
-                    'memo'         => $edit['memo'],
-                    'acc_trans_id' => $counterId,
-                ]);
-            }
-        }
-
-        // Alte Zahlungsbuchungen samt Gegenbeinen löschen — aber NICHT die
-        // geschützten Bank-Zahlungen (noch gebuchte Bankzuordnung). Verwaiste/
-        // stornierte BANK-Einträge sind nicht geschützt und werden hier mit
-        // aufgeräumt. Die Gegenbeine müssen mit weg, weil sie unten mit jeder
-        // Zahlung neu geschrieben werden — sonst stünden sie doppelt da.
-        $deletePaymentsQuery = "DELETE FROM acc_trans WHERE trans_id = :fakturaID AND (chart_link LIKE '{$paymentLink}' OR {$counterLegCond}){$protectExclusion}";
-        $company->execute($deletePaymentsQuery, array_merge(['fakturaID' => $fakturaID], $protectParams));
-
-        // Neue Zahlungsbuchungen einfügen
-        foreach ($paymentEntries as $entry) {
-            // Geschützte Bank-Zahlungen überspringen — sie bleiben in der DB erhalten
-            // (oben nicht gelöscht, oben per Memo-UPDATE gepflegt). Ein erneutes
-            // Einfügen würde sie verdoppeln. Erkennung über die acc_trans_id (robust
-            // gegen ein vom Anwender geändertes Quellfeld). paid (Schritt 3) zählt sie
-            // weiterhin korrekt aus $paymentEntries mit.
-            $accTransId = intval($entry['acc_trans_id'] ?? 0);
-            if ($accTransId > 0 && in_array($accTransId, $protectedBankIds, true)) {
-                continue;
-            }
-            $insertQuery = <<<SQL
-                INSERT INTO acc_trans (
-                    trans_id,
-                    chart_id,
-                    amount,
-                    transdate,
-                    gldate,
-                    source,
-                    memo,
-                    tax_id,
-                    taxkey,
-                    chart_link
-                )
-                SELECT
-                    :trans_id,
-                    :chart_id,
-                    :amount,
-                    :transdate,
-                    :transdate,
-                    :source,
-                    :memo,
-                    :tax_id,
-                    :taxkey,
-                    chart.link
-                FROM chart
-                WHERE chart.id = :chart_id
-SQL;
-            $company->execute($insertQuery, [
-                'trans_id' => $fakturaID,
-                'chart_id' => intval($entry['chart_id']),
-                'amount' => floatval($entry['amount']),
-                'transdate' => $entry['transdate'],
-                'source' => $entry['source'] ?? '',
-                'memo' => $entry['memo'] ?? '',
-                'tax_id' => intval($entry['tax_id'] ?? 0),
-                'taxkey' => intval($entry['taxkey'] ?? 0)
-            ]);
-        }
-    }
-
-    // 3. Beträge in Rechnungstabelle aktualisieren (ar oder ap)
-    if ($isInvoiceType && (!empty($accTransEntries) || $updatePayments)) {
-        if ($updatePayments) {
-            // paid NICHT aus der gesendeten Liste summieren, sondern direkt aus dem
-            // Hauptbuch ableiten — die Zahlungs-Beine (chart_link '…_paid', negativer
-            // Betrag) sind die Wahrheit. So bleibt paid auch dann konsistent, wenn
-            // geschützte Bank-Zahlungen in acc_trans stehen, aber nicht (mehr) in der
-            // übermittelten Liste enthalten sind.
-            $updateInvoiceQuery = <<<SQL
-                UPDATE {$mainTable} SET
-                    netamount = :netAmount,
-                    amount = :grossAmount,
-                    paid = COALESCE((
-                        SELECT -sum(amount)
+                // Fallback für Alt-Buchungen ohne Mapping-Zeile: Gegenbein über das
+                // (noch unveränderte) identische Memo derselben Rechnung finden.
+                if (!$counterId) {
+                    $counterRow = $company->getOne(<<<SQL
+                        SELECT acc_trans_id
                         FROM acc_trans
-                        WHERE trans_id = :fakturaID
-                            AND chart_link LIKE '{$paymentLink}'
-                    ), 0)
-                WHERE id = :fakturaID
-SQL;
-            $company->execute($updateInvoiceQuery, [
-                'fakturaID' => $fakturaID,
-                'netAmount' => $netAmount,
-                'grossAmount' => $grossAmount
-            ]);
-        } else {
-            $updateInvoiceQuery = <<<SQL
-                UPDATE {$mainTable} SET
-                    netamount = :netAmount,
-                    amount = :grossAmount
-                WHERE id = :fakturaID
-SQL;
-            $company->execute($updateInvoiceQuery, [
-                'fakturaID' => $fakturaID,
-                'netAmount' => $netAmount,
-                'grossAmount' => $grossAmount
-            ]);
+                        WHERE trans_id = :tid
+                          AND acc_trans_id <> :bankLeg
+                          AND chart_link NOT LIKE '{$paymentLink}'
+                          AND memo = (SELECT memo FROM acc_trans WHERE acc_trans_id = :bankLeg2)
+                        LIMIT 1
+    SQL, ['tid' => $fakturaID, 'bankLeg' => $bankLegId, 'bankLeg2' => $bankLegId]);
+                    $counterId = $counterRow ? intval($counterRow['acc_trans_id']) : null;
+                }
+
+                $amt = round((float)$edit['amount'], 2);
+
+                // Bank-Bein (negativ). chart_link separat laden (vermeidet doppelte
+                // Named-Parameter) und mit aktualisieren, falls das Geldkonto gewechselt wurde.
+                if (!empty($edit['bank_chart_id'])) {
+                    $bankChartLink = $company->getOne(
+                        "SELECT link FROM chart WHERE id = :id",
+                        ['id' => $edit['bank_chart_id']]
+                    );
+                    $company->execute(<<<SQL
+                        UPDATE acc_trans SET
+                            amount     = :amount,
+                            transdate  = :transdate,
+                            gldate     = :transdate,
+                            source     = :source,
+                            memo       = :memo,
+                            chart_id   = :chart_id,
+                            chart_link = :chart_link
+                        WHERE acc_trans_id = :acc_trans_id
+    SQL, [
+                        'amount'       => -$amt,
+                        'transdate'    => $edit['transdate'],
+                        'source'       => (string)$edit['source'],
+                        'memo'         => $edit['memo'],
+                        'chart_id'     => $edit['bank_chart_id'],
+                        'chart_link'   => $bankChartLink['link'] ?? 'AR_paid:AP_paid',
+                        'acc_trans_id' => $bankLegId,
+                    ]);
+                }
+
+                // Gegenbein (Forderung, positiv) — Konto/chart_link bleiben unverändert.
+                if ($counterId) {
+                    $company->execute(<<<SQL
+                        UPDATE acc_trans SET
+                            amount    = :amount,
+                            transdate = :transdate,
+                            gldate    = :transdate,
+                            source    = :source,
+                            memo      = :memo
+                        WHERE acc_trans_id = :acc_trans_id
+    SQL, [
+                        'amount'       => $amt,
+                        'transdate'    => $edit['transdate'],
+                        'source'       => (string)$edit['source'],
+                        'memo'         => $edit['memo'],
+                        'acc_trans_id' => $counterId,
+                    ]);
+                }
+            }
+
+            // Alte Zahlungsbuchungen samt Gegenbeinen löschen — aber NICHT die
+            // geschützten Bank-Zahlungen (noch gebuchte Bankzuordnung). Verwaiste/
+            // stornierte BANK-Einträge sind nicht geschützt und werden hier mit
+            // aufgeräumt. Die Gegenbeine müssen mit weg, weil sie unten mit jeder
+            // Zahlung neu geschrieben werden — sonst stünden sie doppelt da.
+            $deletePaymentsQuery = "DELETE FROM acc_trans WHERE trans_id = :fakturaID AND (chart_link LIKE '{$paymentLink}' OR {$counterLegCond}){$protectExclusion}";
+            $company->execute($deletePaymentsQuery, array_merge(['fakturaID' => $fakturaID], $protectParams));
+
+            // Neue Zahlungsbuchungen einfügen
+            foreach ($paymentEntries as $entry) {
+                // Geschützte Bank-Zahlungen überspringen — sie bleiben in der DB erhalten
+                // (oben nicht gelöscht, oben per Memo-UPDATE gepflegt). Ein erneutes
+                // Einfügen würde sie verdoppeln. Erkennung über die acc_trans_id (robust
+                // gegen ein vom Anwender geändertes Quellfeld). paid (Schritt 3) zählt sie
+                // weiterhin korrekt aus $paymentEntries mit.
+                $accTransId = intval($entry['acc_trans_id'] ?? 0);
+                if ($accTransId > 0 && in_array($accTransId, $protectedBankIds, true)) {
+                    continue;
+                }
+                $insertQuery = <<<SQL
+                    INSERT INTO acc_trans (
+                        trans_id,
+                        chart_id,
+                        amount,
+                        transdate,
+                        gldate,
+                        source,
+                        memo,
+                        tax_id,
+                        taxkey,
+                        chart_link
+                    )
+                    SELECT
+                        :trans_id,
+                        :chart_id,
+                        :amount,
+                        :transdate,
+                        :transdate,
+                        :source,
+                        :memo,
+                        :tax_id,
+                        :taxkey,
+                        chart.link
+                    FROM chart
+                    WHERE chart.id = :chart_id
+    SQL;
+                $company->execute($insertQuery, [
+                    'trans_id' => $fakturaID,
+                    'chart_id' => intval($entry['chart_id']),
+                    'amount' => floatval($entry['amount']),
+                    'transdate' => $entry['transdate'],
+                    'source' => $entry['source'] ?? '',
+                    'memo' => $entry['memo'] ?? '',
+                    'tax_id' => intval($entry['tax_id'] ?? 0),
+                    'taxkey' => intval($entry['taxkey'] ?? 0)
+                ]);
+            }
         }
+
+        // 3. Beträge in Rechnungstabelle aktualisieren (ar oder ap)
+        if ($isInvoiceType && (!empty($accTransEntries) || $updatePayments)) {
+            if ($updatePayments) {
+                // paid NICHT aus der gesendeten Liste summieren, sondern direkt aus dem
+                // Hauptbuch ableiten — die Zahlungs-Beine (chart_link '…_paid', negativer
+                // Betrag) sind die Wahrheit. So bleibt paid auch dann konsistent, wenn
+                // geschützte Bank-Zahlungen in acc_trans stehen, aber nicht (mehr) in der
+                // übermittelten Liste enthalten sind.
+                $updateInvoiceQuery = <<<SQL
+                    UPDATE {$mainTable} SET
+                        netamount = :netAmount,
+                        amount = :grossAmount,
+                        paid = COALESCE((
+                            SELECT -sum(amount)
+                            FROM acc_trans
+                            WHERE trans_id = :fakturaID
+                                AND chart_link LIKE '{$paymentLink}'
+                        ), 0)
+                    WHERE id = :fakturaID
+    SQL;
+                $company->execute($updateInvoiceQuery, [
+                    'fakturaID' => $fakturaID,
+                    'netAmount' => $netAmount,
+                    'grossAmount' => $grossAmount
+                ]);
+            } else {
+                $updateInvoiceQuery = <<<SQL
+                    UPDATE {$mainTable} SET
+                        netamount = :netAmount,
+                        amount = :grossAmount
+                    WHERE id = :fakturaID
+    SQL;
+                $company->execute($updateInvoiceQuery, [
+                    'fakturaID' => $fakturaID,
+                    'netAmount' => $netAmount,
+                    'grossAmount' => $grossAmount
+                ]);
+            }
+        }
+
+        $company->commit();
+    } catch (\Throwable $e) {
+        $company->rollBack();
+        throw $e;
     }
 
     resultInfo(true, 'UPDATED', [

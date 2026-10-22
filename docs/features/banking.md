@@ -115,7 +115,7 @@ Der erkannte Lieferant ist im Dialog **Neue Eingangsrechnung** vorbelegt (Knopf 
 
 ### Belegnummern
 
-Jede Bankbuchung erhält eine fortlaufende Belegnummer je Geldkonto und Jahr (`Beleg N` im Buchungstext, Nummer im Belegfeld). Die nächste Nummer wird aus dem Hauptbuch abgeleitet; Rechnungsnummern, die als Zahlungsreferenz oder in kivitendo-Dialogbuchungen stehen, zählen dabei nicht mit, damit die Folge nicht in den Rechnungsnummernkreis springt.
+Jede Bankbuchung erhält eine fortlaufende Belegnummer je Geldkonto und Jahr (`Beleg N` im Buchungstext, Nummer im Belegfeld). Die nächste Nummer wird beim Buchen aus dem Hauptbuch abgeleitet, in derselben Transaktion und gegen gleichzeitige Buchungen gesperrt. Rechnungsnummern, die als Zahlungsreferenz der eigenen Rechnung stehen, zählen nicht mit, ebenso wenig Werte, die größer sind als die Zahl der Buchungen des Jahres sein können (in kivitendo-Dialogbuchungen oder ins Belegfeld getippte Rechnungsnummern) — die Folge springt so nicht in den Rechnungsnummernkreis. Dieselbe Vergabe gilt für die Kasse (siehe Buchhaltung → Kasse).
 
 ### Status einer Buchung
 

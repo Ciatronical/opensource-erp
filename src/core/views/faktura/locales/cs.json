@@ -52,6 +52,7 @@
             "email": "E-mail"
         },
         "faktura": {
+            "cashBelegAuto": "Číslo dokladu přiděluje pokladna průběžně při uložení",
             "workflow": "Workflow",
             "reuse": "Als neu verwenden",
             "createQuotation": "Angebot erstellen",

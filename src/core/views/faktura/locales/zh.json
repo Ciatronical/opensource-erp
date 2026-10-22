@@ -52,6 +52,7 @@
             "email": "电子邮件"
         },
         "faktura": {
+            "cashBelegAuto": "凭证编号由收银台在保存时连续分配",
             "workflow": "工作流",
             "reuse": "作为新单据使用",
             "createQuotation": "创建报价单",

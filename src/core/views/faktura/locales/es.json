@@ -52,6 +52,7 @@
             "email": "Correo electrónico"
         },
         "faktura": {
+            "cashBelegAuto": "La caja asigna el número de comprobante de forma consecutiva al guardar",
             "workflow": "Flujo de trabajo",
             "reuse": "Reutilizar como nuevo",
             "createQuotation": "Crear presupuesto",

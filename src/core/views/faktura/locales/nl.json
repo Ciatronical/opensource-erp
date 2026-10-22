@@ -52,6 +52,7 @@
             "email": "E-mail"
         },
         "faktura": {
+            "cashBelegAuto": "De kas kent het bonnummer doorlopend toe bij het opslaan",
             "workflow": "Workflow",
             "reuse": "Als nieuw gebruiken",
             "createQuotation": "Offerte aanmaken",

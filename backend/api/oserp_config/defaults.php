@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__.'/../lib/kontenrahmen.php';  // kassenkontoBedingung()
 /**
  * Lädt die komplette Company-Config ohne Session-Reload und CV-Daten.
  * Wird nach Config-Mutationen aufgerufen statt restoreSession().
@@ -13,6 +14,8 @@ function getCompanyConfig($data) {
 
     // Übergangslösung Rollout: siehe extensionsSelectSql()
     $extensionsSelect = extensionsSelectSql($db, true);
+    // Kassenkonten: dort vergibt die Kasse die Belegnummer, das Belegfeld ist gesperrt
+    $kassenkonto = kassenkontoBedingung('chart');
 
     $query = <<<SQL
         SELECT json_build_object(
@@ -145,7 +148,8 @@ function getCompanyConfig($data) {
                     'payment_acc', (
                         SELECT json_agg(payment_acc ORDER BY accno)
                         FROM (
-                            SELECT id, accno, description FROM chart WHERE link LIKE '%AP_paid%'
+                            SELECT id, accno, description, {$kassenkonto} AS is_cash
+                            FROM chart WHERE link LIKE '%AP_paid%'
                         ) AS payment_acc
                     ),
                     'company_employee_config', (

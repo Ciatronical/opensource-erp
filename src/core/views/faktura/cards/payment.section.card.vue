@@ -105,7 +105,16 @@
                                 @blur="onPaymentChange"
                             >
                                 <template #append-inner>
+                                    <!-- Kassenkonto: Belegnummer vergibt die Kasse beim Speichern, kein Schloss -->
                                     <v-icon
+                                        v-if="isCashChart(payment)"
+                                        size="small"
+                                        icon="mdi-cash-register"
+                                        color="medium-emphasis"
+                                        :title="t('FakturaView.faktura.cashBelegAuto')"
+                                    />
+                                    <v-icon
+                                        v-else
                                         size="small"
                                         :icon="isBelegUnlocked(payment, index) ? 'mdi-lock-open-variant' : 'mdi-lock'"
                                         :color="lockColor(payment, index)"
@@ -414,9 +423,19 @@ export default defineComponent({
 
         /**
          * Ist das Beleg-Feld dieser Zahlung manuell entsperrt? (Standard: gesperrt)
+         * Barzahlungen lassen sich nie entsperren — ihre Belegnummer ist die
+         * fortlaufende Nummer des Kassenbuchs und kommt beim Speichern vom Server.
          */
         function isBelegUnlocked(payment, index) {
-            return !!belegUnlockedKeys.value[getPaymentKey(payment, index)]
+            return !isCashChart(payment) && !!belegUnlockedKeys.value[getPaymentKey(payment, index)]
+        }
+
+        /**
+         * Liegt die Zahlung auf einem Kassenkonto? (Flag is_cash aus der Kontenliste)
+         */
+        function isCashChart(payment) {
+            const acc = props.paymentAccList.find(a => a.id === payment.chart_id)
+            return !!acc?.is_cash
         }
 
         /**
@@ -454,6 +473,7 @@ export default defineComponent({
          * Warnung.
          */
         function toggleBeleg(payment, index) {
+            if (isCashChart(payment)) return
             const key = getPaymentKey(payment, index)
             const nowUnlocked = !belegUnlockedKeys.value[key]
             belegUnlockedKeys.value = { ...belegUnlockedKeys.value, [key]: nowUnlocked }
@@ -469,9 +489,11 @@ export default defineComponent({
         }
 
         /**
-         * Automatische fortlaufende Belegnummer EINMALIG vom Server holen, sobald
-         * ein Zahlungskonto gewählt wurde und das Beleg-Feld noch leer ist. Ein
-         * bereits vorhandener Wert (automatisch oder manuell) wird nie überschrieben.
+         * Vorschau der nächsten Belegnummer vom Server holen, sobald ein Zahlungskonto
+         * gewählt wurde und das Beleg-Feld noch leer ist. Ein bereits vorhandener Wert
+         * bleibt — außer bei einer neuen Barzahlung: Dort ist das Feld reine Vorschau,
+         * die endgültige Nummer vergibt die Kasse fortlaufend beim Speichern, und ein
+         * zuvor getippter Wert (etwa eine Rechnungsnummer) würde nur in die Irre führen.
          *
          * @param {number} index Index der Zahlung
          */
@@ -479,6 +501,9 @@ export default defineComponent({
             const payment = payments.value[index]
             if (!payment || !payment.chart_id || isBankBooked(payment)) {
                 return
+            }
+            if (isCashChart(payment) && !payment.acc_trans_id) {
+                payment.source = ''
             }
             // Nur ein leeres Feld befüllen — vorhandene Nummer bleibt unangetastet
             if (String(payment.source || '').trim() !== '') {
@@ -1060,6 +1085,7 @@ export default defineComponent({
             isLastRow,
             canDeletePayment,
             isBankBooked,
+            isCashChart,
             isBelegUnlocked,
             lockColor,
             lockTitle,

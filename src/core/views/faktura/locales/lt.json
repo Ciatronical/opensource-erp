@@ -52,6 +52,7 @@
             "email": "El. paštas"
         },
         "faktura": {
+            "cashBelegAuto": "Kasa priskiria dokumento numerį iš eilės išsaugant",
             "workflow": "Darbo eiga",
             "reuse": "Als neu verwenden",
             "createQuotation": "Angebot erstellen",

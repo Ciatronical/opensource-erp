@@ -52,6 +52,7 @@
             "email": "E-mail"
         },
         "faktura": {
+            "cashBelegAuto": "Casa atribuie numărul documentului consecutiv la salvare",
             "workflow": "Workflow",
             "reuse": "Als neu verwenden",
             "createQuotation": "Angebot erstellen",

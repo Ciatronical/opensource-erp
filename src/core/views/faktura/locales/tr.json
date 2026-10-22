@@ -52,6 +52,7 @@
             "email": "E-posta"
         },
         "faktura": {
+            "cashBelegAuto": "Belge numarası kaydedilirken kasa tarafından sırayla verilir",
             "workflow": "Workflow",
             "reuse": "Als neu verwenden",
             "createQuotation": "Angebot erstellen",

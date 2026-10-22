@@ -1218,9 +1218,15 @@ function getCashbookPdf($data) {
  * @param array  $data['lines']              Positionen [{chart_id, gross, tax_id?}] — tax_id: weggelassen =
  *                                           Standardschlüssel des Kontos, 0 = ohne Steuer, >0 = tax.id
  * @param string $data['description']        Buchungstext (optional)
- * @param string $data['reference']          Belegnummer (optional)
  * @param int    $data['document_id']        Beleg-ID aus uploadCashDocument (optional)
- * @testdata {"cash_register_id": 1, "transdate": "2026-06-04", "amount": 50.00, "type": "expense", "lines": [{"chart_id": 1, "gross": 38.00}, {"chart_id": 1, "gross": 12.00, "tax_id": 0}], "description": "Rewe", "reference": "BE-2026-001"}
+ * @testdata {"cash_register_id": 1, "transdate": "2026-06-04", "amount": 50.00, "type": "expense", "lines": [{"chart_id": 1, "gross": 38.00}, {"chart_id": 1, "gross": 12.00, "tax_id": 0}], "description": "Rewe"}
+ *
+ * Die Belegnummer vergibt die Kasse selbst, fortlaufend je Jahr, erst beim
+ * Schreiben der Buchung (nextBelegnummer). Ein mitgeschicktes `reference` wird
+ * bewusst ignoriert: Vom Browser vorgemerkte oder von Hand getippte Nummern
+ * haben im Kassenbuch Dubletten (393 zweimal), Lücken (281, 297, 306 durch
+ * Freitext „Bargeldeizahlung") und Rechnungsnummern als Beleg (252580)
+ * hinterlassen.
  */
 function createCashTransaction($data) {
     $db = DbhCompany::begin();
@@ -1262,19 +1268,12 @@ function createCashTransaction($data) {
 
     $transdate   = $data['transdate'] ?? date('Y-m-d');
     $description = trim($data['description'] ?? '') ?: null;
-    $reference   = trim($data['reference'] ?? '');
     $documentId  = intval($data['document_id'] ?? 0) ?: null;
     $employeeId  = mitarbeiterId($data);
 
     // Konten und Steuerschlüssel aller Positionen in einer Abfrage
     $resolved = _kasse_resolveLineCharts($db, $lines, $transdate);
     if (count($resolved) !== count($lines)) { resultInfo(false, 'NOT_FOUND', 'Gegenkonto nicht gefunden'); return; }
-
-    // Fortlaufende Belegnummer automatisch vergeben, falls keine angegeben wurde
-    // (Feld ist im Dialog gesperrt; nur bei manueller Bearbeitung kommt ein Wert).
-    if ($reference === '') {
-        $reference = nextBelegnummer($db, $register['chart_id'], $transdate);
-    }
 
     // Kasse darf nie ins Minus: Ausgabe nur buchen, wenn sie gedeckt ist.
     if ($type === 'expense') {
@@ -1296,6 +1295,13 @@ function createCashTransaction($data) {
     // expense → Geld verlässt die Kasse (Haben) → Kasse positiv, Gegenkonto (Aufwand) negativ
     $counterSign = $type === 'expense' ? -1 : 1;
     $kasseAmount = -$counterSign * $amount;
+
+    // Eine Transaktion um Belegnummer, GL-Kopf, Beine und Belegverknüpfung: Die
+    // Nummer ist nur innerhalb der Transaktion gegen gleichzeitige Buchungen
+    // gesperrt, und eine halbe Buchung darf es ohnehin nicht geben.
+    $db->beginTransaction();
+    try {
+    $reference = nextBelegnummer($db, $register['chart_id'], $transdate);
 
     // GL-Kopf — taxincluded wie kivitendos Dialogbuchung mit Bruttoeingabe
     $glRow = $db->getOne(
@@ -1344,7 +1350,7 @@ function createCashTransaction($data) {
         ];
     }
 
-    $values = []; $params = ['trans_id' => $glId, 'transdate' => $transdate, 'source' => $reference ?? 'Kasse'];
+    $values = []; $params = ['trans_id' => $glId, 'transdate' => $transdate, 'source' => $reference];
     foreach ($legs as $k => $leg) {
         $values[] = "(:trans_id, :c{$k}, :a{$k}, :transdate, :transdate, :source, :l{$k}, :t{$k}, :k{$k})";
         $params["c{$k}"] = $leg['chart_id'];
@@ -1365,6 +1371,11 @@ function createCashTransaction($data) {
             "INSERT INTO cash_gl_documents (gl_id, document_id) VALUES (:gl_id, :doc_id)",
             ['gl_id' => $glId, 'doc_id' => $documentId]
         );
+    }
+    $db->commit();
+    } catch (\Throwable $e) {
+        $db->rollBack();
+        throw $e;
     }
 
     resultInfo(true, '', [
@@ -1517,15 +1528,15 @@ function bookArAsCash($data) {
         return;
     }
 
-    // Fortlaufende Belegnummer für diese Kassenbuchung
-    $beleg = nextBelegnummer($db, $register['chart_id'], $transdate);
-
     // Klammer um die drei Schreibvorgänge: zwei acc_trans-Zeilen und ar.paid
     // gehören zusammen. Bricht es dazwischen ab, stünde eine halbe Zahlung in
     // den Büchern — genau die Sorte Buchung, die später als Differenz zwischen
     // Soll und Haben in der Saldenliste auftaucht und niemand mehr zuordnen kann.
+    // Die Belegnummer gehört mit hinein: Erst in der Transaktion ist der
+    // Belegkreis gegen gleichzeitige Buchungen gesperrt.
     $db->beginTransaction();
     try {
+        $beleg = nextBelegnummer($db, $register['chart_id'], $transdate);
 
         // Vorzeichen exakt wie matching.php / kivitendo (Soll = negativ, Haben = positiv):
         //   Forderungskonto: positiver Betrag (Haben) → klärt die Forderung, zählt für ar.paid
@@ -1707,11 +1718,10 @@ function bookApAsCash($data) {
         return;
     }
 
-    $beleg = nextBelegnummer($db, $register['chart_id'], $transdate);
-
     // Klammer wie bei der Ausgangsrechnung — siehe bookArAsCash().
     $db->beginTransaction();
     try {
+        $beleg = nextBelegnummer($db, $register['chart_id'], $transdate);
 
         // Vorzeichen (Soll = negativ, Haben = positiv):
         //   Verbindlichkeitskonto: negativer Betrag (Soll) → klärt die Verbindlichkeit, zählt für ap.paid

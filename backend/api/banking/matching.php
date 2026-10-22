@@ -313,8 +313,17 @@ function bookMatchedTransactions($data) {
             continue;
         }
 
-        $res = _bookBankPaymentAgainstInvoice($db, $bt, $mapping['target_type'], intval($mapping['target_id']), $bankAccount);
-        if (!$res['ok']) { $errors[] = "Umsatz {$btId}: " . $res['error']; continue; }
+        // Je Umsatz eine Transaktion: Belegnummer, beide Beine, paid und Mapping
+        // gehören zusammen; der Belegkreis ist nur in der Transaktion gesperrt.
+        $db->beginTransaction();
+        try {
+            $res = _bookBankPaymentAgainstInvoice($db, $bt, $mapping['target_type'], intval($mapping['target_id']), $bankAccount);
+        } catch (\Throwable $e) {
+            $db->rollBack();
+            throw $e;
+        }
+        if (!$res['ok']) { $db->rollBack(); $errors[] = "Umsatz {$btId}: " . $res['error']; continue; }
+        $db->commit();
         $bookedCount++;
     }
 
@@ -716,9 +725,17 @@ function createApFromBankTransaction($data) {
         return;
     }
 
-    // 2) sofort mit diesem Bankumsatz als bezahlt verbuchen (gleiche Logik wie Bankabstimmung)
-    $res = _bookBankPaymentAgainstInvoice($db, $bt, 'ap', intval($apId), $bankAccount);
-    if (!$res['ok']) { resultInfo(false, 'BOOK_FAILED', $res['error']); return; }
+    // 2) sofort mit diesem Bankumsatz als bezahlt verbuchen (gleiche Logik wie Bankabstimmung).
+    //    In einer Transaktion, damit die Belegnummer gegen gleichzeitige Buchungen gesperrt ist.
+    $db->beginTransaction();
+    try {
+        $res = _bookBankPaymentAgainstInvoice($db, $bt, 'ap', intval($apId), $bankAccount);
+    } catch (\Throwable $e) {
+        $db->rollBack();
+        throw $e;
+    }
+    if (!$res['ok']) { $db->rollBack(); resultInfo(false, 'BOOK_FAILED', $res['error']); return; }
+    $db->commit();
 
     // 3) Belege an die Eingangsrechnung hängen — mehrere sind erlaubt (Rechnung
     //    plus Lieferschein, mehrseitige Fotos). Ohne Beleg keine ordnungsgemäße
@@ -1720,10 +1737,10 @@ function bookTransactionMultipleInvoices($data) {
 
     // Eine fortlaufende Belegnummer fuer den gesamten (gesplitteten) Bankumsatz.
     // Sie kommt in acc_trans.source (Beleg-Feld); Erkennung/Storno ueber das Mapping.
+    $db->beginTransaction();
     $beleg    = nextBelegnummer($db, $bankAccount['chart_id'], $bt['transdate']);
     $bankMemo = "Beleg {$beleg} · Sammelbuchung Umsatz #{$btId}";
 
-    $db->beginTransaction();
     foreach ($docs as $doc) {
         $res = _bookBankPaymentAgainstInvoice($db, $bt, $doc['type'], $doc['id'], $bankAccount, [
             'amount'   => $doc['open'],

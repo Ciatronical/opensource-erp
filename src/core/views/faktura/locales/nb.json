@@ -52,6 +52,7 @@
             "email": "E-post"
         },
         "faktura": {
+            "cashBelegAuto": "Kassen tildeler bilagsnummeret fortløpende ved lagring",
             "workflow": "Workflow",
             "reuse": "Als neu verwenden",
             "createQuotation": "Tilbud erstellen",

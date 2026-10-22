@@ -1,6 +1,7 @@
 <?php
 // opensource-erp/backend/api/oserp_config/index.php
 
+require_once __DIR__.'/../lib/kontenrahmen.php';  // kassenkontoBedingung()
 require_once __DIR__.'/defaults.php';
 require_once __DIR__.'/extensions.php';
 //require_once __DIR__.'/crm_defaults.php';

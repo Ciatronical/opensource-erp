@@ -499,31 +499,20 @@
                         variant="outlined"
                         class="mb-3"
                     />
+                    <!-- Belegnummer: nur Vorschau. Vergeben wird sie fortlaufend vom
+                         Server beim Buchen — nie aus dem Dialog, damit keine Dubletten,
+                         Lücken oder Rechnungsnummern ins Kassenbuch geraten. -->
                     <v-text-field
                         v-model="txData.reference"
                         :label="t('KasseView.reference')"
-                        :placeholder="t('KasseView.referencePlaceholder')"
-                        :readonly="belegLocked"
-                        :hint="belegLocked ? t('KasseView.autoBelegHint') : t('KasseView.manualBelegHint')"
+                        :hint="t('KasseView.autoBelegHint')"
                         persistent-hint
+                        readonly
+                        prepend-inner-icon="mdi-counter"
                         density="compact"
                         variant="outlined"
                         class="mb-3"
-                    >
-                        <template #append-inner>
-                            <v-tooltip :text="belegLocked ? t('KasseView.editBeleg') : t('KasseView.lockBeleg')" location="top">
-                                <template #activator="{ props }">
-                                    <v-icon
-                                        v-bind="props"
-                                        :icon="belegLocked ? 'mdi-lock' : 'mdi-lock-open-variant'"
-                                        :color="belegLocked ? 'medium-emphasis' : 'primary'"
-                                        style="cursor:pointer"
-                                        @click="toggleBelegLock"
-                                    />
-                                </template>
-                            </v-tooltip>
-                        </template>
-                    </v-text-field>
+                    />
                     <v-file-input
                         v-if="documentsEnabled"
                         v-model="txData.documentFile"
@@ -762,9 +751,6 @@ const editGlId = ref(null)
 // Gebuchten Vorgang ansehen
 const showDetail    = ref(false)
 const detailTransId = ref(null)
-
-// Belegnummer: standardmäßig gesperrt (automatisch). Per Schloss freigebbar.
-const belegLocked = ref(true)
 
 const arDialogItem = ref(null)
 const arData = reactive({
@@ -1113,7 +1099,6 @@ function openNewTransaction() {
         documentFile:   null,
     })
     txLines.value = [newLine()]
-    belegLocked.value = true
     showTransactionDialog.value = true
     loadNextBeleg()
 }
@@ -1145,14 +1130,14 @@ async function openEditTransaction(glId) {
             counterCharts.value.find(c => c.id === l.chart_id) || { id: l.chart_id, accno: l.accno, description: l.description, tax_id: l.tax_id, category: 'E' },
             Number(l.tax_id) || 0, Number(l.gross)))
         if (!txLines.value.length) txLines.value = [newLine()]
-        belegLocked.value = true
         showTransactionDialog.value = true
     } catch (e) {
         alerts.error(e.message)
     }
 }
 
-// Nächste fortlaufende Belegnummer vom Server holen und ins (gesperrte) Feld setzen
+// Vorschau der nächsten Belegnummer. Vergeben wird sie erst beim Buchen vom
+// Server (nextBelegnummer) — die Vorschau kann bis dahin überholt sein.
 async function loadNextBeleg() {
     if (!selectedRegisterId.value) return
     const res = await axios.post(API_URL, {
@@ -1161,11 +1146,6 @@ async function loadNextBeleg() {
         transdate:        txData.transdate,
     })
     if (res.data?.success) txData.reference = res.data.payload.belegnummer
-}
-
-// Schloss umschalten — reiner Editierschutz, ändert die Belegnummer NICHT.
-function toggleBelegLock() {
-    belegLocked.value = !belegLocked.value
 }
 
 // Buchungsvorschlag aus der Historie, sobald ein Betrag eingegeben wurde und noch
@@ -1241,7 +1221,6 @@ async function saveTransaction() {
                 tax_id:   l.tax === null || l.tax === undefined ? undefined : Number(l.tax),
             })),
             description:      txData.description || undefined,
-            reference:        txData.reference   || undefined,
             document_id:      documentId          || undefined,
         })
 
@@ -1518,9 +1497,9 @@ watch(() => txData.type, () => {
         line.tax = line.account ? (line.account.tax_id || 0) : null
     }
 })
-// Bei Jahreswechsel im Datum die automatische Belegnummer neu holen (solange gesperrt)
+// Bei Jahreswechsel im Datum die Vorschau der Belegnummer neu holen
 watch(() => txData.transdate, (nd, od) => {
-    if (showTransactionDialog.value && !editGlId.value && belegLocked.value && (nd || '').slice(0, 4) !== (od || '').slice(0, 4)) {
+    if (showTransactionDialog.value && !editGlId.value && (nd || '').slice(0, 4) !== (od || '').slice(0, 4)) {
         loadNextBeleg()
     }
 })

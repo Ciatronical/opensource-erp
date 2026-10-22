@@ -52,6 +52,7 @@
             "email": "E-mail"
         },
         "faktura": {
+            "cashBelegAuto": "A caixa atribui o número do documento de forma sequencial ao guardar",
             "workflow": "Fluxo de trabalho",
             "reuse": "Reutilizar como novo",
             "createQuotation": "Criar orçamento",

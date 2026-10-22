@@ -261,6 +261,19 @@ kivitendos Dialogbuchung mit mehreren Zeilen (Kassenbein brutto, je Position
 Netto- und Steuerbein). Im Kassenbuch und im Ausdruck steht die Buchung als
 „Split" mit allen Konten und Sätzen.
 
+**Belegnummern.** Jede Kassenbuchung bekommt eine fortlaufende Belegnummer je
+Kalenderjahr — Dialogbuchungen genauso wie Barzahlungen zu Rechnungen, egal ob
+sie aus der Kasse („Bar buchen") oder aus dem Rechnungseditor kommen. Die
+Nummer vergibt immer der Server im Moment des Buchens, in derselben Transaktion
+und gegen gleichzeitige Buchungen gesperrt; der Dialog zeigt vorher nur eine
+Vorschau. Von Hand lässt sich die Nummer nirgends ändern: Das Belegfeld ist in
+der Kasse und für Barzahlungen im Rechnungseditor gesperrt. Beim Ermitteln der
+nächsten Nummer zählen Rechnungsnummern, die als Zahlungsreferenz der eigenen
+Rechnung stehen, nicht mit, und Werte, die größer sind als die Zahl der
+Buchungen des Jahres sein können (ins Belegfeld getippte Rechnungsnummern,
+Datumsangaben), werden ignoriert — sie würden die Folge sonst in einen fremden
+Nummernkreis ziehen.
+
 **Buchung ansehen und ändern.** Ein Klick auf eine Zeile im Kassenbuch zeigt die
 Buchung mit Positionen und allen Beinen (Soll/Haben, Steuerschlüssel). Manuelle
 Kassenbuchungen lassen sich dort oder über den Stift in der Zeile **bearbeiten**:

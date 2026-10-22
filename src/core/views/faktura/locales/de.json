@@ -52,6 +52,7 @@
             "email": "E-Mail"
         },
         "faktura": {
+            "cashBelegAuto": "Belegnummer vergibt die Kasse fortlaufend beim Speichern",
             "workflow": "Workflow",
             "reuse": "Als neu verwenden",
             "createQuotation": "Angebot erstellen",

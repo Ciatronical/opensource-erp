@@ -52,6 +52,7 @@
             "email": "E-mail"
         },
         "faktura": {
+            "cashBelegAuto": "La cassa assegna il numero del documento in modo progressivo al salvataggio",
             "workflow": "Flusso di lavoro",
             "reuse": "Riutilizza come nuovo",
             "createQuotation": "Crea preventivo",

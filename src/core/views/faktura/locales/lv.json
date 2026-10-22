@@ -52,6 +52,7 @@
             "email": "E-pasts"
         },
         "faktura": {
+            "cashBelegAuto": "Kase piešķir dokumenta numuru secīgi saglabāšanas brīdī",
             "workflow": "Darbplūsma",
             "reuse": "Als neu verwenden",
             "createQuotation": "Angebot erstellen",

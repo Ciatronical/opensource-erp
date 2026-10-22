@@ -52,6 +52,7 @@
             "email": "Email"
         },
         "faktura": {
+            "cashBelegAuto": "The cash register assigns the receipt number consecutively when saving",
             "workflow": "Workflow",
             "reuse": "Use as New",
             "createQuotation": "Create Quotation",

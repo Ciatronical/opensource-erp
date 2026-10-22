@@ -213,7 +213,6 @@ function _gl_repost($db, $glId, array $head, array $legs) {
  * @param string $data['type']             income|expense
  * @param array  $data['lines']            Positionen [{chart_id, gross, tax_id?}]
  * @param string $data['description']      Buchungstext (optional)
- * @param string $data['reference']        Belegnummer (optional, sonst unverändert)
  * @param int    $data['document_id']      zusätzlich verknüpfter Beleg (optional)
  * @testdata {"gl_id": 1, "cash_register_id": 1, "transdate": "2026-06-04", "amount": 50.00, "type": "expense", "lines": [{"chart_id": 1, "gross": 50.00}], "description": "Büromaterial"}
  */
@@ -284,7 +283,9 @@ function updateCashTransaction($data) {
         $summary[] = ['accno' => $r['accno'], 'description' => $r['description'], 'gross' => $l['gross'], 'net' => abs($net), 'tax' => abs($tax), 'tax_rate' => $r['rate']];
     }
 
-    $reference   = trim($data['reference'] ?? '') ?: $old['reference'];
+    // Die Belegnummer bleibt — sie ist fortlaufend vergeben und wird nie von Hand
+    // geändert (ein geändertes `reference` aus dem Dialog wird ignoriert).
+    $reference   = $old['reference'];
     $description = trim($data['description'] ?? '') ?: ($type === 'expense' ? 'Barausgabe' : 'Bareinnahme');
     _gl_repost($db, $glId, ['reference' => $reference, 'description' => $description, 'transdate' => $transdate], $legs);
 

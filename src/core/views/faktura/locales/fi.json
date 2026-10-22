@@ -52,6 +52,7 @@
             "email": "Sähköposti"
         },
         "faktura": {
+            "cashBelegAuto": "Kassa antaa tositenumeron juoksevasti tallennettaessa",
             "workflow": "Workflow",
             "reuse": "Als neu verwenden",
             "createQuotation": "Angebot erstellen",
