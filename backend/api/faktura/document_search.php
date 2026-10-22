@@ -27,30 +27,36 @@ function documentListConfig($documentType) {
             'number'     => 'invnumber',
             'filter'     => "COALESCE(d.type, '') <> 'credit_note'",
             'permission' => 'invoice_edit',
+            'print_type' => "'invoice'",
         ],
         'credit_note' => [
             'table'      => 'ar',
             'number'     => 'invnumber',
             'filter'     => "d.type = 'credit_note'",
             'permission' => 'invoice_edit',
+            'print_type' => "'credit_note'",
         ],
         'order' => [
             'table'      => 'oe',
             'number'     => 'ordnumber',
             'filter'     => "COALESCE(d.ordnumber, '') <> ''",
             'permission' => 'sales_order_edit',
+            'print_type' => "'order'",
         ],
         'quotation' => [
             'table'      => 'oe',
             'number'     => 'quonumber',
             'filter'     => "COALESCE(d.quonumber, '') <> ''",
             'permission' => 'sales_quotation_edit',
+            'print_type' => "'quotation'",
         ],
         'delivery_order' => [
             'table'      => 'delivery_orders',
             'number'     => 'donumber',
             'filter'     => '1=1',
             'permission' => 'sales_delivery_order_edit',
+            // Einkaufslieferscheine haben eine eigene Druckvorlage
+            'print_type' => "CASE WHEN d.record_type = 'purchase_delivery_order' THEN 'purchase_delivery_order' ELSE 'delivery_order' END",
         ],
     ];
 
@@ -58,48 +64,49 @@ function documentListConfig($documentType) {
 }
 
 /**
- * Belegliste laden (neueste zuerst), optional gefiltert.
+ * Gemeinsamer SQL-Bau fuer Liste und Export: Filter, Spalten, Sortierung.
  *
- * @param string $data['documentType'] invoice | credit_note | order | quotation | delivery_order
- * @param string $data['q']            Volltext ueber Belegnummer, Kunde und Beschreibung
- * @param string $data['from']         Belegdatum ab (YYYY-MM-DD)
- * @param string $data['to']           Belegdatum bis (YYYY-MM-DD)
- * @param int    $data['limit']        Maximale Trefferzahl (Standard 200, max 1000)
- * @testdata {"action": "searchDocuments", "documentType": "invoice", "limit": 50}
- * @testdata {"action": "searchDocuments", "documentType": "quotation", "q": "Müller"}
+ * Liste und Export muessen exakt dieselben Belege liefern — deshalb entsteht
+ * die Abfrage an genau einer Stelle. Die Summen ueber ALLE Treffer kommen als
+ * Fensterfunktionen mit (total_*): sie werden vor dem LIMIT gebildet, die
+ * Oberflaeche zeigt also die Summe des Filters, nicht nur der sichtbaren Zeilen.
+ *
+ * Betraege im kivitendo-Schema: amount = brutto, netamount = netto, die
+ * Umsatzsteuer ist die Differenz. Lieferscheine fuehren keine Betraege.
+ *
+ * @return array|null ['sql' => string, 'params' => array, 'config' => array] oder null bei unbekanntem Typ
  */
-function searchDocuments($data) {
+function _documentListQuery($data, $withLimit) {
     $documentType = (string)($data['documentType'] ?? '');
     $config = documentListConfig($documentType);
-    if ($config === null) {
-        resultInfo(false, 'INVALID_INPUT', 'Unbekannter Belegtyp');
-        return;
-    }
+    if ($config === null) return null;
 
-    permit($config['permission']);
+    $q      = trim((string)($data['q'] ?? ''));
+    $from   = trim((string)($data['from'] ?? ''));
+    $to     = trim((string)($data['to'] ?? ''));
+    $status = in_array($data['status'] ?? '', ['open', 'closed'], true) ? $data['status'] : '';
 
-    $db    = DbhCompany::begin();
-    $limit = (int)($data['limit'] ?? 200);
-    if ($limit < 1)    $limit = 1;
-    if ($limit > 1000) $limit = 1000;
+    $table  = $config['table'];
+    $number = $config['number'];
 
-    $q    = trim((string)($data['q'] ?? ''));
-    $from = trim((string)($data['from'] ?? ''));
-    $to   = trim((string)($data['to'] ?? ''));
-
-    $table   = $config['table'];
-    $number  = $config['number'];
-    $filter  = $config['filter'];
-
-    // Lieferscheine fuehren keine Betraege — dann bleibt die Spalte leer.
-    $amount  = $table === 'delivery_orders' ? 'NULL::numeric' : 'd.amount';
+    $hasAmounts = $table !== 'delivery_orders';
+    $amount     = $hasAmounts ? 'd.amount' : 'NULL::numeric';
+    $netamount  = $hasAmounts ? 'd.netamount' : 'NULL::numeric';
+    $tax        = $hasAmounts ? '(d.amount - d.netamount)' : 'NULL::numeric';
+    // Bezahlt/offen/faellig gibt es nur bei Rechnungen und Gutschriften
+    $paid       = $table === 'ar' ? 'd.paid' : 'NULL::numeric';
+    $open       = $table === 'ar' ? '(d.amount - d.paid)' : 'NULL::numeric';
+    $duedate    = $table === 'ar' ? 'd.duedate' : 'NULL::date';
     // "Erledigt": Rechnung vollstaendig bezahlt bzw. Beleg geschlossen
-    $closed  = $table === 'ar'
+    $closed     = $table === 'ar'
         ? 'ABS(d.amount) > 0 AND ABS(d.paid) >= ABS(d.amount)'
         : 'COALESCE(d.closed, FALSE)';
+    $overdue    = $table === 'ar'
+        ? "(NOT ($closed) AND d.duedate IS NOT NULL AND d.duedate < CURRENT_DATE)"
+        : 'FALSE';
 
-    $params = [':limit' => $limit];
-    $where  = [$filter];
+    $params = [];
+    $where  = [$config['filter']];
 
     if ($q !== '') {
         $params[':q'] = '%' . $q . '%';
@@ -115,31 +122,343 @@ function searchDocuments($data) {
         $params[':to'] = $to;
         $where[] = 'd.transdate <= :to::date';
     }
+    if ($status === 'open')   $where[] = "NOT ($closed)";
+    if ($status === 'closed') $where[] = "($closed)";
+
+    $limitSql = '';
+    if ($withLimit) {
+        $limit = (int)($data['limit'] ?? 200);
+        if ($limit < 1)    $limit = 1;
+        if ($limit > 1000) $limit = 1000;
+        $params[':limit'] = $limit;
+        $limitSql = 'LIMIT :limit';
+    }
 
     $whereSql = implode(' AND ', $where);
 
-    $documents = $db->getAll(
-        "SELECT d.id,
-                d.$number                        AS number,
-                d.transdate,
-                c.name                           AS customer_name,
-                c.customernumber,
-                $amount                          AS amount,
-                ($closed)                        AS closed,
-                COALESCE(d.transaction_description, '') AS description,
-                (SELECT string_agg(DISTINCT rl.to_table, ',')
-                   FROM record_links rl
-                  WHERE rl.from_table = '$table' AND rl.from_id = d.id
-                    AND rl.to_table IN ('email_journal', 'whatsapp_messages')) AS sent_channels
-           FROM $table d
-           LEFT JOIN customer c ON c.id = d.customer_id
-          WHERE $whereSql
-          ORDER BY d.transdate DESC NULLS LAST, d.id DESC
-          LIMIT :limit",
-        $params
-    );
+    $sql = "SELECT d.id,
+                   d.$number                        AS number,
+                   d.transdate,
+                   $duedate                         AS duedate,
+                   c.id                             AS customer_id,
+                   c.name                           AS customer_name,
+                   c.customernumber,
+                   c.email                          AS customer_email,
+                   c.cc                             AS customer_cc,
+                   c.bcc                            AS customer_bcc,
+                   $amount                          AS amount,
+                   $netamount                       AS netamount,
+                   $tax                             AS tax,
+                   $paid                            AS paid,
+                   $open                            AS open_amount,
+                   ($closed)                        AS closed,
+                   $overdue                         AS overdue,
+                   {$config['print_type']}          AS print_type,
+                   COALESCE(d.transaction_description, '') AS description,
+                   (SELECT string_agg(DISTINCT rl.to_table, ',')
+                      FROM record_links rl
+                     WHERE rl.from_table = '$table' AND rl.from_id = d.id
+                       AND rl.to_table IN ('email_journal', 'whatsapp_messages')) AS sent_channels,
+                   COUNT(*)        OVER ()          AS total_count,
+                   SUM($amount)    OVER ()          AS total_amount,
+                   SUM($netamount) OVER ()          AS total_netamount,
+                   SUM($tax)       OVER ()          AS total_tax,
+                   SUM($open)      OVER ()          AS total_open
+              FROM $table d
+              LEFT JOIN customer c ON c.id = d.customer_id
+             WHERE $whereSql
+             ORDER BY d.transdate DESC NULLS LAST, d.id DESC
+             $limitSql";
 
-    resultInfo(true, '', ['documents' => $documents]);
+    return ['sql' => $sql, 'params' => $params, 'config' => $config, 'has_amounts' => $hasAmounts];
+}
+
+/**
+ * Belegliste laden (neueste zuerst), optional gefiltert.
+ *
+ * Neben den Zeilen kommen die Summen ueber alle Treffer des Filters zurueck
+ * (totals) — auch wenn das Limit greift.
+ *
+ * @param string $data['documentType'] invoice | credit_note | order | quotation | delivery_order
+ * @param string $data['q']            Volltext ueber Belegnummer, Kunde und Beschreibung
+ * @param string $data['from']         Belegdatum ab (YYYY-MM-DD)
+ * @param string $data['to']           Belegdatum bis (YYYY-MM-DD)
+ * @param string $data['status']       leer = alle, open = nur offene, closed = nur erledigte
+ * @param int    $data['limit']        Maximale Trefferzahl (Standard 200, max 1000)
+ * @testdata {"action": "searchDocuments", "documentType": "invoice", "status": "open", "limit": 50}
+ * @testdata {"action": "searchDocuments", "documentType": "quotation", "q": "Müller"}
+ */
+function searchDocuments($data) {
+    $query = _documentListQuery($data, true);
+    if ($query === null) {
+        resultInfo(false, 'INVALID_INPUT', 'Unbekannter Belegtyp');
+        return;
+    }
+    permit($query['config']['permission']);
+
+    $db = DbhCompany::begin();
+    $documents = $db->getAll($query['sql'], $query['params']);
+
+    // Die Summen stehen in jeder Zeile gleich — einmal herausziehen
+    $first  = $documents[0] ?? null;
+    $totals = [
+        'count'     => $first ? (int)$first['total_count'] : 0,
+        'amount'    => $first ? (float)$first['total_amount'] : 0,
+        'netamount' => $first ? (float)$first['total_netamount'] : 0,
+        'tax'       => $first ? (float)$first['total_tax'] : 0,
+        'open'      => $first ? (float)$first['total_open'] : 0,
+    ];
+    foreach ($documents as &$row) {
+        unset($row['total_count'], $row['total_amount'], $row['total_netamount'], $row['total_tax'], $row['total_open']);
+    }
+    unset($row);
+
+    resultInfo(true, '', ['documents' => $documents, 'totals' => $totals]);
+}
+
+/** Datum fuer Export: 31.12.2026 */
+function _documentList_datum($value) {
+    if (!$value) return '';
+    $ts = strtotime((string)$value);
+    return $ts ? date('d.m.Y', $ts) : (string)$value;
+}
+
+/** Betrag fuer CSV: deutsches Format ohne Tausenderpunkt, leer bei NULL */
+function _documentList_betrag($value) {
+    if ($value === null || $value === '') return '';
+    return number_format((float)$value, 2, ',', '');
+}
+
+/** CSV-Feld: nur in Anfuehrungszeichen, wenn noetig */
+function _documentList_csvQuote($value): string {
+    $value = (string)$value;
+    if ($value === '') return '';
+    if (preg_match('/[;"\r\n]/', $value)) {
+        return '"' . str_replace('"', '""', $value) . '"';
+    }
+    return $value;
+}
+
+/** Zeitraumteil fuer Dateinamen: 20260101-20260131, 2026 oder gesamt */
+function _documentList_dateiZeitraum($from, $to) {
+    if ($from === '' && $to === '') return 'gesamt';
+    if ($from !== '' && $to !== '' && substr($from, 5) === '01-01' && substr($to, 5) === '12-31' && substr($from, 0, 4) === substr($to, 0, 4)) {
+        return substr($from, 0, 4);
+    }
+    return ($from !== '' ? str_replace('-', '', $from) : 'Beginn') . '-' . ($to !== '' ? str_replace('-', '', $to) : 'heute');
+}
+
+/**
+ * Belegliste exportieren — dieselben Treffer wie die Ansicht, ohne Limit.
+ *
+ * Formate:
+ *   csv   Semikolon, UTF-8 mit BOM, deutsches Zahlenformat (Excel, LibreOffice)
+ *   pdf   Querformat mit Spaltenkopf je Seite und Summenzeile (ReportPdf)
+ *   rows  die Zeilen als JSON — die Oberflaeche baut daraus die Excel-Datei
+ *
+ * Beschriftungen kommen uebersetzt aus der Oberflaeche (labels); fehlen sie,
+ * gelten deutsche Vorgaben.
+ *
+ * @param string $data['documentType'] wie searchDocuments
+ * @param string $data['q']            wie searchDocuments
+ * @param string $data['from']         wie searchDocuments
+ * @param string $data['to']           wie searchDocuments
+ * @param string $data['status']       wie searchDocuments
+ * @param string $data['format']       csv | pdf | rows
+ * @param array  $data['labels']       Beschriftungen: title, period, number, date, duedate, customer,
+ *                                     customernumber, description, net, tax, gross, paid, open, status,
+ *                                     statusOpen, statusClosed, statusOverdue, total, documents
+ * @testdata {"action": "exportDocumentList", "documentType": "invoice", "format": "csv", "from": "2026-01-01", "to": "2026-12-31"}
+ * @testdata {"action": "exportDocumentList", "documentType": "invoice", "format": "pdf", "labels": {"title": "Rechnungen", "period": "Januar 2026"}}
+ */
+function exportDocumentList($data) {
+    $query = _documentListQuery($data, false);
+    if ($query === null) {
+        resultInfo(false, 'INVALID_INPUT', 'Unbekannter Belegtyp');
+        return;
+    }
+    permit($query['config']['permission']);
+
+    $format = in_array($data['format'] ?? '', ['csv', 'pdf', 'rows'], true) ? $data['format'] : 'csv';
+    $l = array_merge([
+        'title'          => 'Belege',
+        'period'         => '',
+        'company'        => '',
+        'number'         => 'Nummer',
+        'date'           => 'Datum',
+        'duedate'        => 'Fällig',
+        'customer'       => 'Kunde',
+        'customernumber' => 'Kundennummer',
+        'description'    => 'Bezeichnung',
+        'net'            => 'Netto',
+        'tax'            => 'USt',
+        'gross'          => 'Brutto',
+        'paid'           => 'Bezahlt',
+        'open'           => 'Offen',
+        'status'         => 'Status',
+        'statusOpen'     => 'Offen',
+        'statusClosed'   => 'Erledigt',
+        'statusOverdue'  => 'Überfällig',
+        'total'          => 'Summe',
+        'documents'      => 'Belege',
+        'createdAt'      => 'Erstellt am',
+    ], is_array($data['labels'] ?? null) ? array_map('strval', $data['labels']) : []);
+
+    $db   = DbhCompany::begin();
+    $rows = $db->getAll($query['sql'], $query['params']);
+    $hasAmounts = $query['has_amounts'];
+    $isAr       = $query['config']['table'] === 'ar';
+
+    $first  = $rows[0] ?? null;
+    $totals = [
+        'count'     => $first ? (int)$first['total_count'] : 0,
+        'amount'    => $first ? (float)$first['total_amount'] : 0,
+        'netamount' => $first ? (float)$first['total_netamount'] : 0,
+        'tax'       => $first ? (float)$first['total_tax'] : 0,
+        'open'      => $first ? (float)$first['total_open'] : 0,
+    ];
+
+    $statusText = function ($row) use ($l) {
+        if ($row['closed']) return $l['statusClosed'];
+        return $row['overdue'] ? $l['statusOverdue'] : $l['statusOpen'];
+    };
+
+    $from = trim((string)($data['from'] ?? ''));
+    $to   = trim((string)($data['to'] ?? ''));
+    $dateiBasis = preg_replace('/[^A-Za-z0-9_\-]+/', '_', $l['title']) . '_' . _documentList_dateiZeitraum($from, $to);
+
+    if ($format === 'rows') {
+        foreach ($rows as &$row) {
+            unset($row['total_count'], $row['total_amount'], $row['total_netamount'], $row['total_tax'], $row['total_open'],
+                  $row['sent_channels'], $row['customer_email'], $row['customer_cc'], $row['customer_bcc'], $row['print_type']);
+            $row['status_text'] = $statusText($row);
+        }
+        unset($row);
+        resultInfo(true, '', ['documents' => $rows, 'totals' => $totals, 'filename' => $dateiBasis . '.xlsx']);
+        return;
+    }
+
+    if ($format === 'csv') {
+        $head = [$l['number'], $l['date']];
+        if ($isAr) $head[] = $l['duedate'];
+        $head = array_merge($head, [$l['customer'], $l['customernumber'], $l['description']]);
+        if ($hasAmounts) $head = array_merge($head, [$l['net'], $l['tax'], $l['gross']]);
+        if ($isAr) $head = array_merge($head, [$l['paid'], $l['open']]);
+        $head[] = $l['status'];
+        $lines = [implode(';', array_map('_documentList_csvQuote', $head))];
+
+        foreach ($rows as $row) {
+            $cells = [_documentList_csvQuote($row['number']), _documentList_datum($row['transdate'])];
+            if ($isAr) $cells[] = _documentList_datum($row['duedate']);
+            $cells[] = _documentList_csvQuote($row['customer_name']);
+            $cells[] = _documentList_csvQuote($row['customernumber']);
+            $cells[] = _documentList_csvQuote($row['description']);
+            if ($hasAmounts) {
+                $cells[] = _documentList_betrag($row['netamount']);
+                $cells[] = _documentList_betrag($row['tax']);
+                $cells[] = _documentList_betrag($row['amount']);
+            }
+            if ($isAr) {
+                $cells[] = _documentList_betrag($row['paid']);
+                $cells[] = _documentList_betrag($row['open_amount']);
+            }
+            $cells[] = _documentList_csvQuote($statusText($row));
+            $lines[] = implode(';', $cells);
+        }
+
+        if ($hasAmounts) {
+            $cells = [_documentList_csvQuote($l['total'] . ' (' . $totals['count'] . ' ' . $l['documents'] . ')'), ''];
+            if ($isAr) $cells[] = '';
+            $cells = array_merge($cells, ['', '', '',
+                _documentList_betrag($totals['netamount']), _documentList_betrag($totals['tax']), _documentList_betrag($totals['amount'])]);
+            if ($isAr) $cells = array_merge($cells, ['', _documentList_betrag($totals['open'])]);
+            $cells[] = '';
+            $lines[] = implode(';', $cells);
+        }
+
+        resultInfo(true, '', [
+            'filename' => $dateiBasis . '.csv',
+            'mime'     => 'text/csv',
+            'data'     => base64_encode("\xEF\xBB\xBF" . implode("\r\n", $lines)),
+        ]);
+        return;
+    }
+
+    // PDF: Querformat, 267 mm nutzbare Breite
+    require_once __DIR__.'/../lib/report_pdf.php';
+    $pdf = new ReportPdf('L', 'mm', 'A4');
+    $pdf->reportTitle = $l['title'];
+    $pdf->reportLines = array_values(array_filter([
+        $l['company'],
+        $l['period'],
+        $totals['count'] . ' ' . $l['documents'],
+    ]));
+    if ($hasAmounts && $isAr) {
+        $pdf->columns = [
+            ['w' => 26, 'label' => $l['number']],
+            ['w' => 18, 'label' => $l['date']],
+            ['w' => 52, 'label' => $l['customer']],
+            ['w' => 60, 'label' => $l['description']],
+            ['w' => 23, 'label' => $l['net'],   'align' => 'R'],
+            ['w' => 21, 'label' => $l['tax'],   'align' => 'R'],
+            ['w' => 23, 'label' => $l['gross'], 'align' => 'R'],
+            ['w' => 23, 'label' => $l['open'],  'align' => 'R'],
+            ['w' => 21, 'label' => $l['status']],
+        ];
+    } elseif ($hasAmounts) {
+        $pdf->columns = [
+            ['w' => 26, 'label' => $l['number']],
+            ['w' => 18, 'label' => $l['date']],
+            ['w' => 62, 'label' => $l['customer']],
+            ['w' => 74, 'label' => $l['description']],
+            ['w' => 23, 'label' => $l['net'],   'align' => 'R'],
+            ['w' => 21, 'label' => $l['tax'],   'align' => 'R'],
+            ['w' => 23, 'label' => $l['gross'], 'align' => 'R'],
+            ['w' => 20, 'label' => $l['status']],
+        ];
+    } else {
+        $pdf->columns = [
+            ['w' => 30, 'label' => $l['number']],
+            ['w' => 20, 'label' => $l['date']],
+            ['w' => 90, 'label' => $l['customer']],
+            ['w' => 102, 'label' => $l['description']],
+            ['w' => 25, 'label' => $l['status']],
+        ];
+    }
+    $pdf->footNote = $l['createdAt'] . ' ' . date('d.m.Y H:i') . ($l['company'] !== '' ? ' · ' . $l['company'] : '');
+    $pdf->SetMargins(15, 15, 15);
+    $pdf->SetAutoPageBreak(true, 18);
+    $pdf->AliasNbPages();
+    $pdf->AddPage();
+
+    foreach ($rows as $row) {
+        $status = ['text' => $statusText($row)];
+        if (!$row['closed']) $status['color'] = $row['overdue'] ? [180, 30, 30] : [160, 100, 0];
+        $cells = [(string)$row['number'], _documentList_datum($row['transdate']),
+                  (string)$row['customer_name'], ['text' => (string)$row['description'], 'wrap' => true, 'maxLines' => 2]];
+        if ($hasAmounts) {
+            $cells[] = ReportPdf::money($row['netamount']);
+            $cells[] = ReportPdf::money($row['tax']);
+            $cells[] = ReportPdf::money($row['amount']);
+        }
+        if ($isAr) $cells[] = ReportPdf::money($row['open_amount'], true);
+        $cells[] = $status;
+        $pdf->row($cells);
+    }
+
+    if ($hasAmounts) {
+        $cells = [$l['total'], '', $totals['count'] . ' ' . $l['documents'], '',
+                  ReportPdf::money($totals['netamount']), ReportPdf::money($totals['tax']), ReportPdf::money($totals['amount'])];
+        if ($isAr) $cells[] = ReportPdf::money($totals['open']);
+        $cells[] = '';
+        $pdf->totalRow($cells);
+    }
+
+    resultInfo(true, '', [
+        'filename' => $dateiBasis . '.pdf',
+        'mime'     => 'application/pdf',
+        'data'     => base64_encode($pdf->Output('S')),
+    ]);
 }
 
 /**

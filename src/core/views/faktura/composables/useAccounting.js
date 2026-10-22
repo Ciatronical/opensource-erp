@@ -43,7 +43,19 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
         return Math.round((value + Number.EPSILON) * factor) / factor
     }
 
+    // Gutschrift und Storno führen ihre Mengen negativ (wie kivitendo, wie die
+    // Umwandlung aus der Rechnung). Eine positiv erfasste Menge wird deshalb
+    // sofort umgedreht — das Backend erzwingt dasselbe Vorzeichen beim Speichern.
+    const hasNegativeQty = computed(() => ['credit_note', 'invoice_storno'].includes(fakturaType.value))
+
+    function normalizeQtySign(item) {
+        if (hasNegativeQty.value && item && item.qty > 0) {
+            item.qty = -item.qty
+        }
+    }
+
     function calculateItemTotal(item) {
+        normalizeQtySign(item)
         if (!item || !item.qty || !item.sellprice) {
             return
         }
@@ -70,6 +82,7 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
         const baseByRate = new Map()
 
         fakturaItems.value.forEach(item => {
+            normalizeQtySign(item)
             if (item.id !== null && item.parts_id) {
                 const itemTotal = item.qty * item.sellprice * (1 - item.discount)
                 const roundedItemTotal = roundMoney(itemTotal, 2)
@@ -281,6 +294,8 @@ export function useAccounting({ fakturaItems, faktura, fakturaType, paymentList,
         calculateItemTotal,
         calculateTotals,
         flushCalculation,
+        hasNegativeQty,
+        normalizeQtySign,
         calculateAccTransEntries,
         calculatePaymentEntries
     }
