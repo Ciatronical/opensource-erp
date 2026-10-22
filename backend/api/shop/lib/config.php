@@ -206,7 +206,8 @@ function shopChannelConfig($db, int $kanal, bool $neu = false): array {
         "SELECT COALESCE(c.settings, '{}'::jsonb)
                 || COALESCE((SELECT jsonb_object_agg(s.key, s.value)
                                FROM sales_channel_secret_shop s WHERE s.channel_id = c.id), '{}'::jsonb)
-                || jsonb_build_object('id', c.id, 'type', c.type, 'name', c.name, 'active', c.active) AS config
+                || jsonb_build_object('id', c.id, 'type', c.type, 'name', c.name, 'active', c.active,
+                                      'website_id', c.website_id) AS config
            FROM sales_channel_shop c
           WHERE c.id = CAST(:kanal AS integer)",
         [':kanal' => $kanal]
@@ -390,6 +391,72 @@ function shopChannelRequire($db, int $kanal, string $key): string {
 function shopFirstChannelId($db, string $art): int {
     $zeile = $db->getOne("SELECT shop_first_channel_id(:art) AS id", [':art' => $art]);
     return (int)($zeile['id'] ?? 0);
+}
+
+/**
+ * Der HugoShop einer Webseite des Kundenportals (dev/kundenportal.md)
+ *
+ * Die Webseite gehört dem Kern (website_oserp); der HugoShop hängt sich mit
+ * sales_channel_shop.website_id an. Der öffentliche Zugang kennt nur die
+ * Webseite — jede Shop-Aktion holt sich hier ihren Kanal. Ein abgeschalteter
+ * Kanal wird gefunden (Konto, Rechnungen, Widerruf bleiben erreichbar), ein
+ * eingeschalteter hat Vorrang.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $website website_oserp.id
+ * @return int sales_channel_shop.id
+ * @throws ApiError SHOP_NOT_CONFIGURED wenn die Webseite keinen HugoShop hat
+ */
+function shopChannelOfWebsite($db, int $website): int {
+    static $gehalten = null;
+    if (null === $gehalten) {
+        $gehalten = new WeakMap();
+    }
+    $alle = $gehalten[$db] ?? [];
+    if (!isset($alle[$website])) {
+        $zeile = $db->getOne(
+            "SELECT id FROM sales_channel_shop
+              WHERE type = 'hugoshop' AND website_id = CAST(:website AS integer)
+              ORDER BY active DESC, sortkey DESC NULLS LAST, id
+              LIMIT 1",
+            [':website' => $website]
+        );
+        $alle[$website] = (int)($zeile['id'] ?? 0);
+        $gehalten[$db] = $alle;
+    }
+    if ($alle[$website] <= 0) {
+        throw new ApiError('SHOP_NOT_CONFIGURED', 'Zu dieser Webseite gehört kein HugoShop');
+    }
+    return $alle[$website];
+}
+
+/**
+ * Die Webseite eines HugoShops, 0 wenn keine zugeordnet ist
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal sales_channel_shop.id
+ * @return int website_oserp.id
+ */
+function shopWebsiteOfChannel($db, int $kanal): int {
+    return (int)(shopChannelConfig($db, $kanal)['website_id'] ?? 0);
+}
+
+/**
+ * Eine Einstellung der Webseite eines HugoShops
+ *
+ * Adresse, Zugang, HugoCMS und Vorlagensatz gehören seit dem Kundenportal der
+ * Webseite (website_oserp), nicht mehr dem Kanal. Ohne Webseite ist jeder
+ * Wert leer — der Rückfallwert gilt.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal sales_channel_shop.id
+ * @param string $key Schlüssel der Webseite, etwa 'base_url'
+ * @param string $default Rückfallwert
+ * @return string
+ */
+function shopSiteValue($db, int $kanal, string $key, string $default = ''): string {
+    $website = shopWebsiteOfChannel($db, $kanal);
+    return $website > 0 ? websiteValue($db, $website, $key, $default) : $default;
 }
 
 /**

@@ -189,7 +189,7 @@ export function useShop() {
      * tut. Kehrt sofort zurück wie runPublishJobs(); `job_id` ist der
      * Auftrag, der dafür läuft.
      */
-    const installShopUi = (channel_ids = [], start = true) => call('installShopUi', { channel_ids, start })
+    const installPortalUi = (channel_ids = [], start = true) => call('installPortalUi', { channel_ids, start })
 
     /**
      * Stand der Veröffentlichung
@@ -235,7 +235,7 @@ export function useShop() {
         publishAll,
         fetchPublishJobs,
         runPublishJobs,
-        installShopUi,
+        installPortalUi,
         fetchPublishStatus,
         fetchPublishRunOutput,
         cleanupPublishJobs,

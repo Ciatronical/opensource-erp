@@ -1,0 +1,41 @@
+{{- /*
+  Waehlt das Panel-Element zur Seite aus. Erwartet ein dict:
+    page   overview | profile | address | order | payment
+    class  Layout-Klassen fuer den Host, optional
+*/ -}}
+{{- /* noAssets: der Aufrufer bindet das Bundle selbst ein. Bewusst
+     negativ benannt — ein fehlender Schluessel ist in Go-Templates
+     falsch, und der sichere Fall ist "Bundle einbinden". */ -}}
+{{- if not .noAssets }}{{ partial "portal-ui-assets.html" . }}{{ end -}}
+{{- $class := .class -}}
+{{- /* Ziele ohne Angabe: params.portalui.paths bzw. die Vorgaben der Widgets (core/paths.js) */ -}}
+{{- $login := .loginUrl -}}
+{{- if eq .page "overview" -}}
+<portal-account-overview
+  {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- with $class }} class="{{ . }}"{{ end }}></portal-account-overview>
+{{- else if eq .page "profile" -}}
+<portal-account-profile
+  {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- with $class }} class="{{ . }}"{{ end }}></portal-account-profile>
+{{- else if eq .page "address" -}}
+<portal-account-addresses
+  {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- with $class }} class="{{ . }}"{{ end }}></portal-account-addresses>
+{{- else if eq .page "order" -}}
+<portal-account-orders
+  {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- with $class }} class="{{ . }}"{{ end }}></portal-account-orders>
+{{- else if eq .page "payment" -}}
+<portal-account-payment
+  {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- with $class }} class="{{ . }}"{{ end }}></portal-account-payment>
+{{- else if eq .page "vehicles" -}}
+{{- /* Fahrzeuge (LxCars): das Element kommt aus lxcars-widgets.js, das der
+     Partial nur mit dem Merkmal lxcars laedt */ -}}
+<portal-vehicles
+  {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- with $class }} class="{{ . }}"{{ end }}></portal-vehicles>
+{{- else -}}
+{{- errorf "portal-account: unbekannte Seite %q (erlaubt: overview, profile, address, order, payment, vehicles)" .page -}}
+{{- end -}}

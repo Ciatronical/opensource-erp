@@ -24,8 +24,8 @@ nicht gegen eine echte Webseite getestet. Löst E9 aus
 ## Ziel
 
 „Shop-Benutzerschnittstelle installieren“ überträgt alle Dateien des Pakets,
-auch Weiterleiter (`oserp-shop/static/shop-api/index.php`) und 404-Seite
-(`oserp-shop/static/not_found.php`). Von Hand bleibt nur, was keine Übertragung
+auch Weiterleiter (`oserp-portal/static/portal-api/index.php`) und 404-Seite
+(`oserp-portal/static/not_found.php`). Von Hand bleibt nur, was keine Übertragung
 leisten kann: PHP für die Webseite einschalten, die 404 an `not_found.php`
 geben, den öffentlichen Schlüssel einmal in HugoCMS eintragen.
 

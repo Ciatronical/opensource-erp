@@ -33,7 +33,8 @@
                 "channel_round_99_net": "Rounding to .99 is enabled, but sales prices are stored net. With gross sales prices, cart and invoice always match to the cent."
             },
             "points": {
-                "no_parts_offered": "No item offered"
+                "no_parts_offered": "No item offered",
+                "shop_website": "Customer portal website assigned"
             },
             "paypalSandbox": "Sales channel “{name}”: PayPal runs in the test environment — real payments are not possible yet."
         },
@@ -400,6 +401,7 @@
             "republishQueued": "Saved. The product pages will be rewritten with the new prices.",
             "saveError": "The channel settings could not be saved.",
             "loadError": "The sales channels could not be loaded.",
+            "secretsLoadError": "The sales channel keys could not be loaded.",
             "name": "Name",
             "nameRequired": "The channel needs a name.",
             "autoAddParts": "Add new shop items automatically",
@@ -425,7 +427,12 @@
             "notDeletableInvoices": "{anzahl} invoice | {anzahl} invoices",
             "notDeletableWithdrawals": "{anzahl} withdrawal | {anzahl} withdrawals",
             "notDeletableEbayOrders": "{anzahl} eBay order | {anzahl} eBay orders",
-            "notDeletableJobsHint": "The next run completes open jobs (“Run open” in the shop overview). With documents the channel stays switched off."
+            "notDeletableJobsHint": "The next run completes open jobs (“Run open” in the shop overview). With documents the channel stays switched off.",
+            "website": "Website",
+            "websiteHint": "Customer portal website this HugoShop runs on — access, address and HugoCMS are set there (System → Websites).",
+            "websiteNone": "— no website —",
+            "websitesOpen": "Manage websites",
+            "hugocmsViaWebsite": "HugoCMS address and key are set at the channel's website; here only the connection is tested and the grants are read."
         },
         "ebayCondition": {
             "NEW": "New",
@@ -492,7 +499,11 @@
             "KLEINANZEIGEN_LEAD_NOT_FOUND": "This enquiry does not exist.",
             "EMAIL_NOT_CONFIGURED": "The mailbox is not configured (company configuration → email).",
             "MISSING_API_KEYS": "The Anthropic API key is not configured (company configuration → AI).",
-            "CLAUDE_API_ERROR": "The AI did not answer."
+            "CLAUDE_API_ERROR": "The AI did not answer.",
+            "CHANNEL_WEBSITE_TAKEN": "Another HugoShop already runs on this website.",
+            "WEBSITE_NOT_FOUND": "This website does not exist.",
+            "SHOP_WEBSITE_MISSING": "No website is assigned to the HugoShop (sales channels → website).",
+            "SHOP_NOT_CONFIGURED": "No HugoShop belongs to this website."
         },
         "orderStatus": {
             "open": "Open",

@@ -63,7 +63,8 @@
         "newArticle": "/article/new",
         "admin": "/system/administration",
         "systemSettings": "/system/settings",
-        "templateDesigner": "/system/template-designer"
+        "templateDesigner": "/system/template-designer",
+        "websites": "/system/websites"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Error: The password file api/config/api.passwd.php was not found. Please rename the file api/config/api.passwd.php.example to api/config/api.passwd.php and adjust the settings accordingly.",
@@ -109,7 +110,8 @@
         "docs": "Documentation",
         "about": "About",
         "administration": "Users and Companies",
-        "systemSettings": "System settings"
+        "systemSettings": "System settings",
+        "websites": "Websites (customer portal)"
     },
     "DocsView": {
         "title": "Documentation",

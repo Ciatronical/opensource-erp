@@ -7,13 +7,13 @@
 //
 // Die Umleitungen stehen in OpensourceERP (redirect_pages_hugoshop). Abgefragt
 // werden sie über die öffentliche Aktion resolveRedirect — mit Adresse und
-// Schlüssel aus <webseite>/oserp-shop/config.json, wie beim Proxy.
+// Schlüssel aus <webseite>/oserp-portal/config.json, wie beim Proxy.
 //
 // HugoCMS nimmt kein PHP an: diese Datei einmal von Hand nach
-// <webseite>/oserp-shop/static/not_found.php legen — und erneut, wenn der
+// <webseite>/oserp-portal/static/not_found.php legen — und erneut, wenn der
 // Lauf sie als veraltet meldet (dev/shop-hugocms-trennung.md, E9).
 //
-// Jede Antwort trägt X-Oserp-Shop-File mit der Prüfsumme dieser Datei. Der
+// Jede Antwort trägt X-Oserp-Portal-File mit der Prüfsumme dieser Datei. Der
 // Lauf in OpensourceERP ruft eine Adresse auf, die es nicht gibt, und
 // vergleicht sie mit dem Vorlagensatz (shopWebsiteManualFilesCheck) — so
 // prüft er zugleich, ob der Webserver die 404 hierher leitet.
@@ -25,7 +25,7 @@
 // Aussehen: liegt im Docroot eine 404.html, wird sie mit den Platzhaltern
 // [!code], [!display], [!link_text] und [!hyperlink] gefüllt.
 
-header('X-Oserp-Shop-File: '.sha1_file(__FILE__));
+header('X-Oserp-Portal-File: '.sha1_file(__FILE__));
 
 /**
  * Gibt die Fehlerseite aus
@@ -63,7 +63,7 @@ function seiteNichtGefunden(int $code, string $ziel = '', string $linktext = '')
  * @return array|null code, current_link, link_text — oder null
  */
 function umleitungSuchen(string $adresse): ?array {
-    $konfiguration = __DIR__.'/../oserp-shop/config.json';
+    $konfiguration = __DIR__.'/../oserp-portal/config.json';
     $cfg = is_file($konfiguration) ? json_decode((string)file_get_contents($konfiguration), true) : [];
     $url = is_array($cfg) ? (string)($cfg['url'] ?? '') : '';
     $schluessel = is_array($cfg) ? (string)($cfg['key'] ?? '') : '';
@@ -75,7 +75,7 @@ function umleitungSuchen(string $adresse): ?array {
     curl_setopt_array($ch, [
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => json_encode(['action' => 'resolveRedirect', 'url' => $adresse]),
-        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'X-Shop-Key: '.$schluessel],
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'X-Portal-Key: '.$schluessel],
         CURLOPT_RETURNTRANSFER => true,
         // Eine Fehlerseite darf nicht lange warten — lieber ohne Umleitung
         CURLOPT_TIMEOUT        => 5,

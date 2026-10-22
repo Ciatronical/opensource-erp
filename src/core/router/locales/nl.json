@@ -60,7 +60,8 @@
         "newArticle": "/artikel/nieuw",
         "admin": "/systeem/beheer",
         "systemSettings": "/systeem/instellingen",
-        "templateDesigner": "/systeem/sjablooneditor"
+        "templateDesigner": "/systeem/sjablooneditor",
+        "websites": "/systeem/websites"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fout: Het wachtwoordbestand api/config/api.passwd.php is niet gevonden. Hernoem het bestand api/config/api.passwd.php.example naar api/config/api.passwd.php en pas de instellingen aan.",
@@ -99,7 +100,8 @@
         "about": "Over",
         "docs": "Documentatie",
         "administration": "Gebruikers en bedrijven",
-        "systemSettings": "Systeeminstellingen"
+        "systemSettings": "Systeeminstellingen",
+        "websites": "Websites (klantenportaal)"
     },
     "DocsView": {
         "title": "Documentatie",

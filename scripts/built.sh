@@ -48,7 +48,7 @@ echo "2b. Shop-UI bauen..."
 # Stände derselben Widgets, und Lit zeigt statt der Knöpfe seine Platzhalter.
 # Ein reiner Zeitvergleich taugt dafür nicht, weil git pull die Änderungszeit
 # jeder geänderten Quelldatei auf „jetzt“ setzt.
-if ! "$SCRIPT_DIR/shop-ui-build.sh"; then
+if ! "$SCRIPT_DIR/portal-ui-build.sh"; then
     echo ""
     echo "❌ Shop-UI-Build fehlgeschlagen!"
     exit 1
@@ -57,12 +57,12 @@ fi
 # Das Paket-Bündel ist eingecheckt. Weicht der frische Build vom eingecheckten
 # Stand ab, wurde vor dem Commit nicht gebaut — die Datei ist jetzt lokal
 # geändert und kann den nächsten git pull blockieren.
-SHOP_UI_KIT="backend/templates-default/shop/standard/kit/assets/shop-ui/shop-widgets.js"
+SHOP_UI_KIT="backend/templates-default/portal/standard/kit/assets/portal-ui"
 if ! git diff --quiet -- "$SHOP_UI_KIT"; then
     echo ""
-    echo "⚠  Das eingecheckte Shop-UI-Bündel war nicht auf dem Stand des Quelltexts."
-    echo "   Neu gebaut, aber jetzt lokal geändert: $SHOP_UI_KIT"
-    echo "   Im Repository mit scripts/shop-ui-build.sh bauen und committen,"
+    echo "⚠  Die eingecheckten Widget-Bündel waren nicht auf dem Stand des Quelltexts."
+    echo "   Neu gebaut, aber jetzt lokal geändert: $SHOP_UI_KIT/"
+    echo "   Im Repository mit scripts/portal-ui-build.sh bauen und committen,"
     echo "   hier danach: git checkout -- $SHOP_UI_KIT"
 fi
 

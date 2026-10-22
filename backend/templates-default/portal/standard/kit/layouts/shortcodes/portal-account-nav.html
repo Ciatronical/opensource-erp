@@ -1,0 +1,10 @@
+{{- /*
+  {{< portal-account-nav current="overview" >}}
+
+  Nur die Seitenleiste. Fuer die uebliche Konto-Seite ist portal-account der
+  bequemere Weg — der bringt das Panel und das Layout gleich mit.
+*/ -}}
+{{- partial "portal-account-nav.html" (dict
+      "current" (.Get "current")
+      "showPayment" (.Get "show-payment" | default "false")
+      "class" (.Get "class")) -}}

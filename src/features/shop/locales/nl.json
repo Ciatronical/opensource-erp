@@ -32,7 +32,8 @@
                 "channel_round_99_net": "Afronden op ,99 is ingeschakeld, maar de verkoopprijzen zijn netto opgeslagen. Met bruto verkoopprijzen komen winkelwagen en factuur altijd op de cent overeen."
             },
             "points": {
-                "no_parts_offered": "Geen artikel aangeboden"
+                "no_parts_offered": "Geen artikel aangeboden",
+                "shop_website": "Website van het klantenportaal gekoppeld"
             },
             "paypalSandbox": "Verkoopkanaal „{name}”: PayPal draait in de testomgeving — echte betalingen zijn nog niet mogelijk."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Opgeslagen. De productpagina's worden met de nieuwe prijzen opnieuw geschreven.",
             "saveError": "De kanaalinstellingen konden niet worden opgeslagen.",
             "loadError": "De verkoopkanalen konden niet worden geladen.",
+            "secretsLoadError": "De sleutels van de verkoopkanalen konden niet worden geladen.",
             "name": "Naam",
             "nameRequired": "Het kanaal heeft een naam nodig.",
             "autoAddParts": "Nieuwe winkelartikelen automatisch opnemen",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} factuur | {anzahl} facturen",
             "notDeletableWithdrawals": "{anzahl} herroeping | {anzahl} herroepingen",
             "notDeletableEbayOrders": "{anzahl} eBay-bestelling | {anzahl} eBay-bestellingen",
-            "notDeletableJobsHint": "De volgende run voert open taken uit („Open uitvoeren” in het winkeloverzicht). Met documenten blijft het kanaal uitgeschakeld."
+            "notDeletableJobsHint": "De volgende run voert open taken uit („Open uitvoeren” in het winkeloverzicht). Met documenten blijft het kanaal uitgeschakeld.",
+            "website": "Website",
+            "websiteHint": "Website van het klantenportaal waarop deze HugoShop draait – toegang, adres en HugoCMS staan daar (Systeem → Websites).",
+            "websiteNone": "– geen website –",
+            "websitesOpen": "Websites beheren",
+            "hugocmsViaWebsite": "Adres en sleutel van HugoCMS staan bij de website van het kanaal; hier wordt alleen de verbinding getest en worden de vrijgaven gelezen."
         },
         "ebayCondition": {
             "NEW": "Nieuw",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "Deze naam bestaat al.",
             "ASSORTMENT_NAME_INVALID": "Uit deze naam kan geen adres worden gevormd – gebruik letters of cijfers.",
             "ASSORTMENT_NOT_FOUND": "De vermelding bestaat niet meer. Laad de weergave opnieuw.",
-            "ASSORTMENT_CATEGORY_IN_USE": "De categorie is nog aan artikelen toegewezen."
+            "ASSORTMENT_CATEGORY_IN_USE": "De categorie is nog aan artikelen toegewezen.",
+            "CHANNEL_WEBSITE_TAKEN": "Op deze website draait al een andere HugoShop.",
+            "WEBSITE_NOT_FOUND": "Deze website bestaat niet.",
+            "SHOP_WEBSITE_MISSING": "Aan de HugoShop is geen website gekoppeld (verkoopkanalen → website).",
+            "SHOP_NOT_CONFIGURED": "Bij deze website hoort geen HugoShop."
         },
         "orderStatus": {
             "open": "Open",

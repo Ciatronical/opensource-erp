@@ -112,7 +112,7 @@ Schalter `shop_delivery_status_show` (Vorgabe aus), nur HugoShop:
   `getInvoiceSummary` liefert `delivery_status`. Bleibt auch im
   Kaufabschluss stehen (Entscheidung 2026-10-08) — dieselbe Seite öffnet der
   Link in der Mail zum Lieferstatus später wieder.
-- Kundenkonto `<shop-account-orders>`: Liste und Detailansicht der
+- Kundenkonto `<portal-account-orders>`: Liste und Detailansicht der
   Bestellungen (`personalOrders`, `personalOrder`).
 
 ### Link in der Mail

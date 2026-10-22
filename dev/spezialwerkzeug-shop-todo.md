@@ -16,7 +16,7 @@ Verwandt: `dev/shop-betrieb.md` (Läufer, Aufträge), `dev/shop-verkaufskanaele.
 | Angebot speichern | `backend/api/lxcars/special_tools.php`, `saveSpecialToolShopOffer` | Vorgaben: Verkaufspreis = Einkaufspreis, Miete = ein Drittel des Einkaufspreises (änderbar). Legt je Angebot einmalig einen Artikel an (Verkauf: Ware, Miete: Dienstleistung, Nummern aus dem Nummernkreis), schreibt `parts_ext` mit Kategorie `Spezialwerkzeug` bzw. `Werkzeugverleih` und der Fahrzeugliste aus den Regeln als technische Daten, nimmt die Artikel in alle HugoShop-Kanäle auf und stellt `publish_part` ein. Abwählen schaltet die Kanalzeile ab und stellt `remove_part` ein |
 | Nachführen | `_stSyncShopArticles()` | Läuft nach jeder KI-Analyse und jeder Regeländerung, damit die Fahrzeugliste auf der Produktseite stimmt |
 | Werkzeugsuche im Shop | `backend/api/shop/lib/special_tools.php`, öffentliche Aktion `findSpecialTools` | HSN/TSN → KBA-Profil (`special_tool_profile_from_kba_lxcars`) → Regeln live prüfen (`special_tool_compute_matches_lxcars(..., p_profile)`). FIN → Fahrzeug im eigenen Bestand → Treffer-Cache. Liefert je Werkzeug Miet- und Kaufangebot mit Kanalpreis (netto/brutto), Verfügbarkeit, Produktseite |
-| Widget | `shop-ui/src/components/shop-tool-finder.js`, Shortcode `shop-tool-finder.html` | Formular (HSN/TSN oder FIN, optional Motorcode und Erstzulassung), Fahrzeuganzeige, Werkzeugkarten mit „Jetzt mieten" / „In den Warenkorb" (`shop-add-to-cart`). Texte de/en |
+| Widget | `portal-ui/src/components/shop-tool-finder.js`, Shortcode `shop-tool-finder.html` | Formular (HSN/TSN oder FIN, optional Motorcode und Erstzulassung), Fahrzeuganzeige, Werkzeugkarten mit „Jetzt mieten" / „In den Warenkorb" (`shop-add-to-cart`). Texte de/en |
 | Oberfläche im ERP | Werkzeugdialog, Reiter „Werkzeug", Abschnitt „Im HugoShop anbieten" | Nur bei aktiver Shop-Erweiterung. Übersicht zeigt Chips „Verleih"/„Verkauf" |
 
 Einstellung: `defaults_oserp.special_tools_buchungsgruppen_id` legt die
@@ -28,7 +28,7 @@ verwendete Buchungsgruppe. Die Einheit kommt vom häufigsten Artikel der Art.
 1. Shop-Erweiterung und HugoShop-Kanal wie in `dev/shop-betrieb.md`.
 2. Seite für die Werkzeugsuche im Hugo-Projekt anlegen, z. B.
    `content/de/werkzeugverleih.md` mit `{{< shop-tool-finder heading="Werkzeugverleih" >}}`.
-   Der Shortcode kommt mit dem Paket (`oserp-shop/layouts/shortcodes/`).
+   Der Shortcode kommt mit dem Paket (`oserp-portal/layouts/shortcodes/`).
 3. Werkzeuge im ERP mit Einkaufspreis versehen und „Zum Verleih / Zum Kauf
    anbieten" einschalten; der Läufer schreibt die Produktseiten.
 4. Versandart: Der Läufer schreibt eine Seite nur als Entwurf, wenn keine
@@ -115,9 +115,9 @@ wie jeder andere, mehr nicht. Es fehlt:
 - Bruttopreise: Die Vorschau im ERP zeigt Nettopreise; die Seite rechnet den
   Kanalpreis mit Aufschlag und Steuer (`shop_channel_price`). Im Dialog den
   Kanalpreis anzeigen wie in der Artikelkarte.
-- Übersetzungen des Widgets in weitere Sprachen (`shop-ui/src/core/i18n.js`
+- Übersetzungen des Widgets in weitere Sprachen (`portal-ui/src/core/i18n.js`
   hat de/en); ERP-Texte unter `SpecialToolsView.shop` nur de/en.
-- Nach Bau des Widget-Bundles (`cd shop-ui && npm run build`) gehört das
+- Nach Bau des Widget-Bundles (`cd portal-ui && npm run build`) gehört das
   Bundle in den Commit; der Läufer verteilt es ins Paket der Webseite.
 - Test gegen eine echte Shop-Instanz: Seite anlegen, Läufer laufen lassen,
   Werkzeugsuche im Browser mit HSN 0603 / TSN AFA prüfen.

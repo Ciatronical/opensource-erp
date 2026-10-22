@@ -60,7 +60,8 @@
         "newArticle": "/prece/jauns",
         "admin": "/sistema/administresana",
         "systemSettings": "/sistema/iestatijumi",
-        "templateDesigner": "/sistema/veidnu-redaktors"
+        "templateDesigner": "/sistema/veidnu-redaktors",
+        "websites": "/sistema/vietnes"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Kluda: Paroles fails api/config/api.passwd.php nav atrasts. Ludzu pardevejiet failu api/config/api.passwd.php.example par api/config/api.passwd.php un pielagojiet iestatijumus.",
@@ -99,7 +100,8 @@
         "about": "Par",
         "docs": "Dokumentācija",
         "administration": "Lietotāji un uzņēmumi",
-        "systemSettings": "Sistēmas iestatījumi"
+        "systemSettings": "Sistēmas iestatījumi",
+        "websites": "Vietnes (klientu portāls)"
     },
     "DocsView": {
         "title": "Dokumentācija",

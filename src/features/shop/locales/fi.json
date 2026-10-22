@@ -32,7 +32,8 @@
                 "channel_round_99_net": "Pyöristys ,99:ään on käytössä, mutta myyntihinnat on tallennettu netto. Bruttomyyntihinnoilla ostoskori ja lasku täsmäävät aina sentilleen."
             },
             "points": {
-                "no_parts_offered": "Ei tarjottuja tuotteita"
+                "no_parts_offered": "Ei tarjottuja tuotteita",
+                "shop_website": "Asiakasportaalin sivusto liitetty"
             },
             "paypalSandbox": "Myyntikanava ”{name}”: PayPal toimii testiympäristössä — oikeat maksut eivät ole vielä mahdollisia."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Tallennettu. Tuotesivut kirjoitetaan uudelleen uusilla hinnoilla.",
             "saveError": "Kanava-asetuksia ei voitu tallentaa.",
             "loadError": "Myyntikanavia ei voitu ladata.",
+            "secretsLoadError": "Myyntikanavien avaimia ei voitu ladata.",
             "name": "Nimi",
             "nameRequired": "Kanava tarvitsee nimen.",
             "autoAddParts": "Lisää uudet kaupan tuotteet automaattisesti",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} lasku | {anzahl} laskua",
             "notDeletableWithdrawals": "{anzahl} peruutus | {anzahl} peruutusta",
             "notDeletableEbayOrders": "{anzahl} eBay-tilaus | {anzahl} eBay-tilausta",
-            "notDeletableJobsHint": "Seuraava ajo suorittaa avoimet tehtävät (”Suorita avoimet” kaupan yleisnäkymässä). Tositteiden kanssa kanava pysyy pois päältä."
+            "notDeletableJobsHint": "Seuraava ajo suorittaa avoimet tehtävät (”Suorita avoimet” kaupan yleisnäkymässä). Tositteiden kanssa kanava pysyy pois päältä.",
+            "website": "Sivusto",
+            "websiteHint": "Asiakasportaalin sivusto, jolla tämä HugoShop toimii – pääsy, osoite ja HugoCMS määritetään siellä (Järjestelmä → Verkkosivut).",
+            "websiteNone": "– ei sivustoa –",
+            "websitesOpen": "Hallitse sivustoja",
+            "hugocmsViaWebsite": "HugoCMS:n osoite ja avain ovat kanavan sivustolla; täällä vain testataan yhteys ja luetaan oikeudet."
         },
         "ebayCondition": {
             "NEW": "Uusi",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "Tämä nimi on jo olemassa.",
             "ASSORTMENT_NAME_INVALID": "Tästä nimestä ei voi muodostaa osoitetta – käytä kirjaimia tai numeroita.",
             "ASSORTMENT_NOT_FOUND": "Merkintää ei enää ole. Lataa näkymä uudelleen.",
-            "ASSORTMENT_CATEGORY_IN_USE": "Kategoria on yhä liitetty tuotteisiin."
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategoria on yhä liitetty tuotteisiin.",
+            "CHANNEL_WEBSITE_TAKEN": "Tällä sivustolla toimii jo toinen HugoShop.",
+            "WEBSITE_NOT_FOUND": "Tätä sivustoa ei ole.",
+            "SHOP_WEBSITE_MISSING": "HugoShopille ei ole liitetty sivustoa (myyntikanavat → sivusto).",
+            "SHOP_NOT_CONFIGURED": "Tähän sivustoon ei kuulu HugoShopia."
         },
         "orderStatus": {
             "open": "Avoin",

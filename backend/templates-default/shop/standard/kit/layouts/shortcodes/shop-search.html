@@ -4,7 +4,7 @@
   Das Suchfeld als Shortcode — im Regelfall steht das Element im Kopf-Partial
   der Instanz. auto-focus="true" bildet das alte autofocus-Attribut nach.
 */ -}}
-{{- partial "shop-ui-assets.html" . -}}
+{{- partial "portal-ui-assets.html" . -}}
 <shop-search
   {{- with .Get `results-url` }} results-url="{{ . }}"{{ end }}
   auto-focus="{{ .Get `auto-focus` | default `false` }}"

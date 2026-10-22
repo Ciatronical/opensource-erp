@@ -32,7 +32,8 @@
                 "channel_round_99_net": "Apvalinimas iki ,99 įjungtas, bet pardavimo kainos saugomos be PVM. Su kainomis su PVM krepšelis ir sąskaita visada sutampa iki cento."
             },
             "points": {
-                "no_parts_offered": "Nesiūloma jokia prekė"
+                "no_parts_offered": "Nesiūloma jokia prekė",
+                "shop_website": "Priskirta klientų portalo svetainė"
             },
             "paypalSandbox": "Pardavimo kanalas „{name}“: PayPal veikia bandomojoje aplinkoje — tikri mokėjimai dar negalimi."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Išsaugota. Prekių puslapiai bus perrašyti su naujomis kainomis.",
             "saveError": "Nepavyko išsaugoti kanalo nustatymų.",
             "loadError": "Nepavyko įkelti pardavimo kanalų.",
+            "secretsLoadError": "Nepavyko įkelti pardavimo kanalų raktų.",
             "name": "Pavadinimas",
             "nameRequired": "Kanalui reikia pavadinimo.",
             "autoAddParts": "Naujas parduotuvės prekes įtraukti automatiškai",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} sąskaita | {anzahl} sąskaitos",
             "notDeletableWithdrawals": "{anzahl} atsisakymas | {anzahl} atsisakymai",
             "notDeletableEbayOrders": "{anzahl} eBay užsakymas | {anzahl} eBay užsakymai",
-            "notDeletableJobsHint": "Atviras užduotis atliks kitas vykdymas („Vykdyti atviras“ parduotuvės apžvalgoje). Su dokumentais kanalas lieka išjungtas."
+            "notDeletableJobsHint": "Atviras užduotis atliks kitas vykdymas („Vykdyti atviras“ parduotuvės apžvalgoje). Su dokumentais kanalas lieka išjungtas.",
+            "website": "Svetainė",
+            "websiteHint": "Klientų portalo svetainė, kurioje veikia šis HugoShop – prieiga, adresas ir HugoCMS nustatomi ten (Sistema → Svetainės).",
+            "websiteNone": "– svetainės nėra –",
+            "websitesOpen": "Tvarkyti svetaines",
+            "hugocmsViaWebsite": "HugoCMS adresas ir raktas yra kanalo svetainėje; čia tik tikrinamas ryšys ir skaitomi leidimai."
         },
         "ebayCondition": {
             "NEW": "Nauja",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "Toks pavadinimas jau yra.",
             "ASSORTMENT_NAME_INVALID": "Iš šio pavadinimo negalima sudaryti adreso – naudokite raides arba skaitmenis.",
             "ASSORTMENT_NOT_FOUND": "Įrašo nebėra. Įkelkite rodinį iš naujo.",
-            "ASSORTMENT_CATEGORY_IN_USE": "Kategorija vis dar priskirta prekėms."
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategorija vis dar priskirta prekėms.",
+            "CHANNEL_WEBSITE_TAKEN": "Šioje svetainėje jau veikia kitas HugoShop.",
+            "WEBSITE_NOT_FOUND": "Tokios svetainės nėra.",
+            "SHOP_WEBSITE_MISSING": "HugoShop nepriskirta svetainė (pardavimo kanalai → svetainė).",
+            "SHOP_NOT_CONFIGURED": "Šiai svetainei nepriklauso joks HugoShop."
         },
         "orderStatus": {
             "open": "Atidaryta",

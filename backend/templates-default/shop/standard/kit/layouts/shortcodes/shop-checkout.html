@@ -2,7 +2,7 @@
   {{< shop-checkout billing-page="/rechnung/" canceled-page="/bezahlung-abgebrochen/" >}}
 
   Ersetzt checkout.html. billing-page und canceled-page sind die
-  Rueckkehr-Seiten des PayPal-Einstiegs (/shop-api/?action=beginPayment);
+  Rueckkehr-Seiten des PayPal-Einstiegs (/portal-api/?action=beginPayment);
   invoice-url ist das Ziel nach einer erfolgreichen Bestellung.
 
   Anders als beim alten Shortcode steht hier kein Layout-Markup: das
@@ -10,7 +10,7 @@
   beide Spalten dort entstehen. Die Shadow-Grenze trennt also keinen
   Grid-Container von seinen Kindern.
 */ -}}
-{{- partial "shop-ui-assets.html" . -}}
+{{- partial "portal-ui-assets.html" . -}}
 <shop-checkout
   {{- with .Get `billing-page` }} billing-page="{{ . }}"{{ end }}
   {{- with .Get `canceled-page` }} canceled-page="{{ . }}"{{ end }}

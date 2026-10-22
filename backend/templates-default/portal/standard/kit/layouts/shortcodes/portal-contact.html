@@ -1,0 +1,12 @@
+{{- /*
+  {{< portal-contact >}}
+
+  Ersetzt contact-form.html. redirect-url ist die Seite nach dem Absenden;
+  contact.js sprang fest auf /kontakt-danke/, waehrend im Knopf
+  data-redirect="/abgesendet/" stand — eine Seite, die es nicht gibt.
+*/ -}}
+{{- partial "portal-ui-assets.html" . -}}
+<portal-contact
+  {{- with .Get `redirect-url` }} redirect-url="{{ . }}"{{ end }}
+  {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
+  {{- with .Get `class` }} class="{{ . }}"{{ end }}></portal-contact>

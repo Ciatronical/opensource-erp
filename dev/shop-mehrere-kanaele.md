@@ -78,7 +78,7 @@ Schon je Kanal-Kennung gespeichert und damit ohne Umbau tragfähig:
    `ar_link_hugoshop` (welcher Shop die Rechnung erzeugt hat: Mail-Signatur,
    Rechnungsseite, PayPal-Rücksprung), `withdrawals_hugoshop`,
    `redirect_pages_hugoshop`, `ebay_orders`.
-5. **Öffentlicher Zugang:** Der Schlüssel `X-Shop-Key` bestimmt heute den
+5. **Öffentlicher Zugang:** Der Schlüssel `X-Portal-Key` bestimmt heute den
    Mandanten, künftig Mandant **und** Kanal. Passt ohne Umbau der Webseiten;
    auch HugoCMS kennt je Schlüssel genau ein Webprojekt.
 
@@ -251,7 +251,7 @@ entfernt). `shop_auto_publish_enabled(kanal)` liest nur noch `settings`.
 
 **Öffentlicher Zugang** (`public/bootstrap.php`):
 
-- Der Shop-Schlüssel (`X-Shop-Key`) wird mit `public_key` aller HugoShops
+- Der Shop-Schlüssel (`X-Portal-Key`) wird mit `public_key` aller HugoShops
   aller Mandanten verglichen und bestimmt Mandant **und** Kanal; ein
   eindeutiger Index (`sales_channel_secret_shop_public_key`) verhindert
   denselben Schlüssel in zwei Kanälen. Auch ein abgeschalteter HugoShop wird
@@ -287,7 +287,7 @@ Kontakt-Mitarbeiter gelten für den ganzen Mandanten.
 
 **Achtung beim Einspielen:** Der öffentliche Zugang sucht den Schlüssel in
 `sales_channel_secret_shop`. Bis zum Schema-Update (Anmeldung eines
-Mitarbeiters) antwortet ein HugoShop mit `SHOP_NOT_AUTHORIZED`; das Protokoll
+Mitarbeiters) antwortet ein HugoShop mit `PORTAL_NOT_AUTHORIZED`; das Protokoll
 nennt den Mandanten.
 
 **Getestet** in einer zurückgerollten Transaktion an Werkzeug24 (Upstall
@@ -344,7 +344,7 @@ auf dem aktuellen Stand".
 **Verwaltung.** Bis zur Kanalauswahl (Schritt 5) nehmen die Funktionen ein
 optionales `channel_id`, ohne Angabe gilt der Standard-HugoShop
 (`shopHugoshopOfRequest`): `previewShopPage`, `writeShopPage`,
-`publishShopPart`, `publishShopAll`, `installShopUi`, `testShopHugoCms`,
+`publishShopPart`, `publishShopAll`, `installPortalUi`, `testShopHugoCms`,
 `browseDirectories` (Basis `site`). Wird ein Artikel abgewählt oder aus dem
 Shop genommen, entsteht je betroffenem HugoShop ein `remove_part`.
 `getShopPublishJobs` liefert `channel_id` und `channel_name`.

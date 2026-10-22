@@ -60,7 +60,8 @@
         "newArticle": "/vare/ny",
         "admin": "/system/administration",
         "systemSettings": "/system/indstillinger",
-        "templateDesigner": "/system/skabeloneditor"
+        "templateDesigner": "/system/skabeloneditor",
+        "websites": "/system/websteder"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fejl: Adgangskodefilen api/config/api.passwd.php blev ikke fundet. Omdoeb venligst filen api/config/api.passwd.php.example til api/config/api.passwd.php og tilpas indstillingerne.",
@@ -99,7 +100,8 @@
         "about": "Om",
         "docs": "Dokumentation",
         "administration": "Brugere og firmaer",
-        "systemSettings": "Systemindstillinger"
+        "systemSettings": "Systemindstillinger",
+        "websites": "Websteder (kundeportal)"
     },
     "DocsView": {
         "title": "Dokumentation",

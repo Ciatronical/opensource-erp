@@ -144,6 +144,11 @@
           <template #prepend><v-icon size="small" class="me-2">mdi-cog</v-icon></template>
           <v-list-item-title class="text-body-2">{{ t('SystemMenu.clientConfig') }}</v-list-item-title>
         </v-list-item>
+        <!-- Kundenportal: Webseiten — wer Webshops anlegen darf (edit_shop_config) -->
+        <v-list-item v-if="oserpData.checkPermission('edit_shop_config')" :to="{ name: 'websites' }" @click="clientMenuOpen = false">
+          <template #prepend><v-icon size="small" class="me-2">mdi-web</v-icon></template>
+          <v-list-item-title class="text-body-2">{{ t('SystemMenu.websites') }}</v-list-item-title>
+        </v-list-item>
         <v-list-item :to="{ name: 'developer-tools' }" @click="clientMenuOpen = false">
           <template #prepend><v-icon size="small" class="me-2">mdi-wrench</v-icon></template>
           <v-list-item-title class="text-body-2">{{ t('SystemMenu.developerTools') }}</v-list-item-title>

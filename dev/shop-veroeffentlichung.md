@@ -217,9 +217,9 @@ im Vorlagensatz:
 **Beispiel „Sortiment“ (16.10.2026):** Kanalkarte `category_link =
 /shop/sortiment/%s/`, `category_title = Sortiment`; Webseite `permalinks`
 auf `/shop/sortiment/` und `/shop/sortiment/:slug/`, Titel „Sortiment“ in
-`content/shopkategorien/_index.md`. `params.shopui.paths.categories` braucht es
-nicht mehr: ohne Angabe nimmt `shop-ui-assets.html` die Adresse der
-Übersichtsseite der Taxonomie aus `params.shopui.taxonomy`.
+`content/shopkategorien/_index.md`. `params.portalui.paths.categories` braucht es
+nicht mehr: ohne Angabe nimmt `portal-ui-assets.html` die Adresse der
+Übersichtsseite der Taxonomie aus `params.portalui.taxonomy`.
 
 `shopChannelCategoryPaths()` (lib/config.php) liest beides; `shopPageData()`
 reicht es als `shop.taxonomy`, `shop.categories_url` und `shop.category_url`
@@ -239,12 +239,12 @@ der Webseite:
     "taxonomy": { "shopkategorien": "/shop/kategorien/" },
     "term":     { "shopkategorien": "/shop/kategorien/:slug/" }
 },
-"params": { "shopui": { "taxonomy": "shopkategorien", "paths": { "categories": "/shop/kategorien/" } } }
+"params": { "portalui": { "taxonomy": "shopkategorien", "paths": { "categories": "/shop/kategorien/" } } }
 ```
 
 Dazu `content/shopkategorien/_index.md` mit dem Titel der Übersicht. Das Theme
 `inter-data` verzweigt in `_default/terms.html` und `_default/term.html` auf
-`params.shopui.taxonomy`: Übersicht mit Topsellern, Gruppenkacheln und
+`params.portalui.taxonomy`: Übersicht mit Topsellern, Gruppenkacheln und
 gruppierten Spalten wie bei sonic24, Begriffsseiten als Liste mit Bild, Titel
 und Beschreibung wie `taxonomy/category.html` von hugoshop. Die Themen-
 Taxonomie der Webseite bleibt unberührt, ihre Layouts (`taxonomy/category.html`)

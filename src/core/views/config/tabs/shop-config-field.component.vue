@@ -182,7 +182,7 @@ function zusatz(field) {
  * 32 Byte aus dem Zufallsgenerator des Browsers, hexadezimal: 64 Zeichen aus
  * 0-9a-f, die in nginx-Konfigurationen und auf der Kommandozeile keinen Ärger
  * machen. Gespeichert wird er wie jede andere Änderung; der Läufer trägt ihn
- * beim nächsten Lauf in oserp-shop/config.json ein.
+ * beim nächsten Lauf in oserp-portal/config.json ein.
  */
 function schluesselErzeugen() {
     const bytes = crypto.getRandomValues(new Uint8Array(32))

@@ -4,7 +4,7 @@
   Die Trefferliste auf der Ergebnisseite. Der Suchbegriff kommt aus der
   Adresszeile (?terms=…); mit terms="…" laesst er sich fest vorgeben.
 */ -}}
-{{- partial "shop-ui-assets.html" . -}}
+{{- partial "portal-ui-assets.html" . -}}
 <shop-search-results
   {{- with .Get `terms` }} terms="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}

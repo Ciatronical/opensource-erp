@@ -32,7 +32,8 @@
                 "channel_round_99_net": "Yuvarlama ,99 etkin, ancak satış fiyatları net olarak kayıtlı. Brüt satış fiyatlarıyla sepet ve fatura her zaman kuruşu kuruşuna eşleşir."
             },
             "points": {
-                "no_parts_offered": "Sunulan ürün yok"
+                "no_parts_offered": "Sunulan ürün yok",
+                "shop_website": "Müşteri portalı web sitesi atanmış"
             },
             "paypalSandbox": "Satış kanalı „{name}“: PayPal test ortamında çalışıyor — gerçek ödemeler henüz mümkün değil."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Kaydedildi. Ürün sayfaları yeni fiyatlarla yeniden yazılacak.",
             "saveError": "Kanal ayarları kaydedilemedi.",
             "loadError": "Satış kanalları yüklenemedi.",
+            "secretsLoadError": "Satış kanallarının anahtarları yüklenemedi.",
             "name": "Ad",
             "nameRequired": "Kanalın bir adı olmalı.",
             "autoAddParts": "Yeni mağaza ürünlerini otomatik ekle",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} fatura | {anzahl} fatura",
             "notDeletableWithdrawals": "{anzahl} cayma | {anzahl} cayma",
             "notDeletableEbayOrders": "{anzahl} eBay siparişi | {anzahl} eBay siparişi",
-            "notDeletableJobsHint": "Açık görevleri sonraki çalışma tamamlar (mağaza genel bakışında „Açıkları çalıştır“). Belgeler varsa kanal kapalı kalır."
+            "notDeletableJobsHint": "Açık görevleri sonraki çalışma tamamlar (mağaza genel bakışında „Açıkları çalıştır“). Belgeler varsa kanal kapalı kalır.",
+            "website": "Web sitesi",
+            "websiteHint": "Bu HugoShop'un çalıştığı müşteri portalı web sitesi – erişim, adres ve HugoCMS orada ayarlanır (Sistem → Web siteleri).",
+            "websiteNone": "– web sitesi yok –",
+            "websitesOpen": "Web sitelerini yönet",
+            "hugocmsViaWebsite": "HugoCMS adresi ve anahtarı kanalın web sitesinde ayarlanır; burada yalnızca bağlantı test edilir ve izinler okunur."
         },
         "ebayCondition": {
             "NEW": "Yeni",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "Bu ad zaten var.",
             "ASSORTMENT_NAME_INVALID": "Bu addan adres oluşturulamaz – harf veya rakam kullanın.",
             "ASSORTMENT_NOT_FOUND": "Kayıt artık yok. Lütfen görünümü yeniden yükleyin.",
-            "ASSORTMENT_CATEGORY_IN_USE": "Kategori hâlâ ürünlere atanmış."
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategori hâlâ ürünlere atanmış.",
+            "CHANNEL_WEBSITE_TAKEN": "Bu web sitesinde zaten başka bir HugoShop çalışıyor.",
+            "WEBSITE_NOT_FOUND": "Bu web sitesi yok.",
+            "SHOP_WEBSITE_MISSING": "HugoShop'a web sitesi atanmamış (satış kanalları → web sitesi).",
+            "SHOP_NOT_CONFIGURED": "Bu web sitesine ait HugoShop yok."
         },
         "orderStatus": {
             "open": "Açık",

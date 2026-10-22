@@ -1240,7 +1240,7 @@ function getWhatsAppTemplates($data) {
     $templates = $db->getAll(
         "SELECT id, name, display_name, category, submitted_category, language, header_type, header_text, body_text,
                 footer_text, status, meta_template_id, rejection_reason,
-                is_default, template_type, example_values, itime, mtime
+                is_default, template_type, example_values, buttons, itime, mtime
          FROM whatsapp_templates
          ORDER BY template_type, display_name"
     );
@@ -1308,6 +1308,7 @@ function saveWhatsAppTemplate($data) {
     $templateType = trim($tpl['template_type'] ?? 'general');
     $exampleValues = json_encode($tpl['example_values'] ?? new \stdClass());
     $submitToMeta = (bool)($tpl['submit_to_meta'] ?? false);
+    $buttons = _whatsappTemplateButtons($tpl['buttons'] ?? []);
 
     if (empty($name) || empty($bodyText)) {
         resultInfo(false, 'INVALID_INPUT', 'Name und Nachrichtentext sind erforderlich');
@@ -1324,29 +1325,32 @@ function saveWhatsAppTemplate($data) {
             "UPDATE whatsapp_templates
              SET name = :name, display_name = :display_name, category = :category,
                  language = :language, header_type = :header_type, header_text = :header, body_text = :body,
-                 footer_text = :footer, template_type = :ttype, example_values = :examples, mtime = NOW()
+                 footer_text = :footer, template_type = :ttype, example_values = :examples,
+                 buttons = CAST(:buttons AS jsonb), mtime = NOW()
              WHERE id = :id",
             [
                 ':name' => $name, ':display_name' => $displayName, ':category' => $category,
                 ':language' => $language, ':header_type' => $headerType, ':header' => $headerText, ':body' => $bodyText,
-                ':footer' => $footerText, ':ttype' => $templateType, ':examples' => $exampleValues, ':id' => $id
+                ':footer' => $footerText, ':ttype' => $templateType, ':examples' => $exampleValues,
+                ':buttons' => json_encode($buttons), ':id' => $id
             ]
         );
     } else {
         // Insert
         $row = $db->getOne(
-            "INSERT INTO whatsapp_templates (name, display_name, category, language, header_type, header_text, body_text, footer_text, template_type, example_values, status)
-             VALUES (:name, :display_name, :category, :language, :header_type, :header, :body, :footer, :ttype, :examples, 'draft')
+            "INSERT INTO whatsapp_templates (name, display_name, category, language, header_type, header_text, body_text, footer_text, template_type, example_values, status, buttons)
+             VALUES (:name, :display_name, :category, :language, :header_type, :header, :body, :footer, :ttype, :examples, 'draft', CAST(:buttons AS jsonb))
              ON CONFLICT (name, language) DO UPDATE
              SET display_name = EXCLUDED.display_name, category = EXCLUDED.category,
                  header_type = EXCLUDED.header_type, header_text = EXCLUDED.header_text, body_text = EXCLUDED.body_text,
                  footer_text = EXCLUDED.footer_text, template_type = EXCLUDED.template_type,
-                 example_values = EXCLUDED.example_values, mtime = NOW()
+                 example_values = EXCLUDED.example_values, buttons = EXCLUDED.buttons, mtime = NOW()
              RETURNING id",
             [
                 ':name' => $name, ':display_name' => $displayName, ':category' => $category,
                 ':language' => $language, ':header_type' => $headerType, ':header' => $headerText, ':body' => $bodyText,
-                ':footer' => $footerText, ':ttype' => $templateType, ':examples' => $exampleValues
+                ':footer' => $footerText, ':ttype' => $templateType, ':examples' => $exampleValues,
+                ':buttons' => json_encode($buttons)
             ]
         );
         $id = (int)$row['id'];
@@ -1532,19 +1536,27 @@ function loadDefaultTemplates($data) {
         ['name' => 'termin_bestaetigung', 'display_name' => 'Terminbestaetigung', 'header_type' => null, 'body_text' => 'Hallo {{1}}, Ihr Termin am {{2}} um {{3}} Uhr ist bestaetigt. Wir freuen uns auf Ihren Besuch.', 'template_type' => 'appointment_confirm', 'category' => 'UTILITY'],
         ['name' => 'adresse_senden', 'display_name' => 'Adresse senden (alt)', 'header_type' => null, 'body_text' => "Hallo {{1}},\n\nhier finden Sie unsere Adresse:\n\n{{2}}\n\nMit freundlichen Gruessen\n{{3}}", 'template_type' => 'general', 'category' => 'UTILITY'],
         ['name' => 'adresse_senden_v2', 'display_name' => 'Adresse senden', 'header_type' => null, 'body_text' => "Hallo {{1}},\n\nhier finden Sie unsere Adresse:\n\n{{2}}\n\n{{3}}\n\nMit freundlichen Gruessen\n{{4}}", 'template_type' => 'address', 'category' => 'UTILITY'],
+        // Kundenportal: Freischaltung eines Bestandskunden (dev/shop-konto-freischaltung.md).
+        // Die Adresse der Schaltfläche ist vor dem Einreichen auf die Seite
+        // „Konto freischalten“ der eigenen Webseite zu setzen; {{1}} bleibt.
+        ['name' => 'konto_freischalten', 'display_name' => 'Kundenkonto freischalten', 'header_type' => null,
+         'body_text' => "Hallo {{1}},\n\nmit dem Knopf unten richten Sie Ihren Zugang zum Kundenkonto auf unserer Webseite ein. Sie vergeben dabei Ihre E-Mail-Adresse und ein Kennwort.\n\nDer Link gilt 24 Stunden.",
+         'template_type' => 'portal_activation', 'category' => 'UTILITY',
+         'buttons' => [['type' => 'URL', 'text' => 'Zugang einrichten', 'url' => 'https://www.example.de/freischalten/?token={{1}}', 'example' => 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6']]],
     ];
 
     $loaded = 0;
     foreach ($defaults as $tpl) {
         $db->execute(
-            "INSERT INTO whatsapp_templates (name, display_name, header_type, body_text, template_type, category, is_default, status)
-             VALUES (:name, :display_name, :header_type, :body, :ttype, :category, TRUE, 'draft')
+            "INSERT INTO whatsapp_templates (name, display_name, header_type, body_text, template_type, category, is_default, status, buttons)
+             VALUES (:name, :display_name, :header_type, :body, :ttype, :category, TRUE, 'draft', CAST(:buttons AS jsonb))
              ON CONFLICT (name, language) DO NOTHING",
             [
                 ':name' => $tpl['name'], ':display_name' => $tpl['display_name'],
                 ':header_type' => $tpl['header_type'],
                 ':body' => $tpl['body_text'], ':ttype' => $tpl['template_type'],
-                ':category' => $tpl['category']
+                ':category' => $tpl['category'],
+                ':buttons' => json_encode($tpl['buttons'] ?? []),
             ]
         );
         $loaded++;
@@ -1563,53 +1575,139 @@ function loadDefaultTemplates($data) {
  * @testdata {"to": "+491234567890", "template_id": 1, "parameters": ["Herr Müller", "MOL-LX10", "137"]}
  */
 function sendWhatsAppTemplateMessage($data) {
+    $ergebnis = whatsappSendTemplate([
+        'to'                => $data['to'] ?? '',
+        'template_id'       => (int)($data['template_id'] ?? 0),
+        'parameters'        => $data['parameters'] ?? [],
+        'button_parameters' => $data['button_parameters'] ?? [],
+        'customer_id'       => (int)($data['customer_id'] ?? 0),
+    ]);
+
+    if (empty($ergebnis['success'])) {
+        resultInfo(false, $ergebnis['code'], $ergebnis['error']);
+        return;
+    }
+
+    resultInfo(true, '', [
+        'wa_message_id' => $ergebnis['wa_message_id'],
+        'status' => 'sent',
+        'rendered_text' => $ergebnis['rendered_text']
+    ]);
+}
+
+/**
+ * Bereinigt die Schaltflächen einer Vorlage
+ *
+ * @param mixed $roh Liste aus type (URL, PHONE_NUMBER, QUICK_REPLY), text, url, example
+ * @return array
+ */
+function _whatsappTemplateButtons($roh): array {
+    if (is_string($roh)) {
+        $roh = json_decode($roh, true);
+    }
+    $buttons = [];
+    foreach (is_array($roh) ? $roh : [] as $b) {
+        if (!is_array($b)) continue;
+        $typ = strtoupper(trim((string)($b['type'] ?? 'URL')));
+        $text = trim((string)($b['text'] ?? ''));
+        $url = trim((string)($b['url'] ?? ''));
+        if ('' === $text || ('URL' === $typ && '' === $url)) continue;
+        $buttons[] = [
+            'type'    => in_array($typ, ['URL', 'PHONE_NUMBER', 'QUICK_REPLY'], true) ? $typ : 'URL',
+            'text'    => mb_substr($text, 0, 25),
+            'url'     => $url,
+            'example' => trim((string)($b['example'] ?? '')),
+        ];
+    }
+    return $buttons;
+}
+
+/**
+ * Versand einer Vorlagennachricht — ohne Ausgabe, für andere Module
+ *
+ * Die Vorlage wird über template_id oder über template_type (erste genehmigte
+ * Vorlage dieses Typs) gefunden. Platzhalter im Text kommen aus parameters;
+ * Schaltflächen mit veränderlichem Suffix ({{1}} in der Adresse) aus
+ * button_parameters, in der Reihenfolge der Schaltflächen.
+ *
+ * @param array $daten to, template_id | template_type, parameters, button_parameters, customer_id
+ * @return array{success: bool, code: string, error: string, wa_message_id: string, rendered_text: string}
+ */
+function whatsappSendTemplate(array $daten): array {
     $db = DbhCompany::begin();
     $config = _getWhatsAppConfig();
+
+    $fehler = fn(string $code, string $text) => [
+        'success' => false, 'code' => $code, 'error' => $text, 'wa_message_id' => '', 'rendered_text' => '',
+    ];
 
     $accessToken = $config['whatsapp_access_token'] ?? '';
     $phoneNumberId = $config['whatsapp_phone_number_id'] ?? '';
     $countryCode = $config['whatsapp_country_code'] ?? '49';
 
     if (empty($accessToken) || empty($phoneNumberId)) {
-        resultInfo(false, 'WHATSAPP_NOT_CONFIGURED', 'WhatsApp Business API ist nicht konfiguriert');
-        return;
+        return $fehler('WHATSAPP_NOT_CONFIGURED', 'WhatsApp Business API ist nicht konfiguriert');
     }
 
-    $to = _normalizePhone($data['to'] ?? '', $countryCode);
-    $templateId = (int)($data['template_id'] ?? 0);
-    $parameters = $data['parameters'] ?? [];
-    $customerId = (int)($data['customer_id'] ?? 0);
+    $to = _normalizePhone((string)($daten['to'] ?? ''), $countryCode);
+    $templateId = (int)($daten['template_id'] ?? 0);
+    $templateType = trim((string)($daten['template_type'] ?? ''));
+    $parameters = is_array($daten['parameters'] ?? null) ? array_values($daten['parameters']) : [];
+    $buttonParameters = is_array($daten['button_parameters'] ?? null) ? array_values($daten['button_parameters']) : [];
+    $customerId = (int)($daten['customer_id'] ?? 0);
 
-    if (empty($to) || $templateId <= 0) {
-        resultInfo(false, 'INVALID_INPUT', 'Telefonnummer und Template sind erforderlich');
-        return;
+    if (empty($to) || ($templateId <= 0 && '' === $templateType)) {
+        return $fehler('INVALID_INPUT', 'Telefonnummer und Template sind erforderlich');
     }
 
-    // Template laden
-    $template = $db->getOne(
-        "SELECT name, language, body_text, header_text FROM whatsapp_templates WHERE id = :id AND status = 'approved'",
-        [':id' => $templateId]
-    );
+    // Template laden: nach Kennung oder als erste genehmigte Vorlage des Typs
+    $template = $templateId > 0
+        ? $db->getOne(
+            "SELECT name, language, body_text, header_text, buttons FROM whatsapp_templates WHERE id = :id AND status = 'approved'",
+            [':id' => $templateId]
+        )
+        : $db->getOne(
+            "SELECT name, language, body_text, header_text, buttons FROM whatsapp_templates
+              WHERE template_type = :ttype AND status = 'approved' ORDER BY id LIMIT 1",
+            [':ttype' => $templateType]
+        );
 
     if (!$template) {
-        resultInfo(false, 'TEMPLATE_NOT_FOUND', 'Genehmigtes Template nicht gefunden');
-        return;
+        return $fehler('TEMPLATE_NOT_FOUND', 'Genehmigtes Template nicht gefunden'
+                       .('' !== $templateType ? ' (Typ '.$templateType.')' : ''));
     }
 
     // Meta API Payload bauen
     $langCode = $template['language'] === 'de' ? 'de' : 'en';
     $components = [];
 
+    // Meta verbietet Zeilenumbrüche, Tabs und >4 aufeinanderfolgende Leerzeichen in Template-Parametern
+    $bereinigt = function ($val): string {
+        $sanitized = str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string)$val);
+        return (string)preg_replace('/\s{5,}/', '    ', $sanitized);
+    };
+
     // Body-Parameter
     if (!empty($parameters)) {
         $bodyParams = [];
         foreach ($parameters as $val) {
-            // Meta verbietet Zeilenumbrüche, Tabs und >4 aufeinanderfolgende Leerzeichen in Template-Parametern
-            $sanitized = str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string)$val);
-            $sanitized = preg_replace('/\s{5,}/', '    ', $sanitized);
-            $bodyParams[] = ['type' => 'text', 'text' => $sanitized];
+            $bodyParams[] = ['type' => 'text', 'text' => $bereinigt($val)];
         }
         $components[] = ['type' => 'body', 'parameters' => $bodyParams];
+    }
+
+    // Schaltflächen mit veränderlichem Suffix: je Schaltfläche mit {{1}} ein
+    // Parameter, nummeriert in der Reihenfolge aller Schaltflächen der Vorlage
+    $buttons = _whatsappTemplateButtons($template['buttons'] ?? '[]');
+    $suffix = 0;
+    foreach ($buttons as $index => $button) {
+        if ('URL' !== $button['type'] || !str_contains($button['url'], '{{1}}')) continue;
+        $wert = $buttonParameters[$suffix++] ?? null;
+        if (null === $wert) continue;
+        $components[] = [
+            'type' => 'button', 'sub_type' => 'url', 'index' => (string)$index,
+            'parameters' => [['type' => 'text', 'text' => $bereinigt($wert)]],
+        ];
     }
 
     $payload = json_encode([
@@ -1642,8 +1740,7 @@ function sendWhatsAppTemplateMessage($data) {
     curl_close($ch);
 
     if ($curlError) {
-        resultInfo(false, 'WHATSAPP_CURL_ERROR', $curlError);
-        return;
+        return $fehler('WHATSAPP_CURL_ERROR', $curlError);
     }
 
     $responseData = json_decode($response, true);
@@ -1655,8 +1752,7 @@ function sendWhatsAppTemplateMessage($data) {
             $errorDetail .= ' — ' . $responseData['error']['error_data']['details'];
         }
         error_log("WhatsApp Template Send Error: " . json_encode($responseData));
-        resultInfo(false, 'WHATSAPP_API_ERROR', $errorDetail);
-        return;
+        return $fehler('WHATSAPP_API_ERROR', $errorDetail);
     }
 
     $waMessageId = $responseData['messages'][0]['id'];
@@ -1665,10 +1761,20 @@ function sendWhatsAppTemplateMessage($data) {
     $renderedText = $template['body_text'];
     foreach ($parameters as $i => $val) {
         $placeholder = '{{' . ($i + 1) . '}}';
-        $renderedText = str_replace($placeholder, $val, $renderedText);
+        $renderedText = str_replace($placeholder, (string)$val, $renderedText);
     }
     // System-Platzhalter ersetzen
     $renderedText = _replaceSystemPlaceholders($renderedText, $customerId);
+    // Schaltflächen im Chat als Zeile mit der fertigen Adresse
+    $suffix = 0;
+    foreach ($buttons as $button) {
+        if ('URL' !== $button['type']) continue;
+        $adresse = $button['url'];
+        if (str_contains($adresse, '{{1}}')) {
+            $adresse = str_replace('{{1}}', (string)($buttonParameters[$suffix++] ?? ''), $adresse);
+        }
+        $renderedText .= "\n\n[".$button['text'].'] '.$adresse;
+    }
 
     // In DB speichern
     $db->execute(
@@ -1682,11 +1788,10 @@ function sendWhatsAppTemplateMessage($data) {
         ]
     );
 
-    resultInfo(true, '', [
-        'wa_message_id' => $waMessageId,
-        'status' => 'sent',
-        'rendered_text' => $renderedText
-    ]);
+    return [
+        'success' => true, 'code' => '', 'error' => '',
+        'wa_message_id' => $waMessageId, 'rendered_text' => $renderedText,
+    ];
 }
 
 /**
@@ -1845,6 +1950,26 @@ function _submitTemplateToMeta(int $templateId): array {
 
     if (!empty($footerText)) {
         $components[] = ['type' => 'FOOTER', 'text' => $footerText];
+    }
+
+    // Schaltflächen: Links (mit {{1}} als veränderlichem Suffix — Meta
+    // verlangt dafür ein Beispiel), Anrufe, Schnellantworten
+    $buttons = [];
+    foreach (_whatsappTemplateButtons(json_decode($template['buttons'] ?? '[]', true) ?: []) as $button) {
+        if ('URL' === $button['type']) {
+            $eintrag = ['type' => 'URL', 'text' => $button['text'], 'url' => $button['url']];
+            if (str_contains($button['url'], '{{1}}')) {
+                $eintrag['example'] = [str_replace('{{1}}', $button['example'] ?: 'beispiel', $button['url'])];
+            }
+            $buttons[] = $eintrag;
+        } elseif ('PHONE_NUMBER' === $button['type']) {
+            $buttons[] = ['type' => 'PHONE_NUMBER', 'text' => $button['text'], 'phone_number' => $button['url']];
+        } else {
+            $buttons[] = ['type' => 'QUICK_REPLY', 'text' => $button['text']];
+        }
+    }
+    if (!empty($buttons)) {
+        $components[] = ['type' => 'BUTTONS', 'buttons' => $buttons];
     }
 
     $metaTemplateId = $template['meta_template_id'] ?? null;

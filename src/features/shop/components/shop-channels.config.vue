@@ -123,6 +123,28 @@
             </v-alert>
 
             <v-card-text class="pt-4">
+                <!-- HugoShop: die Webseite des Kundenportals, auf der er läuft
+                     (dev/kundenportal.md) — Zugang, Adresse und HugoCMS stehen dort -->
+                <v-row v-if="kanal.type === 'hugoshop'" dense class="mb-2">
+                    <v-col cols="12" sm="8" md="6" class="py-1">
+                        <v-select
+                            v-model="kanal.website_id"
+                            :items="webseitenAuswahl"
+                            :label="t('ShopView.channelConfig.website')"
+                            :hint="t('ShopView.channelConfig.websiteHint')"
+                            persistent-hint
+                            variant="outlined"
+                            density="compact"
+                            hide-details="auto"
+                        />
+                    </v-col>
+                    <v-col cols="12" sm="4" md="6" class="py-1 d-flex align-center">
+                        <v-btn variant="text" size="small" prepend-icon="mdi-web" @click="router.push({ name: 'websites' })">
+                            {{ t('ShopView.channelConfig.websitesOpen') }}
+                        </v-btn>
+                    </v-col>
+                </v-row>
+
                 <v-row dense>
                     <v-col cols="12" sm="6" md="4" class="py-1">
                         <v-text-field
@@ -281,6 +303,8 @@
                                 :type="kanal.type"
                                 :settings="kanal.settings"
                                 :secrets-set="kanal.secrets_set"
+                                :secrets="secrets[kanal.channel_id] || {}"
+                                :secrets-visible="istAdmin"
                                 :quellen="quellen"
                                 :backend-url-vorschlag="backendUrlVorschlag"
                             />
@@ -308,6 +332,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import { shopFehler } from '../composables/useShop.js'
@@ -333,10 +358,21 @@ const einstellungenOffen = ref({})
 const i18n = useI18n()
 const { t, te } = i18n
 const oserp = oserpStore()
+const router = useRouter()
 
 const kanaele = ref([])
+/** Systemadministrator: bekommt die Geheimnisse der Kanäle (getShopChannelSecrets) in die Felder */
+const istAdmin = computed(() => oserp.isAdmin())
+/** Geheimnisse je Kanal (channel_id → Schlüssel → Wert), nur für Systemadministratoren geladen */
+const secrets = ref({})
 /** Vorschlag für die Adresse des Shop-Zugangs (getShopChannels) — belegt ein leeres Feld vor */
 const backendUrlVorschlag = ref('')
+/** Webseiten des Kundenportals (getShopChannels: websites) — Auswahl je HugoShop */
+const webseiten = ref([])
+const webseitenAuswahl = computed(() => [
+    { value: 0, title: t('ShopView.channelConfig.websiteNone') },
+    ...webseiten.value.map(w => ({ value: Number(w.id), title: w.base_url ? `${w.name} (${w.base_url})` : w.name })),
+])
 
 /** Auswahllisten aus getShopChannels */
 const alleLaender = ref([])
@@ -414,6 +450,7 @@ function alsKanal(zeile) {
         channel_id: Number(zeile.channel_id),
         type: String(zeile.type),
         active: WAHR.includes(zeile.active),
+        website_id: Number(zeile.website_id) || 0,
         markup_type: zeile.markup_type || 'none',
         markup_value: Number(zeile.markup_value) || 0,
         round_99: WAHR.includes(zeile.round_99),
@@ -467,6 +504,8 @@ function nutzdaten(kanal) {
         countries: [...kanal.countries].sort(),
         name: kanal.name.trim(),
         auto_add_parts: kanal.auto_add_parts,
+        // nur der HugoShop läuft auf einer Webseite des Kundenportals
+        ...(kanal.type === 'hugoshop' ? { website_id: Number(kanal.website_id) || 0 } : {}),
         // nur eBay kennt den Ausschluss; andere Kanäle lassen ihn unberührt
         ...(kanal.type === 'ebay' ? { excluded_delivery_terms: [...kanal.excluded_delivery_terms].sort((a, b) => a - b) } : {}),
     }
@@ -482,6 +521,27 @@ function alsListe(wert) {
     try { const liste = JSON.parse(wert || '[]'); return Array.isArray(liste) ? liste : [] } catch { return [] }
 }
 
+/**
+ * Geheimnisse aller Kanäle — eigener Aufruf, getShopChannels liefert nur, ob
+ * sie hinterlegt sind. Nur Systemadministratoren; ein Fehler blockiert die
+ * Ansicht nicht, die Felder bleiben dann leer wie für alle anderen.
+ */
+async function geheimnisseLaden() {
+    try {
+        const antwort = await axios.post('/api/shop/', { action: 'getShopChannelSecrets', channel_id: 0 })
+        if (!antwort.data?.success) {
+            toasts.warning(shopFehler(antwort.data, i18n, 'ShopView.channelConfig.secretsLoadError').text)
+            return
+        }
+        const geladen = alsObjekt(antwort.data.payload?.secrets)
+        const naechste = {}
+        Object.keys(geladen).forEach(id => { naechste[Number(id)] = alsObjekt(geladen[id]) })
+        secrets.value = naechste
+    } catch (e) {
+        toasts.warning(shopFehler(e?.response?.data, i18n, 'ShopView.channelConfig.secretsLoadError').text)
+    }
+}
+
 async function laden() {
     bereit = false
     laedt.value = true
@@ -494,11 +554,13 @@ async function laden() {
         }
         alleLaender.value = antwort.data.payload?.all_countries || []
         backendUrlVorschlag.value = antwort.data.payload?.backend_url_suggestion || ''
+        webseiten.value = antwort.data.payload?.websites || []
         arten.value = antwort.data.payload?.types || []
         lieferbedingungen.value = antwort.data.payload?.delivery_terms || []
         kanaele.value = (antwort.data.payload?.channels || []).map(alsKanal)
         ausBackend.value = WAHR.includes(antwort.data.payload?.tax_included)
         kanaele.value.forEach(k => { zuletzt[k.channel_id] = JSON.stringify(nutzdaten(k)) })
+        if (istAdmin.value) await geheimnisseLaden()
     } catch (e) {
         fehler.value = shopFehler(e?.response?.data, i18n, 'ShopView.channelConfig.loadError').text
     } finally {

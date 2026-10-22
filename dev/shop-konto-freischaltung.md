@@ -1,6 +1,20 @@
 # Shop: Konto-Freischaltung für Bestandskunden per WhatsApp
 
-Stand 2026-10-21. Status: **Analyse**, nichts umgesetzt.
+Stand 2026-10-21. Status: **umgesetzt** mit den Vorschlägen F1 bis F6, als
+Teil des Kundenportals (`dev/kundenportal.md`): Fachlogik in
+`backend/api/portal/lib/activation.php`, Tabelle `portal_activation_oserp`
+(statt `account_activation_hugoshop`), Aktionen `requestActivation`,
+`activationInfo`, `completeActivation` im Kern, Widget `<portal-activate>`
+(`portal-ui/src/components/portal-activate.js`), Shortcode `portal-activate`,
+Seite der Webseite über die Einstellung `activate_page`. Aus der Kundenakte:
+Karte „Zugang zum Kundenkonto“ im Reiter WhatsApp (`sendPortalActivation`,
+auch per Mail). WhatsApp-Vorlage: Typ „Kundenkonto freischalten“
+(`portal_activation`) mit Schaltfläche, Vorlage `konto_freischalten` kommt
+mit „Standard-Templates laden“ — Adresse der Schaltfläche auf die eigene
+Webseite setzen und bei Meta einreichen. Die Drossel je Sitzung zählt in
+`portal_context_oserp.activation_count`. „Kennwort vergessen“ (F5) ist noch
+nicht gebaut; die Bausteine (Kennung, Seite, `customerSetPassword`) stehen.
+Der Rest dieser Datei ist die Analyse von vor der Umsetzung.
 
 Ausgangslage bei Autoprofis: Die Kunden der Werkstatt stehen in `customer`,
 meist mit Telefonnummer, selten mit E-Mail-Adresse, nie mit Shop-Kennwort.
@@ -21,7 +35,7 @@ außerhalb des Codes ist die Genehmigung der Vorlage durch Meta.
 | Kunde zur Telefonnummer finden | vorhanden: `_findCustomerByPhone()` und `_normalizePhone()` in `backend/api/whatsapp/whatsapp.php` (sucht `customer.phone` und `customer_ext.phone_numbers`) | klein: aus dem Shop nutzbar machen, mehrdeutige Treffer behandeln |
 | WhatsApp senden | vorhanden: `sendWhatsAppTemplateMessage()` (Meta Business API, Vorlagen mit Textplatzhaltern) | mittel: Schaltfläche mit Link in der Vorlage |
 | Link-Kennung mit Ablauf | Muster vorhanden: `ar_link_hugoshop.uuid` (Rechnungslink ersetzt die Anmeldung) | klein: eigene Tabelle |
-| Seite im Shop mit Formular | Muster vorhanden: `<shop-register>`, `<shop-login>`, Shortcodes im Paket, Pfade in `params.shopui.paths` | mittel: neues Widget `<shop-activate>` |
+| Seite im Shop mit Formular | Muster vorhanden: `<portal-register>`, `<portal-login>`, Shortcodes im Paket, Pfade in `params.portalui.paths` | mittel: neues Widget `<shop-activate>` |
 | Kennwort vergessen | **fehlt** heute ganz | fällt mit demselben Mechanismus ab |
 
 ## Ablauf
@@ -128,13 +142,13 @@ Kontext selbst (Schemaänderung in der Shop-Erweiterung).
 
 ### Widget und Webseite
 
-- `<shop-activate>` in `shop-ui/src/components/`: ohne `token` das
+- `<shop-activate>` in `portal-ui/src/components/`: ohne `token` das
   Anfrageformular (Telefon, PLZ), mit `token` das Einrichtungsformular
   (E-Mail, Kennwort, Wiederholung, Kennwortfeld aus `core/password-field.js`).
   Shortcode `shop-activate.html` im Paket, Pfad `activate` in
-  `params.shopui.paths` (Vorgabe `/freischalten/`), Übersetzungen in
+  `params.portalui.paths` (Vorgabe `/freischalten/`), Übersetzungen in
   `core/i18n.js`.
-- `<shop-login>` bekommt unter dem Formular einen Verweis „Bestandskunde?
+- `<portal-login>` bekommt unter dem Formular einen Verweis „Bestandskunde?
   Konto freischalten“ (Attribut `activate-url`, Vorgabe aus den Pfaden).
 - Seite `content/shop/freischalten.md` der Webseite mit dem Shortcode, wie
   die Seiten für Anmeldung und Registrierung.
@@ -200,7 +214,7 @@ Kontext selbst (Schemaänderung in der Shop-Erweiterung).
    Testdatenbank. Freigabe der Schemaänderung vorher.
 2. WhatsApp: Vorlage mit URL-Schaltfläche senden können, Vorlage einreichen
    (parallel, wegen der Wartezeit bei Meta).
-3. Widget `<shop-activate>`, Shortcode, Pfad, Verweis in `<shop-login>`,
+3. Widget `<shop-activate>`, Shortcode, Pfad, Verweis in `<portal-login>`,
    Seite in der Webseite autoprofis24.
 4. Knopf in der Kundenakte.
 5. „Kennwort vergessen“ auf derselben Grundlage.

@@ -60,7 +60,8 @@
         "newArticle": "/tovar/novyi",
         "admin": "/systema/administruvannia",
         "systemSettings": "/systema/nalashtuvannia",
-        "templateDesigner": "/systema/redaktor-shabloniv"
+        "templateDesigner": "/systema/redaktor-shabloniv",
+        "websites": "/systema/saity"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Помилка: Файл паролів api/config/api.passwd.php не знайдено. Будь ласка, перейменуйте файл api/config/api.passwd.php.example на api/config/api.passwd.php та налаштуйте параметри відповідно.",
@@ -99,7 +100,8 @@
         "about": "Про програму",
         "docs": "Документація",
         "administration": "Користувачі та компанії",
-        "systemSettings": "Системні налаштування"
+        "systemSettings": "Системні налаштування",
+        "websites": "Сайти (портал клієнтів)"
     },
     "DocsView": {
         "title": "Документація",

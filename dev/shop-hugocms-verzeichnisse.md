@@ -61,7 +61,7 @@ fest — der Ort, dem die Webseite gehört —, nicht OpensourceERP:
   | Produktbilder | `static/images/products/` | — | seit 2026-10-15 aus der Medienbibliothek schreiben und löschen (`jpg, jpeg, png, gif, webp`, `dev/shop-medienbibliothek.md`); davor: HugoCMS liest sie für die Vorschaubilder |
   | Vorschaubilder | `static/images/thumbnails/` | — | seit 2026-10-15 fertig aus der Medienbibliothek schreiben und löschen; davor: HugoCMS schreibt sie |
   | Downloads (seit 2026-10-14) | `static/downloads/` | — | seit 2026-10-15 aus der Medienbibliothek schreiben und löschen (zusätzlich `pdf, zip, txt`); davor: HugoCMS prüft nur, ob die Dateien da sind (`shopdownloads`) |
-  | Paket | `oserp-shop/` (fest, nicht wählbar) | — | `md, json, html, js, css`, PHP nur signiert |
+  | Paket | `oserp-portal/` (fest, nicht wählbar) | — | `md, json, html, js, css`, PHP nur signiert |
 
   Gespeichert unter `[shop]` (`content_dir`, `category_groups`, `images`,
   `thumbnails`); `[shop] areas` entfällt.
@@ -100,7 +100,7 @@ verwaiste Seiten mit alten Preisen veröffentlicht.
 
 | Nr. | Frage | Entscheidung |
 | --- | --- | --- |
-| E1 | Die vier Freigaben oben, Paket `oserp-shop/` fest | ja |
+| E1 | Die vier Freigaben oben, Paket `oserp-portal/` fest | ja |
 | E2 | Bestehende Webseiten mit Schlüssel | gelten als eingeschaltet; neue Webseiten erst nach dem Einschalten |
 | E3 | `content_dir` in OSERP | entfällt ganz (Kanalschlüssel und Feld, Upstall räumt auf — **Schemaänderung, Freigabe nötig**); OSERP hält keine eigene Kopie der Freigaben |
 | E4 | Alte Seiten nach einem Verzeichniswechsel | löschen, sofern OSERP sie selbst geliefert hat |

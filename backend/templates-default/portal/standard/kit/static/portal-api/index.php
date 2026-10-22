@@ -1,0 +1,124 @@
+<?php
+// portal-api/index.php — Proxy der Shop-Webseite zu OpensourceERP
+//
+// Stammt aus dem Vorlagensatz der Shop-Erweiterung (kit/static/). Hugo
+// veröffentlicht ihn aus <webseite>/oserp-portal/static/portal-api/index.php nach
+// <webseite>/public/portal-api/index.php. Geändert wird im Vorlagensatz, nicht
+// in der Kopie auf dem Webserver.
+//
+// WOFÜR
+// Die Widgets rufen /portal-api/ auf derselben Adresse auf, unter der die Seite
+// läuft; das Sitzungs-Cookie (SameSite=Strict) ginge sonst verloren. Der Proxy
+// hält den Aufruf same-origin und trägt den Shop-Schlüssel nach, damit ihn der
+// Browser nie zu sehen bekommt.
+//
+// Ein Reverse-Proxy im Webserver ist der bessere Weg, wo er zur Verfügung
+// steht — er kostet keinen PHP-Prozess je Anfrage.
+//
+// EINRICHTUNG
+// HugoCMS nimmt kein PHP an: diese Datei einmal von Hand nach
+// <webseite>/oserp-portal/static/portal-api/index.php legen — und erneut, wenn
+// der Lauf sie als veraltet meldet (dev/shop-hugocms-trennung.md, E9).
+// Adresse und Schlüssel kommen über die Übertragung nach
+// <webseite>/oserp-portal/config.json — außerhalb des Docroots, und Hugo hängt
+// die Datei nicht ein.
+//
+// PRÜFUNG
+// Jede Antwort trägt X-Oserp-Portal-File mit der Prüfsumme dieser Datei. Der
+// Lauf in OpensourceERP ruft /portal-api/ auf und vergleicht sie mit dem
+// Vorlagensatz (shopWebsiteManualFilesCheck): so erkennt er eine fehlende,
+// veraltete oder nicht ausgeführte Kopie.
+
+header('X-Oserp-Portal-File: '.sha1_file(__FILE__));
+
+$konfiguration = __DIR__.'/../../oserp-portal/config.json';
+$cfg = is_file($konfiguration) ? json_decode((string)file_get_contents($konfiguration), true) : [];
+$adresse   = is_array($cfg) ? (string)($cfg['url'] ?? '') : '';
+$schluessel = is_array($cfg) ? (string)($cfg['key'] ?? '') : '';
+
+if ('' === $adresse || '' === $schluessel) {
+    http_response_code(503);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => false,
+        'text'    => 'PORTAL_PROXY_NOT_CONFIGURED',
+        'debug'   => 'oserp-portal/config.json fehlt oder ist unvollständig — in den Shop-Einstellungen die Adresse von OpensourceERP und den Shop-Schlüssel setzen, dann den Läufer laufen lassen',
+    ]);
+    exit;
+}
+
+// Die Abfrage aus der Adresse wird mitgereicht: der Rückweg von PayPal kommt
+// als GET mit action, token und page.
+$ziel = rtrim($adresse, '/').'/';
+if (!empty($_SERVER['QUERY_STRING'])) {
+    $ziel .= '?'.$_SERVER['QUERY_STRING'];
+}
+
+$methode = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$rumpf   = 'POST' === $methode ? file_get_contents('php://input') : null;
+
+$kopfzeilen = [
+    // Der Schlüssel wird hier nachgetragen, nicht vom Browser geschickt
+    'X-Portal-Key: '.$schluessel,
+];
+if (!empty($_SERVER['CONTENT_TYPE'])) {
+    $kopfzeilen[] = 'Content-Type: '.$_SERVER['CONTENT_TYPE'];
+}
+// Das Sitzungs-Cookie des Besuchers muss mit, sonst kennt das Backend ihn nicht
+if (!empty($_SERVER['HTTP_COOKIE'])) {
+    $kopfzeilen[] = 'Cookie: '.$_SERVER['HTTP_COOKIE'];
+}
+// Für das Protokoll auf der ERP-Seite: wer hat wirklich angefragt
+$kopfzeilen[] = 'X-Forwarded-For: '.($_SERVER['REMOTE_ADDR'] ?? '');
+$kopfzeilen[] = 'X-Forwarded-Host: '.($_SERVER['HTTP_HOST'] ?? '');
+
+$ch = curl_init($ziel);
+curl_setopt_array($ch, [
+    CURLOPT_CUSTOMREQUEST  => $methode,
+    CURLOPT_POSTFIELDS     => $rumpf,
+    CURLOPT_HTTPHEADER     => $kopfzeilen,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HEADER         => true,
+    CURLOPT_TIMEOUT        => 60,
+    // Weiterleitungen NICHT folgen: die Bezahlung schickt den Besucher zu
+    // PayPal und von dort zurück — das gehört in seinen Browser, nicht in
+    // diesen Proxy.
+    CURLOPT_FOLLOWLOCATION => false,
+]);
+
+$antwort = curl_exec($ch);
+
+if (false === $antwort) {
+    $fehler = curl_error($ch);
+    http_response_code(502);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => false,
+        'text'    => 'PORTAL_BACKEND_UNREACHABLE',
+        'debug'   => $fehler,
+    ]);
+    exit;
+}
+
+$status     = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$kopfLaenge = (int)curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+
+http_response_code($status);
+
+// Kopfzeilen durchreichen, die der Browser braucht: Inhaltstyp, das
+// Sitzungs-Cookie, Weiterleitungen und der Dateiname beim PDF-Abruf. Alles
+// andere bleibt draußen — Längen und Kodierungen stimmen nach dem Durchreichen
+// nicht mehr zwingend.
+$durchreichen = ['content-type', 'content-disposition', 'location', 'set-cookie', 'cache-control'];
+foreach (explode("\r\n", substr($antwort, 0, $kopfLaenge)) as $zeile) {
+    $doppelpunkt = strpos($zeile, ':');
+    if (false === $doppelpunkt) {
+        continue;
+    }
+    $name = strtolower(trim(substr($zeile, 0, $doppelpunkt)));
+    if (in_array($name, $durchreichen, true)) {
+        header($zeile, 'set-cookie' !== $name);
+    }
+}
+
+echo substr($antwort, $kopfLaenge);

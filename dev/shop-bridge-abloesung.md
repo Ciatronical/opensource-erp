@@ -28,7 +28,7 @@ Dieses Dokument erfasst, was darüber hinaus in der Bridge steckt.
 | Teil der Bridge | Aufgabe | Stand in OSERP | Ziel |
 | --- | --- | --- | --- |
 | `framework/` | Backend, 55 Funktionen | übernommen (Stufen 1–7) | — |
-| `web/shop-api/index.php` | API-Einstieg für die Webseite | ersetzt durch `backend/shop/index.php` | — |
+| `web/portal-api/index.php` | API-Einstieg für die Webseite | ersetzt durch `backend/shop/index.php` | — |
 | `web/oserp/` | Proxy, Einstellungsübernahme — in Stufe 7 entstanden | Proxy im Paket (Stufe A), Übernahme `tools/shop-bridge-settings.php` (Stufe D) | — |
 | `web/not_found.php` | 404-Seite mit Umleitungen aus `redirect_pages_hugoshop` (301, 302, 404, 410) | `resolveRedirect` und `not_found.php` im Paket (Stufe A) | — |
 | `web/search/index.php` | serverseitige Suchseite, eigene `ILIKE`-Suche, festes Bootstrap-Markup | nicht übernommen | entfällt: sonic24 verlinkt sie nicht mehr, gesucht wird mit `shop-search-results` (Stufe D) |
@@ -37,7 +37,7 @@ Dieses Dokument erfasst, was darüber hinaus in der Bridge steckt.
 | `batchjob/sitemap.php` | Sitemaps: Produkte, PDFs, Markdown-Seiten, feste Seiten, Kategoriegruppen; gzip, in Blöcken | entfällt — konnte nie laufen, Hugo erzeugt die Sitemaps | `lastmod` im Front Matter (Stufe C) |
 | `payment/reconcile.php` | Abgleich schwebender PayPal-Zahlungen | Aktion `reconcileShopPayments` im Admin-Panel, Auftrag `reconcile_payments` (Stufe C) | — |
 | `hugo/layouts/` | 16 Shortcodes, 4 Partials: Einbindung der Widgets in Hugo | im Paket (Stufe A) | — |
-| `shop-ui/` | Käuferoberfläche, 17 Web Components (Lit), Build mit esbuild | in OpensourceERP, Bundle im Paket (Stufe B) | — |
+| `portal-ui/` | Käuferoberfläche, 17 Web Components (Lit), Build mit esbuild | in OpensourceERP, Bundle im Paket (Stufe B) | — |
 | `sql/install.sql`, `sql/migrations/` | Schema | übernommen (`backend/upstall/shop/`) | — |
 | `sql/dev.sql`, `zufallspreise.sql`, `database_source.sql`, `db_query.sql`, `search.sql` | Entwicklungsdaten und Abfragen | — | entfällt |
 | `test/payment-pending.php` | Prüfung schwebender Zahlungen | — | nicht übernommen (Stufe E): prüft Klassen der Bridge; der Abgleich in OpensourceERP ist über den Auftrag `reconcile_payments` geprüft |
@@ -73,7 +73,7 @@ der beiden Repositories.
 
 Eine Hugo-Instanz bindet heute drei Verzeichnisse der Bridge per Mount ein:
 `web/` (Einstiegspunkte im Docroot), `hugo/layouts/` (Shortcodes und Partials)
-und `shop-ui/dist/` (Widget-Bundle). Nach der Ablösung liefert OSERP diese
+und `portal-ui/dist/` (Widget-Bundle). Nach der Ablösung liefert OSERP diese
 Teile — der Vorlagensatz wird zum vollständigen Paket für eine Webseite:
 
 ```
@@ -83,7 +83,7 @@ backend/templates-default/shop/standard/
 ├── layouts/                Shortcodes und Partials (aus bridge/hugo/layouts)
 └── static/                 Einstiegspunkte im Docroot: Proxy, 404-Seite
 
-shop-ui/                    Quelltext der Widgets (Lit), Build mit esbuild → kit/assets/shop-ui/
+portal-ui/                    Quelltext der Widgets (Lit), Build mit esbuild → kit/assets/portal-ui/
 ```
 
 **Die Shop-UI bekommt keinen Platz im Vite-Build von OSERP.** Sie läuft auf
@@ -132,34 +132,34 @@ backend/templates-default/shop/standard/kit/
 ├── layouts/partials/          4 Partials   (aus bridge/hugo/layouts)
 ├── layouts/shortcodes/       17 Shortcodes (aus bridge/hugo/layouts)
 └── static/
-    ├── shop-api/index.php     Proxy zu OpensourceERP
+    ├── portal-api/index.php     Proxy zu OpensourceERP
     └── not_found.php          404-Seite mit Umleitungen
 ```
 
-Das Widget-Bundle (`assets/shop-ui/`) ist mit Stufe B dazugekommen.
+Das Widget-Bundle (`assets/portal-ui/`) ist mit Stufe B dazugekommen.
 
 Die Layouts sind unverändert übernommen; nur die Warnung in
-`shop-ui-assets.html` nennt jetzt den neuen Mount statt des Bridge-Pfads.
+`portal-ui-assets.html` nennt jetzt den neuen Mount statt des Bridge-Pfads.
 
 ### Der Läufer überträgt es
 
 `shopSyncKit()` in `backend/api/shop/lib/publish.php` spiegelt `kit/` nach
-`<webseite>/oserp-shop/`: kopiert nur Geändertes, entfernt, was das Paket nicht
-mehr enthält — beides nur innerhalb von `oserp-shop/`. Verknüpfungen werden als
+`<webseite>/oserp-portal/`: kopiert nur Geändertes, entfernt, was das Paket nicht
+mehr enthält — beides nur innerhalb von `oserp-portal/`. Verknüpfungen werden als
 solche gelöscht, nie ihr Ziel. Der Läufer gleicht das Paket vor jedem Bau ab;
 zusätzlich gibt es den Auftrag `sync_kit`. Gebaut wird, sobald Seiten oder das
 Paket sich geändert haben.
 
 **Nicht direkt nach `layouts/`:** Die Webseite hängt die Unterordner von
-`oserp-shop/` *nach* ihren eigenen ein. So behalten Übersteuerungen der Instanz
+`oserp-portal/` *nach* ihren eigenen ein. So behalten Übersteuerungen der Instanz
 Vorrang — direkt in `layouts/` kopiert, überschriebe das Paket sie.
 
-Der Name `oserp-shop` ist fest: Proxy und 404-Seite finden ihre Konfiguration
+Der Name `oserp-portal` ist fest: Proxy und 404-Seite finden ihre Konfiguration
 darüber.
 
 ### Konfiguration statt `bridge-config`
 
-Der Läufer schreibt `<webseite>/oserp-shop/config.json` (bis 2026-09-24
+Der Läufer schreibt `<webseite>/oserp-portal/config.json` (bis 2026-09-24
 `config.php`, siehe `dev/shop-hugocms-trennung.md`, E9) mit der Adresse von
 OpensourceERP (neue Einstellung `shop_backend_url`) und dem Shop-Schlüssel. Die
 Datei liegt außerhalb des Docroots und wird von Hugo nicht eingehängt; sie wird
@@ -192,10 +192,10 @@ In der `config.json` der Instanz ersetzen diese Mounts die der Bridge:
 ```json
 "module": { "mounts": [
   { "source": "static",                    "target": "static" },
-  { "source": "oserp-shop/static",         "target": "static" },
+  { "source": "oserp-portal/static",         "target": "static" },
   { "source": "layouts",                   "target": "layouts" },
-  { "source": "oserp-shop/layouts",        "target": "layouts" },
-  { "source": "oserp-shop/assets/shop-ui", "target": "assets/shop-ui" }
+  { "source": "oserp-portal/layouts",        "target": "layouts" },
+  { "source": "oserp-portal/assets/portal-ui", "target": "assets/portal-ui" }
 ]}
 ```
 
@@ -225,7 +225,7 @@ entfallen, `100%_rabatt` wird zu `100\%\_rabatt%`, leere Eingaben fragen nicht.
 | `/weg` | 410, Hinweis auf die Ersatzseite, `<` im Linktext maskiert |
 | `/gibtsnicht` | 404, Hinweis ausgeblendet |
 | Proxy, POST mit Cookie und Abfrage | Status 201 und `Set-Cookie` durchgereicht; beim Backend kommen Schlüssel, Cookie, Abfrage und Rumpf an |
-| Proxy ohne `config.php` | 503 `SHOP_PROXY_NOT_CONFIGURED` |
+| Proxy ohne `config.php` | 503 `PORTAL_PROXY_NOT_CONFIGURED` |
 | `/alt` ohne `config.php` | 404 |
 
 Dazu `php -l` auf allen Dateien, `check:api` (189 Dateien), die neue
@@ -242,25 +242,25 @@ Nicht geprüft: gegen eine echte Datenbank, mit Hugo und hinter nginx.
 ### Quelltext und Build
 
 ```
-shop-ui/                          Quelltext (Lit), eigener Build mit esbuild
+portal-ui/                          Quelltext (Lit), eigener Build mit esbuild
 ├── src/  demo/  demo-src/        aus der Bridge übernommen
 ├── package.json                  build → Site-Kit, build:dev und watch → dist/
 └── .gitignore                    node_modules/, dist/
 
-backend/templates-default/shop/standard/kit/assets/shop-ui/
+backend/templates-default/shop/standard/kit/assets/portal-ui/
 └── shop-widgets.js               gebautes Bundle, versioniert
 ```
 
-`npm run build` in `shop-ui/` (oder `npm run build:shop-ui` im
+`npm run build` in `portal-ui/` (oder `npm run build:portal-ui` im
 Wurzelverzeichnis) schreibt das minifizierte Bundle direkt ins Kit. Es wird
 versioniert, weil der Läufer es auch auf Server ohne Node überträgt. Der
 Vite-Build von OpensourceERP bleibt davon unberührt. `build:dev` und `watch`
-schreiben mit Sourcemap nach `shop-ui/dist/` — nur für die Testseite
-`/shop-ui-demo/`.
+schreiben mit Sourcemap nach `portal-ui/dist/` — nur für die Testseite
+`/portal-ui-demo/`.
 
-Die README der Shop-UI nennt jetzt die Mounts auf `oserp-shop/`, den Build ins
+Die README der Shop-UI nennt jetzt die Mounts auf `oserp-portal/`, den Build ins
 Kit und für Tailwind das Bundle als Scan-Pfad
-(`./oserp-shop/assets/shop-ui/*.js`): Die Klassenketten stehen im minifizierten
+(`./oserp-portal/assets/portal-ui/*.js`): Die Klassenketten stehen im minifizierten
 Bundle unverändert, die Webseite braucht also keinen Pfad zum Quelltext.
 
 ### Rückfall auf die Bridge entfernt
@@ -269,7 +269,7 @@ Bundle unverändert, die Webseite braucht also keinen Pfad zum Quelltext.
 | --- | --- |
 | `src/core/api.js` | `send()` liefert `payload`; `mitRueckfall` entfällt; Anmelden und Abmelden rufen `shopLogin` und `shopLogout` direkt |
 | `src/core/dates.js` | nur noch ISO-Datumsangaben; ein reines Datum wird als Ortszeit gelesen |
-| `src/core/cart-data.js`, `shop-account-orders.js` | nur noch `thumbnail`, nicht mehr die Bridge-Schreibweise `tumbnail` |
+| `src/core/cart-data.js`, `portal-account-orders.js` | nur noch `thumbnail`, nicht mehr die Bridge-Schreibweise `tumbnail` |
 
 ### Eigene Vorlagensätze
 
@@ -398,12 +398,12 @@ samt erzeugter Übersicht.
 
 ### sonic24 bindet das Paket ein
 
-In `sonic24.de/config.json` ersetzen die Mounts auf `oserp-shop/` die der
+In `sonic24.de/config.json` ersetzen die Mounts auf `oserp-portal/` die der
 Bridge (Aufstellung in Stufe A). Die Datei ist in sonic24 nicht versioniert —
 sie ist Einstellung der Instanz; der alte Stand liegt in
-`tmp/config.json.vor-oserp`. Die Testseite `/shop-ui-demo/` kommt aus dem
-Arbeitsstand von OpensourceERP (`../../opensource-erp/shop-ui/`, nur in der
-Entwicklung). `/oserp-shop/` steht in der `.gitignore` von sonic24: der Läufer
+`tmp/config.json.vor-oserp`. Die Testseite `/portal-ui-demo/` kommt aus dem
+Arbeitsstand von OpensourceERP (`../../opensource-erp/portal-ui/`, nur in der
+Entwicklung). `/oserp-portal/` steht in der `.gitignore` von sonic24: der Läufer
 legt es an, und `config.php` enthält den Shop-Schlüssel.
 
 Nicht mehr eingehängt werden `web/search/` — sonic24 verlinkt die Seite nicht
@@ -411,13 +411,13 @@ mehr, gesucht wird mit `shop-search-results` — und `web/oserp/`: der Proxy
 steckt im Paket, die Übernahme der Einstellungen in `tools/`.
 
 Die Theme-Shortcodes `checkout`, `invoice` und `personal-order` rufen
-`/shop-api/` noch mit Formularen und Links auf. Der Inhalt von sonic24
+`/portal-api/` noch mit Formularen und Links auf. Der Inhalt von sonic24
 verwendet sie nicht mehr; der Einstieg nähme GET und POST ohnehin an, und die
 Aktionen sind freigegeben.
 
 ### Das Paket muss vor dem ersten Bau da sein
 
-Ohne `oserp-shop/` bricht Hugo ab: `template for shortcode "shop-cart" not
+Ohne `oserp-portal/` bricht Hugo ab: `template for shortcode "shop-cart" not
 found`. Der Läufer gleicht das Paket deshalb jetzt bei jedem Lauf ab, nicht nur
 nach neuen Seiten, und baut danach. Nebenbei kommt so ein neues Bundle nach
 einem Update von OpensourceERP an, ohne dass jemand eine Seite veröffentlicht;
@@ -462,22 +462,22 @@ OpensourceERP gar nicht.
    auf Wunsch dasselbe Verzeichnis als Rückfall und `shop_sites_dir` als
    Grenze.
 5. `php tools/shop-publish.php --client=<id>` einmal von Hand: legt
-   `oserp-shop/` samt `config.php` an. Gebaut wird dabei noch mit den alten
+   `oserp-portal/` samt `config.php` an. Gebaut wird dabei noch mit den alten
    Mounts.
 6. `config.json` der Instanz auf die neuen Mounts umstellen und bauen.
 7. Cron-Einträge für den Läufer und den Zahlungsabgleich (Stufe C).
 8. Prüfen: Warenkorb, Anmeldung, Bestellung mit der PayPal-Sandbox,
    Rechnungsdownload, 404-Seite und eine Umleitung.
 
-Am Webserver ändert sich nichts: `shop-api/index.php` und `not_found.php`
+Am Webserver ändert sich nichts: `portal-api/index.php` und `not_found.php`
 liegen an denselben Adressen wie bisher. Wer die Serverkonfiguration ändern
 kann, ersetzt den PHP-Proxy durch einen Reverse-Proxy und spart einen
 PHP-Prozess je Anfrage:
 
 ```nginx
-location /shop-api/ {
+location /portal-api/ {
     proxy_pass         https://erp.example/shop/;
-    proxy_set_header   X-Shop-Key        "<Shop-Schlüssel>";
+    proxy_set_header   X-Portal-Key        "<Shop-Schlüssel>";
     proxy_set_header   Host              $host;
     proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
     proxy_set_header   X-Forwarded-Proto $scheme;
@@ -510,9 +510,9 @@ veröffentlicht wird. Gegeneinander gesperrt sind die beiden Bauten nicht.
   `search/index.php` und die drei Dateien unter `oserp/`. Von 3.983
   gemeinsamen Dateien unterscheiden sich 3.834 nur in Fingerabdruck und
   `integrity` des Bundles (der Warenkorb steht im Seitenkopf); zwei sind
-  gewollt neu: `shop-api/index.php` und `not_found.php` aus dem Paket
-- ohne `oserp-shop/` bricht der Bau ab, siehe oben
-- Testseite `/shop-ui-demo/` mit dem Bundle aus `shop-ui/dist`
+  gewollt neu: `portal-api/index.php` und `not_found.php` aus dem Paket
+- ohne `oserp-portal/` bricht der Bau ab, siehe oben
+- Testseite `/portal-ui-demo/` mit dem Bundle aus `portal-ui/dist`
 - Satz sonic24: Produktseite aus `standard`, Paket gleich `standard` (24
   Dateien), Kategorieübersicht mit seinen Regeln gleich der vorhandenen von
   sonic24
@@ -540,9 +540,9 @@ den Lieferantenimport erledigt (Stufe F).
 | `dev/widerruf.md` | `dev/shop-widerruf.md`, rechtlicher Teil unverändert, Stand auf OpensourceERP umgeschrieben |
 | `web/oserp/einstellungen-uebernehmen.php` | `tools/shop-bridge-settings.php` (Stufe D) |
 | `web/oserp/README.md` | Umstellung und Reverse-Proxy stehen in Stufe D |
-| `test/payment-pending.php` | nicht übernommen: prüft `KiviShopAccount` und `PayPalConnector` der Bridge. Was es absichert — dass der Regelbetrieb nichts bucht —, gilt in OpensourceERP durch `paymentApplyState()`, das ausschließlich nach `ar_link_hugoshop` schreibt |
+| `test/payment-pending.php` | nicht übernommen: prüft `KiviPortalAccount` und `PayPalConnector` der Bridge. Was es absichert — dass der Regelbetrieb nichts bucht —, gilt in OpensourceERP durch `paymentApplyState()`, das ausschließlich nach `ar_link_hugoshop` schreibt |
 | `test/test.pl`, `test/data.json` | entfallen, der Druck läuft ohne Perl |
-| `sql/`, `batchjob/`, `payment/`, `hugo/`, `web/`, `shop-ui/` | abgelöst (Stufen A bis D) |
+| `sql/`, `batchjob/`, `payment/`, `hugo/`, `web/`, `portal-ui/` | abgelöst (Stufen A bis D) |
 | `chatgpt.*.php` der Instanz | entfallen (Entscheidung 1) |
 
 ### Neue Dokumentation
@@ -559,13 +559,13 @@ diese Ablösung.
 Seit Stufe D beantwortet OpensourceERP die Aufrufe der Webseite, und die
 Antwort trägt jetzt eine Hülle aus `success`, `text` und `payload`.
 
-- Kopfzeile, Suche und Kontoknöpfe des Themes schalten über `params.shopui` auf
+- Kopfzeile, Suche und Kontoknöpfe des Themes schalten über `params.portalui` auf
   die Widgets um; das alte `js/shopwindow.js` ist nur der Rückfall für Shops
   ohne Shop-UI und wird bei sonic24 nicht geladen.
 - Das Widerrufsformular lädt eigenes JavaScript. Es kommt mit der Hülle
   zurecht, weil `fetchRequest()` `success` auswertet.
 - Die Shortcodes `checkout`, `invoice` und `personal-order` des Themes rufen
-  `/shop-api/` direkt auf; der Inhalt von sonic24 verwendet sie nicht.
+  `/portal-api/` direkt auf; der Inhalt von sonic24 verwendet sie nicht.
 
 ### Geprüft
 

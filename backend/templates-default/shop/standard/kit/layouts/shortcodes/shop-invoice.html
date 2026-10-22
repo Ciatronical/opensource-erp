@@ -4,7 +4,7 @@
   Ersetzt invoice.html. Die Seite lebt vom Parameter ?link= in der Adresse —
   ohne ihn zeigt die Komponente einen Hinweis statt einer leeren Seite.
 */ -}}
-{{- partial "shop-ui-assets.html" . -}}
+{{- partial "portal-ui-assets.html" . -}}
 <shop-invoice
   {{- with .Get `orders-url` }} orders-url="{{ . }}"{{ end }}
   {{- with .Get `continue-url` }} continue-url="{{ . }}"{{ end }}

@@ -1,0 +1,24 @@
+{{- /*
+  Markup der Konto-Navigation. Eigener Partial, weil ihn zwei Shortcodes
+  aufrufen: portal-account-nav (einzeln) und portal-account (mit Layout).
+
+  Erwartet ein dict:
+    current      overview | profile | address | order | vehicles  (optional)
+    showPayment  "true", um den Eintrag "Zahlungsarten" einzublenden
+    showVehicles "true", um den Eintrag "Meine Fahrzeuge" auch ohne das
+                 Merkmal lxcars der Webseite einzublenden
+    class        Layout-Klassen fuer den Host, optional
+
+  Die Ziele kommen aus params.portalui.paths bzw. den Vorgaben des Widgets
+  (portal-ui/src/core/paths.js), samt #focus-Anker — dem Container des
+  mitgelieferten Themes, an den der Browser nach dem Sprung scrollt.
+*/ -}}
+{{- /* noAssets: der Aufrufer bindet das Bundle selbst ein. Bewusst
+     negativ benannt — ein fehlender Schluessel ist in Go-Templates
+     falsch, und der sichere Fall ist "Bundle einbinden". */ -}}
+{{- if not .noAssets }}{{ partial "portal-ui-assets.html" . }}{{ end -}}
+<portal-account-nav
+  current="{{ .current }}"
+  {{- if eq (.showPayment | default "false") "true" }} show-payment{{ end }}
+  {{- if eq (.showVehicles | default "false") "true" }} show-vehicles{{ end }}
+  {{- with .class }} class="{{ . }}"{{ end }}></portal-account-nav>

@@ -1,0 +1,14 @@
+{{- /*
+  {{< portal-vehicles >}}
+  {{< portal-vehicles heading="Meine Fahrzeuge" login-url="/login/" >}}
+
+  Die Fahrzeuge des angemeldeten Kunden aus LxCars (Kennzeichen, Typ,
+  HU-Termin, Kilometerstand). Kommt mit dem Paket der LxCars-Erweiterung;
+  das Element liegt in lxcars-widgets.js, das der Partial mit dem Merkmal
+  lxcars der Webseite lädt. Innerhalb des Kontos: {{< portal-account page="vehicles" >}}.
+*/ -}}
+{{- partial "portal-ui-assets.html" . -}}
+<portal-vehicles
+  {{- with .Get `login-url` }} login-url="{{ . }}"{{ end }}
+  {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
+  {{- with .Get `class` }} class="{{ . }}"{{ end }}></portal-vehicles>

@@ -11,10 +11,11 @@ Teile entstanden sind, beschreiben `shop-migration.md` (Fachlogik),
 | --- | --- | --- |
 | Admin-Panel | `src/features/shop/` | Mitarbeiter: Übersicht, Bestellungen, Zahlungen, Widerrufe, Veröffentlichung |
 | Mitarbeiter-API | `backend/api/shop/` | normale OpensourceERP-Sitzung, Rechte über `permit()` |
-| Öffentlicher Zugang | `backend/shop/index.php` | Kunden des Betreibers; Ausweis über den Kopf `X-Shop-Key`, zugelassene Aktionen in `public/actions.php` |
-| Fachschicht | `backend/api/shop/lib/` | Warenkorb, Konto, Suche, Rechnung, Zahlung, Mail, Widerruf, Umleitungen, Veröffentlichung, Kategorien |
-| Webseiten-Paket | `backend/templates-default/shop/standard/kit/` | Shortcodes, Partials, Proxy, 404-Seite, Widget-Bundle |
-| Shop-UI | `shop-ui/` | Widgets der Käuferoberfläche (Lit), eigener Build ins Paket |
+| Kundenportal (Kern) | `backend/api/portal/`, Ansicht System → Webseiten | Webseiten (`website_oserp`) mit Zugang, Adresse, HugoCMS und Vorlagensatz; Sitzung, Konto, Rechnungen, Kontakt, Freischaltung; Paket und HugoCMS-Transport (`dev/kundenportal.md`) |
+| Öffentlicher Zugang | `backend/portal/index.php` | Kunden des Betreibers; Ausweis über den Kopf `X-Portal-Key` der Webseite, Aktionen des Kerns plus `public/actions.php` jeder aktiven Erweiterung |
+| Fachschicht | `backend/api/shop/lib/` | Warenkorb, Kasse, Suche, Rechnung, Zahlung, Mail, Widerruf, Umleitungen, Veröffentlichung, Kategorien; hängt über `lib/portal_hooks.php` am Portal |
+| Webseiten-Paket | `backend/templates-default/portal/standard/kit/` (Kern: Konto-Shortcodes, Partials, Proxy, Bündel) + `backend/templates-default/shop/standard/kit/` (Shop: Warenkorb, Kasse, Suche, 404-Seite) | geht zusammen als `oserp-portal/` an HugoCMS |
+| Widgets | `portal-ui/` | Web Components (Lit): `portal-widgets.js`, `shop-widgets.js`, `lxcars-widgets.js`; eigener Build ins Paket |
 | Läufer | `tools/shop-publish.php` | Aufträge abarbeiten, Paket abgleichen, Kategorien, an HugoCMS übertragen und dort bauen lassen |
 | Übernahme | `tools/shop-bridge-settings.php` | Einstellungen einer Bridge-Instanz als SQL ausgeben |
 | Medienbibliothek | `backend/api/shop/media.php`, `lib/media.php`, Medien in der Artikelkarte | Produktbilder und Downloads zentral für alle Verkaufskanäle (`dev/shop-medienbibliothek.md`); Übernahme vorhandener Medien mit `tools/shop-media-import.php` |
@@ -26,7 +27,7 @@ die Shop-Erweiterung von HugoCMS und lässt die Webseite dort bauen
 (`dev/shop-hugocms-trennung.md`). Wohin es schreiben darf, legt ein
 Administrator in HugoCMS fest — die **Freigaben** in den Projekteinstellungen
 (Produktseiten, Kategorieübersicht, Produktbilder, Vorschaubilder, Downloads;
-das Paket liegt fest in `oserp-shop/`). OpensourceERP zeigt sie in der
+das Paket liegt fest in `oserp-portal/`). OpensourceERP zeigt sie in der
 Kanalkarte nur an und übernimmt sie bei jedem Lauf
 (`dev/shop-hugocms-verzeichnisse.md`). Produktbilder, Vorschaubilder und
 Downloads kommen aus der Medienbibliothek und gehen mit jeder Lieferung an die
@@ -38,49 +39,57 @@ Webseite (`dev/shop-medienbibliothek.md`).
 2. **Firmenkonfiguration → Shop:** die Angaben für den ganzen Mandanten
    (Rechnungsstellung, Bankverbindung, Lagerplatz, Bestellungen, siehe
    „Einstellungen“).
-3. **Shop-Menü → Verkaufskanäle:** einen HugoShop anlegen. In seiner Karte:
+3. **System → Webseiten** (Recht „Webshops anlegen und bearbeiten“): die
+   Webseite des Kundenportals anlegen. In ihrer Karte:
    - **Shop-Schlüssel** — der Knopf neben dem Feld erzeugt ihn (32 zufällige
-     Byte, hexadezimal). Er unterscheidet Mandanten und Kanäle; zwei Kanäle
-     dürfen nicht denselben haben. Die Webseite bekommt ihn über
-     `oserp-shop/config.json`, der Browser sieht ihn nie.
-   - **Adresse des Shop-Zugangs von OpensourceERP** — der Shop-Zugang
-     `backend/shop/` (etwa `https://erp.example.de/shop/`), mit „Verbindung
-     prüfen“. Ein leeres Feld belegt die Karte mit der Adresse vor, unter der
-     OpensourceERP gerade aufgerufen wird (`shopBackendUrlSuggestion`, lokal
-     `http://localhost:8000/shop/`). Der Webserver von OpensourceERP muss
-     `/shop` dorthin geben (Apache: `Alias /shop …/backend/shop`).
-   - Basisadresse, Adressmuster, Vorlagensatz.
-4. **HugoCMS → Projekteinstellungen → Shop-Erweiterung** (nur Administratoren):
-   die Erweiterung einschalten, einen Schlüssel erzeugen und die **Freigaben**
-   prüfen — Verzeichnis der Produktseiten (Vorgabe `content/de/produkt`),
-   Kategorieübersicht (`data/category_groups.json`, so erwartet sie der
-   Vorlagensatz `standard`), Produkt- und Vorschaubilder. Die dort angezeigte
-   Adresse (`…/cms-api/`) und den Schlüssel in der Kanalkarte im Kasten
-   „HugoCMS“ eintragen, „Verbindung prüfen und Freigaben abrufen“. Passen die
-   Adressmuster nicht zu den Freigaben, bietet die Karte einen Vorschlag an.
+     Byte, hexadezimal). Er unterscheidet Mandanten und Webseiten; zwei
+     Webseiten dürfen nicht denselben haben. Die Webseite bekommt ihn über
+     `oserp-portal/config.json`, der Browser sieht ihn nie.
+   - **Adresse des Portal-Zugangs von OpensourceERP** — `backend/portal/`
+     (etwa `https://erp.example.de/portal/`; `…/shop/` gilt weiter), mit
+     „Verbindung prüfen“. Ein leeres Feld belegt die Karte mit der Adresse
+     vor, unter der OpensourceERP gerade aufgerufen wird (lokal
+     `http://localhost:8000/portal/`). Der Webserver von OpensourceERP muss
+     `/portal` dorthin geben (Apache: `Alias /portal …/backend/portal`).
+   - Adresse der Webseite, Seiten (Rechnung, Konto freischalten),
+     Vorlagensatz, Empfänger des Kontaktformulars.
+   - **HugoCMS:** Adresse (`…/cms-api/`) und Schlüssel aus HugoCMS (siehe 4),
+     „Verbindung prüfen und Freigaben abrufen“; „Paket installieren“ überträgt
+     Vorlagen, Widgets und Weiterleiter und lässt bauen.
+   Dann **Shop-Menü → Verkaufskanäle:** einen HugoShop anlegen und in seiner
+   Karte die **Webseite** wählen; dort bleiben Adressmuster, PayPal, Mails.
+   Passen die Adressmuster nicht zu den Freigaben, bietet die Karte nach
+   „Verbindung prüfen“ einen Vorschlag an.
+4. **HugoCMS → Projekteinstellungen → OpensourceERP-Anbindung** (nur
+   Administratoren): die Anbindung einschalten, einen Schlüssel erzeugen und
+   die **Freigaben** prüfen — Verzeichnis der Produktseiten (Vorgabe
+   `content/de/produkt`), Kategorieübersicht (`data/category_groups.json`, so
+   erwartet sie der Vorlagensatz `standard`), Produkt- und Vorschaubilder.
 5. **Signaturschlüssel:** in den Systemeinstellungen von OpensourceERP erzeugen,
    den öffentlichen Teil in HugoCMS eintragen (Shop-Erweiterung →
    Signaturschlüssel). Dann überträgt der Lauf Weiterleiter und 404-Seite
    selbst; ohne ihn legt man sie von Hand ab (siehe „Einstellungen“).
-6. **Hugo-Konfiguration der Webseite:** die Mounts `oserp-shop/static` →
-   `static`, `oserp-shop/layouts` → `layouts` und `oserp-shop/assets/shop-ui`
-   → `assets/shop-ui`, jeweils **nach** den eigenen Einträgen. Optional
-   `params.shopui` für das Aussehen der Widgets und `params.shopui.paths` für
-   die Pfade der Shop-Seiten (`kit/layouts/partials/shop-ui-assets.html`,
-   `shop-ui/README.md` „Pfade der Seiten“).
+6. **Hugo-Konfiguration der Webseite:** die Mounts `oserp-portal/static` →
+   `static`, `oserp-portal/layouts` → `layouts` und `oserp-portal/assets/portal-ui`
+   → `assets/portal-ui`, jeweils **nach** den eigenen Einträgen. Optional
+   `params.portalui` für das Aussehen der Widgets und `params.portalui.paths` für
+   die Pfade der Seiten (`kit/layouts/partials/portal-ui-assets.html`,
+   `portal-ui/README.md` „Pfade der Seiten“). Der Partial lädt die Bündel nach
+   `features.json` im Paket: den Kern immer, den Shop mit HugoShop, die
+   Fahrzeuge mit LxCars.
    - **Shop unterhalb einer bestehenden Webseite** (etwa eine Werkstatt mit
      ein paar Artikeln unter `https://werkstatt.example/shop/`): Seiten unter
      `content/shop/`, `"paths": { "base": "/shop/" }`; in HugoCMS die
      Freigabe „Produktseiten“ auf `content/shop/produkt`; in der Kanalkarte
      Adressmuster `/shop/produkt/%s/` und Rechnungsseite `/shop/rechnung/`.
-     Der Weiterleiter bleibt `/shop-api/`.
+     Der Weiterleiter bleibt `/portal-api/`.
    - **Eigene Hugo-Seite unter einem Pfad** (`baseURL` mit `/shop/`): keine
      Angabe nötig, der Partial leitet die Pfade aus der baseURL ab; in der
      Kanalkarte die Adresse der Shop-Webseite mit Pfad eintragen
      (`https://werkstatt.example/shop/`), der Weiterleiter liegt dann unter
-     `/shop/shop-api/`.
-7. **Webserver der Webseite:** PHP für `shop-api/index.php` und `not_found.php`,
-   die 404 an `/not_found.php` (nginx: `error_page 404 /not_found.php;`).
+     `/shop/portal-api/`.
+7. **Webserver der Webseite:** PHP für `portal-api/index.php` und `not_found.php`,
+   die 404 an `/not_found.php` (nginx: `error_page 404 /not_found.php;`, Apache: `ErrorDocument 404 /not_found.php`).
 8. **„Shop-Benutzerschnittstelle installieren“** in der Shop-Übersicht, danach
    die Cron-Einträge für Läufer und Zahlungsabgleich.
 
@@ -106,7 +115,7 @@ Ein Lauf tut der Reihe nach:
    (`backend/tmp/shop-publish-<db>-<kanal>-staging/`), im Verzeichnis der
    Freigabe „Produktseiten“.
 3. **Paket abgleichen** — bei jedem Lauf; er vergleicht Prüfsummen und kopiert
-   nur Geändertes nach `oserp-shop/` der Bereitstellung.
+   nur Geändertes nach `oserp-portal/` der Bereitstellung.
 4. **Kategorieübersicht** erneuern, wenn Seiten geschrieben oder entfernt
    wurden — an den Ort der Freigabe; erwartet der Vorlagensatz sie anderswo,
    warnt der Lauf.
@@ -432,9 +441,9 @@ Vorschaubild fertig aus dem Backend (`shopChannelLink`, aus `products_link` und
 Fehlt ein Muster, zeigen sie keinen Link bzw. kein Bild. Die Aktion
 `getProductLink` und die Attribute `product-url`/`thumbnail-url` sind
 entfallen. Die Pfade der übrigen Seiten (Kasse, Anmeldung, Rechnungsseite …)
-kommen aus `params.shopui.paths` der Webseite, ersatzweise aus den Vorgaben
+kommen aus `params.portalui.paths` der Webseite, ersatzweise aus den Vorgaben
 der Widgets; ein Attribut am Shortcode geht vor (seit 2026-10-14,
-`shop-ui/README.md` „Pfade der Seiten“).
+`portal-ui/README.md` „Pfade der Seiten“).
 
 **Gebaut wird in HugoCMS**, mit dem Hugo-Programm aus dessen `hugocms.ini`
 (`[hugo] bin`); `--cleanDestinationDir` stellt dort `[hugo] clean` ein.
@@ -447,27 +456,28 @@ angezeigten öffentlichen Schlüssel in HugoCMS eintragen (Projekteinstellungen 
 Shop-Erweiterung). Dann überträgt der Lauf Weiterleiter und 404-Seite selbst,
 auch nach einem OSERP-Update (`dev/shop-php-signatur.md`).
 
-**Adresse des Shop-Zugangs von OpensourceERP** (`backend_url`, seit
-2026-10-08 mit „Verbindung prüfen“ direkt unter dem Feld): Ziel des
-Weiterleiters, also der Shop-Zugang `backend/shop/` — nicht die Adresse von
-HugoCMS (`…/cms-api/`), die in der HugoCMS-Gruppe steht. Der Test prüft in drei
+**Adresse des Portal-Zugangs von OpensourceERP** (`backend_url` der Webseite
+unter System → Webseiten, mit „Verbindung prüfen“ direkt unter dem Feld): Ziel
+des Weiterleiters, also der Portal-Zugang `backend/portal/` — nicht die Adresse
+von HugoCMS (`…/cms-api/`), die in der HugoCMS-Gruppe steht. Der Test prüft in drei
 Schritten: Eingabe (nicht die HugoCMS-Adresse), direkt von OpensourceERP mit dem
-Shop-Schlüssel (öffentliche Aktion `shopPing`, legt keine Sitzung an) und über
-`<Basisadresse>/shop-api/`, wie der Browser. Lokal mit `scripts/dev.sh` ist das
-`http://localhost:8000/shop/` — der Vite-Server auf 5173 leitet `/shop` nicht
-weiter.
+Schlüssel der Webseite (öffentliche Aktion `portalPing`, legt keine Sitzung an)
+und über `<Basisadresse>/portal-api/`, wie der Browser. Lokal mit `scripts/dev.sh`
+ist das `http://localhost:8000/portal/` — der Vite-Server auf 5173 leitet
+`/portal` nicht weiter. Der frühere Einstieg `backend/shop/` ist seit 2026-10-22
+entfernt.
 
 Ohne Signaturschlüssel **zwei Dateien einmal von Hand** auf den Webserver legen,
 weil HugoCMS sonst kein PHP annimmt: aus `backend/templates-default/shop/standard/kit/static/`
-die `shop-api/index.php` nach `<webseite>/oserp-shop/static/shop-api/index.php`
-und die `not_found.php` nach `<webseite>/oserp-shop/static/not_found.php`. Ihre
-Konfiguration (`oserp-shop/config.json`) kommt über die Übertragung. Für die
-404-Seite muss der Webserver auf sie zeigen (nginx: `error_page 404 /not_found.php;`).
+die `portal-api/index.php` nach `<webseite>/oserp-portal/static/portal-api/index.php`
+und die `not_found.php` nach `<webseite>/oserp-portal/static/not_found.php`. Ihre
+Konfiguration (`oserp-portal/config.json`) kommt über die Übertragung. Für die
+404-Seite muss der Webserver auf sie zeigen (nginx: `error_page 404 /not_found.php;`, Apache: `ErrorDocument 404 /not_found.php`).
 
 Ob beide liegen und aktuell sind, prüft der Lauf nach jeder Übertragung über
 die Webseite (`shopWebsiteManualFilesCheck`, seit 2026-10-08): Beide Dateien
-senden ihre Prüfsumme im Kopf `X-Oserp-Shop-File`, der Lauf vergleicht sie
-mit dem Vorlagensatz. Aufgerufen werden `<Basisadresse>/shop-api/` und eine
+senden ihre Prüfsumme im Kopf `X-Oserp-Portal-File`, der Lauf vergleicht sie
+mit dem Vorlagensatz. Aufgerufen werden `<Basisadresse>/portal-api/` und eine
 Adresse, die es nicht gibt (für die 404-Seite). Gemeldet wird nur, was nicht
 stimmt: fehlt, veraltet (nach einem OSERP-Update neu kopieren), PHP läuft
 nicht, Weiterleiter ohne `config.json`. Ohne Basisadresse im Kanal oder bei
@@ -497,13 +507,14 @@ abzulegen.
   dafür eine Einlagerung in der Lagerverwaltung.
 - **eBay:** Angebote und Bestellabruf, siehe `dev/shop-verkaufskanaele.md`;
   der Abruf läuft über `backend/cli/ebay-orders.php`.
-- **Shop-UI ändern:** `npm run build:shop-ui`, das Bundle mit committen; der
-  Läufer verteilt es beim nächsten Lauf. Der Build prüft das Bündel selbst;
-  nach dem Commit zeigt `npm --prefix shop-ui run check`, ob es unverändert
-  geblieben ist.
+- **Widgets ändern:** `npm run build:portal-ui` (oder `build:portal-ui`), die
+  Bündel unter `backend/templates-default/portal/standard/kit/assets/portal-ui/`
+  mit committen; der Läufer verteilt sie beim nächsten Lauf. Der Build prüft
+  die Bündel selbst; nach dem Commit zeigt `npm --prefix portal-ui run check`,
+  ob sie unverändert geblieben sind.
 - **Shop-UI sofort in die Webseite bringen:** Übersicht der Shop-Erweiterung,
   Karte „Veröffentlichung“, Knopf „Shop-Benutzerschnittstelle installieren“
-  (Recht `edit_shop_config`, Aktion `installShopUi`). Nach einer Rückfrage —
+  (Recht `edit_shop_config`, Aktion `installPortalUi`). Nach einer Rückfrage —
   sofort oder als Aufgabe für den nächsten Lauf — legt er den Auftrag
   „Shop-Benutzerschnittstelle aktualisieren“ (`sync_kit`, `param = install`)
   an; sofort heißt: der Läufer startet nur für diesen Auftrag. Das Paket geht
@@ -511,18 +522,18 @@ abzulegen.
   Paket schon aktuell war. Die Mounts der Hugo-Konfiguration (siehe „Eine
   Webseite einrichten“) prüft OpensourceERP nicht — fehlen sie, meldet Hugo
   beim Bau fehlende Shortcodes oder das fehlende Widget-Bündel.
-- **Widgets zeigen `lit$…$`, Klassennamen oder Quelltext als Text:** Das
+- **Widgets zeigen `lit$…$`, Klassennamen oder Quelltext als Text:** Ein
   Bündel ist beschädigt (früher durch `tools/fix-ws.sh`, siehe
-  `shop-ui/README.md`, „Warum `build` ein eigenes Skript ist“).
-  `npm --prefix shop-ui run check` meldet es; neu bauen und übertragen.
+  `portal-ui/README.md`, „Warum `build` ein eigenes Skript ist“).
+  `npm --prefix portal-ui run check` meldet es; neu bauen und übertragen.
 
 ## Wenn etwas klemmt
 
 | Zeichen | Ursache |
 | --- | --- |
-| Hugo: `template for shortcode "shop-…" not found` | Paket nicht übertragen oder Mount `oserp-shop/layouts` fehlt — „Shop-Benutzerschnittstelle installieren“, Hugo-Konfiguration prüfen |
-| Proxy antwortet 503 `SHOP_PROXY_NOT_CONFIGURED` | `oserp-shop/config.json` fehlt oder ist für den Webserver nicht lesbar |
-| 403 `SHOP_NOT_AUTHORIZED` | Der Schlüssel im Proxy passt nicht zu `shop_public_key` |
+| Hugo: `template for shortcode "shop-…" not found` | Paket nicht übertragen oder Mount `oserp-portal/layouts` fehlt — „Shop-Benutzerschnittstelle installieren“, Hugo-Konfiguration prüfen |
+| Proxy antwortet 503 `PORTAL_PROXY_NOT_CONFIGURED` | `oserp-portal/config.json` fehlt oder ist für den Webserver nicht lesbar |
+| 403 `PORTAL_NOT_AUTHORIZED` | Der Schlüssel im Proxy passt nicht zu `shop_public_key` |
 | Warenkorb bleibt leer | Der Aufruf kommt nicht von derselben Adresse — Proxy einrichten oder `shop_allowed_origins` setzen |
 | Seiten entstehen nicht | Ausgabe des Laufs lesen; „Inhaltsdateien von HugoCMS nicht angenommen“: eine Freigabe hat sich während des Laufs geändert — der nächste Lauf legt die Dateien an den neuen Ort |
 | Aufträge „ausgesetzt“ (gelbes Zeichen) | Shop-Schlüssel, Adresse oder Schlüssel von HugoCMS fehlen — Kanalkarte; oder HugoCMS ist nicht erreichbar, die Shop-Erweiterung dort ausgeschaltet oder eine Freigabe unbrauchbar — Ausgabe des Laufs, „Verbindung prüfen und Freigaben abrufen“ |

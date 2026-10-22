@@ -60,7 +60,8 @@
         "newArticle": "/article/new",
         "admin": "/system/administration",
         "systemSettings": "/system/settings",
-        "templateDesigner": "/system/template-designer"
+        "templateDesigner": "/system/template-designer",
+        "websites": "/system/websites"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "错误：未找到密码文件 api/config/api.passwd.php。请将文件 api/config/api.passwd.php.example 重命名为 api/config/api.passwd.php 并相应调整设置。",
@@ -99,7 +100,8 @@
         "about": "关于",
         "docs": "文档",
         "administration": "用户与公司",
-        "systemSettings": "系统设置"
+        "systemSettings": "系统设置",
+        "websites": "网站（客户门户）"
     },
     "DocsView": {
         "title": "文档",

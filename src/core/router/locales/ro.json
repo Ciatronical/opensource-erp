@@ -60,7 +60,8 @@
         "newArticle": "/articol/nou",
         "admin": "/sistem/administrare",
         "systemSettings": "/sistem/setari",
-        "templateDesigner": "/sistem/editor-sabloane"
+        "templateDesigner": "/sistem/editor-sabloane",
+        "websites": "/sistem/site-uri"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Eroare: Fisierul cu parola api/config/api.passwd.php nu a fost gasit. Va rugam redenumiti fisierul api/config/api.passwd.php.example in api/config/api.passwd.php si ajustati setarile corespunzator.",
@@ -99,7 +100,8 @@
         "about": "Despre",
         "docs": "Documentație",
         "administration": "Utilizatori și firme",
-        "systemSettings": "Setări de sistem"
+        "systemSettings": "Setări de sistem",
+        "websites": "Site-uri (portal clienți)"
     },
     "DocsView": {
         "title": "Documentație",

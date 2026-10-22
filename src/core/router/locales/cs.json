@@ -60,7 +60,8 @@
         "newArticle": "/artikl/novy",
         "admin": "/system/sprava",
         "systemSettings": "/system/nastaveni",
-        "templateDesigner": "/system/editor-sablon"
+        "templateDesigner": "/system/editor-sablon",
+        "websites": "/system/weby"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Chyba: Soubor s heslem api/config/api.passwd.php nebyl nalezen. Prosim prejmenujte soubor api/config/api.passwd.php.example na api/config/api.passwd.php a upravte nastaveni.",
@@ -99,7 +100,8 @@
         "about": "O aplikaci",
         "docs": "Dokumentace",
         "administration": "Uživatelé a firmy",
-        "systemSettings": "Nastavení systému"
+        "systemSettings": "Nastavení systému",
+        "websites": "Weby (zákaznický portál)"
     },
     "DocsView": {
         "title": "Dokumentace",

@@ -1,0 +1,101 @@
+{{- /*
+  Bindet das Widget-Bundle ein. Wird von jedem Widget-Shortcode aufgerufen —
+  das ist unschaedlich: ein ES-Modul wird pro URL genau einmal geladen und
+  ausgefuehrt, auch wenn das script-Tag mehrfach im Dokument steht.
+
+  Der Fingerprint im Dateinamen ist Pflicht, weil nginx .js-Dateien mit
+  "expires 1y; immutable" ausliefert. Ohne ihn wuerde eine neue Bundle-Version
+  bei wiederkehrenden Besuchern ein Jahr lang nicht ankommen.
+
+  Theming: das Preset bestimmt, welche CSS-Klassen die Widgets vergeben und
+  welches Stylesheet sie in ihren ShadowRoot adoptieren. Konfiguration in der
+  Site-Config, z.B.
+
+      "params": { "portalui": { "theme": "bootstrap5" } }
+      "params": { "portalui": { "theme": "pure" } }
+      "params": { "portalui": { "theme": "tailwind", "stylesheet": "/css/site.css" } }
+      "params": { "portalui": { "theme": "custom",   "stylesheet": "/css/portal-ui.css" } }
+
+  Ohne Angabe gilt "bootstrap5"; das Stylesheet wird dann automatisch aus dem
+  bereits geladenen <link> der Seite ermittelt.
+
+  Einzelne Rollen lassen sich pro Shop ueberschreiben — vor allem bei Tailwind
+  noetig, weil dort die Farben in den Klassen stecken:
+
+      "params": { "portalui": { "theme": "tailwind", "classes": {
+          "buttonSecondary": "inline-block rounded px-4 py-2 bg-teal-700 text-white"
+      }}}
+*/ -}}
+{{- $cfg := site.Params.portalui | default dict -}}
+{{- /*
+  Pfade der Shop-Seiten (portal-ui/src/core/paths.js): Ein Shop kann unterhalb
+  einer bestehenden Webseite liegen, etwa https://werkstatt.example/shop/.
+
+      "params": { "portalui": { "paths": { "base": "/shop/" } } }
+      "params": { "portalui": { "paths": { "base": "/shop/", "cart": "korb/", "login": "/anmelden/" } } }
+
+  base       Basispfad des Shops ab der Wurzel der Domain. Vorgabe: der Pfad
+             der baseURL — liegt die ganze Hugo-Seite unter /shop/, stimmt er
+             ohne Angabe.
+  api        Adresse des Weiterleiters. Vorgabe: <Pfad der baseURL>portal-api/ —
+             er liegt in static/ der Hugo-Seite, nicht unter base.
+  Seiten     cart, checkout, invoice, paymentcanceled, login, logout, register,
+             registered, account, profile, addresses, orders, payment,
+             categories, searchresults, contactthanks, privacy, home —
+             relativ zu base, oder mit / ab der Wurzel. Ohne Angabe die
+             Vorgaben der Widgets (warenkorb/, kasse/, rechnung/ …).
+  Ein Attribut am Shortcode (cart-url="…") geht allem vor.
+*/ -}}
+{{- $paths := $cfg.paths | default dict -}}
+{{- $site := (urls.Parse site.BaseURL).Path | default "/" -}}
+{{- if not (hasSuffix $site "/") }}{{ $site = printf "%s/" $site }}{{ end -}}
+{{- $base := printf "%v" ($paths.base | default $site) -}}
+{{- if not (hasPrefix $base "/") }}{{ $base = printf "%s%s" $site $base }}{{ end -}}
+{{- if not (hasSuffix $base "/") }}{{ $base = printf "%s/" $base }}{{ end -}}
+{{- $api := printf "%v" ($paths.api | default (printf "%sportal-api/" $site)) -}}
+{{- $pages := dict -}}
+{{- range $key, $value := $paths -}}
+  {{- if not (in (slice "base" "api") $key) -}}
+    {{- $page := printf "%v" $value -}}
+    {{- if not (hasPrefix $page "/") }}{{ $page = printf "%s%s" $base $page }}{{ end -}}
+    {{- $pages = merge $pages (dict $key $page) -}}
+  {{- end -}}
+{{- end -}}
+{{- /*
+  categories ohne Angabe: die Übersichtsseite der Shop-Taxonomie, wenn die
+  Seite eine nennt ("params": { "portalui": { "taxonomy": "shopkategorien" } }).
+  Ihre Adresse legt die Webseite über permalinks fest — so steht der Pfad
+  (etwa /shop/sortiment/) nur dort und nicht ein zweites Mal hier.
+*/ -}}
+{{- if and (not (isset $pages "categories")) $cfg.taxonomy -}}
+  {{- with site.GetPage (printf "/%s" $cfg.taxonomy) -}}
+    {{- $pages = merge $pages (dict "categories" .RelPermalink) -}}
+  {{- end -}}
+{{- end -}}
+{{- $pathsJson := jsonify (dict "base" $base "site" $site "api" $api "pages" $pages) -}}
+{{- $theme := $cfg.theme | default "bootstrap5" -}}
+{{- $sheet := $cfg.stylesheet | default "" -}}
+{{- $classes := $cfg.classes | default dict -}}
+{{- $allowUrl := $cfg.allowurltheme | default false -}}
+{{- /*
+  Bündel nach den Merkmalen der Webseite (Kundenportal, dev/kundenportal.md):
+  features.json schreibt OpensourceERP mit dem Paket — portal-widgets.js
+  immer, shop-widgets.js mit HugoShop, lxcars-widgets.js mit LxCars. Die
+  Einstiege teilen sich ein Stück (chunk-<hash>.js) und laden es relativ zu
+  sich; damit Hugo es ausliefert, wird es hier veröffentlicht. Ohne
+  features.json (Paket von vor dem Kundenportal) gilt nur der Kern.
+*/ -}}
+{{- $features := dict "portal" true -}}
+{{- with resources.Get "portal-ui/features.json" -}}{{- $features = . | transform.Unmarshal -}}{{- end -}}
+{{- range resources.Match "portal-ui/chunk-*.js" -}}{{- $veroeffentlicht := .RelPermalink -}}{{- end -}}
+{{- $bundles := slice "portal-widgets" -}}
+{{- if $features.shop }}{{ $bundles = $bundles | append "shop-widgets" }}{{ end -}}
+{{- if $features.lxcars }}{{ $bundles = $bundles | append "lxcars-widgets" }}{{ end -}}
+{{- range $i, $name := $bundles -}}
+{{- with resources.Get (printf "portal-ui/%s.js" $name) -}}
+{{- $js := . | fingerprint "sha256" -}}
+<script type="module"{{ if eq $i 0 }} data-portal-ui-theme="{{ $theme }}" data-portal-ui-paths="{{ $pathsJson }}" data-portal-ui-features="{{ jsonify $features }}"{{ with $sheet }} data-portal-ui-stylesheet="{{ . }}"{{ end }}{{ if $classes }} data-portal-ui-classes="{{ jsonify $classes }}"{{ end }}{{ if $allowUrl }} data-portal-ui-allow-url="true"{{ end }}{{ end }} src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}"></script>
+{{- else -}}
+{{- warnf "portal-ui: assets/portal-ui/%s.js nicht gefunden — ist der Mount oserp-portal/assets/portal-ui → assets/portal-ui gesetzt und hat OpensourceERP das Paket übertragen (Webseiten → Paket installieren)?" $name -}}
+{{- end -}}
+{{- end -}}

@@ -51,17 +51,9 @@ OserpConfig::init();
 require_once __DIR__.'/../backend/api/error.php';
 require_once __DIR__.'/../backend/api/logging.php';
 require_once __DIR__.'/../backend/api/database.php';
-require_once __DIR__.'/../backend/api/shop/lib/config.php';
-require_once __DIR__.'/../backend/api/shop/lib/payment.php';
-require_once __DIR__.'/../backend/api/shop/lib/publish.php';
-require_once __DIR__.'/../backend/api/shop/lib/categories.php';
-require_once __DIR__.'/../backend/api/shop/lib/hugocms.php';
-// Kleinanzeigen-Dienst: die Bilder der Anzeigen liegen im Datenverzeichnis
-require_once __DIR__.'/../backend/api/customer_vendor/filemanager.php';
-require_once __DIR__.'/../backend/api/shop/lib/channel_images.php';
-// Mails zum Lieferstatus (dev/shop-bestellstatus.md)
-require_once __DIR__.'/../backend/api/email/smtp.class.php';
-require_once __DIR__.'/../backend/api/shop/lib/mail.php';
+// Die ganze Fachschicht des Shops samt Kundenportal (Webseiten, Paket,
+// HugoCMS-Transport) und den Haken, über die der Shop am Portal hängt
+require_once __DIR__.'/../backend/api/shop/lib/portal_hooks.php';
 
 set_time_limit(0);
 

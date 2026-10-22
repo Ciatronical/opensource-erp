@@ -192,11 +192,13 @@ function shopSiteStateFile($db, int $kanal, string $endung): string {
  * @return string absoluter Pfad
  */
 function shopStagingDir($db, int $kanal): string {
-    $verzeichnis = shopSiteStateFile($db, $kanal, '-staging');
-    if (!is_dir($verzeichnis) && !@mkdir($verzeichnis, 0775, true) && !is_dir($verzeichnis)) {
-        throw new ApiError('SHOP_STAGING_UNAVAILABLE', 'Bereitstellungsverzeichnis lässt sich nicht anlegen: '.$verzeichnis);
+    // Seit dem Kundenportal gehört die Bereitstellung der Webseite
+    // (portalStagingDir); die bisherige je Kanal zieht beim ersten Zugriff um
+    $website = shopWebsiteOfChannel($db, $kanal);
+    if ($website <= 0) {
+        throw new ApiError('SHOP_WEBSITE_MISSING', 'Dem HugoShop ist keine Webseite zugeordnet (Verkaufskanäle → Webseite)');
     }
-    return realpath($verzeichnis) ?: $verzeichnis;
+    return portalStagingDir($db, $website, shopSiteStateFile($db, $kanal, '-staging'));
 }
 
 /**
@@ -219,15 +221,18 @@ function shopStagingDir($db, int $kanal): string {
  */
 function shopChannelPublishBlockers($db, int $kanal): array {
     $gruende = [];
-    if ('' === shopChannelValue($db, $kanal, 'public_key')) {
-        $gruende[] = 'Shop-Schlüssel fehlt';
+    if (shopWebsiteOfChannel($db, $kanal) <= 0) {
+        return ['Dem HugoShop ist keine Webseite zugeordnet'];
     }
-    $adresse = shopHugoCmsUrl(shopChannelValue($db, $kanal, 'hugocms_url'));
+    if ('' === shopSiteValue($db, $kanal, 'public_key')) {
+        $gruende[] = 'Schlüssel der Webseite fehlt';
+    }
+    $adresse = shopHugoCmsUrl(shopSiteValue($db, $kanal, 'hugocms_url'));
     if ('' !== $adresse['fehler']) {
         $gruende[] = $adresse['fehler'];
     }
-    if ('' === shopChannelValue($db, $kanal, 'hugocms_key')) {
-        $gruende[] = 'HugoCMS-Schlüssel fehlt';
+    if ('' === shopSiteValue($db, $kanal, 'hugocms_key')) {
+        $gruende[] = 'HugoCMS-Schlüssel der Webseite fehlt';
     }
     return $gruende;
 }
@@ -487,7 +492,7 @@ function shopPageData($db, int $kanal, int $partsId): array {
         'betrieb' => [
             'firma'            => (string)($zeile['firma'] ?? ''),
             'currency'         => shopConfigValue($db, 'shop_standard_currency', 'EUR'),
-            'base_url'         => shopChannelValue($db, $kanal, 'base_url'),
+            'base_url'         => shopSiteValue($db, $kanal, 'base_url'),
             'products_link'    => shopChannelValue($db, $kanal, 'products_link'),
             'thumbnails_link'  => shopChannelValue($db, $kanal, 'thumbnails_link'),
             'free_shipping_from' => (float)($zeile['free_shipping_from'] ?? 0),
@@ -623,7 +628,7 @@ function shopPageFileName(array $seite): string {
  * @throws ApiError SHOP_TEMPLATE_MISSING
  */
 function shopRenderPage($db, int $kanal, array $seite, string $ausgabe = 'product'): string {
-    $verzeichnis = shopTemplateDir(shopChannelValue($db, $kanal, 'template_set', 'standard'));
+    $verzeichnis = shopTemplateDir(shopSiteValue($db, $kanal, 'template_set', 'standard'));
     $name = basename($ausgabe).'.md.php';
 
     $vorlage = $verzeichnis.'/'.$name;
@@ -717,155 +722,57 @@ function shopPageAsDraft(string $inhalt): string {
 
 // ── Webseiten-Paket ──
 //
-// Der Vorlagensatz bringt unter kit/ mit, was die Webseite ausser den
-// Produktseiten braucht: Hugo-Layouts, Einstiegspunkte im Docroot (Proxy,
-// 404-Seite) und das Widget-Bundle. Der Laeufer spiegelt es nach oserp-shop/
-// der Bereitstellung; die Übertragung bringt es in die Webseite. Die Webseite
-// haengt die Unterordner NACH ihren eigenen ein — so behalten ihre
-// Uebersteuerungen Vorrang. Direkt nach layouts/ kopiert, ueberschriebe das
-// Paket die Dateien der Instanz.
+// Das Paket gehört seit dem Kundenportal dem Kern (backend/api/portal/lib/
+// kit.php): Grundlage ist das Paket des Portals (Partials, Shortcodes der
+// Kern-Widgets, Weiterleiter, 404-Seite, Bündel), darüber legt der Shop die
+// Shortcodes und Partials seiner Widgets (Haken publish_files in
+// lib/portal_hooks.php) — aus dem mitgelieferten Satz standard und dem
+// gewählten Satz der Webseite. Der Läufer spiegelt es nach oserp-portal/ der
+// Bereitstellung; die Übertragung bringt es in die Webseite. Die Webseite
+// hängt die Unterordner NACH ihren eigenen ein — so behalten ihre
+// Übersteuerungen Vorrang.
 //
-// Der Name ist fest: der Proxy findet seine Konfiguration darueber.
+// Der Name ist fest: der Proxy findet seine Konfiguration darüber.
 
 /** Verzeichnis des Pakets in der Bereitstellung eines HugoShops */
 function shopKitDir($db, int $kanal, bool $anlegen = false): string {
-    return shopPathUnder(shopStagingDir($db, $kanal), 'oserp-shop', $anlegen);
+    return shopPathUnder(shopStagingDir($db, $kanal), 'oserp-portal', $anlegen);
 }
 
 /**
- * Inhalt von oserp-shop/config.json
+ * Dateien des Pakets eines HugoShops, relativer Pfad => Quelle
  *
- * Adresse und Schlüssel für Weiterleiter und 404-Seite. Die Datei liegt
- * außerhalb des Docroots, und Hugo hängt sie nicht ein.
- *
- * JSON statt PHP (dev/shop-hugocms-trennung.md, E9): Das Paket geht über die
- * HugoCMS-API, und HugoCMS schreibt bewusst
- * kein PHP. Eine Konfiguration, die sich mit jedem neuen Shop-Schlüssel
- * ändert, muss aber übertragen werden können — anders als die beiden
- * PHP-Einstiegspunkte, die man einmal von Hand ablegt.
- *
- * Der Schlüssel ist der des HugoShops: über ihn erkennt der öffentliche
- * Zugang Mandant und Kanal (dev/shop-mehrere-kanaele.md).
+ * Kern und Shop zusammen (portalKitFiles mit dem Vorlagensatz der Webseite).
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
- * @return string
- */
-function shopKitConfig($db, int $kanal): string {
-    $werte = [
-        '_hinweis' => 'Von OpensourceERP geschrieben (tools/shop-publish.php) — nicht von Hand ändern.',
-        'url'      => shopChannelValue($db, $kanal, 'backend_url'),
-        'key'      => shopChannelValue($db, $kanal, 'public_key'),
-    ];
-    return json_encode($werte, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n";
-}
-
-/**
- * Dateien des Pakets, relativer Pfad => Quelle
- *
- * Grundlage ist das Paket des mitgelieferten Satzes standard; das Paket des
- * gewählten Satzes legt sich dateiweise darüber. Ein eigener Satz bringt so
- * nur mit, was er ändert, und bekommt das Widget-Bundle nach jedem Neubau
- * ohne eigene Kopie. Entfernen kann er eine Datei der Grundlage nicht, nur
- * ersetzen.
- *
- * @param string $satz Name des gewählten Satzes
  * @return array
- * @throws ApiError SHOP_TEMPLATE_SET_INVALID, SHOP_TEMPLATE_SET_MISSING
+ * @throws ApiError PORTAL_TEMPLATE_SET_INVALID, SHOP_WEBSITE_MISSING
  */
-function shopKitFiles(string $satz): array {
-    $schichten = array_unique([shopTemplateMasterDir().'/standard/kit', shopTemplateDir($satz).'/kit']);
-
-    $dateien = [];
-    foreach ($schichten as $quelle) {
-        if (!is_dir($quelle)) {
-            continue;
-        }
-        $eintraege = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($quelle, FilesystemIterator::SKIP_DOTS)
-        );
-        foreach ($eintraege as $datei) {
-            if ($datei->isFile()) {
-                $dateien[substr($datei->getPathname(), strlen($quelle) + 1)] = $datei->getPathname();
-            }
-        }
+function shopKitFiles($db, int $kanal): array {
+    $website = shopWebsiteOfChannel($db, $kanal);
+    if ($website <= 0) {
+        throw new ApiError('SHOP_WEBSITE_MISSING', 'Dem HugoShop ist keine Webseite zugeordnet (Verkaufskanäle → Webseite)');
     }
-
-    ksort($dateien);
-    return $dateien;
+    return portalKitFiles($db, $website);
 }
 
 /**
- * Spiegelt das Paket des Vorlagensatzes in die Bereitstellung
- *
- * Kopiert nur, was sich geaendert hat, und entfernt, was das Paket nicht mehr
- * enthaelt — beides nur innerhalb von oserp-shop/. Die config.json bleibt dabei
- * stehen und wird nur neu geschrieben, wenn sich ihr Inhalt aendert. Woraus
- * das Paket besteht, sagt shopKitFiles().
+ * Spiegelt das Paket in die Bereitstellung — Kern (portalSyncKit)
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
  * @return array kopiert, entfernt, config (true wenn neu geschrieben)
- * @throws ApiError SHOP_WRITE_FAILED
+ * @throws ApiError PORTAL_WRITE_FAILED, SHOP_WEBSITE_MISSING
  */
 function shopSyncKit($db, int $kanal): array {
-    $bilanz = ['kopiert' => 0, 'entfernt' => 0, 'config' => false];
-
-    $imPaket = shopKitFiles(shopChannelValue($db, $kanal, 'template_set', 'standard'));
-    if (!$imPaket) {
-        return $bilanz;
+    $website = shopWebsiteOfChannel($db, $kanal);
+    if ($website <= 0) {
+        throw new ApiError('SHOP_WEBSITE_MISSING', 'Dem HugoShop ist keine Webseite zugeordnet (Verkaufskanäle → Webseite)');
     }
-    $ziel = shopKitDir($db, $kanal, true);
-
-    foreach ($imPaket as $relativ => $quelle) {
-        $zielDatei = $ziel.'/'.$relativ;
-        if (is_file($zielDatei) && md5_file($zielDatei) === md5_file($quelle)) {
-            continue;
-        }
-        if (!is_dir(dirname($zielDatei))) {
-            mkdir(dirname($zielDatei), 0775, true);
-        }
-        if (!copy($quelle, $zielDatei)) {
-            throw new ApiError('SHOP_WRITE_FAILED', 'Datei nicht kopierbar: '.$zielDatei);
-        }
-        $bilanz['kopiert']++;
-    }
-
-    // Kinder vor Eltern, damit leer gewordene Verzeichnisse mit verschwinden.
-    // Verknuepfungen werden als solche geloescht, nie ihr Ziel.
-    $eintraege = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($ziel, FilesystemIterator::SKIP_DOTS),
-        RecursiveIteratorIterator::CHILD_FIRST
-    );
-    foreach ($eintraege as $eintrag) {
-        $relativ = substr($eintrag->getPathname(), strlen($ziel) + 1);
-        // Die Konfiguration schreibt der Abgleich unten selbst. Eine alte
-        // config.php (vor E9) steht nicht im Paket und fällt hier weg.
-        if ('config.json' === $relativ) {
-            continue;
-        }
-        if ($eintrag->isDir() && !$eintrag->isLink()) {
-            if (!(new FilesystemIterator($eintrag->getPathname()))->valid()) {
-                rmdir($eintrag->getPathname());
-            }
-            continue;
-        }
-        if (!isset($imPaket[$relativ])) {
-            unlink($eintrag->getPathname());
-            $bilanz['entfernt']++;
-        }
-    }
-
-    $inhalt = shopKitConfig($db, $kanal);
-    $konfiguration = $ziel.'/config.json';
-    if (!is_file($konfiguration) || file_get_contents($konfiguration) !== $inhalt) {
-        if (false === file_put_contents($konfiguration, $inhalt, LOCK_EX)) {
-            throw new ApiError('SHOP_WRITE_FAILED', 'Datei nicht schreibbar: '.$konfiguration);
-        }
-        $bilanz['config'] = true;
-    }
-
-    return $bilanz;
+    // Die Bereitstellung des Kanals zieht vorher auf die Webseite um
+    shopStagingDir($db, $kanal);
+    return portalSyncKit($db, $website, 'oserp-portal');
 }
 
 /** Zahl der Aenderungen eines Abgleichs */
@@ -1852,7 +1759,7 @@ function shopSiteJobResults($db, array $ids, array $fehler, bool $gebaut): void 
  */
 function shopPublishSite($db, int $kanal, array $zahlen, bool $bauen, callable $sagen, callable $fehler, array &$bilanz): void {
     // Das Paket bei jedem Lauf abgleichen, nicht nur nach neuen Seiten:
-    // beim ersten Lauf entsteht oserp-shop/ überhaupt erst, und nach einem
+    // beim ersten Lauf entsteht oserp-portal/ überhaupt erst, und nach einem
     // Update kommt ein neues Bundle an, ohne dass jemand veröffentlicht.
     try {
         $abgleich = shopSyncKit($db, $kanal);

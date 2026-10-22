@@ -48,9 +48,9 @@ function getShopStatus($data) {
                         'carts', (SELECT COUNT(*) FROM carts_hugoshop k WHERE k.channel_id = c.id),
                         -- Kundenanmeldungen: Sitzungen mit Kundenkonto. Eine Sitzung
                         -- entsteht für jeden Besucher; Gäste haben kein Konto
-                        'logins', (SELECT COUNT(*) FROM context_hugoshop x
+                        'logins', (SELECT COUNT(*) FROM portal_context_oserp x
                                      JOIN customer_ext ce ON ce.customer_id = x.customer_id
-                                    WHERE x.channel_id = c.id AND NOT ce.hugoshop_guest))
+                                    WHERE x.website_id = c.website_id AND NOT ce.portal_guest))
                         -- Reihenfolge wie in der Ansicht „Verkaufskanäle“: umgekehrt
                         ORDER BY c.sortkey DESC NULLS FIRST, c.id DESC), '[]')
                FROM sales_channel_shop c WHERE c.active) AS kanaele,
@@ -110,11 +110,18 @@ function getShopStatus($data) {
     foreach ($hugoshops as $kanal) {
         $id = (int)$kanal['id'];
         $leer = fn(string $key) => '' === shopChannelValue($db, $id, $key);
+        // Zugang, Adresse und HugoCMS stehen seit dem Kundenportal an der
+        // Webseite des Kanals (website_oserp)
+        $leerSeite = fn(string $key) => '' === shopSiteValue($db, $id, $key);
         $fehlt = $mandantFehlt;
         $hin = 0 === (int)$kanal['parts'] ? ['no_parts_offered'] : [];
         $probleme = [];
 
-        if ($leer('public_key')) {
+        if (shopWebsiteOfChannel($db, $id) <= 0) {
+            $blockierend[] = 'shop_website';
+            $fehlt[] = 'shop_website';
+        }
+        if ($leerSeite('public_key')) {
             $blockierend[] = 'shop_public_key';
             $fehlt[] = 'shop_public_key';
         }
@@ -124,7 +131,7 @@ function getShopStatus($data) {
         if ($leer($paypal.'client_id') || $leer($paypal.'secret')) {
             $hin[] = 'shop_'.$paypal.'client_id';
         }
-        if ($leer('base_url')) {
+        if ($leerSeite('base_url')) {
             $hin[] = 'shop_base_url';
         }
         // Testumgebung ist kein fehlender Punkt, sondern ein Zustand: eigene
@@ -136,13 +143,13 @@ function getShopStatus($data) {
         // stimmt, prüft der Knopf in der Kanalkarte; ein Aufruf bei jedem
         // Öffnen der Übersicht wäre zu teuer. Der Grund einer ungültigen
         // Adresse steht bei den Hinweisen des Kanals.
-        $adresse = shopHugoCmsUrl(shopChannelValue($db, $id, 'hugocms_url'));
+        $adresse = shopHugoCmsUrl(shopSiteValue($db, $id, 'hugocms_url'));
         if ('' !== $adresse['fehler']) {
             $blockierend[] = 'shop_hugocms_url';
             $fehlt[] = 'shop_hugocms_url';
             $probleme[] = $adresse['fehler'];
         }
-        if ($leer('hugocms_key')) {
+        if ($leerSeite('hugocms_key')) {
             $blockierend[] = 'shop_hugocms_key';
             $fehlt[] = 'shop_hugocms_key';
         }
@@ -277,7 +284,7 @@ function getShopOrders($data) {
                 TRUNC(ar.amount, 2) AS amount, TRUNC(ar.paid, 2) AS paid,
                 (SELECT name FROM currencies WHERE id = ar.currency_id) AS currency,
                 c.id AS customer_id, c.name AS customer, c.customernumber,
-                ce.hugoshop_guest AS guest,
+                ce.portal_guest AS guest,
                 b.channel_id, k.name AS channel_name, k.type AS channel_type,
                 b.ebay_order_id,
                 al.uuid AS ar_link, al.paypal, al.paypal_order_id,
@@ -1712,6 +1719,38 @@ function shopBackendUrlSuggestion(): string {
 }
 
 /**
+ * Geheimnisse der Verkaufskanäle (sales_channel_secret_shop) — nur für Systemadministratoren
+ *
+ * Eigener Aufruf neben getShopChannels, damit die Kanalkarte die Werte
+ * (PayPal-Secrets, eBay-Zugang, Kleinanzeigen-Kennwort, Feed-Schlüssel) zum
+ * Nachsehen in die Felder schreiben kann. Wer kein Systemadministrator ist,
+ * bekommt NO_PERMISSION und sieht weiterhin nur, ob etwas hinterlegt ist.
+ *
+ * @param int $data['channel_id'] Nur dieser Kanal (optional, 0 = alle)
+ * @return void secrets (Kanal => (Schlüssel => Wert))
+ * @testdata {"channel_id": 0}
+ */
+function getShopChannelSecrets($data) {
+    permit(['edit_shop_config'], false);
+    requireSystemAdmin();
+    $db = DbhCompany::begin();
+
+    $zeile = $db->getOne(
+        "SELECT COALESCE(json_object_agg(x.channel_id, x.werte), '{}') AS secrets
+           FROM (SELECT s.channel_id, json_object_agg(s.key, s.value) AS werte
+                   FROM sales_channel_secret_shop s
+                  WHERE s.value <> ''
+                    AND (CAST(:alle AS integer) = 0 OR s.channel_id = :channel_id)
+                  GROUP BY s.channel_id) x",
+        [':alle' => (int)($data['channel_id'] ?? 0), ':channel_id' => (int)($data['channel_id'] ?? 0)]
+    );
+
+    resultInfo(true, '', [
+        'secrets' => json_decode((string)($zeile['secrets'] ?? '{}'), true) ?: (object)[],
+    ]);
+}
+
+/**
  * Verkaufskanäle mit ihren Vorgaben für die Firmenkonfiguration
  *
  * Alle eingerichteten Kanäle, auch abgeschaltete, mit der Zahl der Artikel,
@@ -1728,11 +1767,21 @@ function getShopChannels($data) {
 
     resultInfo(true, '', [
         'backend_url_suggestion' => shopBackendUrlSuggestion(),
+        // Webseiten des Kundenportals (website_oserp) — ein HugoShop läuft auf
+        // genau einer; die Kanalkarte wählt sie aus (dev/kundenportal.md)
+        'websites' => $db->getAll(
+            "SELECT w.id, w.name, w.active, w.settings ->> 'base_url' AS base_url,
+                    (SELECT c.id FROM sales_channel_shop c
+                      WHERE c.website_id = w.id AND c.type = 'hugoshop' LIMIT 1) AS channel_id
+               FROM website_oserp w
+              ORDER BY w.sortkey NULLS LAST, w.id"
+        ),
         'channels' => $db->getAll(
             "SELECT c.id AS channel_id, c.type, c.name, c.active, c.sortkey, c.auto_add_parts,
-                    c.markup_type, c.markup_value, c.round_99, c.free_shipping_from,
+                    c.markup_type, c.markup_value, c.round_99, c.free_shipping_from, c.website_id,
                     COALESCE(c.settings, '{}'::jsonb) AS settings,
-                    -- Geheimnisse: nur ob hinterlegt, nie der Wert
+                    -- Geheimnisse: nur ob hinterlegt; die Werte holt
+                    -- getShopChannelSecrets für Systemadministratoren
                     (SELECT COALESCE(json_object_agg(s.key, true), '{}')
                        FROM sales_channel_secret_shop s
                       WHERE s.channel_id = c.id AND s.value <> '') AS secrets_set,
@@ -1799,6 +1848,8 @@ function getShopChannels($data) {
  *              wird (W11); fehlt = unverändert
  * @param string $data['name'] Name des Kanals, eindeutig; fehlt = unverändert
  * @param bool $data['auto_add_parts'] neue Shop-Artikel automatisch aufnehmen (M3); fehlt = unverändert
+ * @param int|null $data['website_id'] HugoShop: Webseite des Kundenportals, auf der er läuft
+ *             (website_oserp); 0 oder leer = keine; fehlt = unverändert
  * @return void
  * @testdata {"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "round_99": true, "free_shipping_from": 150, "name": "HugoShop"}
  */
@@ -1847,6 +1898,9 @@ function saveShopChannel($data) {
         return;
     }
     $aufnahmeSetzen = array_key_exists('auto_add_parts', $data);
+    // Webseite des Kundenportals: nur, wenn mitgeschickt; 0 = keine
+    $webseiteSetzen = array_key_exists('website_id', $data);
+    $webseite = (int)($data['website_id'] ?? 0);
 
     // vorher liest den Stand vor der Änderung: daraus ergibt sich, ob sich
     // der Preis der HugoShop-Seiten ändert.
@@ -1885,6 +1939,8 @@ function saveShopChannel($data) {
                         name         = CASE WHEN :name_setzen = 1 THEN CAST(:name AS text) ELSE name END,
                         auto_add_parts = CASE WHEN :aufnahme_setzen = 1 THEN CAST(:auto_add_parts AS boolean)
                                               ELSE auto_add_parts END,
+                        website_id   = CASE WHEN :webseite_setzen = 1 THEN CAST(NULLIF(:website_id, 0) AS integer)
+                                            ELSE website_id END,
                         mtime        = now()
                   WHERE id = :channel_id
                  RETURNING id, type, active, markup_type, markup_value, round_99,
@@ -1919,13 +1975,25 @@ function saveShopChannel($data) {
                 ':name'               => $name,
                 ':aufnahme_setzen'    => $aufnahmeSetzen ? 1 : 0,
                 ':auto_add_parts'     => !empty($data['auto_add_parts']) ? 'true' : 'false',
+                ':webseite_setzen'    => $webseiteSetzen ? 1 : 0,
+                ':website_id'         => $webseite,
             ]
         );
     } catch (PDOException $e) {
-        // Der Name ist eindeutig (sales_channel_shop_name_key)
         if ('23505' === $e->getCode()) {
+            // Eine Webseite trägt höchstens einen HugoShop (sales_channel_shop_website_hugoshop)
+            if (str_contains($e->getMessage(), 'website')) {
+                // Text in der Oberfläche (ShopView.errors.CHANNEL_WEBSITE_TAKEN)
+                resultInfo(false, 'CHANNEL_WEBSITE_TAKEN', null, null);
+                return;
+            }
+            // Der Name ist eindeutig (sales_channel_shop_name_key) —
             // Text in der Oberfläche (ShopView.errors.CHANNEL_NAME_TAKEN)
             resultInfo(false, 'CHANNEL_NAME_TAKEN', null, null);
+            return;
+        }
+        if ('23503' === $e->getCode()) {
+            resultInfo(false, 'WEBSITE_NOT_FOUND', null, 'Diese Webseite gibt es nicht');
             return;
         }
         throw $e;
@@ -2184,8 +2252,11 @@ function deleteShopChannel($data) {
  */
 function getShopTemplateSets($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+    portalExtensionsLoad($db);
 
-    resultInfo(true, '', ['sets' => shopTemplateSets()]);
+    // Sätze von Kern und Erweiterungen unter einem Namen (portalTemplateSets)
+    resultInfo(true, '', ['sets' => portalTemplateSets($db)]);
 }
 
 /**
@@ -2478,7 +2549,7 @@ function retryShopPublishJobs($data) {
  *
  * Übernimmt aus dem Panel, was sonst tools/shop-publish.php im Cron erledigt:
  * das Paket des Vorlagensatzes (Widget-Bündel, Shortcodes, Einstiegspunkte,
- * config.json) nach oserp-shop/ der Bereitstellung spiegeln, an HugoCMS
+ * config.json) nach oserp-portal/ der Bereitstellung spiegeln, an HugoCMS
  * übertragen und die Webseite dort bauen lassen. Gebaut wird auch, wenn das
  * Paket schon aktuell war (SHOP_KIT_INSTALL).
  *
@@ -2494,7 +2565,7 @@ function retryShopPublishJobs($data) {
  * @return void job_id, job_ids, started, running, queued
  * @testdata {"start": false}
  */
-function installShopUi($data) {
+function installPortalUi($data) {
     permit(['edit_shop_config'], false);
     $db = DbhCompany::begin();
 
@@ -2605,8 +2676,8 @@ function testShopHugoCms($data) {
  *  2. direkt — Aufruf der Adresse von diesem Server mit dem Shop-Schlüssel
  *     des Kanals (shopPing): antwortet der Shop-Zugang von OpensourceERP, und
  *     gehört der Schlüssel zu diesem Kanal?
- *  3. über die Webseite — <Basisadresse>/shop-api/, also Weiterleiter,
- *     oserp-shop/config.json und Shop-Zugang zusammen, wie der Browser
+ *  3. über die Webseite — <Basisadresse>/portal-api/, also Weiterleiter,
+ *     oserp-portal/config.json und Shop-Zugang zusammen, wie der Browser
  *
  * Adressen und Schlüssel dürfen aus dem Formular kommen (noch nicht
  * gespeichert); leer heißt: der gespeicherte Wert gilt. Schritt 3 prüft, was
@@ -2627,13 +2698,14 @@ function testShopBackendUrl($data) {
     $db = DbhCompany::begin();
 
     $kanal = shopHugoshopOfRequest($db, $data);
+    // Adressen und Schlüssel stehen an der Webseite des Kanals
     $wert = fn(string $feld) => '' !== trim((string)($data[$feld] ?? ''))
-        ? trim((string)$data[$feld]) : trim(shopChannelValue($db, $kanal, $feld));
+        ? trim((string)$data[$feld]) : trim(shopSiteValue($db, $kanal, $feld));
     $adresse = $wert('backend_url');
     $basis = rtrim($wert('base_url'), '/');
     $hugocms = rtrim($wert('hugocms_url'), '/');
     $schluessel = '' !== trim((string)($data['key'] ?? '')) ? trim((string)$data['key'])
-        : shopChannelValue($db, $kanal, 'public_key');
+        : shopSiteValue($db, $kanal, 'public_key');
 
     $schritte = [];
     $melden = function (string $schritt, string $art, string $code, array $params = []) use (&$schritte) {
@@ -2673,7 +2745,7 @@ function testShopBackendUrl($data) {
         $melden('direkt', 'error', 'NO_KEY');
     } else {
         $bewerten('direkt', shopShopApiClassify(
-            shopWebsiteProbe(rtrim($adresse, '/').'/', ['action' => 'shopPing'], ['X-Shop-Key: '.$schluessel]),
+            shopWebsiteProbe(rtrim($adresse, '/').'/', ['action' => 'shopPing'], ['X-Portal-Key: '.$schluessel]),
             $kanal
         ));
     }
@@ -2683,7 +2755,7 @@ function testShopBackendUrl($data) {
         $melden('webseite', 'info', 'NO_BASE');
     } else {
         $bewerten('webseite', shopShopApiClassify(
-            shopWebsiteProbe($basis.'/shop-api/', ['action' => 'shopPing']),
+            shopWebsiteProbe($basis.'/portal-api/', ['action' => 'shopPing']),
             $kanal
         ));
     }

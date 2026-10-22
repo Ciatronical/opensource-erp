@@ -337,6 +337,39 @@
                                 </v-tooltip>
                             </template>
                         </v-text-field>
+
+                        <!-- Schaltfläche mit Link (Meta: URL-Button): Beschriftung, Adresse
+                             mit {{1}} für den veränderlichen Teil, Beispiel für Meta -->
+                        <div class="text-subtitle-2 mt-4 mb-2">{{ t('crm_fields.whatsappTpl.buttons') }}</div>
+                        <v-text-field
+                            :model-value="urlButton.text"
+                            :label="t('crm_fields.whatsappTpl.buttonText')"
+                            variant="outlined"
+                            density="compact"
+                            maxlength="25"
+                            counter
+                            class="mb-3"
+                            @update:model-value="wert => buttonFeld('text', wert)"
+                        />
+                        <v-text-field
+                            :model-value="urlButton.url"
+                            :label="t('crm_fields.whatsappTpl.buttonUrl')"
+                            :hint="t('crm_fields.whatsappTpl.buttonUrlHint')"
+                            persistent-hint
+                            variant="outlined"
+                            density="compact"
+                            class="mb-3"
+                            @update:model-value="wert => buttonFeld('url', wert)"
+                        />
+                        <v-text-field
+                            v-if="String(urlButton.url || '').includes('{{1}}')"
+                            :model-value="urlButton.example"
+                            :label="t('crm_fields.whatsappTpl.buttonExample')"
+                            variant="outlined"
+                            density="compact"
+                            class="mb-3"
+                            @update:model-value="wert => buttonFeld('example', wert)"
+                        />
                     </v-col>
 
                     <!-- Right: Live Preview -->
@@ -478,8 +511,29 @@ const emptyTemplate = {
     body_text: '',
     footer_text: '',
     status: 'draft',
-    example_values: { body: [], header: [] }
+    example_values: { body: [], header: [] },
+    // Schaltfläche mit Link (Meta: BUTTONS/URL) — höchstens eine, mit {{1}}
+    // am Ende der Adresse für den veränderlichen Teil
+    buttons: []
 };
+
+/** Liste der Schaltflächen aus der Datenbank (jsonb) oder leer */
+function alsButtons(wert) {
+    if (Array.isArray(wert)) return wert;
+    try { const liste = JSON.parse(wert || '[]'); return Array.isArray(liste) ? liste : []; } catch { return []; }
+}
+
+/** Die eine Link-Schaltfläche der Vorlage — angelegt beim ersten Eintippen */
+const urlButton = computed({
+    get: () => (editingTemplate.value.buttons || []).find(b => (b.type || 'URL') === 'URL') || { type: 'URL', text: '', url: '', example: '' },
+    set: (wert) => {
+        const andere = (editingTemplate.value.buttons || []).filter(b => (b.type || 'URL') !== 'URL');
+        editingTemplate.value.buttons = wert.text || wert.url ? [...andere, { ...wert, type: 'URL' }] : andere;
+    }
+});
+function buttonFeld(feld, wert) {
+    urlButton.value = { ...urlButton.value, [feld]: wert };
+}
 
 const editingTemplate = ref({ ...emptyTemplate });
 
@@ -506,7 +560,9 @@ const templateTypeOptions = computed(() => [
     { title: t('crm_fields.whatsappTpl.type_hu'), value: 'hu' },
     { title: t('crm_fields.whatsappTpl.type_reminder'), value: 'reminder' },
     { title: t('crm_fields.whatsappTpl.type_appointment_confirm'), value: 'appointment_confirm' },
-    { title: t('crm_fields.whatsappTpl.type_address'), value: 'address' }
+    { title: t('crm_fields.whatsappTpl.type_address'), value: 'address' },
+    // Kundenportal: Link zur Einrichtung des Kundenkontos (dev/shop-konto-freischaltung.md)
+    { title: t('crm_fields.whatsappTpl.type_portal_activation'), value: 'portal_activation' }
 ]);
 
 const headerTypeOptions = [
@@ -621,7 +677,7 @@ function insertPlaceholder(field, placeholder) {
 
 // Edit Operations
 function openCreate() {
-    editingTemplate.value = { ...emptyTemplate, example_values: { body: [], header: [] } };
+    editingTemplate.value = { ...emptyTemplate, example_values: { body: [], header: [] }, buttons: [] };
     editing.value = true;
 }
 
@@ -631,7 +687,8 @@ function openEdit(item) {
         : (item.example_values || {});
     editingTemplate.value = {
         ...JSON.parse(JSON.stringify(item)),
-        example_values: { body: ex.body || [], header: ex.header || [] }
+        example_values: { body: ex.body || [], header: ex.header || [] },
+        buttons: alsButtons(item.buttons)
     };
     editing.value = true;
 }

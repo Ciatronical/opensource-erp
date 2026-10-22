@@ -32,7 +32,8 @@
                 "channel_round_99_net": "Rotunjirea la ,99 este activată, dar prețurile de vânzare sunt salvate net. Cu prețuri de vânzare brute, coșul și factura coincid întotdeauna la ban."
             },
             "points": {
-                "no_parts_offered": "Niciun articol oferit"
+                "no_parts_offered": "Niciun articol oferit",
+                "shop_website": "Site-ul portalului clienți atribuit"
             },
             "paypalSandbox": "Canalul de vânzare „{name}”: PayPal rulează în mediul de test — plățile reale nu sunt încă posibile."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Salvat. Paginile de produs vor fi rescrise cu noile prețuri.",
             "saveError": "Setările canalului nu au putut fi salvate.",
             "loadError": "Canalele de vânzare nu au putut fi încărcate.",
+            "secretsLoadError": "Cheile canalelor de vânzare nu au putut fi încărcate.",
             "name": "Nume",
             "nameRequired": "Canalul are nevoie de un nume.",
             "autoAddParts": "Adaugă automat articolele noi ale magazinului",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} factură | {anzahl} facturi",
             "notDeletableWithdrawals": "{anzahl} retragere | {anzahl} retrageri",
             "notDeletableEbayOrders": "{anzahl} comandă eBay | {anzahl} comenzi eBay",
-            "notDeletableJobsHint": "Următoarea rulare finalizează sarcinile deschise („Rulează deschise” în prezentarea magazinului). Cu documente, canalul rămâne dezactivat."
+            "notDeletableJobsHint": "Următoarea rulare finalizează sarcinile deschise („Rulează deschise” în prezentarea magazinului). Cu documente, canalul rămâne dezactivat.",
+            "website": "Site",
+            "websiteHint": "Site-ul portalului clienți pe care rulează acest HugoShop – accesul, adresa și HugoCMS se setează acolo (Sistem → Site-uri).",
+            "websiteNone": "– fără site –",
+            "websitesOpen": "Gestionează site-urile",
+            "hugocmsViaWebsite": "Adresa și cheia HugoCMS se setează la site-ul canalului; aici doar se testează conexiunea și se citesc permisiunile."
         },
         "ebayCondition": {
             "NEW": "Nou",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "Acest nume există deja.",
             "ASSORTMENT_NAME_INVALID": "Din acest nume nu se poate forma o adresă – folosiți litere sau cifre.",
             "ASSORTMENT_NOT_FOUND": "Intrarea nu mai există. Reîncărcați vizualizarea.",
-            "ASSORTMENT_CATEGORY_IN_USE": "Categoria este încă atribuită unor articole."
+            "ASSORTMENT_CATEGORY_IN_USE": "Categoria este încă atribuită unor articole.",
+            "CHANNEL_WEBSITE_TAKEN": "Pe acest site rulează deja alt HugoShop.",
+            "WEBSITE_NOT_FOUND": "Acest site nu există.",
+            "SHOP_WEBSITE_MISSING": "HugoShop nu are un site atribuit (canale de vânzare → site).",
+            "SHOP_NOT_CONFIGURED": "Niciun HugoShop nu aparține acestui site."
         },
         "orderStatus": {
             "open": "Deschisă",

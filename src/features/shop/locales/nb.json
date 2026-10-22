@@ -32,7 +32,8 @@
                 "channel_round_99_net": "Avrunding til ,99 er slått på, men salgsprisene er lagret netto. Med bruttosalgspriser stemmer handlekurv og faktura alltid på øret."
             },
             "points": {
-                "no_parts_offered": "Ingen varer tilbys"
+                "no_parts_offered": "Ingen varer tilbys",
+                "shop_website": "Kundeportal-nettsted tilknyttet"
             },
             "paypalSandbox": "Salgskanal «{name}»: PayPal kjører i testmiljøet — ekte betalinger er ennå ikke mulig."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Lagret. Produktsidene skrives på nytt med de nye prisene.",
             "saveError": "Kanalinnstillingene kunne ikke lagres.",
             "loadError": "Salgskanalene kunne ikke lastes.",
+            "secretsLoadError": "Salgskanalenes nøkler kunne ikke lastes.",
             "name": "Navn",
             "nameRequired": "Kanalen trenger et navn.",
             "autoAddParts": "Legg til nye butikkvarer automatisk",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} faktura | {anzahl} fakturaer",
             "notDeletableWithdrawals": "{anzahl} angring | {anzahl} angringer",
             "notDeletableEbayOrders": "{anzahl} eBay-ordre | {anzahl} eBay-ordrer",
-            "notDeletableJobsHint": "Åpne oppgaver utføres ved neste kjøring («Kjør åpne» i butikkoversikten). Med bilag forblir kanalen slått av."
+            "notDeletableJobsHint": "Åpne oppgaver utføres ved neste kjøring («Kjør åpne» i butikkoversikten). Med bilag forblir kanalen slått av.",
+            "website": "Nettsted",
+            "websiteHint": "Kundeportal-nettsted som denne HugoShop kjører på – tilgang, adresse og HugoCMS settes der (System → Nettsteder).",
+            "websiteNone": "– intet nettsted –",
+            "websitesOpen": "Administrer nettsteder",
+            "hugocmsViaWebsite": "HugoCMS-adresse og nøkkel settes ved kanalens nettsted; her testes bare forbindelsen og tillatelsene leses."
         },
         "ebayCondition": {
             "NEW": "Ny",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "Dette navnet finnes allerede.",
             "ASSORTMENT_NAME_INVALID": "Det kan ikke lages en adresse av dette navnet – bruk bokstaver eller sifre.",
             "ASSORTMENT_NOT_FOUND": "Oppføringen finnes ikke lenger. Last inn visningen på nytt.",
-            "ASSORTMENT_CATEGORY_IN_USE": "Kategorien er fortsatt tilordnet varer."
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategorien er fortsatt tilordnet varer.",
+            "CHANNEL_WEBSITE_TAKEN": "En annen HugoShop kjører allerede på dette nettstedet.",
+            "WEBSITE_NOT_FOUND": "Dette nettstedet finnes ikke.",
+            "SHOP_WEBSITE_MISSING": "HugoShop har intet nettsted tilknyttet (salgskanaler → nettsted).",
+            "SHOP_NOT_CONFIGURED": "Ingen HugoShop hører til dette nettstedet."
         },
         "orderStatus": {
             "open": "Åpen",

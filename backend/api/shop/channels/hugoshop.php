@@ -319,7 +319,7 @@ function shopChannelHugoshopRunJob($db, array $auftrag, callable $sagen, callabl
             $sagen(sprintf('Paket abgeglichen: %d kopiert, %d entfernt%s',
                 $kit['kopiert'], $kit['entfernt'], $kit['config'] ? ', Konfiguration neu' : ''));
 
-            // „Shop-Benutzerschnittstelle installieren“ (installShopUi): die
+            // „Shop-Benutzerschnittstelle installieren“ (installPortalUi): die
             // Webseite wird auch gebaut, wenn das Paket schon aktuell war —
             // etwa weil ein früherer Bau fehlschlug oder die Mounts erst
             // danach eingetragen wurden.

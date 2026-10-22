@@ -10,37 +10,24 @@
 // Darstellung über shop-config-field.component.vue wie im Reiter „Shop";
 // Beschriftungen und Hilfetexte sind dieselben (crm_fields.*).
 
+// Zugang, Adresse der Webseite, HugoCMS und Vorlagensatz gehören seit dem
+// Kundenportal der Webseite (System → Webseiten, dev/kundenportal.md); der
+// Kanal wählt in der Karte nur noch seine Webseite. Die Gruppe HugoCMS bleibt
+// ohne Felder: „Verbindung prüfen“ liest die Freigaben, an denen sich die
+// Adressmuster unten ausrichten.
 const hugoshop = [
-    // HugoCMS zuerst: ohne Verbindung entsteht keine Webseite, und „Verbindung
-    // prüfen" zeigt die Freigaben, an denen sich die Adressmuster unten
-    // ausrichten. action: die Karte zeigt unter den Feldern „Verbindung prüfen"
     {
         name: "hugocms",
         type: "group",
         icon: "mdi-web-sync",
         label: "crm_fields.shopHugoCms",
-        tooltip: "crm_fields.shopHugoCms_help",
+        tooltip: "ShopView.channelConfig.hugocmsViaWebsite",
         action: "hugocmsTest",
-        fields: [
-            { name: "hugocms_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopHugoCmsUrl", tooltip: "crm_fields.shopHugoCmsUrl_help" },
-            { name: "hugocms_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopHugoCmsKey", tooltip: "crm_fields.shopHugoCmsKey_help" },
-        ],
+        fields: [],
     },
-
-    { name: "zugang", type: "headline", label: "crm_fields.shopAccess" },
-
-    // Erzeugt wird ein neuer Schlüssel im Browser; er gehört auch in den
-    // Reverse-Proxy, falls einer den mitgelieferten ersetzt. Je HugoShop ein
-    // eigener — er bestimmt im öffentlichen Zugang Mandant und Kanal.
-    { name: "public_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", generate: true, label: "crm_fields.shopPublicKey", tooltip: "crm_fields.shopPublicKey_help" },
-    { name: "allowed_origins", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopAllowedOrigins", tooltip: "crm_fields.shopAllowedOrigins_help" },
 
     { name: "adressen", type: "headline", label: "crm_fields.shopLinks" },
 
-    { name: "base_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBaseUrl", tooltip: "crm_fields.shopBaseUrl_help" },
-    // Seite mit <shop-invoice> — Ziel des Links in der Mail zum Lieferstatus
-    // (dev/shop-bestellstatus.md); leer = /rechnung/
-    { name: "invoice_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopInvoicePage", tooltip: "crm_fields.shopInvoicePage_help" },
     { name: "products_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopProductsLink", tooltip: "crm_fields.shopProductsLink_help" },
     { name: "category_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopCategoryLink", tooltip: "crm_fields.shopCategoryLink_help" },
     // Schlüssel im Front Matter, aus dem Hugo die Kategorieseiten bildet; mit
@@ -56,9 +43,6 @@ const hugoshop = [
 
     { name: "veroeffentlichung", type: "headline", label: "crm_fields.shopPublish" },
 
-    // action: die Karte zeigt unter dem Feld „Verbindung prüfen“ (testShopBackendUrl)
-    { name: "backend_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopBackendUrl", tooltip: "crm_fields.shopBackendUrl_help", action: "backendTest" },
-    { name: "template_set", type: "dynamic-select", source: "shopTemplateSets", itemTitle: "title", itemValue: "name", fieldstyle: "max-width: 60ch", label: "crm_fields.shopTemplateSet", tooltip: "crm_fields.shopTemplateSet_help" },
     // Veröffentlicht wird immer über HugoCMS (2026-10-07): OSERP schreibt in
     // die Bereitstellung, überträgt an HugoCMS und lässt dort bauen. Wohin
     // die Produktseiten gehören, legt HugoCMS fest (Freigaben,

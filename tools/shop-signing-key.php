@@ -5,7 +5,7 @@
 // Signaturschlüssel der Shop-Erweiterung (dev/shop-php-signatur.md).
 //
 // HugoCMS nimmt die PHP-Einstiegspunkte des Webseiten-Pakets (Weiterleiter
-// shop-api/index.php, 404-Seite not_found.php) nur an, wenn OpensourceERP sie
+// portal-api/index.php, 404-Seite not_found.php) nur an, wenn OpensourceERP sie
 // signiert hat. Dafür braucht diese Installation ein Ed25519-Schlüsselpaar:
 // Der private Schlüssel liegt in backend/config/shop-signing.key (nicht im
 // Repository, Rechte 0600), den öffentlichen trägt ein Administrator in HugoCMS

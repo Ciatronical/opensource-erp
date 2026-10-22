@@ -1,0 +1,16 @@
+{{- /*
+  {{< portal-activate >}}
+  {{< portal-activate redirect-url="/persönliche-daten/" login-url="/login/" heading="Zugang einrichten" >}}
+
+  Zugang für Bestandskunden (dev/shop-konto-freischaltung.md): ohne ?token=
+  in der Adresse das Anfrageformular (Handynummer und Postleitzahl), mit
+  ?token=… aus dem WhatsApp- oder Mail-Link das Einrichtungsformular
+  (E-Mail-Adresse und Passwort). Die Seite gehört in den Einstellungen der
+  Webseite unter „Seite Konto freischalten“ eingetragen (Vorgabe /freischalten/).
+*/ -}}
+{{- partial "portal-ui-assets.html" . -}}
+<portal-activate
+  {{- with .Get `redirect-url` }} redirect-url="{{ . }}"{{ end }}
+  {{- with .Get `login-url` }} login-url="{{ . }}"{{ end }}
+  {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
+  {{- with .Get `class` }} class="{{ . }}"{{ end }}></portal-activate>

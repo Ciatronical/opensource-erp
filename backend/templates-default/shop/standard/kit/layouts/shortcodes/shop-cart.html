@@ -3,9 +3,9 @@
   {{< shop-cart ... invoicing-canceled="true" >}}
 
   Ersetzt cart.html. billing-page und canceled-page sind die Rueckkehr-Seiten
-  des PayPal-Einstiegs (/shop-api/?action=beginPayment).
+  des PayPal-Einstiegs (/portal-api/?action=beginPayment).
 */ -}}
-{{- partial "shop-ui-assets.html" . -}}
+{{- partial "portal-ui-assets.html" . -}}
 <shop-cart
   {{- with .Get `billing-page` }} billing-page="{{ . }}"{{ end }}
   {{- with .Get `canceled-page` }} canceled-page="{{ . }}"{{ end }}

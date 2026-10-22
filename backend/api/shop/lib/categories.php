@@ -347,7 +347,7 @@ function shopCategoryGroups(array $kategorien, array $regeln): array {
  * @throws ApiError SHOP_TEMPLATE_SET_INVALID, SHOP_TEMPLATE_SET_MISSING
  */
 function shopCategoryGroupsTemplatePath($db, int $kanal, ?string $satz = null): string {
-    $satz = $satz ?? shopChannelValue($db, $kanal, 'template_set', 'standard');
+    $satz = $satz ?? shopSiteValue($db, $kanal, 'template_set', 'standard');
     return trim((string)(shopTemplateInfo(shopTemplateDir($satz))['data']['category_groups'] ?? ''), '/');
 }
 
@@ -456,7 +456,7 @@ function shopWriteCategoryGroups($db, int $kanal): array {
 
     // Derselbe Satz, aus dem shopCategoryGroupsFile() den Pfad nimmt: hat er
     // eigene Regeln, bestimmen sie die Gruppen, sonst das Sortiment.
-    $satz = shopChannelValue($db, $kanal, 'template_set', 'standard');
+    $satz = shopSiteValue($db, $kanal, 'template_set', 'standard');
 
     $kategorien = shopCategoryCounts($db, $kanal);
     if (!$kategorien) {

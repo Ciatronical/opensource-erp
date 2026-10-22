@@ -32,7 +32,8 @@
                 "channel_round_99_net": "Avrundning till ,99 är påslagen, men försäljningspriserna är sparade netto. Med bruttopriser stämmer varukorg och faktura alltid på öret."
             },
             "points": {
-                "no_parts_offered": "Inga artiklar erbjuds"
+                "no_parts_offered": "Inga artiklar erbjuds",
+                "shop_website": "Kundportalens webbplats kopplad"
             },
             "paypalSandbox": "Försäljningskanal ”{name}”: PayPal körs i testmiljön — riktiga betalningar är ännu inte möjliga."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Sparat. Produktsidorna skrivs om med de nya priserna.",
             "saveError": "Kanalinställningarna kunde inte sparas.",
             "loadError": "Försäljningskanalerna kunde inte läsas in.",
+            "secretsLoadError": "Försäljningskanalernas nycklar kunde inte läsas in.",
             "name": "Namn",
             "nameRequired": "Kanalen behöver ett namn.",
             "autoAddParts": "Lägg till nya butiksartiklar automatiskt",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} faktura | {anzahl} fakturor",
             "notDeletableWithdrawals": "{anzahl} ångring | {anzahl} ångringar",
             "notDeletableEbayOrders": "{anzahl} eBay-order | {anzahl} eBay-ordrar",
-            "notDeletableJobsHint": "Öppna uppgifter utförs vid nästa körning (”Kör öppna” i butiksöversikten). Med verifikationer förblir kanalen avstängd."
+            "notDeletableJobsHint": "Öppna uppgifter utförs vid nästa körning (”Kör öppna” i butiksöversikten). Med verifikationer förblir kanalen avstängd.",
+            "website": "Webbplats",
+            "websiteHint": "Kundportalens webbplats som denna HugoShop körs på – åtkomst, adress och HugoCMS ställs in där (System → Webbplatser).",
+            "websiteNone": "– ingen webbplats –",
+            "websitesOpen": "Hantera webbplatser",
+            "hugocmsViaWebsite": "HugoCMS-adress och nyckel ställs in vid kanalens webbplats; här testas bara anslutningen och behörigheterna läses."
         },
         "ebayCondition": {
             "NEW": "Ny",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "Namnet finns redan.",
             "ASSORTMENT_NAME_INVALID": "Ingen adress kan skapas av det här namnet – använd bokstäver eller siffror.",
             "ASSORTMENT_NOT_FOUND": "Posten finns inte längre. Läs in vyn igen.",
-            "ASSORTMENT_CATEGORY_IN_USE": "Kategorin är fortfarande tilldelad artiklar."
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategorin är fortfarande tilldelad artiklar.",
+            "CHANNEL_WEBSITE_TAKEN": "En annan HugoShop körs redan på denna webbplats.",
+            "WEBSITE_NOT_FOUND": "Denna webbplats finns inte.",
+            "SHOP_WEBSITE_MISSING": "HugoShop har ingen webbplats kopplad (försäljningskanaler → webbplats).",
+            "SHOP_NOT_CONFIGURED": "Ingen HugoShop hör till denna webbplats."
         },
         "orderStatus": {
             "open": "Öppen",

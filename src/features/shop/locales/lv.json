@@ -32,7 +32,8 @@
                 "channel_round_99_net": "Noapaļošana līdz ,99 ir ieslēgta, bet pārdošanas cenas ir saglabātas bez PVN. Ar cenām ar PVN grozs un rēķins vienmēr sakrīt līdz centam."
             },
             "points": {
-                "no_parts_offered": "Netiek piedāvāta neviena prece"
+                "no_parts_offered": "Netiek piedāvāta neviena prece",
+                "shop_website": "Piesaistīta klientu portāla vietne"
             },
             "paypalSandbox": "Pārdošanas kanāls “{name}”: PayPal darbojas testa vidē — īsti maksājumi vēl nav iespējami."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Saglabāts. Produktu lapas tiks pārrakstītas ar jaunajām cenām.",
             "saveError": "Kanāla iestatījumus neizdevās saglabāt.",
             "loadError": "Pārdošanas kanālus neizdevās ielādēt.",
+            "secretsLoadError": "Neizdevās ielādēt pārdošanas kanālu atslēgas.",
             "name": "Nosaukums",
             "nameRequired": "Kanālam vajadzīgs nosaukums.",
             "autoAddParts": "Jaunās veikala preces pievienot automātiski",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} rēķins | {anzahl} rēķini",
             "notDeletableWithdrawals": "{anzahl} atteikums | {anzahl} atteikumi",
             "notDeletableEbayOrders": "{anzahl} eBay pasūtījums | {anzahl} eBay pasūtījumi",
-            "notDeletableJobsHint": "Atvērtos uzdevumus izpildīs nākamā palaišana (“Izpildīt atvērtos” veikala pārskatā). Ar dokumentiem kanāls paliek izslēgts."
+            "notDeletableJobsHint": "Atvērtos uzdevumus izpildīs nākamā palaišana (“Izpildīt atvērtos” veikala pārskatā). Ar dokumentiem kanāls paliek izslēgts.",
+            "website": "Vietne",
+            "websiteHint": "Klientu portāla vietne, kurā darbojas šis HugoShop – piekļuve, adrese un HugoCMS iestatāmi tur (Sistēma → Vietnes).",
+            "websiteNone": "– nav vietnes –",
+            "websitesOpen": "Pārvaldīt vietnes",
+            "hugocmsViaWebsite": "HugoCMS adrese un atslēga ir kanāla vietnē; šeit tikai pārbauda savienojumu un nolasa atļaujas."
         },
         "ebayCondition": {
             "NEW": "Jauns",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "Šāds nosaukums jau pastāv.",
             "ASSORTMENT_NAME_INVALID": "No šī nosaukuma nevar izveidot adresi – izmantojiet burtus vai ciparus.",
             "ASSORTMENT_NOT_FOUND": "Ieraksts vairs nepastāv. Pārlādējiet skatu.",
-            "ASSORTMENT_CATEGORY_IN_USE": "Kategorija joprojām ir piešķirta precēm."
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategorija joprojām ir piešķirta precēm.",
+            "CHANNEL_WEBSITE_TAKEN": "Šajā vietnē jau darbojas cits HugoShop.",
+            "WEBSITE_NOT_FOUND": "Šādas vietnes nav.",
+            "SHOP_WEBSITE_MISSING": "HugoShop nav piesaistīta vietne (pārdošanas kanāli → vietne).",
+            "SHOP_NOT_CONFIGURED": "Šai vietnei nepieder neviens HugoShop."
         },
         "orderStatus": {
             "open": "Atvērts",

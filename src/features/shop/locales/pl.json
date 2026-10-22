@@ -32,7 +32,8 @@
                 "channel_round_99_net": "Zaokrąglanie do ,99 jest włączone, ale ceny sprzedaży są zapisane netto. Przy cenach brutto koszyk i faktura zawsze zgadzają się co do grosza."
             },
             "points": {
-                "no_parts_offered": "Brak oferowanych artykułów"
+                "no_parts_offered": "Brak oferowanych artykułów",
+                "shop_website": "Przypisana strona portalu klienta"
             },
             "paypalSandbox": "Kanał sprzedaży „{name}”: PayPal działa w środowisku testowym — prawdziwe płatności nie są jeszcze możliwe."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Zapisano. Strony produktów zostaną przepisane z nowymi cenami.",
             "saveError": "Nie udało się zapisać ustawień kanału.",
             "loadError": "Nie udało się wczytać kanałów sprzedaży.",
+            "secretsLoadError": "Nie udało się wczytać kluczy kanałów sprzedaży.",
             "name": "Nazwa",
             "nameRequired": "Kanał potrzebuje nazwy.",
             "autoAddParts": "Automatycznie dodawaj nowe artykuły sklepu",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} faktura | {anzahl} faktur",
             "notDeletableWithdrawals": "{anzahl} odstąpienie | {anzahl} odstąpień",
             "notDeletableEbayOrders": "{anzahl} zamówienie eBay | {anzahl} zamówień eBay",
-            "notDeletableJobsHint": "Otwarte zadania wykona następne uruchomienie („Uruchom otwarte” w przeglądzie sklepu). Z dokumentami kanał pozostaje wyłączony."
+            "notDeletableJobsHint": "Otwarte zadania wykona następne uruchomienie („Uruchom otwarte” w przeglądzie sklepu). Z dokumentami kanał pozostaje wyłączony.",
+            "website": "Strona",
+            "websiteHint": "Strona portalu klienta, na której działa ten HugoShop – dostęp, adres i HugoCMS ustawia się tam (System → Strony).",
+            "websiteNone": "– brak strony –",
+            "websitesOpen": "Zarządzaj stronami",
+            "hugocmsViaWebsite": "Adres i klucz HugoCMS ustawia się przy stronie kanału; tu tylko sprawdza się połączenie i odczytuje uprawnienia."
         },
         "ebayCondition": {
             "NEW": "Nowy",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "Ta nazwa już istnieje.",
             "ASSORTMENT_NAME_INVALID": "Z tej nazwy nie da się utworzyć adresu – użyj liter lub cyfr.",
             "ASSORTMENT_NOT_FOUND": "Wpis już nie istnieje. Wczytaj widok ponownie.",
-            "ASSORTMENT_CATEGORY_IN_USE": "Kategoria jest nadal przypisana do artykułów."
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategoria jest nadal przypisana do artykułów.",
+            "CHANNEL_WEBSITE_TAKEN": "Na tej stronie działa już inny HugoShop.",
+            "WEBSITE_NOT_FOUND": "Ta strona nie istnieje.",
+            "SHOP_WEBSITE_MISSING": "HugoShop nie ma przypisanej strony (kanały sprzedaży → strona).",
+            "SHOP_NOT_CONFIGURED": "Do tej strony nie należy żaden HugoShop."
         },
         "orderStatus": {
             "open": "Otwarte",

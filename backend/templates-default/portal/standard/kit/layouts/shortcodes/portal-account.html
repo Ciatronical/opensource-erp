@@ -1,0 +1,18 @@
+{{- /*
+  {{< portal-account page="overview" >}}
+  {{< portal-account page="vehicles" >}}
+
+  Navigation und Panel des Kundenkontos — wie {{< portal-account >}}, dazu die
+  Seite vehicles (Fahrzeuge aus LxCars). Zweispaltiges Layout im Light DOM.
+*/ -}}
+{{- $page := .Get "page" -}}
+{{- $nav := dict "current" $page "showPayment" (.Get "show-payment" | default "false") "showVehicles" (.Get "show-vehicles" | default "false") "noAssets" true -}}
+{{ partial "portal-ui-assets.html" . }}
+<style>
+.portal-account-layout{display:grid;grid-template-columns:minmax(0,16rem) minmax(0,1fr);gap:2rem;align-items:start}
+@media (max-width:48rem){.portal-account-layout{grid-template-columns:minmax(0,1fr)}}
+</style>
+<div class="portal-account-layout">
+{{ partial "portal-account-nav.html" $nav }}
+{{ partial "portal-account-panel.html" (dict "page" $page "loginUrl" (.Get "login-url") "noAssets" true) }}
+</div>

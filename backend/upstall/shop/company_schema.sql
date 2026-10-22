@@ -7,9 +7,15 @@
 -- (die Datei laeuft bei jedem Update), customer_ext nur noch als ADD COLUMN,
 -- und keine Stammdaten, die bestehende Werte ueberschreiben.
 --
--- Die Namen *_hugoshop und die Spalten hugoshop_* bleiben, obwohl die
--- Erweiterung shop heisst: Beispielshop und Entwicklungs-OSERP arbeiten auf
--- derselben Datenbank, ein Umbenennen braeche den laufenden Shop.
+-- Die Namen *_hugoshop bleiben, obwohl die Erweiterung shop heisst:
+-- Beispielshop und Entwicklungs-OSERP arbeiten auf derselben Datenbank, ein
+-- Umbenennen braeche den laufenden Shop.
+--
+-- Seit 2026-10-21 (dev/kundenportal.md) liegen Webseite, Sitzung, Kundenkonto
+-- und Rechnungslink im Kern (upstall/crm: website_oserp, portal_context_oserp,
+-- invoice_link_oserp, customer_ext.portal_*). Dieses Schema hängt sich daran:
+-- sales_channel_shop.website_id, portal_context_oserp.cart_uuid,
+-- ar_link_hugoshop mit den PayPal-Feldern zur uuid aus invoice_link_oserp.
 --
 -- Reihenfolge beachten: der Upstall-Parser verarbeitet erst alle
 -- CREATE TABLE (...) getrennt, danach alles Uebrige in Dateireihenfolge.
@@ -20,29 +26,9 @@
 -- KUNDENERWEITERUNG
 -- ============================================================================
 --
--- customer_ext gehoert der CRM-Basis. Hier kommen nur die beiden Spalten des
--- Shops dazu — als ADD COLUMN mit Vorgabewert, damit das auch auf einer
--- Datenbank mit vorhandenen Kunden durchlaeuft. Dasselbe Muster wie
--- lxcars/company_schema.sql fuer hu_serienbrief_excluded.
-
-ALTER TABLE customer_ext ADD COLUMN IF NOT EXISTS hugoshop_guest boolean NOT NULL DEFAULT false;
-ALTER TABLE customer_ext ADD COLUMN IF NOT EXISTS hugoshop_shipto_id integer;
-
-COMMENT ON COLUMN customer_ext.hugoshop_guest     IS 'Shop: Gastbestellung ohne Kundenkonto';
-COMMENT ON COLUMN customer_ext.hugoshop_shipto_id IS 'Shop: gewaehlte Standard-Lieferadresse';
-
--- SET NULL und nicht CASCADE: hugoshop_shipto_id ist ein Zeiger auf eine
--- Einstellung, keine Besitzbeziehung. Mit CASCADE riss das Loeschen einer
--- Lieferadresse die ganze Kundenzeile mit.
-DO $$ BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint
-                    WHERE conrelid = 'customer_ext'::regclass
-                      AND conname = 'customer_ext_hugoshop_shipto_id_fkey') THEN
-        ALTER TABLE customer_ext
-            ADD CONSTRAINT customer_ext_hugoshop_shipto_id_fkey
-            FOREIGN KEY (hugoshop_shipto_id) REFERENCES shipto (shipto_id) ON DELETE SET NULL;
-    END IF;
-END $$;
+-- customer_ext gehoert der CRM-Basis. Gastkennzeichen und Standard-
+-- Lieferadresse (portal_guest, portal_shipto_id) legt seit 2026-10-21 der
+-- Kern an (Kundenportal, upstall/crm); der Shop liest und schreibt sie nur.
 
 -- ============================================================================
 -- SORTIMENT
@@ -229,6 +215,26 @@ CREATE TABLE IF NOT EXISTS sales_channel_shop
     CONSTRAINT sales_channel_shop_type_check CHECK (type IN ('hugoshop', 'ebay', 'amazon', 'kleinanzeigen')),
     CONSTRAINT sales_channel_shop_markup_check CHECK (markup_type IN ('none', 'percent', 'amount'))
 );
+
+-- Ein HugoShop gehört zu einer Webseite des Kerns (dev/kundenportal.md):
+-- dort stehen Adresse, Zugang und HugoCMS; hier bleibt der Handel
+ALTER TABLE sales_channel_shop ADD COLUMN IF NOT EXISTS website_id integer;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint
+                    WHERE conrelid = 'sales_channel_shop'::regclass
+                      AND conname = 'sales_channel_shop_website_id_fk') THEN
+        ALTER TABLE sales_channel_shop
+            ADD CONSTRAINT sales_channel_shop_website_id_fk
+            FOREIGN KEY (website_id) REFERENCES website_oserp (id) ON DELETE SET NULL;
+    END IF;
+END $$;
+COMMENT ON COLUMN sales_channel_shop.website_id IS 'Webseite des Kerns (website_oserp), auf der der HugoShop läuft';
+
+-- Eine Webseite trägt höchstens einen HugoShop: Bereitstellung, Paket und
+-- Sitzungen gehören der Webseite, zwei Shops darauf überschrieben sich
+CREATE UNIQUE INDEX IF NOT EXISTS sales_channel_shop_website_hugoshop
+    ON sales_channel_shop (website_id)
+ WHERE type = 'hugoshop' AND website_id IS NOT NULL;
 
 COMMENT ON TABLE  sales_channel_shop                IS 'Shop: Verkaufskanal, eine Instanz seiner Art';
 COMMENT ON COLUMN sales_channel_shop.type           IS 'Art: hugoshop, ebay, amazon oder kleinanzeigen';
@@ -1982,35 +1988,27 @@ END $$;
 -- SITZUNGSKONTEXT
 -- ============================================================================
 --
--- Die Sitzung des Shop-Kunden. Voellig getrennt von auth.session_oserp: eine
--- UUID aus dem Cookie HUGOSHOPCLIENTID, ein Warenkorb, ein Kunde — kein
--- Benutzer, keine Rechte. Wer hier steht, ist Kunde des Betreibers und hat
--- mit dem Admin-Panel nichts zu tun.
-
-CREATE TABLE IF NOT EXISTS context_hugoshop
-(
-    id          integer NOT NULL GENERATED ALWAYS AS IDENTITY,
-    uuid        text NOT NULL,
-    cart_uuid   text,
-    customer_id integer,
-    active      timestamp without time zone DEFAULT now(),
-    CONSTRAINT context_hugoshop_pkey PRIMARY KEY (uuid),
-    CONSTRAINT context_hugoshop_carts_uuid_fk FOREIGN KEY (cart_uuid)
-        REFERENCES carts_hugoshop (uuid) ON UPDATE NO ACTION ON DELETE CASCADE,
-    CONSTRAINT context_hugoshop_customer_id_fk FOREIGN KEY (customer_id)
-        REFERENCES customer (id) ON UPDATE NO ACTION ON DELETE CASCADE
-);
-
-COMMENT ON TABLE  context_hugoshop      IS 'Shop: Sitzung eines Shop-Besuchers (Cookie HUGOSHOPCLIENTID)';
-COMMENT ON COLUMN context_hugoshop.uuid IS 'Wert des Cookies — vom Aufrufer frei waehlbar, gehoert immer gebunden';
+-- Die Sitzung des Besuchers (Cookie HUGOSHOPCLIENTID) hält der Kern in
+-- portal_context_oserp (dev/kundenportal.md). Der Shop hängt seinen Warenkorb
+-- daran: portal_context_oserp.cart_uuid zeigt auf carts_hugoshop.
+DO $$ BEGIN
+    IF to_regclass('portal_context_oserp') IS NOT NULL
+       AND NOT EXISTS (SELECT 1 FROM pg_constraint
+                        WHERE conrelid = 'portal_context_oserp'::regclass
+                          AND conname = 'portal_context_oserp_cart_uuid_fk') THEN
+        ALTER TABLE portal_context_oserp
+            ADD CONSTRAINT portal_context_oserp_cart_uuid_fk
+            FOREIGN KEY (cart_uuid) REFERENCES carts_hugoshop (uuid) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 -- ============================================================================
 -- RECHNUNGSVERKNUEPFUNG UND ZAHLUNGSSTAND
 -- ============================================================================
 --
--- Der Kunde bekommt nach dem Kauf einen Link mit dieser UUID; darueber sieht
--- er seine Rechnung, ohne angemeldet zu sein. Die UUID ist damit das
--- Geheimnis und ersetzt die Rechteprüfung.
+-- Der Rechnungslink selbst (uuid, ar_id, Webseite) liegt seit 2026-10-21 im
+-- Kern (invoice_link_oserp, dev/kundenportal.md). Diese Tabelle trägt zur
+-- selben uuid, was der Shop dazu weiß: PayPal-Buchung und Zahlungsstand.
 --
 -- paypal ist die Payer-Id und steht, sobald eine Buchung vorliegt — auch eine
 -- schwebende. Ob bezahlt wurde, sagt payment_status: COMPLETED (Geld da),
@@ -2358,9 +2356,9 @@ BEGIN
     UPDATE ar SET shipto_id = v_neu WHERE id = p_ar_id;
 
     IF p_gast_aufraeumen AND p_quelle IS NOT NULL
-       AND EXISTS (SELECT 1 FROM customer_ext ce WHERE ce.customer_id = v_kunde AND ce.hugoshop_guest) THEN
-        UPDATE customer_ext SET hugoshop_shipto_id = NULL
-         WHERE customer_id = v_kunde AND hugoshop_shipto_id = p_quelle;
+       AND EXISTS (SELECT 1 FROM customer_ext ce WHERE ce.customer_id = v_kunde AND ce.portal_guest) THEN
+        UPDATE customer_ext SET portal_shipto_id = NULL
+         WHERE customer_id = v_kunde AND portal_shipto_id = p_quelle;
         DELETE FROM shipto s
          WHERE s.shipto_id = p_quelle
            AND s.trans_id = v_kunde
@@ -2426,11 +2424,12 @@ $$;
 -- AUFRAEUMEN
 -- ============================================================================
 --
--- Warenkoerbe und Sitzungen verfallen. Beides haengt an Statement-Triggern auf
--- context_hugoshop: jeder Zugriff eines Besuchers raeumt ein wenig mit auf, es
--- braucht also keinen Cronjob.
+-- Warenkoerbe verfallen. Der Trigger haengt am Statement-Trigger der
+-- Sitzungen des Kerns (portal_context_oserp): jeder Zugriff eines Besuchers
+-- raeumt ein wenig mit auf, es braucht also keinen Cronjob. Die Sitzungen
+-- selbst raeumt der Kern (cleanup_portal_context_oserp).
 --
--- Die Fristen kommen aus defaults_oserp statt fest aus dem Rumpf. Ein Korb mit
+-- Die Frist kommt aus defaults_oserp statt fest aus dem Rumpf. Ein Korb mit
 -- angemeldetem Kunden bleibt stehen — der Kunde findet ihn beim naechsten
 -- Besuch wieder.
 
@@ -2441,38 +2440,32 @@ BEGIN
                (SELECT value FROM defaults_oserp WHERE key = 'shop_cart_lifetime_hours'),
                '24') || ' hours')::interval
        AND NOT EXISTS (
-           SELECT 1 FROM context_hugoshop
+           SELECT 1 FROM portal_context_oserp
             WHERE cart_uuid = carts_hugoshop.uuid AND customer_id IS NOT NULL
        );
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION cleanup_context_hugoshop() RETURNS trigger AS $$
-BEGIN
-    DELETE FROM context_hugoshop
-     WHERE active < NOW() - (COALESCE(
-               (SELECT value FROM defaults_oserp WHERE key = 'shop_context_lifetime_hours'),
-               '24') || ' hours')::interval;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
+-- Alte Sitzungstabelle der Erweiterung: Sitzungen sind flüchtig (Frist
+-- shop_context_lifetime_hours), Besucher bekommen beim nächsten Aufruf eine
+-- neue — Trigger und Tabelle gehen ohne Übernahme
+DO $$ BEGIN
+    IF to_regclass('context_hugoshop') IS NOT NULL THEN
+        DROP TRIGGER IF EXISTS trigger_cleanup_carts_hugoshop ON context_hugoshop;
+        DROP TRIGGER IF EXISTS trigger_cleanup_context_hugoshop ON context_hugoshop;
+        DROP TABLE context_hugoshop;
+    END IF;
+END $$;
+DROP FUNCTION IF EXISTS cleanup_context_hugoshop();
 
 -- CREATE OR REPLACE TRIGGER gaebe es erst ab PostgreSQL 14. Das DO-Muster mit
 -- Existenzpruefung ist dasselbe wie in lxcars und laeuft ueberall.
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_cleanup_carts_hugoshop') THEN
         CREATE TRIGGER trigger_cleanup_carts_hugoshop
-            AFTER INSERT OR UPDATE ON context_hugoshop
+            AFTER INSERT OR UPDATE ON portal_context_oserp
             FOR EACH STATEMENT EXECUTE FUNCTION cleanup_carts_hugoshop();
-    END IF;
-END $$;
-
-DO $$ BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_cleanup_context_hugoshop') THEN
-        CREATE TRIGGER trigger_cleanup_context_hugoshop
-            AFTER INSERT OR UPDATE ON context_hugoshop
-            FOR EACH STATEMENT EXECUTE FUNCTION cleanup_context_hugoshop();
     END IF;
 END $$;
 
@@ -2601,7 +2594,6 @@ DECLARE
 BEGIN
     FOR t IN SELECT * FROM (VALUES
             ('carts_hugoshop',          'hugoshop', 'CASCADE',   'HugoShop des Warenkorbs'),
-            ('context_hugoshop',        'hugoshop', 'CASCADE',   'HugoShop der Sitzung'),
             ('redirect_pages_hugoshop', 'hugoshop', 'CASCADE',   'Webseite (HugoShop) der Weiterleitung'),
             ('batchjob_hugoshop',       'hugoshop', 'CASCADE',   'Verkaufskanal des Auftrags'),
             ('ar_link_hugoshop',        'hugoshop', 'NO ACTION', 'HugoShop, aus dem die Rechnung stammt: Mail, Rechnungsseite, PayPal-Rücksprung'),
@@ -2667,11 +2659,8 @@ CREATE OR REPLACE FUNCTION shop_channel_setting_keys()
 RETURNS TABLE (type text, old_key text, key text, secret boolean)
     LANGUAGE sql IMMUTABLE AS $$
     VALUES
-        -- HugoShop: Zugang und Webseite
-        ('hugoshop', 'shop_public_key',                       'public_key',                       true),
-        ('hugoshop', 'shop_allowed_origins',                  'allowed_origins',                  false),
-        ('hugoshop', 'shop_base_url',                         'base_url',                         false),
-        ('hugoshop', 'shop_backend_url',                      'backend_url',                      false),
+        -- HugoShop: Handel. Zugang, Adresse und HugoCMS der Webseite stehen
+        -- seit 2026-10-21 beim Kern (website_setting_keys(), dev/kundenportal.md)
         ('hugoshop', 'shop_products_link',                    'products_link',                    false),
         ('hugoshop', 'shop_category_link',                    'category_link',                    false),
         -- Schlüssel im Front Matter der Produktseiten, aus dem Hugo die
@@ -2691,12 +2680,9 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         -- Pfad der Rechnungsseite (<shop-invoice>), für den Link in der Mail
         -- zum Lieferstatus (dev/shop-bestellstatus.md); leer = /rechnung/.
         -- Den alten Schlüssel gab es nie, die Abschrift findet nichts.
-        ('hugoshop', 'shop_invoice_page',                     'invoice_page',                     false),
         -- HugoShop: Veröffentlichung. Das Verzeichnis der Produktseiten legt
         -- HugoCMS fest (Freigaben, dev/shop-hugocms-verzeichnisse.md)
         ('hugoshop', 'shop_template_set',                     'template_set',                     false),
-        ('hugoshop', 'shop_hugocms_url',                      'hugocms_url',                      false),
-        ('hugoshop', 'shop_hugocms_key',                      'hugocms_key',                      true),
         ('hugoshop', 'shop_auto_publish',                     'auto_publish',                     false),
         ('hugoshop', 'shop_channel_off_pages',                'channel_off_pages',                false),
         -- HugoShop: Mail und PayPal (M2)
@@ -2825,12 +2811,62 @@ DELETE FROM defaults_oserp WHERE key = 'shop_content_dir';
 DROP TRIGGER IF EXISTS trigger_defaults_oserp_shop_channel_sync ON defaults_oserp;
 DROP FUNCTION IF EXISTS defaults_oserp_shop_channel_sync();
 
--- Der Shop-Schlüssel bestimmt Mandant und HugoShop (öffentlicher Zugang,
--- shopPublicFindCompany) — zwei Kanäle mit demselben Schlüssel wären nicht
--- zu unterscheiden.
-CREATE UNIQUE INDEX IF NOT EXISTS sales_channel_secret_shop_public_key
-    ON sales_channel_secret_shop (value)
- WHERE key = 'public_key';
+-- Der Schlüssel des Zugangs gehört seit 2026-10-21 der Webseite des Kerns
+-- (website_secret_oserp); der alte Index am Kanal entfällt
+DROP INDEX IF EXISTS sales_channel_secret_shop_public_key;
+
+-- Übernahme (dev/kundenportal.md): Jeder HugoShop ohne Webseite bekommt eine
+-- aus seinen bisherigen Einstellungen — Name wie der Kanal, Zugang, Adresse,
+-- HugoCMS; die Schlüssel verlassen den Kanal. Danach zeigen Sitzungen und
+-- Rechnungslinks auf die Webseite (unten). Läuft nur einmal je Kanal.
+DO $$
+DECLARE
+    k        record;
+    neu      integer;
+    schluessel text[] := ARRAY['allowed_origins', 'base_url', 'backend_url', 'invoice_page', 'hugocms_url'];
+BEGIN
+    IF to_regclass('website_oserp') IS NULL THEN
+        RETURN;
+    END IF;
+    FOR k IN SELECT id, name, settings FROM sales_channel_shop
+              WHERE type = 'hugoshop' AND website_id IS NULL ORDER BY id
+    LOOP
+        INSERT INTO website_oserp (name, active, sortkey, settings)
+        VALUES (COALESCE(NULLIF(k.name, ''), 'Webseite ' || k.id), true, k.id,
+                website_default_settings()
+                || COALESCE((SELECT jsonb_object_agg(e.key, e.value)
+                               FROM jsonb_each(COALESCE(k.settings, '{}'::jsonb)) e
+                              WHERE e.key = ANY (schluessel)), '{}'::jsonb)
+                || jsonb_strip_nulls(jsonb_build_object(
+                       'template_set',    k.settings ->> 'template_set',
+                       -- Empfänger des Kontaktformulars war der des Widerrufs
+                       'contact_mail_to', k.settings ->> 'withdrawal_mail_to')))
+        ON CONFLICT (name) DO UPDATE SET mtime = now()
+        RETURNING id INTO neu;
+
+        INSERT INTO website_secret_oserp (website_id, key, value)
+        SELECT neu, s.key, s.value
+          FROM sales_channel_secret_shop s
+         WHERE s.channel_id = k.id AND s.key IN ('public_key', 'hugocms_key') AND s.value <> ''
+        ON CONFLICT (website_id, key) DO UPDATE SET value = EXCLUDED.value, mtime = now();
+        DELETE FROM sales_channel_secret_shop s
+         WHERE s.channel_id = k.id AND s.key IN ('public_key', 'hugocms_key');
+
+        UPDATE sales_channel_shop
+           SET website_id = neu,
+               settings = COALESCE(settings, '{}'::jsonb) - 'allowed_origins' - 'base_url' - 'backend_url'
+                          - 'invoice_page' - 'hugocms_url' - 'public_key' - 'hugocms_key'
+         WHERE id = k.id;
+    END LOOP;
+END $$;
+
+-- Rechnungslinks in den Kern: dieselbe uuid, dazu die Webseite des Kanals
+INSERT INTO invoice_link_oserp (uuid, ar_id, website_id, active)
+SELECT l.uuid, l.ar_id, c.website_id, l.active
+  FROM ar_link_hugoshop l
+  LEFT JOIN sales_channel_shop c ON c.id = l.channel_id
+ WHERE l.ar_id IS NOT NULL
+ON CONFLICT (uuid) DO NOTHING;
 
 -- Ein Kanal je eBay-Konto (M4, dev/shop-mehrere-kanaele.md, Schritt 4): der
 -- Inventareintrag gehört bei eBay dem Konto, zwei Kanäle mit demselben Konto

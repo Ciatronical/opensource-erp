@@ -49,19 +49,19 @@ Lieferantenimport). Die Regeln für Arbeiten an HugoCMS stehen in
 | E6 | **Die Medien bleiben auf der Webseiten-Seite**: Produktbilder, Downloads und Vorschaubilder. OSERP kennt nur ihre Dateinamen | 2026-09-24 |
 | E7 | Transport über die HugoCMS-API, von OSERP angestoßen (Weg A unten, vorher Empfehlung R1) | 2026-09-24 |
 | E8 | Die heutige Arbeitsweise bleibt als Betriebsart „lokal" erhalten; „HugoCMS" kommt als zweite Betriebsart hinzu (vorher Empfehlung R2) | 2026-09-24 |
-| E9 | HugoCMS bleibt ohne PHP. Die Paket-Konfiguration wird `oserp-shop/config.json` und reist mit der Übertragung; Weiterleiter und 404-Seite legt man einmal von Hand auf den Webserver. **Abgelöst am 2026-10-08:** beide gehen signiert mit, sobald in HugoCMS der Signaturschlüssel von OpensourceERP hinterlegt ist (`dev/shop-php-signatur.md`); ohne ihn bleibt es beim Weg von Hand | 2026-09-24 |
+| E9 | HugoCMS bleibt ohne PHP. Die Paket-Konfiguration wird `oserp-portal/config.json` und reist mit der Übertragung; Weiterleiter und 404-Seite legt man einmal von Hand auf den Webserver. **Abgelöst am 2026-10-08:** beide gehen signiert mit, sobald in HugoCMS der Signaturschlüssel von OpensourceERP hinterlegt ist (`dev/shop-php-signatur.md`); ohne ihn bleibt es beim Weg von Hand | 2026-09-24 |
 
 ## Ausgangslage
 
 **Schon vorhanden und weiter verwendbar:**
 
 - **Weiterleiter für die Shop-UI.** Das Paket enthält
-  `kit/static/shop-api/index.php`, das auf dem Webserver der Webseite läuft —
+  `kit/static/portal-api/index.php`, das auf dem Webserver der Webseite läuft —
   als PHP-Skript, nicht als eigener Proxy-Server.
   - Es hält die Aufrufe der Widgets auf der Adresse der Webseite. Das
     Sitzungs-Cookie (`SameSite=Strict`) kommt deshalb an.
-  - Den Shop-Schlüssel (`X-Shop-Key`) trägt es serverseitig aus
-    `oserp-shop/config.json` nach (bis E9 `config.php`).
+  - Den Shop-Schlüssel (`X-Portal-Key`) trägt es serverseitig aus
+    `oserp-portal/config.json` nach (bis E9 `config.php`).
   - Es reicht `Set-Cookie`, `Content-Disposition` und `Location` durch.
 
   Damit ist E4 bereits erfüllt, der Weiterleiter bleibt unverändert.
@@ -79,7 +79,7 @@ Lieferantenimport). Die Regeln für Arbeiten an HugoCMS stehen in
 | Was | Umfang | Wer erzeugt es |
 | --- | --- | --- |
 | Produktseiten `content/de/produkt/` | 3713 Dateien, gepackt 1,5 MB | OSERP |
-| Webseiten-Paket `oserp-shop/`, mit Shop-UI-Bündel | 25 Dateien, 320 KB | OSERP |
+| Webseiten-Paket `oserp-portal/`, mit Shop-UI-Bündel | 25 Dateien, 320 KB | OSERP |
 | Kategorieübersicht `data/category_groups.json` | 1 Datei, 20 KB | OSERP |
 | Produktbilder `static/images/products/` | 7486 Dateien, 476 MB | bleibt auf der Webseite (E6) |
 | Downloads | 954 Dateien, 2,5 GB | bleibt auf der Webseite (E6) |
@@ -101,7 +101,7 @@ flowchart LR
         W[Shop-Widgets]
     end
     subgraph Webserver["Webserver: Webseite + HugoCMS"]
-        P[shop-api/index.php<br/>Weiterleiter]
+        P[portal-api/index.php<br/>Weiterleiter]
         N[not_found.php]
         C[HugoCMS<br/>Zugang per API-Schlüssel]
         H[Hugo-Bau<br/>Cron oder Anstoß]
@@ -113,7 +113,7 @@ flowchart LR
         B[(Bereitstellung<br/>lokale Kopie)]
     end
 
-    W -->|same-origin| P -->|X-Shop-Key| O
+    W -->|same-origin| P -->|X-Portal-Key| O
     N -->|resolveRedirect| O
     L --> B
     B -->|Abgleich, Übertragung, Übernahme| C
@@ -128,7 +128,7 @@ flowchart LR
 Der Läufer schreibt Produktseiten, Kategorieübersicht und Webseiten-Paket wie
 bisher, aber in ein **Bereitstellungsverzeichnis auf dem OSERP-Server**. Es hat
 dieselbe relative Gliederung wie die Webseite (`content/de/produkt/…`,
-`data/category_groups.json`, `oserp-shop/…`). Danach gleicht er ab:
+`data/category_groups.json`, `oserp-portal/…`). Danach gleicht er ab:
 
 1. **Abgleich.** OSERP schickt ein Verzeichnis aller verwalteten Dateien mit
    Prüfsumme (SHA-256). HugoCMS antwortet mit der Liste der Dateien, die fehlen
@@ -213,7 +213,7 @@ nur in eigens dafür angelegte Mounts der Webseite:
 | --- | --- |
 | Produktseiten | `content/de/produkt` |
 | Datendatei | `data` |
-| Paket | `oserp-shop` |
+| Paket | `oserp-portal` |
 
 Die Mounts der Redakteure bleiben davon getrennt.
 
@@ -381,11 +381,11 @@ das gehört zur Betriebsart „HugoCMS" (Schritt 4).
 ### Schritte 2 und 4 (2026-09-24)
 
 **Abweichung vom Entwurf: keine drei Mounts.** Ein HugoCMS-Mount verlangt beim
-Laden ein vorhandenes Verzeichnis — ein Mount auf `oserp-shop/` hätte eine
+Laden ein vorhandenes Verzeichnis — ein Mount auf `oserp-portal/` hätte eine
 frische Webseite beim Laden abgebrochen. Stattdessen ein eigener Mount auf die
 Hugo-Quelle, der nur im Übertragungsdienst existiert (nicht im Resolver der
 Redakteure), begrenzt durch **Bereiche** (`[shop] areas`, Vorgabe
-`content/de/produkt/`, `data/category_groups.json`, `oserp-shop/`) und
+`content/de/produkt/`, `data/category_groups.json`, `oserp-portal/`) und
 **Endungen** (`md`, `json`, `html`, `js`, `css`). Geschrieben wird weiterhin
 nur über `FileService`, wie die HugoCMS-Regeln es verlangen.
 
@@ -433,14 +433,14 @@ Lieferung (`last-manifest.json`) und löscht nur, was dort stand und jetzt fehlt
 
 **PHP-Dateien des Pakets (entschieden als E9).** HugoCMS schreibt bewusst kein
 PHP. Gewählt wurde, diese Grenze stehen zu lassen:
-- `oserp-shop/config.php` ist jetzt `oserp-shop/config.json`
+- `oserp-portal/config.php` ist jetzt `oserp-portal/config.json`
   (`shopKitConfig()`). Sie ändert sich mit jedem neuen Shop-Schlüssel und reist
   deshalb mit der Übertragung. Weiterleiter und 404-Seite lesen sie mit
   `json_decode()`. In der Betriebsart „lokal" entfernt der nächste
   Paketabgleich die alte `config.php` und schreibt die JSON-Datei; weil er im
   selben Lauf auch neu baut, bekommt `public/` den passenden Weiterleiter im
   selben Zug.
-- `oserp-shop/static/shop-api/index.php` und `oserp-shop/static/not_found.php`
+- `oserp-portal/static/portal-api/index.php` und `oserp-portal/static/not_found.php`
   legt man in der Betriebsart HugoCMS einmal von Hand ab (Anleitung in
   `dev/shop-betrieb.md`). Der Lauf nennt sie, sobald er etwas überträgt, und
   sonst nichts.

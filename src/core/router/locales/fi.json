@@ -60,7 +60,8 @@
         "newArticle": "/tuote/uusi",
         "admin": "/jarjestelma/hallinta",
         "systemSettings": "/jarjestelma/asetukset",
-        "templateDesigner": "/jarjestelma/mallieditori"
+        "templateDesigner": "/jarjestelma/mallieditori",
+        "websites": "/jarjestelma/verkkosivut"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Virhe: Salasanatiedostoa api/config/api.passwd.php ei löytynyt. Nimeä tiedosto api/config/api.passwd.php.example uudelleen muotoon api/config/api.passwd.php ja muokkaa asetuksia vastaavasti.",
@@ -99,7 +100,8 @@
         "about": "Tietoja",
         "docs": "Dokumentaatio",
         "administration": "Käyttäjät ja yritykset",
-        "systemSettings": "Järjestelmäasetukset"
+        "systemSettings": "Järjestelmäasetukset",
+        "websites": "Verkkosivut (asiakasportaali)"
     },
     "DocsView": {
         "title": "Dokumentaatio",

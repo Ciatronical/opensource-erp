@@ -8,7 +8,7 @@
 
       {{< shop-tool-finder heading="Werkzeugverleih" cart-url="/warenkorb/" >}}
 */ -}}
-{{- partial "shop-ui-assets.html" . -}}
+{{- partial "portal-ui-assets.html" . -}}
 <shop-tool-finder
   {{- with .Get `cart-url` }} cart-url="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}

@@ -1,0 +1,14 @@
+{{- /*
+  {{< portal-account-buttons >}}
+
+  Die Kopf-Knoepfe als Shortcode — im Regelfall steht das Element direkt im
+  Kopf-Partial der Instanz, nicht im Inhalt. Nuetzlich zum Ausprobieren.
+*/ -}}
+{{- partial "portal-ui-assets.html" . -}}
+<portal-account-buttons
+  {{- with .Get `login-url` }} login-url="{{ . }}"{{ end }}
+  {{- with .Get `logout-url` }} logout-url="{{ . }}"{{ end }}
+  {{- with .Get `register-url` }} register-url="{{ . }}"{{ end }}
+  {{- with .Get `account-url` }} account-url="{{ . }}"{{ end }}
+  {{- with .Get `cart-url` }} cart-url="{{ . }}"{{ end }}
+  {{- with .Get `class` }} class="{{ . }}"{{ end }}></portal-account-buttons>

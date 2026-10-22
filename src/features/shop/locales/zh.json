@@ -32,7 +32,8 @@
                 "channel_round_99_net": "已启用 ,99 取整，但销售价格以净价保存。使用含税销售价格时，购物车和发票始终精确到分一致。"
             },
             "points": {
-                "no_parts_offered": "没有上架任何物料"
+                "no_parts_offered": "没有上架任何物料",
+                "shop_website": "已分配客户门户网站"
             },
             "paypalSandbox": "销售渠道“{name}”：PayPal 运行在测试环境中 — 尚无法接收真实付款。"
         },
@@ -396,6 +397,7 @@
             "republishQueued": "已保存。商品页面将以新价格重新生成。",
             "saveError": "无法保存渠道设置。",
             "loadError": "无法加载销售渠道。",
+            "secretsLoadError": "无法加载销售渠道的密钥。",
             "name": "名称",
             "nameRequired": "渠道需要一个名称。",
             "autoAddParts": "自动加入新的商店商品",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} 张发票 | {anzahl} 张发票",
             "notDeletableWithdrawals": "{anzahl} 项撤销 | {anzahl} 项撤销",
             "notDeletableEbayOrders": "{anzahl} 个 eBay 订单 | {anzahl} 个 eBay 订单",
-            "notDeletableJobsHint": "下一次运行将完成未完成的任务（商店概览中的“执行未完成”）。有单据时渠道保持停用。"
+            "notDeletableJobsHint": "下一次运行将完成未完成的任务（商店概览中的“执行未完成”）。有单据时渠道保持停用。",
+            "website": "网站",
+            "websiteHint": "运行此 HugoShop 的客户门户网站——访问、地址和 HugoCMS 在那里设置（系统 → 网站）。",
+            "websiteNone": "— 无网站 —",
+            "websitesOpen": "管理网站",
+            "hugocmsViaWebsite": "HugoCMS 的地址和密钥在渠道的网站中设置；此处仅测试连接并读取授权。"
         },
         "ebayCondition": {
             "NEW": "全新",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "此名称已存在。",
             "ASSORTMENT_NAME_INVALID": "无法从此名称生成地址——请使用字母或数字。",
             "ASSORTMENT_NOT_FOUND": "该条目已不存在。请重新加载视图。",
-            "ASSORTMENT_CATEGORY_IN_USE": "该分类仍分配给商品。"
+            "ASSORTMENT_CATEGORY_IN_USE": "该分类仍分配给商品。",
+            "CHANNEL_WEBSITE_TAKEN": "此网站上已运行另一个 HugoShop。",
+            "WEBSITE_NOT_FOUND": "此网站不存在。",
+            "SHOP_WEBSITE_MISSING": "HugoShop 未分配网站（销售渠道 → 网站）。",
+            "SHOP_NOT_CONFIGURED": "此网站没有关联的 HugoShop。"
         },
         "orderStatus": {
             "open": "未处理",

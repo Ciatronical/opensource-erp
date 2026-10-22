@@ -8,7 +8,7 @@
 //
 // Preise kommen als Zahlen, nicht als formatierte Zeichenketten. Die Bridge
 // formatierte in PHP (formatPrice); in OpensourceERP formatiert die
-// Oberflaeche. Fuer das shop-ui heisst das: die Anzeige uebernimmt die
+// Oberflaeche. Fuer das portal-ui heisst das: die Anzeige uebernimmt die
 // Formatierung, siehe dev/shop-migration.md.
 
 /**
@@ -20,32 +20,37 @@
  * @param object $db Company-Datenbankverbindung
  * @param string $uuid Wert des Kontext-Cookies
  * @return string Warenkorb-Kennung
- * @throws ApiError SHOP_CONTEXT_ERROR wenn der Kontext nicht existiert
+ * @throws ApiError PORTAL_CONTEXT_ERROR wenn der Kontext nicht existiert
  */
 function cartOfContext($db, string $uuid): string {
-    $context = shopContextRequire($db, $uuid);
+    $context = portalContextRequire($db, $uuid);
     if (!empty($context['cart_uuid'])) {
         return $context['cart_uuid'];
     }
 
     // Anlegen und anhaengen in einem Vorgang: der neue Korb uebernimmt den
     // Kunden des Kontextes, damit er beim Abmelden nicht aufgeraeumt wird,
-    // und seinen HugoShop — Preise, Angebot und Versand gelten je Kanal.
+    // und den HugoShop der Webseite — Preise, Angebot und Versand gelten je
+    // Kanal.
     $zeile = $db->getOne(
         "WITH neu AS (
              INSERT INTO carts_hugoshop (uuid, customer_id, active, channel_id)
-             SELECT :cart_uuid, con.customer_id, NOW(), con.channel_id
-               FROM context_hugoshop con WHERE con.uuid = :uuid
+             SELECT :cart_uuid, con.customer_id, NOW(), CAST(:kanal AS integer)
+               FROM portal_context_oserp con WHERE con.uuid = :uuid
              RETURNING uuid
          )
-         UPDATE context_hugoshop SET cart_uuid = (SELECT uuid FROM neu)
+         UPDATE portal_context_oserp SET cart_uuid = (SELECT uuid FROM neu)
           WHERE uuid = :uuid
          RETURNING cart_uuid",
-        [':cart_uuid' => shopNewContextUuid(), ':uuid' => $uuid]
+        [
+            ':cart_uuid' => portalNewUuid(),
+            ':uuid'      => $uuid,
+            ':kanal'     => shopChannelOfWebsite($db, (int)$context['website_id']),
+        ]
     );
 
     if (!$zeile || empty($zeile['cart_uuid'])) {
-        throw new ApiError("SHOP_CONTEXT_ERROR", 'Warenkorb konnte nicht angelegt werden');
+        throw new ApiError("PORTAL_CONTEXT_ERROR", 'Warenkorb konnte nicht angelegt werden');
     }
     return $zeile['cart_uuid'];
 }
@@ -197,7 +202,7 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, str
  * @return array{positions: array, totalSum: float, ...}
  */
 function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, ?string $land = null): array {
-    $stammdaten = shopInvoicingData($db, $customerId);
+    $stammdaten = customerInvoicingData($db, $customerId);
     $precision  = (float)$stammdaten['precision'];
     $taxzoneId  = (int)$stammdaten['taxzone_id'];
 
@@ -381,7 +386,7 @@ function cartPositionShape(array $p, bool $simple): array {
  * @param int $partsId Artikel
  * @param int $menge Anzahl, mindestens 1
  * @return array{cartPosCount: int}
- * @throws ApiError SHOP_CONTEXT_ERROR, INVALID_QUANTITY, PART_NOT_FOUND
+ * @throws ApiError PORTAL_CONTEXT_ERROR, INVALID_QUANTITY, PART_NOT_FOUND
  */
 function cartAdd($db, string $uuid, int $partsId, int $menge): array {
     if (1 > $menge) {
@@ -485,7 +490,7 @@ function cartSetQuantity($db, string $cartUuid, ?int $customerId, int $posId, in
         return cartRemovePos($db, $cartUuid, $customerId, $posId);
     }
 
-    $stammdaten = shopInvoicingData($db, $customerId);
+    $stammdaten = customerInvoicingData($db, $customerId);
     $precision  = (float)$stammdaten['precision'];
 
     $zeile = $db->getOne(
@@ -534,7 +539,7 @@ function cartSetQuantity($db, string $cartUuid, ?int $customerId, int $posId, in
  * @return array
  */
 function cartSummary($db, string $cartUuid, ?int $customerId): array {
-    $stammdaten = shopInvoicingData($db, $customerId);
+    $stammdaten = customerInvoicingData($db, $customerId);
     $summen = cartTotals($db, $cartUuid, (float)$stammdaten['precision'], (int)$stammdaten['taxzone_id'],
                          shopShippingCountry($db, $customerId, [], true));
 
@@ -632,7 +637,7 @@ function shopShippingCountry($db, ?int $customerId, array $lieferadresse = [], b
                         AND COALESCE(s.module, 'CT') = 'CT'),
                     CASE WHEN :standard = 1 THEN
                         (SELECT s.shiptocountry FROM shipto s
-                           JOIN customer_ext ce ON ce.hugoshop_shipto_id = s.shipto_id
+                           JOIN customer_ext ce ON ce.portal_shipto_id = s.shipto_id
                           WHERE ce.customer_id = :kunde_b AND s.trans_id = :kunde_c
                             AND COALESCE(s.module, 'CT') = 'CT')
                     END,
@@ -701,7 +706,8 @@ function cartClear($db, string $cartUuid): void {
 /**
  * Fuehrt den Gastkorb mit dem Warenkorb des Kunden zusammen
  *
- * Wird beim Anmelden gerufen. Drei Faelle, alle in einem Vorgang:
+ * Wird beim Anmelden gerufen — über den Haken login des Kundenportals
+ * (lib/portal_hooks.php). Drei Faelle, alle in einem Vorgang:
  *
  *   kein Kundenkorb        der Gastkorb wird zum Kundenkorb
  *   kein Gastkorb          der Kundenkorb wird an den Kontext gehaengt
@@ -720,15 +726,22 @@ function cartClear($db, string $cartUuid): void {
  * @return void
  */
 function cartMergeIntoCustomerCart($db, string $uuid, int $customerId): void {
-    $context = shopContextRequire($db, $uuid);
+    $context = portalContextRequire($db, $uuid);
     $gastKorb = $context['cart_uuid'] ?? null;
+
+    // Webseite ohne HugoShop: nichts zusammenzuführen
+    try {
+        $kanal = shopChannelOfWebsite($db, (int)$context['website_id']);
+    } catch (ApiError $e) {
+        return;
+    }
 
     $kundenKorb = $db->getOne(
         "SELECT uuid FROM carts_hugoshop
           WHERE customer_id = :customer_id AND (:gast_korb::text IS NULL OR uuid <> :gast_korb)
             AND channel_id = CAST(:kanal AS integer)
           ORDER BY active DESC LIMIT 1",
-        [':customer_id' => $customerId, ':gast_korb' => $gastKorb, ':kanal' => (int)$context['channel_id']]
+        [':customer_id' => $customerId, ':gast_korb' => $gastKorb, ':kanal' => $kanal]
     );
     $kundenKorb = $kundenKorb['uuid'] ?? null;
 
@@ -746,7 +759,7 @@ function cartMergeIntoCustomerCart($db, string $uuid, int $customerId): void {
     // Kein mitgebrachter Korb: den vorhandenen anhaengen.
     if (null === $gastKorb) {
         $db->execute(
-            "UPDATE context_hugoshop SET cart_uuid = :cart_uuid WHERE uuid = :uuid",
+            "UPDATE portal_context_oserp SET cart_uuid = :cart_uuid WHERE uuid = :uuid",
             [':cart_uuid' => $kundenKorb, ':uuid' => $uuid]
         );
         return;
@@ -763,7 +776,7 @@ function cartMergeIntoCustomerCart($db, string $uuid, int $customerId): void {
     );
 
     $db->execute(
-        "UPDATE context_hugoshop SET cart_uuid = :kunden_korb WHERE uuid = :uuid",
+        "UPDATE portal_context_oserp SET cart_uuid = :kunden_korb WHERE uuid = :uuid",
         [':kunden_korb' => $kundenKorb, ':uuid' => $uuid]
     );
 

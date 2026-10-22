@@ -411,7 +411,7 @@ Mindestabnahme an; „−" an der Mindestabnahme entfernt die Position.
 **Lieferbedingung** (Punkt 7, Weg a): je Position in Warenkorb und Kasse,
 und in der Rechnung im Langtext der Position.
 
-**Shop-Widget** (`shop-ui`, Bündel neu gebaut, beide auf dem Stand des
+**Shop-Widget** (`portal-ui`, Bündel neu gebaut, beide auf dem Stand des
 Quelltexts): Versandart oder „versandkostenfrei", Sperrgrund statt Betrag,
 Kaufknöpfe gesperrt; Lieferbedingung und Mindestabnahme je Position; die
 Kasse gibt ihre Adresswahl an den Warenkorb und an PayPal (neue Adresse wird

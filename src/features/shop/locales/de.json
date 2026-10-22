@@ -33,7 +33,8 @@
                 "channel_round_99_net": "Die Rundung auf ,99 ist eingeschaltet, die Verkaufspreise sind aber netto hinterlegt. Mit Brutto-Verkaufspreisen stimmen Warenkorb und Rechnung immer auf den Cent überein."
             },
             "points": {
-                "no_parts_offered": "Kein Artikel angeboten"
+                "no_parts_offered": "Kein Artikel angeboten",
+                "shop_website": "Webseite des Kundenportals zugeordnet"
             },
             "paypalSandbox": "Verkaufskanal „{name}“: PayPal läuft in der Testumgebung — echte Zahlungen sind noch nicht möglich."
         },
@@ -400,6 +401,7 @@
             "republishQueued": "Gespeichert. Die Produktseiten werden mit den neuen Preisen neu geschrieben.",
             "saveError": "Die Kanaleinstellungen konnten nicht gespeichert werden.",
             "loadError": "Die Verkaufskanäle konnten nicht geladen werden.",
+            "secretsLoadError": "Die Schlüssel der Verkaufskanäle konnten nicht geladen werden.",
             "name": "Name",
             "nameRequired": "Der Kanal braucht einen Namen.",
             "autoAddParts": "Neue Shop-Artikel automatisch aufnehmen",
@@ -425,7 +427,12 @@
             "notDeletableInvoices": "{anzahl} Rechnung | {anzahl} Rechnungen",
             "notDeletableWithdrawals": "{anzahl} Widerruf | {anzahl} Widerrufe",
             "notDeletableEbayOrders": "{anzahl} eBay-Bestellung | {anzahl} eBay-Bestellungen",
-            "notDeletableJobsHint": "Offene Aufträge erledigt der nächste Lauf („Offene ausführen“ in der Shop-Übersicht). Mit Belegen bleibt der Kanal abgeschaltet stehen."
+            "notDeletableJobsHint": "Offene Aufträge erledigt der nächste Lauf („Offene ausführen“ in der Shop-Übersicht). Mit Belegen bleibt der Kanal abgeschaltet stehen.",
+            "website": "Webseite",
+            "websiteHint": "Webseite des Kundenportals, auf der dieser HugoShop läuft — Zugang, Adresse und HugoCMS stehen dort (System → Webseiten).",
+            "websiteNone": "— keine Webseite —",
+            "websitesOpen": "Webseiten verwalten",
+            "hugocmsViaWebsite": "Adresse und Schlüssel von HugoCMS stehen bei der Webseite des Kanals; hier wird nur die Verbindung geprüft und die Freigaben gelesen."
         },
         "ebayCondition": {
             "NEW": "Neu",
@@ -492,7 +499,11 @@
             "KLEINANZEIGEN_LEAD_NOT_FOUND": "Diese Anfrage gibt es nicht.",
             "EMAIL_NOT_CONFIGURED": "Das Postfach ist nicht eingerichtet (Firmenkonfiguration → E-Mail).",
             "MISSING_API_KEYS": "Der Anthropic-API-Schlüssel ist nicht hinterlegt (Firmenkonfiguration → KI).",
-            "CLAUDE_API_ERROR": "Die KI hat nicht geantwortet."
+            "CLAUDE_API_ERROR": "Die KI hat nicht geantwortet.",
+            "CHANNEL_WEBSITE_TAKEN": "Auf dieser Webseite läuft schon ein anderer HugoShop.",
+            "WEBSITE_NOT_FOUND": "Diese Webseite gibt es nicht.",
+            "SHOP_WEBSITE_MISSING": "Dem HugoShop ist keine Webseite zugeordnet (Verkaufskanäle → Webseite).",
+            "SHOP_NOT_CONFIGURED": "Zu dieser Webseite gehört kein HugoShop."
         },
         "orderStatus": {
             "open": "Offen",

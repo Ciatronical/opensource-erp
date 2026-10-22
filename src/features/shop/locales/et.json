@@ -32,7 +32,8 @@
                 "channel_round_99_net": "Ümardamine ,99-ni on sisse lülitatud, kuid müügihinnad on salvestatud netona. Brutohindadega ühtivad ostukorv ja arve alati sendi täpsusega."
             },
             "points": {
-                "no_parts_offered": "Ühtegi artiklit ei pakuta"
+                "no_parts_offered": "Ühtegi artiklit ei pakuta",
+                "shop_website": "Kliendiportaali veebileht määratud"
             },
             "paypalSandbox": "Müügikanal „{name}“: PayPal töötab testkeskkonnas — päris makseid ei saa veel teha."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Salvestatud. Tootelehed kirjutatakse uute hindadega üle.",
             "saveError": "Kanali seadeid ei õnnestunud salvestada.",
             "loadError": "Müügikanaleid ei õnnestunud laadida.",
+            "secretsLoadError": "Müügikanalite võtmeid ei õnnestunud laadida.",
             "name": "Nimi",
             "nameRequired": "Kanalil peab olema nimi.",
             "autoAddParts": "Lisa uued poe tooted automaatselt",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} arve | {anzahl} arvet",
             "notDeletableWithdrawals": "{anzahl} taganemine | {anzahl} taganemist",
             "notDeletableEbayOrders": "{anzahl} eBay tellimus | {anzahl} eBay tellimust",
-            "notDeletableJobsHint": "Avatud tööd täidab järgmine käivitus („Käivita avatud“ poe ülevaates). Dokumentidega jääb kanal välja lülitatuks."
+            "notDeletableJobsHint": "Avatud tööd täidab järgmine käivitus („Käivita avatud“ poe ülevaates). Dokumentidega jääb kanal välja lülitatuks.",
+            "website": "Veebileht",
+            "websiteHint": "Kliendiportaali veebileht, millel see HugoShop töötab – juurdepääs, aadress ja HugoCMS seadistatakse seal (Süsteem → Veebilehed).",
+            "websiteNone": "– veebilehte pole –",
+            "websitesOpen": "Halda veebilehti",
+            "hugocmsViaWebsite": "HugoCMS-i aadress ja võti on kanali veebilehe juures; siin ainult testitakse ühendust ja loetakse lube."
         },
         "ebayCondition": {
             "NEW": "Uus",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "See nimi on juba olemas.",
             "ASSORTMENT_NAME_INVALID": "Sellest nimest ei saa aadressi moodustada – kasutage tähti või numbreid.",
             "ASSORTMENT_NOT_FOUND": "Kirjet enam ei ole. Laadige vaade uuesti.",
-            "ASSORTMENT_CATEGORY_IN_USE": "Kategooria on endiselt toodetele määratud."
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategooria on endiselt toodetele määratud.",
+            "CHANNEL_WEBSITE_TAKEN": "Sellel veebilehel töötab juba teine HugoShop.",
+            "WEBSITE_NOT_FOUND": "Seda veebilehte pole olemas.",
+            "SHOP_WEBSITE_MISSING": "HugoShopile pole veebilehte määratud (müügikanalid → veebileht).",
+            "SHOP_NOT_CONFIGURED": "Sellele veebilehele ei kuulu ühtegi HugoShopi."
         },
         "orderStatus": {
             "open": "Avatud",

@@ -3,7 +3,7 @@
 Grundlage: `/home/worker/Projekte/dev.hugoshop.dev/kivitendo_bridge/framework/`
 (4.055 Zeilen, 55 Funktionen). Ziel ist ein Backend in der Erweiterung `shop`,
 auf das zwei Zugänge zugreifen — das Admin-Panel im OSERP-Frontend für die
-Mitarbeiter des Betreibers und die Webshop-Webseite (`shop-ui`) für dessen
+Mitarbeiter des Betreibers und die Webshop-Webseite (`portal-ui`) für dessen
 Kunden.
 
 ## 1. Drei Schichten
@@ -48,10 +48,10 @@ Damit ist jede Funktion von beiden Zugängen aufrufbar und einzeln prüfbar.
 Der zehnzeilige Vorspann
 
     $hugoshop_context = getCookie(CONTEXT_COOKIE, null);
-    if(null == $hugoshop_context){ resultInfo(false, "SHOP_CONTEXT_ERROR", …); return; }
+    if(null == $hugoshop_context){ resultInfo(false, "PORTAL_CONTEXT_ERROR", …); return; }
     $pdo = connectPDO();
     $context = shopContextRow($pdo, $hugoshop_context);
-    if(!$context) { resultInfo(false, "SHOP_CONTEXT_ERROR", …); return; }
+    if(!$context) { resultInfo(false, "PORTAL_CONTEXT_ERROR", …); return; }
 
 steht heute wortgleich in siebzehn Funktionen von `shop.account.php`. Er
 gehört genau einmal in die Aktionsschicht des Kundenzugangs:
@@ -75,7 +75,7 @@ Das Admin-Panel hat keinen Kontext. Der Mitarbeiter nennt `customer_id` bzw.
 ## 4. Aktionen des Kundenzugangs
 
 Die Spalte „Fachfunktion" nennt den Namen nach dem Umbau. Aktionsnamen bleiben,
-wo sie stehen — sie sind die Schnittstelle zum `shop-ui`.
+wo sie stehen — sie sind die Schnittstelle zum `portal-ui`.
 
 ### Sitzung und Kontext (`shop.session.php`)
 
@@ -296,7 +296,7 @@ Von 55 Bridge-Funktionen kollidieren genau zwei mit OSERP:
 | `logout` (`shop.session.php:227`) | `logout` (`backend/api/auth.php:369`) | `shopLogout` |
 
 Ohne Umbenennung bricht PHP beim Laden ab („Cannot redeclare"). Die
-Aktionsnamen im `shop-ui` ziehen mit (`shop-ui/src/core/api.js` und die beiden
+Aktionsnamen im `portal-ui` ziehen mit (`portal-ui/src/core/api.js` und die beiden
 Aufrufstellen).
 
 ## 8. Der öffentliche Einstiegspunkt
@@ -326,13 +326,13 @@ Dafür muss `DbhCompany::begin($pdo)` den übergebenen Parameter auch verwenden
 
 Der Kundenzugang liefert heute keinen einheitlichen Rahmen: im Fehlerfall
 `{success:false, text:"<CODE>"}`, sonst die Nutzdaten direkt. So steht es im
-Kopfkommentar von `shop-ui/src/core/api.js`, und `send()` gibt entsprechend
+Kopfkommentar von `portal-ui/src/core/api.js`, und `send()` gibt entsprechend
 `data` zurück.
 
 OSERP verwendet `resultInfo($success, $text, $data, $debug)` mit den Nutzdaten
 unter `payload`. Zwei Formate im selben Modul wären eine dauerhafte
 Fehlerquelle. Empfehlung: auch der Kundenzugang antwortet im OSERP-Format; im
-`shop-ui` ändert sich dafür eine Zeile:
+`portal-ui` ändert sich dafür eine Zeile:
 
     return data.payload ?? data;
 
@@ -387,6 +387,6 @@ einzeln angesehen werden.
 4. Beide Einstiegspunkte, Allowlist, `shopLogin`/`shopLogout`
 5. Rechnung und Zahlung auf Faktura, Print und E-Mail von OSERP
 6. `src/features/shop/` — Admin-Panel, Routen in allen 21 Sprachen
-7. `shop-ui` auf den Rahmen aus 9. umstellen, Proxy einrichten
+7. `portal-ui` auf den Rahmen aus 9. umstellen, Proxy einrichten
 
 Nach Schritt 5 ist der Shop lauffähig, nach Schritt 6 verwaltbar.

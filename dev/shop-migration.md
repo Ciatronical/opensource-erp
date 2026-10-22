@@ -13,7 +13,7 @@ Backend greifen zwei Zugänge zu:
 
 - **Admin-Panel** im OSERP-Frontend — für die Mitarbeiter des Shop-Betreibers.
   Normale OSERP-Sitzung, `permit()`.
-- **Webshop-Webseite** (`shop-ui`, externer Hugo-Client) — für die Kunden des
+- **Webshop-Webseite** (`portal-ui`, externer Hugo-Client) — für die Kunden des
   Betreibers. Anonym, Sitzungslogik unverändert aus der Bridge.
 
 Kunden erreichen das Admin-Panel nicht. Mitarbeiter sind keine Kunden.
@@ -25,7 +25,7 @@ OSERP-Erweiterung statt der Bridge auf.
 
 | | Kunde (Webshop) | Mitarbeiter (Admin-Panel) |
 | --- | --- | --- |
-| Cookie | `HUGOSHOPCLIENTID` | `SESSION_COOKIE` (`backend/api/config.php:116`) |
+| Cookie | `PORTALCLIENTID` | `SESSION_COOKIE` (`backend/api/config.php:116`) |
 | Sitzungstabelle | `context_hugoshop` | `auth.session_oserp` |
 | Identität | `customer.id` | `auth.user.id` + `client_id` |
 | Passwort | `customer.user_password`, bcrypt | `auth.user`, PBKDF2 (`backend/api/password.php`) |
@@ -66,7 +66,7 @@ Diese Teile der Bridge werden nicht portiert, sondern ersetzt:
    `shopLogoutCustomer`.
 4. ~~**Same-Origin.**~~ Erledigt in Stufe 7: Proxy im Shop-Docroot, damit
    bleibt der Aufruf same-origin und das Kontext-Cookie geht nicht verloren.
-5. ~~**Antwortformat.**~~ Erledigt in Stufe 7: das `shop-ui` nimmt Antworten
+5. ~~**Antwortformat.**~~ Erledigt in Stufe 7: das `portal-ui` nimmt Antworten
    mit und ohne Hülle an.
 
 ## Tabellennamen
@@ -110,7 +110,7 @@ die reine Shop-Variante stand.
 | 4 | Beide Einstiegspunkte, Allowlist, `shopLogin`/`shopLogout` | **erledigt** |
 | 5 | Rechnung und Zahlung auf Faktura, Print und E-Mail | **erledigt**, PDF/Mail/PayPal ungeprüft |
 | 6 | `src/features/shop/` — Admin-Panel, Routen in 21 Sprachen | **erledigt** |
-| 7 | `shop-ui` auf das Antwortformat umstellen, Proxy einrichten | **erledigt** |
+| 7 | `portal-ui` auf das Antwortformat umstellen, Proxy einrichten | **erledigt** |
 
 Nach Stufe 5 ist der Shop lauffähig, nach Stufe 6 verwaltbar.
 
@@ -283,7 +283,7 @@ Beim Portieren korrigiert, jeweils im Code begründet:
   `ADDRESS_NOT_FOUND`, wenn nichts getroffen wurde. Die Bridge meldete bei
   `updateDeliveryAddress` auch dann Erfolg, wenn keine Zeile geändert wurde.
 - **Preise als Zahlen.** Die Bridge lieferte formatierte Zeichenketten
-  (`formatPrice`). Formatiert wird jetzt in der Oberfläche — für das `shop-ui`
+  (`formatPrice`). Formatiert wird jetzt in der Oberfläche — für das `portal-ui`
   ein Punkt in Stufe 7.
 - **Eindeutiger Index auf `(cart_uuid, parts_id)`** im Schema ergänzt. Damit
   wird aus Suchen-und-Entscheiden ein `INSERT … ON CONFLICT DO UPDATE`; zwei
@@ -347,7 +347,7 @@ Aufruf von `/api/shop/` mit `Class "ApiError" not found`.
 
 ### Mandant ohne Sitzung
 
-Die Shop-Webseite weist sich mit dem Kopf `X-Shop-Key` aus; der Wert steht in
+Die Shop-Webseite weist sich mit dem Kopf `X-Portal-Key` aus; der Wert steht in
 `defaults_oserp.shop_public_key`. Gesucht wird wie in
 `backend/webhook/telegram.php`: über die Mandanten der Auth-Datenbank, Vergleich
 mit `hash_equals`, ein leerer Schlüssel wird nie angenommen.
@@ -697,7 +697,7 @@ erst der erste Aufruf im Browser.
 Diese Stufe berührt **das Bridge-Repository**, nicht OpensourceERP:
 `/home/worker/Projekte/dev.hugoshop.dev/kivitendo_bridge/`.
 
-### Das `shop-ui` verträgt jetzt beide Backends
+### Das `portal-ui` verträgt jetzt beide Backends
 
 Damit lässt sich der Shop neu bauen, bevor umgeschaltet wird — und im Zweifel
 zurückschalten, ohne ihn erneut zu bauen.
@@ -707,8 +707,8 @@ zurückschalten, ohne ihn erneut zu bauen.
 | `src/core/api.js` | Antwort mit Hülle (`payload`) und ohne; `login`/`logout` versuchen erst `shopLogin`/`shopLogout` und fallen auf die alten Namen zurück |
 | `src/core/dates.js` | neu: nimmt `15.03.2026` und `2026-03-15` an |
 | `src/core/cart-data.js` | `thumbnail` mit Rückfall auf den Schreibfehler `tumbnail` |
-| `src/components/shop-account-orders.js` | dasselbe für die Rechnungspositionen, Datum über `formatDate()` |
-| `shop-login.js`, `shop-register.js`, `shop-account-buttons.js` | rufen die neuen Helfer statt `apiRequest('login')` |
+| `src/components/portal-account-orders.js` | dasselbe für die Rechnungspositionen, Datum über `formatDate()` |
+| `portal-login.js`, `portal-register.js`, `portal-account-buttons.js` | rufen die neuen Helfer statt `apiRequest('login')` |
 
 Preise brauchten keine Änderung: `src/core/money.js` wandelt jeden Betrag beim
 Eintreffen in eine Zahl um und verkraftet beide Schreibweisen. Dass das
@@ -717,9 +717,9 @@ Oberfläche nicht.
 
 ### Der Proxy
 
-`web/oserp/shop-api-proxy.php` tritt an die Stelle von `web/shop-api/index.php`.
+`web/oserp/portal-api-proxy.php` tritt an die Stelle von `web/portal-api/index.php`.
 Er hält den Aufruf same-origin — sonst schickt der Browser das Cookie
-`HUGOSHOPCLIENTID` (`SameSite=Strict`) nicht mit und der Warenkorb wäre bei
+`PORTALCLIENTID` (`SameSite=Strict`) nicht mit und der Warenkorb wäre bei
 jeder Anfrage leer — und trägt den Shop-Schlüssel nach, sodass der Browser ihn
 nie sieht.
 
@@ -744,11 +744,11 @@ mit zwei Webservern und einer Testdatenbank.
   Bestellliste
 - Der alte Aktionsname `login` bleibt am öffentlichen Zugang verwehrt
   (`API_ACTION_NOT_ALLOWED`) — genau der Fehlercode, auf den der Rückfall im
-  `shop-ui` reagiert
+  `portal-ui` reagiert
 - Eine Weiterleitung (302 mit `Location`) wird nicht verschluckt
 - Ohne konfigurierten Schlüssel meldet der Proxy HTTP 503 und
-  `SHOP_PROXY_NOT_CONFIGURED`
-- `npm run build` des `shop-ui` fehlerfrei (152 kB)
+  `PORTAL_PROXY_NOT_CONFIGURED`
+- `npm run build` des `portal-ui` fehlerfrei (152 kB)
 
 ### Was der Umstellung noch fehlt
 
@@ -757,6 +757,6 @@ dem Umschalten von `sonic24.de`:
 
 1. Erweiterung beim Mandanten aktivieren, Schema-Update laufen lassen
 2. Shop-Einstellungen füllen, bis die Übersicht grün ist
-3. `shop-ui` neu bauen und veröffentlichen (läuft weiter gegen die Bridge)
+3. `portal-ui` neu bauen und veröffentlichen (läuft weiter gegen die Bridge)
 4. Proxy einrichten — ab hier läuft der Shop gegen OpensourceERP
 5. PDF und Mailversand prüfen: beides ist bisher nirgends vollständig gelaufen

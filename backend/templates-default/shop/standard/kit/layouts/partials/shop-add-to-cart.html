@@ -13,7 +13,7 @@
     max         Hoechstmenge, optional
     class       Layout-Klassen fuer den Host, optional
 */ -}}
-{{- partial "shop-ui-assets.html" . -}}
+{{- partial "portal-ui-assets.html" . -}}
 <shop-add-to-cart
   product="{{ .product }}"
   {{- with .cartUrl }} cart-url="{{ . }}"{{ end }}

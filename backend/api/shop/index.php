@@ -7,9 +7,11 @@
  * Fuer die Mitarbeiter des Shop-Betreibers: normale OpensourceERP-Sitzung,
  * Rechtepruefung ueber permit(). Die Kunden des Betreibers erreichen diesen
  * Einstiegspunkt nicht — sie haben keine Zeile in auth.user; ihr Zugang liegt
- * unter backend/shop/index.php.
+ * im Kundenportal unter backend/portal/index.php (und weiterhin
+ * backend/shop/index.php).
  *
- * Beide Zugaenge teilen sich die Fachschicht unter lib/.
+ * Beide Zugaenge teilen sich die Fachschicht unter lib/; Sitzung, Konto und
+ * Rechnungen kommen aus dem Kern (backend/api/portal/lib/).
  */
 
 // ApiError muss VOR lib/payment.php stehen: dort erbt ShopPaymentError davon,
@@ -20,28 +22,9 @@
 // per require_once ohnehin.
 require_once __DIR__.'/../error.php';
 
-require_once __DIR__.'/../faktura/faktura.php';
-require_once __DIR__.'/../print/print.php';
-require_once __DIR__.'/../print/template_engine.php';
-require_once __DIR__.'/../email/smtp.class.php';
-
-require_once __DIR__.'/lib/config.php';
-require_once __DIR__.'/lib/context.php';
-require_once __DIR__.'/lib/cart.php';
-require_once __DIR__.'/lib/account.php';
-require_once __DIR__.'/lib/search.php';
-require_once __DIR__.'/lib/invoice.php';
-require_once __DIR__.'/lib/mail.php';
-require_once __DIR__.'/lib/payment.php';
-require_once __DIR__.'/lib/analytics.php';
-require_once __DIR__.'/lib/withdrawal.php';
-require_once __DIR__.'/lib/redirect.php';
-require_once __DIR__.'/lib/publish.php';
-require_once __DIR__.'/lib/categories.php';
-require_once __DIR__.'/lib/hugocms.php';
-require_once __DIR__.'/../customer_vendor/filemanager.php';   // Datenverzeichnis der Kanalbilder und der Medienbibliothek
-require_once __DIR__.'/lib/channel_images.php';
-require_once __DIR__.'/lib/media.php';
+// Die Fachschicht des Shops samt Kundenportal (lib/shop.php) und die Haken,
+// über die der Shop am Portal hängt
+require_once __DIR__.'/lib/portal_hooks.php';
 require_once __DIR__.'/admin.php';
 require_once __DIR__.'/media.php';
 require_once __DIR__.'/assortment.php';  // Ansicht Sortiment: Gruppen und Kategorien

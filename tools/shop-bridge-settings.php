@@ -189,7 +189,7 @@ echo "-- Aus $konfig übernommen am ".date('Y-m-d H:i')."\n";
 echo "-- Vor dem Einspielen lesen: die Werte überschreiben, was im Admin-Panel steht.\n";
 echo "--\n";
 echo "-- NOCH ZU SETZEN, hier nicht enthalten (Kanalkarte des HugoShops):\n";
-echo "--   Shop-Schlüssel       — neu vergeben; der Läufer trägt ihn in oserp-shop/config.json ein\n";
+echo "--   Shop-Schlüssel       — neu vergeben; der Läufer trägt ihn in oserp-portal/config.json ein\n";
 echo "--   Adresse von OSERP    — für Proxy und 404-Seite, z.B. https://erp.example/shop/\n";
 echo "--   Vorlagensatz         — eigener Vorlagensatz der Instanz, falls es einen gibt\n";
 echo "--   Erlaubte Herkunft    — nur ohne Proxy nötig\n";

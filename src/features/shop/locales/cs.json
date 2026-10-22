@@ -32,7 +32,8 @@
                 "channel_round_99_net": "Zaokrouhlení na ,99 je zapnuté, ale prodejní ceny jsou uloženy bez DPH. S cenami s DPH se košík a faktura vždy shodují na haléř."
             },
             "points": {
-                "no_parts_offered": "Žádná nabízená položka"
+                "no_parts_offered": "Žádná nabízená položka",
+                "shop_website": "Přiřazen web zákaznického portálu"
             },
             "paypalSandbox": "Prodejní kanál „{name}“: PayPal běží v testovacím prostředí — skutečné platby zatím nejsou možné."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Uloženo. Stránky produktů budou přepsány s novými cenami.",
             "saveError": "Nastavení kanálu se nepodařilo uložit.",
             "loadError": "Prodejní kanály se nepodařilo načíst.",
+            "secretsLoadError": "Klíče prodejních kanálů se nepodařilo načíst.",
             "name": "Název",
             "nameRequired": "Kanál potřebuje název.",
             "autoAddParts": "Nové položky obchodu přidávat automaticky",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} faktura | {anzahl} faktury",
             "notDeletableWithdrawals": "{anzahl} odstoupení | {anzahl} odstoupení",
             "notDeletableEbayOrders": "{anzahl} objednávka eBay | {anzahl} objednávky eBay",
-            "notDeletableJobsHint": "Otevřené úlohy dokončí příští běh („Spustit otevřené“ v přehledu obchodu). S doklady zůstane kanál vypnutý."
+            "notDeletableJobsHint": "Otevřené úlohy dokončí příští běh („Spustit otevřené“ v přehledu obchodu). S doklady zůstane kanál vypnutý.",
+            "website": "Web",
+            "websiteHint": "Web zákaznického portálu, na kterém tento HugoShop běží – přístup, adresa a HugoCMS se nastavují tam (Systém → Weby).",
+            "websiteNone": "– žádný web –",
+            "websitesOpen": "Spravovat weby",
+            "hugocmsViaWebsite": "Adresa a klíč HugoCMS jsou u webu kanálu; zde se jen ověří spojení a načtou oprávnění."
         },
         "ebayCondition": {
             "NEW": "Nové",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "Tento název už existuje.",
             "ASSORTMENT_NAME_INVALID": "Z tohoto názvu nelze vytvořit adresu – použijte písmena nebo číslice.",
             "ASSORTMENT_NOT_FOUND": "Záznam už neexistuje. Načtěte prosím zobrazení znovu.",
-            "ASSORTMENT_CATEGORY_IN_USE": "Kategorie je stále přiřazena položkám."
+            "ASSORTMENT_CATEGORY_IN_USE": "Kategorie je stále přiřazena položkám.",
+            "CHANNEL_WEBSITE_TAKEN": "Na tomto webu už běží jiný HugoShop.",
+            "WEBSITE_NOT_FOUND": "Tento web neexistuje.",
+            "SHOP_WEBSITE_MISSING": "HugoShopu není přiřazen žádný web (prodejní kanály → web).",
+            "SHOP_NOT_CONFIGURED": "K tomuto webu nepatří žádný HugoShop."
         },
         "orderStatus": {
             "open": "Otevřeno",

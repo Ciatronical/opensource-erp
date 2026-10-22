@@ -3944,3 +3944,236 @@ DO $$ BEGIN
         PERFORM parts_usage_rebuild();
     END IF;
 END $$;
+
+-- ============================================================================
+-- KUNDENPORTAL (dev/kundenportal.md, 2026-10-21)
+-- ============================================================================
+--
+-- Kunden erreichen über eine Webseite (HugoCMS) ihr Konto: Anmeldung,
+-- Stammdaten, Adressen, Rechnungen — und, je nach aktiver Erweiterung, den
+-- Shop (Warenkorb, Kasse) oder die Fahrzeuge (LxCars). Der Kern hält die
+-- Webseite, die Sitzung, den Rechnungslink und die Freischaltung; die
+-- Erweiterungen hängen sich daran (shop: sales_channel_shop.website_id,
+-- portal_context_oserp.cart_uuid; ar_link_hugoshop trägt die PayPal-Felder
+-- zur selben uuid wie invoice_link_oserp).
+--
+-- Reihenfolge: dieses Schema läuft vor den Erweiterungen, deren Schemata
+-- dürfen die Tabellen hier voraussetzen.
+
+-- Webseite: Name, Einstellungen (jsonb, Schlüssel aus website_setting_keys())
+CREATE TABLE IF NOT EXISTS website_oserp
+(
+    id       integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name     text NOT NULL,
+    active   boolean NOT NULL DEFAULT true,
+    sortkey  integer,
+    settings jsonb,
+    itime    timestamp without time zone DEFAULT now(),
+    mtime    timestamp without time zone,
+    CONSTRAINT website_oserp_name_key UNIQUE (name)
+);
+
+COMMENT ON TABLE  website_oserp          IS 'Kundenportal: Webseite (HugoCMS), über die Kunden ihr Konto erreichen';
+COMMENT ON COLUMN website_oserp.settings IS 'Einstellungen ohne Geheimnisse, Schlüssel aus website_setting_keys()';
+
+-- Geheimnisse der Webseite: Schlüssel des Zugangs (public_key) und der
+-- HugoCMS-Zugang (hugocms_key) — nur für edit_shop_config (getWebsiteSecrets),
+-- nie an den öffentlichen Zugang
+CREATE TABLE IF NOT EXISTS website_secret_oserp
+(
+    website_id integer NOT NULL REFERENCES website_oserp (id) ON DELETE CASCADE,
+    key        text NOT NULL,
+    value      text NOT NULL DEFAULT '',
+    mtime      timestamp without time zone DEFAULT now(),
+    PRIMARY KEY (website_id, key)
+);
+
+COMMENT ON TABLE website_secret_oserp IS 'Kundenportal: Geheimnisse einer Webseite — nur für edit_shop_config, nie an den öffentlichen Zugang';
+
+-- Der Schlüssel bestimmt im öffentlichen Zugang Mandant und Webseite
+-- (portalPublicFindCompany): zwei Webseiten mit demselben Schlüssel wären
+-- nicht zu unterscheiden.
+CREATE UNIQUE INDEX IF NOT EXISTS website_secret_oserp_public_key
+    ON website_secret_oserp (value)
+ WHERE key = 'public_key' AND value <> '';
+
+-- Sitzung eines Besuchers (Cookie HUGOSHOPCLIENTID — der Name bleibt, damit
+-- laufende Webseiten ihre Sitzungen behalten). uuid kommt aus dem Cookie und
+-- gehört immer gebunden. cart_uuid gehört der Shop-Erweiterung (Warenkorb,
+-- Fremdschlüssel dort).
+CREATE TABLE IF NOT EXISTS portal_context_oserp
+(
+    uuid        text NOT NULL PRIMARY KEY,
+    website_id  integer NOT NULL REFERENCES website_oserp (id) ON DELETE CASCADE,
+    customer_id integer REFERENCES customer (id) ON DELETE CASCADE,
+    cart_uuid   text,
+    active      timestamp without time zone DEFAULT now()
+);
+
+COMMENT ON TABLE  portal_context_oserp           IS 'Kundenportal: Sitzung eines Besuchers einer Webseite';
+COMMENT ON COLUMN portal_context_oserp.cart_uuid IS 'Warenkorb der Shop-Erweiterung (carts_hugoshop.uuid), sonst NULL';
+
+CREATE INDEX IF NOT EXISTS portal_context_oserp_customer_idx ON portal_context_oserp (customer_id);
+
+-- Drossel der Freischaltung je Sitzung (dev/shop-konto-freischaltung.md, F6):
+-- Zähler der Anfragen und Beginn des laufenden Tages
+ALTER TABLE portal_context_oserp ADD COLUMN IF NOT EXISTS activation_count integer NOT NULL DEFAULT 0;
+ALTER TABLE portal_context_oserp ADD COLUMN IF NOT EXISTS activation_reset timestamp without time zone;
+
+-- Rechnungslink: der Kunde sieht und lädt seine Rechnung über diese uuid, auch
+-- ohne Anmeldung (Mail, Rechnungsseite). Die uuid ist das Geheimnis.
+CREATE TABLE IF NOT EXISTS invoice_link_oserp
+(
+    uuid       text NOT NULL PRIMARY KEY,
+    ar_id      integer NOT NULL REFERENCES ar (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    website_id integer REFERENCES website_oserp (id) ON DELETE SET NULL,
+    active     timestamp without time zone DEFAULT now(),
+    CONSTRAINT invoice_link_oserp_ar_id_key UNIQUE (ar_id)
+);
+
+COMMENT ON TABLE invoice_link_oserp IS 'Kundenportal: Geheimnis im Rechnungslink — ersetzt die Anmeldung';
+
+-- Freischaltung eines Bestandskunden (dev/shop-konto-freischaltung.md): die
+-- Kennung geht per WhatsApp an den Kunden, der damit E-Mail-Adresse und
+-- Kennwort setzt. Je Kunde höchstens eine offene Kennung.
+CREATE TABLE IF NOT EXISTS portal_activation_oserp
+(
+    uuid        text NOT NULL PRIMARY KEY,
+    customer_id integer NOT NULL REFERENCES customer (id) ON DELETE CASCADE,
+    website_id  integer REFERENCES website_oserp (id) ON DELETE CASCADE,
+    phone       text NOT NULL DEFAULT '',
+    source      text NOT NULL DEFAULT 'portal',
+    created     timestamp without time zone NOT NULL DEFAULT now(),
+    expires     timestamp without time zone NOT NULL,
+    used_at     timestamp without time zone,
+    CONSTRAINT portal_activation_oserp_source_check CHECK (source IN ('portal', 'staff'))
+);
+
+COMMENT ON TABLE  portal_activation_oserp        IS 'Kundenportal: Kennung zur Freischaltung eines Bestandskunden (WhatsApp-Link)';
+COMMENT ON COLUMN portal_activation_oserp.source IS 'portal = vom Kunden angefragt, staff = aus der Kundenakte gesendet';
+
+CREATE UNIQUE INDEX IF NOT EXISTS portal_activation_oserp_offen
+    ON portal_activation_oserp (customer_id)
+ WHERE used_at IS NULL;
+
+-- Kunde: Gastkonto und gewählte Standard-Lieferadresse. Umbenannt aus den
+-- Spalten der Shop-Erweiterung (hugoshop_*), wo sie vorhanden sind.
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'customer_ext' AND column_name = 'hugoshop_guest')
+       AND NOT EXISTS (SELECT 1 FROM information_schema.columns
+                        WHERE table_name = 'customer_ext' AND column_name = 'portal_guest') THEN
+        ALTER TABLE customer_ext RENAME COLUMN hugoshop_guest TO portal_guest;
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'customer_ext' AND column_name = 'hugoshop_shipto_id')
+       AND NOT EXISTS (SELECT 1 FROM information_schema.columns
+                        WHERE table_name = 'customer_ext' AND column_name = 'portal_shipto_id') THEN
+        ALTER TABLE customer_ext RENAME COLUMN hugoshop_shipto_id TO portal_shipto_id;
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_constraint
+                WHERE conrelid = 'customer_ext'::regclass AND conname = 'customer_ext_hugoshop_shipto_id_fkey') THEN
+        ALTER TABLE customer_ext RENAME CONSTRAINT customer_ext_hugoshop_shipto_id_fkey TO customer_ext_portal_shipto_id_fkey;
+    END IF;
+END $$;
+
+ALTER TABLE customer_ext ADD COLUMN IF NOT EXISTS portal_guest boolean NOT NULL DEFAULT false;
+ALTER TABLE customer_ext ADD COLUMN IF NOT EXISTS portal_shipto_id integer;
+
+COMMENT ON COLUMN customer_ext.portal_guest     IS 'Kundenportal: Gast (ohne Kennwort, etwa Gastbestellung im Shop)';
+COMMENT ON COLUMN customer_ext.portal_shipto_id IS 'Kundenportal: gewählte Standard-Lieferadresse';
+
+-- SET NULL und nicht CASCADE: ein Zeiger auf eine Einstellung, keine
+-- Besitzbeziehung. Mit CASCADE risse das Löschen einer Lieferadresse die
+-- ganze Kundenzeile mit.
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint
+                    WHERE conrelid = 'customer_ext'::regclass
+                      AND conname = 'customer_ext_portal_shipto_id_fkey') THEN
+        ALTER TABLE customer_ext
+            ADD CONSTRAINT customer_ext_portal_shipto_id_fkey
+            FOREIGN KEY (portal_shipto_id) REFERENCES shipto (shipto_id) ON DELETE SET NULL;
+    END IF;
+END $$;
+
+-- Einstellungen einer Webseite: Schlüssel in settings bzw. — secret — in
+-- website_secret_oserp. Was eine Erweiterung je Webseite braucht (Adressmuster
+-- der Produktseiten, PayPal), steht bei ihr (Kanal), nicht hier.
+CREATE OR REPLACE FUNCTION website_setting_keys()
+RETURNS TABLE (key text, secret boolean)
+    LANGUAGE sql IMMUTABLE AS $$
+    VALUES
+        -- Zugang der Webseite zu OpensourceERP
+        ('public_key',      true),   -- Schlüssel im Kopf X-Shop-Key, bestimmt Mandant und Webseite
+        ('allowed_origins', false),  -- erlaubte Herkünfte bei Zugriff ohne Weiterleiter
+        ('base_url',        false),  -- Adresse der Webseite
+        ('backend_url',     false),  -- Adresse des Portal-Zugangs von OpensourceERP, für den Weiterleiter
+        ('invoice_page',    false),  -- Seite mit der Rechnungsansicht (Links in Mails)
+        ('activate_page',   false),  -- Seite „Konto freischalten“ (Link in der WhatsApp-Nachricht)
+        ('contact_mail_to', false),  -- Empfänger des Kontaktformulars; leer = Absenderadresse der Firma
+        -- Veröffentlichung
+        ('template_set',    false),  -- Vorlagensatz des Pakets (backend/templates-default/portal/<satz>/kit/)
+        ('hugocms_url',     false),  -- cms-api-Adresse der Webseite in HugoCMS
+        ('hugocms_key',     true)    -- Schlüssel der Shop-Anbindung von HugoCMS
+$$;
+
+-- Ziffern einer Telefonnummer, international ohne Plus: 0171… wird zu
+-- 49171…, +49 171… und 0049… ebenso. Für den Vergleich bei der Freischaltung
+-- (activationFindCustomer); land ist die Vorwahl ohne Plus.
+CREATE OR REPLACE FUNCTION portal_phone_digits(nummer text, land text)
+RETURNS text LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE WHEN d = ''        THEN ''
+                WHEN d LIKE '00%'  THEN substr(d, 3)
+                WHEN d LIKE '0%'   THEN land || substr(d, 2)
+                ELSE d END
+      FROM (SELECT regexp_replace(COALESCE(nummer, ''), '[^0-9]', '', 'g') AS d) x
+$$;
+
+-- Schaltflächen einer WhatsApp-Vorlage (Meta: BUTTONS-Komponente), etwa der
+-- Link zur Freischaltung: [{"type": "URL", "text": "…", "url": "https://…/freischalten/?token={{1}}", "example": "abc"}]
+ALTER TABLE whatsapp_templates ADD COLUMN IF NOT EXISTS buttons jsonb NOT NULL DEFAULT '[]'::jsonb;
+COMMENT ON COLUMN whatsapp_templates.buttons IS 'Schaltflächen (Meta BUTTONS): type URL/QUICK_REPLY/PHONE_NUMBER, text, url mit {{1}} als Suffix, example';
+
+CREATE OR REPLACE FUNCTION website_default_settings() RETURNS jsonb
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT jsonb_build_object('template_set', 'standard')
+$$;
+
+-- Sitzungen verfallen: jeder Zugriff eines Besuchers räumt ein wenig mit auf,
+-- es braucht keinen Cronjob. Frist aus defaults_oserp
+-- (portal_context_lifetime_hours, übergangsweise shop_context_lifetime_hours).
+CREATE OR REPLACE FUNCTION cleanup_portal_context_oserp() RETURNS trigger AS $$
+BEGIN
+    DELETE FROM portal_context_oserp
+     WHERE active < NOW() - (COALESCE(
+               (SELECT value FROM defaults_oserp WHERE key = 'portal_context_lifetime_hours'),
+               (SELECT value FROM defaults_oserp WHERE key = 'shop_context_lifetime_hours'),
+               '24') || ' hours')::interval;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_cleanup_portal_context_oserp') THEN
+        CREATE TRIGGER trigger_cleanup_portal_context_oserp
+            AFTER INSERT OR UPDATE ON portal_context_oserp
+            FOR EACH STATEMENT EXECUTE FUNCTION cleanup_portal_context_oserp();
+    END IF;
+END $$;
+
+-- Abgelaufene Freischaltungen gehen mit — selten genug, um am selben
+-- Trigger zu hängen
+CREATE OR REPLACE FUNCTION cleanup_portal_activation_oserp() RETURNS trigger AS $$
+BEGIN
+    DELETE FROM portal_activation_oserp WHERE expires < NOW() - interval '7 days';
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_cleanup_portal_activation_oserp') THEN
+        CREATE TRIGGER trigger_cleanup_portal_activation_oserp
+            AFTER INSERT ON portal_activation_oserp
+            FOR EACH STATEMENT EXECUTE FUNCTION cleanup_portal_activation_oserp();
+    END IF;
+END $$;

@@ -32,7 +32,8 @@
                 "channel_round_99_net": "El redondeo a ,99 está activado, pero los precios de venta están guardados en neto. Con precios de venta brutos, el carrito y la factura siempre coinciden al céntimo."
             },
             "points": {
-                "no_parts_offered": "Ningún artículo ofrecido"
+                "no_parts_offered": "Ningún artículo ofrecido",
+                "shop_website": "Sitio del portal de clientes asignado"
             },
             "paypalSandbox": "Canal de venta «{name}»: PayPal funciona en el entorno de pruebas — todavía no es posible recibir pagos reales."
         },
@@ -396,6 +397,7 @@
             "republishQueued": "Guardado. Las páginas de producto se reescribirán con los nuevos precios.",
             "saveError": "No se pudieron guardar los ajustes del canal.",
             "loadError": "No se pudieron cargar los canales de venta.",
+            "secretsLoadError": "No se pudieron cargar las claves de los canales de venta.",
             "name": "Nombre",
             "nameRequired": "El canal necesita un nombre.",
             "autoAddParts": "Añadir automáticamente los nuevos artículos de la tienda",
@@ -421,7 +423,12 @@
             "notDeletableInvoices": "{anzahl} factura | {anzahl} facturas",
             "notDeletableWithdrawals": "{anzahl} desistimiento | {anzahl} desistimientos",
             "notDeletableEbayOrders": "{anzahl} pedido de eBay | {anzahl} pedidos de eBay",
-            "notDeletableJobsHint": "La próxima ejecución completa las tareas abiertas («Ejecutar abiertas» en la vista general de la tienda). Con documentos, el canal permanece desactivado."
+            "notDeletableJobsHint": "La próxima ejecución completa las tareas abiertas («Ejecutar abiertas» en la vista general de la tienda). Con documentos, el canal permanece desactivado.",
+            "website": "Sitio web",
+            "websiteHint": "Sitio del portal de clientes en el que funciona este HugoShop; acceso, dirección y HugoCMS se definen allí (Sistema → Sitios web).",
+            "websiteNone": "— sin sitio web —",
+            "websitesOpen": "Gestionar sitios web",
+            "hugocmsViaWebsite": "La dirección y la clave de HugoCMS se definen en el sitio del canal; aquí solo se prueba la conexión y se leen los permisos."
         },
         "ebayCondition": {
             "NEW": "Nuevo",
@@ -461,7 +468,11 @@
             "ASSORTMENT_NAME_TAKEN": "Este nombre ya existe.",
             "ASSORTMENT_NAME_INVALID": "No se puede formar una dirección con este nombre; use letras o cifras.",
             "ASSORTMENT_NOT_FOUND": "La entrada ya no existe. Vuelva a cargar la vista.",
-            "ASSORTMENT_CATEGORY_IN_USE": "La categoría sigue asignada a artículos."
+            "ASSORTMENT_CATEGORY_IN_USE": "La categoría sigue asignada a artículos.",
+            "CHANNEL_WEBSITE_TAKEN": "Otro HugoShop ya funciona en este sitio.",
+            "WEBSITE_NOT_FOUND": "Este sitio web no existe.",
+            "SHOP_WEBSITE_MISSING": "El HugoShop no tiene ningún sitio web asignado (canales de venta → sitio web).",
+            "SHOP_NOT_CONFIGURED": "Ningún HugoShop pertenece a este sitio."
         },
         "orderStatus": {
             "open": "Abierto",

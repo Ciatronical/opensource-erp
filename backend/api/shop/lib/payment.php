@@ -237,10 +237,12 @@ function paypalAccessToken($db, int $kanal): string {
  * @throws ShopPaymentError, ApiError CART_EMPTY, CART_NOT_OFFERED, SHIPPING_*
  */
 function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSeite, array $lieferadresse = []): array {
-    $context    = shopContextCustomer($db, $uuid);
+    $context    = portalContextCustomer($db, $uuid);
     $customerId = (int)$context['customer_id'];
-    // HugoShop der Sitzung: sein PayPal-Zugang, seine Rücksprungadresse
-    $kanal      = (int)$context['channel_id'];
+    // HugoShop der Webseite: sein PayPal-Zugang; die Rücksprungadresse ist
+    // die der Webseite
+    $website    = (int)$context['website_id'];
+    $kanal      = shopChannelOfWebsite($db, $website);
 
     if (empty($context['cart_uuid'])) {
         throw new ApiError('CART_NOT_FOUND', 'Zu dieser Sitzung gibt es keinen Warenkorb');
@@ -266,7 +268,7 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
     cartRequireOffered($korb);
     cartRequireShipping($korb);
 
-    $rueckweg = rtrim(shopChannelRequire($db, $kanal, 'base_url'), '/').'/shop-api/';
+    $rueckweg = rtrim(websiteRequire($db, $website, 'base_url'), '/').'/portal-api/';
 
     $antwort = paypalRequest($db, $kanal, '/v2/checkout/orders', 'POST', [
         'intent' => 'CAPTURE',

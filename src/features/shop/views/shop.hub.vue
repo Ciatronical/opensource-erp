@@ -551,7 +551,7 @@
                         variant="tonal"
                         prepend-icon="mdi-calendar-clock"
                         :disabled="hugoshops.length > 1 && !installKanaele.length"
-                        @click="shopUiInstallieren(false)"
+                        @click="portalUiInstallieren(false)"
                     >
                         {{ t('ShopView.publish.installUiLater') }}
                     </v-btn>
@@ -560,7 +560,7 @@
                         variant="flat"
                         prepend-icon="mdi-flash"
                         :disabled="hugoshops.length > 1 && !installKanaele.length"
-                        @click="shopUiInstallieren(true)"
+                        @click="portalUiInstallieren(true)"
                     >
                         {{ t('ShopView.publish.installUiNow') }}
                     </v-btn>
@@ -965,17 +965,17 @@ function installierenFragen() {
  *
  * Das Backend legt einen Auftrag „Shop-Benutzerschnittstelle aktualisieren“ (sync_kit) an, der auch dann baut,
  * wenn das Paket schon aktuell war. Sofort: der Auftrag wird gleich
- * ausgeführt; fehlende Mounts oder params.shopui stehen danach als Hinweis
+ * ausgeführt; fehlende Mounts oder params.portalui stehen danach als Hinweis
  * in der Ausgabe des Laufs. Später: der Auftrag bleibt offen für den Cron.
  *
  * @param {boolean} jetzt sofort ausführen oder nur planen
  */
-async function shopUiInstallieren(jetzt) {
+async function portalUiInstallieren(jetzt) {
     installierenGefragt.value = false
     installiert.value = true
     try {
         const kanaele = hugoshops.value.length > 1 ? [...installKanaele.value] : []
-        const antwort = await shop.installShopUi(kanaele, jetzt)
+        const antwort = await shop.installPortalUi(kanaele, jetzt)
         if (shop.error.value) {
             return
         }
@@ -999,7 +999,7 @@ async function shopUiInstallieren(jetzt) {
 /**
  * Ein Lauf wurde angestoßen: melden und beobachten
  *
- * @param {object|null} antwort Antwort von runShopPublishJobs bzw. installShopUi
+ * @param {object|null} antwort Antwort von runShopPublishJobs bzw. installPortalUi
  */
 function gestartet(antwort) {
     // Der Läufer arbeitet jetzt im Hintergrund; die Antwort kommt sofort.

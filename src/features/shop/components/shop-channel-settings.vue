@@ -8,15 +8,17 @@
     shop-config-field dargestellt.
 
     Gespeichert wird verzögert nach jeder Änderung (saveShopChannelSettings).
-    Geheimnisse kommen nie vom Server: das Feld bleibt leer, der Platzhalter
-    sagt, ob etwas hinterlegt ist, und nur ein neu eingegebener Wert geht
-    hinaus.
+    Geheimnisse: Systemadministratoren bekommen sie über getShopChannelSecrets
+    verdeckt in die Felder (Auge-Symbol zum Anzeigen). Für alle anderen bleibt
+    das Feld leer, der Platzhalter sagt, ob etwas hinterlegt ist, und nur ein
+    neu eingegebener Wert geht hinaus. Ein geleertes Feld behält den
+    gespeicherten Wert.
 -->
 <template>
     <div>
         <v-alert type="info" variant="tonal" density="compact" class="mb-2">
             <v-icon start size="small">mdi-shield-key-outline</v-icon>
-            {{ t('crm_fields.shopSecretsNotice') }}
+            {{ t(secretsVisible ? 'crm_fields.shopSecretsNoticeAdmin' : 'crm_fields.shopSecretsNotice') }}
         </v-alert>
 
         <template v-for="(feld, index) in felder" :key="feld.name + '-' + index">
@@ -66,10 +68,10 @@
                     <!-- Kleinanzeigen: Board, Anfragen holen, Feed-Adressen -->
                     <KleinanzeigenStatusConfig v-if="feld.action === 'kleinanzeigenPanel'" :channel-id="channelId" class="mt-2" />
 
-                    <!-- Verbindung zu HugoCMS prüfen: mit den Werten im Formular,
-                         auch wenn sie noch nicht gespeichert sind -->
+                    <!-- Verbindung zu HugoCMS prüfen: Adresse und Schlüssel stehen bei
+                         der Webseite des Kanals (System → Webseiten); hier geht es um
+                         die Freigaben, an denen sich die Adressmuster ausrichten -->
                     <template v-if="feld.action === 'hugocmsTest'">
-                        <v-divider class="my-4" />
                         <v-btn
                             variant="tonal"
                             size="small"
@@ -219,6 +221,10 @@ const props = defineProps({
     settings: { type: Object, default: () => ({}) },
     /** Geheimnisse: Schlüssel -> hinterlegt */
     secretsSet: { type: Object, default: () => ({}) },
+    /** Geheimnisse: Schlüssel -> Wert (getShopChannelSecrets), nur für Systemadministratoren gefüllt */
+    secrets: { type: Object, default: () => ({}) },
+    /** Systemadministrator: Geheimnisse stehen in den Feldern und bleiben nach dem Speichern stehen */
+    secretsVisible: { type: Boolean, default: false },
     /** Auswahllisten (Vorlagensätze) */
     quellen: { type: Object, default: () => ({}) },
     /** Adresse, unter der OpensourceERP gerade läuft, mit Shop-Zugang — für ein leeres backend_url */
@@ -233,7 +239,7 @@ const alleFelder = computed(() => channelSettingFields(props.type))
 
 const WAHR = [true, 't', 'true', '1', 1, 'y', 'yes']
 
-/** Werte für die Felder: Wahrheitswerte als boolean, Geheimnisse leer */
+/** Werte für die Felder: Wahrheitswerte als boolean, Geheimnisse aus secrets (sonst leer) */
 const werte = reactive({})
 const gesetzt = ref({ ...props.secretsSet })
 
@@ -243,7 +249,7 @@ function uebernehmen() {
         if (feld.type === 'checkbox') {
             werte[feld.name] = WAHR.includes(wert)
         } else if (feld.type === 'password') {
-            werte[feld.name] = ''
+            werte[feld.name] = props.secretsVisible ? String(props.secrets?.[feld.name] ?? '') : ''
         } else {
             werte[feld.name] = wert === null || wert === undefined ? '' : String(wert)
         }
@@ -306,9 +312,12 @@ async function speichern() {
             return
         }
         gesetzt.value = { ...(antwort.data.payload?.secrets_set || {}) }
-        // Gespeicherte Geheimnisse verschwinden aus dem Feld — der Platzhalter
-        // sagt danach „hinterlegt"
-        alleFelder.value.filter(feld => feld.type === 'password').forEach(feld => { werte[feld.name] = '' })
+        // Ohne Administratorrechte verschwinden gespeicherte Geheimnisse aus dem
+        // Feld — der Platzhalter sagt danach „hinterlegt"; Administratoren
+        // sehen sie weiter
+        if (!props.secretsVisible) {
+            alleFelder.value.filter(feld => feld.type === 'password').forEach(feld => { werte[feld.name] = '' })
+        }
         zuletzt = JSON.stringify(nutzdaten())
         // Felder, die das Backend nicht kennt (shop_channel_setting_keys), sind
         // nicht gespeichert — meist fehlt das Upstall. Beschriftung statt Schlüssel.

@@ -707,7 +707,7 @@ Ware im Lager ausgebucht wird. Siehe O14.
 (Deutsch, Englisch — die Sprachen der Shop-UI) und im Warenkorb die
 Kennzeichnung „Nicht mehr erhältlich" für Positionen mit `offered: false`.
 Bündel neu gebaut
-(`backend/templates-default/shop/standard/kit/assets/shop-ui/shop-widgets.js`);
+(`backend/templates-default/shop/standard/kit/assets/portal-ui/shop-widgets.js`);
 es geht mit dem nächsten Abgleich des Webseiten-Pakets an die Webseite.
 
 **Übersicht:** Die Auftragsliste zeigt den Kanal je Auftrag.
