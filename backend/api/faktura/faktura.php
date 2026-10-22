@@ -439,6 +439,17 @@ function getFakturaTableConfig($fakturaType) {
 }
 
 /**
+ * Belegarten, deren Positionsmengen negativ geführt werden (wie kivitendo):
+ * Gutschrift und Storno kehren die Ursprungsrechnung um.
+ *
+ * @param string $fakturaType Dokumenttyp
+ * @return bool
+ */
+function hasNegativeQty($fakturaType) {
+    return in_array($fakturaType, ['credit_note', 'invoice_storno']);
+}
+
+/**
  * Gibt die benötigte Berechtigung für einen Dokumenttyp zurück
  *
  * @param string $fakturaType Dokumenttyp
@@ -758,6 +769,8 @@ SQL;
 function createFakturaItemCore($company, $fakturaType, $fakturaID, $item) {
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable = $tableConfig['items_table'];
+    // Gutschrift/Storno: Menge immer negativ (wie bei der Umwandlung aus der Rechnung)
+    $qtyExpr = hasNegativeQty($fakturaType) ? '-abs(:qty)' : ':qty';
 
     // Nächste Position ermitteln
     $positionQuery = "SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM {$itemsTable} WHERE trans_id = :fakturaID";
@@ -783,7 +796,7 @@ function createFakturaItemCore($company, $fakturaType, $fakturaID, $item) {
         ':description',
         // Leerer Langtext -> Langtext des Artikels (parts.notes), wie in kivitendo
         "COALESCE(NULLIF(:longdescription, ''), (SELECT notes FROM parts WHERE id = :ld_parts_id), '')",
-        ':qty',
+        $qtyExpr,
         ':sellprice',
         ':discount',
         // Leere Einheit -> Einheit des Artikels (parts.unit), sonst NULL.
@@ -806,8 +819,8 @@ function createFakturaItemCore($company, $fakturaType, $fakturaID, $item) {
         'ld_parts_id' => intval($item['parts_id'])
     ];
 
-    // Zusätzliche Spalten nur für Rechnungen (invoice Tabelle)
-    if ($fakturaType === 'invoice') {
+    // Zusätzliche Spalten nur für Belege in der invoice-Tabelle (Rechnung, Gutschrift, Storno)
+    if ($itemsTable === 'invoice') {
         $columns[] = 'fxsellprice';
         $values[] = ':fxsellprice';
         $params['fxsellprice'] = floatval($item['sellprice'] ?? 0);
@@ -867,6 +880,10 @@ SQL;
 
     $company->execute($renumberQuery, ['transId' => $transId]);
 
+    // Kopfbeträge neu berechnen — auch wenn die letzte Position gelöscht wurde
+    // und der Editor danach nichts mehr zu speichern hat
+    recalcFakturaTotals($company, $fakturaType, $transId);
+
     resultInfo(true, 'DELETED', ['message' => 'Position gelöscht']);
 }
 
@@ -899,6 +916,8 @@ function replaceFakturaItemArticle($data) {
 
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable = $tableConfig['items_table']; // kontrollierter Tabellenname (kein User-Input)
+    // Gutschrift/Storno: Menge immer negativ
+    $qtyExpr = hasNegativeQty($fakturaType) ? '-abs(:qty)' : ':qty';
 
     // Langtext folgt dem neuen Artikel (parts.notes), wie in kivitendo
     $row = $company->getOne(
@@ -906,7 +925,7 @@ function replaceFakturaItemArticle($data) {
             SET parts_id = :parts_id,
                 description = :description,
                 longdescription = COALESCE((SELECT notes FROM parts WHERE id = :ld_parts_id), ''),
-                qty = :qty,
+                qty = {$qtyExpr},
                 sellprice = :sellprice,
                 unit = COALESCE(NULLIF(:unit, ''), unit)
           WHERE id = :item_id
@@ -1200,6 +1219,20 @@ SQL;
             'netAmount' => $netAmount,
             'grossAmount' => $grossAmount
         ]);
+    }
+
+    // 2b. Gutschrift/Storno: Mengen immer negativ halten (auch wenn ein Client
+    // eine positive Menge schickt) und Kopfbeträge in SQL aus den Positionen
+    // neu berechnen. Der Editor bucht diese Typen nicht ins Hauptbuch (keine
+    // accTransEntries), deshalb greift der ar-Update unter 3. nicht — ohne
+    // diesen Schritt bliebe der bei der Umwandlung kopierte Betrag der
+    // Ursprungsrechnung stehen.
+    if (hasNegativeQty($fakturaType)) {
+        $company->execute(
+            "UPDATE {$itemsTable} SET qty = -abs(qty) WHERE trans_id = :fakturaID AND qty > 0",
+            ['fakturaID' => $fakturaID]
+        );
+        recalcFakturaTotals($company, $fakturaType, $fakturaID);
     }
 
     // Geschützte Bank-Buchungen ermitteln: acc_trans-Einträge, die zu einer noch
@@ -2753,6 +2786,84 @@ function importSilverDATItems($data) {
 }
 
 /**
+ * Berechnet die Kopfbeträge (netamount/amount) eines Belegs in SQL aus den Positionen neu.
+ *
+ * Gleiche Regeln wie useAccounting.calculateTotals: Zeilensumme auf 2 Stellen
+ * runden, je Steuersatz Netto summieren, Steuer auf der Gruppensumme runden.
+ * Steuersatz wie in postArInvoiceToLedger aus Buchungsgruppe → taxzone_charts
+ * (Steuerzone des Belegs) → taxkeys (gültig am Belegdatum).
+ *
+ * Zuständig für Aufträge/Angebote (oe/orderitems) sowie Gutschriften und
+ * Stornos (ar/invoice). Letztere werden vom Editor NICHT ins Hauptbuch gebucht,
+ * deshalb muss der Kopfbetrag hier aus den Positionen kommen — sonst bleibt
+ * nach dem Löschen von Positionen der (negierte) Betrag der Ursprungsrechnung
+ * stehen und Belegliste wie Druckvorlage zeigen einen falschen Wert.
+ * Rechnungen/Einkaufsrechnungen und Lieferscheine werden nicht angefasst.
+ *
+ * @param object $company   DbhCompany-Handle
+ * @param string $fakturaType order|purchase_order|quotation|request_quotation|credit_note|invoice_storno
+ * @param int    $fakturaID   ID in oe bzw. ar
+ * @return bool true wenn neu berechnet wurde
+ */
+function recalcFakturaTotals($company, $fakturaType, $fakturaID) {
+    $fakturaID = intval($fakturaID);
+    if ($fakturaID <= 0) {
+        return false;
+    }
+
+    if (in_array($fakturaType, ['order', 'purchase_order', 'quotation', 'request_quotation'])) {
+        $mainTable = 'oe';
+        $itemsTable = 'orderitems';
+    } elseif (hasNegativeQty($fakturaType)) {
+        $mainTable = 'ar';
+        $itemsTable = 'invoice';
+    } else {
+        return false;
+    }
+
+    $totalsQuery = <<<SQL
+        WITH pos AS (
+            SELECT COALESCE(m.taxincluded, FALSE) AS taxincluded, COALESCE(bz.rate, 0) AS rate,
+                   ROUND((i.qty * i.sellprice * (1 - COALESCE(i.discount, 0)))::numeric, 2) AS total
+            FROM {$itemsTable} i
+            JOIN {$mainTable} m ON m.id = i.trans_id
+            JOIN parts p ON p.id = i.parts_id
+            LEFT JOIN LATERAL (
+                SELECT tx.rate
+                FROM buchungsgruppen bg
+                JOIN taxzone_charts tc ON tc.buchungsgruppen_id = bg.id AND tc.taxzone_id = m.taxzone_id
+                JOIN chart c2 ON c2.id = tc.income_accno_id
+                LEFT JOIN taxkeys tk ON tk.chart_id = c2.id AND tk.startdate <= m.transdate
+                LEFT JOIN tax tx ON tx.id = tk.tax_id
+                WHERE bg.id = p.buchungsgruppen_id
+                ORDER BY tk.startdate DESC NULLS LAST
+                LIMIT 1
+            ) bz ON TRUE
+            WHERE i.trans_id = :fakturaID
+        ), grp AS (
+            SELECT taxincluded, rate,
+                   SUM(total) AS gross_base,
+                   SUM(CASE WHEN taxincluded AND rate <> 0 THEN ROUND(total / (1 + rate), 2) ELSE total END) AS net_base
+            FROM pos
+            GROUP BY taxincluded, rate
+        ), sums AS (
+            SELECT COALESCE(bool_or(taxincluded), FALSE) AS taxincluded,
+                   COALESCE(SUM(gross_base), 0) AS gross_base,
+                   COALESCE(SUM(net_base), 0) AS net_base,
+                   COALESCE(SUM(ROUND(net_base * rate, 2)), 0) AS tax
+            FROM grp
+        )
+        UPDATE {$mainTable} SET
+            netamount = CASE WHEN sums.taxincluded THEN sums.gross_base - sums.tax ELSE sums.net_base END,
+            amount    = CASE WHEN sums.taxincluded THEN sums.gross_base ELSE sums.net_base + sums.tax END
+        FROM sums
+        WHERE {$mainTable}.id = :mainID
+SQL;
+    $company->execute($totalsQuery, ['fakturaID' => $fakturaID, 'mainID' => $fakturaID]);
+    return true;
+}
+
+/**
  * Legt Positionen (mit Artikeln) in einem Beleg an — gemeinsamer Kern von
  * importSilverDATItems (VXS) und applyGutachtenToOrder (Gutachten-PDF).
  *
@@ -2903,56 +3014,11 @@ SQL;
         $createdIds[] = intval($insertResult['id']);
     }
 
-    // Kopfbeträge (oe.netamount/amount) aus den Positionen neu berechnen —
-    // sonst bleibt in der Auftragsübersicht der alte Betrag stehen, bis der
-    // Beleg im Editor erneut gespeichert wird. Gleiche Regeln wie
-    // useAccounting.calculateTotals: Zeilensumme auf 2 Stellen runden, je
-    // Steuersatz Netto summieren, Steuer auf der Gruppensumme runden.
-    // Steuersatz wie in postArInvoiceToLedger aus Buchungsgruppe →
-    // taxzone_charts (Steuerzone des Belegs) → taxkeys (gültig am Belegdatum).
-    // Rechnungen bleiben außen vor: dort gehören auch acc_trans-Buchungen dazu,
-    // die der Editor beim Speichern erzeugt.
-    if (in_array($fakturaType, ['order', 'purchase_order', 'quotation', 'request_quotation'])) {
-        $totalsQuery = <<<SQL
-            WITH pos AS (
-                SELECT COALESCE(o.taxincluded, FALSE) AS taxincluded, COALESCE(bz.rate, 0) AS rate,
-                       ROUND((i.qty * i.sellprice * (1 - COALESCE(i.discount, 0)))::numeric, 2) AS total
-                FROM orderitems i
-                JOIN oe o ON o.id = i.trans_id
-                JOIN parts p ON p.id = i.parts_id
-                LEFT JOIN LATERAL (
-                    SELECT tx.rate
-                    FROM buchungsgruppen bg
-                    JOIN taxzone_charts tc ON tc.buchungsgruppen_id = bg.id AND tc.taxzone_id = o.taxzone_id
-                    JOIN chart c2 ON c2.id = tc.income_accno_id
-                    LEFT JOIN taxkeys tk ON tk.chart_id = c2.id AND tk.startdate <= o.transdate
-                    LEFT JOIN tax tx ON tx.id = tk.tax_id
-                    WHERE bg.id = p.buchungsgruppen_id
-                    ORDER BY tk.startdate DESC NULLS LAST
-                    LIMIT 1
-                ) bz ON TRUE
-                WHERE i.trans_id = :fakturaID
-            ), grp AS (
-                SELECT taxincluded, rate,
-                       SUM(total) AS gross_base,
-                       SUM(CASE WHEN taxincluded AND rate <> 0 THEN ROUND(total / (1 + rate), 2) ELSE total END) AS net_base
-                FROM pos
-                GROUP BY taxincluded, rate
-            ), sums AS (
-                SELECT bool_or(taxincluded) AS taxincluded,
-                       COALESCE(SUM(gross_base), 0) AS gross_base,
-                       COALESCE(SUM(net_base), 0) AS net_base,
-                       COALESCE(SUM(ROUND(net_base * rate, 2)), 0) AS tax
-                FROM grp
-            )
-            UPDATE oe SET
-                netamount = CASE WHEN sums.taxincluded THEN sums.gross_base - sums.tax ELSE sums.net_base END,
-                amount    = CASE WHEN sums.taxincluded THEN sums.gross_base ELSE sums.net_base + sums.tax END
-            FROM sums
-            WHERE oe.id = :oeID
-SQL;
-        $company->execute($totalsQuery, ['fakturaID' => $fakturaID, 'oeID' => $fakturaID]);
-    }
+    // Kopfbeträge aus den Positionen neu berechnen — sonst bleibt in der
+    // Belegübersicht der alte Betrag stehen, bis der Beleg im Editor erneut
+    // gespeichert wird. Rechnungen bleiben außen vor: dort gehören auch
+    // acc_trans-Buchungen dazu, die der Editor beim Speichern erzeugt.
+    recalcFakturaTotals($company, $fakturaType, $fakturaID);
 
     return $createdIds;
 }
