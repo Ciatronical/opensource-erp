@@ -126,6 +126,8 @@
         "alreadyRunning": "Der kører allerede en databaseopdatering. Prøv igen om et par minutter."
     },
     "HelpPanel": {
-        "close": "Luk hjælp"
+        "close": "Luk hjælp",
+        "copy": "Kopiér",
+        "copied": "Kopieret"
     }
 }

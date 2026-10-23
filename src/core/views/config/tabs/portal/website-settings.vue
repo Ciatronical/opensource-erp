@@ -165,10 +165,21 @@
                         variant="tonal"
                         density="compact"
                         class="mt-2"
-                        style="max-width: 90ch"
+                        style="max-width: 90ch; white-space: pre-line"
                     >
                         <strong>{{ t(`crm_fields.shopBackendTestStep_${schritt.schritt}`) }}:</strong>
                         {{ testText(schritt) }}
+                        <!-- Weiterleiter fehlt auf der Webseite: oft fehlen die Mounts in der
+                             config.json des Hugo-Projekts — das Info-Symbol zeigt sie in der Hilfsanzeige -->
+                        <v-icon
+                            v-if="'webseite' === schritt.schritt && ['NOT_FOUND', 'FOREIGN', 'NO_PHP'].includes(schritt.code)"
+                            size="small"
+                            class="ms-1"
+                            style="cursor: help"
+                            role="button"
+                            :title="t('WebsitesView.mountsHelp.title')"
+                            @click="mountsHilfe"
+                        >mdi-information-outline</v-icon>
                     </v-alert>
 
                     <!-- Paket installieren: Vorlagen, Widgets und Weiterleiter an
@@ -209,6 +220,7 @@ import axios from 'axios'
 import ShopConfigField from '@/core/views/config/tabs/shop-config-field.component.vue'
 import websiteSettingsConfig, { websiteSettingFields } from './websiteSettingsConfig.js'
 import * as toasts from '@/core/utils/toasts.js'
+import { useHelpPanel } from '@/core/composables/useHelpPanel.js'
 
 const props = defineProps({
     websiteId: { type: Number, required: true },
@@ -413,6 +425,73 @@ const backendErgebnis = ref([])
  * WebsitesView.backendTest, neutrale (UNREACHABLE, NOT_FOUND, …) teilen
  * sich die Webseiten mit der Kanalkarte unter crm_fields.shopBackendTest_*.
  */
+/**
+ * Der Abschnitt „module“ der config.json des Hugo-Projekts, wie er mit dem
+ * Kundenportal-Paket aussieht: erst die üblichen Mounts der Webseite, dann die
+ * drei Einträge für das Paket — Vorlage zum Kopieren in der Hilfsanzeige
+ */
+const MOUNTS_JSON = `"module": {
+    "mounts": [
+        {
+            "source": "archetypes",
+            "target": "archetypes"
+        },
+        {
+            "source": "assets",
+            "target": "assets"
+        },
+        {
+            "source": "content",
+            "target": "content"
+        },
+        {
+            "source": "data",
+            "target": "data"
+        },
+        {
+            "source": "layouts",
+            "target": "layouts"
+        },
+        {
+            "source": "static",
+            "target": "static"
+        },
+        {
+            "source": "static/images",
+            "target": "assets/images"
+        },
+        {
+            "comment": "Einstiegspunkte aus dem Kundenportal-Paket von OpensourceERP (Weiterleiter /portal-api/, mit Shop not_found.php)",
+            "source": "oserp-portal/static",
+            "target": "static"
+        },
+        {
+            "comment": "Shortcodes und Partials des Kundenportals aus dem Paket von OpensourceERP",
+            "source": "oserp-portal/layouts",
+            "target": "layouts"
+        },
+        {
+            "comment": "Widget-Bündel des Kundenportals; über assets/ statt static/, damit Hugo fingerprinten kann",
+            "source": "oserp-portal/assets/portal-ui",
+            "target": "assets/portal-ui"
+        },
+        {
+            "comment": "Fertige Portalseiten (Anmelden, Konto, Freischalten, Kontakt …) aus dem Paket; ihre Adressen stehen in OpensourceERP unter „Seiten der Webseite“",
+            "source": "oserp-portal/content",
+            "target": "content/kunden"
+        }
+    ]
+},`
+
+const { zeigen: hilfeZeigen } = useHelpPanel()
+
+function mountsHilfe() {
+    hilfeZeigen(t('WebsitesView.mountsHelp.title'), t('WebsitesView.mountsHelp.text'), {
+        code: MOUNTS_JSON,
+        nachtext: t('WebsitesView.mountsHelp.after'),
+    })
+}
+
 function testText(schritt) {
     const eigen = `WebsitesView.backendTest.${schritt.code}`
     return te(eigen)

@@ -20,12 +20,24 @@ const zustand = reactive({
     offen: false,
     titel: '',
     text: '',
+    /** Vorlage zum Kopieren (etwa ein Konfigurationsausschnitt), mit Kopierknopf */
+    code: '',
+    /** Text unter der Vorlage */
+    nachtext: '',
 })
 
-/** Öffnet die Hilfsanzeige mit diesem Text oder ersetzt den angezeigten */
-function zeigen(titel, text) {
+/**
+ * Öffnet die Hilfsanzeige mit diesem Text oder ersetzt den angezeigten
+ *
+ * @param {string} titel
+ * @param {string} text Erklärung (Absätze mit Leerzeile)
+ * @param {{code?: string, nachtext?: string}} extra Vorlage zum Kopieren und Text darunter
+ */
+function zeigen(titel, text, extra = {}) {
     zustand.titel = String(titel || '')
     zustand.text = String(text || '')
+    zustand.code = String(extra.code || '')
+    zustand.nachtext = String(extra.nachtext || '')
     zustand.offen = true
 }
 

@@ -126,6 +126,8 @@
         "alreadyRunning": "En databasuppdatering pågår redan. Försök igen om några minuter."
     },
     "HelpPanel": {
-        "close": "Stäng hjälpen"
+        "close": "Stäng hjälpen",
+        "copy": "Kopiera",
+        "copied": "Kopierat"
     }
 }

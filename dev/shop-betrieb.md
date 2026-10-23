@@ -70,8 +70,18 @@ Webseite (`dev/shop-medienbibliothek.md`).
    Signaturschlüssel). Dann überträgt der Lauf Weiterleiter und 404-Seite
    selbst; ohne ihn legt man sie von Hand ab (siehe „Einstellungen“).
 6. **Hugo-Konfiguration der Webseite:** die Mounts `oserp-portal/static` →
-   `static`, `oserp-portal/layouts` → `layouts` und `oserp-portal/assets/portal-ui`
-   → `assets/portal-ui`, jeweils **nach** den eigenen Einträgen. Optional
+   `static`, `oserp-portal/layouts` → `layouts`, `oserp-portal/assets/portal-ui`
+   → `assets/portal-ui` und `oserp-portal/content` → `content/kunden`, jeweils
+   **nach** den eigenen Einträgen. Der vierte bringt die fertigen Portalseiten
+   (Anmelden, Registrieren, Konto samt Unterseiten, Freischalten, Kontakt; mit
+   Shop Warenkorb, Kasse, Rechnung; mit LxCars Fahrzeuge) aus dem Paket mit —
+   ihre Adressen stehen in OpensourceERP unter „Seiten der Webseite“
+   (`portalKitPages`, Platzhalter `[[login]]` … in `kit/content/`): das
+   „Verzeichnis des Kundenportals“ (`portal_path`, Vorgabe `/kunden/`) ist der
+   gemeinsame Anfang, Seiten ohne führenden Schrägstrich hängen daran
+   (`websitePagePath`), mit Schrägstrich stehen sie für sich — und
+   `assets/portal-ui/pages.json` gibt dieselben Adressen an die Widgets. Eine
+   eigene Seite der Webseite unter derselben Adresse geht vor. Optional
    `params.portalui` für das Aussehen der Widgets und `params.portalui.paths` für
    die Pfade der Seiten (`kit/layouts/partials/portal-ui-assets.html`,
    `portal-ui/README.md` „Pfade der Seiten“). Der Partial lädt die Bündel nach

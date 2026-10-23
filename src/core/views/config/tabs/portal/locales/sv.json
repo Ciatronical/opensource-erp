@@ -37,7 +37,7 @@
         "fields": {
             "contact": "Kontaktformulär",
             "activatePage": "Sidan ”Aktivera konto”",
-            "activatePage_help": "Sida där befintliga kunder aktiverar sitt kundkonto. Tomt = /freischalten/.",
+            "activatePage_help": "Sida där befintliga kunder aktiverar sitt kundkonto. Tomt = freischalten/.",
             "contactMailTo": "Mottagare av kontaktformuläret",
             "contactMailTo_help": "E-postadress dit förfrågningar från kontaktformuläret går. Tomt = företagets avsändaradress.",
             "hugocms_help": "Anslutning till HugoCMS, som bygger och publicerar den här webbplatsen.",
@@ -51,7 +51,7 @@
             "pages": "Webbplatsens sidor",
             "baseUrl": "Webbplatsens webbadress",
             "baseUrl_help": "Adress som besökare öppnar webbplatsen på, till exempel https://www.example.se/.",
-            "invoicePage_help": "Sida på webbplatsen som visar en faktura. Tomt = /rechnung/.",
+            "invoicePage_help": "Sida på webbplatsen som visar en faktura. Tomt = rechnung/.",
             "templateSet_help": "Portalsidornas utseende; ”Standard” passar de flesta webbplatser.",
             "grants_help": "Var OpensourceERP får skriva bestämmer HugoCMS (projektinställningar → OpensourceERP-anslutning). Visas här bara för kännedom; överföringen tillämpar behörigheterna varje gång.",
             "grantPackage": "Kundportalspaket",
@@ -63,7 +63,17 @@
             "allowedOrigins": "Tillåtna ursprungsadresser",
             "invoicePage": "Sidan ”Faktura”",
             "templateSet": "Malluppsättning",
-            "publish": "Publicering"
+            "publish": "Publicering",
+            "loginPage": "Sidan ”Logga in”",
+            "loginPage_help": "Sida med inloggningsformuläret. Standard anmelden/.",
+            "registerPage": "Sidan ”Registrera”",
+            "registerPage_help": "Sida där nya kunder skapar ett konto. Standard registrieren/.",
+            "accountPage": "Sidan ”Kundkonto”",
+            "accountPage_help": "Översikt över kundkontot; profil, adresser och fakturor ligger under den. Standard konto/.",
+            "contactPage": "Sidan ”Kontakt”",
+            "contactPage_help": "Sida med kontaktformuläret. Standard kontakt/.",
+            "portalPath": "Kundportalens katalog",
+            "portalPath_help": "Gemensam början för alla portalsidor, till exempel /kunden/ eller /kundenportal/. Standard /kunden/."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "En webbplats med detta namn finns redan.",
@@ -85,7 +95,8 @@
             "HUGOCMS": "Svaret kom från HugoCMS i stället för OpensourceERP:s portalåtkomst. Via webbplatsen gäller den senast överförda adressen — spara efter en rättelse och kör ”Installera paket”.",
             "KEY_REJECTED": "Portalåtkomsten avvisade nyckeln — kontrollera webbplatsens nyckel; via webbplatsen gäller den senast överförda.",
             "PROXY_NOT_CONFIGURED": "Vidarebefordraren körs men hittar inte oserp-portal/config.json eller den är ofullständig — kör ”Installera paket”.",
-            "FOREIGN": "Oväntat svar (HTTP {status}) — det är inte OpensourceERP:s portalåtkomst som svarar."
+            "FOREIGN": "På {url} svarar något annat än OpensourceERP (HTTP {status}). Adressen pekar troligen på en främmande sida eller en annan tjänst — kontrollera webbadressen.",
+            "NOT_FOUND": "Inget svarar på {url} (fel 404). Antingen ligger vidarebefordraren ännu inte på webbplatsen, eller så är webbplatsens webbadress fel.\nNästa steg: 1. Kontrollera att ”Webbplatsens webbadress” är startsidan så som besökare öppnar den. 2. Kör ”Installera paket” så att vidarebefordraren hamnar på webbplatsen. 3. Testa sedan igen här. Obs: ofta saknas posterna för paketet i webbplatsprojektets config.json — vilka, visar infoikonen."
         },
         "hugocmsShopOff": "I HugoCMS är webbutiken inte frisläppt för den här webbplatsen — slå på ”Webbutik på den här webbplatsen” i projektinställningarna under ”OpensourceERP-anslutning”. Tills dess överför butikskörningen inga produktsidor.",
         "help": {
@@ -95,12 +106,18 @@
             "backendUrl": "Adressen till portalåtkomsten är OpensourceERP:s offentliga ingång för kunder: katalogen backend/portal/ i installationen, till exempel https://erp.example.se/portal/ — lokalt med scripts/dev.sh http://localhost:8000/portal/.\n\nDit vidarebefordrar /portal-api/ på webbplatsen alla förfrågningar från widgetarna: inloggning, konto, fakturor och, med butik, varukorg och kassa. ”Installera paket” skriver adressen tillsammans med webbplatsens nyckel i oserp-portal/config.json.\n\nHit hör varken HugoCMS adress (…/cms-api/, kortet HugoCMS) eller webbplatsens egen adress.\n\nEtt tomt fält förifylls med adressen som OpensourceERP just nu anropas på. Bakom en omvänd proxy är det den utifrån synliga adressen — den måste gå att nå från webbplatsens webbserver.\n\n”Testa anslutning” kontrollerar i tre steg: inmatning, direkt från OpensourceERP, via webbplatsen.",
             "hugocmsUrl": "HugoCMS är programmet som webbplatsen underhålls och byggs med. OpensourceERP skickar det kundportalspaketet och låter sedan webbplatsen byggas om. För det behövs en webbadress där HugoCMS nås utifrån.\n\nDen adressen visar HugoCMS självt: i webbplatsens projektinställningar under ”OpensourceERP-anslutning”. Den slutar på /cms-api/, till exempel https://www.example.se/cms-api/. Kopiera den helst därifrån.\n\nAdressen måste börja med https://, annars avvisar HugoCMS anslutningen. Enda undantaget är ett test på samma dator.\n\nKontroll: knappen ”Testa anslutning och hämta behörigheter” på det här kortet.",
             "hugocmsKey": "Med den här nyckeln identifierar sig OpensourceERP mot HugoCMS. Den gäller bara för den här webbplatsen.\n\nDen skapas i HugoCMS: webbplatsens projektinställningar → ”OpensourceERP-anslutning” → ”Skapa nyckel”. HugoCMS visar den i sin helhet exakt en gång — kopiera den då och klistra in här. Senare visar HugoCMS bara de fyra sista tecknen, så kan man kontrollera att båda sidor har samma nyckel.\n\nTappas nyckeln bort, skapa en ny i HugoCMS och ersätt den här. Den gamla gäller då inte längre.",
-            "invoicePage": "Kunder får i e-post en länk till sin faktura. Länken leder till en sida på webbplatsen som visar fakturan — här står dess sökväg, till exempel /faktura/.\n\nSidan skapas i HugoCMS med byggstenen ”shop-invoice”. Lämnas fältet tomt använder OpensourceERP /rechnung/.\n\nLänken innehåller en hemlig kod, så även gäster utan kundkonto kan se sin faktura.",
-            "activatePage": "Befintliga kunder utan kundkonto kan få ett aktiverat: de anger sitt telefonnummer och får en länk via WhatsApp. Länken leder till sidan som anges här, till exempel /aktivera/.\n\nSidan skapas i HugoCMS med byggstenen ”portal-activate”. Lämnas fältet tomt använder OpensourceERP /freischalten/.\n\nSamma sökväg hör hemma i WhatsApp-mallen ”Aktivera kundkonto” som knappens adress.",
+            "invoicePage": "Kunder får i e-post en länk till sin faktura. Länken leder till en sida på webbplatsen som visar fakturan — här står dess sökväg, till exempel /faktura/.\n\nSidan skapas i HugoCMS med byggstenen ”shop-invoice”. Lämnas fältet tomt använder OpensourceERP rechnung/.\n\nLänken innehåller en hemlig kod, så även gäster utan kundkonto kan se sin faktura.",
+            "activatePage": "Befintliga kunder utan kundkonto kan få ett aktiverat: de anger sitt telefonnummer och får en länk via WhatsApp. Länken leder till sidan som anges här, till exempel /aktivera/.\n\nSidan skapas i HugoCMS med byggstenen ”portal-activate”. Lämnas fältet tomt använder OpensourceERP freischalten/.\n\nSamma sökväg hör hemma i WhatsApp-mallen ”Aktivera kundkonto” som knappens adress.",
             "templateSet": "Malluppsättningen avgör hur inloggning, kundkonto, fakturor och kontaktformulär ser ut på webbplatsen. ”Standard” anpassar sig till webbplatsens utseende och räcker i de flesta fall.\n\nEgna uppsättningar kan en utvecklare skapa i företagets mallkatalog under portal/; de visas då här att välja.\n\nEfter ett byte kör ”Installera paket” så att webbplatsen får de nya mallarna.",
-            "contactMailTo": "Fyller en kund i kontaktformuläret på webbplatsen skickar OpensourceERP förfrågan som e-post till den här adressen.\n\nLämnas fältet tomt går förfrågan till företagets avsändaradress från företagskonfigurationen.\n\nFlera mottagare stöds inte — använd en delad brevlåda eller en sändlista."
+            "contactMailTo": "Fyller en kund i kontaktformuläret på webbplatsen skickar OpensourceERP förfrågan som e-post till den här adressen.\n\nLämnas fältet tomt går förfrågan till företagets avsändaradress från företagskonfigurationen.\n\nFlera mottagare stöds inte — använd en delad brevlåda eller en sändlista.",
+            "pages": "På dessa adresser skapar ”Installera paket” portalsidorna på webbplatsen — färdiga med rätt byggsten. Det kräver posten för oserp-portal/content i webbplatsprojektets config.json (se hjälpen vid ”Testa anslutning”).\n\nAdressen anges från webbplatsens rot, med snedstreck i början och slutet, till exempel /kunden/anmelden/. Kontots undersidor (profil, adresser, fakturor, med butik betalsättet, med fordon fordonen) ligger under kundkontots adress.\n\nSamma adresser använder widgetarna för sina länkar och OpensourceERP för länkarna i e-post och WhatsApp-meddelanden. Den som vill utforma en sida själv skapar i HugoCMS en egen sida på samma adress — den går före sidan från paketet.\n\nEfter en ändring kör ”Installera paket”.\n\nKundportalens katalog är den gemensamma början: en sida utan inledande snedstreck (t.ex. anmelden/) ligger under den — /kunden/ och anmelden/ blir /kunden/anmelden/. För en annan katalog räcker det att ändra detta enda fält. En sida med inledande snedstreck (t.ex. /login/) står för sig själv."
         },
         "hugocmsFromBaseUrl": "Använd webbadressen",
-        "hugocmsFromBaseUrl_help": "Sätter adressen för HugoCMS-fjärråtkomst utifrån webbplatsens webbadress med /cms-api/ på slutet."
+        "hugocmsFromBaseUrl_help": "Sätter adressen för HugoCMS-fjärråtkomst utifrån webbplatsens webbadress med /cms-api/ på slutet.",
+        "mountsHelp": {
+            "title": "Poster för webbplatsens config.json",
+            "text": "För att Hugo ska ta med vidarebefordraren, mallarna och widgetarna från paketet måste avsnittet ”module” i Hugo-projektets config.json se ut så här — de första posterna är webbplatsens vanliga kataloger, de fyra sista hör till paketet:",
+            "after": "Filen ligger i webbplatsens projektkatalog på webbservern; i HugoCMS kan den redigeras under ”Alla filer”. Kör sedan ”Installera paket” och testa igen här.\n\nSaknas posterna når paketet visserligen HugoCMS, men Hugo kopierar inget av det till den byggda webbplatsen — vidarebefordraren svarar då med fel 404."
+        }
     }
 }

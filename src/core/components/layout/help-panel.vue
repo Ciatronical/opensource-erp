@@ -32,10 +32,27 @@
         </div>
         <v-divider />
         <div class="help-panel__text text-body-2">{{ zustand.text }}</div>
+
+        <!-- Vorlage zum Kopieren, etwa ein Konfigurationsausschnitt -->
+        <template v-if="zustand.code">
+            <div class="help-panel__code-kopf">
+                <v-btn
+                    size="small"
+                    variant="tonal"
+                    :prepend-icon="kopiert ? 'mdi-check' : 'mdi-content-copy'"
+                    @click="kopieren"
+                >
+                    {{ t(kopiert ? 'HelpPanel.copied' : 'HelpPanel.copy') }}
+                </v-btn>
+            </div>
+            <pre class="help-panel__code text-caption">{{ zustand.code }}</pre>
+            <div v-if="zustand.nachtext" class="help-panel__text text-body-2">{{ zustand.nachtext }}</div>
+        </template>
     </v-navigation-drawer>
 </template>
 
 <script setup>
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHelpPanel } from '@/core/composables/useHelpPanel.js'
 
@@ -46,6 +63,18 @@ defineProps({
 
 const { t } = useI18n()
 const { zustand, schliessen } = useHelpPanel()
+
+const kopiert = ref(false)
+watch(() => zustand.code, () => { kopiert.value = false })
+
+async function kopieren() {
+    try {
+        await navigator.clipboard.writeText(zustand.code)
+        kopiert.value = true
+    } catch {
+        kopiert.value = false
+    }
+}
 </script>
 
 <style scoped>
@@ -60,9 +89,26 @@ const { zustand, schliessen } = useHelpPanel()
     flex: 1 1 auto;
     min-width: 0;
 }
+.help-panel__code-kopf {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 var(--oserp-gap-md, 16px);
+}
+.help-panel__code {
+    margin: var(--oserp-gap-sm, 8px) var(--oserp-gap-md, 16px);
+    padding: var(--oserp-gap-sm, 8px);
+    border: 1px solid var(--oserp-border);
+    border-radius: var(--oserp-radius-sm, 4px);
+    background: var(--oserp-surface-soft);
+    white-space: pre;
+    overflow: auto;
+    font-family: monospace;
+    line-height: 1.4;
+}
 .help-panel__text {
     padding: var(--oserp-gap-md, 16px);
-    white-space: pre-line;   /* Absätze aus dem Hilfetext bleiben erhalten */
+    white-space: pre-wrap;   /* Absätze und Einrückungen (etwa JSON-Beispiele) bleiben erhalten */
+    overflow-wrap: anywhere; /* lange Adressen brechen um, statt die Leiste zu sprengen */
     line-height: 1.5;
     color: var(--oserp-text-muted);
 }

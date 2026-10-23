@@ -126,6 +126,8 @@
         "alreadyRunning": "Ya hay una actualización de la base de datos en curso. Inténtelo de nuevo en unos minutos."
     },
     "HelpPanel": {
-        "close": "Cerrar ayuda"
+        "close": "Cerrar ayuda",
+        "copy": "Copiar",
+        "copied": "Copiado"
     }
 }

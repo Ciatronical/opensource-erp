@@ -501,14 +501,16 @@ function portalBackendUrlCheck($db, int $website, array $eingaben = []): array {
     $melden = function (string $schritt, string $art, string $code, array $params = []) use (&$schritte) {
         $schritte[] = ['schritt' => $schritt, 'art' => $art, 'code' => $code, 'params' => $params];
     };
-    $bewerten = function (string $schritt, array $ziel) use ($melden) {
+    // url: die aufgerufene Adresse — die Meldung nennt sie vollständig, damit
+    // man sie im Browser nachprüfen kann
+    $bewerten = function (string $schritt, array $ziel, string $url = '') use ($melden) {
         $art = match ($ziel['code']) {
             'OK' => 'success',
             'OK_OLD' => 'warning',
             default => 'error',
         };
         $melden($schritt, $art, $ziel['code'], [
-            'name' => $ziel['name'], 'status' => (string)$ziel['status'], 'error' => (string)$ziel['fehler'],
+            'name' => $ziel['name'], 'status' => (string)$ziel['status'], 'error' => (string)$ziel['fehler'], 'url' => $url,
         ]);
     };
 
@@ -533,20 +535,22 @@ function portalBackendUrlCheck($db, int $website, array $eingaben = []): array {
     } elseif ('' === $schluessel) {
         $melden('direkt', 'error', 'NO_KEY');
     } else {
+        $direkt = rtrim($adresse, '/').'/';
         $bewerten('direkt', portalApiClassify(
-            portalWebsiteProbe(rtrim($adresse, '/').'/', ['action' => 'portalPing'], ['X-Portal-Key: '.$schluessel]),
+            portalWebsiteProbe($direkt, ['action' => 'portalPing'], ['X-Portal-Key: '.$schluessel]),
             $website
-        ));
+        ), $direkt);
     }
 
     // 3. über die Webseite
     if ('' === $basis) {
         $melden('webseite', 'info', 'NO_BASE');
     } else {
+        $weiterleiter = $basis.'/portal-api/';
         $bewerten('webseite', portalApiClassify(
-            portalWebsiteProbe($basis.'/portal-api/', ['action' => 'portalPing']),
+            portalWebsiteProbe($weiterleiter, ['action' => 'portalPing']),
             $website
-        ));
+        ), $weiterleiter);
     }
 
     return $schritte;

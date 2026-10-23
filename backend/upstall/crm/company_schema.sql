@@ -4249,8 +4249,16 @@ RETURNS TABLE (key text, secret boolean)
         ('allowed_origins', false),  -- erlaubte Herkünfte bei Zugriff ohne Weiterleiter
         ('base_url',        false),  -- Adresse der Webseite
         ('backend_url',     false),  -- Adresse des Portal-Zugangs von OpensourceERP, für den Weiterleiter
+        -- Seiten der Webseite: Pfade, unter denen das Paket die Portalseiten
+        -- anlegt (oserp-portal/content/) und auf die Widgets und Mails verlinken.
+        -- Ohne führenden Schrägstrich relativ zum Verzeichnis des Kundenportals
+        ('portal_path',     false),  -- Verzeichnis des Kundenportals, Vorgabe /kunden/
+        ('login_page',      false),  -- Anmeldung
+        ('register_page',   false),  -- Registrierung
+        ('account_page',    false),  -- Kundenkonto; Unterseiten (Profil, Adressen, Rechnungen …) hängen daran
         ('invoice_page',    false),  -- Seite mit der Rechnungsansicht (Links in Mails)
         ('activate_page',   false),  -- Seite „Konto freischalten“ (Link in der WhatsApp-Nachricht)
+        ('contact_page',    false),  -- Kontaktformular
         ('contact_mail_to', false),  -- Empfänger des Kontaktformulars; leer = Absenderadresse der Firma
         -- Veröffentlichung
         ('template_set',    false),  -- Vorlagensatz des Pakets (backend/templates-default/portal/<satz>/kit/)
@@ -4275,9 +4283,35 @@ $$;
 ALTER TABLE whatsapp_templates ADD COLUMN IF NOT EXISTS buttons jsonb NOT NULL DEFAULT '[]'::jsonb;
 COMMENT ON COLUMN whatsapp_templates.buttons IS 'Schaltflächen (Meta BUTTONS): type URL/QUICK_REPLY/PHONE_NUMBER, text, url mit {{1}} als Suffix, example';
 
+-- Übergang (2026-10-23): Vor dem Verzeichnis des Kundenportals wurden die
+-- Seitenpfade absolut gespeichert (/kunden/anmelden/ …). Solange das
+-- Verzeichnis noch die Vorgabe ist, werden sie relativ (anmelden/), damit ein
+-- geändertes Verzeichnis sie mitnimmt. Idempotent: danach beginnt kein Wert
+-- mehr mit /kunden/.
+UPDATE website_oserp w
+   SET settings = w.settings || (
+           SELECT COALESCE(jsonb_object_agg(k, substr(w.settings ->> k, length('/kunden/') + 1)), '{}'::jsonb)
+             FROM unnest(ARRAY['login_page', 'register_page', 'account_page', 'invoice_page', 'activate_page', 'contact_page']) AS k
+            WHERE w.settings ->> k LIKE '/kunden/_%')
+ WHERE COALESCE(w.settings ->> 'portal_path', '/kunden/') = '/kunden/'
+   AND EXISTS (SELECT 1 FROM unnest(ARRAY['login_page', 'register_page', 'account_page', 'invoice_page', 'activate_page', 'contact_page']) AS k
+                WHERE w.settings ->> k LIKE '/kunden/_%');
+
+-- Vorgaben: Vorlagensatz, das Verzeichnis des Kundenportals und die Seiten
+-- darin (relativ, websitePagePath hängt sie an portal_path) — so legt das
+-- Paket die Seiten ohne weitere Einstellung an (portalKitPages)
 CREATE OR REPLACE FUNCTION website_default_settings() RETURNS jsonb
     LANGUAGE sql IMMUTABLE AS $$
-    SELECT jsonb_build_object('template_set', 'standard')
+    SELECT jsonb_build_object(
+        'template_set',  'standard',
+        'portal_path',   '/kunden/',
+        'login_page',    'anmelden/',
+        'register_page', 'registrieren/',
+        'account_page',  'konto/',
+        'invoice_page',  'rechnung/',
+        'activate_page', 'freischalten/',
+        'contact_page',  'kontakt/'
+    )
 $$;
 
 -- Sitzungen verfallen: jeder Zugriff eines Besuchers räumt ein wenig mit auf,

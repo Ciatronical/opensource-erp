@@ -126,6 +126,8 @@
         "alreadyRunning": "Aktualizacja bazy danych już trwa. Spróbuj ponownie za kilka minut."
     },
     "HelpPanel": {
-        "close": "Zamknij pomoc"
+        "close": "Zamknij pomoc",
+        "copy": "Kopiuj",
+        "copied": "Skopiowano"
     }
 }

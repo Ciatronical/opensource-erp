@@ -37,7 +37,7 @@
         "fields": {
             "contact": "Contactformulier",
             "activatePage": "Pagina „Account activeren“",
-            "activatePage_help": "Pagina waarop bestaande klanten hun klantaccount activeren. Leeg = /freischalten/.",
+            "activatePage_help": "Pagina waarop bestaande klanten hun klantaccount activeren. Leeg = freischalten/.",
             "contactMailTo": "Ontvanger van het contactformulier",
             "contactMailTo_help": "E-mailadres waar aanvragen uit het contactformulier naartoe gaan. Leeg = afzenderadres van het bedrijf.",
             "hugocms_help": "Koppeling met HugoCMS, dat deze website bouwt en publiceert.",
@@ -51,7 +51,7 @@
             "pages": "Pagina’s van de website",
             "baseUrl": "Webadres van de website",
             "baseUrl_help": "Adres waarop bezoekers de website openen, bijvoorbeeld https://www.example.nl/.",
-            "invoicePage_help": "Pagina van de website die een factuur toont. Leeg = /rechnung/.",
+            "invoicePage_help": "Pagina van de website die een factuur toont. Leeg = rechnung/.",
             "templateSet_help": "Vormgeving van de portaalpagina’s; „Standaard“ past bij de meeste websites.",
             "grants_help": "Waar OpensourceERP mag schrijven, bepaalt HugoCMS (projectinstellingen → OpensourceERP-koppeling). Hier alleen ter inzage; de overdracht past de vrijgaven elke keer toe.",
             "grantPackage": "Klantenportaalpakket",
@@ -63,7 +63,17 @@
             "allowedOrigins": "Toegestane herkomstadressen",
             "invoicePage": "Pagina „Factuur“",
             "templateSet": "Sjabloonset",
-            "publish": "Publicatie"
+            "publish": "Publicatie",
+            "loginPage": "Pagina „Aanmelden“",
+            "loginPage_help": "Pagina met het aanmeldformulier. Standaard anmelden/.",
+            "registerPage": "Pagina „Registreren“",
+            "registerPage_help": "Pagina waar nieuwe klanten een account aanmaken. Standaard registrieren/.",
+            "accountPage": "Pagina „Klantaccount“",
+            "accountPage_help": "Overzicht van het klantaccount; profiel, adressen en facturen staan eronder. Standaard konto/.",
+            "contactPage": "Pagina „Contact“",
+            "contactPage_help": "Pagina met het contactformulier. Standaard kontakt/.",
+            "portalPath": "Map van het klantenportaal",
+            "portalPath_help": "Gemeenschappelijk begin van alle portaalpagina’s, bijvoorbeeld /kunden/ of /kundenportal/. Standaard /kunden/."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Er bestaat al een website met deze naam.",
@@ -85,7 +95,8 @@
             "HUGOCMS": "Het antwoord kwam van HugoCMS in plaats van de portaaltoegang van OpensourceERP. Via de website geldt het laatst overgedragen adres — na een correctie opslaan en „Pakket installeren“ uitvoeren.",
             "KEY_REJECTED": "De portaaltoegang heeft de sleutel geweigerd — sleutel van de website controleren; via de website geldt de laatst overgedragen sleutel.",
             "PROXY_NOT_CONFIGURED": "De doorstuurder werkt, maar vindt oserp-portal/config.json niet of onvolledig — „Pakket installeren“ uitvoeren.",
-            "FOREIGN": "Onverwacht antwoord (HTTP {status}) — daar antwoordt niet de portaaltoegang van OpensourceERP."
+            "FOREIGN": "Op {url} antwoordt iets anders dan OpensourceERP (HTTP {status}). Het adres wijst waarschijnlijk naar een vreemde pagina of een andere dienst — webadres controleren.",
+            "NOT_FOUND": "Op {url} antwoordt niets (fout 404). Of de doorstuurder staat nog niet op de website, of het webadres van de website klopt niet.\nVolgende stappen: 1. Controleer of „Webadres van de website“ de startpagina is zoals bezoekers die openen. 2. Voer „Pakket installeren“ uit, zodat de doorstuurder op de website komt. 3. Test daarna hier opnieuw. Let op: vaak ontbreken in de config.json van het websiteproject de vermeldingen voor het pakket — welke, toont het infopictogram."
         },
         "hugocmsShopOff": "In HugoCMS is de webwinkel voor deze website niet vrijgegeven — zet in de projectinstellingen onder „OpensourceERP-koppeling“ de schakelaar „Webwinkel op deze website“ aan. Tot dan draagt de winkelrun geen productpagina’s over.",
         "help": {
@@ -95,12 +106,18 @@
             "backendUrl": "Het adres van de portaaltoegang is de openbare ingang van OpensourceERP voor klanten: de map backend/portal/ van de installatie, bijvoorbeeld https://erp.example.nl/portal/ — lokaal met scripts/dev.sh http://localhost:8000/portal/.\n\nDaarheen stuurt de doorstuurder /portal-api/ op de website alle verzoeken van de widgets: aanmelding, account, facturen en, met winkel, winkelwagen en kassa. „Pakket installeren“ schrijft het adres samen met de sleutel van de website in oserp-portal/config.json.\n\nNiet hier horen het adres van HugoCMS (…/cms-api/, kaart HugoCMS) en het adres van de website zelf.\n\nEen leeg veld wordt vooraf ingevuld met het adres waarop OpensourceERP nu wordt aangeroepen. Achter een reverse proxy is dat het van buiten zichtbare adres — het moet bereikbaar zijn vanaf de webserver van de website.\n\n„Verbinding testen“ controleert in drie stappen: invoer, rechtstreeks vanuit OpensourceERP, via de website.",
             "hugocmsUrl": "HugoCMS is het programma waarmee de website wordt beheerd en gebouwd. OpensourceERP stuurt het het klantenportaalpakket en laat de website daarna opnieuw bouwen. Daarvoor is een webadres nodig waarop HugoCMS van buitenaf bereikbaar is.\n\nDit adres toont HugoCMS zelf: in de projectinstellingen van de website onder „OpensourceERP-koppeling“. Het eindigt op /cms-api/, bijvoorbeeld https://www.example.nl/cms-api/. Kopieer het bij voorkeur daarvandaan.\n\nHet adres moet met https:// beginnen, anders weigert HugoCMS de verbinding. De enige uitzondering is een test op dezelfde computer.\n\nControleren: de knop „Verbinding testen en vrijgaven ophalen“ op deze kaart.",
             "hugocmsKey": "Met deze sleutel identificeert OpensourceERP zich bij HugoCMS. Hij geldt alleen voor deze ene website.\n\nHij wordt aangemaakt in HugoCMS: projectinstellingen van de website → „OpensourceERP-koppeling“ → „Sleutel aanmaken“. HugoCMS toont hem precies één keer volledig — dan kopiëren en hier plakken. Later toont HugoCMS alleen de laatste vier tekens, zodat je kunt controleren of beide kanten dezelfde sleutel hebben.\n\nRaakt de sleutel kwijt, maak dan in HugoCMS een nieuwe en vervang hem hier. De oude geldt dan niet meer.",
-            "invoicePage": "Klanten krijgen in e-mails een link naar hun factuur. Die link leidt naar een pagina van de website die de factuur toont — hier staat het pad, bijvoorbeeld /factuur/.\n\nDe pagina maak je in HugoCMS met de bouwsteen „shop-invoice“. Blijft het veld leeg, dan gebruikt OpensourceERP /rechnung/.\n\nDe link bevat een geheime code, daardoor kunnen ook gasten zonder klantaccount hun factuur zien.",
-            "activatePage": "Bestaande klanten zonder klantaccount kunnen er een laten activeren: ze voeren hun telefoonnummer in en krijgen via WhatsApp een link. Die link leidt naar de hier ingevulde pagina, bijvoorbeeld /activeren/.\n\nDe pagina maak je in HugoCMS met de bouwsteen „portal-activate“. Blijft het veld leeg, dan gebruikt OpensourceERP /freischalten/.\n\nHetzelfde pad hoort in het WhatsApp-sjabloon „Klantaccount activeren“ als adres van de knop.",
+            "invoicePage": "Klanten krijgen in e-mails een link naar hun factuur. Die link leidt naar een pagina van de website die de factuur toont — hier staat het pad, bijvoorbeeld /factuur/.\n\nDe pagina maak je in HugoCMS met de bouwsteen „shop-invoice“. Blijft het veld leeg, dan gebruikt OpensourceERP rechnung/.\n\nDe link bevat een geheime code, daardoor kunnen ook gasten zonder klantaccount hun factuur zien.",
+            "activatePage": "Bestaande klanten zonder klantaccount kunnen er een laten activeren: ze voeren hun telefoonnummer in en krijgen via WhatsApp een link. Die link leidt naar de hier ingevulde pagina, bijvoorbeeld /activeren/.\n\nDe pagina maak je in HugoCMS met de bouwsteen „portal-activate“. Blijft het veld leeg, dan gebruikt OpensourceERP freischalten/.\n\nHetzelfde pad hoort in het WhatsApp-sjabloon „Klantaccount activeren“ als adres van de knop.",
             "templateSet": "De sjabloonset bepaalt hoe aanmelding, klantaccount, facturen en contactformulier er op de website uitzien. „Standaard“ past zich aan het uiterlijk van de website aan en volstaat meestal.\n\nEigen sets kan een ontwikkelaar aanmaken in de sjabloonmap van het bedrijf onder portal/; ze verschijnen dan hier ter keuze.\n\nNa een wissel „Pakket installeren“ uitvoeren, zodat de website de nieuwe sjablonen krijgt.",
-            "contactMailTo": "Vult een klant het contactformulier op de website in, dan stuurt OpensourceERP de aanvraag als e-mail naar dit adres.\n\nBlijft het veld leeg, dan gaat de aanvraag naar het afzenderadres van het bedrijf uit de bedrijfsconfiguratie.\n\nMeerdere ontvangers zijn niet voorzien — gebruik daarvoor een gedeelde mailbox of een verzendlijst."
+            "contactMailTo": "Vult een klant het contactformulier op de website in, dan stuurt OpensourceERP de aanvraag als e-mail naar dit adres.\n\nBlijft het veld leeg, dan gaat de aanvraag naar het afzenderadres van het bedrijf uit de bedrijfsconfiguratie.\n\nMeerdere ontvangers zijn niet voorzien — gebruik daarvoor een gedeelde mailbox of een verzendlijst.",
+            "pages": "Op deze adressen maakt „Pakket installeren“ de portaalpagina’s op de website aan — klaar met de passende bouwsteen. Daarvoor heeft de config.json van het websiteproject de vermelding voor oserp-portal/content nodig (zie de hulp bij „Verbinding testen“).\n\nHet adres wordt vanaf de wortel van de website opgegeven, met een schuine streep aan begin en einde, bijvoorbeeld /kunden/anmelden/. De subpagina’s van het account (profiel, adressen, facturen, met winkel de betaalwijze, met voertuigen de voertuigen) hangen onder het adres van het klantaccount.\n\nDezelfde adressen gebruiken de widgets voor hun links en OpensourceERP voor de links in e-mails en WhatsApp-berichten. Wie een pagina zelf wil vormgeven, maakt in HugoCMS op hetzelfde adres een eigen pagina — die gaat voor op de pagina uit het pakket.\n\nNa een wijziging „Pakket installeren“ uitvoeren.\n\nDe map van het klantenportaal is het gemeenschappelijke begin: een pagina zonder schuine streep vooraan (bijv. anmelden/) hangt eronder — /kunden/ en anmelden/ worden /kunden/anmelden/. Voor een andere map volstaat het dit ene veld te wijzigen. Een pagina met schuine streep vooraan (bijv. /login/) staat op zichzelf."
         },
         "hugocmsFromBaseUrl": "Webadres overnemen",
-        "hugocmsFromBaseUrl_help": "Stelt het adres voor HugoCMS-toegang op afstand in op basis van het webadres van de website met /cms-api/ erachter."
+        "hugocmsFromBaseUrl_help": "Stelt het adres voor HugoCMS-toegang op afstand in op basis van het webadres van de website met /cms-api/ erachter.",
+        "mountsHelp": {
+            "title": "Vermeldingen voor de config.json van de website",
+            "text": "Zodat Hugo de doorstuurder, de sjablonen en de widgets uit het pakket overneemt, moet de sectie „module“ in de config.json van het Hugo-project er zo uitzien — de eerste vermeldingen zijn de gebruikelijke mappen van de website, de laatste vier horen bij het pakket:",
+            "after": "Het bestand staat in de projectmap van de website op de webserver; in HugoCMS is het te bewerken onder „Alle bestanden“. Voer daarna „Pakket installeren“ uit en test hier opnieuw.\n\nOntbreken de vermeldingen, dan komt het pakket wel bij HugoCMS aan, maar Hugo kopieert er niets van naar de gebouwde website — de doorstuurder antwoordt dan met fout 404."
+        }
     }
 }

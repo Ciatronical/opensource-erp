@@ -37,7 +37,7 @@
         "fields": {
             "contact": "联系表单",
             "activatePage": "“激活账户”页面",
-            "activatePage_help": "现有客户激活其客户账户的页面。留空 = /freischalten/。",
+            "activatePage_help": "现有客户激活其客户账户的页面。留空 = freischalten/。",
             "contactMailTo": "联系表单的收件人",
             "contactMailTo_help": "接收联系表单请求的电子邮件地址。留空 = 公司的发件人地址。",
             "hugocms_help": "与构建并发布此网站的 HugoCMS 的连接。",
@@ -51,7 +51,7 @@
             "pages": "网站页面",
             "baseUrl": "网站的网址",
             "baseUrl_help": "访客打开网站所用的地址，例如 https://www.example.com/。",
-            "invoicePage_help": "网站上显示发票的页面。留空 = /rechnung/。",
+            "invoicePage_help": "网站上显示发票的页面。留空 = rechnung/。",
             "templateSet_help": "门户页面的外观；“标准”适用于大多数网站。",
             "grants_help": "OpensourceERP 可写入的位置由 HugoCMS 决定（项目设置 → OpensourceERP 连接）。此处仅供查看；每次传输都会应用这些授权。",
             "grantPackage": "客户门户软件包",
@@ -63,7 +63,17 @@
             "allowedOrigins": "允许的来源地址",
             "invoicePage": "“发票”页面",
             "templateSet": "模板集",
-            "publish": "发布"
+            "publish": "发布",
+            "loginPage": "“登录”页面",
+            "loginPage_help": "包含登录表单的页面。默认 anmelden/。",
+            "registerPage": "“注册”页面",
+            "registerPage_help": "新客户创建账户的页面。默认 registrieren/。",
+            "accountPage": "“客户账户”页面",
+            "accountPage_help": "客户账户概览；个人资料、地址和发票位于其下。默认 konto/。",
+            "contactPage": "“联系”页面",
+            "contactPage_help": "包含联系表单的页面。默认 kontakt/。",
+            "portalPath": "客户门户目录",
+            "portalPath_help": "所有门户页面的公共起始路径，例如 /kunden/ 或 /kundenportal/。默认 /kunden/。"
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "已存在同名网站。",
@@ -85,7 +95,8 @@
             "HUGOCMS": "响应来自 HugoCMS 而不是 OpensourceERP 的门户访问端。通过网站生效的是最后传送的地址 — 更正后保存并执行“安装软件包”。",
             "KEY_REJECTED": "门户访问端拒绝了密钥 — 请检查网站密钥；通过网站生效的是最后传送的密钥。",
             "PROXY_NOT_CONFIGURED": "转发器正在运行，但找不到 oserp-portal/config.json 或其不完整 — 请执行“安装软件包”。",
-            "FOREIGN": "意外的响应（HTTP {status}）— 应答方不是 OpensourceERP 的门户访问端。"
+            "FOREIGN": "在 {url} 响应的不是 OpensourceERP（HTTP {status}）。该地址可能指向其他页面或其他服务 — 请检查网址。",
+            "NOT_FOUND": "{url} 无任何响应（错误 404）。要么转发器尚未部署到网站，要么网站的网址有误。\n后续步骤：1. 检查“网站的网址”是否为访客打开的首页。2. 执行“安装软件包”，使转发器部署到网站。3. 然后在此处重新测试。 提示：网站项目的 config.json 中经常缺少软件包所需的条目 — 点击信息图标可查看具体条目。"
         },
         "hugocmsShopOff": "HugoCMS 尚未为此网站启用在线商店 — 请在项目设置的“OpensourceERP 连接”中打开“此网站上的在线商店”。在此之前，商店运行不会传送任何产品页面。",
         "help": {
@@ -95,12 +106,18 @@
             "backendUrl": "门户访问端地址是 OpensourceERP 面向客户的公开入口：安装目录中的 backend/portal/，例如 https://erp.example.com/portal/ — 本地使用 scripts/dev.sh 时为 http://localhost:8000/portal/。\n\n网站上的转发器 /portal-api/ 将组件的所有请求转发到那里：登录、账户、发票，以及有商店时的购物车和结账。“安装软件包”会将该地址与网站密钥一起写入 oserp-portal/config.json。\n\n不应填在这里的是 HugoCMS 的地址（…/cms-api/，HugoCMS 卡片）和网站本身的地址。\n\n空字段会预填为当前访问 OpensourceERP 所用的地址。在反向代理后面，这是对外可见的地址 — 必须能从网站的 Web 服务器访问。\n\n“测试连接”分三步检查：输入、直接从 OpensourceERP、通过网站。",
             "hugocmsUrl": "HugoCMS 是用于维护和构建网站的程序。OpensourceERP 向它发送客户门户软件包，然后让它重新构建网站。为此需要一个可从外部访问 HugoCMS 的网址。\n\n该地址由 HugoCMS 自己显示：在网站的项目设置中“OpensourceERP 连接”下。它以 /cms-api/ 结尾，例如 https://www.example.com/cms-api/。最好从那里复制。\n\n地址必须以 https:// 开头，否则 HugoCMS 不接受连接。唯一的例外是在同一台计算机上进行测试。\n\n检查：此卡片中的“测试连接并获取授权”按钮。",
             "hugocmsKey": "OpensourceERP 使用此密钥向 HugoCMS 证明身份。它仅对此网站有效。\n\n在 HugoCMS 中生成：网站的项目设置 → “OpensourceERP 连接” → “生成密钥”。HugoCMS 只会完整显示一次 — 此时复制并粘贴到这里。之后 HugoCMS 只显示最后四个字符，可据此检查双方是否持有相同的密钥。\n\n如果密钥丢失，请在 HugoCMS 中生成新密钥并在此处替换。旧密钥随即失效。",
-            "invoicePage": "客户会在电子邮件中收到其发票的链接。该链接指向网站上显示发票的页面 — 此处填写该页面的路径，例如 /invoice/。\n\n该页面在 HugoCMS 中创建，并放置“shop-invoice”组件。如果字段留空，OpensourceERP 使用 /rechnung/。\n\n链接包含一个秘密代码，因此没有客户账户的访客也能查看其发票。",
-            "activatePage": "尚无客户账户的现有客户可以激活账户：输入电话号码后，通过 WhatsApp 收到一个链接。该链接指向此处填写的页面，例如 /activate/。\n\n该页面在 HugoCMS 中创建，并放置“portal-activate”组件。如果字段留空，OpensourceERP 使用 /freischalten/。\n\n同一路径应作为按钮地址填入 WhatsApp 模板“激活客户账户”。",
+            "invoicePage": "客户会在电子邮件中收到其发票的链接。该链接指向网站上显示发票的页面 — 此处填写该页面的路径，例如 /invoice/。\n\n该页面在 HugoCMS 中创建，并放置“shop-invoice”组件。如果字段留空，OpensourceERP 使用 rechnung/。\n\n链接包含一个秘密代码，因此没有客户账户的访客也能查看其发票。",
+            "activatePage": "尚无客户账户的现有客户可以激活账户：输入电话号码后，通过 WhatsApp 收到一个链接。该链接指向此处填写的页面，例如 /activate/。\n\n该页面在 HugoCMS 中创建，并放置“portal-activate”组件。如果字段留空，OpensourceERP 使用 freischalten/。\n\n同一路径应作为按钮地址填入 WhatsApp 模板“激活客户账户”。",
             "templateSet": "模板集决定登录、客户账户、发票和联系表单在网站上的外观。“标准”会适应网站外观，大多数情况下足够。\n\n开发人员可在公司模板目录的 portal/ 下创建自定义集，之后会在此处显示供选择。\n\n切换后请执行“安装软件包”，以便网站获得新模板。",
-            "contactMailTo": "当客户在网站上填写联系表单时，OpensourceERP 会将请求以电子邮件形式发送到此地址。\n\n如果字段留空，请求将发送到公司配置中的公司发件人地址。\n\n不支持多个收件人 — 请使用共享邮箱或分发列表。"
+            "contactMailTo": "当客户在网站上填写联系表单时，OpensourceERP 会将请求以电子邮件形式发送到此地址。\n\n如果字段留空，请求将发送到公司配置中的公司发件人地址。\n\n不支持多个收件人 — 请使用共享邮箱或分发列表。",
+            "pages": "“安装软件包”会在这些地址上在网站中创建门户页面 — 已带有相应的组件。这需要网站项目的 config.json 中包含 oserp-portal/content 的条目（参见“测试连接”处的帮助）。\n\n地址从网站根目录开始填写，开头和结尾都带斜杠，例如 /kunden/anmelden/。账户的子页面（个人资料、地址、发票，有商店时的付款方式，有车辆时的车辆）挂在客户账户地址之下。\n\n组件的链接以及 OpensourceERP 在电子邮件和 WhatsApp 消息中的链接都使用这些相同的地址。若想自行设计某个页面，请在 HugoCMS 中以相同地址创建自己的页面 — 它优先于软件包中的页面。\n\n更改后请执行“安装软件包”。\n\n客户门户目录是公共起始路径：不以斜杠开头的页面（例如 anmelden/）挂在其下 — /kunden/ 与 anmelden/ 组合为 /kunden/anmelden/。若要使用其他目录，只需更改这一个字段。以斜杠开头的页面（例如 /login/）则独立存在。"
         },
         "hugocmsFromBaseUrl": "采用网站地址",
-        "hugocmsFromBaseUrl_help": "根据网站地址并在末尾加上 /cms-api/ 设置 HugoCMS 远程访问地址。"
+        "hugocmsFromBaseUrl_help": "根据网站地址并在末尾加上 /cms-api/ 设置 HugoCMS 远程访问地址。",
+        "mountsHelp": {
+            "title": "网站 config.json 的条目",
+            "text": "为了让 Hugo 从软件包中接收转发器、模板和组件，Hugo 项目 config.json 中的“module”部分应如下所示 — 前面的条目是网站的常规目录，最后四个属于软件包：",
+            "after": "该文件位于 Web 服务器上网站的项目目录中；在 HugoCMS 中可在“所有文件”下编辑。然后执行“安装软件包”并在此处重新测试。\n\n如果缺少这些条目，软件包虽然到达了 HugoCMS，但 Hugo 不会将其中任何内容复制到生成的网站中 — 转发器随即以错误 404 响应。"
+        }
     }
 }

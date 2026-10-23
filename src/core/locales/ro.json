@@ -126,6 +126,8 @@
         "alreadyRunning": "O actualizare a bazei de date rulează deja. Încercați din nou peste câteva minute."
     },
     "HelpPanel": {
-        "close": "Închide ajutorul"
+        "close": "Închide ajutorul",
+        "copy": "Copiază",
+        "copied": "Copiat"
     }
 }

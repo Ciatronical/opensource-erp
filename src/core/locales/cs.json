@@ -126,6 +126,8 @@
         "alreadyRunning": "Aktualizace databáze již probíhá. Zkuste to prosím znovu za několik minut."
     },
     "HelpPanel": {
-        "close": "Zavřít nápovědu"
+        "close": "Zavřít nápovědu",
+        "copy": "Kopírovat",
+        "copied": "Zkopírováno"
     }
 }

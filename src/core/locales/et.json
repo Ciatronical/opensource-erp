@@ -126,6 +126,8 @@
         "alreadyRunning": "Andmebaasi uuendus juba käib. Palun proovige mõne minuti pärast uuesti."
     },
     "HelpPanel": {
-        "close": "Sulge abi"
+        "close": "Sulge abi",
+        "copy": "Kopeeri",
+        "copied": "Kopeeritud"
     }
 }

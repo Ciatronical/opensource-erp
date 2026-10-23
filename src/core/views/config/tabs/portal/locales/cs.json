@@ -37,7 +37,7 @@
         "fields": {
             "contact": "Kontaktní formulář",
             "activatePage": "Stránka „Aktivace účtu“",
-            "activatePage_help": "Stránka, na které si stávající zákazníci aktivují zákaznický účet. Prázdné = /freischalten/.",
+            "activatePage_help": "Stránka, na které si stávající zákazníci aktivují zákaznický účet. Prázdné = freischalten/.",
             "contactMailTo": "Příjemce kontaktního formuláře",
             "contactMailTo_help": "E-mailová adresa, na kterou chodí dotazy z kontaktního formuláře. Prázdné = adresa odesílatele firmy.",
             "hugocms_help": "Spojení s HugoCMS, které tento web sestavuje a publikuje.",
@@ -51,7 +51,7 @@
             "pages": "Stránky webu",
             "baseUrl": "Webová adresa webu",
             "baseUrl_help": "Adresa, pod kterou návštěvníci web otevírají, například https://www.example.cz/.",
-            "invoicePage_help": "Stránka webu, která zobrazuje fakturu. Prázdné = /rechnung/.",
+            "invoicePage_help": "Stránka webu, která zobrazuje fakturu. Prázdné = rechnung/.",
             "templateSet_help": "Vzhled stránek portálu; „Standard“ vyhovuje většině webů.",
             "grants_help": "Kam smí OpensourceERP zapisovat, určuje HugoCMS (nastavení projektu → Napojení OpensourceERP). Zde jen pro náhled; přenos převezme oprávnění pokaždé.",
             "grantPackage": "Balíček zákaznického portálu",
@@ -63,7 +63,17 @@
             "allowedOrigins": "Povolené adresy původu",
             "invoicePage": "Stránka „Faktura“",
             "templateSet": "Sada šablon",
-            "publish": "Publikování"
+            "publish": "Publikování",
+            "loginPage": "Stránka „Přihlášení“",
+            "loginPage_help": "Stránka s přihlašovacím formulářem. Výchozí anmelden/.",
+            "registerPage": "Stránka „Registrace“",
+            "registerPage_help": "Stránka, na které si noví zákazníci založí účet. Výchozí registrieren/.",
+            "accountPage": "Stránka „Zákaznický účet“",
+            "accountPage_help": "Přehled zákaznického účtu; profil, adresy a faktury leží pod ním. Výchozí konto/.",
+            "contactPage": "Stránka „Kontakt“",
+            "contactPage_help": "Stránka s kontaktním formulářem. Výchozí kontakt/.",
+            "portalPath": "Adresář zákaznického portálu",
+            "portalPath_help": "Společný začátek všech stránek portálu, například /kunden/ nebo /kundenportal/. Výchozí /kunden/."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Web s tímto názvem už existuje.",
@@ -85,7 +95,8 @@
             "HUGOCMS": "Odpověď přišla z HugoCMS místo z portálového přístupu OpensourceERP. Přes web platí naposledy přenesená adresa — po opravě uložte a spusťte „Instalovat balíček“.",
             "KEY_REJECTED": "Portálový přístup klíč odmítl — zkontrolujte klíč webu; přes web platí naposledy přenesený.",
             "PROXY_NOT_CONFIGURED": "Přesměrovač běží, ale nenachází oserp-portal/config.json nebo je neúplný — spusťte „Instalovat balíček“.",
-            "FOREIGN": "Neočekávaná odpověď (HTTP {status}) — neodpovídá tam portálový přístup OpensourceERP."
+            "FOREIGN": "Na adrese {url} odpovídá něco jiného než OpensourceERP (HTTP {status}). Adresa zřejmě ukazuje na cizí stránku nebo jinou službu — zkontrolujte webovou adresu.",
+            "NOT_FOUND": "Na adrese {url} nic neodpovídá (chyba 404). Buď přesměrovač ještě není na webu, nebo webová adresa webu není správná.\nDalší postup: 1. Ověřit, že „Webová adresa webu“ je úvodní stránka, jak ji otevírají návštěvníci. 2. Spustit „Instalovat balíček“, aby se přesměrovač dostal na web. 3. Poté zde znovu zkontrolovat. Poznámka: V config.json projektu webu často chybí záznamy pro balíček — které, ukáže ikona informací."
         },
         "hugocmsShopOff": "V HugoCMS není pro tento web povolen online obchod — v nastavení projektu v části „Napojení OpensourceERP“ zapněte „Online obchod na tomto webu“. Do té doby běh obchodu nepřenáší žádné produktové stránky.",
         "help": {
@@ -95,12 +106,18 @@
             "backendUrl": "Adresa portálového přístupu je veřejný vstup OpensourceERP pro zákazníky: adresář backend/portal/ instalace, například https://erp.example.cz/portal/ — lokálně se scripts/dev.sh http://localhost:8000/portal/.\n\nTam přesměrovač /portal-api/ na webu předává všechny požadavky widgetů: přihlášení, účet, faktury a s obchodem košík a pokladnu. „Instalovat balíček“ zapíše adresu spolu s klíčem webu do oserp-portal/config.json.\n\nSem nepatří adresa HugoCMS (…/cms-api/, karta HugoCMS) ani adresa samotného webu.\n\nPrázdné pole se předvyplní adresou, na které OpensourceERP právě běží. Za reverzní proxy je to zvenčí viditelná adresa — musí být dosažitelná z webového serveru webu.\n\n„Zkontrolovat spojení“ testuje ve třech krocích: zadání, přímo z OpensourceERP, přes web.",
             "hugocmsUrl": "HugoCMS je program, kterým se web spravuje a sestavuje. OpensourceERP mu pošle balíček zákaznického portálu a nechá web znovu sestavit. K tomu potřebuje webovou adresu, na které je HugoCMS dostupné zvenčí.\n\nTuto adresu zobrazuje samo HugoCMS: v nastavení projektu webu v části „Napojení OpensourceERP“. Končí na /cms-api/, například https://www.example.cz/cms-api/. Nejlépe ji odtud zkopírovat.\n\nAdresa musí začínat https://, jinak HugoCMS spojení nepřijme. Výjimkou je jen test na stejném počítači.\n\nKontrola: tlačítko „Zkontrolovat spojení a načíst oprávnění“ na této kartě.",
             "hugocmsKey": "Tímto klíčem se OpensourceERP prokazuje HugoCMS. Platí jen pro tento jeden web.\n\nVytváří se v HugoCMS: nastavení projektu webu → „Napojení OpensourceERP“ → „Vytvořit klíč“. HugoCMS jej celý zobrazí přesně jednou — tehdy zkopírovat a sem vložit. Později HugoCMS ukazuje jen poslední čtyři znaky, podle nich lze ověřit, že obě strany mají stejný klíč.\n\nZtratí-li se klíč, vytvořte v HugoCMS nový a zde jej nahraďte. Starý pak už neplatí.",
-            "invoicePage": "Zákazníci dostávají v e-mailech odkaz na svou fakturu. Odkaz vede na stránku webu, která fakturu zobrazí — zde se uvádí její cesta, například /faktura/.\n\nStránku založíte v HugoCMS a vložíte do ní stavební prvek „shop-invoice“. Zůstane-li pole prázdné, použije OpensourceERP /rechnung/.\n\nOdkaz obsahuje tajný kód, proto fakturu vidí i hosté bez zákaznického účtu.",
-            "activatePage": "Stávající zákazníci bez zákaznického účtu si jej mohou nechat aktivovat: zadají telefonní číslo a dostanou přes WhatsApp odkaz. Odkaz vede na zde zadanou stránku, například /aktivace/.\n\nStránku založíte v HugoCMS a vložíte do ní stavební prvek „portal-activate“. Zůstane-li pole prázdné, použije OpensourceERP /freischalten/.\n\nStejná cesta patří do šablony WhatsApp „Aktivace zákaznického účtu“ jako adresa tlačítka.",
+            "invoicePage": "Zákazníci dostávají v e-mailech odkaz na svou fakturu. Odkaz vede na stránku webu, která fakturu zobrazí — zde se uvádí její cesta, například /faktura/.\n\nStránku založíte v HugoCMS a vložíte do ní stavební prvek „shop-invoice“. Zůstane-li pole prázdné, použije OpensourceERP rechnung/.\n\nOdkaz obsahuje tajný kód, proto fakturu vidí i hosté bez zákaznického účtu.",
+            "activatePage": "Stávající zákazníci bez zákaznického účtu si jej mohou nechat aktivovat: zadají telefonní číslo a dostanou přes WhatsApp odkaz. Odkaz vede na zde zadanou stránku, například /aktivace/.\n\nStránku založíte v HugoCMS a vložíte do ní stavební prvek „portal-activate“. Zůstane-li pole prázdné, použije OpensourceERP freischalten/.\n\nStejná cesta patří do šablony WhatsApp „Aktivace zákaznického účtu“ jako adresa tlačítka.",
             "templateSet": "Sada šablon určuje, jak na webu vypadají přihlášení, zákaznický účet, faktury a kontaktní formulář. „Standard“ se přizpůsobí vzhledu webu a většinou stačí.\n\nVlastní sady může vývojář založit v adresáři šablon firmy pod portal/; pak se zde objeví k výběru.\n\nPo změně spusťte „Instalovat balíček“, aby web dostal nové šablony.",
-            "contactMailTo": "Vyplní-li zákazník kontaktní formulář na webu, pošle OpensourceERP dotaz e-mailem na tuto adresu.\n\nZůstane-li pole prázdné, jde dotaz na adresu odesílatele firmy z konfigurace firmy.\n\nVíce příjemců není podporováno — použijte sdílenou schránku nebo distribuční seznam."
+            "contactMailTo": "Vyplní-li zákazník kontaktní formulář na webu, pošle OpensourceERP dotaz e-mailem na tuto adresu.\n\nZůstane-li pole prázdné, jde dotaz na adresu odesílatele firmy z konfigurace firmy.\n\nVíce příjemců není podporováno — použijte sdílenou schránku nebo distribuční seznam.",
+            "pages": "Na těchto adresách založí „Instalovat balíček“ stránky portálu na webu — hotové s příslušným stavebním prvkem. K tomu potřebuje config.json projektu webu záznam pro oserp-portal/content (viz nápověda u „Zkontrolovat spojení“).\n\nAdresa se uvádí od kořene webu, s lomítkem na začátku i na konci, například /kunden/anmelden/. Podstránky účtu (profil, adresy, faktury, s obchodem způsob platby, s vozidly vozidla) visí pod adresou zákaznického účtu.\n\nStejné adresy používají widgety pro své odkazy a OpensourceERP pro odkazy v e-mailech a zprávách WhatsApp. Kdo chce stránku navrhnout sám, založí v HugoCMS na stejné adrese vlastní stránku — ta má přednost před stránkou z balíčku.\n\nPo změně spusťte „Instalovat balíček“.\n\nAdresář zákaznického portálu je společný začátek: stránka bez úvodního lomítka (např. anmelden/) visí pod ním — z /kunden/ a anmelden/ vznikne /kunden/anmelden/. Má-li platit jiný adresář, stačí změnit toto jedno pole. Stránka s úvodním lomítkem (např. /login/) stojí sama za sebe."
         },
         "hugocmsFromBaseUrl": "Převzít webovou adresu",
-        "hugocmsFromBaseUrl_help": "Nastaví adresu vzdáleného přístupu k HugoCMS z webové adresy webu s /cms-api/ na konci."
+        "hugocmsFromBaseUrl_help": "Nastaví adresu vzdáleného přístupu k HugoCMS z webové adresy webu s /cms-api/ na konci.",
+        "mountsHelp": {
+            "title": "Záznamy pro config.json webu",
+            "text": "Aby Hugo převzal přesměrovač, šablony a widgety z balíčku, musí oddíl „module“ v config.json projektu Hugo vypadat takto — první záznamy jsou obvyklé adresáře webu, poslední čtyři patří k balíčku:",
+            "after": "Soubor leží v projektovém adresáři webu na webovém serveru; v HugoCMS jej lze upravit pod „Všechny soubory“. Poté spusťte „Instalovat balíček“ a zde znovu zkontrolujte.\n\nChybí-li záznamy, balíček sice dorazí do HugoCMS, ale Hugo z něj nic nezkopíruje do hotového webu — přesměrovač pak odpovídá chybou 404."
+        }
     }
 }

@@ -37,7 +37,7 @@
         "fields": {
             "contact": "Yhteydenottolomake",
             "activatePage": "Sivu ”Aktivoi tili”",
-            "activatePage_help": "Sivu, jolla nykyiset asiakkaat aktivoivat asiakastilinsä. Tyhjä = /freischalten/.",
+            "activatePage_help": "Sivu, jolla nykyiset asiakkaat aktivoivat asiakastilinsä. Tyhjä = freischalten/.",
             "contactMailTo": "Yhteydenottolomakkeen vastaanottaja",
             "contactMailTo_help": "Sähköpostiosoite, johon yhteydenottolomakkeen viestit menevät. Tyhjä = yrityksen lähettäjäosoite.",
             "hugocms_help": "Yhteys HugoCMS:ään, joka rakentaa ja julkaisee tämän verkkosivuston.",
@@ -51,7 +51,7 @@
             "pages": "Verkkosivuston sivut",
             "baseUrl": "Verkkosivuston verkko-osoite",
             "baseUrl_help": "Osoite, josta kävijät avaavat sivuston, esimerkiksi https://www.example.fi/.",
-            "invoicePage_help": "Sivuston sivu, joka näyttää laskun. Tyhjä = /rechnung/.",
+            "invoicePage_help": "Sivuston sivu, joka näyttää laskun. Tyhjä = rechnung/.",
             "templateSet_help": "Portaalisivujen ulkoasu; ”Standard” sopii useimmille sivustoille.",
             "grants_help": "HugoCMS määrää, minne OpensourceERP saa kirjoittaa (projektin asetukset → OpensourceERP-liitäntä). Täällä vain tiedoksi; siirto soveltaa oikeudet joka kerta.",
             "grantPackage": "Asiakasportaalin paketti",
@@ -63,7 +63,17 @@
             "allowedOrigins": "Sallitut alkuperäosoitteet",
             "invoicePage": "Sivu ”Lasku”",
             "templateSet": "Mallisarja",
-            "publish": "Julkaisu"
+            "publish": "Julkaisu",
+            "loginPage": "Sivu ”Kirjautuminen”",
+            "loginPage_help": "Sivu, jolla on kirjautumislomake. Oletus anmelden/.",
+            "registerPage": "Sivu ”Rekisteröityminen”",
+            "registerPage_help": "Sivu, jolla uudet asiakkaat luovat tilin. Oletus registrieren/.",
+            "accountPage": "Sivu ”Asiakastili”",
+            "accountPage_help": "Asiakastilin yleiskatsaus; profiili, osoitteet ja laskut ovat sen alla. Oletus konto/.",
+            "contactPage": "Sivu ”Yhteydenotto”",
+            "contactPage_help": "Sivu, jolla on yhteydenottolomake. Oletus kontakt/.",
+            "portalPath": "Asiakasportaalin hakemisto",
+            "portalPath_help": "Kaikkien portaalisivujen yhteinen alku, esimerkiksi /kunden/ tai /kundenportal/. Oletus /kunden/."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Tämän niminen sivusto on jo olemassa.",
@@ -85,7 +95,8 @@
             "HUGOCMS": "Vastaus tuli HugoCMS:ltä eikä OpensourceERP:n portaalipääsyltä. Sivuston kautta pätee viimeksi siirretty osoite – korjauksen jälkeen tallenna ja suorita ”Asenna paketti”.",
             "KEY_REJECTED": "Portaalipääsy hylkäsi avaimen – tarkista sivuston avain; sivuston kautta pätee viimeksi siirretty.",
             "PROXY_NOT_CONFIGURED": "Välittäjä toimii, mutta ei löydä tiedostoa oserp-portal/config.json tai se on puutteellinen – suorita ”Asenna paketti”.",
-            "FOREIGN": "Odottamaton vastaus (HTTP {status}) – siellä ei vastaa OpensourceERP:n portaalipääsy."
+            "FOREIGN": "Osoitteessa {url} vastaa jokin muu kuin OpensourceERP (HTTP {status}). Osoite osoittaa luultavasti vieraalle sivulle tai toiseen palveluun – tarkista verkko-osoite.",
+            "NOT_FOUND": "Osoitteessa {url} ei vastaa mikään (virhe 404). Joko välittäjä ei ole vielä sivustolla tai sivuston verkko-osoite on väärä.\nSeuraavaksi: 1. Tarkista, että ”Verkkosivuston verkko-osoite” on etusivu sellaisena kuin kävijät sen avaavat. 2. Suorita ”Asenna paketti”, jotta välittäjä pääsee sivustolle. 3. Tarkista sitten täällä uudelleen. Huomautus: sivustoprojektin config.json-tiedostosta puuttuvat usein paketin merkinnät – tietokuvake näyttää, mitkä."
         },
         "hugocmsShopOff": "HugoCMS:ssä verkkokauppaa ei ole vapautettu tälle sivustolle – kytke projektin asetuksissa kohdassa ”OpensourceERP-liitäntä” päälle ”Verkkokauppa tällä sivustolla”. Siihen asti kaupan ajo ei siirrä tuotesivuja.",
         "help": {
@@ -95,12 +106,18 @@
             "backendUrl": "Portaalipääsyn osoite on OpensourceERP:n julkinen sisäänkäynti asiakkaille: asennuksen hakemisto backend/portal/, esimerkiksi https://erp.example.fi/portal/ – paikallisesti scripts/dev.sh:lla http://localhost:8000/portal/.\n\nSinne sivuston välittäjä /portal-api/ ohjaa kaikki widgettien pyynnöt: kirjautuminen, tili, laskut ja kaupan kanssa ostoskori ja kassa. ”Asenna paketti” kirjoittaa osoitteen yhdessä sivuston avaimen kanssa tiedostoon oserp-portal/config.json.\n\nTähän eivät kuulu HugoCMS:n osoite (…/cms-api/, kortti HugoCMS) eikä sivuston oma osoite.\n\nTyhjä kenttä esitäytetään osoitteella, josta OpensourceERP:tä parhaillaan käytetään. Käänteisvälityspalvelimen takana se on ulospäin näkyvä osoite – sen on oltava tavoitettavissa sivuston web-palvelimelta.\n\n”Testaa yhteys” tarkistaa kolmessa vaiheessa: syöte, suoraan OpensourceERP:stä, sivuston kautta.",
             "hugocmsUrl": "HugoCMS on ohjelma, jolla sivustoa ylläpidetään ja rakennetaan. OpensourceERP lähettää sille asiakasportaalin paketin ja rakennuttaa sivuston sen jälkeen uudelleen. Siihen se tarvitsee verkko-osoitteen, josta HugoCMS on tavoitettavissa ulkoa.\n\nTämän osoitteen HugoCMS näyttää itse: sivuston projektin asetuksissa kohdassa ”OpensourceERP-liitäntä”. Se päättyy /cms-api/, esimerkiksi https://www.example.fi/cms-api/. Kopioi se mieluiten sieltä.\n\nOsoitteen on alettava https://, muuten HugoCMS ei hyväksy yhteyttä. Ainoa poikkeus on testi samalla koneella.\n\nTarkistus: tämän kortin painike ”Tarkista yhteys ja hae oikeudet”.",
             "hugocmsKey": "Tällä avaimella OpensourceERP tunnistautuu HugoCMS:lle. Se koskee vain tätä yhtä sivustoa.\n\nSe luodaan HugoCMS:ssä: sivuston projektin asetukset → ”OpensourceERP-liitäntä” → ”Luo avain”. HugoCMS näyttää sen kokonaan täsmälleen kerran – kopioi silloin ja liitä tähän. Myöhemmin HugoCMS näyttää vain neljä viimeistä merkkiä, joista voi tarkistaa, että molemmilla puolilla on sama avain.\n\nJos avain katoaa, luo HugoCMS:ssä uusi ja korvaa se tässä. Vanha ei enää kelpaa.",
-            "invoicePage": "Asiakkaat saavat sähköposteissa linkin laskuunsa. Linkki johtaa sivuston sivulle, joka näyttää laskun – tähän tulee sen polku, esimerkiksi /lasku/.\n\nSivu luodaan HugoCMS:ssä ja siihen lisätään rakennuspalikka ”shop-invoice”. Jos kenttä jää tyhjäksi, OpensourceERP käyttää /rechnung/.\n\nLinkki sisältää salaisen koodin, joten myös vieraat ilman asiakastiliä näkevät laskunsa.",
-            "activatePage": "Nykyiset asiakkaat, joilla ei vielä ole asiakastiliä, voivat aktivoida sellaisen: he syöttävät puhelinnumeronsa ja saavat linkin WhatsAppilla. Linkki johtaa tähän syötetylle sivulle, esimerkiksi /aktivoi/.\n\nSivu luodaan HugoCMS:ssä ja siihen lisätään rakennuspalikka ”portal-activate”. Jos kenttä jää tyhjäksi, OpensourceERP käyttää /freischalten/.\n\nSama polku kuuluu WhatsApp-malliin ”Aktivoi asiakastili” painikkeen osoitteena.",
+            "invoicePage": "Asiakkaat saavat sähköposteissa linkin laskuunsa. Linkki johtaa sivuston sivulle, joka näyttää laskun – tähän tulee sen polku, esimerkiksi /lasku/.\n\nSivu luodaan HugoCMS:ssä ja siihen lisätään rakennuspalikka ”shop-invoice”. Jos kenttä jää tyhjäksi, OpensourceERP käyttää rechnung/.\n\nLinkki sisältää salaisen koodin, joten myös vieraat ilman asiakastiliä näkevät laskunsa.",
+            "activatePage": "Nykyiset asiakkaat, joilla ei vielä ole asiakastiliä, voivat aktivoida sellaisen: he syöttävät puhelinnumeronsa ja saavat linkin WhatsAppilla. Linkki johtaa tähän syötetylle sivulle, esimerkiksi /aktivoi/.\n\nSivu luodaan HugoCMS:ssä ja siihen lisätään rakennuspalikka ”portal-activate”. Jos kenttä jää tyhjäksi, OpensourceERP käyttää freischalten/.\n\nSama polku kuuluu WhatsApp-malliin ”Aktivoi asiakastili” painikkeen osoitteena.",
             "templateSet": "Mallisarja määrää, miltä kirjautuminen, asiakastili, laskut ja yhteydenottolomake näyttävät sivustolla. ”Standard” mukautuu sivuston ulkoasuun ja riittää useimmiten.\n\nKehittäjä voi luoda omia sarjoja yrityksen mallihakemistoon portal/-kansioon; ne näkyvät sitten tässä valittavina.\n\nVaihdon jälkeen suorita ”Asenna paketti”, jotta sivusto saa uudet mallit.",
-            "contactMailTo": "Kun asiakas täyttää sivuston yhteydenottolomakkeen, OpensourceERP lähettää viestin sähköpostina tähän osoitteeseen.\n\nJos kenttä jää tyhjäksi, viesti menee yrityksen lähettäjäosoitteeseen yrityksen asetuksista.\n\nUseita vastaanottajia ei tueta – käytä yhteistä postilaatikkoa tai jakelulistaa."
+            "contactMailTo": "Kun asiakas täyttää sivuston yhteydenottolomakkeen, OpensourceERP lähettää viestin sähköpostina tähän osoitteeseen.\n\nJos kenttä jää tyhjäksi, viesti menee yrityksen lähettäjäosoitteeseen yrityksen asetuksista.\n\nUseita vastaanottajia ei tueta – käytä yhteistä postilaatikkoa tai jakelulistaa.",
+            "pages": "Näihin osoitteisiin ”Asenna paketti” luo portaalisivut sivustolle – valmiina sopivan rakennuspalikan kanssa. Se edellyttää sivustoprojektin config.json-tiedostossa merkintää oserp-portal/content (ks. ohje kohdassa ”Testaa yhteys”).\n\nOsoite annetaan sivuston juuresta, vinoviiva alussa ja lopussa, esimerkiksi /kunden/anmelden/. Tilin alasivut (profiili, osoitteet, laskut, kaupan kanssa maksutapa, ajoneuvojen kanssa ajoneuvot) ovat asiakastilin osoitteen alla.\n\nWidgetit käyttävät samoja osoitteita linkeissään ja OpensourceERP sähköpostien ja WhatsApp-viestien linkeissä. Jos haluat suunnitella sivun itse, luo HugoCMS:ssä oma sivu samaan osoitteeseen – se ohittaa paketin sivun.\n\nMuutoksen jälkeen suorita ”Asenna paketti”.\n\nAsiakasportaalin hakemisto on yhteinen alku: sivu ilman alkuvinoviivaa (esim. anmelden/) on sen alla – /kunden/ ja anmelden/ muodostavat /kunden/anmelden/. Toista hakemistoa varten riittää tämän yhden kentän muuttaminen. Sivu, joka alkaa vinoviivalla (esim. /login/), on itsenäinen."
         },
         "hugocmsFromBaseUrl": "Käytä verkko-osoitetta",
-        "hugocmsFromBaseUrl_help": "Asettaa HugoCMS:n etäkäyttöosoitteen sivuston verkko-osoitteesta lisäten /cms-api/."
+        "hugocmsFromBaseUrl_help": "Asettaa HugoCMS:n etäkäyttöosoitteen sivuston verkko-osoitteesta lisäten /cms-api/.",
+        "mountsHelp": {
+            "title": "Merkinnät sivuston config.json-tiedostoon",
+            "text": "Jotta Hugo ottaa paketista välittäjän, mallit ja widgetit käyttöön, Hugo-projektin config.json-tiedoston osion ”module” on näytettävä tältä – ensimmäiset merkinnät ovat sivuston tavalliset hakemistot, neljä viimeistä kuuluvat pakettiin:",
+            "after": "Tiedosto on sivuston projektihakemistossa web-palvelimella; HugoCMS:ssä sitä voi muokata kohdassa ”Kaikki tiedostot”. Suorita sen jälkeen ”Asenna paketti” ja tarkista täällä uudelleen.\n\nJos merkinnät puuttuvat, paketti saapuu HugoCMS:ään, mutta Hugo ei kopioi siitä mitään valmiiseen sivustoon – välittäjä vastaa silloin virheellä 404."
+        }
     }
 }

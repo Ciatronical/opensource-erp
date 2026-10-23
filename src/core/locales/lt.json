@@ -126,6 +126,8 @@
         "alreadyRunning": "Duomenų bazės atnaujinimas jau vyksta. Bandykite dar kartą po kelių minučių."
     },
     "HelpPanel": {
-        "close": "Užverti žinyną"
+        "close": "Užverti žinyną",
+        "copy": "Kopijuoti",
+        "copied": "Nukopijuota"
     }
 }

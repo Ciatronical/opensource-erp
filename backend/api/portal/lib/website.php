@@ -140,15 +140,39 @@ function websiteSettingKeys($db): array {
  * @param array $query Parameter, die angehängt werden
  * @return string leer, wenn die Webseite keine Basisadresse hat
  */
+/**
+ * Pfad einer Portalseite ab der Wurzel der Webseite
+ *
+ * Eine Angabe ohne führenden Schrägstrich hängt am Verzeichnis des
+ * Kundenportals (portal_path, Vorgabe /kunden/): „anmelden/“ wird zu
+ * /kunden/anmelden/. Mit Schrägstrich steht sie für sich, eine vollständige
+ * Adresse (https://…) bleibt, wie sie ist. Immer mit Schrägstrich am Ende.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $website Webseite
+ * @param string $key Einstellung mit dem Pfad, etwa 'login_page'
+ * @param string $vorgabe Rückfall, wenn die Einstellung leer ist (relativ oder absolut)
+ * @return string
+ */
+function websitePagePath($db, int $website, string $key, string $vorgabe): string {
+    $pfad = trim(websiteValue($db, $website, $key));
+    if ('' === $pfad) {
+        $pfad = $vorgabe;
+    }
+    if (!preg_match('~^(https?://|/)~i', $pfad)) {
+        $verzeichnis = trim(websiteValue($db, $website, 'portal_path'));
+        $verzeichnis = '/'.trim('' === $verzeichnis ? 'kunden' : $verzeichnis, '/');
+        $pfad = ('/' === $verzeichnis ? '' : $verzeichnis).'/'.$pfad;
+    }
+    return str_ends_with($pfad, '/') ? $pfad : $pfad.'/';
+}
+
 function websitePageUrl($db, int $website, string $key, string $vorgabe, array $query = []): string {
     $basis = rtrim(trim(websiteValue($db, $website, 'base_url')), '/');
     if ('' === $basis) {
         return '';
     }
-    $pfad = trim(websiteValue($db, $website, $key));
-    if ('' === $pfad) {
-        $pfad = $vorgabe;
-    }
+    $pfad = websitePagePath($db, $website, $key, $vorgabe);
     $adresse = preg_match('~^https?://~i', $pfad) ? $pfad : $basis.'/'.ltrim($pfad, '/');
     if (empty($query)) {
         return $adresse;
@@ -171,7 +195,7 @@ function websiteInvoicePageUrl($db, int $website, string $arLink): string {
     if ('' === $arLink) {
         return '';
     }
-    return websitePageUrl($db, $website, 'invoice_page', '/rechnung/', ['link' => $arLink]);
+    return websitePageUrl($db, $website, 'invoice_page', 'rechnung/', ['link' => $arLink]);
 }
 
 /**
@@ -183,5 +207,5 @@ function websiteInvoicePageUrl($db, int $website, string $arLink): string {
  * @return string
  */
 function websiteActivatePageUrl($db, int $website, string $token): string {
-    return websitePageUrl($db, $website, 'activate_page', '/freischalten/', ['token' => $token]);
+    return websitePageUrl($db, $website, 'activate_page', 'freischalten/', ['token' => $token]);
 }

@@ -126,6 +126,8 @@
         "alreadyRunning": "È già in corso un aggiornamento del database. Riprovare tra qualche minuto."
     },
     "HelpPanel": {
-        "close": "Chiudi la guida"
+        "close": "Chiudi la guida",
+        "copy": "Copia",
+        "copied": "Copiato"
     }
 }

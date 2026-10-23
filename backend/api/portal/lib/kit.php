@@ -176,6 +176,88 @@ function portalKitConfig($db, int $website): string {
 }
 
 /**
+ * Pfade der Portalseiten einer Webseite, Schlüssel wie in portal-ui/src/core/paths.js
+ *
+ * Aus den Einstellungen (login_page, register_page, account_page,
+ * invoice_page, activate_page, contact_page; Vorgaben unter /kunden/ aus
+ * website_default_settings) und daraus abgeleitet: die Unterseiten des
+ * Kontos hängen an account_page, die Dankeseite am Kontaktformular. Die
+ * Seiten des Shops (Warenkorb, Kasse) haben feste Pfade an der Wurzel.
+ * Erweiterungen passen die Liste über den Haken pages an.
+ *
+ * Zwei Abnehmer: die Seitenvorlagen im Paket (oserp-portal/content/,
+ * Platzhalter [[login]] …) und assets/portal-ui/pages.json, aus dem der
+ * Partial die Pfade an die Widgets gibt — so verlinken Seiten, Widgets und
+ * Mails dieselben Adressen.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $website Webseite
+ * @return array Schlüssel => Pfad ab der Wurzel, mit Schrägstrich am Ende
+ */
+function portalKitPages($db, int $website): array {
+    // Relative Angaben hängen am Verzeichnis des Kundenportals (portal_path)
+    $pfad = fn(string $key, string $vorgabe) => websitePagePath($db, $website, $key, $vorgabe);
+    $konto = $pfad('account_page', 'konto/');
+    $kontakt = $pfad('contact_page', 'kontakt/');
+    $seiten = [
+        'home'            => '/',
+        'login'           => $pfad('login_page', 'anmelden/'),
+        'logout'          => $konto.'abgemeldet/',
+        'register'        => $pfad('register_page', 'registrieren/'),
+        'registered'      => $konto,
+        'account'         => $konto,
+        'profile'         => $konto.'profil/',
+        'addresses'       => $konto.'adressen/',
+        'orders'          => $konto.'rechnungen/',
+        'payment'         => $konto.'zahlungsart/',
+        'vehicles'        => $konto.'fahrzeuge/',
+        'activate'        => $pfad('activate_page', 'freischalten/'),
+        'invoice'         => $pfad('invoice_page', 'rechnung/'),
+        'contact'         => $kontakt,
+        'contactthanks'   => $kontakt.'danke/',
+        'cart'            => '/warenkorb/',
+        'checkout'        => '/kasse/',
+        'paymentcanceled' => '/bezahlung-abgebrochen/',
+    ];
+    return portalHookFilter('pages', $seiten, $db, $website);
+}
+
+/**
+ * Inhalt von assets/portal-ui/pages.json — liest der Partial der Webseite
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $website Webseite
+ * @return string
+ */
+function portalKitPagesJson($db, int $website): string {
+    return json_encode(portalKitPages($db, $website), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n";
+}
+
+/**
+ * Eine Seitenvorlage des Pakets (oserp-portal/content/…) für diese Webseite
+ *
+ * Platzhalter: [[login]], [[account]], [[profile]] … die Pfade aus
+ * portalKitPages; [[feature:shop]], [[feature:lxcars]] als true/false für
+ * Shortcode-Schalter wie show-payment. Unbekannte Platzhalter werden leer.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $website Webseite
+ * @param string $quelle Vorlagendatei im Vorlagensatz
+ * @return string
+ */
+function portalKitPageRender($db, int $website, string $quelle): string {
+    $seiten = portalKitPages($db, $website);
+    $features = portalKitFeatures($db, $website);
+    $inhalt = (string)file_get_contents($quelle);
+    return preg_replace_callback('/\[\[(feature:)?([a-z]+)\]\]/', function (array $m) use ($seiten, $features) {
+        if ('' !== $m[1]) {
+            return !empty($features[$m[2]]) ? 'true' : 'false';
+        }
+        return $seiten[$m[2]] ?? '';
+    }, $inhalt);
+}
+
+/**
  * Inhalt von assets/portal-ui/features.json — liest der Partial der Webseite
  *
  * Im Verzeichnis der Bündel, weil Hugo es dort schon einhängt (Mount
@@ -286,13 +368,19 @@ function portalSyncKit($db, int $website, string $paket = 'oserp-portal'): array
 
     foreach ($imPaket as $relativ => $quelle) {
         $zielDatei = $ziel.'/'.$relativ;
-        if (is_file($zielDatei) && md5_file($zielDatei) === md5_file($quelle)) {
+        // Seitenvorlagen (content/) werden je Webseite ausgefüllt, alles
+        // andere unverändert kopiert
+        $gerendert = str_starts_with($relativ, 'content/') ? portalKitPageRender($db, $website, $quelle) : null;
+        if (is_file($zielDatei) && (null === $gerendert
+                ? md5_file($zielDatei) === md5_file($quelle)
+                : file_get_contents($zielDatei) === $gerendert)) {
             continue;
         }
         if (!is_dir(dirname($zielDatei))) {
             mkdir(dirname($zielDatei), 0775, true);
         }
-        if (!copy($quelle, $zielDatei)) {
+        $ok = null === $gerendert ? copy($quelle, $zielDatei) : false !== file_put_contents($zielDatei, $gerendert, LOCK_EX);
+        if (!$ok) {
             throw new ApiError('PORTAL_WRITE_FAILED', 'Datei nicht kopierbar: '.$zielDatei);
         }
         $bilanz['kopiert']++;
@@ -302,7 +390,7 @@ function portalSyncKit($db, int $website, string $paket = 'oserp-portal'): array
     // nicht im Paket steht, fällt weg. Kinder vor Eltern, damit leer
     // gewordene Verzeichnisse mit verschwinden; Verknüpfungen werden als
     // solche gelöscht, nie ihr Ziel.
-    $eigene = ['config.json', 'assets/portal-ui/features.json'];
+    $eigene = ['config.json', 'assets/portal-ui/features.json', 'assets/portal-ui/pages.json'];
     $eintraege = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($ziel, FilesystemIterator::SKIP_DOTS),
         RecursiveIteratorIterator::CHILD_FIRST
@@ -324,7 +412,11 @@ function portalSyncKit($db, int $website, string $paket = 'oserp-portal'): array
         }
     }
 
-    foreach (['config.json' => portalKitConfig($db, $website), 'assets/portal-ui/features.json' => portalKitFeaturesJson($db, $website)] as $relativ => $inhalt) {
+    foreach ([
+        'config.json'                   => portalKitConfig($db, $website),
+        'assets/portal-ui/features.json' => portalKitFeaturesJson($db, $website),
+        'assets/portal-ui/pages.json'    => portalKitPagesJson($db, $website),
+    ] as $relativ => $inhalt) {
         $datei = $ziel.'/'.$relativ;
         if (is_file($datei) && file_get_contents($datei) === $inhalt) {
             continue;

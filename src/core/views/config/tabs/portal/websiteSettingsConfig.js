@@ -44,13 +44,22 @@ const website = [
     // action: die Karte zeigt unter dem Feld „Verbindung prüfen“ (testWebsiteBackendUrl)
     { name: "backend_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "WebsitesView.fields.backendUrl", tooltip: "WebsitesView.fields.backendUrl_help", action: "backendTest", help: "WebsitesView.help.backendUrl" },
 
-    // Seiten der Webseite, auf die Mails und Nachrichten verlinken
+    // Seiten der Webseite: unter diesen Pfaden legt das Paket die Portalseiten
+    // an (oserp-portal/content/), dorthin verlinken Widgets, Mails und
+    // Nachrichten. Vorgaben unter /kunden/ (website_default_settings)
     { name: "seiten", type: "headline", label: "WebsitesView.fields.pages" },
 
-    // Seite mit <shop-invoice> — Ziel des Links in den Mails; leer = /rechnung/
+    // Gemeinsamer Anfang: Seiten ohne führenden Schrägstrich hängen daran
+    { name: "portal_path", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.portalPath", tooltip: "WebsitesView.fields.portalPath_help", help: "WebsitesView.help.pages" },
+    { name: "login_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.loginPage", tooltip: "WebsitesView.fields.loginPage_help", help: "WebsitesView.help.pages" },
+    { name: "register_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.registerPage", tooltip: "WebsitesView.fields.registerPage_help", help: "WebsitesView.help.pages" },
+    // Unterseiten (Profil, Adressen, Rechnungen, Zahlungsart, Fahrzeuge) hängen an dieser Adresse
+    { name: "account_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.accountPage", tooltip: "WebsitesView.fields.accountPage_help", help: "WebsitesView.help.pages" },
+    // Seite mit <shop-invoice> — Ziel des Links in den Mails
     { name: "invoice_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.invoicePage", tooltip: "WebsitesView.fields.invoicePage_help", help: "WebsitesView.help.invoicePage" },
-    // Seite mit <portal-activate> — Ziel des Links in der WhatsApp-Nachricht; leer = /freischalten/
+    // Seite mit <portal-activate> — Ziel des Links in der WhatsApp-Nachricht
     { name: "activate_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.activatePage", tooltip: "WebsitesView.fields.activatePage_help", help: "WebsitesView.help.activatePage" },
+    { name: "contact_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.contactPage", tooltip: "WebsitesView.fields.contactPage_help", help: "WebsitesView.help.pages" },
 
     { name: "veroeffentlichung", type: "headline", label: "WebsitesView.fields.publish" },
 

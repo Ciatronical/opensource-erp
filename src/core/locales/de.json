@@ -130,6 +130,8 @@
         "alreadyRunning": "Es läuft bereits ein Datenbank-Update. Bitte in einigen Minuten erneut versuchen."
     },
     "HelpPanel": {
-        "close": "Hilfe schließen"
+        "close": "Hilfe schließen",
+        "copy": "Kopieren",
+        "copied": "Kopiert"
     }
 }

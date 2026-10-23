@@ -126,6 +126,8 @@
         "alreadyRunning": "Datu bāzes atjaunināšana jau notiek. Lūdzu, mēģiniet vēlreiz pēc dažām minūtēm."
     },
     "HelpPanel": {
-        "close": "Aizvērt palīdzību"
+        "close": "Aizvērt palīdzību",
+        "copy": "Kopēt",
+        "copied": "Nokopēts"
     }
 }

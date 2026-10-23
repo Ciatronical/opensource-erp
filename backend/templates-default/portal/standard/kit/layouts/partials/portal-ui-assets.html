@@ -54,6 +54,17 @@
 {{- if not (hasSuffix $base "/") }}{{ $base = printf "%s/" $base }}{{ end -}}
 {{- $api := printf "%v" ($paths.api | default (printf "%sportal-api/" $site)) -}}
 {{- $pages := dict -}}
+{{- /*
+  Pfade der Portalseiten aus OpensourceERP (assets/portal-ui/pages.json, mit
+  dem Paket geschrieben): dieselben Adressen, unter denen das Paket die Seiten
+  anlegt (oserp-portal/content/) und auf die Mails verlinken. Angaben in
+  params.portalui.paths gehen vor.
+*/ -}}
+{{- with resources.Get "portal-ui/pages.json" -}}
+  {{- range $key, $value := (. | transform.Unmarshal) -}}
+    {{- $pages = merge $pages (dict $key (printf "%v" $value)) -}}
+  {{- end -}}
+{{- end -}}
 {{- range $key, $value := $paths -}}
   {{- if not (in (slice "base" "api") $key) -}}
     {{- $page := printf "%v" $value -}}

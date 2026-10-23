@@ -126,6 +126,8 @@
         "alreadyRunning": "Er loopt al een database-update. Probeer het over enkele minuten opnieuw."
     },
     "HelpPanel": {
-        "close": "Help sluiten"
+        "close": "Help sluiten",
+        "copy": "Kopiëren",
+        "copied": "Gekopieerd"
     }
 }

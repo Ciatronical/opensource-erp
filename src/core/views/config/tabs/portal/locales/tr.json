@@ -37,7 +37,7 @@
         "fields": {
             "contact": "İletişim formu",
             "activatePage": "“Hesabı etkinleştir” sayfası",
-            "activatePage_help": "Mevcut müşterilerin müşteri hesaplarını etkinleştirdiği sayfa. Boş = /freischalten/.",
+            "activatePage_help": "Mevcut müşterilerin müşteri hesaplarını etkinleştirdiği sayfa. Boş = freischalten/.",
             "contactMailTo": "İletişim formunun alıcısı",
             "contactMailTo_help": "İletişim formundan gelen taleplerin gönderildiği e-posta adresi. Boş = şirketin gönderen adresi.",
             "hugocms_help": "Bu web sitesini oluşturan ve yayınlayan HugoCMS ile bağlantı.",
@@ -51,7 +51,7 @@
             "pages": "Web sitesinin sayfaları",
             "baseUrl": "Web sitesinin web adresi",
             "baseUrl_help": "Ziyaretçilerin web sitesini açtığı adres, örneğin https://www.example.com/.",
-            "invoicePage_help": "Web sitesinde bir faturayı gösteren sayfa. Boş = /rechnung/.",
+            "invoicePage_help": "Web sitesinde bir faturayı gösteren sayfa. Boş = rechnung/.",
             "templateSet_help": "Portal sayfalarının tasarımı; “Standart” çoğu web sitesine uyar.",
             "grants_help": "OpensourceERP’nin nereye yazabileceğini HugoCMS belirler (proje ayarları → OpensourceERP bağlantısı). Burada yalnızca görüntüleme amaçlı; aktarım izinleri her seferinde uygular.",
             "grantPackage": "Müşteri portalı paketi",
@@ -63,7 +63,17 @@
             "allowedOrigins": "İzin verilen kaynak adresleri",
             "invoicePage": "“Fatura” sayfası",
             "templateSet": "Şablon seti",
-            "publish": "Yayınlama"
+            "publish": "Yayınlama",
+            "loginPage": "“Oturum aç” sayfası",
+            "loginPage_help": "Oturum açma formunun bulunduğu sayfa. Varsayılan anmelden/.",
+            "registerPage": "“Kayıt ol” sayfası",
+            "registerPage_help": "Yeni müşterilerin hesap oluşturduğu sayfa. Varsayılan registrieren/.",
+            "accountPage": "“Müşteri hesabı” sayfası",
+            "accountPage_help": "Müşteri hesabına genel bakış; profil, adresler ve faturalar bunun altındadır. Varsayılan konto/.",
+            "contactPage": "“İletişim” sayfası",
+            "contactPage_help": "İletişim formunun bulunduğu sayfa. Varsayılan kontakt/.",
+            "portalPath": "Müşteri portalı dizini",
+            "portalPath_help": "Tüm portal sayfalarının ortak başlangıcı, örneğin /kunden/ veya /kundenportal/. Varsayılan /kunden/."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Bu ada sahip bir web sitesi zaten var.",
@@ -85,7 +95,8 @@
             "HUGOCMS": "Yanıt OpensourceERP portal erişimi yerine HugoCMS’den geldi. Web sitesi üzerinden en son aktarılan adres geçerlidir — düzeltmeden sonra kaydedin ve “Paketi yükle” çalıştırın.",
             "KEY_REJECTED": "Portal erişimi anahtarı reddetti — web sitesi anahtarını kontrol edin; web sitesi üzerinden en son aktarılan geçerlidir.",
             "PROXY_NOT_CONFIGURED": "Yönlendirici çalışıyor ancak oserp-portal/config.json dosyasını bulamıyor ya da dosya eksik — “Paketi yükle” çalıştırın.",
-            "FOREIGN": "Beklenmeyen yanıt (HTTP {status}) — orada yanıt veren OpensourceERP portal erişimi değil."
+            "FOREIGN": "{url} adresinde OpensourceERP dışında bir şey yanıt veriyor (HTTP {status}). Adres muhtemelen yabancı bir sayfaya veya başka bir hizmete işaret ediyor — web adresini kontrol edin.",
+            "NOT_FOUND": "{url} adresinde hiçbir şey yanıt vermiyor (hata 404). Ya yönlendirici henüz web sitesinde değil ya da web sitesinin web adresi yanlış.\nSonraki adımlar: 1. “Web sitesinin web adresi”nin ziyaretçilerin açtığı ana sayfa olduğunu kontrol edin. 2. Yönlendiricinin web sitesine gelmesi için “Paketi yükle” çalıştırın. 3. Ardından burada yeniden sınayın. Not: Web sitesi projesinin config.json dosyasında paket için girdiler sıklıkla eksiktir — hangileri olduğunu bilgi simgesi gösterir."
         },
         "hugocmsShopOff": "HugoCMS’de bu web sitesi için çevrimiçi mağaza etkin değil — proje ayarlarında “OpensourceERP bağlantısı” altında “Bu web sitesinde çevrimiçi mağaza” seçeneğini açın. O zamana kadar mağaza çalışması ürün sayfası aktarmaz.",
         "help": {
@@ -95,12 +106,18 @@
             "backendUrl": "Portal erişiminin adresi, OpensourceERP’nin müşteriler için genel girişidir: kurulumun backend/portal/ dizini, örneğin https://erp.example.com/portal/ — yerelde scripts/dev.sh ile http://localhost:8000/portal/.\n\nWeb sitesindeki /portal-api/ yönlendiricisi bileşenlerin tüm isteklerini oraya iletir: oturum açma, hesap, faturalar ve mağaza varsa sepet ve ödeme. “Paketi yükle”, adresi web sitesi anahtarıyla birlikte oserp-portal/config.json dosyasına yazar.\n\nHugoCMS adresi (…/cms-api/, HugoCMS kartı) ve web sitesinin kendi adresi buraya girilmez.\n\nBoş alan, OpensourceERP’nin şu anda çağrıldığı adresle önceden doldurulur. Ters vekil sunucu arkasında bu, dışarıdan görünen adrestir — web sitesinin web sunucusundan erişilebilir olmalıdır.\n\n“Bağlantıyı sına” üç adımda test eder: giriş, doğrudan OpensourceERP’den, web sitesi üzerinden.",
             "hugocmsUrl": "HugoCMS, web sitesinin yönetildiği ve oluşturulduğu programdır. OpensourceERP ona müşteri portalı paketini gönderir ve ardından web sitesini yeniden oluşturtur. Bunun için HugoCMS’ye dışarıdan erişilebilen bir web adresi gerekir.\n\nBu adresi HugoCMS’nin kendisi gösterir: web sitesinin proje ayarlarında “OpensourceERP bağlantısı” altında. /cms-api/ ile biter, örneğin https://www.example.com/cms-api/. En iyisi oradan kopyalamaktır.\n\nAdres https:// ile başlamalıdır, aksi halde HugoCMS bağlantıyı kabul etmez. Tek istisna aynı bilgisayardaki bir testtir.\n\nKontrol: bu karttaki “Bağlantıyı sına ve izinleri al” düğmesi.",
             "hugocmsKey": "OpensourceERP bu anahtarla HugoCMS’ye kendini tanıtır. Yalnızca bu web sitesi için geçerlidir.\n\nHugoCMS’de oluşturulur: web sitesinin proje ayarları → “OpensourceERP bağlantısı” → “Anahtar oluştur”. HugoCMS bunu tam olarak yalnızca bir kez gösterir — o anda kopyalayıp buraya yapıştırın. Daha sonra HugoCMS yalnızca son dört karakteri gösterir; bununla her iki tarafın aynı anahtara sahip olup olmadığı kontrol edilebilir.\n\nAnahtar kaybolursa HugoCMS’de yenisini oluşturun ve burada değiştirin. Eskisi artık geçerli olmaz.",
-            "invoicePage": "Müşteriler e-postalarda faturalarına bir bağlantı alır. Bu bağlantı, faturayı gösteren bir web sitesi sayfasına gider — buraya o sayfanın yolu girilir, örneğin /fatura/.\n\nSayfa HugoCMS’de oluşturulur ve içine “shop-invoice” yapı taşı yerleştirilir. Alan boş kalırsa OpensourceERP /rechnung/ kullanır.\n\nBağlantı gizli bir kod içerir, bu nedenle müşteri hesabı olmayan misafirler de faturalarını görebilir.",
-            "activatePage": "Henüz müşteri hesabı olmayan mevcut müşteriler hesaplarını etkinleştirebilir: telefon numaralarını girerler ve WhatsApp üzerinden bir bağlantı alırlar. Bu bağlantı burada girilen sayfaya gider, örneğin /etkinlestir/.\n\nSayfa HugoCMS’de oluşturulur ve içine “portal-activate” yapı taşı yerleştirilir. Alan boş kalırsa OpensourceERP /freischalten/ kullanır.\n\nAynı yol, WhatsApp şablonu “Müşteri hesabını etkinleştir” içinde düğme adresi olarak girilir.",
+            "invoicePage": "Müşteriler e-postalarda faturalarına bir bağlantı alır. Bu bağlantı, faturayı gösteren bir web sitesi sayfasına gider — buraya o sayfanın yolu girilir, örneğin /fatura/.\n\nSayfa HugoCMS’de oluşturulur ve içine “shop-invoice” yapı taşı yerleştirilir. Alan boş kalırsa OpensourceERP rechnung/ kullanır.\n\nBağlantı gizli bir kod içerir, bu nedenle müşteri hesabı olmayan misafirler de faturalarını görebilir.",
+            "activatePage": "Henüz müşteri hesabı olmayan mevcut müşteriler hesaplarını etkinleştirebilir: telefon numaralarını girerler ve WhatsApp üzerinden bir bağlantı alırlar. Bu bağlantı burada girilen sayfaya gider, örneğin /etkinlestir/.\n\nSayfa HugoCMS’de oluşturulur ve içine “portal-activate” yapı taşı yerleştirilir. Alan boş kalırsa OpensourceERP freischalten/ kullanır.\n\nAynı yol, WhatsApp şablonu “Müşteri hesabını etkinleştir” içinde düğme adresi olarak girilir.",
             "templateSet": "Şablon seti; oturum açma, müşteri hesabı, faturalar ve iletişim formunun web sitesinde nasıl göründüğünü belirler. “Standart” web sitesinin görünümüne uyum sağlar ve çoğu durumda yeterlidir.\n\nBir geliştirici kendi setlerini şirketin şablon dizininde portal/ altında oluşturabilir; ardından burada seçilebilir olarak görünürler.\n\nDeğişiklikten sonra web sitesinin yeni şablonları alması için “Paketi yükle” çalıştırın.",
-            "contactMailTo": "Bir müşteri web sitesindeki iletişim formunu doldurduğunda OpensourceERP talebi e-posta olarak bu adrese gönderir.\n\nAlan boş kalırsa talep, şirket yapılandırmasındaki şirketin gönderen adresine gider.\n\nBirden fazla alıcı öngörülmemiştir — bunun için ortak bir posta kutusu veya dağıtım listesi kullanın."
+            "contactMailTo": "Bir müşteri web sitesindeki iletişim formunu doldurduğunda OpensourceERP talebi e-posta olarak bu adrese gönderir.\n\nAlan boş kalırsa talep, şirket yapılandırmasındaki şirketin gönderen adresine gider.\n\nBirden fazla alıcı öngörülmemiştir — bunun için ortak bir posta kutusu veya dağıtım listesi kullanın.",
+            "pages": "Bu adreslerde “Paketi yükle” portal sayfalarını web sitesinde oluşturur — uygun yapı taşıyla hazır olarak. Bunun için web sitesi projesinin config.json dosyasında oserp-portal/content girdisi gereklidir (bkz. “Bağlantıyı sına” yardımı).\n\nAdres web sitesinin kökünden, başında ve sonunda eğik çizgiyle verilir, örneğin /kunden/anmelden/. Hesabın alt sayfaları (profil, adresler, faturalar, mağaza varsa ödeme yöntemi, araçlar varsa araçlar) müşteri hesabı adresinin altındadır.\n\nAynı adresleri bileşenler bağlantıları için, OpensourceERP ise e-postalardaki ve WhatsApp mesajlarındaki bağlantılar için kullanır. Bir sayfayı kendisi tasarlamak isteyen, HugoCMS’de aynı adreste kendi sayfasını oluşturur — bu sayfa paketteki sayfaya göre önceliklidir.\n\nBir değişiklikten sonra “Paketi yükle” çalıştırın.\n\nMüşteri portalı dizini ortak başlangıçtır: başında eğik çizgi olmayan bir sayfa (örn. anmelden/) onun altındadır — /kunden/ ve anmelden/ birleşerek /kunden/anmelden/ olur. Başka bir dizin için yalnızca bu alanı değiştirmek yeterlidir. Başında eğik çizgi olan bir sayfa (örn. /login/) bağımsızdır."
         },
         "hugocmsFromBaseUrl": "Web adresini kullan",
-        "hugocmsFromBaseUrl_help": "HugoCMS uzaktan erişim adresini, sonuna /cms-api/ eklenmiş web sitesi adresinden ayarlar."
+        "hugocmsFromBaseUrl_help": "HugoCMS uzaktan erişim adresini, sonuna /cms-api/ eklenmiş web sitesi adresinden ayarlar.",
+        "mountsHelp": {
+            "title": "Web sitesinin config.json dosyası için girdiler",
+            "text": "Hugo’nun paketten yönlendiriciyi, şablonları ve bileşenleri alması için Hugo projesinin config.json dosyasındaki “module” bölümü şöyle görünmelidir — ilk girdiler web sitesinin olağan dizinleridir, son dördü pakete aittir:",
+            "after": "Dosya web sunucusundaki web sitesinin proje dizininde bulunur; HugoCMS’de “Tüm dosyalar” altında düzenlenebilir. Ardından “Paketi yükle” çalıştırın ve burada yeniden sınayın.\n\nGirdiler eksikse paket HugoCMS’ye ulaşır, ancak Hugo bundan hiçbir şeyi oluşturulan web sitesine kopyalamaz — yönlendirici o zaman 404 hatasıyla yanıt verir."
+        }
     }
 }

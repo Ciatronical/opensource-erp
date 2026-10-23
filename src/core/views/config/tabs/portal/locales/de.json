@@ -37,7 +37,7 @@
         "fields": {
             "contact": "Kontaktformular",
             "activatePage": "Seite „Konto freischalten“",
-            "activatePage_help": "Seite, auf der Bestandskunden ihr Kundenkonto freischalten. Leer = /freischalten/.",
+            "activatePage_help": "Seite, auf der Bestandskunden ihr Kundenkonto freischalten. Leer = freischalten/.",
             "contactMailTo": "Empfänger des Kontaktformulars",
             "contactMailTo_help": "E-Mail-Adresse, an die Anfragen aus dem Kontaktformular gehen. Leer = Absenderadresse der Firma.",
             "hugocms_help": "Verbindung zu HugoCMS, das diese Webseite baut und veröffentlicht.",
@@ -51,7 +51,7 @@
             "pages": "Seiten der Webseite",
             "baseUrl": "Webadresse der Webseite",
             "baseUrl_help": "Adresse, unter der Besucher die Webseite aufrufen, zum Beispiel https://www.example.de/.",
-            "invoicePage_help": "Seite der Webseite, die eine Rechnung anzeigt. Leer = /rechnung/.",
+            "invoicePage_help": "Seite der Webseite, die eine Rechnung anzeigt. Leer = rechnung/.",
             "templateSet_help": "Gestaltung der Portalseiten; „Standard“ passt für die meisten Webseiten.",
             "grants_help": "Wohin OpensourceERP schreiben darf, legt HugoCMS fest (Projekteinstellungen → OpensourceERP-Anbindung). Hier nur zur Ansicht; die Übertragung übernimmt die Freigaben jedes Mal.",
             "grantPackage": "Kundenportal-Paket",
@@ -63,7 +63,17 @@
             "allowedOrigins": "Erlaubte Herkunftsadressen",
             "invoicePage": "Seite „Rechnung“",
             "templateSet": "Vorlagensatz",
-            "publish": "Veröffentlichung"
+            "publish": "Veröffentlichung",
+            "loginPage": "Seite „Anmelden“",
+            "loginPage_help": "Seite mit dem Anmeldeformular. Vorgabe anmelden/.",
+            "registerPage": "Seite „Registrieren“",
+            "registerPage_help": "Seite, auf der neue Kunden ein Konto anlegen. Vorgabe registrieren/.",
+            "accountPage": "Seite „Kundenkonto“",
+            "accountPage_help": "Übersicht des Kundenkontos; Profil, Adressen und Rechnungen liegen darunter. Vorgabe konto/.",
+            "contactPage": "Seite „Kontakt“",
+            "contactPage_help": "Seite mit dem Kontaktformular. Vorgabe kontakt/.",
+            "portalPath": "Verzeichnis des Kundenportals",
+            "portalPath_help": "Gemeinsamer Anfang aller Portalseiten, zum Beispiel /kunden/ oder /kundenportal/. Vorgabe /kunden/."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Eine Webseite mit diesem Namen gibt es schon.",
@@ -85,7 +95,8 @@
             "HUGOCMS": "Die Antwort kam von HugoCMS statt vom Portal-Zugang von OpensourceERP. Über die Webseite gilt die zuletzt übertragene Adresse — nach einer Korrektur speichern und „Paket installieren“ ausführen.",
             "KEY_REJECTED": "Der Portal-Zugang hat den Schlüssel abgewiesen — Schlüssel der Webseite prüfen; über die Webseite gilt der zuletzt übertragene.",
             "PROXY_NOT_CONFIGURED": "Der Weiterleiter läuft, findet aber oserp-portal/config.json nicht oder unvollständig — „Paket installieren“ ausführen.",
-            "FOREIGN": "Unerwartete Antwort (HTTP {status}) — dort antwortet nicht der Portal-Zugang von OpensourceERP."
+            "FOREIGN": "Unter {url} antwortet etwas anderes als OpensourceERP (HTTP {status}). Vermutlich zeigt die Adresse auf eine fremde Seite oder einen anderen Dienst — Webadresse prüfen.",
+            "NOT_FOUND": "Unter {url} antwortet nichts (Fehler 404). Entweder liegt der Weiterleiter noch nicht auf der Webseite, oder die Webadresse der Webseite stimmt nicht.\nSo geht es weiter: 1. Prüfen, ob „Webadresse der Webseite“ die Startseite ist, so wie Besucher sie aufrufen. 2. „Paket installieren“ ausführen, damit der Weiterleiter auf die Webseite kommt. 3. Dann hier erneut prüfen. Hinweis: Oft fehlen in der config.json des Webseiten-Projekts die Einträge für das Paket — welche, zeigt das Info-Symbol."
         },
         "hugocmsShopOff": "In HugoCMS ist der Online-Shop für diese Webseite nicht freigegeben — in den Projekteinstellungen unter „OpensourceERP-Anbindung“ den Schalter „Online-Shop auf dieser Webseite“ einschalten. Bis dahin überträgt der Shop-Lauf keine Produktseiten.",
         "help": {
@@ -95,12 +106,18 @@
             "backendUrl": "Die Adresse des Portal-Zugangs ist der öffentliche Einstieg von OpensourceERP für Kunden: das Verzeichnis backend/portal/ der Installation, zum Beispiel https://erp.example.de/portal/ — lokal mit scripts/dev.sh http://localhost:8000/portal/.\n\nDorthin leitet der Weiterleiter /portal-api/ auf der Webseite alle Anfragen der Widgets: Anmeldung, Konto, Rechnungen und, mit Shop, Warenkorb und Kasse. „Paket installieren“ schreibt die Adresse zusammen mit dem Schlüssel der Webseite in oserp-portal/config.json.\n\nNicht hierher gehören die Adresse von HugoCMS (…/cms-api/, Karte HugoCMS) und die Adresse der Webseite selbst.\n\nEin leeres Feld wird mit der Adresse vorbelegt, unter der OpensourceERP gerade aufgerufen wird. Hinter einem Reverse-Proxy ist das die von außen sichtbare Adresse — sie muss vom Webserver der Webseite aus erreichbar sein.\n\n„Verbindung prüfen“ testet in drei Schritten: Eingabe, direkt von OpensourceERP, über die Webseite.",
             "hugocmsUrl": "HugoCMS ist das Programm, mit dem die Webseite gepflegt und gebaut wird. OpensourceERP schickt ihm das Kundenportal-Paket und lässt die Webseite danach neu bauen. Dafür braucht es eine Webadresse, unter der HugoCMS von außen erreichbar ist.\n\nDiese Adresse zeigt HugoCMS selbst an: in den Projekteinstellungen der Webseite unter „OpensourceERP-Anbindung“. Sie endet auf /cms-api/, zum Beispiel https://www.example.de/cms-api/. Am besten von dort kopieren.\n\nDie Adresse muss mit https:// beginnen, sonst nimmt HugoCMS die Verbindung nicht an. Ausnahme ist nur ein Test auf demselben Rechner.\n\nPrüfen: der Knopf „Verbindung prüfen und Freigaben abrufen“ in dieser Karte.",
             "hugocmsKey": "Mit diesem Schlüssel weist sich OpensourceERP bei HugoCMS aus. Er gilt nur für diese eine Webseite.\n\nErzeugt wird er in HugoCMS: Projekteinstellungen der Webseite → „OpensourceERP-Anbindung“ → „Schlüssel erzeugen“. HugoCMS zeigt ihn dabei genau einmal vollständig an — dann kopieren und hier einfügen. Später zeigt HugoCMS nur noch die letzten vier Zeichen, damit lässt sich prüfen, ob beide Seiten denselben Schlüssel haben.\n\nGeht der Schlüssel verloren, in HugoCMS einen neuen erzeugen und hier ersetzen. Der alte gilt dann nicht mehr.",
-            "invoicePage": "Kunden bekommen in E-Mails einen Link zu ihrer Rechnung. Dieser Link führt auf eine Seite der Webseite, die die Rechnung anzeigt — hier steht ihr Pfad, zum Beispiel /rechnung/.\n\nDie Seite legt man in HugoCMS an und setzt dort den Baustein „shop-invoice“ ein. Bleibt das Feld leer, verwendet OpensourceERP /rechnung/.\n\nDer Link enthält einen geheimen Code, deshalb können auch Gäste ohne Kundenkonto ihre Rechnung sehen.",
-            "activatePage": "Bestandskunden, die noch kein Kundenkonto haben, können sich eines freischalten lassen: Sie geben ihre Telefonnummer ein und bekommen per WhatsApp einen Link. Dieser Link führt auf die hier eingetragene Seite, zum Beispiel /freischalten/.\n\nDie Seite legt man in HugoCMS an und setzt dort den Baustein „portal-activate“ ein. Bleibt das Feld leer, verwendet OpensourceERP /freischalten/.\n\nDerselbe Pfad gehört in die WhatsApp-Vorlage „Kundenkonto freischalten“ als Adresse der Schaltfläche.",
+            "invoicePage": "Kunden bekommen in E-Mails einen Link zu ihrer Rechnung. Dieser Link führt auf eine Seite der Webseite, die die Rechnung anzeigt — hier steht ihr Pfad, zum Beispiel rechnung/.\n\nDie Seite legt man in HugoCMS an und setzt dort den Baustein „shop-invoice“ ein. Bleibt das Feld leer, verwendet OpensourceERP rechnung/.\n\nDer Link enthält einen geheimen Code, deshalb können auch Gäste ohne Kundenkonto ihre Rechnung sehen.",
+            "activatePage": "Bestandskunden, die noch kein Kundenkonto haben, können sich eines freischalten lassen: Sie geben ihre Telefonnummer ein und bekommen per WhatsApp einen Link. Dieser Link führt auf die hier eingetragene Seite, zum Beispiel freischalten/.\n\nDie Seite legt man in HugoCMS an und setzt dort den Baustein „portal-activate“ ein. Bleibt das Feld leer, verwendet OpensourceERP freischalten/.\n\nDerselbe Pfad gehört in die WhatsApp-Vorlage „Kundenkonto freischalten“ als Adresse der Schaltfläche.",
             "templateSet": "Der Vorlagensatz bestimmt, wie Anmeldung, Kundenkonto, Rechnungen und Kontaktformular auf der Webseite aussehen. „Standard“ passt sich dem Aussehen der Webseite an und reicht in den meisten Fällen.\n\nEigene Sätze kann ein Entwickler im Vorlagenverzeichnis der Firma unter portal/ anlegen; sie erscheinen dann hier zur Auswahl.\n\nNach einem Wechsel „Paket installieren“ ausführen, damit die Webseite die neuen Vorlagen bekommt.",
-            "contactMailTo": "Füllt ein Kunde das Kontaktformular auf der Webseite aus, schickt OpensourceERP die Anfrage als E-Mail an diese Adresse.\n\nBleibt das Feld leer, geht die Anfrage an die Absenderadresse der Firma aus der Firmenkonfiguration.\n\nMehrere Empfänger sind nicht vorgesehen — dafür ein Postfach oder eine Verteilerliste verwenden."
+            "contactMailTo": "Füllt ein Kunde das Kontaktformular auf der Webseite aus, schickt OpensourceERP die Anfrage als E-Mail an diese Adresse.\n\nBleibt das Feld leer, geht die Anfrage an die Absenderadresse der Firma aus der Firmenkonfiguration.\n\nMehrere Empfänger sind nicht vorgesehen — dafür ein Postfach oder eine Verteilerliste verwenden.",
+            "pages": "Unter diesen Adressen legt „Paket installieren“ die Portalseiten auf der Webseite an — fertig mit dem passenden Baustein. Dafür braucht die config.json des Webseiten-Projekts den Eintrag für oserp-portal/content (siehe Hilfe bei „Verbindung prüfen“).\n\nDie Adresse wird ab der Wurzel der Webseite angegeben, mit Schrägstrich am Anfang und am Ende, zum Beispiel /kunden/anmelden/. Die Unterseiten des Kontos (Profil, Adressen, Rechnungen, mit Shop die Zahlungsart, mit Fahrzeugen die Fahrzeuge) hängen an der Adresse des Kundenkontos.\n\nDieselben Adressen verwenden die Widgets für ihre Links und OpensourceERP für die Links in E-Mails und WhatsApp-Nachrichten. Wer eine Seite selbst gestalten will, legt in HugoCMS unter derselben Adresse eine eigene Seite an — sie geht der Seite aus dem Paket vor.\n\nNach einer Änderung „Paket installieren“ ausführen.\n\nDas Verzeichnis des Kundenportals ist der gemeinsame Anfang: Eine Seite ohne führenden Schrägstrich (etwa anmelden/) hängt daran — aus /kunden/ und anmelden/ wird /kunden/anmelden/. Soll ein anderes Verzeichnis gelten, genügt es, dieses eine Feld zu ändern. Eine Seite mit führendem Schrägstrich (etwa /login/) steht für sich."
         },
         "hugocmsFromBaseUrl": "Webadresse übernehmen",
-        "hugocmsFromBaseUrl_help": "Setzt die Adresse für den HugoCMS-Fernzugriff aus der Webadresse der Webseite mit /cms-api/ am Ende."
+        "hugocmsFromBaseUrl_help": "Setzt die Adresse für den HugoCMS-Fernzugriff aus der Webadresse der Webseite mit /cms-api/ am Ende.",
+        "mountsHelp": {
+            "title": "Einträge für die config.json der Webseite",
+            "text": "Damit Hugo den Weiterleiter, die Vorlagen und die Widgets aus dem Paket übernimmt, muss der Abschnitt „module“ in der config.json des Hugo-Projekts so aussehen — die ersten Einträge sind die üblichen Verzeichnisse der Webseite, die letzten vier gehören zum Paket:",
+            "after": "Die Datei liegt im Projektverzeichnis der Webseite auf dem Webserver; in HugoCMS lässt sie sich unter „Alle Dateien“ bearbeiten. Danach „Paket installieren“ ausführen und hier erneut prüfen.\n\nFehlen die Einträge, landet das Paket zwar bei HugoCMS, Hugo kopiert aber nichts davon in die fertige Webseite — der Weiterleiter antwortet dann mit Fehler 404."
+        }
     }
 }

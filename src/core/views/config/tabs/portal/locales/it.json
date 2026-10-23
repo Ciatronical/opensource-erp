@@ -37,7 +37,7 @@
         "fields": {
             "contact": "Modulo di contatto",
             "activatePage": "Pagina «Attiva account»",
-            "activatePage_help": "Pagina in cui i clienti esistenti attivano il proprio account cliente. Vuoto = /freischalten/.",
+            "activatePage_help": "Pagina in cui i clienti esistenti attivano il proprio account cliente. Vuoto = freischalten/.",
             "contactMailTo": "Destinatario del modulo di contatto",
             "contactMailTo_help": "Indirizzo e-mail a cui arrivano le richieste dal modulo di contatto. Vuoto = indirizzo mittente dell’azienda.",
             "hugocms_help": "Collegamento con HugoCMS, che costruisce e pubblica questo sito web.",
@@ -51,7 +51,7 @@
             "pages": "Pagine del sito web",
             "baseUrl": "Indirizzo web del sito",
             "baseUrl_help": "Indirizzo con cui i visitatori aprono il sito web, ad esempio https://www.example.it/.",
-            "invoicePage_help": "Pagina del sito che mostra una fattura. Vuoto = /rechnung/.",
+            "invoicePage_help": "Pagina del sito che mostra una fattura. Vuoto = rechnung/.",
             "templateSet_help": "Aspetto delle pagine del portale; «Standard» va bene per la maggior parte dei siti.",
             "grants_help": "HugoCMS stabilisce dove OpensourceERP può scrivere (impostazioni del progetto → Collegamento OpensourceERP). Qui solo in visualizzazione; il trasferimento applica le autorizzazioni ogni volta.",
             "grantPackage": "Pacchetto del portale clienti",
@@ -63,7 +63,17 @@
             "allowedOrigins": "Indirizzi di origine consentiti",
             "invoicePage": "Pagina «Fattura»",
             "templateSet": "Set di modelli",
-            "publish": "Pubblicazione"
+            "publish": "Pubblicazione",
+            "loginPage": "Pagina «Accesso»",
+            "loginPage_help": "Pagina con il modulo di accesso. Predefinito anmelden/.",
+            "registerPage": "Pagina «Registrazione»",
+            "registerPage_help": "Pagina in cui i nuovi clienti creano un account. Predefinito registrieren/.",
+            "accountPage": "Pagina «Account cliente»",
+            "accountPage_help": "Panoramica dell’account cliente; profilo, indirizzi e fatture si trovano sotto. Predefinito konto/.",
+            "contactPage": "Pagina «Contatto»",
+            "contactPage_help": "Pagina con il modulo di contatto. Predefinito kontakt/.",
+            "portalPath": "Cartella del portale clienti",
+            "portalPath_help": "Inizio comune di tutte le pagine del portale, ad esempio /kunden/ o /kundenportal/. Predefinito /kunden/."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Esiste già un sito con questo nome.",
@@ -85,7 +95,8 @@
             "HUGOCMS": "La risposta è arrivata da HugoCMS invece che dall’accesso al portale di OpensourceERP. Tramite il sito vale l’ultimo indirizzo trasferito — dopo una correzione salvare ed eseguire «Installa pacchetto».",
             "KEY_REJECTED": "L’accesso al portale ha rifiutato la chiave — verificare la chiave del sito; tramite il sito vale l’ultima trasferita.",
             "PROXY_NOT_CONFIGURED": "L’inoltro funziona ma non trova oserp-portal/config.json o è incompleto — eseguire «Installa pacchetto».",
-            "FOREIGN": "Risposta inattesa (HTTP {status}) — lì non risponde l’accesso al portale di OpensourceERP."
+            "FOREIGN": "A {url} risponde qualcosa di diverso da OpensourceERP (HTTP {status}). Probabilmente l’indirizzo punta a una pagina estranea o a un altro servizio — verificare l’indirizzo web.",
+            "NOT_FOUND": "A {url} non risponde nulla (errore 404). O l’inoltro non è ancora sul sito, o l’indirizzo web del sito non è corretto.\nProssimi passi: 1. Verificare che «Indirizzo web del sito» sia la pagina iniziale come la aprono i visitatori. 2. Eseguire «Installa pacchetto» perché l’inoltro arrivi sul sito. 3. Poi verificare di nuovo qui. Nota: spesso nel config.json del progetto del sito mancano le voci per il pacchetto — quali, lo mostra l’icona informazioni."
         },
         "hugocmsShopOff": "In HugoCMS il negozio online non è abilitato per questo sito — attivare «Negozio online su questo sito» nelle impostazioni del progetto alla voce «Collegamento OpensourceERP». Fino ad allora l’esecuzione del negozio non trasferisce pagine prodotto.",
         "help": {
@@ -95,12 +106,18 @@
             "backendUrl": "L’indirizzo dell’accesso al portale è l’ingresso pubblico di OpensourceERP per i clienti: la cartella backend/portal/ dell’installazione, ad esempio https://erp.example.it/portal/ — in locale con scripts/dev.sh http://localhost:8000/portal/.\n\nLì l’inoltro /portal-api/ del sito trasmette tutte le richieste dei widget: accesso, account, fatture e, con negozio, carrello e cassa. «Installa pacchetto» scrive l’indirizzo insieme alla chiave del sito in oserp-portal/config.json.\n\nNon vanno qui l’indirizzo di HugoCMS (…/cms-api/, scheda HugoCMS) né l’indirizzo del sito stesso.\n\nUn campo vuoto viene precompilato con l’indirizzo da cui OpensourceERP è attualmente richiamato. Dietro un reverse proxy è l’indirizzo visibile dall’esterno — deve essere raggiungibile dal server web del sito.\n\n«Prova connessione» verifica in tre passi: inserimento, direttamente da OpensourceERP, tramite il sito web.",
             "hugocmsUrl": "HugoCMS è il programma con cui il sito viene gestito e costruito. OpensourceERP gli invia il pacchetto del portale clienti e poi fa ricostruire il sito. Per questo serve un indirizzo web al quale HugoCMS sia raggiungibile dall’esterno.\n\nQuesto indirizzo lo mostra HugoCMS stesso: nelle impostazioni del progetto del sito alla voce «Collegamento OpensourceERP». Termina con /cms-api/, ad esempio https://www.example.it/cms-api/. Meglio copiarlo da lì.\n\nL’indirizzo deve iniziare con https://, altrimenti HugoCMS rifiuta il collegamento. Unica eccezione: un test sullo stesso computer.\n\nVerifica: il pulsante «Prova connessione e recupera autorizzazioni» in questa scheda.",
             "hugocmsKey": "Con questa chiave OpensourceERP si identifica presso HugoCMS. Vale solo per questo sito.\n\nSi genera in HugoCMS: impostazioni del progetto del sito → «Collegamento OpensourceERP» → «Genera chiave». HugoCMS la mostra per intero esattamente una volta — copiarla allora e incollarla qui. In seguito HugoCMS mostra solo gli ultimi quattro caratteri, con cui si può verificare che entrambe le parti abbiano la stessa chiave.\n\nSe la chiave va persa, generarne una nuova in HugoCMS e sostituirla qui. Quella vecchia non vale più.",
-            "invoicePage": "I clienti ricevono nelle e-mail un link alla loro fattura. Il link porta a una pagina del sito che mostra la fattura — qui va il suo percorso, ad esempio /fattura/.\n\nLa pagina si crea in HugoCMS con il blocco «shop-invoice». Se il campo resta vuoto, OpensourceERP usa /rechnung/.\n\nIl link contiene un codice segreto, perciò anche gli ospiti senza account cliente vedono la loro fattura.",
-            "activatePage": "I clienti esistenti senza account cliente possono farsene attivare uno: inseriscono il numero di telefono e ricevono un link via WhatsApp. Il link porta alla pagina indicata qui, ad esempio /attiva/.\n\nLa pagina si crea in HugoCMS con il blocco «portal-activate». Se il campo resta vuoto, OpensourceERP usa /freischalten/.\n\nLo stesso percorso va nel modello WhatsApp «Attiva account cliente» come indirizzo del pulsante.",
+            "invoicePage": "I clienti ricevono nelle e-mail un link alla loro fattura. Il link porta a una pagina del sito che mostra la fattura — qui va il suo percorso, ad esempio /fattura/.\n\nLa pagina si crea in HugoCMS con il blocco «shop-invoice». Se il campo resta vuoto, OpensourceERP usa rechnung/.\n\nIl link contiene un codice segreto, perciò anche gli ospiti senza account cliente vedono la loro fattura.",
+            "activatePage": "I clienti esistenti senza account cliente possono farsene attivare uno: inseriscono il numero di telefono e ricevono un link via WhatsApp. Il link porta alla pagina indicata qui, ad esempio /attiva/.\n\nLa pagina si crea in HugoCMS con il blocco «portal-activate». Se il campo resta vuoto, OpensourceERP usa freischalten/.\n\nLo stesso percorso va nel modello WhatsApp «Attiva account cliente» come indirizzo del pulsante.",
             "templateSet": "Il set di modelli determina l’aspetto di accesso, account cliente, fatture e modulo di contatto sul sito. «Standard» si adatta all’aspetto del sito e basta nella maggior parte dei casi.\n\nUno sviluppatore può creare set personalizzati nella cartella dei modelli dell’azienda sotto portal/; compaiono poi qui tra le scelte.\n\nDopo un cambio eseguire «Installa pacchetto», così il sito riceve i nuovi modelli.",
-            "contactMailTo": "Quando un cliente compila il modulo di contatto sul sito, OpensourceERP invia la richiesta per e-mail a questo indirizzo.\n\nSe il campo resta vuoto, la richiesta va all’indirizzo mittente dell’azienda dalla configurazione aziendale.\n\nPiù destinatari non sono previsti — usare una casella condivisa o una lista di distribuzione."
+            "contactMailTo": "Quando un cliente compila il modulo di contatto sul sito, OpensourceERP invia la richiesta per e-mail a questo indirizzo.\n\nSe il campo resta vuoto, la richiesta va all’indirizzo mittente dell’azienda dalla configurazione aziendale.\n\nPiù destinatari non sono previsti — usare una casella condivisa o una lista di distribuzione.",
+            "pages": "A questi indirizzi «Installa pacchetto» crea le pagine del portale sul sito — pronte, con il blocco corrispondente. Serve la voce per oserp-portal/content nel config.json del progetto del sito (vedi la guida a «Prova connessione»).\n\nL’indirizzo si indica dalla radice del sito, con barra all’inizio e alla fine, ad esempio /kunden/anmelden/. Le sottopagine dell’account (profilo, indirizzi, fatture, con negozio il metodo di pagamento, con veicoli i veicoli) dipendono dall’indirizzo dell’account cliente.\n\nI widget usano gli stessi indirizzi per i loro link, e OpensourceERP per i link nelle e-mail e nei messaggi WhatsApp. Chi vuole progettare una pagina da sé crea in HugoCMS una propria pagina allo stesso indirizzo — ha la precedenza su quella del pacchetto.\n\nDopo una modifica eseguire «Installa pacchetto».\n\nLa cartella del portale clienti è l’inizio comune: una pagina senza barra iniziale (ad es. anmelden/) ne dipende — da /kunden/ e anmelden/ nasce /kunden/anmelden/. Per un’altra cartella basta cambiare questo solo campo. Una pagina con barra iniziale (ad es. /login/) sta a sé."
         },
         "hugocmsFromBaseUrl": "Usa l’indirizzo web",
-        "hugocmsFromBaseUrl_help": "Imposta l’indirizzo per l’accesso remoto a HugoCMS dall’indirizzo web del sito con /cms-api/ in coda."
+        "hugocmsFromBaseUrl_help": "Imposta l’indirizzo per l’accesso remoto a HugoCMS dall’indirizzo web del sito con /cms-api/ in coda.",
+        "mountsHelp": {
+            "title": "Voci per il config.json del sito",
+            "text": "Perché Hugo rilevi inoltro, modelli e widget dal pacchetto, la sezione «module» del config.json del progetto Hugo deve apparire così — le prime voci sono le cartelle abituali del sito, le ultime quattro appartengono al pacchetto:",
+            "after": "Il file si trova nella cartella del progetto del sito sul server web; in HugoCMS si modifica sotto «Tutti i file». Poi eseguire «Installa pacchetto» e verificare di nuovo qui.\n\nSenza queste voci il pacchetto arriva a HugoCMS, ma Hugo non ne copia nulla nel sito generato — l’inoltro risponde allora con errore 404."
+        }
     }
 }

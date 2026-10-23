@@ -126,6 +126,8 @@
         "alreadyRunning": "Zaten bir veritabanı güncellemesi çalışıyor. Lütfen birkaç dakika sonra tekrar deneyin."
     },
     "HelpPanel": {
-        "close": "Yardımı kapat"
+        "close": "Yardımı kapat",
+        "copy": "Kopyala",
+        "copied": "Kopyalandı"
     }
 }

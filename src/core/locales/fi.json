@@ -126,6 +126,8 @@
         "alreadyRunning": "Tietokannan päivitys on jo käynnissä. Yritä uudelleen muutaman minuutin kuluttua."
     },
     "HelpPanel": {
-        "close": "Sulje ohje"
+        "close": "Sulje ohje",
+        "copy": "Kopioi",
+        "copied": "Kopioitu"
     }
 }
