@@ -82,6 +82,7 @@
             "additionalInfo": "Додаткова інформація",
             "currency": "Валюта",
             "taxZone": "Податкова зона",
+            "reverseChargeHint": "Зворотне нарахування ПДВ (§ 13b UStG): 0 % ПДВ, примітка друкується на документі.",
             "shippingPoint": "Місце відвантаження",
             "shipVia": "Спосіб доставки",
             "transactionDescription": "Опис операції",

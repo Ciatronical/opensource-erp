@@ -106,6 +106,7 @@
             "additionalInfo": "Additional Information",
             "currency": "Currency",
             "taxZone": "Tax Zone",
+            "reverseChargeHint": "Reverse charge (Section 13b German VAT Act): 0 % VAT, the notice is printed on the document.",
             "taxIncluded": "Tax Included in Price",
             "orderConfirmed": "Confirmed",
             "shippingPoint": "Shipping Point",

@@ -82,6 +82,7 @@
             "additionalInfo": "Дополнительная информация",
             "currency": "Валюта",
             "taxZone": "Налоговая зона",
+            "reverseChargeHint": "Обратное начисление НДС (§ 13b UStG): 0 % НДС, примечание печатается на документе.",
             "shippingPoint": "Место отгрузки",
             "shipVia": "Способ доставки",
             "transactionDescription": "Описание операции",

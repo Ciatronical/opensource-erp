@@ -82,6 +82,7 @@
             "additionalInfo": "Información adicional",
             "currency": "Moneda",
             "taxZone": "Zona fiscal",
+            "reverseChargeHint": "Inversión del sujeto pasivo (§ 13b UStG): 0 % de IVA, la nota figura en el documento.",
             "shippingPoint": "Lugar de envío",
             "shipVia": "Tipo de envío",
             "transactionDescription": "Descripción de la operación",

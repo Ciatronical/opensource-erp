@@ -82,6 +82,7 @@
             "additionalInfo": "附加信息",
             "currency": "货币",
             "taxZone": "税区",
+            "reverseChargeHint": "反向征税（§ 13b UStG）：增值税 0 %，提示语印在单据上。",
             "shippingPoint": "发货地点",
             "shipVia": "发货方式",
             "transactionDescription": "业务描述",

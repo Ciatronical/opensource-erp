@@ -82,6 +82,7 @@
             "additionalInfo": "Informacje dodatkowe",
             "currency": "Waluta",
             "taxZone": "Strefa podatkowa",
+            "reverseChargeHint": "Odwrotne obciążenie (§ 13b UStG): 0 % VAT, adnotacja jest drukowana na dokumencie.",
             "shippingPoint": "Miejsce wysyłki",
             "shipVia": "Sposób wysyłki",
             "transactionDescription": "Opis transakcji",

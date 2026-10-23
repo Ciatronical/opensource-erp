@@ -3084,6 +3084,7 @@ INSERT INTO ustva_kennzahlen (kz, label, section, kind, rate, sortkey) VALUES
     (44, 'Weitere steuerfreie Umsätze mit Vorsteuerabzug',                       'umsatz_frei', 'base', 0,    60),
     (48, 'Umsätze nach § 4 Nr. 8 ff. UStG (ohne Vorsteuerabzug)',                'umsatz_frei', 'base', 0,    70),
     (21, 'Nicht steuerbare sonstige Leistungen (§ 18b Satz 1 Nr. 2 UStG)',       'umsatz_frei', 'base', 0,    80),
+    (60, 'Steuerpflichtige Umsätze, für die der Leistungsempfänger die Steuer nach § 13b UStG schuldet', 'umsatz_frei', 'base', 0, 85),
     (45, 'Übrige nicht steuerbare Umsätze (Leistungsort nicht im Inland)',       'umsatz_frei', 'base', 0,    90),
     (89, 'Innergemeinschaftliche Erwerbe zum Steuersatz von 19 %',               'erwerb',      'base', 0.19, 100),
     (93, 'Innergemeinschaftliche Erwerbe zum Steuersatz von 7 %',                'erwerb',      'base', 0.07, 110),
@@ -3151,6 +3152,146 @@ WHERE NOT EXISTS (
       AND m.rate   IS NOT DISTINCT FROM seed.rate
       AND m.chart_id IS NULL
 );
+
+-- ============================================================================
+-- REVERSE CHARGE (§ 13b UStG) IN DER FAKTURA
+-- ============================================================================
+-- Umsätze, bei denen der Leistungsempfänger die Umsatzsteuer schuldet (Bau-
+-- leistungen, Gebäudereinigung, Schrott, Mobilfunkgeräte …), laufen wie in
+-- kivitendo über eine eigene Steuerzone: Buchungsgruppe × Zone → Erlöskonto
+-- „Erlöse aus Leistungen, für die der Leistungsempfänger die Umsatzsteuer nach
+-- § 13b UStG schuldet" (SKR04 4337, SKR03 8337) → Steuerschlüssel 0 → 0 %.
+-- Damit stimmen Positionen, Buchungssätze, Druck, E-Rechnung und UStVA (Kz 60)
+-- ohne Sonderfälle im Code.
+--
+-- Der Schalter feature_reverse_charge (Firmenkonfiguration → Features) legt die
+-- Zone beim Einschalten an bzw. aktiviert sie wieder, beim Ausschalten wird
+-- sie nur ausgeblendet (obsolete) — bestehende Belege behalten ihre Zone und
+-- drucken den Hinweissatz weiterhin.
+INSERT INTO defaults_oserp (key, value) VALUES
+    ('feature_reverse_charge', '0')
+ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES
+    ('reverse_charge_text', 'Leistungen unterliegen gemäß § 13b UStG dem Reverse-Charge-Verfahren (Steuerschuldnerschaft des Leistungsempfängers).')
+ON CONFLICT (key) DO NOTHING;
+
+-- Schaltet Reverse Charge firmenweit ein oder aus und hält dabei alle
+-- Stammdaten konsistent. Idempotent — darf bei jedem Speichern der
+-- Firmenkonfiguration laufen (neue Buchungsgruppen bekommen so ihre Zuordnung).
+--
+-- Beim Einschalten:
+--   1. Erlöskonto nach Kontenrahmen bestimmen (defaults.coa), Verknüpfung
+--      AR_amount:IC_sale:IC_income sicherstellen (nötig für Buchungsgruppen,
+--      Buchung und die UStVA-Einordnung) und Steuerschlüssel 0 / Kz 60 am Konto
+--   2. Steuerzone anlegen oder reaktivieren (Merker reverse_charge_taxzone_id)
+--   3. taxzone_charts für jede Buchungsgruppe ohne Eintrag: Erlös = § 13b-Konto,
+--      Aufwand wie in der Zone mit dem kleinsten sortkey (Inland)
+--   4. UStVA-Zuordnung des Erlöskontos auf Kennzahl 60
+-- Beim Ausschalten: Zone obsolete = true, Schalter 0 — sonst bleibt alles.
+CREATE OR REPLACE FUNCTION reverse_charge_set(p_enabled boolean)
+    RETURNS json
+    LANGUAGE plpgsql
+AS $BODY$
+DECLARE
+    v_zone_id   integer;
+    v_chart_id  integer;
+    v_accno     text;
+    v_coa       text;
+    v_desc      text := 'Reverse Charge § 13b UStG';
+BEGIN
+    SELECT NULLIF(btrim(value), '')::integer INTO v_zone_id
+      FROM defaults_oserp WHERE key = 'reverse_charge_taxzone_id';
+    IF v_zone_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM tax_zones WHERE id = v_zone_id) THEN
+        v_zone_id := NULL;
+    END IF;
+    IF v_zone_id IS NULL THEN
+        SELECT id INTO v_zone_id FROM tax_zones WHERE description = v_desc ORDER BY id LIMIT 1;
+    END IF;
+
+    IF NOT p_enabled THEN
+        IF v_zone_id IS NOT NULL THEN
+            UPDATE tax_zones SET obsolete = true WHERE id = v_zone_id;
+        END IF;
+        INSERT INTO defaults_oserp (key, value) VALUES ('feature_reverse_charge', '0')
+        ON CONFLICT (key) DO UPDATE SET value = '0', mtime = now();
+        RETURN json_build_object('enabled', false, 'taxzone_id', v_zone_id);
+    END IF;
+
+    -- 1. Erlöskonto je Kontenrahmen
+    SELECT coa INTO v_coa FROM defaults LIMIT 1;
+    v_accno := CASE WHEN v_coa ILIKE '%SKR03%' THEN '8337' ELSE '4337' END;
+    SELECT id INTO v_chart_id FROM chart WHERE accno = v_accno LIMIT 1;
+    IF v_chart_id IS NULL THEN
+        RAISE EXCEPTION 'Erlöskonto % (§ 13b UStG) fehlt im Kontenrahmen %', v_accno, v_coa;
+    END IF;
+    UPDATE chart
+       SET link = CASE
+                    WHEN COALESCE(link, '') = '' THEN 'AR_amount:IC_sale:IC_income'
+                    ELSE link || ':AR_amount'
+                  END
+     WHERE id = v_chart_id
+       AND COALESCE(link, '') !~ '(^|:)AR_amount(:|$)';
+    IF NOT EXISTS (SELECT 1 FROM taxkeys WHERE chart_id = v_chart_id) THEN
+        INSERT INTO taxkeys (chart_id, tax_id, taxkey_id, pos_ustva, startdate)
+        VALUES (v_chart_id, 0, 0, 60, '1970-01-01');
+    END IF;
+
+    -- 2. Steuerzone
+    IF v_zone_id IS NULL THEN
+        INSERT INTO tax_zones (description, sortkey, obsolete)
+        VALUES (v_desc, (SELECT COALESCE(MAX(sortkey), 0) + 1 FROM tax_zones), false)
+        RETURNING id INTO v_zone_id;
+    ELSE
+        UPDATE tax_zones SET obsolete = false WHERE id = v_zone_id;
+    END IF;
+
+    -- 3. Kontenzuordnung je Buchungsgruppe. Vorlage ist die Zone mit dem
+    --    kleinsten sortkey (Inland): steuerpflichtige Gruppen wechseln auf das
+    --    § 13b-Erlöskonto, ohnehin steuerfreie (Auslagen, durchlaufende Posten,
+    --    Gebühren) behalten ihr Erlöskonto — das sind keine § 13b-Leistungen.
+    INSERT INTO taxzone_charts (taxzone_id, buchungsgruppen_id, income_accno_id, expense_accno_id)
+    SELECT v_zone_id, bg.id,
+           CASE WHEN COALESCE(src.rate, 0) > 0 THEN v_chart_id ELSE src.income_accno_id END,
+           src.expense_accno_id
+      FROM buchungsgruppen bg
+      JOIN LATERAL (
+            SELECT tc.income_accno_id, tc.expense_accno_id,
+                   (SELECT t.rate
+                      FROM taxkeys k
+                      JOIN tax t ON t.id = k.tax_id
+                     WHERE k.chart_id = tc.income_accno_id
+                       AND k.startdate <= CURRENT_DATE
+                     ORDER BY k.startdate DESC
+                     LIMIT 1) AS rate
+              FROM taxzone_charts tc
+              JOIN tax_zones z ON z.id = tc.taxzone_id
+             WHERE tc.buchungsgruppen_id = bg.id
+               AND tc.taxzone_id <> v_zone_id
+             ORDER BY z.sortkey, z.id
+             LIMIT 1
+           ) src ON true
+     WHERE NOT EXISTS (
+            SELECT 1 FROM taxzone_charts x
+             WHERE x.taxzone_id = v_zone_id AND x.buchungsgruppen_id = bg.id);
+
+    -- 4. UStVA: Bemessungsgrundlage auf dem § 13b-Erlöskonto → Kennzahl 60
+    INSERT INTO ustva_mapping (taxkey, rate, chart_id, role, direction, kz, description)
+    SELECT NULL, NULL, v_chart_id, 'base', 'revenue', 60, 'Reverse Charge § 13b UStG (Ausgangsseite)'
+     WHERE NOT EXISTS (
+            SELECT 1 FROM ustva_mapping m
+             WHERE m.role = 'base' AND m.direction = 'revenue' AND m.chart_id = v_chart_id);
+
+    INSERT INTO defaults_oserp (key, value) VALUES ('feature_reverse_charge', '1')
+    ON CONFLICT (key) DO UPDATE SET value = '1', mtime = now();
+    INSERT INTO defaults_oserp (key, value) VALUES ('reverse_charge_taxzone_id', v_zone_id::text)
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, mtime = now();
+
+    RETURN json_build_object('enabled', true, 'taxzone_id', v_zone_id,
+                             'description', v_desc, 'income_accno', v_accno);
+END;
+$BODY$;
+
+COMMENT ON FUNCTION reverse_charge_set(boolean) IS 'Reverse Charge (§ 13b UStG) ein-/ausschalten: Steuerzone, Kontenzuordnung, UStVA-Kennzahl 60 — idempotent.';
 
 -- ============================================================================
 -- MITARBEITER-CHAT (interner Chat zwischen Benutzern, Echtzeit via SSE)

@@ -20,6 +20,34 @@ Das Faktura-Modul deckt den gesamten Belegfluss ab: Von der Anfrage über das An
 | **Rechnung** | Abrechnung an den Kunden |
 | **Einkaufsrechnung** | Eingangsrechnung vom Lieferanten |
 
+## Steuerzonen und Reverse Charge (§ 13b UStG)
+
+Die Steuerzone eines Belegs (Inland, EU mit/ohne USt-ID, Außerhalb EU) bestimmt über die Buchungsgruppe des Artikels das Erlöskonto und damit den Steuersatz jeder Position. Sie wird beim Anlegen aus dem Kunden übernommen und lässt sich am Beleg unter „Zusätzliche Informationen“ umstellen — alle Positionen werden dann neu bewertet und die Buchungssätze neu geschrieben.
+
+### Reverse Charge einschalten
+
+**Firmenkonfiguration → Features → Verkauf → Reverse Charge (§ 13b UStG)**. Das Einschalten legt an bzw. aktiviert:
+
+| Was | Wert |
+|---|---|
+| Steuerzone | „Reverse Charge § 13b UStG“ (am Ende der Steuerzonen-Liste) |
+| Erlöskonto | SKR04 **4337** / SKR03 **8337** „Erlöse aus Leistungen, für die der Leistungsempfänger die Umsatzsteuer nach § 13b UStG schuldet“, Steuerschlüssel 0 → 0 % |
+| Kontenzuordnung | je Buchungsgruppe: steuerpflichtige Gruppen auf das § 13b-Konto, ohnehin steuerfreie (Auslagen, durchlaufende Posten, Gebühren) behalten ihr Konto; Aufwandskonten wie Inland |
+| UStVA | Bemessungsgrundlage auf dem § 13b-Konto → **Kennzahl 60** |
+| Hinweissatz | frei formulierbar, Vorgabe: „Leistungen unterliegen gemäß § 13b UStG dem Reverse-Charge-Verfahren (Steuerschuldnerschaft des Leistungsempfängers).“ |
+
+Alles passiert in der SQL-Funktion `reverse_charge_set()` (Upstall `crm`), idempotent bei jedem Speichern der Firmenkonfiguration — eine später angelegte Buchungsgruppe bekommt ihre Zuordnung beim nächsten Speichern. Ausschalten blendet die Zone nur aus (`obsolete`); bestehende Belege behalten sie und drucken den Satz weiter.
+
+> Das Erlöskonto bekommt dabei die kivitendo-Verknüpfung `AR_amount:IC_sale:IC_income`, falls sie fehlt — ohne sie ließe sich das Konto weder in Buchungsgruppen verwenden noch in der UStVA einordnen.
+
+### Anwenden
+
+- **Dauerhaft je Kunde**: Kundenmaske → Steuerzone „Reverse Charge § 13b UStG“. Jeder neue Beleg dieses Kunden steht dann in der Zone.
+- **Einzelner Beleg**: Steuerzone unter „Zusätzliche Informationen“ umstellen. Ein Hinweis unter dem Feld zeigt, dass der Beleg mit 0 % und Hinweissatz läuft.
+- **Ausdruck**: Angebot, Auftrag, Rechnung (auch Storno), Gutschrift und Proformarechnung drucken den Satz unterhalb der Zahlungs-/Lieferbedingungen — Vorlagenvariable `<%if reverse_charge%><%reverse_charge_text%><%end if%>` in allen Master-Sets (RB/Standard, marei, mersiha).
+- **E-Rechnung** (ZUGFeRD/XRechnung): 0 %-Zeilen erhalten die Steuerkategorie **AE** (statt Z) mit dem Hinweissatz als Befreiungsgrund und Code `VATEX-EU-AE`.
+- **Eingangsseite** (§ 13b beim Einkauf) läuft unverändert über den kivitendo-Steuerschlüssel 94 (Kennzahlen 46/47/67).
+
 ## Belegfluss
 
 ```

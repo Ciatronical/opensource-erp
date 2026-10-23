@@ -436,6 +436,7 @@ Eine einheitliche Oberfläche für alle Belege:
 - **Artikel einer bestehenden Position austauschen**
 - Automatische Positionsnummerierung
 - **Steuerberechnung** inkl. Steuerzonen
+- **Reverse Charge (§ 13b UStG)** *(Schalter `feature_reverse_charge`)*: eigene Steuerzone mit 0 %, Erlöskonto 4337/8337, UStVA-Kennzahl 60, konfigurierbarer Hinweissatz auf Angebot/Auftrag/Rechnung/Gutschrift, Steuerkategorie AE in der E-Rechnung; je Kunde oder je Beleg wählbar
 - Belegdatum, Lieferdatum, Fälligkeitsdatum einzeln änderbar
 - **Kompakt- und Vollansicht** umschaltbar
 - **Entwürfe** speichern und später weiterbearbeiten
@@ -1211,6 +1212,7 @@ Automatische Kennzeichenerkennung an der Werkstattzufahrt.
 | `feature_nvr` | Videoüberwachung / NVR (Standard: an) |
 | `feature_datev` | DATEV-Funktionen |
 | `feature_ustva` | UStVA-Kennzahlen in den kivitendo-Auswertungen |
+| `feature_reverse_charge` | Reverse Charge (§ 13b UStG): Steuerzone, Kontenzuordnung, Kennzahl 60 und Hinweissatz (Standard: aus) |
 | `ustva_permanent_extension` | Dauerfristverlängerung — verschiebt die berechnete Abgabefrist um einen Monat |
 | `lxcars_mechanic_mode` | Mechaniker-Modus im Menü und als Startansicht |
 | `lxcars_hu_whatsapp_enabled` | HU-Benachrichtigungen per WhatsApp |

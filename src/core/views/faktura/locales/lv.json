@@ -82,6 +82,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Valūta",
             "taxZone": "Steuerzone",
+            "reverseChargeHint": "Reversā PVN maksāšana (§ 13b UStG): 0 % PVN, piezīme tiek drukāta dokumentā.",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

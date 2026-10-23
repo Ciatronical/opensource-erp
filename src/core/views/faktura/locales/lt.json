@@ -82,6 +82,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Valiuta",
             "taxZone": "Steuerzone",
+            "reverseChargeHint": "Atvirkštinis apmokestinimas (§ 13b UStG): 0 % PVM, pastaba spausdinama dokumente.",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

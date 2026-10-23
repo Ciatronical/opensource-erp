@@ -82,6 +82,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Valuutta",
             "taxZone": "Steuerzone",
+            "reverseChargeHint": "Käännetty verovelvollisuus (§ 13b UStG): 0 % ALV, huomautus tulostuu asiakirjaan.",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

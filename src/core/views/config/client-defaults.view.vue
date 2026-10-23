@@ -948,6 +948,11 @@ async function loadConfig() {
     }
     previousFeatureAnpr = crmDefaults.value.feature_anpr;
     previousFeatureNvr  = crmDefaults.value.feature_nvr;
+
+    // Reverse Charge (§ 13b UStG) ist bewusst standardmäßig AUS — die Zone
+    // soll nur erscheinen, wenn die Firma sie wirklich braucht.
+    const rc = crmDefaults.value.feature_reverse_charge;
+    crmDefaults.value.feature_reverse_charge = (rc === true || rc === 'true' || rc === '1' || rc === 1);
 }
 
 /**
@@ -989,6 +994,12 @@ async function saveConfig() {
                     crmSecrets.value[key] = true;
                 }
             });
+
+            // Reverse Charge legt die Steuerzone an bzw. blendet sie aus —
+            // die Steuerzonen-Liste im Store (Faktura, Kundenmaske) nachladen.
+            if (response.data.payload?.reverse_charge) {
+                await store.loadCompanyConfig();
+            }
 
             lastSaved.value = new Date();
             toasts.success(t('saveSuccess'));

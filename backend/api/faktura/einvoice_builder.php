@@ -232,7 +232,10 @@ class EInvoiceBuilder {
             $builder->addDocumentPositionTax(
                 $this->vatCategoryForRate($rate),
                 ZugferdVatTypeCodes::VALUE_ADDED_TAX,
-                $rate
+                $rate,
+                null,
+                $this->exemptionReason($rate),
+                $this->exemptionReasonCode($rate)
             );
 
             $builder->setDocumentPositionLineSummation(round($lineTotal, 2));
@@ -250,15 +253,39 @@ class EInvoiceBuilder {
                 ZugferdVatTypeCodes::VALUE_ADDED_TAX,
                 $basis,
                 $taxAmount,
-                $ratePct
+                $ratePct,
+                $this->exemptionReason($ratePct),
+                $this->exemptionReasonCode($ratePct)
             );
         }
     }
 
+    /**
+     * Reverse Charge (§ 13b UStG): die Rechnung liegt in der dafür angelegten
+     * Steuerzone. 0 %-Zeilen sind dann Kategorie AE (Steuerschuldnerschaft des
+     * Leistungsempfängers) statt Z, mit Befreiungsgrund — so verlangt es EN 16931.
+     */
+    private function isReverseCharge(): bool {
+        return in_array($this->data['reverse_charge'] ?? false, [true, 't', '1', 1], true);
+    }
+
     private function vatCategoryForRate(float $ratePct): string {
-        return $ratePct > 0
-            ? ZugferdVatCategoryCodes::STAN_RATE
+        if ($ratePct > 0) {
+            return ZugferdVatCategoryCodes::STAN_RATE;
+        }
+        return $this->isReverseCharge()
+            ? ZugferdVatCategoryCodes::VAT_REVE_CHAR
             : ZugferdVatCategoryCodes::ZERO_RATE_GOOD;
+    }
+
+    private function exemptionReason(float $ratePct): ?string {
+        if ($ratePct > 0 || !$this->isReverseCharge()) return null;
+        $text = trim((string)($this->data['reverse_charge_text'] ?? ''));
+        return $text !== '' ? $text : 'Reverse Charge (§ 13b UStG)';
+    }
+
+    private function exemptionReasonCode(float $ratePct): ?string {
+        return ($ratePct > 0 || !$this->isReverseCharge()) ? null : 'VATEX-EU-AE';
     }
 
     private function invoiceTypeCode(string $arType): string {

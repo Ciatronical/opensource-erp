@@ -82,6 +82,7 @@
             "additionalInfo": "Aanvullende informatie",
             "currency": "Valuta",
             "taxZone": "Belastingzone",
+            "reverseChargeHint": "Verleggingsregeling (§ 13b UStG): 0 % btw, de vermelding staat op het document.",
             "shippingPoint": "Verzendpunt",
             "shipVia": "Verzendwijze",
             "transactionDescription": "Transactiebeschrijving",

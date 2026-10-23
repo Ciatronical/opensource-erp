@@ -82,6 +82,7 @@
             "additionalInfo": "Informazioni aggiuntive",
             "currency": "Valuta",
             "taxZone": "Zona fiscale",
+            "reverseChargeHint": "Inversione contabile (§ 13b UStG): IVA 0 %, la dicitura compare sul documento.",
             "shippingPoint": "Luogo di spedizione",
             "shipVia": "Tipo di spedizione",
             "transactionDescription": "Descrizione operazione",

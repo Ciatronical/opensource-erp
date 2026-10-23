@@ -82,6 +82,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Valuta",
             "taxZone": "Skattzone",
+            "reverseChargeHint": "Omvänd skattskyldighet (§ 13b UStG): 0 % moms, upplysningen står på dokumentet.",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

@@ -23,6 +23,7 @@ Buchungsgruppe eines Artikels und der tatsächlich angewandten Umsatzsteuer.
 | 1  | EU mit USt-ID Nummer   | 2          |
 | 2  | EU ohne USt-ID Nummer  | 3          |
 | 3  | Außerhalb EU           | 4          |
+| *n* | Reverse Charge § 13b UStG | 5 (nur mit Schalter `feature_reverse_charge`) |
 
 ### Auflösungskette der `rate`
 
@@ -49,15 +50,18 @@ und in [backend/api/faktura/faktura.php](../backend/api/faktura/faktura.php) ver
 - **Erwartete Logik**: Inland = 19 % / 7 %, EU mit USt-ID bzw. Außerhalb EU = 0 %
   (steuerfrei bzw. Reverse Charge).
 
-### Bekannte Einschränkungen im aktuellen Code
+### Stand
 
-1. **Wechsel der Steuerzone berechnet bestehende Positionen nicht neu.** Nur neu
-   hinzugefügte Positionen erhalten den Satz der neuen Zone; bereits erfasste
-   Positionen behalten ihre alte `rate`.
-2. **Beim Laden einer bestehenden Rechnung ist die Zone hartkodiert auf `4`**
-   ([faktura.php](../backend/api/faktura/faktura.php), `WHERE tc.taxzone_id = '4'`).
-   Eine gespeicherte Auslandsrechnung wird beim Wiederöffnen mit Inlands-Sätzen
-   angezeigt — abweichend vom gespeicherten Wert.
+- Ein Wechsel der Steuerzone am Beleg lädt die Positionen samt `buchungsziel`
+  neu und schreibt die Buchungssätze neu (`onFakturaFieldChange` in
+  faktura.view.vue). Beim Laden gilt immer die gespeicherte Zone des Belegs.
+- **Reverse Charge (§ 13b UStG)** ist eine fünfte Zone, die der Schalter
+  `feature_reverse_charge` über `reverse_charge_set()` (Upstall `crm`) anlegt:
+  Erlöskonto 4337/8337 mit Steuerschlüssel 0, UStVA-Kennzahl 60, Merker
+  `defaults_oserp.reverse_charge_taxzone_id`. Druck (`reverse_charge`,
+  `reverse_charge_text`) und E-Rechnung (Kategorie AE) prüfen nur, ob der Beleg
+  in dieser Zone liegt — unabhängig vom Schalter. Siehe
+  [docs/features/faktura.md](../docs/features/faktura.md).
 
 ## SQL-Abfragen zur Prüfung
 

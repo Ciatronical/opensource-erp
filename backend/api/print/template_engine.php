@@ -137,7 +137,7 @@ class LaTeXTemplateEngine {
             '²'           => '$^2$',
             '³'           => '$^3$',
             '°'           => '$^\\circ$',
-            '§'           => '\\S ',
+            '§'           => '\\S{}',          // {} statt Leerzeichen: TeX verschluckt sonst das folgende Leerzeichen („§ 13b“ → „§13b“)
             '®'           => '{\\textregistered}',
             '©'           => '{\\textcopyright}',
             '~'           => '{\\raisebox{0.5ex}{\\texttildelow}}',

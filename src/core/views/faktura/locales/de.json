@@ -106,6 +106,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Währung",
             "taxZone": "Steuerzone",
+            "reverseChargeHint": "Reverse Charge (§ 13b UStG): 0 % Umsatzsteuer, der Hinweissatz steht auf dem Beleg.",
             "taxIncluded": "Steuer im Preis inbegriffen",
             "orderConfirmed": "Bestätigt",
             "shippingPoint": "Versandort",

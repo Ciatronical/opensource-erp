@@ -82,6 +82,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Monedă",
             "taxZone": "Steuerzone",
+            "reverseChargeHint": "Taxare inversă (§ 13b UStG): 0 % TVA, mențiunea apare pe document.",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

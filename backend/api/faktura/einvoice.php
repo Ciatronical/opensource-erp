@@ -285,6 +285,16 @@ function loadEInvoiceData($db, int $fakturaID): ?array {
                     LIMIT 1
                 ) b
             ),
+            -- Reverse Charge (§ 13b UStG): Steuerkategorie AE statt Z, mit dem
+            -- konfigurierten Hinweissatz als Befreiungsgrund (BT-120/VATEX-EU-AE)
+            'reverse_charge', (
+                SELECT ar.taxzone_id = (SELECT NULLIF(btrim(value), '')::int FROM defaults_oserp
+                                         WHERE key = 'reverse_charge_taxzone_id')
+                FROM ar WHERE ar.id = :fakturaID
+            ),
+            'reverse_charge_text', (
+                SELECT value FROM defaults_oserp WHERE key = 'reverse_charge_text'
+            ),
             'einvoice_mode', (
                 SELECT CASE
                     WHEN cu.create_zugferd_invoices = -1 THEN d.create_zugferd_invoices

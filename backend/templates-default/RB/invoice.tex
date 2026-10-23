@@ -193,6 +193,9 @@
     {\steuerfreiEU\\}{}  % EU mit USt-ID Nummer
 \ifthenelse{\equal{<%taxzone_id%>}{3}}
     {\steuerfreiAUS\\}{}   % Außerhalb EU
+<%if reverse_charge%>
+  <%reverse_charge_text%>\\
+<%end if%>
 
 \gruesse \\ \\ \\
   <%employee_name%>

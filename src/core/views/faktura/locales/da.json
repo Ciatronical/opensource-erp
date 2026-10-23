@@ -82,6 +82,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Valuta",
             "taxZone": "Skatzone",
+            "reverseChargeHint": "Omvendt betalingspligt (§ 13b UStG): 0 % moms, bemærkningen står på bilaget.",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

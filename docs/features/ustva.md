@@ -35,6 +35,8 @@ Buchungen, die sich keiner Kennzahl zuordnen lassen, werden im Block **Nicht zug
 
 Ein Klick auf **Zuordnen** wählt die Kennzahl und legt die Regel dauerhaft an.
 
+**Reverse Charge auf der Ausgangsseite** (§ 13b UStG, siehe [Faktura](faktura.md#steuerzonen-und-reverse-charge--13b-ustg)): beim Einschalten des Features wird das Erlöskonto 4337 (SKR04) bzw. 8337 (SKR03) der **Kennzahl 60** zugeordnet — die Bemessungsgrundlage erscheint dort, Steuer fällt keine an.
+
 ---
 
 ## Soll- und Ist-Versteuerung

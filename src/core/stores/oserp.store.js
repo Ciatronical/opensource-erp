@@ -121,6 +121,16 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     /**
+     * Steuerzone für Reverse Charge (§ 13b UStG) — null, wenn nie angelegt.
+     * Ein Beleg in dieser Zone bekommt 0 % und den Hinweissatz auf dem Ausdruck.
+     */
+    function reverseChargeTaxzoneId() {
+        const v = getClientDefaultValue('reverse_charge_taxzone_id', null);
+        const id = parseInt(v, 10);
+        return Number.isFinite(id) && id > 0 ? id : null;
+    }
+
+    /**
      * Prüft ob der Benutzer Systemadministrator ist (Benutzer, Gruppen, Firmen verwalten)
      */
     function isAdmin() {
@@ -956,6 +966,7 @@ export const oserpStore = defineStore('oserpStore', () => {
 
         // Config
         loadCompanyConfig,
+        reverseChargeTaxzoneId,
         saveCrmClientConfig,
         getStartupViewConfig,
         getAuthUserData,

@@ -16,7 +16,7 @@ den Docker-Betrieb von OpensourceERP.
 |--------|-------|-----------------|
 | `docker.sh` | Docker-Stack verwalten (Start, Stop, Backup, DB-Zugang, ...) | Docker Engine >= 20.10, `docker/.env` |
 | `run-dev.sh` | Lokale Entwicklungsumgebung starten (ohne Docker) | PHP >= 8.0, Node.js, lokale PostgreSQL auf Port 5432 |
-| `run-built.sh` | Vue-Frontend bauen und für Apache-Deployment vorbereiten | Node.js |
+| `built.sh` | Repository aktualisieren, Frontend bauen, Abhängigkeiten prüfen und für Apache-Deployment vorbereiten | Node.js |
 
 ---
 
@@ -171,24 +171,59 @@ Beenden: `Ctrl+C` im geöffneten Terminal-Fenster.
 
 ---
 
-## run-built.sh — Vue-Frontend bauen
+## built.sh — Frontend bauen & bereitstellen
 
-Baut das Vue-Frontend mit Vite und setzt die Dateiberechtigungen für ein
-Apache-Deployment. Gedacht für die Bereitstellung auf einem Nicht-Docker-Server.
+Holt den aktuellen Stand per `git pull`, installiert die Abhängigkeiten, baut
+Vue-Frontend (Vite) und Shop-UI (esbuild), setzt die Dateiberechtigungen für
+Apache und prüft zum Schluss alle Abhängigkeiten auf Sicherheitslücken und
+Aktualität. Gedacht für den Entwicklungsrechner und für Nicht-Docker-Server.
 
 ### Was das Skript macht
 
-1. `npm run build` — Vite Production-Build nach `dist/`
-2. Setzt Verzeichnisrechte auf `775` und Dateirechte auf `664`
+0. `git pull`
+1. `npm install`
+1b. *(optional)* veraltete npm-Pakete auf die neueste Version heben, siehe unten
+2. `npm run build` und `scripts/portal-ui-build.sh`
+2c./2d. Abhängigkeiten von SSE-Server und Composer
+3./4. Build-ID anzeigen, Rechte auf `775`/`664` setzen
+5. `npm audit`, `composer audit`, `npm outdated` — Bericht ganz am Ende
+6. Ergebnis des automatischen Paket-Updates
+
+### Automatisches Paket-Update (Schritt 1b)
+
+Standardmäßig meldet das Skript veraltete npm-Pakete nur. Auf dem
+Entwicklungsrechner kann es sie selbst auf die neueste Version heben:
+
+```bash
+git config oserp.autoUpdate true     # einmalig, pro Clone, wird nicht eingecheckt
+```
+
+Danach läuft bei jedem Build `npm i <paket>@latest …` für alle echten
+Rückstände (Pakete, deren `latest`-Tag rückwärts zeigt, bleiben außen vor).
+Der anschließende Build ist der Test:
+
+- **Build ok** → grüner Bericht am Ende mit der Liste alt → neu;
+  `package.json` und `package-lock.json` sind geändert und müssen committet
+  werden. Major-Sprünge werden eigens genannt, dort lohnt ein Blick in die
+  Oberfläche.
+- **Build scheitert** → `package.json`/`package-lock.json` werden
+  zurückgesetzt, `npm install` stellt die alten Versionen wieder her, es wird
+  erneut gebaut. Das System läuft weiter, am Ende steht ein roter Bericht mit
+  den betroffenen Paketen; die Fehlerausgabe liegt in
+  `build-fehler-update.log` (gitignored).
+
+Auf Kundenrechnern bleibt der Schalter aus: dort würde die lokale Änderung an
+`package.json` den nächsten `git pull` blockieren. Die neuen Versionen kommen
+dort mit dem Pull.
 
 ### Voraussetzungen
 
-- Node.js 25
+- Node.js >= 20.19 (lokal 25)
 
 ### Aufruf
 
 ```bash
-./scripts/run-built.sh
+./scripts/built.sh
 ```
 
 ---

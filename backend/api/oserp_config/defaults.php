@@ -389,8 +389,19 @@ function saveDefaults($data) {
             );
         }
 
+        // Reverse Charge (§ 13b UStG): der Schalter zieht Steuerzone, Konten-
+        // zuordnung und UStVA-Kennzahl nach — alles in der SQL-Funktion
+        // reverse_charge_set() (idempotent, siehe Upstall crm). Die Zone kommt
+        // zurück, damit die Oberfläche die Steuerzonen im Store nachlädt.
+        $reverseCharge = null;
+        if (array_key_exists('feature_reverse_charge', $crmData)) {
+            $on  = in_array($crmData['feature_reverse_charge'], [true, 'true', '1', 1], true);
+            $row = $db->getOne("SELECT reverse_charge_set(:on) AS result", [':on' => $on ? 't' : 'f']);
+            $reverseCharge = json_decode($row['result'] ?? 'null', true);
+        }
+
         // Erfolgsantwort
-        resultInfo(true, 'Firmenkonfiguration erfolgreich gespeichert');
+        resultInfo(true, 'Firmenkonfiguration erfolgreich gespeichert', ['reverse_charge' => $reverseCharge]);
 
     } catch (PDOException $e) {
         resultInfo(false, 'DATABASE_ERROR', $e->getMessage());

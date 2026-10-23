@@ -82,6 +82,7 @@
             "additionalInfo": "Informations supplementaires",
             "currency": "Devise",
             "taxZone": "Zone fiscale",
+            "reverseChargeHint": "Autoliquidation (§ 13b UStG) : 0 % de TVA, la mention figure sur le document.",
             "shippingPoint": "Point d'expedition",
             "shipVia": "Mode d'expedition",
             "transactionDescription": "Description de l'operation",

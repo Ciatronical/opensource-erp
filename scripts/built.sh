@@ -16,6 +16,21 @@ echo ""
 
 cd "$PROJECT_DIR" || exit 1
 
+# Farben nur, wenn ein echtes Terminal dranhängt
+if [ -t 1 ]; then
+    R=$'\e[1;37;41m'; Y=$'\e[1;33m'; G=$'\e[1;32m'; B=$'\e[0m'
+else
+    R=''; Y=''; G=''; B=''
+fi
+
+# Automatisches Heben der npm-Pakete auf die neueste Version (Schritt 1b).
+# Nur auf dem Entwicklungsrechner sinnvoll: dort werden package.json und
+# package-lock.json danach committet. Auf einem Kundenrechner würde die lokale
+# Änderung den nächsten 'git pull' blockieren — die neuen Versionen kommen dort
+# mit dem Pull. Einschalten (einmalig, pro Clone, wird nicht eingecheckt):
+#     git config oserp.autoUpdate true
+AUTO_UPDATE=$(git config --bool oserp.autoUpdate 2>/dev/null || echo false)
+
 echo "0. Aktuelles Repository aktualisieren..."
 git pull
 
@@ -32,27 +47,142 @@ echo ""
 echo "1. Dependencies installieren..."
 npm install
 
-echo ""
-echo "2. Vue.js bauen..."
-if ! npm run build; then
+# Veraltete Frontend-Pakete ermitteln.
+#
+# 'npm outdated' liest stumpf den "latest"-Tag aus der Registry. Bei Paketen, deren
+# Maintainer den Tag nie umgehängt hat, zeigt der rückwärts: vuedraggable meldet
+# "latest 2.24.3", das ist aber die Vue-2-Linie — die Vue-3-Version 4.1.0 hängt am
+# "next"-Tag. Solche Einträge werden hier aussortiert, sonst steht dauerhaft ein
+# Fehlalarm im Report und echte Rückstände gehen darin unter.
+#
+# Ausgabe, zeilenweise:
+#   1  Anzahl echter Rückstände
+#   2  ignorierte Fallen ("latest" zeigt rückwärts)
+#   3  Paketliste für 'npm i' (name@latest ...)
+#   4  Major-Sprünge (name alt→neu ...) — da lohnt der Blick ins Changelog
+#   5+ formatierte Tabelle
+list_outdated() {
+    (npm outdated --json 2>/dev/null || true) | node -e '
+        let s = "";
+        process.stdin.on("data", d => s += d);
+        process.stdin.on("end", () => {
+            let o = {};
+            try { o = JSON.parse(s || "{}"); } catch (e) { console.log("0\n\n\n"); return; }
+            const num = v => String(v || "0").split("-")[0].split(".").map(n => parseInt(n, 10) || 0);
+            const cmp = (a, b) => {
+                const x = num(a), y = num(b);
+                for (let i = 0; i < 3; i++) if ((x[i]||0) !== (y[i]||0)) return (x[i]||0) < (y[i]||0) ? -1 : 1;
+                return 0;
+            };
+            const real = [], traps = [], majors = [];
+            for (const [name, raw] of Object.entries(o)) {
+                const info = Array.isArray(raw) ? raw[0] : raw;
+                if (!info || !info.current || !info.latest) continue;
+                const d = cmp(info.latest, info.current);
+                if (d < 0) traps.push(name + " (" + info.current + " > latest " + info.latest + ")");
+                else if (d > 0) {
+                    real.push({ name, current: info.current, latest: info.latest });
+                    if (num(info.latest)[0] !== num(info.current)[0])
+                        majors.push(name + " " + info.current + "→" + info.latest);
+                }
+            }
+            real.sort((a, b) => a.name.localeCompare(b.name));
+            const wn = Math.max(0, ...real.map(r => r.name.length));
+            const wc = Math.max(0, ...real.map(r => r.current.length));
+            console.log(real.length);
+            console.log(traps.join(", "));
+            console.log(real.map(r => r.name + "@latest").join(" "));
+            console.log(majors.join(", "));
+            for (const r of real) {
+                console.log("      " + r.name.padEnd(wn) + "  " + r.current.padStart(wc) + " → " + r.latest);
+            }
+        });
+    ' 2>/dev/null
+}
+
+# Ergebnis von 1b, wird im Abschlussbericht ausgewertet
+UPDATED_PKGS=""        # Pakete, die auf @latest gehoben wurden ("a@latest b@latest")
+UPDATED_LIST=""        # dazu die Tabelle alt → neu
+UPDATED_MAJORS=""      # davon Major-Sprünge
+UPDATE_ROLLBACK=0      # 1 = Build mit den neuen Versionen gescheitert, alte Versionen wiederhergestellt
+UPDATE_BACKUP=""       # Sicherung von package.json/-lock.json vor dem Update
+UPDATE_FAIL_LOG="$PROJECT_DIR/build-fehler-update.log"
+
+if [ "$AUTO_UPDATE" = "true" ]; then
     echo ""
-    echo "❌ Build fehlgeschlagen!"
-    exit 1
+    echo "1b. npm-Pakete auf die neueste Version heben..."
+    OUTDATED_RAW=$(list_outdated)
+    { read -r OUTDATED; read -r TRAPS; read -r OUTDATED_PKGS; read -r OUTDATED_MAJORS; } <<< "$OUTDATED_RAW"
+    OUTDATED_LIST=$(printf '%s\n' "$OUTDATED_RAW" | tail -n +5)
+    if [ "${OUTDATED:-0}" -gt 0 ]; then
+        printf '%s\n' "$OUTDATED_LIST"
+        UPDATE_BACKUP=$(mktemp -d)
+        cp package.json package-lock.json "$UPDATE_BACKUP/"
+        # shellcheck disable=SC2086  — Paketliste ist absichtlich wortgetrennt
+        if npm i $OUTDATED_PKGS --no-audit --no-fund; then
+            UPDATED_PKGS="$OUTDATED_PKGS"
+            UPDATED_LIST="$OUTDATED_LIST"
+            UPDATED_MAJORS="$OUTDATED_MAJORS"
+            echo "  ${G}✓${B} $OUTDATED Paket(e) aktualisiert — der Build prüft sie gleich"
+        else
+            echo "  ${Y}⚠${B} npm i fehlgeschlagen — alte Versionen bleiben"
+            cp "$UPDATE_BACKUP/package.json" "$UPDATE_BACKUP/package-lock.json" .
+            npm install
+        fi
+    else
+        echo "  ${G}✓${B} alle npm-Pakete aktuell"
+    fi
+    [ -n "${TRAPS:-}" ] && echo "  ${Y}ℹ${B} ignoriert, \"latest\"-Tag zeigt rückwärts: $TRAPS"
 fi
 
-echo ""
-echo "2b. Shop-UI bauen..."
-# Die Widgets des Shops werden getrennt gebaut (esbuild statt Vite). Beide
-# Bündel — Paket und Demo — entstehen hier immer neu aus dem Quelltext, damit
-# sie nicht auseinanderlaufen: sonst lädt eine Shop-Seite zwei verschiedene
-# Stände derselben Widgets, und Lit zeigt statt der Knöpfe seine Platzhalter.
-# Ein reiner Zeitvergleich taugt dafür nicht, weil git pull die Änderungszeit
-# jeder geänderten Quelldatei auf „jetzt“ setzt.
-if ! "$SCRIPT_DIR/portal-ui-build.sh"; then
+# Frontend (Vite) und Shop-UI (esbuild) bauen; die Ausgabe landet zusätzlich
+# in $1, damit sie beim Rücksetzen nach einem Update-Fehler erhalten bleibt.
+build_frontend() {
+    local log="$1"
     echo ""
-    echo "❌ Shop-UI-Build fehlgeschlagen!"
-    exit 1
+    echo "2. Vue.js bauen..."
+    npm run build 2>&1 | tee "$log"
+    [ "${PIPESTATUS[0]}" -eq 0 ] || return 1
+
+    echo ""
+    echo "2b. Shop-UI bauen..."
+    # Die Widgets des Shops werden getrennt gebaut (esbuild statt Vite). Beide
+    # Bündel — Paket und Demo — entstehen hier immer neu aus dem Quelltext, damit
+    # sie nicht auseinanderlaufen: sonst lädt eine Shop-Seite zwei verschiedene
+    # Stände derselben Widgets, und Lit zeigt statt der Knöpfe seine Platzhalter.
+    # Ein reiner Zeitvergleich taugt dafür nicht, weil git pull die Änderungszeit
+    # jeder geänderten Quelldatei auf „jetzt“ setzt.
+    "$SCRIPT_DIR/portal-ui-build.sh" 2>&1 | tee -a "$log"
+    [ "${PIPESTATUS[0]}" -eq 0 ] || return 2
+}
+
+BUILD_LOG=$(mktemp)
+if ! build_frontend "$BUILD_LOG"; then
+    if [ -n "$UPDATED_PKGS" ]; then
+        # Der Build ist der Test für die neuen Versionen. Er ist gescheitert, also
+        # zurück auf den letzten funktionierenden Stand, damit das System
+        # weiterläuft — der Fehler wird am Ende groß gemeldet.
+        echo ""
+        echo "${Y}⚠  Build mit den aktualisierten Paketen fehlgeschlagen — setze zurück...${B}"
+        cp "$BUILD_LOG" "$UPDATE_FAIL_LOG"
+        cp "$UPDATE_BACKUP/package.json" "$UPDATE_BACKUP/package-lock.json" .
+        npm install
+        UPDATE_ROLLBACK=1
+        if ! build_frontend "$BUILD_LOG"; then
+            echo ""
+            echo "❌ Build fehlgeschlagen — auch mit den bisherigen Paketversionen!"
+            rm -f "$BUILD_LOG"
+            exit 1
+        fi
+    else
+        echo ""
+        echo "❌ Build fehlgeschlagen!"
+        rm -f "$BUILD_LOG"
+        exit 1
+    fi
 fi
+rm -f "$BUILD_LOG"
+[ -n "$UPDATE_BACKUP" ] && rm -rf "$UPDATE_BACKUP"
 
 # Das Paket-Bündel ist eingecheckt. Weicht der frische Build vom eingecheckten
 # Stand ab, wurde vor dem Commit nicht gebaut — die Datei ist jetzt lokal
@@ -110,13 +240,6 @@ echo "========================================="
 # =========================================================================
 echo ""
 echo "5. Abhängigkeiten prüfen (Sicherheit & Aktualität)..."
-
-# Farben nur, wenn ein echtes Terminal dranhängt
-if [ -t 1 ]; then
-    R=$'\e[1;37;41m'; Y=$'\e[1;33m'; G=$'\e[1;32m'; B=$'\e[0m'
-else
-    R=''; Y=''; G=''; B=''
-fi
 
 # Zählt die Vulnerabilities eines npm-Projekts. Gibt "crit high mod low" zurück.
 count_npm_vulns() {
@@ -176,55 +299,22 @@ if [ -f "$PROJECT_DIR/backend/composer.json" ]; then
     fi
 fi
 
-# Veraltete Frontend-Pakete (nur Info, kein Alarm)
-#
-# 'npm outdated' liest stumpf den "latest"-Tag aus der Registry. Bei Paketen, deren
-# Maintainer den Tag nie umgehängt hat, zeigt der rückwärts: vuedraggable meldet
-# "latest 2.24.3", das ist aber die Vue-2-Linie — die Vue-3-Version 4.1.0 hängt am
-# "next"-Tag. Solche Einträge werden hier aussortiert, sonst steht dauerhaft ein
-# Fehlalarm im Report und echte Rückstände gehen darin unter.
-OUTDATED_RAW=$( (npm outdated --json 2>/dev/null || true) | node -e '
-    let s = "";
-    process.stdin.on("data", d => s += d);
-    process.stdin.on("end", () => {
-        let o = {};
-        try { o = JSON.parse(s || "{}"); } catch (e) { console.log("0"); console.log(""); return; }
-        const num = v => String(v || "0").split("-")[0].split(".").map(n => parseInt(n, 10) || 0);
-        const cmp = (a, b) => {
-            const x = num(a), y = num(b);
-            for (let i = 0; i < 3; i++) if ((x[i]||0) !== (y[i]||0)) return (x[i]||0) < (y[i]||0) ? -1 : 1;
-            return 0;
-        };
-        const real = [], traps = [];
-        for (const [name, raw] of Object.entries(o)) {
-            const info = Array.isArray(raw) ? raw[0] : raw;
-            if (!info || !info.current || !info.latest) continue;
-            const d = cmp(info.latest, info.current);
-            if (d < 0) traps.push(name + " (" + info.current + " > latest " + info.latest + ")");
-            else if (d > 0) real.push({ name, current: info.current, latest: info.latest });
-        }
-        real.sort((a, b) => a.name.localeCompare(b.name));
-        const wn = Math.max(0, ...real.map(r => r.name.length));
-        const wc = Math.max(0, ...real.map(r => r.current.length));
-        console.log(real.length);
-        console.log(traps.join(", "));
-        console.log(real.map(r => r.name + "@latest").join(" "));
-        for (const r of real) {
-            console.log("      " + r.name.padEnd(wn) + "  " + r.current.padStart(wc) + " \u2192 " + r.latest);
-        }
-    });
-' 2>/dev/null )
-{ read -r OUTDATED; read -r TRAPS; read -r OUTDATED_PKGS; } <<< "$OUTDATED_RAW"
-OUTDATED_LIST=$(printf '%s\n' "$OUTDATED_RAW" | tail -n +4)
+# Veraltete Frontend-Pakete (nur Info, kein Alarm). Mit oserp.autoUpdate hat
+# Schritt 1b sie bereits gehoben — hier steht dann nur noch, was bewusst
+# zurückgesetzt wurde oder gar nicht installierbar war.
+OUTDATED_RAW=$(list_outdated)
+{ read -r OUTDATED; read -r TRAPS; read -r OUTDATED_PKGS; read -r OUTDATED_MAJORS; } <<< "$OUTDATED_RAW"
+OUTDATED_LIST=$(printf '%s\n' "$OUTDATED_RAW" | tail -n +5)
 
 if [ "${OUTDATED:-0}" -gt 0 ]; then
     echo "  ${Y}ℹ${B} $OUTDATED veraltete npm-Paket(e):"
     printf '%s\n' "$OUTDATED_LIST"
     echo ""
     echo "      ${Y}Aktualisieren:${B} npm i $OUTDATED_PKGS"
+    [ "$AUTO_UPDATE" != "true" ] && echo "      Automatisch bei jedem Build (nur Entwicklungsrechner): git config oserp.autoUpdate true"
 fi
 
-[ -n "${TRAPS:-}" ] && echo "  ${Y}ℹ${B} ignoriert, \"latest\"-Tag zeigt rückwärts: $TRAPS"
+[ -n "${TRAPS:-}" ] && [ "$AUTO_UPDATE" != "true" ] && echo "  ${Y}ℹ${B} ignoriert, \"latest\"-Tag zeigt rückwärts: $TRAPS"
 
 # Gegenprobe: ist so ein Paket bereits versehentlich heruntergestuft worden?
 # 'npm i <paket>@latest' schreibt die Range in package.json einfach um, das ^ schützt
@@ -275,4 +365,33 @@ if [ "${DOWNGRADE_ALERT:-0}" -gt 0 ]; then
     echo "${R}   $DOWNGRADE_ALERT Paket(e) auf einer inkompatiblen Linie.        ${B}"
     echo "${R}   Beheben:  npm ci    (stellt package-lock.json wieder her)${B}"
     echo "${R}                                                          ${B}"
+fi
+
+# =========================================================================
+# 6. Ergebnis des automatischen Paket-Updates (Schritt 1b)
+# =========================================================================
+if [ "${UPDATE_ROLLBACK:-0}" -eq 1 ]; then
+    echo ""
+    echo "${R}                                                          ${B}"
+    echo "${R}   ⚠  PAKET-UPDATE FEHLGESCHLAGEN — ZURÜCKGESETZT!  ⚠      ${B}"
+    echo "${R}                                                          ${B}"
+    echo "${R}   Mit diesen Versionen bricht der Build ab:              ${B}"
+    printf '%s\n' "$UPDATED_LIST"
+    [ -n "$UPDATED_MAJORS" ] && echo "   Major-Sprung (Changelog lesen): $UPDATED_MAJORS"
+    echo ""
+    echo "   Installiert ist wieder der bisherige Stand, das System läuft."
+    echo "   Fehlerausgabe des Builds: $UPDATE_FAIL_LOG"
+    echo "   Zum Nachstellen:  npm i $UPDATED_PKGS && npm run build"
+elif [ -n "$UPDATED_PKGS" ]; then
+    echo ""
+    echo "${G}=========================================${B}"
+    echo "${G} ✓  npm-Pakete aktualisiert, Build läuft:${B}"
+    printf '%s\n' "$UPDATED_LIST"
+    if [ -n "$UPDATED_MAJORS" ]; then
+        echo ""
+        echo "   ${Y}Major-Sprung${B} — Build ok, Oberfläche trotzdem kurz prüfen: $UPDATED_MAJORS"
+    fi
+    echo ""
+    echo "   package.json und package-lock.json sind geändert — bitte committen."
+    echo "${G}=========================================${B}"
 fi

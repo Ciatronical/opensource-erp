@@ -82,6 +82,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Para birimi",
             "taxZone": "Steuerzone",
+            "reverseChargeHint": "Ters vergilendirme (§ 13b UStG): %0 KDV, açıklama belgede yer alır.",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

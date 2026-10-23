@@ -82,6 +82,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Valuta",
             "taxZone": "Skattzone",
+            "reverseChargeHint": "Omvendt avgiftsplikt (§ 13b UStG): 0 % mva, merknaden står på bilaget.",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

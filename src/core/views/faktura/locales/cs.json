@@ -82,6 +82,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Měna",
             "taxZone": "Steuerzone",
+            "reverseChargeHint": "Přenesení daňové povinnosti (§ 13b UStG): 0 % DPH, upozornění je uvedeno na dokladu.",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

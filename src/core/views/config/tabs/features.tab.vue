@@ -137,8 +137,8 @@
                         class="feature-card"
                     >
                         <v-card-text class="pa-4">
-                            <div class="d-flex align-center justify-space-between">
-                                <div class="d-flex align-center ga-3">
+                            <div class="d-flex align-center justify-space-between ga-3">
+                                <div class="d-flex align-center ga-3 flex-grow-1" style="min-width: 0">
                                     <v-icon size="32" :color="crmDefaults.feature_recurring ? 'primary' : 'grey'">mdi-autorenew</v-icon>
                                     <div>
                                         <div class="text-subtitle-1 font-weight-bold">{{ $t('featureRecurring') }}</div>
@@ -153,6 +153,7 @@
                                     hide-details
                                     density="compact"
                                     inset
+                                    class="flex-shrink-0"
                                 />
                             </div>
                             <v-alert
@@ -161,6 +162,53 @@
                             >
                                 {{ $t('featureRecurringActiveHint', { count: recurringActive }) }}
                             </v-alert>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+
+                <!-- Reverse Charge (§ 13b UStG): eigene Steuerzone mit 0 % und
+                     Erlöskonto „Leistungen nach § 13b" — Speichern legt die Zone
+                     an bzw. blendet sie aus (SQL reverse_charge_set). Der Satz
+                     erscheint auf jedem Beleg in dieser Zone. -->
+                <v-col cols="12" md="6">
+                    <v-card
+                        :variant="crmDefaults.feature_reverse_charge ? 'outlined' : 'tonal'"
+                        :color="crmDefaults.feature_reverse_charge ? 'primary' : undefined"
+                        class="feature-card"
+                    >
+                        <v-card-text class="pa-4">
+                            <div class="d-flex align-center justify-space-between ga-3">
+                                <div class="d-flex align-center ga-3 flex-grow-1" style="min-width: 0">
+                                    <v-icon size="32" :color="crmDefaults.feature_reverse_charge ? 'primary' : 'grey'">mdi-swap-horizontal-bold</v-icon>
+                                    <div>
+                                        <div class="text-subtitle-1 font-weight-bold">{{ $t('featureReverseCharge') }}</div>
+                                        <div class="text-caption text-medium-emphasis">{{ $t('featureReverseChargeDesc') }}</div>
+                                    </div>
+                                </div>
+                                <v-switch
+                                    v-model="crmDefaults.feature_reverse_charge"
+                                    :true-value="true"
+                                    :false-value="false"
+                                    color="primary"
+                                    hide-details
+                                    density="compact"
+                                    inset
+                                    class="flex-shrink-0"
+                                />
+                            </div>
+                            <!-- text-high-emphasis: der Satz soll nicht die Primärfarbe der Karte erben -->
+                            <div v-if="crmDefaults.feature_reverse_charge" class="text-high-emphasis mt-3">
+                                <v-textarea
+                                    v-model="crmDefaults.reverse_charge_text"
+                                    :label="$t('reverseChargeText')"
+                                    :hint="$t('reverseChargeTextHint')"
+                                    persistent-hint
+                                    variant="outlined"
+                                    density="compact"
+                                    rows="2"
+                                    auto-grow
+                                />
+                            </div>
                         </v-card-text>
                     </v-card>
                 </v-col>

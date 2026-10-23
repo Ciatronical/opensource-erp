@@ -82,6 +82,7 @@
             "additionalInfo": "Informações adicionais",
             "currency": "Moeda",
             "taxZone": "Zona fiscal",
+            "reverseChargeHint": "Autoliquidação (§ 13b UStG): 0 % de IVA, a menção consta no documento.",
             "shippingPoint": "Local de envio",
             "shipVia": "Tipo de envio",
             "transactionDescription": "Descrição da operação",

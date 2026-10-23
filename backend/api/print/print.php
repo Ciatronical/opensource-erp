@@ -1121,7 +1121,13 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
             e.deleted_email AS employee_email,
             e.login AS employee_login,
             e.deleted AS employee_deleted,
-            pt.description_long AS payment_terms
+            pt.description_long AS payment_terms,
+            -- Reverse Charge (§ 13b UStG): Beleg liegt in der dafür angelegten
+            -- Steuerzone. Unabhängig vom Schalter — ein alter Beleg in dieser
+            -- Zone bleibt ein § 13b-Beleg und trägt den Hinweissatz weiter.
+            (m.taxzone_id = (SELECT NULLIF(btrim(value), '')::int FROM defaults_oserp
+                              WHERE key = 'reverse_charge_taxzone_id')) AS reverse_charge,
+            (SELECT value FROM defaults_oserp WHERE key = 'reverse_charge_text') AS reverse_charge_text
         FROM {$mainTable} m
         LEFT JOIN customer c ON c.id = m.customer_id
         LEFT JOIN vendor v ON v.id = {$vendorKey}
@@ -1406,6 +1412,10 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         'cusordnumber'    => $head['cusordnumber'] ?? '',
         'taxzone_id'      => $head['taxzone_id'] ?? '',
         'transaction_description' => $head['transaction_description'] ?? '',
+
+        // Reverse Charge (§ 13b UStG): <%if reverse_charge%><%reverse_charge_text%><%end if%>
+        'reverse_charge'      => in_array($head['reverse_charge'] ?? false, [true, 't', '1', 1], true) ? '1' : '',
+        'reverse_charge_text' => $head['reverse_charge_text'] ?? '',
 
         // Kunde
         'name'            => $head['customer_name'] ?? '',

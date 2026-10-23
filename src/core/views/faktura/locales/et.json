@@ -82,6 +82,7 @@
             "additionalInfo": "Zusätzliche Informationen",
             "currency": "Valuuta",
             "taxZone": "Steuerzone",
+            "reverseChargeHint": "Pöördmaksustamine (§ 13b UStG): 0 % käibemaks, märkus on dokumendil.",
             "shippingPoint": "Versandort",
             "shipVia": "Versandart",
             "transactionDescription": "Vorgangsbeschreibung",

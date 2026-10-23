@@ -39,6 +39,18 @@
                         autocomplete="off"
                         prepend-inner-icon="mdi-percent"
                     />
+                    <!-- Reverse Charge (§ 13b UStG): Beleg liegt in der dafür
+                         angelegten Steuerzone → 0 % USt, Hinweissatz auf dem Beleg -->
+                    <v-alert
+                        v-if="isReverseCharge"
+                        type="info"
+                        variant="tonal"
+                        density="compact"
+                        icon="mdi-swap-horizontal-bold"
+                        class="mt-2 reverse-charge-hint"
+                    >
+                        {{ t('FakturaView.faktura.reverseChargeHint') }}
+                    </v-alert>
                 </v-col>
 
                 <v-col
@@ -144,8 +156,9 @@
 <script>
 // src/core/views/faktura/cards/additional.info.card.vue
 
-import { defineComponent } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { oserpStore } from '@/core/stores/oserp.store.js'
 
 export default defineComponent({
     name: 'AdditionalInfoCard',
@@ -186,6 +199,13 @@ export default defineComponent({
     emits: ['update:modelValue', 'field-change'],
     setup(props, { emit }) {
         const { t } = useI18n()
+        const store = oserpStore()
+
+        // Beleg liegt in der Reverse-Charge-Steuerzone (§ 13b UStG)
+        const isReverseCharge = computed(() => {
+            const rcZone = store.reverseChargeTaxzoneId()
+            return !!rcZone && Number(props.modelValue?.taxzone_id) === rcZone
+        })
 
         /**
          * Aktualisiert das Model und emittiert das field-change Event für Backend-Speicherung
@@ -200,6 +220,7 @@ export default defineComponent({
 
         return {
             t,
+            isReverseCharge,
             onFieldChange
         }
     }
@@ -210,6 +231,11 @@ export default defineComponent({
 /* ============================================
    ADDITIONAL INFO CARD
    ============================================ */
+
+.reverse-charge-hint {
+    font-size: 12px;
+    line-height: 1.3;
+}
 
 .faktura-card {
     height: 100%;
