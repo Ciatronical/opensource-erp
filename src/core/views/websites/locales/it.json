@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Elenco di indirizzi separati da virgole da cui il sito può accedere. Lasciare vuoto se il sito usa lo stesso indirizzo tramite l’inoltro /portal-api/.",
             "backendUrl": "Indirizzo dell’accesso al portale di OpensourceERP",
             "backendUrl_help": "Il sito web inoltra accesso, account, fatture e — con negozio — carrello e cassa a questo indirizzo: l’accesso pubblico al portale di OpensourceERP (backend/portal/), ad esempio https://erp.example.it/portal/. Non l’indirizzo di HugoCMS né quello del sito. Il pacchetto lo scrive con la chiave in oserp-portal/config.json. Un campo vuoto viene precompilato con l’indirizzo da cui OpensourceERP è attualmente richiamato.",
-            "links": "Indirizzi del sito web",
+            "pages": "Pagine del sito web",
             "baseUrl": "Indirizzo del sito web",
             "baseUrl_help": "Indirizzo completo incluso https://. Se il portale clienti si trova sotto un sito, con percorso: https://officina.example/clienti/ — l’inoltro si trova allora sotto quel percorso (…/clienti/portal-api/).",
             "invoicePage_help": "Pagina del sito con lo shortcode shop-invoice, ad es. /fattura/. Le mail rimandano lì, così anche gli ospiti senza account vedono lo stato. Vuoto = /rechnung/.",
             "templateSet_help": "Determina l’aspetto del pacchetto (modelli e shortcode). I set personalizzati si trovano nella cartella dei modelli sotto portal/.",
             "grants_help": "HugoCMS stabilisce dove OpensourceERP può scrivere (impostazioni del progetto → Collegamento OpensourceERP). Qui solo in visualizzazione; il trasferimento applica le autorizzazioni ogni volta.",
-            "grantPackage": "Pacchetto",
+            "grantPackage": "Pacchetto del portale clienti",
             "signingKey_help": "Da inserire in HugoCMS in impostazioni del progetto → Collegamento OpensourceERP. OpensourceERP trasferisce poi da solo inoltro e pagina 404. Vale per tutti i siti di questa installazione."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "L’accesso al portale ha rifiutato la chiave — verificare la chiave del sito; tramite il sito vale l’ultima trasferita.",
             "PROXY_NOT_CONFIGURED": "L’inoltro funziona ma non trova oserp-portal/config.json o è incompleto — eseguire «Installa pacchetto».",
             "FOREIGN": "Risposta inattesa (HTTP {status}) — lì non risponde l’accesso al portale di OpensourceERP."
-        }
+        },
+        "hugocmsShopOff": "In HugoCMS il negozio online non è abilitato per questo sito — attivare «Negozio online su questo sito» nelle impostazioni del progetto alla voce «Collegamento OpensourceERP». Fino ad allora l’esecuzione del negozio non trasferisce pagine prodotto."
     }
 }

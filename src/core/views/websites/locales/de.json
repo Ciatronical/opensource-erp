@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Kommagetrennte Liste der Adressen, von denen die Webseite zugreifen darf. Leer lassen, wenn die Webseite über den Weiterleiter /portal-api/ dieselbe Adresse verwendet.",
             "backendUrl": "Adresse des Portal-Zugangs von OpensourceERP",
             "backendUrl_help": "Die Webseite leitet Anmeldung, Konto, Rechnungen und — mit Shop — Warenkorb und Kasse an diese Adresse weiter: der öffentliche Portal-Zugang von OpensourceERP (backend/portal/), zum Beispiel https://erp.example.de/portal/. Nicht die Adresse von HugoCMS und nicht die der Webseite. Das Paket trägt sie mit dem Schlüssel in oserp-portal/config.json ein. Ein leeres Feld wird mit der Adresse vorbelegt, unter der OpensourceERP gerade aufgerufen wird.",
-            "links": "Adressen der Webseite",
+            "pages": "Seiten der Webseite",
             "baseUrl": "Adresse der Webseite",
             "baseUrl_help": "Vollständige Adresse einschließlich https://. Liegt das Kundenportal unterhalb einer Webseite, mit Pfad: https://werkstatt.example/kunden/ — der Weiterleiter liegt dann unter diesem Pfad (…/kunden/portal-api/).",
             "invoicePage_help": "Seite der Webseite mit dem Shortcode shop-invoice, etwa /rechnung/. Mails verlinken dorthin, damit auch Gäste ohne Kundenkonto den Stand sehen. Leer = /rechnung/.",
             "templateSet_help": "Bestimmt das Aussehen des Pakets (Vorlagen und Shortcodes). Eigene Sätze liegen im Vorlagenverzeichnis unter portal/.",
             "grants_help": "Wohin OpensourceERP schreiben darf, legt HugoCMS fest (Projekteinstellungen → OpensourceERP-Anbindung). Hier nur zur Ansicht; die Übertragung übernimmt die Freigaben jedes Mal.",
-            "grantPackage": "Paket",
+            "grantPackage": "Kundenportal-Paket",
             "signingKey_help": "In HugoCMS unter Projekteinstellungen → OpensourceERP-Anbindung eintragen. Dann überträgt OpensourceERP Weiterleiter und 404-Seite selbst. Gilt für alle Webseiten dieser Installation."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "Der Portal-Zugang hat den Schlüssel abgewiesen — Schlüssel der Webseite prüfen; über die Webseite gilt der zuletzt übertragene.",
             "PROXY_NOT_CONFIGURED": "Der Weiterleiter läuft, findet aber oserp-portal/config.json nicht oder unvollständig — „Paket installieren“ ausführen.",
             "FOREIGN": "Unerwartete Antwort (HTTP {status}) — dort antwortet nicht der Portal-Zugang von OpensourceERP."
-        }
+        },
+        "hugocmsShopOff": "In HugoCMS ist der Online-Shop für diese Webseite nicht freigegeben — in den Projekteinstellungen unter „OpensourceERP-Anbindung“ den Schalter „Online-Shop auf dieser Webseite“ einschalten. Bis dahin überträgt der Shop-Lauf keine Produktseiten."
     }
 }

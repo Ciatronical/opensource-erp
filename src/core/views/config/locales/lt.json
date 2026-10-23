@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Produktų nuotraukos",
         "shopHugoCmsGrantThumbnails": "Miniatiūros",
         "shopHugoCmsGrantDownloads": "Atsisiuntimai",
-        "shopHugoCmsGrantPackage": "Parduotuvės paketas",
+        "shopHugoCmsGrantPackage": "Klientų portalo paketas",
         "shopHugoCmsCategoryMismatch": "Šablonų rinkinys tikisi kategorijų apžvalgos vietoje {expected}, HugoCMS leidžia {granted} — jo šablonai jos ten neras. HugoCMS pakeiskite leidimą „Kategorijų apžvalga“.",
         "shopLinkSuggestion": "Adresų šablonai neatitinka leidimų. Pasiūlymas pagal leidimus:",
         "shopLinkSuggestionApply": "Taikyti pasiūlymą",

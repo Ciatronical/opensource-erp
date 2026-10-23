@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Comma-separated list of addresses the website may call from. Leave empty if the website uses the same address via the /portal-api/ proxy.",
             "backendUrl": "Address of the OpensourceERP portal access",
             "backendUrl_help": "The website forwards login, account, invoices and — with a shop — cart and checkout to this address: the public OpensourceERP portal access (backend/portal/), for example https://erp.example.com/portal/. Not the HugoCMS address and not the website’s. The package writes it with the key into oserp-portal/config.json. An empty field is prefilled with the address OpensourceERP is currently called at.",
-            "links": "Website addresses",
+            "pages": "Pages of the website",
             "baseUrl": "Website address",
             "baseUrl_help": "Full address including https://. If the customer portal lives below a website, with path: https://workshop.example/customers/ — the proxy is then below that path (…/customers/portal-api/).",
             "invoicePage_help": "Page of the website with the shop-invoice shortcode, e.g. /invoice/. Mails link there so that guests without an account can see the status too. Empty = /rechnung/.",
             "templateSet_help": "Determines the look of the package (templates and shortcodes). Custom sets live in the template directory under portal/.",
             "grants_help": "HugoCMS decides where OpensourceERP may write (project settings → OpensourceERP connection). Shown here for reference only; the transfer applies the grants every time.",
-            "grantPackage": "Package",
+            "grantPackage": "Customer portal package",
             "signingKey_help": "Enter it in HugoCMS under project settings → OpensourceERP connection. OpensourceERP then transfers the proxy and the 404 page itself. Applies to all websites of this installation."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "The portal access rejected the key — check the website key; via the website the key transferred last applies.",
             "PROXY_NOT_CONFIGURED": "The proxy runs but cannot find oserp-portal/config.json or it is incomplete — run “Install package”.",
             "FOREIGN": "Unexpected response (HTTP {status}) — this is not the OpensourceERP portal access."
-        }
+        },
+        "hugocmsShopOff": "In HugoCMS the online shop is not enabled for this website — turn on “Online shop on this website” in the project settings under “OpensourceERP connection”. Until then the shop run transfers no product pages."
     }
 }

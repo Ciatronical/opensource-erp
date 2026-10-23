@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Productafbeeldingen",
         "shopHugoCmsGrantThumbnails": "Miniaturen",
         "shopHugoCmsGrantDownloads": "Downloads",
-        "shopHugoCmsGrantPackage": "Winkelpakket",
+        "shopHugoCmsGrantPackage": "Klantenportaalpakket",
         "shopHugoCmsCategoryMismatch": "De sjabloonset verwacht het categorieoverzicht onder {expected}, HugoCMS geeft {granted} vrij — de sjablonen vinden het daar niet. Pas in HugoCMS de vrijgave „Categorieoverzicht” aan.",
         "shopLinkSuggestion": "De adrespatronen passen niet bij de vrijgaven. Voorstel op basis van de vrijgaven:",
         "shopLinkSuggestionApply": "Voorstel overnemen",

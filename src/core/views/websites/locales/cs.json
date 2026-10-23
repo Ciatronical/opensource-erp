@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Čárkami oddělený seznam adres, ze kterých smí web přistupovat. Nechte prázdné, pokud web používá stejnou adresu přes přesměrovač /portal-api/.",
             "backendUrl": "Adresa portálového přístupu OpensourceERP",
             "backendUrl_help": "Web předává přihlášení, účet, faktury a — s obchodem — košík a pokladnu na tuto adresu: veřejný portálový přístup OpensourceERP (backend/portal/), například https://erp.example.cz/portal/. Ne adresa HugoCMS a ne adresa webu. Balíček ji s klíčem zapíše do oserp-portal/config.json. Prázdné pole se předvyplní adresou, na které OpensourceERP právě běží.",
-            "links": "Adresy webu",
+            "pages": "Stránky webu",
             "baseUrl": "Adresa webu",
             "baseUrl_help": "Úplná adresa včetně https://. Je-li zákaznický portál pod webem, s cestou: https://dilna.example/zakaznici/ — přesměrovač je pak pod touto cestou (…/zakaznici/portal-api/).",
             "invoicePage_help": "Stránka webu se zkratkou shop-invoice, např. /faktura/. Maily na ni odkazují, aby stav viděli i hosté bez účtu. Prázdné = /rechnung/.",
             "templateSet_help": "Určuje vzhled balíčku (šablony a zkratky). Vlastní sady leží v adresáři šablon pod portal/.",
             "grants_help": "Kam smí OpensourceERP zapisovat, určuje HugoCMS (nastavení projektu → Napojení OpensourceERP). Zde jen pro náhled; přenos převezme oprávnění pokaždé.",
-            "grantPackage": "Balíček",
+            "grantPackage": "Balíček zákaznického portálu",
             "signingKey_help": "Zadejte v HugoCMS v nastavení projektu → Napojení OpensourceERP. OpensourceERP pak přenese přesměrovač a stránku 404 sám. Platí pro všechny weby této instalace."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "Portálový přístup klíč odmítl — zkontrolujte klíč webu; přes web platí naposledy přenesený.",
             "PROXY_NOT_CONFIGURED": "Přesměrovač běží, ale nenachází oserp-portal/config.json nebo je neúplný — spusťte „Instalovat balíček“.",
             "FOREIGN": "Neočekávaná odpověď (HTTP {status}) — neodpovídá tam portálový přístup OpensourceERP."
-        }
+        },
+        "hugocmsShopOff": "V HugoCMS není pro tento web povolen online obchod — v nastavení projektu v části „Napojení OpensourceERP“ zapněte „Online obchod na tomto webu“. Do té doby běh obchodu nepřenáší žádné produktové stránky."
     }
 }

@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Obrázky produktů",
         "shopHugoCmsGrantThumbnails": "Náhledy",
         "shopHugoCmsGrantDownloads": "Soubory ke stažení",
-        "shopHugoCmsGrantPackage": "Balíček obchodu",
+        "shopHugoCmsGrantPackage": "Balíček zákaznického portálu",
         "shopHugoCmsCategoryMismatch": "Sada šablon očekává přehled kategorií v {expected}, HugoCMS povoluje {granted} — její šablony jej tam nenajdou. Upravte v HugoCMS povolení „Přehled kategorií“.",
         "shopLinkSuggestion": "Vzory adres neodpovídají povolením. Návrh podle povolení:",
         "shopLinkSuggestionApply": "Převzít návrh",

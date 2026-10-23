@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Зображення товарів",
         "shopHugoCmsGrantThumbnails": "Мініатюри",
         "shopHugoCmsGrantDownloads": "Завантаження",
-        "shopHugoCmsGrantPackage": "Пакет магазину",
+        "shopHugoCmsGrantPackage": "Пакет клієнтського порталу",
         "shopHugoCmsCategoryMismatch": "Набір шаблонів очікує огляд категорій у {expected}, HugoCMS дозволяє {granted} — його шаблони не знайдуть його там. Змініть у HugoCMS дозвіл «Огляд категорій».",
         "shopLinkSuggestion": "Шаблони адрес не відповідають дозволам. Пропозиція на основі дозволів:",
         "shopLinkSuggestionApply": "Застосувати пропозицію",

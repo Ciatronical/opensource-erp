@@ -48,13 +48,13 @@
             "allowedOrigins_help": "允许网站发起访问的地址列表，以逗号分隔。如果网站通过转发器 /portal-api/ 使用同一地址，则留空。",
             "backendUrl": "OpensourceERP 门户访问端地址",
             "backendUrl_help": "网站将登录、账户、发票以及（有商店时）购物车和结账转发到此地址：OpensourceERP 的公开门户访问端（backend/portal/），例如 https://erp.example.com/portal/。不是 HugoCMS 的地址，也不是网站的地址。软件包会将其与密钥一起写入 oserp-portal/config.json。空字段会预填为当前访问 OpensourceERP 所用的地址。",
-            "links": "网站地址",
+            "pages": "网站页面",
             "baseUrl": "网站地址",
             "baseUrl_help": "包含 https:// 的完整地址。如果客户门户位于网站的子路径下，则带路径：https://workshop.example/customers/ — 转发器位于该路径下（…/customers/portal-api/）。",
             "invoicePage_help": "网站上包含短代码 shop-invoice 的页面，例如 /invoice/。邮件会链接到那里，以便没有账户的访客也能查看状态。留空 = /rechnung/。",
             "templateSet_help": "决定软件包的外观（模板和短代码）。自定义集位于模板目录的 portal/ 下。",
             "grants_help": "OpensourceERP 可写入的位置由 HugoCMS 决定（项目设置 → OpensourceERP 连接）。此处仅供查看；每次传输都会应用这些授权。",
-            "grantPackage": "软件包",
+            "grantPackage": "客户门户软件包",
             "signingKey_help": "在 HugoCMS 的项目设置 → OpensourceERP 连接中填写。此后 OpensourceERP 会自行传送转发器和 404 页面。适用于此安装的所有网站。"
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "门户访问端拒绝了密钥 — 请检查网站密钥；通过网站生效的是最后传送的密钥。",
             "PROXY_NOT_CONFIGURED": "转发器正在运行，但找不到 oserp-portal/config.json 或其不完整 — 请执行“安装软件包”。",
             "FOREIGN": "意外的响应（HTTP {status}）— 应答方不是 OpensourceERP 的门户访问端。"
-        }
+        },
+        "hugocmsShopOff": "HugoCMS 尚未为此网站启用在线商店 — 请在项目设置的“OpensourceERP 连接”中打开“此网站上的在线商店”。在此之前，商店运行不会传送任何产品页面。"
     }
 }

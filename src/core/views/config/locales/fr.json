@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Images des produits",
         "shopHugoCmsGrantThumbnails": "Vignettes",
         "shopHugoCmsGrantDownloads": "Téléchargements",
-        "shopHugoCmsGrantPackage": "Paquet de la boutique",
+        "shopHugoCmsGrantPackage": "Paquet du portail client",
         "shopHugoCmsCategoryMismatch": "Le jeu de modèles attend l’aperçu des catégories sous {expected}, HugoCMS autorise {granted} — ses modèles ne le trouveront pas. Adaptez l’autorisation « Aperçu des catégories » dans HugoCMS.",
         "shopLinkSuggestion": "Les modèles d’adresse ne correspondent pas aux autorisations. Proposition d’après les autorisations :",
         "shopLinkSuggestionApply": "Reprendre la proposition",

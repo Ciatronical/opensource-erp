@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Pilkuilla eroteltu luettelo osoitteista, joista sivusto saa ottaa yhteyttä. Jätä tyhjäksi, jos sivusto käyttää samaa osoitetta välittäjän /portal-api/ kautta.",
             "backendUrl": "OpensourceERP:n portaalipääsyn osoite",
             "backendUrl_help": "Verkkosivusto ohjaa kirjautumisen, tilin, laskut ja – kaupan kanssa – ostoskorin ja kassan tähän osoitteeseen: OpensourceERP:n julkinen portaalipääsy (backend/portal/), esimerkiksi https://erp.example.fi/portal/. Ei HugoCMS:n eikä sivuston osoite. Paketti kirjoittaa sen avaimen kanssa tiedostoon oserp-portal/config.json. Tyhjä kenttä esitäytetään osoitteella, josta OpensourceERP:tä parhaillaan käytetään.",
-            "links": "Verkkosivuston osoitteet",
+            "pages": "Verkkosivuston sivut",
             "baseUrl": "Verkkosivuston osoite",
             "baseUrl_help": "Täydellinen osoite https:// mukaan lukien. Jos asiakasportaali on sivuston alla, polun kanssa: https://korjaamo.example/asiakkaat/ – välittäjä on silloin tämän polun alla (…/asiakkaat/portal-api/).",
             "invoicePage_help": "Sivuston sivu, jolla on shortcode shop-invoice, esim. /lasku/. Sähköpostit linkittävät sinne, jotta myös vieraat ilman tiliä näkevät tilan. Tyhjä = /rechnung/.",
             "templateSet_help": "Määrittää paketin ulkoasun (mallit ja shortcodet). Omat sarjat ovat mallihakemistossa portal/-kansiossa.",
             "grants_help": "HugoCMS määrää, minne OpensourceERP saa kirjoittaa (projektin asetukset → OpensourceERP-liitäntä). Täällä vain tiedoksi; siirto soveltaa oikeudet joka kerta.",
-            "grantPackage": "Paketti",
+            "grantPackage": "Asiakasportaalin paketti",
             "signingKey_help": "Syötä HugoCMS:ään kohtaan projektin asetukset → OpensourceERP-liitäntä. Sen jälkeen OpensourceERP siirtää välittäjän ja 404-sivun itse. Koskee kaikkia tämän asennuksen sivustoja."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "Portaalipääsy hylkäsi avaimen – tarkista sivuston avain; sivuston kautta pätee viimeksi siirretty.",
             "PROXY_NOT_CONFIGURED": "Välittäjä toimii, mutta ei löydä tiedostoa oserp-portal/config.json tai se on puutteellinen – suorita ”Asenna paketti”.",
             "FOREIGN": "Odottamaton vastaus (HTTP {status}) – siellä ei vastaa OpensourceERP:n portaalipääsy."
-        }
+        },
+        "hugocmsShopOff": "HugoCMS:ssä verkkokauppaa ei ole vapautettu tälle sivustolle – kytke projektin asetuksissa kohdassa ”OpensourceERP-liitäntä” päälle ”Verkkokauppa tällä sivustolla”. Siihen asti kaupan ajo ei siirrä tuotesivuja."
     }
 }

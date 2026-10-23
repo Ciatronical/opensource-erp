@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Produktbilder",
         "shopHugoCmsGrantThumbnails": "Miniatyrer",
         "shopHugoCmsGrantDownloads": "Nedladdningar",
-        "shopHugoCmsGrantPackage": "Butikspaket",
+        "shopHugoCmsGrantPackage": "Kundportalspaket",
         "shopHugoCmsCategoryMismatch": "Mallsetet förväntar sig kategoriöversikten under {expected}, HugoCMS ger behörighet för {granted} — mallarna hittar den inte där. Justera behörigheten ”Kategoriöversikt” i HugoCMS.",
         "shopLinkSuggestion": "Adressmönstren stämmer inte med behörigheterna. Förslag utifrån behörigheterna:",
         "shopLinkSuggestionApply": "Använd förslaget",

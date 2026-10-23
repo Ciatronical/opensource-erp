@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Web sitesinin erişebileceği adreslerin virgülle ayrılmış listesi. Web sitesi /portal-api/ yönlendiricisi üzerinden aynı adresi kullanıyorsa boş bırakın.",
             "backendUrl": "OpensourceERP portal erişiminin adresi",
             "backendUrl_help": "Web sitesi oturum açma, hesap, faturalar ve — mağaza varsa — sepet ve ödemeyi bu adrese yönlendirir: OpensourceERP’nin genel portal erişimi (backend/portal/), örneğin https://erp.example.com/portal/. HugoCMS’nin ya da web sitesinin adresi değil. Paket bunu anahtarla birlikte oserp-portal/config.json dosyasına yazar. Boş alan, OpensourceERP’nin şu anda çağrıldığı adresle önceden doldurulur.",
-            "links": "Web sitesi adresleri",
+            "pages": "Web sitesinin sayfaları",
             "baseUrl": "Web sitesi adresi",
             "baseUrl_help": "https:// dahil tam adres. Müşteri portalı bir web sitesinin altındaysa yol ile: https://atolye.example/musteriler/ — yönlendirici o zaman bu yolun altındadır (…/musteriler/portal-api/).",
             "invoicePage_help": "Web sitesinin shop-invoice kısa kodunu içeren sayfası, örn. /fatura/. E-postalar oraya bağlantı verir, böylece hesabı olmayan misafirler de durumu görür. Boş = /rechnung/.",
             "templateSet_help": "Paketin görünümünü belirler (şablonlar ve kısa kodlar). Kendi setleriniz şablon dizininde portal/ altında bulunur.",
             "grants_help": "OpensourceERP’nin nereye yazabileceğini HugoCMS belirler (proje ayarları → OpensourceERP bağlantısı). Burada yalnızca görüntüleme amaçlı; aktarım izinleri her seferinde uygular.",
-            "grantPackage": "Paket",
+            "grantPackage": "Müşteri portalı paketi",
             "signingKey_help": "HugoCMS’de proje ayarları → OpensourceERP bağlantısı altına girin. Ardından OpensourceERP yönlendiriciyi ve 404 sayfasını kendisi aktarır. Bu kurulumun tüm web siteleri için geçerlidir."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "Portal erişimi anahtarı reddetti — web sitesi anahtarını kontrol edin; web sitesi üzerinden en son aktarılan geçerlidir.",
             "PROXY_NOT_CONFIGURED": "Yönlendirici çalışıyor ancak oserp-portal/config.json dosyasını bulamıyor ya da dosya eksik — “Paketi yükle” çalıştırın.",
             "FOREIGN": "Beklenmeyen yanıt (HTTP {status}) — orada yanıt veren OpensourceERP portal erişimi değil."
-        }
+        },
+        "hugocmsShopOff": "HugoCMS’de bu web sitesi için çevrimiçi mağaza etkin değil — proje ayarlarında “OpensourceERP bağlantısı” altında “Bu web sitesinde çevrimiçi mağaza” seçeneğini açın. O zamana kadar mağaza çalışması ürün sayfası aktarmaz."
     }
 }

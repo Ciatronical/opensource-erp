@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Kommaseparert liste over adresser nettstedet kan kalle fra. La stå tom hvis nettstedet bruker samme adresse via videresenderen /portal-api/.",
             "backendUrl": "Adresse til OpensourceERP sin portaltilgang",
             "backendUrl_help": "Nettstedet videresender innlogging, konto, fakturaer og — med butikk — handlekurv og kasse til denne adressen: OpensourceERP sin offentlige portaltilgang (backend/portal/), for eksempel https://erp.example.no/portal/. Ikke adressen til HugoCMS og ikke nettstedets. Pakken skriver den sammen med nøkkelen i oserp-portal/config.json. Et tomt felt fylles ut med adressen OpensourceERP kalles på nå.",
-            "links": "Nettstedets adresser",
+            "pages": "Nettstedets sider",
             "baseUrl": "Nettstedets adresse",
             "baseUrl_help": "Full adresse inkludert https://. Ligger kundeportalen under et nettsted, med sti: https://verksted.example/kunder/ — videresenderen ligger da under den stien (…/kunder/portal-api/).",
             "invoicePage_help": "Nettstedets side med shortcoden shop-invoice, f.eks. /faktura/. E-poster lenker dit slik at også gjester uten konto ser status. Tom = /rechnung/.",
             "templateSet_help": "Bestemmer pakkens utseende (maler og shortcodes). Egne sett ligger i malkatalogen under portal/.",
             "grants_help": "Hvor OpensourceERP kan skrive, bestemmer HugoCMS (prosjektinnstillinger → OpensourceERP-tilkobling). Vises her bare til orientering; overføringen bruker frigivelsene hver gang.",
-            "grantPackage": "Pakke",
+            "grantPackage": "Kundeportal-pakke",
             "signingKey_help": "Skriv den inn i HugoCMS under prosjektinnstillinger → OpensourceERP-tilkobling. Da overfører OpensourceERP videresenderen og 404-siden selv. Gjelder alle nettsteder i denne installasjonen."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "Portaltilgangen avviste nøkkelen — sjekk nettstedets nøkkel; via nettstedet gjelder den sist overførte.",
             "PROXY_NOT_CONFIGURED": "Videresenderen kjører, men finner ikke oserp-portal/config.json eller den er ufullstendig — kjør «Installer pakke».",
             "FOREIGN": "Uventet svar (HTTP {status}) — det er ikke OpensourceERP sin portaltilgang som svarer."
-        }
+        },
+        "hugocmsShopOff": "I HugoCMS er nettbutikken ikke frigitt for dette nettstedet — slå på «Nettbutikk på dette nettstedet» i prosjektinnstillingene under «OpensourceERP-tilkobling». Inntil da overfører butikkjøringen ingen produktsider."
     }
 }

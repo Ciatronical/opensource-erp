@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Ar komatiem atdalīts adrešu saraksts, no kurām vietne drīkst piekļūt. Atstājiet tukšu, ja vietne izmanto to pašu adresi caur pārsūtītāju /portal-api/.",
             "backendUrl": "OpensourceERP portāla piekļuves adrese",
             "backendUrl_help": "Vietne pārsūta pieteikšanos, kontu, rēķinus un — ar veikalu — grozu un kasi uz šo adresi: publiskā OpensourceERP portāla piekļuve (backend/portal/), piemēram, https://erp.example.lv/portal/. Ne HugoCMS un ne vietnes adrese. Pakotne to kopā ar atslēgu ieraksta failā oserp-portal/config.json. Tukšs lauks tiek aizpildīts ar adresi, kurā OpensourceERP pašlaik tiek izsaukts.",
-            "links": "Vietnes adreses",
+            "pages": "Vietnes lapas",
             "baseUrl": "Vietnes adrese",
             "baseUrl_help": "Pilna adrese ar https://. Ja klientu portāls atrodas zem vietnes, ar ceļu: https://darbnica.example/klienti/ — pārsūtītājs tad atrodas zem šī ceļa (…/klienti/portal-api/).",
             "invoicePage_help": "Vietnes lapa ar īskodu shop-invoice, piem., /rekins/. E-pasti ved uz turieni, lai arī viesi bez konta redzētu stāvokli. Tukšs = /rechnung/.",
             "templateSet_help": "Nosaka pakotnes izskatu (veidnes un īskodi). Pašu komplekti atrodas veidņu direktorijā zem portal/.",
             "grants_help": "Kur OpensourceERP drīkst rakstīt, nosaka HugoCMS (projekta iestatījumi → OpensourceERP savienojums). Šeit tikai apskatei; pārsūtīšana atļaujas piemēro katru reizi.",
-            "grantPackage": "Pakotne",
+            "grantPackage": "Klientu portāla pakotne",
             "signingKey_help": "Ievadiet HugoCMS sadaļā projekta iestatījumi → OpensourceERP savienojums. Tad OpensourceERP pats pārsūta pārsūtītāju un 404 lapu. Attiecas uz visām šīs instalācijas vietnēm."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "Portāla piekļuve noraidīja atslēgu — pārbaudiet vietnes atslēgu; caur vietni ir spēkā pēdējā pārsūtītā.",
             "PROXY_NOT_CONFIGURED": "Pārsūtītājs darbojas, bet neatrod oserp-portal/config.json vai tas ir nepilnīgs — izpildiet „Instalēt pakotni“.",
             "FOREIGN": "Negaidīta atbilde (HTTP {status}) — tur neatbild OpensourceERP portāla piekļuve."
-        }
+        },
+        "hugocmsShopOff": "HugoCMS šai vietnei interneta veikals nav atļauts — projekta iestatījumos sadaļā „OpensourceERP savienojums“ ieslēdziet „Interneta veikals šajā vietnē“. Līdz tam veikala izpilde nepārsūta produktu lapas."
     }
 }

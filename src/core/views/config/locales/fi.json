@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Tuotekuvat",
         "shopHugoCmsGrantThumbnails": "Pienoiskuvat",
         "shopHugoCmsGrantDownloads": "Lataukset",
-        "shopHugoCmsGrantPackage": "Kaupan paketti",
+        "shopHugoCmsGrantPackage": "Asiakasportaalin paketti",
         "shopHugoCmsCategoryMismatch": "Mallisarja odottaa luokkien yleiskatsausta sijainnissa {expected}, HugoCMS sallii {granted} — sen mallit eivät löydä sitä sieltä. Muuta HugoCMS:ssä lupaa ”Luokkien yleiskatsaus”.",
         "shopLinkSuggestion": "Osoitemallit eivät vastaa lupia. Ehdotus lupien perusteella:",
         "shopLinkSuggestionApply": "Ota ehdotus käyttöön",

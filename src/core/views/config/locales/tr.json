@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Ürün görselleri",
         "shopHugoCmsGrantThumbnails": "Küçük resimler",
         "shopHugoCmsGrantDownloads": "İndirmeler",
-        "shopHugoCmsGrantPackage": "Mağaza paketi",
+        "shopHugoCmsGrantPackage": "Müşteri portalı paketi",
         "shopHugoCmsCategoryMismatch": "Şablon seti kategori özetini {expected} konumunda bekliyor, HugoCMS {granted} için izin veriyor — şablonları onu orada bulamaz. HugoCMS'te „Kategori özeti” iznini düzenleyin.",
         "shopLinkSuggestion": "Adres desenleri izinlerle eşleşmiyor. İzinlere göre öneri:",
         "shopLinkSuggestionApply": "Öneriyi uygula",

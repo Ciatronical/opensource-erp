@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Komadega eraldatud aadresside loend, kust veebisait tohib pöörduda. Jätke tühjaks, kui veebisait kasutab sama aadressi edastaja /portal-api/ kaudu.",
             "backendUrl": "OpensourceERP portaali juurdepääsu aadress",
             "backendUrl_help": "Veebisait suunab sisselogimise, konto, arved ja — poega — ostukorvi ja kassa sellele aadressile: OpensourceERP avalik portaali juurdepääs (backend/portal/), näiteks https://erp.example.ee/portal/. Mitte HugoCMS-i ega veebisaidi aadress. Pakett kirjutab selle koos võtmega faili oserp-portal/config.json. Tühi väli täidetakse aadressiga, millelt OpensourceERP parajasti avatud on.",
-            "links": "Veebisaidi aadressid",
+            "pages": "Veebisaidi lehed",
             "baseUrl": "Veebisaidi aadress",
             "baseUrl_help": "Täielik aadress koos https://. Kui kliendiportaal asub veebisaidi all, siis koos teega: https://tookoda.example/kliendid/ — edastaja asub siis selle tee all (…/kliendid/portal-api/).",
             "invoicePage_help": "Veebisaidi leht lühikoodiga shop-invoice, nt /arve/. Kirjad viitavad sinna, et ka kontota külalised näeksid seisu. Tühi = /rechnung/.",
             "templateSet_help": "Määrab paketi välimuse (mallid ja lühikoodid). Oma komplektid asuvad mallikataloogis portal/ all.",
             "grants_help": "Kuhu OpensourceERP kirjutada tohib, määrab HugoCMS (projekti seaded → OpensourceERP ühendus). Siin ainult vaatamiseks; edastus rakendab load iga kord.",
-            "grantPackage": "Pakett",
+            "grantPackage": "Kliendiportaali pakett",
             "signingKey_help": "Sisestage HugoCMS-is projekti seadetes → OpensourceERP ühendus. Seejärel edastab OpensourceERP edastaja ja 404-lehe ise. Kehtib kõigile selle paigalduse veebisaitidele."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "Portaali juurdepääs lükkas võtme tagasi — kontrollige veebisaidi võtit; veebisaidi kaudu kehtib viimati edastatud.",
             "PROXY_NOT_CONFIGURED": "Edastaja töötab, kuid ei leia faili oserp-portal/config.json või see on puudulik — käivitage „Paigalda pakett“.",
             "FOREIGN": "Ootamatu vastus (HTTP {status}) — seal ei vasta OpensourceERP portaali juurdepääs."
-        }
+        },
+        "hugocmsShopOff": "HugoCMS-is pole selle veebisaidi jaoks veebipood lubatud — lülitage projekti seadetes jaotises „OpensourceERP ühendus“ sisse „Veebipood sellel veebisaidil“. Seni ei edasta poe käivitus ühtegi tootelehte."
     }
 }

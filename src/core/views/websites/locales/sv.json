@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Kommaseparerad lista över adresser som webbplatsen får anropa från. Lämna tomt om webbplatsen använder samma adress via vidarebefordraren /portal-api/.",
             "backendUrl": "Adress till OpensourceERP:s portalåtkomst",
             "backendUrl_help": "Webbplatsen vidarebefordrar inloggning, konto, fakturor och — med butik — varukorg och kassa till den här adressen: OpensourceERP:s offentliga portalåtkomst (backend/portal/), till exempel https://erp.example.se/portal/. Inte HugoCMS adress och inte webbplatsens. Paketet skriver den tillsammans med nyckeln i oserp-portal/config.json. Ett tomt fält förifylls med adressen som OpensourceERP just nu anropas på.",
-            "links": "Webbplatsens adresser",
+            "pages": "Webbplatsens sidor",
             "baseUrl": "Webbplatsens adress",
             "baseUrl_help": "Fullständig adress inklusive https://. Ligger kundportalen under en webbplats, med sökväg: https://verkstad.example/kunder/ — vidarebefordraren ligger då under den sökvägen (…/kunder/portal-api/).",
             "invoicePage_help": "Webbplatsens sida med shortcoden shop-invoice, t.ex. /faktura/. Mejl länkar dit så att även gäster utan konto ser status. Tomt = /rechnung/.",
             "templateSet_help": "Bestämmer paketets utseende (mallar och shortcodes). Egna uppsättningar ligger i mallkatalogen under portal/.",
             "grants_help": "Var OpensourceERP får skriva bestämmer HugoCMS (projektinställningar → OpensourceERP-anslutning). Visas här bara för kännedom; överföringen tillämpar behörigheterna varje gång.",
-            "grantPackage": "Paket",
+            "grantPackage": "Kundportalspaket",
             "signingKey_help": "Ange den i HugoCMS under projektinställningar → OpensourceERP-anslutning. Då överför OpensourceERP vidarebefordraren och 404-sidan själv. Gäller alla webbplatser i den här installationen."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "Portalåtkomsten avvisade nyckeln — kontrollera webbplatsens nyckel; via webbplatsen gäller den senast överförda.",
             "PROXY_NOT_CONFIGURED": "Vidarebefordraren körs men hittar inte oserp-portal/config.json eller den är ofullständig — kör ”Installera paket”.",
             "FOREIGN": "Oväntat svar (HTTP {status}) — det är inte OpensourceERP:s portalåtkomst som svarar."
-        }
+        },
+        "hugocmsShopOff": "I HugoCMS är webbutiken inte frisläppt för den här webbplatsen — slå på ”Webbutik på den här webbplatsen” i projektinställningarna under ”OpensourceERP-anslutning”. Tills dess överför butikskörningen inga produktsidor."
     }
 }

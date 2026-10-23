@@ -931,7 +931,7 @@
         "shopHugoCmsGrantImages": "Изображения товаров",
         "shopHugoCmsGrantThumbnails": "Миниатюры",
         "shopHugoCmsGrantDownloads": "Загрузки",
-        "shopHugoCmsGrantPackage": "Пакет магазина",
+        "shopHugoCmsGrantPackage": "Пакет клиентского портала",
         "shopHugoCmsCategoryMismatch": "Набор шаблонов ожидает обзор категорий в {expected}, HugoCMS разрешает {granted} — его шаблоны не найдут его там. Измените в HugoCMS разрешение «Обзор категорий».",
         "shopLinkSuggestion": "Шаблоны адресов не соответствуют разрешениям. Предложение на основе разрешений:",
         "shopLinkSuggestionApply": "Применить предложение",

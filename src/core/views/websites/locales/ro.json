@@ -48,13 +48,13 @@
             "allowedOrigins_help": "Listă de adrese separate prin virgulă din care site-ul poate accesa. Lăsați gol dacă site-ul folosește aceeași adresă prin redirecționarea /portal-api/.",
             "backendUrl": "Adresa accesului portalului OpensourceERP",
             "backendUrl_help": "Site-ul redirecționează autentificarea, contul, facturile și — cu magazin — coșul și casa la această adresă: accesul public al portalului OpensourceERP (backend/portal/), de exemplu https://erp.example.ro/portal/. Nu adresa HugoCMS și nu cea a site-ului. Pachetul o scrie împreună cu cheia în oserp-portal/config.json. Un câmp gol este precompletat cu adresa la care OpensourceERP este apelat acum.",
-            "links": "Adresele site-ului",
+            "pages": "Paginile site-ului",
             "baseUrl": "Adresa site-ului",
             "baseUrl_help": "Adresa completă inclusiv https://. Dacă portalul clienților se află sub un site, cu cale: https://atelier.example/clienti/ — redirecționarea se află atunci sub acea cale (…/clienti/portal-api/).",
             "invoicePage_help": "Pagina site-ului cu shortcode-ul shop-invoice, de ex. /factura/. E-mailurile trimit acolo, astfel încât și vizitatorii fără cont să vadă starea. Gol = /rechnung/.",
             "templateSet_help": "Determină aspectul pachetului (șabloane și shortcode-uri). Seturile proprii se află în directorul de șabloane sub portal/.",
             "grants_help": "Unde poate scrie OpensourceERP stabilește HugoCMS (setările proiectului → Conexiune OpensourceERP). Aici doar pentru vizualizare; transferul aplică permisiunile de fiecare dată.",
-            "grantPackage": "Pachet",
+            "grantPackage": "Pachetul portalului clienților",
             "signingKey_help": "Introduceți în HugoCMS la setările proiectului → Conexiune OpensourceERP. Apoi OpensourceERP transferă singur redirecționarea și pagina 404. Valabil pentru toate site-urile acestei instalări."
         },
         "errors": {
@@ -78,6 +78,7 @@
             "KEY_REJECTED": "Accesul portalului a respins cheia — verificați cheia site-ului; prin site este valabilă ultima transferată.",
             "PROXY_NOT_CONFIGURED": "Redirecționarea funcționează, dar nu găsește oserp-portal/config.json sau este incomplet — rulați „Instalează pachetul”.",
             "FOREIGN": "Răspuns neașteptat (HTTP {status}) — acolo nu răspunde accesul portalului OpensourceERP."
-        }
+        },
+        "hugocmsShopOff": "În HugoCMS magazinul online nu este activat pentru acest site — activați „Magazin online pe acest site” în setările proiectului la „Conexiune OpensourceERP”. Până atunci rularea magazinului nu transferă pagini de produs."
     }
 }
