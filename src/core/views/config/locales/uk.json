@@ -1358,5 +1358,8 @@
     "templateSetsLoadFailed": "Не вдалося завантажити набори шаблонів друку",
     "templateSetNameInvalid": "Дозволені лише літери, цифри, дефіс і підкреслення",
     "templateSetNameExists": "Ця назва вже використовується",
-    "loadingConfiguration": "Завантаження конфігурації …"
+    "loadingConfiguration": "Завантаження конфігурації …",
+    "portalTab": {
+        "title": "Клієнтський портал"
+    }
 }

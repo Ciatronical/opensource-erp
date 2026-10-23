@@ -60,8 +60,7 @@
         "newArticle": "/preke/naujas",
         "admin": "/sistema/administravimas",
         "systemSettings": "/sistema/nustatymai",
-        "templateDesigner": "/sistema/sablonu-redaktorius",
-        "websites": "/sistema/svetaines"
+        "templateDesigner": "/sistema/sablonu-redaktorius"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Klaida: Slaptazodzio failas api/config/api.passwd.php nerastas. Pervadinkite faila api/config/api.passwd.php.example i api/config/api.passwd.php ir pritaikykite nustatymus.",
@@ -100,8 +99,7 @@
         "about": "Apie",
         "docs": "Dokumentacija",
         "administration": "Vartotojai ir įmonės",
-        "systemSettings": "Sistemos nustatymai",
-        "websites": "Svetainės (klientų portalas)"
+        "systemSettings": "Sistemos nustatymai"
     },
     "DocsView": {
         "title": "Dokumentacija",

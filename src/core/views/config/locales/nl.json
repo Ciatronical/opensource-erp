@@ -1328,5 +1328,8 @@
     "fintsProductIdRegister": "Registratie",
     "fintsDebugLabel": "FinTS-foutopsporingslogboek inschakelen",
     "fintsDebugHelp": "Registreert de volledige FinTS-communicatie met de bank (verzonden/ontvangen segmenten) naar backend/log/opensource_erp.api.debug.log. Nuttig voor het oplossen van FinTS-problemen — maar PIN/TAN verschijnen ook in leesbare tekst in het logboek. Schakel dit alleen tijdelijk in voor foutopsporing.",
-    "loadingConfiguration": "Configuratie wordt geladen …"
+    "loadingConfiguration": "Configuratie wordt geladen …",
+    "portalTab": {
+        "title": "Klantenportaal"
+    }
 }

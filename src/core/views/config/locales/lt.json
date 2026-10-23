@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "Įrašo visą FinTS ryšį su banku (siunčiami/gaunami segmentai) į backend/log/opensource_erp.api.debug.log. Naudinga FinTS problemų šalinimui — tačiau PIN/TAN taip pat bus matomi žurnale kaip paprastas tekstas. Įjunkite tik laikinai derinimui.",
     "crm.lxcarsHuTriggerDescriptions": "Techninės apžiūros paleidiklių aprašymai",
     "crm.lxcarsHuTriggerDescriptions_help": "Kableliais atskirtas pozicijų aprašymų sąrašas. Jei pozicija turi vieną iš šių terminų (poeilutė, neatsižvelgiant į didžiąsias/mažąsias raides), kita transporto priemonės techninės apžiūros data automatiškai nustatoma į šiandien + 2 metai (mėnesio 1 d.) kuriant sąskaitą.",
-    "loadingConfiguration": "Įkeliama konfigūracija …"
+    "loadingConfiguration": "Įkeliama konfigūracija …",
+    "portalTab": {
+        "title": "Klientų portalas"
+    }
 }

@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "Registrerer fullstendig FinTS-kommunikasjon med banken (sendte/mottatte segmenter) til backend/log/opensource_erp.api.debug.log. Nyttig for feilsøking av FinTS-problemer — men PIN/TAN vil også vises i klartekst i loggen. Aktiver kun midlertidig for feilsøking.",
     "crm.lxcarsHuTriggerDescriptions": "Utløserbeskrivelser for EU-kontroll",
     "crm.lxcarsHuTriggerDescriptions_help": "Kommaseparert liste med linjepostbeskrivelser. Hvis en linjepost inneholder ett av disse termene (delstreng, uten hensyn til store/små bokstaver), settes kjøretøyets neste kontrolldato automatisk til i dag + 2 år (den 1. i måneden) når fakturaen opprettes.",
-    "loadingConfiguration": "Laster konfigurasjonen …"
+    "loadingConfiguration": "Laster konfigurasjonen …",
+    "portalTab": {
+        "title": "Kundeportal"
+    }
 }

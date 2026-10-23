@@ -11,7 +11,7 @@ Teile entstanden sind, beschreiben `shop-migration.md` (Fachlogik),
 | --- | --- | --- |
 | Admin-Panel | `src/features/shop/` | Mitarbeiter: Übersicht, Bestellungen, Zahlungen, Widerrufe, Veröffentlichung |
 | Mitarbeiter-API | `backend/api/shop/` | normale OpensourceERP-Sitzung, Rechte über `permit()` |
-| Kundenportal (Kern) | `backend/api/portal/`, Ansicht System → Webseiten | Webseiten (`website_oserp`) mit Zugang, Adresse, HugoCMS und Vorlagensatz; Sitzung, Konto, Rechnungen, Kontakt, Freischaltung; Paket und HugoCMS-Transport (`dev/kundenportal.md`) |
+| Kundenportal (Kern) | `backend/api/portal/`, Ansicht Firmenkonfiguration → Kundenportal | Webseiten (`website_oserp`) mit Zugang, Adresse, HugoCMS und Vorlagensatz; Sitzung, Konto, Rechnungen, Kontakt, Freischaltung; Paket und HugoCMS-Transport (`dev/kundenportal.md`) |
 | Öffentlicher Zugang | `backend/portal/index.php` | Kunden des Betreibers; Ausweis über den Kopf `X-Portal-Key` der Webseite, Aktionen des Kerns plus `public/actions.php` jeder aktiven Erweiterung |
 | Fachschicht | `backend/api/shop/lib/` | Warenkorb, Kasse, Suche, Rechnung, Zahlung, Mail, Widerruf, Umleitungen, Veröffentlichung, Kategorien; hängt über `lib/portal_hooks.php` am Portal |
 | Webseiten-Paket | `backend/templates-default/portal/standard/kit/` (Kern: Konto-Shortcodes, Partials, Proxy, Bündel) + `backend/templates-default/shop/standard/kit/` (Shop: Warenkorb, Kasse, Suche, 404-Seite) | geht zusammen als `oserp-portal/` an HugoCMS |
@@ -39,7 +39,7 @@ Webseite (`dev/shop-medienbibliothek.md`).
 2. **Firmenkonfiguration → Shop:** die Angaben für den ganzen Mandanten
    (Rechnungsstellung, Bankverbindung, Lagerplatz, Bestellungen, siehe
    „Einstellungen“).
-3. **System → Webseiten** (Recht „Webshops anlegen und bearbeiten“): die
+3. **Firmenkonfiguration → Kundenportal** (Recht „Webshops anlegen und bearbeiten“): die
    Webseite des Kundenportals anlegen. In ihrer Karte:
    - **Shop-Schlüssel** — der Knopf neben dem Feld erzeugt ihn (32 zufällige
      Byte, hexadezimal). Er unterscheidet Mandanten und Webseiten; zwei
@@ -457,7 +457,7 @@ Shop-Erweiterung). Dann überträgt der Lauf Weiterleiter und 404-Seite selbst,
 auch nach einem OSERP-Update (`dev/shop-php-signatur.md`).
 
 **Adresse des Portal-Zugangs von OpensourceERP** (`backend_url` der Webseite
-unter System → Webseiten, mit „Verbindung prüfen“ direkt unter dem Feld): Ziel
+unter Firmenkonfiguration → Kundenportal, mit „Verbindung prüfen“ direkt unter dem Feld): Ziel
 des Weiterleiters, also der Portal-Zugang `backend/portal/` — nicht die Adresse
 von HugoCMS (`…/cms-api/`), die in der HugoCMS-Gruppe steht. Der Test prüft in drei
 Schritten: Eingabe (nicht die HugoCMS-Adresse), direkt von OpensourceERP mit dem

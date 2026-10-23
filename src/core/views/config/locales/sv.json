@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "Registrerar fullständig FinTS-kommunikation. PIN/TAN visas i klartext. Aktivera endast tillfälligt.",
     "crm.lxcarsHuTriggerDescriptions": "Beskrivningar för HU-utlösare",
     "crm.lxcarsHuTriggerDescriptions_help": "Kommaseparerad lista med orderradsbeskrivningar. Om en rad innehåller något av dessa termer sätts fordonets nästa besiktningsdatum till idag + 2 år när fakturan skapas.",
-    "loadingConfiguration": "Konfigurationen läses in …"
+    "loadingConfiguration": "Konfigurationen läses in …",
+    "portalTab": {
+        "title": "Kundportal"
+    }
 }

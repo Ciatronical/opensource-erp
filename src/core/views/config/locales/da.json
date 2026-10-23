@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "Optager den komplette FinTS-kommunikation med banken. Nyttig til fejlfinding — men PIN/TAN vises også i klartekst. Aktivér kun midlertidigt.",
     "crm.lxcarsHuTriggerDescriptions": "Udløserbeskrivelser for køretøjsinspektion",
     "crm.lxcarsHuTriggerDescriptions_help": "Kommasepareret liste over linjepostbeskrivelser. Hvis en linjepost indeholder et af disse udtryk, sættes køretøjets næste inspektionsdato automatisk til i dag + 2 år (den 1. i måneden) ved oprettelse af fakturaen.",
-    "loadingConfiguration": "Konfigurationen indlæses …"
+    "loadingConfiguration": "Konfigurationen indlæses …",
+    "portalTab": {
+        "title": "Kundeportal"
+    }
 }

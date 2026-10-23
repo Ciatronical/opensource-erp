@@ -174,7 +174,7 @@
                         <component
                             v-else
                             :is="currentTabComponent"
-                            :defaults="['crm','lxcars','shop','anpr','ai_health','employees','master_lists'].includes(activeTab) ? undefined : defaults"
+                            :defaults="['crm','lxcars','shop','anpr','ai_health','employees','master_lists','portal'].includes(activeTab) ? undefined : defaults"
                             :crm-defaults="['crm','lxcars','shop','anpr','bank','features','ai_health'].includes(activeTab) ? crmDefaults : undefined"
                             :crm-secrets="activeTab === 'shop' ? crmSecrets : undefined"
                             :search-query="searchQuery"
@@ -374,6 +374,7 @@ const DatevCheckConfigurationTab = defineAsyncComponent(() => import('./tabs/dat
 const OrdersDeleteableTab = defineAsyncComponent(() => import('./tabs/orders.deleteable.tab.vue'));
 const WarehouseTab = defineAsyncComponent(() => import('./tabs/warehouse.tab.vue'));
 const FeaturesTab = defineAsyncComponent(() => import('./tabs/features.tab.vue'));
+const PortalTab = defineAsyncComponent(() => import('./tabs/portal/portal.tab.vue'));
 const StocktakingTab = defineAsyncComponent(() => import('./tabs/stocktaking.tab.vue'));
 const RecordLinksTab = defineAsyncComponent(() => import('./tabs/record.links.tab.vue'));
 const BankTab = defineAsyncComponent(() => import('./tabs/bank.tab.vue'));
@@ -624,6 +625,8 @@ const tabGroups = computed(() => [
         title: t('configGroups.features'),
         items: [
             { value: 'features', title: t('features'), icon: 'mdi-star', keywords: ['feature', 'funktion', 'modul', 'branche', 'module', 'e-mail', 'email', 'dms', 'dokumente', 'webdav', 'kamera', 'überwachung', 'datev', 'ustva', 'wiederkehrend', 'abo', 'miete', 'recurring'] },
+            // Kundenportal: Webseiten in HugoCMS, über die Kunden ihr Konto erreichen (dev/kundenportal.md)
+            { value: 'portal', title: t('portalTab.title'), icon: 'mdi-web', keywords: ['kundenportal', 'portal', 'webseite', 'website', 'hugocms', 'kundenkonto', 'login', 'anmeldung', 'rechnungen', 'freischaltung', 'shop'] },
             ...(store.isLxCars() ? [{ value: 'lxcars', title: 'LxCars', icon: 'mdi-car', keywords: ['lxcars', 'fahrzeug', 'auto', 'werkstatt', 'kfz', 'reifen'] }] : []),
             ...(store.isExtensionEnabled('shop') ? [{
                 value: 'shop', title: 'Shop', icon: 'mdi-storefront',
@@ -890,6 +893,7 @@ const currentTabComponent = computed(() => {
         'orders_deleteable': OrdersDeleteableTab,
         'warehouse': WarehouseTab,
         'features': FeaturesTab,
+        'portal': PortalTab,
         'stocktaking': StocktakingTab,
         'record_links': RecordLinksTab,
         'bank': BankTab,

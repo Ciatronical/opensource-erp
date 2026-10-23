@@ -2076,5 +2076,8 @@
             }
         }
     },
-    "letter": "Letter (last number, next letter gets counter + 1)"
+    "letter": "Letter (last number, next letter gets counter + 1)",
+    "portalTab": {
+        "title": "Customer portal"
+    }
 }

@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "Tam FinTS iletişimini kaydeder. PIN/TAN düz metin olarak görünür. Yalnızca geçici olarak etkinleştirin.",
     "crm.lxcarsHuTriggerDescriptions": "Araç Muayene Tetikleyici Açıklamaları",
     "crm.lxcarsHuTriggerDescriptions_help": "Virgülle ayrılmış sipariş kalemi açıklamaları listesi. Bir kalem bu terimlerden birini içeriyorsa fatura oluşturulduğunda aracın bir sonraki muayene tarihi bugün + 2 yıl olarak ayarlanır.",
-    "loadingConfiguration": "Yapılandırma yükleniyor …"
+    "loadingConfiguration": "Yapılandırma yükleniyor …",
+    "portalTab": {
+        "title": "Müşteri portalı"
+    }
 }

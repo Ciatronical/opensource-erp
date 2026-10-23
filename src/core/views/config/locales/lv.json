@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "Ieraksta visu FinTS saziņu ar banku (nosūtītie/saņemtie segmenti) failā backend/log/opensource_erp.api.debug.log. Noderīgi FinTS problēmu novēršanai — taču PIN/TAN žurnālā parādīsies arī vienkāršā tekstā. Iespējot tikai īslaicīgi atkļūdošanai.",
     "crm.lxcarsHuTriggerDescriptions": "Tehniskās apskates aktivatoru apraksti",
     "crm.lxcarsHuTriggerDescriptions_help": "Ar komatiem atdalīts pozīciju aprakstu saraksts. Ja pozīcija satur kādu no šiem terminiem (apakšvirkne, bez reģistra atšķiršanas), transportlīdzekļa nākamā tehniskās apskates datums tiek automātiski iestatīts uz šodien + 2 gadi (mēneša 1. datums) rēķina izveides brīdī.",
-    "loadingConfiguration": "Notiek konfigurācijas ielāde …"
+    "loadingConfiguration": "Notiek konfigurācijas ielāde …",
+    "portalTab": {
+        "title": "Klientu portāls"
+    }
 }

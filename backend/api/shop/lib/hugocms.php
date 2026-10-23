@@ -248,12 +248,12 @@ function shopWebsiteManualFilesCheck($db, int $kanal, array $signiert = []): arr
         $handablage = in_array($pfad, $signiert, true)
             ? 'Die Datei ist signiert an HugoCMS geliefert und liegt in der Webseite ('.$pfad
               .'), wird unter der Basisadresse '.$basis.' aber nicht ausgeliefert — Adresse der Webseite unter '
-              .'System → Webseiten prüfen und ob der Webserver dafür das Verzeichnis public/ dieser Webseite ausliefert. Datei: '
+              .'Firmenkonfiguration → Kundenportal prüfen und ob der Webserver dafür das Verzeichnis public/ dieser Webseite ausliefert. Datei: '
             : 'Von Hand auf den Webserver legen (HugoCMS nimmt kein PHP an): ';
 
         if ('' === $basis) {
             $ergebnis[] = ['pfad' => $pfad, 'stand' => 'ungeprueft',
-                           'text' => 'Nicht geprüft, die Webseite hat keine Adresse (System → Webseiten). '.$handablage.$pfad];
+                           'text' => 'Nicht geprüft, die Webseite hat keine Adresse (Firmenkonfiguration → Kundenportal). '.$handablage.$pfad];
             continue;
         }
 
@@ -277,15 +277,15 @@ function shopWebsiteManualFilesCheck($db, int $kanal, array $signiert = []): arr
             if ('PROXY_NOT_CONFIGURED' === $ziel) {
                 $stand = 'nicht_eingerichtet';
                 $text = 'Warnung: Der Weiterleiter '.$adresse.' läuft, findet aber oserp-portal/config.json nicht '
-                      .'oder unvollständig — Adresse des Portal-Zugangs und Schlüssel der Webseite unter System → Webseiten prüfen.';
+                      .'oder unvollständig — Adresse des Portal-Zugangs und Schlüssel der Webseite unter Firmenkonfiguration → Kundenportal prüfen.';
             } elseif ('HUGOCMS' === $ziel) {
                 $stand = 'falsches_ziel';
                 $text = 'Warnung: Der Weiterleiter '.$adresse.' erreicht HugoCMS statt OpensourceERP — '
-                      .'„Adresse des Portal-Zugangs von OpensourceERP“ unter System → Webseiten prüfen (Verbindung prüfen).';
+                      .'„Adresse des Portal-Zugangs von OpensourceERP“ unter Firmenkonfiguration → Kundenportal prüfen (Verbindung prüfen).';
             } elseif (in_array($ziel, ['BACKEND_UNREACHABLE', 'KEY_REJECTED', 'OTHER_CHANNEL', 'OTHER_WEBSITE', 'FOREIGN', 'NOT_FOUND'], true)) {
                 $stand = 'falsches_ziel';
                 $text = 'Warnung: Der Weiterleiter '.$adresse.' erreicht den Portal-Zugang von OpensourceERP nicht ('
-                      .$ziel.') — unter System → Webseiten „Verbindung prüfen“ bei „Adresse des Portal-Zugangs von OpensourceERP“.';
+                      .$ziel.') — unter Firmenkonfiguration → Kundenportal „Verbindung prüfen“ bei „Adresse des Portal-Zugangs von OpensourceERP“.';
             }
         } elseif ('' !== $ist) {
             $stand = 'veraltet';

@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "Registra l'intera comunicazione FinTS con la banca (segmenti inviati/ricevuti) in backend/log/opensource_erp.api.debug.log. Utile per la risoluzione dei problemi FinTS — ma PIN/TAN appariranno anche in chiaro nel registro. Abilitare solo temporaneamente per il debug.",
     "crm.lxcarsHuTriggerDescriptions": "Descrizioni attivatori revisione veicoli",
     "crm.lxcarsHuTriggerDescriptions_help": "Elenco di descrizioni di posizioni separato da virgole. Se una posizione contiene uno di questi termini (sottostringa, senza distinzione maiuscole/minuscole), la prossima data di revisione del veicolo viene automaticamente impostata a oggi + 2 anni (1° del mese) alla creazione della fattura.",
-    "loadingConfiguration": "Caricamento della configurazione …"
+    "loadingConfiguration": "Caricamento della configurazione …",
+    "portalTab": {
+        "title": "Portale clienti"
+    }
 }

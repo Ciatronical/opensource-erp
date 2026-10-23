@@ -1328,5 +1328,8 @@
     "fintsProductIdRegister": "Регистрация",
     "fintsDebugLabel": "Включить журналирование отладки FinTS",
     "fintsDebugHelp": "Записывает полную коммуникацию FinTS с банком (отправленные/полученные сегменты) в backend/log/opensource_erp.api.debug.log. Полезно для устранения проблем с FinTS — но PIN/TAN также появятся в журнале в открытом виде. Включайте только временно для отладки.",
-    "loadingConfiguration": "Загрузка конфигурации …"
+    "loadingConfiguration": "Загрузка конфигурации …",
+    "portalTab": {
+        "title": "Клиентский портал"
+    }
 }

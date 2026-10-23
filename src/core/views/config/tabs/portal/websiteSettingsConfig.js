@@ -1,4 +1,4 @@
-// src/core/views/websites/websiteSettingsConfig.js
+// src/core/views/config/tabs/portal/websiteSettingsConfig.js
 //
 // Einstellungen einer Webseite des Kundenportals (dev/kundenportal.md). Die
 // Namen sind die Schlüssel in website_oserp.settings bzw. — bei type

@@ -1,4 +1,4 @@
-<!-- src/core/views/websites/website-settings.vue -->
+<!-- src/core/views/config/tabs/portal/website-settings.vue -->
 <!--
     Einstellungen einer Webseite des Kundenportals (dev/kundenportal.md):
     HugoCMS, Zugang (Schlüssel, Herkünfte, Adresse des Portal-Zugangs),

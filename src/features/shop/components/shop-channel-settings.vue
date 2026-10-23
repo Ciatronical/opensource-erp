@@ -69,7 +69,7 @@
                     <KleinanzeigenStatusConfig v-if="feld.action === 'kleinanzeigenPanel'" :channel-id="channelId" class="mt-2" />
 
                     <!-- Verbindung zu HugoCMS prüfen: Adresse und Schlüssel stehen bei
-                         der Webseite des Kanals (System → Webseiten); hier geht es um
+                         der Webseite des Kanals (Firmenkonfiguration → Kundenportal); hier geht es um
                          die Freigaben, an denen sich die Adressmuster ausrichten -->
                     <template v-if="feld.action === 'hugocmsTest'">
                         <v-btn

@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "Enregistre l'intégralité de la communication FinTS avec la banque (segments envoyés/reçus) dans backend/log/opensource_erp.api.debug.log. Utile pour résoudre les problèmes FinTS — mais le PIN/TAN apparaîtra également en clair dans le journal. À activer uniquement temporairement pour le débogage.",
     "crm.lxcarsHuTriggerDescriptions": "Descriptions déclencheurs contrôle technique",
     "crm.lxcarsHuTriggerDescriptions_help": "Liste de descriptions de postes séparées par des virgules. Si un poste contient un de ces termes (sous-chaîne, insensible à la casse), la prochaine date de contrôle technique du véhicule est automatiquement fixée à aujourd'hui + 2 ans (1er du mois) lors de la création de la facture.",
-    "loadingConfiguration": "Chargement de la configuration …"
+    "loadingConfiguration": "Chargement de la configuration …",
+    "portalTab": {
+        "title": "Portail client"
+    }
 }

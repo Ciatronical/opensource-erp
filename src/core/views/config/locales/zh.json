@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "记录完整的FinTS通信。PIN/TAN以明文显示。仅临时启用。",
     "crm.lxcarsHuTriggerDescriptions": "车辆检验触发描述",
     "crm.lxcarsHuTriggerDescriptions_help": "逗号分隔的订单行描述列表。若订单行包含这些术语之一，创建发票时车辆下次检验日期将设为今天+2年。",
-    "loadingConfiguration": "正在加载配置 …"
+    "loadingConfiguration": "正在加载配置 …",
+    "portalTab": {
+        "title": "客户门户"
+    }
 }

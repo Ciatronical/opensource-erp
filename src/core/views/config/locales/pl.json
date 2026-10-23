@@ -1584,5 +1584,8 @@
         "markedActive": "{name} ponownie aktywowano"
     },
     "searchSettings": "Przeszukaj ustawienia",
-    "loadingConfiguration": "Wczytywanie konfiguracji …"
+    "loadingConfiguration": "Wczytywanie konfiguracji …",
+    "portalTab": {
+        "title": "Portal klienta"
+    }
 }

@@ -60,8 +60,7 @@
         "newArticle": "/artikkel/uus",
         "admin": "/susteem/haldus",
         "systemSettings": "/susteem/seaded",
-        "templateDesigner": "/susteem/mallide-redaktor",
-        "websites": "/susteem/veebilehed"
+        "templateDesigner": "/susteem/mallide-redaktor"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Viga: Paroolifaili api/config/api.passwd.php ei leitud. Palun nimetage fail api/config/api.passwd.php.example umber api/config/api.passwd.php ja kohandage seadeid vastavalt.",
@@ -100,8 +99,7 @@
         "about": "Teave",
         "docs": "Dokumentatsioon",
         "administration": "Kasutajad ja ettevõtted",
-        "systemSettings": "Süsteemi seaded",
-        "websites": "Veebilehed (kliendiportaal)"
+        "systemSettings": "Süsteemi seaded"
     },
     "DocsView": {
         "title": "Dokumentatsioon",

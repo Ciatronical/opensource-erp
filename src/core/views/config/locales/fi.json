@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "Tallentaa täydellisen FinTS-viestinnän pankin kanssa. Hyödyllinen vianmääritykseen — mutta PIN/TAN näkyy myös selkokielisenä. Ota käyttöön vain väliaikaisesti.",
     "crm.lxcarsHuTriggerDescriptions": "Ajoneuvokatsastuksen käynnistäjien kuvaukset",
     "crm.lxcarsHuTriggerDescriptions_help": "Pilkuilla erotettu luettelo rivinimikedescriptioista. Jos rivi sisältää jonkin näistä termeistä, ajoneuvon seuraava katsastuspäivä asetetaan automaattisesti tänään + 2 vuotta (kuun 1. päivä) laskun luomisen yhteydessä.",
-    "loadingConfiguration": "Ladataan asetuksia …"
+    "loadingConfiguration": "Ladataan asetuksia …",
+    "portalTab": {
+        "title": "Asiakasportaali"
+    }
 }

@@ -1,16 +1,18 @@
-<!-- src/core/views/websites/websites.view.vue -->
+<!-- src/core/views/config/tabs/portal/portal.tab.vue -->
 <!--
+    Reiter „Kundenportal“ der Firmenkonfiguration (Gruppe Funktionen).
     Webseiten des Kundenportals (dev/kundenportal.md): je Webseite in HugoCMS,
     über die Kunden ihr Konto erreichen, eine Karte mit Name, Schalter,
     Kennzahlen, den Einstellungen (website-settings.vue) und „Paket
     installieren“. Dazu Webseiten anlegen und löschen.
 
-    Recht: edit_shop_config — wie die Kanäle des Shops.
+    Recht: edit_shop_config — wie die Kanäle des Shops. Aufruf mit
+    ?tab=portal&website=<id> klappt die Einstellungen dieser Webseite auf.
 -->
 <template>
-    <NavbarView />
-    <v-container fluid>
-        <page-header :title="t('WebsitesView.title')" :subtitle="t('WebsitesView.subtitle')" />
+    <div>
+        <h3 class="text-h6 mb-1">{{ t('WebsitesView.title') }}</h3>
+        <div class="text-caption text-medium-emphasis mb-4">{{ t('WebsitesView.subtitle') }}</div>
 
         <v-alert v-if="!darf" type="warning" variant="tonal" density="compact">
             {{ t('WebsitesView.errors.NO_PERMISSION') }}
@@ -178,7 +180,7 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
-    </v-container>
+    </div>
 </template>
 
 <script setup>
@@ -186,8 +188,6 @@ import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import NavbarView from '@/core/components/navbar/navbar.view.vue'
-import PageHeader from '@/core/components/layout/page-header.vue'
 import SectionCard from '@/core/components/layout/section-card.vue'
 import WebsiteSettings from './website-settings.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'

@@ -2076,5 +2076,8 @@
             }
         }
     },
-    "letter": "Brief (letzte Nummer, nächster Brief erhält Zähler + 1)"
+    "letter": "Brief (letzte Nummer, nächster Brief erhält Zähler + 1)",
+    "portalTab": {
+        "title": "Kundenportal"
+    }
 }

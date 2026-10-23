@@ -1328,5 +1328,8 @@
     "fintsProductIdRegister": "Înregistrare",
     "fintsDebugLabel": "Activați jurnalizarea de depanare FinTS",
     "fintsDebugHelp": "Înregistrează comunicarea FinTS completă cu banca (segmente trimise/primite) în backend/log/opensource_erp.api.debug.log. Util pentru depanarea problemelor FinTS — dar PIN/TAN vor apărea și în jurnal ca text simplu. Activați doar temporar pentru depanare.",
-    "loadingConfiguration": "Se încarcă configurația …"
+    "loadingConfiguration": "Se încarcă configurația …",
+    "portalTab": {
+        "title": "Portalul clienților"
+    }
 }

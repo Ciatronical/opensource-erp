@@ -139,7 +139,7 @@
                         />
                     </v-col>
                     <v-col cols="12" sm="4" md="6" class="py-1 d-flex align-center">
-                        <v-btn variant="text" size="small" prepend-icon="mdi-web" @click="router.push({ name: 'websites' })">
+                        <v-btn variant="text" size="small" prepend-icon="mdi-web" @click="router.push({ name: 'client-defaults', query: { tab: 'portal' } })">
                             {{ t('ShopView.channelConfig.websitesOpen') }}
                         </v-btn>
                     </v-col>

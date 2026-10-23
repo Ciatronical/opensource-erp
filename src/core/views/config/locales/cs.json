@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "Zaznamenává kompletní komunikaci FinTS s bankou. Užitečné pro odstraňování problémů — ale PIN/TAN se zobrazí jako prostý text. Aktivujte pouze dočasně.",
     "crm.lxcarsHuTriggerDescriptions": "Spouštěče kontroly technického stavu vozidla",
     "crm.lxcarsHuTriggerDescriptions_help": "Čárkami oddělený seznam popisů řádkových položek. Pokud položka obsahuje jeden z těchto výrazů, datum příští technické kontroly vozidla se automaticky nastaví na dnes + 2 roky (1. dne v měsíci) při vytvoření faktury.",
-    "loadingConfiguration": "Načítá se konfigurace …"
+    "loadingConfiguration": "Načítá se konfigurace …",
+    "portalTab": {
+        "title": "Zákaznický portál"
+    }
 }

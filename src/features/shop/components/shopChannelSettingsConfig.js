@@ -11,7 +11,7 @@
 // Beschriftungen und Hilfetexte sind dieselben (crm_fields.*).
 
 // Zugang, Adresse der Webseite, HugoCMS und Vorlagensatz gehören seit dem
-// Kundenportal der Webseite (System → Webseiten, dev/kundenportal.md); der
+// Kundenportal der Webseite (Firmenkonfiguration → Kundenportal, dev/kundenportal.md); der
 // Kanal wählt in der Karte nur noch seine Webseite. Die Gruppe HugoCMS bleibt
 // ohne Felder: „Verbindung prüfen“ liest die Freigaben, an denen sich die
 // Adressmuster unten ausrichten.

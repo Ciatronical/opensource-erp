@@ -1328,5 +1328,8 @@
     "fintsProductIdRegister": "Registo",
     "fintsDebugLabel": "Ativar registo de depuração FinTS",
     "fintsDebugHelp": "Regista a comunicação FinTS completa com o banco (segmentos enviados/recebidos) em backend/log/opensource_erp.api.debug.log. Útil para resolver problemas de FinTS — mas PIN/TAN também aparecerão no registo em texto simples. Ative apenas temporariamente para depuração.",
-    "loadingConfiguration": "A carregar a configuração …"
+    "loadingConfiguration": "A carregar a configuração …",
+    "portalTab": {
+        "title": "Portal de clientes"
+    }
 }

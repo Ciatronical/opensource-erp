@@ -39,7 +39,6 @@ const AdminView = () => import('@/core/views/admin/admin.view.vue')
 const TemplateDesignerView = () => import('@/core/views/template-designer/template-designer.view.vue')
 const SystemSettingsView = () => import('@/core/views/system-settings/system-settings.view.vue')
 // Kundenportal: Webseiten, über die Kunden ihr Konto erreichen (dev/kundenportal.md)
-const WebsitesView = () => import('@/core/views/websites/websites.view.vue')
 const WallDisplayView = () => import('@/core/views/wall-display/wall-display.view.vue')
 const AnschlagtafelView = () => import('@/core/views/anschlagtafel/anschlagtafel.view.vue')
 const TafelView = () => import('@/core/views/tafel/tafel.view.vue')
@@ -977,13 +976,6 @@ function buildRoutes() {
             name: 'system-settings',
             component: SystemSettingsView,
             meta: { hideCustomerBar: true, requiresAdmin: true },
-        },
-        // ── Kundenportal: Webseiten (Recht edit_shop_config, geprüft in der Ansicht) ──
-        {
-            ...routePath('routes.websites'),
-            name: 'websites',
-            component: WebsitesView,
-            meta: { hideCustomerBar: true },
         },
         // ── Vorlageneditor: Druckvorlagen per Drag & Drop gestalten ──
         {

@@ -1328,5 +1328,8 @@
     "fintsDebugHelp": "Registra la comunicación completa de FinTS con el banco. Útil para la resolución de problemas — pero el PIN/TAN también aparecerá en texto plano. Solo actívelo temporalmente.",
     "crm.lxcarsHuTriggerDescriptions": "Descripciones de activación de inspección técnica",
     "crm.lxcarsHuTriggerDescriptions_help": "Lista de descripciones de líneas separadas por comas. Si una línea contiene uno de estos términos, la fecha de próxima inspección del vehículo se establece automáticamente en hoy + 2 años (día 1 del mes) al crear la factura.",
-    "loadingConfiguration": "Cargando configuración …"
+    "loadingConfiguration": "Cargando configuración …",
+    "portalTab": {
+        "title": "Portal de clientes"
+    }
 }

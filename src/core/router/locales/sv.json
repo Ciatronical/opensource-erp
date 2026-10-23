@@ -60,8 +60,7 @@
         "newArticle": "/artikel/ny",
         "admin": "/system/administration",
         "systemSettings": "/system/installningar",
-        "templateDesigner": "/system/mallredigerare",
-        "websites": "/system/webbplatser"
+        "templateDesigner": "/system/mallredigerare"
     },
     "errors": {
         "PASSWORD_FILE_NOT_FOUND": "Fel: Losenordsfilen api/config/api.passwd.php hittades inte. Byt namn pa filen api/config/api.passwd.php.example till api/config/api.passwd.php och anpassa installningarna.",
@@ -100,8 +99,7 @@
         "about": "Om",
         "docs": "Dokumentation",
         "administration": "Användare och företag",
-        "systemSettings": "Systeminställningar",
-        "websites": "Webbplatser (kundportal)"
+        "systemSettings": "Systeminställningar"
     },
     "DocsView": {
         "title": "Dokumentation",
