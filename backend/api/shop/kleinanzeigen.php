@@ -1004,12 +1004,12 @@ function shopKleinanzeigenWorkerFail(ApiError $e): void {
  * Stand des Kleinanzeigen-Dienstes für einen Kanal
  *
  * Ohne check nur, ob der Dienst eingeschaltet und erreichbar ist und ob
- * Zugangsdaten hinterlegt sind. Mit check fragt der Browser die Webseite:
- * angemeldet, Code nötig, Captcha, abgemeldet — das dauert einige Sekunden.
+ * Konto und Anmelde-IDs hinterlegt sind. Mit check fragt der Browser die
+ * Webseite: angemeldet, Captcha, gesperrt, abgemeldet — das dauert einige Sekunden.
  *
  * @param int $data['channel_id'] Kanal
- * @param bool $data['check'] Anmeldung in der Webseite prüfen
- * @return void enabled, reachable, version, has_login, automatic, session {state, logged_in, …}
+ * @param bool $data['check'] Anmeldung in der Webseite prüfen (spielt bei Bedarf die hinterlegten Anmelde-IDs ein)
+ * @return void enabled, reachable, version, has_login, has_cookies, automatic, session {state, logged_in, ids}
  * @testdata {"channel_id": 3, "check": false}
  */
 function getKleinanzeigenWorkerStatus($data) {
@@ -1018,7 +1018,8 @@ function getKleinanzeigenWorkerStatus($data) {
     $kanal = shopKleinanzeigenChannel($db, $data);
     $cfg = shopChannelConfig($db, $kanal);
     $stand = shopKleinanzeigenWorkerHealth($db);
-    $stand['has_login'] = '' !== trim((string)($cfg['login_email'] ?? '')) && '' !== trim((string)($cfg['login_password'] ?? ''));
+    $stand['has_login'] = '' !== trim((string)($cfg['login_email'] ?? ''));
+    $stand['has_cookies'] = '' !== trim((string)($cfg['login_cookies'] ?? ''));
     $stand['login_email'] = trim((string)($cfg['login_email'] ?? ''));
     $stand['automatic'] = shopKleinanzeigenAutomatic($db, $kanal);
     $stand['ads_last_sync'] = $cfg['ads_last_sync'] ?? null;
@@ -1026,156 +1027,67 @@ function getKleinanzeigenWorkerStatus($data) {
     if (!empty($data['check']) && !empty($stand['reachable'])) {
         try {
             $stand['session'] = shopKleinanzeigenWorkerCall($db, $kanal, '/session/status', [], 90);
-            // Angemeldet (etwa von Hand im Fenster): die Sperrpause ist hinfällig
-            if ('ok' === ($stand['session']['state'] ?? '') && !empty($cfg['login_blocked_until'])) {
-                $db->execute(
-                    "UPDATE sales_channel_shop SET settings = COALESCE(settings, '{}'::jsonb) - 'login_blocked_until' WHERE id = CAST(:kanal AS integer)",
-                    [':kanal' => $kanal]
-                );
-                shopChannelConfig($db, $kanal, true);
+            if (empty($stand['session']['logged_in']) && $stand['has_cookies']) {
+                // Profil verloren oder Browser neu: die hinterlegten IDs einspielen
+                $stand['session'] = shopKleinanzeigenRestoreSession($db, $kanal);
             }
         } catch (ApiError $e) {
             $stand['session'] = ['state' => 'error', 'message' => $e->getMessage()] + shopKleinanzeigenWorkerDetail();
         }
     }
-    $stand['login_blocked_until'] = $cfg['login_blocked_until'] ?? null;
     resultInfo(true, '', $stand);
 }
 
 /**
- * Meldet den Browser des Dienstes bei Kleinanzeigen an
+ * Übernimmt die Anmelde-IDs aus dem Browser des Benutzers
  *
- * Mit den Zugangsdaten des Kanals. Verlangt Kleinanzeigen einen Code per
- * E-Mail, holt OSERP ihn aus dem Postfach (bis zu zwei Minuten) und reicht
- * ihn nach — der Benutzer bestätigt dann nichts. Kommt der Code per SMS oder
- * ist das Postfach nicht eingerichtet, antwortet code_required, und die
- * Oberfläche fragt den Code ab (confirmKleinanzeigenLogin).
- *
- * @param int $data['channel_id'] Kanal
- * @return void state: ok, code_required (kind), captcha, failed; screenshot bei Captcha
- * @testdata {"channel_id": 3}
- */
-function loginKleinanzeigen($data) {
-    permit(['edit_shop_config'], false);
-    set_time_limit(300);
-    $db = DbhCompany::begin();
-    $kanal = shopKleinanzeigenChannel($db, $data);
-    try {
-        // Anmeldung mit Code aus dem Postfach (lib/kleinanzeigen_worker.php) —
-        // derselbe Weg, den die Aufträge im Hintergrund nehmen
-        $antwort = shopKleinanzeigenLogin($db, $kanal);
-    } catch (ApiError $e) {
-        shopKleinanzeigenWorkerFail($e);
-        return;
-    }
-    resultInfo(true, '', $antwort);
-}
-
-/**
- * Öffnet die Anmeldeseite im sichtbaren Browser des Dienstes — Anmeldung von Hand
- *
- * Für den ersten Login, Captchas oder wenn Kleinanzeigen den automatischen
- * Weg sperrt: Der Dienst zeigt sein Browserfenster (KA_HEADLESS=0 mit
- * DISPLAY), der Benutzer meldet sich darin an. Die Sitzung bleibt im Profil;
- * danach arbeitet der Dienst wieder unsichtbar. Die Oberfläche fragt den
- * Stand anschließend mit getKleinanzeigenWorkerStatus (check) nach.
+ * Der Dienst meldet sich nie selbst an. Der Benutzer meldet sich in seinem
+ * eigenen Browser bei Kleinanzeigen an und kopiert die Cookies der Seite
+ * (mindestens refresh_token; die Kanalkarte nimmt JSON-Export, cookies.txt,
+ * „name=wert“-Zeilen oder die Tabelle der Entwicklerwerkzeuge). Die IDs
+ * gehen an den Dienst, der sie in sein Browserprofil setzt und die Sitzung
+ * prüft. Angemeldet, werden alle Cookies der Sitzung als Geheimnis
+ * login_cookies im Kanal aufgehoben — so spielt OSERP sie nach einem
+ * Profilverlust von selbst wieder ein (shopKleinanzeigenRestoreSession).
  *
  * @param int $data['channel_id'] Kanal
- * @return void state manual oder ok, headless, message
- * @testdata {"channel_id": 3}
+ * @param array $data['cookies'] Liste {name, value, domain?, path?, expires?, httpOnly?, secure?, sameSite?}
+ * @return void state, logged_in, ids [{name, domain, expires}], set
+ * @testdata {"channel_id": 3, "cookies": [{"name": "refresh_token", "value": "…", "domain": ".kleinanzeigen.de"}]}
  */
-function openKleinanzeigenLogin($data) {
+function saveKleinanzeigenSession($data) {
     permit(['edit_shop_config'], false);
-    set_time_limit(120);
+    set_time_limit(180);
     $db = DbhCompany::begin();
     $kanal = shopKleinanzeigenChannel($db, $data);
-    try {
-        $antwort = shopKleinanzeigenWorkerCall($db, $kanal, '/session/manual', [], 90);
-    } catch (ApiError $e) {
-        shopKleinanzeigenWorkerFail($e);
-        return;
-    }
-    resultInfo(true, '', $antwort);
-}
-
-/**
- * Fernsteuerung des Dienst-Browsers aus der Kanalkarte
- *
- * Der Benutzer sitzt nicht am Server: Die Karte zeigt das Bild des
- * Browsers, Klicks, Text und Tasten gehen an die Seite. So meldet er sich
- * selbst an, auch durch Captcha oder Bestätigungscode hindurch. Ist die
- * Anmeldung erkannt, ist die Sperrpause hinfällig.
- *
- * @param int $data['channel_id'] Kanal
- * @param string $data['op'] view, open, click, type, key oder scroll
- * @param string $data['url'] open: Adresse (leer = Anmeldeseite)
- * @param float $data['x'] click: Position im Browserbild
- * @param float $data['y'] click: Position im Browserbild
- * @param string $data['text'] type: Text
- * @param string $data['key'] key: Enter, Tab, Backspace, Escape, Delete, ArrowDown, ArrowUp
- * @param int $data['dy'] scroll: Pixel (negativ = nach oben)
- * @return void jpeg (base64), url, title, width, height, logged_in
- * @testdata {"channel_id": 3, "op": "view"}
- */
-function remoteKleinanzeigenBrowser($data) {
-    permit(['edit_shop_config'], false);
-    set_time_limit(120);
-    $db = DbhCompany::begin();
-    $kanal = shopKleinanzeigenChannel($db, $data);
-    $op = (string)($data['op'] ?? 'view');
-    if (!in_array($op, ['view', 'open', 'click', 'type', 'key', 'scroll', 'fill'], true)) {
-        resultInfo(false, 'VALIDATION_ERROR', null, 'Unbekannte Aktion: '.$op);
-        return;
-    }
-    $nutzdaten = array_intersect_key($data, array_flip(['url', 'x', 'y', 'text', 'key', 'dy', 'field', 'enter']));
-    if ('fill' === $op) {
-        // Zugangsdaten tippt der Dienst selbst — die Oberfläche kennt das Passwort nicht
-        $cfg = shopChannelConfig($db, $kanal);
-        $feld = (string)($data['field'] ?? 'email');
-        $nutzdaten['text'] = 'password' === $feld ? (string)($cfg['login_password'] ?? '') : ('email' === $feld ? (string)($cfg['login_email'] ?? '') : (string)($data['text'] ?? ''));
-        if ('' === $nutzdaten['text']) {
-            resultInfo(false, 'KLEINANZEIGEN_NO_LOGIN', null, 'E-Mail und Passwort des Kleinanzeigen-Kontos in der Kanalkarte hinterlegen');
-            return;
+    $cookies = [];
+    foreach ((array)($data['cookies'] ?? []) as $c) {
+        if (!is_array($c) || '' === trim((string)($c['name'] ?? ''))) {
+            continue;
         }
+        $cookies[] = array_intersect_key($c, array_flip(['name', 'value', 'domain', 'path', 'expires', 'httpOnly', 'secure', 'sameSite', 'session']));
+    }
+    if (!$cookies) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Keine Anmelde-IDs erkannt');
+        return;
     }
     try {
-        $antwort = shopKleinanzeigenWorkerCall($db, $kanal, '/remote/'.$op, $nutzdaten, 120);
+        $antwort = shopKleinanzeigenWorkerCall($db, $kanal, '/session/restore', ['cookies' => $cookies], 120);
     } catch (ApiError $e) {
         shopKleinanzeigenWorkerFail($e);
         return;
     }
     if (!empty($antwort['logged_in'])) {
         $db->execute(
-            "UPDATE sales_channel_shop SET settings = COALESCE(settings, '{}'::jsonb) - 'login_blocked_until' WHERE id = CAST(:kanal AS integer)",
-            [':kanal' => $kanal]
+            "INSERT INTO sales_channel_secret_shop (channel_id, key, value)
+             VALUES (CAST(:kanal AS integer), 'login_cookies', CAST(:cookies AS text))
+             ON CONFLICT (channel_id, key) DO UPDATE SET value = EXCLUDED.value, mtime = now()",
+            [':kanal' => $kanal, ':cookies' => json_encode($antwort['cookies'] ?? $cookies, JSON_UNESCAPED_SLASHES)]
         );
+        shopChannelConfig($db, $kanal, true);
     }
+    unset($antwort['cookies']);
     resultInfo(true, '', $antwort);
-}
-
-/**
- * Reicht den Bestätigungscode der Anmeldung nach (SMS oder von Hand)
- *
- * @param int $data['channel_id'] Kanal
- * @param string $data['code'] Code aus SMS oder E-Mail
- * @return void state ok oder failed
- * @testdata {"channel_id": 3, "code": "123456"}
- */
-function confirmKleinanzeigenLogin($data) {
-    permit(['edit_shop_config'], false);
-    set_time_limit(120);
-    $db = DbhCompany::begin();
-    $kanal = shopKleinanzeigenChannel($db, $data);
-    $code = preg_replace('/\D+/', '', (string)($data['code'] ?? ''));
-    if ('' === $code) {
-        resultInfo(false, 'VALIDATION_ERROR', null, 'Code fehlt');
-        return;
-    }
-    try {
-        resultInfo(true, '', shopKleinanzeigenWorkerCall($db, $kanal, '/session/code', ['code' => $code], 120));
-    } catch (ApiError $e) {
-        shopKleinanzeigenWorkerFail($e);
-    }
 }
 
 /**

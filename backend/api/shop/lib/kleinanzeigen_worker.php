@@ -10,8 +10,9 @@
 // (account = <Datenbank>-<Kanal>), die Anmeldung bleibt darin erhalten.
 //
 // Einstellungen je Mandant (defaults_oserp): kleinanzeigen_worker_url,
-// kleinanzeigen_worker_token. Je Kanal (sales_channel_shop):
-// login_email (settings) und login_password (Geheimnis).
+// kleinanzeigen_worker_token. Je Kanal (sales_channel_shop): login_email
+// (settings) und login_cookies (Geheimnis: die Anmelde-IDs, die der
+// Benutzer nach seiner Anmeldung im eigenen Browser übergeben hat).
 
 const SHOP_KLEINANZEIGEN_WORKER_DEFAULT = 'http://127.0.0.1:3007';
 
@@ -128,14 +129,13 @@ function shopKleinanzeigenWorkerDetail(): array {
 }
 
 /**
- * Ruft den Dienst auf und meldet den Browser bei Bedarf vorher an
+ * Ruft den Dienst auf und spielt bei Bedarf vorher die Anmelde-IDs ein
  *
- * Antwortet der Dienst „nicht angemeldet“, läuft die Anmeldung mit den
- * Zugangsdaten des Kanals (shopKleinanzeigenLogin) und der Aufruf wird
- * wiederholt — so braucht auch der Läufer im Hintergrund niemanden, der
- * vorher auf „Anmelden“ drückt. Verlangt Kleinanzeigen einen Code, der sich
- * nicht aus dem Postfach holen ließ, bleibt der Fehler stehen
- * (KLEINANZEIGEN_CODE_REQUIRED) — dann einmal in der Kanalkarte eintragen.
+ * Antwortet der Dienst „nicht angemeldet“ (etwa nach Verlust des
+ * Browserprofils), bekommt er die im Kanal hinterlegten Anmelde-IDs
+ * (shopKleinanzeigenRestoreSession) und der Aufruf wird wiederholt. Der
+ * Dienst meldet sich nie selbst mit Passwort an — die Anmeldung macht der
+ * Benutzer in seinem eigenen Browser und übergibt die IDs in der Kanalkarte.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal Kleinanzeigen-Kanal
@@ -143,7 +143,7 @@ function shopKleinanzeigenWorkerDetail(): array {
  * @param array $body Nutzdaten
  * @param int $timeout Sekunden
  * @return array Antwort ohne ok
- * @throws ApiError wie shopKleinanzeigenWorkerCall, dazu KLEINANZEIGEN_CODE_REQUIRED, KLEINANZEIGEN_LOGIN_FAILED
+ * @throws ApiError wie shopKleinanzeigenWorkerCall, dazu KLEINANZEIGEN_NOT_LOGGED_IN
  */
 function shopKleinanzeigenWorkerCallLoggedIn($db, int $kanal, string $pfad, array $body = [], int $timeout = 180): array {
     try {
@@ -153,69 +153,28 @@ function shopKleinanzeigenWorkerCallLoggedIn($db, int $kanal, string $pfad, arra
             throw $e;
         }
     }
-    $anmeldung = shopKleinanzeigenLogin($db, $kanal);
-    if ('ok' !== ($anmeldung['state'] ?? '')) {
-        $GLOBALS['shop_kleinanzeigen_worker_detail'] = array_intersect_key($anmeldung, array_flip(['url', 'screenshot', 'state', 'kind', 'detail']));
-        $stand = (string)($anmeldung['state'] ?? '');
-        $code = ['code_required' => 'KLEINANZEIGEN_CODE_REQUIRED', 'blocked' => 'KLEINANZEIGEN_BLOCKED', 'captcha' => 'KLEINANZEIGEN_CAPTCHA'][$stand] ?? 'KLEINANZEIGEN_LOGIN_FAILED';
-        $meldung = [
-            'code_required' => 'Kleinanzeigen verlangt einen Bestätigungscode ('.($anmeldung['kind'] ?? 'email').') — in der Kanalkarte unter „Kleinanzeigen-Dienst“ eintragen',
-            'blocked'       => 'Kleinanzeigen hat den IP-Bereich dieses Anschlusses vorübergehend gesperrt — Sperrpause bis '.date('H:i', time() + 7200).' Uhr, danach wird es wieder versucht',
-            'captcha'       => 'Kleinanzeigen zeigt ein Captcha — Dienst einmal sichtbar starten (KA_HEADLESS=0) und lösen',
-        ][$stand] ?? 'Anmeldung bei Kleinanzeigen fehlgeschlagen: '.($anmeldung['message'] ?? $stand);
-        throw new ApiError($code, $meldung);
+    $sitzung = shopKleinanzeigenRestoreSession($db, $kanal);
+    if (empty($sitzung['logged_in'])) {
+        $GLOBALS['shop_kleinanzeigen_worker_detail'] = array_intersect_key($sitzung, array_flip(['url', 'screenshot', 'state', 'ids']));
+        throw new ApiError('KLEINANZEIGEN_NOT_LOGGED_IN', 'Der Browser des Dienstes ist nicht bei Kleinanzeigen angemeldet — in der Kanalkarte die Anmelde-IDs aus dem eigenen Browser übernehmen');
     }
     return shopKleinanzeigenWorkerCall($db, $kanal, $pfad, $body, $timeout);
 }
 
 /**
- * Meldet den Browser des Dienstes mit den Zugangsdaten des Kanals an
- *
- * Verlangt Kleinanzeigen einen Code per E-Mail, wird er bis zu zwei Minuten
- * im Postfach gesucht und nachgereicht.
+ * Spielt die im Kanal hinterlegten Anmelde-IDs in den Browser des Dienstes ein
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal Kleinanzeigen-Kanal
- * @return array state: ok, code_required (kind), captcha, blocked, failed — mit message, screenshot
- * @throws ApiError KLEINANZEIGEN_NO_LOGIN ohne Zugangsdaten, sonst Fehler des Dienstes
+ * @return array state, logged_in, ids — logged_in false ohne hinterlegte IDs
+ * @throws ApiError Fehler des Dienstes
  */
-function shopKleinanzeigenLogin($db, int $kanal): array {
-    $cfg = shopChannelConfig($db, $kanal);
-    $email = trim((string)($cfg['login_email'] ?? ''));
-    $passwort = (string)($cfg['login_password'] ?? '');
-    if ('' === $email || '' === $passwort) {
-        throw new ApiError('KLEINANZEIGEN_NO_LOGIN', 'E-Mail und Passwort des Kleinanzeigen-Kontos in der Kanalkarte hinterlegen');
+function shopKleinanzeigenRestoreSession($db, int $kanal): array {
+    $cookies = json_decode((string)(shopChannelConfig($db, $kanal)['login_cookies'] ?? ''), true);
+    if (!is_array($cookies) || !$cookies) {
+        return ['state' => 'logged_out', 'logged_in' => false, 'ids' => []];
     }
-    // Sperrpause: nach „IP-Bereich gesperrt“ oder Captcha nicht alle paar
-    // Minuten erneut anklopfen — das verlängert die Sperre nur
-    $pause = trim((string)($cfg['login_blocked_until'] ?? ''));
-    if ('' !== $pause && strtotime($pause) > time()) {
-        throw new ApiError('KLEINANZEIGEN_BLOCKED', 'Kleinanzeigen hat den IP-Bereich vorübergehend gesperrt — nächster Versuch frühestens '.date('H:i', strtotime($pause)).' Uhr');
-    }
-    $beginn = time();
-    $antwort = shopKleinanzeigenWorkerCall($db, $kanal, '/session/login', ['password' => $passwort], 180);
-    if (in_array($antwort['state'] ?? '', ['blocked', 'captcha'], true)) {
-        $db->execute(
-            "UPDATE sales_channel_shop
-                SET settings = COALESCE(settings, '{}'::jsonb) || jsonb_build_object('login_blocked_until', to_char(now() + interval '2 hours', 'YYYY-MM-DD HH24:MI:SS'))
-              WHERE id = CAST(:kanal AS integer)",
-            [':kanal' => $kanal]
-        );
-        shopChannelConfig($db, $kanal, true);
-    }
-    if ('code_required' === ($antwort['state'] ?? '') && 'email' === ($antwort['kind'] ?? 'email')) {
-        $deadline = time() + 120;
-        $code = '';
-        while ('' === $code && time() < $deadline) {
-            sleep(5);
-            $code = shopKleinanzeigenLoginCodeFromMail($db, $kanal, $beginn);
-        }
-        if ('' !== $code) {
-            $antwort = shopKleinanzeigenWorkerCall($db, $kanal, '/session/code', ['code' => $code], 120);
-            $antwort['code_from_mail'] = true;
-        }
-    }
-    return $antwort;
+    return shopKleinanzeigenWorkerCall($db, $kanal, '/session/restore', ['cookies' => array_values($cookies)], 120);
 }
 
 /**
@@ -536,49 +495,4 @@ function shopKleinanzeigenLeadsViaWorker($db, int $kanal): array {
     );
     shopChannelConfig($db, $kanal, true);
     return $bilanz;
-}
-
-/**
- * Sucht den Bestätigungscode von Kleinanzeigen im Postfach
- *
- * Kleinanzeigen schickt bei der Anmeldung auf einem neuen Gerät eine Mail mit
- * einem sechsstelligen Code. Gesucht werden Mails der letzten Minuten vom
- * Absender kleinanzeigen; der Code ist die erste sechsstellige Zahl im
- * Betreff oder Text.
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $kanal Kleinanzeigen-Kanal (Ordner lead_mail_folder)
- * @param int $seit Zeitstempel, ab dem die Mail gekommen sein muss
- * @return string Code, leer wenn keiner gefunden
- */
-function shopKleinanzeigenLoginCodeFromMail($db, int $kanal, int $seit): string {
-    $cfg = shopChannelConfig($db, $kanal);
-    $ordner = trim((string)($cfg['lead_mail_folder'] ?? '')) ?: 'INBOX';
-    try {
-        $imap = _createImapClient();
-    } catch (\Throwable $e) {
-        return '';
-    }
-    try {
-        $imap->selectFolder($ordner);
-        $uids = $imap->search('SINCE '.date('d-M-Y', $seit - 86400).' FROM "kleinanzeigen"');
-        rsort($uids);
-        foreach (array_slice($uids, 0, 10) as $uid) {
-            $mail = $imap->fetchMessage((int)$uid, true);
-            $zeit = !empty($mail['date']) ? strtotime((string)$mail['date']) : 0;
-            if ($zeit && $zeit < $seit - 120) {
-                continue;
-            }
-            $text = ($mail['subject'] ?? '')."\n".($mail['body_text'] ?? '')."\n".strip_tags((string)($mail['body_html'] ?? ''));
-            if (preg_match('/(?:Code|Bestätigungscode|Sicherheitscode|Verifizierungscode)[^0-9]{0,40}(\d{6})\b/iu', $text, $t)
-                || preg_match('/\b(\d{6})\b/', $text, $t)) {
-                return $t[1];
-            }
-        }
-    } catch (\Throwable $e) {
-        writeLog('shopKleinanzeigenLoginCodeFromMail: '.$e->getMessage(), true, DLOG_WRN);
-    } finally {
-        $imap->disconnect();
-    }
-    return '';
 }

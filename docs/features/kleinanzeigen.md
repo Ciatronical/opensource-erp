@@ -21,14 +21,14 @@ Der Kanal gehört zur Erweiterung **Shop** und erscheint im Shop-Menü als **Kle
 
 | Schritt | Was der Dienst tut |
 |---------|--------------------|
-| **Anmelden** | Einmal „Anmelden“ in der Kanalkarte: der Browser meldet sich mit E-Mail und Passwort an (Auth0, zwei Schritte). Verlangt Kleinanzeigen einen Code, liest OSERP ihn aus dem Postfach des E-Mail-Moduls; nur bei SMS tippen Sie ihn ein. Die Sitzung bleibt im Browserprofil erhalten. |
+| **Anmelden** | Sie melden sich in Ihrem eigenen Browser bei Kleinanzeigen an, wie immer. Dann übernehmen Sie in der Kanalkarte die Anmelde-IDs (die Cookies der Seite, aus den Entwicklerwerkzeugen kopiert): der Dienst setzt sie in sein Browserprofil und ist damit angemeldet. OSERP hebt die IDs auf und spielt sie nach einem Neustart oder Profilverlust von selbst wieder ein. Kein Passwort im ERP, keine automatische Anmeldung. |
 | **Einstellen** | „Jetzt bei Kleinanzeigen einstellen“ im Board oder in der Anzeige: Kategorie (Vorgabe des Kanals als Pfad wie „Auto, Rad & Boot > Autoteile & Reifen“), Zustand, Versand, Preis, Text, PLZ, Bilder, Titel; kostenloses Basis-Paket; Hinweisdialoge werden weggeklickt. Die Anzeigennummer kommt zurück, das Board wacht. |
 | **Nachführen** | Ändert sich Preis, Titel oder Text, legt OSERP wie bei eBay einen Auftrag an; der Shop-Läufer aktualisiert die Anzeige. Abgewählt oder ausverkauft → der Läufer löscht sie. Im Board lassen sich die Aufgaben auch sofort erledigen („Jetzt aktualisieren“, „Jetzt löschen“, „Auffrischen“). |
 | **Auffrischen** | „Verlängern“ bei Kleinanzeigen (in den letzten Tagen vor Ablauf), sonst löschen und neu einstellen — die Anzeige steht wieder oben. |
 | **Abgleich** | Der Läufer (`--reconcile-payments`) liest „Meine Anzeigen“: gelöschte oder abgelaufene Anzeigen werden beendet, reservierte erkannt. |
 | **Nachrichten** | Der Läufer holt die Unterhaltungen; im Board stehen Absender, Anzeige und letzte Nachricht. Antworten gehen direkt aus dem Board an Kleinanzeigen — mit KI-Vorschlag auf Knopfdruck. |
 
-Einrichtung: `backend/services/kleinanzeigen/README.md` (Installer, Dienst `oserp-kleinanzeigen`, Token), dann **Firmenkonfiguration → Shop → Kleinanzeigen-Dienst** und in der Kanalkarte E-Mail und Passwort des Kleinanzeigen-Kontos.
+Einrichtung: `backend/services/kleinanzeigen/README.md` (Installer, Dienst `oserp-kleinanzeigen`, Token), dann **Firmenkonfiguration → Shop → Kleinanzeigen-Dienst** und in der Kanalkarte die E-Mail des Kleinanzeigen-Kontos und die Anmelde-IDs.
 
 Hinweis: Automatisiertes Einstellen widerspricht den Nutzungsbedingungen von Kleinanzeigen. Der Dienst arbeitet wie ein Mensch am Browser, mit einem Konto und Pausen zwischen den Schritten — das Risiko einer Kontosperre trägt der Betreiber.
 

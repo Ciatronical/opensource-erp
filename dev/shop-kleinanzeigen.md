@@ -120,7 +120,7 @@ einen eigenen Dienst, der einen echten Chrome steuert.
 | K12 | **Eigener Dienst** `backend/services/kleinanzeigen/kleinanzeigen-worker.py` (Python 3.12, `nodriver` 0.50.6 über das DevTools-Protokoll ohne WebDriver-Spuren, `aiohttp`), lokal auf 127.0.0.1:3007, Shared-Secret `KA_TOKEN`. Muster wie der Whisper-Dienst (venv, systemd-Unit `install/oserp-kleinanzeigen.service`). |
 | K13 | **Keine App-API, kein Scraping fremder Konten**: Der Dienst arbeitet nur mit dem eigenen Konto des Kanals über die normale Webseite — derselbe Weg wie kleinanzeigen-bot (AGPL, als Referenz für Abläufe und Selektoren gelesen, kein Code übernommen). |
 | K14 | **Ein Browserprofil je Kanal** (`~/.local/share/oserp-kleinanzeigen/<db>-<kanal>`), Sitzung bleibt erhalten; Browser schließt nach Leerlauf und startet beim nächsten Aufruf. Je Profil ein Lock — Aufrufe laufen nacheinander. |
-| K15 | **Login-Code aus dem Postfach**: antwortet der Dienst `code_required (email)`, sucht OSERP bis zu zwei Minuten die Mail von Kleinanzeigen mit sechsstelligem Code (IMAP, Ordner `lead_mail_folder`) und reicht ihn nach. SMS-Code fragt die Kanalkarte ab. Captcha: Dienst einmal sichtbar starten (`KA_HEADLESS=0`). |
+| K15 | **Anmeldung durch den Benutzer, nicht durch den Dienst** (22.10.2026, ersetzt Passwort-Login, Code aus dem Postfach und Fernsteuerung): Der Benutzer meldet sich in seinem eigenen Browser an und übergibt die Anmelde-IDs (Cookies von kleinanzeigen.de, mindestens `refresh_token`) in der Kanalkarte; `saveKleinanzeigenSession` → `/session/restore` setzt sie ins Profil, prüft die Sitzung und hebt angemeldet alle Cookies als Geheimnis `login_cookies` auf. `shopKleinanzeigenWorkerCallLoggedIn` spielt sie bei `NOT_LOGGED_IN` wieder ein; der Dienst sichert sie beim Schließen in `oserp-session.json`. Keine Tarnung des Browsers, kein Passwort im ERP. Captcha im Formular: Dienst einmal sichtbar starten (`KA_HEADLESS=0`). |
 | K16 | **Zwei Betriebsarten je Mandant** (`shopKleinanzeigenAutomatic`): Dienst eingeschaltet (`kleinanzeigen_worker_enabled`) und `login_email` im Kanal → automatisch; sonst von Hand wie in Teil 1. Dieselben Kanalzeilen, dasselbe Board. |
 | K17 | **Aufträge**: automatisch stellen `publish_part`/`remove_part` über den Dienst ein bzw. löschen; `sync_ads` gleicht mit `m-meine-anzeigen-verwalten.json` ab; `import_leads` holt die Unterhaltungen (Rückfall IMAP). Der Cron (`--reconcile-payments`) legt `sync_ads` und `import_leads` an. Fehler stehen an der Kanalzeile (`sync_error`), der Auftrag gilt als fehlgeschlagen. |
 | K18 | **Einstellen ab Knopfdruck**: Aufnehmen aus den Vorschlägen erzeugt einen Entwurf; eingestellt wird erst über „Jetzt bei Kleinanzeigen einstellen“ (Board/Anzeige) — damit Titel, Preis und Bilder vorher geprüft sind. Danach halten die Aufträge die Anzeige nach. |
@@ -131,13 +131,13 @@ einen eigenen Dienst, der einen echten Chrome steuert.
 Bausteine: `backend/services/kleinanzeigen/` (Dienst, README, install.sh,
 requirements.txt), `backend/api/shop/lib/kleinanzeigen_worker.php`
 (HTTP-Client, Nutzdaten aus `kleinanzeigen_ad()`, Publish/Delete/Sync/Leads,
-Login-Code aus dem Postfach), API in `backend/api/shop/kleinanzeigen.php`
-(`getKleinanzeigenWorkerStatus`, `loginKleinanzeigen`, `confirmKleinanzeigenLogin`,
+Sitzung aus den hinterlegten IDs), API in `backend/api/shop/kleinanzeigen.php`
+(`getKleinanzeigenWorkerStatus`, `saveKleinanzeigenSession`,
 `publishKleinanzeigenAd`, `deleteKleinanzeigenAd`, `extendKleinanzeigenAd`,
 `syncKleinanzeigenAds`, `replyKleinanzeigenLead`), Einstellungen
 `kleinanzeigen_worker_enabled/url/token` (Shop-Tab) und `login_email`,
-`login_password` (Geheimnis), `contact_name` je Kanal; Oberfläche: Kanalkarte
-(Status, Anmelden, Code, Abgleich), Board und Anzeige-Dialog mit den
+`login_cookies` (Geheimnis), `contact_name` je Kanal; Oberfläche: Kanalkarte
+(Status, Anmelde-IDs übernehmen, Abgleich), Board und Anzeige-Dialog mit den
 Sofort-Knöpfen, Antwort aus dem Board.
 
 **Prüfstand 2026-10-17:** Die Umgebung dieser Sitzung ließ keine Aufrufe gegen
@@ -148,10 +148,18 @@ starten, in der Kanalkarte anmelden, einen Testartikel einstellen, danach
 `/debug/page` für die Nachrichtenseite auswerten und die Selektoren in
 `do_messages_list`/`do_messages_read`/`do_messages_reply` nachziehen.
 
+**Prüfstand 2026-10-18/22:** Erster Lauf gegen die echte Webseite scheiterte
+an der Anmeldung: „IP-Bereich vorübergehend gesperrt“ nach dem Passwort
+(IPv6-Bereich des Anschlusses; seither `KA_IPV4=1`). Der Nutzer will die
+Anmeldung ohnehin selbst im eigenen Browser machen (K15) — der Dienst
+bekommt nur die IDs. Lokal geprüft: Cookies einspielen, auslesen, Sicherung
+und Wiederherstellung nach Browserneustart; menschliches Klicken/Tippen im
+Formular (Bezier-Mausweg, Tipprhythmus) gegen eine Testseite.
+
 ## Offen
 
-- Erster Lauf gegen die echte Webseite (siehe Prüfstand), Captcha-Verhalten
-  im Headless-Betrieb, Selektoren der Nachrichtenseite
+- Erstes Einstellen gegen die echte Webseite mit übernommenen IDs,
+  Captcha-Verhalten im Headless-Betrieb, Selektoren der Nachrichtenseite
 - Übersetzungen (19 Sprachen) für `ShopView.kleinanzeigen.*`,
   `crm_fields.kleinanzeigen*`, `aiModels.assistants.kleinanzeigen`
 - Mail-Parser gegen echte Benachrichtigungen prüfen (Betreff- und

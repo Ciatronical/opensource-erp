@@ -101,10 +101,7 @@ export function useShop() {
     const fetchKleinanzeigenFeedUrl = (channel_id) => call('getKleinanzeigenFeedUrl', { channel_id })
     // Kleinanzeigen-Dienst (Headless-Browser, dev/shop-kleinanzeigen.md Teil 2)
     const fetchKleinanzeigenWorkerStatus = (channel_id, check = false) => call('getKleinanzeigenWorkerStatus', { channel_id, check })
-    const loginKleinanzeigen = (channel_id) => call('loginKleinanzeigen', { channel_id })
-    const confirmKleinanzeigenLogin = (channel_id, code) => call('confirmKleinanzeigenLogin', { channel_id, code })
-    const openKleinanzeigenLogin = (channel_id) => call('openKleinanzeigenLogin', { channel_id })
-    const remoteKleinanzeigenBrowser = (channel_id, op, extra = {}) => call('remoteKleinanzeigenBrowser', { channel_id, op, ...extra })
+    const saveKleinanzeigenSession = (channel_id, cookies) => call('saveKleinanzeigenSession', { channel_id, cookies })
     const publishKleinanzeigenAd = (parts_id, channel_id) => call('publishKleinanzeigenAd', { parts_id, channel_id })
     const deleteKleinanzeigenAd = (parts_id, channel_id) => call('deleteKleinanzeigenAd', { parts_id, channel_id })
     const extendKleinanzeigenAd = (parts_id, channel_id) => call('extendKleinanzeigenAd', { parts_id, channel_id })
@@ -263,10 +260,7 @@ export function useShop() {
         fetchKleinanzeigenImagesZip,
         fetchKleinanzeigenFeedUrl,
         fetchKleinanzeigenWorkerStatus,
-        loginKleinanzeigen,
-        confirmKleinanzeigenLogin,
-        openKleinanzeigenLogin,
-        remoteKleinanzeigenBrowser,
+        saveKleinanzeigenSession,
         publishKleinanzeigenAd,
         deleteKleinanzeigenAd,
         extendKleinanzeigenAd,

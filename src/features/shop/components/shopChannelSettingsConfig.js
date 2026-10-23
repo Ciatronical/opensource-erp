@@ -169,10 +169,10 @@ const kleinanzeigen = [
             { name: "location_zip", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.kleinanzeigenLocationZip", tooltip: "crm_fields.kleinanzeigenLocationZip_help" },
             { name: "location_city", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.kleinanzeigenLocationCity", tooltip: "crm_fields.kleinanzeigenLocationCity_help" },
             { name: "lead_mail_folder", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.kleinanzeigenLeadMailFolder", tooltip: "crm_fields.kleinanzeigenLeadMailFolder_help" },
-            // Zugang für den Kleinanzeigen-Dienst (Headless-Browser): meldet
-            // sich mit diesem Konto an und stellt die Anzeigen selbst ein
+            // Konto des Kleinanzeigen-Dienstes (Headless-Browser): die Anmeldung
+            // macht der Benutzer im eigenen Browser und übergibt die Anmelde-IDs
+            // in der Kanalkarte (shop-kleinanzeigen-status.vue); kein Passwort
             { name: "login_email", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenLoginEmail", tooltip: "crm_fields.kleinanzeigenLoginEmail_help" },
-            { name: "login_password", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenLoginPassword", tooltip: "crm_fields.kleinanzeigenLoginPassword_help" },
             { name: "contact_name", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.kleinanzeigenContactName", tooltip: "crm_fields.kleinanzeigenContactName_help" },
         ],
     },

@@ -7,12 +7,9 @@ Kleinanzeigen.de hat keine Schnittstelle. Dieser Dienst steuert einen echten
 Chrome (nodriver, Chrome DevTools Protocol, ohne WebDriver-Spuren) mit dem
 eigenen Konto des Betreibers und bietet OpensourceERP eine kleine JSON-API:
 
-    POST /session/status   {account, email}                 Angemeldet?
-    POST /session/login    {account, email, password}       Anmelden (Auth0, zwei Schritte)
-    POST /session/code     {account, code}                  Bestätigungscode (E-Mail/SMS) nachreichen
-    POST /session/manual   {account, email}                 Anmeldeseite im sichtbaren Browser öffnen, Benutzer meldet sich selbst an
-    POST /remote/view|open|click|type|key|scroll             Fernsteuerung: Bild des Browsers (jpeg), Klick {x,y}, Text {text},
-                                                             Taste {key}, Rollen {dy}, Seite öffnen {url} — jede Antwort bringt das Bild mit
+    POST /session/status   {account, email}                 Angemeldet? (mit den Anmelde-IDs der Sitzung)
+    POST /session/restore  {account, email, cookies}        Anmelde-IDs übernehmen: Cookies aus dem Browser des
+                                                             Benutzers, der sich dort selbst angemeldet hat
     POST /session/close    {account}                        Browser schließen
     POST /ads/list         {account}                        Meine Anzeigen (JSON-Endpunkt der Webseite)
     POST /ads/publish      {account, ad}                    Anzeige neu einstellen oder (mit ad.id) ändern
@@ -22,15 +19,22 @@ eigenen Konto des Betreibers und bietet OpensourceERP eine kleine JSON-API:
     POST /messages/read    {account, id}                    Nachrichten einer Unterhaltung
     POST /messages/reply   {account, id, text}              Antworten
     POST /debug/page       {account, url}                   Seite laden, Text und HTML zurückgeben
+    POST /debug/eval       {account, code}                  JavaScript in der aktuellen Seite ausführen
     POST /debug/screenshot {account}                        Bildschirmfoto (PNG, base64)
     GET  /health                                            Lebenszeichen
 
 Jede Anfrage trägt den Kopf  X-KA-Token: <KA_TOKEN>.  "account" ist eine
 Kennung je Konto (etwa "<datenbank>-<kanal>"); je Kennung läuft ein Browser mit
-eigenem Profil, die Sitzung (Cookies) bleibt über Neustarts erhalten — nach dem
-ersten Anmelden ist in der Regel nie wieder ein Login nötig.
+eigenem Profil.
 
-Die Abläufe (Login über login.kleinanzeigen.de, Formular, Paketwahl, Löschen
+Anmeldung: Der Dienst meldet sich nie selbst an. Der Benutzer meldet sich in
+seinem eigenen Browser bei Kleinanzeigen an und übergibt die Anmelde-IDs
+(die Cookies von kleinanzeigen.de, etwa refresh_token) über die Kanalkarte;
+/session/restore spielt sie in das Profil ein. Der Dienst sichert die Cookies
+der Domain beim Schließen in <profil>/oserp-session.json und spielt sie beim
+nächsten Start wieder ein — so überleben auch Sitzungs-Cookies einen Neustart.
+
+Die Abläufe (Formular, Paketwahl, Löschen
 über m-anzeigen-loeschen.json, Anzeigenliste über m-meine-anzeigen-verwalten.json)
 folgen dem Stand der Webseite im Oktober 2026, wie ihn auch das Open-Source-
 Projekt kleinanzeigen-bot dokumentiert. Ändert Kleinanzeigen die Seite,
@@ -41,7 +45,7 @@ Konfiguration über Umgebungsvariablen:
     KA_TOKEN         Pflicht: Shared-Secret, auch in der Firmenkonfiguration eintragen
     KA_PROFILE_DIR   Basisverzeichnis der Browserprofile (Standard ~/.local/share/oserp-kleinanzeigen)
     KA_CHROME        Pfad zum Chrome/Chromium (Standard: google-chrome aus PATH)
-    KA_HEADLESS      1 (Standard) oder 0 für einen sichtbaren Browser (Einrichtung, Captcha)
+    KA_HEADLESS      1 (Standard) oder 0 für einen sichtbaren Browser (Fehlersuche, Captcha im Formular)
     KA_ROOT_URL      https://www.kleinanzeigen.de
     KA_IDLE_MINUTES  Browser nach so vielen Minuten ohne Anfrage schließen (Standard 30, 0 = nie)
 """
@@ -93,12 +97,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 # Elemente, an denen die Webseite eine angemeldete Sitzung zeigt
 LOGGED_IN_SELECTORS = ('[data-testid="logged-in-user"]', ".mr-medium", "#user-email")
 LOGGED_OUT_SELECTOR = 'a[href*="einloggen"]'
-AUTH0_SUBMIT = "button[type='submit'][data-action-button-primary='true']:not([disabled])"
 CAPTCHA_IFRAMES = (
     "iframe[src*='google.com/recaptcha']", "iframe[src*='recaptcha.net']", "iframe[src*='hcaptcha.com']",
     "iframe[src*='challenges.cloudflare.com']", "iframe[src*='arkoselabs.com']", "iframe[src*='funcaptcha.com']",
 )
-CODE_INPUT_SELECTORS = ("input[autocomplete='one-time-code']", "input[name='code']", "input[id*='code']")
 SUBMIT_LABELS = ("Anzeige aufgeben", "Änderungen speichern", "Anzeige speichern")
 PRICE_TYPE_INDEX = {"FIXED": 0, "NEGOTIABLE": 1, "GIVE_AWAY": 2, "fixed": 0, "negotiable": 1, "giveaway": 2}
 SHIPPING_LABELS = {"SHIPPING": "Versand möglich", "PICKUP": "Nur Abholung", "both": "Versand möglich",
@@ -151,6 +153,12 @@ class Session:
         safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", self.account) or "default"
         return PROFILE_BASE / safe
 
+    @property
+    def cookie_file(self) -> Path:
+        """Sicherung der Cookies von kleinanzeigen.de (Anmelde-IDs) — beim
+        Schließen geschrieben, beim Start eingespielt; nur für den Dienstbenutzer lesbar"""
+        return self.profile_dir / "oserp-session.json"
+
     async def ensure_browser(self) -> None:
         self.last_used = time.time()
         if self.browser is not None and not getattr(self.browser, "stopped", False):
@@ -178,9 +186,64 @@ class Session:
         LOG.info("[%s] Browser starten (headless=%s, profil=%s)", self.account, HEADLESS, self.profile_dir)
         self.browser = await uc.start(cfg)
         self.page = None
+        # Sitzungs-Cookies aus der Sicherung zurück; was das Profil noch hat, bleibt
+        await self.cookies_einspielen(self.cookies_aus_datei(), nur_fehlende=True)
+
+    # ── Anmelde-IDs (Cookies von kleinanzeigen.de) ──
+
+    def cookies_aus_datei(self) -> list[dict]:
+        try:
+            daten = json.loads(self.cookie_file.read_text())
+            return daten if isinstance(daten, list) else []
+        except Exception:  # noqa: BLE001
+            return []
+
+    def cookies_in_datei(self, cookies: list[dict]) -> None:
+        if not cookies:
+            return
+        self.profile_dir.mkdir(parents=True, exist_ok=True)
+        tmp = self.cookie_file.with_suffix(".tmp")
+        tmp.write_text(json.dumps(cookies))
+        os.chmod(tmp, 0o600)
+        tmp.replace(self.cookie_file)
+
+    async def cookies_lesen(self) -> list[dict]:
+        """Alle Cookies von kleinanzeigen.de (auch login.kleinanzeigen.de) aus dem Browser"""
+        if self.browser is None:
+            return []
+        alle = await self.browser.cookies.get_all()
+        return [c.to_json() for c in alle if "kleinanzeigen.de" in (c.domain or "")]
+
+    async def cookies_sichern(self) -> list[dict]:
+        cookies = await self.cookies_lesen()
+        self.cookies_in_datei(cookies)
+        return cookies
+
+    async def cookies_einspielen(self, cookies: list[dict], nur_fehlende: bool = False) -> int:
+        """Cookies in den Browser setzen; nur_fehlende lässt vorhandene (neuere) stehen"""
+        if not cookies or self.browser is None:
+            return 0
+        vorhanden = set()
+        if nur_fehlende:
+            vorhanden = {(c.get("name"), c.get("domain"), c.get("path")) for c in await self.cookies_lesen()}
+        params = []
+        for c in cookies:
+            if (c.get("name"), c.get("domain"), c.get("path")) in vorhanden or cookie_abgelaufen(c):
+                continue
+            param = cookie_param(c)
+            if param is not None:
+                params.append(param)
+        if params:
+            await self.browser.main_tab.send(uc.cdp.storage.set_cookies(cookies=params))
+            LOG.info("[%s] %d Cookies eingespielt: %s", self.account, len(params), ", ".join(p.name for p in params))
+        return len(params)
 
     async def close(self) -> None:
         if self.browser is not None:
+            try:
+                await asyncio.wait_for(self.cookies_sichern(), 5)
+            except Exception:  # noqa: BLE001
+                pass
             try:
                 self.browser.stop()
             except Exception:  # noqa: BLE001
@@ -441,6 +504,52 @@ class Session:
 SESSIONS: dict[str, Session] = {}
 
 
+# ── Anmelde-IDs ──
+#
+# Nach der Anmeldung setzt Kleinanzeigen Cookies, mit denen jede weitere
+# Seite angemeldet ist (etwa refresh_token). Der Benutzer liest sie aus
+# seinem Browser ab und übergibt sie; der Dienst setzt sie in sein Profil.
+# Nach außen zeigt der Dienst nur Namen und Ablauf, nie die Werte.
+
+AUTH_COOKIE = re.compile(r"token|sess|auth|login|sid|user|refresh|access|jwt", re.I)
+
+
+def cookie_abgelaufen(c: dict) -> bool:
+    exp = c.get("expires")
+    return isinstance(exp, (int, float)) and 0 < exp < time.time()
+
+
+def cookie_param(c: dict) -> Any:
+    """Cookie-Beschreibung (wie Cookie.to_json oder von der Kanalkarte) als CDP-Parameter"""
+    name = str(c.get("name") or "").strip()
+    if not name:
+        return None
+    net = uc.cdp.network
+    domain = str(c.get("domain") or ".kleinanzeigen.de")
+    exp = c.get("expires")
+    same_site = str(c.get("sameSite") or "")
+    try:
+        return net.CookieParam(
+            name=name, value=str(c.get("value") or ""), domain=domain, path=str(c.get("path") or "/"),
+            secure=bool(c.get("secure", True)), http_only=bool(c.get("httpOnly", True)),
+            same_site=net.CookieSameSite(same_site) if same_site in ("Strict", "Lax", "None") else None,
+            expires=net.TimeSinceEpoch(float(exp)) if isinstance(exp, (int, float)) and exp > 0 and not c.get("session") else None,
+        )
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def anmelde_ids(cookies: list[dict]) -> list[dict]:
+    """Die Cookies, die nach Anmeldung aussehen — Name, Domain, gültig bis; ohne Wert"""
+    ids = []
+    for c in cookies:
+        if AUTH_COOKIE.search(str(c.get("name", ""))):
+            exp = c.get("expires")
+            ids.append({"name": c.get("name"), "domain": c.get("domain"),
+                        "expires": time.strftime("%d.%m.%Y %H:%M", time.localtime(exp)) if isinstance(exp, (int, float)) and exp > 0 else None})
+    return ids
+
+
 def session_for(account: str) -> Session:
     if account not in SESSIONS:
         SESSIONS[account] = Session(account=account)
@@ -465,17 +574,10 @@ async def is_logged_in(s: Session, email: str) -> bool:
 
 
 async def login_state(s: Session, email: str) -> dict:
-    """Wo steht die Anmeldung gerade? ok, code_required, captcha, logged_out"""
+    """Wo steht die Sitzung gerade? ok, captcha, blocked, logged_out"""
     url = await s.url()
     if await is_logged_in(s, email):
         return {"state": "ok", "url": url}
-    for sel in CODE_INPUT_SELECTORS:
-        if await s.probe(sel) is not None:
-            hint = await s.js("return (document.body?.innerText || '').slice(0, 600)")
-            kind = "sms" if re.search(r"Telefonnummer|SMS", str(hint)) else "email"
-            return {"state": "code_required", "kind": kind, "url": url}
-    if await s.probe_text("Um dein Konto zu schützen haben wir dir eine E-Mail geschickt") is not None:
-        return {"state": "code_required", "kind": "email", "url": url}
     if await s.has_captcha() or await s.probe("[data-captcha-provider], .cf-turnstile, .g-recaptcha") is not None:
         return {"state": "captcha", "url": url}
     if await s.probe_text("IP-Bereich vorübergehend gesperrt") is not None:
@@ -489,223 +591,28 @@ async def do_status(s: Session, email: str) -> dict:
     state = await login_state(s, email)
     state["logged_in"] = state["state"] == "ok"
     s.email = email or s.email
+    cookies = await s.cookies_sichern() if state["logged_in"] else await s.cookies_lesen()
+    state["ids"] = anmelde_ids(cookies)
     return state
 
 
-async def do_login(s: Session, email: str, password: str) -> dict:
-    s.email = email
-    await s.open(ROOT_URL + "/", reload=True)
-    await s.accept_gdpr()
-    if await is_logged_in(s, email):
-        return {"state": "ok", "message": "bereits angemeldet"}
-
-    # Auth0 in zwei Schritten: E-Mail, dann Passwort
-    await s.open(ROOT_URL + "/m-einloggen-sso.html", reload=True)
-    deadline = time.time() + 20
-    while time.time() < deadline:
-        url = await s.url()
-        if "login.kleinanzeigen.de" in url or "/u/login" in url:
-            break
-        await asyncio.sleep(0.5)
-    else:
-        if await is_logged_in(s, email):
-            return {"state": "ok"}
-        raise WorkerError("LOGIN_PAGE", "Die Anmeldeseite (Auth0) wurde nicht erreicht", url=await s.url(), screenshot=await s.screenshot_b64())
-
-    await s.type_into("#username", email, 15, "E-Mail-Feld")
-    await s.click(AUTH0_SUBMIT, 10, "Weiter")
-
-    # Captcha auf der E-Mail-Seite (Turnstile) wartet meist selbst auf sein Token
-    deadline = time.time() + 25
-    while time.time() < deadline and "/u/login/password" not in await s.url():
-        token_ready = await s.js("return (document.querySelector(\"input[name='captcha']\")?.value?.length || 0) > 0")
-        if token_ready:
-            btn = await s.probe(AUTH0_SUBMIT)
-            if btn is not None:
-                await btn.click()
-        await asyncio.sleep(1)
-    if "/u/login/password" not in await s.url():
-        state = await login_state(s, email)
-        if state["state"] == "captcha":
-            return {"state": "captcha", "message": "Captcha auf der Anmeldeseite — bitte im sichtbaren Browser lösen (KA_HEADLESS=0)", "screenshot": await s.screenshot_b64()}
-        raise WorkerError("LOGIN_EMAIL_STEP", "Nach der E-Mail kam keine Passwortseite", url=await s.url(), screenshot=await s.screenshot_b64())
-
-    await s.type_into("input[type='password']", password, 15, "Passwortfeld")
-    if await s.has_captcha():
-        return {"state": "captcha", "message": "Captcha vor dem Passwort — bitte im sichtbaren Browser lösen", "screenshot": await s.screenshot_b64()}
-    await s.click(AUTH0_SUBMIT, 10, "Anmelden")
-
-    # Ergebnis abwarten: zurück auf kleinanzeigen.de, Code-Abfrage oder Fehler
-    deadline = time.time() + 30
-    while time.time() < deadline:
-        state = await login_state(s, email)
-        if state["state"] in ("ok", "code_required", "captcha", "blocked"):
-            break
-        url = await s.url()
-        if "/u/login/password" in url:
-            error = await s.js("""
-                for (const sel of ["[role='alert']", ".ulp-input-error-message", "#error-element-password"]) {
-                    const el = document.querySelector(sel); if (el && el.innerText.trim()) return el.innerText.trim();
-                }
-                return null;""")
-            if error:
-                return {"state": "failed", "message": str(error)}
-        await asyncio.sleep(1)
-    else:
-        state = await login_state(s, email)
-
-    if state["state"] == "ok":
-        await s.open(ROOT_URL + "/", reload=True)
-        await s.accept_gdpr()
-        return {"state": "ok"}
-    if state["state"] == "code_required":
-        return {"state": "code_required", "kind": state.get("kind", "email"),
-                "message": "Kleinanzeigen verlangt einen Bestätigungscode"}
-    if state["state"] in ("captcha", "blocked"):
-        return {"state": state["state"], "message": state.get("message", "Sicherheitsabfrage"), "screenshot": await s.screenshot_b64()}
-    raise WorkerError("LOGIN_UNCONFIRMED", "Anmeldung nicht bestätigt", url=await s.url(), screenshot=await s.screenshot_b64())
-
-
-async def do_manual_login(s: Session, email: str) -> dict:
-    """Öffnet die Anmeldeseite im (sichtbaren) Browser und rührt nichts an —
-    der Benutzer meldet sich selbst an, auch durch Captcha oder Code hindurch.
-    Danach bestätigt /session/status die Sitzung; das Profil behält sie."""
-    s.email = email or s.email
-    await s.open(ROOT_URL + "/", reload=True)
-    await s.accept_gdpr()
-    if await is_logged_in(s, s.email):
-        return {"state": "ok", "message": "bereits angemeldet"}
-    await s.open(ROOT_URL + "/m-einloggen-sso.html", reload=True)
-    try:
-        await s.page.activate()
-    except Exception:  # noqa: BLE001
-        pass
-    return {"state": "manual", "headless": HEADLESS, "url": await s.url(),
-            "message": "Anmeldeseite geöffnet — bitte im Browserfenster anmelden" if not HEADLESS
-                       else "Der Dienst läuft unsichtbar (KA_HEADLESS=1) — für die Anmeldung von Hand KA_HEADLESS=0 und DISPLAY setzen"}
-
-
-# ── Fernsteuerung: Bild des Browsers, Klicks und Tasten aus dem ERP ──
-#
-# Der Benutzer sitzt nicht am Server. Die Kanalkarte zeigt ihm das Bild des
-# Browsers, Klicks und Eingaben gehen als CDP-Ereignisse an die Seite — so
-# meldet er sich selbst an, auch durch Captcha oder Code hindurch.
-
-REMOTE_KEYS = {
-    "Enter": ("Enter", 13, "\r"), "Tab": ("Tab", 9, None), "Backspace": ("Backspace", 8, None),
-    "Escape": ("Escape", 27, None), "Delete": ("Delete", 46, None),
-    "ArrowDown": ("ArrowDown", 40, None), "ArrowUp": ("ArrowUp", 38, None),
-    "ArrowLeft": ("ArrowLeft", 37, None), "ArrowRight": ("ArrowRight", 39, None),
-}
-
-
-async def quick_logged_in(s: Session, email: str) -> bool:
-    """Angemeldet? Eine DOM-Abfrage ohne Wartezeit — für jedes Bild der Fernsteuerung."""
-    if not email:
-        return False
-    try:
-        return bool(await s.js(f"""
-            const mail = {json.dumps(email.lower())};
-            for (const sel of {json.dumps(list(LOGGED_IN_SELECTORS))}) {{
-                const el = document.querySelector(sel);
-                if (el && (el.textContent || '').toLowerCase().includes(mail)) return true;
-            }}
-            return false;"""))
-    except WorkerError:
-        return False
-
-
-async def do_remote(s: Session, email: str, op: str, body: dict) -> dict:
-    await s.ensure_browser()
-    if s.page is None or op == "open":
-        url = str(body.get("url") or "") or (ROOT_URL + "/m-einloggen-sso.html")
-        await s.open(url, reload=True)
-        await asyncio.sleep(1.5)
-        await s.accept_gdpr()
-    elif op == "click":
-        x, y = float(body.get("x") or 0), float(body.get("y") or 0)
-        await s.human_click(x, y)
-        await asyncio.sleep(0.5)
-    elif op == "type":
-        await s.human_type(str(body.get("text") or ""))
-    elif op == "fill":
-        # Zugangsdaten in das passende Feld der Anmeldeseite: Feld suchen,
-        # anklicken, tippen — der Wert kommt aus OSERP (E-Mail oder Passwort)
-        feld = str(body.get("field") or "email")
-        selector = {"email": "#username, input[name='username'], input[type='email']",
-                    "password": "input[type='password']", "code": "input[autocomplete='one-time-code'], input[name='code']"}.get(feld, feld)
-        elem = None
-        for sel in selector.split(", "):
-            elem = await s.probe(sel, 1)
-            if elem is not None:
-                break
-        if elem is None:
-            raise WorkerError("FIELD_NOT_FOUND", f"Kein Feld für {feld} auf dieser Seite")
-        await s.type_into(sel, str(body.get("text") or ""), 5, feld)
-        if body.get("enter"):
-            await asyncio.sleep(random.uniform(0.3, 0.8))
-            await s.page.send(uc.cdp.input_.dispatch_key_event("keyDown", key="Enter", code="Enter", windows_virtual_key_code=13, text="\r"))
-            await s.page.send(uc.cdp.input_.dispatch_key_event("keyUp", key="Enter", code="Enter", windows_virtual_key_code=13))
-            await asyncio.sleep(1.5)
-    elif op == "key":
-        name = str(body.get("key") or "Enter")
-        key, vk, text = REMOTE_KEYS.get(name, REMOTE_KEYS["Enter"])
-        await s.page.send(uc.cdp.input_.dispatch_key_event("keyDown", key=key, code=key, windows_virtual_key_code=vk, native_virtual_key_code=vk, text=text))
-        await s.page.send(uc.cdp.input_.dispatch_key_event("keyUp", key=key, code=key, windows_virtual_key_code=vk, native_virtual_key_code=vk))
-        await asyncio.sleep(1.0)
-    elif op == "scroll":
-        await s.js(f"window.scrollBy(0, {int(body.get('dy') or 400)}); return true")
-        await asyncio.sleep(0.4)
-    elif op == "view":
-        pass
-    else:
-        raise WorkerError("REMOTE_OP", "Unbekannte Aktion: " + op)
-
-    masse = await s.js("return {w: window.innerWidth, h: window.innerHeight, title: document.title}") or {}
-    try:
-        bild = await s.page.save_screenshot(as_base64=True, format="jpeg")
-    except Exception:  # noqa: BLE001
-        bild = ""
-    return {"png": "", "jpeg": str(bild or ""), "url": await s.url(), "title": str(masse.get("title", "")),
-            "width": int(masse.get("w") or 1400), "height": int(masse.get("h") or 1000),
-            "logged_in": await quick_logged_in(s, email or s.email)}
-
-
-async def do_code(s: Session, code: str) -> dict:
+async def do_restore(s: Session, email: str, cookies: list) -> dict:
+    """Anmelde-IDs übernehmen: Cookies aus dem Browser des Benutzers einspielen
+    und prüfen, ob die Webseite die Sitzung als angemeldet zeigt. Antwortet mit
+    den gesetzten IDs und — angemeldet — mit allen Cookies der Sitzung, damit
+    OSERP sie für einen Profilverlust aufhebt."""
+    cookies = [c for c in cookies if isinstance(c, dict) and str(c.get("name") or "").strip()]
+    if not cookies:
+        raise WorkerError("NO_COOKIES", "Keine Anmelde-IDs übergeben")
     await s.ensure_browser()
     if s.page is None:
-        raise WorkerError("NO_LOGIN_FLOW", "Es läuft keine Anmeldung")
-    field_ = None
-    for sel in CODE_INPUT_SELECTORS:
-        field_ = await s.probe(sel, 2)
-        if field_ is not None:
-            await s.type_into(sel, code, 5, "Code-Feld")
-            break
-    if field_ is None:
-        raise WorkerError("NO_CODE_FIELD", "Kein Feld für den Bestätigungscode auf der Seite", screenshot=await s.screenshot_b64())
-    btn = await s.probe(AUTH0_SUBMIT, 2) or await s.probe("button[type='submit']", 2)
-    if btn is not None:
-        await btn.click()
-    else:
-        await field_.send_keys("\n")
-    deadline = time.time() + 30
-    while time.time() < deadline:
-        if await is_logged_in(s, s.email):
-            await s.open(ROOT_URL + "/", reload=True)
-            await s.accept_gdpr()
-            return {"state": "ok"}
-        # „Dieses Gerät merken“ oder ähnliche Zwischenseiten: weiter klicken
-        cont = await s.probe(AUTH0_SUBMIT)
-        if cont is not None and "/u/" in await s.url():
-            try:
-                await cont.click()
-            except Exception:  # noqa: BLE001
-                pass
-        await asyncio.sleep(1)
-    state = await login_state(s, s.email)
-    if state["state"] == "ok":
-        return {"state": "ok"}
-    return {"state": "failed", "message": "Code nicht angenommen oder Anmeldung nicht bestätigt", "detail": state, "screenshot": await s.screenshot_b64()}
+        await s.open(ROOT_URL + "/")
+    gesetzt = await s.cookies_einspielen(cookies)
+    state = await do_status(s, email)
+    state["set"] = gesetzt
+    if state["logged_in"]:
+        state["cookies"] = await s.cookies_lesen()
+    return state
 
 
 async def require_login(s: Session, email: str) -> None:
@@ -717,7 +624,7 @@ async def require_login(s: Session, email: str) -> None:
         await s.open(ROOT_URL + "/", reload=True)
         await s.accept_gdpr()
         if not await is_logged_in(s, email):
-            raise WorkerError("NOT_LOGGED_IN", "Nicht angemeldet — bitte zuerst /session/login")
+            raise WorkerError("NOT_LOGGED_IN", "Nicht angemeldet — Anmelde-IDs in der Kanalkarte übernehmen")
 
 
 # ── Meine Anzeigen ──
@@ -1341,14 +1248,8 @@ async def handle(request: web.Request) -> web.Response:
         try:
             if path == "/session/status":
                 result = await do_status(s, email)
-            elif path == "/session/login":
-                result = await do_login(s, email, str(body.get("password") or ""))
-            elif path == "/session/code":
-                result = await do_code(s, str(body.get("code") or "").strip())
-            elif path == "/session/manual":
-                result = await do_manual_login(s, email)
-            elif path.startswith("/remote/"):
-                result = await do_remote(s, email, path[len("/remote/"):], body)
+            elif path == "/session/restore":
+                result = await do_restore(s, email, list(body.get("cookies") or []))
             elif path == "/session/close":
                 await s.close()
                 result = {"closed": True}

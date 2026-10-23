@@ -337,7 +337,8 @@ sudo systemctl daemon-reload && sudo systemctl enable --now oserp-kleinanzeigen
 
 Danach in **Firmenkonfiguration → Shop → Kleinanzeigen-Dienst** einschalten
 (Adresse `http://127.0.0.1:3007`, dasselbe Token) und in der Kanalkarte unter
-Verkaufskanäle das Kleinanzeigen-Konto hinterlegen und anmelden.
+Verkaufskanäle das Kleinanzeigen-Konto hinterlegen und die Anmelde-IDs
+aus dem eigenen Browser übernehmen (der Dienst meldet sich nicht selbst an).
 Ausführlich: `backend/services/kleinanzeigen/README.md`.
 
 ## 4b. SSE-Server (Echtzeit-Benachrichtigungen)

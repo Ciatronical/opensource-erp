@@ -2735,9 +2735,11 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         ('kleinanzeigen', 'kleinanzeigen_employee_login',      'employee_login',      false),
         -- Feed für Sync-Werkzeuge: der Schlüssel ist ein Geheimnis
         ('kleinanzeigen', 'kleinanzeigen_feed_key',            'feed_key',            true),
-        -- Kleinanzeigen-Dienst (Headless-Browser): Zugang des Kontos, Name im Anzeigenformular
+        -- Kleinanzeigen-Dienst (Headless-Browser): Konto, Anmelde-IDs (Cookies,
+        -- die der Benutzer nach seiner Anmeldung im eigenen Browser übergibt),
+        -- Name im Anzeigenformular
         ('kleinanzeigen', 'kleinanzeigen_login_email',         'login_email',         false),
-        ('kleinanzeigen', 'kleinanzeigen_login_password',      'login_password',      true),
+        ('kleinanzeigen', 'kleinanzeigen_login_cookies',       'login_cookies',       true),
         ('kleinanzeigen', 'kleinanzeigen_contact_name',        'contact_name',        false)
 $$;
 
@@ -2775,6 +2777,13 @@ DELETE FROM sales_channel_secret_shop s
    AND COALESCE(d.value, '') = ''
    AND s.channel_id = shop_first_channel_id(m.type)
    AND s.key = m.key;
+
+-- Kleinanzeigen: Der Dienst meldet sich nicht mehr mit Passwort an (der
+-- Benutzer übergibt die Anmelde-IDs aus seinem Browser) — ein früher
+-- hinterlegtes Passwort wird gelöscht
+DELETE FROM sales_channel_secret_shop s
+ USING sales_channel_shop c
+ WHERE s.channel_id = c.id AND c.type = 'kleinanzeigen' AND s.key = 'login_password';
 
 -- Schritt 5 (dev/shop-mehrere-kanaele.md): Die Instanz-Einstellungen werden
 -- in der Kanalkarte gepflegt. Die Abschrift oben hat die letzten Werte aus
