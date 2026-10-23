@@ -74,9 +74,17 @@
                 />
             </section>
 
-            <!-- Versandstatus: wurde der Beleg schon per E-Mail / WhatsApp / Post / DHL verschickt? -->
+            <!-- Versandstatus: wurde der Beleg schon per E-Mail / WhatsApp / Post / DHL verschickt?
+                 Bei Aufträgen rechts daneben: wurde daraus schon eine Rechnung gemacht? -->
             <section class="faktura-section faktura-section--sent" v-if="fakturaId && faktura.data && faktura.data.common">
-                <sent-status-component :entries="sentLog" :auto-send-hint="autoSendHint" />
+                <sent-status-component
+                    :entries="sentLog"
+                    :auto-send-hint="autoSendHint"
+                    :invoice-status="invoiceStatus"
+                    :can-create-invoice="hasCustomer"
+                    @open-invoice="openLinkedInvoice"
+                    @create-invoice="createInvoiceFromFaktura"
+                />
             </section>
 
             <!-- Postversand (Hybridbrief): Beleg beim Briefdienstleister einliefern -->
@@ -3263,6 +3271,13 @@ export default defineComponent({
             post: sentLog.value.filter(e => e.channel === 'post').length,
         }))
 
+        // ===== Rechnungsstatus des Auftrags =====
+        // invoice_status kommt mit getFakturaData (SQL-Funktion oe_invoice_status) — nur in der Auftragsmaske gezeigt
+        const invoiceStatus = computed(() => (fakturaType.value === 'order' && faktura.data?.invoice_status) ? faktura.data.invoice_status : null)
+        function openLinkedInvoice(inv) {
+            if (inv?.id) router.push({ name: 'faktura-invoice-view', params: { id: inv.id } })
+        }
+
         // ===== Postversand (Hybridbrief) =====
         const postalDialogVisible = ref(false)
         function openPostalDialog() {
@@ -3941,6 +3956,8 @@ export default defineComponent({
             postalDialogVisible, openPostalDialog, onPostalSent,
             sentCounts,
             autoSendHint,
+            invoiceStatus,
+            openLinkedInvoice,
             t,
             oserp,
             faktura,

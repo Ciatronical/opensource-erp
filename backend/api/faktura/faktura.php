@@ -31,6 +31,8 @@ function getFakturaData($data) {
     // Eigene Lieferadresse des Belegs (dev/shop-adressen.md) — nicht bei
     // Einkaufsrechnungen: Lieferadressen gehören zum Verkauf
     $eigeneLieferadresseSql = ($mainTable === 'ap') ? '' : "OR shipto.shipto_id = {$mainTable}.shipto_id";
+    // Rechnungsstatus nur bei Auftraegen/Angeboten (oe): welche Rechnung ist daraus entstanden?
+    $invoiceStatusSql = ($mainTable === 'oe') ? 'oe_invoice_status(:fakturaID)' : 'NULL::json';
 
     // Ext-Tabelle für phone_numbers (customer_ext/vendor_ext)
     $extTable = ($cvTable === 'vendor') ? 'vendor_ext' : 'customer_ext';
@@ -217,6 +219,11 @@ function getFakturaData($data) {
                         WHERE pd.record_table = '{$mainTable}' AND pd.record_id = :fakturaID AND pd.status <> 'error'
                     ) AS s
                 ),
+            -- Rechnungsstatus des Auftrags (oe_invoice_status, Upstall crm): state
+            -- invoiced | storno | none, dazu die Rechnungen selbst — die Maske
+            -- zeigt ihn neben dem Versandstatus und bietet den Sprung zur Rechnung.
+            'invoice_status',
+                {$invoiceStatusSql},
             -- Erfolgreiche Kartenzahlungen am SumUp-Terminal (nur Rechnungen). Sie
             -- werden NICHT sofort als Zahlung gebucht — die Buchung kommt mit der
             -- SumUp-Auszahlung im Banking. Hier nur zur Anzeige und damit der

@@ -91,10 +91,23 @@
                 </v-data-table>
             </v-tabs-window-item>
             <v-tabs-window-item value="orders">
+                <!-- Aufträge ohne Rechnung: Anzahl auf einen Blick, Klick filtert darauf -->
+                <div v-if="ordersUninvoiced > 0 || ordersWithoutInvoiceOnly" class="d-flex align-center px-3 pt-2">
+                    <v-chip
+                        size="small"
+                        color="warning"
+                        :variant="ordersWithoutInvoiceOnly ? 'flat' : 'tonal'"
+                        :prepend-icon="ordersWithoutInvoiceOnly ? 'mdi-filter-check' : 'mdi-file-document-alert-outline'"
+                        :title="t('CrmView.withoutInvoiceHint')"
+                        @click="ordersWithoutInvoiceOnly = !ordersWithoutInvoiceOnly"
+                    >
+                        {{ t('CrmView.withoutInvoice', { n: ordersUninvoiced }) }}
+                    </v-chip>
+                </div>
                 <v-data-table
                     v-model="selection.orders"
                     :headers="ordersHeaders"
-                    :items="orders"
+                    :items="ordersShown"
                     :search="searchText"
                     show-select
                     return-object
@@ -103,7 +116,7 @@
                     :no-data-text="noOrdersText"
                     hover
                     @click:row="(event, { item }) => navigateTo('faktura-order-view', item.id)"
-                    class="cursor-pointer zebra-table"
+                    class="cursor-pointer zebra-table orders-table"
                 >
                     <template #item.record_type="{ item }">
                         <v-icon v-if="item.record_type === 'sales_order'" color="success" size="small" :title="t('CrmView.confirmed')">
@@ -112,6 +125,24 @@
                         <v-icon v-else-if="item.record_type === 'sales_order_intake'" color="grey" size="small" :title="t('CrmView.notConfirmed')">
                             mdi-clock-outline
                         </v-icon>
+                    </template>
+                    <!-- Rechnung aus dem Auftrag — Klick öffnet sie -->
+                    <template #item.invoice="{ item }">
+                        <v-chip
+                            v-if="invoiceState(item) === 'invoiced'"
+                            size="x-small"
+                            variant="tonal"
+                            color="success"
+                            prepend-icon="mdi-file-document-check-outline"
+                            :title="t('CrmView.openInvoice', { number: invoiceOf(item).number })"
+                            @click.stop="openInvoice(invoiceOf(item))"
+                        >
+                            {{ invoiceOf(item).number }}<span v-if="item.invoice_status.count > 1" class="ms-1">+{{ item.invoice_status.count - 1 }}</span>
+                        </v-chip>
+                        <v-chip v-else-if="invoiceState(item) === 'storno'" size="x-small" variant="tonal" color="error" prepend-icon="mdi-file-document-remove-outline">
+                            {{ t('CrmView.invoiceStorno') }}
+                        </v-chip>
+                        <span v-else class="text-caption text-medium-emphasis text-no-wrap">{{ t('CrmView.noInvoice') }}</span>
                     </template>
                     <template #item.amount="{ item }">
                         {{ formatNumber(item.amount, locale, 2) }} {{ item.currency }}
@@ -284,6 +315,18 @@ const lxCarsEnabled = computed(() => oserpData.isLxCars && oserpData.isLxCars())
 // Reactive computed properties that update when customer_vendor changes
 const offers = computed(() => oserpData.customer_vendor?.offers || []);
 const orders = computed(() => oserpData.customer_vendor?.orders || []);
+
+// Rechnungsstatus je Auftrag (invoice_status aus getCustomerVendor: state, count, invoices)
+const invoiceState = (item) => item.invoice_status?.state || 'none';
+const invoiceOf = (item) => item.invoice_status?.invoices?.[0] || null;
+const ordersWithoutInvoiceOnly = ref(false);
+const ordersUninvoiced = computed(() => orders.value.filter(o => invoiceState(o) === 'none').length);
+const ordersShown = computed(() => ordersWithoutInvoiceOnly.value ? orders.value.filter(o => invoiceState(o) === 'none') : orders.value);
+// Beim Wechsel des Kunden den Filter zurücksetzen
+watch(orders, () => { ordersWithoutInvoiceOnly.value = false; });
+const openInvoice = (inv) => {
+    if (inv?.id) router.push({ name: 'faktura-invoice-view', params: { id: inv.id } });
+};
 const invoices = computed(() => oserpData.customer_vendor?.invoices || []);
 const deliveryOrders = computed(() => oserpData.customer_vendor?.delivery_orders || []);
 const reclamations = computed(() => oserpData.customer_vendor?.reclamations || []);
@@ -334,6 +377,8 @@ const ordersHeaders = computed(() => {
         cols.push({ title: t('CrmView.licensePlate'), key: 'license_plate', sortable: true });
     }
     cols.push(
+        // Sortierung nach der Rechnungsnummer — Aufträge ohne Rechnung stehen zusammen
+        { title: t('CrmView.invoice'), key: 'invoice', value: item => invoiceOf(item)?.number || '', sortable: true, align: 'center' },
         { title: t('CrmView.confirmed'), key: 'record_type', sortable: true, align: 'center' },
         { title: t('CrmView.amount'), key: 'amount', sortable: true, align: 'end' }
     );
@@ -576,6 +621,13 @@ async function exportSelected() {
 
 .zebra-table :deep(tbody tr.row-closed) {
     color: rgba(0, 0, 0, 0.55);
+}
+
+/* Aufträge haben die meisten Spalten (Kennzeichen, Rechnung, Bestätigt, Betrag) —
+   etwas engere Zellen, damit die Karte in der halben Breite ohne Scrollen auskommt */
+.orders-table :deep(th),
+.orders-table :deep(td) {
+    padding: 0 10px !important;
 }
 
 .selection-bar {

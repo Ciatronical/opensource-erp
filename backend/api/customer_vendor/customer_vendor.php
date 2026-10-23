@@ -536,6 +536,7 @@ function getCV($data, $withConfig = []) {
                                                 'number', oe.ordnumber,
                                                 'record_type', oe.record_type,
                                                 'license_plate', {$kennzeichenForOrder},
+                                                'invoice_status', oe_invoice_status(oe.id),
                                                 'id', oe.id
                                             ) AS obj
                                         FROM oe

@@ -386,7 +386,16 @@
                 "postSent": "submitted",
                 "postDone": "printed and dispatched",
                 "postManual": "sent manually",
-                "postCanceled": "canceled"
+                "postCanceled": "canceled",
+                "invoiceTitle": "Invoice created",
+                "invoiceNone": "No invoice yet",
+                "invoiceNoneHint": "No invoice has been created from this order yet.",
+                "invoiceStorno": "Invoice cancelled",
+                "invoiceStornoShort": "cancelled",
+                "invoiceCreate": "Create invoice",
+                "invoiceOpen": "Open invoice {number}",
+                "invoicePaid": "paid",
+                "invoiceOpenAmount": "{amount} open"
             },
             "autoSend": {
                 "hint": "Will be sent to the customer automatically by {channels} when printing.",

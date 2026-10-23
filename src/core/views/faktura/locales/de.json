@@ -386,7 +386,16 @@
                 "postSent": "eingeliefert",
                 "postDone": "gedruckt und versendet",
                 "postManual": "selbst versendet",
-                "postCanceled": "storniert"
+                "postCanceled": "storniert",
+                "invoiceTitle": "Rechnung erstellt",
+                "invoiceNone": "Noch keine Rechnung",
+                "invoiceNoneHint": "Aus diesem Auftrag wurde noch keine Rechnung gemacht.",
+                "invoiceStorno": "Rechnung storniert",
+                "invoiceStornoShort": "storniert",
+                "invoiceCreate": "Rechnung erstellen",
+                "invoiceOpen": "Rechnung {number} öffnen",
+                "invoicePaid": "bezahlt",
+                "invoiceOpenAmount": "offen {amount}"
             },
             "autoSend": {
                 "hint": "Wird beim Drucken automatisch per {channels} an den Kunden geschickt.",

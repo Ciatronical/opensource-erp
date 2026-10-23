@@ -28,6 +28,16 @@ Angebot → Auftrag → Rechnung
 
 Jeder Beleg kann in den nächsten Typ umgewandelt werden. Positionen, Preise und Kundendaten werden übernommen.
 
+### Rechnungsstatus am Auftrag
+
+Zu jedem Auftrag ist sichtbar, ob daraus schon eine Rechnung gemacht wurde — an drei Stellen:
+
+- **Auftragsliste** (`/auftrag`): Spalte „Rechnung“ mit der Rechnungsnummer (Klick öffnet die Rechnung), Filter „Ohne Rechnung / Mit Rechnung“ und in der Summenleiste die Anzahl und Bruttosumme der Aufträge ohne Rechnung — ein Klick darauf filtert. Export (PDF, Excel, CSV) führt die Spalte mit.
+- **CRM-Belegkarte** (Reiter „Aufträge“ beim Kunden): Spalte „Rechnung“, sortierbar; der Chip „n ohne Rechnung“ blendet alle anderen Aufträge aus.
+- **Auftragsmaske**: rechts neben dem Versandstatus — Rechnungsnummer, Datum, bezahlt/offen (Klick öffnet die Rechnung) oder „Noch keine Rechnung“ mit dem Knopf „Rechnung erstellen“.
+
+Die Zuordnung ermittelt die SQL-Funktion `oe_invoice_status` (Upstall `crm`): über `record_links` (Auftrag → Rechnung, auch über einen Lieferschein) und für Altbelege über die Auftragsnummer im Rechnungskopf. Stornierte Rechnungen zählen nicht; gibt es nur solche, steht am Auftrag „Rechnung storniert“.
+
 ## Positionen
 
 Jeder Beleg enthält Positionen mit:

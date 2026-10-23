@@ -4177,3 +4177,80 @@ DO $$ BEGIN
             FOR EACH STATEMENT EXECUTE FUNCTION cleanup_portal_activation_oserp();
     END IF;
 END $$;
+
+-- ============================================================================
+-- RECHNUNGSSTATUS EINES AUFTRAGS
+-- ============================================================================
+-- Welche Rechnung(en) sind aus einem Auftrag (oe) entstanden? Genutzt von der
+-- Auftragsliste, der Belegkarte im CRM und der Auftragsmaske — eine Stelle,
+-- ein Ergebnis.
+--
+-- Verknüpfung:
+--   1. record_links oe → ar/ap, auch über einen Lieferschein (oe → delivery_orders → ar/ap)
+--   2. Altbelege ohne record_links: die Auftragsnummer im Rechnungskopf (ar.ordnumber)
+-- Gutschriften zählen nicht als Rechnung. Stornierte Rechnungen (storno = true,
+-- Original und Stornobeleg) zählen nicht als gültige Rechnung — gibt es nur
+-- solche, lautet der Zustand 'storno'.
+--
+-- Rückgabe (json):
+--   state    'invoiced' | 'storno' | 'none'
+--   count    Anzahl gültiger Rechnungen
+--   invoices [{id, kind (invoice|purchase_invoice), number, transdate, amount, paid, storno}]
+--            gültige zuerst, jeweils neueste zuerst
+CREATE OR REPLACE FUNCTION oe_invoice_status(p_oe_id integer)
+    RETURNS json
+    LANGUAGE sql
+    STABLE
+AS $function$
+    WITH o AS (
+        SELECT id, ordnumber, (record_type = 'purchase_order') AS purchase FROM oe WHERE id = p_oe_id
+    ),
+    linked AS (
+        SELECT rl.to_table, rl.to_id
+          FROM o
+          JOIN record_links rl ON rl.from_table = 'oe' AND rl.from_id = o.id AND rl.to_table IN ('ar', 'ap')
+        UNION
+        SELECT rl2.to_table, rl2.to_id
+          FROM o
+          JOIN record_links rl  ON rl.from_table = 'oe' AND rl.from_id = o.id AND rl.to_table = 'delivery_orders'
+          JOIN record_links rl2 ON rl2.from_table = 'delivery_orders' AND rl2.from_id = rl.to_id AND rl2.to_table IN ('ar', 'ap')
+    ),
+    inv AS (
+        SELECT ar.id, ar.invnumber, ar.transdate, ar.amount, ar.paid, COALESCE(ar.storno, FALSE) AS storno, 'invoice' AS kind
+          FROM ar
+         WHERE NOT (SELECT purchase FROM o)
+           AND COALESCE(ar.type, '') <> 'credit_note'
+           AND ar.id IN (SELECT to_id FROM linked WHERE to_table = 'ar')
+        UNION
+        SELECT ar.id, ar.invnumber, ar.transdate, ar.amount, ar.paid, COALESCE(ar.storno, FALSE), 'invoice'
+          FROM o, ar
+         WHERE NOT o.purchase
+           AND COALESCE(ar.type, '') <> 'credit_note'
+           AND COALESCE(o.ordnumber, '') <> ''
+           AND lower(ar.ordnumber) = lower(o.ordnumber)
+        UNION
+        SELECT ap.id, ap.invnumber, ap.transdate, ap.amount, ap.paid, COALESCE(ap.storno, FALSE), 'purchase_invoice'
+          FROM ap
+         WHERE (SELECT purchase FROM o)
+           AND ap.id IN (SELECT to_id FROM linked WHERE to_table = 'ap')
+        UNION
+        SELECT ap.id, ap.invnumber, ap.transdate, ap.amount, ap.paid, COALESCE(ap.storno, FALSE), 'purchase_invoice'
+          FROM o, ap
+         WHERE o.purchase
+           AND COALESCE(o.ordnumber, '') <> ''
+           AND lower(ap.ordnumber) = lower(o.ordnumber)
+    )
+    SELECT json_build_object(
+        'state', CASE WHEN EXISTS (SELECT 1 FROM inv WHERE NOT storno) THEN 'invoiced'
+                      WHEN EXISTS (SELECT 1 FROM inv) THEN 'storno'
+                      ELSE 'none' END,
+        'count', (SELECT count(*) FROM inv WHERE NOT storno),
+        'invoices', (
+            SELECT COALESCE(json_agg(json_build_object(
+                       'id', i.id, 'kind', i.kind, 'number', i.invnumber, 'transdate', i.transdate,
+                       'amount', i.amount, 'paid', i.paid, 'storno', i.storno
+                   ) ORDER BY i.storno, i.transdate DESC, i.id DESC), '[]'::json)
+              FROM inv i
+        )
+    )
+$function$;

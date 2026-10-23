@@ -4,6 +4,11 @@
     erreicht hat (E-Mail, WhatsApp, Post, DHL). Die Einträge kommen aus getFakturaData
     (sent_log: record_links → email_journal / whatsapp_messages, dhl_shipments,
     postal_dispatches).
+
+    Bei Aufträgen steht rechts daneben der Rechnungsstatus (invoice_status aus
+    getFakturaData, SQL-Funktion oe_invoice_status): welche Rechnung ist aus dem
+    Auftrag entstanden — anklickbar — oder „Noch keine Rechnung“ mit dem Knopf,
+    sie gleich zu erstellen.
 -->
 <template>
     <v-card
@@ -85,6 +90,64 @@
             >
                 {{ t('FakturaView.faktura.sent.history') }}
             </v-btn>
+
+            <!-- Rechnungsstatus (nur Aufträge): rechts, vom Versand abgesetzt -->
+            <div
+                v-if="invoiceStatus"
+                class="sent-status__invoice"
+                :class="`sent-status__invoice--${invoiceState}`"
+                @click.stop
+                @keydown.enter.stop
+                @keydown.space.stop
+            >
+                <div class="sent-status__invoice-icon">
+                    <v-icon size="20" :color="invoiceMeta.color">{{ invoiceMeta.icon }}</v-icon>
+                </div>
+                <div class="sent-status__text">
+                    <div class="sent-status__title">
+                        {{ t(invoiceMeta.label) }}
+                        <span v-if="invoiceCount > 1" class="sent-status__count sent-status__count--invoice">{{ invoiceCount }}</span>
+                    </div>
+                    <div v-if="invoiceList.length" class="sent-status__chips">
+                        <v-chip
+                            v-for="inv in invoiceList"
+                            :key="inv.id"
+                            size="small"
+                            variant="tonal"
+                            :color="inv.storno ? 'error' : 'success'"
+                            class="sent-status__chip"
+                            :title="t('FakturaView.faktura.sent.invoiceOpen', { number: inv.number })"
+                            @click="emit('open-invoice', inv)"
+                        >
+                            <v-icon start size="16">{{ inv.storno ? 'mdi-file-document-remove-outline' : 'mdi-file-document-outline' }}</v-icon>
+                            <span class="font-weight-medium">{{ inv.number }}</span>
+                            <span class="sent-status__chip-sep">·</span>
+                            <span>{{ formatDay(inv.transdate) }}</span>
+                            <span class="sent-status__chip-sep">·</span>
+                            <span v-if="inv.storno">{{ t('FakturaView.faktura.sent.invoiceStornoShort') }}</span>
+                            <span v-else-if="isPaid(inv)" class="d-inline-flex align-center">
+                                <v-icon size="14" class="me-1">mdi-check</v-icon>{{ t('FakturaView.faktura.sent.invoicePaid') }}
+                            </span>
+                            <span v-else>{{ t('FakturaView.faktura.sent.invoiceOpenAmount', { amount: formatAmount(openAmount(inv)) }) }}</span>
+                        </v-chip>
+                        <span v-if="invoiceMore > 0" class="sent-status__chip-more">+{{ invoiceMore }}</span>
+                    </div>
+                    <div v-else class="sent-status__hint">
+                        {{ t('FakturaView.faktura.sent.invoiceNoneHint') }}
+                    </div>
+                </div>
+                <v-btn
+                    v-if="invoiceState === 'none' && canCreateInvoice"
+                    variant="tonal"
+                    size="small"
+                    color="primary"
+                    class="sent-status__invoice-action"
+                    prepend-icon="mdi-file-document-edit"
+                    @click="emit('create-invoice')"
+                >
+                    {{ t('FakturaView.faktura.sent.invoiceCreate') }}
+                </v-btn>
+            </div>
         </div>
 
         <!-- Verlauf: alle Versandereignisse, neueste zuerst -->
@@ -145,12 +208,44 @@ const props = defineProps({
     entries: { type: Array, default: () => [] },
     /** Hinweistext, wenn der Beleg beim Drucken automatisch versendet wird (leer = kein Auto-Versand) */
     autoSendHint: { type: String, default: '' },
+    /** invoice_status aus getFakturaData (nur Aufträge): {state, count, invoices: [{id, number, transdate, amount, paid, storno}]} — null blendet den Block aus */
+    invoiceStatus: { type: Object, default: null },
+    /** Darf aus diesem Beleg eine Rechnung erstellt werden? (Knopf „Rechnung erstellen“) */
+    canCreateInvoice: { type: Boolean, default: true },
 })
+
+const emit = defineEmits(['open-invoice', 'create-invoice'])
 
 const { t, locale } = useI18n()
 const expanded = ref(false)
 
 const sent = computed(() => props.entries.length > 0)
+
+// ── Rechnungsstatus (Aufträge) ───────────────────────────────────────────────
+const INVOICE_CHIPS = 3
+const invoiceState = computed(() => props.invoiceStatus?.state || 'none')
+const invoiceCount = computed(() => Number(props.invoiceStatus?.count || 0))
+const invoiceAll   = computed(() => props.invoiceStatus?.invoices || [])
+const invoiceList  = computed(() => invoiceAll.value.slice(0, INVOICE_CHIPS))
+const invoiceMore  = computed(() => Math.max(0, invoiceAll.value.length - INVOICE_CHIPS))
+const invoiceMeta  = computed(() => {
+    switch (invoiceState.value) {
+        case 'invoiced': return { icon: 'mdi-file-document-check',  color: 'success', label: 'FakturaView.faktura.sent.invoiceTitle' }
+        case 'storno':   return { icon: 'mdi-file-document-remove', color: 'error',   label: 'FakturaView.faktura.sent.invoiceStorno' }
+        default:         return { icon: 'mdi-file-document-outline', color: 'grey',   label: 'FakturaView.faktura.sent.invoiceNone' }
+    }
+})
+const openAmount = (inv) => Number(inv.amount || 0) - Number(inv.paid || 0)
+const isPaid = (inv) => Math.abs(openAmount(inv)) < 0.005
+function formatAmount(value) {
+    return new Intl.NumberFormat(locale.value, { style: 'currency', currency: 'EUR' }).format(Number(value || 0))
+}
+function formatDay(value) {
+    if (!value) return ''
+    const d = new Date(value)
+    if (isNaN(d.getTime())) return String(value)
+    return d.toLocaleDateString(locale.value, { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
 
 const channelMeta = {
     email:    { icon: 'mdi-email',          color: 'info',           label: 'FakturaView.faktura.sent.channelEmail' },
@@ -311,6 +406,51 @@ function formatWhen(value) {
     flex: 0 0 auto;
 }
 
+/* Rechnungsstatus: eigener Block rechts, durch eine Linie vom Versand getrennt */
+.sent-status__invoice {
+    flex: 0 1 auto;
+    max-width: 48%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 16px;
+    margin-left: 4px;
+    border-left: 1px solid rgba(0, 0, 0, 0.12);
+    cursor: default;
+}
+
+.sent-status__invoice-icon {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.sent-status__invoice--invoiced .sent-status__invoice-icon {
+    background: rgba(76, 175, 80, 0.15);
+}
+
+.sent-status__invoice--storno .sent-status__invoice-icon {
+    background: rgba(244, 67, 54, 0.12);
+}
+
+.sent-status__invoice--none .sent-status__title {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.sent-status__count--invoice {
+    color: #2e7d32;
+}
+
+.sent-status__invoice-action {
+    flex: 0 0 auto;
+}
+
 .sent-status__timeline {
     padding: 12px 16px 4px;
     background: #fff;
@@ -359,6 +499,16 @@ function formatWhen(value) {
     }
     .sent-status__chip-recipient {
         max-width: 120px;
+    }
+    /* Rechnungsstatus rutscht unter den Versand, als eigene Zeile */
+    .sent-status__invoice {
+        flex-basis: 100%;
+        max-width: 100%;
+        margin: 8px 0 0;
+        padding: 8px 0 0;
+        border-left: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.12);
+        flex-wrap: wrap;
     }
 }
 </style>

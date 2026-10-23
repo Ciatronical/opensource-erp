@@ -148,6 +148,18 @@
                         <v-btn value="closed" size="small" class="flex-grow-1" color="success">{{ t('DocumentList.closed') }}</v-btn>
                     </v-btn-toggle>
                 </v-col>
+                <!-- Aufträge: wurde daraus schon eine Rechnung gemacht? Filtert auf dem
+                     Server, damit Summen, Liste und Export dasselbe meinen -->
+                <v-col v-if="isOrder" cols="12" class="d-flex align-center flex-wrap ga-3 pt-0">
+                    <span class="text-body-2 text-medium-emphasis">
+                        <v-icon size="18" class="me-1">mdi-file-document-check-outline</v-icon>{{ t('DocumentList.invoice.filterLabel') }}
+                    </span>
+                    <v-btn-toggle v-model="invoiced" mandatory density="compact" variant="outlined" rounded="lg" divided>
+                        <v-btn value="all" size="small">{{ t('DocumentList.statusAll') }}</v-btn>
+                        <v-btn value="none" size="small" color="warning" :title="t('DocumentList.invoice.noneHint')">{{ t('DocumentList.invoice.none') }}</v-btn>
+                        <v-btn value="invoiced" size="small" color="success">{{ t('DocumentList.invoice.done') }}</v-btn>
+                    </v-btn-toggle>
+                </v-col>
             </template>
             <!-- Zwei Schalter, ein Zustand (partsScope): es ist immer nur
                  einer an; beide aus heißt „nur aktive Artikel“ -->
@@ -244,6 +256,22 @@
             <div v-if="hasPayments" class="summary-item">
                 <span class="summary-label">{{ t('DocumentList.columns.open') }}</span>
                 <span class="summary-value" :class="totals.open > 0.005 ? 'text-warning' : ''">{{ formatCurrency(totals.open) }}</span>
+            </div>
+            <!-- Aufträge ohne Rechnung: Anzahl und Brutto — ein Klick filtert darauf -->
+            <div
+                v-if="isOrder"
+                class="summary-item summary-item--action"
+                :class="{ 'summary-item--active': invoiced === 'none' }"
+                role="button"
+                tabindex="0"
+                :title="t('DocumentList.invoice.noneHint')"
+                @click="invoiced = invoiced === 'none' ? 'all' : 'none'"
+                @keydown.enter.prevent="invoiced = invoiced === 'none' ? 'all' : 'none'"
+            >
+                <span class="summary-label">{{ t('DocumentList.invoice.uninvoiced') }}</span>
+                <span class="summary-value" :class="totals.uninvoiced > 0 ? 'text-warning' : ''">
+                    {{ totals.uninvoiced }} · {{ formatCurrency(totals.uninvoiced_amount) }}
+                </span>
             </div>
         </v-sheet>
 
@@ -350,6 +378,32 @@
             </template>
             <template #item.onhand="{ item }">
                 <span class="text-no-wrap">{{ formatQty(item.onhand) }}</span>
+            </template>
+            <!-- Aufträge: Rechnung daraus — Klick öffnet die Rechnung -->
+            <template #item.invoice_number="{ item }">
+                <v-chip
+                    v-if="item.invoice_state === 'invoiced'"
+                    size="x-small"
+                    variant="tonal"
+                    color="success"
+                    prepend-icon="mdi-file-document-check-outline"
+                    :title="t('DocumentList.invoice.open', { number: item.invoice_number })"
+                    @click.stop="openInvoice(item)"
+                >
+                    {{ item.invoice_number }}<span v-if="item.invoice_count > 1" class="ms-1">+{{ item.invoice_count - 1 }}</span>
+                </v-chip>
+                <v-chip
+                    v-else-if="item.invoice_state === 'storno'"
+                    size="x-small"
+                    variant="tonal"
+                    color="error"
+                    prepend-icon="mdi-file-document-remove-outline"
+                >
+                    {{ t('DocumentList.invoice.storno') }}
+                </v-chip>
+                <span v-else class="text-caption text-medium-emphasis text-no-wrap">
+                    <v-icon size="14" class="me-1">mdi-file-document-outline</v-icon>{{ t('DocumentList.invoice.noneShort') }}
+                </span>
             </template>
             <template #item.closed="{ item }">
                 <span class="d-inline-flex align-center ga-1">
@@ -489,9 +543,11 @@ export default {
         // Lieferscheine führen keine Beträge; bezahlt/offen gibt es nur bei Rechnungen und Gutschriften
         const hasAmounts = computed(() => !isParts.value && listType.value !== 'delivery_order')
         const hasPayments = computed(() => ['invoice', 'credit_note'].includes(listType.value))
+        // Nur Aufträge kennen einen Rechnungsstatus (Spalte, Filter, Summe „Ohne Rechnung“)
+        const isOrder = computed(() => listType.value === 'order')
 
         const rows = ref([])
-        const totals = ref({ count: 0, amount: 0, netamount: 0, tax: 0, open: 0 })
+        const totals = ref({ count: 0, amount: 0, netamount: 0, tax: 0, open: 0, uninvoiced: 0, uninvoiced_amount: 0 })
         const selected = ref([])
         const loading = ref(false)
         const error = ref('')
@@ -500,6 +556,8 @@ export default {
         const to = ref('')
         // 'all', 'open', 'closed' — filtert auf dem Server, damit Summen und Export dasselbe meinen
         const status = ref('all')
+        // Aufträge: 'all', 'none' (ohne Rechnung), 'invoiced' (mit Rechnung) — filtert auf dem Server
+        const invoiced = ref('all')
         // Welche Artikel: 'active' (Vorgabe), 'obsolete' oder 'all'
         const partsScope = ref('active')
         const obsoleteOnly = computed({
@@ -646,7 +704,7 @@ export default {
         const LIMIT = 500
         const atLimit = computed(() => rows.value.length >= LIMIT)
         const hasFilter = computed(() =>
-            !!search.value || !!from.value || !!to.value || status.value !== 'all' || partsScope.value !== 'active' || !!shopFilter.value
+            !!search.value || !!from.value || !!to.value || status.value !== 'all' || invoiced.value !== 'all' || partsScope.value !== 'active' || !!shopFilter.value
             || weightMissing.value || shippingUnfit.value
         )
 
@@ -676,6 +734,7 @@ export default {
                 )
             }
             if (hasPayments.value) cols.push({ title: t('DocumentList.columns.open'), key: 'open_amount', align: 'end' })
+            if (isOrder.value) cols.push({ title: t('DocumentList.columns.invoice'), key: 'invoice_number', align: 'center' })
             cols.push(
                 { title: t('DocumentList.columns.status'), key: 'closed', align: 'center' },
                 { title: '', key: 'actions', sortable: false, align: 'end', width: 120 },
@@ -701,7 +760,8 @@ export default {
 
         // Filter der Belegliste — Laden und Export nutzen exakt dieselben Werte
         function listParams() {
-            return { documentType: listType.value, q: search.value || '', from: from.value || '', to: to.value || '', status: status.value === 'all' ? '' : status.value }
+            return { documentType: listType.value, q: search.value || '', from: from.value || '', to: to.value || '', status: status.value === 'all' ? '' : status.value,
+                     invoiced: isOrder.value && invoiced.value !== 'all' ? invoiced.value : '' }
         }
 
         async function load() {
@@ -715,10 +775,10 @@ export default {
                 const res = await axios.post('/api/faktura/', payload)
                 if (res.data?.success) {
                     rows.value = (isParts.value ? res.data.payload.parts : res.data.payload.documents) || []
-                    totals.value = res.data.payload.totals || { count: rows.value.length, amount: 0, netamount: 0, tax: 0, open: 0 }
+                    totals.value = res.data.payload.totals || { count: rows.value.length, amount: 0, netamount: 0, tax: 0, open: 0, uninvoiced: 0, uninvoiced_amount: 0 }
                 } else {
                     rows.value = []
-                    totals.value = { count: 0, amount: 0, netamount: 0, tax: 0, open: 0 }
+                    totals.value = { count: 0, amount: 0, netamount: 0, tax: 0, open: 0, uninvoiced: 0, uninvoiced_amount: 0 }
                     error.value = res.data?.payload || t('DocumentList.loadError')
                 }
             } catch {
@@ -734,7 +794,7 @@ export default {
 
         // Tippen laedt nach kurzer Pause nach — kein Suchknopf noetig
         let debounce = null
-        watch([search, from, to, status, partsScope, shopFilter, channelId, weightMissing, shippingUnfit], () => {
+        watch([search, from, to, status, invoiced, partsScope, shopFilter, channelId, weightMissing, shippingUnfit], () => {
             clearTimeout(debounce)
             debounce = setTimeout(load, 350)
         })
@@ -750,6 +810,7 @@ export default {
             from.value = ''
             to.value = ''
             status.value = 'all'
+            invoiced.value = 'all'
             partsScope.value = 'active'
             shopFilterState.value = ''
             channelIdState.value = 0
@@ -759,6 +820,11 @@ export default {
 
         function openRow(_event, row) {
             router.push({ name: config.value.route, params: { id: row.item.id } })
+        }
+
+        // Rechnung zum Auftrag öffnen (Chip in der Spalte „Rechnung“)
+        function openInvoice(item) {
+            if (item.invoice_id) router.push({ name: 'faktura-invoice-view', params: { id: item.invoice_id } })
         }
 
         // ── Drucker (wie in der Suche: Vorgabe aus der Benutzerkonfiguration) ──
@@ -804,6 +870,9 @@ export default {
                 total:         t('DocumentList.totals.total'),
                 documents:     t('DocumentList.totals.documents'),
                 createdAt:     t('DocumentList.totals.createdAt'),
+                invoice:       t('DocumentList.columns.invoice'),
+                noInvoice:     t('DocumentList.invoice.noneShort'),
+                invoiceStorno: t('DocumentList.invoice.storno'),
             }
         }
 
@@ -840,6 +909,7 @@ export default {
             if (withAmounts) { col(l.net, 14); col(l.tax, 14); col(l.gross, 14) }
             if (withPayments) { col(l.paid, 14); col(l.open, 14) }
             col(l.status, 12)
+            if (isOrder.value) col(l.invoice, 14)
 
             const toDate = v => (v ? new Date(v + 'T00:00:00') : null)
             const num = v => (v === null || v === undefined || v === '' ? null : Number(v))
@@ -850,6 +920,7 @@ export default {
                 if (withAmounts) row.push(num(r.netamount), num(r.tax), num(r.amount))
                 if (withPayments) row.push(num(r.paid), num(r.open_amount))
                 row.push(r.status_text)
+                if (isOrder.value) row.push(r.invoice_text || '')
                 return row
             })
             if (withAmounts) {
@@ -859,6 +930,7 @@ export default {
                 row.push(null, null, null, Number(tot.netamount), Number(tot.tax), Number(tot.amount))
                 if (withPayments) row.push(null, Number(tot.open))
                 row.push(null)
+                if (isOrder.value) row.push(null)
                 data.push(row)
             }
 
@@ -1094,8 +1166,8 @@ export default {
 
         return {
             hasSentChannel, LIMIT,
-            t, te, locale, config, isParts, hasAmounts, hasPayments, rows, totals, selected, headers, loading, error, busy,
-            search, from, to, status, periodPreset, periodItems,
+            t, te, locale, config, isParts, isOrder, hasAmounts, hasPayments, rows, totals, selected, headers, loading, error, busy,
+            search, from, to, status, invoiced, openInvoice, periodPreset, periodItems,
             obsoleteOnly, showAll, shopOnly, notInShop, weightMissing, shippingUnfit, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit,
             printerList, selectedPrinter, selectPrinter, printerSubtitle,
             formatDate, formatCurrency, formatQty, reset, openRow,
@@ -1132,6 +1204,23 @@ export default {
     display: flex;
     flex-direction: column;
     min-width: 7rem;
+}
+/* „Ohne Rechnung“ ist zugleich Schnellfilter: anklickbar, aktiv hervorgehoben */
+.summary-item--action {
+    cursor: pointer;
+    border-radius: var(--oserp-radius-sm, 6px);
+    padding: var(--oserp-gap-xs, 4px) var(--oserp-gap-sm, 8px);
+    margin: calc(-1 * var(--oserp-gap-xs, 4px)) calc(-1 * var(--oserp-gap-sm, 8px));
+    transition: background-color 0.15s;
+}
+.summary-item--action:hover,
+.summary-item--action:focus-visible {
+    background-color: rgba(var(--v-theme-warning), 0.08);
+    outline: none;
+}
+.summary-item--active {
+    background-color: rgba(var(--v-theme-warning), 0.14);
+    box-shadow: inset 0 0 0 1px rgba(var(--v-theme-warning), 0.55);
 }
 .summary-label {
     font-size: 0.75rem;
