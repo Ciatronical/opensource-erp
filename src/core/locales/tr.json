@@ -124,5 +124,8 @@
         "success": "Veritabanı güncellendi. Lütfen son işlemi tekrarlayın.",
         "failed": "Veritabanı güncellemesi başarısız oldu.",
         "alreadyRunning": "Zaten bir veritabanı güncellemesi çalışıyor. Lütfen birkaç dakika sonra tekrar deneyin."
+    },
+    "HelpPanel": {
+        "close": "Yardımı kapat"
     }
 }

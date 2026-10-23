@@ -17,7 +17,7 @@
                 density="compact"
             >
                 <template v-if="field.tooltip" #append>
-                    <FeldHilfe :text="t(field.tooltip)" />
+                    <FeldHilfe :text="t(field.tooltip)" :langtext="langtext(field)" :titel="t(field.label)" />
                 </template>
             </v-checkbox>
         </v-col>
@@ -44,18 +44,21 @@
                 autocomplete="new-password"
             >
                 <template v-if="field.tooltip" #append-inner>
-                    <FeldHilfe :text="t(field.tooltip)" />
+                    <FeldHilfe :text="t(field.tooltip)" :langtext="langtext(field)" :titel="t(field.label)" />
                 </template>
-                <!-- Neuen Schlüssel erzeugen: nur beim Shop-Schlüssel, der frei
-                     wählbar ist. Die PayPal-Geheimnisse vergibt PayPal. -->
-                <template v-if="field.generate" #append>
+                <!-- Rechts neben dem Feld: „Neuen Schlüssel erzeugen“ beim frei
+                     wählbaren Schlüssel (die PayPal-Geheimnisse vergibt PayPal)
+                     und, was die Ansicht über den Slot „append“ dazugibt -->
+                <template v-if="field.generate || $slots.append" #append>
                     <v-btn
+                        v-if="field.generate"
                         icon="mdi-key-variant"
                         variant="text"
                         size="small"
                         :title="t('crm_fields.shopKeyGenerate')"
                         @click="schluesselErzeugen"
                     />
+                    <slot name="append" />
                 </template>
             </component>
         </v-col>
@@ -74,7 +77,7 @@
                 variant="outlined"
             >
                 <template v-if="field.tooltip" #append-inner>
-                    <FeldHilfe :text="t(field.tooltip)" />
+                    <FeldHilfe :text="t(field.tooltip)" :langtext="langtext(field)" :titel="t(field.label)" />
                 </template>
             </v-select>
         </v-col>
@@ -96,7 +99,7 @@
                 clearable
             >
                 <template v-if="field.tooltip" #append-inner>
-                    <FeldHilfe :text="t(field.tooltip)" />
+                    <FeldHilfe :text="t(field.tooltip)" :langtext="langtext(field)" :titel="t(field.label)" />
                 </template>
             </v-select>
         </v-col>
@@ -109,6 +112,7 @@ import { useI18n } from 'vue-i18n'
 import { VIcon, VTextField, VTextarea, VTooltip } from 'vuetify/components'
 import PasswordField from '@/core/components/password-field.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import { useHelpPanel } from '@/core/composables/useHelpPanel.js'
 
 const { t, te } = useI18n()
 const store = oserpStore()
@@ -221,15 +225,36 @@ function auswahl(source) {
 }
 
 /**
- * Das Fragezeichen mit dem Hilfetext
+ * Langfassung der Hilfe eines Felds (field.help), leer wenn keine da ist
+ *
+ * Die Kurzfassung (field.tooltip) erscheint beim Zeigen, die Langfassung in
+ * der Hilfsanzeige am rechten Rand (help-panel.vue) nach einem Klick.
+ */
+function langtext(field) {
+    return field.help && te(field.help) ? t(field.help) : ''
+}
+
+const { zeigen: hilfeZeigen } = useHelpPanel()
+
+/**
+ * Das Info-Symbol mit dem Hilfetext
  *
  * Als kleine Funktionskomponente statt viermal derselbe Block — das Muster
- * wiederholt sich für jeden Feldtyp.
+ * wiederholt sich für jeden Feldtyp. Mit Langfassung wird der Zeiger zum
+ * Fragezeichen, und ein Klick öffnet die Hilfsanzeige oder tauscht ihren
+ * Inhalt aus; die Kurzfassung bleibt der Tooltip.
  */
 const FeldHilfe = (props) => h(VTooltip, { location: 'top' }, {
     activator: ({ props: aktivator }) =>
-        h(VIcon, { ...aktivator, size: 'small', color: 'grey' }, () => 'mdi-information-outline'),
+        h(VIcon, {
+            ...aktivator,
+            size: 'small',
+            color: 'grey',
+            style: props.langtext ? { cursor: 'help' } : undefined,
+            role: props.langtext ? 'button' : undefined,
+            onClick: props.langtext ? () => hilfeZeigen(props.titel, props.langtext) : undefined,
+        }, () => 'mdi-information-outline'),
     default: () => props.text,
 })
-FeldHilfe.props = { text: String }
+FeldHilfe.props = { text: String, langtext: String, titel: String }
 </script>

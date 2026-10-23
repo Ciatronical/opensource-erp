@@ -34,14 +34,31 @@
                 </v-card-item>
 
                 <v-card-text class="pt-0">
-                    <ShopConfigField
-                        v-for="unterfeld in feld.fields"
-                        :key="unterfeld.name"
-                        :field="unterfeld"
-                        :werte="werte"
-                        :quellen="quellen"
-                        :gesetzt="gesetzt"
-                    />
+                    <!-- focusin: ein leeres HugoCMS-Adressfeld beim Anwählen aus der Webadresse vorbelegen -->
+                    <div v-for="unterfeld in feld.fields" :key="unterfeld.name" @focusin="feldBetreten(unterfeld)">
+                        <ShopConfigField
+                            :field="unterfeld"
+                            :werte="werte"
+                            :quellen="quellen"
+                            :gesetzt="gesetzt"
+                        >
+                            <!-- Rechts neben dem HugoCMS-Adressfeld: „Webadresse übernehmen“
+                                 setzt die Adresse aus der Webadresse der Webseite, auch wenn
+                                 schon etwas dasteht -->
+                            <template v-if="'hugocms_url' === unterfeld.name" #append>
+                                <v-btn
+                                    variant="tonal"
+                                    size="small"
+                                    prepend-icon="mdi-arrow-left-bold-box-outline"
+                                    :disabled="!gueltigeAdresse(werte.base_url)"
+                                    :title="t('WebsitesView.hugocmsFromBaseUrl_help')"
+                                    @click="hugocmsAdresseVorbelegen(true)"
+                                >
+                                    {{ t('WebsitesView.hugocmsFromBaseUrl') }}
+                                </v-btn>
+                            </template>
+                        </ShopConfigField>
+                    </div>
 
                     <template v-if="feld.action === 'hugocmsTest'">
                         <v-divider class="my-4" />
@@ -117,12 +134,15 @@
             </v-card>
 
             <template v-else>
-                <ShopConfigField
-                    :field="feld"
-                    :werte="werte"
-                    :quellen="quellen"
-                    :gesetzt="gesetzt"
-                />
+                <!-- focusout: beim Verlassen der Webadresse die HugoCMS-Adresse ableiten -->
+                <div @focusout="feldVerlassen(feld)">
+                    <ShopConfigField
+                        :field="feld"
+                        :werte="werte"
+                        :quellen="quellen"
+                        :gesetzt="gesetzt"
+                    />
+                </div>
 
                 <!-- Adresse des Portal-Zugangs prüfen: plausibel, direkt, über die Webseite -->
                 <div v-if="feld.action === 'backendTest'" class="mb-4">
@@ -192,6 +212,8 @@ import * as toasts from '@/core/utils/toasts.js'
 
 const props = defineProps({
     websiteId: { type: Number, required: true },
+    /** Name der Webseite — daraus wird eine leere Webadresse vorbelegt, wenn er wie eine Domain aussieht */
+    websiteName: { type: String, default: '' },
     /** settings der Webseite, wie getWebsites sie liefert */
     settings: { type: Object, default: () => ({}) },
     /** Geheimnisse: Schlüssel -> hinterlegt */
@@ -243,10 +265,75 @@ function nutzdaten() {
             settings[feld.name] = wert === null || wert === undefined ? '' : String(wert)
         }
     })
+    // Die Vorbelegung „https://“ allein ist keine Adresse: so lange nichts
+    // dahintersteht, gilt das Feld als leer und wird nicht gespeichert
+    if (VORBELEGUNG_ADRESSE === String(settings.base_url || '').trim()) {
+        settings.base_url = ''
+    }
     return { settings, secrets }
 }
 
+/**
+ * Webadresse aus dem Namen der Webseite, wenn der schon wie eine Domain
+ * aussieht („inter-data.de“, „www.example.de“, auch mit https:// davor) —
+ * sonst leer. Kleingeschrieben, mit Schrägstrich am Ende.
+ */
+function adresseAusName(name) {
+    const host = String(name || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '')
+    return /^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/.test(host) ? `https://${host}/` : ''
+}
+
+// Leere Webadresse der Webseite: „https://“ vorbelegen, damit nur noch der
+// Name der Webseite zu tippen ist. Vor „zuletzt“, damit die Vorbelegung
+// allein nicht als Änderung zählt (nutzdaten liefert dafür '').
+const VORBELEGUNG_ADRESSE = 'https://'
+const adresseVorschlag = '' === String(werte.base_url || '').trim() ? adresseAusName(props.websiteName) : ''
+if ('' === String(werte.base_url || '').trim()) {
+    werte.base_url = VORBELEGUNG_ADRESSE
+}
+
 let zuletzt = JSON.stringify(nutzdaten())
+
+// Lässt sich aus dem Namen eine Adresse ableiten, steht sie gleich im Feld —
+// nach „zuletzt“, damit sie wie die Adresse des Zugangs als Änderung zählt
+// und gespeichert wird
+if (adresseVorschlag) {
+    werte.base_url = adresseVorschlag
+    // … und daraus gleich die Adresse für den HugoCMS-Fernzugriff, falls leer
+    hugocmsAdresseVorbelegen()
+}
+
+/** Vollständige Webadresse mit Schema und Hostnamen, sonst leer — mit Schrägstrich am Ende */
+function gueltigeAdresse(wert) {
+    const adresse = String(wert || '').trim()
+    // Hostname mit Endung (example.de, ap24.localhost) oder localhost, optional Port und Pfad
+    if (!/^https?:\/\/(localhost|(?!-)[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,}|localhost))(:\d+)?(\/[^\s?#]*)?$/i.test(adresse)) return ''
+    return adresse.endsWith('/') ? adresse : adresse + '/'
+}
+
+/**
+ * Leere Adresse für den HugoCMS-Fernzugriff nach dem üblichen Schema
+ * vorbelegen: HugoCMS liegt auf derselben Webseite unter /cms-api/. Nur wenn
+ * eine gültige Webadresse der Webseite dasteht.
+ *
+ * @param {boolean} ueberschreiben auch eine vorhandene Adresse ersetzen (Knopf „Webadresse übernehmen“)
+ */
+function hugocmsAdresseVorbelegen(ueberschreiben = false) {
+    const basis = gueltigeAdresse(werte.base_url)
+    if (basis && (ueberschreiben || '' === String(werte.hugocms_url || '').trim())) {
+        werte.hugocms_url = basis + 'cms-api/'
+    }
+}
+
+/** Beim Verlassen der Webadresse (Tab, Mausklick) */
+function feldVerlassen(feld) {
+    if ('base_url' === feld.name) hugocmsAdresseVorbelegen()
+}
+
+/** Beim Anwählen des leeren HugoCMS-Adressfelds */
+function feldBetreten(feld) {
+    if ('hugocms_url' === feld.name) hugocmsAdresseVorbelegen()
+}
 let timer = null
 const speichert = ref(false)
 

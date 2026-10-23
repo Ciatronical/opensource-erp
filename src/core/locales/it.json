@@ -124,5 +124,8 @@
         "success": "Il database è stato aggiornato. Ripetere l'ultima azione.",
         "failed": "L'aggiornamento del database non è riuscito.",
         "alreadyRunning": "È già in corso un aggiornamento del database. Riprovare tra qualche minuto."
+    },
+    "HelpPanel": {
+        "close": "Chiudi la guida"
     }
 }

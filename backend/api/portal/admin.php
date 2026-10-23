@@ -63,7 +63,9 @@ function getWebsites($data) {
                 (SELECT COUNT(*) FROM portal_activation_oserp a
                   WHERE a.website_id = w.id AND a.used_at IS NULL AND a.expires > now()) AS activations_open
            FROM website_oserp w
-          ORDER BY w.sortkey NULLS LAST, w.id",
+          -- Jüngste zuerst: sortkey wächst beim Anlegen, die neue Webseite
+          -- steht damit oben, wo man sie gerade einrichtet
+          ORDER BY w.sortkey DESC NULLS LAST, w.id DESC",
         []
     ) ?: [];
 
@@ -80,7 +82,8 @@ function getWebsites($data) {
 /**
  * Legt eine Webseite an
  *
- * Abgeschaltet, mit den Vorgaben (website_default_settings): eingeschaltet
+ * Abgeschaltet, mit den Vorgaben (website_default_settings) und einem fertig
+ * erzeugten Schlüssel der Webseite (public_key): eingeschaltet
  * wird, wenn Zugang und HugoCMS eingerichtet sind.
  *
  * @param string $data['name'] Name, eindeutig
@@ -97,11 +100,20 @@ function createWebsite($data) {
         return;
     }
     try {
+        // Der Schlüssel der Webseite entsteht gleich mit: 32 Zufallsbytes als
+        // Hex, dasselbe Format wie „Neuen Schlüssel erzeugen“ in der Oberfläche.
+        // So fehlt nach dem Anlegen nur noch, was nur der Betreiber weiß.
         $zeile = $db->getOne(
-            "INSERT INTO website_oserp (name, active, sortkey, settings)
-             VALUES (:name, false, COALESCE((SELECT max(sortkey) FROM website_oserp), 0) + 1, website_default_settings())
-             RETURNING id",
-            [':name' => $name]
+            "WITH seite AS (
+                 INSERT INTO website_oserp (name, active, sortkey, settings)
+                 VALUES (:name, false, COALESCE((SELECT max(sortkey) FROM website_oserp), 0) + 1, website_default_settings())
+                 RETURNING id
+             ), schluessel AS (
+                 INSERT INTO website_secret_oserp (website_id, key, value)
+                 SELECT id, 'public_key', :public_key FROM seite
+             )
+             SELECT id FROM seite",
+            [':name' => $name, ':public_key' => bin2hex(random_bytes(32))]
         );
     } catch (PDOException $e) {
         if ('23505' === $e->getCode()) {

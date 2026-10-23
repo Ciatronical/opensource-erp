@@ -128,5 +128,8 @@
         "success": "Die Datenbank wurde aktualisiert. Bitte die letzte Aktion wiederholen.",
         "failed": "Das Datenbank-Update ist fehlgeschlagen.",
         "alreadyRunning": "Es läuft bereits ein Datenbank-Update. Bitte in einigen Minuten erneut versuchen."
+    },
+    "HelpPanel": {
+        "close": "Hilfe schließen"
     }
 }

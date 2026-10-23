@@ -27,7 +27,7 @@
         "installHint": "Überträgt Vorlagen, Widgets und Weiterleiter an HugoCMS und lässt die Webseite bauen.",
         "installQueued": "Auftrag angelegt — die Shop-Veröffentlichung überträgt das Paket (Shop-Übersicht).",
         "installDone": "Paket übertragen und Webseite gebaut.",
-        "installFailed": "Paket nicht vollständig übertragen — siehe Meldungen.",
+        "installFailed": "Paket nicht vollständig übertragen. Grund:",
         "features": "Auf dieser Webseite:",
         "feature": {
             "portal": "Kundenkonto",
@@ -37,25 +37,33 @@
         "fields": {
             "contact": "Kontaktformular",
             "activatePage": "Seite „Konto freischalten“",
-            "activatePage_help": "Seite mit dem Shortcode portal-activate; dorthin führt der Link in der WhatsApp-Nachricht. Leer = /freischalten/",
+            "activatePage_help": "Seite, auf der Bestandskunden ihr Kundenkonto freischalten. Leer = /freischalten/.",
             "contactMailTo": "Empfänger des Kontaktformulars",
             "contactMailTo_help": "E-Mail-Adresse, an die Anfragen aus dem Kontaktformular gehen. Leer = Absenderadresse der Firma.",
-            "hugocms_help": "Die Webseite liegt in HugoCMS: OpensourceERP überträgt das Paket dorthin und lässt die Webseite bauen. Ohne Adresse und Schlüssel wird nicht veröffentlicht.",
-            "hugocmsUrl_help": "Der cms-api-Endpunkt der Webseite, wie ihn HugoCMS in den Projekteinstellungen unter „OpensourceERP-Anbindung“ anzeigt — zum Beispiel https://www.example.de/cms-api/.",
-            "access": "Zugang der Webseite",
+            "hugocms_help": "Verbindung zu HugoCMS, das diese Webseite baut und veröffentlicht.",
+            "hugocmsUrl_help": "Webadresse für den Fernzugriff auf das HugoCMS über die Webseite.",
+            "access": "Zugang zu OpensourceERP",
             "publicKey": "Schlüssel der Webseite",
-            "publicKey_help": "Geheimnis, mit dem sich die Webseite beim Portal-Zugang von OpensourceERP ausweist. Ohne diesen Wert nimmt der Zugang keine Anfrage an.",
-            "allowedOrigins_help": "Kommagetrennte Liste der Adressen, von denen die Webseite zugreifen darf. Leer lassen, wenn die Webseite über den Weiterleiter /portal-api/ dieselbe Adresse verwendet.",
-            "backendUrl": "Adresse des Portal-Zugangs von OpensourceERP",
-            "backendUrl_help": "Die Webseite leitet Anmeldung, Konto, Rechnungen und — mit Shop — Warenkorb und Kasse an diese Adresse weiter: der öffentliche Portal-Zugang von OpensourceERP (backend/portal/), zum Beispiel https://erp.example.de/portal/. Nicht die Adresse von HugoCMS und nicht die der Webseite. Das Paket trägt sie mit dem Schlüssel in oserp-portal/config.json ein. Ein leeres Feld wird mit der Adresse vorbelegt, unter der OpensourceERP gerade aufgerufen wird.",
+            "publicKey_help": "Geheimer Schlüssel, mit dem sich die Webseite bei OpensourceERP ausweist.",
+            "allowedOrigins_help": "Nur nötig, wenn die Webseite OpensourceERP ohne den Weiterleiter direkt anspricht — sonst leer lassen.",
+            "backendUrl": "Webadresse des Kundenportal-Zugangs",
+            "backendUrl_help": "Adresse, unter der die Webseite OpensourceERP erreicht, zum Beispiel https://erp.example.de/portal/.",
             "pages": "Seiten der Webseite",
-            "baseUrl": "Adresse der Webseite",
-            "baseUrl_help": "Adresse, unter der die Hugo-Webseite erreichbar ist (ihre baseURL), einschließlich https:// — zum Beispiel https://www.example.de/. Genau dort liegt der Weiterleiter /portal-api/. Ein Pfad gehört nur dann dazu, wenn die ganze Webseite in einem Unterverzeichnis liegt, also ihre baseURL selbst auf …/pfad/ endet. Unter welchen Seiten das Kundenportal liegt (Anmeldung, Rechnung, Freischaltung), wird unter „Seiten der Webseite“ eingestellt, nicht hier.",
-            "invoicePage_help": "Seite der Webseite mit dem Shortcode shop-invoice, etwa /rechnung/. Mails verlinken dorthin, damit auch Gäste ohne Kundenkonto den Stand sehen. Leer = /rechnung/.",
-            "templateSet_help": "Bestimmt das Aussehen des Pakets (Vorlagen und Shortcodes). Eigene Sätze liegen im Vorlagenverzeichnis unter portal/.",
+            "baseUrl": "Webadresse der Webseite",
+            "baseUrl_help": "Adresse, unter der Besucher die Webseite aufrufen, zum Beispiel https://www.example.de/.",
+            "invoicePage_help": "Seite der Webseite, die eine Rechnung anzeigt. Leer = /rechnung/.",
+            "templateSet_help": "Gestaltung der Portalseiten; „Standard“ passt für die meisten Webseiten.",
             "grants_help": "Wohin OpensourceERP schreiben darf, legt HugoCMS fest (Projekteinstellungen → OpensourceERP-Anbindung). Hier nur zur Ansicht; die Übertragung übernimmt die Freigaben jedes Mal.",
             "grantPackage": "Kundenportal-Paket",
-            "signingKey_help": "In HugoCMS unter Projekteinstellungen → OpensourceERP-Anbindung eintragen. Dann überträgt OpensourceERP Weiterleiter und 404-Seite selbst. Gilt für alle Webseiten dieser Installation."
+            "signingKey_help": "In HugoCMS unter Projekteinstellungen → OpensourceERP-Anbindung eintragen. Dann überträgt OpensourceERP Weiterleiter und 404-Seite selbst. Gilt für alle Webseiten dieser Installation.",
+            "hugocms": "HugoCMS",
+            "hugocmsUrl": "Webadresse für HugoCMS-Fernzugriff",
+            "hugocmsKey": "Schlüssel für HugoCMS-Fernzugriff",
+            "hugocmsKey_help": "Zugangsschlüssel, den HugoCMS für diese Webseite erzeugt hat.",
+            "allowedOrigins": "Erlaubte Herkunftsadressen",
+            "invoicePage": "Seite „Rechnung“",
+            "templateSet": "Vorlagensatz",
+            "publish": "Veröffentlichung"
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Eine Webseite mit diesem Namen gibt es schon.",
@@ -65,7 +73,7 @@
             "NO_PERMISSION": "Für die Webseiten fehlt das Recht „Webshops anlegen und bearbeiten“."
         },
         "proxyHint": "Die Webseite erreicht OpensourceERP über den Weiterleiter /portal-api/ im Paket — oder über einen Reverse-Proxy, der den Kopf X-Portal-Key setzt.",
-        "secretsNotice": "Die Schlüssel stehen verdeckt in den Feldern (Auge-Symbol zum Anzeigen), damit sie sich im Fehlerfall mit HugoCMS vergleichen lassen. Ein geleertes Feld behält den gespeicherten Wert.",
+        "secretsNotice": "Die Schlüssel sind ausgefüllt und verdeckt; das Auge-Symbol zeigt sie an. Ein geleertes Feld löscht den gespeicherten Schlüssel nicht.",
         "secretsLoadError": "Die Schlüssel der Webseiten konnten nicht geladen werden.",
         "backendTest": {
             "INVALID": "Keine gültige Adresse: {url} — erwartet etwa https://erp.example.de/portal/",
@@ -79,6 +87,20 @@
             "PROXY_NOT_CONFIGURED": "Der Weiterleiter läuft, findet aber oserp-portal/config.json nicht oder unvollständig — „Paket installieren“ ausführen.",
             "FOREIGN": "Unerwartete Antwort (HTTP {status}) — dort antwortet nicht der Portal-Zugang von OpensourceERP."
         },
-        "hugocmsShopOff": "In HugoCMS ist der Online-Shop für diese Webseite nicht freigegeben — in den Projekteinstellungen unter „OpensourceERP-Anbindung“ den Schalter „Online-Shop auf dieser Webseite“ einschalten. Bis dahin überträgt der Shop-Lauf keine Produktseiten."
+        "hugocmsShopOff": "In HugoCMS ist der Online-Shop für diese Webseite nicht freigegeben — in den Projekteinstellungen unter „OpensourceERP-Anbindung“ den Schalter „Online-Shop auf dieser Webseite“ einschalten. Bis dahin überträgt der Shop-Lauf keine Produktseiten.",
+        "help": {
+            "baseUrl": "Die Adresse der Webseite ist die baseURL der Hugo-Seite, so wie sie der Browser aufruft — mit https:// und mit Schrägstrich am Ende.\n\nDaraus leitet OpensourceERP zwei Dinge ab: den Ort des Weiterleiters (<Adresse>/portal-api/), den die Widgets der Webseite ansprechen, und die Links in E-Mails und WhatsApp-Nachrichten (Rechnung, Konto freischalten).\n\nEin Pfad gehört nur dazu, wenn die gesamte Hugo-Seite in einem Unterverzeichnis liegt, zum Beispiel https://firma.example/portal/ — dann endet auch ihre baseURL so, und Hugo legt den Weiterleiter unter diesem Pfad ab.\n\nNicht gemeint ist die Unterseite, auf der die Portalseiten liegen (etwa /kunden/anmelden/). Diese Seiten gehören unter „Seiten der Webseite“.\n\nPrüfen: „Verbindung prüfen“, dritter Schritt „Über die Webseite“ ruft genau <Adresse>/portal-api/ auf.",
+            "publicKey": "Der Schlüssel der Webseite ist das Geheimnis, mit dem sich die Webseite beim Portal-Zugang von OpensourceERP ausweist. Er bestimmt dort Mandant und Webseite — deshalb braucht jede Webseite einen eigenen.\n\nNormalerweise sieht ihn nur der Weiterleiter /portal-api/ auf dem Webserver: OpensourceERP schreibt ihn mit „Paket installieren“ in oserp-portal/config.json, außerhalb des öffentlichen Verzeichnisses. Der Browser der Kunden bekommt ihn nie zu sehen.\n\nErsetzt ein eigener Reverse-Proxy den Weiterleiter, setzt dieser den Kopf X-Portal-Key mit demselben Wert.\n\nNeuen Schlüssel erzeugen: Symbol rechts im Feld. Danach „Paket installieren“, sonst arbeitet die Webseite noch mit dem alten.",
+            "allowedOrigins": "Erlaubte Herkünfte braucht nur, wer den Portal-Zugang von OpensourceERP direkt aus dem Browser anspricht — also ohne den Weiterleiter /portal-api/ und ohne eigenen Reverse-Proxy.\n\nDann kommen die Anfragen von einer anderen Adresse als OpensourceERP selbst, und der Browser verlangt eine CORS-Freigabe. Hier stehen die Adressen der Webseite, kommagetrennt, mit Schema: https://www.example.de, https://example.de.\n\nLäuft die Webseite wie vorgesehen über den Weiterleiter, bleibt das Feld leer: Browser und Weiterleiter haben dieselbe Adresse, es gibt nichts freizugeben.\n\nSicherheit: Jede eingetragene Adresse darf mit dem Schlüssel der Webseite Sitzungen anlegen — nur eigene Webseiten eintragen.",
+            "backendUrl": "Die Adresse des Portal-Zugangs ist der öffentliche Einstieg von OpensourceERP für Kunden: das Verzeichnis backend/portal/ der Installation, zum Beispiel https://erp.example.de/portal/ — lokal mit scripts/dev.sh http://localhost:8000/portal/.\n\nDorthin leitet der Weiterleiter /portal-api/ auf der Webseite alle Anfragen der Widgets: Anmeldung, Konto, Rechnungen und, mit Shop, Warenkorb und Kasse. „Paket installieren“ schreibt die Adresse zusammen mit dem Schlüssel der Webseite in oserp-portal/config.json.\n\nNicht hierher gehören die Adresse von HugoCMS (…/cms-api/, Karte HugoCMS) und die Adresse der Webseite selbst.\n\nEin leeres Feld wird mit der Adresse vorbelegt, unter der OpensourceERP gerade aufgerufen wird. Hinter einem Reverse-Proxy ist das die von außen sichtbare Adresse — sie muss vom Webserver der Webseite aus erreichbar sein.\n\n„Verbindung prüfen“ testet in drei Schritten: Eingabe, direkt von OpensourceERP, über die Webseite.",
+            "hugocmsUrl": "HugoCMS ist das Programm, mit dem die Webseite gepflegt und gebaut wird. OpensourceERP schickt ihm das Kundenportal-Paket und lässt die Webseite danach neu bauen. Dafür braucht es eine Webadresse, unter der HugoCMS von außen erreichbar ist.\n\nDiese Adresse zeigt HugoCMS selbst an: in den Projekteinstellungen der Webseite unter „OpensourceERP-Anbindung“. Sie endet auf /cms-api/, zum Beispiel https://www.example.de/cms-api/. Am besten von dort kopieren.\n\nDie Adresse muss mit https:// beginnen, sonst nimmt HugoCMS die Verbindung nicht an. Ausnahme ist nur ein Test auf demselben Rechner.\n\nPrüfen: der Knopf „Verbindung prüfen und Freigaben abrufen“ in dieser Karte.",
+            "hugocmsKey": "Mit diesem Schlüssel weist sich OpensourceERP bei HugoCMS aus. Er gilt nur für diese eine Webseite.\n\nErzeugt wird er in HugoCMS: Projekteinstellungen der Webseite → „OpensourceERP-Anbindung“ → „Schlüssel erzeugen“. HugoCMS zeigt ihn dabei genau einmal vollständig an — dann kopieren und hier einfügen. Später zeigt HugoCMS nur noch die letzten vier Zeichen, damit lässt sich prüfen, ob beide Seiten denselben Schlüssel haben.\n\nGeht der Schlüssel verloren, in HugoCMS einen neuen erzeugen und hier ersetzen. Der alte gilt dann nicht mehr.",
+            "invoicePage": "Kunden bekommen in E-Mails einen Link zu ihrer Rechnung. Dieser Link führt auf eine Seite der Webseite, die die Rechnung anzeigt — hier steht ihr Pfad, zum Beispiel /rechnung/.\n\nDie Seite legt man in HugoCMS an und setzt dort den Baustein „shop-invoice“ ein. Bleibt das Feld leer, verwendet OpensourceERP /rechnung/.\n\nDer Link enthält einen geheimen Code, deshalb können auch Gäste ohne Kundenkonto ihre Rechnung sehen.",
+            "activatePage": "Bestandskunden, die noch kein Kundenkonto haben, können sich eines freischalten lassen: Sie geben ihre Telefonnummer ein und bekommen per WhatsApp einen Link. Dieser Link führt auf die hier eingetragene Seite, zum Beispiel /freischalten/.\n\nDie Seite legt man in HugoCMS an und setzt dort den Baustein „portal-activate“ ein. Bleibt das Feld leer, verwendet OpensourceERP /freischalten/.\n\nDerselbe Pfad gehört in die WhatsApp-Vorlage „Kundenkonto freischalten“ als Adresse der Schaltfläche.",
+            "templateSet": "Der Vorlagensatz bestimmt, wie Anmeldung, Kundenkonto, Rechnungen und Kontaktformular auf der Webseite aussehen. „Standard“ passt sich dem Aussehen der Webseite an und reicht in den meisten Fällen.\n\nEigene Sätze kann ein Entwickler im Vorlagenverzeichnis der Firma unter portal/ anlegen; sie erscheinen dann hier zur Auswahl.\n\nNach einem Wechsel „Paket installieren“ ausführen, damit die Webseite die neuen Vorlagen bekommt.",
+            "contactMailTo": "Füllt ein Kunde das Kontaktformular auf der Webseite aus, schickt OpensourceERP die Anfrage als E-Mail an diese Adresse.\n\nBleibt das Feld leer, geht die Anfrage an die Absenderadresse der Firma aus der Firmenkonfiguration.\n\nMehrere Empfänger sind nicht vorgesehen — dafür ein Postfach oder eine Verteilerliste verwenden."
+        },
+        "hugocmsFromBaseUrl": "Webadresse übernehmen",
+        "hugocmsFromBaseUrl_help": "Setzt die Adresse für den HugoCMS-Fernzugriff aus der Webadresse der Webseite mit /cms-api/ am Ende."
     }
 }

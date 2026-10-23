@@ -124,5 +124,8 @@
         "success": "Duomenų bazė atnaujinta. Pakartokite paskutinį veiksmą.",
         "failed": "Duomenų bazės atnaujinti nepavyko.",
         "alreadyRunning": "Duomenų bazės atnaujinimas jau vyksta. Bandykite dar kartą po kelių minučių."
+    },
+    "HelpPanel": {
+        "close": "Užverti žinyną"
     }
 }

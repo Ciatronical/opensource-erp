@@ -124,5 +124,8 @@
         "success": "Andmebaas on uuendatud. Palun korrake viimast toimingut.",
         "failed": "Andmebaasi uuendamine ebaõnnestus.",
         "alreadyRunning": "Andmebaasi uuendus juba käib. Palun proovige mõne minuti pärast uuesti."
+    },
+    "HelpPanel": {
+        "close": "Sulge abi"
     }
 }

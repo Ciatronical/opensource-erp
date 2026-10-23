@@ -124,5 +124,8 @@
         "success": "Tietokanta on päivitetty. Toista viimeisin toiminto.",
         "failed": "Tietokannan päivitys epäonnistui.",
         "alreadyRunning": "Tietokannan päivitys on jo käynnissä. Yritä uudelleen muutaman minuutin kuluttua."
+    },
+    "HelpPanel": {
+        "close": "Sulje ohje"
     }
 }

@@ -121,7 +121,7 @@
                 </div>
 
                 <!-- Einstellungen: erst beim Aufklappen geladen -->
-                <v-expansion-panels v-model="einstellungenOffen[seite.id]" variant="accordion" class="mt-4">
+                <v-expansion-panels v-model="einstellungenOffen[seite.id]" variant="accordion" color="grey-lighten-3" class="mt-4">
                     <v-expansion-panel>
                         <v-expansion-panel-title>
                             <v-icon start size="small">mdi-cog-outline</v-icon>
@@ -130,6 +130,7 @@
                         <v-expansion-panel-text>
                             <WebsiteSettings
                                 :website-id="seite.id"
+                                :website-name="seite.name"
                                 :settings="seite.settings"
                                 :secrets-set="seite.secrets_set"
                                 :secrets="secrets[seite.id] || {}"
@@ -156,6 +157,10 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
+
+        <!-- Hilfsanzeige für Felder mit Langfassung der Hilfe (field.help) — zunächst
+             nur hier, zum Ausprobieren -->
+        <help-panel />
     </div>
 </template>
 
@@ -165,6 +170,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import SectionCard from '@/core/components/layout/section-card.vue'
+import HelpPanel from '@/core/components/layout/help-panel.vue'
 import WebsiteSettings from './website-settings.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toasts from '@/core/utils/toasts.js'
@@ -263,6 +269,10 @@ async function laden() {
         einstellungenOffen.value[fokus] = 0
         await nextTick()
         document.getElementById(`webseite-${fokus}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else if (1 === webseiten.value.length) {
+        // Eine einzige Webseite: ihre Einstellungen gleich aufklappen — man
+        // kommt hierher, um genau sie einzurichten
+        einstellungenOffen.value[webseiten.value[0].id] = 0
     }
 }
 

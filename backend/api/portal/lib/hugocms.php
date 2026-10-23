@@ -37,7 +37,7 @@ require_once __DIR__.'/signing.php';
 function portalHugoCmsUrl(string $adresse): array {
     $adresse = trim($adresse);
     if ('' === $adresse) {
-        return ['adresse' => '', 'fehler' => 'Die Webseite hat keine Adresse von HugoCMS (Webseiten → HugoCMS)'];
+        return ['adresse' => '', 'fehler' => 'Die Webseite hat keine Webadresse für den HugoCMS-Fernzugriff (Firmenkonfiguration → Kundenportal, Karte HugoCMS)'];
     }
 
     $teile = parse_url($adresse);
@@ -145,7 +145,7 @@ function portalHugoCmsCall($db, int $website, string $befehl, string $methode = 
     }
     $schluessel = $eingabe('key', 'hugocms_key');
     if ('' === $schluessel) {
-        $ergebnis['fehler'] = 'Die Webseite hat keinen Schlüssel für HugoCMS (Webseiten → HugoCMS)';
+        $ergebnis['fehler'] = 'Die Webseite hat keinen Schlüssel für den HugoCMS-Fernzugriff (Firmenkonfiguration → Kundenportal, Karte HugoCMS)';
         return $ergebnis;
     }
 

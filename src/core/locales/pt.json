@@ -124,5 +124,8 @@
         "success": "A base de dados foi atualizada. Repita a última ação.",
         "failed": "A atualização da base de dados falhou.",
         "alreadyRunning": "Já está a decorrer uma atualização da base de dados. Tente novamente dentro de alguns minutos."
+    },
+    "HelpPanel": {
+        "close": "Fechar ajuda"
     }
 }

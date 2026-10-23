@@ -27,7 +27,7 @@
         "installHint": "Pārsūta veidnes, logrīkus un starpniekserveri uz HugoCMS un liek uzbūvēt vietni.",
         "installQueued": "Uzdevums izveidots – veikala publicēšana pārsūtīs pakotni (veikala pārskats).",
         "installDone": "Pakotne pārsūtīta un vietne uzbūvēta.",
-        "installFailed": "Pakotne nav pilnībā pārsūtīta – skatīt ziņojumus.",
+        "installFailed": "Pakotne netika pārsūtīta pilnībā. Iemesls:",
         "features": "Šajā vietnē:",
         "feature": {
             "portal": "Klienta konts",
@@ -36,26 +36,34 @@
         },
         "fields": {
             "contact": "Kontaktforma",
-            "activatePage": "Lapa “Konta aktivizācija”",
-            "activatePage_help": "Lapa ar īskodu portal-activate; uz to ved saite WhatsApp ziņā. Tukšs = /freischalten/",
+            "activatePage": "Lapa „Aktivizēt kontu“",
+            "activatePage_help": "Lapa, kurā esošie klienti aktivizē savu klienta kontu. Tukšs = /freischalten/.",
             "contactMailTo": "Kontaktformas saņēmējs",
             "contactMailTo_help": "E-pasta adrese, uz kuru nonāk pieprasījumi no kontaktformas. Tukšs = uzņēmuma sūtītāja adrese.",
-            "hugocms_help": "Vietne atrodas HugoCMS: OpensourceERP pārsūta tur pakotni un liek vietni uzbūvēt. Bez adreses un atslēgas nekas netiek publicēts.",
-            "hugocmsUrl_help": "Vietnes cms-api galapunkts, kā to HugoCMS rāda projekta iestatījumos sadaļā „OpensourceERP savienojums“, piemēram, https://www.example.lv/cms-api/.",
-            "access": "Vietnes piekļuve",
+            "hugocms_help": "Savienojums ar HugoCMS, kas šo vietni būvē un publicē.",
+            "hugocmsUrl_help": "Tīmekļa adrese attālinātai piekļuvei HugoCMS caur vietni.",
+            "access": "Piekļuve OpensourceERP",
             "publicKey": "Vietnes atslēga",
-            "publicKey_help": "Noslēpums, ar kuru vietne apliecina sevi OpensourceERP portāla piekļuvei. Bez tā piekļuve nepieņem nevienu pieprasījumu.",
-            "allowedOrigins_help": "Ar komatiem atdalīts adrešu saraksts, no kurām vietne drīkst piekļūt. Atstājiet tukšu, ja vietne izmanto to pašu adresi caur pārsūtītāju /portal-api/.",
-            "backendUrl": "OpensourceERP portāla piekļuves adrese",
-            "backendUrl_help": "Vietne pārsūta pieteikšanos, kontu, rēķinus un — ar veikalu — grozu un kasi uz šo adresi: publiskā OpensourceERP portāla piekļuve (backend/portal/), piemēram, https://erp.example.lv/portal/. Ne HugoCMS un ne vietnes adrese. Pakotne to kopā ar atslēgu ieraksta failā oserp-portal/config.json. Tukšs lauks tiek aizpildīts ar adresi, kurā OpensourceERP pašlaik tiek izsaukts.",
+            "publicKey_help": "Slepena atslēga, ar kuru vietne apliecina sevi OpensourceERP.",
+            "allowedOrigins_help": "Vajadzīgs tikai tad, ja vietne OpensourceERP izsauc tieši bez pārsūtītāja — citādi atstājiet tukšu.",
+            "backendUrl": "Klientu portāla piekļuves tīmekļa adrese",
+            "backendUrl_help": "Adrese, kurā vietne sasniedz OpensourceERP, piemēram, https://erp.example.lv/portal/.",
             "pages": "Vietnes lapas",
-            "baseUrl": "Vietnes adrese",
-            "baseUrl_help": "Adrese, kurā ir pieejama Hugo vietne (tās baseURL), ieskaitot https:// — piemēram, https://www.example.lv/. Tieši tur atrodas pārsūtītājs /portal-api/. Ceļš šeit pieder tikai tad, ja visa vietne atrodas apakšdirektorijā, t. i., tās baseURL pati beidzas ar …/cels/. Kurās lapās atrodas klientu portāls (pieteikšanās, rēķins, aktivizēšana), iestata sadaļā „Vietnes lapas“, nevis šeit.",
-            "invoicePage_help": "Vietnes lapa ar īskodu shop-invoice, piem., /rekins/. E-pasti ved uz turieni, lai arī viesi bez konta redzētu stāvokli. Tukšs = /rechnung/.",
-            "templateSet_help": "Nosaka pakotnes izskatu (veidnes un īskodi). Pašu komplekti atrodas veidņu direktorijā zem portal/.",
+            "baseUrl": "Vietnes tīmekļa adrese",
+            "baseUrl_help": "Adrese, kurā apmeklētāji atver vietni, piemēram, https://www.example.lv/.",
+            "invoicePage_help": "Vietnes lapa, kas rāda rēķinu. Tukšs = /rechnung/.",
+            "templateSet_help": "Portāla lapu noformējums; „Standard“ der lielākajai daļai vietņu.",
             "grants_help": "Kur OpensourceERP drīkst rakstīt, nosaka HugoCMS (projekta iestatījumi → OpensourceERP savienojums). Šeit tikai apskatei; pārsūtīšana atļaujas piemēro katru reizi.",
             "grantPackage": "Klientu portāla pakotne",
-            "signingKey_help": "Ievadiet HugoCMS sadaļā projekta iestatījumi → OpensourceERP savienojums. Tad OpensourceERP pats pārsūta pārsūtītāju un 404 lapu. Attiecas uz visām šīs instalācijas vietnēm."
+            "signingKey_help": "Ievadiet HugoCMS sadaļā projekta iestatījumi → OpensourceERP savienojums. Tad OpensourceERP pats pārsūta pārsūtītāju un 404 lapu. Attiecas uz visām šīs instalācijas vietnēm.",
+            "hugocms": "HugoCMS",
+            "hugocmsUrl": "Tīmekļa adrese HugoCMS attālinātajai piekļuvei",
+            "hugocmsKey": "Atslēga HugoCMS attālinātajai piekļuvei",
+            "hugocmsKey_help": "Piekļuves atslēga, ko HugoCMS izveidoja šai vietnei.",
+            "allowedOrigins": "Atļautās izcelsmes adreses",
+            "invoicePage": "Lapa „Rēķins“",
+            "templateSet": "Veidņu komplekts",
+            "publish": "Publicēšana"
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Vietne ar šādu nosaukumu jau ir.",
@@ -65,7 +73,7 @@
             "NO_PERMISSION": "Vietnēm trūkst tiesību “Izveidot un rediģēt interneta veikalus”."
         },
         "proxyHint": "Vietne sasniedz OpensourceERP caur pakotnes starpniekserveri /portal-api/ – vai caur reverso starpniekserveri, kas iestata galveni X-Portal-Key.",
-        "secretsNotice": "Atslēgas laukos ir paslēptas (acs ikona tās parāda), lai kļūdas gadījumā varētu salīdzināt ar HugoCMS. Iztukšots lauks saglabā saglabāto vērtību.",
+        "secretsNotice": "Atslēgas ir aizpildītas un paslēptas; acs ikona tās parāda. Iztukšots lauks saglabāto atslēgu nedzēš.",
         "secretsLoadError": "Neizdevās ielādēt vietņu atslēgas.",
         "backendTest": {
             "INVALID": "Nederīga adrese: {url} — gaidīts, piemēram, https://erp.example.lv/portal/",
@@ -79,6 +87,20 @@
             "PROXY_NOT_CONFIGURED": "Pārsūtītājs darbojas, bet neatrod oserp-portal/config.json vai tas ir nepilnīgs — izpildiet „Instalēt pakotni“.",
             "FOREIGN": "Negaidīta atbilde (HTTP {status}) — tur neatbild OpensourceERP portāla piekļuve."
         },
-        "hugocmsShopOff": "HugoCMS šai vietnei interneta veikals nav atļauts — projekta iestatījumos sadaļā „OpensourceERP savienojums“ ieslēdziet „Interneta veikals šajā vietnē“. Līdz tam veikala izpilde nepārsūta produktu lapas."
+        "hugocmsShopOff": "HugoCMS šai vietnei interneta veikals nav atļauts — projekta iestatījumos sadaļā „OpensourceERP savienojums“ ieslēdziet „Interneta veikals šajā vietnē“. Līdz tam veikala izpilde nepārsūta produktu lapas.",
+        "help": {
+            "baseUrl": "Vietnes adrese ir Hugo vietnes baseURL tā, kā to izsauc pārlūks — ar https:// un slīpsvītru beigās.\n\nNo tās OpensourceERP atvasina divas lietas: pārsūtītāja atrašanās vietu (<adrese>/portal-api/), ko izsauc vietnes logrīki, un saites e-pastos un WhatsApp ziņās (rēķins, konta aktivizēšana).\n\nCeļš pieder tikai tad, ja visa Hugo vietne atrodas apakšdirektorijā, piem., https://firma.example/portal/ — tad arī tās baseURL beidzas tā, un Hugo novieto pārsūtītāju zem šī ceļa.\n\nNav domāta apakšlapa, kurā atrodas portāla lapas (piem., /klienti/pieteiksanas/). Tās pieder sadaļā „Vietnes lapas“.\n\nPārbaude: „Pārbaudīt savienojumu“, trešais solis „Caur vietni“ izsauc tieši <adrese>/portal-api/.",
+            "publicKey": "Vietnes atslēga ir noslēpums, ar kuru vietne apliecina sevi OpensourceERP portāla piekļuvei. Tā tur nosaka nomnieku un vietni — tāpēc katrai vietnei vajadzīga sava.\n\nParasti to redz tikai pārsūtītājs /portal-api/ tīmekļa serverī: OpensourceERP to ar „Instalēt pakotni“ ieraksta failā oserp-portal/config.json ārpus publiskās direktorijas. Klientu pārlūks to nekad neredz.\n\nJa pārsūtītāju aizstāj pašu reversais starpniekserveris, tas iestata galveni X-Portal-Key ar to pašu vērtību.\n\nIzveidot jaunu atslēgu: ikona lauka labajā pusē. Pēc tam „Instalēt pakotni“, citādi vietne vēl strādā ar veco.",
+            "allowedOrigins": "Atļautās izcelsmes vajadzīgas tikai tad, ja OpensourceERP portāla piekļuvi izsauc tieši no pārlūka — tātad bez pārsūtītāja /portal-api/ un bez sava reversā starpniekservera.\n\nTad pieprasījumi nāk no citas adreses nekā pats OpensourceERP, un pārlūks prasa CORS atļauju. Šeit norāda vietnes adreses, atdalītas ar komatiem, ar shēmu: https://www.example.lv, https://example.lv.\n\nJa vietne, kā paredzēts, darbojas caur pārsūtītāju, lauks paliek tukšs: pārlūkam un pārsūtītājam ir viena adrese, nav ko atļaut.\n\nDrošība: katra norādītā adrese drīkst ar vietnes atslēgu veidot sesijas — norādiet tikai savas vietnes.",
+            "backendUrl": "Portāla piekļuves adrese ir OpensourceERP publiskā ieeja klientiem: instalācijas direktorija backend/portal/, piemēram, https://erp.example.lv/portal/ — lokāli ar scripts/dev.sh http://localhost:8000/portal/.\n\nUz turieni vietnes pārsūtītājs /portal-api/ nodod visus logrīku pieprasījumus: pieteikšanos, kontu, rēķinus un ar veikalu grozu un kasi. „Instalēt pakotni“ ieraksta adresi kopā ar vietnes atslēgu failā oserp-portal/config.json.\n\nŠeit nepieder HugoCMS adrese (…/cms-api/, kartīte HugoCMS) un pašas vietnes adrese.\n\nTukšs lauks tiek aizpildīts ar adresi, kurā OpensourceERP pašlaik tiek izsaukts. Aiz reversā starpniekservera tā ir no ārpuses redzamā adrese — tai jābūt sasniedzamai no vietnes tīmekļa servera.\n\n„Pārbaudīt savienojumu“ pārbauda trīs soļos: ievade, tieši no OpensourceERP, caur vietni.",
+            "hugocmsUrl": "HugoCMS ir programma, ar kuru vietni uztur un būvē. OpensourceERP tai nosūta klientu portāla pakotni un pēc tam liek vietni uzbūvēt no jauna. Tam vajadzīga tīmekļa adrese, kurā HugoCMS ir sasniedzams no ārpuses.\n\nŠo adresi rāda pats HugoCMS: vietnes projekta iestatījumos sadaļā „OpensourceERP savienojums“. Tā beidzas ar /cms-api/, piemēram, https://www.example.lv/cms-api/. Vislabāk to nokopēt no turienes.\n\nAdresei jāsākas ar https://, citādi HugoCMS savienojumu nepieņem. Vienīgais izņēmums ir tests tajā pašā datorā.\n\nPārbaude: poga „Pārbaudīt savienojumu un ielādēt atļaujas“ šajā kartītē.",
+            "hugocmsKey": "Ar šo atslēgu OpensourceERP apliecina sevi HugoCMS. Tā attiecas tikai uz šo vienu vietni.\n\nTo izveido HugoCMS: vietnes projekta iestatījumi → „OpensourceERP savienojums“ → „Izveidot atslēgu“. HugoCMS to pilnībā parāda tieši vienu reizi — tad nokopējiet un ielīmējiet šeit. Vēlāk HugoCMS rāda tikai pēdējās četras rakstzīmes, pēc tām var pārbaudīt, vai abām pusēm ir viena un tā pati atslēga.\n\nJa atslēga pazūd, HugoCMS izveidojiet jaunu un šeit nomainiet. Vecā vairs nav derīga.",
+            "invoicePage": "Klienti e-pastos saņem saiti uz savu rēķinu. Šī saite ved uz vietnes lapu, kas rēķinu parāda — šeit norāda tās ceļu, piemēram, /rekins/.\n\nLapu izveido HugoCMS un tajā ievieto bloku „shop-invoice“. Ja lauks paliek tukšs, OpensourceERP izmanto /rechnung/.\n\nSaitē ir slepens kods, tāpēc savu rēķinu redz arī viesi bez klienta konta.",
+            "activatePage": "Esošie klienti bez klienta konta var to aktivizēt: viņi ievada tālruņa numuru un saņem saiti caur WhatsApp. Šī saite ved uz šeit norādīto lapu, piemēram, /aktivizet/.\n\nLapu izveido HugoCMS un tajā ievieto bloku „portal-activate“. Ja lauks paliek tukšs, OpensourceERP izmanto /freischalten/.\n\nTas pats ceļš jānorāda WhatsApp veidnē „Aktivizēt klienta kontu“ kā pogas adrese.",
+            "templateSet": "Veidņu komplekts nosaka, kā vietnē izskatās pieteikšanās, klienta konts, rēķini un kontaktforma. „Standard“ pielāgojas vietnes izskatam un vairumā gadījumu pietiek.\n\nSavus komplektus izstrādātājs var izveidot uzņēmuma veidņu direktorijā zem portal/; tad tie šeit parādās izvēlei.\n\nPēc maiņas izpildiet „Instalēt pakotni“, lai vietne saņemtu jaunās veidnes.",
+            "contactMailTo": "Kad klients vietnē aizpilda kontaktformu, OpensourceERP pieprasījumu kā e-pastu nosūta uz šo adresi.\n\nJa lauks paliek tukšs, pieprasījums nonāk uz uzņēmuma sūtītāja adresi no uzņēmuma konfigurācijas.\n\nVairāki saņēmēji nav paredzēti — tam izmantojiet kopīgu pastkasti vai izplatīšanas sarakstu."
+        },
+        "hugocmsFromBaseUrl": "Pārņemt tīmekļa adresi",
+        "hugocmsFromBaseUrl_help": "Iestata HugoCMS attālinātās piekļuves adresi no vietnes tīmekļa adreses ar /cms-api/ beigās."
     }
 }

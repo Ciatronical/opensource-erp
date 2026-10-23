@@ -27,7 +27,7 @@
         "installHint": "Överför mallar, widgetar och proxy till HugoCMS och låter bygga webbplatsen.",
         "installQueued": "Jobb skapat – butikspubliceringen överför paketet (butiksöversikt).",
         "installDone": "Paket överfört och webbplats byggd.",
-        "installFailed": "Paketet överfördes inte helt – se meddelanden.",
+        "installFailed": "Paketet överfördes inte fullständigt. Orsak:",
         "features": "På denna webbplats:",
         "feature": {
             "portal": "Kundkonto",
@@ -36,26 +36,34 @@
         },
         "fields": {
             "contact": "Kontaktformulär",
-            "activatePage": "Sida ”Aktivera konto”",
-            "activatePage_help": "Sida med kortkoden portal-activate; länken i WhatsApp-meddelandet leder dit. Tom = /freischalten/",
+            "activatePage": "Sidan ”Aktivera konto”",
+            "activatePage_help": "Sida där befintliga kunder aktiverar sitt kundkonto. Tomt = /freischalten/.",
             "contactMailTo": "Mottagare av kontaktformuläret",
-            "contactMailTo_help": "E-postadress som förfrågningar från kontaktformuläret skickas till. Tom = företagets avsändaradress.",
-            "hugocms_help": "Webbplatsen ligger i HugoCMS: OpensourceERP överför paketet dit och låter webbplatsen byggas. Utan adress och nyckel publiceras inget.",
-            "hugocmsUrl_help": "Webbplatsens cms-api-slutpunkt som HugoCMS visar den i projektinställningarna under ”OpensourceERP-anslutning” — till exempel https://www.example.se/cms-api/.",
-            "access": "Webbplatsens åtkomst",
+            "contactMailTo_help": "E-postadress dit förfrågningar från kontaktformuläret går. Tomt = företagets avsändaradress.",
+            "hugocms_help": "Anslutning till HugoCMS, som bygger och publicerar den här webbplatsen.",
+            "hugocmsUrl_help": "Webbadress för fjärråtkomst till HugoCMS via webbplatsen.",
+            "access": "Åtkomst till OpensourceERP",
             "publicKey": "Webbplatsens nyckel",
-            "publicKey_help": "Hemlighet som webbplatsen identifierar sig med mot OpensourceERP:s portalåtkomst. Utan den tar åtkomsten inte emot några förfrågningar.",
-            "allowedOrigins_help": "Kommaseparerad lista över adresser som webbplatsen får anropa från. Lämna tomt om webbplatsen använder samma adress via vidarebefordraren /portal-api/.",
-            "backendUrl": "Adress till OpensourceERP:s portalåtkomst",
-            "backendUrl_help": "Webbplatsen vidarebefordrar inloggning, konto, fakturor och — med butik — varukorg och kassa till den här adressen: OpensourceERP:s offentliga portalåtkomst (backend/portal/), till exempel https://erp.example.se/portal/. Inte HugoCMS adress och inte webbplatsens. Paketet skriver den tillsammans med nyckeln i oserp-portal/config.json. Ett tomt fält förifylls med adressen som OpensourceERP just nu anropas på.",
+            "publicKey_help": "Hemlig nyckel som webbplatsen identifierar sig med mot OpensourceERP.",
+            "allowedOrigins_help": "Behövs bara om webbplatsen anropar OpensourceERP direkt utan vidarebefordraren — lämna annars tomt.",
+            "backendUrl": "Webbadress till kundportalsåtkomsten",
+            "backendUrl_help": "Adress där webbplatsen når OpensourceERP, till exempel https://erp.example.se/portal/.",
             "pages": "Webbplatsens sidor",
-            "baseUrl": "Webbplatsens adress",
-            "baseUrl_help": "Adress där Hugo-webbplatsen nås (dess baseURL), inklusive https:// — till exempel https://www.example.se/. Exakt där ligger vidarebefordraren /portal-api/. En sökväg hör bara hit om hela webbplatsen ligger i en underkatalog, alltså om dess baseURL själv slutar på …/sokvag/. Vilka sidor kundportalen ligger på (inloggning, faktura, aktivering) ställs in under ”Webbplatsens sidor”, inte här.",
-            "invoicePage_help": "Webbplatsens sida med shortcoden shop-invoice, t.ex. /faktura/. Mejl länkar dit så att även gäster utan konto ser status. Tomt = /rechnung/.",
-            "templateSet_help": "Bestämmer paketets utseende (mallar och shortcodes). Egna uppsättningar ligger i mallkatalogen under portal/.",
+            "baseUrl": "Webbplatsens webbadress",
+            "baseUrl_help": "Adress som besökare öppnar webbplatsen på, till exempel https://www.example.se/.",
+            "invoicePage_help": "Sida på webbplatsen som visar en faktura. Tomt = /rechnung/.",
+            "templateSet_help": "Portalsidornas utseende; ”Standard” passar de flesta webbplatser.",
             "grants_help": "Var OpensourceERP får skriva bestämmer HugoCMS (projektinställningar → OpensourceERP-anslutning). Visas här bara för kännedom; överföringen tillämpar behörigheterna varje gång.",
             "grantPackage": "Kundportalspaket",
-            "signingKey_help": "Ange den i HugoCMS under projektinställningar → OpensourceERP-anslutning. Då överför OpensourceERP vidarebefordraren och 404-sidan själv. Gäller alla webbplatser i den här installationen."
+            "signingKey_help": "Ange den i HugoCMS under projektinställningar → OpensourceERP-anslutning. Då överför OpensourceERP vidarebefordraren och 404-sidan själv. Gäller alla webbplatser i den här installationen.",
+            "hugocms": "HugoCMS",
+            "hugocmsUrl": "Webbadress för HugoCMS-fjärråtkomst",
+            "hugocmsKey": "Nyckel för HugoCMS-fjärråtkomst",
+            "hugocmsKey_help": "Åtkomstnyckel som HugoCMS har skapat för den här webbplatsen.",
+            "allowedOrigins": "Tillåtna ursprungsadresser",
+            "invoicePage": "Sidan ”Faktura”",
+            "templateSet": "Malluppsättning",
+            "publish": "Publicering"
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "En webbplats med detta namn finns redan.",
@@ -65,7 +73,7 @@
             "NO_PERMISSION": "Rättigheten ”Skapa och redigera webbutiker” saknas för webbplatserna."
         },
         "proxyHint": "Webbplatsen når OpensourceERP via proxyn /portal-api/ i paketet – eller via en reverse proxy som sätter headern X-Portal-Key.",
-        "secretsNotice": "Nycklarna står dolda i fälten (ögonikonen visar dem) så att de kan jämföras med HugoCMS vid fel. Ett tömt fält behåller det sparade värdet.",
+        "secretsNotice": "Nycklarna är ifyllda och dolda; ögonikonen visar dem. Ett tömt fält raderar inte den sparade nyckeln.",
         "secretsLoadError": "Webbplatsernas nycklar kunde inte läsas in.",
         "backendTest": {
             "INVALID": "Ogiltig adress: {url} — förväntat t.ex. https://erp.example.se/portal/",
@@ -79,6 +87,20 @@
             "PROXY_NOT_CONFIGURED": "Vidarebefordraren körs men hittar inte oserp-portal/config.json eller den är ofullständig — kör ”Installera paket”.",
             "FOREIGN": "Oväntat svar (HTTP {status}) — det är inte OpensourceERP:s portalåtkomst som svarar."
         },
-        "hugocmsShopOff": "I HugoCMS är webbutiken inte frisläppt för den här webbplatsen — slå på ”Webbutik på den här webbplatsen” i projektinställningarna under ”OpensourceERP-anslutning”. Tills dess överför butikskörningen inga produktsidor."
+        "hugocmsShopOff": "I HugoCMS är webbutiken inte frisläppt för den här webbplatsen — slå på ”Webbutik på den här webbplatsen” i projektinställningarna under ”OpensourceERP-anslutning”. Tills dess överför butikskörningen inga produktsidor.",
+        "help": {
+            "baseUrl": "Webbplatsens adress är Hugo-webbplatsens baseURL så som webbläsaren anropar den — med https:// och snedstreck på slutet.\n\nOpensourceERP härleder två saker ur den: platsen för vidarebefordraren (<adress>/portal-api/) som webbplatsens widgetar anropar, och länkarna i e-post och WhatsApp-meddelanden (faktura, aktivera konto).\n\nEn sökväg hör bara hit om hela Hugo-webbplatsen ligger i en underkatalog, t.ex. https://foretag.example/portal/ — då slutar även dess baseURL så, och Hugo lägger vidarebefordraren under den sökvägen.\n\nInte menat är undersidan där portalsidorna ligger (t.ex. /kunder/logga-in/). De sidorna hör hemma under ”Webbplatsens sidor”.\n\nKontroll: ”Testa anslutning”, tredje steget ”Via webbplatsen” anropar exakt <adress>/portal-api/.",
+            "publicKey": "Webbplatsens nyckel är hemligheten som webbplatsen identifierar sig med mot OpensourceERP:s portalåtkomst. Den avgör där klient och webbplats — därför behöver varje webbplats en egen.\n\nNormalt ser bara vidarebefordraren /portal-api/ på webbservern den: OpensourceERP skriver den med ”Installera paket” i oserp-portal/config.json, utanför den publika katalogen. Kundernas webbläsare får aldrig se den.\n\nErsätter en egen omvänd proxy vidarebefordraren sätter den rubriken X-Portal-Key med samma värde.\n\nSkapa ny nyckel: ikonen till höger i fältet. Därefter ”Installera paket”, annars arbetar webbplatsen fortfarande med den gamla.",
+            "allowedOrigins": "Tillåtna ursprung behövs bara om OpensourceERP:s portalåtkomst anropas direkt från webbläsaren — alltså utan vidarebefordraren /portal-api/ och utan egen omvänd proxy.\n\nDå kommer förfrågningarna från en annan adress än OpensourceERP självt, och webbläsaren kräver ett CORS-godkännande. Här står webbplatsens adresser, kommaseparerade, med schema: https://www.example.se, https://example.se.\n\nKör webbplatsen som avsett via vidarebefordraren lämnas fältet tomt: webbläsare och vidarebefordrare har samma adress, det finns inget att godkänna.\n\nSäkerhet: varje angiven adress får skapa sessioner med webbplatsens nyckel — ange bara egna webbplatser.",
+            "backendUrl": "Adressen till portalåtkomsten är OpensourceERP:s offentliga ingång för kunder: katalogen backend/portal/ i installationen, till exempel https://erp.example.se/portal/ — lokalt med scripts/dev.sh http://localhost:8000/portal/.\n\nDit vidarebefordrar /portal-api/ på webbplatsen alla förfrågningar från widgetarna: inloggning, konto, fakturor och, med butik, varukorg och kassa. ”Installera paket” skriver adressen tillsammans med webbplatsens nyckel i oserp-portal/config.json.\n\nHit hör varken HugoCMS adress (…/cms-api/, kortet HugoCMS) eller webbplatsens egen adress.\n\nEtt tomt fält förifylls med adressen som OpensourceERP just nu anropas på. Bakom en omvänd proxy är det den utifrån synliga adressen — den måste gå att nå från webbplatsens webbserver.\n\n”Testa anslutning” kontrollerar i tre steg: inmatning, direkt från OpensourceERP, via webbplatsen.",
+            "hugocmsUrl": "HugoCMS är programmet som webbplatsen underhålls och byggs med. OpensourceERP skickar det kundportalspaketet och låter sedan webbplatsen byggas om. För det behövs en webbadress där HugoCMS nås utifrån.\n\nDen adressen visar HugoCMS självt: i webbplatsens projektinställningar under ”OpensourceERP-anslutning”. Den slutar på /cms-api/, till exempel https://www.example.se/cms-api/. Kopiera den helst därifrån.\n\nAdressen måste börja med https://, annars avvisar HugoCMS anslutningen. Enda undantaget är ett test på samma dator.\n\nKontroll: knappen ”Testa anslutning och hämta behörigheter” på det här kortet.",
+            "hugocmsKey": "Med den här nyckeln identifierar sig OpensourceERP mot HugoCMS. Den gäller bara för den här webbplatsen.\n\nDen skapas i HugoCMS: webbplatsens projektinställningar → ”OpensourceERP-anslutning” → ”Skapa nyckel”. HugoCMS visar den i sin helhet exakt en gång — kopiera den då och klistra in här. Senare visar HugoCMS bara de fyra sista tecknen, så kan man kontrollera att båda sidor har samma nyckel.\n\nTappas nyckeln bort, skapa en ny i HugoCMS och ersätt den här. Den gamla gäller då inte längre.",
+            "invoicePage": "Kunder får i e-post en länk till sin faktura. Länken leder till en sida på webbplatsen som visar fakturan — här står dess sökväg, till exempel /faktura/.\n\nSidan skapas i HugoCMS med byggstenen ”shop-invoice”. Lämnas fältet tomt använder OpensourceERP /rechnung/.\n\nLänken innehåller en hemlig kod, så även gäster utan kundkonto kan se sin faktura.",
+            "activatePage": "Befintliga kunder utan kundkonto kan få ett aktiverat: de anger sitt telefonnummer och får en länk via WhatsApp. Länken leder till sidan som anges här, till exempel /aktivera/.\n\nSidan skapas i HugoCMS med byggstenen ”portal-activate”. Lämnas fältet tomt använder OpensourceERP /freischalten/.\n\nSamma sökväg hör hemma i WhatsApp-mallen ”Aktivera kundkonto” som knappens adress.",
+            "templateSet": "Malluppsättningen avgör hur inloggning, kundkonto, fakturor och kontaktformulär ser ut på webbplatsen. ”Standard” anpassar sig till webbplatsens utseende och räcker i de flesta fall.\n\nEgna uppsättningar kan en utvecklare skapa i företagets mallkatalog under portal/; de visas då här att välja.\n\nEfter ett byte kör ”Installera paket” så att webbplatsen får de nya mallarna.",
+            "contactMailTo": "Fyller en kund i kontaktformuläret på webbplatsen skickar OpensourceERP förfrågan som e-post till den här adressen.\n\nLämnas fältet tomt går förfrågan till företagets avsändaradress från företagskonfigurationen.\n\nFlera mottagare stöds inte — använd en delad brevlåda eller en sändlista."
+        },
+        "hugocmsFromBaseUrl": "Använd webbadressen",
+        "hugocmsFromBaseUrl_help": "Sätter adressen för HugoCMS-fjärråtkomst utifrån webbplatsens webbadress med /cms-api/ på slutet."
     }
 }

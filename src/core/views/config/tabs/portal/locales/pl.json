@@ -27,7 +27,7 @@
         "installHint": "Przesyła szablony, widżety i proxy do HugoCMS i buduje stronę.",
         "installQueued": "Zadanie utworzone – publikacja sklepu przesyła pakiet (przegląd sklepu).",
         "installDone": "Pakiet przesłany i strona zbudowana.",
-        "installFailed": "Pakiet nie został w pełni przesłany – zobacz komunikaty.",
+        "installFailed": "Pakiet nie został w pełni przesłany. Powód:",
         "features": "Na tej stronie:",
         "feature": {
             "portal": "Konto klienta",
@@ -37,25 +37,33 @@
         "fields": {
             "contact": "Formularz kontaktowy",
             "activatePage": "Strona „Aktywacja konta”",
-            "activatePage_help": "Strona z shortcodem portal-activate; prowadzi tam link w wiadomości WhatsApp. Puste = /freischalten/",
+            "activatePage_help": "Strona, na której dotychczasowi klienci aktywują swoje konto klienta. Puste = /freischalten/.",
             "contactMailTo": "Odbiorca formularza kontaktowego",
             "contactMailTo_help": "Adres e-mail, na który trafiają zapytania z formularza kontaktowego. Puste = adres nadawcy firmy.",
-            "hugocms_help": "Witryna działa w HugoCMS: OpensourceERP przesyła tam pakiet i zleca zbudowanie witryny. Bez adresu i klucza nic nie jest publikowane.",
-            "hugocmsUrl_help": "Punkt końcowy cms-api witryny, tak jak pokazuje go HugoCMS w ustawieniach projektu w sekcji „Połączenie OpensourceERP” — na przykład https://www.example.pl/cms-api/.",
-            "access": "Dostęp witryny",
+            "hugocms_help": "Połączenie z HugoCMS, które buduje i publikuje tę witrynę.",
+            "hugocmsUrl_help": "Adres internetowy zdalnego dostępu do HugoCMS przez witrynę.",
+            "access": "Dostęp do OpensourceERP",
             "publicKey": "Klucz witryny",
-            "publicKey_help": "Sekret, którym witryna uwierzytelnia się wobec dostępu portalowego OpensourceERP. Bez niego dostęp nie przyjmuje żadnych żądań.",
-            "allowedOrigins_help": "Rozdzielona przecinkami lista adresów, z których witryna może się łączyć. Pozostaw puste, jeśli witryna używa tego samego adresu przez przekaźnik /portal-api/.",
-            "backendUrl": "Adres dostępu portalowego OpensourceERP",
-            "backendUrl_help": "Witryna przekazuje logowanie, konto, faktury oraz — ze sklepem — koszyk i kasę na ten adres: publiczny dostęp portalowy OpensourceERP (backend/portal/), na przykład https://erp.example.pl/portal/. Nie adres HugoCMS ani adres witryny. Pakiet zapisuje go z kluczem w oserp-portal/config.json. Puste pole jest wstępnie wypełniane adresem, pod którym OpensourceERP jest obecnie wywoływany.",
+            "publicKey_help": "Tajny klucz, którym witryna uwierzytelnia się wobec OpensourceERP.",
+            "allowedOrigins_help": "Potrzebne tylko wtedy, gdy witryna wywołuje OpensourceERP bezpośrednio bez przekaźnika — w przeciwnym razie zostaw puste.",
+            "backendUrl": "Adres internetowy dostępu do portalu klienta",
+            "backendUrl_help": "Adres, pod którym witryna dociera do OpensourceERP, na przykład https://erp.example.pl/portal/.",
             "pages": "Strony witryny",
-            "baseUrl": "Adres witryny",
-            "baseUrl_help": "Adres, pod którym dostępna jest witryna Hugo (jej baseURL), wraz z https:// — na przykład https://www.example.pl/. Dokładnie tam znajduje się przekaźnik /portal-api/. Ścieżka należy tutaj tylko wtedy, gdy cała witryna znajduje się w podkatalogu, czyli jej baseURL sama kończy się na …/sciezka/. Na których stronach znajduje się portal klienta (logowanie, faktura, aktywacja), ustawia się w sekcji „Strony witryny”, nie tutaj.",
-            "invoicePage_help": "Strona witryny z shortcode shop-invoice, np. /faktura/. Maile odsyłają tam, aby status widzieli także goście bez konta. Puste = /rechnung/.",
-            "templateSet_help": "Określa wygląd pakietu (szablony i shortcode’y). Własne zestawy leżą w katalogu szablonów pod portal/.",
+            "baseUrl": "Adres internetowy witryny",
+            "baseUrl_help": "Adres, pod którym odwiedzający otwierają witrynę, na przykład https://www.example.pl/.",
+            "invoicePage_help": "Strona witryny wyświetlająca fakturę. Puste = /rechnung/.",
+            "templateSet_help": "Wygląd stron portalu; „Standard” pasuje do większości witryn.",
             "grants_help": "Gdzie OpensourceERP może zapisywać, określa HugoCMS (ustawienia projektu → Połączenie OpensourceERP). Tutaj tylko do wglądu; transfer stosuje uprawnienia za każdym razem.",
             "grantPackage": "Pakiet portalu klienta",
-            "signingKey_help": "Wpisz w HugoCMS w ustawieniach projektu → Połączenie OpensourceERP. Wtedy OpensourceERP sam przesyła przekaźnik i stronę 404. Dotyczy wszystkich witryn tej instalacji."
+            "signingKey_help": "Wpisz w HugoCMS w ustawieniach projektu → Połączenie OpensourceERP. Wtedy OpensourceERP sam przesyła przekaźnik i stronę 404. Dotyczy wszystkich witryn tej instalacji.",
+            "hugocms": "HugoCMS",
+            "hugocmsUrl": "Adres internetowy zdalnego dostępu do HugoCMS",
+            "hugocmsKey": "Klucz zdalnego dostępu do HugoCMS",
+            "hugocmsKey_help": "Klucz dostępu, który HugoCMS wygenerował dla tej witryny.",
+            "allowedOrigins": "Dozwolone adresy źródłowe",
+            "invoicePage": "Strona „Faktura”",
+            "templateSet": "Zestaw szablonów",
+            "publish": "Publikacja"
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Strona o tej nazwie już istnieje.",
@@ -65,7 +73,7 @@
             "NO_PERMISSION": "Brak uprawnienia „Tworzenie i edycja sklepów internetowych” dla stron."
         },
         "proxyHint": "Strona łączy się z OpensourceERP przez proxy /portal-api/ w pakiecie – lub przez reverse proxy ustawiające nagłówek X-Portal-Key.",
-        "secretsNotice": "Klucze są ukryte w polach (ikona oka je pokazuje), aby w razie błędu można je było porównać z HugoCMS. Wyczyszczone pole zachowuje zapisaną wartość.",
+        "secretsNotice": "Klucze są wypełnione i ukryte; ikona oka je pokazuje. Wyczyszczenie pola nie usuwa zapisanego klucza.",
         "secretsLoadError": "Nie udało się wczytać kluczy witryn.",
         "backendTest": {
             "INVALID": "Nieprawidłowy adres: {url} — oczekiwano np. https://erp.example.pl/portal/",
@@ -79,6 +87,20 @@
             "PROXY_NOT_CONFIGURED": "Przekaźnik działa, ale nie znajduje oserp-portal/config.json lub plik jest niekompletny — uruchom „Zainstaluj pakiet”.",
             "FOREIGN": "Nieoczekiwana odpowiedź (HTTP {status}) — nie odpowiada tam dostęp portalowy OpensourceERP."
         },
-        "hugocmsShopOff": "W HugoCMS sklep internetowy nie jest włączony dla tej witryny — włącz „Sklep internetowy w tej witrynie” w ustawieniach projektu w sekcji „Połączenie OpensourceERP”. Do tego czasu przebieg sklepu nie przesyła stron produktów."
+        "hugocmsShopOff": "W HugoCMS sklep internetowy nie jest włączony dla tej witryny — włącz „Sklep internetowy w tej witrynie” w ustawieniach projektu w sekcji „Połączenie OpensourceERP”. Do tego czasu przebieg sklepu nie przesyła stron produktów.",
+        "help": {
+            "baseUrl": "Adres witryny to baseURL witryny Hugo, tak jak wywołuje ją przeglądarka — z https:// i ukośnikiem na końcu.\n\nOpensourceERP wyprowadza z niego dwie rzeczy: położenie przekaźnika (<adres>/portal-api/), który wywołują widżety witryny, oraz linki w e-mailach i wiadomościach WhatsApp (faktura, aktywacja konta).\n\nŚcieżka należy tu tylko wtedy, gdy cała witryna Hugo znajduje się w podkatalogu, np. https://firma.example/portal/ — wtedy jej baseURL też tak się kończy, a Hugo umieszcza przekaźnik pod tą ścieżką.\n\nNie chodzi o podstronę, na której znajdują się strony portalu (np. /klienci/logowanie/). Te strony należą do „Strony witryny”.\n\nSprawdzenie: „Testuj połączenie”, trzeci krok „Przez witrynę” wywołuje dokładnie <adres>/portal-api/.",
+            "publicKey": "Klucz witryny to sekret, którym witryna uwierzytelnia się wobec dostępu portalowego OpensourceERP. Określa tam mandanta i witrynę — dlatego każda witryna potrzebuje własnego.\n\nZwykle widzi go tylko przekaźnik /portal-api/ na serwerze WWW: OpensourceERP zapisuje go przez „Zainstaluj pakiet” w oserp-portal/config.json, poza katalogiem publicznym. Przeglądarka klientów nigdy go nie widzi.\n\nJeśli własny reverse proxy zastępuje przekaźnik, ustawia nagłówek X-Portal-Key z tą samą wartością.\n\nNowy klucz: ikona po prawej stronie pola. Potem „Zainstaluj pakiet”, inaczej witryna pracuje nadal ze starym.",
+            "allowedOrigins": "Dozwolone źródła są potrzebne tylko wtedy, gdy dostęp portalowy OpensourceERP jest wywoływany bezpośrednio z przeglądarki — czyli bez przekaźnika /portal-api/ i bez własnego reverse proxy.\n\nWtedy żądania przychodzą z innego adresu niż sam OpensourceERP, a przeglądarka wymaga zgody CORS. Tutaj wpisuje się adresy witryny, rozdzielone przecinkami, ze schematem: https://www.example.pl, https://example.pl.\n\nJeśli witryna działa zgodnie z założeniem przez przekaźnik, pole pozostaje puste: przeglądarka i przekaźnik mają ten sam adres, nie ma czego zezwalać.\n\nBezpieczeństwo: każdy wpisany adres może zakładać sesje kluczem witryny — wpisuj tylko własne witryny.",
+            "backendUrl": "Adres dostępu portalowego to publiczne wejście OpensourceERP dla klientów: katalog backend/portal/ instalacji, na przykład https://erp.example.pl/portal/ — lokalnie ze scripts/dev.sh http://localhost:8000/portal/.\n\nTam przekaźnik /portal-api/ w witrynie przekazuje wszystkie żądania widżetów: logowanie, konto, faktury oraz, ze sklepem, koszyk i kasę. „Zainstaluj pakiet” zapisuje adres wraz z kluczem witryny w oserp-portal/config.json.\n\nNie należą tutaj adres HugoCMS (…/cms-api/, karta HugoCMS) ani adres samej witryny.\n\nPuste pole jest wstępnie wypełniane adresem, pod którym OpensourceERP jest obecnie wywoływany. Za reverse proxy jest to adres widoczny z zewnątrz — musi być osiągalny z serwera WWW witryny.\n\n„Testuj połączenie” sprawdza w trzech krokach: dane wejściowe, bezpośrednio z OpensourceERP, przez witrynę.",
+            "hugocmsUrl": "HugoCMS to program, którym zarządza się witryną i ją buduje. OpensourceERP wysyła mu pakiet portalu klienta, a następnie zleca ponowne zbudowanie witryny. Potrzebuje do tego adresu internetowego, pod którym HugoCMS jest dostępny z zewnątrz.\n\nTen adres pokazuje sam HugoCMS: w ustawieniach projektu witryny w sekcji „Połączenie OpensourceERP”. Kończy się na /cms-api/, na przykład https://www.example.pl/cms-api/. Najlepiej skopiować go stamtąd.\n\nAdres musi zaczynać się od https://, inaczej HugoCMS odrzuci połączenie. Jedyny wyjątek to test na tym samym komputerze.\n\nSprawdzenie: przycisk „Testuj połączenie i pobierz uprawnienia” na tej karcie.",
+            "hugocmsKey": "Tym kluczem OpensourceERP uwierzytelnia się wobec HugoCMS. Obowiązuje tylko dla tej jednej witryny.\n\nGeneruje się go w HugoCMS: ustawienia projektu witryny → „Połączenie OpensourceERP” → „Wygeneruj klucz”. HugoCMS pokazuje go w całości dokładnie raz — wtedy skopiować i wkleić tutaj. Później HugoCMS pokazuje tylko cztery ostatnie znaki, po których można sprawdzić, czy obie strony mają ten sam klucz.\n\nJeśli klucz zaginie, wygeneruj w HugoCMS nowy i zastąp go tutaj. Stary przestaje obowiązywać.",
+            "invoicePage": "Klienci otrzymują w e-mailach link do swojej faktury. Link prowadzi do strony witryny, która wyświetla fakturę — tutaj wpisuje się jej ścieżkę, na przykład /faktura/.\n\nStronę zakłada się w HugoCMS i wstawia na niej element „shop-invoice”. Jeśli pole pozostanie puste, OpensourceERP użyje /rechnung/.\n\nLink zawiera tajny kod, dlatego fakturę widzą także goście bez konta klienta.",
+            "activatePage": "Dotychczasowi klienci bez konta klienta mogą je aktywować: podają numer telefonu i otrzymują link przez WhatsApp. Link prowadzi do wpisanej tutaj strony, na przykład /aktywacja/.\n\nStronę zakłada się w HugoCMS i wstawia na niej element „portal-activate”. Jeśli pole pozostanie puste, OpensourceERP użyje /freischalten/.\n\nTa sama ścieżka należy do szablonu WhatsApp „Aktywacja konta klienta” jako adres przycisku.",
+            "templateSet": "Zestaw szablonów określa, jak logowanie, konto klienta, faktury i formularz kontaktowy wyglądają w witrynie. „Standard” dopasowuje się do wyglądu witryny i zwykle wystarcza.\n\nWłasne zestawy programista może założyć w katalogu szablonów firmy pod portal/; pojawiają się wtedy tutaj do wyboru.\n\nPo zmianie uruchom „Zainstaluj pakiet”, aby witryna otrzymała nowe szablony.",
+            "contactMailTo": "Gdy klient wypełni formularz kontaktowy w witrynie, OpensourceERP wysyła zapytanie e-mailem na ten adres.\n\nJeśli pole pozostanie puste, zapytanie trafia na adres nadawcy firmy z konfiguracji firmy.\n\nWielu odbiorców nie przewidziano — użyj wspólnej skrzynki lub listy dystrybucyjnej."
+        },
+        "hugocmsFromBaseUrl": "Przejmij adres internetowy",
+        "hugocmsFromBaseUrl_help": "Ustawia adres zdalnego dostępu do HugoCMS na podstawie adresu witryny z dopiskiem /cms-api/."
     }
 }

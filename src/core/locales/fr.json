@@ -124,5 +124,8 @@
         "success": "La base de données a été mise à jour. Veuillez répéter la dernière action.",
         "failed": "La mise à jour de la base de données a échoué.",
         "alreadyRunning": "Une mise à jour de la base de données est déjà en cours. Veuillez réessayer dans quelques minutes."
+    },
+    "HelpPanel": {
+        "close": "Fermer l’aide"
     }
 }

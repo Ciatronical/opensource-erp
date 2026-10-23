@@ -124,5 +124,8 @@
         "success": "Databasen er oppdatert. Gjenta den siste handlingen.",
         "failed": "Databaseoppdateringen mislyktes.",
         "alreadyRunning": "En databaseoppdatering kjører allerede. Prøv igjen om noen minutter."
+    },
+    "HelpPanel": {
+        "close": "Lukk hjelp"
     }
 }

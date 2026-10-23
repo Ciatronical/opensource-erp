@@ -27,7 +27,7 @@
         "installHint": "Přenese šablony, widgety a proxy do HugoCMS a nechá web sestavit.",
         "installQueued": "Úloha vytvořena – publikování obchodu přenese balíček (přehled obchodu).",
         "installDone": "Balíček přenesen a web sestaven.",
-        "installFailed": "Balíček nebyl přenesen celý – viz hlášení.",
+        "installFailed": "Balíček nebyl přenesen úplně. Důvod:",
         "features": "Na tomto webu:",
         "feature": {
             "portal": "Zákaznický účet",
@@ -37,25 +37,33 @@
         "fields": {
             "contact": "Kontaktní formulář",
             "activatePage": "Stránka „Aktivace účtu“",
-            "activatePage_help": "Stránka se shortcodem portal-activate; tam vede odkaz ve zprávě WhatsApp. Prázdné = /freischalten/",
+            "activatePage_help": "Stránka, na které si stávající zákazníci aktivují zákaznický účet. Prázdné = /freischalten/.",
             "contactMailTo": "Příjemce kontaktního formuláře",
             "contactMailTo_help": "E-mailová adresa, na kterou chodí dotazy z kontaktního formuláře. Prázdné = adresa odesílatele firmy.",
-            "hugocms_help": "Web běží v HugoCMS: OpensourceERP tam přenese balíček a nechá web sestavit. Bez adresy a klíče se nic nepublikuje.",
-            "hugocmsUrl_help": "Koncový bod cms-api webu, jak jej HugoCMS zobrazuje v nastavení projektu v části „Napojení OpensourceERP“ — například https://www.example.cz/cms-api/.",
-            "access": "Přístup webu",
+            "hugocms_help": "Spojení s HugoCMS, které tento web sestavuje a publikuje.",
+            "hugocmsUrl_help": "Webová adresa pro vzdálený přístup k HugoCMS přes web.",
+            "access": "Přístup k OpensourceERP",
             "publicKey": "Klíč webu",
-            "publicKey_help": "Tajemství, kterým se web prokazuje portálovému přístupu OpensourceERP. Bez něj přístup nepřijme žádný požadavek.",
-            "allowedOrigins_help": "Čárkami oddělený seznam adres, ze kterých smí web přistupovat. Nechte prázdné, pokud web používá stejnou adresu přes přesměrovač /portal-api/.",
-            "backendUrl": "Adresa portálového přístupu OpensourceERP",
-            "backendUrl_help": "Web předává přihlášení, účet, faktury a — s obchodem — košík a pokladnu na tuto adresu: veřejný portálový přístup OpensourceERP (backend/portal/), například https://erp.example.cz/portal/. Ne adresa HugoCMS a ne adresa webu. Balíček ji s klíčem zapíše do oserp-portal/config.json. Prázdné pole se předvyplní adresou, na které OpensourceERP právě běží.",
+            "publicKey_help": "Tajný klíč, kterým se web prokazuje OpensourceERP.",
+            "allowedOrigins_help": "Nutné jen tehdy, když web volá OpensourceERP přímo bez přesměrovače — jinak nechte prázdné.",
+            "backendUrl": "Webová adresa přístupu k zákaznickému portálu",
+            "backendUrl_help": "Adresa, na které web dosáhne OpensourceERP, například https://erp.example.cz/portal/.",
             "pages": "Stránky webu",
-            "baseUrl": "Adresa webu",
-            "baseUrl_help": "Adresa, na které je web Hugo dostupný (jeho baseURL), včetně https:// — například https://www.example.cz/. Přesně tam leží přesměrovač /portal-api/. Cesta sem patří jen tehdy, když celý web leží v podadresáři, tedy když jeho baseURL sama končí na …/cesta/. Na kterých stránkách leží zákaznický portál (přihlášení, faktura, aktivace), se nastavuje v „Stránky webu“, ne zde.",
-            "invoicePage_help": "Stránka webu se zkratkou shop-invoice, např. /faktura/. Maily na ni odkazují, aby stav viděli i hosté bez účtu. Prázdné = /rechnung/.",
-            "templateSet_help": "Určuje vzhled balíčku (šablony a zkratky). Vlastní sady leží v adresáři šablon pod portal/.",
+            "baseUrl": "Webová adresa webu",
+            "baseUrl_help": "Adresa, pod kterou návštěvníci web otevírají, například https://www.example.cz/.",
+            "invoicePage_help": "Stránka webu, která zobrazuje fakturu. Prázdné = /rechnung/.",
+            "templateSet_help": "Vzhled stránek portálu; „Standard“ vyhovuje většině webů.",
             "grants_help": "Kam smí OpensourceERP zapisovat, určuje HugoCMS (nastavení projektu → Napojení OpensourceERP). Zde jen pro náhled; přenos převezme oprávnění pokaždé.",
             "grantPackage": "Balíček zákaznického portálu",
-            "signingKey_help": "Zadejte v HugoCMS v nastavení projektu → Napojení OpensourceERP. OpensourceERP pak přenese přesměrovač a stránku 404 sám. Platí pro všechny weby této instalace."
+            "signingKey_help": "Zadejte v HugoCMS v nastavení projektu → Napojení OpensourceERP. OpensourceERP pak přenese přesměrovač a stránku 404 sám. Platí pro všechny weby této instalace.",
+            "hugocms": "HugoCMS",
+            "hugocmsUrl": "Webová adresa pro vzdálený přístup k HugoCMS",
+            "hugocmsKey": "Klíč pro vzdálený přístup k HugoCMS",
+            "hugocmsKey_help": "Přístupový klíč, který HugoCMS vytvořilo pro tento web.",
+            "allowedOrigins": "Povolené adresy původu",
+            "invoicePage": "Stránka „Faktura“",
+            "templateSet": "Sada šablon",
+            "publish": "Publikování"
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Web s tímto názvem už existuje.",
@@ -65,7 +73,7 @@
             "NO_PERMISSION": "Pro weby chybí právo „Vytvářet a upravovat e-shopy“."
         },
         "proxyHint": "Web se k OpensourceERP dostane přes proxy /portal-api/ v balíčku – nebo přes reverzní proxy, které nastaví hlavičku X-Portal-Key.",
-        "secretsNotice": "Klíče jsou v polích skryté (ikona oka je zobrazí), aby se daly při chybě porovnat s HugoCMS. Vymazané pole zachová uloženou hodnotu.",
+        "secretsNotice": "Klíče jsou vyplněné a skryté; ikona oka je zobrazí. Vymazání pole uložený klíč nesmaže.",
         "secretsLoadError": "Klíče webů se nepodařilo načíst.",
         "backendTest": {
             "INVALID": "Neplatná adresa: {url} — očekává se například https://erp.example.cz/portal/",
@@ -79,6 +87,20 @@
             "PROXY_NOT_CONFIGURED": "Přesměrovač běží, ale nenachází oserp-portal/config.json nebo je neúplný — spusťte „Instalovat balíček“.",
             "FOREIGN": "Neočekávaná odpověď (HTTP {status}) — neodpovídá tam portálový přístup OpensourceERP."
         },
-        "hugocmsShopOff": "V HugoCMS není pro tento web povolen online obchod — v nastavení projektu v části „Napojení OpensourceERP“ zapněte „Online obchod na tomto webu“. Do té doby běh obchodu nepřenáší žádné produktové stránky."
+        "hugocmsShopOff": "V HugoCMS není pro tento web povolen online obchod — v nastavení projektu v části „Napojení OpensourceERP“ zapněte „Online obchod na tomto webu“. Do té doby běh obchodu nepřenáší žádné produktové stránky.",
+        "help": {
+            "baseUrl": "Adresa webu je baseURL webu Hugo tak, jak ji volá prohlížeč — s https:// a lomítkem na konci.\n\nOpensourceERP z ní odvozuje dvě věci: umístění přesměrovače (<adresa>/portal-api/), který volají widgety webu, a odkazy v e-mailech a zprávách WhatsApp (faktura, aktivace účtu).\n\nCesta sem patří jen tehdy, když celý web Hugo leží v podadresáři, např. https://firma.example/portal/ — pak tak končí i jeho baseURL a Hugo uloží přesměrovač pod tuto cestu.\n\nNemyslí se podstránka, na které leží stránky portálu (např. /zakaznici/prihlaseni/). Ty patří do „Stránky webu“.\n\nKontrola: „Zkontrolovat spojení“, třetí krok „Přes web“ volá přesně <adresa>/portal-api/.",
+            "publicKey": "Klíč webu je tajemství, kterým se web prokazuje portálovému přístupu OpensourceERP. Určuje tam tenanta a web — proto potřebuje každý web vlastní.\n\nBěžně jej vidí jen přesměrovač /portal-api/ na webovém serveru: OpensourceERP jej zapíše při „Instalovat balíček“ do oserp-portal/config.json, mimo veřejný adresář. Prohlížeč zákazníků jej nikdy neuvidí.\n\nNahradí-li přesměrovač vlastní reverzní proxy, nastaví hlavičku X-Portal-Key se stejnou hodnotou.\n\nVytvořit nový klíč: ikona vpravo v poli. Poté „Instalovat balíček“, jinak web pracuje stále se starým.",
+            "allowedOrigins": "Povolené původy potřebuje jen ten, kdo volá portálový přístup OpensourceERP přímo z prohlížeče — tedy bez přesměrovače /portal-api/ a bez vlastní reverzní proxy.\n\nPak přicházejí požadavky z jiné adresy než OpensourceERP sám a prohlížeč vyžaduje uvolnění CORS. Zde se uvádějí adresy webu, oddělené čárkami, se schématem: https://www.example.cz, https://example.cz.\n\nBěží-li web podle plánu přes přesměrovač, zůstává pole prázdné: prohlížeč a přesměrovač mají stejnou adresu, není co uvolňovat.\n\nBezpečnost: Každá uvedená adresa smí s klíčem webu zakládat relace — uvádějte jen vlastní weby.",
+            "backendUrl": "Adresa portálového přístupu je veřejný vstup OpensourceERP pro zákazníky: adresář backend/portal/ instalace, například https://erp.example.cz/portal/ — lokálně se scripts/dev.sh http://localhost:8000/portal/.\n\nTam přesměrovač /portal-api/ na webu předává všechny požadavky widgetů: přihlášení, účet, faktury a s obchodem košík a pokladnu. „Instalovat balíček“ zapíše adresu spolu s klíčem webu do oserp-portal/config.json.\n\nSem nepatří adresa HugoCMS (…/cms-api/, karta HugoCMS) ani adresa samotného webu.\n\nPrázdné pole se předvyplní adresou, na které OpensourceERP právě běží. Za reverzní proxy je to zvenčí viditelná adresa — musí být dosažitelná z webového serveru webu.\n\n„Zkontrolovat spojení“ testuje ve třech krocích: zadání, přímo z OpensourceERP, přes web.",
+            "hugocmsUrl": "HugoCMS je program, kterým se web spravuje a sestavuje. OpensourceERP mu pošle balíček zákaznického portálu a nechá web znovu sestavit. K tomu potřebuje webovou adresu, na které je HugoCMS dostupné zvenčí.\n\nTuto adresu zobrazuje samo HugoCMS: v nastavení projektu webu v části „Napojení OpensourceERP“. Končí na /cms-api/, například https://www.example.cz/cms-api/. Nejlépe ji odtud zkopírovat.\n\nAdresa musí začínat https://, jinak HugoCMS spojení nepřijme. Výjimkou je jen test na stejném počítači.\n\nKontrola: tlačítko „Zkontrolovat spojení a načíst oprávnění“ na této kartě.",
+            "hugocmsKey": "Tímto klíčem se OpensourceERP prokazuje HugoCMS. Platí jen pro tento jeden web.\n\nVytváří se v HugoCMS: nastavení projektu webu → „Napojení OpensourceERP“ → „Vytvořit klíč“. HugoCMS jej celý zobrazí přesně jednou — tehdy zkopírovat a sem vložit. Později HugoCMS ukazuje jen poslední čtyři znaky, podle nich lze ověřit, že obě strany mají stejný klíč.\n\nZtratí-li se klíč, vytvořte v HugoCMS nový a zde jej nahraďte. Starý pak už neplatí.",
+            "invoicePage": "Zákazníci dostávají v e-mailech odkaz na svou fakturu. Odkaz vede na stránku webu, která fakturu zobrazí — zde se uvádí její cesta, například /faktura/.\n\nStránku založíte v HugoCMS a vložíte do ní stavební prvek „shop-invoice“. Zůstane-li pole prázdné, použije OpensourceERP /rechnung/.\n\nOdkaz obsahuje tajný kód, proto fakturu vidí i hosté bez zákaznického účtu.",
+            "activatePage": "Stávající zákazníci bez zákaznického účtu si jej mohou nechat aktivovat: zadají telefonní číslo a dostanou přes WhatsApp odkaz. Odkaz vede na zde zadanou stránku, například /aktivace/.\n\nStránku založíte v HugoCMS a vložíte do ní stavební prvek „portal-activate“. Zůstane-li pole prázdné, použije OpensourceERP /freischalten/.\n\nStejná cesta patří do šablony WhatsApp „Aktivace zákaznického účtu“ jako adresa tlačítka.",
+            "templateSet": "Sada šablon určuje, jak na webu vypadají přihlášení, zákaznický účet, faktury a kontaktní formulář. „Standard“ se přizpůsobí vzhledu webu a většinou stačí.\n\nVlastní sady může vývojář založit v adresáři šablon firmy pod portal/; pak se zde objeví k výběru.\n\nPo změně spusťte „Instalovat balíček“, aby web dostal nové šablony.",
+            "contactMailTo": "Vyplní-li zákazník kontaktní formulář na webu, pošle OpensourceERP dotaz e-mailem na tuto adresu.\n\nZůstane-li pole prázdné, jde dotaz na adresu odesílatele firmy z konfigurace firmy.\n\nVíce příjemců není podporováno — použijte sdílenou schránku nebo distribuční seznam."
+        },
+        "hugocmsFromBaseUrl": "Převzít webovou adresu",
+        "hugocmsFromBaseUrl_help": "Nastaví adresu vzdáleného přístupu k HugoCMS z webové adresy webu s /cms-api/ na konci."
     }
 }

@@ -27,7 +27,7 @@
         "installHint": "Transfers templates, widgets and the proxy to HugoCMS and has the website built.",
         "installQueued": "Job created — the shop publishing transfers the package (shop overview).",
         "installDone": "Package transferred and website built.",
-        "installFailed": "Package not fully transferred — see messages.",
+        "installFailed": "Package not fully transferred. Reason:",
         "features": "On this website:",
         "feature": {
             "portal": "Customer account",
@@ -36,26 +36,34 @@
         },
         "fields": {
             "contact": "Contact form",
-            "activatePage": "Page “Set up access”",
-            "activatePage_help": "Page with the shortcode portal-activate; the link in the WhatsApp message leads there. Empty = /freischalten/",
+            "activatePage": "“Activate account” page",
+            "activatePage_help": "Page where existing customers activate their customer account. Empty = /freischalten/.",
             "contactMailTo": "Recipient of the contact form",
-            "contactMailTo_help": "Email address that receives requests from the contact form. Empty = the company's sender address.",
-            "hugocms_help": "The website lives in HugoCMS: OpensourceERP transfers the package there and has the website built. Nothing is published without address and key.",
-            "hugocmsUrl_help": "The cms-api endpoint of the website as shown by HugoCMS in the project settings under “OpensourceERP connection” — for example https://www.example.com/cms-api/.",
-            "access": "Website access",
+            "contactMailTo_help": "E-mail address that receives contact form requests. Empty = the company’s sender address.",
+            "hugocms_help": "Connection to HugoCMS, which builds and publishes this website.",
+            "hugocmsUrl_help": "Web address for remote access to HugoCMS via the website.",
+            "access": "Access to OpensourceERP",
             "publicKey": "Website key",
-            "publicKey_help": "Secret with which the website identifies itself to the OpensourceERP portal access. Without it the access accepts no request.",
-            "allowedOrigins_help": "Comma-separated list of addresses the website may call from. Leave empty if the website uses the same address via the /portal-api/ proxy.",
-            "backendUrl": "Address of the OpensourceERP portal access",
-            "backendUrl_help": "The website forwards login, account, invoices and — with a shop — cart and checkout to this address: the public OpensourceERP portal access (backend/portal/), for example https://erp.example.com/portal/. Not the HugoCMS address and not the website’s. The package writes it with the key into oserp-portal/config.json. An empty field is prefilled with the address OpensourceERP is currently called at.",
+            "publicKey_help": "Secret key with which the website identifies itself to OpensourceERP.",
+            "allowedOrigins_help": "Only needed if the website calls OpensourceERP directly without the proxy — otherwise leave empty.",
+            "backendUrl": "Web address of the customer portal access",
+            "backendUrl_help": "Address at which the website reaches OpensourceERP, for example https://erp.example.com/portal/.",
             "pages": "Pages of the website",
-            "baseUrl": "Website address",
-            "baseUrl_help": "Address at which the Hugo website is reachable (its baseURL), including https:// — for example https://www.example.com/. The /portal-api/ proxy lives exactly there. A path belongs here only if the whole website lives in a subdirectory, i.e. its baseURL itself ends in …/path/. Which pages hold the customer portal (login, invoice, activation) is set under “Pages of the website”, not here.",
-            "invoicePage_help": "Page of the website with the shop-invoice shortcode, e.g. /invoice/. Mails link there so that guests without an account can see the status too. Empty = /rechnung/.",
-            "templateSet_help": "Determines the look of the package (templates and shortcodes). Custom sets live in the template directory under portal/.",
+            "baseUrl": "Web address of the website",
+            "baseUrl_help": "Address visitors use to open the website, for example https://www.example.com/.",
+            "invoicePage_help": "Page of the website that shows an invoice. Empty = /rechnung/.",
+            "templateSet_help": "Design of the portal pages; “Standard” suits most websites.",
             "grants_help": "HugoCMS decides where OpensourceERP may write (project settings → OpensourceERP connection). Shown here for reference only; the transfer applies the grants every time.",
             "grantPackage": "Customer portal package",
-            "signingKey_help": "Enter it in HugoCMS under project settings → OpensourceERP connection. OpensourceERP then transfers the proxy and the 404 page itself. Applies to all websites of this installation."
+            "signingKey_help": "Enter it in HugoCMS under project settings → OpensourceERP connection. OpensourceERP then transfers the proxy and the 404 page itself. Applies to all websites of this installation.",
+            "hugocms": "HugoCMS",
+            "hugocmsUrl": "Web address for HugoCMS remote access",
+            "hugocmsKey": "Key for HugoCMS remote access",
+            "hugocmsKey_help": "Access key that HugoCMS generated for this website.",
+            "allowedOrigins": "Allowed origin addresses",
+            "invoicePage": "“Invoice” page",
+            "templateSet": "Template set",
+            "publish": "Publishing"
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "A website with this name already exists.",
@@ -65,7 +73,7 @@
             "NO_PERMISSION": "The right “Create and edit webshops” is missing for the websites."
         },
         "proxyHint": "The website reaches OpensourceERP through the proxy /portal-api/ in the package — or through a reverse proxy that sets the header X-Portal-Key.",
-        "secretsNotice": "The keys are shown masked in the fields (eye icon to reveal) so they can be compared with HugoCMS if something fails. A cleared field keeps the stored value.",
+        "secretsNotice": "The keys are filled in and masked; the eye icon reveals them. Clearing a field does not delete the stored key.",
         "secretsLoadError": "The website keys could not be loaded.",
         "backendTest": {
             "INVALID": "Not a valid address: {url} — expected something like https://erp.example.com/portal/",
@@ -79,6 +87,20 @@
             "PROXY_NOT_CONFIGURED": "The proxy runs but cannot find oserp-portal/config.json or it is incomplete — run “Install package”.",
             "FOREIGN": "Unexpected response (HTTP {status}) — this is not the OpensourceERP portal access."
         },
-        "hugocmsShopOff": "In HugoCMS the online shop is not enabled for this website — turn on “Online shop on this website” in the project settings under “OpensourceERP connection”. Until then the shop run transfers no product pages."
+        "hugocmsShopOff": "In HugoCMS the online shop is not enabled for this website — turn on “Online shop on this website” in the project settings under “OpensourceERP connection”. Until then the shop run transfers no product pages.",
+        "help": {
+            "baseUrl": "The website address is the baseURL of the Hugo site as the browser calls it — with https:// and a trailing slash.\n\nOpensourceERP derives two things from it: the location of the proxy (<address>/portal-api/) that the website widgets call, and the links in e-mails and WhatsApp messages (invoice, activate account).\n\nA path belongs here only if the whole Hugo site lives in a subdirectory, e.g. https://company.example/portal/ — then its baseURL ends the same way and Hugo places the proxy under that path.\n\nNot meant is the subpage holding the portal pages (e.g. /customers/login/). Those pages belong under “Pages of the website”.\n\nCheck: “Test connection”, third step “Via the website” calls exactly <address>/portal-api/.",
+            "publicKey": "The website key is the secret with which the website identifies itself to the OpensourceERP portal access. It determines tenant and website there — so every website needs its own.\n\nNormally only the /portal-api/ proxy on the web server sees it: OpensourceERP writes it with “Install package” into oserp-portal/config.json, outside the public directory. Customers’ browsers never see it.\n\nIf your own reverse proxy replaces the proxy, it sets the header X-Portal-Key with the same value.\n\nGenerate a new key: icon at the right of the field. Then “Install package”, otherwise the website still works with the old one.",
+            "allowedOrigins": "Allowed origins are needed only if the OpensourceERP portal access is called directly from the browser — i.e. without the /portal-api/ proxy and without your own reverse proxy.\n\nThen requests come from a different address than OpensourceERP itself, and the browser demands a CORS clearance. Enter the website addresses here, comma-separated, with scheme: https://www.example.com, https://example.com.\n\nIf the website runs via the proxy as intended, leave the field empty: browser and proxy share the same address, there is nothing to clear.\n\nSecurity: every listed address may open sessions with the website key — enter only your own websites.",
+            "backendUrl": "The address of the portal access is the public entry point of OpensourceERP for customers: the backend/portal/ directory of the installation, for example https://erp.example.com/portal/ — locally with scripts/dev.sh http://localhost:8000/portal/.\n\nThe /portal-api/ proxy on the website forwards all widget requests there: login, account, invoices and, with a shop, cart and checkout. “Install package” writes the address together with the website key into oserp-portal/config.json.\n\nNot here: the HugoCMS address (…/cms-api/, HugoCMS card) and the address of the website itself.\n\nAn empty field is prefilled with the address OpensourceERP is currently called at. Behind a reverse proxy this is the externally visible address — it must be reachable from the website’s web server.\n\n“Test connection” checks in three steps: input, directly from OpensourceERP, via the website.",
+            "hugocmsUrl": "HugoCMS is the program the website is maintained and built with. OpensourceERP sends it the customer portal package and then has the website rebuilt. For that it needs a web address at which HugoCMS is reachable from outside.\n\nHugoCMS shows this address itself: in the project settings of the website under “OpensourceERP connection”. It ends in /cms-api/, for example https://www.example.com/cms-api/. Best copy it from there.\n\nThe address must start with https://, otherwise HugoCMS refuses the connection. The only exception is a test on the same machine.\n\nCheck: the button “Check connection and fetch grants” in this card.",
+            "hugocmsKey": "With this key OpensourceERP identifies itself to HugoCMS. It applies to this one website only.\n\nIt is generated in HugoCMS: project settings of the website → “OpensourceERP connection” → “Generate key”. HugoCMS shows it in full exactly once — copy it then and paste it here. Later HugoCMS shows only the last four characters, which lets you check that both sides hold the same key.\n\nIf the key is lost, generate a new one in HugoCMS and replace it here. The old one is then no longer valid.",
+            "invoicePage": "Customers receive a link to their invoice in e-mails. This link leads to a page of the website that shows the invoice — its path goes here, for example /invoice/.\n\nThe page is created in HugoCMS with the “shop-invoice” building block on it. If the field is empty, OpensourceERP uses /rechnung/.\n\nThe link contains a secret code, so guests without a customer account can see their invoice too.",
+            "activatePage": "Existing customers without a customer account can have one activated: they enter their phone number and receive a link via WhatsApp. This link leads to the page entered here, for example /activate/.\n\nThe page is created in HugoCMS with the “portal-activate” building block on it. If the field is empty, OpensourceERP uses /freischalten/.\n\nThe same path belongs in the WhatsApp template “Activate customer account” as the button address.",
+            "templateSet": "The template set determines how login, customer account, invoices and contact form look on the website. “Standard” adapts to the website’s look and is sufficient in most cases.\n\nA developer can create custom sets in the company’s template directory under portal/; they then appear here for selection.\n\nAfter switching, run “Install package” so the website receives the new templates.",
+            "contactMailTo": "When a customer fills in the contact form on the website, OpensourceERP sends the request as an e-mail to this address.\n\nIf the field is empty, the request goes to the company’s sender address from the company configuration.\n\nMultiple recipients are not supported — use a shared mailbox or a distribution list instead."
+        },
+        "hugocmsFromBaseUrl": "Use website address",
+        "hugocmsFromBaseUrl_help": "Sets the HugoCMS remote access address from the website address with /cms-api/ appended."
     }
 }

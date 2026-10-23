@@ -27,7 +27,7 @@
         "installHint": "Perkelia šablonus, valdiklius ir tarpinį serverį į HugoCMS ir liepia sukurti svetainę.",
         "installQueued": "Užduotis sukurta – parduotuvės publikavimas perkels paketą (parduotuvės apžvalga).",
         "installDone": "Paketas perkeltas ir svetainė sukurta.",
-        "installFailed": "Paketas perkeltas ne visas – žr. pranešimus.",
+        "installFailed": "Paketas perkeltas ne iki galo. Priežastis:",
         "features": "Šioje svetainėje:",
         "feature": {
             "portal": "Kliento paskyra",
@@ -36,26 +36,34 @@
         },
         "fields": {
             "contact": "Kontaktų forma",
-            "activatePage": "Puslapis „Paskyros aktyvavimas“",
-            "activatePage_help": "Puslapis su trumpuoju kodu portal-activate; į jį veda nuoroda WhatsApp žinutėje. Tuščia = /freischalten/",
+            "activatePage": "Puslapis „Aktyvuoti paskyrą“",
+            "activatePage_help": "Puslapis, kuriame esami klientai aktyvuoja savo kliento paskyrą. Tuščia = /freischalten/.",
             "contactMailTo": "Kontaktų formos gavėjas",
             "contactMailTo_help": "El. pašto adresas, kuriuo siunčiamos užklausos iš kontaktų formos. Tuščia = įmonės siuntėjo adresas.",
-            "hugocms_help": "Svetainė yra HugoCMS: OpensourceERP ten perkelia paketą ir leidžia sukurti svetainę. Be adreso ir rakto niekas neskelbiama.",
-            "hugocmsUrl_help": "Svetainės cms-api galinis taškas, kaip jį HugoCMS rodo projekto nustatymuose skiltyje „OpensourceERP jungtis“, pavyzdžiui, https://www.example.lt/cms-api/.",
-            "access": "Svetainės prieiga",
+            "hugocms_help": "Ryšys su HugoCMS, kuri sukuria ir skelbia šią svetainę.",
+            "hugocmsUrl_help": "Žiniatinklio adresas nuotolinei prieigai prie HugoCMS per svetainę.",
+            "access": "Prieiga prie OpensourceERP",
             "publicKey": "Svetainės raktas",
-            "publicKey_help": "Paslaptis, kuria svetainė prisistato OpensourceERP portalo prieigai. Be jos prieiga nepriima jokios užklausos.",
-            "allowedOrigins_help": "Kableliais atskirtas adresų sąrašas, iš kurių svetainė gali kreiptis. Palikite tuščią, jei svetainė naudoja tą patį adresą per peradresavimą /portal-api/.",
-            "backendUrl": "OpensourceERP portalo prieigos adresas",
-            "backendUrl_help": "Svetainė peradresuoja prisijungimą, paskyrą, sąskaitas ir — su parduotuve — krepšelį ir kasą šiuo adresu: viešoji OpensourceERP portalo prieiga (backend/portal/), pavyzdžiui, https://erp.example.lt/portal/. Ne HugoCMS ir ne svetainės adresas. Paketas jį su raktu įrašo į oserp-portal/config.json. Tuščias laukas užpildomas adresu, kuriuo OpensourceERP šiuo metu pasiekiamas.",
+            "publicKey_help": "Slaptas raktas, kuriuo svetainė prisistato OpensourceERP.",
+            "allowedOrigins_help": "Reikia tik tada, kai svetainė kreipiasi į OpensourceERP tiesiogiai be peradresavimo — kitu atveju palikite tuščią.",
+            "backendUrl": "Klientų portalo prieigos žiniatinklio adresas",
+            "backendUrl_help": "Adresas, kuriuo svetainė pasiekia OpensourceERP, pavyzdžiui, https://erp.example.lt/portal/.",
             "pages": "Svetainės puslapiai",
-            "baseUrl": "Svetainės adresas",
-            "baseUrl_help": "Adresas, kuriuo pasiekiama Hugo svetainė (jos baseURL), su https:// — pavyzdžiui, https://www.example.lt/. Būtent ten yra peradresavimas /portal-api/. Kelias čia priklauso tik tada, kai visa svetainė yra pakatalogyje, t. y. jos pačios baseURL baigiasi …/kelias/. Kuriuose puslapiuose yra klientų portalas (prisijungimas, sąskaita, aktyvavimas), nustatoma skiltyje „Svetainės puslapiai“, ne čia.",
-            "invoicePage_help": "Svetainės puslapis su trumpuoju kodu shop-invoice, pvz., /saskaita/. Laiškai nukreipia ten, kad būseną matytų ir svečiai be paskyros. Tuščia = /rechnung/.",
-            "templateSet_help": "Nustato paketo išvaizdą (šablonai ir trumpieji kodai). Savi rinkiniai yra šablonų kataloge portal/.",
+            "baseUrl": "Svetainės žiniatinklio adresas",
+            "baseUrl_help": "Adresas, kuriuo lankytojai atidaro svetainę, pavyzdžiui, https://www.example.lt/.",
+            "invoicePage_help": "Svetainės puslapis, rodantis sąskaitą. Tuščia = /rechnung/.",
+            "templateSet_help": "Portalo puslapių išvaizda; „Standard“ tinka daugumai svetainių.",
             "grants_help": "Kur OpensourceERP gali rašyti, nustato HugoCMS (projekto nustatymai → OpensourceERP jungtis). Čia tik peržiūrai; perkėlimas leidimus taiko kiekvieną kartą.",
             "grantPackage": "Klientų portalo paketas",
-            "signingKey_help": "Įveskite HugoCMS projekto nustatymuose → OpensourceERP jungtis. Tada OpensourceERP pats perkelia peradresavimą ir 404 puslapį. Galioja visoms šio diegimo svetainėms."
+            "signingKey_help": "Įveskite HugoCMS projekto nustatymuose → OpensourceERP jungtis. Tada OpensourceERP pats perkelia peradresavimą ir 404 puslapį. Galioja visoms šio diegimo svetainėms.",
+            "hugocms": "HugoCMS",
+            "hugocmsUrl": "Žiniatinklio adresas nuotolinei HugoCMS prieigai",
+            "hugocmsKey": "Raktas nuotolinei HugoCMS prieigai",
+            "hugocmsKey_help": "Prieigos raktas, kurį HugoCMS sukūrė šiai svetainei.",
+            "allowedOrigins": "Leidžiami kilmės adresai",
+            "invoicePage": "Puslapis „Sąskaita“",
+            "templateSet": "Šablonų rinkinys",
+            "publish": "Skelbimas"
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Svetainė tokiu pavadinimu jau yra.",
@@ -65,7 +73,7 @@
             "NO_PERMISSION": "Svetainėms trūksta teisės „Kurti ir redaguoti el. parduotuves“."
         },
         "proxyHint": "Svetainė pasiekia OpensourceERP per paketo tarpinį serverį /portal-api/ – arba per atvirkštinį tarpinį serverį, nustatantį antraštę X-Portal-Key.",
-        "secretsNotice": "Raktai laukuose paslėpti (akies piktograma juos parodo), kad klaidos atveju būtų galima palyginti su HugoCMS. Ištuštintas laukas išlaiko išsaugotą reikšmę.",
+        "secretsNotice": "Raktai užpildyti ir paslėpti; akies piktograma juos parodo. Ištuštintas laukas išsaugoto rakto neištrina.",
         "secretsLoadError": "Nepavyko įkelti svetainių raktų.",
         "backendTest": {
             "INVALID": "Netinkamas adresas: {url} — tikėtasi, pvz., https://erp.example.lt/portal/",
@@ -79,6 +87,20 @@
             "PROXY_NOT_CONFIGURED": "Peradresavimas veikia, bet neranda oserp-portal/config.json arba jis neišsamus — paleiskite „Įdiegti paketą“.",
             "FOREIGN": "Netikėtas atsakymas (HTTP {status}) — ten atsako ne OpensourceERP portalo prieiga."
         },
-        "hugocmsShopOff": "HugoCMS šiai svetainei internetinė parduotuvė neįjungta — projekto nustatymuose, skiltyje „OpensourceERP jungtis“, įjunkite „Internetinė parduotuvė šioje svetainėje“. Iki tol parduotuvės vykdymas neperkelia produktų puslapių."
+        "hugocmsShopOff": "HugoCMS šiai svetainei internetinė parduotuvė neįjungta — projekto nustatymuose, skiltyje „OpensourceERP jungtis“, įjunkite „Internetinė parduotuvė šioje svetainėje“. Iki tol parduotuvės vykdymas neperkelia produktų puslapių.",
+        "help": {
+            "baseUrl": "Svetainės adresas yra Hugo svetainės baseURL, kaip jį iškviečia naršyklė — su https:// ir pasviruoju brūkšniu gale.\n\nIš jo OpensourceERP išveda du dalykus: peradresavimo vietą (<adresas>/portal-api/), į kurią kreipiasi svetainės valdikliai, ir nuorodas el. laiškuose bei WhatsApp žinutėse (sąskaita, paskyros aktyvavimas).\n\nKelias priklauso tik tada, kai visa Hugo svetainė yra pakatalogyje, pvz., https://imone.example/portal/ — tada taip baigiasi ir jos baseURL, o Hugo peradresavimą padeda po šiuo keliu.\n\nNeturimas omenyje popuslapis, kuriame yra portalo puslapiai (pvz., /klientai/prisijungti/). Jie priklauso skilčiai „Svetainės puslapiai“.\n\nPatikra: „Tikrinti ryšį“, trečias žingsnis „Per svetainę“ iškviečia būtent <adresas>/portal-api/.",
+            "publicKey": "Svetainės raktas yra paslaptis, kuria svetainė prisistato OpensourceERP portalo prieigai. Ten jis nustato nuomininką ir svetainę — todėl kiekvienai svetainei reikia savo.\n\nPaprastai jį mato tik peradresavimas /portal-api/ žiniatinklio serveryje: OpensourceERP jį įrašo per „Įdiegti paketą“ į oserp-portal/config.json, už viešojo katalogo ribų. Klientų naršyklė jo niekada nemato.\n\nJei peradresavimą pakeičia savas atvirkštinis tarpinis serveris, jis nustato antraštę X-Portal-Key su ta pačia reikšme.\n\nSukurti naują raktą: piktograma lauko dešinėje. Po to „Įdiegti paketą“, kitaip svetainė dar dirba su senuoju.",
+            "allowedOrigins": "Leidžiamų kilmių reikia tik tam, kas į OpensourceERP portalo prieigą kreipiasi tiesiai iš naršyklės — t. y. be peradresavimo /portal-api/ ir be savo atvirkštinio tarpinio serverio.\n\nTada užklausos ateina iš kito adreso nei pats OpensourceERP, ir naršyklė reikalauja CORS leidimo. Čia įrašomi svetainės adresai, atskirti kableliais, su schema: https://www.example.lt, https://example.lt.\n\nJei svetainė, kaip numatyta, veikia per peradresavimą, laukas lieka tuščias: naršyklė ir peradresavimas turi tą patį adresą, nėra ko leisti.\n\nSaugumas: kiekvienas įrašytas adresas gali su svetainės raktu kurti seansus — įrašykite tik savo svetaines.",
+            "backendUrl": "Portalo prieigos adresas yra viešas OpensourceERP įėjimas klientams: diegimo katalogas backend/portal/, pavyzdžiui, https://erp.example.lt/portal/ — vietoje su scripts/dev.sh http://localhost:8000/portal/.\n\nTen svetainės peradresavimas /portal-api/ perduoda visas valdiklių užklausas: prisijungimą, paskyrą, sąskaitas ir, su parduotuve, krepšelį ir kasą. „Įdiegti paketą“ įrašo adresą kartu su svetainės raktu į oserp-portal/config.json.\n\nČia nepriklauso HugoCMS adresas (…/cms-api/, kortelė HugoCMS) ir pačios svetainės adresas.\n\nTuščias laukas užpildomas adresu, kuriuo OpensourceERP šiuo metu pasiekiamas. Už atvirkštinio tarpinio serverio tai iš išorės matomas adresas — jis turi būti pasiekiamas iš svetainės žiniatinklio serverio.\n\n„Tikrinti ryšį“ tikrina trimis žingsniais: įvestis, tiesiogiai iš OpensourceERP, per svetainę.",
+            "hugocmsUrl": "HugoCMS yra programa, kuria svetainė tvarkoma ir kuriama. OpensourceERP jai nusiunčia klientų portalo paketą ir po to leidžia svetainę sukurti iš naujo. Tam reikia žiniatinklio adreso, kuriuo HugoCMS pasiekiama iš išorės.\n\nŠį adresą rodo pati HugoCMS: svetainės projekto nustatymuose, skiltyje „OpensourceERP jungtis“. Jis baigiasi /cms-api/, pavyzdžiui, https://www.example.lt/cms-api/. Geriausia jį nukopijuoti iš ten.\n\nAdresas turi prasidėti https://, kitaip HugoCMS ryšio nepriims. Vienintelė išimtis — bandymas tame pačiame kompiuteryje.\n\nPatikra: mygtukas „Tikrinti ryšį ir gauti leidimus“ šioje kortelėje.",
+            "hugocmsKey": "Šiuo raktu OpensourceERP prisistato HugoCMS. Jis galioja tik šiai vienai svetainei.\n\nJis sukuriamas HugoCMS: svetainės projekto nustatymai → „OpensourceERP jungtis“ → „Sukurti raktą“. HugoCMS jį visą parodo lygiai vieną kartą — tada nukopijuokite ir įklijuokite čia. Vėliau HugoCMS rodo tik paskutinius keturis simbolius, pagal juos galima patikrinti, ar abi pusės turi tą patį raktą.\n\nJei raktas pamestas, HugoCMS sukurkite naują ir čia pakeiskite. Senasis nebegalioja.",
+            "invoicePage": "Klientai el. laiškuose gauna nuorodą į savo sąskaitą. Ši nuoroda veda į svetainės puslapį, kuris rodo sąskaitą — čia įrašomas jo kelias, pavyzdžiui, /saskaita/.\n\nPuslapis kuriamas HugoCMS, jame įdedamas blokas „shop-invoice“. Jei laukas liks tuščias, OpensourceERP naudos /rechnung/.\n\nNuorodoje yra slaptas kodas, todėl savo sąskaitą mato ir svečiai be kliento paskyros.",
+            "activatePage": "Esami klientai, dar neturintys kliento paskyros, gali ją aktyvuoti: jie įveda telefono numerį ir per WhatsApp gauna nuorodą. Ši nuoroda veda į čia įrašytą puslapį, pavyzdžiui, /aktyvuoti/.\n\nPuslapis kuriamas HugoCMS, jame įdedamas blokas „portal-activate“. Jei laukas liks tuščias, OpensourceERP naudos /freischalten/.\n\nTas pats kelias įrašomas į WhatsApp šabloną „Aktyvuoti kliento paskyrą“ kaip mygtuko adresas.",
+            "templateSet": "Šablonų rinkinys nustato, kaip svetainėje atrodo prisijungimas, kliento paskyra, sąskaitos ir kontaktų forma. „Standard“ prisitaiko prie svetainės išvaizdos ir dažniausiai pakanka.\n\nSavus rinkinius kūrėjas gali sukurti įmonės šablonų kataloge portal/; tada jie čia pasirodo pasirinkimui.\n\nPakeitus paleiskite „Įdiegti paketą“, kad svetainė gautų naujus šablonus.",
+            "contactMailTo": "Kai klientas svetainėje užpildo kontaktų formą, OpensourceERP užklausą el. paštu siunčia šiuo adresu.\n\nJei laukas liks tuščias, užklausa keliauja įmonės siuntėjo adresu iš įmonės konfigūracijos.\n\nKeli gavėjai nenumatyti — tam naudokite bendrą pašto dėžutę arba platinimo sąrašą."
+        },
+        "hugocmsFromBaseUrl": "Perimti žiniatinklio adresą",
+        "hugocmsFromBaseUrl_help": "Nustato nuotolinės HugoCMS prieigos adresą iš svetainės žiniatinklio adreso su /cms-api/ gale."
     }
 }

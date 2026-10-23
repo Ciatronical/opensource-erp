@@ -27,7 +27,7 @@
         "installHint": "Siirtää mallit, widgetit ja välittäjän HugoCMS:ään ja rakennuttaa sivuston.",
         "installQueued": "Tehtävä luotu – kaupan julkaisu siirtää paketin (kaupan yleiskuva).",
         "installDone": "Paketti siirretty ja sivusto rakennettu.",
-        "installFailed": "Pakettia ei siirretty kokonaan – katso viestit.",
+        "installFailed": "Pakettia ei siirretty kokonaan. Syy:",
         "features": "Tällä sivustolla:",
         "feature": {
             "portal": "Asiakastili",
@@ -36,26 +36,34 @@
         },
         "fields": {
             "contact": "Yhteydenottolomake",
-            "activatePage": "Sivu ”Tilin aktivointi”",
-            "activatePage_help": "Sivu, jolla on lyhytkoodi portal-activate; WhatsApp-viestin linkki johtaa sinne. Tyhjä = /freischalten/",
+            "activatePage": "Sivu ”Aktivoi tili”",
+            "activatePage_help": "Sivu, jolla nykyiset asiakkaat aktivoivat asiakastilinsä. Tyhjä = /freischalten/.",
             "contactMailTo": "Yhteydenottolomakkeen vastaanottaja",
-            "contactMailTo_help": "Sähköpostiosoite, johon yhteydenottolomakkeen pyynnöt lähetetään. Tyhjä = yrityksen lähettäjäosoite.",
-            "hugocms_help": "Verkkosivusto on HugoCMS:ssä: OpensourceERP siirtää paketin sinne ja rakennuttaa sivuston. Ilman osoitetta ja avainta ei julkaista mitään.",
-            "hugocmsUrl_help": "Verkkosivuston cms-api-päätepiste sellaisena kuin HugoCMS näyttää sen projektin asetuksissa kohdassa ”OpensourceERP-liitäntä” — esimerkiksi https://www.example.fi/cms-api/.",
-            "access": "Verkkosivuston pääsy",
+            "contactMailTo_help": "Sähköpostiosoite, johon yhteydenottolomakkeen viestit menevät. Tyhjä = yrityksen lähettäjäosoite.",
+            "hugocms_help": "Yhteys HugoCMS:ään, joka rakentaa ja julkaisee tämän verkkosivuston.",
+            "hugocmsUrl_help": "Verkko-osoite HugoCMS:n etäkäyttöön verkkosivuston kautta.",
+            "access": "Pääsy OpensourceERP:hen",
             "publicKey": "Verkkosivuston avain",
-            "publicKey_help": "Salaisuus, jolla verkkosivusto tunnistautuu OpensourceERP:n portaalipääsylle. Ilman sitä pääsy ei hyväksy pyyntöjä.",
-            "allowedOrigins_help": "Pilkuilla eroteltu luettelo osoitteista, joista sivusto saa ottaa yhteyttä. Jätä tyhjäksi, jos sivusto käyttää samaa osoitetta välittäjän /portal-api/ kautta.",
-            "backendUrl": "OpensourceERP:n portaalipääsyn osoite",
-            "backendUrl_help": "Verkkosivusto ohjaa kirjautumisen, tilin, laskut ja – kaupan kanssa – ostoskorin ja kassan tähän osoitteeseen: OpensourceERP:n julkinen portaalipääsy (backend/portal/), esimerkiksi https://erp.example.fi/portal/. Ei HugoCMS:n eikä sivuston osoite. Paketti kirjoittaa sen avaimen kanssa tiedostoon oserp-portal/config.json. Tyhjä kenttä esitäytetään osoitteella, josta OpensourceERP:tä parhaillaan käytetään.",
+            "publicKey_help": "Salainen avain, jolla sivusto tunnistautuu OpensourceERP:lle.",
+            "allowedOrigins_help": "Tarvitaan vain, jos sivusto kutsuu OpensourceERP:tä suoraan ilman välittäjää – muuten jätä tyhjäksi.",
+            "backendUrl": "Asiakasportaalin pääsyn verkko-osoite",
+            "backendUrl_help": "Osoite, josta sivusto tavoittaa OpensourceERP:n, esimerkiksi https://erp.example.fi/portal/.",
             "pages": "Verkkosivuston sivut",
-            "baseUrl": "Verkkosivuston osoite",
-            "baseUrl_help": "Osoite, josta Hugo-sivusto on tavoitettavissa (sen baseURL), https:// mukaan lukien – esimerkiksi https://www.example.fi/. Juuri siellä on välittäjä /portal-api/. Polku kuuluu tähän vain, jos koko sivusto on alihakemistossa eli sen baseURL itse päättyy …/polku/. Millä sivuilla asiakasportaali on (kirjautuminen, lasku, aktivointi), määritetään kohdassa ”Verkkosivuston sivut”, ei tässä.",
-            "invoicePage_help": "Sivuston sivu, jolla on shortcode shop-invoice, esim. /lasku/. Sähköpostit linkittävät sinne, jotta myös vieraat ilman tiliä näkevät tilan. Tyhjä = /rechnung/.",
-            "templateSet_help": "Määrittää paketin ulkoasun (mallit ja shortcodet). Omat sarjat ovat mallihakemistossa portal/-kansiossa.",
+            "baseUrl": "Verkkosivuston verkko-osoite",
+            "baseUrl_help": "Osoite, josta kävijät avaavat sivuston, esimerkiksi https://www.example.fi/.",
+            "invoicePage_help": "Sivuston sivu, joka näyttää laskun. Tyhjä = /rechnung/.",
+            "templateSet_help": "Portaalisivujen ulkoasu; ”Standard” sopii useimmille sivustoille.",
             "grants_help": "HugoCMS määrää, minne OpensourceERP saa kirjoittaa (projektin asetukset → OpensourceERP-liitäntä). Täällä vain tiedoksi; siirto soveltaa oikeudet joka kerta.",
             "grantPackage": "Asiakasportaalin paketti",
-            "signingKey_help": "Syötä HugoCMS:ään kohtaan projektin asetukset → OpensourceERP-liitäntä. Sen jälkeen OpensourceERP siirtää välittäjän ja 404-sivun itse. Koskee kaikkia tämän asennuksen sivustoja."
+            "signingKey_help": "Syötä HugoCMS:ään kohtaan projektin asetukset → OpensourceERP-liitäntä. Sen jälkeen OpensourceERP siirtää välittäjän ja 404-sivun itse. Koskee kaikkia tämän asennuksen sivustoja.",
+            "hugocms": "HugoCMS",
+            "hugocmsUrl": "Verkko-osoite HugoCMS:n etäkäyttöön",
+            "hugocmsKey": "Avain HugoCMS:n etäkäyttöön",
+            "hugocmsKey_help": "Käyttöavain, jonka HugoCMS loi tälle verkkosivustolle.",
+            "allowedOrigins": "Sallitut alkuperäosoitteet",
+            "invoicePage": "Sivu ”Lasku”",
+            "templateSet": "Mallisarja",
+            "publish": "Julkaisu"
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Tämän niminen sivusto on jo olemassa.",
@@ -65,7 +73,7 @@
             "NO_PERMISSION": "Sivustoihin puuttuu oikeus ”Luo ja muokkaa verkkokauppoja”."
         },
         "proxyHint": "Sivusto tavoittaa OpensourceERP:n paketin välittäjän /portal-api/ kautta – tai käänteisen välityspalvelimen kautta, joka asettaa otsakkeen X-Portal-Key.",
-        "secretsNotice": "Avaimet ovat kentissä piilotettuina (silmäkuvake näyttää ne), jotta niitä voi virhetilanteessa verrata HugoCMS:ään. Tyhjennetty kenttä säilyttää tallennetun arvon.",
+        "secretsNotice": "Avaimet on täytetty ja piilotettu; silmäkuvake näyttää ne. Kentän tyhjentäminen ei poista tallennettua avainta.",
         "secretsLoadError": "Verkkosivustojen avaimia ei voitu ladata.",
         "backendTest": {
             "INVALID": "Virheellinen osoite: {url} – odotettiin esimerkiksi https://erp.example.fi/portal/",
@@ -79,6 +87,20 @@
             "PROXY_NOT_CONFIGURED": "Välittäjä toimii, mutta ei löydä tiedostoa oserp-portal/config.json tai se on puutteellinen – suorita ”Asenna paketti”.",
             "FOREIGN": "Odottamaton vastaus (HTTP {status}) – siellä ei vastaa OpensourceERP:n portaalipääsy."
         },
-        "hugocmsShopOff": "HugoCMS:ssä verkkokauppaa ei ole vapautettu tälle sivustolle – kytke projektin asetuksissa kohdassa ”OpensourceERP-liitäntä” päälle ”Verkkokauppa tällä sivustolla”. Siihen asti kaupan ajo ei siirrä tuotesivuja."
+        "hugocmsShopOff": "HugoCMS:ssä verkkokauppaa ei ole vapautettu tälle sivustolle – kytke projektin asetuksissa kohdassa ”OpensourceERP-liitäntä” päälle ”Verkkokauppa tällä sivustolla”. Siihen asti kaupan ajo ei siirrä tuotesivuja.",
+        "help": {
+            "baseUrl": "Verkkosivuston osoite on Hugo-sivuston baseURL sellaisena kuin selain sen kutsuu – https:// ja vinoviiva lopussa.\n\nOpensourceERP johtaa siitä kaksi asiaa: välittäjän sijainnin (<osoite>/portal-api/), jota sivuston widgetit kutsuvat, sekä linkit sähköposteissa ja WhatsApp-viesteissä (lasku, tilin aktivointi).\n\nPolku kuuluu mukaan vain, jos koko Hugo-sivusto on alihakemistossa, esim. https://yritys.example/portal/ – silloin myös sen baseURL päättyy niin ja Hugo sijoittaa välittäjän tämän polun alle.\n\nTarkoitettu ei ole alasivu, jolla portaalisivut ovat (esim. /asiakkaat/kirjaudu/). Ne kuuluvat kohtaan ”Verkkosivuston sivut”.\n\nTarkistus: ”Testaa yhteys”, kolmas vaihe ”Sivuston kautta” kutsuu täsmälleen <osoite>/portal-api/.",
+            "publicKey": "Verkkosivuston avain on salaisuus, jolla sivusto tunnistautuu OpensourceERP:n portaalipääsylle. Se määrää siellä asiakkaan ja sivuston – siksi jokainen sivusto tarvitsee omansa.\n\nTavallisesti sen näkee vain välittäjä /portal-api/ web-palvelimella: OpensourceERP kirjoittaa sen ”Asenna paketti” -toiminnolla tiedostoon oserp-portal/config.json julkisen hakemiston ulkopuolelle. Asiakkaiden selain ei näe sitä koskaan.\n\nJos oma käänteisvälityspalvelin korvaa välittäjän, se asettaa otsakkeen X-Portal-Key samalla arvolla.\n\nUuden avaimen luonti: kentän oikean reunan kuvake. Sen jälkeen ”Asenna paketti”, muuten sivusto toimii vielä vanhalla.",
+            "allowedOrigins": "Sallittuja alkuperiä tarvitsee vain se, joka kutsuu OpensourceERP:n portaalipääsyä suoraan selaimesta – siis ilman välittäjää /portal-api/ ja ilman omaa käänteisvälityspalvelinta.\n\nSilloin pyynnöt tulevat eri osoitteesta kuin OpensourceERP itse, ja selain vaatii CORS-luvan. Tähän kirjoitetaan sivuston osoitteet pilkuilla eroteltuina, skeeman kanssa: https://www.example.fi, https://example.fi.\n\nJos sivusto toimii tarkoitetusti välittäjän kautta, kenttä jää tyhjäksi: selaimella ja välittäjällä on sama osoite, mitään ei tarvitse sallia.\n\nTurvallisuus: jokainen merkitty osoite saa luoda istuntoja sivuston avaimella – merkitse vain omat sivustot.",
+            "backendUrl": "Portaalipääsyn osoite on OpensourceERP:n julkinen sisäänkäynti asiakkaille: asennuksen hakemisto backend/portal/, esimerkiksi https://erp.example.fi/portal/ – paikallisesti scripts/dev.sh:lla http://localhost:8000/portal/.\n\nSinne sivuston välittäjä /portal-api/ ohjaa kaikki widgettien pyynnöt: kirjautuminen, tili, laskut ja kaupan kanssa ostoskori ja kassa. ”Asenna paketti” kirjoittaa osoitteen yhdessä sivuston avaimen kanssa tiedostoon oserp-portal/config.json.\n\nTähän eivät kuulu HugoCMS:n osoite (…/cms-api/, kortti HugoCMS) eikä sivuston oma osoite.\n\nTyhjä kenttä esitäytetään osoitteella, josta OpensourceERP:tä parhaillaan käytetään. Käänteisvälityspalvelimen takana se on ulospäin näkyvä osoite – sen on oltava tavoitettavissa sivuston web-palvelimelta.\n\n”Testaa yhteys” tarkistaa kolmessa vaiheessa: syöte, suoraan OpensourceERP:stä, sivuston kautta.",
+            "hugocmsUrl": "HugoCMS on ohjelma, jolla sivustoa ylläpidetään ja rakennetaan. OpensourceERP lähettää sille asiakasportaalin paketin ja rakennuttaa sivuston sen jälkeen uudelleen. Siihen se tarvitsee verkko-osoitteen, josta HugoCMS on tavoitettavissa ulkoa.\n\nTämän osoitteen HugoCMS näyttää itse: sivuston projektin asetuksissa kohdassa ”OpensourceERP-liitäntä”. Se päättyy /cms-api/, esimerkiksi https://www.example.fi/cms-api/. Kopioi se mieluiten sieltä.\n\nOsoitteen on alettava https://, muuten HugoCMS ei hyväksy yhteyttä. Ainoa poikkeus on testi samalla koneella.\n\nTarkistus: tämän kortin painike ”Tarkista yhteys ja hae oikeudet”.",
+            "hugocmsKey": "Tällä avaimella OpensourceERP tunnistautuu HugoCMS:lle. Se koskee vain tätä yhtä sivustoa.\n\nSe luodaan HugoCMS:ssä: sivuston projektin asetukset → ”OpensourceERP-liitäntä” → ”Luo avain”. HugoCMS näyttää sen kokonaan täsmälleen kerran – kopioi silloin ja liitä tähän. Myöhemmin HugoCMS näyttää vain neljä viimeistä merkkiä, joista voi tarkistaa, että molemmilla puolilla on sama avain.\n\nJos avain katoaa, luo HugoCMS:ssä uusi ja korvaa se tässä. Vanha ei enää kelpaa.",
+            "invoicePage": "Asiakkaat saavat sähköposteissa linkin laskuunsa. Linkki johtaa sivuston sivulle, joka näyttää laskun – tähän tulee sen polku, esimerkiksi /lasku/.\n\nSivu luodaan HugoCMS:ssä ja siihen lisätään rakennuspalikka ”shop-invoice”. Jos kenttä jää tyhjäksi, OpensourceERP käyttää /rechnung/.\n\nLinkki sisältää salaisen koodin, joten myös vieraat ilman asiakastiliä näkevät laskunsa.",
+            "activatePage": "Nykyiset asiakkaat, joilla ei vielä ole asiakastiliä, voivat aktivoida sellaisen: he syöttävät puhelinnumeronsa ja saavat linkin WhatsAppilla. Linkki johtaa tähän syötetylle sivulle, esimerkiksi /aktivoi/.\n\nSivu luodaan HugoCMS:ssä ja siihen lisätään rakennuspalikka ”portal-activate”. Jos kenttä jää tyhjäksi, OpensourceERP käyttää /freischalten/.\n\nSama polku kuuluu WhatsApp-malliin ”Aktivoi asiakastili” painikkeen osoitteena.",
+            "templateSet": "Mallisarja määrää, miltä kirjautuminen, asiakastili, laskut ja yhteydenottolomake näyttävät sivustolla. ”Standard” mukautuu sivuston ulkoasuun ja riittää useimmiten.\n\nKehittäjä voi luoda omia sarjoja yrityksen mallihakemistoon portal/-kansioon; ne näkyvät sitten tässä valittavina.\n\nVaihdon jälkeen suorita ”Asenna paketti”, jotta sivusto saa uudet mallit.",
+            "contactMailTo": "Kun asiakas täyttää sivuston yhteydenottolomakkeen, OpensourceERP lähettää viestin sähköpostina tähän osoitteeseen.\n\nJos kenttä jää tyhjäksi, viesti menee yrityksen lähettäjäosoitteeseen yrityksen asetuksista.\n\nUseita vastaanottajia ei tueta – käytä yhteistä postilaatikkoa tai jakelulistaa."
+        },
+        "hugocmsFromBaseUrl": "Käytä verkko-osoitetta",
+        "hugocmsFromBaseUrl_help": "Asettaa HugoCMS:n etäkäyttöosoitteen sivuston verkko-osoitteesta lisäten /cms-api/."
     }
 }

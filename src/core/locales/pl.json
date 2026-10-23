@@ -124,5 +124,8 @@
         "success": "Baza danych została zaktualizowana. Powtórz ostatnią akcję.",
         "failed": "Aktualizacja bazy danych nie powiodła się.",
         "alreadyRunning": "Aktualizacja bazy danych już trwa. Spróbuj ponownie za kilka minut."
+    },
+    "HelpPanel": {
+        "close": "Zamknij pomoc"
     }
 }

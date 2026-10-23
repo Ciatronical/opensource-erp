@@ -21,6 +21,7 @@ Pixelwerte für Abstände mehr verwenden — immer `var(--oserp-…)`.
 |----------|-------|
 | `page-header` | Seitenkopf: Rückweg, Titel, Untertitel, Status-Slot neben dem Titel, `actions`-Slot rechts |
 | `section-card` | Abschnittskarte mit Symbol, Titel, `actions`-Slot und Inhalt; bringt die Feld-Konventionen (outlined, compact, hide-details auto) per `v-defaults-provider` mit |
+| `help-panel` | Hilfsanzeige: schmale, nicht modale Leiste am rechten Rand mit der Langfassung eines Hilfetexts; geöffnet über `useHelpPanel().zeigen(titel, text)`, ein weiterer Aufruf tauscht den Inhalt. Einmal je Ansicht einbinden. Felder von `shop-config-field` nutzen sie über `help: '<Sprachschlüssel>'` neben `tooltip` (Kurzform); das Info-Symbol bekommt dann den Fragezeichen-Zeiger. Erster Abnehmer: Firmenkonfiguration → Kundenportal |
 
 ### page-header
 

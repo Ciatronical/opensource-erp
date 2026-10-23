@@ -27,7 +27,7 @@
         "installHint": "Edastab mallid, vidinad ja edastaja HugoCMS-i ja laseb veebilehe ehitada.",
         "installQueued": "Töö loodud – poe avaldamine edastab paketi (poe ülevaade).",
         "installDone": "Pakett edastatud ja veebileht ehitatud.",
-        "installFailed": "Pakett ei edastatud täielikult – vaata teateid.",
+        "installFailed": "Paketti ei edastatud täielikult. Põhjus:",
         "features": "Sellel veebilehel:",
         "feature": {
             "portal": "Kliendikonto",
@@ -37,25 +37,33 @@
         "fields": {
             "contact": "Kontaktivorm",
             "activatePage": "Leht „Konto aktiveerimine“",
-            "activatePage_help": "Leht lühikoodiga portal-activate; sinna viib WhatsAppi sõnumi link. Tühi = /freischalten/",
-            "contactMailTo": "Kontaktivormi saaja",
-            "contactMailTo_help": "E-posti aadress, kuhu kontaktivormi päringud saadetakse. Tühi = ettevõtte saatja aadress.",
-            "hugocms_help": "Veebisait asub HugoCMS-is: OpensourceERP edastab paketi sinna ja laseb saidi ehitada. Ilma aadressi ja võtmeta ei avaldata midagi.",
-            "hugocmsUrl_help": "Veebisaidi cms-api lõpp-punkt, nagu HugoCMS seda projekti seadetes jaotises „OpensourceERP ühendus“ näitab — näiteks https://www.example.ee/cms-api/.",
-            "access": "Veebisaidi juurdepääs",
+            "activatePage_help": "Leht, kus olemasolevad kliendid oma kliendikonto aktiveerivad. Tühi = /freischalten/.",
+            "contactMailTo": "Kontaktvormi saaja",
+            "contactMailTo_help": "E-posti aadress, kuhu kontaktvormi päringud lähevad. Tühi = ettevõtte saatja-aadress.",
+            "hugocms_help": "Ühendus HugoCMS-iga, mis selle veebisaidi ehitab ja avaldab.",
+            "hugocmsUrl_help": "Veebiaadress HugoCMS-i kaugjuurdepääsuks veebisaidi kaudu.",
+            "access": "Juurdepääs OpensourceERP-le",
             "publicKey": "Veebisaidi võti",
-            "publicKey_help": "Saladus, millega veebisait end OpensourceERP portaali juurdepääsule tõendab. Ilma selleta ei võta juurdepääs ühtegi päringut vastu.",
-            "allowedOrigins_help": "Komadega eraldatud aadresside loend, kust veebisait tohib pöörduda. Jätke tühjaks, kui veebisait kasutab sama aadressi edastaja /portal-api/ kaudu.",
-            "backendUrl": "OpensourceERP portaali juurdepääsu aadress",
-            "backendUrl_help": "Veebisait suunab sisselogimise, konto, arved ja — poega — ostukorvi ja kassa sellele aadressile: OpensourceERP avalik portaali juurdepääs (backend/portal/), näiteks https://erp.example.ee/portal/. Mitte HugoCMS-i ega veebisaidi aadress. Pakett kirjutab selle koos võtmega faili oserp-portal/config.json. Tühi väli täidetakse aadressiga, millelt OpensourceERP parajasti avatud on.",
+            "publicKey_help": "Salajane võti, millega veebisait end OpensourceERP-le tõendab.",
+            "allowedOrigins_help": "Vajalik ainult siis, kui veebisait pöördub OpensourceERP poole otse ilma edastajata — muidu jätke tühjaks.",
+            "backendUrl": "Kliendiportaali juurdepääsu veebiaadress",
+            "backendUrl_help": "Aadress, millelt veebisait OpensourceERP-ni jõuab, näiteks https://erp.example.ee/portal/.",
             "pages": "Veebisaidi lehed",
-            "baseUrl": "Veebisaidi aadress",
-            "baseUrl_help": "Aadress, millel Hugo veebisait on kättesaadav (selle baseURL), koos https:// — näiteks https://www.example.ee/. Täpselt seal asub edastaja /portal-api/. Tee kuulub siia ainult siis, kui kogu veebisait asub alamkataloogis, st selle baseURL ise lõpeb …/tee/. Millistel lehtedel kliendiportaal asub (sisselogimine, arve, aktiveerimine), määratakse jaotises „Veebisaidi lehed“, mitte siin.",
-            "invoicePage_help": "Veebisaidi leht lühikoodiga shop-invoice, nt /arve/. Kirjad viitavad sinna, et ka kontota külalised näeksid seisu. Tühi = /rechnung/.",
-            "templateSet_help": "Määrab paketi välimuse (mallid ja lühikoodid). Oma komplektid asuvad mallikataloogis portal/ all.",
+            "baseUrl": "Veebisaidi veebiaadress",
+            "baseUrl_help": "Aadress, millelt külastajad veebisaidi avavad, näiteks https://www.example.ee/.",
+            "invoicePage_help": "Veebisaidi leht, mis näitab arvet. Tühi = /rechnung/.",
+            "templateSet_help": "Portaalilehtede kujundus; „Standard“ sobib enamikule veebisaitidele.",
             "grants_help": "Kuhu OpensourceERP kirjutada tohib, määrab HugoCMS (projekti seaded → OpensourceERP ühendus). Siin ainult vaatamiseks; edastus rakendab load iga kord.",
             "grantPackage": "Kliendiportaali pakett",
-            "signingKey_help": "Sisestage HugoCMS-is projekti seadetes → OpensourceERP ühendus. Seejärel edastab OpensourceERP edastaja ja 404-lehe ise. Kehtib kõigile selle paigalduse veebisaitidele."
+            "signingKey_help": "Sisestage HugoCMS-is projekti seadetes → OpensourceERP ühendus. Seejärel edastab OpensourceERP edastaja ja 404-lehe ise. Kehtib kõigile selle paigalduse veebisaitidele.",
+            "hugocms": "HugoCMS",
+            "hugocmsUrl": "Veebiaadress HugoCMS-i kaugjuurdepääsuks",
+            "hugocmsKey": "Võti HugoCMS-i kaugjuurdepääsuks",
+            "hugocmsKey_help": "Juurdepääsuvõti, mille HugoCMS selle veebisaidi jaoks lõi.",
+            "allowedOrigins": "Lubatud päritoluaadressid",
+            "invoicePage": "Leht „Arve“",
+            "templateSet": "Mallikomplekt",
+            "publish": "Avaldamine"
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Selle nimega veebileht on juba olemas.",
@@ -65,7 +73,7 @@
             "NO_PERMISSION": "Veebilehtede jaoks puudub õigus „Veebipoodide loomine ja muutmine“."
         },
         "proxyHint": "Veebileht jõuab OpensourceERP-ni paketi edastaja /portal-api/ kaudu – või pöördproksi kaudu, mis seab päise X-Portal-Key.",
-        "secretsNotice": "Võtmed on väljadel peidetud (silma ikoon näitab), et neid saaks vea korral HugoCMS-iga võrrelda. Tühjendatud väli säilitab salvestatud väärtuse.",
+        "secretsNotice": "Võtmed on täidetud ja peidetud; silma ikoon näitab neid. Välja tühjendamine ei kustuta salvestatud võtit.",
         "secretsLoadError": "Veebisaitide võtmeid ei õnnestunud laadida.",
         "backendTest": {
             "INVALID": "Vigane aadress: {url} — oodati näiteks https://erp.example.ee/portal/",
@@ -79,6 +87,20 @@
             "PROXY_NOT_CONFIGURED": "Edastaja töötab, kuid ei leia faili oserp-portal/config.json või see on puudulik — käivitage „Paigalda pakett“.",
             "FOREIGN": "Ootamatu vastus (HTTP {status}) — seal ei vasta OpensourceERP portaali juurdepääs."
         },
-        "hugocmsShopOff": "HugoCMS-is pole selle veebisaidi jaoks veebipood lubatud — lülitage projekti seadetes jaotises „OpensourceERP ühendus“ sisse „Veebipood sellel veebisaidil“. Seni ei edasta poe käivitus ühtegi tootelehte."
+        "hugocmsShopOff": "HugoCMS-is pole selle veebisaidi jaoks veebipood lubatud — lülitage projekti seadetes jaotises „OpensourceERP ühendus“ sisse „Veebipood sellel veebisaidil“. Seni ei edasta poe käivitus ühtegi tootelehte.",
+        "help": {
+            "baseUrl": "Veebisaidi aadress on Hugo saidi baseURL, nagu brauser seda kutsub — koos https:// ja lõpukaldkriipsuga.\n\nOpensourceERP tuletab sellest kaks asja: edastaja asukoha (<aadress>/portal-api/), mida veebisaidi vidinad kutsuvad, ja lingid e-kirjades ja WhatsAppi sõnumites (arve, konto aktiveerimine).\n\nTee kuulub siia ainult siis, kui kogu Hugo sait asub alamkataloogis, nt https://firma.example/portal/ — siis lõpeb ka selle baseURL nii ja Hugo paigutab edastaja selle tee alla.\n\nMõeldud ei ole alamleht, kus portaalilehed asuvad (nt /kliendid/sisselogimine/). Need lehed kuuluvad jaotisse „Veebisaidi lehed“.\n\nKontroll: „Kontrolli ühendust“, kolmas samm „Veebisaidi kaudu“ kutsub täpselt <aadress>/portal-api/.",
+            "publicKey": "Veebisaidi võti on saladus, millega veebisait end OpensourceERP portaali juurdepääsule tõendab. See määrab seal rentniku ja veebisaidi — seepärast vajab iga veebisait oma võtit.\n\nTavaliselt näeb seda ainult edastaja /portal-api/ veebiserveris: OpensourceERP kirjutab selle käsuga „Paigalda pakett“ faili oserp-portal/config.json väljaspool avalikku kataloogi. Klientide brauser ei näe seda kunagi.\n\nKui oma pöördproksi asendab edastaja, seab see päise X-Portal-Key sama väärtusega.\n\nUue võtme loomine: ikoon välja paremas servas. Seejärel „Paigalda pakett“, muidu töötab veebisait veel vanaga.",
+            "allowedOrigins": "Lubatud päritolusid vajab ainult see, kes pöördub OpensourceERP portaali juurdepääsu poole otse brauserist — st ilma edastajata /portal-api/ ja ilma oma pöördproksita.\n\nSiis tulevad päringud muult aadressilt kui OpensourceERP ise ja brauser nõuab CORS-i luba. Siia kirjutatakse veebisaidi aadressid komadega eraldatult koos skeemiga: https://www.example.ee, https://example.ee.\n\nKui veebisait töötab ettenähtult edastaja kaudu, jääb väli tühjaks: brauseril ja edastajal on sama aadress, lubada pole midagi.\n\nTurvalisus: iga sisestatud aadress tohib veebisaidi võtmega seansse luua — sisestage ainult oma veebisaidid.",
+            "backendUrl": "Portaali juurdepääsu aadress on OpensourceERP avalik sissepääs klientidele: paigalduse kataloog backend/portal/, näiteks https://erp.example.ee/portal/ — kohalikult scripts/dev.sh-ga http://localhost:8000/portal/.\n\nSinna suunab veebisaidi edastaja /portal-api/ kõik vidinate päringud: sisselogimine, konto, arved ja poega ostukorv ja kassa. „Paigalda pakett“ kirjutab aadressi koos veebisaidi võtmega faili oserp-portal/config.json.\n\nSiia ei kuulu HugoCMS-i aadress (…/cms-api/, kaart HugoCMS) ega veebisaidi enda aadress.\n\nTühi väli täidetakse aadressiga, millelt OpensourceERP parajasti avatud on. Pöördproksi taga on see väljast nähtav aadress — see peab olema veebisaidi veebiserverist kättesaadav.\n\n„Kontrolli ühendust“ testib kolmes sammus: sisestus, otse OpensourceERP-st, veebisaidi kaudu.",
+            "hugocmsUrl": "HugoCMS on programm, millega veebisaiti hallatakse ja ehitatakse. OpensourceERP saadab talle kliendiportaali paketi ja laseb veebisaidi seejärel uuesti ehitada. Selleks on vaja veebiaadressi, millelt HugoCMS on väljastpoolt kättesaadav.\n\nSeda aadressi näitab HugoCMS ise: veebisaidi projekti seadetes jaotises „OpensourceERP ühendus“. See lõpeb /cms-api/, näiteks https://www.example.ee/cms-api/. Kõige parem on see sealt kopeerida.\n\nAadress peab algama https://, muidu HugoCMS ühendust vastu ei võta. Ainus erand on test samas arvutis.\n\nKontroll: nupp „Kontrolli ühendust ja too load“ sellel kaardil.",
+            "hugocmsKey": "Selle võtmega tõendab OpensourceERP end HugoCMS-ile. See kehtib ainult sellele ühele veebisaidile.\n\nSee luuakse HugoCMS-is: veebisaidi projekti seaded → „OpensourceERP ühendus“ → „Loo võti“. HugoCMS näitab seda täielikult täpselt ühe korra — siis kopeerida ja siia kleepida. Hiljem näitab HugoCMS ainult nelja viimast märki, nende järgi saab kontrollida, et mõlemal poolel on sama võti.\n\nKui võti kaob, looge HugoCMS-is uus ja asendage see siin. Vana enam ei kehti.",
+            "invoicePage": "Kliendid saavad e-kirjades lingi oma arvele. See link viib veebisaidi lehele, mis arvet näitab — siia käib selle tee, näiteks /arve/.\n\nLeht luuakse HugoCMS-is ja sinna lisatakse ehitusplokk „shop-invoice“. Kui väli jääb tühjaks, kasutab OpensourceERP /rechnung/.\n\nLink sisaldab salajast koodi, seega näevad oma arvet ka kliendikontota külalised.",
+            "activatePage": "Olemasolevad kliendid, kellel kliendikontot veel pole, saavad selle aktiveerida: nad sisestavad telefoninumbri ja saavad WhatsAppi kaudu lingi. See link viib siia sisestatud lehele, näiteks /aktiveeri/.\n\nLeht luuakse HugoCMS-is ja sinna lisatakse ehitusplokk „portal-activate“. Kui väli jääb tühjaks, kasutab OpensourceERP /freischalten/.\n\nSama tee kuulub WhatsAppi malli „Kliendikonto aktiveerimine“ nupu aadressina.",
+            "templateSet": "Mallikomplekt määrab, kuidas sisselogimine, kliendikonto, arved ja kontaktvorm veebisaidil välja näevad. „Standard“ kohandub veebisaidi välimusega ja piisab enamasti.\n\nOma komplekte saab arendaja luua ettevõtte mallikataloogis portal/ all; seejärel ilmuvad need siia valikusse.\n\nPärast vahetust käivitage „Paigalda pakett“, et veebisait saaks uued mallid.",
+            "contactMailTo": "Kui klient täidab veebisaidil kontaktvormi, saadab OpensourceERP päringu e-kirjaga sellele aadressile.\n\nKui väli jääb tühjaks, läheb päring ettevõtte saatja-aadressile ettevõtte seadetest.\n\nMitut saajat ei toetata — kasutage selleks ühispostkasti või jaotusloendit."
+        },
+        "hugocmsFromBaseUrl": "Võta veebiaadress üle",
+        "hugocmsFromBaseUrl_help": "Seab HugoCMS-i kaugjuurdepääsu aadressi veebisaidi veebiaadressist, lõpus /cms-api/."
     }
 }

@@ -124,5 +124,8 @@
         "success": "Datu bāze ir atjaunināta. Lūdzu, atkārtojiet pēdējo darbību.",
         "failed": "Datu bāzes atjaunināšana neizdevās.",
         "alreadyRunning": "Datu bāzes atjaunināšana jau notiek. Lūdzu, mēģiniet vēlreiz pēc dažām minūtēm."
+    },
+    "HelpPanel": {
+        "close": "Aizvērt palīdzību"
     }
 }
