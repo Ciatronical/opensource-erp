@@ -50,7 +50,7 @@
             "backendUrl_help": "Veebisait suunab sisselogimise, konto, arved ja — poega — ostukorvi ja kassa sellele aadressile: OpensourceERP avalik portaali juurdepääs (backend/portal/), näiteks https://erp.example.ee/portal/. Mitte HugoCMS-i ega veebisaidi aadress. Pakett kirjutab selle koos võtmega faili oserp-portal/config.json. Tühi väli täidetakse aadressiga, millelt OpensourceERP parajasti avatud on.",
             "pages": "Veebisaidi lehed",
             "baseUrl": "Veebisaidi aadress",
-            "baseUrl_help": "Täielik aadress koos https://. Kui kliendiportaal asub veebisaidi all, siis koos teega: https://tookoda.example/kliendid/ — edastaja asub siis selle tee all (…/kliendid/portal-api/).",
+            "baseUrl_help": "Aadress, millel Hugo veebisait on kättesaadav (selle baseURL), koos https:// — näiteks https://www.example.ee/. Täpselt seal asub edastaja /portal-api/. Tee kuulub siia ainult siis, kui kogu veebisait asub alamkataloogis, st selle baseURL ise lõpeb …/tee/. Millistel lehtedel kliendiportaal asub (sisselogimine, arve, aktiveerimine), määratakse jaotises „Veebisaidi lehed“, mitte siin.",
             "invoicePage_help": "Veebisaidi leht lühikoodiga shop-invoice, nt /arve/. Kirjad viitavad sinna, et ka kontota külalised näeksid seisu. Tühi = /rechnung/.",
             "templateSet_help": "Määrab paketi välimuse (mallid ja lühikoodid). Oma komplektid asuvad mallikataloogis portal/ all.",
             "grants_help": "Kuhu OpensourceERP kirjutada tohib, määrab HugoCMS (projekti seaded → OpensourceERP ühendus). Siin ainult vaatamiseks; edastus rakendab load iga kord.",

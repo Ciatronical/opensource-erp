@@ -50,7 +50,7 @@
             "backendUrl_help": "Web sitesi oturum açma, hesap, faturalar ve — mağaza varsa — sepet ve ödemeyi bu adrese yönlendirir: OpensourceERP’nin genel portal erişimi (backend/portal/), örneğin https://erp.example.com/portal/. HugoCMS’nin ya da web sitesinin adresi değil. Paket bunu anahtarla birlikte oserp-portal/config.json dosyasına yazar. Boş alan, OpensourceERP’nin şu anda çağrıldığı adresle önceden doldurulur.",
             "pages": "Web sitesinin sayfaları",
             "baseUrl": "Web sitesi adresi",
-            "baseUrl_help": "https:// dahil tam adres. Müşteri portalı bir web sitesinin altındaysa yol ile: https://atolye.example/musteriler/ — yönlendirici o zaman bu yolun altındadır (…/musteriler/portal-api/).",
+            "baseUrl_help": "Hugo web sitesinin erişilebildiği adres (baseURL’si), https:// dahil — örneğin https://www.example.com/. Yönlendirici /portal-api/ tam olarak oradadır. Bir yol buraya yalnızca tüm web sitesi bir alt dizinde bulunuyorsa, yani baseURL’nin kendisi …/yol/ ile bitiyorsa girilir. Müşteri portalının hangi sayfalarda bulunduğu (oturum açma, fatura, etkinleştirme) burada değil, “Web sitesinin sayfaları” altında ayarlanır.",
             "invoicePage_help": "Web sitesinin shop-invoice kısa kodunu içeren sayfası, örn. /fatura/. E-postalar oraya bağlantı verir, böylece hesabı olmayan misafirler de durumu görür. Boş = /rechnung/.",
             "templateSet_help": "Paketin görünümünü belirler (şablonlar ve kısa kodlar). Kendi setleriniz şablon dizininde portal/ altında bulunur.",
             "grants_help": "OpensourceERP’nin nereye yazabileceğini HugoCMS belirler (proje ayarları → OpensourceERP bağlantısı). Burada yalnızca görüntüleme amaçlı; aktarım izinleri her seferinde uygular.",

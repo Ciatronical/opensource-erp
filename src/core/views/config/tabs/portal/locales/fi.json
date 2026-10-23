@@ -50,7 +50,7 @@
             "backendUrl_help": "Verkkosivusto ohjaa kirjautumisen, tilin, laskut ja – kaupan kanssa – ostoskorin ja kassan tähän osoitteeseen: OpensourceERP:n julkinen portaalipääsy (backend/portal/), esimerkiksi https://erp.example.fi/portal/. Ei HugoCMS:n eikä sivuston osoite. Paketti kirjoittaa sen avaimen kanssa tiedostoon oserp-portal/config.json. Tyhjä kenttä esitäytetään osoitteella, josta OpensourceERP:tä parhaillaan käytetään.",
             "pages": "Verkkosivuston sivut",
             "baseUrl": "Verkkosivuston osoite",
-            "baseUrl_help": "Täydellinen osoite https:// mukaan lukien. Jos asiakasportaali on sivuston alla, polun kanssa: https://korjaamo.example/asiakkaat/ – välittäjä on silloin tämän polun alla (…/asiakkaat/portal-api/).",
+            "baseUrl_help": "Osoite, josta Hugo-sivusto on tavoitettavissa (sen baseURL), https:// mukaan lukien – esimerkiksi https://www.example.fi/. Juuri siellä on välittäjä /portal-api/. Polku kuuluu tähän vain, jos koko sivusto on alihakemistossa eli sen baseURL itse päättyy …/polku/. Millä sivuilla asiakasportaali on (kirjautuminen, lasku, aktivointi), määritetään kohdassa ”Verkkosivuston sivut”, ei tässä.",
             "invoicePage_help": "Sivuston sivu, jolla on shortcode shop-invoice, esim. /lasku/. Sähköpostit linkittävät sinne, jotta myös vieraat ilman tiliä näkevät tilan. Tyhjä = /rechnung/.",
             "templateSet_help": "Määrittää paketin ulkoasun (mallit ja shortcodet). Omat sarjat ovat mallihakemistossa portal/-kansiossa.",
             "grants_help": "HugoCMS määrää, minne OpensourceERP saa kirjoittaa (projektin asetukset → OpensourceERP-liitäntä). Täällä vain tiedoksi; siirto soveltaa oikeudet joka kerta.",

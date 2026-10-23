@@ -50,7 +50,7 @@
             "backendUrl_help": "Webstedet videresender login, konto, fakturaer og — med shop — kurv og kasse til denne adresse: OpensourceERP’s offentlige portaladgang (backend/portal/), fx https://erp.example.dk/portal/. Ikke HugoCMS’ adresse og ikke webstedets. Pakken skriver den sammen med nøglen i oserp-portal/config.json. Et tomt felt udfyldes med den adresse, OpensourceERP aktuelt kaldes på.",
             "pages": "Webstedets sider",
             "baseUrl": "Webstedets adresse",
-            "baseUrl_help": "Fuld adresse inklusive https://. Ligger kundeportalen under et websted, med sti: https://vaerksted.example/kunder/ — videresenderen ligger så under den sti (…/kunder/portal-api/).",
+            "baseUrl_help": "Adresse, hvor Hugo-webstedet kan nås (dets baseURL), inklusive https:// — fx https://www.example.dk/. Præcis dér ligger videresenderen /portal-api/. En sti hører kun hertil, hvis hele webstedet ligger i en undermappe, altså dets baseURL selv ender på …/sti/. Hvilke sider kundeportalen ligger på (login, faktura, aktivering), indstilles under „Webstedets sider“, ikke her.",
             "invoicePage_help": "Webstedets side med shortcoden shop-invoice, fx /faktura/. Mails linker dertil, så også gæster uden konto kan se status. Tomt = /rechnung/.",
             "templateSet_help": "Bestemmer pakkens udseende (skabeloner og shortcodes). Egne sæt ligger i skabelonmappen under portal/.",
             "grants_help": "Hvor OpensourceERP må skrive, bestemmer HugoCMS (projektindstillinger → OpensourceERP-tilkobling). Vises her kun til orientering; overførslen anvender frigivelserne hver gang.",

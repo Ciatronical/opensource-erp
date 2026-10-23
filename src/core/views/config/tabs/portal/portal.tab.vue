@@ -3,8 +3,8 @@
     Reiter „Kundenportal“ der Firmenkonfiguration (Gruppe Funktionen).
     Webseiten des Kundenportals (dev/kundenportal.md): je Webseite in HugoCMS,
     über die Kunden ihr Konto erreichen, eine Karte mit Name, Schalter,
-    Kennzahlen, den Einstellungen (website-settings.vue) und „Paket
-    installieren“. Dazu Webseiten anlegen und löschen.
+    Kennzahlen und den Einstellungen (website-settings.vue, dort auch „Paket
+    installieren“ unter „Verbindung prüfen“). Dazu Webseiten anlegen und löschen.
 
     Recht: edit_shop_config — wie die Kanäle des Shops. Aufruf mit
     ?tab=portal&website=<id> klappt die Einstellungen dieser Webseite auf.
@@ -120,30 +120,6 @@
                     {{ t('WebsitesView.noChannels') }}
                 </div>
 
-                <!-- Paket installieren: Vorlagen, Widgets, Weiterleiter an HugoCMS -->
-                <div class="d-flex flex-wrap align-center ga-2 mt-4">
-                    <v-btn
-                        variant="tonal"
-                        color="primary"
-                        size="small"
-                        prepend-icon="mdi-package-variant-closed"
-                        :loading="installiert[seite.id]"
-                        @click="installieren(seite)"
-                    >
-                        {{ t('WebsitesView.install') }}
-                    </v-btn>
-                    <span class="text-caption text-medium-emphasis">{{ t('WebsitesView.installHint') }}</span>
-                </div>
-                <v-alert
-                    v-if="installErgebnis[seite.id]"
-                    :type="installErgebnis[seite.id].art"
-                    variant="tonal"
-                    density="compact"
-                    class="mt-2"
-                >
-                    <div v-for="(zeile, nr) in installErgebnis[seite.id].zeilen" :key="nr">{{ zeile }}</div>
-                </v-alert>
-
                 <!-- Einstellungen: erst beim Aufklappen geladen -->
                 <v-expansion-panels v-model="einstellungenOffen[seite.id]" variant="accordion" class="mt-4">
                     <v-expansion-panel>
@@ -211,8 +187,6 @@ const laedt = ref(false)
 const fehler = ref('')
 const speichert = ref({})
 const einstellungenOffen = ref({})
-const installiert = ref({})
-const installErgebnis = ref({})
 const neu = reactive({ name: '' })
 const legtAn = ref(false)
 
@@ -384,33 +358,6 @@ async function loeschen() {
         toasts.error(fehlerText(e?.response?.data, 'WebsitesView.saveError'))
     } finally {
         loescht.value = false
-    }
-}
-
-// ── Paket installieren ──
-
-async function installieren(seite) {
-    installiert.value[seite.id] = true
-    installErgebnis.value[seite.id] = null
-    try {
-        const antwort = await axios.post('/api/portal/', { action: 'installWebsitePackage', website_id: seite.id })
-        if (!antwort.data?.success) {
-            installErgebnis.value[seite.id] = { art: 'error', zeilen: [fehlerText(antwort.data, 'WebsitesView.installFailed')] }
-            return
-        }
-        const daten = antwort.data.payload || {}
-        if (daten.queued) {
-            installErgebnis.value[seite.id] = { art: 'info', zeilen: [t('WebsitesView.installQueued')] }
-            return
-        }
-        const zeilen = (daten.messages || []).map(m => m.text)
-        installErgebnis.value[seite.id] = daten.ok
-            ? { art: 'success', zeilen: [t('WebsitesView.installDone'), ...zeilen] }
-            : { art: 'warning', zeilen: [t('WebsitesView.installFailed'), ...zeilen] }
-    } catch (e) {
-        installErgebnis.value[seite.id] = { art: 'error', zeilen: [fehlerText(e?.response?.data, 'WebsitesView.installFailed')] }
-    } finally {
-        installiert.value[seite.id] = false
     }
 }
 

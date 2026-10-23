@@ -50,7 +50,7 @@
             "backendUrl_help": "O site reencaminha início de sessão, conta, faturas e — com loja — carrinho e caixa para este endereço: o acesso público ao portal do OpensourceERP (backend/portal/), por exemplo https://erp.example.pt/portal/. Não o endereço do HugoCMS nem o do site. O pacote escreve-o com a chave em oserp-portal/config.json. Um campo vazio é preenchido com o endereço em que o OpensourceERP está a ser chamado.",
             "pages": "Páginas do site",
             "baseUrl": "Endereço do site",
-            "baseUrl_help": "Endereço completo incluindo https://. Se o portal de clientes estiver sob um site, com caminho: https://oficina.example/clientes/ — o reencaminhador fica então sob esse caminho (…/clientes/portal-api/).",
+            "baseUrl_help": "Endereço em que o site Hugo está acessível (a sua baseURL), incluindo https:// — por exemplo https://www.example.pt/. É exatamente aí que fica o reencaminhador /portal-api/. Um caminho só pertence aqui se todo o site estiver num subdiretório, ou seja, se a própria baseURL terminar em …/caminho/. Em que páginas fica o portal de clientes (início de sessão, fatura, ativação) define-se em «Páginas do site», não aqui.",
             "invoicePage_help": "Página do site com o shortcode shop-invoice, p. ex. /fatura/. Os e-mails ligam para lá para que também os convidados sem conta vejam o estado. Vazio = /rechnung/.",
             "templateSet_help": "Determina o aspeto do pacote (modelos e shortcodes). Conjuntos próprios ficam no diretório de modelos em portal/.",
             "grants_help": "Onde o OpensourceERP pode escrever é definido pelo HugoCMS (definições do projeto → Ligação OpensourceERP). Aqui apenas para consulta; a transferência aplica as autorizações de cada vez.",

@@ -50,7 +50,7 @@
             "backendUrl_help": "The website forwards login, account, invoices and — with a shop — cart and checkout to this address: the public OpensourceERP portal access (backend/portal/), for example https://erp.example.com/portal/. Not the HugoCMS address and not the website’s. The package writes it with the key into oserp-portal/config.json. An empty field is prefilled with the address OpensourceERP is currently called at.",
             "pages": "Pages of the website",
             "baseUrl": "Website address",
-            "baseUrl_help": "Full address including https://. If the customer portal lives below a website, with path: https://workshop.example/customers/ — the proxy is then below that path (…/customers/portal-api/).",
+            "baseUrl_help": "Address at which the Hugo website is reachable (its baseURL), including https:// — for example https://www.example.com/. The /portal-api/ proxy lives exactly there. A path belongs here only if the whole website lives in a subdirectory, i.e. its baseURL itself ends in …/path/. Which pages hold the customer portal (login, invoice, activation) is set under “Pages of the website”, not here.",
             "invoicePage_help": "Page of the website with the shop-invoice shortcode, e.g. /invoice/. Mails link there so that guests without an account can see the status too. Empty = /rechnung/.",
             "templateSet_help": "Determines the look of the package (templates and shortcodes). Custom sets live in the template directory under portal/.",
             "grants_help": "HugoCMS decides where OpensourceERP may write (project settings → OpensourceERP connection). Shown here for reference only; the transfer applies the grants every time.",

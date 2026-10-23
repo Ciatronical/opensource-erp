@@ -50,7 +50,7 @@
             "backendUrl_help": "Svetainė peradresuoja prisijungimą, paskyrą, sąskaitas ir — su parduotuve — krepšelį ir kasą šiuo adresu: viešoji OpensourceERP portalo prieiga (backend/portal/), pavyzdžiui, https://erp.example.lt/portal/. Ne HugoCMS ir ne svetainės adresas. Paketas jį su raktu įrašo į oserp-portal/config.json. Tuščias laukas užpildomas adresu, kuriuo OpensourceERP šiuo metu pasiekiamas.",
             "pages": "Svetainės puslapiai",
             "baseUrl": "Svetainės adresas",
-            "baseUrl_help": "Visas adresas su https://. Jei klientų portalas yra po svetaine, su keliu: https://dirbtuve.example/klientai/ — peradresavimas tada yra po šiuo keliu (…/klientai/portal-api/).",
+            "baseUrl_help": "Adresas, kuriuo pasiekiama Hugo svetainė (jos baseURL), su https:// — pavyzdžiui, https://www.example.lt/. Būtent ten yra peradresavimas /portal-api/. Kelias čia priklauso tik tada, kai visa svetainė yra pakatalogyje, t. y. jos pačios baseURL baigiasi …/kelias/. Kuriuose puslapiuose yra klientų portalas (prisijungimas, sąskaita, aktyvavimas), nustatoma skiltyje „Svetainės puslapiai“, ne čia.",
             "invoicePage_help": "Svetainės puslapis su trumpuoju kodu shop-invoice, pvz., /saskaita/. Laiškai nukreipia ten, kad būseną matytų ir svečiai be paskyros. Tuščia = /rechnung/.",
             "templateSet_help": "Nustato paketo išvaizdą (šablonai ir trumpieji kodai). Savi rinkiniai yra šablonų kataloge portal/.",
             "grants_help": "Kur OpensourceERP gali rašyti, nustato HugoCMS (projekto nustatymai → OpensourceERP jungtis). Čia tik peržiūrai; perkėlimas leidimus taiko kiekvieną kartą.",

@@ -50,7 +50,7 @@
             "backendUrl_help": "Site-ul redirecționează autentificarea, contul, facturile și — cu magazin — coșul și casa la această adresă: accesul public al portalului OpensourceERP (backend/portal/), de exemplu https://erp.example.ro/portal/. Nu adresa HugoCMS și nu cea a site-ului. Pachetul o scrie împreună cu cheia în oserp-portal/config.json. Un câmp gol este precompletat cu adresa la care OpensourceERP este apelat acum.",
             "pages": "Paginile site-ului",
             "baseUrl": "Adresa site-ului",
-            "baseUrl_help": "Adresa completă inclusiv https://. Dacă portalul clienților se află sub un site, cu cale: https://atelier.example/clienti/ — redirecționarea se află atunci sub acea cale (…/clienti/portal-api/).",
+            "baseUrl_help": "Adresa la care este accesibil site-ul Hugo (baseURL-ul său), inclusiv https:// — de exemplu https://www.example.ro/. Exact acolo se află redirecționarea /portal-api/. O cale aparține aici doar dacă întregul site se află într-un subdirector, adică baseURL-ul său se termină el însuși în …/cale/. Pe ce pagini se află portalul clienților (autentificare, factură, activare) se setează la „Paginile site-ului”, nu aici.",
             "invoicePage_help": "Pagina site-ului cu shortcode-ul shop-invoice, de ex. /factura/. E-mailurile trimit acolo, astfel încât și vizitatorii fără cont să vadă starea. Gol = /rechnung/.",
             "templateSet_help": "Determină aspectul pachetului (șabloane și shortcode-uri). Seturile proprii se află în directorul de șabloane sub portal/.",
             "grants_help": "Unde poate scrie OpensourceERP stabilește HugoCMS (setările proiectului → Conexiune OpensourceERP). Aici doar pentru vizualizare; transferul aplică permisiunile de fiecare dată.",

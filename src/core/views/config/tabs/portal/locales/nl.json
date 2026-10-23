@@ -50,7 +50,7 @@
             "backendUrl_help": "De website stuurt aanmelding, account, facturen en — met winkel — winkelwagen en kassa door naar dit adres: de openbare portaaltoegang van OpensourceERP (backend/portal/), bijvoorbeeld https://erp.example.nl/portal/. Niet het adres van HugoCMS en niet dat van de website. Het pakket schrijft het met de sleutel in oserp-portal/config.json. Een leeg veld wordt vooraf ingevuld met het adres waarop OpensourceERP nu wordt aangeroepen.",
             "pages": "Pagina’s van de website",
             "baseUrl": "Adres van de website",
-            "baseUrl_help": "Volledig adres inclusief https://. Staat het klantenportaal onder een website, met pad: https://werkplaats.example/klanten/ — de doorstuurder staat dan onder dat pad (…/klanten/portal-api/).",
+            "baseUrl_help": "Adres waarop de Hugo-website bereikbaar is (zijn baseURL), inclusief https:// — bijvoorbeeld https://www.example.nl/. Precies daar staat de doorstuurder /portal-api/. Een pad hoort hier alleen bij als de hele website in een submap staat, dus als de baseURL zelf eindigt op …/pad/. Op welke pagina’s het klantenportaal staat (aanmelding, factuur, activering), stel je in onder „Pagina’s van de website“, niet hier.",
             "invoicePage_help": "Pagina van de website met de shortcode shop-invoice, bijv. /factuur/. Mails linken daarheen zodat ook gasten zonder account de status zien. Leeg = /rechnung/.",
             "templateSet_help": "Bepaalt het uiterlijk van het pakket (sjablonen en shortcodes). Eigen sets staan in de sjabloonmap onder portal/.",
             "grants_help": "Waar OpensourceERP mag schrijven, bepaalt HugoCMS (projectinstellingen → OpensourceERP-koppeling). Hier alleen ter inzage; de overdracht past de vrijgaven elke keer toe.",

@@ -50,7 +50,7 @@
             "backendUrl_help": "Vietne pārsūta pieteikšanos, kontu, rēķinus un — ar veikalu — grozu un kasi uz šo adresi: publiskā OpensourceERP portāla piekļuve (backend/portal/), piemēram, https://erp.example.lv/portal/. Ne HugoCMS un ne vietnes adrese. Pakotne to kopā ar atslēgu ieraksta failā oserp-portal/config.json. Tukšs lauks tiek aizpildīts ar adresi, kurā OpensourceERP pašlaik tiek izsaukts.",
             "pages": "Vietnes lapas",
             "baseUrl": "Vietnes adrese",
-            "baseUrl_help": "Pilna adrese ar https://. Ja klientu portāls atrodas zem vietnes, ar ceļu: https://darbnica.example/klienti/ — pārsūtītājs tad atrodas zem šī ceļa (…/klienti/portal-api/).",
+            "baseUrl_help": "Adrese, kurā ir pieejama Hugo vietne (tās baseURL), ieskaitot https:// — piemēram, https://www.example.lv/. Tieši tur atrodas pārsūtītājs /portal-api/. Ceļš šeit pieder tikai tad, ja visa vietne atrodas apakšdirektorijā, t. i., tās baseURL pati beidzas ar …/cels/. Kurās lapās atrodas klientu portāls (pieteikšanās, rēķins, aktivizēšana), iestata sadaļā „Vietnes lapas“, nevis šeit.",
             "invoicePage_help": "Vietnes lapa ar īskodu shop-invoice, piem., /rekins/. E-pasti ved uz turieni, lai arī viesi bez konta redzētu stāvokli. Tukšs = /rechnung/.",
             "templateSet_help": "Nosaka pakotnes izskatu (veidnes un īskodi). Pašu komplekti atrodas veidņu direktorijā zem portal/.",
             "grants_help": "Kur OpensourceERP drīkst rakstīt, nosaka HugoCMS (projekta iestatījumi → OpensourceERP savienojums). Šeit tikai apskatei; pārsūtīšana atļaujas piemēro katru reizi.",

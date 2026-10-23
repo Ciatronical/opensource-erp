@@ -50,7 +50,7 @@
             "backendUrl_help": "Web předává přihlášení, účet, faktury a — s obchodem — košík a pokladnu na tuto adresu: veřejný portálový přístup OpensourceERP (backend/portal/), například https://erp.example.cz/portal/. Ne adresa HugoCMS a ne adresa webu. Balíček ji s klíčem zapíše do oserp-portal/config.json. Prázdné pole se předvyplní adresou, na které OpensourceERP právě běží.",
             "pages": "Stránky webu",
             "baseUrl": "Adresa webu",
-            "baseUrl_help": "Úplná adresa včetně https://. Je-li zákaznický portál pod webem, s cestou: https://dilna.example/zakaznici/ — přesměrovač je pak pod touto cestou (…/zakaznici/portal-api/).",
+            "baseUrl_help": "Adresa, na které je web Hugo dostupný (jeho baseURL), včetně https:// — například https://www.example.cz/. Přesně tam leží přesměrovač /portal-api/. Cesta sem patří jen tehdy, když celý web leží v podadresáři, tedy když jeho baseURL sama končí na …/cesta/. Na kterých stránkách leží zákaznický portál (přihlášení, faktura, aktivace), se nastavuje v „Stránky webu“, ne zde.",
             "invoicePage_help": "Stránka webu se zkratkou shop-invoice, např. /faktura/. Maily na ni odkazují, aby stav viděli i hosté bez účtu. Prázdné = /rechnung/.",
             "templateSet_help": "Určuje vzhled balíčku (šablony a zkratky). Vlastní sady leží v adresáři šablon pod portal/.",
             "grants_help": "Kam smí OpensourceERP zapisovat, určuje HugoCMS (nastavení projektu → Napojení OpensourceERP). Zde jen pro náhled; přenos převezme oprávnění pokaždé.",

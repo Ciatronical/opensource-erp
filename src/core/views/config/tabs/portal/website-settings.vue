@@ -150,6 +150,32 @@
                         <strong>{{ t(`crm_fields.shopBackendTestStep_${schritt.schritt}`) }}:</strong>
                         {{ testText(schritt) }}
                     </v-alert>
+
+                    <!-- Paket installieren: Vorlagen, Widgets und Weiterleiter an
+                         HugoCMS — der dritte Prüfschritt braucht genau das -->
+                    <div class="d-flex flex-wrap align-center ga-2 mt-4">
+                        <v-btn
+                            variant="tonal"
+                            color="primary"
+                            size="small"
+                            prepend-icon="mdi-package-variant-closed"
+                            :loading="installiert"
+                            @click="installieren"
+                        >
+                            {{ t('WebsitesView.install') }}
+                        </v-btn>
+                        <span class="text-caption text-medium-emphasis">{{ t('WebsitesView.installHint') }}</span>
+                    </div>
+                    <v-alert
+                        v-if="installErgebnis"
+                        :type="installErgebnis.art"
+                        variant="tonal"
+                        density="compact"
+                        class="mt-2"
+                        style="max-width: 90ch"
+                    >
+                        <div v-for="(zeile, nr) in installErgebnis.zeilen" :key="nr">{{ zeile }}</div>
+                    </v-alert>
                 </div>
             </template>
         </template>
@@ -326,6 +352,36 @@ async function backendPruefen() {
         backendErgebnis.value = [{ schritt: 'direkt', art: 'error', code: 'FAILED', params: { error: e?.message || '' } }]
     } finally {
         backendPrueft.value = false
+    }
+}
+
+// ── Paket installieren ──
+
+const installiert = ref(false)
+const installErgebnis = ref(null)
+
+async function installieren() {
+    installiert.value = true
+    installErgebnis.value = null
+    try {
+        const antwort = await axios.post('/api/portal/', { action: 'installWebsitePackage', website_id: props.websiteId })
+        if (!antwort.data?.success) {
+            installErgebnis.value = { art: 'error', zeilen: [fehlerText(antwort.data, 'WebsitesView.installFailed')] }
+            return
+        }
+        const daten = antwort.data.payload || {}
+        if (daten.queued) {
+            installErgebnis.value = { art: 'info', zeilen: [t('WebsitesView.installQueued')] }
+            return
+        }
+        const zeilen = (daten.messages || []).map(m => m.text)
+        installErgebnis.value = daten.ok
+            ? { art: 'success', zeilen: [t('WebsitesView.installDone'), ...zeilen] }
+            : { art: 'warning', zeilen: [t('WebsitesView.installFailed'), ...zeilen] }
+    } catch (e) {
+        installErgebnis.value = { art: 'error', zeilen: [fehlerText(e?.response?.data, 'WebsitesView.installFailed')] }
+    } finally {
+        installiert.value = false
     }
 }
 

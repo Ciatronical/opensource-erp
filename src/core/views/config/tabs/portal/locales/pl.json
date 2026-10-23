@@ -50,7 +50,7 @@
             "backendUrl_help": "Witryna przekazuje logowanie, konto, faktury oraz — ze sklepem — koszyk i kasę na ten adres: publiczny dostęp portalowy OpensourceERP (backend/portal/), na przykład https://erp.example.pl/portal/. Nie adres HugoCMS ani adres witryny. Pakiet zapisuje go z kluczem w oserp-portal/config.json. Puste pole jest wstępnie wypełniane adresem, pod którym OpensourceERP jest obecnie wywoływany.",
             "pages": "Strony witryny",
             "baseUrl": "Adres witryny",
-            "baseUrl_help": "Pełny adres wraz z https://. Jeśli portal klienta znajduje się pod witryną, ze ścieżką: https://warsztat.example/klienci/ — przekaźnik znajduje się wtedy pod tą ścieżką (…/klienci/portal-api/).",
+            "baseUrl_help": "Adres, pod którym dostępna jest witryna Hugo (jej baseURL), wraz z https:// — na przykład https://www.example.pl/. Dokładnie tam znajduje się przekaźnik /portal-api/. Ścieżka należy tutaj tylko wtedy, gdy cała witryna znajduje się w podkatalogu, czyli jej baseURL sama kończy się na …/sciezka/. Na których stronach znajduje się portal klienta (logowanie, faktura, aktywacja), ustawia się w sekcji „Strony witryny”, nie tutaj.",
             "invoicePage_help": "Strona witryny z shortcode shop-invoice, np. /faktura/. Maile odsyłają tam, aby status widzieli także goście bez konta. Puste = /rechnung/.",
             "templateSet_help": "Określa wygląd pakietu (szablony i shortcode’y). Własne zestawy leżą w katalogu szablonów pod portal/.",
             "grants_help": "Gdzie OpensourceERP może zapisywać, określa HugoCMS (ustawienia projektu → Połączenie OpensourceERP). Tutaj tylko do wglądu; transfer stosuje uprawnienia za każdym razem.",
