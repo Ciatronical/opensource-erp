@@ -96,7 +96,8 @@
             "KEY_REJECTED": "Portaali juurdepääs lükkas võtme tagasi — kontrollige veebisaidi võtit; veebisaidi kaudu kehtib viimati edastatud.",
             "PROXY_NOT_CONFIGURED": "Edastaja töötab, kuid ei leia faili oserp-portal/config.json või see on puudulik — käivitage „Paigalda pakett“.",
             "FOREIGN": "Aadressil {url} vastab midagi muud kui OpensourceERP (HTTP {status}). Aadress osutab ilmselt võõrale lehele või teisele teenusele — kontrollige veebiaadressi.",
-            "NOT_FOUND": "Aadressil {url} ei vasta midagi (viga 404). Kas edastaja pole veel veebisaidil või veebisaidi veebiaadress on vale.\nEdasi: 1. Kontrollige, et „Veebisaidi veebiaadress“ on avaleht, nagu külastajad selle avavad. 2. Käivitage „Paigalda pakett“, et edastaja veebisaidile jõuaks. 3. Seejärel kontrollige siin uuesti. Märkus: veebisaidi projekti config.json-ist puuduvad sageli paketi kirjed — millised, näitab teabeikoon."
+            "NOT_FOUND": "Aadressil {url} ei vasta midagi (viga 404). Kas edastaja pole veel veebisaidil või veebisaidi veebiaadress on vale.\nEdasi: 1. Kontrollige, et „Veebisaidi veebiaadress“ on avaleht, nagu külastajad selle avavad. 2. Käivitage „Paigalda pakett“, et edastaja veebisaidile jõuaks. 3. Seejärel kontrollige siin uuesti. Märkus: veebisaidi projekti config.json-ist puuduvad sageli paketi kirjed — millised, näitab teabeikoon.",
+            "WEBSITE_INACTIVE": "Veebisait on välja lülitatud. Ühendus toimib, kuid sisselogimine, registreerimine ja konto teatavad külastajatele „kliendiportaal pole avatud“. Avamiseks lülitage kaardi ülaosas sisse „Veebisait sisse lülitatud“."
         },
         "hugocmsShopOff": "HugoCMS-is pole selle veebisaidi jaoks veebipood lubatud — lülitage projekti seadetes jaotises „OpensourceERP ühendus“ sisse „Veebipood sellel veebisaidil“. Seni ei edasta poe käivitus ühtegi tootelehte.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Kirjed veebisaidi config.json-i",
             "text": "Et Hugo võtaks paketist edastaja, mallid ja vidinad üle, peab Hugo projekti config.json-i jaotis „module“ välja nägema nii — esimesed kirjed on veebisaidi tavalised kataloogid, viimased neli kuuluvad paketile:",
             "after": "Fail asub veebisaidi projektikataloogis veebiserveris; HugoCMS-is saab seda muuta jaotises „Kõik failid“. Seejärel käivitage „Paigalda pakett“ ja kontrollige siin uuesti.\n\nKui kirjed puuduvad, jõuab pakett küll HugoCMS-i, kuid Hugo ei kopeeri sellest midagi valmis veebisaiti — edastaja vastab siis veaga 404."
+        },
+        "backendTestStep": {
+            "schalter": "Veebisaidi lüliti"
         }
     }
 }

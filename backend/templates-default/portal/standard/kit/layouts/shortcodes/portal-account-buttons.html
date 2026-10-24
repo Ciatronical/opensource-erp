@@ -11,4 +11,5 @@
   {{- with .Get `register-url` }} register-url="{{ . }}"{{ end }}
   {{- with .Get `account-url` }} account-url="{{ . }}"{{ end }}
   {{- with .Get `cart-url` }} cart-url="{{ . }}"{{ end }}
+  {{- if eq (.Get `show-cart` | default `false`) `true` }} show-cart{{ end }}
   {{- with .Get `class` }} class="{{ . }}"{{ end }}></portal-account-buttons>

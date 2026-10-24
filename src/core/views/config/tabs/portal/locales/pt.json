@@ -96,7 +96,8 @@
             "KEY_REJECTED": "O acesso ao portal rejeitou a chave — verificar a chave do site; através do site vale a última transferida.",
             "PROXY_NOT_CONFIGURED": "O reencaminhador funciona, mas não encontra oserp-portal/config.json ou está incompleto — executar «Instalar pacote».",
             "FOREIGN": "Em {url} responde algo diferente do OpensourceERP (HTTP {status}). O endereço aponta provavelmente para uma página estranha ou outro serviço — verificar o endereço web.",
-            "NOT_FOUND": "Em {url} nada responde (erro 404). Ou o reencaminhador ainda não está no site, ou o endereço web do site está errado.\nPassos seguintes: 1. Verificar se «Endereço web do site» é a página inicial tal como os visitantes a abrem. 2. Executar «Instalar pacote» para que o reencaminhador chegue ao site. 3. Depois testar aqui novamente. Nota: muitas vezes faltam no config.json do projeto do site as entradas para o pacote — o ícone de informação mostra quais."
+            "NOT_FOUND": "Em {url} nada responde (erro 404). Ou o reencaminhador ainda não está no site, ou o endereço web do site está errado.\nPassos seguintes: 1. Verificar se «Endereço web do site» é a página inicial tal como os visitantes a abrem. 2. Executar «Instalar pacote» para que o reencaminhador chegue ao site. 3. Depois testar aqui novamente. Nota: muitas vezes faltam no config.json do projeto do site as entradas para o pacote — o ícone de informação mostra quais.",
+            "WEBSITE_INACTIVE": "O site está desligado. A ligação funciona, mas início de sessão, registo e conta indicam aos visitantes «portal de clientes indisponível». Para o libertar, ligar «Site ativado» no topo do cartão."
         },
         "hugocmsShopOff": "No HugoCMS a loja online não está ativada para este site — ative «Loja online neste site» nas definições do projeto em «Ligação OpensourceERP». Até lá a execução da loja não transfere páginas de produto.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Entradas para o config.json do site",
             "text": "Para que o Hugo assuma o reencaminhador, os modelos e os widgets do pacote, a secção «module» do config.json do projeto Hugo tem de ter este aspeto — as primeiras entradas são os diretórios habituais do site, as quatro últimas pertencem ao pacote:",
             "after": "O ficheiro está no diretório do projeto do site no servidor web; no HugoCMS pode ser editado em «Todos os ficheiros». Depois executar «Instalar pacote» e testar aqui novamente.\n\nSe as entradas faltarem, o pacote chega ao HugoCMS, mas o Hugo não copia nada dele para o site gerado — o reencaminhador responde então com erro 404."
+        },
+        "backendTestStep": {
+            "schalter": "Interruptor do site"
         }
     }
 }

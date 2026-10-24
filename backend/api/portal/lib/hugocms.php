@@ -553,6 +553,14 @@ function portalBackendUrlCheck($db, int $website, array $eingaben = []): array {
         ), $weiterleiter);
     }
 
+    // 4. Schalter der Webseite: abgeschaltet weist der Zugang jede Anfrage
+    // der Widgets ab (WEBSITE_INACTIVE) — der Ping oben läuft trotzdem, damit
+    // sich die Verbindung vor dem Einschalten prüfen lässt. Deshalb hier der
+    // Hinweis, sonst ist „alles grün“ und die Anmeldung geht trotzdem nicht
+    if (!websiteIsActive($db, $website)) {
+        $melden('schalter', 'warning', 'WEBSITE_INACTIVE');
+    }
+
     return $schritte;
 }
 

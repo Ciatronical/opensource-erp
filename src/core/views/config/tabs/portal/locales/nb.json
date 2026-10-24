@@ -96,7 +96,8 @@
             "KEY_REJECTED": "Portaltilgangen avviste nøkkelen — sjekk nettstedets nøkkel; via nettstedet gjelder den sist overførte.",
             "PROXY_NOT_CONFIGURED": "Videresenderen kjører, men finner ikke oserp-portal/config.json eller den er ufullstendig — kjør «Installer pakke».",
             "FOREIGN": "På {url} svarer noe annet enn OpensourceERP (HTTP {status}). Adressen peker trolig på en fremmed side eller en annen tjeneste — sjekk nettadressen.",
-            "NOT_FOUND": "Ingenting svarer på {url} (feil 404). Enten ligger videresenderen ikke på nettstedet ennå, eller nettstedets nettadresse er feil.\nNeste steg: 1. Sjekk at «Nettstedets nettadresse» er forsiden slik besøkende åpner den. 2. Kjør «Installer pakke» slik at videresenderen kommer på nettstedet. 3. Test deretter på nytt her. Merk: Ofte mangler oppføringene for pakken i nettstedsprosjektets config.json — hvilke, viser info-ikonet."
+            "NOT_FOUND": "Ingenting svarer på {url} (feil 404). Enten ligger videresenderen ikke på nettstedet ennå, eller nettstedets nettadresse er feil.\nNeste steg: 1. Sjekk at «Nettstedets nettadresse» er forsiden slik besøkende åpner den. 2. Kjør «Installer pakke» slik at videresenderen kommer på nettstedet. 3. Test deretter på nytt her. Merk: Ofte mangler oppføringene for pakken i nettstedsprosjektets config.json — hvilke, viser info-ikonet.",
+            "WEBSITE_INACTIVE": "Nettstedet er slått av. Tilkoblingen fungerer, men innlogging, registrering og konto melder besøkende «kundeportal ikke tilgjengelig». Slå på «Nettsted aktivert» øverst på kortet for å frigi det."
         },
         "hugocmsShopOff": "I HugoCMS er nettbutikken ikke frigitt for dette nettstedet — slå på «Nettbutikk på dette nettstedet» i prosjektinnstillingene under «OpensourceERP-tilkobling». Inntil da overfører butikkjøringen ingen produktsider.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Oppføringer for nettstedets config.json",
             "text": "For at Hugo skal ta med videresenderen, malene og widgetene fra pakken, må avsnittet «module» i Hugo-prosjektets config.json se slik ut — de første oppføringene er nettstedets vanlige mapper, de fire siste hører til pakken:",
             "after": "Filen ligger i nettstedets prosjektmappe på webserveren; i HugoCMS kan den redigeres under «Alle filer». Kjør deretter «Installer pakke» og test på nytt her.\n\nMangler oppføringene, når pakken riktignok HugoCMS, men Hugo kopierer ingenting av den inn i det ferdige nettstedet — videresenderen svarer da med feil 404."
+        },
+        "backendTestStep": {
+            "schalter": "Nettstedets bryter"
         }
     }
 }

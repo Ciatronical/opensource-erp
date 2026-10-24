@@ -167,7 +167,7 @@
                         class="mt-2"
                         style="max-width: 90ch; white-space: pre-line"
                     >
-                        <strong>{{ t(`crm_fields.shopBackendTestStep_${schritt.schritt}`) }}:</strong>
+                        <strong>{{ te(`WebsitesView.backendTestStep.${schritt.schritt}`) ? t(`WebsitesView.backendTestStep.${schritt.schritt}`) : t(`crm_fields.shopBackendTestStep_${schritt.schritt}`) }}:</strong>
                         {{ testText(schritt) }}
                         <!-- Weiterleiter fehlt auf der Webseite: oft fehlen die Mounts in der
                              config.json des Hugo-Projekts — das Info-Symbol zeigt sie in der Hilfsanzeige -->

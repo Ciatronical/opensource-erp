@@ -96,7 +96,8 @@
             "KEY_REJECTED": "The portal access rejected the key — check the website key; via the website the key transferred last applies.",
             "PROXY_NOT_CONFIGURED": "The proxy runs but cannot find oserp-portal/config.json or it is incomplete — run “Install package”.",
             "FOREIGN": "Something other than OpensourceERP answers at {url} (HTTP {status}). The address probably points to a foreign page or another service — check the web address.",
-            "NOT_FOUND": "Nothing answers at {url} (error 404). Either the proxy is not on the website yet, or the website address is wrong.\nNext steps: 1. Check that “Web address of the website” is the home page as visitors open it. 2. Run “Install package” so the proxy gets onto the website. 3. Then check again here. Note: often the website project’s config.json lacks the entries for the package — the info icon shows which."
+            "NOT_FOUND": "Nothing answers at {url} (error 404). Either the proxy is not on the website yet, or the website address is wrong.\nNext steps: 1. Check that “Web address of the website” is the home page as visitors open it. 2. Run “Install package” so the proxy gets onto the website. 3. Then check again here. Note: often the website project’s config.json lacks the entries for the package — the info icon shows which.",
+            "WEBSITE_INACTIVE": "The website is switched off. The connection works, but login, registration and account tell visitors “customer portal not available”. To release it, turn on “Website enabled” at the top of the card."
         },
         "hugocmsShopOff": "In HugoCMS the online shop is not enabled for this website — turn on “Online shop on this website” in the project settings under “OpensourceERP connection”. Until then the shop run transfers no product pages.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Entries for the website’s config.json",
             "text": "For Hugo to pick up the proxy, templates and widgets from the package, the “module” section of the Hugo project’s config.json must look like this — the first entries are the website’s usual directories, the last four belong to the package:",
             "after": "The file lives in the website’s project directory on the web server; in HugoCMS it can be edited under “All files”. Then run “Install package” and check again here.\n\nWithout these entries the package reaches HugoCMS, but Hugo copies none of it into the built website — the proxy then answers with error 404."
+        },
+        "backendTestStep": {
+            "schalter": "Website switch"
         }
     }
 }

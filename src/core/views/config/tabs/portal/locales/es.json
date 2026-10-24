@@ -96,7 +96,8 @@
             "KEY_REJECTED": "El acceso al portal rechazó la clave; comprobar la clave del sitio web; a través del sitio vale la última transferida.",
             "PROXY_NOT_CONFIGURED": "El reenviador funciona, pero no encuentra oserp-portal/config.json o está incompleto; ejecutar «Instalar paquete».",
             "FOREIGN": "En {url} responde algo distinto de OpensourceERP (HTTP {status}). Probablemente la dirección apunta a una página ajena o a otro servicio; comprobar la dirección web.",
-            "NOT_FOUND": "En {url} no responde nada (error 404). O el reenviador aún no está en el sitio web, o la dirección web del sitio no es correcta.\nPasos siguientes: 1. Comprobar que «Dirección web del sitio» es la página de inicio tal como la abren los visitantes. 2. Ejecutar «Instalar paquete» para que el reenviador llegue al sitio. 3. Después volver a probar aquí. Nota: a menudo faltan en el config.json del proyecto del sitio las entradas para el paquete; el icono de información muestra cuáles."
+            "NOT_FOUND": "En {url} no responde nada (error 404). O el reenviador aún no está en el sitio web, o la dirección web del sitio no es correcta.\nPasos siguientes: 1. Comprobar que «Dirección web del sitio» es la página de inicio tal como la abren los visitantes. 2. Ejecutar «Instalar paquete» para que el reenviador llegue al sitio. 3. Después volver a probar aquí. Nota: a menudo faltan en el config.json del proyecto del sitio las entradas para el paquete; el icono de información muestra cuáles.",
+            "WEBSITE_INACTIVE": "El sitio web está desactivado. La conexión funciona, pero inicio de sesión, registro y cuenta indican a los visitantes «portal de clientes no disponible». Para liberarlo, activar «Sitio web activado» arriba en la tarjeta."
         },
         "hugocmsShopOff": "En HugoCMS la tienda online no está habilitada para este sitio web; active «Tienda online en este sitio web» en la configuración del proyecto, en «Conexión OpensourceERP». Hasta entonces la ejecución de la tienda no transfiere páginas de producto.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Entradas para el config.json del sitio web",
             "text": "Para que Hugo incorpore el reenviador, las plantillas y los widgets del paquete, la sección «module» del config.json del proyecto Hugo debe tener este aspecto: las primeras entradas son los directorios habituales del sitio, las cuatro últimas pertenecen al paquete:",
             "after": "El archivo está en el directorio del proyecto del sitio en el servidor web; en HugoCMS se puede editar en «Todos los archivos». Después ejecutar «Instalar paquete» y volver a probar aquí.\n\nSi faltan las entradas, el paquete llega a HugoCMS, pero Hugo no copia nada de él al sitio generado; el reenviador responde entonces con error 404."
+        },
+        "backendTestStep": {
+            "schalter": "Interruptor del sitio web"
         }
     }
 }

@@ -96,7 +96,8 @@
             "KEY_REJECTED": "Dostęp portalowy odrzucił klucz — sprawdź klucz witryny; przez witrynę obowiązuje ostatnio przesłany.",
             "PROXY_NOT_CONFIGURED": "Przekaźnik działa, ale nie znajduje oserp-portal/config.json lub plik jest niekompletny — uruchom „Zainstaluj pakiet”.",
             "FOREIGN": "Pod adresem {url} odpowiada coś innego niż OpensourceERP (HTTP {status}). Adres prawdopodobnie wskazuje na obcą stronę lub inną usługę — sprawdź adres internetowy.",
-            "NOT_FOUND": "Pod adresem {url} nic nie odpowiada (błąd 404). Albo przekaźnik nie jest jeszcze w witrynie, albo adres internetowy witryny jest błędny.\nDalsze kroki: 1. Sprawdź, czy „Adres internetowy witryny” to strona główna, tak jak otwierają ją odwiedzający. 2. Uruchom „Zainstaluj pakiet”, aby przekaźnik trafił do witryny. 3. Następnie sprawdź tutaj ponownie. Uwaga: w config.json projektu witryny często brakuje wpisów dla pakietu — które, pokazuje ikona informacji."
+            "NOT_FOUND": "Pod adresem {url} nic nie odpowiada (błąd 404). Albo przekaźnik nie jest jeszcze w witrynie, albo adres internetowy witryny jest błędny.\nDalsze kroki: 1. Sprawdź, czy „Adres internetowy witryny” to strona główna, tak jak otwierają ją odwiedzający. 2. Uruchom „Zainstaluj pakiet”, aby przekaźnik trafił do witryny. 3. Następnie sprawdź tutaj ponownie. Uwaga: w config.json projektu witryny często brakuje wpisów dla pakietu — które, pokazuje ikona informacji.",
+            "WEBSITE_INACTIVE": "Witryna jest wyłączona. Połączenie działa, ale logowanie, rejestracja i konto zgłaszają odwiedzającym „portal klienta niedostępny”. Aby go udostępnić, włącz u góry karty „Witryna włączona”."
         },
         "hugocmsShopOff": "W HugoCMS sklep internetowy nie jest włączony dla tej witryny — włącz „Sklep internetowy w tej witrynie” w ustawieniach projektu w sekcji „Połączenie OpensourceERP”. Do tego czasu przebieg sklepu nie przesyła stron produktów.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Wpisy do config.json witryny",
             "text": "Aby Hugo przejął z pakietu przekaźnik, szablony i widżety, sekcja „module” w config.json projektu Hugo musi wyglądać tak — pierwsze wpisy to zwykłe katalogi witryny, ostatnie cztery należą do pakietu:",
             "after": "Plik znajduje się w katalogu projektu witryny na serwerze WWW; w HugoCMS można go edytować w „Wszystkie pliki”. Następnie uruchom „Zainstaluj pakiet” i sprawdź tutaj ponownie.\n\nJeśli wpisów brakuje, pakiet dociera do HugoCMS, ale Hugo nic z niego nie kopiuje do zbudowanej witryny — przekaźnik odpowiada wtedy błędem 404."
+        },
+        "backendTestStep": {
+            "schalter": "Przełącznik witryny"
         }
     }
 }

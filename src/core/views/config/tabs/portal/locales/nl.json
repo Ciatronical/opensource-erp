@@ -96,7 +96,8 @@
             "KEY_REJECTED": "De portaaltoegang heeft de sleutel geweigerd — sleutel van de website controleren; via de website geldt de laatst overgedragen sleutel.",
             "PROXY_NOT_CONFIGURED": "De doorstuurder werkt, maar vindt oserp-portal/config.json niet of onvolledig — „Pakket installeren“ uitvoeren.",
             "FOREIGN": "Op {url} antwoordt iets anders dan OpensourceERP (HTTP {status}). Het adres wijst waarschijnlijk naar een vreemde pagina of een andere dienst — webadres controleren.",
-            "NOT_FOUND": "Op {url} antwoordt niets (fout 404). Of de doorstuurder staat nog niet op de website, of het webadres van de website klopt niet.\nVolgende stappen: 1. Controleer of „Webadres van de website“ de startpagina is zoals bezoekers die openen. 2. Voer „Pakket installeren“ uit, zodat de doorstuurder op de website komt. 3. Test daarna hier opnieuw. Let op: vaak ontbreken in de config.json van het websiteproject de vermeldingen voor het pakket — welke, toont het infopictogram."
+            "NOT_FOUND": "Op {url} antwoordt niets (fout 404). Of de doorstuurder staat nog niet op de website, of het webadres van de website klopt niet.\nVolgende stappen: 1. Controleer of „Webadres van de website“ de startpagina is zoals bezoekers die openen. 2. Voer „Pakket installeren“ uit, zodat de doorstuurder op de website komt. 3. Test daarna hier opnieuw. Let op: vaak ontbreken in de config.json van het websiteproject de vermeldingen voor het pakket — welke, toont het infopictogram.",
+            "WEBSITE_INACTIVE": "De website is uitgeschakeld. De verbinding werkt, maar aanmelding, registratie en account melden bezoekers „klantenportaal niet beschikbaar“. Zet bovenaan de kaart „Website ingeschakeld“ aan om het vrij te geven."
         },
         "hugocmsShopOff": "In HugoCMS is de webwinkel voor deze website niet vrijgegeven — zet in de projectinstellingen onder „OpensourceERP-koppeling“ de schakelaar „Webwinkel op deze website“ aan. Tot dan draagt de winkelrun geen productpagina’s over.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Vermeldingen voor de config.json van de website",
             "text": "Zodat Hugo de doorstuurder, de sjablonen en de widgets uit het pakket overneemt, moet de sectie „module“ in de config.json van het Hugo-project er zo uitzien — de eerste vermeldingen zijn de gebruikelijke mappen van de website, de laatste vier horen bij het pakket:",
             "after": "Het bestand staat in de projectmap van de website op de webserver; in HugoCMS is het te bewerken onder „Alle bestanden“. Voer daarna „Pakket installeren“ uit en test hier opnieuw.\n\nOntbreken de vermeldingen, dan komt het pakket wel bij HugoCMS aan, maar Hugo kopieert er niets van naar de gebouwde website — de doorstuurder antwoordt dan met fout 404."
+        },
+        "backendTestStep": {
+            "schalter": "Schakelaar van de website"
         }
     }
 }

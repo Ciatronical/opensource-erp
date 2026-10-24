@@ -96,7 +96,8 @@
             "KEY_REJECTED": "Portāla piekļuve noraidīja atslēgu — pārbaudiet vietnes atslēgu; caur vietni ir spēkā pēdējā pārsūtītā.",
             "PROXY_NOT_CONFIGURED": "Pārsūtītājs darbojas, bet neatrod oserp-portal/config.json vai tas ir nepilnīgs — izpildiet „Instalēt pakotni“.",
             "FOREIGN": "Adresē {url} atbild kas cits, nevis OpensourceERP (HTTP {status}). Adrese, visticamāk, norāda uz svešu lapu vai citu pakalpojumu — pārbaudiet tīmekļa adresi.",
-            "NOT_FOUND": "Adresē {url} nekas neatbild (kļūda 404). Vai nu pārsūtītājs vēl nav vietnē, vai vietnes tīmekļa adrese nav pareiza.\nTālāk: 1. Pārbaudiet, vai „Vietnes tīmekļa adrese“ ir sākumlapa, kā to atver apmeklētāji. 2. Izpildiet „Instalēt pakotni“, lai pārsūtītājs nonāktu vietnē. 3. Pēc tam šeit pārbaudiet vēlreiz. Piezīme: vietnes projekta config.json bieži trūkst pakotnes ierakstu — kuru, rāda informācijas ikona."
+            "NOT_FOUND": "Adresē {url} nekas neatbild (kļūda 404). Vai nu pārsūtītājs vēl nav vietnē, vai vietnes tīmekļa adrese nav pareiza.\nTālāk: 1. Pārbaudiet, vai „Vietnes tīmekļa adrese“ ir sākumlapa, kā to atver apmeklētāji. 2. Izpildiet „Instalēt pakotni“, lai pārsūtītājs nonāktu vietnē. 3. Pēc tam šeit pārbaudiet vēlreiz. Piezīme: vietnes projekta config.json bieži trūkst pakotnes ierakstu — kuru, rāda informācijas ikona.",
+            "WEBSITE_INACTIVE": "Vietne ir izslēgta. Savienojums darbojas, bet pieteikšanās, reģistrācija un konts apmeklētājiem ziņo „klientu portāls nav pieejams“. Lai atbrīvotu, kartītes augšpusē ieslēdziet „Vietne ieslēgta“."
         },
         "hugocmsShopOff": "HugoCMS šai vietnei interneta veikals nav atļauts — projekta iestatījumos sadaļā „OpensourceERP savienojums“ ieslēdziet „Interneta veikals šajā vietnē“. Līdz tam veikala izpilde nepārsūta produktu lapas.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Ieraksti vietnes config.json",
             "text": "Lai Hugo no pakotnes pārņemtu pārsūtītāju, veidnes un logrīkus, Hugo projekta config.json sadaļai „module“ jāizskatās šādi — pirmie ieraksti ir vietnes parastās direktorijas, pēdējie četri pieder pakotnei:",
             "after": "Fails atrodas vietnes projekta direktorijā tīmekļa serverī; HugoCMS to var rediģēt sadaļā „Visi faili“. Pēc tam izpildiet „Instalēt pakotni“ un šeit pārbaudiet vēlreiz.\n\nJa ieraksti trūkst, pakotne gan nonāk HugoCMS, bet Hugo neko no tās nekopē gatavajā vietnē — pārsūtītājs tad atbild ar kļūdu 404."
+        },
+        "backendTestStep": {
+            "schalter": "Vietnes slēdzis"
         }
     }
 }

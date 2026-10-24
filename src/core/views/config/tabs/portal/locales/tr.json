@@ -96,7 +96,8 @@
             "KEY_REJECTED": "Portal erişimi anahtarı reddetti — web sitesi anahtarını kontrol edin; web sitesi üzerinden en son aktarılan geçerlidir.",
             "PROXY_NOT_CONFIGURED": "Yönlendirici çalışıyor ancak oserp-portal/config.json dosyasını bulamıyor ya da dosya eksik — “Paketi yükle” çalıştırın.",
             "FOREIGN": "{url} adresinde OpensourceERP dışında bir şey yanıt veriyor (HTTP {status}). Adres muhtemelen yabancı bir sayfaya veya başka bir hizmete işaret ediyor — web adresini kontrol edin.",
-            "NOT_FOUND": "{url} adresinde hiçbir şey yanıt vermiyor (hata 404). Ya yönlendirici henüz web sitesinde değil ya da web sitesinin web adresi yanlış.\nSonraki adımlar: 1. “Web sitesinin web adresi”nin ziyaretçilerin açtığı ana sayfa olduğunu kontrol edin. 2. Yönlendiricinin web sitesine gelmesi için “Paketi yükle” çalıştırın. 3. Ardından burada yeniden sınayın. Not: Web sitesi projesinin config.json dosyasında paket için girdiler sıklıkla eksiktir — hangileri olduğunu bilgi simgesi gösterir."
+            "NOT_FOUND": "{url} adresinde hiçbir şey yanıt vermiyor (hata 404). Ya yönlendirici henüz web sitesinde değil ya da web sitesinin web adresi yanlış.\nSonraki adımlar: 1. “Web sitesinin web adresi”nin ziyaretçilerin açtığı ana sayfa olduğunu kontrol edin. 2. Yönlendiricinin web sitesine gelmesi için “Paketi yükle” çalıştırın. 3. Ardından burada yeniden sınayın. Not: Web sitesi projesinin config.json dosyasında paket için girdiler sıklıkla eksiktir — hangileri olduğunu bilgi simgesi gösterir.",
+            "WEBSITE_INACTIVE": "Web sitesi kapalı. Bağlantı çalışıyor, ancak oturum açma, kayıt ve hesap ziyaretçilere “müşteri portalı kullanılamıyor” bildiriyor. Açmak için kartın üst kısmında “Web sitesi etkin” seçeneğini açın."
         },
         "hugocmsShopOff": "HugoCMS’de bu web sitesi için çevrimiçi mağaza etkin değil — proje ayarlarında “OpensourceERP bağlantısı” altında “Bu web sitesinde çevrimiçi mağaza” seçeneğini açın. O zamana kadar mağaza çalışması ürün sayfası aktarmaz.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Web sitesinin config.json dosyası için girdiler",
             "text": "Hugo’nun paketten yönlendiriciyi, şablonları ve bileşenleri alması için Hugo projesinin config.json dosyasındaki “module” bölümü şöyle görünmelidir — ilk girdiler web sitesinin olağan dizinleridir, son dördü pakete aittir:",
             "after": "Dosya web sunucusundaki web sitesinin proje dizininde bulunur; HugoCMS’de “Tüm dosyalar” altında düzenlenebilir. Ardından “Paketi yükle” çalıştırın ve burada yeniden sınayın.\n\nGirdiler eksikse paket HugoCMS’ye ulaşır, ancak Hugo bundan hiçbir şeyi oluşturulan web sitesine kopyalamaz — yönlendirici o zaman 404 hatasıyla yanıt verir."
+        },
+        "backendTestStep": {
+            "schalter": "Web sitesi anahtarı"
         }
     }
 }

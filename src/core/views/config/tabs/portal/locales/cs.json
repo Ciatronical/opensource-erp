@@ -96,7 +96,8 @@
             "KEY_REJECTED": "Portálový přístup klíč odmítl — zkontrolujte klíč webu; přes web platí naposledy přenesený.",
             "PROXY_NOT_CONFIGURED": "Přesměrovač běží, ale nenachází oserp-portal/config.json nebo je neúplný — spusťte „Instalovat balíček“.",
             "FOREIGN": "Na adrese {url} odpovídá něco jiného než OpensourceERP (HTTP {status}). Adresa zřejmě ukazuje na cizí stránku nebo jinou službu — zkontrolujte webovou adresu.",
-            "NOT_FOUND": "Na adrese {url} nic neodpovídá (chyba 404). Buď přesměrovač ještě není na webu, nebo webová adresa webu není správná.\nDalší postup: 1. Ověřit, že „Webová adresa webu“ je úvodní stránka, jak ji otevírají návštěvníci. 2. Spustit „Instalovat balíček“, aby se přesměrovač dostal na web. 3. Poté zde znovu zkontrolovat. Poznámka: V config.json projektu webu často chybí záznamy pro balíček — které, ukáže ikona informací."
+            "NOT_FOUND": "Na adrese {url} nic neodpovídá (chyba 404). Buď přesměrovač ještě není na webu, nebo webová adresa webu není správná.\nDalší postup: 1. Ověřit, že „Webová adresa webu“ je úvodní stránka, jak ji otevírají návštěvníci. 2. Spustit „Instalovat balíček“, aby se přesměrovač dostal na web. 3. Poté zde znovu zkontrolovat. Poznámka: V config.json projektu webu často chybí záznamy pro balíček — které, ukáže ikona informací.",
+            "WEBSITE_INACTIVE": "Web je vypnutý. Spojení funguje, ale přihlášení, registrace a účet hlásí návštěvníkům „zákaznický portál není zpřístupněn“. Pro zpřístupnění zapněte nahoře na kartě „Web zapnutý“."
         },
         "hugocmsShopOff": "V HugoCMS není pro tento web povolen online obchod — v nastavení projektu v části „Napojení OpensourceERP“ zapněte „Online obchod na tomto webu“. Do té doby běh obchodu nepřenáší žádné produktové stránky.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Záznamy pro config.json webu",
             "text": "Aby Hugo převzal přesměrovač, šablony a widgety z balíčku, musí oddíl „module“ v config.json projektu Hugo vypadat takto — první záznamy jsou obvyklé adresáře webu, poslední čtyři patří k balíčku:",
             "after": "Soubor leží v projektovém adresáři webu na webovém serveru; v HugoCMS jej lze upravit pod „Všechny soubory“. Poté spusťte „Instalovat balíček“ a zde znovu zkontrolujte.\n\nChybí-li záznamy, balíček sice dorazí do HugoCMS, ale Hugo z něj nic nezkopíruje do hotového webu — přesměrovač pak odpovídá chybou 404."
+        },
+        "backendTestStep": {
+            "schalter": "Přepínač webu"
         }
     }
 }

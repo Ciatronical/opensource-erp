@@ -1,9 +1,10 @@
 import { html, css, nothing } from 'lit';
 import { PortalElement } from '../core/base.js';
-import { apiRequest, getContext, refreshContext, logout } from '../core/api.js';
+import { apiRequest, getContext, refreshContext, logout, ApiError } from '../core/api.js';
 import { on, emit, PORTAL_AUTH_CHANGED, SHOP_CART_CHANGED } from '../core/bus.js';
 import { t } from '../core/i18n.js';
 import { shopPath } from '../core/paths.js';
+import { hasFeature } from '../core/features.js';
 
 /**
  * <portal-account-buttons login-url="/login/" …></portal-account-buttons>
@@ -41,6 +42,10 @@ export class PortalAccountButtons extends PortalElement {
     registerLabel: { type: String, attribute: 'register-label' },
     accountLabel: { type: String, attribute: 'account-label' },
     cartLabel: { type: String, attribute: 'cart-label' },
+    /** Warenkorb-Knopf erzwingen; ohne Angabe nur, wenn die Webseite einen Shop hat (features.json) */
+    showCart: { type: Boolean, attribute: 'show-cart' },
+    /** Webseite in OpensourceERP abgeschaltet (WEBSITE_INACTIVE): dann gar keine Knöpfe */
+    _inactive: { state: true },
     _account: { state: true },
     _count: { state: true },
     _busy: { state: true },
@@ -114,6 +119,7 @@ export class PortalAccountButtons extends PortalElement {
     this._count = 0;
     this._busy = false;
     this._hint = false;
+    this._inactive = false;
   }
 
   connectedCallback() {
@@ -143,10 +149,16 @@ export class PortalAccountButtons extends PortalElement {
     try {
       const context = await pending;
       if (!context) return;
+      this._inactive = false;
       this._account = !!context.account;
       this._count = Number(context.cart_pos_count) || 0;
-    } catch {
-      // Es bleibt beim abgemeldeten Zustand — siehe Klassenkommentar.
+    } catch (error) {
+      // Abgeschaltete Webseite: Anmelden und Konto führten nur zu einer
+      // Fehlermeldung — die Knöpfe verschwinden, bis sie wieder eingeschaltet
+      // ist. Jeder andere Fehler: es bleibt beim abgemeldeten Zustand.
+      if (error instanceof ApiError && 'WEBSITE_INACTIVE' === error.code) {
+        this._inactive = true;
+      }
     }
   }
 
@@ -174,6 +186,7 @@ export class PortalAccountButtons extends PortalElement {
   }
 
   render() {
+    if (this._inactive) return nothing;
     return html`
       <ul part="buttons">
         <li>${this._account ? this.#logoutButton() : this.#link(this.loginUrl, this.loginLabel || t('header.login'), this.#unlockIcon(), 'buttonSecondary')}</li>
@@ -182,7 +195,7 @@ export class PortalAccountButtons extends PortalElement {
             ? this.#link(this.accountUrl, this.accountLabel || t('header.account'), this.#personIcon(), 'buttonSecondary')
             : this.#link(this.registerUrl, this.registerLabel || t('header.register'), this.#personIcon(), 'buttonSecondary')}
         </li>
-        <li>${this.#cartButton()}</li>
+        ${this.showCart || hasFeature('shop') ? html`<li>${this.#cartButton()}</li>` : nothing}
       </ul>
     `;
   }

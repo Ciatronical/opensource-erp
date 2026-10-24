@@ -96,7 +96,8 @@
             "KEY_REJECTED": "L’accesso al portale ha rifiutato la chiave — verificare la chiave del sito; tramite il sito vale l’ultima trasferita.",
             "PROXY_NOT_CONFIGURED": "L’inoltro funziona ma non trova oserp-portal/config.json o è incompleto — eseguire «Installa pacchetto».",
             "FOREIGN": "A {url} risponde qualcosa di diverso da OpensourceERP (HTTP {status}). Probabilmente l’indirizzo punta a una pagina estranea o a un altro servizio — verificare l’indirizzo web.",
-            "NOT_FOUND": "A {url} non risponde nulla (errore 404). O l’inoltro non è ancora sul sito, o l’indirizzo web del sito non è corretto.\nProssimi passi: 1. Verificare che «Indirizzo web del sito» sia la pagina iniziale come la aprono i visitatori. 2. Eseguire «Installa pacchetto» perché l’inoltro arrivi sul sito. 3. Poi verificare di nuovo qui. Nota: spesso nel config.json del progetto del sito mancano le voci per il pacchetto — quali, lo mostra l’icona informazioni."
+            "NOT_FOUND": "A {url} non risponde nulla (errore 404). O l’inoltro non è ancora sul sito, o l’indirizzo web del sito non è corretto.\nProssimi passi: 1. Verificare che «Indirizzo web del sito» sia la pagina iniziale come la aprono i visitatori. 2. Eseguire «Installa pacchetto» perché l’inoltro arrivi sul sito. 3. Poi verificare di nuovo qui. Nota: spesso nel config.json del progetto del sito mancano le voci per il pacchetto — quali, lo mostra l’icona informazioni.",
+            "WEBSITE_INACTIVE": "Il sito web è spento. Il collegamento funziona, ma accesso, registrazione e account comunicano ai visitatori «portale clienti non disponibile». Per attivarlo, accendere «Sito web attivo» in alto nella scheda."
         },
         "hugocmsShopOff": "In HugoCMS il negozio online non è abilitato per questo sito — attivare «Negozio online su questo sito» nelle impostazioni del progetto alla voce «Collegamento OpensourceERP». Fino ad allora l’esecuzione del negozio non trasferisce pagine prodotto.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Voci per il config.json del sito",
             "text": "Perché Hugo rilevi inoltro, modelli e widget dal pacchetto, la sezione «module» del config.json del progetto Hugo deve apparire così — le prime voci sono le cartelle abituali del sito, le ultime quattro appartengono al pacchetto:",
             "after": "Il file si trova nella cartella del progetto del sito sul server web; in HugoCMS si modifica sotto «Tutti i file». Poi eseguire «Installa pacchetto» e verificare di nuovo qui.\n\nSenza queste voci il pacchetto arriva a HugoCMS, ma Hugo non ne copia nulla nel sito generato — l’inoltro risponde allora con errore 404."
+        },
+        "backendTestStep": {
+            "schalter": "Interruttore del sito web"
         }
     }
 }

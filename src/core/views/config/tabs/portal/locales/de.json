@@ -96,7 +96,8 @@
             "KEY_REJECTED": "Der Portal-Zugang hat den Schlüssel abgewiesen — Schlüssel der Webseite prüfen; über die Webseite gilt der zuletzt übertragene.",
             "PROXY_NOT_CONFIGURED": "Der Weiterleiter läuft, findet aber oserp-portal/config.json nicht oder unvollständig — „Paket installieren“ ausführen.",
             "FOREIGN": "Unter {url} antwortet etwas anderes als OpensourceERP (HTTP {status}). Vermutlich zeigt die Adresse auf eine fremde Seite oder einen anderen Dienst — Webadresse prüfen.",
-            "NOT_FOUND": "Unter {url} antwortet nichts (Fehler 404). Entweder liegt der Weiterleiter noch nicht auf der Webseite, oder die Webadresse der Webseite stimmt nicht.\nSo geht es weiter: 1. Prüfen, ob „Webadresse der Webseite“ die Startseite ist, so wie Besucher sie aufrufen. 2. „Paket installieren“ ausführen, damit der Weiterleiter auf die Webseite kommt. 3. Dann hier erneut prüfen. Hinweis: Oft fehlen in der config.json des Webseiten-Projekts die Einträge für das Paket — welche, zeigt das Info-Symbol."
+            "NOT_FOUND": "Unter {url} antwortet nichts (Fehler 404). Entweder liegt der Weiterleiter noch nicht auf der Webseite, oder die Webadresse der Webseite stimmt nicht.\nSo geht es weiter: 1. Prüfen, ob „Webadresse der Webseite“ die Startseite ist, so wie Besucher sie aufrufen. 2. „Paket installieren“ ausführen, damit der Weiterleiter auf die Webseite kommt. 3. Dann hier erneut prüfen. Hinweis: Oft fehlen in der config.json des Webseiten-Projekts die Einträge für das Paket — welche, zeigt das Info-Symbol.",
+            "WEBSITE_INACTIVE": "Die Webseite ist abgeschaltet. Die Verbindung steht, aber Anmeldung, Registrierung und Konto melden Besuchern „Kundenportal nicht freigeschaltet“. Zum Freigeben oben in der Karte „Webseite eingeschaltet“ einschalten."
         },
         "hugocmsShopOff": "In HugoCMS ist der Online-Shop für diese Webseite nicht freigegeben — in den Projekteinstellungen unter „OpensourceERP-Anbindung“ den Schalter „Online-Shop auf dieser Webseite“ einschalten. Bis dahin überträgt der Shop-Lauf keine Produktseiten.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Einträge für die config.json der Webseite",
             "text": "Damit Hugo den Weiterleiter, die Vorlagen und die Widgets aus dem Paket übernimmt, muss der Abschnitt „module“ in der config.json des Hugo-Projekts so aussehen — die ersten Einträge sind die üblichen Verzeichnisse der Webseite, die letzten vier gehören zum Paket:",
             "after": "Die Datei liegt im Projektverzeichnis der Webseite auf dem Webserver; in HugoCMS lässt sie sich unter „Alle Dateien“ bearbeiten. Danach „Paket installieren“ ausführen und hier erneut prüfen.\n\nFehlen die Einträge, landet das Paket zwar bei HugoCMS, Hugo kopiert aber nichts davon in die fertige Webseite — der Weiterleiter antwortet dann mit Fehler 404."
+        },
+        "backendTestStep": {
+            "schalter": "Schalter der Webseite"
         }
     }
 }

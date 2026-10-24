@@ -335,6 +335,7 @@ const de = {
   // Verkaufskanäle (dev/shop-verkaufskanaele.md, V16, V23)
   PART_NOT_FOUND: 'Diesen Artikel gibt es im Shop nicht.',
   SHOP_CLOSED: 'Der Shop nimmt derzeit keine Bestellungen an.',
+  WEBSITE_INACTIVE: 'Das Kundenportal ist zurzeit nicht freigeschaltet. Bitte versuchen Sie es später noch einmal.',
   CART_NOT_OFFERED:
     'Einige Artikel in Ihrem Warenkorb werden nicht mehr angeboten. Bitte entfernen Sie die markierten Positionen.',
   'cart.notOffered': 'Nicht mehr erhältlich',
@@ -694,6 +695,7 @@ const en = {
   ADDRESS_NOT_FOUND: 'This address does not exist. Please reload the page.',
   PART_NOT_FOUND: 'This article is not available in the shop.',
   SHOP_CLOSED: 'The shop is currently not accepting orders.',
+  WEBSITE_INACTIVE: 'The customer portal is not available at the moment. Please try again later.',
   CART_NOT_OFFERED:
     'Some articles in your cart are no longer offered. Please remove the marked items.',
   'cart.notOffered': 'No longer available',

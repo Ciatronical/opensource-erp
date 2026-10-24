@@ -96,7 +96,8 @@
             "KEY_REJECTED": "Portalo prieiga atmetė raktą — patikrinkite svetainės raktą; per svetainę galioja paskutinį kartą perkeltas.",
             "PROXY_NOT_CONFIGURED": "Peradresavimas veikia, bet neranda oserp-portal/config.json arba jis neišsamus — paleiskite „Įdiegti paketą“.",
             "FOREIGN": "Adresu {url} atsako kažkas kita nei OpensourceERP (HTTP {status}). Adresas tikriausiai rodo į svetimą puslapį ar kitą paslaugą — patikrinkite žiniatinklio adresą.",
-            "NOT_FOUND": "Adresu {url} niekas neatsako (klaida 404). Arba peradresavimas dar nėra svetainėje, arba svetainės žiniatinklio adresas neteisingas.\nTolesni žingsniai: 1. Patikrinkite, ar „Svetainės žiniatinklio adresas“ yra pradinis puslapis, kaip jį atidaro lankytojai. 2. Paleiskite „Įdiegti paketą“, kad peradresavimas patektų į svetainę. 3. Tada čia patikrinkite dar kartą. Pastaba: svetainės projekto config.json dažnai trūksta paketo įrašų — kurių, rodo informacijos piktograma."
+            "NOT_FOUND": "Adresu {url} niekas neatsako (klaida 404). Arba peradresavimas dar nėra svetainėje, arba svetainės žiniatinklio adresas neteisingas.\nTolesni žingsniai: 1. Patikrinkite, ar „Svetainės žiniatinklio adresas“ yra pradinis puslapis, kaip jį atidaro lankytojai. 2. Paleiskite „Įdiegti paketą“, kad peradresavimas patektų į svetainę. 3. Tada čia patikrinkite dar kartą. Pastaba: svetainės projekto config.json dažnai trūksta paketo įrašų — kurių, rodo informacijos piktograma.",
+            "WEBSITE_INACTIVE": "Svetainė išjungta. Ryšys veikia, bet prisijungimas, registracija ir paskyra lankytojams praneša „klientų portalas neprieinamas“. Kad įjungtumėte, kortelės viršuje įjunkite „Svetainė įjungta“."
         },
         "hugocmsShopOff": "HugoCMS šiai svetainei internetinė parduotuvė neįjungta — projekto nustatymuose, skiltyje „OpensourceERP jungtis“, įjunkite „Internetinė parduotuvė šioje svetainėje“. Iki tol parduotuvės vykdymas neperkelia produktų puslapių.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Įrašai svetainės config.json",
             "text": "Kad Hugo iš paketo perimtų peradresavimą, šablonus ir valdiklius, Hugo projekto config.json skiltis „module“ turi atrodyti taip — pirmieji įrašai yra įprasti svetainės katalogai, paskutiniai keturi priklauso paketui:",
             "after": "Failas yra svetainės projekto kataloge žiniatinklio serveryje; HugoCMS jį galima redaguoti skiltyje „Visi failai“. Po to paleiskite „Įdiegti paketą“ ir čia patikrinkite dar kartą.\n\nJei įrašų trūksta, paketas pasiekia HugoCMS, bet Hugo nieko iš jo nenukopijuoja į sukurtą svetainę — peradresavimas tada atsako klaida 404."
+        },
+        "backendTestStep": {
+            "schalter": "Svetainės jungiklis"
         }
     }
 }

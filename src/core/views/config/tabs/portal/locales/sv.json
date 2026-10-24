@@ -96,7 +96,8 @@
             "KEY_REJECTED": "Portalåtkomsten avvisade nyckeln — kontrollera webbplatsens nyckel; via webbplatsen gäller den senast överförda.",
             "PROXY_NOT_CONFIGURED": "Vidarebefordraren körs men hittar inte oserp-portal/config.json eller den är ofullständig — kör ”Installera paket”.",
             "FOREIGN": "På {url} svarar något annat än OpensourceERP (HTTP {status}). Adressen pekar troligen på en främmande sida eller en annan tjänst — kontrollera webbadressen.",
-            "NOT_FOUND": "Inget svarar på {url} (fel 404). Antingen ligger vidarebefordraren ännu inte på webbplatsen, eller så är webbplatsens webbadress fel.\nNästa steg: 1. Kontrollera att ”Webbplatsens webbadress” är startsidan så som besökare öppnar den. 2. Kör ”Installera paket” så att vidarebefordraren hamnar på webbplatsen. 3. Testa sedan igen här. Obs: ofta saknas posterna för paketet i webbplatsprojektets config.json — vilka, visar infoikonen."
+            "NOT_FOUND": "Inget svarar på {url} (fel 404). Antingen ligger vidarebefordraren ännu inte på webbplatsen, eller så är webbplatsens webbadress fel.\nNästa steg: 1. Kontrollera att ”Webbplatsens webbadress” är startsidan så som besökare öppnar den. 2. Kör ”Installera paket” så att vidarebefordraren hamnar på webbplatsen. 3. Testa sedan igen här. Obs: ofta saknas posterna för paketet i webbplatsprojektets config.json — vilka, visar infoikonen.",
+            "WEBSITE_INACTIVE": "Webbplatsen är avstängd. Anslutningen fungerar, men inloggning, registrering och konto meddelar besökare ”kundportalen är inte tillgänglig”. Slå på ”Webbplats aktiverad” överst på kortet för att frisläppa den."
         },
         "hugocmsShopOff": "I HugoCMS är webbutiken inte frisläppt för den här webbplatsen — slå på ”Webbutik på den här webbplatsen” i projektinställningarna under ”OpensourceERP-anslutning”. Tills dess överför butikskörningen inga produktsidor.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Poster för webbplatsens config.json",
             "text": "För att Hugo ska ta med vidarebefordraren, mallarna och widgetarna från paketet måste avsnittet ”module” i Hugo-projektets config.json se ut så här — de första posterna är webbplatsens vanliga kataloger, de fyra sista hör till paketet:",
             "after": "Filen ligger i webbplatsens projektkatalog på webbservern; i HugoCMS kan den redigeras under ”Alla filer”. Kör sedan ”Installera paket” och testa igen här.\n\nSaknas posterna når paketet visserligen HugoCMS, men Hugo kopierar inget av det till den byggda webbplatsen — vidarebefordraren svarar då med fel 404."
+        },
+        "backendTestStep": {
+            "schalter": "Webbplatsens strömbrytare"
         }
     }
 }

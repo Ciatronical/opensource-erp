@@ -96,7 +96,8 @@
             "KEY_REJECTED": "L’accès portail a refusé la clé — vérifier la clé du site ; via le site, c’est la dernière clé transférée qui compte.",
             "PROXY_NOT_CONFIGURED": "Le relais fonctionne mais ne trouve pas oserp-portal/config.json ou il est incomplet — exécuter « Installer le paquet ».",
             "FOREIGN": "À {url}, c’est autre chose qu’OpensourceERP qui répond (HTTP {status}). L’adresse pointe probablement vers une page étrangère ou un autre service — vérifier l’adresse web.",
-            "NOT_FOUND": "Rien ne répond à {url} (erreur 404). Soit le relais n’est pas encore sur le site, soit l’adresse web du site est incorrecte.\nÉtapes suivantes : 1. Vérifier que « Adresse web du site » est la page d’accueil telle que les visiteurs l’ouvrent. 2. Exécuter « Installer le paquet » pour que le relais arrive sur le site. 3. Puis vérifier à nouveau ici. Remarque : il manque souvent dans le config.json du projet du site les entrées pour le paquet — l’icône d’information indique lesquelles."
+            "NOT_FOUND": "Rien ne répond à {url} (erreur 404). Soit le relais n’est pas encore sur le site, soit l’adresse web du site est incorrecte.\nÉtapes suivantes : 1. Vérifier que « Adresse web du site » est la page d’accueil telle que les visiteurs l’ouvrent. 2. Exécuter « Installer le paquet » pour que le relais arrive sur le site. 3. Puis vérifier à nouveau ici. Remarque : il manque souvent dans le config.json du projet du site les entrées pour le paquet — l’icône d’information indique lesquelles.",
+            "WEBSITE_INACTIVE": "Le site web est désactivé. La connexion fonctionne, mais connexion, inscription et compte indiquent aux visiteurs « portail client indisponible ». Pour l’activer, basculer « Site web activé » en haut de la carte."
         },
         "hugocmsShopOff": "Dans HugoCMS, la boutique en ligne n’est pas activée pour ce site — activez « Boutique en ligne sur ce site » dans les paramètres du projet sous « Liaison OpensourceERP ». D’ici là, le traitement boutique ne transfère aucune page produit.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Entrées pour le config.json du site",
             "text": "Pour que Hugo reprenne le relais, les modèles et les widgets du paquet, la section « module » du config.json du projet Hugo doit ressembler à ceci — les premières entrées sont les répertoires habituels du site, les quatre dernières appartiennent au paquet :",
             "after": "Le fichier se trouve dans le répertoire du projet du site sur le serveur web ; dans HugoCMS, il se modifie sous « Tous les fichiers ». Ensuite exécuter « Installer le paquet » et vérifier à nouveau ici.\n\nSans ces entrées, le paquet arrive bien dans HugoCMS, mais Hugo n’en copie rien dans le site généré — le relais répond alors avec l’erreur 404."
+        },
+        "backendTestStep": {
+            "schalter": "Interrupteur du site web"
         }
     }
 }

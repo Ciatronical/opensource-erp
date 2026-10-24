@@ -96,7 +96,8 @@
             "KEY_REJECTED": "Accesul portalului a respins cheia — verificați cheia site-ului; prin site este valabilă ultima transferată.",
             "PROXY_NOT_CONFIGURED": "Redirecționarea funcționează, dar nu găsește oserp-portal/config.json sau este incomplet — rulați „Instalează pachetul”.",
             "FOREIGN": "La {url} răspunde altceva decât OpensourceERP (HTTP {status}). Adresa indică probabil o pagină străină sau alt serviciu — verificați adresa web.",
-            "NOT_FOUND": "La {url} nu răspunde nimic (eroare 404). Fie redirecționarea nu este încă pe site, fie adresa web a site-ului nu este corectă.\nPașii următori: 1. Verificați că „Adresa web a site-ului” este pagina de start așa cum o deschid vizitatorii. 2. Rulați „Instalează pachetul” pentru ca redirecționarea să ajungă pe site. 3. Apoi verificați din nou aici. Notă: adesea lipsesc din config.json al proiectului site-ului intrările pentru pachet — care anume, arată pictograma de informații."
+            "NOT_FOUND": "La {url} nu răspunde nimic (eroare 404). Fie redirecționarea nu este încă pe site, fie adresa web a site-ului nu este corectă.\nPașii următori: 1. Verificați că „Adresa web a site-ului” este pagina de start așa cum o deschid vizitatorii. 2. Rulați „Instalează pachetul” pentru ca redirecționarea să ajungă pe site. 3. Apoi verificați din nou aici. Notă: adesea lipsesc din config.json al proiectului site-ului intrările pentru pachet — care anume, arată pictograma de informații.",
+            "WEBSITE_INACTIVE": "Site-ul este oprit. Conexiunea funcționează, dar autentificarea, înregistrarea și contul le comunică vizitatorilor „portalul clienților nu este disponibil”. Pentru eliberare, activați „Site activat” în partea de sus a cardului."
         },
         "hugocmsShopOff": "În HugoCMS magazinul online nu este activat pentru acest site — activați „Magazin online pe acest site” în setările proiectului la „Conexiune OpensourceERP”. Până atunci rularea magazinului nu transferă pagini de produs.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Intrări pentru config.json al site-ului",
             "text": "Pentru ca Hugo să preia redirecționarea, șabloanele și widgeturile din pachet, secțiunea „module” din config.json al proiectului Hugo trebuie să arate astfel — primele intrări sunt directoarele obișnuite ale site-ului, ultimele patru aparțin pachetului:",
             "after": "Fișierul se află în directorul proiectului site-ului pe serverul web; în HugoCMS poate fi editat la „Toate fișierele”. Apoi rulați „Instalează pachetul” și verificați din nou aici.\n\nDacă intrările lipsesc, pachetul ajunge la HugoCMS, dar Hugo nu copiază nimic din el în site-ul generat — redirecționarea răspunde atunci cu eroarea 404."
+        },
+        "backendTestStep": {
+            "schalter": "Comutatorul site-ului"
         }
     }
 }

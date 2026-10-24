@@ -96,7 +96,8 @@
             "KEY_REJECTED": "Portaalipääsy hylkäsi avaimen – tarkista sivuston avain; sivuston kautta pätee viimeksi siirretty.",
             "PROXY_NOT_CONFIGURED": "Välittäjä toimii, mutta ei löydä tiedostoa oserp-portal/config.json tai se on puutteellinen – suorita ”Asenna paketti”.",
             "FOREIGN": "Osoitteessa {url} vastaa jokin muu kuin OpensourceERP (HTTP {status}). Osoite osoittaa luultavasti vieraalle sivulle tai toiseen palveluun – tarkista verkko-osoite.",
-            "NOT_FOUND": "Osoitteessa {url} ei vastaa mikään (virhe 404). Joko välittäjä ei ole vielä sivustolla tai sivuston verkko-osoite on väärä.\nSeuraavaksi: 1. Tarkista, että ”Verkkosivuston verkko-osoite” on etusivu sellaisena kuin kävijät sen avaavat. 2. Suorita ”Asenna paketti”, jotta välittäjä pääsee sivustolle. 3. Tarkista sitten täällä uudelleen. Huomautus: sivustoprojektin config.json-tiedostosta puuttuvat usein paketin merkinnät – tietokuvake näyttää, mitkä."
+            "NOT_FOUND": "Osoitteessa {url} ei vastaa mikään (virhe 404). Joko välittäjä ei ole vielä sivustolla tai sivuston verkko-osoite on väärä.\nSeuraavaksi: 1. Tarkista, että ”Verkkosivuston verkko-osoite” on etusivu sellaisena kuin kävijät sen avaavat. 2. Suorita ”Asenna paketti”, jotta välittäjä pääsee sivustolle. 3. Tarkista sitten täällä uudelleen. Huomautus: sivustoprojektin config.json-tiedostosta puuttuvat usein paketin merkinnät – tietokuvake näyttää, mitkä.",
+            "WEBSITE_INACTIVE": "Verkkosivusto on pois päältä. Yhteys toimii, mutta kirjautuminen, rekisteröityminen ja tili ilmoittavat kävijöille ”asiakasportaali ei ole käytettävissä”. Vapauta se kytkemällä kortin yläosassa ”Verkkosivusto käytössä” päälle."
         },
         "hugocmsShopOff": "HugoCMS:ssä verkkokauppaa ei ole vapautettu tälle sivustolle – kytke projektin asetuksissa kohdassa ”OpensourceERP-liitäntä” päälle ”Verkkokauppa tällä sivustolla”. Siihen asti kaupan ajo ei siirrä tuotesivuja.",
         "help": {
@@ -118,6 +119,9 @@
             "title": "Merkinnät sivuston config.json-tiedostoon",
             "text": "Jotta Hugo ottaa paketista välittäjän, mallit ja widgetit käyttöön, Hugo-projektin config.json-tiedoston osion ”module” on näytettävä tältä – ensimmäiset merkinnät ovat sivuston tavalliset hakemistot, neljä viimeistä kuuluvat pakettiin:",
             "after": "Tiedosto on sivuston projektihakemistossa web-palvelimella; HugoCMS:ssä sitä voi muokata kohdassa ”Kaikki tiedostot”. Suorita sen jälkeen ”Asenna paketti” ja tarkista täällä uudelleen.\n\nJos merkinnät puuttuvat, paketti saapuu HugoCMS:ään, mutta Hugo ei kopioi siitä mitään valmiiseen sivustoon – välittäjä vastaa silloin virheellä 404."
+        },
+        "backendTestStep": {
+            "schalter": "Verkkosivuston kytkin"
         }
     }
 }
