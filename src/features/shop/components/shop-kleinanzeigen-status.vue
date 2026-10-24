@@ -93,6 +93,18 @@
                 </div>
             </v-card>
 
+            <!-- Kategoriebaum von Kleinanzeigen (K22): vom Dienst aus dem Formular gelesen, Grundlage der Kategorieauswahl -->
+            <div class="d-flex flex-wrap align-center ga-2 mb-3">
+                <v-btn variant="outlined" prepend-icon="mdi-file-tree-outline" :loading="laedtKategorien" :disabled="!status.has_login" @click="kategorienLaden">
+                    {{ t('crm_fields.kleinanzeigenPanelUi.categories.load') }}
+                </v-btn>
+                <span class="text-caption text-medium-emphasis">
+                    {{ kategorien.count
+                        ? t('crm_fields.kleinanzeigenPanelUi.categories.state', { anzahl: kategorien.count, zeit: kategorien.mtime || '' })
+                        : t('crm_fields.kleinanzeigenPanelUi.categories.none') }}
+                </span>
+            </div>
+
             <!-- Captcha oder unklarer Stand: Bildschirmfoto des Browsers -->
             <div v-if="foto" class="mb-3">
                 <div class="text-caption text-medium-emphasis mb-1">{{ t('crm_fields.kleinanzeigenPanelUi.screenshot') }}</div>
@@ -147,6 +159,7 @@ import * as toasts from '@/core/utils/toasts.js'
 const props = defineProps({
     channelId: { type: Number, required: true },
 })
+const emit = defineEmits(['categories'])
 
 const { t, te } = useI18n()
 const shop = useShop()
@@ -160,6 +173,8 @@ const holt = ref(false)
 const meldung = reactive({ type: 'info', text: '' })
 const feed = ref({ url_csv: '', url_json: '' })
 const idsOffen = ref(false)
+const kategorien = ref({ count: 0, mtime: null })
+const laedtKategorien = ref(false)
 const idsText = ref('')
 const uebernimmt = ref(false)
 
@@ -307,6 +322,28 @@ async function abgleichen() {
     laden()
 }
 
+async function kategorienStand() {
+    const antwort = await shop.fetchKleinanzeigenCategories()
+    if (antwort) kategorien.value = { count: antwort.count || 0, mtime: antwort.mtime || null }
+}
+
+/** Liest den Baum über den Dienst neu ein — der Dialog wird komplett abgelaufen, das dauert einige Minuten */
+async function kategorienLaden() {
+    laedtKategorien.value = true
+    meldung.text = ''
+    const antwort = await shop.syncKleinanzeigenCategories(props.channelId)
+    laedtKategorien.value = false
+    if (!antwort) {
+        meldung.type = 'error'
+        meldung.text = fehlerText(shop.errorCode.value)
+        return
+    }
+    meldung.type = 'success'
+    meldung.text = t('crm_fields.kleinanzeigenPanelUi.categories.ok', antwort)
+    await kategorienStand()
+    emit('categories')
+}
+
 async function feedLaden() {
     const antwort = await shop.fetchKleinanzeigenFeedUrl(props.channelId)
     if (antwort) feed.value = antwort
@@ -338,6 +375,7 @@ async function kopieren(text) {
 onMounted(() => {
     laden()
     feedLaden()
+    kategorienStand()
 })
 </script>
 

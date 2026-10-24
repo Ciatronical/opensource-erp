@@ -102,6 +102,9 @@ export function useShop() {
     // Kleinanzeigen-Dienst (Headless-Browser, dev/shop-kleinanzeigen.md Teil 2)
     const fetchKleinanzeigenWorkerStatus = (channel_id, check = false) => call('getKleinanzeigenWorkerStatus', { channel_id, check })
     const saveKleinanzeigenSession = (channel_id, cookies) => call('saveKleinanzeigenSession', { channel_id, cookies })
+    /** Kategoriebaum von Kleinanzeigen: Blätter als Pfade für die Auswahl */
+    const fetchKleinanzeigenCategories = () => call('getKleinanzeigenCategories')
+    const syncKleinanzeigenCategories = (channel_id) => call('syncKleinanzeigenCategories', { channel_id })
     const publishKleinanzeigenAd = (parts_id, channel_id) => call('publishKleinanzeigenAd', { parts_id, channel_id })
     const deleteKleinanzeigenAd = (parts_id, channel_id) => call('deleteKleinanzeigenAd', { parts_id, channel_id })
     const extendKleinanzeigenAd = (parts_id, channel_id) => call('extendKleinanzeigenAd', { parts_id, channel_id })
@@ -261,6 +264,8 @@ export function useShop() {
         fetchKleinanzeigenFeedUrl,
         fetchKleinanzeigenWorkerStatus,
         saveKleinanzeigenSession,
+        fetchKleinanzeigenCategories,
+        syncKleinanzeigenCategories,
         publishKleinanzeigenAd,
         deleteKleinanzeigenAd,
         extendKleinanzeigenAd,

@@ -27,11 +27,19 @@ export function useViewHistory() {
             // Alteintraege enthalten noch einen festen Pfad-String. Der wird
             // verworfen und aus type/id neu abgeleitet, damit gespeicherte
             // Verlaeufe unabhaengig von der URL-Schreibweise bleiben.
-            return history.map(h => (
-                typeof h.route === 'string'
+            // Ebenso steckte das Belegdatum frueher roh (ISO) im Untertitel;
+            // es wandert ins Feld date und wird erst bei der Anzeige formatiert.
+            return history.map(h => {
+                const entry = typeof h.route === 'string'
                     ? { ...h, route: entityRoute(h.type, h.id) }
-                    : h
-            ))
+                    : { ...h }
+                const m = !entry.date && /^(.*?)(?:\s·\s)?(\d{4}-\d{2}-\d{2})$/.exec(entry.subtitle || '')
+                if (m) {
+                    entry.subtitle = m[1].trim()
+                    entry.date = m[2]
+                }
+                return entry
+            })
         } catch {
             return []
         }
@@ -45,6 +53,7 @@ export function useViewHistory() {
      * @param {number|string} item.id - ID des Datensatzes
      * @param {string} item.title - Anzeigename
      * @param {string} [item.subtitle] - Zusatzinfo
+     * @param {string} [item.date] - Belegdatum (ISO), wird erst bei der Anzeige formatiert
      * @param {Object} item.route - Route-Objekt ({ name, params, query }) — nie ein Pfad-String
      */
     function saveToHistory(item) {
@@ -53,6 +62,7 @@ export function useViewHistory() {
             id: item.id,
             title: item.title,
             subtitle: item.subtitle || '',
+            date: item.date || '',
             route: item.route
         }
         let history = loadHistory()

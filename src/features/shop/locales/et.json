@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Teenuseid turuplatsidel ei pakuta.",
             "channelImages": "Pildid kanalile {kanal}",
             "imagesAfterCreate": "Pilte saab lisada pärast toote loomist.",
+            "imagesFromTemplate": "Malli {n} pilti võetakse loomisel üle.",
             "moveLeft": "Liiguta ettepoole",
             "moveRight": "Liiguta tahapoole",
             "removeImage": "Eemalda pilt",

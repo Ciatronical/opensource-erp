@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "服务类商品不在电商平台上架。",
             "channelImages": "{kanal} 的图片",
             "imagesAfterCreate": "商品创建后即可添加图片。",
+            "imagesFromTemplate": "创建时将复制模板的 {n} 张图片。",
             "moveLeft": "前移",
             "moveRight": "后移",
             "removeImage": "删除图片",

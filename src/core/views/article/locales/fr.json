@@ -32,6 +32,13 @@
         },
         "titleNew": "Créer un article",
         "create": "Créer",
-        "cancel": "Annuler"
+        "cancel": "Annuler",
+        "useAsNew": "Utiliser comme nouveau",
+        "useAsNewHint": "Ouvre un nouvel article prérempli avec toutes les données de celui-ci. Rien n’est enregistré avant « Créer ».",
+        "template": {
+            "info": "Prérempli à partir de l’article {partnumber} « {description} ». Un nouveau numéro d’article sera attribué ; le stock et l’EAN ne sont pas repris.",
+            "back": "Vers le modèle",
+            "notFound": "Le modèle est introuvable, le formulaire est vide."
+        }
     }
 }

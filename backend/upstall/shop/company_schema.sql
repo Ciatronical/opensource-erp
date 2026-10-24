@@ -2724,6 +2724,7 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         -- Vorgaben für neue Anzeigen
         ('kleinanzeigen', 'kleinanzeigen_price_type',          'price_type',          false),
         ('kleinanzeigen', 'kleinanzeigen_shipping',            'shipping',            false),
+        ('kleinanzeigen', 'kleinanzeigen_buy_now',             'buy_now',             false),
         ('kleinanzeigen', 'kleinanzeigen_default_condition',   'default_condition',   false),
         ('kleinanzeigen', 'kleinanzeigen_default_category',    'default_category',    false),
         ('kleinanzeigen', 'kleinanzeigen_text_style',          'text_style',          false),
@@ -3057,6 +3058,31 @@ COMMENT ON COLUMN kleinanzeigen_lead_shop.mail_uid IS 'Ordner:UID der Mail im Po
 
 CREATE INDEX IF NOT EXISTS kleinanzeigen_lead_shop_open_idx ON kleinanzeigen_lead_shop (channel_id, status, received_at DESC);
 
+-- Kategoriebaum von Kleinanzeigen (dev/shop-kleinanzeigen.md K22): vom Dienst
+-- aus dem Kategorie-Dialog des Anzeigenformulars gelesen, mandantenweit.
+-- Der Pfad („Auto, Rad & Boot > Autoteile & Reifen > Weitere Autoteile“) ist
+-- der Schlüssel — er steht in parts_channel_shop.settings.category und in
+-- der Kanalvorgabe default_category. Einstellbar sind nur Blätter; die
+-- dritte Ebene ist auf der Webseite ein Merkmal („Art“) der Kategorie.
+CREATE TABLE IF NOT EXISTS kleinanzeigen_category_shop
+(
+    path        text PRIMARY KEY,
+    parent      text,
+    name        text NOT NULL,
+    level       integer NOT NULL,
+    category_id integer,
+    is_leaf     boolean NOT NULL DEFAULT false,
+    sort        integer NOT NULL DEFAULT 0,
+    mtime       timestamp without time zone DEFAULT now()
+);
+
+COMMENT ON TABLE  kleinanzeigen_category_shop             IS 'Shop: Kategoriebaum von Kleinanzeigen, vom Dienst gelesen';
+COMMENT ON COLUMN kleinanzeigen_category_shop.path        IS 'Beschriftungen mit „ > “, wie im Dialog der Webseite';
+COMMENT ON COLUMN kleinanzeigen_category_shop.category_id IS 'Nummer der Webseite (Ebenen 1–2, /s-…/c<nr>), NULL bei Merkmalsausprägungen';
+COMMENT ON COLUMN kleinanzeigen_category_shop.is_leaf     IS 'Nur Blätter lassen sich im Formular übernehmen';
+
+CREATE INDEX IF NOT EXISTS kleinanzeigen_category_shop_parent_idx ON kleinanzeigen_category_shop (parent, sort);
+
 -- Reiner Text aus den Artikelnotizen: kivitendo speichert sie als HTML,
 -- Kleinanzeigen nimmt nur Text. Absätze und Zeilenumbrüche bleiben erhalten.
 CREATE OR REPLACE FUNCTION kleinanzeigen_plain_text(p_html text) RETURNS text
@@ -3218,6 +3244,7 @@ CREATE OR REPLACE FUNCTION kleinanzeigen_board(p_channel_id integer) RETURNS jso
           FROM sales_channel_shop c WHERE c.id = p_channel_id
     ), zeile AS (
         SELECT pc.parts_id, pc.active, COALESCE(pc.sync_status, 'draft') AS stand, pc.external_id, pc.sync_mtime,
+               pc.sync_error,
                COALESCE(pc.sync_data, '{}'::jsonb) AS d,
                kleinanzeigen_ad(pc.parts_id, k.id) AS ad, k.refresh_days
           FROM parts_channel_shop pc
@@ -3245,7 +3272,10 @@ CREATE OR REPLACE FUNCTION kleinanzeigen_board(p_channel_id integer) RETURNS jso
                    'state', b.stand, 'todo', b.todo, 'leads', b.anfragen,
                    'online_since', b.online_seit, 'refreshed_at', b.aufgefrischt,
                    'days_online', CASE WHEN b.online_seit IS NOT NULL THEN EXTRACT(DAY FROM now() - b.online_seit)::int END,
-                   'url', b.d ->> 'url') AS karte,
+                   'url', b.d ->> 'url',
+                   -- letzter Fehler des Dienstes oder Läufers an dieser Anzeige (Karte zeigt ihn, bis es klappt)
+                   'sync_error', NULLIF(btrim(b.sync_error), ''),
+                   'sync_mtime', to_char(b.sync_mtime, 'DD.MM.YYYY HH24:MI')) AS karte,
                b.stand, b.todo, b.online_seit
           FROM bewertet b
     ), verkauf AS (

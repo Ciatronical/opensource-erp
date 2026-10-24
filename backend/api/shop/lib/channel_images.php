@@ -22,6 +22,41 @@ const SHOP_CHANNEL_IMAGE_TYPES = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
                                   'gif' => 'image/gif', 'webp' => 'image/webp'];
 
 /**
+ * Übernimmt die Kanalbilder eines Artikels für einen anderen („Als neu verwenden“)
+ *
+ * Zeilen und Dateien; schon vorhandene Bilder des Ziels bleiben. Bilder sind
+ * je Artikel abgelegt, deshalb werden die Dateien kopiert.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $von Vorlage
+ * @param int $nach neuer Artikel
+ * @return int Anzahl übernommener Bilder
+ */
+function shopChannelImagesCopyFromPart($db, int $von, int $nach): int {
+    if ($von <= 0 || $nach <= 0 || $von === $nach) return 0;
+    $zeilen = $db->getAll(
+        "INSERT INTO parts_channel_image_shop (parts_id, channel_id, filename, sort)
+         SELECT :nach, i.channel_id, i.filename, i.sort
+           FROM parts_channel_image_shop i
+          WHERE i.parts_id = :von
+         ON CONFLICT (parts_id, channel_id, filename) DO NOTHING
+         RETURNING filename",
+        [':nach' => $nach, ':von' => $von]
+    );
+    if (!$zeilen) return 0;
+
+    $quelle = shopChannelImageDir($db, $von);
+    $ziel   = shopChannelImageDir($db, $nach, true);
+    foreach (array_unique(array_column($zeilen, 'filename')) as $datei) {
+        $datei = basename((string)$datei);
+        if (is_file($quelle.'/'.$datei) && !is_file($ziel.'/'.$datei)) {
+            copy($quelle.'/'.$datei, $ziel.'/'.$datei);
+        }
+    }
+    return count($zeilen);
+}
+
+/**
  * Verzeichnis der Bilder eines Artikels
  *
  * @param object $db Company-Datenbankverbindung

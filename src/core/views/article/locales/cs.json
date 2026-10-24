@@ -32,6 +32,13 @@
         },
         "titleNew": "Založení artiklu",
         "create": "Založit",
-        "cancel": "Zrušit"
+        "cancel": "Zrušit",
+        "useAsNew": "Použít jako nový",
+        "useAsNewHint": "Otevře nový artikl předvyplněný všemi údaji tohoto artiklu. Uloží se až po kliknutí na „Vytvořit“.",
+        "template": {
+            "info": "Předvyplněno z artiklu {partnumber} „{description}“. Číslo artiklu bude přiděleno nově; zásoba a EAN se nepřebírají.",
+            "back": "Zpět na předlohu",
+            "notFound": "Předloha nebyla nalezena, formulář je prázdný."
+        }
     }
 }

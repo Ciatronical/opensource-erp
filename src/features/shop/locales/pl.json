@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Usługi nie są oferowane na platformach sprzedażowych.",
             "channelImages": "Zdjęcia dla {kanal}",
             "imagesAfterCreate": "Zdjęcia można dodać po utworzeniu artykułu.",
+            "imagesFromTemplate": "{n} zdjęć wzorca zostanie przejętych przy tworzeniu.",
             "moveLeft": "Przesuń do przodu",
             "moveRight": "Przesuń do tyłu",
             "removeImage": "Usuń zdjęcie",

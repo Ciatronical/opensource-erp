@@ -210,9 +210,8 @@ function shopKleinanzeigenWorkerHealth($db): array {
  *
  * Aus kleinanzeigen_ad(): Titel, Text, Preis, Preisart, Versand, Zustand,
  * PLZ. Bilder als Dateipfade im Datenverzeichnis (der Dienst läuft auf
- * demselben Rechner). Kategorie: die Beschriftungen des Kanals
- * („Auto, Rad & Boot > Autoteile & Reifen“) für den Dialog der Webseite,
- * ein Zahlenpfad („210/223“) für die ältere Auswahl.
+ * demselben Rechner). Kategorie: der Beschriftungspfad („Auto, Rad & Boot >
+ * Autoteile & Reifen > Weitere Autoteile“) für den Dialog der Webseite.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal Kleinanzeigen-Kanal
@@ -252,18 +251,24 @@ function shopKleinanzeigenAdPayload($db, int $kanal, int $partsId): array {
         }
     }
 
-    // Kategorie: Text mit „>“ = Beschriftungen für den Dialog; nur Ziffern und
-    // „/“ = Zahlenpfad der alten Auswahl
+    // Kategorie: Beschriftungspfad für den Dialog der Webseite. Ist der Baum
+    // geladen, muss der Pfad ein Blatt sein — sonst lehnt das Formular ab
     $kategorie = trim((string)($anzeige['category'] ?? ''));
-    $labels = [];
-    $pfad = '';
-    if (preg_match('#^[0-9/]+$#', $kategorie)) {
-        $pfad = $kategorie;
-    } elseif ('' !== $kategorie) {
-        $labels = array_values(array_filter(array_map('trim', preg_split('/\s*(?:>|›|»|\/)\s*/u', $kategorie))));
+    $labels = '' !== $kategorie ? array_values(array_filter(array_map('trim', preg_split('/\s*(?:>|›|»)\s*/u', $kategorie)))) : [];
+    if ($labels) {
+        $blatt = $db->getOne(
+            "SELECT c.is_leaf, (SELECT count(*) FROM kleinanzeigen_category_shop) AS geladen
+               FROM kleinanzeigen_category_shop c WHERE c.path = CAST(:pfad AS text)",
+            [':pfad' => implode(' > ', $labels)]
+        );
+        if ($blatt && !in_array($blatt['is_leaf'], [true, 't', '1', 1], true)) {
+            throw new ApiError('KLEINANZEIGEN_CATEGORY_NOT_LEAF', 'Die Kategorie „'.implode(' > ', $labels).'“ hat Unterkategorien — im Artikel oder im Kanal eine davon wählen');
+        }
     }
 
     $preisart = ['fixed' => 'FIXED', 'negotiable' => 'NEGOTIABLE', 'giveaway' => 'GIVE_AWAY'][$anzeige['price_type']] ?? 'FIXED';
+    // „Direkt kaufen“ (Bezahlen über Kleinanzeigen): Pflichtfrage im Formular, Vorgabe des Kanals, normalerweise nein
+    $direktKaufen = in_array(strtolower(trim((string)(shopChannelConfig($db, $kanal)['buy_now'] ?? ''))), ['1', 't', 'true', 'on', 'y', 'yes'], true);
     $versand = ['pickup' => 'PICKUP', 'shipping' => 'SHIPPING', 'both' => 'SHIPPING'][$anzeige['shipping']] ?? 'SHIPPING';
 
     return [
@@ -276,7 +281,7 @@ function shopKleinanzeigenAdPayload($db, int $kanal, int $partsId): array {
             'price_type'      => $preisart,
             'shipping'        => $versand,
             'condition'       => (string)($anzeige['condition'] ?? ''),
-            'category'        => $pfad,
+            'buy_now'         => $direktKaufen,
             'category_labels' => $labels,
             'zipcode'         => trim((string)$zeile['plz']),
             'contact_name'    => trim((string)$zeile['kontakt']),

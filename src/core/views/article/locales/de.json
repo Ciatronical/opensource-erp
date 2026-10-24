@@ -30,23 +30,15 @@
       "weightInvalid": "Leer oder eine Zahl ab 0",
       "required": "Pflichtfeld"
     },
-    "ebay": {
-      "title": "eBay-Artikel",
-      "checkbox": "Bei eBay einstellen",
-      "images": "Artikelbilder",
-      "addImage": "Bild hinzufügen",
-      "noImages": "Noch keine Bilder. eBay benötigt mindestens ein Bild.",
-      "deleteImage": "Bild löschen",
-      "statusActive": "Bei eBay eingestellt",
-      "statusEnded": "Listing beendet",
-      "statusError": "eBay-Fehler",
-      "listingId": "Listing-ID: {id}",
-      "busy": "eBay wird aktualisiert …",
-      "uploadError": "Bild-Upload fehlgeschlagen.",
-      "needImageHint": "Bitte zuerst mindestens ein Bild hochladen."
-    },
     "titleNew": "Artikel anlegen",
     "create": "Anlegen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "useAsNew": "Als neu verwenden",
+    "useAsNewHint": "Öffnet die Neuanlage mit allen Angaben dieses Artikels. Angelegt wird erst mit „Anlegen“.",
+    "template": {
+      "info": "Vorbelegt aus Artikel {partnumber} „{description}“. Die Artikelnummer wird neu vergeben; Bestand und EAN werden nicht übernommen.",
+      "back": "Zur Vorlage",
+      "notFound": "Die Vorlage wurde nicht gefunden, die Maske ist leer."
+    }
   }
 }

@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Služby se na tržištích nenabízejí.",
             "channelImages": "Obrázky pro {kanal}",
             "imagesAfterCreate": "Obrázky lze přidat, jakmile je položka založena.",
+            "imagesFromTemplate": "{n} obrázků předlohy se převezme při vytvoření.",
             "moveLeft": "Posunout dopředu",
             "moveRight": "Posunout dozadu",
             "removeImage": "Odstranit obrázek",

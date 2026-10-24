@@ -9,36 +9,29 @@
     getFakturaData, SQL-Funktion oe_invoice_status): welche Rechnung ist aus dem
     Auftrag entstanden — anklickbar — oder „Noch keine Rechnung“ mit dem Knopf,
     sie gleich zu erstellen.
+
+    Beides sind schlichte Vuetify-Alerts (tonal): grün = erledigt, rot = fehlt noch.
 -->
 <template>
-    <v-card
-        variant="outlined"
-        class="sent-status"
-        :class="sent ? 'sent-status--sent' : 'sent-status--pending'"
-    >
-        <div
-            class="sent-status__main"
-            :class="{ 'sent-status__main--clickable': sent }"
-            :role="sent ? 'button' : undefined"
-            :tabindex="sent ? 0 : undefined"
-            @click="sent && (expanded = !expanded)"
-            @keydown.enter.prevent="sent && (expanded = !expanded)"
-            @keydown.space.prevent="sent && (expanded = !expanded)"
-        >
-            <div class="sent-status__icon">
-                <v-icon :color="sent ? 'success' : 'grey'" size="22">
-                    {{ sent ? 'mdi-check-decagram' : 'mdi-send-clock-outline' }}
-                </v-icon>
-            </div>
-
-            <div class="sent-status__text">
-                <div class="sent-status__title">
-                    {{ sent ? t('FakturaView.faktura.sent.title') : t('FakturaView.faktura.sent.notSent') }}
-                    <span v-if="sent" class="sent-status__count">{{ entries.length }}</span>
-                </div>
+    <v-row dense class="sent-status">
+        <!-- Versand -->
+        <v-col cols="12" :md="invoiceStatus ? 7 : 12">
+            <v-alert
+                :type="sent ? 'success' : 'error'"
+                variant="tonal"
+                density="compact"
+                :icon="sent ? 'mdi-check-decagram' : 'mdi-send-clock-outline'"
+                class="h-100"
+            >
+                <template #title>
+                    <span class="d-flex align-center ga-2">
+                        {{ sent ? t('FakturaView.faktura.sent.title') : t('FakturaView.faktura.sent.notSent') }}
+                        <v-chip v-if="sent" size="x-small" variant="flat" color="success">{{ entries.length }}</v-chip>
+                    </span>
+                </template>
 
                 <!-- Versendet: ein Chip je Kanal mit letztem Versand -->
-                <div v-if="sent" class="sent-status__chips">
+                <div v-if="sent" class="d-flex flex-wrap ga-1 mt-1">
                     <v-chip
                         v-for="ch in latestPerChannel"
                         :key="ch.channel"
@@ -74,129 +67,128 @@
                 </div>
 
                 <!-- Noch nicht versendet: Hinweis, ggf. auf den automatischen Versand beim Drucken -->
-                <div v-else class="sent-status__hint">
+                <div v-else class="text-body-2">
                     {{ autoSendHint || t('FakturaView.faktura.sent.notSentHint') }}
                 </div>
-            </div>
 
-            <v-btn
-                v-if="sent"
-                variant="text"
-                size="small"
-                color="success"
-                class="sent-status__toggle"
-                :append-icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-                @click.stop="expanded = !expanded"
-            >
-                {{ t('FakturaView.faktura.sent.history') }}
-            </v-btn>
+                <!-- Verlauf: alle Versandereignisse, neueste zuerst -->
+                <v-expand-transition>
+                    <div v-show="expanded && sent">
+                        <v-timeline side="end" density="compact" align="start" truncate-line="both" class="mt-2">
+                            <v-timeline-item
+                                v-for="(e, i) in entries"
+                                :key="i"
+                                :dot-color="channelMeta[e.channel]?.color || 'grey'"
+                                :icon="channelMeta[e.channel]?.icon"
+                                icon-color="white"
+                                size="small"
+                            >
+                                <div class="text-body-2">
+                                    <div class="d-flex align-center flex-wrap ga-2">
+                                        <span class="font-weight-medium">{{ t(channelMeta[e.channel]?.label || 'FakturaView.faktura.sent.channelEmail') }}</span>
+                                        <span class="text-medium-emphasis">{{ formatWhen(e.sent_at) }}</span>
+                                        <v-chip
+                                            v-if="e.channel === 'whatsapp'"
+                                            size="x-small"
+                                            variant="tonal"
+                                            :color="waStatusMeta(e.status).color"
+                                            :prepend-icon="waStatusMeta(e.status).icon"
+                                        >{{ t(waStatusMeta(e.status).label) }}</v-chip>
+                                        <v-chip
+                                            v-if="e.channel === 'post'"
+                                            size="x-small"
+                                            variant="tonal"
+                                            :color="postStatusMeta(e.status).color"
+                                            :prepend-icon="postStatusMeta(e.status).icon"
+                                        >{{ t(postStatusMeta(e.status).label) }}</v-chip>
+                                    </div>
+                                    <div v-if="e.recipient">
+                                        <v-icon size="14" class="me-1">mdi-account-arrow-right-outline</v-icon>{{ e.recipient }}
+                                    </div>
+                                    <div v-if="e.subject" class="text-medium-emphasis">
+                                        <v-icon size="14" class="me-1">{{ e.channel === 'dhl' ? 'mdi-package-variant' : (e.channel === 'post' ? 'mdi-file-pdf-box' : 'mdi-text-short') }}</v-icon>{{ e.subject }}
+                                    </div>
+                                    <div v-if="e.employee_name" class="text-medium-emphasis">
+                                        <v-icon size="14" class="me-1">mdi-account-tie</v-icon>{{ e.employee_name }}
+                                    </div>
+                                </div>
+                            </v-timeline-item>
+                        </v-timeline>
+                    </div>
+                </v-expand-transition>
 
-            <!-- Rechnungsstatus (nur Aufträge): rechts, vom Versand abgesetzt -->
-            <div
-                v-if="invoiceStatus"
-                class="sent-status__invoice"
-                :class="`sent-status__invoice--${invoiceState}`"
-                @click.stop
-                @keydown.enter.stop
-                @keydown.space.stop
-            >
-                <div class="sent-status__invoice-icon">
-                    <v-icon size="20" :color="invoiceMeta.color">{{ invoiceMeta.icon }}</v-icon>
-                </div>
-                <div class="sent-status__text">
-                    <div class="sent-status__title">
-                        {{ t(invoiceMeta.label) }}
-                        <span v-if="invoiceCount > 1" class="sent-status__count sent-status__count--invoice">{{ invoiceCount }}</span>
-                    </div>
-                    <div v-if="invoiceList.length" class="sent-status__chips">
-                        <v-chip
-                            v-for="inv in invoiceList"
-                            :key="inv.id"
-                            size="small"
-                            variant="tonal"
-                            :color="inv.storno ? 'error' : 'success'"
-                            class="sent-status__chip"
-                            :title="t('FakturaView.faktura.sent.invoiceOpen', { number: inv.number })"
-                            @click="emit('open-invoice', inv)"
-                        >
-                            <v-icon start size="16">{{ inv.storno ? 'mdi-file-document-remove-outline' : 'mdi-file-document-outline' }}</v-icon>
-                            <span class="font-weight-medium">{{ inv.number }}</span>
-                            <span class="sent-status__chip-sep">·</span>
-                            <span>{{ formatDay(inv.transdate) }}</span>
-                            <span class="sent-status__chip-sep">·</span>
-                            <span v-if="inv.storno">{{ t('FakturaView.faktura.sent.invoiceStornoShort') }}</span>
-                            <span v-else-if="isPaid(inv)" class="d-inline-flex align-center">
-                                <v-icon size="14" class="me-1">mdi-check</v-icon>{{ t('FakturaView.faktura.sent.invoicePaid') }}
-                            </span>
-                            <span v-else>{{ t('FakturaView.faktura.sent.invoiceOpenAmount', { amount: formatAmount(openAmount(inv)) }) }}</span>
-                        </v-chip>
-                        <span v-if="invoiceMore > 0" class="sent-status__chip-more">+{{ invoiceMore }}</span>
-                    </div>
-                    <div v-else class="sent-status__hint">
-                        {{ t('FakturaView.faktura.sent.invoiceNoneHint') }}
-                    </div>
-                </div>
-                <v-btn
-                    v-if="invoiceState === 'none' && canCreateInvoice"
-                    variant="tonal"
-                    size="small"
-                    color="primary"
-                    class="sent-status__invoice-action"
-                    prepend-icon="mdi-file-document-edit"
-                    @click="emit('create-invoice')"
-                >
-                    {{ t('FakturaView.faktura.sent.invoiceCreate') }}
-                </v-btn>
-            </div>
-        </div>
-
-        <!-- Verlauf: alle Versandereignisse, neueste zuerst -->
-        <v-expand-transition>
-            <div v-show="expanded && sent">
-                <v-divider />
-                <v-timeline side="end" density="compact" align="start" truncate-line="both" class="sent-status__timeline">
-                    <v-timeline-item
-                        v-for="(e, i) in entries"
-                        :key="i"
-                        :dot-color="channelMeta[e.channel]?.color || 'grey'"
-                        :icon="channelMeta[e.channel]?.icon"
-                        icon-color="white"
+                <template v-if="sent" #append>
+                    <v-btn
+                        variant="text"
                         size="small"
+                        color="success"
+                        :append-icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                        @click="expanded = !expanded"
                     >
-                        <div class="sent-status__event">
-                            <div class="sent-status__event-head">
-                                <span class="font-weight-medium">{{ t(channelMeta[e.channel]?.label || 'FakturaView.faktura.sent.channelEmail') }}</span>
-                                <span class="text-medium-emphasis">{{ formatWhen(e.sent_at) }}</span>
-                                <v-chip
-                                    v-if="e.channel === 'whatsapp'"
-                                    size="x-small"
-                                    variant="tonal"
-                                    :color="waStatusMeta(e.status).color"
-                                    :prepend-icon="waStatusMeta(e.status).icon"
-                                >{{ t(waStatusMeta(e.status).label) }}</v-chip>
-                                <v-chip
-                                    v-if="e.channel === 'post'"
-                                    size="x-small"
-                                    variant="tonal"
-                                    :color="postStatusMeta(e.status).color"
-                                    :prepend-icon="postStatusMeta(e.status).icon"
-                                >{{ t(postStatusMeta(e.status).label) }}</v-chip>
-                            </div>
-                            <div v-if="e.recipient" class="sent-status__event-line">
-                                <v-icon size="14" class="mr-1">mdi-account-arrow-right-outline</v-icon>{{ e.recipient }}
-                            </div>
-                            <div v-if="e.subject" class="sent-status__event-line text-medium-emphasis">
-                                <v-icon size="14" class="mr-1">{{ e.channel === 'dhl' ? 'mdi-package-variant' : (e.channel === 'post' ? 'mdi-file-pdf-box' : 'mdi-text-short') }}</v-icon>{{ e.subject }}
-                            </div>
-                            <div v-if="e.employee_name" class="sent-status__event-line text-medium-emphasis">
-                                <v-icon size="14" class="mr-1">mdi-account-tie</v-icon>{{ e.employee_name }}
-                            </div>
-                        </div>
-                    </v-timeline-item>
-                </v-timeline>
-            </div>
-        </v-expand-transition>
-    </v-card>
+                        {{ t('FakturaView.faktura.sent.history') }}
+                    </v-btn>
+                </template>
+            </v-alert>
+        </v-col>
+
+        <!-- Rechnungsstatus (nur Aufträge) -->
+        <v-col v-if="invoiceStatus" cols="12" md="5">
+            <v-alert
+                :type="invoiceState === 'invoiced' ? 'success' : 'error'"
+                variant="tonal"
+                density="compact"
+                :icon="invoiceMeta.icon"
+                class="h-100"
+            >
+                <template #title>
+                    <span class="d-flex align-center ga-2">
+                        {{ t(invoiceMeta.label) }}
+                        <v-chip v-if="invoiceCount > 1" size="x-small" variant="flat" color="success">{{ invoiceCount }}</v-chip>
+                    </span>
+                </template>
+
+                <div v-if="invoiceList.length" class="d-flex flex-wrap align-center ga-1 mt-1">
+                    <v-chip
+                        v-for="inv in invoiceList"
+                        :key="inv.id"
+                        size="small"
+                        variant="tonal"
+                        :color="inv.storno ? 'error' : 'success'"
+                        class="sent-status__chip"
+                        :title="t('FakturaView.faktura.sent.invoiceOpen', { number: inv.number })"
+                        @click="emit('open-invoice', inv)"
+                    >
+                        <v-icon start size="16">{{ inv.storno ? 'mdi-file-document-remove-outline' : 'mdi-file-document-outline' }}</v-icon>
+                        <span class="font-weight-medium">{{ inv.number }}</span>
+                        <span class="sent-status__chip-sep">·</span>
+                        <span>{{ formatDay(inv.transdate) }}</span>
+                        <span class="sent-status__chip-sep">·</span>
+                        <span v-if="inv.storno">{{ t('FakturaView.faktura.sent.invoiceStornoShort') }}</span>
+                        <span v-else-if="isPaid(inv)" class="d-inline-flex align-center">
+                            <v-icon size="14" class="me-1">mdi-check</v-icon>{{ t('FakturaView.faktura.sent.invoicePaid') }}
+                        </span>
+                        <span v-else>{{ t('FakturaView.faktura.sent.invoiceOpenAmount', { amount: formatAmount(openAmount(inv)) }) }}</span>
+                    </v-chip>
+                    <span v-if="invoiceMore > 0" class="sent-status__chip-more">+{{ invoiceMore }}</span>
+                </div>
+                <div v-else class="text-body-2">
+                    {{ t('FakturaView.faktura.sent.invoiceNoneHint') }}
+                </div>
+
+                <template v-if="invoiceState === 'none' && canCreateInvoice" #append>
+                    <v-btn
+                        variant="flat"
+                        size="small"
+                        color="error"
+                        prepend-icon="mdi-file-document-edit"
+                        @click="emit('create-invoice')"
+                    >
+                        {{ t('FakturaView.faktura.sent.invoiceCreate') }}
+                    </v-btn>
+                </template>
+            </v-alert>
+        </v-col>
+    </v-row>
 </template>
 
 <script setup>
@@ -232,7 +224,7 @@ const invoiceMeta  = computed(() => {
     switch (invoiceState.value) {
         case 'invoiced': return { icon: 'mdi-file-document-check',  color: 'success', label: 'FakturaView.faktura.sent.invoiceTitle' }
         case 'storno':   return { icon: 'mdi-file-document-remove', color: 'error',   label: 'FakturaView.faktura.sent.invoiceStorno' }
-        default:         return { icon: 'mdi-file-document-outline', color: 'grey',   label: 'FakturaView.faktura.sent.invoiceNone' }
+        default:         return { icon: 'mdi-file-document-alert-outline', color: 'error', label: 'FakturaView.faktura.sent.invoiceNone' }
     }
 })
 const openAmount = (inv) => Number(inv.amount || 0) - Number(inv.paid || 0)
@@ -294,94 +286,25 @@ function formatWhen(value) {
 </script>
 
 <style scoped>
-.sent-status {
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-/* Versendet: grüner Akzent links, zarter Verlauf */
-.sent-status--sent {
-    border-color: rgba(76, 175, 80, 0.45) !important;
-    background: linear-gradient(90deg, rgba(76, 175, 80, 0.10) 0%, rgba(76, 175, 80, 0.03) 35%, #fff 100%);
-    box-shadow: inset 4px 0 0 #4caf50;
-}
-
-/* Noch nicht versendet: gestrichelt und zurückhaltend */
-.sent-status--pending {
-    border-style: dashed !important;
-    border-color: rgba(0, 0, 0, 0.18) !important;
-    background: #fafafa;
-}
-
-.sent-status__main {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 10px 16px;
-    min-height: 56px;
-}
-
-.sent-status__main--clickable {
-    cursor: pointer;
-}
-
-.sent-status__icon {
-    flex: 0 0 auto;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.04);
-}
-
-.sent-status--sent .sent-status__icon {
-    background: rgba(76, 175, 80, 0.15);
-}
-
-.sent-status__text {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-.sent-status__title {
-    font-size: 14px;
+/* Titel wie ein Abschnittstitel, Inhalt oben ausgerichtet — beide Alerts gleich hoch */
+.sent-status :deep(.v-alert-title) {
+    font-size: 1rem;
     font-weight: 600;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    line-height: 1.3;
 }
 
-.sent-status__count {
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 18px;
-    min-width: 18px;
-    padding: 0 6px;
-    border-radius: 9px;
-    text-align: center;
-    color: #2e7d32;
-    background: rgba(76, 175, 80, 0.18);
-}
-
-.sent-status__hint {
-    font-size: 12.5px;
-    color: rgba(0, 0, 0, 0.55);
-    margin-top: 2px;
-}
-
-.sent-status__chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 6px;
+.sent-status :deep(.v-alert__content) {
+    align-self: flex-start;
 }
 
 .sent-status__chip {
     max-width: 100%;
+}
+
+/* Chip-Inhalt darf kürzen statt über die Karte hinauszulaufen */
+.sent-status__chip :deep(.v-chip__content) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sent-status__chip-sep {
@@ -402,113 +325,9 @@ function formatWhen(value) {
     opacity: 0.75;
 }
 
-.sent-status__toggle {
-    flex: 0 0 auto;
-}
-
-/* Rechnungsstatus: eigener Block rechts, durch eine Linie vom Versand getrennt */
-.sent-status__invoice {
-    flex: 0 1 auto;
-    max-width: 48%;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding-left: 16px;
-    margin-left: 4px;
-    border-left: 1px solid rgba(0, 0, 0, 0.12);
-    cursor: default;
-}
-
-.sent-status__invoice-icon {
-    flex: 0 0 auto;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.04);
-}
-
-.sent-status__invoice--invoiced .sent-status__invoice-icon {
-    background: rgba(76, 175, 80, 0.15);
-}
-
-.sent-status__invoice--storno .sent-status__invoice-icon {
-    background: rgba(244, 67, 54, 0.12);
-}
-
-.sent-status__invoice--none .sent-status__title {
-    color: rgba(0, 0, 0, 0.6);
-}
-
-.sent-status__count--invoice {
-    color: #2e7d32;
-}
-
-.sent-status__invoice-action {
-    flex: 0 0 auto;
-}
-
-.sent-status__timeline {
-    padding: 12px 16px 4px;
-    background: #fff;
-}
-
-.sent-status__event {
-    font-size: 13px;
-    padding-bottom: 6px;
-}
-
-.sent-status__event-head {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 2px;
-}
-
-.sent-status__event-line {
-    display: flex;
-    align-items: center;
-    line-height: 1.6;
-    word-break: break-word;
-}
-
-/* Chip-Inhalt darf kürzen statt über die Karte hinauszulaufen */
-.sent-status__chip :deep(.v-chip__content) {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 @media (max-width: 600px) {
-    /* Symbol und Text bleiben in einer Zeile, nur der Verlauf-Button rutscht darunter */
-    .sent-status__main {
-        flex-wrap: wrap;
-    }
-    .sent-status__text {
-        flex: 1 1 0;
-        min-width: 60%;
-    }
-    .sent-status__toggle {
-        flex-basis: 100%;
-        margin-left: 50px;
-        justify-content: flex-start;
-    }
     .sent-status__chip-recipient {
         max-width: 120px;
-    }
-    /* Rechnungsstatus rutscht unter den Versand, als eigene Zeile */
-    .sent-status__invoice {
-        flex-basis: 100%;
-        max-width: 100%;
-        margin: 8px 0 0;
-        padding: 8px 0 0;
-        border-left: 0;
-        border-top: 1px solid rgba(0, 0, 0, 0.12);
-        flex-wrap: wrap;
     }
 }
 </style>

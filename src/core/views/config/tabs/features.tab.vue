@@ -59,6 +59,7 @@
                 <!-- ANPR -->
                 <v-col cols="12" md="6">
                     <v-card
+                        data-field-name="feature_anpr"
                         :variant="crmDefaults.feature_anpr ? 'outlined' : 'tonal'"
                         :color="crmDefaults.feature_anpr ? 'primary' : undefined"
                         class="feature-card"
@@ -89,6 +90,7 @@
                 <!-- NVR -->
                 <v-col cols="12" md="6">
                     <v-card
+                        data-field-name="feature_nvr"
                         :variant="crmDefaults.feature_nvr ? 'outlined' : 'tonal'"
                         :color="crmDefaults.feature_nvr ? 'primary' : undefined"
                         class="feature-card"
@@ -132,6 +134,7 @@
             <v-row class="mb-2">
                 <v-col cols="12" md="6">
                     <v-card
+                        data-field-name="feature_recurring"
                         :variant="crmDefaults.feature_recurring ? 'outlined' : 'tonal'"
                         :color="crmDefaults.feature_recurring ? 'primary' : undefined"
                         class="feature-card"
@@ -172,6 +175,7 @@
                      erscheint auf jedem Beleg in dieser Zone. -->
                 <v-col cols="12" md="6">
                     <v-card
+                        data-field-name="feature_reverse_charge"
                         :variant="crmDefaults.feature_reverse_charge ? 'outlined' : 'tonal'"
                         :color="crmDefaults.feature_reverse_charge ? 'primary' : undefined"
                         class="feature-card"
@@ -197,6 +201,7 @@
                                 />
                             </div>
                             <!-- text-high-emphasis: der Satz soll nicht die Primärfarbe der Karte erben -->
+                            <div data-field-name="reverse_charge_text">
                             <div v-if="crmDefaults.feature_reverse_charge" class="text-high-emphasis mt-3">
                                 <v-textarea
                                     v-model="crmDefaults.reverse_charge_text"
@@ -208,6 +213,7 @@
                                     rows="2"
                                     auto-grow
                                 />
+                            </div>
                             </div>
                         </v-card-text>
                     </v-card>

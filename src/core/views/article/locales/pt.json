@@ -32,6 +32,13 @@
         },
         "titleNew": "Criar artigo",
         "create": "Criar",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "useAsNew": "Usar como novo",
+        "useAsNewHint": "Abre um novo artigo pré-preenchido com todos os dados deste. Nada é guardado até clicar em «Criar».",
+        "template": {
+            "info": "Pré-preenchido a partir do artigo {partnumber} «{description}». Será atribuído um novo número de artigo; o stock e o EAN não são copiados.",
+            "back": "Ir ao modelo",
+            "notFound": "O modelo não foi encontrado, o formulário está vazio."
+        }
     }
 }

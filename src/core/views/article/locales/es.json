@@ -32,6 +32,13 @@
         },
         "titleNew": "Crear artículo",
         "create": "Crear",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "useAsNew": "Usar como nuevo",
+        "useAsNewHint": "Abre un artículo nuevo con todos los datos de este. No se guarda nada hasta pulsar «Crear».",
+        "template": {
+            "info": "Precargado desde el artículo {partnumber} «{description}». Se asignará un número de artículo nuevo; las existencias y el EAN no se copian.",
+            "back": "Ir a la plantilla",
+            "notFound": "No se encontró la plantilla, el formulario está vacío."
+        }
     }
 }

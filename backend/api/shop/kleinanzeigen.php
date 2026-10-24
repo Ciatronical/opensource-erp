@@ -1091,6 +1091,83 @@ function saveKleinanzeigenSession($data) {
 }
 
 /**
+ * Kategoriebaum von Kleinanzeigen für die Auswahl
+ *
+ * Mandantenweit (kleinanzeigen_category_shop), vom Dienst gelesen
+ * (syncKleinanzeigenCategories). Blätter sind einstellbar; Zwischenebenen
+ * kommen mit, damit die Auswahl sie als Gruppen zeigen kann.
+ *
+ * @return void categories [{path, parent, name, level, category_id, is_leaf}], count, mtime
+ * @testdata {}
+ */
+function getKleinanzeigenCategories($data) {
+    permit(['shop_order', 'shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+    $zeile = $db->getOne(
+        "SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                    'path', c.path, 'parent', c.parent, 'name', c.name, 'level', c.level,
+                    'category_id', c.category_id, 'is_leaf', c.is_leaf)
+                ORDER BY c.level, c.parent, c.sort), '[]'::jsonb) AS categories,
+                count(*) AS count,
+                to_char(max(c.mtime), 'YYYY-MM-DD HH24:MI') AS mtime
+           FROM kleinanzeigen_category_shop c"
+    );
+    resultInfo(true, '', [
+        'categories' => json_decode($zeile['categories'] ?? '[]', true) ?: [],
+        'count'      => (int)($zeile['count'] ?? 0),
+        'mtime'      => $zeile['mtime'] ?? null,
+    ]);
+}
+
+/**
+ * Liest den Kategoriebaum über den Dienst neu ein
+ *
+ * Der Dienst läuft den Kategorie-Dialog des Anzeigenformulars ab (einige
+ * Minuten) und ergänzt die Nummern der Übersichtsseite; der Baum ersetzt
+ * den gespeicherten in einem Vorgang.
+ *
+ * @param int $data['channel_id'] Kanal mit angemeldetem Dienst
+ * @return void count, leaves
+ * @testdata {"channel_id": 3}
+ */
+function syncKleinanzeigenCategories($data) {
+    permit(['edit_shop_config'], false);
+    set_time_limit(900);
+    $db = DbhCompany::begin();
+    $kanal = shopKleinanzeigenChannel($db, $data);
+    try {
+        $antwort = shopKleinanzeigenWorkerCallLoggedIn($db, $kanal, '/categories', [], 850);
+    } catch (ApiError $e) {
+        shopKleinanzeigenWorkerFail($e);
+        return;
+    }
+    $baum = array_values(array_filter((array)($antwort['categories'] ?? []), fn($c) => is_array($c) && '' !== trim((string)($c['path'] ?? ''))));
+    if (count($baum) < 10) {
+        resultInfo(false, 'KLEINANZEIGEN_CATEGORY_TREE', null, 'Der Dienst hat keinen brauchbaren Kategoriebaum geliefert ('.count($baum).' Einträge)');
+        return;
+    }
+    $zeile = $db->getOne(
+        "WITH neu AS (
+             SELECT e.path, NULLIF(e.parent, '') AS parent, e.name, e.level, e.category_id, COALESCE(e.is_leaf, false) AS is_leaf, COALESCE(e.sort, 0) AS sort
+               FROM jsonb_to_recordset(CAST(:baum AS jsonb))
+                    AS e(path text, parent text, name text, level integer, category_id integer, is_leaf boolean, sort integer)
+         ), weg AS (
+             DELETE FROM kleinanzeigen_category_shop WHERE path NOT IN (SELECT path FROM neu) RETURNING path
+         ), rein AS (
+             INSERT INTO kleinanzeigen_category_shop (path, parent, name, level, category_id, is_leaf, sort, mtime)
+             SELECT path, parent, name, level, category_id, is_leaf, sort, now() FROM neu
+             ON CONFLICT (path) DO UPDATE
+                SET parent = EXCLUDED.parent, name = EXCLUDED.name, level = EXCLUDED.level, category_id = EXCLUDED.category_id,
+                    is_leaf = EXCLUDED.is_leaf, sort = EXCLUDED.sort, mtime = now()
+             RETURNING is_leaf
+         )
+         SELECT (SELECT count(*) FROM rein) AS count, (SELECT count(*) FROM rein WHERE is_leaf) AS leaves, (SELECT count(*) FROM weg) AS removed",
+        [':baum' => json_encode($baum, JSON_UNESCAPED_UNICODE)]
+    );
+    resultInfo(true, '', ['count' => (int)$zeile['count'], 'leaves' => (int)$zeile['leaves'], 'removed' => (int)$zeile['removed']]);
+}
+
+/**
  * Stellt die Anzeige eines Artikels jetzt bei Kleinanzeigen ein oder aktualisiert sie
  *
  * Über den Dienst, sofort — der Knopf im Board. Die Aufträge der

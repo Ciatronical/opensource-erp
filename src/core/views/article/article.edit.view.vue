@@ -12,6 +12,22 @@
                 {{ article.partnumber }}
             </v-chip>
             <v-spacer />
+            <!-- Als neu verwenden: öffnet die Neuanlage mit allen Angaben dieses
+                 Artikels (kivitendo: „use as new“); angelegt wird erst mit „Anlegen“ -->
+            <v-btn
+                v-if="!isNewMode && !loading && !error"
+                variant="tonal"
+                size="small"
+                color="primary"
+                prepend-icon="mdi-content-copy"
+                class="mr-2"
+                @click="useAsNew"
+            >
+                {{ t('ArticleEditView.useAsNew') }}
+                <v-tooltip activator="parent" location="bottom" max-width="320">
+                    {{ t('ArticleEditView.useAsNewHint') }}
+                </v-tooltip>
+            </v-btn>
             <v-chip v-if="!isNewMode && saving" size="x-small" color="warning" variant="tonal">
                 <v-progress-circular indeterminate size="12" width="2" class="mr-1" />
                 {{ t('ArticleEditView.saving') }}
@@ -43,6 +59,28 @@
         </v-alert>
         <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mb-3">
             {{ error }}
+        </v-alert>
+        <!-- Neuanlage aus einer Vorlage: was übernommen wurde und was nicht -->
+        <v-alert
+            v-if="isNewMode && vorlage && !loading"
+            type="info"
+            variant="tonal"
+            density="compact"
+            icon="mdi-content-copy"
+            class="mb-3"
+        >
+            <div class="d-flex align-center flex-wrap ga-2">
+                <span>{{ t('ArticleEditView.template.info', { partnumber: vorlage.partnumber, description: vorlage.description }) }}</span>
+                <v-btn
+                    variant="text"
+                    size="small"
+                    density="comfortable"
+                    prepend-icon="mdi-arrow-left"
+                    :to="{ name: 'article-edit', params: { id: vorlage.id } }"
+                >
+                    {{ t('ArticleEditView.template.back') }}
+                </v-btn>
+            </div>
         </v-alert>
 
         <div
@@ -121,6 +159,7 @@
                                 <!-- Beschreibung -->
                                 <v-col cols="12" class="py-1">
                                     <v-text-field
+                                        ref="beschreibungFeld"
                                         v-model="article.description"
                                         :label="t('ArticleEditView.fields.description')"
                                         :rules="isNewMode ? [requiredRule] : []"
@@ -162,9 +201,8 @@
                                     />
                                 </v-col>
 
-                                <!-- Gewicht (parts.weight) — Grundlage der Versandkosten im Shop.
-                                     Erst am angelegten Artikel: createPart übernimmt kein Gewicht -->
-                                <v-col v-if="!isNewMode" cols="12" sm="4" class="py-1">
+                                <!-- Gewicht (parts.weight) — Grundlage der Versandkosten im Shop -->
+                                <v-col cols="12" sm="4" class="py-1">
                                     <v-text-field
                                         persistent-placeholder
                                         v-model="article.weight"
@@ -231,6 +269,7 @@
                         v-if="shopEnabled"
                         ref="shopCard"
                         :parts-id="isNewMode ? null : id"
+                        :template-parts-id="vorlage ? vorlage.id : null"
                         :suggested-link="shopLinkSuggestion"
                         :sellprice="article.sellprice"
                         :buchungsgruppen-id="article.buchungsgruppen_id"
@@ -251,7 +290,10 @@
                             {{ createError }}
                         </v-alert>
                         <div class="d-flex justify-end ga-2">
-                            <v-btn variant="text" :to="{ name: 'article-list' }">
+                            <v-btn
+                                variant="text"
+                                :to="vorlage ? { name: 'article-edit', params: { id: vorlage.id } } : { name: 'article-list' }"
+                            >
                                 {{ t('ArticleEditView.cancel') }}
                             </v-btn>
                             <v-btn
@@ -277,10 +319,11 @@
 <script>
 import { defineComponent, defineAsyncComponent, ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useHourlyRate } from '@/core/composables/useHourlyRate.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import * as toasts from '@/core/utils/toasts.js'
 import axios from 'axios'
 
 // Die Shop-Karte gehört zur Shop-Erweiterung: erst laden, wenn sie gebraucht wird
@@ -297,6 +340,7 @@ export default defineComponent({
         const { t } = useI18n()
         const oserp = oserpStore()
         const router = useRouter()
+        const route = useRoute()
 
         const article = ref({
             partnumber: '',
@@ -496,6 +540,37 @@ export default defineComponent({
         const createError = ref('')
         const nextPartnumber = ref('')
 
+        // ── Als neu verwenden ──
+        //
+        // Die Neuanlage kann aus einem vorhandenen Artikel vorbelegt werden
+        // (?vorlage=<id>, damit die Adresse teilbar bleibt). Die Maske zeigt
+        // dessen Angaben ohne Nummer; sichtbare Felder gehen über das Formular,
+        // alles Übrige (Warengruppe, Einkaufspreis, Übersetzungen, Shop-Bilder …)
+        // übernimmt das Backend anhand der Vorlage — erst beim Anlegen.
+
+        /** Vorlage der Neuanlage: { id, partnumber, description }, sonst null */
+        const vorlage = ref(null)
+        const vorlageId = computed(() => isNewMode.value ? (Number(route.query.vorlage) || 0) : 0)
+        /** Während die Vorlage in die Felder kommt, dürfen die Typ-Watcher nichts umstellen */
+        let vorlageWirdGeladen = false
+        /** Zuletzt vorbelegte Vorlage (0 = leere Maske, -1 = keine Neuanlage) — Routen- und
+         *  Vorlagen-Watcher reagieren beide auf den Wechsel in die Neuanlage; wer zuerst
+         *  kommt, belegt vor, der andere sieht es daran und lässt es */
+        let vorlageAngewendet = -1
+        const beschreibungFeld = ref(null)
+
+        function useAsNew() {
+            router.push({ name: 'article-new', query: { vorlage: String(props.id) } })
+        }
+
+        /** Beschreibung markieren: das Erste, was bei einer Kopie meist anders heißt */
+        function beschreibungMarkieren() {
+            const input = beschreibungFeld.value?.$el?.querySelector('input')
+            if (!input) return
+            input.focus()
+            input.select()
+        }
+
         // ── Shop (nur bei aktiver Erweiterung) ──
 
         const shopEnabled = computed(() => oserp.isExtensionEnabled('shop'))
@@ -557,7 +632,36 @@ export default defineComponent({
             return unitOptions.value.includes(wunsch) ? wunsch : (unitOptions.value[0] || wunsch)
         }
 
-        function initNew() {
+        async function initNew() {
+            vorlageAngewendet = vorlageId.value
+            vorlage.value = null
+            createError.value = ''
+            partnumberError.value = ''
+
+            if (vorlageId.value) {
+                vorlageWirdGeladen = true
+                await fetchArticle(vorlageId.value)
+                if (!error.value) {
+                    vorlage.value = {
+                        id: vorlageId.value,
+                        partnumber: article.value.partnumber,
+                        description: article.value.description
+                    }
+                    // Die Nummer wird neu vergeben, „Veraltet“ gilt nicht für eine Kopie
+                    article.value.partnumber = ''
+                    article.value.obsolete = false
+                    await nextTick()
+                    vorlageWirdGeladen = false
+                    peekPartnumber()
+                    beschreibungMarkieren()
+                    return
+                }
+                // Vorlage weg: leere Maske, der Hinweis sagt warum
+                error.value = ''
+                vorlageWirdGeladen = false
+                toasts.warning(t('ArticleEditView.template.notFound'))
+            }
+
             const gruppe = buchungsgruppen.value.find(bg => !bg.obsolete) || buchungsgruppen.value[0]
             article.value = {
                 partnumber: '',
@@ -572,7 +676,6 @@ export default defineComponent({
             }
             loading.value = false
             error.value = ''
-            createError.value = ''
             peekPartnumber()
         }
 
@@ -584,6 +687,7 @@ export default defineComponent({
                     part_type: article.value.part_type
                 })
                 nextPartnumber.value = response.data?.success ? (response.data.payload?.partnumber || '') : ''
+                if (response.data?.payload?.weightunit) weightunit.value = response.data.payload.weightunit
             } catch (e) {
                 nextPartnumber.value = ''
             }
@@ -591,7 +695,7 @@ export default defineComponent({
 
         /** Neue Dienstleistung in der Stundensatz-Einheit ohne Preis → Standard-Stundensatz vorbelegen */
         function prefillHourlyRate() {
-            if (!isNewMode.value) return
+            if (!isNewMode.value || vorlageWirdGeladen) return
             if (article.value.part_type !== 'service' || article.value.unit !== hourlyRateUnit.value) return
             if (Number(article.value.sellprice) > 0 || !defaultHourlyRate.value) return
             article.value.sellprice = defaultHourlyRate.value
@@ -599,7 +703,7 @@ export default defineComponent({
 
         // Ware und Dienstleistung haben getrennte Nummernkreise und Standard-Einheiten
         watch(() => article.value.part_type, (neu, alt) => {
-            if (!isNewMode.value) return
+            if (!isNewMode.value || vorlageWirdGeladen) return
             if (alt !== undefined && article.value.unit === defaultUnit(alt)) {
                 article.value.unit = defaultUnit(neu)
             }
@@ -630,13 +734,15 @@ export default defineComponent({
                     unit: article.value.unit,
                     sellprice: article.value.sellprice,
                     buchungsgruppen_id: article.value.buchungsgruppen_id,
-                    notes: article.value.notes
+                    notes: article.value.notes,
+                    weight: weightValue(),
+                    ...(vorlage.value ? { template_parts_id: vorlage.value.id } : {})
                 })
 
                 if (response.data?.success) {
                     const partsId = response.data.payload.parts_id
                     // Shop-Angaben erst jetzt: vorher gab es keinen Artikel, an dem sie hängen
-                    if (shopCard.value?.saveFor) await shopCard.value.saveFor(partsId)
+                    if (shopCard.value?.saveFor) await shopCard.value.saveFor(partsId, vorlage.value?.id || null)
                     router.replace({ name: 'article-edit', params: { id: partsId } })
                 } else {
                     createError.value = createErrorText(response.data?.text)
@@ -668,6 +774,11 @@ export default defineComponent({
             flushPendingChanges()
         })
 
+        // Andere Vorlage bei gleicher Route (article-new bleibt): neu vorbelegen
+        watch(vorlageId, neu => {
+            if (isNewMode.value && neu !== vorlageAngewendet) initNew()
+        })
+
         // Die Route wechselt zwischen article-new und article-edit, ohne dass die
         // Ansicht neu entsteht — deshalb hier beide Richtungen.
         watch(() => props.id, async (newId, oldId) => {
@@ -679,9 +790,11 @@ export default defineComponent({
             }
             initialLoaded.value = false
             if (!newId) {
-                initNew()
+                if (vorlageId.value !== vorlageAngewendet) initNew()
                 return
             }
+            vorlageAngewendet = -1
+            vorlage.value = null
             await fetchArticle(newId)
             await nextTick()
             initialLoaded.value = true
@@ -708,6 +821,10 @@ export default defineComponent({
             requiredRule,
             weightRule,
             weightunit,
+            // Als neu verwenden
+            vorlage,
+            useAsNew,
+            beschreibungFeld,
             // Shop
             shopEnabled,
             abschnitte,

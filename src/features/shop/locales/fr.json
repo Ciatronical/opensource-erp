@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Les prestations de service ne sont pas proposées sur les places de marché.",
             "channelImages": "Images pour {kanal}",
             "imagesAfterCreate": "Les images peuvent être ajoutées une fois l'article créé.",
+            "imagesFromTemplate": "{n} images du modèle seront reprises à la création.",
             "moveLeft": "Avancer",
             "moveRight": "Reculer",
             "removeImage": "Supprimer l'image",

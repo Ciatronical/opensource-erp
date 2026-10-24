@@ -30,23 +30,15 @@
       "weightInvalid": "Empty or a number from 0",
       "required": "Required"
     },
-    "ebay": {
-      "title": "eBay article",
-      "checkbox": "List on eBay",
-      "images": "Article images",
-      "addImage": "Add image",
-      "noImages": "No images yet. eBay requires at least one image.",
-      "deleteImage": "Delete image",
-      "statusActive": "Listed on eBay",
-      "statusEnded": "Listing ended",
-      "statusError": "eBay error",
-      "listingId": "Listing id: {id}",
-      "busy": "Updating eBay …",
-      "uploadError": "Image upload failed.",
-      "needImageHint": "Please upload at least one image first."
-    },
     "titleNew": "Create article",
     "create": "Create",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "useAsNew": "Use as new",
+    "useAsNewHint": "Opens a new article prefilled with everything from this one. Nothing is saved until you click “Create”.",
+    "template": {
+      "info": "Prefilled from article {partnumber} “{description}”. A new article number will be assigned; stock and EAN are not copied.",
+      "back": "Back to template",
+      "notFound": "The template was not found, the form is empty."
+    }
   }
 }

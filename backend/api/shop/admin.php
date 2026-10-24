@@ -639,6 +639,7 @@ function getPartShopData($data) {
  *              width, height (cm), min_qty (Mindestabnahme, bei eBay die
  *              Losgröße), delivery_term_id (Lieferbedingung). Fehlt das Feld,
  *              bleiben die Angaben unverändert
+ * @param int $data['template_parts_id'] „Als neu verwenden“: Vorlage, deren Kanalbilder übernommen werden (optional)
  * @return void
  * @testdata {"parts_id": 1, "category_id": 1, "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}], "shipping": {"shipping_method_id": null, "length": 40, "width": 30, "height": 20, "min_qty": null, "delivery_term_id": null}}
  */
@@ -808,6 +809,12 @@ function savePartShopData($data) {
             return;
         }
         throw $e;
+    }
+
+    // „Als neu verwenden“: die Kanalbilder der Vorlage gehören zum neuen Artikel
+    $vorlage = (int)($data['template_parts_id'] ?? 0);
+    if ($vorlage > 0) {
+        shopChannelImagesCopyFromPart($db, $vorlage, $partsId);
     }
 
     // Die abschließende Abfrage liest parts_ext im Stand vor der Anweisung,

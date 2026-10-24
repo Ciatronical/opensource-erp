@@ -32,6 +32,13 @@
         },
         "titleNew": "Opret vare",
         "create": "Opret",
-        "cancel": "Annuller"
+        "cancel": "Annuller",
+        "useAsNew": "Brug som ny",
+        "useAsNewHint": "Åbner en ny artikel udfyldt med alle oplysninger fra denne. Intet gemmes, før du klikker på „Opret“.",
+        "template": {
+            "info": "Udfyldt fra artikel {partnumber} „{description}“. Der tildeles et nyt artikelnummer; beholdning og EAN overtages ikke.",
+            "back": "Til skabelonen",
+            "notFound": "Skabelonen blev ikke fundet, formularen er tom."
+        }
     }
 }

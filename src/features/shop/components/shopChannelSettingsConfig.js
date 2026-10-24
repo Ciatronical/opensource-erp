@@ -197,6 +197,15 @@ const kleinanzeigen = [
         ],
         label: "crm_fields.kleinanzeigenShipping", tooltip: "crm_fields.kleinanzeigenShipping_help"
     },
+    // „Direkt kaufen“: Pflichtfrage im Anzeigenformular — der Dienst beantwortet sie mit dieser Vorgabe
+    {
+        name: "buy_now", type: "select", fieldstyle: "max-width: 30ch",
+        items: [
+            { title: "crm_fields.kleinanzeigenBuyNowNo", value: "0" },
+            { title: "crm_fields.kleinanzeigenBuyNowYes", value: "1" },
+        ],
+        label: "crm_fields.kleinanzeigenBuyNow", tooltip: "crm_fields.kleinanzeigenBuyNow_help"
+    },
     {
         name: "default_condition", type: "select", fieldstyle: "max-width: 30ch",
         items: [
@@ -209,7 +218,8 @@ const kleinanzeigen = [
         ],
         label: "crm_fields.kleinanzeigenCondition", tooltip: "crm_fields.kleinanzeigenCondition_help"
     },
-    { name: "default_category", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenCategory", tooltip: "crm_fields.kleinanzeigenCategory_help" },
+    // Kategoriebaum von Kleinanzeigen (quellen.kleinanzeigenCategories, nur Blätter) — geladen über die Kanalkarte
+    { name: "default_category", type: "dynamic-autocomplete", source: "kleinanzeigenCategories", itemTitle: "path", itemValue: "path", emptyText: "crm_fields.kleinanzeigenCategoryEmpty", fieldstyle: "max-width: 70ch", label: "crm_fields.kleinanzeigenCategory", tooltip: "crm_fields.kleinanzeigenCategory_help" },
     {
         name: "text_style", type: "select", fieldstyle: "max-width: 30ch",
         items: [

@@ -93,6 +93,24 @@ Die Häufigkeit kommt aus `parts_usage_oserp` (Verwendungen je Artikel und Beleg
 
 **Firmenkonfiguration → Grunddaten → Artikelsuche in Belegen:** Anzahl Vorschläge, Gewicht Verwendungshäufigkeit, Gewicht „zuletzt verwendet", Zeitraum „zuletzt". Eine **Probesuche** zeigt die Wirkung der eingetragenen Gewichte sofort, noch vor dem Speichern; „Neu aufbauen" zählt die Verwendungsstatistik aus den Bestandsdaten neu.
 
+## Artikelstamm
+
+Artikel (Waren und Dienstleistungen) werden unter **Artikel** gepflegt. Die Maske speichert Änderungen an einem bestehenden Artikel automatisch; ein neuer Artikel entsteht erst mit **Anlegen**. Die Artikelnummer kommt aus dem Nummernkreis (Waren und Dienstleistungen getrennt) oder wird von Hand vergeben, vergebene Nummern meldet die Maske am Feld.
+
+### Als neu verwenden
+
+Der Knopf **Als neu verwenden** im Kopf eines Artikels öffnet die Neuanlage, vorbelegt mit allen Angaben des Artikels (kivitendo: „use as new“). Bis zum Klick auf **Anlegen** wird nichts gespeichert; **Abbrechen** führt zum Ausgangsartikel zurück. Die Beschreibung ist markiert, weil sie bei einer Variante meist als Erstes geändert wird. Die Adresse ist teilbar (`/artikel/neu?vorlage=<id>`).
+
+Übernommen wird mehr, als die Maske zeigt:
+
+- Stammsatz: Beschreibung, Langbeschreibung, Typ, Einheit, Verkaufspreis, Buchungsgruppe, Gewicht, dazu Listenpreis, Einkaufspreis, Warengruppe, Preisfaktor, Lager und Lagerplatz, Zolltarifnummer und die übrigen kivitendo-Felder
+- Übersetzungen, benutzerdefinierte Variablen, Herstellerangaben (Hersteller/Modell), Preisgruppenpreise
+- Shop-Erweiterung: Shop-Angaben, Versandangaben, Verkaufskanäle mit Aufschlägen und Texten sowie die Kanalbilder (werden beim Anlegen kopiert, die Karte zeigt vorher ihre Anzahl)
+
+Nicht übernommen werden die Artikelnummer (wird neu vergeben), der Bestand, „Veraltet“, die EAN (ein Strichcode gehört zu genau einem Artikel) und der Stand beim Marktplatz (Kennung, Abgleich).
+
+---
+
 ## Drucken
 
 Belege können als PDF gedruckt werden. Die Druckvorlagen sind konfigurierbar unter **Einstellungen > Druckvorlagen**.

@@ -32,6 +32,13 @@
         },
         "titleNew": "Opprett vare",
         "create": "Opprett",
-        "cancel": "Avbryt"
+        "cancel": "Avbryt",
+        "useAsNew": "Bruk som ny",
+        "useAsNewHint": "Åpner en ny artikkel forhåndsutfylt med alle opplysningene fra denne. Ingenting lagres før du klikker «Opprett».",
+        "template": {
+            "info": "Forhåndsutfylt fra artikkel {partnumber} «{description}». Nytt artikkelnummer tildeles; beholdning og EAN overtas ikke.",
+            "back": "Til malen",
+            "notFound": "Malen ble ikke funnet, skjemaet er tomt."
+        }
     }
 }

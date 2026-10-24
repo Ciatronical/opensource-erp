@@ -32,6 +32,13 @@
         },
         "titleNew": "Crea articolo",
         "create": "Crea",
-        "cancel": "Annulla"
+        "cancel": "Annulla",
+        "useAsNew": "Usa come nuovo",
+        "useAsNewHint": "Apre un nuovo articolo precompilato con tutti i dati di questo. Nulla viene salvato prima di «Crea».",
+        "template": {
+            "info": "Precompilato dall’articolo {partnumber} «{description}». Verrà assegnato un nuovo numero articolo; giacenza ed EAN non vengono copiati.",
+            "back": "Al modello",
+            "notFound": "Il modello non è stato trovato, la maschera è vuota."
+        }
     }
 }

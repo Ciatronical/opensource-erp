@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Pakalpojumi tirdzniecības platformās netiek piedāvāti.",
             "channelImages": "Attēli kanālam {kanal}",
             "imagesAfterCreate": "Attēlus var pievienot, kad prece ir izveidota.",
+            "imagesFromTemplate": "{n} veidnes attēli tiks pārņemti izveidojot.",
             "moveLeft": "Pārvietot uz priekšu",
             "moveRight": "Pārvietot atpakaļ",
             "removeImage": "Noņemt attēlu",

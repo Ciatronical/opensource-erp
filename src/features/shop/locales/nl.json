@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Diensten worden niet op marktplaatsen aangeboden.",
             "channelImages": "Afbeeldingen voor {kanal}",
             "imagesAfterCreate": "Afbeeldingen kunnen worden toegevoegd zodra het artikel is aangemaakt.",
+            "imagesFromTemplate": "{n} afbeeldingen van het sjabloon worden bij het aanmaken overgenomen.",
             "moveLeft": "Naar voren",
             "moveRight": "Naar achteren",
             "removeImage": "Afbeelding verwijderen",

@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Tjenesteydelser udbydes ikke på markedspladser.",
             "channelImages": "Billeder til {kanal}",
             "imagesAfterCreate": "Billeder kan tilføjes, når varen er oprettet.",
+            "imagesFromTemplate": "{n} billeder fra skabelonen overtages ved oprettelse.",
             "moveLeft": "Flyt frem",
             "moveRight": "Flyt tilbage",
             "removeImage": "Fjern billede",

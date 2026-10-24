@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Serviciile nu sunt oferite pe marketplace-uri.",
             "channelImages": "Imagini pentru {kanal}",
             "imagesAfterCreate": "Imaginile pot fi adăugate după crearea articolului.",
+            "imagesFromTemplate": "{n} imagini ale șablonului vor fi preluate la creare.",
             "moveLeft": "Mută în față",
             "moveRight": "Mută în spate",
             "removeImage": "Elimină imaginea",

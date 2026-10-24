@@ -32,6 +32,13 @@
         },
         "titleNew": "Skapa artikel",
         "create": "Skapa",
-        "cancel": "Avbryt"
+        "cancel": "Avbryt",
+        "useAsNew": "Använd som ny",
+        "useAsNewHint": "Öppnar en ny artikel förifylld med alla uppgifter från denna. Inget sparas förrän du klickar på ”Skapa”.",
+        "template": {
+            "info": "Förifylld från artikel {partnumber} ”{description}”. Ett nytt artikelnummer tilldelas; lagersaldo och EAN tas inte över.",
+            "back": "Till mallen",
+            "notFound": "Mallen hittades inte, formuläret är tomt."
+        }
     }
 }

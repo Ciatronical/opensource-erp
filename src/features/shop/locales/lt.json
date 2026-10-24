@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Paslaugos prekyvietėse nesiūlomos.",
             "channelImages": "Nuotraukos kanalui {kanal}",
             "imagesAfterCreate": "Nuotraukas galima pridėti sukūrus prekę.",
+            "imagesFromTemplate": "{n} šablono paveikslėliai bus perimti kuriant.",
             "moveLeft": "Perkelti į priekį",
             "moveRight": "Perkelti atgal",
             "removeImage": "Pašalinti nuotrauką",

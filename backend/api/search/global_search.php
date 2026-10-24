@@ -135,7 +135,9 @@ function globalSearch($data) {
             'type' => 'invoice',
             'id' => intval($row['id']),
             'title' => $row['invnumber'],
-            'subtitle' => trim($row['customer_name'] . ' · ' . $row['transdate']),
+            'subtitle' => trim($row['customer_name'] ?? ''),
+            // Datum roh (ISO) mitgeben, die Anzeige formatiert es nach Sprache
+            'date' => $row['transdate'],
         ];
     }
 
@@ -157,7 +159,9 @@ function globalSearch($data) {
             'type' => 'order',
             'id' => intval($row['id']),
             'title' => $row['ordnumber'],
-            'subtitle' => trim($row['customer_name'] . ' · ' . $row['transdate']),
+            'subtitle' => trim($row['customer_name'] ?? ''),
+            // Datum roh (ISO) mitgeben, die Anzeige formatiert es nach Sprache
+            'date' => $row['transdate'],
         ];
     }
 
@@ -179,7 +183,9 @@ function globalSearch($data) {
             'type' => 'quotation',
             'id' => intval($row['id']),
             'title' => $row['quonumber'],
-            'subtitle' => trim($row['customer_name'] . ' · ' . $row['transdate']),
+            'subtitle' => trim($row['customer_name'] ?? ''),
+            // Datum roh (ISO) mitgeben, die Anzeige formatiert es nach Sprache
+            'date' => $row['transdate'],
         ];
     }
 

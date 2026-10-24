@@ -518,6 +518,14 @@ function suggestPartType($data) {
  * Legt einen neuen Artikel in der parts Tabelle an.
  * Artikelnummer wird automatisch als nächste freie Nummer generiert.
  *
+ * Mit template_parts_id („Als neu verwenden“ in der Artikelmaske) kommt alles
+ * mit, was die Maske nicht zeigt: Listenpreis, Einkaufspreis, Warengruppe,
+ * Preisfaktor, Lager und Lagerplatz, Zolltarifnummer, Übersetzungen,
+ * benutzerdefinierte Variablen, Herstellerangaben und Preisgruppenpreise.
+ * Nicht mit: Artikelnummer, Bestand, Veraltet und die EAN — ein Strichcode
+ * gehört zu genau einem Artikel, eine Kopie fände der Scanner doppelt.
+ * Die Shop-Angaben der Vorlage übernimmt die Shop-Karte (savePartShopData).
+ *
  * @param array $data Artikel-Daten
  * @param string $data['description'] Beschreibung (Pflicht)
  * @param string $data['partnumber'] Artikelnummer (optional, wird generiert)
@@ -526,6 +534,8 @@ function suggestPartType($data) {
  * @param float $data['sellprice'] Verkaufspreis
  * @param string $data['unit'] Einheit
  * @param string $data['notes'] Langbeschreibung
+ * @param float $data['weight'] Gewicht in der Gewichtseinheit des Mandanten (optional)
+ * @param int $data['template_parts_id'] Vorlage: Artikel, dessen übrige Angaben übernommen werden (optional)
  * @param int $data['taxzone_id'] Steuerzone des Belegs, aus dem heraus angelegt wird (optional, Standard 0)
  * @param string $data['transdate'] Belegdatum (optional, Standard heute) — bestimmt den gültigen Steuerschlüssel
  * @return void JSON {parts_id, partnumber, part_type, buchungsziel}; Fehler PARTNUMBER_EXISTS, wenn eine vorgegebene Artikelnummer vergeben ist
@@ -539,6 +549,7 @@ function createPart($data) {
     $description = trim($data['description'] ?? '');
     $partType = $data['part_type'] ?? 'service';
     $buchungsgruppenId = intval($data['buchungsgruppen_id'] ?? 0);
+    $templateId = intval($data['template_parts_id'] ?? 0);
 
     // Validierung
     if (empty($description)) {
@@ -556,6 +567,10 @@ function createPart($data) {
         return;
     }
 
+    // Gewicht: leer = nicht gepflegt, sonst eine Zahl ab 0
+    $weight = $data['weight'] ?? null;
+    $weight = ($weight === null || $weight === '' || !is_numeric($weight) || (float)$weight < 0) ? null : (float)$weight;
+
     $partnumber = trim($data['partnumber'] ?? '');
     $partParams = [
         ':description'        => $description,
@@ -564,6 +579,7 @@ function createPart($data) {
         ':sellprice'          => floatval($data['sellprice'] ?? 0),
         ':unit'               => trim($data['unit'] ?? 'Stck'),
         ':notes'              => trim($data['notes'] ?? ''),
+        ':weight'             => $weight,
         // Buchungsziel (Erlöskonto, Steuerkonto, tax_id, Satz) gleich mitliefern: die
         // Faktura rechnet damit die Umsatzsteuer der Position. Ohne diese Angabe stünde
         // der Artikel in der Position mit Satz 0 und der Beleg wäre zu niedrig besteuert.
@@ -597,54 +613,92 @@ function createPart($data) {
         ) AS buchungsziel
     SQL;
 
+    // Die Anweisung besteht aus festen Bausteinen; Werte gehen nur als Platzhalter
+    // hinein. Mit Vorlage kommen die Spalten der Vorlage und ihre Nebentabellen dazu.
+    $vorlageSpalten = '';
+    $vorlageWerte   = '';
+    $vorlageQuelle  = '';
+    $vorlageTabellen = '';
+    if ($templateId > 0) {
+        $partParams[':template_parts_id'] = $templateId;
+        $vorlageSpalten = ', listprice, lastcost, makemodel, rop, shop, bom, image, drawing, microfiche,
+                           partsgroup_id, ve, gv, formel, not_discountable, payment_id, price_factor_id,
+                           stockable, has_sernumber, warehouse_id, bin_id, classification_id, instruction,
+                           order_qty, order_locked, tariff_code';
+        $vorlageWerte = ', v.listprice, v.lastcost, COALESCE(v.makemodel, FALSE), v.rop, COALESCE(v.shop, FALSE),
+                          COALESCE(v.bom, FALSE), v.image, v.drawing, v.microfiche,
+                          v.partsgroup_id, v.ve, v.gv, v.formel, COALESCE(v.not_discountable, FALSE), v.payment_id,
+                          v.price_factor_id, COALESCE(v.stockable, FALSE), COALESCE(v.has_sernumber, FALSE),
+                          v.warehouse_id, v.bin_id, COALESCE(v.classification_id, 0), COALESCE(v.instruction, FALSE),
+                          COALESCE(v.order_qty, 0), COALESCE(v.order_locked, FALSE), v.tariff_code';
+        // Die Vorlage muss es geben — sonst entsteht kein Artikel (Ergebnis leer)
+        $vorlageQuelle = 'FROM parts v WHERE v.id = :template_parts_id';
+        $vorlageTabellen = <<<SQL
+            , uebersetzung AS (
+                INSERT INTO translation (parts_id, language_id, translation, longdescription)
+                SELECT np.id, t.language_id, t.translation, t.longdescription
+                  FROM np, translation t WHERE t.parts_id = :tpl_translation
+            ), variablen AS (
+                INSERT INTO custom_variables (config_id, trans_id, sub_module, bool_value, timestamp_value, text_value, number_value)
+                SELECT cv.config_id, np.id, cv.sub_module, cv.bool_value, cv.timestamp_value, cv.text_value, cv.number_value
+                  FROM np, custom_variables cv
+                  JOIN custom_variable_configs cvc ON cvc.id = cv.config_id AND cvc.module = 'IC'
+                 WHERE cv.trans_id = :tpl_variables
+            ), hersteller AS (
+                INSERT INTO makemodel (parts_id, make, model, lastcost, lastupdate, sortorder, part_description, part_longdescription)
+                SELECT np.id, m.make, m.model, m.lastcost, m.lastupdate, m.sortorder, m.part_description, m.part_longdescription
+                  FROM np, makemodel m WHERE m.parts_id = :tpl_makemodel
+            ), preisgruppen AS (
+                INSERT INTO prices (parts_id, pricegroup_id, price)
+                SELECT np.id, pr.pricegroup_id, pr.price
+                  FROM np, prices pr WHERE pr.parts_id = :tpl_prices
+            )
+        SQL;
+        // PDO ohne Emulation erlaubt keinen Platzhalter zweimal
+        foreach (['translation', 'variables', 'makemodel', 'prices'] as $teil) {
+            $partParams[":tpl_{$teil}"] = $templateId;
+        }
+    }
+
     if (empty($partnumber)) {
         // Artikelnummer automatisch vergeben: nextFreeNumber zählt den defaults-Counter
         // hoch und überspringt bereits vergebene Nummern in parts.partnumber.
         $numberField = ($partType === 'service') ? 'servicenumber' : 'articlenumber';
-        $nextNumber = nextFreeNumber($company, $numberField, 'parts', 'partnumber');
-
-        $result = $company->getOne(<<<SQL
-            WITH np AS (
-                INSERT INTO parts (partnumber, description, part_type, buchungsgruppen_id, sellprice, unit, notes, obsolete)
-                VALUES (:partnumber, :description, :part_type, :buchungsgruppen_id, :sellprice, :unit, :notes, FALSE)
-                RETURNING id, partnumber
-            )
-            SELECT np.id, np.partnumber, {$buchungszielSql}
-            FROM np
-        SQL, array_merge($partParams, [':partnumber' => $nextNumber]));
-
-        $partsId    = $result['id'];
-        $partnumber = $result['partnumber'];
+        $partnumber = nextFreeNumber($company, $numberField, 'parts', 'partnumber');
+        $nummerFrei = '';
     } else {
         // Manuelle Artikelnummer: nur anlegen, wenn sie noch frei ist. Die Prüfung
         // steckt in derselben Abfrage und hängt nicht an einem eindeutigen Index
         // auf partnumber. Eigener Platzhalter für die Prüfung, weil PDO ohne
         // Emulation keinen Namen zweimal erlaubt.
-        $query = <<<SQL
-            WITH np AS (
-                INSERT INTO parts (partnumber, description, part_type, buchungsgruppen_id, sellprice, unit, notes, obsolete)
-                SELECT :partnumber, :description, :part_type, :buchungsgruppen_id, :sellprice, :unit, :notes, FALSE
-                 WHERE NOT EXISTS (SELECT 1 FROM parts WHERE partnumber = :partnumber_check)
-                RETURNING id
-            )
-            SELECT np.id, {$buchungszielSql}
-            FROM np
-        SQL;
+        $nummerFrei = ($vorlageQuelle ? 'AND' : 'WHERE').' NOT EXISTS (SELECT 1 FROM parts WHERE partnumber = :partnumber_check)';
+        $partParams[':partnumber_check'] = $partnumber;
+    }
+    $partParams[':partnumber'] = $partnumber;
 
-        $result = $company->getOne($query, array_merge($partParams, [
-            ':partnumber'       => $partnumber,
-            ':partnumber_check' => $partnumber,
-        ]));
-        if (!$result) {
+    $result = $company->getOne(<<<SQL
+        WITH np AS (
+            INSERT INTO parts (partnumber, description, part_type, buchungsgruppen_id, sellprice, unit, notes, obsolete, weight{$vorlageSpalten})
+            SELECT :partnumber, :description, :part_type, :buchungsgruppen_id, :sellprice, :unit, :notes, FALSE, :weight{$vorlageWerte}
+            {$vorlageQuelle} {$nummerFrei}
+            RETURNING id, partnumber
+        ){$vorlageTabellen}
+        SELECT np.id, np.partnumber, {$buchungszielSql}
+        FROM np
+    SQL, $partParams);
+
+    if (!$result) {
+        if ($nummerFrei) {
             resultInfo(false, 'PARTNUMBER_EXISTS', ['message' => 'Artikelnummer ist bereits vergeben']);
-            return;
+        } else {
+            resultInfo(false, 'TEMPLATE_NOT_FOUND', ['message' => 'Vorlage nicht gefunden']);
         }
-        $partsId = $result['id'];
+        return;
     }
 
     resultInfo(true, 'CREATED', [
-        'parts_id' => $partsId,
-        'partnumber' => $partnumber,
+        'parts_id' => $result['id'],
+        'partnumber' => $result['partnumber'],
         'part_type' => $partType,
         'buchungsziel' => !empty($result['buchungsziel']) ? json_decode($result['buchungsziel'], true) : null
     ]);
@@ -773,7 +827,7 @@ function searchParts($data) {
  * genau wie in nextFreeNumber(). Verbraucht wird die Nummer erst beim Anlegen.
  *
  * @param string $data['part_type'] 'part' (articlenumber) oder 'service' (servicenumber)
- * @return void JSON {partnumber}
+ * @return void JSON {partnumber, weightunit}
  * @testdata {"part_type": "part"}
  */
 function peekNextPartnumber($data) {
@@ -788,8 +842,9 @@ function peekNextPartnumber($data) {
             UNION ALL
             SELECT n + 1 FROM c WHERE EXISTS (SELECT 1 FROM parts WHERE partnumber = c.n::TEXT)
         )
-        SELECT MAX(n)::TEXT AS partnumber FROM c
+        SELECT MAX(n)::TEXT AS partnumber, (SELECT weightunit FROM defaults LIMIT 1) AS weightunit FROM c
     SQL);
 
-    resultInfo(true, '', ['partnumber' => $row['partnumber'] ?? '']);
+    // Die Gewichtseinheit gleich mit: die Neuanlage zeigt das Gewichtsfeld und hat sonst keine Quelle dafür
+    resultInfo(true, '', ['partnumber' => $row['partnumber'] ?? '', 'weightunit' => $row['weightunit'] ?? '']);
 }

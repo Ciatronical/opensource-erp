@@ -30,23 +30,15 @@
             "weightInvalid": "Puste lub liczba od 0",
             "required": "Pole wymagane"
         },
-        "ebay": {
-            "title": "Artykuł eBay",
-            "checkbox": "Wystaw na eBay",
-            "images": "Zdjęcia artykułu",
-            "addImage": "Dodaj zdjęcie",
-            "noImages": "Brak zdjęć. eBay wymaga co najmniej jednego zdjęcia.",
-            "deleteImage": "Usuń zdjęcie",
-            "statusActive": "Wystawiono na eBay",
-            "statusEnded": "Aukcja zakończona",
-            "statusError": "Błąd eBay",
-            "listingId": "ID aukcji: {id}",
-            "busy": "Aktualizowanie eBay …",
-            "uploadError": "Przesyłanie zdjęcia nie powiodło się.",
-            "needImageHint": "Najpierw prześlij co najmniej jedno zdjęcie."
-        },
         "titleNew": "Dodawanie artykułu",
         "create": "Dodaj",
-        "cancel": "Anuluj"
+        "cancel": "Anuluj",
+        "useAsNew": "Użyj jako nowy",
+        "useAsNewHint": "Otwiera nowy artykuł wypełniony wszystkimi danymi tego artykułu. Zapis następuje dopiero po kliknięciu „Utwórz”.",
+        "template": {
+            "info": "Wypełniono na podstawie artykułu {partnumber} „{description}”. Numer artykułu zostanie nadany na nowo; stan magazynowy i EAN nie są przenoszone.",
+            "back": "Do wzorca",
+            "notFound": "Nie znaleziono wzorca, formularz jest pusty."
+        }
     }
 }

@@ -17,6 +17,9 @@
     Bearbeiten (partsId gesetzt): lädt selbst und speichert Änderungen verzögert.
     Neuanlage (partsId leer): „Im Shop anbieten" ist vorbelegt; die Karte
     sammelt nur, die Maske ruft nach createPart saveFor(neueId) auf.
+    Als neu verwenden (templatePartsId): die Neuanlage zeigt die Shop-Angaben
+    der Vorlage; die Kanalbilder der Vorlage kopiert savePartShopData beim
+    Anlegen, weil sie je Artikel abgelegt sind.
 -->
 <template>
     <v-card id="abschnitt-shop" variant="outlined" elevation="1" class="mt-4 sprungziel">
@@ -471,6 +474,23 @@
                                         density="compact"
                                         hide-details="auto"
                                     />
+                                    <!-- Kleinanzeigen-Kategorie: Blätter des Baums (dev/shop-kleinanzeigen.md K22), leer = Kanalvorgabe -->
+                                    <v-autocomplete
+                                        v-else-if="feld.source"
+                                        v-model="kanal.settings[feld.name]"
+                                        :items="quellen[feld.source] || []"
+                                        item-title="path"
+                                        item-value="path"
+                                        :label="t(feld.label)"
+                                        :hint="feld.hint ? t(feld.hint) : ''"
+                                        :no-data-text="t('ShopView.kleinanzeigen.ad.categoryEmpty')"
+                                        :readonly="!darfBearbeiten"
+                                        variant="outlined"
+                                        density="compact"
+                                        hide-details="auto"
+                                        clearable
+                                        auto-select-first
+                                    />
                                     <v-text-field
                                         v-else
                                         v-model="kanal.settings[feld.name]"
@@ -489,7 +509,11 @@
                                     <div class="text-caption text-medium-emphasis mb-1">
                                         {{ t('ShopView.partCard.channelImages', { kanal: kanalName(kanal) }) }}
                                     </div>
-                                    <div v-if="!partsId" class="text-caption">{{ t('ShopView.partCard.imagesAfterCreate') }}</div>
+                                    <div v-if="!partsId" class="text-caption">
+                                        {{ kanal.template_images
+                                            ? t('ShopView.partCard.imagesFromTemplate', { n: kanal.template_images })
+                                            : t('ShopView.partCard.imagesAfterCreate') }}
+                                    </div>
                                     <template v-else>
                                         <div class="d-flex flex-wrap ga-2 mb-2">
                                             <div
@@ -615,6 +639,8 @@ import ShopPartMedia from './shop-part-media.vue'
 const props = defineProps({
     /** Artikel; leer bei der Neuanlage */
     partsId: { type: [String, Number], default: null },
+    /** Neuanlage aus einer Vorlage („Als neu verwenden“): deren Shop-Angaben vorbelegen */
+    templatePartsId: { type: [String, Number], default: null },
     /** Vorschlag für die Produktseite, solange keine eingetragen ist */
     suggestedLink: { type: String, default: '' },
     /** Verkaufspreis aus der Maske — Grundpreis der Preisvorschau */
@@ -827,10 +853,17 @@ const KANAL_FELDER = {
         { name: 'price_type', label: 'ShopView.kleinanzeigen.ad.priceType', items: KLEINANZEIGEN_PREISARTEN, prefix: 'ShopView.kleinanzeigen.priceType.' },
         { name: 'shipping', label: 'ShopView.kleinanzeigen.ad.shipping', items: KLEINANZEIGEN_VERSAND, prefix: 'ShopView.kleinanzeigen.shipping.' },
         { name: 'condition', label: 'ShopView.kleinanzeigen.ad.condition', items: KLEINANZEIGEN_ZUSTAENDE, prefix: 'ShopView.kleinanzeigen.condition.' },
-        { name: 'category', label: 'ShopView.kleinanzeigen.ad.category', hint: 'ShopView.partCard.channelDefaultHint' },
+        { name: 'category', label: 'ShopView.kleinanzeigen.ad.category', hint: 'ShopView.partCard.channelDefaultHint', source: 'kleinanzeigenCategories' },
     ],
 }
 const kanalFelder = kanal => KANAL_FELDER[kanal.type] || []
+/** Auswahllisten der Kanalfelder (source), etwa der Kategoriebaum von Kleinanzeigen — einmal je Karte geladen */
+const quellen = ref({})
+async function quellenLaden(kanaele) {
+    if (quellen.value.kleinanzeigenCategories || !kanaele.some(k => k.type === 'kleinanzeigen')) return
+    const antwort = await shop.fetchKleinanzeigenCategories()
+    quellen.value = { ...quellen.value, kleinanzeigenCategories: (antwort?.categories || []).filter(k => k.is_leaf) }
+}
 const feldAuswahl = feld => [
     { value: null, title: t('ShopView.partCard.channelDefault') },
     ...feld.items.map(wert => ({ value: wert, title: t(feld.prefix + wert) })),
@@ -1154,9 +1187,11 @@ async function laden() {
     bereit = false
     fehler.value = ''
 
-    // Auch bei der Neuanlage: die Kanäle und Steuersätze kommen mit
+    // Auch bei der Neuanlage: die Kanäle und Steuersätze kommen mit; mit
+    // Vorlage ihre Angaben
+    const quelle = props.partsId || props.templatePartsId
     laedt.value = true
-    const antwort = await shop.fetchPartShopData(props.partsId ? Number(props.partsId) : 0)
+    const antwort = await shop.fetchPartShopData(quelle ? Number(quelle) : 0)
     laedt.value = false
 
     if (shop.error.value) {
@@ -1165,6 +1200,7 @@ async function laden() {
     }
 
     const kanaele = antwort?.channels || []
+    quellenLaden(kanaele)
     vorgaben.value = Object.fromEntries(kanaele.map(k => [Number(k.channel_id), alsVorgabe(k)]))
     steuersaetze.value = antwort?.tax_rates || {}
     const versand = antwort?.shipping || {}
@@ -1175,7 +1211,7 @@ async function laden() {
     gewicht.value = antwort?.part?.weight === null || antwort?.part?.weight === undefined ? null : Number(antwort.part.weight)
     versandartikelVon.value = antwort?.part?.shipping_method_of || ''
 
-    if (!props.partsId) {
+    if (!quelle) {
         // Neuanlage bei aktivem Shop: der Artikel ist in der Regel für den Shop
         // gedacht. Vorhandene Artikel zeigen dagegen den gespeicherten Stand.
         daten.value = { ...leer(), listed: true, channels: kanaele.map(alsKanal) }
@@ -1204,8 +1240,20 @@ async function laden() {
             delivery_term_id: versand.part.delivery_term_id ? Number(versand.part.delivery_term_id) : null,
         } : leererVersand(),
     }
-    zuletzt = stand(props.partsId)
     alleKanaeleZu()
+
+    if (!props.partsId) {
+        // Vorlage: der Stand beim Kanal (Abgleich, Kennung, Bilder) gehört ihr;
+        // die Bilder kommen beim Anlegen mit, bis dahin zählt die Karte sie nur
+        versandartikelVon.value = ''
+        for (const kanal of daten.value.channels) {
+            Object.assign(kanal, { sync_status: '', sync_error: '', external_id: '', shipping_message: '', shipping_prices: [] })
+            kanal.template_images = kanal.images.length
+            kanal.images = []
+        }
+        return
+    }
+    zuletzt = stand(props.partsId)
 
     // Der Watcher auf daten läuft erst vor dem nächsten Rendern — sonst hielte
     // er das Laden für eine Eingabe.
@@ -1266,9 +1314,10 @@ watch(daten, () => {
     timer = setTimeout(() => { timer = null; speichern(partsId) }, 800)
 }, { deep: true })
 
-// Wechsel des Artikels (auch Neuanlage → angelegter Artikel): Ausstehendes
-// gehört noch zum bisherigen
-watch(() => props.partsId, (neu, alt) => {
+// Wechsel des Artikels (auch Neuanlage → angelegter Artikel) oder der Vorlage:
+// Ausstehendes gehört noch zum bisherigen. Ein Watcher für beides, sonst lüde
+// der Wechsel Bearbeiten → „Als neu verwenden“ zweimal.
+watch(() => [props.partsId, props.templatePartsId], (neu, [alt]) => {
     if (timer && alt) {
         clearTimeout(timer)
         timer = null
@@ -1321,11 +1370,16 @@ async function veroeffentlichen() {
 /**
  * Neuanlage: speichert die gesammelten Angaben am eben angelegten Artikel
  *
+ * @param {number|string} partsId der neue Artikel
+ * @param {number|string|null} templatePartsId Vorlage, deren Kanalbilder mitkommen
  * @returns {Promise<boolean>} false, wenn das Speichern scheiterte
  */
-async function saveFor(partsId) {
+async function saveFor(partsId, templatePartsId = null) {
     if (!daten.value.listed || !darfBearbeiten.value) return true
-    await shop.savePartShopData(nutzdaten(partsId))
+    await shop.savePartShopData({
+        ...nutzdaten(partsId),
+        ...(templatePartsId ? { template_parts_id: Number(templatePartsId) } : {}),
+    })
     if (shop.error.value) {
         toasts.error(fehlerText())
         return false

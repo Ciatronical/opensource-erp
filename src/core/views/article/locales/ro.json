@@ -32,6 +32,13 @@
         },
         "titleNew": "Creare articol",
         "create": "Creare",
-        "cancel": "Anulare"
+        "cancel": "Anulare",
+        "useAsNew": "Folosește ca nou",
+        "useAsNewHint": "Deschide un articol nou precompletat cu toate datele acestuia. Nimic nu se salvează până la „Creează”.",
+        "template": {
+            "info": "Precompletat din articolul {partnumber} „{description}”. Se va atribui un număr de articol nou; stocul și EAN nu se preiau.",
+            "back": "La șablon",
+            "notFound": "Șablonul nu a fost găsit, formularul este gol."
+        }
     }
 }

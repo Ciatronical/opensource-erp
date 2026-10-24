@@ -32,6 +32,13 @@
         },
         "titleNew": "Artikel aanmaken",
         "create": "Aanmaken",
-        "cancel": "Annuleren"
+        "cancel": "Annuleren",
+        "useAsNew": "Als nieuw gebruiken",
+        "useAsNewHint": "Opent een nieuw artikel, vooraf ingevuld met alle gegevens van dit artikel. Er wordt pas opgeslagen bij „Aanmaken“.",
+        "template": {
+            "info": "Vooraf ingevuld vanuit artikel {partnumber} „{description}“. Er wordt een nieuw artikelnummer toegekend; voorraad en EAN worden niet overgenomen.",
+            "back": "Naar het sjabloon",
+            "notFound": "Het sjabloon is niet gevonden, het formulier is leeg."
+        }
     }
 }

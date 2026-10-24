@@ -549,6 +549,7 @@ Aus einem Beleg heraus erzeugen:
 ## 7. Artikel & Preise
 
 - Artikelstammdaten anlegen, laden, bearbeiten
+- **Als neu verwenden**: Neuanlage aus einem vorhandenen Artikel, alle Angaben samt Nebentabellen und Shop-Bildern vorbelegt, Nummer neu, nichts gespeichert bis „Anlegen“
 - **Artikelsuche** mit Pagination, Sortierung und Filtern
 - **Intelligenter Artikeltyp-Vorschlag** — lernt dynamisch aus der Datenbank statt fester Listen
 - Buchungsgruppen, Erlös-/Aufwands-/Bestandskonten

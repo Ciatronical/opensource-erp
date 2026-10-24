@@ -32,6 +32,13 @@
         },
         "titleNew": "Luo tuote",
         "create": "Luo",
-        "cancel": "Peruuta"
+        "cancel": "Peruuta",
+        "useAsNew": "Käytä uutena",
+        "useAsNewHint": "Avaa uuden tuotteen, johon on esitäytetty kaikki tämän tuotteen tiedot. Tallennus vasta painikkeella ”Luo”.",
+        "template": {
+            "info": "Esitäytetty tuotteesta {partnumber} ”{description}”. Tuotenumero annetaan uudelleen; varastosaldoa ja EAN-koodia ei kopioida.",
+            "back": "Malliin",
+            "notFound": "Mallia ei löytynyt, lomake on tyhjä."
+        }
     }
 }

@@ -307,6 +307,7 @@
                                 :secrets-visible="istAdmin"
                                 :quellen="quellen"
                                 :backend-url-vorschlag="backendUrlVorschlag"
+                                @kleinanzeigen-categories="ladeKleinanzeigenKategorien"
                             />
                         </v-expansion-panel-text>
                     </v-expansion-panel>
@@ -405,8 +406,8 @@ const artName = typ => (te(`ShopView.channels.${typ}`) ? t(`ShopView.channels.${
 const arten = ref([])
 const artAuswahl = computed(() => arten.value.map(art => ({ value: art, title: artName(art) })))
 
-/** Vorlagensätze für die Einstellungen der HugoShops — einmal geladen */
-const quellen = ref({ shopTemplateSets: [] })
+/** Vorlagensätze der HugoShops und Kategoriebaum von Kleinanzeigen — einmal geladen */
+const quellen = ref({ shopTemplateSets: [], kleinanzeigenCategories: [] })
 
 /** Der letzte eingeschaltete Kanal lässt sich nicht abschalten (V8) */
 const letzterAktiver = kanal => kanal.active && kanaele.value.filter(k => k.active).length === 1
@@ -706,9 +707,22 @@ async function ladeVorlagensaetze() {
     }
 }
 
+/** Kategoriebaum von Kleinanzeigen (Blätter) für die Kanalvorgabe; die Kanalkarte ruft es nach dem Laden erneut */
+async function ladeKleinanzeigenKategorien() {
+    try {
+        const antwort = await axios.post('/api/shop/', { action: 'getKleinanzeigenCategories' })
+        if (antwort.data?.success) {
+            quellen.value = { ...quellen.value, kleinanzeigenCategories: (antwort.data.payload?.categories || []).filter(k => k.is_leaf) }
+        }
+    } catch {
+        // Ohne Baum bleibt die Auswahl leer — der gespeicherte Pfad gilt weiter
+    }
+}
+
 onMounted(() => {
     laden()
     ladeVorlagensaetze()
+    ladeKleinanzeigenKategorien()
 })
 
 // Ausstehende Änderungen nicht verlieren, wenn der Reiter gewechselt wird

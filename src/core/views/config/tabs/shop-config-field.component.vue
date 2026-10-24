@@ -104,6 +104,30 @@
             </v-select>
         </v-col>
     </v-row>
+
+    <!-- Auswahl mit Suche aus einer langen Liste (etwa Kategoriebaum von Kleinanzeigen) -->
+    <v-row v-else-if="field.type === 'dynamic-autocomplete'" class="pt-4 my-4" :data-field-name="field.name">
+        <v-col cols="12" md="8">
+            <v-autocomplete
+                v-model="werte[field.name]"
+                :items="auswahl(field.source)"
+                :item-title="field.itemTitle || 'title'"
+                :item-value="field.itemValue || 'value'"
+                :label="t(field.label)"
+                :style="field.fieldstyle"
+                :no-data-text="field.emptyText ? t(field.emptyText) : undefined"
+                hide-details="auto"
+                density="compact"
+                variant="outlined"
+                clearable
+                auto-select-first
+            >
+                <template v-if="field.tooltip" #append-inner>
+                    <FeldHilfe :text="t(field.tooltip)" :langtext="langtext(field)" :titel="t(field.label)" />
+                </template>
+            </v-autocomplete>
+        </v-col>
+    </v-row>
 </template>
 
 <script setup>

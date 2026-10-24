@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Palveluja ei tarjota kauppapaikoilla.",
             "channelImages": "Kuvat kanavalle {kanal}",
             "imagesAfterCreate": "Kuvia voi lisätä, kun tuote on luotu.",
+            "imagesFromTemplate": "Mallin {n} kuvaa kopioidaan luotaessa.",
             "moveLeft": "Siirrä eteen",
             "moveRight": "Siirrä taakse",
             "removeImage": "Poista kuva",

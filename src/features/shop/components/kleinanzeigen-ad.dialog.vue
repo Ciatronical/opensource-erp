@@ -134,14 +134,20 @@
                                 />
                             </v-col>
                             <v-col cols="12" sm="8">
-                                <v-text-field
+                                <!-- Blätter des Kategoriebaums (dev/shop-kleinanzeigen.md K22); ohne Baum: Kanalkarte → Kategorien laden -->
+                                <v-autocomplete
                                     v-model="form.category"
+                                    :items="kategorien"
+                                    item-title="path"
+                                    item-value="path"
                                     :label="t('ShopView.kleinanzeigen.ad.category')"
-                                    :hint="t('ShopView.kleinanzeigen.ad.categoryHint')"
+                                    :hint="t(kategorien.length ? 'ShopView.kleinanzeigen.ad.categoryHint' : 'ShopView.kleinanzeigen.ad.categoryEmpty')"
+                                    :no-data-text="t('ShopView.kleinanzeigen.ad.categoryEmpty')"
                                     persistent-hint
                                     variant="outlined"
                                     density="compact"
-                                    autocomplete="off"
+                                    clearable
+                                    auto-select-first
                                 />
                             </v-col>
                             <v-col cols="12" sm="4">
@@ -336,6 +342,13 @@ const offen = computed({ get: () => props.modelValue, set: v => emit('update:mod
 const ad = ref(null)
 const fehler = ref('')
 const form = reactive({ title: '', text: '', price: null, price_type: 'fixed', shipping: 'both', condition: '', category: '' })
+/** Blätter des Kategoriebaums von Kleinanzeigen — einmal je Dialog geladen */
+const kategorien = ref([])
+async function kategorienLaden() {
+    if (kategorien.value.length) return
+    const antwort = await shop.fetchKleinanzeigenCategories()
+    kategorien.value = (antwort?.categories || []).filter(k => k.is_leaf)
+}
 const gespeichert = ref('')
 const url = ref('')
 const kopiert = ref('')
@@ -377,6 +390,7 @@ async function laden() {
     ad.value = null
     fehler.value = ''
     url.value = ''
+    kategorienLaden()
     const antwort = await shop.fetchKleinanzeigenAd(props.partsId, props.channelId)
     if (!antwort?.ad) {
         fehler.value = shop.error.value || t('ShopView.errors.API_ERROR')

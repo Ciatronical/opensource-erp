@@ -624,7 +624,7 @@ const tabGroups = computed(() => [
         key: 'features',
         title: t('configGroups.features'),
         items: [
-            { value: 'features', title: t('features'), icon: 'mdi-star', keywords: ['feature', 'funktion', 'modul', 'branche', 'module', 'e-mail', 'email', 'dms', 'dokumente', 'webdav', 'kamera', 'überwachung', 'datev', 'ustva', 'wiederkehrend', 'abo', 'miete', 'recurring'] },
+            { value: 'features', title: t('features'), icon: 'mdi-star', keywords: ['feature', 'funktion', 'modul', 'branche', 'module', 'e-mail', 'email', 'dms', 'dokumente', 'webdav', 'kamera', 'überwachung', 'datev', 'ustva', 'wiederkehrend', 'abo', 'miete', 'recurring', 'reverse charge', '13b', 'steuerschuldnerschaft'] },
             // Kundenportal: Webseiten in HugoCMS, über die Kunden ihr Konto erreichen (dev/kundenportal.md)
             { value: 'portal', title: t('portalTab.title'), icon: 'mdi-web', keywords: ['kundenportal', 'portal', 'webseite', 'website', 'hugocms', 'kundenkonto', 'login', 'anmeldung', 'rechnungen', 'freischaltung', 'shop'] },
             ...(store.isLxCars() ? [{ value: 'lxcars', title: 'LxCars', icon: 'mdi-car', keywords: ['lxcars', 'fahrzeug', 'auto', 'werkstatt', 'kfz', 'reifen'] }] : []),
@@ -690,8 +690,31 @@ const focusedField = ref('');
  * ein Treffer (focusField).
  */
 const fieldSources = { crm: crmDefaultsConfig, lxcars: lxcarsDefaultsConfig, anpr: anprDefaultsConfig, shop: shopDefaultsConfig };
+// Die Schalter-Karten des Features-Tabs liegen nicht in einer Feldkonfiguration,
+// sondern direkt in features.tab.vue — hier als Suchtreffer nachgetragen, damit
+// „reverse charge" oder „13b" zur Karte springt (data-field-name dort).
+const featureFields = [
+    { name: 'feature_recurring',      label: 'featureRecurring',     tooltip: 'featureRecurringDesc',     headline: 'salesFeatures' },
+    { name: 'feature_reverse_charge', label: 'featureReverseCharge', tooltip: 'featureReverseChargeDesc', headline: 'salesFeatures' },
+    { name: 'reverse_charge_text',    label: 'reverseChargeText',    tooltip: 'reverseChargeTextHint',    headline: 'salesFeatures' },
+    { name: 'feature_anpr',           label: 'ANPR',                 tooltip: 'featureAnprDesc',          headline: 'cameraAndSurveillance', plain: true },
+    { name: 'feature_nvr',            label: 'NVR',                  tooltip: 'featureNvrDesc',           headline: 'cameraAndSurveillance', plain: true },
+];
 const fieldIndex = computed(() => {
     const out = [];
+    const featuresTab = allTabs.value.find(x => x.value === 'features');
+    if (featuresTab) {
+        for (const f of featureFields) {
+            out.push({
+                tab: 'features',
+                icon: featuresTab.icon,
+                name: f.name,
+                title: f.plain ? f.label : t(f.label),
+                help: t(f.tooltip),
+                parent: `${featuresTab.title} › ${t(f.headline)}`,
+            });
+        }
+    }
     for (const [tabValue, fields] of Object.entries(fieldSources)) {
         const tab = allTabs.value.find(x => x.value === tabValue);
         if (!tab) continue;

@@ -62,8 +62,8 @@
                 <v-list-item-title class="text-body-2">
                     {{ item.title }}
                 </v-list-item-title>
-                <v-list-item-subtitle v-if="item.subtitle" class="text-caption">
-                    {{ item.subtitle }}
+                <v-list-item-subtitle v-if="subtitleOf(item)" class="text-caption">
+                    {{ subtitleOf(item) }}
                 </v-list-item-subtitle>
 
                 <template #prepend>
@@ -90,13 +90,14 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useViewHistory } from '@/core/composables/useViewHistory.js'
 import { entityRoute } from '@/core/constants/routes.js'
+import { formatDate } from '@/core/utils/dateFormatter.js'
 import axios from 'axios'
 
 export default defineComponent({
     name: 'GlobalSearchComponent',
 
     setup() {
-        const { t } = useI18n()
+        const { t, locale } = useI18n()
         const router = useRouter()
         const { saveToHistory, clearHistory: clearHistoryData, getHistoryItems } = useViewHistory()
 
@@ -210,6 +211,20 @@ export default defineComponent({
         }
 
         /**
+         * Untertitel eines Treffers: Zusatzinfo plus Belegdatum in der
+         * Sprache des Benutzers. Das Datum kommt roh (ISO) vom Backend bzw.
+         * aus dem Verlauf und wird erst hier formatiert.
+         *
+         * @param {Object} item - Suchtreffer oder Verlaufseintrag
+         * @return {string} Anzeigetext
+         */
+        function subtitleOf(item) {
+            return [item.subtitle, item.date ? formatDate(item.date, locale.value) : '']
+                .filter(Boolean)
+                .join(' · ')
+        }
+
+        /**
          * Vuetify-Item-Props ohne den Klick-Handler
          *
          * Der Klick-Handler würde das Item als Auswahl an v-autocomplete melden.
@@ -271,6 +286,7 @@ export default defineComponent({
             onFocus,
             onEnter,
             formatItem,
+            subtitleOf,
             withoutClick,
             clearHistory
         }

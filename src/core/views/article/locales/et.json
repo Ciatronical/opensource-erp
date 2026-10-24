@@ -32,6 +32,13 @@
         },
         "titleNew": "Artikli loomine",
         "create": "Loo",
-        "cancel": "Tühista"
+        "cancel": "Tühista",
+        "useAsNew": "Kasuta uuena",
+        "useAsNewHint": "Avab uue artikli, mis on eeltäidetud selle artikli kõigi andmetega. Salvestatakse alles nupuga „Loo“.",
+        "template": {
+            "info": "Eeltäidetud artiklist {partnumber} „{description}“. Artiklinumber antakse uuesti; laoseisu ja EAN-i üle ei võeta.",
+            "back": "Malli juurde",
+            "notFound": "Malli ei leitud, vorm on tühi."
+        }
     }
 }

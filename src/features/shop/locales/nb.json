@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Tjenester tilbys ikke på markedsplasser.",
             "channelImages": "Bilder for {kanal}",
             "imagesAfterCreate": "Bilder kan legges til når varen er opprettet.",
+            "imagesFromTemplate": "{n} bilder fra malen overtas ved opprettelse.",
             "moveLeft": "Flytt frem",
             "moveRight": "Flytt tilbake",
             "removeImage": "Fjern bilde",

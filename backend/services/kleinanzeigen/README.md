@@ -121,7 +121,8 @@ Kontos (OSERP: `<datenbank>-<kanal>`), `email` die Konto-Adresse.
 | `/session/restore` | `account, email, cookies: [{name, value, domain?, path?, expires?, httpOnly?, secure?, sameSite?}]` | wie status, dazu `set` (gesetzte Cookies) und — angemeldet — `cookies` (alle der Sitzung) |
 | `/session/close` | `account` | `{closed}` |
 | `/ads/list` | `account` | `{ads: [{id, title, state, endDate, …}], count}` |
-| `/ads/publish` | `account, ad: {id?, title, description, price, price_type FIXED/NEGOTIABLE/GIVE_AWAY, shipping SHIPPING/PICKUP, condition, category "210/223", category_labels ["Auto, Rad & Boot", "Autoteile & Reifen"], zipcode, contact_name, images: [Pfade]}` | `{id, url}` |
+| `/categories` | `account` | `{categories: [{path, parent, name, level, category_id, is_leaf, sort}], count}` — Kategorie-Dialog des Formulars komplett abgelaufen (einige Minuten), Nummern der Ebenen 1–2 von `s-kategorien.html` |
+| `/ads/publish` | `account, ad: {id?, title, description, price, price_type FIXED/NEGOTIABLE/GIVE_AWAY, shipping SHIPPING/PICKUP, condition, category_labels ["Auto, Rad & Boot", "Autoteile & Reifen", "Weitere Autoteile"] (Pfad bis zum Blatt), zipcode, contact_name, images: [Pfade]}` | `{id, url}` |
 | `/ads/delete` | `account, id` | `{deleted, status}` |
 | `/ads/extend` | `account, id` | `{extended}` |
 | `/messages/list` | `account, limit` | `{conversations: [{id, ad_id, ad_title, counterpart, last_message, unread}]}` |
@@ -132,7 +133,7 @@ Kontos (OSERP: `<datenbank>-<kanal>`), `email` die Konto-Adresse.
 | `/debug/screenshot` | `account` | `{png (base64), url}` |
 
 Fehler: HTTP 422/500 mit `{ok: false, error: CODE, message, screenshot?}`.
-Codes: `NOT_LOGGED_IN`, `NO_COOKIES`, `CAPTCHA`, `CATEGORY`, `FORM_VALIDATION`, `IMAGE_UPLOAD`,
+Codes: `NOT_LOGGED_IN`, `NO_COOKIES`, `CAPTCHA`, `CATEGORY`, `CATEGORY_NOT_LEAF`, `FORM_VALIDATION`, `IMAGE_UPLOAD`,
 `PACKAGE`, `PAYMENT_REQUIRED`, `SUBMIT_UNCONFIRMED`, `ID_UNKNOWN`,
 `DELETE_FAILED`, `EXTEND_BUTTON_MISSING`, `ADS_LIST_FAILED`, `NO_REPLY_BOX`,
 `ELEMENT_NOT_FOUND`, `JS_ERROR`, `UNAUTHORIZED`.

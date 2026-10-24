@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Hizmetler pazaryerlerinde sunulmaz.",
             "channelImages": "{kanal} için görseller",
             "imagesAfterCreate": "Görseller, ürün oluşturulduktan sonra eklenebilir.",
+            "imagesFromTemplate": "Şablonun {n} görseli oluşturulurken devralınır.",
             "moveLeft": "Öne taşı",
             "moveRight": "Geriye taşı",
             "removeImage": "Görseli kaldır",

@@ -66,7 +66,7 @@
                     <!-- eBay: Verbindungstest, Bestellabruf, Stand dieses Kanals -->
                     <EbayStatusConfig v-if="feld.action === 'ebayPanel'" :channel-id="channelId" class="mt-2" />
                     <!-- Kleinanzeigen: Board, Anfragen holen, Feed-Adressen -->
-                    <KleinanzeigenStatusConfig v-if="feld.action === 'kleinanzeigenPanel'" :channel-id="channelId" class="mt-2" />
+                    <KleinanzeigenStatusConfig v-if="feld.action === 'kleinanzeigenPanel'" :channel-id="channelId" class="mt-2" @categories="$emit('kleinanzeigen-categories')" />
 
                     <!-- Verbindung zu HugoCMS prüfen: Adresse und Schlüssel stehen bei
                          der Webseite des Kanals (Firmenkonfiguration → Kundenportal); hier geht es um
@@ -212,6 +212,9 @@ import * as toasts from '@/core/utils/toasts.js'
 
 const EbayStatusConfig = defineAsyncComponent(() => import('./shop-ebay-status.vue'))
 const KleinanzeigenStatusConfig = defineAsyncComponent(() => import('./shop-kleinanzeigen-status.vue'))
+
+/** Kategoriebaum von Kleinanzeigen neu geladen — die Kanalkarte holt die Auswahlliste nach */
+defineEmits(['kleinanzeigen-categories'])
 
 const props = defineProps({
     channelId: { type: Number, required: true },

@@ -32,6 +32,13 @@
         },
         "titleNew": "Prekės kūrimas",
         "create": "Sukurti",
-        "cancel": "Atšaukti"
+        "cancel": "Atšaukti",
+        "useAsNew": "Naudoti kaip naują",
+        "useAsNewHint": "Atidaro naują prekę, užpildytą visais šios prekės duomenimis. Išsaugoma tik paspaudus „Sukurti“.",
+        "template": {
+            "info": "Užpildyta pagal prekę {partnumber} „{description}“. Prekės numeris bus suteiktas iš naujo; likutis ir EAN neperimami.",
+            "back": "Į šabloną",
+            "notFound": "Šablonas nerastas, forma tuščia."
+        }
     }
 }

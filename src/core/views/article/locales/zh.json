@@ -32,6 +32,13 @@
         },
         "titleNew": "新建商品",
         "create": "新建",
-        "cancel": "取消"
+        "cancel": "取消",
+        "useAsNew": "用作新商品",
+        "useAsNewHint": "打开一个新商品，并预填本商品的全部数据。点击“创建”后才会保存。",
+        "template": {
+            "info": "已从商品 {partnumber}“{description}”预填。将分配新的商品编号；库存和 EAN 不会复制。",
+            "back": "返回模板",
+            "notFound": "未找到模板，表单为空。"
+        }
     }
 }

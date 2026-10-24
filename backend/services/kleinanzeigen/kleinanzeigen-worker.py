@@ -12,6 +12,7 @@ eigenen Konto des Betreibers und bietet OpensourceERP eine kleine JSON-API:
                                                              Benutzers, der sich dort selbst angemeldet hat
     POST /session/close    {account}                        Browser schließen
     POST /ads/list         {account}                        Meine Anzeigen (JSON-Endpunkt der Webseite)
+    POST /categories       {account}                        Kategoriebaum von Kleinanzeigen (Dialog des Formulars + Nummern der Übersichtsseite)
     POST /ads/publish      {account, ad}                    Anzeige neu einstellen oder (mit ad.id) ändern
     POST /ads/delete       {account, id}                    Anzeige löschen
     POST /ads/extend       {account, id}                    Anzeige verlängern (kurz vor Ablauf)
@@ -560,6 +561,8 @@ def session_for(account: str) -> Session:
 
 
 async def is_logged_in(s: Session, email: str) -> bool:
+    """Zeigt die Seite ein angemeldetes Konto? Mit E-Mail muss sie im
+    Kopfbereich stehen; ohne E-Mail genügt der Kopfbereich selbst."""
     for sel in LOGGED_IN_SELECTORS:
         elem = await s.probe(sel, 2)
         if elem is None:
@@ -568,7 +571,7 @@ async def is_logged_in(s: Session, email: str) -> bool:
             text = await elem.apply("(e) => (e.textContent || '')")
         except Exception:  # noqa: BLE001
             text = ""
-        if email and email.lower() in str(text).lower():
+        if not email or email.lower() in str(text).lower():
             return True
     return False
 
@@ -624,6 +627,8 @@ async def require_login(s: Session, email: str) -> None:
         await s.open(ROOT_URL + "/", reload=True)
         await s.accept_gdpr()
         if not await is_logged_in(s, email):
+            if await s.probe_text("IP-Bereich vorübergehend gesperrt") is not None:
+                raise WorkerError("BLOCKED", "Kleinanzeigen hat den IP-Bereich dieses Anschlusses vorübergehend gesperrt — einige Stunden warten, nichts wiederholen", screenshot=await s.screenshot_b64())
             raise WorkerError("NOT_LOGGED_IN", "Nicht angemeldet — Anmelde-IDs in der Kanalkarte übernehmen")
 
 
@@ -702,78 +707,183 @@ async def do_extend_ad(s: Session, email: str, ad_id: str) -> dict:
 # ── Anzeige einstellen / ändern ──
 
 
-async def _set_category(s: Session, labels: list[str], numeric_path: str) -> None:
-    """Kategorie: erst die automatische Erkennung anstoßen, dann wenn gewünscht
-    über den Dialog (Beschriftungen) oder die alten cat_<id>-Links."""
+# ── Kategorie-Dialog ──
+#
+# Das Formular wählt die Kategorie über einen Dialog („Kategorie wählen“):
+# eine Liste je Ebene, oben die Brotkrumen (Knöpfe mit „/“, aktuelle Ebene
+# als Span), darunter Knöpfe — mit Pfeil „öffnet Unterkategorien“ für
+# Zwischenebenen, mit aria-pressed für Blätter. Übernehmen geht nur mit
+# einem Blatt. Die dritte Ebene ist auf der Webseite ein Merkmal („Art“) der
+# Kategorie, im Dialog aber Teil des Pfads — für OSERP zählt der Pfad.
+
+DIALOG_SEL = "dialog[open]"
+JS_DIALOG_ENTRIES = """
+    const dlg = document.querySelector('dialog[open]');
+    if (!dlg || !/Kategorie wählen|Choose category/.test(dlg.innerText || '')) return null;
+    const out = [];
+    for (const li of dlg.querySelectorAll('li')) {
+        const btn = li.querySelector(':scope > button');
+        const crumb = li.querySelector(':scope > span[aria-current]');
+        if (crumb) { out.push({name: crumb.textContent.trim(), crumb: true, current: true}); continue; }
+        if (!btn) continue;
+        // Beschriftung: der erste sichtbare Span (Symbole und „/“ sind aria-hidden)
+        const name = [...btn.querySelectorAll('span')].map(x => x.getAttribute('aria-hidden') ? '' : x.textContent.trim()).find(Boolean) || btn.textContent.trim();
+        if (!name) continue;
+        const isCrumb = [...btn.querySelectorAll('span[aria-hidden="true"]')].some(x => x.textContent.trim() === '/');
+        const pfeil = !!btn.querySelector('svg[data-title="arrowRight"]') || /öffnet Unterkategorien/.test(btn.textContent);
+        out.push({name, crumb: isCrumb, leaf: btn.hasAttribute('aria-pressed'), children: pfeil && !btn.hasAttribute('aria-pressed')});
+    }
+    return out;"""
+
+
+def _norm(text: str) -> str:
+    text = (text or "").lower()
+    for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss"), ("&amp;", "&")):
+        text = text.replace(a, b)
+    return re.sub(r"[^a-z0-9]+", " ", text).strip()
+
+
+async def _dialog_entries(s: Session) -> list[dict] | None:
+    result = await s.js(JS_DIALOG_ENTRIES)
+    return result if isinstance(result, list) else None
+
+
+async def _dialog_click(s: Session, name: str, crumb: bool = False) -> bool:
+    """Klickt den Knopf mit dieser Beschriftung (Liste oder Brotkrumen) und wartet auf die neue Liste"""
+    before = await _dialog_entries(s) or []
+    blatt = any(e.get("leaf") and _norm(e["name"]) == _norm(name) for e in before)
+    hit = await s.js(f"""
+        const dlg = document.querySelector('dialog[open]');
+        const norm = t => (t || '').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
+        const want = {json.dumps(_norm(name))};
+        for (const btn of dlg.querySelectorAll('li > button')) {{
+            const isCrumb = [...btn.querySelectorAll('span[aria-hidden="true"]')].some(x => x.textContent.trim() === '/');
+            if (isCrumb !== {json.dumps(bool(crumb))}) continue;
+            const label = norm([...btn.querySelectorAll('span')].map(x => x.getAttribute('aria-hidden') ? '' : x.textContent.trim()).find(Boolean) || btn.textContent);
+            if (label === want) {{ btn.click(); return true; }}
+        }}
+        return false;""")
+    if not hit:
+        return False
+    if blatt:
+        await asyncio.sleep(random.uniform(0.6, 1.2))
+        return True
+    # Die neue Liste kommt nachgeladen: erst die Brotkrumen, dann die
+    # Einträge. Fertig ist sie, wenn der angeklickte Name die aktuelle
+    # Brotkrume ist, Einträge da sind und zwei Abfragen gleich ausfallen
+    deadline = time.time() + 8
+    letzte = None
+    while time.time() < deadline:
+        await asyncio.sleep(0.35)
+        now = await _dialog_entries(s)
+        if now is None:
+            break
+        aktuell = any(e.get("current") and _norm(e["name"]) == _norm(name) for e in now)
+        eintraege = any(not e.get("crumb") and not e.get("current") for e in now)
+        if aktuell and eintraege and now == letzte:
+            break
+        letzte = now
+    else:
+        LOG.warning("[%s] Kategorie-Dialog: Liste nach „%s“ nicht fertig geladen", s.account, name)
+    # Ein Mensch liest die Liste, bevor er weiterklickt — ein zu schneller
+    # Lauf (hunderte Klicks in einer Minute) hat den IP-Bereich gesperrt
+    await asyncio.sleep(random.uniform(0.9, 2.2))
+    return True
+
+
+async def _open_category_dialog(s: Session) -> None:
+    if await _dialog_entries(s):
+        return
+    link = await s.probe("#ad-category-suggestions a, #ad-category-suggestions button", 10)
+    if link is None:
+        raise WorkerError("CATEGORY", "Kategorie-Auswahl nicht im Formular gefunden", screenshot=await s.screenshot_b64())
+    await link.click()
+    deadline = time.time() + 6
+    while time.time() < deadline and not await _dialog_entries(s):
+        await asyncio.sleep(0.3)
+    if not await _dialog_entries(s):
+        raise WorkerError("CATEGORY", "Kategorie-Dialog öffnet nicht", screenshot=await s.screenshot_b64())
+    await asyncio.sleep(random.uniform(0.4, 0.8))
+
+
+async def _set_category(s: Session, labels: list[str]) -> None:
+    """Kategorie über den Dialog setzen — der Pfad muss bis zu einem Blatt reichen"""
     desc = await s.probe("#ad-description", 10)
     if desc is not None:
         await desc.click()
         await s.pause()
-    if not labels and not numeric_path:
+    if not labels:
         return
-    link = await s.probe('a[aria-describedby="ad-category-path"]', 3) or await s.probe_text("Wähle deine Kategorie", 2) or await s.probe_text("Kategorie", 2)
-    if link is None:
-        LOG.warning("Kategorie-Link nicht gefunden — automatische Erkennung bleibt")
-        return
-    await link.click()
+    await _open_category_dialog(s)
+    for depth, label in enumerate(labels):
+        if not await _dialog_click(s, label):
+            offered = ", ".join(e["name"] for e in (await _dialog_entries(s) or []) if not e.get("crumb"))[:600]
+            raise WorkerError("CATEGORY", f"Kategorie „{label}“ nicht im Dialog gefunden. Angeboten: {offered or '?'}")
+    applied = await s.js("""
+        const dlg = document.querySelector('dialog[open]');
+        const btn = [...dlg.querySelectorAll('button')].find(b => ['Übernehmen', 'Apply'].includes((b.textContent || '').trim()));
+        if (!btn) return false; btn.click(); return true;""")
+    if not applied:
+        raise WorkerError("CATEGORY", "Kategorie-Dialog hat keinen Übernehmen-Knopf")
     await s.pause(800, 1400)
+    if await _dialog_entries(s):
+        offered = ", ".join(e["name"] for e in (await _dialog_entries(s) or []) if not e.get("crumb") and not e.get("current"))[:600]
+        raise WorkerError("CATEGORY_NOT_LEAF", f"„{' > '.join(labels)}“ hat Unterkategorien — eine davon wählen: {offered or '?'}")
+    chosen = await s.js("return document.querySelector(\"input[name='categoryId']\")?.value || ''")
+    LOG.info("[%s] Kategorie gesetzt: %s (categoryId=%s)", s.account, " > ".join(labels), chosen)
 
-    dialog = await s.js("""
-        for (const sel of ['dialog[open]', '[role="dialog"]:not([aria-hidden="true"])']) {
-            const d = document.querySelector(sel);
-            if (d && /Kategorie wählen|Choose category/.test(d.innerText || '')) return sel;
+
+async def do_categories(s: Session, email: str) -> dict:
+    """Kategoriebaum: Dialog des Formulars komplett ablaufen (Namen, Ebenen,
+    Blätter); Nummern der Ebenen 1–2 von der Übersichtsseite s-kategorien.html."""
+    await require_login(s, email)
+    # Nummern der Übersichtsseite: H2-Link = Hauptkategorie, Listenlinks darunter = Unterkategorien
+    await s.open(ROOT_URL + "/s-kategorien.html", reload=True)
+    await s.accept_gdpr()
+    nummern = await s.js(r"""
+        const out = []; let head = null;
+        for (const a of document.querySelectorAll('a[href]')) {
+            const m = (a.getAttribute('href') || '').match(/^\/s-[^/]+\/c(\d+)$/);
+            if (!m || a.closest('nav.sr-only, [aria-hidden="true"]')) continue;
+            const name = a.textContent.trim().replace(/\s+/g, ' ');
+            if (a.closest('h1,h2,h3,h4')) { head = name; out.push({id: +m[1], name, parent: null}); }
+            else out.push({id: +m[1], name, parent: head});
         }
-        return null;""")
-    if dialog and labels:
-        for depth, label in enumerate(labels):
-            ok = await s.js(f"""
-                const dlg = document.querySelector({json.dumps(dialog)});
-                const norm = t => (t || '').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
-                const want = norm({json.dumps(label)});
-                let buttons = [...dlg.querySelectorAll('li > button')];
-                if ({depth} === 0 && buttons.length === 1 && /alle kategorien|all categories/.test(norm(buttons[0].textContent))) {{
-                    buttons[0].click(); await new Promise(r => setTimeout(r, 700));
-                    buttons = [...dlg.querySelectorAll('li > button')];
-                }}
-                const exact = buttons.filter(b => norm(b.textContent) === want);
-                const loose = buttons.filter(b => norm(b.textContent).includes(want) || want.includes(norm(b.textContent)));
-                const hit = exact[0] || (loose.length === 1 ? loose[0] : null);
-                if (!hit) return {{ok: false, offered: buttons.map(b => b.textContent.trim())}};
-                hit.click(); return {{ok: true}};""")
-            if not isinstance(ok, dict) or not ok.get("ok"):
-                offered = ", ".join(str(x) for x in (ok.get("offered", []) if isinstance(ok, dict) else [])[:30]) or "?"
-                raise WorkerError("CATEGORY", f"Kategorie „{label}“ nicht im Dialog gefunden. Angeboten: {offered}")
-            await s.pause(500, 900)
-        applied = await s.js(f"""
-            const dlg = document.querySelector({json.dumps(dialog)});
-            const btn = [...dlg.querySelectorAll('button')].find(b => ['Übernehmen', 'Apply'].includes((b.textContent || '').trim()));
-            if (!btn) return false; btn.click(); return true;""")
-        if not applied:
-            raise WorkerError("CATEGORY", "Kategorie-Dialog hat keinen Übernehmen-Knopf")
-        await s.pause(800, 1400)
-        return
+        return out;""") or []
+    ids: dict[tuple, int] = {}
+    for n in nummern:
+        ids[(_norm(n.get("parent") or ""), _norm(n["name"]))] = int(n["id"])
 
-    if numeric_path:
-        for segment in [p for p in numeric_path.split("/") if p]:
-            elem = await s.probe(f"#cat_{segment}", 6)
-            if elem is None:
-                raise WorkerError("CATEGORY", f"Kategorie-Eintrag cat_{segment} nicht gefunden")
-            await elem.click()
-            await s.pause()
-        weiter = await s.probe_text("Weiter", 5)
-        if weiter is not None:
-            await weiter.click()
-            await s.pause(800, 1400)
-    # Vorschlagsliste der neuen Seite, wenn der Pfad nicht aufgelöst wurde
-    picker = await s.probe("#ad-category-picker", 2)
-    if picker is not None:
-        chosen = await s.js(f"""
-            const wanted = {json.dumps([p for p in (numeric_path or '').split('/') if p][::-1])};
-            const radios = [...document.querySelectorAll("#ad-category-picker input[type='radio'][name='category-suggestions']")];
-            for (const w of wanted) {{ const r = radios.find(x => x.value === w); if (r) {{ const l = document.querySelector(`#ad-category-picker label[for='${{r.id}}']`); (l || r).click(); return true; }} }}
-            if (radios.length) {{ const l = document.querySelector(`#ad-category-picker label[for='${{radios[0].id}}']`); (l || radios[0]).click(); return true; }}
-            return false;""")
-        LOG.info("Kategorie-Vorschlag gewählt: %s", chosen)
+    await s.open(ROOT_URL + "/p-anzeige-aufgeben-schritt2.html", reload=True)
+    await s.accept_gdpr()
+    await _open_category_dialog(s)
+    rows: list[dict] = []
+
+    async def walk(path: list[str]) -> None:
+        entries = [e for e in (await _dialog_entries(s) or []) if not e.get("crumb") and not e.get("current")]
+        for sort, e in enumerate(entries):
+            name = str(e["name"])
+            voll = path + [name]
+            level = len(voll)
+            parent = " > ".join(path) if path else None
+            cid = ids.get((_norm(path[-1]) if path else "", _norm(name))) if level <= 2 else None
+            rows.append({"path": " > ".join(voll), "parent": parent, "name": name, "level": level,
+                         "category_id": cid, "is_leaf": bool(e.get("leaf")) or not e.get("children"), "sort": sort})
+            if e.get("children"):
+                if not await _dialog_click(s, name):
+                    LOG.warning("[%s] Kategorie %s nicht anklickbar", s.account, " > ".join(voll))
+                    continue
+                await walk(voll)
+                # zurück zur Ebene darüber: Brotkrume der aktuellen Oberkategorie
+                zurueck = path[-1] if path else "Alle Kategorien"
+                if not await _dialog_click(s, zurueck, crumb=True):
+                    raise WorkerError("CATEGORY", f"Zurück zu „{zurueck}“ im Dialog nicht möglich")
+
+    LOG.info("[%s] Kategoriebaum lesen — in Ruhe, das dauert einige Minuten", s.account)
+    await walk([])
+    await s.js("const d = document.querySelector('dialog[open]'); const b = d && [...d.querySelectorAll('button')].find(x => /Abbrechen|Cancel/.test(x.textContent)); if (b) b.click(); return true")
+    LOG.info("[%s] Kategoriebaum: %d Einträge, %d Blätter", s.account, len(rows), sum(1 for r in rows if r["is_leaf"]))
+    return {"categories": rows, "count": len(rows)}
 
 
 async def _set_condition(s: Session, condition: str) -> None:
@@ -904,6 +1014,24 @@ async def _upload_images(s: Session, images: list[str]) -> None:
     raise WorkerError("IMAGE_UPLOAD", "Nicht alle Bilder wurden verarbeitet")
 
 
+async def _set_buy_now(s: Session, use: bool) -> None:
+    """„Direkt kaufen“ (Bezahlen über Kleinanzeigen): das Formular verlangt
+    eine der beiden Antworten — Vorgabe des Kanals, normalerweise Nein"""
+    wanted = "Ja, ich möchte die Vorteile" if use else "nicht nutzen"
+    clicked = await s.js(f"""
+        const visible = e => e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden';
+        const want = {json.dumps(wanted)};
+        for (const r of document.querySelectorAll('input[type="radio"]')) {{
+            const label = r.id ? document.querySelector(`label[for="${{r.id}}"]`) : null;
+            const text = ((label?.innerText || '') + ' ' + (r.closest('label')?.innerText || '') + ' ' + (r.parentElement?.innerText || '')).replace(/\\s+/g, ' ');
+            if (text.includes(want)) {{ if (!r.checked) (label || r).click(); return text.trim().slice(0, 80); }}
+        }}
+        return null;""")
+    if clicked:
+        LOG.info("[%s] Direkt kaufen: %s", s.account, clicked)
+        await s.pause(500, 900)
+
+
 async def _form_errors(s: Session) -> list[str]:
     result = await s.js("""
         const form = document.getElementById('ad-title')?.closest('form'); if (!form) return [];
@@ -918,6 +1046,12 @@ async def _form_errors(s: Session) -> list[str]:
             if (m) out.add(label ? label + ': ' + m : m);
         }
         for (const e of form.querySelectorAll('[id$="-error"]')) if (visible(e) && e.innerText.trim()) out.add(e.innerText.trim());
+        // Hinweise ohne aria-invalid („Bitte wähle eine der beiden Optionen …“): kurze Sätze mit „Bitte“
+        for (const e of form.querySelectorAll('p, span, div')) {
+            if (e.children.length > 1 || !visible(e)) continue;
+            const t = (e.innerText || '').trim();
+            if (/^Bitte\\s/.test(t) && t.length < 160 && [...out].every(o => !o.includes(t))) out.add(t);
+        }
         return [...out];""")
     return [str(x) for x in result] if isinstance(result, list) else []
 
@@ -1071,7 +1205,7 @@ async def do_publish(s: Session, email: str, ad: dict) -> dict:
     await s.find("#ad-title", 20, "Anzeigenformular")
 
     labels = [str(x) for x in (ad.get("category_labels") or []) if str(x).strip()]
-    await _set_category(s, labels, str(ad.get("category") or ""))
+    await _set_category(s, labels)
     await s.pause()
     if ad.get("condition"):
         try:
@@ -1080,6 +1214,7 @@ async def do_publish(s: Session, email: str, ad: dict) -> dict:
             LOG.warning("Zustand nicht gesetzt: %s", ex)
     await _set_shipping(s, str(ad.get("shipping") or "both"))
     await _set_price(s, ad.get("price"), str(ad.get("price_type") or "fixed"))
+    await _set_buy_now(s, bool(ad.get("buy_now")))
     await s.set_value("ad-description", str(ad.get("description") or ""))
     if ad.get("zipcode"):
         try:
@@ -1255,6 +1390,8 @@ async def handle(request: web.Request) -> web.Response:
                 result = {"closed": True}
             elif path == "/ads/list":
                 result = await do_list_ads(s, email)
+            elif path == "/categories":
+                result = await do_categories(s, email)
             elif path == "/ads/publish":
                 result = await do_publish(s, email, dict(body.get("ad") or {}))
             elif path == "/ads/delete":

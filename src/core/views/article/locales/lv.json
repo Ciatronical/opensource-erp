@@ -32,6 +32,13 @@
         },
         "titleNew": "Preces izveide",
         "create": "Izveidot",
-        "cancel": "Atcelt"
+        "cancel": "Atcelt",
+        "useAsNew": "Izmantot kā jaunu",
+        "useAsNewHint": "Atver jaunu preci, kas aizpildīta ar visiem šīs preces datiem. Saglabā tikai pēc „Izveidot“.",
+        "template": {
+            "info": "Aizpildīts no preces {partnumber} „{description}“. Preces numurs tiks piešķirts no jauna; atlikums un EAN netiek pārņemti.",
+            "back": "Uz veidni",
+            "notFound": "Veidne netika atrasta, veidlapa ir tukša."
+        }
     }
 }

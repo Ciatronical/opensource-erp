@@ -55,6 +55,11 @@
         </page-header>
 
         <v-alert v-if="shop.error.value" type="error" variant="tonal" density="compact" class="mb-3">{{ shop.error.value }}</v-alert>
+        <!-- Fehler der letzten Dienst-Aktion bleibt stehen, bis die nächste gelingt — ein Toast allein ist schnell weg -->
+        <v-alert v-if="dienstMeldung" type="error" variant="tonal" density="compact" class="mb-3" closable @click:close="dienstMeldung = ''">
+            <div class="font-weight-medium">{{ t('ShopView.kleinanzeigen.auto.failed', { titel: dienstMeldungTitel }) }}</div>
+            <div>{{ dienstMeldung }}</div>
+        </v-alert>
 
         <v-alert v-if="board && !board.channel.active" type="info" variant="tonal" density="compact" class="mb-3">
             {{ t('ShopView.kleinanzeigen.channelOffHint') }}
@@ -184,6 +189,11 @@
                                 <v-chip v-if="!anzeige.missing.length" size="x-small" color="success" variant="tonal" prepend-icon="mdi-check">
                                     {{ t('ShopView.kleinanzeigen.drafts.ready') }}
                                 </v-chip>
+                                <!-- Letzter Fehler des Dienstes an dieser Anzeige (parts_channel_shop.sync_error) -->
+                                <v-alert v-if="anzeige.sync_error" type="error" variant="tonal" density="compact" class="mt-2 text-caption">
+                                    <div class="text-medium-emphasis">{{ t('ShopView.kleinanzeigen.drafts.lastError', { zeit: anzeige.sync_mtime || '' }) }}</div>
+                                    {{ anzeige.sync_error }}
+                                </v-alert>
                             </v-card-text>
                             <v-spacer />
                             <v-card-actions>
@@ -514,18 +524,25 @@ async function laden() {
     gewaehlt.value = gewaehlt.value.filter(id => vorschlaege.value.some(v => v.parts_id === id))
 }
 
-/** Fehler des Dienstes: bekannter Code übersetzt, sonst die Meldung des Backends */
+/** Fehler des Dienstes: übersetzter Code samt Einzelheit des Backends (shopFehler), sonst die rohe Meldung */
 function dienstFehler() {
     const code = shop.errorCode.value || ''
-    return te(`ShopView.errors.${code}`) ? t(`ShopView.errors.${code}`) : (shop.error.value || t('ShopView.errors.API_ERROR'))
+    return shop.error.value || (te(`ShopView.errors.${code}`) ? t(`ShopView.errors.${code}`) : t('ShopView.errors.API_ERROR'))
 }
+
+/** Letzter Fehler einer Dienst-Aktion — bleibt als Alert stehen, laden() löscht shop.error */
+const dienstMeldung = ref('')
+const dienstMeldungTitel = ref('')
 
 async function dienstAktion(anzeige, aufruf, erfolg) {
     arbeitet.value = new Set([...arbeitet.value, anzeige.parts_id])
+    dienstMeldung.value = ''
     const antwort = await aufruf()
     arbeitet.value = new Set([...arbeitet.value].filter(id => id !== anzeige.parts_id))
     if (!antwort) {
-        toasts.error(dienstFehler(), { timer: 8000 })
+        dienstMeldung.value = dienstFehler()
+        dienstMeldungTitel.value = anzeige.title || anzeige.partnumber || ''
+        toasts.error(dienstMeldung.value, { timer: 12000 })
         await laden()
         return
     }

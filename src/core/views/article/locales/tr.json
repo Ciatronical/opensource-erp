@@ -32,6 +32,13 @@
         },
         "titleNew": "Ürün oluştur",
         "create": "Oluştur",
-        "cancel": "İptal"
+        "cancel": "İptal",
+        "useAsNew": "Yeni olarak kullan",
+        "useAsNewHint": "Bu ürünün tüm bilgileriyle önceden doldurulmuş yeni bir ürün açar. „Oluştur“ tıklanana kadar hiçbir şey kaydedilmez.",
+        "template": {
+            "info": "{partnumber} „{description}“ ürününden önceden dolduruldu. Yeni bir ürün numarası verilir; stok ve EAN devralınmaz.",
+            "back": "Şablona git",
+            "notFound": "Şablon bulunamadı, form boş."
+        }
     }
 }

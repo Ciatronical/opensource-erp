@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Tjänster erbjuds inte på marknadsplatser.",
             "channelImages": "Bilder för {kanal}",
             "imagesAfterCreate": "Bilder kan läggas till när artikeln har skapats.",
+            "imagesFromTemplate": "{n} bilder från mallen tas över när artikeln skapas.",
             "moveLeft": "Flytta fram",
             "moveRight": "Flytta bak",
             "removeImage": "Ta bort bild",

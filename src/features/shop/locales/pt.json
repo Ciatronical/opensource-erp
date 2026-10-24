@@ -173,6 +173,7 @@
             "serviceNotOnMarketplace": "Os serviços não são oferecidos em marketplaces.",
             "channelImages": "Imagens para {kanal}",
             "imagesAfterCreate": "As imagens podem ser adicionadas depois de criado o artigo.",
+            "imagesFromTemplate": "{n} imagens do modelo serão copiadas ao criar.",
             "moveLeft": "Mover para a frente",
             "moveRight": "Mover para trás",
             "removeImage": "Remover imagem",
