@@ -5,6 +5,7 @@
     "clientConfiguration": "Yrityksen asetukset",
     "save": "Tallenna",
     "saveSuccess": "Asetukset tallennettu",
+    "saveError": "Yrityksen asetuksia ei voitu tallentaa",
     "yes": "Kyllä",
     "no": "Ei",
     "never": "Ei koskaan",

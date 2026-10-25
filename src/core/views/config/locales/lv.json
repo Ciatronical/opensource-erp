@@ -5,6 +5,7 @@
     "clientConfiguration": "Uzņēmuma konfigurācija",
     "save": "Saglabāt",
     "saveSuccess": "Konfigurācija veiksmīgi saglabāta",
+    "saveError": "Uzņēmuma konfigurāciju neizdevās saglabāt",
     "yes": "Jā",
     "no": "Nē",
     "never": "Nekad",

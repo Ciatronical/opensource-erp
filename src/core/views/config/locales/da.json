@@ -5,6 +5,7 @@
     "clientConfiguration": "Firmenkonfiguration",
     "save": "Gem",
     "saveSuccess": "Konfiguration gemt",
+    "saveError": "Firmakonfigurationen kunne ikke gemmes",
     "yes": "Ja",
     "no": "Nein",
     "never": "Niemals",

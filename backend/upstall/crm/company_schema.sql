@@ -3346,7 +3346,7 @@ ON CONFLICT (key) DO NOTHING;
 -- Firmenkonfiguration laufen (neue Buchungsgruppen bekommen so ihre Zuordnung).
 --
 -- Beim Einschalten:
---   1. Erlöskonto nach Kontenrahmen bestimmen (defaults.coa), Verknüpfung
+--   1. Erlöskonto nach Kontenrahmen bestimmen (defaults.coa), bei Bedarf anlegen, Verknüpfung
 --      AR_amount:IC_sale:IC_income sicherstellen (nötig für Buchungsgruppen,
 --      Buchung und die UStVA-Einordnung) und Steuerschlüssel 0 / Kz 60 am Konto
 --   2. Steuerzone anlegen oder reaktivieren (Merker reverse_charge_taxzone_id)
@@ -3387,8 +3387,14 @@ BEGIN
     SELECT coa INTO v_coa FROM defaults LIMIT 1;
     v_accno := CASE WHEN v_coa ILIKE '%SKR03%' THEN '8337' ELSE '4337' END;
     SELECT id INTO v_chart_id FROM chart WHERE accno = v_accno LIMIT 1;
+    -- Die mitgelieferten SKR03/SKR04-Kontenrahmen enthalten das Konto nicht —
+    -- dann hier anlegen (Erlöskonto, steuerfrei, BWA/EÜR wie die übrigen Erlöse).
     IF v_chart_id IS NULL THEN
-        RAISE EXCEPTION 'Erlöskonto % (§ 13b UStG) fehlt im Kontenrahmen %', v_accno, v_coa;
+        INSERT INTO chart (accno, description, charttype, category, link, taxkey_id,
+                           pos_bwa, pos_eur, pos_er, datevautomatik)
+        VALUES (v_accno, 'Erlöse aus Leistungen nach § 13b UStG', 'A', 'I',
+                'AR_amount:IC_sale:IC_income', 0, 1, 1, 1, false)
+        RETURNING id INTO v_chart_id;
     END IF;
     UPDATE chart
        SET link = CASE

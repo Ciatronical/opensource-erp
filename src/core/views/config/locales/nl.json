@@ -5,6 +5,7 @@
     "clientConfiguration": "Bedrijfsconfiguratie",
     "save": "Opslaan",
     "saveSuccess": "Configuratie opgeslagen",
+    "saveError": "Bedrijfsconfiguratie kon niet worden opgeslagen",
     "yes": "Ja",
     "no": "Nee",
     "never": "Nooit",

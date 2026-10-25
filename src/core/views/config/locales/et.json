@@ -5,6 +5,7 @@
     "clientConfiguration": "Ettevõtte seadistus",
     "save": "Salvesta",
     "saveSuccess": "Konfiguratsioon edukalt salvestatud",
+    "saveError": "Ettevõtte seadistust ei õnnestunud salvestada",
     "yes": "Jah",
     "no": "Ei",
     "never": "Mitte kunagi",

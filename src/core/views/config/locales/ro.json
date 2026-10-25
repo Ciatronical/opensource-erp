@@ -5,6 +5,7 @@
     "clientConfiguration": "Configurare firmă",
     "save": "Salvare",
     "saveSuccess": "Configurație salvată cu succes",
+    "saveError": "Configurația firmei nu a putut fi salvată",
     "yes": "Da",
     "no": "Nu",
     "never": "Niciodată",

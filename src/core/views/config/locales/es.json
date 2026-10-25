@@ -5,6 +5,7 @@
     "clientConfiguration": "Configuración de empresa",
     "save": "Guardar",
     "saveSuccess": "Configuración guardada correctamente",
+    "saveError": "No se pudo guardar la configuración de la empresa",
     "yes": "Sí",
     "no": "No",
     "never": "Nunca",

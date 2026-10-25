@@ -1029,6 +1029,10 @@ async function saveConfig() {
             toasts.success(t('saveSuccess'));
         } else {
             console.error('API Error:', response.data);
+            // Backend-Meldung mitgeben — sonst scheitert z. B. Reverse Charge
+            // (§ 13b) still und der Schalter wirkt eingeschaltet.
+            const detail = typeof response.data?.payload === 'string' ? response.data.payload : '';
+            toasts.error(detail ? `${t('saveError')}: ${detail}` : t('saveError'));
         }
     } catch (error) {
         console.error('Network/Exception Error:', error);

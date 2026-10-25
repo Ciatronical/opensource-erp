@@ -41,6 +41,7 @@
     "clientConfiguration": "Client Configuration",
     "save": "Save",
     "saveSuccess": "Configuration saved successfully",
+    "saveError": "Company configuration could not be saved",
     "yes": "Yes",
     "no": "No",
     "never": "Never",

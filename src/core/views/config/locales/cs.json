@@ -5,6 +5,7 @@
     "clientConfiguration": "Konfigurace firmy",
     "save": "Uložit",
     "saveSuccess": "Konfigurace úspěšně uložena",
+    "saveError": "Konfiguraci firmy nelze uložit",
     "yes": "Ano",
     "no": "Ne",
     "never": "Nikdy",

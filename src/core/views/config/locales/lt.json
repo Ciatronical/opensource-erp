@@ -5,6 +5,7 @@
     "clientConfiguration": "Įmonės konfigūracija",
     "save": "Išsaugoti",
     "saveSuccess": "Konfigūracija sėkmingai išsaugota",
+    "saveError": "Nepavyko išsaugoti įmonės konfigūracijos",
     "yes": "Taip",
     "no": "Ne",
     "never": "Niekada",

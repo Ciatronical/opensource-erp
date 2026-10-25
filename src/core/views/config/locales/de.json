@@ -41,6 +41,7 @@
     "clientConfiguration": "Firmenkonfiguration",
     "save": "Speichern",
     "saveSuccess": "Firmenkonfiguration erfolgreich gespeichert",
+    "saveError": "Firmenkonfiguration konnte nicht gespeichert werden",
     "yes": "Ja",
     "no": "Nein",
     "never": "Niemals",

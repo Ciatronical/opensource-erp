@@ -5,6 +5,7 @@
     "clientConfiguration": "Firmenkonfiguration",
     "save": "Lagre",
     "saveSuccess": "Konfigurasjon lagret",
+    "saveError": "Firmakonfigurasjonen kunne ikke lagres",
     "yes": "Ja",
     "no": "Nein",
     "never": "Niemals",

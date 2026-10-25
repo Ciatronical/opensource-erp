@@ -5,6 +5,7 @@
     "clientConfiguration": "Firma yapılandırması",
     "save": "Kaydet",
     "saveSuccess": "Yapılandırma başarıyla kaydedildi",
+    "saveError": "Şirket yapılandırması kaydedilemedi",
     "yes": "Evet",
     "no": "Hayır",
     "never": "Asla",

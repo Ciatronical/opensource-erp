@@ -380,6 +380,11 @@ function saveDefaults($data) {
         // bindTypedParams() iteriert den $params-Array per Key (0-basiert), PDO-?-Platzhalter
         // sind aber 1-basiert — Index 0 wird ignoriert, der letzte ? bleibt ungebunden
         // → PDOException → Config wird nie gespeichert. (Regressions-Commit: 91a5cab)
+        // Einstellungen und Reverse Charge in einer Transaktion: scheitert
+        // reverse_charge_set(), darf der Schalter nicht trotzdem als „an"
+        // gespeichert bleiben.
+        $db->beginTransaction();
+        $inTx = true;
         foreach ($crmData as $key => $value) {
             $v = is_bool($value) ? ($value ? '1' : '0') : (string)$value;
             $db->execute(
@@ -399,14 +404,18 @@ function saveDefaults($data) {
             $row = $db->getOne("SELECT reverse_charge_set(:on) AS result", [':on' => $on ? 't' : 'f']);
             $reverseCharge = json_decode($row['result'] ?? 'null', true);
         }
+        $db->commit();
+        $inTx = false;
 
         // Erfolgsantwort
         resultInfo(true, 'Firmenkonfiguration erfolgreich gespeichert', ['reverse_charge' => $reverseCharge]);
 
     } catch (PDOException $e) {
+        if (!empty($inTx)) $db->rollBack();
         resultInfo(false, 'DATABASE_ERROR', $e->getMessage());
         // writeLog("saveDefaults PDO Error: " . $e->getMessage());
     } catch (Exception $e) {
+        if (!empty($inTx)) $db->rollBack();
         resultInfo(false, 'INTERNAL_ERROR', $e->getMessage());
         // writeLog("saveDefaults Error: " . $e->getMessage());
     }

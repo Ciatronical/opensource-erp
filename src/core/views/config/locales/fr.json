@@ -5,6 +5,7 @@
     "clientConfiguration": "Configuration de la societe",
     "save": "Enregistrer",
     "saveSuccess": "Configuration enregistrée avec succès",
+    "saveError": "La configuration de l'entreprise n'a pas pu être enregistrée",
     "yes": "Oui",
     "no": "Non",
     "never": "Jamais",

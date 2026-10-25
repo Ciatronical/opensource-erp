@@ -5,6 +5,7 @@
     "clientConfiguration": "Firmenkonfiguration",
     "save": "Spara",
     "saveSuccess": "Konfiguration sparad",
+    "saveError": "Företagskonfigurationen kunde inte sparas",
     "yes": "Ja",
     "no": "Nein",
     "never": "Niemals",
