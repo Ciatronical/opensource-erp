@@ -45,6 +45,7 @@
         "hr": "/personal",
         "hrPayroll": "/personal/zarplata",
         "hrVacation": "/personal/vidpustka",
+        "hrPerformance": "/personal/produktyvnist",
         "newDeliveryOrder": "/nakladna/novyi",
         "setup": "/vstanovlennia",
         "login": "/vkhid",

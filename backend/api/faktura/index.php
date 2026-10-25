@@ -4,6 +4,7 @@
 require_once __DIR__.'/../lib/kontenrahmen.php';        // kassenkontoBedingung()
 require_once __DIR__.'/../banking/banking_utils.php';  // nextBelegnummer() für Barzahlungen
 require_once __DIR__.'/faktura.php';
+require_once __DIR__.'/history.php';
 require_once __DIR__.'/order_search.php';
 require_once __DIR__.'/document_search.php';
 require_once __DIR__.'/einvoice.php';

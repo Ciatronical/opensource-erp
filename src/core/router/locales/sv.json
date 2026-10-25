@@ -45,6 +45,7 @@
         "hr": "/personal",
         "hrPayroll": "/personal/lon",
         "hrVacation": "/personal/semester",
+        "hrPerformance": "/personal/prestation",
         "newDeliveryOrder": "/foljesedel/ny",
         "setup": "/installation",
         "login": "/inloggning",

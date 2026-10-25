@@ -696,9 +696,6 @@
         "aagOnlinePassword_help": "Passwort für AAG Online",
         "aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "mega macs adresas (URL)",
-        "gutmannMegamacsUrl_help": "mega macs X adresas arba URL šablonas. Vietaženkliai {hsn} {tsn} {vin} pakeičiami, pvz. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Be vietaženklių hsn/tsn/vin pridedami (SPA dažnai ignoruoja). Patarimas: įrenginyje pasirinkite transporto priemonę ir nukopijuokite adreso juostą.",
         "hgsData": "HGS Data",
         "hgsDataUser": "HGS Data naudotojas",
         "hgsDataUser_help": "HGS Data naudotojo vardas (transporto priemonės paieška pagal HSN/TSN)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Siųsti sumą automatiškai",
         "sumupAutoSend_help": "Kai sąskaita faktūra sukuriama iš pasiūlymo arba užsakymo, likusi suma iš karto siunčiama į terminalą (numatytoji: įjungta). Atidarant esamas arba apmokėtas sąskaitas faktūras automatiškai niekada nesiunčiama",
         "shopWebsite": "Klientų portalo svetainė",
-        "shopWebsite_help": "Svetainė, kurioje veikia HugoShop – priskirta pardavimo kanaluose, sukonfigūruota Sistema → Svetainės."
+        "shopWebsite_help": "Svetainė, kurioje veikia HugoShop – priskirta pardavimo kanaluose, sukonfigūruota Sistema → Svetainės.",
+        "orderConfirmation": "Užsakymo patvirtinimas",
+        "orderConfirmAi": "Aptikti sutikimus naudojant DI",
+        "orderConfirmAi_help": "Klientų, turinčių atvirą gautą užsakymą (neužbaigtą, dar neapskaitytą), skambučiai (įrašas), WhatsApp žinutės (taip pat balso žinutės ir atsakymo mygtukai) ir el. laiškai transkribuojami, o DI patikrina, ar juose yra sutikimas arba atsisakymas. „Pasiūlymas“: užsakyme rodomas aptiktas sutikimas su citata, patvirtinama vienu paspaudimu. „Automatiškai“: vienareikšmiai sutikimai per WhatsApp arba telefonu (vienas atviras užsakymas, be sąlygų, didelis tikrumas) patvirtinami iš karto; el. laiškai visada lieka pasiūlymu, nes jų siuntėją galima suklastoti. Reikalavimai: Anthropic API raktas, Whisper paslauga ir paslauga oserp-auftragsbestaetigung, el. laiškams papildomai paslauga oserp-email-eingang su sukonfigūruota pašto dėžute. Skambučius įrašyti leidžiama tik gavus skambinančiojo sutikimą.",
+        "orderConfirmAiOff": "Išjungta",
+        "orderConfirmAiSuggest": "Pasiūlymas — patvirtinti paspaudimu",
+        "orderConfirmAiAuto": "Automatiškai, kai sutikimas vienareikšmis",
+        "orderConfirmAiDays": "Pastarųjų dienų gauti užsakymai",
+        "orderConfirmAiDays_help": "Sutikimui aptikti tinka tik gauti užsakymai, ne senesni nei nurodytas dienų skaičius (numatytoji reikšmė 60). Senesni nepatvirtinti užsakymai netikrinami."
     },
     "add": "Pridėti",
     "add_fields": {

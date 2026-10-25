@@ -82,7 +82,8 @@
             "businessCard": "Skanning av visitkort",
             "phoneSearch": "Telefonsökning",
             "callTranscript": "Analys av samtal",
-            "banking": "Likviditetsprognos"
+            "banking": "Likviditetsprognos",
+            "orderConfirm": "Orderbekräftelse"
         }
     },
     "passwordField": {

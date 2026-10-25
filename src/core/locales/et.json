@@ -82,7 +82,8 @@
             "businessCard": "Visiitkaardi skannimine",
             "phoneSearch": "Telefoniotsing",
             "callTranscript": "Kõne analüüs",
-            "banking": "Likviidsusprognoos"
+            "banking": "Likviidsusprognoos",
+            "orderConfirm": "Tellimuse kinnitamine"
         }
     },
     "passwordField": {

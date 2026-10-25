@@ -696,9 +696,6 @@
         "aagOnlinePassword_help": "Passwort für AAG Online",
         "aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "mega macs adrese (URL)",
-        "gutmannMegamacsUrl_help": "mega macs X adrese vai URL veidne. Vietturi {hsn} {tsn} {vin} tiek aizstāti, piem. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Bez vietturiem hsn/tsn/vin tiek pievienoti (SPA bieži ignorē). Padoms: ierīcē atlasiet transportlīdzekli un kopējiet adreses joslu.",
         "hgsData": "HGS Data",
         "hgsDataUser": "HGS Data lietotājs",
         "hgsDataUser_help": "HGS Data lietotājvārds (transportlīdzekļa meklēšana pēc HSN/TSN)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Sūtīt summu automātiski",
         "sumupAutoSend_help": "Ja rēķins tiek izveidots no piedāvājuma vai pasūtījuma, atlikusī summa uzreiz tiek nosūtīta uz termināli (noklusējums: ieslēgts). Atverot esošus vai apmaksātus rēķinus, automātiska sūtīšana nekad nenotiek",
         "shopWebsite": "Klientu portāla vietne",
-        "shopWebsite_help": "Vietne, kurā darbojas HugoShop – piesaistīta pārdošanas kanālos, iestatīta sadaļā Sistēma → Vietnes."
+        "shopWebsite_help": "Vietne, kurā darbojas HugoShop – piesaistīta pārdošanas kanālos, iestatīta sadaļā Sistēma → Vietnes.",
+        "orderConfirmation": "Pasūtījumu apstiprināšana",
+        "orderConfirmAi": "Atpazīt piekrišanu ar MI",
+        "orderConfirmAi_help": "Zvani (ieraksts), WhatsApp ziņojumi (arī balss ziņojumi un atbildes pogas) un e-pasti no klientiem ar atvērtu ienākošo pasūtījumu (nav noslēgts, vēl nav izrakstīts rēķins) tiek transkribēti, un MI pārbauda, vai tajos ir piekrišana vai atteikums. „Ieteikums“: pasūtījumā tiek parādīta atpazītā piekrišana ar citātu, apstiprināšana notiek ar klikšķi. „Automātiski“: nepārprotamas piekrišanas pa WhatsApp vai tālruni (viens atvērts pasūtījums, bez nosacījumiem, augsta ticamība) tiek apstiprinātas uzreiz; e-pasti vienmēr paliek kā ieteikums, jo to sūtītāju var viltot. Priekšnosacījums: Anthropic API atslēga, Whisper dienests un dienests oserp-auftragsbestaetigung, e-pastiem papildus dienests oserp-email-eingang ar iestatītu pastkasti. Zvanus drīkst ierakstīt tikai ar zvanītāja piekrišanu.",
+        "orderConfirmAiOff": "Izslēgts",
+        "orderConfirmAiSuggest": "Ieteikums — apstiprināt ar klikšķi",
+        "orderConfirmAiAuto": "Automātiski pie nepārprotamas piekrišanas",
+        "orderConfirmAiDays": "Pēdējo dienu ienākošie pasūtījumi",
+        "orderConfirmAiDays_help": "Piekrišanai tiek ņemti vērā tikai ienākošie pasūtījumi, kas nav vecāki par šo dienu skaitu (noklusējums 60). Vecāki neapstiprināti pasūtījumi netiek pārbaudīti."
     },
     "add": "Pievienot",
     "add_fields": {

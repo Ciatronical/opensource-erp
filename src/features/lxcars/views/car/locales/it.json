@@ -344,16 +344,6 @@
             "tsnTooltip": "Cerca il veicolo tramite VIN in AAG-Online",
             "error": "Impossibile aprire AAG-Online"
         },
-        "esi": {
-            "button": "ESI",
-            "tooltip": "Apri il veicolo in Bosch ESI[tronic] tramite HSN/TSN",
-            "noKba": "Nessun numero chiave valido (HSN/TSN) disponibile"
-        },
-        "gutmann": {
-            "button": "Gutmann",
-            "tooltip": "Apri il veicolo in Hella Gutmann mega macs tramite HSN/TSN",
-            "noKba": "Nessun numero chiave valido (HSN/TSN) disponibile"
-        },
         "hgs": {
             "button": "HGS-Data",
             "tooltip": "Apri i dati del veicolo in HGS Data",

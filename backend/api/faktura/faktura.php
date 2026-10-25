@@ -12,16 +12,30 @@ require_once __DIR__.'/../banking/banking_utils.php';  // nextBelegnummer()
  */
 function getFakturaData($data) {
     $fakturaID = intval($data['fakturaID']);
-    $fakturaType = $data['fakturaType'] ?? 'invoice';
+    $hintType = $data['fakturaType'] ?? 'invoice';
 
     $company = DbhCompany::begin();
 
+    // Die Route kennt nur Verkaufsarten (Bestellung öffnet über die Auftragsroute,
+    // Eingangsrechnung über die Rechnungsroute) — die echte Belegart steht im Datensatz
+    $resolved = resolveFakturaType($company, $fakturaID, $hintType);
+    if (!$resolved) {
+        resultInfo(false, 'FAKTURA_NOT_FOUND', "Dokument {$fakturaID} ({$hintType}) nicht gefunden");
+        return;
+    }
+    $fakturaType = $resolved['type'];
     permit(getPermissionForFakturaType($fakturaType));
+    // Eingangsrechnung ohne Positionen (Belegerfassung, reine Buchung): gehört ins Journal
+    if ($resolved['ledger_only']) {
+        resultInfo(false, 'FAKTURA_LEDGER_ONLY', ['src' => $resolved['table'], 'id' => $fakturaID]);
+        return;
+    }
 
     // Tabellennamen abhängig vom Dokumenttyp
     $tableConfig = getFakturaTableConfig($fakturaType);
     $mainTable = $tableConfig['main_table'];
     $itemsTable = $tableConfig['items_table'];
+    $itemsFk = $tableConfig['items_fk'];
     $cvTable = $tableConfig['cv_table'];
     $cvColumn = $tableConfig['cv_column'];
 
@@ -33,6 +47,25 @@ function getFakturaData($data) {
     $eigeneLieferadresseSql = ($mainTable === 'ap') ? '' : "OR shipto.shipto_id = {$mainTable}.shipto_id";
     // Rechnungsstatus nur bei Auftraegen/Angeboten (oe): welche Rechnung ist daraus entstanden?
     $invoiceStatusSql = ($mainTable === 'oe') ? 'oe_invoice_status(:fakturaID)' : 'NULL::json';
+    // Wiedervorlagen hängen über follow_up_links (trans_id + kivitendo-trans_type) am Beleg.
+    // trans_id allein ist nicht eindeutig — oe/delivery_orders teilen sich die Sequenz mit
+    // customer/vendor, ar/ap mit gl —, deshalb nur die Typen der eigenen Haupttabelle.
+    $followUpTypes = [
+        'oe'              => ['sales_quotation', 'sales_order', 'sales_order_intake', 'request_quotation', 'purchase_order', 'purchase_quotation_intake', 'purchase_order_confirmation'],
+        'ar'              => ['sales_invoice', 'credit_note', 'ar_transaction'],
+        'ap'              => ['purchase_invoice', 'vendor_invoice', 'ap_transaction'],
+        'delivery_orders' => ['sales_delivery_order', 'purchase_delivery_order', 'supplier_delivery_order', 'rma_delivery_order'],
+    ][$mainTable] ?? [];
+    // Bestätigungsstand nur bei Verkaufsaufträgen (oe_confirmation_status liefert sonst NULL)
+    $confirmationSql = ($mainTable === 'oe') ? 'oe_confirmation_status(:fakturaID)' : 'NULL::json';
+    // Letzte Änderung aus der Belegchronik (Tooltip der Verlauf-Taste); die Tabelle legt
+    // erst der Upstall an — bis dahin bleibt der Wert leer statt die Abfrage zu sprengen
+    $lastChangeSql = existingTables($company, ['record_history_oserp'])
+        ? "(SELECT json_build_object('itime', h.itime, 'employee_id', h.employee_id, 'employee_name', e.name, 'source', h.source)
+              FROM record_history_oserp h LEFT JOIN employee e ON e.id = h.employee_id
+             WHERE h.record_table = '{$mainTable}' AND h.record_id = :fakturaID
+             ORDER BY h.itime DESC, h.id DESC LIMIT 1)"
+        : 'NULL::json';
 
     // Ext-Tabelle für phone_numbers (customer_ext/vendor_ext)
     $extTable = ($cvTable === 'vendor') ? 'vendor_ext' : 'customer_ext';
@@ -62,6 +95,8 @@ function getFakturaData($data) {
         SELECT json_build_object(
             'success', true,
             'payload', json_build_object(
+            -- Belegart aus dem Datensatz (resolveFakturaType) — das Frontend übernimmt sie
+            'fakturaType', CAST(:fakturaType AS text),
             'common',
                 (
                     SELECT row_to_json(common)
@@ -120,6 +155,9 @@ function getFakturaData($data) {
                         ) btx ON true
                         WHERE at.trans_id = :fakturaID
                             AND at.chart_link LIKE '{$paymentLink}'
+                            -- Zahlungen gibt es nur an Rechnungen; oe/delivery_orders-IDs
+                            -- stammen aus einer anderen Sequenz und können kollidieren
+                            AND '{$mainTable}' IN ('ar', 'ap')
                     ) AS payment
                 ),
             'positions',
@@ -160,7 +198,7 @@ function getFakturaData($data) {
                             ) AS buchungsziel
                         FROM {$itemsTable}
                         LEFT JOIN parts ON {$itemsTable}.parts_id = parts.id
-                        WHERE trans_id = :fakturaID
+                        WHERE {$itemsTable}.{$itemsFk} = :fakturaID
                     ) AS {$itemsTable}
                 ),
             'shiptos',
@@ -209,7 +247,7 @@ function getFakturaData($data) {
                         SELECT 'dhl', ds.created_at, ds.shipment_no, ds.product, 'sent', e.name
                         FROM dhl_shipments ds
                         LEFT JOIN employee e ON e.id = ds.created_by
-                        WHERE ds.record_type = :fakturaType AND ds.record_id = :fakturaID
+                        WHERE ds.record_type = ANY(CAST(:dhlTypes AS text[])) AND ds.record_id = :fakturaID
                         UNION ALL
                         -- Postversand (Hybridbrief): Einlieferungen beim Briefdienstleister
                         SELECT 'post', COALESCE(pd.sent_at, pd.itime), pd.recipient_name,
@@ -224,6 +262,44 @@ function getFakturaData($data) {
             -- zeigt ihn neben dem Versandstatus und bietet den Sprung zur Rechnung.
             'invoice_status',
                 {$invoiceStatusSql},
+            -- Letzte Änderung (Belegchronik): wer zuletzt und wann
+            'last_change',
+                {$lastChangeSql},
+            -- Offene Wiedervorlagen zum Beleg (kivitendo follow_ups): Zähler an der
+            -- Glocke der Aktionsleiste, Liste mit Erledigt/Bearbeiten. Die Links
+            -- gehen mit, weil updateFollowUp sie neu schreibt.
+            'follow_ups',
+                (
+                    SELECT COALESCE(json_agg(f ORDER BY f.follow_up_date, f.id), '[]'::json)
+                    FROM (
+                        SELECT fu.id, fu.follow_up_date, n.subject, n.body,
+                               ec.name AS created_by_name,
+                               (SELECT COALESCE(json_agg(json_build_object(
+                                           'employee_id', fe.employee_id,
+                                           'employee_name', e.name) ORDER BY e.name), '[]'::json)
+                                  FROM follow_up_created_for_employees fe
+                                  LEFT JOIN employee e ON e.id = fe.employee_id
+                                 WHERE fe.follow_up_id = fu.id) AS assigned_employees,
+                               (SELECT json_agg(json_build_object(
+                                           'trans_id', l.trans_id,
+                                           'trans_type', l.trans_type,
+                                           'trans_info', l.trans_info) ORDER BY l.id)
+                                  FROM follow_up_links l
+                                 WHERE l.follow_up_id = fu.id) AS links
+                        FROM follow_ups fu
+                        LEFT JOIN notes n ON n.id = fu.note_id
+                        LEFT JOIN employee ec ON ec.id = fu.created_by
+                        WHERE EXISTS (SELECT 1 FROM follow_up_links ful
+                                       WHERE ful.follow_up_id = fu.id
+                                         AND ful.trans_id = :fakturaID
+                                         AND ful.trans_type = ANY(CAST(:followUpTypes AS text[])))
+                          AND NOT EXISTS (SELECT 1 FROM follow_up_done fud WHERE fud.follow_up_id = fu.id)
+                    ) AS f
+                ),
+            -- Bestätigung des Verkaufsauftrags (oe_confirmation_status, Upstall crm):
+            -- bestätigt ja/nein, wie/wann/von wem, Betrag damals, offene KI-Vorschläge
+            'confirmation_status',
+                {$confirmationSql},
             -- Erfolgreiche Kartenzahlungen am SumUp-Terminal (nur Rechnungen). Sie
             -- werden NICHT sofort als Zahlung gebucht — die Buchung kommt mit der
             -- SumUp-Auszahlung im Banking. Hier nur zur Anzeige und damit der
@@ -253,7 +329,19 @@ SQL;
 
     //debugQuery($query, ['fakturaID' => $fakturaID], 'Faktura Daten laden');
 
-    $row = $company->getOne($query, ['fakturaID' => $fakturaID, 'fakturaType' => $fakturaType]);
+    $row = $company->getOne($query, [
+        'fakturaID'     => $fakturaID,
+        'fakturaType'   => $fakturaType,
+        'followUpTypes' => '{' . implode(',', $followUpTypes) . '}',
+        // DHL-Etiketten tragen die Belegart, unter der sie erstellt wurden (Bestellungen
+        // früher als 'order') — deshalb alle Arten der Haupttabelle
+        'dhlTypes'      => '{' . implode(',', [
+            'oe'              => ['order', 'quotation', 'purchase_order', 'request_quotation'],
+            'ar'              => ['invoice', 'credit_note', 'invoice_storno'],
+            'ap'              => ['purchase_invoice'],
+            'delivery_orders' => ['delivery_order', 'purchase_delivery_order'],
+        ][$mainTable] ?? []) . '}',
+    ]);
 
     // Unbekannte oder gelöschte ID: die Abfrage liefert sonst success=true mit
     // common=NULL — die View würde darauf abstürzen. Deshalb als Fehler melden,
@@ -379,64 +467,176 @@ SQL;
 }
 
 /**
+ * Spalte der Lieferschein-Belegart: neues kivitendo-Schema record_type (Enum),
+ * altes order_type (Text) — kivitendo benennt sie per Pg-upgrade2 um
+ *
+ * @param object $db Firmen-DB
+ * @return string 'record_type' oder 'order_type'
+ */
+function deliveryOrderTypeColumn($db) {
+    static $column = null;
+    if ($column === null) {
+        $row = $db->getOne(
+            "SELECT column_name FROM information_schema.columns
+              WHERE table_schema = 'public' AND table_name = 'delivery_orders' AND column_name IN ('record_type', 'order_type')
+              ORDER BY column_name = 'record_type' DESC LIMIT 1"
+        );
+        $column = $row['column_name'] ?? 'record_type';
+    }
+    return $column;
+}
+
+/**
+ * Belegart eines Faktura-Datensatzes aus dem Datensatz selbst ermitteln
+ *
+ * Der Typ des Aufrufers ist nur ein Hinweis auf die ID-Familie: ar/ap ziehen ihre
+ * IDs aus der Sequenz glid, oe/delivery_orders aus id. Innerhalb einer Familie ist
+ * eine ID eindeutig, zwischen den Familien nicht. Das alte kivitendo-Schema
+ * (oe.quotation statt record_type, delivery_orders ohne record_type) lesen die
+ * unqualifizierten Spalten über die Rückfall-Zeile schema_fallback.
+ *
+ * @param object $company   Firmen-DB
+ * @param int    $fakturaID Beleg-ID
+ * @param string $hintType  Belegart laut Route/Aufrufer
+ * @return array|null ['type' => Belegart, 'table' => Haupttabelle, 'ledger_only' => bool]
+ */
+function resolveFakturaType($company, $fakturaID, $hintType) {
+    $glFamily = in_array($hintType, ['invoice', 'purchase_invoice', 'credit_note', 'invoice_storno'], true);
+    $sql = $glFamily ? <<<SQL
+        SELECT COALESCE(
+            (SELECT json_build_object('type', 'invoice', 'table', 'ar', 'ledger_only', false)
+               FROM ar a WHERE a.id = :id),
+            -- Eingangsrechnungen bucht und bearbeitet das Journal (Belegerfassung, Bank);
+            -- die Faktura kann sie weder rechnen noch drucken
+            (SELECT json_build_object('type', 'purchase_invoice', 'table', 'ap', 'ledger_only', true)
+               FROM ap p WHERE p.id = :id)
+        ) AS resolved
+SQL
+    : <<<SQL
+        SELECT COALESCE(
+            (SELECT json_build_object('type', CASE
+                        WHEN rt = 'sales_quotation' THEN 'quotation'
+                        WHEN rt IN ('request_quotation', 'purchase_quotation_intake') THEN 'request_quotation'
+                        WHEN rt IN ('purchase_order', 'purchase_order_confirmation') THEN 'purchase_order'
+                        ELSE 'order' END, 'table', 'oe', 'ledger_only', false)
+               FROM (SELECT NULL::text AS record_type, NULL::boolean AS quotation) AS schema_fallback
+               CROSS JOIN LATERAL (
+                   SELECT COALESCE(record_type::text,
+                            CASE WHEN o.vendor_id IS NOT NULL
+                                 THEN CASE WHEN quotation THEN 'request_quotation' ELSE 'purchase_order' END
+                                 ELSE CASE WHEN quotation THEN 'sales_quotation' ELSE 'sales_order' END END) AS rt
+                     FROM oe o WHERE o.id = :id) AS oe_art),
+            (SELECT json_build_object('type', CASE WHEN d.vendor_id IS NOT NULL THEN 'purchase_delivery_order' ELSE 'delivery_order' END,
+                                      'table', 'delivery_orders', 'ledger_only', false)
+               FROM delivery_orders d WHERE d.id = :id)
+        ) AS resolved
+SQL;
+    $row = $company->getOne($sql, ['id' => intval($fakturaID)]);
+    $resolved = !empty($row['resolved']) ? json_decode($row['resolved'], true) : null;
+    // Ausgangsrechnungen: die Art (Rechnung, Gutschrift, Storno) bestimmt weiter die Route —
+    // die Maske behandelt sie verschieden (Buchung, Zahlungen, E-Rechnung)
+    if ($resolved && $resolved['table'] === 'ar' && in_array($hintType, ['invoice', 'credit_note', 'invoice_storno'], true)) {
+        $resolved['type'] = $hintType;
+    }
+    return $resolved;
+}
+
+/**
+ * Belegart für Schreibzugriffe: aus dem Datensatz, nicht aus dem Request
+ *
+ * Rechte und Tabellen hängen an der Belegart. Kommt sie ungeprüft aus dem
+ * Request, ließe sich z. B. mit 'quotation' eine Bestellung löschen.
+ *
+ * @param object $company   Firmen-DB
+ * @param int    $fakturaID Beleg-ID
+ * @param string $hintType  Belegart laut Request
+ * @return string Belegart
+ * @throws ApiError FAKTURA_NOT_FOUND
+ */
+function resolveFakturaTypeForWrite($company, $fakturaID, $hintType) {
+    $resolved = resolveFakturaType($company, $fakturaID, $hintType);
+    if (!$resolved) {
+        throw new ApiError('FAKTURA_NOT_FOUND', "Dokument {$fakturaID} nicht gefunden");
+    }
+    return $resolved['type'];
+}
+
+/**
  * Gibt die Tabellenkonfiguration für den jeweiligen Dokumenttyp zurück
  *
- * @param string $fakturaType Dokumenttyp (invoice, order, quotation, delivery_order)
- * @return array Konfiguration mit main_table und items_table
+ * @param string $fakturaType Dokumenttyp (invoice, order, quotation, delivery_order …)
+ * @return array Konfiguration mit main_table, items_table, items_fk (Fremdschlüssel der
+ *               Positionen auf den Beleg: trans_id, bei Lieferscheinen delivery_order_id)
  */
 function getFakturaTableConfig($fakturaType) {
     $configs = [
         'invoice' => [
             'main_table' => 'ar',
             'items_table' => 'invoice',
+            'items_fk' => 'trans_id',
             'cv_table' => 'customer',
             'cv_column' => 'customer_id'
         ],
         'purchase_invoice' => [
             'main_table' => 'ap',
             'items_table' => 'invoice',
+            'items_fk' => 'trans_id',
             'cv_table' => 'vendor',
             'cv_column' => 'vendor_id'
         ],
         'order' => [
             'main_table' => 'oe',
             'items_table' => 'orderitems',
+            'items_fk' => 'trans_id',
             'cv_table' => 'customer',
             'cv_column' => 'customer_id'
         ],
         'purchase_order' => [
             'main_table' => 'oe',
             'items_table' => 'orderitems',
+            'items_fk' => 'trans_id',
             'cv_table' => 'vendor',
             'cv_column' => 'vendor_id'
         ],
         'quotation' => [
             'main_table' => 'oe',
             'items_table' => 'orderitems',
+            'items_fk' => 'trans_id',
             'cv_table' => 'customer',
             'cv_column' => 'customer_id'
         ],
         'request_quotation' => [
             'main_table' => 'oe',
             'items_table' => 'orderitems',
+            'items_fk' => 'trans_id',
             'cv_table' => 'vendor',
             'cv_column' => 'vendor_id'
         ],
         'delivery_order' => [
             'main_table' => 'delivery_orders',
             'items_table' => 'delivery_order_items',
+            'items_fk' => 'delivery_order_id',
             'cv_table' => 'customer',
             'cv_column' => 'customer_id'
+        ],
+        'purchase_delivery_order' => [
+            'main_table' => 'delivery_orders',
+            'items_table' => 'delivery_order_items',
+            'items_fk' => 'delivery_order_id',
+            'cv_table' => 'vendor',
+            'cv_column' => 'vendor_id'
         ],
         'credit_note' => [
             'main_table' => 'ar',
             'items_table' => 'invoice',
+            'items_fk' => 'trans_id',
             'cv_table' => 'customer',
             'cv_column' => 'customer_id'
         ],
         'invoice_storno' => [
             'main_table' => 'ar',
             'items_table' => 'invoice',
+            'items_fk' => 'trans_id',
             'cv_table' => 'customer',
             'cv_column' => 'customer_id'
         ]
@@ -465,12 +665,13 @@ function hasNegativeQty($fakturaType) {
 function getPermissionForFakturaType($fakturaType) {
     $map = [
         'invoice' => 'invoice_edit',
-        'purchase_invoice' => 'purchase_invoice_edit',
+        'purchase_invoice' => 'vendor_invoice_edit',
         'order' => 'sales_order_edit',
         'purchase_order' => 'purchase_order_edit',
         'quotation' => 'sales_quotation_edit',
-        'request_quotation' => 'sales_quotation_edit',
+        'request_quotation' => 'request_quotation_edit',
         'delivery_order' => 'sales_delivery_order_edit',
+        'purchase_delivery_order' => 'purchase_delivery_order_edit',
         'credit_note' => 'invoice_edit',
         'invoice_storno' => 'invoice_edit',
     ];
@@ -528,7 +729,8 @@ function resolveEffectiveFakturaType($fakturaType, $isVendor) {
     $typeMap = [
         'order' => 'purchase_order',
         'quotation' => 'request_quotation',
-        'invoice' => 'purchase_invoice'
+        'invoice' => 'purchase_invoice',
+        'delivery_order' => 'purchase_delivery_order'
     ];
     return $typeMap[$fakturaType] ?? $fakturaType;
 }
@@ -559,8 +761,10 @@ function createFakturaCore($company, $fakturaType, $cvId, $cvSrc, $employeeId, $
     $taxincluded = false;
     if ($cvId) {
         $cvTable = $isVendor ? 'vendor' : 'customer';
+        // taxincluded_checked gibt es nur beim Kunden
+        $taxCol = $isVendor ? 'false AS taxincluded_checked' : 'taxincluded_checked';
         $cvData = $company->getOne(
-            "SELECT taxzone_id, taxincluded_checked FROM {$cvTable} WHERE id = :id",
+            "SELECT taxzone_id, {$taxCol} FROM {$cvTable} WHERE id = :id",
             ['id' => $cvId]
         );
         $taxzoneId = $cvData ? intval($cvData['taxzone_id']) : null;
@@ -585,27 +789,15 @@ function createFakturaCore($company, $fakturaType, $cvId, $cvSrc, $employeeId, $
     //   INSERT INTO <table> (..., <numberfield>, ...) SELECT ..., (SELECT <col> FROM tmp), ...
     //   RETURNING id
     //
-    // Mapping effectiveType → defaults-Spalte / Nummernfeld in oe:
-    //   order            → sonumber  / ordnumber
-    //   purchase_order   → ponumber  / ordnumber
-    //   quotation        → sqnumber  / quonumber  (ordnumber bleibt '' – NOT NULL in oe)
-    //   request_quotation→ rfqnumber / quonumber
+    // Mapping effectiveType → defaults-Spalte / Nummernfeld:
+    //   order            → sonumber  / oe.ordnumber
+    //   purchase_order   → ponumber  / oe.ordnumber
+    //   quotation        → sqnumber  / oe.quonumber  (ordnumber bleibt '' – NOT NULL in oe)
+    //   request_quotation→ rfqnumber / oe.quonumber
     //   invoice          → invnumber / ar.invnumber
     //   purchase_invoice → invnumber / ap.invnumber
-
-    // Nummernkreis-Spalte je nach Dokumenttyp bestimmen
-    $defaultsColMap = [
-        'purchase_invoice'   => 'invnumber',
-        'invoice'            => 'invnumber',
-        'quotation'          => 'sqnumber',
-        'request_quotation'  => 'rfqnumber',
-        'purchase_order'     => 'ponumber',
-        'order'              => 'sonumber',
-        'sales_order'        => 'sonumber',
-    ];
-    $nkCol = $defaultsColMap[$effectiveType] ?? 'sonumber';
-    $nkBefore = $company->getOne("SELECT {$nkCol} FROM defaults LIMIT 1");
-    // writeLog("createFaktura VORHER: defaults.{$nkCol} = " . ($nkBefore[$nkCol] ?? 'NULL') . " (effectiveType={$effectiveType})");
+    //   delivery_order   → sdonumber / delivery_orders.donumber
+    //   purchase_delivery_order → pdonumber / delivery_orders.donumber
 
     if ($effectiveType === 'purchase_invoice') {
         // Eingangsrechnung → ap-Tabelle
@@ -660,6 +852,28 @@ SQL;
             ':taxincluded'  => $taxincluded ? 'true' : 'false'
         ]);
 
+    } elseif ($effectiveType === 'delivery_order' || $effectiveType === 'purchase_delivery_order') {
+        // Lieferschein (Verkauf/Einkauf) → delivery_orders, Nummernkreis wie kivitendo
+        $defaultsCol = ($effectiveType === 'delivery_order') ? 'sdonumber' : 'pdonumber';
+        $recordType  = ($effectiveType === 'delivery_order') ? 'sales_delivery_order' : 'purchase_delivery_order';
+        $typeCol     = deliveryOrderTypeColumn($company);
+
+        $query = <<<SQL
+            WITH tmp AS (UPDATE defaults SET {$defaultsCol} = COALESCE({$defaultsCol}::INT, 0) + 1 RETURNING {$defaultsCol})
+            INSERT INTO delivery_orders (donumber, transdate, employee_id, customer_id, vendor_id, taxzone_id, currency_id, {$typeCol}, taxincluded)
+            SELECT (SELECT {$defaultsCol} FROM tmp), CURRENT_DATE, :employee_id, :customer_id, :vendor_id, :taxzone_id, :currency_id, :record_type, :taxincluded
+            RETURNING id, donumber
+SQL;
+        $result = $company->getOne($query, [
+            ':employee_id'  => $employeeId,
+            ':customer_id'  => $customerId,
+            ':vendor_id'    => $vendorId,
+            ':taxzone_id'   => $taxzoneId,
+            ':currency_id'  => $currencyId,
+            ':record_type'  => $recordType,
+            ':taxincluded'  => $taxincluded ? 'true' : 'false'
+        ]);
+
     } else {
         // Auftrag (Verkauf oder Einkauf) → oe-Tabelle, Nummer in ordnumber
         // Neue Verkaufsaufträge starten als Auftragseingang (unbestätigt) und werden
@@ -684,11 +898,8 @@ SQL;
         ]);
     }
 
-    $nkAfter = $company->getOne("SELECT {$nkCol} FROM defaults LIMIT 1");
-    // writeLog("createFaktura NACHHER: defaults.{$nkCol} = " . ($nkAfter[$nkCol] ?? 'NULL') . " (effectiveType={$effectiveType})");
-
     // Dokumentnummer aus dem RETURNING-Ergebnis extrahieren
-    $docNumber = $result['invnumber'] ?? $result['ordnumber'] ?? $result['quonumber'] ?? null;
+    $docNumber = $result['invnumber'] ?? $result['ordnumber'] ?? $result['quonumber'] ?? $result['donumber'] ?? null;
 
     return [
         'id' => intval($result['id']),
@@ -710,12 +921,14 @@ function createFakturaItem($data) {
 
     $company = DbhCompany::begin();
 
+    $fakturaType = resolveFakturaTypeForWrite($company, $fakturaID, $fakturaType);
     permit(getPermissionForFakturaType($fakturaType));
 
     $newId = createFakturaItemCore($company, $fakturaType, $fakturaID, $item);
 
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable = $tableConfig['items_table'];
+    $itemsFk = $tableConfig['items_fk'];
     $mainTable = $tableConfig['main_table'];
 
     // Komplette Position mit allen Daten zurückgeben (wie in getFakturaData)
@@ -744,9 +957,9 @@ function createFakturaItem($data) {
                                 LEFT JOIN chart c2 ON tc.income_accno_id = c2.id
                                 -- nur am Belegdatum gültige Schlüssel (V24)
                                 LEFT JOIN taxkeys tk ON tk.chart_id = c2.id
-                                    AND tk.startdate <= COALESCE((SELECT transdate FROM {$mainTable} WHERE id = {$itemsTable}.trans_id), current_date)
+                                    AND tk.startdate <= COALESCE((SELECT transdate FROM {$mainTable} WHERE id = {$itemsTable}.{$itemsFk}), current_date)
                                 LEFT JOIN tax tx ON tx.id = tk.tax_id
-                                WHERE tc.taxzone_id = (SELECT taxzone_id FROM {$mainTable} WHERE id = {$itemsTable}.trans_id)
+                                WHERE tc.taxzone_id = (SELECT taxzone_id FROM {$mainTable} WHERE id = {$itemsTable}.{$itemsFk})
                                     AND p.id = parts.id
                                 ORDER BY tk.startdate DESC
                                 LIMIT 1
@@ -776,16 +989,17 @@ SQL;
 function createFakturaItemCore($company, $fakturaType, $fakturaID, $item) {
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable = $tableConfig['items_table'];
+    $itemsFk = $tableConfig['items_fk'];
     // Gutschrift/Storno: Menge immer negativ (wie bei der Umwandlung aus der Rechnung)
     $qtyExpr = hasNegativeQty($fakturaType) ? '-abs(:qty)' : ':qty';
 
     // Nächste Position ermitteln
-    $positionQuery = "SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM {$itemsTable} WHERE trans_id = :fakturaID";
+    $positionQuery = "SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM {$itemsTable} WHERE {$itemsFk} = :fakturaID";
     $nextPosition = $company->getOne($positionQuery, ['fakturaID' => $fakturaID])['next_position'];
 
     // Basis-Spalten für alle Tabellentypen
     $columns = [
-        'trans_id',
+        $itemsFk,
         'parts_id',
         'position',
         'description',
@@ -855,19 +1069,22 @@ function deleteFakturaItem($data) {
 
     $company = DbhCompany::begin();
 
-    permit(getPermissionForFakturaType($fakturaType));
-
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable = $tableConfig['items_table'];
+    $itemsFk = $tableConfig['items_fk'];
 
     // trans_id ermitteln für Positionsneuberechnung
-    $transIdQuery = "SELECT trans_id FROM {$itemsTable} WHERE id = :itemID";
-    $transId = $company->getOne($transIdQuery, ['itemID' => $itemID])['trans_id'];
+    $transIdQuery = "SELECT {$itemsFk} AS trans_id FROM {$itemsTable} WHERE id = :itemID";
+    $transId = $company->getOne($transIdQuery, ['itemID' => $itemID])['trans_id'] ?? null;
 
     if (!$transId) {
         resultInfo(false, 'ITEM_NOT_FOUND', ['message' => 'Position nicht gefunden']);
         return;
     }
+
+    // Recht nach dem Beleg, zu dem die Position gehört
+    $fakturaType = resolveFakturaTypeForWrite($company, $transId, $fakturaType);
+    permit(getPermissionForFakturaType($fakturaType));
 
     // Position löschen
     $deleteQuery = "DELETE FROM {$itemsTable} WHERE id = :itemID";
@@ -880,7 +1097,7 @@ function deleteFakturaItem($data) {
         FROM (
             SELECT id, ROW_NUMBER() OVER (ORDER BY position) AS new_position
             FROM {$itemsTable}
-            WHERE trans_id = :transId
+            WHERE {$itemsFk} = :transId
         ) AS subquery
         WHERE {$itemsTable}.id = subquery.id
 SQL;
@@ -990,6 +1207,7 @@ function saveFakturaItemAsNewPart($data) {
 
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable  = $tableConfig['items_table']; // kontrollierte Tabellennamen (kein User-Input)
+    $itemsFk     = $tableConfig['items_fk'];
     $mainTable   = $tableConfig['main_table'];
 
     $partnumber = trim($data['partnumber'] ?? '');
@@ -1012,7 +1230,7 @@ function saveFakturaItemAsNewPart($data) {
             SELECT p.buchungsgruppen_id, p.unit AS part_unit, m.taxzone_id, m.transdate
             FROM {$itemsTable} i
             LEFT JOIN parts p ON p.id = i.parts_id
-            LEFT JOIN {$mainTable} m ON m.id = i.trans_id
+            LEFT JOIN {$mainTable} m ON m.id = i.{$itemsFk}
             WHERE i.id = :item_id
         ),
         np AS (
@@ -1184,10 +1402,12 @@ function updateFakturaItems($data) {
 
     $company = DbhCompany::begin();
 
+    $fakturaType = resolveFakturaTypeForWrite($company, $fakturaID, $fakturaType);
     permit(getPermissionForFakturaType($fakturaType));
 
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable = $tableConfig['items_table'];
+    $itemsFk = $tableConfig['items_fk'];
     $mainTable = $tableConfig['main_table'];
     $isInvoiceType = in_array($fakturaType, ['invoice', 'purchase_invoice']);
     $isOeType = in_array($fakturaType, ['order', 'purchase_order', 'quotation', 'request_quotation']);
@@ -1236,7 +1456,7 @@ SQL;
     // Ursprungsrechnung stehen.
     if (hasNegativeQty($fakturaType)) {
         $company->execute(
-            "UPDATE {$itemsTable} SET qty = -abs(qty) WHERE trans_id = :fakturaID AND qty > 0",
+            "UPDATE {$itemsTable} SET qty = -abs(qty) WHERE {$itemsFk} = :fakturaID AND qty > 0",
             ['fakturaID' => $fakturaID]
         );
         recalcFakturaTotals($company, $fakturaType, $fakturaID);
@@ -1907,6 +2127,10 @@ function getNumberConfig($fakturaType) {
         'purchase_order'     => ['doc_number_column' => 'ordnumber', 'defaults_column' => 'ponumber'],
         'quotation'          => ['doc_number_column' => 'quonumber', 'defaults_column' => 'sqnumber'],
         'request_quotation'  => ['doc_number_column' => 'quonumber', 'defaults_column' => 'rfqnumber'],
+        'delivery_order'     => ['doc_number_column' => 'donumber', 'defaults_column' => 'sdonumber'],
+        'purchase_delivery_order' => ['doc_number_column' => 'donumber', 'defaults_column' => 'pdonumber'],
+        'credit_note'        => ['doc_number_column' => 'invnumber', 'defaults_column' => 'invnumber'],
+        'invoice_storno'     => ['doc_number_column' => 'invnumber', 'defaults_column' => 'invnumber'],
     ];
     return $map[$fakturaType] ?? null;
 }
@@ -1931,11 +2155,13 @@ function deleteFaktura($data) {
 
     $company = DbhCompany::begin();
 
+    $fakturaType = resolveFakturaTypeForWrite($company, $fakturaID, $fakturaType);
     permit(getPermissionForFakturaType($fakturaType));
 
     $tableConfig = getFakturaTableConfig($fakturaType);
     $mainTable = $tableConfig['main_table'];
     $itemsTable = $tableConfig['items_table'];
+    $itemsFk = $tableConfig['items_fk'];
     $numberConfig = getNumberConfig($fakturaType);
 
     // 1. Dokument laden
@@ -1949,6 +2175,16 @@ function deleteFaktura($data) {
     if (!$doc) {
         echo resultInfo(false, 'NOT_FOUND', 'Dokument nicht gefunden');
         return;
+    }
+
+    // Ausgelagerter Lieferschein: Lagerbewegungen zeigen auf ihn (inventory.oe_id ohne
+    // CASCADE) — wie kivitendo nicht mehr löschbar
+    if ($mainTable === 'delivery_orders') {
+        $delivered = $company->getOne("SELECT delivered FROM delivery_orders WHERE id = :id", [':id' => $fakturaID]);
+        if (!empty($delivered['delivered'])) {
+            resultInfo(false, 'DELIVERED', 'Der Lieferschein ist ausgelagert und kann nicht gelöscht werden');
+            return;
+        }
     }
 
     // 2. Transaktion starten und Nummernkreis mit FOR UPDATE sperren,
@@ -1971,7 +2207,7 @@ function deleteFaktura($data) {
         $isLastNumber = (string)$docNumber === (string)$currentNumber;
 
         // Nur bei Rechnungen die Nummernkreis-Prüfung erzwingen
-        if (in_array($fakturaType, ['invoice', 'purchase_invoice']) && !$isLastNumber) {
+        if (in_array($fakturaType, ['invoice', 'purchase_invoice', 'credit_note', 'invoice_storno']) && !$isLastNumber) {
             $company->rollBack();
             echo resultInfo(false, 'NOT_LAST_NUMBER', [
                 'currentNumber' => $currentNumber,
@@ -1990,12 +2226,7 @@ function deleteFaktura($data) {
         );
     }
 
-    $company->execute(
-        "DELETE FROM {$itemsTable} WHERE trans_id = :fakturaID",
-        ['fakturaID' => $fakturaID]
-    );
-
-    if (in_array($fakturaType, ['invoice', 'purchase_invoice'])) {
+    if (in_array($fakturaType, ['invoice', 'purchase_invoice', 'credit_note', 'invoice_storno'])) {
         $company->execute(
             "DELETE FROM acc_trans WHERE trans_id = :fakturaID",
             ['fakturaID' => $fakturaID]
@@ -2009,8 +2240,14 @@ function deleteFaktura($data) {
         );
     }
 
+    // Erst der Kopf, dann die Positionen: oe/delivery_orders nehmen ihre Positionen per
+    // Kaskade mit, und die Belegchronik vermerkt nur das Löschen des Belegs statt jeder Position
     $company->execute(
         "DELETE FROM {$mainTable} WHERE id = :fakturaID",
+        ['fakturaID' => $fakturaID]
+    );
+    $company->execute(
+        "DELETE FROM {$itemsTable} WHERE {$itemsFk} = :fakturaID",
         ['fakturaID' => $fakturaID]
     );
 
@@ -2070,33 +2307,35 @@ function updateFakturaField($data) {
         'closed'            // Status offen/erledigt
     ];
 
-    // Feldname-Mapping: Frontend -> Datenbank (je nach Tabellentyp)
-    $fieldMapping = [];
-    if (in_array($fakturaType, ['invoice', 'purchase_invoice'])) {
-        // ar/ap-Tabelle verwendet 'deliverydate' statt 'reqdate'
-        $fieldMapping['reqdate'] = 'deliverydate';
-    }
-
-    // Feldnamen ggf. mappen
-    $dbField = $fieldMapping[$field] ?? $field;
-
     if (!in_array($field, $allowedFields)) {
         resultInfo(false, 'INVALID_FIELD', ['message' => 'Feld nicht erlaubt: ' . $field]);
         return;
     }
 
-    // duedate nur bei Rechnungen erlauben
-    if ($field === 'duedate' && !in_array($fakturaType, ['invoice', 'purchase_invoice'])) {
-        resultInfo(false, 'INVALID_FIELD', ['message' => 'Fälligkeitsdatum nur bei Rechnungen erlaubt']);
-        return;
-    }
-
     $company = DbhCompany::begin();
 
+    $fakturaType = resolveFakturaTypeForWrite($company, $fakturaID, $fakturaType);
     permit(getPermissionForFakturaType($fakturaType));
 
     $tableConfig = getFakturaTableConfig($fakturaType);
     $mainTable = $tableConfig['main_table'];
+
+    // ar/ap führen das Lieferdatum als 'deliverydate' (auch Gutschrift/Storno), oe und
+    // delivery_orders als 'reqdate'
+    $dbField = (in_array($mainTable, ['ar', 'ap'], true) && $field === 'reqdate') ? 'deliverydate' : $field;
+
+    // Spalten, die es in der Haupttabelle nicht gibt (Fälligkeit nur an Rechnungen,
+    // keine Angebotsnummer am Lieferschein, keine Lieferadresse an Eingangsrechnungen …)
+    $notInTable = [
+        'oe'              => ['invnumber', 'donumber', 'deliverydate', 'duedate'],
+        'delivery_orders' => ['invnumber', 'quonumber', 'deliverydate', 'duedate'],
+        'ap'              => ['donumber', 'cusordnumber', 'customer_id', 'shipto_id', 'billing_address_id', 'closed'],
+        'ar'              => ['vendor_id', 'closed'],
+    ][$mainTable] ?? [];
+    if (in_array($dbField, $notInTable, true)) {
+        resultInfo(false, 'INVALID_FIELD', ['message' => "Feld {$field} gibt es bei diesem Beleg nicht"]);
+        return;
+    }
 
     // Wert vorbereiten
     if ($field === 'closed') {
@@ -2122,15 +2361,22 @@ function updateFakturaField($data) {
 }
 
 /**
- * Bestätigt einen Verkaufsauftrag oder setzt ihn auf Auftragseingang zurück.
+ * Bestätigt einen Verkaufsauftrag oder nimmt die Bestätigung zurück.
  *
  * Schaltet record_type zwischen 'sales_order' (bestätigt) und
- * 'sales_order_intake' (Auftragseingang/unbestätigt). Nur für Verkaufsaufträge —
- * Angebote, Lieferscheine, Rechnungen und Einkaufsbelege werden abgelehnt.
+ * 'sales_order_intake' (Auftragseingang) und hält fest, wie der Kunde zugesagt
+ * hat — mit dem Betrag zum Zeitpunkt der Bestätigung (SQL-Funktion oe_confirm,
+ * Upstall crm). Mit suggestion_id wird ein Vorschlag der KI übernommen.
+ * Nur für Verkaufsaufträge.
  *
- * @param int  $data['fakturaID'] Auftrags-ID (oe.id)
- * @param bool $data['confirmed'] true = bestätigt, false = Auftragseingang
- * @testdata {"fakturaID": 1, "confirmed": true}
+ * @param int    $data['fakturaID']     Auftrags-ID (oe.id)
+ * @param bool   $data['confirmed']     true = bestätigen, false = zurücknehmen
+ * @param string $data['channel']       phone | email | whatsapp | visit | signature | portal | other
+ * @param int    $data['agreed_at']     Zeitpunkt der Zusage (ms seit 1970), leer = jetzt
+ * @param string $data['note']          Notiz, z. B. was der Kunde gesagt hat
+ * @param int    $data['suggestion_id'] Vorschlag der KI, der übernommen wird
+ * @param int    $data['employee_id']   bestätigender Mitarbeiter (aus dem Store)
+ * @testdata {"fakturaID": 1, "confirmed": true, "channel": "phone", "note": "Kunde hat telefonisch zugesagt", "employee_id": 1}
  */
 function setOrderConfirmed($data) {
     $fakturaID = intval($data['fakturaID'] ?? 0);
@@ -2142,23 +2388,63 @@ function setOrderConfirmed($data) {
     $company = DbhCompany::begin();
     permit(getPermissionForFakturaType('order'));
 
+    $agreedAt = intval($data['agreed_at'] ?? 0);
     $row = $company->getOne(
-        "SELECT record_type FROM oe WHERE id = :id",
-        [':id' => $fakturaID]
+        "SELECT oe_confirm(:id, :confirmed, :employee_id, :channel,
+                           CASE WHEN :agreed_at::bigint > 0 THEN to_timestamp(:agreed_at2::bigint / 1000.0) END,
+                           :note, :suggestion_id) AS status",
+        [
+            ':id'            => $fakturaID,
+            ':confirmed'     => !empty($data['confirmed']) ? 'true' : 'false',
+            ':employee_id'   => intval($data['employee_id'] ?? 0) ?: null,
+            ':channel'       => (string)($data['channel'] ?? '') ?: null,
+            ':agreed_at'     => $agreedAt,
+            ':agreed_at2'    => $agreedAt,
+            ':note'          => (string)($data['note'] ?? '') ?: null,
+            ':suggestion_id' => intval($data['suggestion_id'] ?? 0) ?: null,
+        ]
     );
-    if (!$row) {
-        resultInfo(false, 'NOT_FOUND', 'Auftrag nicht gefunden');
-        return;
-    }
-    if (!in_array($row['record_type'], ['sales_order', 'sales_order_intake'], true)) {
-        resultInfo(false, 'INVALID_TYPE', 'Nur Verkaufsaufträge können bestätigt werden');
+    $status = json_decode($row['status'] ?? 'null', true);
+    if (!$status || isset($status['error'])) {
+        resultInfo(false, $status['error'] ?? 'NOT_FOUND', 'Auftrag konnte nicht bestätigt werden');
         return;
     }
 
-    $newType = !empty($data['confirmed']) ? 'sales_order' : 'sales_order_intake';
-    $company->update('oe', ['record_type'], [$newType], 'id = ' . $fakturaID);
+    resultInfo(true, 'UPDATED', [
+        'record_type'         => $status['confirmed'] ? 'sales_order' : 'sales_order_intake',
+        'confirmation_status' => $status,
+    ]);
+}
 
-    resultInfo(true, 'UPDATED', ['record_type' => $newType]);
+/**
+ * Verwirft einen Vorschlag der KI (keine Zusage) bzw. nimmt eine erkannte
+ * Absage zur Kenntnis (SQL-Funktion oe_confirmation_dismiss).
+ *
+ * @param int $data['id']          Vorschlag (oe_confirmation_oserp.id)
+ * @param int $data['employee_id'] Mitarbeiter (aus dem Store)
+ * @testdata {"id": 1, "employee_id": 1}
+ */
+function dismissOrderConfirmation($data) {
+    $id = intval($data['id'] ?? 0);
+    if (!$id) {
+        resultInfo(false, 'VALIDATION_ERROR', 'id required');
+        return;
+    }
+
+    $company = DbhCompany::begin();
+    permit(getPermissionForFakturaType('order'));
+
+    $row = $company->getOne(
+        "SELECT oe_confirmation_dismiss(:id, :employee_id) AS status",
+        [':id' => $id, ':employee_id' => intval($data['employee_id'] ?? 0) ?: null]
+    );
+    $status = json_decode($row['status'] ?? 'null', true);
+    if (!$status || isset($status['error'])) {
+        resultInfo(false, $status['error'] ?? 'NOT_FOUND', 'Vorschlag nicht gefunden');
+        return;
+    }
+
+    resultInfo(true, 'UPDATED', ['confirmation_status' => $status]);
 }
 
 /**
@@ -2188,6 +2474,7 @@ function convertFaktura($data) {
 
     $company = DbhCompany::begin();
 
+    $sourceType = resolveFakturaTypeForWrite($company, $sourceId, $sourceType);
     permit(getPermissionForFakturaType($sourceType));
     permit(getPermissionForFakturaType($targetType));
 
@@ -2208,18 +2495,28 @@ function convertFaktura($data) {
         return;
     }
 
-    // ── 1b. Duplikat-Check: Nur eine Rechnung pro Auftrag/Angebot ──
+    // Einkaufsbeleg als Quelle (Lieferant, kein Kunde): Ziel auf den Einkauf umlenken
+    // (Einkaufslieferschein → Eingangsrechnung statt Ausgangsrechnung ohne Kunden)
+    $sourceIsVendor = empty($source['customer_id']) && !empty($source['vendor_id']);
+    $effectiveTarget = $sourceIsVendor ? resolveEffectiveFakturaType($targetType, true) : $targetType;
+    if ($effectiveTarget !== $targetType) {
+        permit(getPermissionForFakturaType($effectiveTarget));
+        $targetConfig = getFakturaTableConfig($effectiveTarget);
+        $targetTable  = $targetConfig['main_table'];
+    }
+
+    // ── 1b. Duplikat-Check: Nur eine Rechnung pro Auftrag/Angebot/Lieferschein ──
 
     $isReuse = ($sourceType === $targetType);
 
-    if (!$isReuse && $targetType === 'invoice' && $sourceTable === 'oe') {
+    if (!$isReuse && $targetType === 'invoice' && in_array($sourceTable, ['oe', 'delivery_orders'], true)) {
         $existingInvoice = $company->getOne(
             "SELECT rl.to_id, ar.invnumber
              FROM record_links rl
              JOIN ar ON ar.id = rl.to_id
-             WHERE rl.from_table = 'oe' AND rl.from_id = :sourceId AND rl.to_table = 'ar'
+             WHERE rl.from_table = :sourceTable AND rl.from_id = :sourceId AND rl.to_table = 'ar'
              LIMIT 1",
-            [':sourceId' => $sourceId]
+            [':sourceTable' => $sourceTable, ':sourceId' => $sourceId]
         );
 
         if ($existingInvoice) {
@@ -2252,7 +2549,7 @@ function convertFaktura($data) {
     // Für Einkaufs-Workflows (Lieferantenanfrage/-auftrag) aus Verkaufsdokumenten:
     // customer_id nicht übernehmen, vendor_id bleibt leer (manuell zuordnen)
     $isTargetPurchase = in_array($targetType, ['purchase_order', 'request_quotation']);
-    if ($isTargetPurchase) {
+    if ($isTargetPurchase && !$sourceIsVendor) {
         $customerId = null;
         $vendorId   = null;
     }
@@ -2267,27 +2564,7 @@ function convertFaktura($data) {
     $currencyId = intval($source['currency_id'] ?? 1);
     $taxzoneId  = intval($source['taxzone_id'] ?? 4);
 
-    // Effektiven Zieltyp bestimmen (wie in createFaktura)
-    $effectiveTarget = $targetType;
-
-    // Nummernfeld und record_type je nach Zieltyp
     $newId = null;
-
-    // Nummernkreis-Spalte je nach Zieltyp bestimmen
-    $defaultsColMap = [
-        'invoice'            => 'invnumber',
-        'purchase_invoice'   => 'invnumber',
-        'quotation'          => 'sqnumber',
-        'request_quotation'  => 'rfqnumber',
-        'order'              => 'sonumber',
-        'purchase_order'     => 'ponumber',
-        'delivery_order'     => 'donumber',
-        'credit_note'        => 'invnumber',
-        'invoice_storno'     => 'invnumber',
-    ];
-    $nkCol = $defaultsColMap[$effectiveTarget] ?? 'sonumber';
-    $nkBefore = $company->getOne("SELECT {$nkCol} FROM defaults LIMIT 1");
-    // writeLog("convertFaktura VORHER: defaults.{$nkCol} = " . ($nkBefore[$nkCol] ?? 'NULL') . " (sourceType={$sourceType}, targetType={$targetType}, effectiveTarget={$effectiveTarget})");
 
     if ($effectiveTarget === 'invoice') {
         $query = <<<SQL
@@ -2361,7 +2638,9 @@ SQL;
 
     } elseif (in_array($effectiveTarget, ['order', 'purchase_order'])) {
         $defaultsCol = ($effectiveTarget === 'purchase_order') ? 'ponumber' : 'sonumber';
-        $recordType  = ($effectiveTarget === 'purchase_order') ? 'purchase_order' : 'sales_order';
+        // Auch ein umgewandelter oder kopierter Verkaufsauftrag startet als Auftragseingang
+        // (wie createFakturaCore) — bestätigt wird mit Weg und Zeitpunkt (setOrderConfirmed)
+        $recordType  = ($effectiveTarget === 'purchase_order') ? 'purchase_order' : 'sales_order_intake';
 
         $query = <<<SQL
             WITH tmp AS (UPDATE defaults SET {$defaultsCol} = COALESCE({$defaultsCol}::INT, 0) + 1 RETURNING {$defaultsCol})
@@ -2379,11 +2658,15 @@ SQL;
         ]);
         $newId = intval($result['id']);
 
-    } elseif ($effectiveTarget === 'delivery_order') {
+    } elseif (in_array($effectiveTarget, ['delivery_order', 'purchase_delivery_order'], true)) {
+        // Nummernkreis wie kivitendo: sdonumber (Verkauf) / pdonumber (Einkauf); defaults.donumber gibt es nicht
+        $defaultsCol = ($effectiveTarget === 'delivery_order') ? 'sdonumber' : 'pdonumber';
+        $recordType  = ($effectiveTarget === 'delivery_order') ? 'sales_delivery_order' : 'purchase_delivery_order';
+        $typeCol     = deliveryOrderTypeColumn($company);
         $query = <<<SQL
-            WITH tmp AS (UPDATE defaults SET donumber = COALESCE(donumber::INT, 0) + 1 RETURNING donumber)
-            INSERT INTO delivery_orders (donumber, transdate, employee_id, customer_id, vendor_id, taxzone_id, currency_id, record_type)
-            SELECT (SELECT donumber FROM tmp), CURRENT_DATE, :employee_id, :customer_id, :vendor_id, :taxzone_id, :currency_id, 'sales_delivery_order'
+            WITH tmp AS (UPDATE defaults SET {$defaultsCol} = COALESCE({$defaultsCol}::INT, 0) + 1 RETURNING {$defaultsCol})
+            INSERT INTO delivery_orders (donumber, transdate, employee_id, customer_id, vendor_id, taxzone_id, currency_id, {$typeCol})
+            SELECT (SELECT {$defaultsCol} FROM tmp), CURRENT_DATE, :employee_id, :customer_id, :vendor_id, :taxzone_id, :currency_id, :record_type
             RETURNING id
 SQL;
         $result = $company->getOne($query, [
@@ -2391,7 +2674,8 @@ SQL;
             ':customer_id' => $customerId,
             ':vendor_id'   => $vendorId,
             ':taxzone_id'  => $taxzoneId,
-            ':currency_id' => $currencyId
+            ':currency_id' => $currencyId,
+            ':record_type' => $recordType
         ]);
         $newId = intval($result['id']);
 
@@ -2469,9 +2753,6 @@ SQL;
         return;
     }
 
-    $nkAfter = $company->getOne("SELECT {$nkCol} FROM defaults LIMIT 1");
-    // writeLog("convertFaktura NACHHER: defaults.{$nkCol} = " . ($nkAfter[$nkCol] ?? 'NULL') . " (effectiveTarget={$effectiveTarget}, newId={$newId})");
-
     // ── 3. Header-Felder vom Quell-Dokument kopieren ──
 
     // Felder, die auf dem Zieldokument aktualisiert werden (sofern sie in der Zieltabelle existieren)
@@ -2497,7 +2778,17 @@ SQL;
         $headerParams[':reqdate_val'] = $source['deliverydate'];
     }
 
+    // Nur Spalten, die die Zieltabelle hat (delivery_orders kennt keine Beträge, ap keine
+    // Lieferadresse/Kundenauftragsnummer) — sonst scheitert das UPDATE
+    $targetColumns = array_column($company->getAll(
+        "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = :t",
+        [':t' => $targetTable]
+    ), 'column_name');
+
     foreach ($copyFields as $field) {
+        if (!in_array($field, $targetColumns, true)) {
+            continue;
+        }
         if (isset($source[$field]) && $source[$field] !== null && $source[$field] !== '') {
             $headerFields[] = "{$field} = :{$field}_val";
             $headerParams[":{$field}_val"] = $source[$field];
@@ -2533,6 +2824,18 @@ SQL;
                 $headerFields[] = "quonumber = :ref_quonumber";
                 $headerParams[':ref_quonumber'] = $source['quonumber'];
             }
+        }
+    }
+
+    // Lieferschein als Quelle: Liefer- und Auftragsnummer mitnehmen (ar kennt beide)
+    if (!$isReuse && $sourceTable === 'delivery_orders' && in_array($targetTable, ['ar', 'ap', 'oe'], true)) {
+        if (!empty($source['donumber']) && in_array('donumber', $targetColumns, true)) {
+            $headerFields[] = "donumber = :ref_donumber";
+            $headerParams[':ref_donumber'] = $source['donumber'];
+        }
+        if (!empty($source['ordnumber']) && in_array('ordnumber', $targetColumns, true)) {
+            $headerFields[] = "ordnumber = :ref_ordnumber";
+            $headerParams[':ref_ordnumber'] = $source['ordnumber'];
         }
     }
 
@@ -2592,6 +2895,19 @@ SQL;
             ':to_id'      => $newId
         ]
     );
+
+    // ── 5b. Lieferschein als Quelle ──
+    // Er hat keine Beträge: Summe des Ziels aus den Positionen rechnen (sonst steht
+    // die Rechnung auf 0 und die Buchung scheitert). Wird daraus eine Rechnung,
+    // gilt er wie in kivitendo (close_orders) als erledigt.
+    if (!$isReuse && $sourceTable === 'delivery_orders') {
+        if (in_array($targetTable, ['oe', 'ar'], true)) {
+            recalcFakturaTotals($company, $effectiveTarget, $newId, true);
+        }
+        if (in_array($targetTable, ['ar', 'ap'], true)) {
+            $company->execute("UPDATE delivery_orders SET closed = TRUE WHERE id = :id", [':id' => $sourceId]);
+        }
+    }
 
     // ── 6. LxCars: Fahrzeug-Zuordnung + Fertigstellung + Mängel kopieren ──
     // Nur bei aktiver Erweiterung: ohne LxCars gibt es die Tabellen oe_ext/ar_ext
@@ -2810,9 +3126,12 @@ function importSilverDATItems($data) {
  * @param object $company   DbhCompany-Handle
  * @param string $fakturaType order|purchase_order|quotation|request_quotation|credit_note|invoice_storno
  * @param int    $fakturaID   ID in oe bzw. ar
+ * @param bool   $force       auch eine Rechnung (ar) berechnen — nur für eine frisch aus einem
+ *                            Lieferschein erstellte, noch ungebuchte Rechnung (der Lieferschein
+ *                            hat keine Beträge, ohne Summe scheitert die Buchung)
  * @return bool true wenn neu berechnet wurde
  */
-function recalcFakturaTotals($company, $fakturaType, $fakturaID) {
+function recalcFakturaTotals($company, $fakturaType, $fakturaID, $force = false) {
     $fakturaID = intval($fakturaID);
     if ($fakturaID <= 0) {
         return false;
@@ -2821,7 +3140,7 @@ function recalcFakturaTotals($company, $fakturaType, $fakturaID) {
     if (in_array($fakturaType, ['order', 'purchase_order', 'quotation', 'request_quotation'])) {
         $mainTable = 'oe';
         $itemsTable = 'orderitems';
-    } elseif (hasNegativeQty($fakturaType)) {
+    } elseif (hasNegativeQty($fakturaType) || ($force && $fakturaType === 'invoice')) {
         $mainTable = 'ar';
         $itemsTable = 'invoice';
     } else {
@@ -2888,10 +3207,11 @@ SQL;
 function _fakturaImportItems($company, $fakturaID, $fakturaType, array $items, $buchungsgruppeTeile, $buchungsgruppeArbeit) {
     $tableConfig = getFakturaTableConfig($fakturaType);
     $itemsTable = $tableConfig['items_table'];
+    $itemsFk = $tableConfig['items_fk'];
     $isInvoiceType = in_array($fakturaType, ['invoice', 'purchase_invoice']);
 
     // Nächste Position ermitteln
-    $positionQuery = "SELECT COALESCE(MAX(position), 0) AS max_position FROM {$itemsTable} WHERE trans_id = :fakturaID";
+    $positionQuery = "SELECT COALESCE(MAX(position), 0) AS max_position FROM {$itemsTable} WHERE {$itemsFk} = :fakturaID";
     $nextPosition = intval($company->getOne($positionQuery, ['fakturaID' => $fakturaID])['max_position']);
 
     $createdIds = [];

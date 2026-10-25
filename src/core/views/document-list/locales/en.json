@@ -34,7 +34,8 @@
             "partnumber": "Article number",
             "unit": "Unit",
             "sellprice": "Sales price",
-            "onhand": "Stock"
+            "onhand": "Stock",
+            "confirmation": "Confirmed"
         },
         "search": "Search (number, customer, description)",
         "searchParts": "Search (article number, description)",
@@ -154,6 +155,19 @@
             "service": "Service",
             "assembly": "Assembly",
             "assortment": "Assortment"
+        },
+        "confirmation": {
+            "filterLabel": "Confirmation",
+            "open": "Order intake",
+            "suggested": "Suggestion",
+            "confirmed": "Confirmed",
+            "suggestedHint": "The AI detected an acceptance or refusal in a call, WhatsApp or email — please review in the order",
+            "suggestedTotal": "To review",
+            "suggestedShort": "review",
+            "openShort": "open",
+            "via": "Confirmed · {channel}",
+            "yes": "yes",
+            "no": "no"
         }
     }
 }

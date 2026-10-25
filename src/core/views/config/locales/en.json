@@ -912,9 +912,6 @@
         "aagOnlinePassword_help": "Password for AAG Online",
         "aagOnlinePassword2": "AAG Online Password (Repeat)",
         "aagOnlinePassword2_help": "Password repetition for confirmation",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "mega macs address (URL)",
-        "gutmannMegamacsUrl_help": "Address or URL template of the mega macs X. Placeholders {hsn} {tsn} {vin} are substituted, e.g. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Without placeholders, hsn/tsn/vin are appended (often ignored by SPA UIs). Tip: select a vehicle on the device and copy the address bar.",
         "hgsData": "HGS Data",
         "hgsDataUser": "HGS Data user",
         "hgsDataUser_help": "Username for HGS Data (for vehicle search by HSN/TSN)",
@@ -1501,7 +1498,15 @@
         "sumupAutoSend": "Send amount automatically",
         "sumupAutoSend_help": "When an invoice is created from a quotation or order, the open amount is sent to the terminal immediately (default: on). Opening existing or paid invoices never sends automatically",
         "shopWebsite": "Customer portal website",
-        "shopWebsite_help": "The website the HugoShop runs on — assigned in the sales channels, set up under System → Websites."
+        "shopWebsite_help": "The website the HugoShop runs on — assigned in the sales channels, set up under System → Websites.",
+        "orderConfirmation": "Order confirmation",
+        "orderConfirmAi": "Detect acceptances with AI",
+        "orderConfirmAi_help": "Calls (recording), WhatsApp messages (including voice messages and reply buttons) and emails from customers with an open order intake (not closed, not yet invoiced) are transcribed and checked by the AI for an acceptance or refusal. \"Suggestion\": the order shows the detected acceptance with a quote and is confirmed with a click. \"Automatic\": unambiguous acceptances via WhatsApp or phone (one open order, no condition, high certainty) are confirmed right away; emails always stay suggestions because their sender can be forged. Requires an Anthropic API key, the Whisper service and the oserp-auftragsbestaetigung service, and for emails also the oserp-email-eingang service with a configured mailbox. Calls may only be recorded with the caller's consent.",
+        "orderConfirmAiOff": "Off",
+        "orderConfirmAiSuggest": "Suggestion — confirm with a click",
+        "orderConfirmAiAuto": "Automatic for unambiguous acceptance",
+        "orderConfirmAiDays": "Order intakes of the last days",
+        "orderConfirmAiDays_help": "Only order intakes no older than this many days are considered for an acceptance (default 60). Older unconfirmed orders are not checked."
     },
     "add": "Add",
     "add_fields": {

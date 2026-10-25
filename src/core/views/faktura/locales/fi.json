@@ -65,8 +65,13 @@
             "createComplaint": "Reklamation erstellen",
             "cancel": "Stornieren",
             "saveAsDraft": "Als Entwurf speichern",
-            "history": "Verlauf",
-            "followUp": "Wiedervorlage",
+            "followUp": "Muistutus",
+            "followUpOpen": "Avoimet muistutukset: {n}",
+            "followUpNew": "Uusi muistutus",
+            "followUpDone": "Valmis",
+            "followUpSaved": "Muistutus tallennettu",
+            "followUpMarkedDone": "Muistutus kuitattu",
+            "followUpError": "Muistutusta ei voitu tallentaa",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Poista",
             "pdfPreview": "PDF-Vorschau",
@@ -182,8 +187,6 @@
             "openVehicle": "Fahrzeug",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Avaa ajoneuvo ESI[tronic]issa",
-            "openGutmann": "Avaa ajoneuvo Hella Gutmann mega macs:ssa",
             "openHgs": "Avaa ajoneuvotiedot HGS Datassa",
             "hgsError": "HGS Dataa ei voitu avata",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Lasku on maksettu kokonaan",
                 "alreadyPaid": "Korttimaksu {amount} € oli jo suoritettu – mitään ei lähetetty uudelleen",
                 "synced": "Korttimaksu {amount} € lisätty SumUpista"
+            },
+            "confirmation": {
+                "open": "Ei vielä vahvistettu",
+                "openHint": "Miten asiakas hyväksyi tilauksen? Vahvistettaessa nykyinen summa kirjataan.",
+                "confirmed": "Vahvistettu",
+                "notRecorded": "Vahvistustapaa ei ole kirjattu.",
+                "suggestedAccept": "Hyväksyntä tunnistettu — tarkista",
+                "suggestedDecline": "Kieltäytyminen tunnistettu",
+                "uncertain": "Tunnistus epävarma — tarkista lainaus huolellisesti.",
+                "condition": "Ehto: {condition}",
+                "amountIncreased": "Noussut {diff} vahvistuksen jälkeen (vahvistettu: {amount})",
+                "auto": "automaattisesti (tekoäly)",
+                "confirm": "Vahvista",
+                "dismiss": "Hylkää",
+                "acknowledge": "Kuittaa",
+                "reconfirm": "Vahvista uudelleen",
+                "record": "Täydennä tiedot",
+                "revoke": "Peru vahvistus",
+                "revokeQuestion": "Tilaus palautuu saapuneeksi tilaukseksi. Aiempi vahvistus jää näkyviin historiaan.",
+                "more": "Lisää toimintoja",
+                "playCall": "Kuuntele puhelu",
+                "openChat": "Avaa keskustelu",
+                "recordingMissing": "Tälle puhelulle ei löytynyt nauhoitetta",
+                "dialogTitle": "Vahvista tilaus",
+                "howQuestion": "Miten asiakas hyväksyi tilauksen?",
+                "when": "Hyväksynnän ajankohta",
+                "note": "Huomautus (valinnainen)",
+                "notePlaceholder": "esim. mitä asiakas sanoi",
+                "amountHint": "Vahvistetaan nykyinen summa {amount}. Jos se myöhemmin nousee, tilaus näyttää sen.",
+                "cancel": "Peruuta",
+                "savedConfirmed": "Tilaus vahvistettu",
+                "savedDismissed": "Ehdotus hylätty",
+                "savedAcknowledged": "Kieltäytyminen kuitattu",
+                "savedRevoked": "Vahvistus peruttu",
+                "channel": {
+                    "phone": "Puhelin",
+                    "email": "Sähköposti",
+                    "whatsapp": "WhatsApp",
+                    "visit": "Paikan päällä",
+                    "signature": "Allekirjoitus",
+                    "portal": "Asiakasportaali",
+                    "other": "Muu"
+                },
+                "saveError": "Se ei onnistunut — tilausta on todennäköisesti muutettu sillä välin. Näkymä on ladattu uudelleen, tarkista vielä kerran."
             }
         },
         "workflow": {
@@ -442,9 +489,13 @@
             "invoice": "Lasku",
             "order": "Tilaus",
             "quotation": "Tarjous",
-            "delivery_order": "Lieferschein",
+            "delivery_order": "Lähete",
             "credit_note": "Gutschrift",
-            "invoice_storno": "Storno-Rechnung"
+            "invoice_storno": "Storno-Rechnung",
+            "purchase_order": "Ostotilaus",
+            "purchase_invoice": "Ostolasku",
+            "request_quotation": "Tarjouspyyntö",
+            "purchase_delivery_order": "Ostolähete"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."
+        },
+        "history": {
+            "title": "Historia",
+            "reload": "Päivitä",
+            "close": "Sulje",
+            "lastChange": "viimeksi muutettu {time}, muuttaja {name}",
+            "changedBy": "{name} muutti juuri tätä asiakirjaa",
+            "createdInfo": "Luotu {time}",
+            "filter": {
+                "all": "Kaikki",
+                "head": "Otsikkotiedot",
+                "items": "Rivit",
+                "events": "Tila ja lähetys"
+            },
+            "filterEmployee": "Kuka",
+            "search": "Hae",
+            "timeTravel": "Aikamatka",
+            "today": "Tänään",
+            "backToToday": "Takaisin tähän päivään",
+            "asOf": "Tila ennen muokkausta {time} – silloin → tänään",
+            "stepsBack": "{n} muokkaus taaksepäin | {n} muokkausta taaksepäin",
+            "noDiff": "Otsikkotiedot ja rivit olivat silloin samat kuin nyt.",
+            "travelItem": {
+                "added": "lisätty sen jälkeen",
+                "removed": "poistettu sen jälkeen",
+                "changed": "muutettu sen jälkeen"
+            },
+            "noMatch": "Ei merkintöjä tällä suodattimella.",
+            "empty": "Muutoksia ei ole vielä tallennettu. Historia alkaa seuraavasta muutoksesta.",
+            "item": {
+                "added": "lisätty",
+                "removed": "poistettu",
+                "changed": "muutettu"
+            },
+            "milestone": {
+                "created": "Asiakirja luotu",
+                "deleted": "Asiakirja poistettu",
+                "confirmed": "Tilaus vahvistettu",
+                "unconfirmed": "Vahvistus peruttu",
+                "closed": "Valmis",
+                "reopened": "Avattu uudelleen",
+                "paid": "Maksu {amount}",
+                "storno": "Mitätöity",
+                "printed": "Tulostettu"
+            },
+            "summary": {
+                "itemsAdded": "{n} rivi lisätty | {n} riviä lisätty",
+                "itemsChanged": "{n} rivi muutettu | {n} riviä muutettu",
+                "itemsRemoved": "{n} rivi poistettu | {n} riviä poistettu",
+                "amount": "Summa {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Tallennettu",
+                "printed": "Tulostettu",
+                "posted": "Kirjattu",
+                "printedPosted": "Tulostettu ja kirjattu",
+                "screened": "Näytetty näytöllä",
+                "mailed": "Lähetetty sähköpostilla",
+                "deleted": "Poistettu",
+                "storno": "Mitätöity",
+                "paymentPosted": "Maksu kirjattu",
+                "previewed": "Esikatselu näytetty",
+                "canceled": "Keskeytetty"
+            },
+            "link": {
+                "to": "{type} {number} luotu tästä",
+                "from": "Luotu asiakirjasta {type} {number}"
+            },
+            "followup": {
+                "created": "Muistutus luotu: {subject} (erääntyy {date})",
+                "done": "Muistutus käsitelty: {subject}"
+            },
+            "sent": {
+                "email": "Sähköpostilla vastaanottajalle {to}",
+                "whatsapp": "WhatsApp-viestinä vastaanottajalle {to}",
+                "post": "Postitse vastaanottajalle {to}",
+                "dhl": "DHL-lähetys {to}",
+                "other": "Lähetetty vastaanottajalle {to}"
+            },
+            "fields": {
+                "parts_id": "Nimike",
+                "paid": "Maksettu",
+                "datepaid": "Maksupäivä",
+                "record_type": "Asiakirjatyyppi",
+                "order_type": "Asiakirjatyyppi",
+                "quotation": "Tarjous",
+                "storno": "Mitätöity",
+                "storno_id": "Mitätöity asiakirja",
+                "dunning_config_id": "Maksumuistutustaso",
+                "cp_id": "Yhteyshenkilö",
+                "globalproject_id": "Projekti",
+                "project_id": "Projekti",
+                "optional": "Valinnainen rivi",
+                "subtotal": "Välisumma",
+                "serialnumber": "Sarjanumero",
+                "pricegroup_id": "Hintaryhmä",
+                "price_factor_id": "Hintakerroin",
+                "orderer_id": "Tilaaja",
+                "delivered": "Toimitettu",
+                "proforma": "Proforma",
+                "order_probability": "Tilauksen todennäköisyys",
+                "expected_billing_date": "Arvioitu laskutuspäivä",
+                "tax_point": "Toimituspäivä",
+                "vendor_confirmation_number": "Toimittajan vahvistusnumero",
+                "oreqnumber": "Tarjouspyynnön numero",
+                "invnumber_for_credit_note": "Hyvitettävän laskun numero",
+                "is_sepa_blocked": "SEPA estetty",
+                "order_status_id": "Tilauksen tila",
+                "no_whatsapp": "Ei WhatsAppia"
+            },
+            "recordType": {
+                "sales_order": "Myyntitilaus (vahvistettu)",
+                "sales_order_intake": "Saapunut tilaus (vahvistamaton)",
+                "sales_quotation": "Tarjous",
+                "request_quotation": "Tarjouspyyntö",
+                "purchase_quotation_intake": "Saapunut tarjous",
+                "purchase_order": "Ostotilaus",
+                "purchase_order_confirmation": "Toimittajan tilausvahvistus",
+                "sales_delivery_order": "Lähete",
+                "purchase_delivery_order": "Ostolähete",
+                "supplier_delivery_order": "Toimittajan lähete",
+                "rma_delivery_order": "Palautuslähete"
+            },
+            "yes": "Kyllä",
+            "no": "Ei",
+            "automatic": "Automaattinen",
+            "external": "kivitendo / ulkoinen",
+            "unknownEmployee": "Tuntematon",
+            "source": {
+                "external": "OSERPin ulkopuolella",
+                "recurring": "toistuva lasku",
+                "ebay": "eBay-tuonti",
+                "portal": "Verkkokauppa / asiakasportaali"
+            }
         }
     }
 }

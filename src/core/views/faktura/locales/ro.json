@@ -65,8 +65,13 @@
             "createComplaint": "Reklamation erstellen",
             "cancel": "Stornieren",
             "saveAsDraft": "Als Entwurf speichern",
-            "history": "Verlauf",
-            "followUp": "Wiedervorlage",
+            "followUp": "Reamintire",
+            "followUpOpen": "Reamintiri deschise: {n}",
+            "followUpNew": "Reamintire nouă",
+            "followUpDone": "Rezolvat",
+            "followUpSaved": "Reamintire salvată",
+            "followUpMarkedDone": "Reamintire rezolvată",
+            "followUpError": "Reamintirea nu a putut fi salvată",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Ștergere",
             "pdfPreview": "PDF-Vorschau",
@@ -182,8 +187,6 @@
             "openVehicle": "Fahrzeug",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Deschide vehiculul în ESI[tronic]",
-            "openGutmann": "Deschide vehiculul în Hella Gutmann mega macs",
             "openHgs": "Deschide datele vehiculului în HGS Data",
             "hgsError": "Nu s-a putut deschide HGS Data",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Factură achitată integral",
                 "alreadyPaid": "Plata cu cardul de {amount} € fusese deja efectuată – nu s-a retrimis nimic",
                 "synced": "Plata cu cardul de {amount} € a fost preluată din SumUp"
+            },
+            "confirmation": {
+                "open": "Încă neconfirmată",
+                "openHint": "Cum a acceptat clientul? Prin confirmare se reține suma actuală.",
+                "confirmed": "Confirmată",
+                "notRecorded": "Nu este înregistrat cum s-a făcut confirmarea.",
+                "suggestedAccept": "Acceptare detectată — verificați",
+                "suggestedDecline": "Refuz detectat",
+                "uncertain": "Detectare incertă — verificați citatul cu atenție.",
+                "condition": "Condiție: {condition}",
+                "amountIncreased": "A crescut cu {diff} de la confirmare (confirmat: {amount})",
+                "auto": "automat (AI)",
+                "confirm": "Confirmă",
+                "dismiss": "Respinge",
+                "acknowledge": "Am înțeles",
+                "reconfirm": "Reconfirmă",
+                "record": "Completează datele",
+                "revoke": "Retrage confirmarea",
+                "revokeQuestion": "Comanda revine la starea de comandă primită. Confirmarea anterioară rămâne vizibilă în istoric.",
+                "more": "Alte acțiuni",
+                "playCall": "Ascultă apelul",
+                "openChat": "Deschide chatul",
+                "recordingMissing": "Nu s-a găsit nicio înregistrare pentru acest apel",
+                "dialogTitle": "Confirmă comanda",
+                "howQuestion": "Cum a acceptat clientul?",
+                "when": "Momentul acceptării",
+                "note": "Notă (opțional)",
+                "notePlaceholder": "de ex. ce a spus clientul",
+                "amountHint": "Se confirmă suma actuală de {amount}. Dacă aceasta crește ulterior, comanda va semnala acest lucru.",
+                "cancel": "Anulare",
+                "savedConfirmed": "Comandă confirmată",
+                "savedDismissed": "Sugestie respinsă",
+                "savedAcknowledged": "Refuz luat la cunoștință",
+                "savedRevoked": "Confirmare retrasă",
+                "channel": {
+                    "phone": "Telefon",
+                    "email": "E-mail",
+                    "whatsapp": "WhatsApp",
+                    "visit": "La fața locului",
+                    "signature": "Semnătură",
+                    "portal": "Portalul clienților",
+                    "other": "Altele"
+                },
+                "saveError": "Nu a funcționat — comanda a fost probabil modificată între timp. Afișarea a fost reîncărcată, verificați din nou."
             }
         },
         "workflow": {
@@ -444,7 +491,11 @@
             "quotation": "Ofertă",
             "delivery_order": "Aviz de livrare",
             "credit_note": "Notă de credit",
-            "invoice_storno": "Storno-Rechnung"
+            "invoice_storno": "Storno-Rechnung",
+            "purchase_order": "Comandă de achiziție",
+            "purchase_invoice": "Factură de furnizor",
+            "request_quotation": "Cerere de ofertă",
+            "purchase_delivery_order": "Aviz de însoțire de achiziție"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."
+        },
+        "history": {
+            "title": "Istoric",
+            "reload": "Actualizează",
+            "close": "Închide",
+            "lastChange": "ultima modificare {time} de {name}",
+            "changedBy": "{name} tocmai a modificat acest document",
+            "createdInfo": "Creat la {time}",
+            "filter": {
+                "all": "Toate",
+                "head": "Antet",
+                "items": "Poziții",
+                "events": "Stare și expediere"
+            },
+            "filterEmployee": "Cine",
+            "search": "Caută",
+            "timeTravel": "Călătorie în timp",
+            "today": "Astăzi",
+            "backToToday": "Înapoi la astăzi",
+            "asOf": "Starea înainte de modificarea din {time} – atunci → astăzi",
+            "stepsBack": "{n} modificare înapoi | {n} modificări înapoi",
+            "noDiff": "Antetul și pozițiile erau la fel ca astăzi.",
+            "travelItem": {
+                "added": "adăugat între timp",
+                "removed": "eliminat între timp",
+                "changed": "modificat între timp"
+            },
+            "noMatch": "Nicio înregistrare pentru acest filtru.",
+            "empty": "Nu s-au înregistrat încă modificări. Istoricul începe cu următoarea modificare.",
+            "item": {
+                "added": "adăugat",
+                "removed": "eliminat",
+                "changed": "modificat"
+            },
+            "milestone": {
+                "created": "Document creat",
+                "deleted": "Document șters",
+                "confirmed": "Comandă confirmată",
+                "unconfirmed": "Confirmare retrasă",
+                "closed": "Finalizat",
+                "reopened": "Redeschis",
+                "paid": "Plată {amount}",
+                "storno": "Stornat",
+                "printed": "Tipărit"
+            },
+            "summary": {
+                "itemsAdded": "{n} poziție adăugată | {n} poziții adăugate",
+                "itemsChanged": "{n} poziție modificată | {n} poziții modificate",
+                "itemsRemoved": "{n} poziție eliminată | {n} poziții eliminate",
+                "amount": "Sumă {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Salvat",
+                "printed": "Tipărit",
+                "posted": "Înregistrat contabil",
+                "printedPosted": "Tipărit și înregistrat contabil",
+                "screened": "Afișat pe ecran",
+                "mailed": "Trimis prin e-mail",
+                "deleted": "Șters",
+                "storno": "Stornat",
+                "paymentPosted": "Plată înregistrată",
+                "previewed": "Previzualizare afișată",
+                "canceled": "Întrerupt"
+            },
+            "link": {
+                "to": "{type} {number} creat din acesta",
+                "from": "Creat din {type} {number}"
+            },
+            "followup": {
+                "created": "Reamintire creată: {subject} (scadentă la {date})",
+                "done": "Reamintire finalizată: {subject}"
+            },
+            "sent": {
+                "email": "Prin e-mail către {to}",
+                "whatsapp": "Prin WhatsApp către {to}",
+                "post": "Prin poștă către {to}",
+                "dhl": "Expediere DHL {to}",
+                "other": "Trimis către {to}"
+            },
+            "fields": {
+                "parts_id": "Articol",
+                "paid": "Plătit",
+                "datepaid": "Plătit la",
+                "record_type": "Tip document",
+                "order_type": "Tip document",
+                "quotation": "Ofertă",
+                "storno": "Stornat",
+                "storno_id": "Stornare pentru",
+                "dunning_config_id": "Nivel de somație",
+                "cp_id": "Persoană de contact",
+                "globalproject_id": "Proiect",
+                "project_id": "Proiect",
+                "optional": "Poziție opțională",
+                "subtotal": "Subtotal",
+                "serialnumber": "Număr de serie",
+                "pricegroup_id": "Grupă de prețuri",
+                "price_factor_id": "Factor de preț",
+                "orderer_id": "Solicitant",
+                "delivered": "Livrat",
+                "proforma": "Proforma",
+                "order_probability": "Probabilitate comandă",
+                "expected_billing_date": "Dată estimată de facturare",
+                "tax_point": "Data prestării",
+                "vendor_confirmation_number": "Număr de confirmare al furnizorului",
+                "oreqnumber": "Număr cerere",
+                "invnumber_for_credit_note": "Număr factură pentru nota de credit",
+                "is_sepa_blocked": "SEPA blocat",
+                "order_status_id": "Stare comandă",
+                "no_whatsapp": "Fără WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Comandă (confirmată)",
+                "sales_order_intake": "Comandă primită (neconfirmată)",
+                "sales_quotation": "Ofertă",
+                "request_quotation": "Cerere de ofertă",
+                "purchase_quotation_intake": "Ofertă primită",
+                "purchase_order": "Comandă de achiziție",
+                "purchase_order_confirmation": "Confirmare de comandă a furnizorului",
+                "sales_delivery_order": "Aviz de însoțire",
+                "purchase_delivery_order": "Aviz de însoțire achiziție",
+                "supplier_delivery_order": "Aviz de însoțire material pus la dispoziție",
+                "rma_delivery_order": "Aviz de retur"
+            },
+            "yes": "Da",
+            "no": "Nu",
+            "automatic": "Automat",
+            "external": "kivitendo / extern",
+            "unknownEmployee": "Necunoscut",
+            "source": {
+                "external": "în afara OSERP",
+                "recurring": "factură recurentă",
+                "ebay": "import eBay",
+                "portal": "Magazin / portal clienți"
+            }
         }
     }
 }

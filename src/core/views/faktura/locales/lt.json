@@ -65,8 +65,13 @@
             "createComplaint": "Reklamation erstellen",
             "cancel": "Stornieren",
             "saveAsDraft": "Als Entwurf speichern",
-            "history": "Verlauf",
             "followUp": "Priminimas",
+            "followUpOpen": "Atviri priminimai: {n}",
+            "followUpNew": "Naujas priminimas",
+            "followUpDone": "Atlikta",
+            "followUpSaved": "Priminimas išsaugotas",
+            "followUpMarkedDone": "Priminimas atliktas",
+            "followUpError": "Nepavyko išsaugoti priminimo",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Ištrinti",
             "pdfPreview": "PDF-Vorschau",
@@ -182,8 +187,6 @@
             "openVehicle": "Transporto priemonė",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Atidaryti transporto priemonę ESI[tronic]",
-            "openGutmann": "Atidaryti transporto priemonę Hella Gutmann mega macs",
             "openHgs": "Atidaryti transporto priemonės duomenis HGS Data",
             "hgsError": "Nepavyko atidaryti HGS Data",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Sąskaita faktūra visiškai apmokėta",
                 "alreadyPaid": "Mokėjimas kortele {amount} € jau buvo atliktas – pakartotinai nieko neišsiųsta",
                 "synced": "Mokėjimas kortele {amount} € papildytas iš SumUp"
+            },
+            "confirmation": {
+                "open": "Dar nepatvirtinta",
+                "openHint": "Kaip klientas sutiko? Patvirtinant užfiksuojama dabartinė suma.",
+                "confirmed": "Patvirtinta",
+                "notRecorded": "Patvirtinimo būdas neužfiksuotas.",
+                "suggestedAccept": "Aptiktas sutikimas — peržiūrėkite",
+                "suggestedDecline": "Aptiktas atsisakymas",
+                "uncertain": "Aptikta nepatikimai — atidžiai patikrinkite citatą.",
+                "condition": "Sąlyga: {condition}",
+                "amountIncreased": "Nuo patvirtinimo padidėjo {diff} (patvirtinta: {amount})",
+                "auto": "automatiškai (DI)",
+                "confirm": "Patvirtinti",
+                "dismiss": "Atmesti",
+                "acknowledge": "Priimti žiniai",
+                "reconfirm": "Patvirtinti iš naujo",
+                "record": "Papildyti duomenis",
+                "revoke": "Atšaukti patvirtinimą",
+                "revokeQuestion": "Užsakymas vėl taps gautu užsakymu. Ankstesnis patvirtinimas liks matomas istorijoje.",
+                "more": "Daugiau veiksmų",
+                "playCall": "Perklausyti skambutį",
+                "openChat": "Atidaryti pokalbį",
+                "recordingMissing": "Šio skambučio įrašas nerastas",
+                "dialogTitle": "Patvirtinti užsakymą",
+                "howQuestion": "Kaip klientas sutiko?",
+                "when": "Sutikimo laikas",
+                "note": "Pastaba (neprivaloma)",
+                "notePlaceholder": "pvz., ką pasakė klientas",
+                "amountHint": "Patvirtinama dabartinė suma {amount}. Jei vėliau ji padidės, užsakymas tai parodys.",
+                "cancel": "Atšaukti",
+                "savedConfirmed": "Užsakymas patvirtintas",
+                "savedDismissed": "Pasiūlymas atmestas",
+                "savedAcknowledged": "Atsisakymas priimtas žiniai",
+                "savedRevoked": "Patvirtinimas atšauktas",
+                "channel": {
+                    "phone": "Telefonas",
+                    "email": "El. paštas",
+                    "whatsapp": "WhatsApp",
+                    "visit": "Vietoje",
+                    "signature": "Parašas",
+                    "portal": "Klientų portalas",
+                    "other": "Kita"
+                },
+                "saveError": "Nepavyko — užsakymas tikriausiai buvo pakeistas per tą laiką. Rodinys įkeltas iš naujo, peržiūrėkite dar kartą."
             }
         },
         "workflow": {
@@ -444,7 +491,11 @@
             "quotation": "Pasiūlymas",
             "delivery_order": "Važtaraštis",
             "credit_note": "Kreditinė sąskaita",
-            "invoice_storno": "Storno sąskaita"
+            "invoice_storno": "Storno sąskaita",
+            "purchase_order": "Pirkimo užsakymas",
+            "purchase_invoice": "Gauta sąskaita",
+            "request_quotation": "Užklausa",
+            "purchase_delivery_order": "Pirkimo važtaraštis"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."
+        },
+        "history": {
+            "title": "Istorija",
+            "reload": "Atnaujinti",
+            "close": "Uždaryti",
+            "lastChange": "paskutinį kartą pakeitė {name} {time}",
+            "changedBy": "{name} ką tik pakeitė šį dokumentą",
+            "createdInfo": "Sukurta {time}",
+            "filter": {
+                "all": "Visi",
+                "head": "Antraštė",
+                "items": "Pozicijos",
+                "events": "Būsena ir siuntimas"
+            },
+            "filterEmployee": "Kas",
+            "search": "Ieškoti",
+            "timeTravel": "Kelionė laiku",
+            "today": "Šiandien",
+            "backToToday": "Grįžti į šiandieną",
+            "asOf": "Būsena prieš {time} pakeitimą – tada → šiandien",
+            "stepsBack": "{n} pakeitimas atgal | {n} pakeitimai atgal",
+            "noDiff": "Antraštė ir pozicijos tada buvo tokios pat kaip šiandien.",
+            "travelItem": {
+                "added": "pridėta nuo tada",
+                "removed": "pašalinta nuo tada",
+                "changed": "pakeista nuo tada"
+            },
+            "noMatch": "Pagal šį filtrą įrašų nėra.",
+            "empty": "Pakeitimų dar neužregistruota. Istorija prasidės nuo kito pakeitimo.",
+            "item": {
+                "added": "pridėta",
+                "removed": "pašalinta",
+                "changed": "pakeista"
+            },
+            "milestone": {
+                "created": "Dokumentas sukurtas",
+                "deleted": "Dokumentas ištrintas",
+                "confirmed": "Užsakymas patvirtintas",
+                "unconfirmed": "Patvirtinimas atšauktas",
+                "closed": "Užbaigta",
+                "reopened": "Vėl atidaryta",
+                "paid": "Mokėjimas {amount}",
+                "storno": "Stornuota",
+                "printed": "Atspausdinta"
+            },
+            "summary": {
+                "itemsAdded": "Pridėta {n} pozicija | Pridėta {n} pozicijų",
+                "itemsChanged": "Pakeista {n} pozicija | Pakeista {n} pozicijų",
+                "itemsRemoved": "Pašalinta {n} pozicija | Pašalinta {n} pozicijų",
+                "amount": "Suma {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Išsaugota",
+                "printed": "Atspausdinta",
+                "posted": "Užregistruota apskaitoje",
+                "printedPosted": "Atspausdinta ir užregistruota apskaitoje",
+                "screened": "Parodyta ekrane",
+                "mailed": "Išsiųsta el. paštu",
+                "deleted": "Ištrinta",
+                "storno": "Stornuota",
+                "paymentPosted": "Mokėjimas užregistruotas",
+                "previewed": "Parodyta peržiūra",
+                "canceled": "Nutraukta"
+            },
+            "link": {
+                "to": "Iš jo sukurta: {type} {number}",
+                "from": "Sukurta iš: {type} {number}"
+            },
+            "followup": {
+                "created": "Priminimas sukurtas: {subject} (terminas {date})",
+                "done": "Priminimas įvykdytas: {subject}"
+            },
+            "sent": {
+                "email": "El. paštu adresu {to}",
+                "whatsapp": "Per WhatsApp gavėjui {to}",
+                "post": "Paštu adresu {to}",
+                "dhl": "DHL siunta {to}",
+                "other": "Išsiųsta gavėjui {to}"
+            },
+            "fields": {
+                "parts_id": "Prekė",
+                "paid": "Apmokėta",
+                "datepaid": "Apmokėjimo data",
+                "record_type": "Dokumento tipas",
+                "order_type": "Dokumento tipas",
+                "quotation": "Pasiūlymas",
+                "storno": "Stornuota",
+                "storno_id": "Stornavimas dokumentui",
+                "dunning_config_id": "Priminimo lygis",
+                "cp_id": "Kontaktinis asmuo",
+                "globalproject_id": "Projektas",
+                "project_id": "Projektas",
+                "optional": "Pasirenkama pozicija",
+                "subtotal": "Tarpinė suma",
+                "serialnumber": "Serijos numeris",
+                "pricegroup_id": "Kainų grupė",
+                "price_factor_id": "Kainos koeficientas",
+                "orderer_id": "Užsakovas",
+                "delivered": "Pristatyta",
+                "proforma": "Išankstinė sąskaita",
+                "order_probability": "Užsakymo tikimybė",
+                "expected_billing_date": "Numatoma sąskaitos išrašymo data",
+                "tax_point": "Paslaugos suteikimo data",
+                "vendor_confirmation_number": "Tiekėjo patvirtinimo numeris",
+                "oreqnumber": "Užklausos numeris",
+                "invnumber_for_credit_note": "Sąskaitos numeris kreditinei sąskaitai",
+                "is_sepa_blocked": "SEPA užblokuota",
+                "order_status_id": "Užsakymo būsena",
+                "no_whatsapp": "Be WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Užsakymas (patvirtintas)",
+                "sales_order_intake": "Gautas užsakymas (nepatvirtintas)",
+                "sales_quotation": "Pasiūlymas",
+                "request_quotation": "Pasiūlymo užklausa",
+                "purchase_quotation_intake": "Gautas pasiūlymas",
+                "purchase_order": "Pirkimo užsakymas",
+                "purchase_order_confirmation": "Tiekėjo užsakymo patvirtinimas",
+                "sales_delivery_order": "Važtaraštis",
+                "purchase_delivery_order": "Pirkimo važtaraštis",
+                "supplier_delivery_order": "Užsakovo medžiagų važtaraštis",
+                "rma_delivery_order": "Grąžinimo važtaraštis"
+            },
+            "yes": "Taip",
+            "no": "Ne",
+            "automatic": "Automatiškai",
+            "external": "kivitendo / išorinis",
+            "unknownEmployee": "Nežinomas",
+            "source": {
+                "external": "už OSERP ribų",
+                "recurring": "periodinė sąskaita",
+                "ebay": "eBay importas",
+                "portal": "Parduotuvė / klientų portalas"
+            }
         }
     }
 }

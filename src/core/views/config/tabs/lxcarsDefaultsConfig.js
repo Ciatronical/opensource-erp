@@ -38,10 +38,6 @@ const lxcarsDefaultsConfig = [
     { name: "aag_online_passwd", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.aagOnlinePassword", tooltip: "crm_fields.aagOnlinePassword_help" },
     { name: "aag_online_passwd2", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.aagOnlinePassword2", tooltip: "crm_fields.aagOnlinePassword2_help" },
 
-    { name: "gutmann", type: "headline", label: "crm_fields.gutmann" },
-
-    { name: "gutmann_megamacs_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.gutmannMegamacsUrl", tooltip: "crm_fields.gutmannMegamacsUrl_help" },
-
     { name: "hgs_data", type: "headline", label: "crm_fields.hgsData" },
 
     { name: "hgs_data_user", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.hgsDataUser", tooltip: "crm_fields.hgsDataUser_help" },

@@ -696,9 +696,6 @@
         "aagOnlinePassword_help": "Passwort für AAG Online",
         "aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "mega macs aadress (URL)",
-        "gutmannMegamacsUrl_help": "mega macs X aadress või URL-mall. Kohatäited {hsn} {tsn} {vin} asendatakse, nt http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Ilma kohatäideteta lisatakse hsn/tsn/vin (SPA sageli ignoreerib). Nõuanne: vali seadmes sõiduk ja kopeeri aadressiriba.",
         "hgsData": "HGS Data",
         "hgsDataUser": "HGS Data kasutaja",
         "hgsDataUser_help": "HGS Data kasutajanimi (sõiduki otsing HSN/TSN järgi)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Saada summa automaatselt",
         "sumupAutoSend_help": "Kui arve luuakse pakkumisest või tellimusest, saadetakse tasumata summa kohe terminali (vaikimisi: sees). Olemasolevate või tasutud arvete avamisel ei saadeta kunagi automaatselt",
         "shopWebsite": "Kliendiportaali veebileht",
-        "shopWebsite_help": "Veebileht, millel HugoShop töötab – määratud müügikanalites, seadistatud Süsteem → Veebilehed all."
+        "shopWebsite_help": "Veebileht, millel HugoShop töötab – määratud müügikanalites, seadistatud Süsteem → Veebilehed all.",
+        "orderConfirmation": "Tellimuse kinnitamine",
+        "orderConfirmAi": "Tuvasta nõusolekud AI abil",
+        "orderConfirmAi_help": "Avatud tellimuse vastuvõtuga (pole suletud, veel arveldamata) klientide kõned (salvestis), WhatsAppi sõnumid (ka häälsõnumid ja vastusenupud) ja e-kirjad transkribeeritakse ning AI kontrollib, kas need sisaldavad nõusolekut või keeldumist. „Ettepanek“: tellimus näitab tuvastatud nõusolekut koos tsitaadiga, kinnitamine toimub klõpsuga. „Automaatselt“: ühemõttelised nõusolekud WhatsAppi või telefoni kaudu (üks avatud tellimus, tingimusi pole, kõrge kindlus) kinnitatakse kohe; e-kirjad jäävad alati ettepanekuks, sest nende saatjat saab võltsida. Eeldus: Anthropicu API-võti, Whisperi teenus ja teenus oserp-auftragsbestaetigung, e-kirjade jaoks lisaks teenus oserp-email-eingang koos seadistatud postkastiga. Kõnesid tohib salvestada ainult helistaja nõusolekul.",
+        "orderConfirmAiOff": "Väljas",
+        "orderConfirmAiSuggest": "Ettepanek — kinnita klõpsuga",
+        "orderConfirmAiAuto": "Automaatselt ühemõttelise nõusoleku korral",
+        "orderConfirmAiDays": "Viimaste päevade tellimuste vastuvõtud",
+        "orderConfirmAiDays_help": "Nõusoleku jaoks võetakse arvesse ainult tellimuste vastuvõtte, mis ei ole vanemad kui see arv päevi (vaikimisi 60). Vanemaid kinnitamata tellimusi ei kontrollita."
     },
     "add": "Lisa",
     "add_fields": {

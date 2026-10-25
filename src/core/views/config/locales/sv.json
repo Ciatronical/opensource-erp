@@ -694,9 +694,6 @@
         "aagOnlinePassword_help": "Losenord für AAG Online",
         "aagOnlinePassword2": "AAG Online Losenord (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "mega macs-adress (URL)",
-        "gutmannMegamacsUrl_help": "Adress eller URL-mall för mega macs X. Platshållarna {hsn} {tsn} {vin} ersätts, t.ex. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Utan platshållare läggs hsn/tsn/vin till (ignoreras ofta av SPA). Tips: välj ett fordon på enheten och kopiera adressfältet.",
         "hgsData": "HGS Data",
         "hgsDataUser": "HGS Data-användare",
         "hgsDataUser_help": "Användarnamn för HGS Data (fordonssökning via HSN/TSN)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Skicka belopp automatiskt",
         "sumupAutoSend_help": "När en faktura skapas från en offert eller order skickas det återstående beloppet direkt till terminalen (standard: på). Vid öppning av befintliga eller betalda fakturor skickas aldrig något automatiskt",
         "shopWebsite": "Kundportalens webbplats",
-        "shopWebsite_help": "Webbplatsen HugoShop körs på – kopplad under försäljningskanaler, inställd under System → Webbplatser."
+        "shopWebsite_help": "Webbplatsen HugoShop körs på – kopplad under försäljningskanaler, inställd under System → Webbplatser.",
+        "orderConfirmation": "Orderbekräftelse",
+        "orderConfirmAi": "Identifiera accepter med AI",
+        "orderConfirmAi_help": "Samtal (inspelning), WhatsApp-meddelanden (även röstmeddelanden och svarsknappar) och e-post från kunder med en öppen inkommen order (inte avslutad, ännu inte fakturerad) transkriberas och granskas av AI för att hitta en accept eller ett avböjande. ”Förslag”: ordern visar den identifierade accepten med citat och bekräftas med ett klick. ”Automatiskt”: entydiga accepter via WhatsApp eller telefon (en öppen order, inget villkor, hög säkerhet) bekräftas direkt; e-post förblir alltid förslag, eftersom avsändaren kan förfalskas. Förutsättning: Anthropic-API-nyckel, Whisper-tjänsten och tjänsten oserp-auftragsbestaetigung, för e-post dessutom tjänsten oserp-email-eingang med en konfigurerad brevlåda. Samtal får bara spelas in med den uppringandes samtycke.",
+        "orderConfirmAiOff": "Av",
+        "orderConfirmAiSuggest": "Förslag — bekräfta med ett klick",
+        "orderConfirmAiAuto": "Automatiskt vid entydig accept",
+        "orderConfirmAiDays": "Inkomna ordrar från de senaste dagarna",
+        "orderConfirmAiDays_help": "Endast inkomna ordrar som är högst så här många dagar gamla kommer i fråga för en accept (standard 60). Äldre obekräftade ordrar granskas inte."
     },
     "add": "Lagg till",
     "add_fields": {

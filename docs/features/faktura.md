@@ -16,9 +16,20 @@ Das Faktura-Modul deckt den gesamten Belegfluss ab: Von der Anfrage über das An
 | Beleg | Beschreibung |
 |-------|-------------|
 | **Angebot** | Preisvorschlag an den Kunden |
-| **Auftrag** | Bestätigter Kundenauftrag |
+| **Auftrag** | Kundenauftrag — zunächst Auftragseingang, nach der Zusage des Kunden bestätigt (siehe [Auftragsbestätigung](#auftragsbestätigung-ki-erkennung-schalter)) |
 | **Rechnung** | Abrechnung an den Kunden |
+| **Lieferschein** | Lieferung an den Kunden; daraus wird die Rechnung |
 | **Einkaufsrechnung** | Eingangsrechnung vom Lieferanten |
+| **Bestellung, Anfrage, Einkaufslieferschein** | Einkaufsbelege an den Lieferanten |
+
+Welche Belegart ein Datensatz ist, erkennt die Faktura am Datensatz selbst — egal, über welchen Link er geöffnet wird (Liste, Schnellsuche, CRM-Karte, Wiedervorlage, Belegkette). Eine Bestellung öffnet also immer als Bestellung mit Lieferant, eine Anfrage als Anfrage, ein Einkaufslieferschein als Einkaufslieferschein. Bei Ausgangsrechnungen bestimmt weiterhin der Link die Rechnungsart (Rechnung, Gutschrift, Storno). Eingangsrechnungen öffnen im Journal, wo sie gebucht werden. Die Rechte prüft das Backend bei jedem Lesen und Schreiben mit der echten Belegart des Datensatzes, nicht mit der aus dem Aufruf (kivitendo-Rechte, z. B. `vendor_invoice_edit`, `request_quotation_edit`, `purchase_delivery_order_edit`).
+
+### Lieferscheine
+
+- Anlegen mit eigenem Nummernkreis wie kivitendo (`sdonumber` Verkauf, `pdonumber` Einkauf), auch auf dem alten kivitendo-Schema (`order_type` statt `record_type`)
+- Positionen bearbeiten, drucken (Vorlage `sales_delivery_order` bzw. `purchase_delivery_order`), versenden
+- **Lieferschein → Rechnung**: Betrag aus den Positionen, Buchung ins Hauptbuch, Liefer- und Auftragsnummer werden übernommen, der Lieferschein gilt danach als erledigt; eine zweite Rechnung aus demselben Lieferschein wird verhindert. Aus einem Einkaufslieferschein entsteht eine Eingangsrechnung.
+- Ein ausgelagerter Lieferschein (Lagerbewegung) lässt sich wie in kivitendo nicht mehr löschen
 
 ## Steuerzonen und Reverse Charge (§ 13b UStG)
 
@@ -65,6 +76,22 @@ Zu jedem Auftrag ist sichtbar, ob daraus schon eine Rechnung gemacht wurde — a
 - **Auftragsmaske**: rechts neben dem Versandstatus — Rechnungsnummer, Datum, bezahlt/offen (Klick öffnet die Rechnung) oder „Noch keine Rechnung“ mit dem Knopf „Rechnung erstellen“.
 
 Die Zuordnung ermittelt die SQL-Funktion `oe_invoice_status` (Upstall `crm`): über `record_links` (Auftrag → Rechnung, auch über einen Lieferschein) und für Altbelege über die Auftragsnummer im Rechnungskopf. Stornierte Rechnungen zählen nicht; gibt es nur solche, steht am Auftrag „Rechnung storniert“.
+
+### Auftragsbestätigung *(KI-Erkennung: Schalter)*
+
+Ein neuer Verkaufsauftrag ist zunächst **Auftragseingang**; bestätigt ist er, wenn der Kunde zugesagt hat. Der Stand steht in der Auftragsmaske zwischen Versand- und Rechnungsstatus — in Kompakt- und Vollansicht:
+
+- **Noch nicht bestätigt** (orange) mit dem Knopf „Bestätigen“. Der Dialog fragt, **wie** der Kunde zugesagt hat (Telefon, E-Mail, WhatsApp, vor Ort, Unterschrift, Kundenportal, Sonstiges), wann, und nimmt eine Notiz auf. Der zuletzt gewählte Weg ist beim nächsten Mal vorbelegt, Strg+Enter bestätigt.
+- **Bestätigt** (grün) mit Weg, Zeitpunkt und Mitarbeiter, dazu Notiz bzw. Zitat. Festgehalten wird auch der **Bruttobetrag zum Zeitpunkt der Bestätigung**: Wird der Auftrag danach teurer, steht „Seit der Bestätigung um … gestiegen“ dabei, mit dem Knopf „Neu bestätigen“. Über das Menü lässt sich die Bestätigung zurücknehmen; der Verlauf bleibt erhalten. Bei früher bestätigten Aufträgen ohne Angaben bietet die Maske „Angaben nachtragen“ an.
+- **Zusage erkannt** (blau) bzw. **Absage erkannt** (rot): ein Vorschlag der KI mit dem wörtlichen Zitat des Kunden, Weg und Zeitpunkt, einer erkannten Bedingung („nicht über 1200 €“) und — bei Anrufen bzw. WhatsApp — dem Knopf „Anruf anhören“ bzw. „Chat öffnen“. „Bestätigen“ übernimmt den Vorschlag, „Verwerfen“ bzw. „Zur Kenntnis“ erledigt ihn. Unsicher erkannte Vorschläge sind gekennzeichnet.
+
+**Auftragsliste** (`/auftrag`): Spalte „Bestätigt“ (Datum und Weg der Zusage, „prüfen“ bei einem Vorschlag, „offen“), Filter „Auftragseingang / Vorschlag / Bestätigt“ (auch per `?confirmed=suggested`) und in der Summenleiste „Zu prüfen“ mit der Zahl der Vorschläge — ein Klick filtert darauf. Export (PDF, Excel, CSV) führt die Spalte mit. In der **CRM-Belegkarte** zeigt das Symbol in der Spalte „Bestätigt“ einen offenen Vorschlag an; in der **Kontakthistorie** des Kunden stehen Bestätigungen, Rücknahmen und Vorschläge als eigene Einträge (siehe [CRM](crm.md#kontakthistorie)).
+
+**Erkennung per KI** (Firmenkonfiguration → CRM → Auftragsbestätigung, Schalter `order_confirm_ai`: *Aus*, *Vorschlag* oder *Automatisch*): Hat ein Kunde einen offenen Auftragseingang (nicht geschlossen, noch nicht berechnet, höchstens `order_confirm_ai_days` Tage alt, Vorgabe 60), landen seine Kontakte in einer Warteschlange — WhatsApp-Nachrichten (Text, Beschriftung gedrückter Antwortknöpfe, Sprachnachrichten) und Anrufe per Trigger, E-Mails aus dem Posteingang über den Dienst `oserp-email-eingang` (nur diese Nachrichten werden ganz geladen, ohne sie als gelesen zu markieren). Der Dienst `oserp-auftragsbestaetigung` arbeitet sie sofort ab: Anrufaufnahmen und Sprachnachrichten schreibt der lokale Whisper-Dienst mit, dann prüft Claude den Text gegen die Aufträge, die beim Eingang der Nachricht offen waren — Zusage, Absage, Rückfrage oder nichts, welcher Auftrag gemeint ist, mit Zitat und Bedingung. Zögern („ich überlege noch“) und Rückfragen werden nicht als Zusage gewertet; bei WhatsApp fließen die Nachrichten davor als Zusammenhang ein. Festgehalten wird der Betrag zum Zeitpunkt der Kundennachricht. Im Modus *Automatisch* bestätigt der Dienst nur eindeutige Fälle per WhatsApp oder Telefon selbst (genau ein offener Auftrag, keine Bedingung, Sicherheit ab 0,9) — sie tragen dann „automatisch (KI)“ —, alles andere bleibt Vorschlag; E-Mails bestätigen nie selbst, weil ihr Absender fälschbar ist und eine gemeinsame Adresse zu mehreren Kunden gehören kann. Auftragsmaske und Kontakthistorie aktualisieren sich live, die Auftragsliste beim nächsten Laden bzw. Filtern. Erledigte Einträge der Warteschlange (mit Mailtexten und Mitschriften) löscht der Dienst nach 30 Tagen.
+
+Voraussetzungen: Anthropic-API-Schlüssel, Whisper-Dienst `oserp-whisper`, für E-Mails der Dienst `oserp-email-eingang` mit eingerichtetem Postfach (nur Mails, die eingehen, während er läuft), Dienst `oserp-auftragsbestaetigung` (`install/install.sh --only auftragsbestaetigung`, Unit-Vorlage `install/oserp-auftragsbestaetigung.service`). Für Anrufe muss der Dienst das Aufnahmeverzeichnis von Asterisk lesen dürfen (der Installer gibt ihm die Gruppe `asterisk`). Modell: KI-Assistent „Auftragsbestätigung“ (Vorgabe Claude Sonnet 5). Anrufe dürfen nur mit Einwilligung des Anrufers aufgezeichnet werden; die Auswertung durch die KI gehört in die Datenschutzerklärung.
+
+Technik: Tabellen `oe_confirmation_oserp` (Bestätigungen und Vorschläge, kivitendos `oe` bleibt unverändert bis auf `record_type`) und `oe_confirmation_queue_oserp` (Warteschlange), SQL-Funktionen `oe_confirmation_status`, `oe_confirm`, `oe_confirmation_dismiss`, `oe_confirmation_suggest`, `oe_confirmation_candidates` im Upstall `crm`; API `setOrderConfirmed` / `dismissOrderConfirmation`; Dienst `backend/cli/auftragsbestaetigung.php` (`--once` arbeitet alle fälligen Einträge ab und beendet sich; Anrufe, deren Aufnahme noch fehlt, bleiben für den nächsten Lauf liegen). Neue Verkaufsaufträge starten auf allen Wegen als Auftragseingang — angelegt, aus Angebot oder anderem Beleg umgewandelt, kopiert, aus einem Telefonat oder von Weroni erstellt.
 
 ## Positionen
 
@@ -149,6 +176,32 @@ Grundlage ist die kivitendo-Konvention `record_links` (Beleg → `email_journal`
 ### Automatischer Versand beim Drucken *(Schalter)*
 
 *Firmenkonfiguration → CRM → Belegversand → Beim Drucken automatisch versenden*: Aus (Standard), per E-Mail, per WhatsApp oder beides. Nach erfolgreichem Druck geht der Beleg an die beim Kunden hinterlegten Kanäle — E-Mail an die Kunden-E-Mail (CC/BCC aus dem Kundenstamm), WhatsApp an die erste Mobilnummer mit dem zugeordneten Faktura-Template. Je Kanal wird nur **einmal** gesendet; ein zweiter Ausdruck schreibt den Kunden nicht erneut an. Fehlende Empfängerdaten oder Fehler werden je Kanal als Hinweis gemeldet, der Druck bleibt davon unberührt.
+
+## Wiedervorlage am Beleg
+
+Die Glocke in der Aktionsleiste legt eine Wiedervorlage zum geöffneten Beleg an — sobald der Beleg gespeichert ist. Der Dialog zeigt die feste Verknüpfung („Verknüpft mit: Auftrag 4711 (Kunde)“), dazu Datum mit Schnellwahl, Betreff, Notiz und zugewiesene Mitarbeiter (ohne Auswahl der Ersteller).
+
+- Ein **Badge** an der Glocke zählt die offenen Wiedervorlagen des Belegs; rot, sobald eine heute fällig oder überfällig ist
+- Gibt es offene Wiedervorlagen, öffnet die Glocke eine **Liste**: Fälligkeit (rot überfällig, orange heute), Betreff, zugewiesene Mitarbeiter; Klick öffnet die Wiedervorlage zum Bearbeiten, der Haken markiert sie als **erledigt**, darunter **Neue Wiedervorlage**
+- Die Liste zeigt alle offenen Wiedervorlagen des Belegs, nicht nur die eigenen — wer den Beleg öffnet, sieht, was zu ihm noch ansteht
+- In der Wiedervorlagen-Übersicht führt der Verknüpfungs-Chip zurück in den Beleg — für alle Belegarten inklusive Lieferschein und Einkauf; reine Buchungen (kivitendo `ar/ap/gl_transaction`) öffnen im Journal
+- Verschieben im Board oder Kalender der Übersicht lässt die Verknüpfung zum Beleg stehen
+- Wird ein Angebot oder Auftrag **geschlossen**, erledigt kivitendo dessen Wiedervorlagen per Trigger (`follow_up_close_when_oe_closed`); die Glocke zeigt das beim nächsten Öffnen des Belegs
+
+Gespeichert wird kivitendo-kompatibel in `follow_ups` / `notes` / `follow_up_links` mit dem kivitendo-`trans_type` des Belegs (`sales_quotation`, `sales_order`, `sales_delivery_order`, `sales_invoice`, `credit_note`, bei Lieferanten `request_quotation`, `purchase_order`, `purchase_delivery_order`, `purchase_invoice`). Die offenen Wiedervorlagen kommen mit dem Beleg in **einem** Aufruf (`getFakturaData` → `follow_ups`).
+
+## Verlauf (Belegchronik)
+
+Die Taste **Verlauf** in der Aktionsleiste zeigt, wer wann was am Beleg geändert hat; ihr Tooltip nennt die letzte Änderung („zuletzt geändert vor 5 Minuten von …“). Ändert jemand anderes den offenen Beleg, meldet ein Hinweis, wer es war.
+
+- **Eine Zeitleiste** für alles: Änderungen am Kopf, an den Positionen und an den Fahrzeugdaten (LxCars), Versand (E-Mail, WhatsApp, Post, DHL), Belegkette („Rechnung 4711 daraus erstellt“, anklickbar), Wiedervorlagen und die kivitendo-Vorgeschichte (gespeichert, gedruckt, gebucht, gemailt)
+- **Zusammengefasst und netto**: Faktura speichert jedes Feld einzeln — Änderungen derselben Person kurz hintereinander erscheinen als eine Bearbeitung, eine Kette A → B → C als A → C, eine kurz angelegte und wieder gelöschte Position gar nicht. Je Bearbeitung eine Zusammenfassung („2 Positionen hinzugefügt · Betrag 975,41 € → 1.189,39 €“)
+- **Klartext**: Feldnamen wie in der Maske, IDs als Namen (auch gelöschte Mitarbeiter, Kunden, Artikel), Beträge, Daten, Rabatte formatiert; Wendepunkte als Etikett: angelegt, Auftrag bestätigt/Bestätigung zurückgenommen, erledigt/wieder geöffnet, Zahlung +x €, storniert, gedruckt
+- **Herkunft**: Änderungen über OSERP tragen den angemeldeten Mitarbeiter (aus der Anmeldung, nicht aus dem Request), automatische als „Automatisch · wiederkehrende Rechnung/eBay-Import“, alles außerhalb von OSERP (kivitendo, Reparatur-SQL) als „kivitendo / extern“
+- **Filter**: Kopf, Positionen, Status & Versand, nach Person, Volltext
+- **Zeitreise**: ein Regler rechnet Kopf und Positionen auf den Stand vor einer Bearbeitung zurück und zeigt, was sich seitdem geändert hat (Felder damals → heute, Positionen hinzugekommen/entfernt/geändert) — ohne gespeicherte Schnappschüsse
+
+Technik: Trigger `record_history_log()` (Upstall `crm`, für `oe_ext`/`ar_ext` Upstall `lxcars`) auf den kivitendo-Tabellen `oe`, `ar`, `ap`, `delivery_orders`, `orderitems`, `invoice`, `delivery_order_items` schreibt je Änderung den Diff der Spalten nach `record_history_oserp` — technische und abgeleitete Spalten (Zeiten, Margen, Positionsnummern, Kopien der Belegnummer) bleiben draußen, unveränderte Speicherungen erzeugen keine Zeile. Mitarbeiter und Quelle setzt jede API-Anfrage zentral (`DbhCompany::begin`, `oserp.employee_id`/`oserp.source`), Cron-Skripte über `DbhCompany::setActor`. Die Chronik kommt in einer Abfrage (`getFakturaHistory`, rund 20 ms).
 
 ## Suche
 

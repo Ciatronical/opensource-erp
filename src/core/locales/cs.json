@@ -82,7 +82,8 @@
             "businessCard": "Sken vizitky",
             "phoneSearch": "Vyhledávání podle telefonu",
             "callTranscript": "Vyhodnocení hovoru",
-            "banking": "Prognóza likvidity"
+            "banking": "Prognóza likvidity",
+            "orderConfirm": "Potvrzení objednávky"
         }
     },
     "passwordField": {

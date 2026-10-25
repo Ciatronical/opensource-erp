@@ -45,6 +45,7 @@
         "hr": "/personal",
         "hrPayroll": "/personal/salarizare",
         "hrVacation": "/personal/concediu",
+        "hrPerformance": "/personal/performanta",
         "newDeliveryOrder": "/aviz-expeditie/nou",
         "setup": "/instalare",
         "login": "/autentificare",

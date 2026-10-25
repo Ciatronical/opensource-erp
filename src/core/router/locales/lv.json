@@ -45,6 +45,7 @@
         "hr": "/personals",
         "hrPayroll": "/personals/alga",
         "hrVacation": "/personals/atvalinajums",
+        "hrPerformance": "/personals/sniegums",
         "newDeliveryOrder": "/pavadzime/jauns",
         "setup": "/uzstadisana",
         "login": "/pieteiksanas",

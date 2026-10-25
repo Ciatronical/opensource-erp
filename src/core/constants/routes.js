@@ -16,6 +16,12 @@ export const ENTITY_ROUTE_NAMES = Object.freeze({
     quotation: 'faktura-quotation-view',
     credit_note: 'faktura-credit-note-view',
     delivery_order: 'faktura-delivery-order-view',
+    // Einkaufsbelege öffnen über die Route ihres Verkaufs-Gegenstücks; die Faktura
+    // ermittelt die echte Belegart aus dem Datensatz (resolveFakturaType)
+    purchase_invoice: 'faktura-invoice-view',
+    purchase_order: 'faktura-order-view',
+    request_quotation: 'faktura-quotation-view',
+    purchase_delivery_order: 'faktura-delivery-order-view',
     article: 'article-edit',
     vehicle: 'car',
     wiki: 'wiki-read'
@@ -36,7 +42,8 @@ export const DOCUMENT_LIST_ROUTE_NAMES = Object.freeze({
     purchase_order: 'order-list',
     quotation: 'quotation-list',
     request_quotation: 'quotation-list',
-    delivery_order: 'delivery-order-list'
+    delivery_order: 'delivery-order-list',
+    purchase_delivery_order: 'delivery-order-list'
 });
 
 /**
@@ -48,9 +55,24 @@ export const DOCUMENT_LIST_ROUTE_NAMES = Object.freeze({
 export const TRANS_TYPE_ROUTE_NAMES = Object.freeze({
     customer: 'customer-edit',
     vendor: 'vendor-edit',
-    sales_quotation: 'quotation-edit',
-    sales_order: 'order-edit',
-    sales_invoice: 'faktura-invoice-view'
+    // quotation-edit/order-edit sind nur Platzhalter („Seite nicht gefunden"),
+    // die Belege öffnet und bearbeitet die Faktura-Ansicht. Einkaufsbelege laufen
+    // über die Route des Verkaufs-Gegenstücks, die Faktura ermittelt die echte
+    // Belegart aus dem Datensatz. Alle trans_type-Werte von kivitendo (SL/FU.pm).
+    sales_quotation: 'faktura-quotation-view',
+    request_quotation: 'faktura-quotation-view',
+    purchase_quotation_intake: 'faktura-quotation-view',
+    sales_order: 'faktura-order-view',
+    sales_order_intake: 'faktura-order-view',
+    purchase_order: 'faktura-order-view',
+    purchase_order_confirmation: 'faktura-order-view',
+    sales_delivery_order: 'faktura-delivery-order-view',
+    purchase_delivery_order: 'faktura-delivery-order-view',
+    supplier_delivery_order: 'faktura-delivery-order-view',
+    sales_invoice: 'faktura-invoice-view',
+    purchase_invoice: 'faktura-invoice-view',
+    vendor_invoice: 'faktura-invoice-view',
+    credit_note: 'faktura-credit-note-view'
 });
 
 /**
@@ -60,8 +82,19 @@ export const TRANS_TYPE_ENTITIES = Object.freeze({
     customer: 'customer',
     vendor: 'vendor',
     sales_invoice: 'invoice',
+    purchase_invoice: 'purchase_invoice',
+    vendor_invoice: 'purchase_invoice',
+    credit_note: 'credit_note',
     sales_order: 'order',
-    sales_quotation: 'quotation'
+    sales_order_intake: 'order',
+    purchase_order: 'purchase_order',
+    purchase_order_confirmation: 'purchase_order',
+    sales_quotation: 'quotation',
+    request_quotation: 'request_quotation',
+    purchase_quotation_intake: 'request_quotation',
+    sales_delivery_order: 'delivery_order',
+    purchase_delivery_order: 'purchase_delivery_order',
+    supplier_delivery_order: 'purchase_delivery_order'
 });
 
 /**
@@ -85,7 +118,19 @@ export function entityRoute(type, id) {
  * @return {Object|null} Route-Objekt für router.push() oder null bei unbekanntem Typ
  */
 export function transTypeRoute(transType, id) {
+    if (id === undefined || id === null || id === '') return null;
+    // Reine Buchungen (kivitendo ar/ap/gl_transaction) zeigt das Journal
+    if (LEDGER_TRANS_TYPES[transType]) {
+        return { name: 'accounting-bookings', query: { src: LEDGER_TRANS_TYPES[transType], id: Number(id) } };
+    }
     const name = TRANS_TYPE_ROUTE_NAMES[transType];
-    if (!name || id === undefined || id === null || id === '') return null;
+    if (!name) return null;
     return { name, params: { id: Number(id) } };
 }
+
+/** kivitendo-`trans_type` reiner Buchungen → Quelle im Journal (accounting-bookings) */
+const LEDGER_TRANS_TYPES = Object.freeze({
+    ar_transaction: 'ar',
+    ap_transaction: 'ap',
+    gl_transaction: 'gl'
+});

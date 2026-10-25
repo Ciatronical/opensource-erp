@@ -82,7 +82,8 @@
             "businessCard": "名片扫描",
             "phoneSearch": "电话查询",
             "callTranscript": "通话分析",
-            "banking": "流动性预测"
+            "banking": "流动性预测",
+            "orderConfirm": "订单确认"
         }
     },
     "passwordField": {

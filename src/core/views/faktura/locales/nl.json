@@ -65,8 +65,13 @@
             "createComplaint": "Klacht aanmaken",
             "cancel": "Annuleren",
             "saveAsDraft": "Als concept opslaan",
-            "history": "Geschiedenis",
             "followUp": "Opvolging",
+            "followUpOpen": "Openstaande opvolgingen: {n}",
+            "followUpNew": "Nieuwe opvolging",
+            "followUpDone": "Afgehandeld",
+            "followUpSaved": "Opvolging opgeslagen",
+            "followUpMarkedDone": "Opvolging afgehandeld",
+            "followUpError": "Opvolging kon niet worden opgeslagen",
             "exportXInvoice": "Factur-X / ZUGFeRD",
             "delete": "Verwijderen",
             "pdfPreview": "PDF-voorbeeld",
@@ -182,8 +187,6 @@
             "openVehicle": "Voertuig",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Voertuig openen in ESI[tronic]",
-            "openGutmann": "Voertuig openen in Hella Gutmann mega macs",
             "openHgs": "Voertuiggegevens openen in HGS Data",
             "hgsError": "Kan HGS Data niet openen",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Factuur volledig betaald",
                 "alreadyPaid": "Kaartbetaling van {amount} € was al uitgevoerd – niets opnieuw verzonden",
                 "synced": "Kaartbetaling van {amount} € vanuit SumUp toegevoegd"
+            },
+            "confirmation": {
+                "open": "Nog niet bevestigd",
+                "openHint": "Hoe heeft de klant akkoord gegeven? Bij de bevestiging wordt het huidige bedrag vastgelegd.",
+                "confirmed": "Bevestigd",
+                "notRecorded": "Hoe er is bevestigd, is niet vastgelegd.",
+                "suggestedAccept": "Akkoord herkend — controleer",
+                "suggestedDecline": "Afwijzing herkend",
+                "uncertain": "Herkend met lage zekerheid — controleer het citaat zorgvuldig.",
+                "condition": "Voorwaarde: {condition}",
+                "amountIncreased": "Sinds de bevestiging met {diff} gestegen (bevestigd: {amount})",
+                "auto": "automatisch (AI)",
+                "confirm": "Bevestigen",
+                "dismiss": "Verwerpen",
+                "acknowledge": "Gezien",
+                "reconfirm": "Opnieuw bevestigen",
+                "record": "Gegevens aanvullen",
+                "revoke": "Bevestiging intrekken",
+                "revokeQuestion": "De order gaat terug naar de status “Orderontvangst”. De eerdere bevestiging blijft zichtbaar in de geschiedenis.",
+                "more": "Meer acties",
+                "playCall": "Gesprek beluisteren",
+                "openChat": "Chat openen",
+                "recordingMissing": "Geen opname gevonden voor dit gesprek",
+                "dialogTitle": "Order bevestigen",
+                "howQuestion": "Hoe heeft de klant akkoord gegeven?",
+                "when": "Tijdstip van akkoord",
+                "note": "Notitie (optioneel)",
+                "notePlaceholder": "bijv. wat de klant zei",
+                "amountHint": "Het huidige bedrag van {amount} wordt bevestigd. Stijgt het later, dan toont de order dat.",
+                "cancel": "Annuleren",
+                "savedConfirmed": "Order bevestigd",
+                "savedDismissed": "Suggestie verworpen",
+                "savedAcknowledged": "Afwijzing ter kennisgeving aangenomen",
+                "savedRevoked": "Bevestiging ingetrokken",
+                "channel": {
+                    "phone": "Telefoon",
+                    "email": "E-mail",
+                    "whatsapp": "WhatsApp",
+                    "visit": "Ter plaatse",
+                    "signature": "Handtekening",
+                    "portal": "Klantenportaal",
+                    "other": "Overig"
+                },
+                "saveError": "Dat is niet gelukt — de order is waarschijnlijk intussen gewijzigd. De weergave is opnieuw geladen, controleer het nog een keer."
             }
         },
         "workflow": {
@@ -444,7 +491,11 @@
             "quotation": "Offerte",
             "delivery_order": "Afleverbon",
             "credit_note": "Creditnota",
-            "invoice_storno": "Stornofactuur"
+            "invoice_storno": "Stornofactuur",
+            "purchase_order": "Inkooporder",
+            "purchase_invoice": "Inkoopfactuur",
+            "request_quotation": "Offerteaanvraag",
+            "purchase_delivery_order": "Inkoopafleverbon"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Toegang geweigerd: U heeft niet de vereiste rechten om dit document te bekijken. Neem contact op met uw beheerder."
+        },
+        "history": {
+            "title": "Geschiedenis",
+            "reload": "Vernieuwen",
+            "close": "Sluiten",
+            "lastChange": "laatst gewijzigd {time} door {name}",
+            "changedBy": "{name} heeft dit document zojuist gewijzigd",
+            "createdInfo": "Aangemaakt op {time}",
+            "filter": {
+                "all": "Alle",
+                "head": "Kop",
+                "items": "Regels",
+                "events": "Status & verzending"
+            },
+            "filterEmployee": "Wie",
+            "search": "Zoeken",
+            "timeTravel": "Tijdreis",
+            "today": "Vandaag",
+            "backToToday": "Terug naar vandaag",
+            "asOf": "Stand vóór de bewerking van {time} – toen → vandaag",
+            "stepsBack": "{n} bewerking terug | {n} bewerkingen terug",
+            "noDiff": "Kop en regels waren toen hetzelfde als nu.",
+            "travelItem": {
+                "added": "sindsdien toegevoegd",
+                "removed": "sindsdien verwijderd",
+                "changed": "sindsdien gewijzigd"
+            },
+            "noMatch": "Geen vermeldingen voor dit filter.",
+            "empty": "Nog geen wijzigingen vastgelegd. De geschiedenis begint bij de volgende wijziging.",
+            "item": {
+                "added": "toegevoegd",
+                "removed": "verwijderd",
+                "changed": "gewijzigd"
+            },
+            "milestone": {
+                "created": "Document aangemaakt",
+                "deleted": "Document verwijderd",
+                "confirmed": "Order bevestigd",
+                "unconfirmed": "Bevestiging ingetrokken",
+                "closed": "Afgehandeld",
+                "reopened": "Heropend",
+                "paid": "Betaling {amount}",
+                "storno": "Geannuleerd",
+                "printed": "Afgedrukt"
+            },
+            "summary": {
+                "itemsAdded": "{n} regel toegevoegd | {n} regels toegevoegd",
+                "itemsChanged": "{n} regel gewijzigd | {n} regels gewijzigd",
+                "itemsRemoved": "{n} regel verwijderd | {n} regels verwijderd",
+                "amount": "Bedrag {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Opgeslagen",
+                "printed": "Afgedrukt",
+                "posted": "Geboekt",
+                "printedPosted": "Afgedrukt en geboekt",
+                "screened": "Op scherm weergegeven",
+                "mailed": "Per e-mail verzonden",
+                "deleted": "Verwijderd",
+                "storno": "Geannuleerd",
+                "paymentPosted": "Betaling geboekt",
+                "previewed": "Voorbeeld weergegeven",
+                "canceled": "Afgebroken"
+            },
+            "link": {
+                "to": "{type} {number} hieruit aangemaakt",
+                "from": "Aangemaakt uit {type} {number}"
+            },
+            "followup": {
+                "created": "Opvolging aangemaakt: {subject} (vervalt {date})",
+                "done": "Opvolging afgehandeld: {subject}"
+            },
+            "sent": {
+                "email": "Per e-mail aan {to}",
+                "whatsapp": "Via WhatsApp aan {to}",
+                "post": "Per post aan {to}",
+                "dhl": "DHL-zending {to}",
+                "other": "Verzonden aan {to}"
+            },
+            "fields": {
+                "parts_id": "Artikel",
+                "paid": "Betaald",
+                "datepaid": "Betaald op",
+                "record_type": "Documenttype",
+                "order_type": "Documenttype",
+                "quotation": "Offerte",
+                "storno": "Geannuleerd",
+                "storno_id": "Annulering van",
+                "dunning_config_id": "Aanmaningsniveau",
+                "cp_id": "Contactpersoon",
+                "globalproject_id": "Project",
+                "project_id": "Project",
+                "optional": "Optionele regel",
+                "subtotal": "Subtotaal",
+                "serialnumber": "Serienummer",
+                "pricegroup_id": "Prijsgroep",
+                "price_factor_id": "Prijsfactor",
+                "orderer_id": "Besteller",
+                "delivered": "Geleverd",
+                "proforma": "Proforma",
+                "order_probability": "Orderkans",
+                "expected_billing_date": "Verwachte factuurdatum",
+                "tax_point": "Prestatiedatum",
+                "vendor_confirmation_number": "Bevestigingsnummer leverancier",
+                "oreqnumber": "Aanvraagnummer",
+                "invnumber_for_credit_note": "Factuurnummer voor creditnota",
+                "is_sepa_blocked": "SEPA geblokkeerd",
+                "order_status_id": "Orderstatus",
+                "no_whatsapp": "Geen WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Verkooporder (bevestigd)",
+                "sales_order_intake": "Orderontvangst (onbevestigd)",
+                "sales_quotation": "Offerte",
+                "request_quotation": "Offerteaanvraag",
+                "purchase_quotation_intake": "Ontvangen offerte",
+                "purchase_order": "Inkooporder",
+                "purchase_order_confirmation": "Orderbevestiging leverancier",
+                "sales_delivery_order": "Pakbon",
+                "purchase_delivery_order": "Inkooppakbon",
+                "supplier_delivery_order": "Leverancierspakbon",
+                "rma_delivery_order": "Retourpakbon"
+            },
+            "yes": "Ja",
+            "no": "Nee",
+            "automatic": "Automatisch",
+            "external": "kivitendo / extern",
+            "unknownEmployee": "Onbekend",
+            "source": {
+                "external": "buiten OSERP",
+                "recurring": "terugkerende factuur",
+                "ebay": "eBay-import",
+                "portal": "Shop / klantenportaal"
+            }
         }
     }
 }

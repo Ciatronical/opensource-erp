@@ -45,6 +45,7 @@
         "hr": "/personnel",
         "hrPayroll": "/personnel/paie",
         "hrVacation": "/personnel/conges",
+        "hrPerformance": "/personnel/performance",
         "newDeliveryOrder": "/bon-de-livraison/nouveau",
         "setup": "/installation",
         "login": "/connexion",

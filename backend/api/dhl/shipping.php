@@ -137,13 +137,26 @@ function getDhlShipments($data) {
         throw new ApiError('DHL_MISSING_PARAMS', 'Beleg-ID und Belegtyp sind erforderlich');
     }
 
+    // Etiketten tragen die Belegart, unter der sie erstellt wurden (Bestellungen früher
+    // als 'order') — deshalb alle Arten derselben Belegtabelle
+    $families = [
+        ['order', 'quotation', 'purchase_order', 'request_quotation'],
+        ['invoice', 'credit_note', 'invoice_storno'],
+        ['delivery_order', 'purchase_delivery_order'],
+        ['purchase_invoice'],
+    ];
+    $types = [$data['record_type']];
+    foreach ($families as $family) {
+        if (in_array($data['record_type'], $family, true)) $types = $family;
+    }
+
     $db = DbhCompany::begin();
     $shipments = $db->getAll(
         "SELECT id, shipment_no, product, weight, created_at, created_by
          FROM dhl_shipments
-         WHERE record_type = :record_type AND record_id = :record_id
+         WHERE record_type = ANY(CAST(:record_types AS text[])) AND record_id = :record_id
          ORDER BY created_at DESC",
-        [':record_type' => $data['record_type'], ':record_id' => $data['record_id']]
+        [':record_types' => '{' . implode(',', $types) . '}', ':record_id' => $data['record_id']]
     );
 
     resultInfo(true, '', ['shipments' => $shipments ?: []]);
@@ -184,7 +197,12 @@ function _getDhlRecipientAddress($db, string $recordType, int $recordId): ?array
         'order' => ['table' => 'oe', 'number_col' => 'ordnumber'],
         'delivery_order' => ['table' => 'delivery_orders', 'number_col' => 'donumber'],
         'quotation' => ['table' => 'oe', 'number_col' => 'quonumber'],
-        'credit_note' => ['table' => 'ar', 'number_col' => 'invnumber']
+        'credit_note' => ['table' => 'ar', 'number_col' => 'invnumber'],
+        // Einkaufsbelege: die Faktura kennt jetzt ihre echte Belegart
+        'invoice_storno' => ['table' => 'ar', 'number_col' => 'invnumber'],
+        'purchase_order' => ['table' => 'oe', 'number_col' => 'ordnumber'],
+        'request_quotation' => ['table' => 'oe', 'number_col' => 'quonumber'],
+        'purchase_delivery_order' => ['table' => 'delivery_orders', 'number_col' => 'donumber']
     ];
 
     $map = $tableMap[$recordType] ?? null;

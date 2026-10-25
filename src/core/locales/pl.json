@@ -82,7 +82,8 @@
             "businessCard": "Skan wizytówki",
             "phoneSearch": "Wyszukiwanie po telefonie",
             "callTranscript": "Analiza rozmowy",
-            "banking": "Prognoza płynności"
+            "banking": "Prognoza płynności",
+            "orderConfirm": "Potwierdzenie zamówienia"
         }
     },
     "passwordField": {

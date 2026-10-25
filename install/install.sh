@@ -95,8 +95,8 @@ as_user() { sudo -u "$OSERP_USER" -H bash -lc "$*"; }
 #  Schrittsteuerung
 # --------------------------------------------------------------------------
 ALL_STEPS=(packages php_fpm node_build database config permissions apache \
-           portforward tls sse whisper fsscanner fseingang ollama anpr go2rtc camera_monitor \
-           camera_sudoers cron dyndns asterisk borg kivitendo healthcheck)
+           portforward tls sse emaileingang whisper fsscanner fseingang ollama anpr go2rtc camera_monitor \
+           camera_sudoers cron dyndns asterisk auftragsbestaetigung borg kivitendo healthcheck)
 
 declare -A STEP_DESC=(
   [packages]="Systempakete via apt (Apache, PostgreSQL, PHP, Node, LaTeX, ffmpeg, borg, asterisk ...)"
@@ -109,6 +109,8 @@ declare -A STEP_DESC=(
   [portforward]="Ports 80/443 am Router per UPnP freigeben (sonst Anleitung für die FRITZ!Box)"
   [tls]="HTTPS: Let's-Encrypt-Zertifikat per certbot (nur mit öffentlichem Hostname)"
   [sse]="SSE-Echtzeitserver als systemd-Dienst"
+  [emaileingang]="E-Mail-Eingang: neue E-Mails per IMAP IDLE live in die Kontakthistorie melden (systemd-Dienst)"
+  [auftragsbestaetigung]="Auftragsbestätigung: Zusagen/Absagen in Anrufen, WhatsApp und E-Mails per KI erkennen (systemd-Dienst)"
   [whisper]="Whisper-Transkription (venv) als systemd-Dienst"
   [fsscanner]="Eigener Fahrzeugscheinscanner (venv, RapidOCR) als systemd-Dienst"
   [fseingang]="Fahrzeugschein-Eingang: Eingangsverzeichnisse der Mandanten überwachen (inotify) als systemd-Dienst"
@@ -746,6 +748,38 @@ setup_fseingang() {
 }
 
 # =============================================================================
+#  SCHRITT: emaileingang  — neue E-Mails live in die Kontakthistorie (IMAP IDLE)
+# =============================================================================
+setup_emaileingang() {
+    step "E-Mail-Eingang (IMAP-Überwachung für die Kontakthistorie)"
+    # Kein Zusatzpaket: eigener IMAP-Client über PHP-Streams. Postfächer kommen aus
+    # der Firmenkonfiguration (E-Mail) und den Mitarbeiterkonten, je Konto eine
+    # Verbindung auf Posteingang und Gesendet.
+    install_unit "$OSERP_ROOT/install/oserp-email-eingang.service" "oserp-email-eingang.service"
+    sudo systemctl enable --now oserp-email-eingang.service
+    ok "E-Mail-Eingang läuft — neue E-Mails erscheinen sofort in der Kontakthistorie"
+}
+
+# =============================================================================
+#  SCHRITT: auftragsbestaetigung  — Zusagen/Absagen der Kunden per KI erkennen
+# =============================================================================
+setup_auftragsbestaetigung() {
+    step "Auftragsbestätigung (Erkennung von Zusagen in Anrufen, WhatsApp, E-Mails)"
+    # Die Warteschlange füllen Trigger (WhatsApp, Anrufe) und der E-Mail-Eingang;
+    # der Dienst transkribiert mit oserp-whisper und fragt Claude. Für Anrufe muss
+    # er die Asterisk-Aufnahmen lesen dürfen → Zusatzgruppe asterisk, falls vorhanden
+    # (der Schritt steht deshalb in ALL_STEPS hinter asterisk).
+    install_unit "$OSERP_ROOT/install/oserp-auftragsbestaetigung.service" "oserp-auftragsbestaetigung.service"
+    if getent group asterisk >/dev/null; then
+        sudo mkdir -p /etc/systemd/system/oserp-auftragsbestaetigung.service.d
+        printf '[Service]\nSupplementaryGroups=asterisk\n' | sudo tee /etc/systemd/system/oserp-auftragsbestaetigung.service.d/asterisk.conf >/dev/null
+        sudo systemctl daemon-reload
+    fi
+    sudo systemctl enable --now oserp-auftragsbestaetigung.service
+    ok "Auftragsbestätigung läuft — einschalten je Mandant: Firmenkonfiguration → CRM → Auftragsbestätigung"
+}
+
+# =============================================================================
 #  SCHRITT: ollama  — stock ollama (offizieller Installer), Modell vorladen
 # =============================================================================
 setup_ollama() {
@@ -1156,7 +1190,7 @@ declare -A STEP_FN=(
   [packages]=install_packages [php_fpm]=setup_php_fpm [node_build]=node_build
   [database]=setup_database [config]=setup_config [permissions]=setup_permissions [apache]=setup_apache
   [portforward]=setup_portforward [tls]=setup_tls
-  [sse]=setup_sse [whisper]=setup_whisper [fsscanner]=setup_fsscanner [fseingang]=setup_fseingang [ollama]=setup_ollama [anpr]=setup_anpr
+  [sse]=setup_sse [emaileingang]=setup_emaileingang [auftragsbestaetigung]=setup_auftragsbestaetigung [whisper]=setup_whisper [fsscanner]=setup_fsscanner [fseingang]=setup_fseingang [ollama]=setup_ollama [anpr]=setup_anpr
   [go2rtc]=setup_go2rtc [camera_monitor]=setup_camera_monitor
   [camera_sudoers]=setup_camera_sudoers [cron]=setup_cron [dyndns]=setup_dyndns
   [asterisk]=setup_asterisk

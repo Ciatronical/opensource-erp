@@ -45,6 +45,7 @@
         "hr": "/personale",
         "hrPayroll": "/personale/buste-paga",
         "hrVacation": "/personale/ferie",
+        "hrPerformance": "/personale/rendimento",
         "newDeliveryOrder": "/documento-trasporto/nuovo",
         "setup": "/installazione",
         "login": "/accesso",

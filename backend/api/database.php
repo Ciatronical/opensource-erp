@@ -752,8 +752,56 @@ class DbhCompany {
         }
         if (null === self::$instance) {
             self::$instance = new ApiDatabase($pdo ?? DbhAuth::begin()->connectPDO());
+            self::setActorContext($pdo === null ? DbhAuth::begin()->getLogin() : null, $pdo === null ? 'api' : 'portal');
         }
         return self::$instance;
+    }
+
+    /**
+     * Wer schreibt: Mitarbeiter und Quelle in die DB-Sitzung (oserp.employee_id, oserp.source)
+     *
+     * Die Änderungs-Trigger (Belegchronik, Zeitreise der Kundenmaske) lesen beides per
+     * current_setting(). Die Verbindungen sind persistent: ohne dieses Setzen je Request
+     * stünde dort noch der Mitarbeiter eines früheren Requests. Der Mitarbeiter kommt
+     * aus dem Login der Sitzung, nie aus dem Request (fälschbar). oserp.cv_src der
+     * Kundenmaske wird mit zurückgesetzt. Schlägt das Setzen fehl, wird wenigstens
+     * geleert — ein alter Wert darf nie stehen bleiben.
+     *
+     * @param string|null $login  Login aus der Sitzung, null = kein Mitarbeiter
+     * @param string      $source api | portal (Shop/Webhook) | cron:… (Skripte)
+     */
+    private static function setActorContext($login, $source) {
+        try {
+            self::$instance->execute(
+                "SELECT set_config('oserp.employee_id', COALESCE((SELECT id::text FROM employee WHERE login = :login), ''), false),
+                        set_config('oserp.source', :source, false),
+                        set_config('oserp.cv_src', '', false)",
+                [':login' => $login, ':source' => $source]
+            );
+        } catch (Throwable $e) {
+            try {
+                self::$instance->execute(
+                    "SELECT set_config('oserp.employee_id', '', false), set_config('oserp.source', :source, false)",
+                    [':source' => $source]
+                );
+            } catch (Throwable $e2) {
+                // Verbindung unbrauchbar — der Request scheitert ohnehin an der nächsten Abfrage
+            }
+        }
+    }
+
+    /**
+     * Mitarbeiter und Quelle für Skripte setzen (Cron, CLI), die die Verbindung selbst aufbauen
+     *
+     * @param object   $db         ApiDatabase
+     * @param int|null $employeeId handelnder Mitarbeiter, null = automatisch
+     * @param string   $source     z. B. 'cron:recurring', 'cron:ebay'
+     */
+    public static function setActor($db, $employeeId, $source) {
+        $db->execute(
+            "SELECT set_config('oserp.employee_id', :emp, false), set_config('oserp.source', :source, false)",
+            [':emp' => $employeeId ? (string)intval($employeeId) : '', ':source' => $source]
+        );
     }
 }
 

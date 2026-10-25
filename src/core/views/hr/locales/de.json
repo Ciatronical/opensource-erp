@@ -3,7 +3,8 @@
         "title": "Personal",
         "hub": "Personal & Lohn",
         "payroll": "Lohnabrechnung",
-        "vacation": "Urlaubsplanung"
+        "vacation": "Urlaubsplanung",
+        "performance": "Leistung"
     },
     "HrView": {
         "title": "Personal & Lohn",
@@ -32,7 +33,8 @@
             "payroll": "Lohnabrechnung",
             "vacation": "Urlaubsplanung",
             "settings": "Mitarbeiterdaten",
-            "tax": "Steuertabelle"
+            "tax": "Steuertabelle",
+            "performance": "Leistung"
         },
         "dashboard": {
             "activeEmployees": "Aktive Mitarbeiter",
@@ -166,6 +168,180 @@
             "noEmployees": "Keine aktiven Mitarbeiter gefunden.",
             "expandAll": "Alle aufklappen",
             "collapseAll": "Alle einklappen"
+        },
+        "performance": {
+            "period": {
+                "week": "Woche",
+                "month": "Monat",
+                "quarter": "Quartal",
+                "year": "Jahr"
+            },
+            "previous": "Zurück",
+            "next": "Weiter",
+            "today": "Heute",
+            "quarterLabel": "{q}. Quartal {year}",
+            "comparedTo": "Vergleich mit {range}",
+            "weekShort": "KW {n}",
+            "bucket": {
+                "day": "Tag",
+                "week": "Woche",
+                "month": "Monat"
+            },
+            "mechanics": "Mechaniker",
+            "all": "Alle",
+            "activeCount": "{n} aktiv im Zeitraum",
+            "noActivity": "Keine Erledigungen im Zeitraum",
+            "noMechanics": "Im gewählten Zeitraum wurden keine Arbeitsanweisungen erledigt. Mechaniker kommen aus der Mitarbeitergruppe des Mechaniker-Modus (Firmenkonfiguration → LxCars).",
+            "showInactive": "{n} ohne Erledigungen anzeigen",
+            "hideInactive": "Ohne Erledigungen ausblenden",
+            "noData": "Keine Daten im Zeitraum",
+            "noComparison": "kein Vergleich",
+            "points": "{v} Punkte",
+            "rankOf": "Platz {rank} von {n} nach Ist-Stunden",
+            "activeDays": "{n} Arbeitstage mit Erledigungen",
+            "vacationDays": "{n} Tage Urlaub",
+            "workingOn": "Arbeitet gerade: {task} · Auftrag {order} · seit {since}",
+            "others": "Weitere ({n})",
+            "insights": "Erkenntnisse",
+            "kpi": {
+                "hours": "Ist-Stunden",
+                "efficiency": "Leistungsgrad",
+                "utilization": "Auslastung",
+                "done": "Erledigte Anweisungen",
+                "laborRevenue": "Arbeitslohn (netto)",
+                "ofAvailable": "von {h} verfügbar",
+                "inOrders": "in {n} Aufträgen",
+                "perHour": "{v} je Ist-Stunde",
+                "team": "Team {v}"
+            },
+            "legend": {
+                "actual": "Ist",
+                "planned": "Vorgabe"
+            },
+            "trend": {
+                "hoursTitle": "Stunden je {unit}",
+                "efficiencyTitle": "Leistungsgrad je {unit}",
+                "efficiencySubtitle": "Vorgabe ÷ Ist · über 100 % = schneller als die Vorgabe",
+                "teamTitle": "Team-Stunden je {unit}",
+                "hoursSubtitle": "Balken anklicken zeigt die Aufträge"
+            },
+            "benchmark": {
+                "title": "Stärken und Schwächen",
+                "subtitle": "Zeit je Tätigkeit im Vergleich zum Team-Durchschnitt",
+                "legend": "Abweichung vom Team",
+                "empty": "Noch keine Tätigkeit, die auch andere Mechaniker im Zeitraum ausgeführt haben",
+                "tooltipFaster": "{v} % schneller als das Team ({own} statt {team}, {n}×)",
+                "tooltipSlower": "{v} % langsamer als das Team ({own} statt {team}, {n}×)"
+            },
+            "heatmap": {
+                "title": "Aktivitätsprofil",
+                "subtitle": "Erfasste Arbeitszeit nach Wochentag und Beginn-Uhrzeit",
+                "tooltip": "{day} ab {hour} Uhr: {n} Arbeitsbeginne, {min} erfasst"
+            },
+            "tasks": {
+                "title": "Tätigkeiten im Zeitraum",
+                "task": "Tätigkeit",
+                "count": "Anzahl",
+                "total": "Gesamt",
+                "avgActual": "Ø Ist",
+                "avgPlanned": "Ø Vorgabe",
+                "teamAvg": "Ø Team",
+                "vsTeam": "zum Team",
+                "showAll": "Alle {n} Tätigkeiten anzeigen",
+                "showLess": "Weniger anzeigen",
+                "subtitle": "Klick öffnet den Auftrag – bei mehreren Aufträgen zuerst die Liste"
+            },
+            "matrix": {
+                "title": "Leistungsmatrix",
+                "subtitle": "Auslastung gegen Leistungsgrad, Kreisgröße = Ist-Stunden. Klick öffnet den Mechaniker.",
+                "q1": "schnell & ausgelastet",
+                "q2": "schnell, Luft nach oben",
+                "q3": "langsam, wenig ausgelastet",
+                "q4": "ausgelastet, über Vorgabe"
+            },
+            "compare": {
+                "title": "Stunden im Vergleich",
+                "subtitle": "Ist gegen Vorgabe je Mechaniker"
+            },
+            "ranking": {
+                "title": "Rangliste",
+                "mechanic": "Mechaniker",
+                "trend": "Verlauf",
+                "planned": "Vorgabe",
+                "orders": "Aufträge",
+                "done": "Erledigt",
+                "revenue": "Arbeitslohn",
+                "checks": "Prüfen"
+            },
+            "spread": {
+                "title": "Größte Unterschiede im Team",
+                "subtitle": "Tätigkeiten, bei denen die Mechaniker am weitesten auseinanderliegen – Hinweis auf Schulung oder Vorgabezeit",
+                "task": "Tätigkeit",
+                "count": "Anzahl",
+                "teamAvg": "Ø Team",
+                "fastest": "Schnellster",
+                "slowest": "Langsamster",
+                "factor": "Faktor"
+            },
+            "insight": {
+                "fasterThanTeam": "Leistungsgrad {v} Punkte über dem Team-Durchschnitt.",
+                "slowerThanTeam": "Leistungsgrad {v} Punkte unter dem Team-Durchschnitt.",
+                "strength": "Stärke: „{task}“ {v} % schneller als das Team.",
+                "weakness": "Potenzial: „{task}“ {v} % langsamer als das Team ({min} statt {team}).",
+                "moreHours": "{v} % mehr Ist-Stunden als in der Vorperiode.",
+                "fewerHours": "{v} % weniger Ist-Stunden als in der Vorperiode.",
+                "lowUtilization": "Auslastung nur {v} % – fehlen Zeiterfassungen oder Aufträge?",
+                "focus": "{v} % der Zeit entfallen auf „{task}“.",
+                "teamBest": "Höchster Leistungsgrad: {name} mit {v} %.",
+                "teamRevenue": "{name} erwirtschaftet {v} % des Arbeitslohns.",
+                "teamMoreHours": "Team hat {v} % mehr Ist-Stunden als in der Vorperiode.",
+                "teamFewerHours": "Team hat {v} % weniger Ist-Stunden als in der Vorperiode.",
+                "teamSpread": "„{task}“: {fast} ist {factor} schneller als {slow} – Erfahrung weitergeben oder Vorgabe prüfen.",
+                "running": "{n} Mechaniker arbeiten gerade mit laufendem Timer.",
+                "timerForgotten": "{h} ({v} % der Ist-Zeit) stammen vermutlich aus vergessenen Timern – Zeiten im Auftrag korrigieren.",
+                "teamTimerForgotten": "{h} ({v} % der Team-Stunden) stammen vermutlich aus vergessenen Timern – Kennzahlen sind dadurch zu hoch."
+            },
+            "checks": {
+                "title": "Plausibilität",
+                "subtitle": "Tage über {h} Arbeitszeit und auffällige Einzelzeiten",
+                "none": "Keine Auffälligkeiten im Zeitraum – alle erfassten Zeiten wirken plausibel.",
+                "filterAll": "Alle ({n})",
+                "filter": {
+                    "day": "Tage über Arbeitszeit ({n})",
+                    "timer": "Timer vergessen? ({n})",
+                    "high": "Ungewöhnlich hoch ({n})",
+                    "low": "Ungewöhnlich niedrig ({n})"
+                },
+                "day": "Tag",
+                "order": "Auftrag",
+                "what": "Anweisung",
+                "recorded": "Erfasst",
+                "expected": "Vergleich",
+                "hint": "Hinweis",
+                "dayDetail": "{n} Anweisungen in {orders} Aufträgen",
+                "workTime": "Arbeitszeit {v}",
+                "planned": "Vorgabe {v}",
+                "usual": "üblich {v}",
+                "kind": {
+                    "day": "Über Arbeitszeit",
+                    "timer": "Timer vergessen?",
+                    "high": "Ungewöhnlich hoch",
+                    "low": "Ungewöhnlich niedrig"
+                },
+                "showAll": "Alle {n} Auffälligkeiten anzeigen"
+            },
+            "orders": {
+                "title": "Aufträge im Zeitraum",
+                "subtitle": "Klick öffnet den Auftrag",
+                "onlyBucket": "Nur {v}",
+                "date": "Erledigt",
+                "order": "Auftrag",
+                "vehicle": "Fahrzeug",
+                "work": "Arbeiten",
+                "flagged": "{n} auffällige Zeit(en) – siehe Plausibilität",
+                "clickHint": "Klicken zeigt die Aufträge",
+                "showAll": "Alle {n} Aufträge anzeigen"
+            }
         }
     }
 }

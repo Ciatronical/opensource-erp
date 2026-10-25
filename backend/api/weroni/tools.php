@@ -507,7 +507,7 @@ function _toolCreateOrder($input, $db) {
 
     $db->execute(
         "INSERT INTO oe (ordnumber, record_type, customer_id, transdate, reqdate, amount, netamount, notes)
-         VALUES (:num, 'sales_order', :cid, CURRENT_DATE, CURRENT_DATE, 0, 0, :notes)",
+         VALUES (:num, 'sales_order_intake', :cid, CURRENT_DATE, CURRENT_DATE, 0, 0, :notes)",
         [':num' => strval($nextNum), ':cid' => $customerId, ':notes' => $input['notes'] ?? '']
     );
 

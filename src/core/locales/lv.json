@@ -82,7 +82,8 @@
             "businessCard": "Vizītkartes skenēšana",
             "phoneSearch": "Meklēšana pēc tālruņa",
             "callTranscript": "Zvana analīze",
-            "banking": "Likviditātes prognoze"
+            "banking": "Likviditātes prognoze",
+            "orderConfirm": "Pasūtījumu apstiprināšana"
         }
     },
     "passwordField": {

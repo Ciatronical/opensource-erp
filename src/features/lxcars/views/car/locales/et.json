@@ -344,16 +344,6 @@
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
         },
-        "esi": {
-            "button": "ESI",
-            "tooltip": "Ava sõiduk Bosch ESI[tronic]-is HSN/TSN järgi",
-            "noKba": "Kehtivad võtmenumbrid (HSN/TSN) puuduvad"
-        },
-        "gutmann": {
-            "button": "Gutmann",
-            "tooltip": "Ava sõiduk Hella Gutmann mega macs-is HSN/TSN järgi",
-            "noKba": "Kehtivad võtmenumbrid (HSN/TSN) puuduvad"
-        },
         "hgs": {
             "button": "HGS-Data",
             "tooltip": "Ava sõidukiandmed HGS Datas",

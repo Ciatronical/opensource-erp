@@ -45,6 +45,7 @@
         "hr": "/personale",
         "hrPayroll": "/personale/loen",
         "hrVacation": "/personale/ferie",
+        "hrPerformance": "/personale/praestation",
         "newDeliveryOrder": "/folgeseddel/ny",
         "setup": "/opsaetning",
         "login": "/login",

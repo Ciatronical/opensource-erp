@@ -344,16 +344,6 @@
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
         },
-        "esi": {
-            "button": "ESI",
-            "tooltip": "通过 HSN/TSN 在 Bosch ESI[tronic] 中打开车辆",
-            "noKba": "没有有效的密钥编号 (HSN/TSN)"
-        },
-        "gutmann": {
-            "button": "Gutmann",
-            "tooltip": "通过 HSN/TSN 在 Hella Gutmann mega macs 中打开车辆",
-            "noKba": "没有有效的密钥编号 (HSN/TSN)"
-        },
         "hgs": {
             "button": "HGS-Data",
             "tooltip": "在 HGS Data 中打开车辆数据",

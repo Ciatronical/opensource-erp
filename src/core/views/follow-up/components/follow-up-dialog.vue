@@ -9,7 +9,7 @@
     >
         <v-card>
             <!-- Header -->
-            <v-card-title class="d-flex align-center pa-4 bg-grey-lighten-4">
+            <v-card-title class="follow-up-dialog__head d-flex align-center pa-4">
                 <v-icon class="me-2" :color="isEdit ? 'primary' : 'success'">
                     {{ isEdit ? 'mdi-pencil' : 'mdi-plus-circle' }}
                 </v-icon>
@@ -32,6 +32,18 @@
             <v-card-text class="pa-4">
                 <v-form ref="formRef" v-model="formValid">
                     <v-row>
+                        <!-- Feste Verknüpfung aus dem Kontext (z. B. der geöffnete Beleg) -->
+                        <v-col v-if="contextLink" cols="12" class="pb-0">
+                            <v-chip
+                                :prepend-icon="getLinkIcon(contextLink.type)"
+                                color="primary"
+                                variant="tonal"
+                                label
+                            >
+                                {{ t('FollowUpDialog.linkedTo') }}: {{ getLinkTypeLabel(contextLink.type) }} {{ contextLink.info }}
+                            </v-chip>
+                        </v-col>
+
                         <!-- Datum -->
                         <v-col cols="12" sm="6">
                             <v-text-field
@@ -46,7 +58,7 @@
                         </v-col>
 
                         <!-- Schnellauswahl Datum -->
-                        <v-col cols="12" sm="6" class="d-flex align-center gap-1 flex-wrap">
+                        <v-col cols="12" sm="6" class="d-flex align-center ga-1 flex-wrap">
                             <v-chip
                                 size="small"
                                 variant="outlined"
@@ -151,7 +163,7 @@
                                             class="ms-2"
                                             color="primary"
                                         >
-                                            {{ formData.transType }}
+                                            {{ getLinkTypeLabel(formData.transType) || formData.transType }}
                                         </v-chip>
                                     </v-expansion-panel-title>
                                     <v-expansion-panel-text>
@@ -164,6 +176,7 @@
                                                     variant="outlined"
                                                     density="compact"
                                                     clearable
+                                                    @update:model-value="onLinkTypeChange"
                                                 />
                                             </v-col>
 
@@ -271,10 +284,16 @@ const props = defineProps({
     contextLink: {
         type: Object,
         default: null
+    },
+    // @save des Elternteils: als Prop deklariert, damit der Dialog auf dessen
+    // Promise warten kann — der Knopf bleibt bis zur Antwort gesperrt (Doppelklick)
+    onSave: {
+        type: Function,
+        default: null
     }
 });
 
-const emit = defineEmits(['update:modelValue', 'save']);
+const emit = defineEmits(['update:modelValue']);
 
 // Form State
 const formRef = ref(null);
@@ -325,6 +344,7 @@ const linkTypeItems = computed(() => [
     { title: t('FollowUpDialog.linkTypes.salesOrder'), value: 'sales_order' },
     { title: t('FollowUpDialog.linkTypes.salesDeliveryOrder'), value: 'sales_delivery_order' },
     { title: t('FollowUpDialog.linkTypes.salesInvoice'), value: 'sales_invoice' },
+    { title: t('FollowUpDialog.linkTypes.creditNote'), value: 'credit_note' },
     { title: t('FollowUpDialog.linkTypes.purchaseQuotation'), value: 'request_quotation' },
     { title: t('FollowUpDialog.linkTypes.purchaseOrder'), value: 'purchase_order' },
     { title: t('FollowUpDialog.linkTypes.purchaseDeliveryOrder'), value: 'purchase_delivery_order' },
@@ -332,10 +352,17 @@ const linkTypeItems = computed(() => [
 ]);
 
 // Methods
+
+/** Datum als YYYY-MM-DD in Ortszeit (toISOString rechnet in UTC) */
+function localDate(date) {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 function resetForm() {
     formData.value = {
         id: null,
-        followUpDate: new Date().toISOString().split('T')[0],
+        followUpDate: localDate(new Date()),
         subject: '',
         body: '',
         assignedEmployees: [],
@@ -346,16 +373,21 @@ function resetForm() {
 }
 
 function loadFollowUp() {
+    // Suche und Auswahl der vorigen Dialogsitzung verwerfen (der Dialog bleibt eingehängt)
+    selectedLink.value = null;
+    linkSearchResults.value = [];
+    linkSearchQuery.value = '';
+
     if (props.followUp) {
         formData.value = {
             id: props.followUp.id || null,
-            followUpDate: props.followUp.follow_up_date || new Date().toISOString().split('T')[0],
+            followUpDate: props.followUp.follow_up_date || localDate(new Date()),
             subject: props.followUp.subject || props.followUp.note?.subject || '',
             body: props.followUp.body || props.followUp.note?.body || '',
             assignedEmployees: props.followUp.assigned_employees?.map(e => e.employee_id) || [],
-            transType: props.followUp.links?.[0]?.trans_type || null,
-            transId: props.followUp.links?.[0]?.trans_id || null,
-            transInfo: props.followUp.links?.[0]?.trans_info || ''
+            transType: props.followUp.links?.[0]?.trans_type || props.contextLink?.type || null,
+            transId: props.followUp.links?.[0]?.trans_id || props.contextLink?.id || null,
+            transInfo: props.followUp.links?.[0]?.trans_info || props.contextLink?.info || ''
         };
     } else {
         resetForm();
@@ -366,6 +398,13 @@ function loadFollowUp() {
             formData.value.transId = props.contextLink.id;
             formData.value.transInfo = props.contextLink.info;
         }
+    }
+    // Vorhandene Verknüpfung als Auswahl zeigen; gleicher Suchtext löst keine neue Suche aus
+    if (formData.value.transId && formData.value.transType) {
+        const current = { id: formData.value.transId, name: formData.value.transInfo || `ID: ${formData.value.transId}` };
+        linkSearchResults.value = [current];
+        selectedLink.value = current;
+        linkSearchQuery.value = current.name;
     }
 }
 
@@ -387,7 +426,7 @@ function setDate(quickDate) {
             date.setMonth(date.getMonth() + 1);
             break;
     }
-    formData.value.followUpDate = date.toISOString().split('T')[0];
+    formData.value.followUpDate = localDate(date);
 }
 
 function getEmployeeColor(employeeId) {
@@ -460,8 +499,8 @@ function onLinkSelected(item) {
     if (item) {
         formData.value.transId = item.id;
         // Für Rechnungen/Orders: Zeige Nummer + Kunde/Lieferant
-        // Für Kunden/Lieferanten: Zeige nur Namen
-        if (item.number) {
+        // Für Kunden/Lieferanten: Zeige nur Namen (die Suche liefert dort die Kundennummer als number)
+        if (item.number && !['customer', 'vendor'].includes(formData.value.transType)) {
             // Hat eine Nummer (Rechnung/Order)
             const partnerName = item.customer_name || item.vendor_name || '';
             formData.value.transInfo = partnerName ? `${item.number} (${partnerName})` : item.number;
@@ -475,14 +514,44 @@ function onLinkSelected(item) {
     }
 }
 
+// Typwechsel durch den Benutzer: alte Auswahl verwerfen. Bewusst kein Watcher —
+// der feuerte auch beim Vorbelegen (Bearbeiten, Kontext-Link) und löschte die Verknüpfung.
+function onLinkTypeChange() {
+    selectedLink.value = null;
+    linkSearchResults.value = [];
+    linkSearchQuery.value = '';
+    formData.value.transId = null;
+    formData.value.transInfo = '';
+}
+
+function getLinkTypeLabel(type) {
+    const keyMap = {
+        'customer': 'customer',
+        'vendor': 'vendor',
+        'sales_quotation': 'salesQuotation',
+        'sales_order': 'salesOrder',
+        'sales_order_intake': 'salesOrder',
+        'sales_delivery_order': 'salesDeliveryOrder',
+        'sales_invoice': 'salesInvoice',
+        'credit_note': 'creditNote',
+        'request_quotation': 'purchaseQuotation',
+        'purchase_order': 'purchaseOrder',
+        'purchase_delivery_order': 'purchaseDeliveryOrder',
+        'purchase_invoice': 'purchaseInvoice'
+    };
+    return keyMap[type] ? t(`FollowUpDialog.linkTypes.${keyMap[type]}`) : '';
+}
+
 function getLinkIcon(type) {
     const iconMap = {
         'customer': 'mdi-account',
         'vendor': 'mdi-domain',
         'sales_quotation': 'mdi-file-document-outline',
         'sales_order': 'mdi-file-document',
+        'sales_order_intake': 'mdi-file-document',
         'sales_delivery_order': 'mdi-truck-delivery',
         'sales_invoice': 'mdi-receipt',
+        'credit_note': 'mdi-cash-refund',
         'request_quotation': 'mdi-file-question-outline',
         'purchase_order': 'mdi-cart',
         'purchase_delivery_order': 'mdi-package-variant',
@@ -502,7 +571,8 @@ function getLinkSearchLabel(type) {
         'request_quotation': t('FollowUpDialog.searchRequestQuotation'),
         'purchase_order': t('FollowUpDialog.searchPurchaseOrder'),
         'purchase_delivery_order': t('FollowUpDialog.searchPurchaseDeliveryOrder'),
-        'purchase_invoice': t('FollowUpDialog.searchPurchaseInvoice')
+        'purchase_invoice': t('FollowUpDialog.searchPurchaseInvoice'),
+        'credit_note': t('FollowUpDialog.searchCreditNote')
     };
     return labelMap[type] || t('FollowUpDialog.search');
 }
@@ -520,11 +590,11 @@ function close() {
 }
 
 async function save() {
-    if (!formValid.value) return;
+    if (!formValid.value || saving.value) return;
 
     saving.value = true;
     try {
-        emit('save', { ...formData.value });
+        await props.onSave?.({ ...formData.value });
     } finally {
         saving.value = false;
     }
@@ -542,16 +612,10 @@ watch(() => props.followUp, () => {
         loadFollowUp();
     }
 }, { deep: true });
-
-// Reset Autocomplete wenn Type sich ändert
-watch(() => formData.value.transType, (newType, oldType) => {
-    // Immer clearen wenn Type sich ändert (außer beim ersten Laden)
-    if (newType !== oldType && oldType !== undefined) {
-        selectedLink.value = null;
-        linkSearchResults.value = [];
-        linkSearchQuery.value = '';
-        formData.value.transId = null;
-        formData.value.transInfo = '';
-    }
-});
 </script>
+
+<style scoped>
+.follow-up-dialog__head {
+    background: var(--oserp-section-head-bg);
+}
+</style>

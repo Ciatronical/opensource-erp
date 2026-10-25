@@ -344,16 +344,6 @@
             "tsnTooltip": "Voertuig op VIN zoeken in AAG-Online",
             "error": "Kan AAG-Online niet openen"
         },
-        "esi": {
-            "button": "ESI",
-            "tooltip": "Voertuig openen in Bosch ESI[tronic] via HSN/TSN",
-            "noKba": "Geen geldige sleutelnummers (HSN/TSN) beschikbaar"
-        },
-        "gutmann": {
-            "button": "Gutmann",
-            "tooltip": "Voertuig openen in Hella Gutmann mega macs via HSN/TSN",
-            "noKba": "Geen geldige sleutelnummers (HSN/TSN) beschikbaar"
-        },
         "hgs": {
             "button": "HGS-Data",
             "tooltip": "Voertuiggegevens openen in HGS Data",

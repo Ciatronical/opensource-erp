@@ -69,6 +69,8 @@ function recurringCronSetCompanyDb(?PDO $pdo): void {
     $prop = $reflection->getProperty('instance');
     $prop->setAccessible(true);
     $prop->setValue(null, $pdo ? new ApiDatabase($pdo) : null);
+    // Belegchronik: automatisch erstellt, kein Mitarbeiter
+    if ($pdo) DbhCompany::setActor(DbhCompany::begin(), null, 'cron:recurring');
 }
 
 // --- Hauptprogramm ---

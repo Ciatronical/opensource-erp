@@ -537,6 +537,9 @@ function getCV($data, $withConfig = []) {
                                                 'record_type', oe.record_type,
                                                 'license_plate', {$kennzeichenForOrder},
                                                 'invoice_status', oe_invoice_status(oe.id),
+                                                -- offene KI-Vorschläge zur Bestätigung (Zusage/Absage erkannt)
+                                                'confirmation_suggestions', (SELECT count(*) FROM oe_confirmation_oserp s
+                                                                              WHERE s.oe_id = oe.id AND s.status = 'suggested'),
                                                 'id', oe.id
                                             ) AS obj
                                         FROM oe
@@ -697,7 +700,8 @@ function getCV($data, $withConfig = []) {
                                                CASE WHEN crmti_direction = 'E' THEN crmti_dst ELSE crmti_src END AS extension,
                                                crmti_status AS status,
                                                NULL::text AS text,
-                                               unique_call_id
+                                               unique_call_id,
+                                               NULL::integer AS record_id
                                         FROM crmti
                                         WHERE (crmti_caller_typ = '$cvSrcLiteral' AND crmti_caller_id = $cv_id)
                                            OR (crmti_caller_typ = 'K' AND crmti_caller_id IN (SELECT cp_id FROM contacts WHERE cp_cv_id = $cv_id))
@@ -711,6 +715,7 @@ function getCV($data, $withConfig = []) {
                                                NULL,
                                                status,
                                                LEFT(COALESCE(NULLIF(message_text, ''), NULLIF(media_caption, ''), message_type), 200),
+                                               NULL,
                                                NULL
                                         FROM whatsapp_messages
                                         WHERE hidden = FALSE
@@ -736,9 +741,63 @@ function getCV($data, $withConfig = []) {
                                                       OR EXISTS (SELECT 1 FROM postal_dispatches pd WHERE pd.record_table = 'letter' AND pd.record_id = l.id AND pd.status <> 'error')
                                                     THEN 'sent' ELSE 'draft' END,
                                                LEFT(COALESCE(NULLIF(l.subject, ''), l.reference, ''), 200),
+                                               NULL,
                                                NULL
                                         FROM letter l
                                         WHERE l.{$cvTable}_id = $cv_id
+                                        UNION ALL
+                                        -- Kunde vor Ort (kivitendo-Notiz am Kunden/Lieferanten):
+                                        -- name = erfassender Mitarbeiter, text = was der Kunde gesagt hat
+                                        SELECT 'visit',
+                                               n.id,
+                                               EXTRACT(EPOCH FROM n.itime::timestamptz) * 1000,
+                                               'I',
+                                               NULL,
+                                               e.name,
+                                               NULL,
+                                               NULL,
+                                               n.body,
+                                               NULL,
+                                               NULL
+                                        FROM notes n
+                                        LEFT JOIN employee e ON e.id = n.created_by
+                                        WHERE n.trans_module = 'CT' AND n.trans_id = $cv_id
+                                        UNION ALL
+                                        -- Auftragsbestätigungen und Vorschläge der KI (oe_confirmation_oserp):
+                                        -- number = Auftragsnummer, name = Mitarbeiter, extension = Kanal,
+                                        -- text = Zitat bzw. Notiz, record_id = Auftrag, unique_call_id = Anruf
+                                        -- der Zusage. status: confirmed | confirmed_auto (auch wenn später
+                                        -- zurückgenommen — die Zusage gab es) | revoked (eigener Eintrag zum
+                                        -- Zeitpunkt der Rücknahme) | suggested_accept | suggested_decline |
+                                        -- declined (Absage zur Kenntnis genommen). Verworfene Zusage-Vorschläge
+                                        -- waren keine Zusage und erscheinen nicht.
+                                        SELECT 'confirmation',
+                                               c.id,
+                                               EXTRACT(EPOCH FROM ev.ts) * 1000,
+                                               'I',
+                                               o.ordnumber,
+                                               e.name,
+                                               c.channel,
+                                               ev.status,
+                                               LEFT(COALESCE(c.quote, c.note, ''), 200),
+                                               CASE WHEN c.channel = 'phone' THEN c.source_ref END,
+                                               o.id
+                                        FROM oe_confirmation_oserp c
+                                        JOIN oe o ON o.id = c.oe_id
+                                        CROSS JOIN LATERAL (
+                                            SELECT c.agreed_at AS ts, c.employee_id AS emp,
+                                                   CASE WHEN c.status = 'suggested' THEN 'suggested_' || c.intent
+                                                        WHEN c.status = 'dismissed' THEN 'declined'
+                                                        WHEN c.source = 'ai' AND c.employee_id IS NULL THEN 'confirmed_auto'
+                                                        ELSE 'confirmed' END AS status
+                                             WHERE c.status IN ('suggested', 'confirmed', 'revoked')
+                                                OR (c.status = 'dismissed' AND c.intent = 'decline')
+                                            UNION ALL
+                                            SELECT c.revoked_at, c.revoked_by, 'revoked'
+                                             WHERE c.status = 'revoked' AND c.revoked_at IS NOT NULL
+                                        ) ev
+                                        LEFT JOIN employee e ON e.id = COALESCE(ev.emp, CASE WHEN ev.status = 'declined' THEN c.decided_by END)
+                                        WHERE o.{$cvTable}_id = $cv_id
                                         ORDER BY ts DESC
                                         LIMIT 100
                                     ) AS h
@@ -1122,7 +1181,7 @@ function saveCV($data) {
 
     $apiCompanySpace->beginTransaction();
     // Wer speichert, steht im Änderungsverlauf (Trigger cv_history_log)
-    cvHistoryContext($apiCompanySpace, $src, $data['employee_id'] ?? 0);
+    cvHistoryContext($apiCompanySpace, $src);
     $newId = null;
     foreach($data as $tableName => $tableData) {
         if('action' === $tableName) {
@@ -1475,7 +1534,7 @@ function deleteContact($data) {
     }
     // Lösche den Ansprechpartner
     try {
-        cvHistoryContext($apiCompanySpace, $data['src'] ?? 'C', $data['employee_id'] ?? 0);
+        cvHistoryContext($apiCompanySpace, $data['src'] ?? 'C');
         $apiCompanySpace->beginTransaction();
         $apiCompanySpace->execute(
             "DELETE FROM contacts WHERE cp_id = :cp_id",
@@ -1562,7 +1621,7 @@ function deleteCV($data) {
     }
 
     try {
-        cvHistoryContext($apiCompanySpace, $isVendor ? 'V' : 'C', $data['employee_id'] ?? 0);
+        cvHistoryContext($apiCompanySpace, $isVendor ? 'V' : 'C');
         $apiCompanySpace->beginTransaction();
         // Stammdaten-Anhänge (teils ohne Fremdschlüssel, würden sonst verwaisen)
         $apiCompanySpace->execute("DELETE FROM contacts WHERE cp_cv_id = :cv_id", [':cv_id' => $cv_id]);
@@ -1630,6 +1689,81 @@ function playPhoneCall($data) {
     }
 
     resultInfo(false, 'FILE_NOT_FOUND', null, 'Keine Aufnahme gefunden für die übergebene unique_call_id');
+}
+
+/**
+ * Speichert einen Besuch „Kunde vor Ort" (was der Kunde vor Ort gesagt hat) in der Kontakthistorie.
+ * Ablage kivitendo-kompatibel als Kunden-/Lieferanten-Notiz (notes, trans_module 'CT');
+ * mit 'id' wird ein vorhandener Eintrag geändert. Rückgabe im Format von getCV.contact_history,
+ * damit das Frontend den Eintrag ohne erneutes getCV einsortieren kann.
+ *
+ * @param array $data 'cv_id', 'text', 'subject', 'ts' (ms, Zeitpunkt des Besuchs), 'employee_id', optional 'id'
+ * @return void Gibt JSON mit dem Historien-Eintrag aus
+ *
+ * @testdata {"action": "saveVisitNote", "cv_id": 1121, "text": "Kunde fragt nach Termin für Reifenwechsel", "subject": "Kunde vor Ort", "ts": 1792828800000, "employee_id": 1}
+ */
+function saveVisitNote($data) {
+    $text = trim($data['text'] ?? '');
+    if (empty($data['cv_id']) || $text === '') {
+        throw new ApiError('MISSING_DATA', 'cv_id oder text fehlt');
+    }
+    $mandant = DbhCompany::begin();
+    $params = [
+        ':cv_id' => (int)$data['cv_id'],
+        ':text' => $text,
+        ':ts' => isset($data['ts']) ? (float)$data['ts'] / 1000 : time(),
+    ];
+    // Neu anlegen bzw. ändern und den Eintrag samt Mitarbeiter in einem Rutsch zurückgeben
+    if (empty($data['id'])) {
+        $write = "INSERT INTO notes (subject, body, created_by, trans_id, trans_module, itime)
+                  VALUES (:subject, :text, :employee_id, :cv_id, 'CT', to_timestamp(:ts)::timestamp)
+                  RETURNING *";
+        $params[':subject'] = $data['subject'] ?? 'Kunde vor Ort';
+        $params[':employee_id'] = (int)($data['employee_id'] ?? 0);
+    } else {
+        $write = "UPDATE notes SET body = :text, itime = to_timestamp(:ts)::timestamp, mtime = now()
+                  WHERE id = :id AND trans_id = :cv_id AND trans_module = 'CT'
+                  RETURNING *";
+        $params[':id'] = (int)$data['id'];
+    }
+
+    $row = $mandant->getOne(
+        "WITH n AS ($write)
+         SELECT json_build_object(
+                    'kind', 'visit',
+                    'id', n.id,
+                    'ts', EXTRACT(EPOCH FROM n.itime::timestamptz) * 1000,
+                    'direction', 'I',
+                    'name', e.name,
+                    'text', n.body
+                ) AS entry
+         FROM n
+         LEFT JOIN employee e ON e.id = n.created_by",
+        $params
+    );
+    if (!$row) {
+        throw new ApiError('NOTE_NOT_FOUND', 'Eintrag nicht gefunden');
+    }
+    resultInfo(true, 'Gespeichert', json_decode($row['entry'], true));
+}
+
+/**
+ * Löscht einen Besuch „Kunde vor Ort" aus der Kontakthistorie
+ *
+ * @param array $data 'id' => notes.id, 'cv_id' => Kunde/Lieferant
+ * @return void Gibt JSON mit Erfolgs-Status aus
+ *
+ * @testdata {"action": "deleteVisitNote", "id": 1, "cv_id": 1121}
+ */
+function deleteVisitNote($data) {
+    if (empty($data['id']) || empty($data['cv_id'])) {
+        throw new ApiError('MISSING_DATA', 'id oder cv_id fehlt');
+    }
+    DbhCompany::begin()->execute(
+        "DELETE FROM notes WHERE id = :id AND trans_id = :cv_id AND trans_module = 'CT'",
+        [':id' => (int)$data['id'], ':cv_id' => (int)$data['cv_id']]
+    );
+    resultInfo(true, 'Gelöscht', ['id' => (int)$data['id']]);
 }
 
 /**
@@ -2140,24 +2274,16 @@ function _getCvIdFromViewHistory($db, $cvSrc) {
 /**
  * Kontext für den Änderungsverlauf (Trigger cv_history_log) setzen
  *
- * Der Trigger kennt weder den angemeldeten Mitarbeiter noch bei Ansprechpartnern
- * und Lieferadressen die Seite (Kunde/Lieferant). Beides geht vor dem Schreiben
- * als Sitzungsvariable in die Verbindung; sie lebt nur für diesen Request.
+ * Bei Ansprechpartnern und Lieferadressen kennt der Trigger die Seite
+ * (Kunde/Lieferant) nicht; sie geht vor dem Schreiben als Sitzungsvariable in
+ * die Verbindung. Den Mitarbeiter setzt DbhCompany::begin() für jeden Request
+ * aus dem Login — nicht aus dem Request, der wäre fälschbar.
  *
- * @param DbhCompany $db     Firmen-Verbindung
- * @param string     $src    'C' Kunde, 'V' Lieferant
- * @param int        $employeeId Mitarbeiter aus dem Store; 0 = über die Anmeldung ermitteln
+ * @param DbhCompany $db  Firmen-Verbindung
+ * @param string     $src 'C' Kunde, 'V' Lieferant
  */
-function cvHistoryContext($db, $src, $employeeId = 0) {
-    $employeeId = intval($employeeId);
-    if (!$employeeId) {
-        $row = $db->getOne("SELECT id FROM employee WHERE login = :login", [':login' => DbhAuth::begin()->getLogin()]);
-        $employeeId = intval($row['id'] ?? 0);
-    }
-    $db->execute(
-        "SELECT set_config('oserp.employee_id', :emp, false), set_config('oserp.cv_src', :src, false)",
-        [':emp' => (string)$employeeId, ':src' => $src === 'V' ? 'V' : 'C']
-    );
+function cvHistoryContext($db, $src) {
+    $db->execute("SELECT set_config('oserp.cv_src', :src, false)", [':src' => $src === 'V' ? 'V' : 'C']);
 }
 
 /**

@@ -85,8 +85,8 @@ context autoprofis1 {
 ```
 
 `ODBC_CALLSTATUS` ist in `func_odbc.conf` definiert (Section `[CALLSTATUS]` →
-`SELECT CallStatus(...)`). Ist `crmti_status` gesetzt und ungleich `ANSWERED`,
-gilt der Anruf als **nicht angenommen** (eingehend verpasst bzw. ausgehend nicht
+`SELECT CallStatus(...)`). Ist `crmti_status` gesetzt und weder `ANSWER`
+(DIALSTATUS) noch `ANSWERED` (CDR-Schreibweise), gilt der Anruf als **nicht angenommen** (eingehend verpasst bzw. ausgehend nicht
 erreicht) und wird in Anrufliste und Info-Bar **rot** dargestellt
 (`src/core/utils/callStatus.js`). Altdaten ohne Status bleiben unauffällig.
 

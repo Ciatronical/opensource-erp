@@ -43,6 +43,7 @@ export const AI_ASSISTANTS = [
     { id: 'business_card', key: 'business_card_ai_model', labelKey: 'aiModels.assistants.businessCard', prompt: false },
     { id: 'phone_search', key: 'phone_search_ai_model', labelKey: 'aiModels.assistants.phoneSearch', prompt: false },
     { id: 'call_transcript', key: 'call_transcript_ai_model', labelKey: 'aiModels.assistants.callTranscript', prompt: false },
+    { id: 'order_confirm', key: 'order_confirm_ai_model', labelKey: 'aiModels.assistants.orderConfirm', prompt: false },
     // Die Prognose erzwingt den Aufruf ihres Werkzeugs; Claude Fable 5.1
     // lehnt einen erzwungenen Werkzeugaufruf ab (siehe lib/ai_model.php).
     { id: 'banking', key: 'banking_ai_model', labelKey: 'aiModels.assistants.banking', prompt: false,

@@ -65,8 +65,13 @@
             "createComplaint": "Reklamation erstellen",
             "cancel": "Stornieren",
             "saveAsDraft": "Als Entwurf speichern",
-            "history": "Verlauf",
             "followUp": "Atgādinājums",
+            "followUpOpen": "Atvērtie atgādinājumi: {n}",
+            "followUpNew": "Jauns atgādinājums",
+            "followUpDone": "Izpildīts",
+            "followUpSaved": "Atgādinājums saglabāts",
+            "followUpMarkedDone": "Atgādinājums izpildīts",
+            "followUpError": "Atgādinājumu neizdevās saglabāt",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Dzēst",
             "pdfPreview": "PDF-Vorschau",
@@ -182,8 +187,6 @@
             "openVehicle": "Transportlīdzeklis",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Atvērt transportlīdzekli ESI[tronic]",
-            "openGutmann": "Atvērt transportlīdzekli Hella Gutmann mega macs",
             "openHgs": "Atvērt transportlīdzekļa datus HGS Data",
             "hgsError": "Neizdevās atvērt HGS Data",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Rēķins pilnībā apmaksāts",
                 "alreadyPaid": "Maksājums ar karti {amount} € apmērā jau bija veikts – nekas netika nosūtīts atkārtoti",
                 "synced": "Maksājums ar karti {amount} € apmērā pievienots no SumUp"
+            },
+            "confirmation": {
+                "open": "Vēl nav apstiprināts",
+                "openHint": "Kā klients piekrita? Apstiprinot tiek fiksēta pašreizējā summa.",
+                "confirmed": "Apstiprināts",
+                "notRecorded": "Nav reģistrēts, kā tika apstiprināts.",
+                "suggestedAccept": "Atpazīta piekrišana — lūdzu, pārbaudiet",
+                "suggestedDecline": "Atpazīts atteikums",
+                "uncertain": "Atpazīts ar zemu ticamību — lūdzu, rūpīgi pārbaudiet citātu.",
+                "condition": "Nosacījums: {condition}",
+                "amountIncreased": "Kopš apstiprināšanas summa pieaugusi par {diff} (apstiprināts: {amount})",
+                "auto": "automātiski (MI)",
+                "confirm": "Apstiprināt",
+                "dismiss": "Atmest",
+                "acknowledge": "Pieņemt zināšanai",
+                "reconfirm": "Apstiprināt no jauna",
+                "record": "Papildināt datus",
+                "revoke": "Atsaukt apstiprinājumu",
+                "revokeQuestion": "Pasūtījums atkal kļūst par ienākošo pasūtījumu. Līdzšinējais apstiprinājums paliek redzams vēsturē.",
+                "more": "Citas darbības",
+                "playCall": "Noklausīties zvanu",
+                "openChat": "Atvērt sarunu",
+                "recordingMissing": "Šim zvanam nav atrasts ieraksts",
+                "dialogTitle": "Apstiprināt pasūtījumu",
+                "howQuestion": "Kā klients piekrita?",
+                "when": "Piekrišanas laiks",
+                "note": "Piezīme (neobligāti)",
+                "notePlaceholder": "piem., ko klients teica",
+                "amountHint": "Tiek apstiprināta pašreizējā summa {amount}. Ja tā vēlāk pieaug, pasūtījums to parādīs.",
+                "cancel": "Atcelt",
+                "savedConfirmed": "Pasūtījums apstiprināts",
+                "savedDismissed": "Ieteikums atmests",
+                "savedAcknowledged": "Atteikums pieņemts zināšanai",
+                "savedRevoked": "Apstiprinājums atsaukts",
+                "channel": {
+                    "phone": "Tālrunis",
+                    "email": "E-pasts",
+                    "whatsapp": "WhatsApp",
+                    "visit": "Uz vietas",
+                    "signature": "Paraksts",
+                    "portal": "Klientu portāls",
+                    "other": "Cits"
+                },
+                "saveError": "Tas neizdevās — pasūtījums pa to laiku, visticamāk, ir mainīts. Skats ir pārlādēts, lūdzu, pārbaudiet vēlreiz."
             }
         },
         "workflow": {
@@ -444,7 +491,11 @@
             "quotation": "Piedāvājums",
             "delivery_order": "Piegādes pavadzīme",
             "credit_note": "Kreditrēķins",
-            "invoice_storno": "Storno rēķins"
+            "invoice_storno": "Storno rēķins",
+            "purchase_order": "Pirkuma pasūtījums",
+            "purchase_invoice": "Ienākošais rēķins",
+            "request_quotation": "Pieprasījums",
+            "purchase_delivery_order": "Pirkuma pavadzīme"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."
+        },
+        "history": {
+            "title": "Vēsture",
+            "reload": "Atsvaidzināt",
+            "close": "Aizvērt",
+            "lastChange": "pēdējās izmaiņas {time}, veica {name}",
+            "changedBy": "{name} tikko mainīja šo dokumentu",
+            "createdInfo": "Izveidots {time}",
+            "filter": {
+                "all": "Visi",
+                "head": "Galvene",
+                "items": "Pozīcijas",
+                "events": "Statuss un nosūtīšana"
+            },
+            "filterEmployee": "Kas",
+            "search": "Meklēt",
+            "timeTravel": "Ceļojums laikā",
+            "today": "Šodien",
+            "backToToday": "Atpakaļ uz šodienu",
+            "asOf": "Stāvoklis pirms labojuma {time} – toreiz → šodien",
+            "stepsBack": "{n} labojums atpakaļ | {n} labojumi atpakaļ",
+            "noDiff": "Galvene un pozīcijas toreiz bija tādas pašas kā šodien.",
+            "travelItem": {
+                "added": "kopš tā laika pievienots",
+                "removed": "kopš tā laika noņemts",
+                "changed": "kopš tā laika mainīts"
+            },
+            "noMatch": "Šim filtram nav ierakstu.",
+            "empty": "Izmaiņas vēl nav reģistrētas. Vēsture sāksies ar nākamo izmaiņu.",
+            "item": {
+                "added": "pievienots",
+                "removed": "noņemts",
+                "changed": "mainīts"
+            },
+            "milestone": {
+                "created": "Dokuments izveidots",
+                "deleted": "Dokuments dzēsts",
+                "confirmed": "Pasūtījums apstiprināts",
+                "unconfirmed": "Apstiprinājums atsaukts",
+                "closed": "Pabeigts",
+                "reopened": "Atvērts atkārtoti",
+                "paid": "Maksājums {amount}",
+                "storno": "Stornēts",
+                "printed": "Izdrukāts"
+            },
+            "summary": {
+                "itemsAdded": "{n} pozīcija pievienota | {n} pozīcijas pievienotas",
+                "itemsChanged": "{n} pozīcija mainīta | {n} pozīcijas mainītas",
+                "itemsRemoved": "{n} pozīcija noņemta | {n} pozīcijas noņemtas",
+                "amount": "Summa {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Saglabāts",
+                "printed": "Izdrukāts",
+                "posted": "Iegrāmatots",
+                "printedPosted": "Izdrukāts un iegrāmatots",
+                "screened": "Parādīts ekrānā",
+                "mailed": "Nosūtīts pa e-pastu",
+                "deleted": "Dzēsts",
+                "storno": "Stornēts",
+                "paymentPosted": "Maksājums iegrāmatots",
+                "previewed": "Parādīts priekšskatījums",
+                "canceled": "Pārtraukts"
+            },
+            "link": {
+                "to": "No tā izveidots {type} {number}",
+                "from": "Izveidots no {type} {number}"
+            },
+            "followup": {
+                "created": "Atgādinājums izveidots: {subject} (termiņš {date})",
+                "done": "Atgādinājums izpildīts: {subject}"
+            },
+            "sent": {
+                "email": "Pa e-pastu adresātam {to}",
+                "whatsapp": "Pa WhatsApp adresātam {to}",
+                "post": "Pa pastu adresātam {to}",
+                "dhl": "DHL sūtījums {to}",
+                "other": "Nosūtīts adresātam {to}"
+            },
+            "fields": {
+                "parts_id": "Artikuls",
+                "paid": "Apmaksāts",
+                "datepaid": "Apmaksas datums",
+                "record_type": "Dokumenta veids",
+                "order_type": "Dokumenta veids",
+                "quotation": "Piedāvājums",
+                "storno": "Stornēts",
+                "storno_id": "Storno dokumentam",
+                "dunning_config_id": "Maksājuma atgādinājuma līmenis",
+                "cp_id": "Kontaktpersona",
+                "globalproject_id": "Projekts",
+                "project_id": "Projekts",
+                "optional": "Neobligāta pozīcija",
+                "subtotal": "Starpsumma",
+                "serialnumber": "Sērijas numurs",
+                "pricegroup_id": "Cenu grupa",
+                "price_factor_id": "Cenu koeficients",
+                "orderer_id": "Pasūtītājs",
+                "delivered": "Piegādāts",
+                "proforma": "Proforma",
+                "order_probability": "Pasūtījuma varbūtība",
+                "expected_billing_date": "Paredzamais rēķina datums",
+                "tax_point": "Piegādes datums",
+                "vendor_confirmation_number": "Piegādātāja apstiprinājuma numurs",
+                "oreqnumber": "Pieprasījuma numurs",
+                "invnumber_for_credit_note": "Rēķina numurs kredītrēķinam",
+                "is_sepa_blocked": "SEPA bloķēts",
+                "order_status_id": "Pasūtījuma statuss",
+                "no_whatsapp": "Bez WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Pasūtījums (apstiprināts)",
+                "sales_order_intake": "Saņemts pasūtījums (neapstiprināts)",
+                "sales_quotation": "Piedāvājums",
+                "request_quotation": "Cenu pieprasījums",
+                "purchase_quotation_intake": "Saņemts piedāvājums",
+                "purchase_order": "Iepirkuma pasūtījums",
+                "purchase_order_confirmation": "Piegādātāja pasūtījuma apstiprinājums",
+                "sales_delivery_order": "Pavadzīme",
+                "purchase_delivery_order": "Iepirkuma pavadzīme",
+                "supplier_delivery_order": "Piegādātāja pavadzīme",
+                "rma_delivery_order": "Atgriešanas pavadzīme"
+            },
+            "yes": "Jā",
+            "no": "Nē",
+            "automatic": "Automātiski",
+            "external": "kivitendo / ārējs",
+            "unknownEmployee": "Nezināms",
+            "source": {
+                "external": "ārpus OSERP",
+                "recurring": "periodisks rēķins",
+                "ebay": "eBay imports",
+                "portal": "Veikals / klientu portāls"
+            }
         }
     }
 }

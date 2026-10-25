@@ -696,9 +696,6 @@
         "aagOnlinePassword_help": "Passwort für AAG Online",
         "aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "mega macs -osoite (URL)",
-        "gutmannMegamacsUrl_help": "mega macs X:n osoite tai URL-malli. Paikkamerkit {hsn} {tsn} {vin} korvataan, esim. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Ilman paikkamerkkejä hsn/tsn/vin lisätään (SPA usein ohittaa). Vinkki: valitse ajoneuvo laitteella ja kopioi osoiterivi.",
         "hgsData": "HGS Data",
         "hgsDataUser": "HGS Data -käyttäjä",
         "hgsDataUser_help": "HGS Data -käyttäjätunnus (ajoneuvohaku HSN/TSN:llä)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Lähetä summa automaattisesti",
         "sumupAutoSend_help": "Kun lasku luodaan tarjouksesta tai tilauksesta, avoin summa lähetetään heti päätteelle (oletus: käytössä). Olemassa olevia tai maksettuja laskuja avattaessa ei koskaan lähetetä automaattisesti",
         "shopWebsite": "Asiakasportaalin sivusto",
-        "shopWebsite_help": "Sivusto, jolla HugoShop toimii – liitetty myyntikanavissa, määritetty kohdassa Järjestelmä → Verkkosivut."
+        "shopWebsite_help": "Sivusto, jolla HugoShop toimii – liitetty myyntikanavissa, määritetty kohdassa Järjestelmä → Verkkosivut.",
+        "orderConfirmation": "Tilausvahvistus",
+        "orderConfirmAi": "Tunnista hyväksynnät tekoälyllä",
+        "orderConfirmAi_help": "Puhelut (nauhoite), WhatsApp-viestit (myös ääniviestit ja vastauspainikkeet) ja sähköpostit asiakkailta, joilla on avoin saapunut tilaus (ei suljettu, ei vielä laskutettu), litteroidaan, ja tekoäly tarkistaa, sisältävätkö ne hyväksynnän tai kieltäytymisen. ”Ehdotus”: tilaus näyttää tunnistetun hyväksynnän ja lainauksen, ja vahvistus tehdään napsautuksella. ”Automaattinen”: yksiselitteiset hyväksynnät WhatsAppin tai puhelimen kautta (yksi avoin tilaus, ei ehtoja, korkea varmuus) vahvistetaan heti; sähköpostit jäävät aina ehdotuksiksi, koska niiden lähettäjä voidaan väärentää. Edellytykset: Anthropic-API-avain, Whisper-palvelu ja palvelu oserp-auftragsbestaetigung, sähköposteja varten lisäksi palvelu oserp-email-eingang ja määritetty postilaatikko. Puheluita saa nauhoittaa vain soittajan suostumuksella.",
+        "orderConfirmAiOff": "Pois",
+        "orderConfirmAiSuggest": "Ehdotus — vahvista napsautuksella",
+        "orderConfirmAiAuto": "Automaattisesti, kun hyväksyntä on yksiselitteinen",
+        "orderConfirmAiDays": "Saapuneet tilaukset viimeisiltä päiviltä",
+        "orderConfirmAiDays_help": "Vain enintään näin monta päivää vanhat saapuneet tilaukset otetaan huomioon hyväksyntää tunnistettaessa (oletus 60). Vanhempia vahvistamattomia tilauksia ei tarkisteta."
     },
     "add": "Lisää",
     "add_fields": {

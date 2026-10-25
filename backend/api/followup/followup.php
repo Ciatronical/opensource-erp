@@ -262,6 +262,10 @@ function createFollowUp($data) {
         $fuResult = $mandant->fetch($fuQuery);
         $followUpId = $fuResult['id'];
 
+        // Wie kivitendo (SL/FU.pm): Notiz zeigt auf die Wiedervorlage — darauf bauen der
+        // Lösch-Trigger follow_up_delete_notes und die Volltextsuche der Auftragsliste
+        $mandant->execute("UPDATE notes SET trans_id = :fu_id WHERE id = :note_id", ['fu_id' => $followUpId, 'note_id' => $noteId]);
+
         // 3. Optional: Link erstellen
         if (!empty($data['transId']) && !empty($data['transType'])) {
             $transId = intval($data['transId']);
@@ -347,13 +351,17 @@ function updateFollowUp($data) {
             }
         }
 
-        // Links aktualisieren
-        $mandant->query("DELETE FROM follow_up_links WHERE follow_up_id = $id");
-        if (!empty($data['transId']) && !empty($data['transType'])) {
-            $transId = intval($data['transId']);
-            $transType = $pdo->quote($data['transType']);
-            $transInfo = $pdo->quote($data['transInfo'] ?? '');
-            $mandant->query("INSERT INTO follow_up_links (follow_up_id, trans_id, trans_type, trans_info) VALUES ($id, $transId, $transType, $transInfo)");
+        // Links nur anfassen, wenn der Aufruf sie mitschickt: Der Dialog sendet immer
+        // transType/transId (null = Verknüpfung entfernen), das Verschieben im Board
+        // oder Kalender nur das Datum — die Verknüpfung zum Beleg muss dann bleiben.
+        if (array_key_exists('transType', $data) || array_key_exists('transId', $data)) {
+            $mandant->execute("DELETE FROM follow_up_links WHERE follow_up_id = :id", ['id' => $id]);
+            if (!empty($data['transId']) && !empty($data['transType'])) {
+                $mandant->execute(
+                    "INSERT INTO follow_up_links (follow_up_id, trans_id, trans_type, trans_info) VALUES (:id, :trans_id, :trans_type, :trans_info)",
+                    ['id' => $id, 'trans_id' => intval($data['transId']), 'trans_type' => (string)$data['transType'], 'trans_info' => (string)($data['transInfo'] ?? '')]
+                );
+            }
         }
 
         $mandant->commit();
@@ -482,210 +490,97 @@ function getEmployeesForFollowUp($data) {
 }
 
 /**
- * Sucht nach Verknüpfungen (Kunden, Aufträge, Rechnungen, etc.)
+ * Sucht nach Verknüpfungen (Kunden, Lieferanten, Belege) für den Wiedervorlage-Dialog
  *
- * @param array $data Mit type (customer/vendor/salesOrder/etc.) und query (Suchbegriff)
+ * Der Suchbegriff geht nur als Parameter in die Abfrage. Die Belegart in oe kennt das
+ * neue kivitendo-Schema als record_type, das alte (z. B. Mandant vermietung) als
+ * quotation. Beide Spalten stehen deshalb unqualifiziert in der Abfrage: Fehlt eine in
+ * oe, löst PostgreSQL den Namen über die Rückfall-Zeile schema_fallback (NULL) auf.
+ *
+ * @param array $data Mit type (customer, vendor, sales_order, credit_note …), query (Suchbegriff), limit
  * @testdata {"action": "searchForLink", "type": "customer", "query": "Ronny"}
+ * @testdata {"action": "searchForLink", "type": "sales_order", "query": "25"}
  */
 function searchForLink($data) {
     $mandant = DbhCompany::begin();
 
     $type = $data['type'] ?? '';
-    $query = $data['query'] ?? '';
-    $limit = intval($data['limit'] ?? 10);
+    $query = trim((string)($data['query'] ?? ''));
+    $limit = max(1, min(50, intval($data['limit'] ?? 10)));
 
-    if (empty($query) || strlen($query) < 2) {
+    if (mb_strlen($query) < 2) {
         resultInfo(false, 'QUERY_TOO_SHORT', 'Mindestens 2 Zeichen erforderlich');
         return;
     }
 
-    // Map: Type -> SQL Query
-    $queryMap = [
-        'customer' => <<<SQL
-            SELECT COALESCE(
-                (SELECT json_agg(row_to_json(sub))
-                 FROM (
-                     SELECT
-                         c.id,
-                         c.name,
-                         c.customernumber AS number,
-                         c.city
-                     FROM customer c
-                     WHERE c.name ILIKE '%$query%'
-                     OR c.customernumber ILIKE '%$query%'
-                     ORDER BY c.name
-                     LIMIT $limit
-                 ) sub
-                ), '[]'::json
-            ) AS results
-        SQL,
-
-        'vendor' => <<<SQL
-            SELECT COALESCE(
-                (SELECT json_agg(row_to_json(sub))
-                 FROM (
-                     SELECT
-                         v.id,
-                         v.name,
-                         v.vendornumber AS number,
-                         v.city
-                     FROM vendor v
-                     WHERE v.name ILIKE '%$query%'
-                     OR v.vendornumber ILIKE '%$query%'
-                     ORDER BY v.name
-                     LIMIT $limit
-                 ) sub
-                ), '[]'::json
-            ) AS results
-        SQL,
-
-        'sales_quotation' => <<<SQL
-            SELECT COALESCE(
-                (SELECT json_agg(row_to_json(sub))
-                 FROM (
-                     SELECT
-                         o.id,
-                         o.quonumber AS number,
-                         c.name AS customer_name,
-                         o.amount::numeric(15,2) AS amount,
-                         o.transdate
-                     FROM oe o
-                     LEFT JOIN customer c ON c.id = o.customer_id
-                     WHERE o.quotation = true
-                     AND o.customer_id IS NOT NULL
-                     AND (o.quonumber ILIKE '%$query%' OR c.name ILIKE '%$query%')
-                     ORDER BY o.transdate DESC
-                     LIMIT $limit
-                 ) sub
-                ), '[]'::json
-            ) AS results
-        SQL,
-
-        'sales_order' => <<<SQL
-            SELECT COALESCE(
-                (SELECT json_agg(row_to_json(sub))
-                 FROM (
-                    SELECT
-                        o.id,
-                        o.ordnumber AS number,
-                        c.name AS customer_name,
-                        o.amount::numeric(15,2) AS amount,
-                        o.transdate
-                    FROM oe o
-                    LEFT JOIN customer c ON c.id = o.customer_id
-                    WHERE o.quotation = false
-                    AND o.customer_id IS NOT NULL
-                    AND (o.ordnumber ILIKE '%$query%' OR c.name ILIKE '%$query%')
-                    ORDER BY o.transdate DESC
-                    LIMIT $limit
-                 ) sub
-                ), '[]'::json
-            ) AS results
-        SQL,
-
-        'sales_invoice' => <<<SQL
-            SELECT COALESCE(
-                (SELECT json_agg(row_to_json(sub))
-                 FROM (
-                    SELECT
-                        ar.id,
-                        ar.invnumber AS number,
-                        COALESCE(c.name, 'Kein Kunde') AS customer_name,
-                        COALESCE(ar.amount, 0)::numeric(15,2) AS amount,
-                        ar.transdate
-                    FROM ar ar
-                    LEFT JOIN customer c ON c.id = ar.customer_id
-                    WHERE (ar.invnumber::text ILIKE '%$query%' OR c.name ILIKE '%$query%')
-                    ORDER BY ar.transdate DESC
-                    LIMIT $limit
-                 ) sub
-                ), '[]'::json
-            ) AS results
-        SQL,
-
-        'purchase_order' => <<<SQL
-            SELECT COALESCE(
-                (SELECT json_agg(row_to_json(sub))
-                 FROM (
-                    SELECT
-                        o.id,
-                        o.ordnumber AS number,
-                        v.name AS vendor_name,
-                        o.amount::numeric(15,2) AS amount,
-                        o.transdate
-                    FROM oe o
-                    LEFT JOIN vendor v ON v.id = o.vendor_id
-                    WHERE o.quotation = false
-                    AND o.vendor_id IS NOT NULL
-                    AND (o.ordnumber ILIKE '%$query%' OR v.name ILIKE '%$query%')
-                    ORDER BY o.transdate DESC
-                    LIMIT $limit
-                 ) sub
-                ), '[]'::json
-            ) AS results
-        SQL,
-
-        'purchase_invoice' => <<<SQL
-            SELECT COALESCE(
-                (SELECT json_agg(row_to_json(sub))
-                 FROM (
-                    SELECT
-                        ap.id,
-                        ap.invnumber AS number,
-                        COALESCE(v.name, 'Kein Lieferant') AS vendor_name,
-                        COALESCE(ap.amount, 0)::numeric(15,2) AS amount,
-                        ap.transdate
-                    FROM ap ap
-                    LEFT JOIN vendor v ON v.id = ap.vendor_id
-                    WHERE (ap.invnumber::text ILIKE '%$query%' OR v.name ILIKE '%$query%')
-                    ORDER BY ap.transdate DESC
-                    LIMIT $limit
-                 ) sub
-                ), '[]'::json
-            ) AS results
-        SQL,
-
-        'sales_delivery_order' => <<<SQL
-            SELECT '[]'::json AS results
-        SQL,
-
-        'purchase_delivery_order' => <<<SQL
-            SELECT '[]'::json AS results
-        SQL,
-
-        'request_quotation' => <<<SQL
-            SELECT COALESCE(
-                (SELECT json_agg(row_to_json(sub))
-                 FROM (
-                    SELECT
-                        o.id,
-                        o.quonumber AS number,
-                        COALESCE(v.name, 'Kein Lieferant') AS vendor_name,
-                        COALESCE(o.amount, 0)::numeric(15,2) AS amount,
-                        o.transdate
-                    FROM oe o
-                    LEFT JOIN vendor v ON v.id = o.vendor_id
-                    WHERE o.quotation = true
-                    AND o.vendor_id IS NOT NULL
-                    AND (o.quonumber::text ILIKE '%$query%' OR v.name ILIKE '%$query%')
-                    ORDER BY o.transdate DESC
-                    LIMIT $limit
-                 ) sub
-                ), '[]'::json
-            ) AS results
-        SQL
+    // Belege in oe: Bedingung für die Belegart (neues Schema | altes Schema), Nummernfeld, Partner
+    $oeTypes = [
+        'sales_quotation'   => ["COALESCE(record_type::text = 'sales_quotation', quotation)", 'quonumber', 'customer'],
+        'sales_order'       => ["COALESCE(record_type::text IN ('sales_order', 'sales_order_intake'), NOT quotation)", 'ordnumber', 'customer'],
+        'request_quotation' => ["COALESCE(record_type::text IN ('request_quotation', 'purchase_quotation_intake'), quotation)", 'quonumber', 'vendor'],
+        'purchase_order'    => ["COALESCE(record_type::text IN ('purchase_order', 'purchase_order_confirmation'), NOT quotation)", 'ordnumber', 'vendor'],
+    ];
+    // Rechnungen und Lieferscheine: Tabelle, Bedingung, Partner
+    $docTypes = [
+        'sales_invoice'           => ['ar', "d.type IS DISTINCT FROM 'credit_note'", 'customer'],
+        'credit_note'             => ['ar', "d.type = 'credit_note'", 'customer'],
+        'purchase_invoice'        => ['ap', 'TRUE', 'vendor'],
+        'sales_delivery_order'    => ['delivery_orders', 'd.customer_id IS NOT NULL', 'customer'],
+        'purchase_delivery_order' => ['delivery_orders', 'd.vendor_id IS NOT NULL', 'vendor'],
     ];
 
-    // Query aus Map holen
-    if (!isset($queryMap[$type])) {
+    if ($type === 'customer' || $type === 'vendor') {
+        $sql = <<<SQL
+            SELECT COALESCE(json_agg(row_to_json(sub) ORDER BY sub.name), '[]'::json) AS results
+            FROM (
+                SELECT cv.id, cv.name, cv.{$type}number AS number, cv.city
+                FROM {$type} cv
+                WHERE cv.name ILIKE '%' || :q || '%' OR cv.{$type}number ILIKE '%' || :q || '%'
+                ORDER BY cv.name
+                LIMIT :limit
+            ) sub
+        SQL;
+    } elseif (isset($oeTypes[$type])) {
+        [$typeCondition, $numberColumn, $cv] = $oeTypes[$type];
+        $sql = <<<SQL
+            SELECT COALESCE(json_agg(row_to_json(sub) ORDER BY sub.transdate DESC), '[]'::json) AS results
+            FROM (SELECT NULL::text AS record_type, NULL::boolean AS quotation) AS schema_fallback
+            CROSS JOIN LATERAL (
+                SELECT o.id, o.{$numberColumn} AS number, cv.name AS {$cv}_name,
+                       COALESCE(o.amount, 0)::numeric(15,2) AS amount, o.transdate
+                FROM oe o
+                LEFT JOIN {$cv} cv ON cv.id = o.{$cv}_id
+                WHERE {$typeCondition}
+                  AND o.{$cv}_id IS NOT NULL
+                  AND (o.{$numberColumn} ILIKE '%' || :q || '%' OR cv.name ILIKE '%' || :q || '%')
+                ORDER BY o.transdate DESC
+                LIMIT :limit
+            ) AS sub
+        SQL;
+    } elseif (isset($docTypes[$type])) {
+        [$table, $typeCondition, $cv] = $docTypes[$type];
+        $numberColumn = ($table === 'delivery_orders') ? 'donumber' : 'invnumber';
+        $amountSql = ($table === 'delivery_orders') ? 'NULL::numeric' : 'COALESCE(d.amount, 0)::numeric(15,2)';
+        $sql = <<<SQL
+            SELECT COALESCE(json_agg(row_to_json(sub) ORDER BY sub.transdate DESC), '[]'::json) AS results
+            FROM (
+                SELECT d.id, d.{$numberColumn} AS number, cv.name AS {$cv}_name,
+                       {$amountSql} AS amount, d.transdate
+                FROM {$table} d
+                LEFT JOIN {$cv} cv ON cv.id = d.{$cv}_id
+                WHERE {$typeCondition}
+                  AND (d.{$numberColumn} ILIKE '%' || :q || '%' OR cv.name ILIKE '%' || :q || '%')
+                ORDER BY d.transdate DESC
+                LIMIT :limit
+            ) sub
+        SQL;
+    } else {
         resultInfo(false, 'INVALID_TYPE', 'Ungültiger Verknüpfungstyp: ' . $type);
         return;
     }
 
-    $sql = $queryMap[$type];
-
-    // Einfach get() verwenden - gibt automatisch JSON zurück!
-    echo $mandant->get($sql);
+    $row = $mandant->getOne($sql, ['q' => $query, 'limit' => $limit]);
+    resultInfo(true, '', ['results' => json_decode($row['results'] ?? '[]', true) ?: []]);
 }
 
 /**

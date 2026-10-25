@@ -65,8 +65,13 @@
             "createComplaint": "Reklamation erstellen",
             "cancel": "Stornieren",
             "saveAsDraft": "Als Entwurf speichern",
-            "history": "Verlauf",
             "followUp": "Järeltegevus",
+            "followUpOpen": "Avatud järeltegevused: {n}",
+            "followUpNew": "Uus järeltegevus",
+            "followUpDone": "Tehtud",
+            "followUpSaved": "Järeltegevus salvestatud",
+            "followUpMarkedDone": "Järeltegevus tehtud",
+            "followUpError": "Järeltegevust ei õnnestunud salvestada",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Kustuta",
             "pdfPreview": "PDF-Vorschau",
@@ -182,8 +187,6 @@
             "openVehicle": "Sõiduk",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Ava sõiduk ESI[tronic]-is",
-            "openGutmann": "Ava sõiduk Hella Gutmann mega macs-is",
             "openHgs": "Ava sõidukiandmed HGS Datas",
             "hgsError": "HGS Data avamine ebaõnnestus",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Arve on täielikult tasutud",
                 "alreadyPaid": "Kaardimakse summas {amount} € oli juba tehtud – midagi uuesti ei saadetud",
                 "synced": "Kaardimakse summas {amount} € lisati SumUp-ist"
+            },
+            "confirmation": {
+                "open": "Veel kinnitamata",
+                "openHint": "Kuidas klient nõusoleku andis? Kinnitamisel salvestatakse praegune summa.",
+                "confirmed": "Kinnitatud",
+                "notRecorded": "Kinnitamise viis pole salvestatud.",
+                "suggestedAccept": "Nõusolek tuvastatud — palun kontrollige",
+                "suggestedDecline": "Keeldumine tuvastatud",
+                "uncertain": "Tuvastatud madala kindlusega — palun kontrollige tsitaati hoolikalt.",
+                "condition": "Tingimus: {condition}",
+                "amountIncreased": "Alates kinnitamisest tõusnud {diff} võrra (kinnitatud: {amount})",
+                "auto": "automaatselt (AI)",
+                "confirm": "Kinnita",
+                "dismiss": "Lükka tagasi",
+                "acknowledge": "Võta teadmiseks",
+                "reconfirm": "Kinnita uuesti",
+                "record": "Lisa andmed",
+                "revoke": "Võta kinnitus tagasi",
+                "revokeQuestion": "Tellimus läheb tagasi tellimuse vastuvõtu olekusse. Senine kinnitus jääb ajaloos nähtavaks.",
+                "more": "Rohkem toiminguid",
+                "playCall": "Kuula kõnet",
+                "openChat": "Ava vestlus",
+                "recordingMissing": "Selle kõne salvestist ei leitud",
+                "dialogTitle": "Kinnita tellimus",
+                "howQuestion": "Kuidas klient nõusoleku andis?",
+                "when": "Nõusoleku aeg",
+                "note": "Märkus (valikuline)",
+                "notePlaceholder": "nt mida klient ütles",
+                "amountHint": "Kinnitatakse praegune summa {amount}. Kui see hiljem tõuseb, näitab tellimus seda.",
+                "cancel": "Tühista",
+                "savedConfirmed": "Tellimus kinnitatud",
+                "savedDismissed": "Ettepanek tagasi lükatud",
+                "savedAcknowledged": "Keeldumine teadmiseks võetud",
+                "savedRevoked": "Kinnitus tagasi võetud",
+                "channel": {
+                    "phone": "Telefon",
+                    "email": "E-post",
+                    "whatsapp": "WhatsApp",
+                    "visit": "Kohapeal",
+                    "signature": "Allkiri",
+                    "portal": "Kliendiportaal",
+                    "other": "Muu"
+                },
+                "saveError": "See ei õnnestunud — tellimust on vahepeal tõenäoliselt muudetud. Vaade laaditi uuesti, palun kontrollige veel kord."
             }
         },
         "workflow": {
@@ -444,7 +491,11 @@
             "quotation": "Pakkumine",
             "delivery_order": "Saateleht",
             "credit_note": "Kreeditarve",
-            "invoice_storno": "Tühistamisarve"
+            "invoice_storno": "Tühistamisarve",
+            "purchase_order": "Ostutellimus",
+            "purchase_invoice": "Ostuarve",
+            "request_quotation": "Hinnapäring",
+            "purchase_delivery_order": "Ostu saateleht"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."
+        },
+        "history": {
+            "title": "Ajalugu",
+            "reload": "Värskenda",
+            "close": "Sulge",
+            "lastChange": "viimati muudetud {time}, muutja {name}",
+            "changedBy": "{name} muutis just seda dokumenti",
+            "createdInfo": "Loodud {time}",
+            "filter": {
+                "all": "Kõik",
+                "head": "Päis",
+                "items": "Read",
+                "events": "Olek ja saatmine"
+            },
+            "filterEmployee": "Kes",
+            "search": "Otsi",
+            "timeTravel": "Ajarännak",
+            "today": "Täna",
+            "backToToday": "Tagasi tänasesse",
+            "asOf": "Seis enne muudatust {time} – siis → täna",
+            "stepsBack": "{n} muudatus tagasi | {n} muudatust tagasi",
+            "noDiff": "Päis ja read olid toona samad mis täna.",
+            "travelItem": {
+                "added": "vahepeal lisatud",
+                "removed": "vahepeal eemaldatud",
+                "changed": "vahepeal muudetud"
+            },
+            "noMatch": "Selle filtri jaoks kirjeid pole.",
+            "empty": "Muudatusi pole veel salvestatud. Ajalugu algab järgmisest muudatusest.",
+            "item": {
+                "added": "lisatud",
+                "removed": "eemaldatud",
+                "changed": "muudetud"
+            },
+            "milestone": {
+                "created": "Dokument loodud",
+                "deleted": "Dokument kustutatud",
+                "confirmed": "Tellimus kinnitatud",
+                "unconfirmed": "Kinnitus võeti tagasi",
+                "closed": "Lõpetatud",
+                "reopened": "Uuesti avatud",
+                "paid": "Makse {amount}",
+                "storno": "Tühistatud",
+                "printed": "Prinditud"
+            },
+            "summary": {
+                "itemsAdded": "{n} rida lisatud | {n} rida lisatud",
+                "itemsChanged": "{n} rida muudetud | {n} rida muudetud",
+                "itemsRemoved": "{n} rida eemaldatud | {n} rida eemaldatud",
+                "amount": "Summa {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Salvestatud",
+                "printed": "Prinditud",
+                "posted": "Kirjendatud",
+                "printedPosted": "Prinditud ja kirjendatud",
+                "screened": "Kuvatud ekraanil",
+                "mailed": "Saadetud e-postiga",
+                "deleted": "Kustutatud",
+                "storno": "Tühistatud",
+                "paymentPosted": "Makse kirjendatud",
+                "previewed": "Eelvaade kuvatud",
+                "canceled": "Katkestatud"
+            },
+            "link": {
+                "to": "Selle põhjal loodud {type} {number}",
+                "from": "Loodud dokumendi {type} {number} põhjal"
+            },
+            "followup": {
+                "created": "Meeldetuletus loodud: {subject} (tähtaeg {date})",
+                "done": "Meeldetuletus täidetud: {subject}"
+            },
+            "sent": {
+                "email": "E-postiga saajale {to}",
+                "whatsapp": "WhatsAppi kaudu saajale {to}",
+                "post": "Postiga saajale {to}",
+                "dhl": "DHL-saadetis {to}",
+                "other": "Saadetud saajale {to}"
+            },
+            "fields": {
+                "parts_id": "Artikkel",
+                "paid": "Makstud",
+                "datepaid": "Makse kuupäev",
+                "record_type": "Dokumendi liik",
+                "order_type": "Dokumendi liik",
+                "quotation": "Hinnapakkumine",
+                "storno": "Tühistatud",
+                "storno_id": "Tühistus dokumendile",
+                "dunning_config_id": "Maksenõude tase",
+                "cp_id": "Kontaktisik",
+                "globalproject_id": "Projekt",
+                "project_id": "Projekt",
+                "optional": "Valikuline rida",
+                "subtotal": "Vahesumma",
+                "serialnumber": "Seerianumber",
+                "pricegroup_id": "Hinnagrupp",
+                "price_factor_id": "Hinnategur",
+                "orderer_id": "Tellija",
+                "delivered": "Tarnitud",
+                "proforma": "Proforma",
+                "order_probability": "Tellimuse tõenäosus",
+                "expected_billing_date": "Eeldatav arve kuupäev",
+                "tax_point": "Teenuse osutamise aeg",
+                "vendor_confirmation_number": "Tarnija kinnitusnumber",
+                "oreqnumber": "Päringu number",
+                "invnumber_for_credit_note": "Kreeditarve aluseks olev arve nr",
+                "is_sepa_blocked": "SEPA blokeeritud",
+                "order_status_id": "Tellimuse olek",
+                "no_whatsapp": "WhatsApp keelatud"
+            },
+            "recordType": {
+                "sales_order": "Müügitellimus (kinnitatud)",
+                "sales_order_intake": "Saabunud tellimus (kinnitamata)",
+                "sales_quotation": "Hinnapakkumine",
+                "request_quotation": "Hinnapäring",
+                "purchase_quotation_intake": "Saabunud hinnapakkumine",
+                "purchase_order": "Ostutellimus",
+                "purchase_order_confirmation": "Tarnija tellimuskinnitus",
+                "sales_delivery_order": "Saateleht",
+                "purchase_delivery_order": "Ostu saateleht",
+                "supplier_delivery_order": "Tarnija saateleht",
+                "rma_delivery_order": "Tagastuse saateleht"
+            },
+            "yes": "Jah",
+            "no": "Ei",
+            "automatic": "Automaatne",
+            "external": "kivitendo / väline",
+            "unknownEmployee": "Teadmata",
+            "source": {
+                "external": "väljaspool OSERP-i",
+                "recurring": "korduv arve",
+                "ebay": "eBay import",
+                "portal": "E-pood / kliendiportaal"
+            }
         }
     }
 }

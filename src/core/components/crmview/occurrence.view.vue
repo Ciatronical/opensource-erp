@@ -122,6 +122,10 @@
                         <v-icon v-if="item.record_type === 'sales_order'" color="success" size="small" :title="t('CrmView.confirmed')">
                             mdi-check-circle
                         </v-icon>
+                        <!-- Die KI hat in Anruf/WhatsApp/E-Mail eine Zusage oder Absage erkannt -->
+                        <v-icon v-else-if="item.record_type === 'sales_order_intake' && item.confirmation_suggestions > 0" color="info" size="small" :title="t('CrmView.confirmationSuggested')">
+                            mdi-message-question-outline
+                        </v-icon>
                         <v-icon v-else-if="item.record_type === 'sales_order_intake'" color="grey" size="small" :title="t('CrmView.notConfirmed')">
                             mdi-clock-outline
                         </v-icon>

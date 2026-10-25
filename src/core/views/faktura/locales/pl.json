@@ -65,8 +65,13 @@
             "createComplaint": "Utwórz reklamację",
             "cancel": "Anuluj",
             "saveAsDraft": "Zapisz jako szkic",
-            "history": "Historia",
             "followUp": "Przypomnienie",
+            "followUpOpen": "Otwarte przypomnienia: {n}",
+            "followUpNew": "Nowe przypomnienie",
+            "followUpDone": "Załatwione",
+            "followUpSaved": "Przypomnienie zapisane",
+            "followUpMarkedDone": "Przypomnienie załatwione",
+            "followUpError": "Nie udało się zapisać przypomnienia",
             "exportXInvoice": "Factur-X / ZUGFeRD",
             "delete": "Usuń",
             "pdfPreview": "Podgląd PDF",
@@ -182,8 +187,6 @@
             "openVehicle": "Pojazd",
             "importSilverDAT": "Import SilverDAT",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Otwórz pojazd w ESI[tronic]",
-            "openGutmann": "Otwórz pojazd w Hella Gutmann mega macs",
             "openHgs": "Otwórz dane pojazdu w HGS Data",
             "hgsError": "Nie można otworzyć HGS Data",
             "aagError": "Could not open AAG-Online",
@@ -400,7 +403,6 @@
                 "saveFirst": "Zapisz fakturę przed wygenerowaniem e-faktury."
             },
             "kmStandRequired": "Stan licznika km jest wymagany — proszę wpisać przed wystawieniem faktury.",
-            "orderConfirmed": "Potwierdzone",
             "belegEdit": "Edytuj numer dokumentu",
             "belegLock": "Zablokuj numer dokumentu",
             "bankBookedEdit": "Zaksięgowane bankowo — kliknij, aby edytować zapis księgowy",
@@ -445,6 +447,50 @@
                 "fullyPaid": "Faktura w pełni opłacona",
                 "alreadyPaid": "Płatność kartą na kwotę {amount} € została już wykonana – nic nie wysłano ponownie",
                 "synced": "Płatność kartą na kwotę {amount} € uzupełniono z SumUp"
+            },
+            "confirmation": {
+                "open": "Jeszcze nie potwierdzono",
+                "openHint": "Jak klient wyraził zgodę? Wraz z potwierdzeniem zostaje zapisana aktualna kwota.",
+                "confirmed": "Potwierdzono",
+                "notRecorded": "Nie zarejestrowano, w jaki sposób potwierdzono.",
+                "suggestedAccept": "Rozpoznano zgodę — proszę sprawdzić",
+                "suggestedDecline": "Rozpoznano odmowę",
+                "uncertain": "Rozpoznano z niską pewnością — proszę dokładnie sprawdzić cytat.",
+                "condition": "Warunek: {condition}",
+                "amountIncreased": "Kwota wzrosła o {diff} od potwierdzenia (potwierdzono: {amount})",
+                "auto": "automatycznie (AI)",
+                "confirm": "Potwierdź",
+                "dismiss": "Odrzuć",
+                "acknowledge": "Przyjmij do wiadomości",
+                "reconfirm": "Potwierdź ponownie",
+                "record": "Uzupełnij dane",
+                "revoke": "Wycofaj potwierdzenie",
+                "revokeQuestion": "Zamówienie wróci do statusu „Przyjęcie zlecenia”. Dotychczasowe potwierdzenie pozostanie widoczne w historii.",
+                "more": "Więcej działań",
+                "playCall": "Odsłuchaj połączenie",
+                "openChat": "Otwórz czat",
+                "recordingMissing": "Nie znaleziono nagrania dla tego połączenia",
+                "dialogTitle": "Potwierdź zamówienie",
+                "howQuestion": "Jak klient wyraził zgodę?",
+                "when": "Czas wyrażenia zgody",
+                "note": "Notatka (opcjonalnie)",
+                "notePlaceholder": "np. co powiedział klient",
+                "amountHint": "Potwierdzana jest aktualna kwota {amount}. Jeśli później wzrośnie, zamówienie to pokaże.",
+                "cancel": "Anuluj",
+                "savedConfirmed": "Zamówienie potwierdzone",
+                "savedDismissed": "Sugestia odrzucona",
+                "savedAcknowledged": "Odmowa przyjęta do wiadomości",
+                "savedRevoked": "Potwierdzenie wycofane",
+                "channel": {
+                    "phone": "Telefon",
+                    "email": "E-mail",
+                    "whatsapp": "WhatsApp",
+                    "visit": "Na miejscu",
+                    "signature": "Podpis",
+                    "portal": "Portal klienta",
+                    "other": "Inne"
+                },
+                "saveError": "To się nie udało — zamówienie zostało prawdopodobnie w międzyczasie zmienione. Widok został ponownie załadowany, proszę sprawdzić jeszcze raz."
             }
         },
         "workflow": {
@@ -459,7 +505,11 @@
             "quotation": "Oferta",
             "delivery_order": "List przewozowy",
             "credit_note": "Nota kredytowa",
-            "invoice_storno": "Faktura storno"
+            "invoice_storno": "Faktura storno",
+            "purchase_order": "Zamówienie u dostawcy",
+            "purchase_invoice": "Faktura zakupu",
+            "request_quotation": "Zapytanie ofertowe",
+            "purchase_delivery_order": "Dowód dostawy od dostawcy"
         },
         "dialogs": {
             "deleteItem": {
@@ -592,6 +642,140 @@
         },
         "alerts": {
             "warning_no_permission": "Odmowa dostępu: Nie masz wymaganych uprawnień, aby wyświetlić ten dokument. Proszę skontaktować się z administratorem."
+        },
+        "history": {
+            "title": "Historia",
+            "reload": "Odśwież",
+            "close": "Zamknij",
+            "lastChange": "ostatnio zmienione {time} przez {name}",
+            "changedBy": "{name} właśnie zmienił ten dokument",
+            "createdInfo": "Utworzono {time}",
+            "filter": {
+                "all": "Wszystko",
+                "head": "Nagłówek",
+                "items": "Pozycje",
+                "events": "Status i wysyłka"
+            },
+            "filterEmployee": "Kto",
+            "search": "Szukaj",
+            "timeTravel": "Podróż w czasie",
+            "today": "Dziś",
+            "backToToday": "Powrót do dziś",
+            "asOf": "Stan przed edycją z {time} – wtedy → dziś",
+            "stepsBack": "{n} edycja wstecz | {n} edycji wstecz",
+            "noDiff": "Nagłówek i pozycje były wtedy takie same jak dziś.",
+            "travelItem": {
+                "added": "dodano od tego czasu",
+                "removed": "usunięto od tego czasu",
+                "changed": "zmieniono od tego czasu"
+            },
+            "noMatch": "Brak wpisów dla tego filtra.",
+            "empty": "Nie zarejestrowano jeszcze żadnych zmian. Historia rozpocznie się od następnej zmiany.",
+            "item": {
+                "added": "dodano",
+                "removed": "usunięto",
+                "changed": "zmieniono"
+            },
+            "milestone": {
+                "created": "Dokument utworzony",
+                "deleted": "Dokument usunięty",
+                "confirmed": "Zamówienie potwierdzone",
+                "unconfirmed": "Potwierdzenie wycofane",
+                "closed": "Zamknięte",
+                "reopened": "Ponownie otwarte",
+                "paid": "Płatność {amount}",
+                "storno": "Stornowano",
+                "printed": "Wydrukowano"
+            },
+            "summary": {
+                "itemsAdded": "Dodano {n} pozycję | Dodano {n} pozycji",
+                "itemsChanged": "Zmieniono {n} pozycję | Zmieniono {n} pozycji",
+                "itemsRemoved": "Usunięto {n} pozycję | Usunięto {n} pozycji",
+                "amount": "Kwota {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Zapisano",
+                "printed": "Wydrukowano",
+                "posted": "Zaksięgowano",
+                "printedPosted": "Wydrukowano i zaksięgowano",
+                "screened": "Wyświetlono na ekranie",
+                "mailed": "Wysłano e-mailem",
+                "deleted": "Usunięto",
+                "storno": "Stornowano",
+                "paymentPosted": "Zaksięgowano płatność",
+                "previewed": "Wyświetlono podgląd",
+                "canceled": "Przerwano"
+            },
+            "link": {
+                "to": "Utworzono na tej podstawie: {type} {number}",
+                "from": "Utworzono z: {type} {number}"
+            },
+            "followup": {
+                "created": "Utworzono przypomnienie: {subject} (termin {date})",
+                "done": "Przypomnienie załatwione: {subject}"
+            },
+            "sent": {
+                "email": "E-mailem do {to}",
+                "whatsapp": "Przez WhatsApp do {to}",
+                "post": "Pocztą do {to}",
+                "dhl": "Przesyłka DHL {to}",
+                "other": "Wysłano do {to}"
+            },
+            "fields": {
+                "parts_id": "Artykuł",
+                "paid": "Zapłacono",
+                "datepaid": "Data zapłaty",
+                "record_type": "Rodzaj dokumentu",
+                "order_type": "Rodzaj dokumentu",
+                "quotation": "Oferta",
+                "storno": "Stornowano",
+                "storno_id": "Storno do",
+                "dunning_config_id": "Poziom upomnienia",
+                "cp_id": "Osoba kontaktowa",
+                "globalproject_id": "Projekt",
+                "project_id": "Projekt",
+                "optional": "Pozycja opcjonalna",
+                "subtotal": "Suma częściowa",
+                "serialnumber": "Numer seryjny",
+                "pricegroup_id": "Grupa cenowa",
+                "price_factor_id": "Współczynnik ceny",
+                "orderer_id": "Zamawiający",
+                "delivered": "Dostarczono",
+                "proforma": "Proforma",
+                "order_probability": "Prawdopodobieństwo zamówienia",
+                "expected_billing_date": "Przewidywana data fakturowania",
+                "tax_point": "Data wykonania usługi",
+                "vendor_confirmation_number": "Numer potwierdzenia dostawcy",
+                "oreqnumber": "Numer zapytania",
+                "invnumber_for_credit_note": "Numer faktury do korekty",
+                "is_sepa_blocked": "SEPA zablokowane",
+                "order_status_id": "Status zamówienia",
+                "no_whatsapp": "Bez WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Zamówienie (potwierdzone)",
+                "sales_order_intake": "Przyjęcie zamówienia (niepotwierdzone)",
+                "sales_quotation": "Oferta",
+                "request_quotation": "Zapytanie ofertowe",
+                "purchase_quotation_intake": "Oferta otrzymana",
+                "purchase_order": "Zamówienie zakupu",
+                "purchase_order_confirmation": "Potwierdzenie zamówienia od dostawcy",
+                "sales_delivery_order": "Dowód dostawy",
+                "purchase_delivery_order": "Dowód dostawy zakupu",
+                "supplier_delivery_order": "Dowód dostawy materiału powierzonego",
+                "rma_delivery_order": "Dowód zwrotu"
+            },
+            "yes": "Tak",
+            "no": "Nie",
+            "automatic": "Automatycznie",
+            "external": "kivitendo / zewnętrzny",
+            "unknownEmployee": "Nieznany",
+            "source": {
+                "external": "poza OSERP",
+                "recurring": "faktura cykliczna",
+                "ebay": "Import z eBay",
+                "portal": "Sklep / portal klienta"
+            }
         }
     }
 }

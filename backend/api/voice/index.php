@@ -8,6 +8,7 @@
  * daher nicht direkt vom Browser erreichbar) plus Pflege des Fachbegriffe-Glossars.
  */
 
+require_once __DIR__.'/../lib/whisper.php';
 require_once __DIR__.'/voice.php';
 
 require_once __DIR__.'/../inc.php'; // muss immer unten stehen

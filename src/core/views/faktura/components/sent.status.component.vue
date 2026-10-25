@@ -10,12 +10,16 @@
     Auftrag entstanden — anklickbar — oder „Noch keine Rechnung“ mit dem Knopf,
     sie gleich zu erstellen.
 
-    Beides sind schlichte Vuetify-Alerts (tonal): grün = erledigt, rot = fehlt noch.
+    Dazwischen steht bei Verkaufsaufträgen die Bestätigung (Slot confirmation,
+    order.confirmation.component.vue) — in der Reihenfolge des Ablaufs:
+    versendet → bestätigt → berechnet.
+
+    Alles schlichte Vuetify-Alerts (tonal): grün = erledigt, rot = fehlt noch.
 -->
 <template>
     <v-row dense class="sent-status">
         <!-- Versand -->
-        <v-col cols="12" :md="invoiceStatus ? 7 : 12">
+        <v-col cols="12" :md="invoiceStatus && !hasConfirmation ? 7 : 12" :lg="hasConfirmation ? 4 : (invoiceStatus ? 7 : 12)">
             <v-alert
                 :type="sent ? 'success' : 'error'"
                 variant="tonal"
@@ -131,8 +135,13 @@
             </v-alert>
         </v-col>
 
+        <!-- Bestätigung (nur Verkaufsaufträge) -->
+        <v-col v-if="hasConfirmation" cols="12" md="6" lg="4">
+            <slot name="confirmation" />
+        </v-col>
+
         <!-- Rechnungsstatus (nur Aufträge) -->
-        <v-col v-if="invoiceStatus" cols="12" md="5">
+        <v-col v-if="invoiceStatus" cols="12" :md="hasConfirmation ? 6 : 5" :lg="hasConfirmation ? 4 : 5">
             <v-alert
                 :type="invoiceState === 'invoiced' ? 'success' : 'error'"
                 variant="tonal"
@@ -204,12 +213,17 @@ const props = defineProps({
     invoiceStatus: { type: Object, default: null },
     /** Darf aus diesem Beleg eine Rechnung erstellt werden? (Knopf „Rechnung erstellen“) */
     canCreateInvoice: { type: Boolean, default: true },
+    /** Slot „confirmation“ (Auftragsbestätigung) zwischen Versand und Rechnung anzeigen */
+    withConfirmation: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['open-invoice', 'create-invoice'])
 
 const { t, locale } = useI18n()
 const expanded = ref(false)
+// Ob der Slot „confirmation“ belegt ist, sagt der Elternteil ausdrücklich —
+// useSlots() ist nicht reaktiv und verpasst einen später gefüllten Slot
+const hasConfirmation = computed(() => props.withConfirmation)
 
 const sent = computed(() => props.entries.length > 0)
 

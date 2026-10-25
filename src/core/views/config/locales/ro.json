@@ -696,9 +696,6 @@
         "aagOnlinePassword_help": "Passwort für AAG Online",
         "aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "Adresă mega macs (URL)",
-        "gutmannMegamacsUrl_help": "Adresa sau șablonul URL al mega macs X. Substituenții {hsn} {tsn} {vin} sunt înlocuiți, ex. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Fără substituenți, hsn/tsn/vin sunt adăugați (adesea ignorați de SPA). Sfat: selectați un vehicul pe dispozitiv și copiați bara de adrese.",
         "hgsData": "HGS Data",
         "hgsDataUser": "Utilizator HGS Data",
         "hgsDataUser_help": "Nume utilizator HGS Data (căutare vehicul după HSN/TSN)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Trimite suma automat",
         "sumupAutoSend_help": "Când o factură este creată dintr-o ofertă sau o comandă, suma restantă este trimisă imediat la terminal (implicit: activat). La deschiderea facturilor existente sau achitate nu se trimite niciodată automat",
         "shopWebsite": "Site-ul portalului clienți",
-        "shopWebsite_help": "Site-ul pe care rulează HugoShop – atribuit în canalele de vânzare, configurat în Sistem → Site-uri."
+        "shopWebsite_help": "Site-ul pe care rulează HugoShop – atribuit în canalele de vânzare, configurat în Sistem → Site-uri.",
+        "orderConfirmation": "Confirmarea comenzii",
+        "orderConfirmAi": "Detectează acceptările cu AI",
+        "orderConfirmAi_help": "Apelurile (înregistrare), mesajele WhatsApp (inclusiv mesajele vocale și butoanele de răspuns) și e-mailurile clienților cu o comandă primită deschisă (neînchisă, încă nefacturată) sunt transcrise și verificate de AI pentru o acceptare sau un refuz. „Sugestie”: comanda afișează acceptarea detectată împreună cu citatul, confirmarea se face printr-un clic. „Automat”: acceptările clare prin WhatsApp sau telefon (o singură comandă deschisă, fără condiție, certitudine ridicată) sunt confirmate imediat; e-mailurile rămân întotdeauna sugestie, deoarece expeditorul lor poate fi falsificat. Cerințe: cheie API Anthropic, serviciul Whisper și serviciul oserp-auftragsbestaetigung, iar pentru e-mailuri suplimentar serviciul oserp-email-eingang cu o căsuță poștală configurată. Apelurile pot fi înregistrate numai cu consimțământul apelantului.",
+        "orderConfirmAiOff": "Dezactivat",
+        "orderConfirmAiSuggest": "Sugestie — confirmare printr-un clic",
+        "orderConfirmAiAuto": "Automat la acceptare clară",
+        "orderConfirmAiDays": "Comenzi primite din ultimele zile",
+        "orderConfirmAiDays_help": "Numai comenzile primite care au cel mult atâtea zile vechime sunt luate în considerare pentru o acceptare (implicit 60). Comenzile neconfirmate mai vechi nu sunt verificate."
     },
     "add": "Adăugare",
     "add_fields": {

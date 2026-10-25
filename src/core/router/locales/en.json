@@ -47,6 +47,7 @@
         "hr": "/hr",
         "hrPayroll": "/hr/payroll",
         "hrVacation": "/hr/vacation",
+        "hrPerformance": "/hr/performance",
         "setup": "/setup",
         "login": "/login",
         "emails": "/emails",

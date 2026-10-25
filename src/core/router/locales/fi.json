@@ -45,6 +45,7 @@
         "hr": "/henkilosto",
         "hrPayroll": "/henkilosto/palkat",
         "hrVacation": "/henkilosto/loma",
+        "hrPerformance": "/henkilosto/suoritus",
         "newDeliveryOrder": "/lahetyslista/uusi",
         "setup": "/asennus",
         "login": "/kirjautuminen",

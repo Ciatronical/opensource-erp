@@ -45,6 +45,7 @@
         "hr": "/personal",
         "hrPayroll": "/personal/lonn",
         "hrVacation": "/personal/ferie",
+        "hrPerformance": "/personal/ytelse",
         "newDeliveryOrder": "/folgeseddel/ny",
         "setup": "/oppsett",
         "login": "/innlogging",

@@ -481,7 +481,7 @@ function buildRoutes() {
             component: FakturaView,
             props: true,
             meta: {
-                permission: 'invoice_edit',
+                permission: ['invoice_edit', 'vendor_invoice_edit'],  // genaue Prüfung im Backend mit der echten Belegart
                 documentType: 'invoice'
             }
         },
@@ -492,7 +492,7 @@ function buildRoutes() {
             component: FakturaView,
             props: true,
             meta: {
-                permission: 'sales_order_edit',
+                permission: ['sales_order_edit', 'purchase_order_edit'],  // genaue Prüfung im Backend mit der echten Belegart
                 documentType: 'order'
             }
         },
@@ -503,7 +503,7 @@ function buildRoutes() {
             component: FakturaView,
             props: true,
             meta: {
-                permission: 'sales_quotation_edit',
+                permission: ['sales_quotation_edit', 'request_quotation_edit'],  // genaue Prüfung im Backend mit der echten Belegart
                 documentType: 'quotation'
             }
         },
@@ -525,7 +525,7 @@ function buildRoutes() {
             component: FakturaView,
             props: true,
             meta: {
-                permission: 'sales_delivery_order_edit',
+                permission: ['sales_delivery_order_edit', 'purchase_delivery_order_edit'],  // genaue Prüfung im Backend mit der echten Belegart
                 documentType: 'delivery_order'
             }
         },
@@ -1027,6 +1027,11 @@ function buildRoutes() {
             ...routePath('routes.hrVacation'),
             name: 'hr-vacation',
             redirect: { name: 'hr', query: { tab: 'vacation' } },
+        },
+        {
+            ...routePath('routes.hrPerformance'),
+            name: 'hr-performance',
+            redirect: { name: 'hr', query: { tab: 'performance' } },
         },
         // ── Catch-All ──
         {

@@ -86,7 +86,8 @@
             "businessCard": "Visitenkarten-Scan",
             "phoneSearch": "Telefonsuche",
             "callTranscript": "Anruf-Auswertung",
-            "banking": "Liquiditätsprognose"
+            "banking": "Liquiditätsprognose",
+            "orderConfirm": "Auftragsbestätigung"
         }
     },
     "passwordField": {

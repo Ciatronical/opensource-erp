@@ -65,8 +65,13 @@
             "createComplaint": "Создать рекламацию",
             "cancel": "Сторнировать",
             "saveAsDraft": "Сохранить как черновик",
-            "history": "История",
             "followUp": "Напоминание",
+            "followUpOpen": "Открытые напоминания: {n}",
+            "followUpNew": "Новое напоминание",
+            "followUpDone": "Выполнено",
+            "followUpSaved": "Напоминание сохранено",
+            "followUpMarkedDone": "Напоминание выполнено",
+            "followUpError": "Не удалось сохранить напоминание",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Удалить",
             "pdfPreview": "Предварительный просмотр PDF",
@@ -182,8 +187,6 @@
             "openVehicle": "Транспортное средство",
             "importSilverDAT": "Импорт SilverDAT",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Открыть автомобиль в ESI[tronic]",
-            "openGutmann": "Открыть автомобиль в Hella Gutmann mega macs",
             "openHgs": "Открыть данные автомобиля в HGS Data",
             "hgsError": "Не удалось открыть HGS Data",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Счёт полностью оплачен",
                 "alreadyPaid": "Оплата картой на {amount} € уже была выполнена – повторно ничего не отправлено",
                 "synced": "Оплата картой на {amount} € добавлена из SumUp"
+            },
+            "confirmation": {
+                "open": "Ещё не подтверждён",
+                "openHint": "Как клиент дал согласие? При подтверждении фиксируется текущая сумма.",
+                "confirmed": "Подтверждён",
+                "notRecorded": "Способ подтверждения не зафиксирован.",
+                "suggestedAccept": "Распознано согласие — проверьте",
+                "suggestedDecline": "Распознан отказ",
+                "uncertain": "Распознано с низкой уверенностью — внимательно проверьте цитату.",
+                "condition": "Условие: {condition}",
+                "amountIncreased": "С момента подтверждения сумма выросла на {diff} (подтверждено: {amount})",
+                "auto": "автоматически (ИИ)",
+                "confirm": "Подтвердить",
+                "dismiss": "Отклонить",
+                "acknowledge": "Принять к сведению",
+                "reconfirm": "Подтвердить заново",
+                "record": "Дополнить данные",
+                "revoke": "Отозвать подтверждение",
+                "revokeQuestion": "Заказ снова станет входящим. Прежнее подтверждение останется видимым в истории.",
+                "more": "Другие действия",
+                "playCall": "Прослушать звонок",
+                "openChat": "Открыть чат",
+                "recordingMissing": "Запись для этого звонка не найдена",
+                "dialogTitle": "Подтвердить заказ",
+                "howQuestion": "Как клиент дал согласие?",
+                "when": "Время согласия",
+                "note": "Заметка (необязательно)",
+                "notePlaceholder": "напр. что сказал клиент",
+                "amountHint": "Подтверждается текущая сумма {amount}. Если позже она вырастет, заказ это покажет.",
+                "cancel": "Отмена",
+                "savedConfirmed": "Заказ подтверждён",
+                "savedDismissed": "Предложение отклонено",
+                "savedAcknowledged": "Отказ принят к сведению",
+                "savedRevoked": "Подтверждение отозвано",
+                "channel": {
+                    "phone": "Телефон",
+                    "email": "E-mail",
+                    "whatsapp": "WhatsApp",
+                    "visit": "На месте",
+                    "signature": "Подпись",
+                    "portal": "Клиентский портал",
+                    "other": "Прочее"
+                },
+                "saveError": "Не получилось — заказ, вероятно, был изменён за это время. Вид перезагружен, проверьте ещё раз."
             }
         },
         "workflow": {
@@ -444,7 +491,11 @@
             "quotation": "Предложение",
             "delivery_order": "Накладная",
             "credit_note": "Кредитовое авизо",
-            "invoice_storno": "Сторно-счет"
+            "invoice_storno": "Сторно-счет",
+            "purchase_order": "Заказ поставщику",
+            "purchase_invoice": "Входящий счет",
+            "request_quotation": "Запрос предложения",
+            "purchase_delivery_order": "Приходная накладная"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Доступ запрещен: У вас нет необходимых прав для просмотра этого документа. Пожалуйста, обратитесь к администратору."
+        },
+        "history": {
+            "title": "История",
+            "reload": "Обновить",
+            "close": "Закрыть",
+            "lastChange": "последнее изменение {time}, {name}",
+            "changedBy": "{name} только что изменил этот документ",
+            "createdInfo": "Создано {time}",
+            "filter": {
+                "all": "Все",
+                "head": "Заголовок",
+                "items": "Позиции",
+                "events": "Статус и отправка"
+            },
+            "filterEmployee": "Кто",
+            "search": "Поиск",
+            "timeTravel": "Машина времени",
+            "today": "Сегодня",
+            "backToToday": "Вернуться к сегодняшнему дню",
+            "asOf": "Состояние до изменения от {time} – тогда → сегодня",
+            "stepsBack": "{n} изменение назад | {n} изменений назад",
+            "noDiff": "Заголовок и позиции тогда были такими же, как сегодня.",
+            "travelItem": {
+                "added": "добавлено с тех пор",
+                "removed": "удалено с тех пор",
+                "changed": "изменено с тех пор"
+            },
+            "noMatch": "Нет записей для этого фильтра.",
+            "empty": "Изменения ещё не зарегистрированы. История начнётся со следующего изменения.",
+            "item": {
+                "added": "добавлено",
+                "removed": "удалено",
+                "changed": "изменено"
+            },
+            "milestone": {
+                "created": "Документ создан",
+                "deleted": "Документ удалён",
+                "confirmed": "Заказ подтверждён",
+                "unconfirmed": "Подтверждение отменено",
+                "closed": "Выполнено",
+                "reopened": "Открыто снова",
+                "paid": "Оплата {amount}",
+                "storno": "Сторнировано",
+                "printed": "Напечатано"
+            },
+            "summary": {
+                "itemsAdded": "Добавлена {n} позиция | Добавлено {n} позиций",
+                "itemsChanged": "Изменена {n} позиция | Изменено {n} позиций",
+                "itemsRemoved": "Удалена {n} позиция | Удалено {n} позиций",
+                "amount": "Сумма {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Сохранено",
+                "printed": "Напечатано",
+                "posted": "Проведено",
+                "printedPosted": "Напечатано и проведено",
+                "screened": "Показано на экране",
+                "mailed": "Отправлено по e-mail",
+                "deleted": "Удалено",
+                "storno": "Сторнировано",
+                "paymentPosted": "Оплата проведена",
+                "previewed": "Показан предпросмотр",
+                "canceled": "Прервано"
+            },
+            "link": {
+                "to": "На его основе создан: {type} {number}",
+                "from": "Создан на основе: {type} {number}"
+            },
+            "followup": {
+                "created": "Напоминание создано: {subject} (срок {date})",
+                "done": "Напоминание выполнено: {subject}"
+            },
+            "sent": {
+                "email": "По e-mail на {to}",
+                "whatsapp": "Через WhatsApp на {to}",
+                "post": "Почтой на {to}",
+                "dhl": "Отправление DHL {to}",
+                "other": "Отправлено на {to}"
+            },
+            "fields": {
+                "parts_id": "Артикул",
+                "paid": "Оплачено",
+                "datepaid": "Дата оплаты",
+                "record_type": "Тип документа",
+                "order_type": "Тип документа",
+                "quotation": "Предложение",
+                "storno": "Сторнировано",
+                "storno_id": "Сторно к",
+                "dunning_config_id": "Уровень напоминания",
+                "cp_id": "Контактное лицо",
+                "globalproject_id": "Проект",
+                "project_id": "Проект",
+                "optional": "Необязательная позиция",
+                "subtotal": "Промежуточный итог",
+                "serialnumber": "Серийный номер",
+                "pricegroup_id": "Ценовая группа",
+                "price_factor_id": "Ценовой коэффициент",
+                "orderer_id": "Заказчик",
+                "delivered": "Поставлено",
+                "proforma": "Проформа",
+                "order_probability": "Вероятность заказа",
+                "expected_billing_date": "Ожидаемая дата выставления счёта",
+                "tax_point": "Дата оказания услуги",
+                "vendor_confirmation_number": "Номер подтверждения поставщика",
+                "oreqnumber": "Номер запроса",
+                "invnumber_for_credit_note": "Номер счёта для кредит-ноты",
+                "is_sepa_blocked": "SEPA заблокировано",
+                "order_status_id": "Статус заказа",
+                "no_whatsapp": "Без WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Заказ (подтверждённый)",
+                "sales_order_intake": "Поступление заказа (неподтверждённое)",
+                "sales_quotation": "Предложение",
+                "request_quotation": "Запрос предложения",
+                "purchase_quotation_intake": "Полученное предложение",
+                "purchase_order": "Заказ поставщику",
+                "purchase_order_confirmation": "Подтверждение заказа поставщиком",
+                "sales_delivery_order": "Накладная",
+                "purchase_delivery_order": "Накладная закупки",
+                "supplier_delivery_order": "Накладная на давальческий материал",
+                "rma_delivery_order": "Возвратная накладная"
+            },
+            "yes": "Да",
+            "no": "Нет",
+            "automatic": "Автоматически",
+            "external": "kivitendo / внешний",
+            "unknownEmployee": "Неизвестно",
+            "source": {
+                "external": "вне OSERP",
+                "recurring": "периодический счёт",
+                "ebay": "Импорт из eBay",
+                "portal": "Магазин / портал клиента"
+            }
         }
     }
 }

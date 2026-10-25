@@ -344,16 +344,6 @@
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
         },
-        "esi": {
-            "button": "ESI",
-            "tooltip": "Otevřít vozidlo v Bosch ESI[tronic] podle HSN/TSN",
-            "noKba": "Nejsou k dispozici platná klíčová čísla (HSN/TSN)"
-        },
-        "gutmann": {
-            "button": "Gutmann",
-            "tooltip": "Otevřít vozidlo v Hella Gutmann mega macs podle HSN/TSN",
-            "noKba": "Nejsou k dispozici platná klíčová čísla (HSN/TSN)"
-        },
         "hgs": {
             "button": "HGS-Data",
             "tooltip": "Otevřít data vozidla v HGS Data",

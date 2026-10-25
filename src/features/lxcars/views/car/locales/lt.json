@@ -344,16 +344,6 @@
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
         },
-        "esi": {
-            "button": "ESI",
-            "tooltip": "Atidaryti transporto priemonę Bosch ESI[tronic] pagal HSN/TSN",
-            "noKba": "Nėra galiojančių rakto numerių (HSN/TSN)"
-        },
-        "gutmann": {
-            "button": "Gutmann",
-            "tooltip": "Atidaryti transporto priemonę Hella Gutmann mega macs pagal HSN/TSN",
-            "noKba": "Nėra galiojančių rakto numerių (HSN/TSN)"
-        },
         "hgs": {
             "button": "HGS-Data",
             "tooltip": "Atidaryti transporto priemonės duomenis HGS Data",

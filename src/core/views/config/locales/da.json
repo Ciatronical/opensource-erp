@@ -694,9 +694,6 @@
         "aagOnlinePassword_help": "Adgangskode für AAG Online",
         "aagOnlinePassword2": "AAG Online Adgangskode (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "mega macs-adresse (URL)",
-        "gutmannMegamacsUrl_help": "Adresse eller URL-skabelon for mega macs X. Pladsholdere {hsn} {tsn} {vin} erstattes, f.eks. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Uden pladsholdere tilføjes hsn/tsn/vin (ofte ignoreret af SPA). Tip: vælg et køretøj på enheden og kopiér adresselinjen.",
         "hgsData": "HGS Data",
         "hgsDataUser": "HGS Data-bruger",
         "hgsDataUser_help": "Brugernavn til HGS Data (køretøjssøgning via HSN/TSN)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Send beløb automatisk",
         "sumupAutoSend_help": "Når en faktura oprettes fra et tilbud eller en ordre, sendes restbeløbet straks til terminalen (standard: til). Ved åbning af eksisterende eller betalte fakturaer sendes der aldrig automatisk",
         "shopWebsite": "Kundeportal-websted",
-        "shopWebsite_help": "Webstedet, HugoShop kører på – tilknyttet under salgskanaler, sat op under System → Websteder."
+        "shopWebsite_help": "Webstedet, HugoShop kører på – tilknyttet under salgskanaler, sat op under System → Websteder.",
+        "orderConfirmation": "Ordrebekræftelse",
+        "orderConfirmAi": "Registrér accepter med AI",
+        "orderConfirmAi_help": "Opkald (optagelse), WhatsApp-beskeder (også talebeskeder og svarknapper) og e-mails fra kunder med en åben ordreindgang (ikke lukket, endnu ikke faktureret) transskriberes og kontrolleres af AI'en for en accept eller et afslag. „Forslag“: ordren viser den registrerede accept med citat, og der bekræftes med et klik. „Automatisk“: entydige accepter via WhatsApp eller telefon (én åben ordre, ingen betingelse, høj sikkerhed) bekræftes straks; e-mails forbliver altid forslag, fordi afsenderen kan forfalskes. Forudsætning: Anthropic-API-nøgle, Whisper-tjenesten og tjenesten oserp-auftragsbestaetigung, for e-mails desuden tjenesten oserp-email-eingang med en opsat postkasse. Opkald må kun optages med den opkaldendes samtykke.",
+        "orderConfirmAiOff": "Fra",
+        "orderConfirmAiSuggest": "Forslag — bekræft med et klik",
+        "orderConfirmAiAuto": "Automatisk ved entydig accept",
+        "orderConfirmAiDays": "Ordreindgange fra de seneste dage",
+        "orderConfirmAiDays_help": "Kun ordreindgange, der højst er så mange dage gamle, kommer i betragtning til en accept (standard 60). Ældre ubekræftede ordrer kontrolleres ikke."
     },
     "add": "Tilfoej",
     "add_fields": {

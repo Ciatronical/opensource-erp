@@ -41,6 +41,51 @@ function _reportTimeToMinutes($t) {
     return intval($p[0]) * 60 + intval($p[1] ?? 0);
 }
 
+/**
+ * CTE „work": jede erfasste Arbeitszeit mit ihrem BEGINN.
+ *
+ * Protokollierte Timer-Sitzungen (oe_instruction_times_lxcars, je Tag) oder,
+ * für Altdaten ohne Protokoll, eine Schätzung: Fertigstellung minus
+ * Nettominuten in Arbeitstagen rückwärts, Wochenende übersprungen.
+ * is_first = erster Arbeitsbeginn einer Anweisung – dort zählen Vorgabezeit
+ * und Erledigung genau einmal. Gleiche Logik wie performance.php.
+ * Die aufrufende Abfrage liefert den Platzhalter :avail (Nettominuten je Tag).
+ *
+ * @return string SQL-Text für "WITH <hier> SELECT ..."
+ */
+function _workTimesCte() {
+    return "work_raw AS MATERIALIZED (
+            SELECT t.instruction_id AS id, t.id AS sid, t.employee_id, t.started_at, t.minutes
+            FROM oe_instruction_times_lxcars t
+            UNION ALL
+            SELECT i.id, 0, i.employee_id,
+                   CASE EXTRACT(isodow FROM est.ts)::int
+                       WHEN 7 THEN est.ts - interval '2 days'
+                       WHEN 6 THEN est.ts - interval '1 day'
+                       ELSE est.ts
+                   END,
+                   i.actual_minutes
+            FROM oe_instructions_lxcars i
+            CROSS JOIN LATERAL (
+                SELECT i.done_at
+                       - make_interval(days => i.actual_minutes / GREATEST(:avail::int, 60))
+                       - make_interval(mins => i.actual_minutes % GREATEST(:avail2::int, 60)) AS ts
+            ) est
+            WHERE i.done = true AND i.actual_minutes > 0 AND i.done_at IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM oe_instruction_times_lxcars t WHERE t.instruction_id = i.id)
+        ),
+        work AS MATERIALIZED (
+            SELECT i.id, i.oe_id,
+                   COALESCE(w.employee_id, i.employee_id) AS employee_id,
+                   i.description, i.planned_minutes, i.actual_minutes, i.done, i.done_at,
+                   w.started_at, w.started_at::date AS work_date, w.minutes,
+                   ROW_NUMBER() OVER (PARTITION BY i.id ORDER BY w.started_at, w.sid) = 1 AS is_first
+            FROM work_raw w
+            JOIN oe_instructions_lxcars i ON i.id = w.id
+            WHERE w.minutes > 0
+        )";
+}
+
 function _workDaysInRange($from, $to) {
     $start = new DateTime($from);
     $end = new DateTime($to);
@@ -84,83 +129,86 @@ function getMyReport($data) {
     $availPerDay = _availableMinutesPerDay($arbeitsbeginn, $arbeitsende, $pausen);
     $workDays = _workDaysInRange($dateFrom, $dateTo);
 
-    // ── Produktive Minuten pro Tag (ueber done_at verknuepft) ──
+    // ── Produktive Minuten pro Tag (nach Arbeitsbeginn der Sitzungen) ──
+    $wp = [':avail' => $availPerDay, ':avail2' => $availPerDay];
     $daily = $db->getAll(
-        "SELECT d.day::date AS work_date,
-                COALESCE(SUM(i.actual_minutes), 0) AS actual_minutes,
-                COALESCE(SUM(i.planned_minutes), 0) AS planned_minutes,
-                COUNT(DISTINCT i.id) FILTER (WHERE i.done = true) AS tasks_done,
-                COUNT(DISTINCT i.oe_id) AS orders_touched
+        "WITH " . _workTimesCte() . "
+         SELECT d.day::date AS work_date,
+                COALESCE(SUM(w.minutes), 0) AS actual_minutes,
+                COALESCE(SUM(w.planned_minutes) FILTER (WHERE w.is_first), 0) AS planned_minutes,
+                COUNT(DISTINCT w.id) FILTER (WHERE w.is_first AND w.done) AS tasks_done,
+                COUNT(DISTINCT w.oe_id) AS orders_touched
          FROM generate_series(:from::date, :to::date, '1 day'::interval) AS d(day)
-         LEFT JOIN oe_instructions_lxcars i
-             ON i.employee_id = :emp
-             AND i.actual_minutes > 0
-             AND i.done_at::date = d.day::date
+         LEFT JOIN work w
+             ON w.employee_id = :emp
+             AND w.work_date = d.day::date
          GROUP BY d.day::date
          ORDER BY d.day::date",
-        [':from' => $dateFrom, ':to' => $dateTo, ':emp' => $employeeId]
+        $wp + [':from' => $dateFrom, ':to' => $dateTo, ':emp' => $employeeId]
     );
 
     // ── Zusammenfassung im Zeitraum ──
     $summary = $db->getOne(
-        "SELECT COALESCE(SUM(actual_minutes), 0) AS total_actual,
-                COALESCE(SUM(planned_minutes), 0) AS total_planned,
-                COUNT(DISTINCT id) FILTER (WHERE done = true) AS tasks_done,
+        "WITH " . _workTimesCte() . "
+         SELECT COALESCE(SUM(minutes), 0) AS total_actual,
+                COALESCE(SUM(planned_minutes) FILTER (WHERE is_first), 0) AS total_planned,
+                COUNT(DISTINCT id) FILTER (WHERE is_first AND done) AS tasks_done,
                 COUNT(DISTINCT id) AS tasks_total,
                 COUNT(DISTINCT oe_id) AS orders_count
-         FROM oe_instructions_lxcars
+         FROM work
          WHERE employee_id = :emp
-           AND actual_minutes > 0
-           AND done_at::date BETWEEN :from::date AND :to::date",
-        [':emp' => $employeeId, ':from' => $dateFrom, ':to' => $dateTo]
+           AND work_date BETWEEN :from::date AND :to::date",
+        $wp + [':emp' => $employeeId, ':from' => $dateFrom, ':to' => $dateTo]
     );
 
     // ── Bearbeitete Fahrzeuge im Zeitraum ──
     $vehicles = $db->getAll(
-        "SELECT o.ordnumber,
+        "WITH " . _workTimesCte() . "
+         SELECT o.ordnumber,
                 COALESCE(ext.kennzeichen, c.c_ln) AS kennzeichen,
                 c.c_m AS fahrzeugtyp,
-                COALESCE(SUM(i.actual_minutes), 0) AS actual_minutes,
-                COALESCE(SUM(i.planned_minutes), 0) AS planned_minutes,
-                COUNT(DISTINCT i.id) FILTER (WHERE i.done = true) AS tasks_done
-         FROM oe_instructions_lxcars i
+                COALESCE(SUM(i.minutes), 0) AS actual_minutes,
+                COALESCE(SUM(i.planned_minutes) FILTER (WHERE i.is_first), 0) AS planned_minutes,
+                COUNT(DISTINCT i.id) FILTER (WHERE i.is_first AND i.done) AS tasks_done
+         FROM work i
          JOIN oe o ON o.id = i.oe_id
          LEFT JOIN oe_ext ext ON ext.oe_id = i.oe_id
          LEFT JOIN cars_lxcars c ON c.c_id = ext.c_id
          WHERE i.employee_id = :emp
-           AND i.actual_minutes > 0
-           AND i.done_at::date BETWEEN :from::date AND :to::date
+           AND i.work_date BETWEEN :from::date AND :to::date
          GROUP BY o.ordnumber, ext.kennzeichen, c.c_ln, c.c_m
-         ORDER BY SUM(i.actual_minutes) DESC
+         ORDER BY SUM(i.minutes) DESC
          LIMIT 25",
-        [':emp' => $employeeId, ':from' => $dateFrom, ':to' => $dateTo]
+        $wp + [':emp' => $employeeId, ':from' => $dateFrom, ':to' => $dateTo]
     );
 
     // ── Top-Taetigkeiten im Zeitraum ──
     $topTasks = $db->getAll(
-        "SELECT description,
+        "WITH " . _workTimesCte() . "
+         SELECT description,
                 COUNT(*) AS times_done,
                 ROUND(AVG(actual_minutes)) AS avg_actual,
                 ROUND(AVG(planned_minutes)) AS avg_planned
-         FROM oe_instructions_lxcars
-         WHERE employee_id = :emp AND done = true AND actual_minutes > 0
-           AND done_at::date BETWEEN :from::date AND :to::date
+         FROM work
+         WHERE employee_id = :emp AND done AND is_first
+           AND work_date BETWEEN :from::date AND :to::date
          GROUP BY description
          ORDER BY COUNT(*) DESC
          LIMIT 10",
-        [':emp' => $employeeId, ':from' => $dateFrom, ':to' => $dateTo]
+        $wp + [':emp' => $employeeId, ':from' => $dateFrom, ':to' => $dateTo]
     );
 
     // ── Persoenlicher Rekord (bester Tag aller Zeiten) ──
     $bestDay = $db->getOne(
-        "SELECT MAX(day_total) AS best_day_minutes
+        "WITH " . _workTimesCte() . "
+         SELECT MAX(day_total) AS best_day_minutes
          FROM (
-             SELECT done_at::date AS d, SUM(actual_minutes) AS day_total
-             FROM oe_instructions_lxcars
-             WHERE employee_id = :emp AND actual_minutes > 0 AND done_at IS NOT NULL
-             GROUP BY done_at::date
+             SELECT work_date, SUM(minutes) AS day_total
+             FROM work
+             WHERE employee_id = :emp
+             GROUP BY work_date
          ) sub",
-        [':emp' => $employeeId]
+        $wp + [':emp' => $employeeId]
     );
 
     resultInfo(true, 'OK', [
@@ -202,94 +250,96 @@ function getTeamReport($data) {
     $workDays = _workDaysInRange($dateFrom, $dateTo);
 
     // ── Pro Mechaniker im Zeitraum ──
+    $wp = [':avail' => $availPerDay, ':avail2' => $availPerDay];
     $teamStats = $db->getAll(
-        "SELECT e.id AS employee_id,
+        "WITH " . _workTimesCte() . "
+         SELECT e.id AS employee_id,
                 e.name AS employee_name,
-                COALESCE(SUM(i.actual_minutes), 0) AS actual_minutes,
-                COALESCE(SUM(i.planned_minutes), 0) AS planned_minutes,
-                COUNT(DISTINCT i.id) FILTER (WHERE i.done = true) AS done_count,
+                COALESCE(SUM(i.minutes), 0) AS actual_minutes,
+                COALESCE(SUM(i.planned_minutes) FILTER (WHERE i.is_first), 0) AS planned_minutes,
+                COUNT(DISTINCT i.id) FILTER (WHERE i.is_first AND i.done) AS done_count,
                 COUNT(DISTINCT i.id) AS total_count,
                 COUNT(DISTINCT i.oe_id) AS order_count
          FROM employee e
-         JOIN oe_instructions_lxcars i ON i.employee_id = e.id
-         WHERE i.actual_minutes > 0
-           AND i.done_at::date BETWEEN :from::date AND :to::date
+         JOIN work i ON i.employee_id = e.id
+         WHERE i.work_date BETWEEN :from::date AND :to::date
          GROUP BY e.id, e.name
-         ORDER BY SUM(i.actual_minutes) DESC",
-        [':from' => $dateFrom, ':to' => $dateTo]
+         ORDER BY SUM(i.minutes) DESC",
+        $wp + [':from' => $dateFrom, ':to' => $dateTo]
     );
 
     // ── Pro Mechaniker pro Tag ──
     $dailyByEmployee = $db->getAll(
-        "SELECT i.employee_id,
+        "WITH " . _workTimesCte() . "
+         SELECT emps.employee_id,
                 e.name AS employee_name,
                 d.day::date AS work_date,
-                COALESCE(SUM(i.actual_minutes), 0) AS actual_minutes
+                COALESCE(SUM(i.minutes), 0) AS actual_minutes
          FROM generate_series(:from::date, :to::date, '1 day'::interval) AS d(day)
          CROSS JOIN (
-             SELECT DISTINCT employee_id FROM oe_instructions_lxcars
-             WHERE actual_minutes > 0 AND done_at::date BETWEEN :from2::date AND :to2::date
+             SELECT DISTINCT employee_id FROM work
+             WHERE work_date BETWEEN :from2::date AND :to2::date
          ) AS emps
          JOIN employee e ON e.id = emps.employee_id
-         LEFT JOIN oe_instructions_lxcars i
+         LEFT JOIN work i
              ON i.employee_id = emps.employee_id
-             AND i.actual_minutes > 0
-             AND i.done_at::date = d.day::date
-         GROUP BY i.employee_id, e.name, d.day::date
+             AND i.work_date = d.day::date
+         GROUP BY emps.employee_id, e.name, d.day::date
          ORDER BY e.name, d.day::date",
-        [':from' => $dateFrom, ':to' => $dateTo, ':from2' => $dateFrom, ':to2' => $dateTo]
+        $wp + [':from' => $dateFrom, ':to' => $dateTo, ':from2' => $dateFrom, ':to2' => $dateTo]
     );
 
     // ── Fahrzeug-Zeiten im Zeitraum ──
     $vehicleTimes = $db->getAll(
-        "SELECT o.ordnumber,
+        "WITH " . _workTimesCte() . "
+         SELECT o.ordnumber,
                 COALESCE(ext.kennzeichen, c.c_ln) AS kennzeichen,
                 c.c_m AS fahrzeugtyp,
-                COALESCE(SUM(i.actual_minutes), 0) AS actual_minutes,
-                COALESCE(SUM(i.planned_minutes), 0) AS planned_minutes,
+                COALESCE(SUM(i.minutes), 0) AS actual_minutes,
+                COALESCE(SUM(i.planned_minutes) FILTER (WHERE i.is_first), 0) AS planned_minutes,
                 COUNT(DISTINCT i.employee_id) AS mechanic_count,
                 string_agg(DISTINCT e.name, ', ') AS mechanics
-         FROM oe_instructions_lxcars i
+         FROM work i
          JOIN oe o ON o.id = i.oe_id
          LEFT JOIN oe_ext ext ON ext.oe_id = i.oe_id
          LEFT JOIN cars_lxcars c ON c.c_id = ext.c_id
          LEFT JOIN employee e ON e.id = i.employee_id
-         WHERE i.done = true AND i.actual_minutes > 0
-           AND i.done_at::date BETWEEN :from::date AND :to::date
+         WHERE i.work_date BETWEEN :from::date AND :to::date
          GROUP BY o.ordnumber, ext.kennzeichen, c.c_ln, c.c_m
-         ORDER BY SUM(i.actual_minutes) DESC
+         ORDER BY SUM(i.minutes) DESC
          LIMIT 50",
-        [':from' => $dateFrom, ':to' => $dateTo]
+        $wp + [':from' => $dateFrom, ':to' => $dateTo]
     );
 
     // ── Team-Gesamtstatistik im Zeitraum ──
     $teamTotal = $db->getOne(
-        "SELECT COALESCE(SUM(actual_minutes), 0) AS total_actual,
-                COALESCE(SUM(planned_minutes), 0) AS total_planned,
-                COUNT(DISTINCT id) FILTER (WHERE done = true) AS total_done,
+        "WITH " . _workTimesCte() . "
+         SELECT COALESCE(SUM(minutes), 0) AS total_actual,
+                COALESCE(SUM(planned_minutes) FILTER (WHERE is_first), 0) AS total_planned,
+                COUNT(DISTINCT id) FILTER (WHERE is_first AND done) AS total_done,
                 COUNT(DISTINCT id) AS total_count,
                 COUNT(DISTINCT oe_id) AS total_orders,
                 COUNT(DISTINCT employee_id) AS mechanic_count
-         FROM oe_instructions_lxcars
-         WHERE actual_minutes > 0
-           AND done_at::date BETWEEN :from::date AND :to::date",
-        [':from' => $dateFrom, ':to' => $dateTo]
+         FROM work
+         WHERE work_date BETWEEN :from::date AND :to::date",
+        $wp + [':from' => $dateFrom, ':to' => $dateTo]
     );
 
     // ── Top-Taetigkeiten teamweit im Zeitraum ──
     $topTasks = $db->getAll(
-        "SELECT description,
+        "WITH " . _workTimesCte() . "
+         SELECT description,
                 COUNT(*) AS times_done,
                 ROUND(AVG(actual_minutes)) AS avg_actual,
                 ROUND(AVG(planned_minutes)) AS avg_planned,
                 COUNT(DISTINCT employee_id) AS mechanic_count
-         FROM oe_instructions_lxcars
-         WHERE done = true AND actual_minutes > 0
-           AND done_at::date BETWEEN :from::date AND :to::date
+         FROM work
+         WHERE done AND is_first
+           AND work_date BETWEEN :from::date AND :to::date
          GROUP BY description
          ORDER BY COUNT(*) DESC
          LIMIT 10",
-        [':from' => $dateFrom, ':to' => $dateTo]
+        $wp + [':from' => $dateFrom, ':to' => $dateTo]
     );
 
     resultInfo(true, 'OK', [

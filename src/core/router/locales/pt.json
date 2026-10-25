@@ -45,6 +45,7 @@
         "hr": "/pessoal",
         "hrPayroll": "/pessoal/salarios",
         "hrVacation": "/pessoal/ferias",
+        "hrPerformance": "/pessoal/desempenho",
         "newDeliveryOrder": "/guia-remessa/novo",
         "setup": "/instalacao",
         "login": "/entrar",

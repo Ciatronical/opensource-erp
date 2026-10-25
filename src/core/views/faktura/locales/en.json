@@ -65,8 +65,13 @@
             "createComplaint": "Create Complaint",
             "cancel": "Cancel / Void",
             "saveAsDraft": "Save as Draft",
-            "history": "History",
             "followUp": "Follow-up",
+            "followUpOpen": "Open follow-ups: {n}",
+            "followUpNew": "New follow-up",
+            "followUpDone": "Done",
+            "followUpSaved": "Follow-up saved",
+            "followUpMarkedDone": "Follow-up done",
+            "followUpError": "Follow-up could not be saved",
             "exportXInvoice": "Generate E-Invoice (Factur-X / XRechnung)",
             "einvoice": {
                 "saveFirst": "Please save the invoice before generating an e-invoice.",
@@ -108,7 +113,6 @@
             "taxZone": "Tax Zone",
             "reverseChargeHint": "Reverse charge (Section 13b German VAT Act): 0 % VAT, the notice is printed on the document.",
             "taxIncluded": "Tax Included in Price",
-            "orderConfirmed": "Confirmed",
             "shippingPoint": "Shipping Point",
             "shipVia": "Ship Via",
             "transactionDescription": "Transaction Description",
@@ -312,8 +316,6 @@
                 "invalidFile": "Invalid file – only PDF or images (JPEG, PNG, WebP) are supported"
             },
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Open vehicle in ESI[tronic]",
-            "openGutmann": "Open vehicle in Hella Gutmann mega macs",
             "openHgs": "Open vehicle data in HGS Data",
             "hgsError": "Could not open HGS Data",
             "aagError": "Could not open AAG-Online",
@@ -558,7 +560,51 @@
                 "createCustomKlassen": "Possible defect classes",
                 "createCustomSave": "Create"
             },
-            "deliveryAddressOwn": "Delivery address of this document"
+            "deliveryAddressOwn": "Delivery address of this document",
+            "confirmation": {
+                "open": "Not yet confirmed",
+                "openHint": "How did the customer accept? Confirming records the current amount.",
+                "confirmed": "Confirmed",
+                "notRecorded": "How it was confirmed has not been recorded.",
+                "suggestedAccept": "Acceptance detected — please review",
+                "suggestedDecline": "Refusal detected",
+                "uncertain": "Detected with low certainty — please check the quote carefully.",
+                "condition": "Condition: {condition}",
+                "amountIncreased": "Increased by {diff} since confirmation (confirmed: {amount})",
+                "auto": "automatically (AI)",
+                "confirm": "Confirm",
+                "dismiss": "Dismiss",
+                "acknowledge": "Acknowledge",
+                "reconfirm": "Confirm again",
+                "record": "Add details",
+                "revoke": "Withdraw confirmation",
+                "revokeQuestion": "The order goes back to order intake. The previous confirmation stays visible in the history.",
+                "more": "More actions",
+                "playCall": "Play call",
+                "openChat": "Open chat",
+                "recordingMissing": "No recording found for this call",
+                "dialogTitle": "Confirm order",
+                "howQuestion": "How did the customer accept?",
+                "when": "Time of acceptance",
+                "note": "Note (optional)",
+                "notePlaceholder": "e.g. what the customer said",
+                "amountHint": "The current amount of {amount} is confirmed. If it rises later, the order will show it.",
+                "cancel": "Cancel",
+                "savedConfirmed": "Order confirmed",
+                "savedDismissed": "Suggestion dismissed",
+                "savedAcknowledged": "Refusal acknowledged",
+                "savedRevoked": "Confirmation withdrawn",
+                "channel": {
+                    "phone": "Phone",
+                    "email": "Email",
+                    "whatsapp": "WhatsApp",
+                    "visit": "In person",
+                    "signature": "Signature",
+                    "portal": "Customer portal",
+                    "other": "Other"
+                },
+                "saveError": "That did not work — the order was probably changed in the meantime. The view has been reloaded, please check again."
+            }
         },
         "workflow": {
             "created": "Document created successfully",
@@ -572,7 +618,11 @@
             "quotation": "Quotation",
             "delivery_order": "Delivery Order",
             "credit_note": "Credit Note",
-            "invoice_storno": "Cancellation Invoice"
+            "invoice_storno": "Cancellation Invoice",
+            "purchase_order": "Purchase Order",
+            "purchase_invoice": "Vendor Invoice",
+            "request_quotation": "Request for Quotation",
+            "purchase_delivery_order": "Purchase Delivery Order"
         },
         "dialogs": {
             "deleteItem": {
@@ -714,6 +764,140 @@
         },
         "alerts": {
             "warning_no_permission": "Access denied: You do not have the required permissions to view this document. Please contact your administrator."
+        },
+        "history": {
+            "title": "History",
+            "reload": "Refresh",
+            "close": "Close",
+            "lastChange": "last changed {time} by {name}",
+            "changedBy": "{name} has just changed this document",
+            "createdInfo": "Created on {time}",
+            "filter": {
+                "all": "All",
+                "head": "Header",
+                "items": "Items",
+                "events": "Status & dispatch"
+            },
+            "filterEmployee": "Who",
+            "search": "Search",
+            "timeTravel": "Time travel",
+            "today": "Today",
+            "backToToday": "Back to today",
+            "asOf": "State before the edit of {time} – then → today",
+            "stepsBack": "{n} edit back | {n} edits back",
+            "noDiff": "Header and items were the same as today.",
+            "travelItem": {
+                "added": "added since",
+                "removed": "removed since",
+                "changed": "changed since"
+            },
+            "noMatch": "No entries for this filter.",
+            "empty": "No changes recorded yet. The history starts with the next change.",
+            "item": {
+                "added": "added",
+                "removed": "removed",
+                "changed": "changed"
+            },
+            "milestone": {
+                "created": "Document created",
+                "deleted": "Document deleted",
+                "confirmed": "Order confirmed",
+                "unconfirmed": "Confirmation withdrawn",
+                "closed": "Closed",
+                "reopened": "Reopened",
+                "paid": "Payment {amount}",
+                "storno": "Cancelled",
+                "printed": "Printed"
+            },
+            "summary": {
+                "itemsAdded": "{n} item added | {n} items added",
+                "itemsChanged": "{n} item changed | {n} items changed",
+                "itemsRemoved": "{n} item removed | {n} items removed",
+                "amount": "Amount {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Saved",
+                "printed": "Printed",
+                "posted": "Posted",
+                "printedPosted": "Printed and posted",
+                "screened": "Shown on screen",
+                "mailed": "Sent by email",
+                "deleted": "Deleted",
+                "storno": "Cancelled",
+                "paymentPosted": "Payment posted",
+                "previewed": "Preview shown",
+                "canceled": "Aborted"
+            },
+            "link": {
+                "to": "{type} {number} created from it",
+                "from": "Created from {type} {number}"
+            },
+            "followup": {
+                "created": "Follow-up created: {subject} (due {date})",
+                "done": "Follow-up done: {subject}"
+            },
+            "sent": {
+                "email": "By email to {to}",
+                "whatsapp": "By WhatsApp to {to}",
+                "post": "By post to {to}",
+                "dhl": "DHL shipment {to}",
+                "other": "Sent to {to}"
+            },
+            "fields": {
+                "parts_id": "Article",
+                "paid": "Paid",
+                "datepaid": "Paid on",
+                "record_type": "Document type",
+                "order_type": "Document type",
+                "quotation": "Quotation",
+                "storno": "Cancelled",
+                "storno_id": "Cancellation of",
+                "dunning_config_id": "Dunning level",
+                "cp_id": "Contact person",
+                "globalproject_id": "Project",
+                "project_id": "Project",
+                "optional": "Optional item",
+                "subtotal": "Subtotal",
+                "serialnumber": "Serial number",
+                "pricegroup_id": "Price group",
+                "price_factor_id": "Price factor",
+                "orderer_id": "Orderer",
+                "delivered": "Delivered",
+                "proforma": "Pro forma",
+                "order_probability": "Order probability",
+                "expected_billing_date": "Expected billing date",
+                "tax_point": "Tax point",
+                "vendor_confirmation_number": "Vendor confirmation number",
+                "oreqnumber": "Request number",
+                "invnumber_for_credit_note": "Invoice number for credit note",
+                "is_sepa_blocked": "SEPA blocked",
+                "order_status_id": "Order status",
+                "no_whatsapp": "No WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Order (confirmed)",
+                "sales_order_intake": "Order intake (unconfirmed)",
+                "sales_quotation": "Quotation",
+                "request_quotation": "Request for quotation",
+                "purchase_quotation_intake": "Quotation intake",
+                "purchase_order": "Purchase order",
+                "purchase_order_confirmation": "Vendor order confirmation",
+                "sales_delivery_order": "Delivery order",
+                "purchase_delivery_order": "Purchase delivery order",
+                "supplier_delivery_order": "Supplier delivery order",
+                "rma_delivery_order": "Return delivery order"
+            },
+            "yes": "Yes",
+            "no": "No",
+            "automatic": "Automatic",
+            "external": "kivitendo / external",
+            "unknownEmployee": "Unknown",
+            "source": {
+                "external": "outside OSERP",
+                "recurring": "recurring invoice",
+                "ebay": "eBay import",
+                "portal": "Shop / customer portal"
+            }
         }
     }
 }

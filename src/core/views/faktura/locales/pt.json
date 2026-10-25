@@ -65,8 +65,13 @@
             "createComplaint": "Criar reclamação",
             "cancel": "Anular",
             "saveAsDraft": "Guardar como rascunho",
-            "history": "Histórico",
             "followUp": "Acompanhamento",
+            "followUpOpen": "Acompanhamentos em aberto: {n}",
+            "followUpNew": "Novo acompanhamento",
+            "followUpDone": "Concluído",
+            "followUpSaved": "Acompanhamento guardado",
+            "followUpMarkedDone": "Acompanhamento concluído",
+            "followUpError": "Não foi possível guardar o acompanhamento",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Eliminar",
             "pdfPreview": "Pré-visualização PDF",
@@ -182,8 +187,6 @@
             "openVehicle": "Veículo",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transferir veículo e abrir",
-            "openEsi": "Abrir veículo no ESI[tronic]",
-            "openGutmann": "Abrir veículo no Hella Gutmann mega macs",
             "openHgs": "Abrir dados do veículo no HGS Data",
             "hgsError": "Não foi possível abrir o HGS Data",
             "aagError": "Não foi possível abrir o AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Fatura totalmente paga",
                 "alreadyPaid": "O pagamento com cartão de {amount} € já tinha sido efetuado – nada foi enviado novamente",
                 "synced": "Pagamento com cartão de {amount} € registado a partir da SumUp"
+            },
+            "confirmation": {
+                "open": "Ainda não confirmada",
+                "openHint": "Como é que o cliente aceitou? Com a confirmação, o montante atual fica registado.",
+                "confirmed": "Confirmada",
+                "notRecorded": "Não está registado como foi confirmada.",
+                "suggestedAccept": "Aceitação detetada — verifique",
+                "suggestedDecline": "Recusa detetada",
+                "uncertain": "Deteção incerta — verifique bem a citação.",
+                "condition": "Condição: {condition}",
+                "amountIncreased": "Aumentou {diff} desde a confirmação (confirmado: {amount})",
+                "auto": "automaticamente (IA)",
+                "confirm": "Confirmar",
+                "dismiss": "Descartar",
+                "acknowledge": "Tomar conhecimento",
+                "reconfirm": "Reconfirmar",
+                "record": "Completar dados",
+                "revoke": "Retirar confirmação",
+                "revokeQuestion": "A encomenda volta ao estado de entrada de encomenda. A confirmação anterior permanece visível no histórico.",
+                "more": "Mais ações",
+                "playCall": "Ouvir chamada",
+                "openChat": "Abrir chat",
+                "recordingMissing": "Nenhuma gravação encontrada para esta chamada",
+                "dialogTitle": "Confirmar encomenda",
+                "howQuestion": "Como é que o cliente aceitou?",
+                "when": "Momento da aceitação",
+                "note": "Nota (opcional)",
+                "notePlaceholder": "p. ex. o que o cliente disse",
+                "amountHint": "É confirmado o montante atual de {amount}. Se aumentar mais tarde, a encomenda assinala-o.",
+                "cancel": "Cancelar",
+                "savedConfirmed": "Encomenda confirmada",
+                "savedDismissed": "Sugestão descartada",
+                "savedAcknowledged": "Recusa registada",
+                "savedRevoked": "Confirmação retirada",
+                "channel": {
+                    "phone": "Telefone",
+                    "email": "E-mail",
+                    "whatsapp": "WhatsApp",
+                    "visit": "No local",
+                    "signature": "Assinatura",
+                    "portal": "Portal de clientes",
+                    "other": "Outro"
+                },
+                "saveError": "Não funcionou — a encomenda foi provavelmente alterada entretanto. A vista foi recarregada, verifique novamente."
             }
         },
         "workflow": {
@@ -444,7 +491,11 @@
             "quotation": "Orçamento",
             "delivery_order": "Guia de remessa",
             "credit_note": "Nota de crédito",
-            "invoice_storno": "Fatura de anulação"
+            "invoice_storno": "Fatura de anulação",
+            "purchase_order": "Encomenda de compra",
+            "purchase_invoice": "Fatura de fornecedor",
+            "request_quotation": "Pedido de cotação",
+            "purchase_delivery_order": "Guia de remessa de compra"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."
+        },
+        "history": {
+            "title": "Histórico",
+            "reload": "Atualizar",
+            "close": "Fechar",
+            "lastChange": "última alteração {time} por {name}",
+            "changedBy": "{name} acabou de alterar este documento",
+            "createdInfo": "Criado em {time}",
+            "filter": {
+                "all": "Todos",
+                "head": "Cabeçalho",
+                "items": "Linhas",
+                "events": "Estado e envio"
+            },
+            "filterEmployee": "Quem",
+            "search": "Pesquisar",
+            "timeTravel": "Viagem no tempo",
+            "today": "Hoje",
+            "backToToday": "Voltar a hoje",
+            "asOf": "Estado antes da edição de {time} – então → hoje",
+            "stepsBack": "{n} edição atrás | {n} edições atrás",
+            "noDiff": "O cabeçalho e as linhas eram iguais aos de hoje.",
+            "travelItem": {
+                "added": "adicionado desde então",
+                "removed": "removido desde então",
+                "changed": "alterado desde então"
+            },
+            "noMatch": "Sem registos para este filtro.",
+            "empty": "Ainda não há alterações registadas. O histórico começa com a próxima alteração.",
+            "item": {
+                "added": "adicionado",
+                "removed": "removido",
+                "changed": "alterado"
+            },
+            "milestone": {
+                "created": "Documento criado",
+                "deleted": "Documento eliminado",
+                "confirmed": "Encomenda confirmada",
+                "unconfirmed": "Confirmação retirada",
+                "closed": "Concluído",
+                "reopened": "Reaberto",
+                "paid": "Pagamento {amount}",
+                "storno": "Anulado",
+                "printed": "Impresso"
+            },
+            "summary": {
+                "itemsAdded": "{n} linha adicionada | {n} linhas adicionadas",
+                "itemsChanged": "{n} linha alterada | {n} linhas alteradas",
+                "itemsRemoved": "{n} linha removida | {n} linhas removidas",
+                "amount": "Montante {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Guardado",
+                "printed": "Impresso",
+                "posted": "Lançado",
+                "printedPosted": "Impresso e lançado",
+                "screened": "Mostrado no ecrã",
+                "mailed": "Enviado por e-mail",
+                "deleted": "Eliminado",
+                "storno": "Anulado",
+                "paymentPosted": "Pagamento lançado",
+                "previewed": "Pré-visualização mostrada",
+                "canceled": "Cancelado"
+            },
+            "link": {
+                "to": "{type} {number} criado a partir deste",
+                "from": "Criado a partir de {type} {number}"
+            },
+            "followup": {
+                "created": "Lembrete criado: {subject} (vence a {date})",
+                "done": "Lembrete concluído: {subject}"
+            },
+            "sent": {
+                "email": "Por e-mail para {to}",
+                "whatsapp": "Por WhatsApp para {to}",
+                "post": "Por correio para {to}",
+                "dhl": "Envio DHL {to}",
+                "other": "Enviado para {to}"
+            },
+            "fields": {
+                "parts_id": "Artigo",
+                "paid": "Pago",
+                "datepaid": "Pago em",
+                "record_type": "Tipo de documento",
+                "order_type": "Tipo de documento",
+                "quotation": "Orçamento",
+                "storno": "Anulado",
+                "storno_id": "Anulação de",
+                "dunning_config_id": "Nível de cobrança",
+                "cp_id": "Pessoa de contacto",
+                "globalproject_id": "Projeto",
+                "project_id": "Projeto",
+                "optional": "Linha opcional",
+                "subtotal": "Subtotal",
+                "serialnumber": "Número de série",
+                "pricegroup_id": "Grupo de preços",
+                "price_factor_id": "Fator de preço",
+                "orderer_id": "Requisitante",
+                "delivered": "Entregue",
+                "proforma": "Pró-forma",
+                "order_probability": "Probabilidade de encomenda",
+                "expected_billing_date": "Data de faturação prevista",
+                "tax_point": "Data da prestação",
+                "vendor_confirmation_number": "Número de confirmação do fornecedor",
+                "oreqnumber": "Número do pedido",
+                "invnumber_for_credit_note": "Número da fatura para a nota de crédito",
+                "is_sepa_blocked": "SEPA bloqueado",
+                "order_status_id": "Estado da encomenda",
+                "no_whatsapp": "Sem WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Encomenda (confirmada)",
+                "sales_order_intake": "Encomenda recebida (não confirmada)",
+                "sales_quotation": "Orçamento",
+                "request_quotation": "Pedido de orçamento",
+                "purchase_quotation_intake": "Orçamento recebido",
+                "purchase_order": "Encomenda a fornecedor",
+                "purchase_order_confirmation": "Confirmação de encomenda do fornecedor",
+                "sales_delivery_order": "Guia de remessa",
+                "purchase_delivery_order": "Guia de remessa de compra",
+                "supplier_delivery_order": "Guia de remessa de material fornecido",
+                "rma_delivery_order": "Guia de devolução"
+            },
+            "yes": "Sim",
+            "no": "Não",
+            "automatic": "Automático",
+            "external": "kivitendo / externo",
+            "unknownEmployee": "Desconhecido",
+            "source": {
+                "external": "fora do OSERP",
+                "recurring": "fatura recorrente",
+                "ebay": "importação eBay",
+                "portal": "Loja / portal do cliente"
+            }
         }
     }
 }

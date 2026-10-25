@@ -45,6 +45,7 @@
         "hr": "/personal",
         "hrPayroll": "/personal/palk",
         "hrVacation": "/personal/puhkus",
+        "hrPerformance": "/personal/tulemuslikkus",
         "newDeliveryOrder": "/saateleht/uus",
         "setup": "/seadistus",
         "login": "/sisselogimine",

@@ -696,9 +696,6 @@
         "aagOnlinePassword_help": "Passwort für AAG Online",
         "aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "mega macs adresi (URL)",
-        "gutmannMegamacsUrl_help": "mega macs X adresi veya URL şablonu. {hsn} {tsn} {vin} yer tutucuları değiştirilir, örn. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Yer tutucu yoksa hsn/tsn/vin eklenir (SPA genelde yok sayar). İpucu: cihazda bir araç seçip adres çubuğunu kopyalayın.",
         "hgsData": "HGS Data",
         "hgsDataUser": "HGS Data kullanıcısı",
         "hgsDataUser_help": "HGS Data kullanıcı adı (HSN/TSN ile araç arama)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Tutarı otomatik gönder",
         "sumupAutoSend_help": "Bir tekliften veya siparişten fatura oluşturulduğunda açık tutar hemen terminale gönderilir (varsayılan: açık). Mevcut veya ödenmiş faturalar açılırken hiçbir zaman otomatik gönderim yapılmaz",
         "shopWebsite": "Müşteri portalı web sitesi",
-        "shopWebsite_help": "HugoShop'un çalıştığı web sitesi – satış kanallarında atanmış, Sistem → Web siteleri altında kurulmuş."
+        "shopWebsite_help": "HugoShop'un çalıştığı web sitesi – satış kanallarında atanmış, Sistem → Web siteleri altında kurulmuş.",
+        "orderConfirmation": "Sipariş onayı",
+        "orderConfirmAi": "Kabulleri YZ ile algıla",
+        "orderConfirmAi_help": "Açık sipariş girişi olan (kapatılmamış, henüz faturalanmamış) müşterilerin aramaları (kayıt), WhatsApp mesajları (sesli mesajlar ve yanıt düğmeleri dahil) ve e-postaları yazıya dökülür ve YZ tarafından kabul veya ret açısından kontrol edilir. “Öneri”: sipariş, algılanan kabulü alıntıyla birlikte gösterir; onay tek tıkla verilir. “Otomatik”: WhatsApp veya telefon üzerinden gelen kesin kabuller (yalnızca bir açık sipariş, koşul yok, yüksek güven) hemen onaylanır; e-postalar, gönderenleri sahte olabileceği için her zaman öneri olarak kalır. Gereksinimler: Anthropic API anahtarı, Whisper hizmeti ve oserp-auftragsbestaetigung hizmeti; e-postalar için ayrıca yapılandırılmış bir posta kutusuyla oserp-email-eingang hizmeti. Aramalar yalnızca arayanın rızasıyla kaydedilebilir.",
+        "orderConfirmAiOff": "Kapalı",
+        "orderConfirmAiSuggest": "Öneri — tek tıkla onayla",
+        "orderConfirmAiAuto": "Kesin kabulde otomatik",
+        "orderConfirmAiDays": "Son günlerin sipariş girişleri",
+        "orderConfirmAiDays_help": "Yalnızca en fazla bu kadar gün önce oluşturulmuş sipariş girişleri kabul için dikkate alınır (varsayılan 60). Daha eski onaylanmamış siparişler kontrol edilmez."
     },
     "add": "Ekle",
     "add_fields": {

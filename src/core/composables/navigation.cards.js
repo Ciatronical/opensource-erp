@@ -174,16 +174,21 @@ export function useNavigationCards() {
         )
 
         // Personal-Menü
+        const hrItems = [
+            { title: t('HrMenu.hub'), to: { name: 'hr' } },
+            '-',
+            { title: t('HrMenu.payroll'), to: { name: 'hr-payroll' } },
+            { title: t('HrMenu.vacation'), to: { name: 'hr-vacation' } }
+        ]
+        // Leistung der Mechaniker: nur mit LxCars und passendem Recht
+        if (oserp.canSeeMechanicPerformance()) {
+            hrItems.push({ title: t('HrMenu.performance'), to: { name: 'hr-performance' } })
+        }
         result.push(
             {
                 title: t('HrMenu.title'),
                 icon: 'mdi-account-group',
-                items: [
-                    { title: t('HrMenu.hub'), to: { name: 'hr' } },
-                    '-',
-                    { title: t('HrMenu.payroll'), to: { name: 'hr-payroll' } },
-                    { title: t('HrMenu.vacation'), to: { name: 'hr-vacation' } }
-                ]
+                items: hrItems
             }
         )
 

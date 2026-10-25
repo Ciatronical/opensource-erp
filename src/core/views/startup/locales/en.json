@@ -31,7 +31,6 @@
         "content": "Content",
         "all": "All",
         "missedCall": "Not answered",
-        "refresh": "Refresh",
         "noSubject": "(no subject)",
         "openWhatsApp": "Open in WhatsApp chat",
         "openEmail": "Open in emails",
@@ -151,7 +150,44 @@
         "letterChannel": {
             "email": "email",
             "post": "post"
-        }
+        },
+        "visit": "On site",
+        "customerOnSite": "Customer on site",
+        "editVisit": "Edit visit",
+        "visitText": "What did the customer say?",
+        "visitPlaceholder": "e.g. request, complaint, appointment …",
+        "visitWhen": "Time",
+        "visitSaveHint": "Ctrl+Enter saves",
+        "visitRecordedBy": "recorded by {name}",
+        "visitSaved": "Visit saved",
+        "visitConfirmDelete": "Really delete this entry?",
+        "delete": "Delete",
+        "save": "Save",
+        "emailsLoading": "Loading e-mails …",
+        "confirmation": "Confirmation",
+        "confirmationReview": "Review suggestion in the order",
+        "openOrder": "Open order",
+        "confirmationSuggested": "Acceptance or refusal detected — please review in the order",
+        "confirmationAuto": "confirmed automatically (AI)",
+        "confirmationBy": "recorded by {name}",
+        "confirmationChannel": {
+            "phone": "Phone",
+            "email": "Email",
+            "whatsapp": "WhatsApp",
+            "visit": "in person",
+            "signature": "Signature",
+            "portal": "Customer portal",
+            "other": "Other"
+        },
+        "confirmationStatus": {
+            "confirmed": "Order {number} confirmed",
+            "confirmed_auto": "Order {number} confirmed",
+            "revoked": "Confirmation of order {number} withdrawn",
+            "suggested_accept": "Acceptance of order {number} detected ({channel}) — please review",
+            "suggested_decline": "Refusal of order {number} detected ({channel})",
+            "declined": "Refusal of order {number} ({channel}) — acknowledged"
+        },
+        "confirmationRevokedBy": "withdrawn by {name}"
     },
     "PhoneActions": {
         "clickToCall": "Call",

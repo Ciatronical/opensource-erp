@@ -696,9 +696,6 @@
         "aagOnlinePassword_help": "Passwort für AAG Online",
         "aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "Adresse mega macs (URL)",
-        "gutmannMegamacsUrl_help": "Adresse ou modèle d'URL du mega macs X. Les espaces réservés {hsn} {tsn} {vin} sont remplacés, p. ex. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Sans espaces réservés, hsn/tsn/vin sont ajoutés (souvent ignorés par les SPA). Astuce : sélectionnez un véhicule sur l'appareil et copiez la barre d'adresse.",
         "hgsData": "HGS Data",
         "hgsDataUser": "Utilisateur HGS Data",
         "hgsDataUser_help": "Nom d'utilisateur HGS Data (recherche de véhicule par HSN/TSN)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Envoyer le montant automatiquement",
         "sumupAutoSend_help": "Lorsqu'une facture est créée à partir d'un devis ou d'une commande, le montant restant dû est immédiatement envoyé au terminal (par défaut : activé). À l'ouverture de factures existantes ou payées, aucun envoi automatique n'a lieu",
         "shopWebsite": "Site du portail client",
-        "shopWebsite_help": "Le site sur lequel fonctionne le HugoShop – associé dans les canaux de vente, configuré sous Système → Sites web."
+        "shopWebsite_help": "Le site sur lequel fonctionne le HugoShop – associé dans les canaux de vente, configuré sous Système → Sites web.",
+        "orderConfirmation": "Confirmation de commande",
+        "orderConfirmAi": "Détecter les acceptations par l’IA",
+        "orderConfirmAi_help": "Les appels (enregistrement), les messages WhatsApp (y compris les messages vocaux et les boutons de réponse) et les e-mails de clients ayant une réception de commande ouverte (non clôturée, pas encore facturée) sont transcrits et analysés par l’IA pour y détecter une acceptation ou un refus. « Proposition » : la commande affiche l’acceptation détectée avec la citation, la confirmation se fait d’un clic. « Automatique » : les acceptations sans équivoque par WhatsApp ou téléphone (une seule commande ouverte, aucune condition, certitude élevée) sont confirmées immédiatement ; les e-mails restent toujours une proposition, car leur expéditeur peut être falsifié. Prérequis : clé API Anthropic, service Whisper et service oserp-auftragsbestaetigung, et pour les e-mails également le service oserp-email-eingang avec une boîte aux lettres configurée. Les appels ne peuvent être enregistrés qu’avec le consentement de l’appelant.",
+        "orderConfirmAiOff": "Désactivé",
+        "orderConfirmAiSuggest": "Proposition — confirmer d’un clic",
+        "orderConfirmAiAuto": "Automatique en cas d’acceptation sans équivoque",
+        "orderConfirmAiDays": "Réceptions de commande des derniers jours",
+        "orderConfirmAiDays_help": "Seules les réceptions de commande datant d’au plus ce nombre de jours sont prises en compte pour une acceptation (60 par défaut). Les commandes non confirmées plus anciennes ne sont pas analysées."
     },
     "add": "Ajouter",
     "add_fields": {

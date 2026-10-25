@@ -65,8 +65,13 @@
             "createComplaint": "创建退货",
             "cancel": "作废",
             "saveAsDraft": "保存为草稿",
-            "history": "历史记录",
             "followUp": "跟进提醒",
+            "followUpOpen": "未完成的跟进提醒：{n}",
+            "followUpNew": "新建跟进提醒",
+            "followUpDone": "已完成",
+            "followUpSaved": "跟进提醒已保存",
+            "followUpMarkedDone": "跟进提醒已完成",
+            "followUpError": "无法保存跟进提醒",
             "exportXInvoice": "Factur-X / ZUGFeRD",
             "delete": "删除",
             "pdfPreview": "PDF 预览",
@@ -182,8 +187,6 @@
             "openVehicle": "车辆",
             "importSilverDAT": "SilverDAT 导入",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "在 ESI[tronic] 中打开车辆",
-            "openGutmann": "在 Hella Gutmann mega macs 中打开车辆",
             "openHgs": "在 HGS Data 中打开车辆数据",
             "hgsError": "无法打开 HGS Data",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "发票已全额付清",
                 "alreadyPaid": "{amount} € 的刷卡支付此前已完成 – 未重复发送",
                 "synced": "已从 SumUp 补录 {amount} € 的刷卡支付"
+            },
+            "confirmation": {
+                "open": "尚未确认",
+                "openHint": "客户是如何同意的？确认时将记录当前金额。",
+                "confirmed": "已确认",
+                "notRecorded": "未记录确认方式。",
+                "suggestedAccept": "识别到客户同意 — 请核实",
+                "suggestedDecline": "识别到客户拒绝",
+                "uncertain": "识别结果不确定 — 请仔细核对引文。",
+                "condition": "条件：{condition}",
+                "amountIncreased": "自确认以来增加了 {diff}（已确认：{amount}）",
+                "auto": "自动（AI）",
+                "confirm": "确认",
+                "dismiss": "忽略",
+                "acknowledge": "已知悉",
+                "reconfirm": "重新确认",
+                "record": "补充信息",
+                "revoke": "撤销确认",
+                "revokeQuestion": "订单将恢复为“订单接收”状态。之前的确认仍会在历史中显示。",
+                "more": "更多操作",
+                "playCall": "收听通话",
+                "openChat": "打开聊天",
+                "recordingMissing": "未找到该通话的录音",
+                "dialogTitle": "确认订单",
+                "howQuestion": "客户是如何同意的？",
+                "when": "同意时间",
+                "note": "备注（可选）",
+                "notePlaceholder": "例如客户说了什么",
+                "amountHint": "将确认当前金额 {amount}。如果之后金额上涨，订单会显示提示。",
+                "cancel": "取消",
+                "savedConfirmed": "订单已确认",
+                "savedDismissed": "建议已忽略",
+                "savedAcknowledged": "已知悉客户拒绝",
+                "savedRevoked": "确认已撤销",
+                "channel": {
+                    "phone": "电话",
+                    "email": "电子邮件",
+                    "whatsapp": "WhatsApp",
+                    "visit": "到店",
+                    "signature": "签名",
+                    "portal": "客户门户",
+                    "other": "其他"
+                },
+                "saveError": "操作未成功 — 订单可能已在此期间被修改。页面已重新加载，请再次核实。"
             }
         },
         "workflow": {
@@ -444,7 +491,11 @@
             "quotation": "报价单",
             "delivery_order": "发货单",
             "credit_note": "贷项通知单",
-            "invoice_storno": "冲销发票"
+            "invoice_storno": "冲销发票",
+            "purchase_order": "采购订单",
+            "purchase_invoice": "进项发票",
+            "request_quotation": "询价单",
+            "purchase_delivery_order": "采购收货单"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "拒绝访问：您没有查看此单据的权限。请联系管理员。"
+        },
+        "history": {
+            "title": "历史记录",
+            "reload": "刷新",
+            "close": "关闭",
+            "lastChange": "最后修改于 {time}，修改人 {name}",
+            "changedBy": "{name} 刚刚修改了此单据",
+            "createdInfo": "创建于 {time}",
+            "filter": {
+                "all": "全部",
+                "head": "抬头",
+                "items": "行项目",
+                "events": "状态与发送"
+            },
+            "filterEmployee": "人员",
+            "search": "搜索",
+            "timeTravel": "时光回溯",
+            "today": "今天",
+            "backToToday": "返回今天",
+            "asOf": "{time} 编辑前的状态 – 当时 → 今天",
+            "stepsBack": "回退 {n} 次编辑 | 回退 {n} 次编辑",
+            "noDiff": "抬头和行项目当时与现在相同。",
+            "travelItem": {
+                "added": "此后新增",
+                "removed": "此后删除",
+                "changed": "此后修改"
+            },
+            "noMatch": "此筛选条件下没有记录。",
+            "empty": "尚未记录任何更改。历史记录将从下一次更改开始。",
+            "item": {
+                "added": "已添加",
+                "removed": "已删除",
+                "changed": "已修改"
+            },
+            "milestone": {
+                "created": "单据已创建",
+                "deleted": "单据已删除",
+                "confirmed": "订单已确认",
+                "unconfirmed": "确认已撤回",
+                "closed": "已完成",
+                "reopened": "已重新打开",
+                "paid": "付款 {amount}",
+                "storno": "已冲销",
+                "printed": "已打印"
+            },
+            "summary": {
+                "itemsAdded": "已添加 {n} 个行项目 | 已添加 {n} 个行项目",
+                "itemsChanged": "已修改 {n} 个行项目 | 已修改 {n} 个行项目",
+                "itemsRemoved": "已删除 {n} 个行项目 | 已删除 {n} 个行项目",
+                "amount": "金额 {old} → {new}"
+            },
+            "legacy": {
+                "saved": "已保存",
+                "printed": "已打印",
+                "posted": "已过账",
+                "printedPosted": "已打印并过账",
+                "screened": "已在屏幕上显示",
+                "mailed": "已通过电子邮件发送",
+                "deleted": "已删除",
+                "storno": "已冲销",
+                "paymentPosted": "付款已过账",
+                "previewed": "已显示预览",
+                "canceled": "已中止"
+            },
+            "link": {
+                "to": "已由此创建 {type} {number}",
+                "from": "由 {type} {number} 创建"
+            },
+            "followup": {
+                "created": "已创建跟进提醒：{subject}（到期 {date}）",
+                "done": "跟进提醒已完成：{subject}"
+            },
+            "sent": {
+                "email": "通过电子邮件发送至 {to}",
+                "whatsapp": "通过 WhatsApp 发送至 {to}",
+                "post": "通过邮寄发送至 {to}",
+                "dhl": "DHL 货件 {to}",
+                "other": "已发送至 {to}"
+            },
+            "fields": {
+                "parts_id": "物料",
+                "paid": "已付款",
+                "datepaid": "付款日期",
+                "record_type": "单据类型",
+                "order_type": "单据类型",
+                "quotation": "报价",
+                "storno": "已冲销",
+                "storno_id": "冲销对象",
+                "dunning_config_id": "催款级别",
+                "cp_id": "联系人",
+                "globalproject_id": "项目",
+                "project_id": "项目",
+                "optional": "可选行项目",
+                "subtotal": "小计",
+                "serialnumber": "序列号",
+                "pricegroup_id": "价格组",
+                "price_factor_id": "价格系数",
+                "orderer_id": "订购人",
+                "delivered": "已交货",
+                "proforma": "形式发票",
+                "order_probability": "订单概率",
+                "expected_billing_date": "预计开票日期",
+                "tax_point": "交付/服务日期",
+                "vendor_confirmation_number": "供应商确认号",
+                "oreqnumber": "询价单号",
+                "invnumber_for_credit_note": "贷项通知单对应发票号",
+                "is_sepa_blocked": "SEPA 已锁定",
+                "order_status_id": "订单状态",
+                "no_whatsapp": "不使用 WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "销售订单（已确认）",
+                "sales_order_intake": "订单接收（未确认）",
+                "sales_quotation": "报价单",
+                "request_quotation": "询价单",
+                "purchase_quotation_intake": "收到的报价",
+                "purchase_order": "采购订单",
+                "purchase_order_confirmation": "供应商订单确认",
+                "sales_delivery_order": "交货单",
+                "purchase_delivery_order": "采购交货单",
+                "supplier_delivery_order": "供应商交货单",
+                "rma_delivery_order": "退货交货单"
+            },
+            "yes": "是",
+            "no": "否",
+            "automatic": "自动",
+            "external": "kivitendo / 外部",
+            "unknownEmployee": "未知",
+            "source": {
+                "external": "OSERP 之外",
+                "recurring": "周期性发票",
+                "ebay": "eBay 导入",
+                "portal": "商店 / 客户门户"
+            }
         }
     }
 }

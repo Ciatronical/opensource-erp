@@ -45,6 +45,7 @@
         "hr": "/kadry",
         "hrPayroll": "/kadry/place",
         "hrVacation": "/kadry/urlop",
+        "hrPerformance": "/kadry/wydajnosc",
         "newDeliveryOrder": "/dostawa/nowy",
         "setup": "/instalacja",
         "login": "/logowanie",

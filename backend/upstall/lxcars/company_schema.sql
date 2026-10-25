@@ -85,6 +85,19 @@ CREATE TABLE IF NOT EXISTS ar_ext (
 
 CREATE INDEX IF NOT EXISTS idx_ar_ext_c_id ON public.ar_ext (c_id);
 
+-- Belegchronik (record_history_log aus der CRM-Basis, die vor den Erweiterungen
+-- läuft): Kilometerstand, Termine, Wartungsdaten je Auftrag/Rechnung mitschreiben
+DO $$ DECLARE t TEXT; BEGIN
+    IF to_regproc('record_history_log') IS NULL THEN
+        RETURN;
+    END IF;
+    FOREACH t IN ARRAY ARRAY['oe_ext', 'ar_ext'] LOOP
+        IF to_regclass(t) IS NOT NULL AND NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = t || '_record_history') THEN
+            EXECUTE format('CREATE TRIGGER %I AFTER INSERT OR UPDATE OR DELETE ON %I FOR EACH ROW EXECUTE FUNCTION record_history_log()', t || '_record_history', t);
+        END IF;
+    END LOOP;
+END $$;
+
 CREATE TABLE IF NOT EXISTS ar_defects (
     id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     ar_id           INTEGER NOT NULL REFERENCES ar(id) ON DELETE CASCADE,
@@ -410,6 +423,23 @@ UPDATE oe_instructions_lxcars SET done_at = NOW() WHERE done = true AND done_at 
 
 -- Nummernkreis in defaults_oserp initialisieren
 INSERT INTO defaults_oserp (key, value) VALUES ('instructionnumber', '100') ON CONFLICT (key) DO NOTHING;
+
+-- Ausführungszeiten je Arbeitsanweisung: jede Timer-Sitzung (Start/Stopp)
+-- wird automatisch festgehalten, tageweise geteilt und mit den Nettominuten
+-- (Arbeitszeit abzüglich Pausen) bewertet. Auswertungen rechnen die Ist-Zeit
+-- damit dem Tag des Arbeitsbeginns zu, nicht der Fertigstellung.
+-- source: timer (Start/Stopp), manual (von Hand eingetragene Ist-Minuten)
+CREATE TABLE IF NOT EXISTS oe_instruction_times_lxcars (
+    id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    instruction_id  INTEGER NOT NULL REFERENCES oe_instructions_lxcars(id) ON DELETE CASCADE,
+    oe_id           INTEGER NOT NULL,
+    employee_id     INTEGER,
+    started_at      TIMESTAMP NOT NULL,
+    stopped_at      TIMESTAMP NOT NULL,
+    minutes         INTEGER NOT NULL DEFAULT 0,
+    source          TEXT NOT NULL DEFAULT 'timer',
+    itime           TIMESTAMP DEFAULT now()
+);
 INSERT INTO defaults_oserp (key, value) VALUES ('instructionprefix', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_order_statuses', 'Angenommen, In Arbeit, Warte auf Teile, Fertig, Abgeholt') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_kfz_ort_options', 'Fahrzeug hier, nicht hier, Bestellung, Sonstiges zur Rep gebracht') ON CONFLICT (key) DO NOTHING;
@@ -441,6 +471,61 @@ DO $$ BEGIN
             EXECUTE FUNCTION notify_instruction_change();
     END IF;
 END $$;
+
+-- Kalender: Beschreibung der Auftragstermine (Bringetermin #FF9800, Fertigstellung #4CAF50)
+-- = erste Arbeitsanweisung, ohne Anweisung die erste Position des Auftrags.
+-- Die Trigger halten sie aktuell, wenn Anweisungen oder Positionen sich ändern.
+CREATE OR REPLACE FUNCTION order_calendar_description(p_oe_id INTEGER) RETURNS TEXT AS $$
+    SELECT COALESCE(
+        (SELECT description FROM oe_instructions_lxcars
+         WHERE oe_id = p_oe_id ORDER BY sort_order, id LIMIT 1),
+        (SELECT description FROM orderitems
+         WHERE trans_id = p_oe_id ORDER BY position, id LIMIT 1)
+    )
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION order_calendar_description_sync() RETURNS trigger AS $$
+DECLARE
+    v_ids   INTEGER[];
+    v_oe_id INTEGER;
+BEGIN
+    -- Feldzugriffe getrennt: PL/pgSQL löst NEW.<feld> beim Planen auf
+    IF TG_TABLE_NAME = 'orderitems' THEN
+        v_ids := ARRAY[NEW.trans_id, OLD.trans_id];
+    ELSE
+        v_ids := ARRAY[NEW.oe_id, OLD.oe_id];
+    END IF;
+    FOREACH v_oe_id IN ARRAY v_ids LOOP
+        CONTINUE WHEN v_oe_id IS NULL;
+        UPDATE calendar_events
+           SET description = order_calendar_description(v_oe_id), mtime = NOW()
+         WHERE order_id = v_oe_id
+           AND color IN ('#FF9800', '#4CAF50')
+           AND description IS DISTINCT FROM order_calendar_description(v_oe_id);
+    END LOOP;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'instructions_calendar_sync') THEN
+        CREATE TRIGGER instructions_calendar_sync
+            AFTER INSERT OR DELETE OR UPDATE OF description, sort_order, oe_id ON oe_instructions_lxcars
+            FOR EACH ROW EXECUTE FUNCTION order_calendar_description_sync();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'orderitems_calendar_sync') THEN
+        CREATE TRIGGER orderitems_calendar_sync
+            AFTER INSERT OR DELETE OR UPDATE OF description, position, trans_id ON orderitems
+            FOR EACH ROW EXECUTE FUNCTION order_calendar_description_sync();
+    END IF;
+END $$;
+
+-- Bestehende Auftragstermine nachziehen (nur wo die Beschreibung veraltet ist)
+UPDATE calendar_events
+   SET description = order_calendar_description(order_id), mtime = NOW()
+ WHERE order_id IS NOT NULL
+   AND color IN ('#FF9800', '#4CAF50')
+   AND description IS DISTINCT FROM order_calendar_description(order_id);
 
 -- Trigger: pg_notify bei Maengel-Aenderungen (SSE fuer Echtzeit-Updates in Faktura)
 CREATE OR REPLACE FUNCTION notify_defect_change() RETURNS trigger AS $$

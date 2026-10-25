@@ -1,0 +1,19 @@
+[Unit]
+Description=OpensourceERP Auftragsbestätigung (erkennt Zusagen/Absagen in Anrufen, WhatsApp und E-Mails)
+After=network-online.target postgresql.service oserp-whisper.service
+Wants=network-online.target postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/work/opensource-erp
+ExecStart=/usr/bin/php /home/work/opensource-erp/backend/cli/auftragsbestaetigung.php
+Restart=always
+RestartSec=5
+TimeoutStopSec=120
+User=work
+Environment=HOME=/home/work
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

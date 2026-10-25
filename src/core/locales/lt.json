@@ -82,7 +82,8 @@
             "businessCard": "Vizitinės kortelės nuskaitymas",
             "phoneSearch": "Paieška pagal telefoną",
             "callTranscript": "Skambučio analizė",
-            "banking": "Likvidumo prognozė"
+            "banking": "Likvidumo prognozė",
+            "orderConfirm": "Užsakymo patvirtinimas"
         }
     },
     "passwordField": {

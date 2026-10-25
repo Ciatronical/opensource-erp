@@ -92,6 +92,20 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     /**
+     * Darf der Benutzer Personal → Leistung sehen? Nur mit LxCars und
+     * kivitendo-Recht „Produktivität" oder als Mitglied der konfigurierten
+     * Werkstattleitungs-Gruppe (Backend prüft dasselbe, performance.php).
+     */
+    function canSeeMechanicPerformance() {
+        if (!isLxCars()) return false;
+        if (checkPermission('productivity')) return true;
+        const groupId = parseInt(getClientDefaultValue('lxcars_werkstattleitung_group', 0));
+        if (!groupId) return false;
+        const group = (session.auth_groups || []).find(g => parseInt(g.id) === groupId);
+        return !!group && (group.logins || []).includes(session.user);
+    }
+
+    /**
      * Prüft ob ANPR aktiviert ist (Standard: true wenn nicht explizit deaktiviert)
      */
     function isAnprEnabled() {
@@ -138,10 +152,13 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     /**
-     * Prüft ob User eine Permission hat
+     * Prüft ob User eine Permission hat — bei einer Liste genügt eine davon
      */
     function checkPermission(permissionName) {
-        return session.permissions && session.permissions.includes(permissionName);
+        const granted = session.permissions || [];
+        return Array.isArray(permissionName)
+            ? permissionName.some(p => granted.includes(p))
+            : granted.includes(permissionName);
     }
 
     /**
@@ -931,6 +948,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         getClientDefaultValue,
         isExtensionEnabled,
         isLxCars,
+        canSeeMechanicPerformance,
         isAnprEnabled,
         isRecurringEnabled,
         isNvrEnabled,

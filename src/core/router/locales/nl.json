@@ -45,6 +45,7 @@
         "hr": "/personeel",
         "hrPayroll": "/personeel/loon",
         "hrVacation": "/personeel/verlof",
+        "hrPerformance": "/personeel/prestaties",
         "newDeliveryOrder": "/pakbon/nieuw",
         "setup": "/installatie",
         "login": "/inloggen",

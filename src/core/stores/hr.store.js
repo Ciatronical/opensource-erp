@@ -99,6 +99,15 @@ export const hrStore = defineStore('hrStore', () => {
         return await post('previewLohnsteuer', data)
     }
 
+    // Leistung (LxCars): Mechaniker-Kennzahlen, eine Abfrage für alle Mechaniker
+    async function fetchMechanicPerformance(params) {
+        const response = await axios.post('/api/lxcars/', { action: 'getMechanicPerformance', ...params })
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text)
+        }
+        return response.data.payload.result
+    }
+
     return {
         fetchDashboard,
         fetchSalarySettings, saveSalarySettings,
@@ -108,6 +117,7 @@ export const hrStore = defineStore('hrStore', () => {
         approveVacationRequest, rejectVacationRequest, deleteVacationRequest,
         saveVacationEntitlement,
         fetchLohnsteuerTableStatus, buildLohnsteuerTable, fetchLohnsteuerTable,
-        calculatePayrollTaxes, previewLohnsteuer
+        calculatePayrollTaxes, previewLohnsteuer,
+        fetchMechanicPerformance
     }
 })

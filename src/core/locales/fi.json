@@ -82,7 +82,8 @@
             "businessCard": "Käyntikortin luku",
             "phoneSearch": "Puhelinhaku",
             "callTranscript": "Puhelun analyysi",
-            "banking": "Maksuvalmiusennuste"
+            "banking": "Maksuvalmiusennuste",
+            "orderConfirm": "Tilausvahvistus"
         }
     },
     "passwordField": {

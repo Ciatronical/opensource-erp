@@ -31,7 +31,6 @@
         "content": "Inhalt",
         "all": "Alle",
         "missedCall": "Nicht angenommen",
-        "refresh": "Aktualisieren",
         "noSubject": "(kein Betreff)",
         "openWhatsApp": "Im WhatsApp-Chat öffnen",
         "openEmail": "In E-Mails öffnen",
@@ -151,7 +150,44 @@
         "letterChannel": {
             "email": "E-Mail",
             "post": "Post"
-        }
+        },
+        "visit": "Vor Ort",
+        "customerOnSite": "Kunde vor Ort",
+        "editVisit": "Besuch bearbeiten",
+        "visitText": "Was hat der Kunde gesagt?",
+        "visitPlaceholder": "z. B. Wunsch, Beschwerde, Terminabsprache …",
+        "visitWhen": "Zeitpunkt",
+        "visitSaveHint": "Strg+Enter speichert",
+        "visitRecordedBy": "erfasst von {name}",
+        "visitSaved": "Besuch gespeichert",
+        "visitConfirmDelete": "Diesen Eintrag wirklich löschen?",
+        "delete": "Löschen",
+        "save": "Speichern",
+        "emailsLoading": "E-Mails werden geladen …",
+        "confirmation": "Bestätigung",
+        "confirmationReview": "Vorschlag im Auftrag prüfen",
+        "openOrder": "Auftrag öffnen",
+        "confirmationSuggested": "Zusage oder Absage erkannt — bitte im Auftrag prüfen",
+        "confirmationAuto": "automatisch bestätigt (KI)",
+        "confirmationBy": "erfasst von {name}",
+        "confirmationChannel": {
+            "phone": "Telefon",
+            "email": "E-Mail",
+            "whatsapp": "WhatsApp",
+            "visit": "vor Ort",
+            "signature": "Unterschrift",
+            "portal": "Kundenportal",
+            "other": "Sonstiges"
+        },
+        "confirmationStatus": {
+            "confirmed": "Auftrag {number} bestätigt",
+            "confirmed_auto": "Auftrag {number} bestätigt",
+            "revoked": "Bestätigung von Auftrag {number} zurückgenommen",
+            "suggested_accept": "Zusage zu Auftrag {number} erkannt ({channel}) — bitte prüfen",
+            "suggested_decline": "Absage zu Auftrag {number} erkannt ({channel})",
+            "declined": "Absage zu Auftrag {number} ({channel}) — zur Kenntnis genommen"
+        },
+        "confirmationRevokedBy": "zurückgenommen von {name}"
     },
     "PhoneActions": {
         "clickToCall": "Anrufen",

@@ -927,9 +927,6 @@
         "aagOnlinePassword_help": "Passwort für AAG Online",
         "aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "mega macs Adresse (URL)",
-        "gutmannMegamacsUrl_help": "Adresse oder URL-Vorlage des mega macs X. Platzhalter {hsn} {tsn} {vin} werden ersetzt, z. B. http://macsx-6129:8889/#/fahrzeug?hsn={hsn}&tsn={tsn}. Ohne Platzhalter werden hsn/tsn/vin angehängt (von SPA-Oberflächen oft ignoriert). Tipp: am Gerät ein Fahrzeug wählen und die Adresszeile kopieren.",
         "hgsData": "HGS-Data",
         "hgsDataUser": "HGS-Data Benutzer",
         "hgsDataUser_help": "Benutzername für HGS-Data (für die Fahrzeugsuche per HSN/TSN)",
@@ -1503,7 +1500,15 @@
         "sumupAutoSend": "Betrag automatisch senden",
         "sumupAutoSend_help": "Wird eine Rechnung aus einem Angebot oder Auftrag erzeugt, geht der offene Betrag sofort an das Terminal (Standard: ein). Beim Öffnen bestehender oder bezahlter Rechnungen wird nie automatisch gesendet",
         "shopWebsite": "Webseite des Kundenportals",
-        "shopWebsite_help": "Die Webseite, auf der der HugoShop läuft — zugeordnet in den Verkaufskanälen, eingerichtet unter System → Webseiten."
+        "shopWebsite_help": "Die Webseite, auf der der HugoShop läuft — zugeordnet in den Verkaufskanälen, eingerichtet unter System → Webseiten.",
+        "orderConfirmation": "Auftragsbestätigung",
+        "orderConfirmAi": "Zusagen per KI erkennen",
+        "orderConfirmAi_help": "Anrufe (Aufnahme), WhatsApp-Nachrichten (auch Sprachnachrichten und Antwortknöpfe) und E-Mails von Kunden mit offenem Auftragseingang (nicht geschlossen, noch nicht berechnet) werden transkribiert und von der KI auf eine Zusage oder Absage geprüft. „Vorschlag“: der Auftrag zeigt die erkannte Zusage mit Zitat, bestätigt wird per Klick. „Automatisch“: eindeutige Zusagen per WhatsApp oder Telefon (ein offener Auftrag, keine Bedingung, hohe Sicherheit) werden gleich bestätigt; E-Mails bleiben immer Vorschlag, weil ihr Absender fälschbar ist. Voraussetzung: Anthropic-API-Schlüssel, Whisper-Dienst und der Dienst oserp-auftragsbestaetigung, für E-Mails zusätzlich der Dienst oserp-email-eingang mit eingerichtetem Postfach. Anrufe dürfen nur mit Einwilligung des Anrufers aufgezeichnet werden.",
+        "orderConfirmAiOff": "Aus",
+        "orderConfirmAiSuggest": "Vorschlag — bestätigen per Klick",
+        "orderConfirmAiAuto": "Automatisch bei eindeutiger Zusage",
+        "orderConfirmAiDays": "Auftragseingänge der letzten Tage",
+        "orderConfirmAiDays_help": "Nur Auftragseingänge, die höchstens so viele Tage alt sind, kommen für eine Zusage in Frage (Vorgabe 60). Ältere unbestätigte Aufträge werden nicht geprüft."
     },
     "add": "Hinzufügen",
     "add_fields": {

@@ -1589,11 +1589,11 @@ function formatAmount(value) {
  */
 const docTypeMap = {
     invoice: 'invoice',
-    purchase_invoice: 'invoice',
+    purchase_invoice: 'purchase_invoice',
     quotation: 'quotation',
     order: 'order',
-    purchase_order: 'order',
-    delivery_order: 'order',
+    purchase_order: 'purchase_order',
+    delivery_order: 'delivery_order',
 };
 
 const onDocRowClick = async (event, row) => {

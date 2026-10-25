@@ -29,7 +29,8 @@ define('PRINT_TEMPLATE_MAP', [
     'purchase_quotation_intake' => ['purchase_quotation_intake.tex', 'purchase_quotation_intake', 'Lieferantenangebot',    'quonumber'],
     'purchase_order'            => ['purchase_order.tex',            'purchase_order',            'Bestellung',            'ordnumber'],
     'delivery_order'            => ['sales_delivery_order.tex',      'sales_delivery_order',      'Lieferschein',          'donumber'],
-    'purchase_delivery_order'   => ['supplier_delivery_order.tex',   'supplier_delivery_order',   'Lieferantenlieferschein', 'donumber'],
+    // Einkaufslieferschein; supplier_delivery_order.tex ist der Beistelllieferschein (kivitendo)
+    'purchase_delivery_order'   => ['purchase_delivery_order.tex',   'purchase_delivery_order',   'Einkaufslieferschein',  'donumber'],
 ]);
 
 // Belegarten, die im Lieferschein-Schema (delivery_orders) statt in oe/ar liegen

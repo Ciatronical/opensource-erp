@@ -181,6 +181,25 @@ const crmDefaultsConfig = [
         fieldstyle: "max-width: 60ch"
     },
 
+    // Auftragsbestätigung: Anrufe, WhatsApp und E-Mails von Kunden mit offenem
+    // Auftragseingang prüft die KI auf eine Zusage/Absage (Dienst
+    // oserp-auftragsbestaetigung, backend/cli/auftragsbestaetigung.php)
+    { name: "order_confirmation", type: "headline", label: "crm_fields.orderConfirmation" },
+
+    {
+        name: "order_confirm_ai",
+        type: "select",
+        items: [
+            { value: "off", titleKey: "crm_fields.orderConfirmAiOff" },
+            { value: "suggest", titleKey: "crm_fields.orderConfirmAiSuggest" },
+            { value: "auto", titleKey: "crm_fields.orderConfirmAiAuto" }
+        ],
+        label: "crm_fields.orderConfirmAi",
+        tooltip: "crm_fields.orderConfirmAi_help",
+        fieldstyle: "max-width: 60ch"
+    },
+    { name: "order_confirm_ai_days", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 60ch", label: "crm_fields.orderConfirmAiDays", tooltip: "crm_fields.orderConfirmAiDays_help", showIf: d => d.order_confirm_ai === "suggest" || d.order_confirm_ai === "auto" },
+
     // Artikelsuche in den Belegpositionen (parts.php findParts): Rangstufen sind
     // fest (beginnt mit > Artikelnummer > Wortanfang > enthält), darin zählt die
     // Verwendungshäufigkeit aus parts_usage_oserp. Standards: src/core/utils/partsSearch.js

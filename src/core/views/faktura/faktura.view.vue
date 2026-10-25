@@ -15,7 +15,7 @@
                     :selected-template-id="selectedTemplate"
                     :faktura-type="fakturaType"
                     :closed="!!faktura.data?.common?.closed"
-                    :show-closed="!!faktura.data && !['invoice', 'purchase_invoice'].includes(fakturaType)"
+                    :show-closed="!!faktura.data && !['invoice', 'purchase_invoice', 'credit_note', 'invoice_storno'].includes(fakturaType)"
                     @toggle-closed="toggleClosed"
                     @save="saveFaktura"
                     @close="closeView"
@@ -40,8 +40,14 @@
                     @create-dhl-label="openDhlDialog"
                     :show-dhl-button="dhlEnabled"
                     @show-on-display="showOnDisplay"
-                    @show-history="showHistory"
+                    @show-history="historyOpen = true"
+                    :history-enabled="!!fakturaId && !!faktura.data"
+                    :last-change="faktura.data?.last_change || null"
                     @set-followup="setFollowUp"
+                    @edit-followup="editFollowUp"
+                    @done-followup="markFollowUpDone"
+                    :follow-ups="openFollowUps"
+                    :follow-up-enabled="!!followUpContextLink"
                     :show-vehicle-voice="!!vehicle && !!vehicle.selectedCarId.value"
                     @voice-vehicle="onVoiceVehicle"
                     @export-xinvoice="exportXInvoice"
@@ -60,12 +66,8 @@
                     @open-aag="onOpenAag"
                     :aag-loading="aagLoading"
                     :aag-configured="aagConfigured"
-                    :esi-available="esiAvailable"
-                    :gutmann-available="gutmannAvailable"
                     :hgs-available="hgsAvailable"
                     :hgs-loading="hgsLoading"
-                    @open-esi="onOpenEsi"
-                    @open-gutmann="onOpenGutmann"
                     @open-hgs="onOpenHgs"
                     @open-special="openSpecialDialog"
                     :sent-email-count="sentCounts.email"
@@ -75,17 +77,41 @@
             </section>
 
             <!-- Versandstatus: wurde der Beleg schon per E-Mail / WhatsApp / Post / DHL verschickt?
-                 Bei Aufträgen rechts daneben: wurde daraus schon eine Rechnung gemacht? -->
+                 Bei Aufträgen daneben: hat der Kunde zugesagt (auch von der KI erkannt)?
+                 Und wurde daraus schon eine Rechnung gemacht? -->
             <section class="faktura-section faktura-section--sent" v-if="fakturaId && faktura.data && faktura.data.common">
                 <sent-status-component
                     :entries="sentLog"
                     :auto-send-hint="autoSendHint"
                     :invoice-status="invoiceStatus"
                     :can-create-invoice="hasCustomer"
+                    :with-confirmation="!!confirmationStatus"
                     @open-invoice="openLinkedInvoice"
                     @create-invoice="createInvoiceFromFaktura"
-                />
+                >
+                    <template v-if="confirmationStatus" #confirmation>
+                        <order-confirmation-component
+                            :status="confirmationStatus"
+                            :busy="confirmBusy"
+                            @confirm="openConfirmDialog"
+                            @dismiss="dismissConfirmationSuggestion"
+                            @revoke="revokeOrderConfirmation"
+                            @open-source="openConfirmationSource"
+                        />
+                    </template>
+                </sent-status-component>
             </section>
+
+            <!-- Auftrag bestätigen: Kanal, Zeitpunkt, Notiz bzw. Vorschlag der KI übernehmen -->
+            <order-confirm-dialog
+                v-if="confirmationStatus"
+                v-model="confirmDialog.show"
+                :suggestion="confirmDialog.suggestion"
+                :amount="confirmationStatus.amount"
+                :subtitle="[faktura.data.common.ordnumber, customerName].filter(Boolean).join(' · ')"
+                :busy="confirmBusy"
+                @submit="submitOrderConfirmation"
+            />
 
             <!-- Postversand (Hybridbrief): Beleg beim Briefdienstleister einliefern -->
             <postal-dialog-component
@@ -101,6 +127,28 @@
                 v-model="specialDialogVisible"
                 :car-id="vehicle?.selectedCarId?.value"
                 :km-stand="vehicle?.oeExtData?.value?.km_stand"
+            />
+
+            <!-- Verlauf (Belegchronik): wer hat wann was geändert -->
+            <history-drawer-component
+                v-if="fakturaId"
+                v-model="historyOpen"
+                :faktura-id="fakturaId"
+                :faktura-type="fakturaType"
+                :current="faktura.data"
+                :positions="fakturaItems"
+                :doc-label="t(`FakturaView.dokumentTypes.${fakturaType}`) + ' ' + (compactDocNumber || '')"
+                @open-record="openHistoryRecord"
+            />
+
+            <!-- Wiedervorlage zum Beleg (kivitendo follow_ups, Verknüpfung fest auf diesen Beleg) -->
+            <follow-up-dialog
+                v-if="followUpContextLink"
+                v-model="followUpDialogOpen"
+                :follow-up="followUpEditItem"
+                :employees="followUpEmployees"
+                :context-link="followUpContextLink"
+                @save="saveFollowUp"
             />
 
             <!-- Stammdaten: Kompakt oder vollständig -->
@@ -537,7 +585,7 @@
                         {{ t('FakturaView.dialogs.deleteFaktura.warning') }}
                     </v-alert>
                     <p v-if="faktura.data?.common" class="mt-2 font-weight-medium">
-                        {{ t(`FakturaView.dokumentTypes.${fakturaType}`) }} #{{ faktura.data.common.invnumber || faktura.data.common.ordnumber || faktura.data.common.quonumber }}
+                        {{ t(`FakturaView.dokumentTypes.${fakturaType}`) }} #{{ compactDocNumber }}
                     </p>
                 </v-card-text>
                 <v-card-actions class="pa-4 pt-0">
@@ -1182,6 +1230,8 @@ import AdditionalInfoCard from './cards/additional.info.card.vue'
 import VehicleSectionCard from './cards/vehicle.section.card.vue'
 import ActionBarComponent from './components/action.bar.component.vue'
 import SentStatusComponent from './components/sent.status.component.vue'
+import OrderConfirmationComponent from './components/order.confirmation.component.vue'
+import OrderConfirmDialog from './dialogs/order.confirm.dialog.vue'
 import PostalDialogComponent from '@/core/components/postal/postal.dialog.component.vue'
 import FakturaItemsTableComponent from './components/faktura.items.table.component.vue'
 import EditPartDialog from './dialogs/edit.part.dialog.vue'
@@ -1198,6 +1248,8 @@ import MaengelSectionCard from '@/features/lxcars/components/maengel.section.car
 import MaintenanceSectionCard from '@/features/lxcars/components/maintenance.section.card.vue'
 import SuggestPositionsDialog from '@/features/lxcars/components/suggest-positions-dialog.vue'
 import PhoneActionBar from '@/core/components/phone-action-bar.vue'
+import FollowUpDialog from '@/core/views/follow-up/components/follow-up-dialog.vue'
+import HistoryDrawerComponent from './components/history.drawer.component.vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 import { oserpStore } from '@/core/stores/oserp.store.js'
@@ -1212,10 +1264,10 @@ import { useGutachtenImport } from './composables/useGutachtenImport.js'
 import { onMounted, onBeforeUnmount, ref, reactive, computed, nextTick, defineAsyncComponent, shallowRef, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import * as alerts from '@/core/utils/alerts.js'
-import { DOCUMENT_LIST_ROUTE_NAMES } from '@/core/constants/routes.js'
+import { DOCUMENT_LIST_ROUTE_NAMES, entityRoute } from '@/core/constants/routes.js'
 import * as toasts from '@/core/utils/toasts.js'
 import { openAppWindow, aagWindowOpen, setAagWindowCarId } from '@/core/utils/aagWindow.js'
-import { hasVehicleId, isKbaValid, buildEsiUrl, buildGutmannUrl } from '@/core/utils/diagLinks.js'
+import { isKbaValid } from '@/core/utils/diagLinks.js'
 import { parseMonthYear, formatMonthYear } from '@/features/lxcars/utils/validation.js'
 
 // Shop-Erweiterung: Bestell- und Lieferstatus der Rechnung, nur bei aktiver Erweiterung geladen
@@ -1236,6 +1288,8 @@ export default defineComponent({
         VehicleSectionCard,
         ActionBarComponent,
         SentStatusComponent,
+        OrderConfirmationComponent,
+        OrderConfirmDialog,
         PostalDialogComponent,
         FakturaItemsTableComponent,
         EditPartDialog,
@@ -1253,7 +1307,9 @@ export default defineComponent({
         MaintenanceSectionCard,
         SuggestPositionsDialog,
         SpecialDialog,
-        PhoneActionBar
+        PhoneActionBar,
+        FollowUpDialog,
+        HistoryDrawerComponent
     },
     props: {
         fakturaID: {
@@ -1288,7 +1344,7 @@ export default defineComponent({
         const fakturaId = ref(props.fakturaID || Number(route.params.id) || null)
 
         const isVendor = computed(() => {
-            return ['purchase_order', 'purchase_invoice', 'request_quotation'].includes(fakturaType.value)
+            return ['purchase_order', 'purchase_invoice', 'request_quotation', 'purchase_delivery_order'].includes(fakturaType.value)
         })
 
         const hasCustomer = computed(() => {
@@ -1384,7 +1440,7 @@ export default defineComponent({
                 case 'invoice': case 'purchase_invoice': return c.invnumber
                 case 'order': case 'purchase_order': return c.ordnumber
                 case 'quotation': case 'request_quotation': return c.quonumber
-                case 'delivery_order': return c.donumber
+                case 'delivery_order': case 'purchase_delivery_order': return c.donumber
                 default: return c.invnumber
             }
         })
@@ -1678,6 +1734,7 @@ export default defineComponent({
             invoice: 'faktura-invoice-view',
             purchase_invoice: 'faktura-invoice-view',
             delivery_order: 'faktura-delivery-order-view',
+            purchase_delivery_order: 'faktura-delivery-order-view',
             credit_note: 'faktura-credit-note-view',
             invoice_storno: 'faktura-invoice-view'
         }
@@ -1710,8 +1767,13 @@ export default defineComponent({
             // Dokumentnummer in den lokalen Daten setzen
             if (result.docNumber) {
                 const effectiveType = result.fakturaType || fakturaType.value
-                const numberField = { invoice: 'invnumber', purchase_invoice: 'invnumber', quotation: 'quonumber', request_quotation: 'quonumber' }[effectiveType] || 'ordnumber'
+                const numberField = { invoice: 'invnumber', purchase_invoice: 'invnumber', quotation: 'quonumber', request_quotation: 'quonumber', delivery_order: 'donumber', purchase_delivery_order: 'donumber' }[effectiveType] || 'ordnumber'
                 faktura.data.common[numberField] = result.docNumber
+            }
+            // Neuer Verkaufsauftrag startet als Auftragseingang (createFakturaCore) —
+            // damit erscheint die Bestätigung sofort, ohne die Maske neu zu laden
+            if (result.fakturaType === 'order' || (!result.fakturaType && fakturaType.value === 'order' && cvSrc !== 'V')) {
+                faktura.data.common.record_type = 'sales_order_intake'
             }
 
             // lxcars: Fahrzeug verknüpfen – aus Query-Parameter c_id oder im Neu-Modus bereits gewählt/angelegt
@@ -1779,8 +1841,16 @@ export default defineComponent({
             if (Date.now() < suppressSSEReloadUntil) return
             sseReloadPending = true
             try {
+                const lastChangeBefore = faktura.data?.last_change?.itime || null
                 await faktura.fetchFakturaData(fakturaId.value, fakturaType.value)
                 if (!faktura.data) return
+
+                // Jemand anderes hat den offenen Beleg geändert: sagen, wer (Belegchronik)
+                const lc = faktura.data.last_change
+                const myId = oserp.session?.logged_in_employee?.id
+                if (lc?.itime && lc.itime !== lastChangeBefore && lc.employee_id && lc.employee_id !== myId) {
+                    toasts.info(t('FakturaView.history.changedBy', { name: lc.employee_name || '' }))
+                }
 
                 fakturaItems.value = (faktura.data.positions || []).map(item => {
                     let buchungsziel = item.buchungsziel
@@ -1827,8 +1897,13 @@ export default defineComponent({
                         if (Number(data.id) === Number(faktura.data?.customer?.id)) reloadFakturaData()
                         return
                     }
-                    const fakturaTables = ['oe', 'ar', 'orderitems', 'invoice', 'oe_instructions_lxcars', 'oe_defects', 'ar_defects', 'oe_parts_requests_lxcars']
-                    if (!fakturaTables.includes(data.table)) return
+                    // Nur Ereignisse der eigenen Haupttabelle: oe- und ar-IDs stammen aus
+                    // verschiedenen Sequenzen und können gleich sein
+                    const sseTables = {
+                        oe: ['oe', 'orderitems', 'oe_instructions_lxcars', 'oe_defects', 'oe_parts_requests_lxcars'],
+                        ar: ['ar', 'invoice', 'ar_defects']
+                    }[recordTable.value] || []
+                    if (!sseTables.includes(data.table)) return
                     if (Number(data.id) !== Number(fakturaId.value)) return
                     if (data.table === 'oe_instructions_lxcars') {
                         instructionsRef.value?.loadInstructions()
@@ -2154,17 +2229,27 @@ export default defineComponent({
                 }
 
                 // getTemplateList parallel zu getFakturaData starten
+                // Beleg der vorigen Ansicht verwerfen (Store überlebt den Wechsel): sonst
+                // zeigen die Karten bis zur Antwort fremde Daten mit dem neuen Routentyp
+                faktura.data = false
+
                 const templatePromise = faktura.getTemplateList().catch(() => null)
 
                 // LxCars: alle Initialdaten in einem Call vorladen (nur wenn aktiv).
                 // customer_id = 0 → Backend leitet sie selbst aus der Faktura ab.
+                // Vorab mit dem Routentyp gestartet; passt die echte Belegart nicht, wird es verworfen.
                 const lxCarsTypes = ['order', 'quotation', 'invoice']
-                const needsLxCars = !!vehicle && lxCarsTypes.includes(fakturaType.value)
-                const lxCarsPromise = (needsLxCars && carsStore)
+                const lxCarsPromise = (vehicle && carsStore && lxCarsTypes.includes(fakturaType.value))
                     ? carsStore.loadLxCarsFakturaInit(fakturaId.value, 0, fakturaType.value).catch(() => null)
                     : Promise.resolve(null)
 
                 await faktura.fetchFakturaData(fakturaId.value, fakturaType.value)
+
+                // Belegart aus dem Datensatz übernehmen (Bestellung über die Auftragsroute,
+                // Gutschrift über die Rechnungsroute …), BEVOR typabhängige Teile laufen
+                const effectiveType = faktura.data?.fakturaType
+                if (effectiveType && effectiveType !== fakturaType.value) fakturaTypeOverride.value = effectiveType
+                const needsLxCars = !!vehicle && lxCarsTypes.includes(fakturaType.value)
 
                 if (faktura.data) {
                     fakturaItems.value = (faktura.data.positions || []).map(item => {
@@ -2259,6 +2344,16 @@ export default defineComponent({
                 }
             } catch (e) {
                 console.error('Faktura-Initialisierung fehlgeschlagen:', e)
+                if (e?.code === 'FAKTURA_LEDGER_ONLY') {
+                    // Eingangsrechnung ohne Positionen (Belegerfassung): Buchung im Journal zeigen
+                    router.replace({ name: 'accounting-bookings', query: { src: e.payload?.src || 'ap', id: fakturaId.value } })
+                    return
+                }
+                if (e?.code === 'NO_PERMISSION') {
+                    faktura.data = false
+                    alerts.error(t('FakturaView.alerts.warning_no_permission'))
+                    return
+                }
                 if (e?.code === 'FAKTURA_NOT_FOUND') {
                     // Gelöschte oder fremde ID (z. B. altes Lesezeichen): keinen
                     // halb leeren Beleg zeigen, sondern zurück in die Übersicht
@@ -2325,12 +2420,6 @@ export default defineComponent({
             const fakturaID = faktura.data.common?.id
             if (!fakturaID) return
             try {
-                // "Bestätigt"-Schalter: record_type (sales_order ↔ sales_order_intake)
-                // läuft über eine eigene, validierte Action statt updateFakturaField.
-                if (field === 'record_type') {
-                    await faktura.setOrderConfirmed(fakturaID, value === 'sales_order')
-                    return
-                }
                 await faktura.updateFakturaField(fakturaID, fakturaType.value, field, value)
                 if (field === 'taxincluded') {
                     // "Steuer im Preis inbegriffen" ändert die Netto/Brutto-Aufteilung
@@ -2533,47 +2622,13 @@ export default defineComponent({
             }
         }
 
-        // ===== ESI[tronic] / Hella Gutmann (verknüpftes Fahrzeug des Auftrags) =====
+        // ===== Verknüpftes Fahrzeug des Auftrags (HGS-Data) =====
 
         // Das aktuell verknüpfte Fahrzeug aus der Kundenfahrzeug-Liste (enthält
         // seit der Backend-Erweiterung c_2/c_3/c_fin).
         const selectedCarObj = computed(() =>
             vehicle?.customerCars?.value?.find(c => c.c_id === vehicle?.selectedCarId?.value) || null
         )
-
-        const gutmannBaseUrl = computed(() =>
-            String(oserp.getClientDefaultValue('gutmann_megamacs_url', '') || '').trim()
-        )
-
-        // Sichtbar wie der AAG-Button: Auftrag mit verknüpftem, identifizierbarem
-        // Fahrzeug (gültige HSN/TSN ODER FIN — auch bei ausgenullter TSN).
-        const esiAvailable = computed(() =>
-            fakturaType.value === 'order' && !!selectedCarObj.value &&
-            hasVehicleId(selectedCarObj.value.c_2, selectedCarObj.value.c_3, selectedCarObj.value.c_fin)
-        )
-
-        const gutmannAvailable = computed(() =>
-            esiAvailable.value && !!gutmannBaseUrl.value
-        )
-
-        function onOpenEsi() {
-            const car = selectedCarObj.value
-            if (!car || !hasVehicleId(car.c_2, car.c_3, car.c_fin)) return
-            window.location.href = buildEsiUrl(car.c_2, car.c_3, car.c_fin)
-        }
-
-        function onOpenGutmann() {
-            const car = selectedCarObj.value
-            if (!car || !hasVehicleId(car.c_2, car.c_3, car.c_fin)) return
-            const url = buildGutmannUrl(gutmannBaseUrl.value, car.c_2, car.c_3, car.c_fin)
-            const win = openAppWindow('gutmann-megamacs')
-            if (win) {
-                win.location.href = url
-                win.focus()
-            } else {
-                window.open(url, '_blank')
-            }
-        }
 
         // HGS-Data-Suche braucht gültige HSN/TSN; Auflösung der vehicleId im Backend.
         const hgsLoading = ref(false)
@@ -3016,12 +3071,99 @@ export default defineComponent({
             // TODO: Implement save as draft
         }
 
-        function showHistory() {
-            // TODO: Implement history
+        // ===== Verlauf (Belegchronik) =====
+        const historyOpen = ref(false)
+        /** Sprung aus der Belegkette der Chronik: Belegart kommt aus dem Backend (kind) */
+        function openHistoryRecord(link) {
+            const target = entityRoute(link?.kind, link?.record_id)
+            if (!target) return
+            historyOpen.value = false
+            router.push(target)
         }
 
+        // ===== Wiedervorlage =====
+        // Offene Wiedervorlagen kommen mit getFakturaData (follow_ups). Neue hängen über
+        // follow_up_links am Beleg — mit dem kivitendo-trans_type, Einkauf bei Lieferanten.
+        const FOLLOW_UP_TRANS_TYPES = {
+            quotation: ['sales_quotation', 'request_quotation'],
+            request_quotation: ['sales_quotation', 'request_quotation'],
+            order: ['sales_order', 'purchase_order'],
+            purchase_order: ['sales_order', 'purchase_order'],
+            delivery_order: ['sales_delivery_order', 'purchase_delivery_order'],
+            purchase_delivery_order: ['sales_delivery_order', 'purchase_delivery_order'],
+            invoice: ['sales_invoice', 'purchase_invoice'],
+            purchase_invoice: ['sales_invoice', 'purchase_invoice'],
+            invoice_storno: ['sales_invoice', 'purchase_invoice'],
+            credit_note: ['credit_note', 'credit_note']
+        }
+        const openFollowUps = computed(() => faktura.data?.follow_ups || [])
+        const followUpDialogOpen = ref(false)
+        const followUpEditItem = ref(null)
+        const followUpEmployees = computed(() => oserp.session?.company_config?.employees || [])
+
+        // Verknüpfung wie im kivitendo-Wiedervorlagedialog: "Nummer (Kunde)"
+        const followUpContextLink = computed(() => {
+            const types = FOLLOW_UP_TRANS_TYPES[fakturaType.value]
+            if (!types || !fakturaId.value) return null
+            const vendor = isVendor.value || !!faktura.data?.common?.vendor_id
+            const number = String(compactDocNumber.value || fakturaId.value)
+            const name = (customerName.value || '').trim()
+            return {
+                type: types[vendor ? 1 : 0],
+                id: fakturaId.value,
+                info: name ? `${number} (${name})` : number
+            }
+        })
+
         function setFollowUp() {
-            // TODO: Implement follow-up
+            followUpEditItem.value = null
+            followUpDialogOpen.value = true
+        }
+
+        function editFollowUp(item) {
+            followUpEditItem.value = item
+            followUpDialogOpen.value = true
+        }
+
+        function setOpenFollowUps(list) {
+            if (!faktura.data) return
+            faktura.data.follow_ups = [...list].sort((a, b) =>
+                String(a.follow_up_date).localeCompare(String(b.follow_up_date)) || a.id - b.id)
+        }
+
+        // Der Dialog wartet auf dieses Promise und hält Speichern so lange gesperrt
+        async function saveFollowUp(data) {
+            try {
+                const response = await axios.post('/api/followup/', {
+                    action: data.id ? 'updateFollowUp' : 'createFollowUp',
+                    ...data
+                })
+                const saved = response.data?.payload?.result?.follow_up
+                if (!response.data?.success || !saved) {
+                    alerts.error(t('FakturaView.faktura.followUpError'))
+                    return
+                }
+                followUpDialogOpen.value = false
+                setOpenFollowUps([...openFollowUps.value.filter(f => f.id !== saved.id), saved])
+                toasts.success(t('FakturaView.faktura.followUpSaved'))
+            } catch (e) {
+                alerts.error(t('FakturaView.faktura.followUpError'))
+            }
+        }
+
+        async function markFollowUpDone(item) {
+            try {
+                const response = await axios.post('/api/followup/', { action: 'markFollowUpDone', id: item.id })
+                // ALREADY_DONE: ein Kollege war schneller — trotzdem aus der Liste nehmen
+                if (!response.data?.success && response.data?.text !== 'ALREADY_DONE') {
+                    alerts.error(t('FakturaView.faktura.followUpError'))
+                    return
+                }
+                setOpenFollowUps(openFollowUps.value.filter(f => f.id !== item.id))
+                toasts.success(t('FakturaView.faktura.followUpMarkedDone'))
+            } catch (e) {
+                alerts.error(t('FakturaView.faktura.followUpError'))
+            }
         }
 
         // Fahrzeugdaten per Sprache: der Kollege spricht frei ("Kilometerstand
@@ -3185,17 +3327,7 @@ export default defineComponent({
          * z. B. "Angebot-0815--Ronny-Zimmermann.pdf"
          */
         function buildPdfFilename() {
-            const typeNames = {
-                invoice: 'Rechnung',
-                purchase_invoice: 'Eingangsrechnung',
-                order: 'Auftrag',
-                purchase_order: 'Bestellung',
-                quotation: 'Angebot',
-                request_quotation: 'Anfrage',
-                delivery_order: 'Lieferschein',
-                credit_note: 'Gutschrift',
-            }
-            const typePart = typeNames[fakturaType.value] || 'Dokument'
+            const typePart = t(`FakturaView.dokumentTypes.${fakturaType.value}`)
             const numberPart = compactDocNumber.value || fakturaId.value || ''
             const namePart = (customerName.value || faktura.data?.customer?.name || '').trim()
 
@@ -3259,7 +3391,8 @@ export default defineComponent({
             delivery_order: 'email_sender_sales_delivery_order',
             purchase_invoice: 'email_sender_purchase_invoice',
             purchase_order: 'email_sender_purchase_order',
-            request_quotation: 'email_sender_request_quotation'
+            request_quotation: 'email_sender_request_quotation',
+            purchase_delivery_order: 'email_sender_purchase_delivery_order'
         }
 
         // ===== Versandstatus =====
@@ -3272,6 +3405,93 @@ export default defineComponent({
         }))
 
         // ===== Rechnungsstatus des Auftrags =====
+        // ===== Auftragsbestätigung =====
+        // confirmation_status kommt mit getFakturaData (SQL-Funktion oe_confirmation_status) —
+        // nur bei Verkaufsaufträgen gesetzt. Vorschläge der KI treffen per SSE ein
+        // (faktura_change auf oe), dann lädt reloadFakturaData den neuen Stand.
+        // Der Betrag kommt live aus der Positionsberechnung (Brutto), damit „seit der
+        // Bestätigung gestiegen“ und der Dialog auch ungespeicherte Änderungen sehen.
+        // Fehlt confirmation_status (neu angelegter Auftrag), ergibt er sich aus record_type.
+        const confirmationStatus = computed(() => {
+            const common = faktura.data?.common
+            if (fakturaType.value !== 'order' || !common?.id || Number(common.id) !== Number(fakturaId.value)) return null
+            if (!['sales_order', 'sales_order_intake'].includes(common.record_type)) return null
+            const status = faktura.data.confirmation_status
+                || { confirmed: common.record_type === 'sales_order', confirmation: null, suggestions: [] }
+            return { ...status, amount: accounting.calculatedGrossAmount.value }
+        })
+        const confirmDialog = reactive({ show: false, suggestion: null })
+        const confirmBusy = ref(false)
+        const currentEmployeeId = () => oserp.session?.logged_in_employee?.id || null
+
+        function openConfirmDialog(suggestion = null) {
+            confirmDialog.suggestion = suggestion
+            confirmDialog.show = true
+        }
+
+        async function runConfirmation(action, successText) {
+            if (confirmBusy.value || !fakturaId.value) return
+            confirmBusy.value = true
+            suppressSSEReloadUntil = Date.now() + 2000
+            try {
+                await action()
+                if (successText) toasts.success(successText)
+                return true
+            } catch (e) {
+                // Meist hat jemand anderes den Vorschlag schon erledigt — Hinweis und frischen Stand laden
+                console.error('Auftragsbestätigung:', e)
+                alerts.error(t('FakturaView.faktura.confirmation.saveError'), t('FakturaView.faktura.confirmation.dialogTitle'))
+                suppressSSEReloadUntil = 0
+                reloadFakturaData()
+                return false
+            } finally {
+                confirmBusy.value = false
+            }
+        }
+
+        async function submitOrderConfirmation(payload) {
+            const ok = await runConfirmation(
+                () => faktura.setOrderConfirmed(fakturaId.value, true, { ...payload, employee_id: currentEmployeeId() }),
+                t('FakturaView.faktura.confirmation.savedConfirmed'))
+            if (ok) confirmDialog.show = false
+        }
+
+        async function dismissConfirmationSuggestion(suggestion) {
+            await runConfirmation(
+                () => faktura.dismissOrderConfirmation(fakturaId.value, suggestion.id, currentEmployeeId()),
+                t(suggestion.intent === 'decline' ? 'FakturaView.faktura.confirmation.savedAcknowledged' : 'FakturaView.faktura.confirmation.savedDismissed'))
+        }
+
+        async function revokeOrderConfirmation() {
+            const answer = await alerts.warning(
+                t('FakturaView.faktura.confirmation.revokeQuestion'),
+                t('FakturaView.faktura.confirmation.revoke'),
+                t('FakturaView.faktura.confirmation.revoke'),
+                t('FakturaView.faktura.confirmation.cancel'))
+            if (!answer.isConfirmed) return
+            await runConfirmation(
+                () => faktura.setOrderConfirmed(fakturaId.value, false, { employee_id: currentEmployeeId() }),
+                t('FakturaView.faktura.confirmation.savedRevoked'))
+        }
+
+        // Quelle eines Vorschlags: Anrufaufnahme abspielen bzw. den WhatsApp-Chat öffnen
+        async function openConfirmationSource(suggestion) {
+            if (suggestion.channel === 'whatsapp') {
+                switchToWhatsAppTabFromFaktura()
+                return
+            }
+            try {
+                const response = await axios.post('/api/customer_vendor/', { action: 'playPhoneCall', unique_call_id: suggestion.source_ref })
+                if (!response.data.success) {
+                    toasts.error(t('FakturaView.faktura.confirmation.recordingMissing'))
+                    return
+                }
+                window.open('/api/customer_vendor/monitor/' + response.data.payload.filename, '_blank')
+            } catch {
+                toasts.error(t('FakturaView.faktura.confirmation.recordingMissing'))
+            }
+        }
+
         // invoice_status kommt mit getFakturaData (SQL-Funktion oe_invoice_status) — nur in der Auftragsmaske gezeigt
         const invoiceStatus = computed(() => (fakturaType.value === 'order' && faktura.data?.invoice_status) ? faktura.data.invoice_status : null)
         function openLinkedInvoice(inv) {
@@ -3292,7 +3512,7 @@ export default defineComponent({
             invoice: 'ar', credit_note: 'ar', invoice_storno: 'ar',
             purchase_invoice: 'ap',
             order: 'oe', purchase_order: 'oe', quotation: 'oe', request_quotation: 'oe',
-            delivery_order: 'delivery_orders'
+            delivery_order: 'delivery_orders', purchase_delivery_order: 'delivery_orders'
         }
         const recordTable = computed(() => recordTableMap[fakturaType.value] || null)
 
@@ -3330,7 +3550,8 @@ export default defineComponent({
             delivery_order: 'sales_delivery_order',
             purchase_invoice: 'purchase_invoice',
             purchase_order: 'purchase_order',
-            request_quotation: 'request_quotation'
+            request_quotation: 'request_quotation',
+            purchase_delivery_order: 'purchase_delivery_order'
         }
 
         /**
@@ -3957,6 +4178,8 @@ export default defineComponent({
             sentCounts,
             autoSendHint,
             invoiceStatus,
+            confirmationStatus, confirmDialog, confirmBusy, openConfirmDialog, submitOrderConfirmation,
+            dismissConfirmationSuggestion, revokeOrderConfirmation, openConfirmationSource,
             openLinkedInvoice,
             t,
             oserp,
@@ -4035,8 +4258,17 @@ export default defineComponent({
             createSupplierOrderFromFaktura,
             createComplaintFromFaktura,
             saveAsDraft,
-            showHistory,
+            historyOpen,
+            openHistoryRecord,
             setFollowUp,
+            editFollowUp,
+            saveFollowUp,
+            markFollowUpDone,
+            openFollowUps,
+            followUpDialogOpen,
+            followUpEditItem,
+            followUpEmployees,
+            followUpContextLink,
             onVoiceVehicle,
             exportXInvoice,
             selectPrinter,
@@ -4064,12 +4296,8 @@ export default defineComponent({
             dhlEnabled,
             shopEnabled,
             aagConfigured,
-            esiAvailable,
-            gutmannAvailable,
             hgsAvailable,
             hgsLoading,
-            onOpenEsi,
-            onOpenGutmann,
             onOpenHgs,
             dhlDialogVisible,
             dhlWeight,

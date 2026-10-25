@@ -363,36 +363,6 @@
                     </template>
                 </v-tooltip>
 
-                <!-- ESI[tronic] (nur bei Aufträgen mit gültiger HSN/TSN) -->
-                <v-tooltip v-if="esiAvailable" location="bottom" :text="t('FakturaView.faktura.openEsi')">
-                    <template #activator="{ props: tip }">
-                        <v-btn
-                            v-bind="tip"
-                            variant="tonal"
-                            color="teal-darken-1"
-                            icon="mdi-cog-outline"
-                            size="small"
-                            :disabled="!hasCustomer"
-                            @click="$emit('open-esi')"
-                        />
-                    </template>
-                </v-tooltip>
-
-                <!-- Hella Gutmann mega macs (nur bei Aufträgen mit gültiger HSN/TSN, wenn konfiguriert) -->
-                <v-tooltip v-if="gutmannAvailable" location="bottom" :text="t('FakturaView.faktura.openGutmann')">
-                    <template #activator="{ props: tip }">
-                        <v-btn
-                            v-bind="tip"
-                            variant="tonal"
-                            color="cyan-darken-2"
-                            icon="mdi-lan-connect"
-                            size="small"
-                            :disabled="!hasCustomer"
-                            @click="$emit('open-gutmann')"
-                        />
-                    </template>
-                </v-tooltip>
-
                 <!-- HGS-Data (nur bei Aufträgen mit identifizierbarem Fahrzeug) -->
                 <v-tooltip v-if="hgsAvailable" location="bottom" :text="t('FakturaView.faktura.openHgs')">
                     <template #activator="{ props: tip }">
@@ -423,35 +393,70 @@
                     </template>
                 </v-tooltip>
 
-                <!-- History - Icon Button -->
-                <v-tooltip location="bottom">
-                    <template #activator="{ props }">
+                <!-- Verlauf (Belegchronik): wer hat wann was geändert -->
+                <v-tooltip location="bottom" :text="historyTooltip">
+                    <template #activator="{ props: tip }">
                         <v-btn
-                            v-bind="props"
-                            icon
-                            variant="text"
+                            v-bind="tip"
+                            variant="tonal"
+                            color="blue-grey"
+                            icon="mdi-history"
+                            size="small"
+                            :disabled="!historyEnabled"
                             @click="$emit('show-history')"
-                        >
-                            <v-icon>mdi-history</v-icon>
-                        </v-btn>
+                        />
                     </template>
-                    <span>{{ t('FakturaView.faktura.history') }}</span>
                 </v-tooltip>
 
-                <!-- Wiedervorlage - Icon Button -->
-                <v-tooltip location="bottom">
-                    <template #activator="{ props }">
-                        <v-btn
-                            v-bind="props"
-                            icon
-                            variant="text"
-                            @click="$emit('set-followup')"
-                        >
-                            <v-icon>mdi-bell-ring-outline</v-icon>
-                        </v-btn>
+                <!-- Wiedervorlage: ohne offene direkt anlegen, sonst Liste mit Erledigt/Bearbeiten.
+                     Badge = offene Wiedervorlagen, rot sobald eine heute fällig oder überfällig ist -->
+                <v-menu location="bottom" :disabled="!followUps.length">
+                    <template #activator="{ props: menu }">
+                        <v-tooltip location="bottom" :text="followUps.length ? t('FakturaView.faktura.followUpOpen', { n: followUps.length }) : t('FakturaView.faktura.followUp')">
+                            <template #activator="{ props: tip }">
+                                <v-badge :model-value="followUps.length > 0" :content="followUps.length" :color="followUpDue ? 'error' : 'primary'" offset-x="4" offset-y="4">
+                                    <v-btn
+                                        v-bind="mergeProps(menu, tip)"
+                                        variant="tonal"
+                                        color="amber-darken-3"
+                                        icon="mdi-bell-ring-outline"
+                                        size="small"
+                                        :disabled="!followUpEnabled"
+                                        @click="!followUps.length && $emit('set-followup')"
+                                    />
+                                </v-badge>
+                            </template>
+                        </v-tooltip>
                     </template>
-                    <span>{{ t('FakturaView.faktura.followUp') }}</span>
-                </v-tooltip>
+                    <v-list density="compact" min-width="320" max-width="440">
+                        <v-list-subheader>{{ t('FakturaView.faktura.followUpOpen', { n: followUps.length }) }}</v-list-subheader>
+                        <v-list-item
+                            v-for="fu in followUps"
+                            :key="fu.id"
+                            :title="fu.subject"
+                            :subtitle="followUpAssignees(fu)"
+                            @click="$emit('edit-followup', fu)"
+                        >
+                            <template #prepend>
+                                <v-chip size="small" variant="tonal" label class="me-3" :color="followUpColor(fu)">
+                                    {{ formatFollowUpDate(fu.follow_up_date) }}
+                                </v-chip>
+                            </template>
+                            <template #append>
+                                <v-btn
+                                    icon="mdi-check"
+                                    size="small"
+                                    variant="text"
+                                    color="success"
+                                    :title="t('FakturaView.faktura.followUpDone')"
+                                    @click.stop="$emit('done-followup', fu)"
+                                />
+                            </template>
+                        </v-list-item>
+                        <v-divider class="my-1" />
+                        <v-list-item prepend-icon="mdi-plus" :title="t('FakturaView.faktura.followUpNew')" @click="$emit('set-followup')" />
+                    </v-list>
+                </v-menu>
 
                 <!-- Fahrzeugdaten einsprechen (Kilometerstand, Zahnriemen, Bremsflüssigkeit …) -->
                 <VoiceInputButton
@@ -488,9 +493,10 @@
 <script>
 // src/core/views/faktura/components/action.bar.component.vue
 
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, mergeProps } from 'vue'
 import { useI18n } from 'vue-i18n'
 import VoiceInputButton from '@/core/components/voice-input-button.vue'
+import { formatRelativeTime } from '@/core/utils/dateFormatter.js'
 
 export default defineComponent({
     name: 'ActionBarComponent',
@@ -578,14 +584,6 @@ export default defineComponent({
             type: Boolean,
             default: false
         },
-        esiAvailable: {
-            type: Boolean,
-            default: false
-        },
-        gutmannAvailable: {
-            type: Boolean,
-            default: false
-        },
         hgsAvailable: {
             type: Boolean,
             default: false
@@ -593,6 +591,26 @@ export default defineComponent({
         hgsLoading: {
             type: Boolean,
             default: false
+        },
+        /** Offene Wiedervorlagen dieses Belegs (getFakturaData → follow_ups) */
+        followUps: {
+            type: Array,
+            default: () => []
+        },
+        /** Wiedervorlage erst, wenn der Beleg gespeichert ist (braucht die ID) */
+        followUpEnabled: {
+            type: Boolean,
+            default: false
+        },
+        /** Verlauf erst bei gespeichertem Beleg */
+        historyEnabled: {
+            type: Boolean,
+            default: false
+        },
+        /** Letzte Änderung aus der Belegchronik (getFakturaData → last_change) */
+        lastChange: {
+            type: Object,
+            default: null
         }
     },
 
@@ -620,6 +638,8 @@ export default defineComponent({
         'select-template',
         'show-history',
         'set-followup',
+        'edit-followup',
+        'done-followup',
         'voice-vehicle',
         'export-xinvoice',
         'delete',
@@ -628,8 +648,6 @@ export default defineComponent({
         'import-gutachten',
         'weroni-review',
         'open-aag',
-        'open-esi',
-        'open-gutmann',
         'open-hgs',
         'open-special',
         'create-dhl-label',
@@ -637,7 +655,7 @@ export default defineComponent({
     ],
 
     setup(props) {
-        const { t } = useI18n()
+        const { t, locale } = useI18n()
 
         // Workflow-Optionen basierend auf Dokumenttyp
 
@@ -684,6 +702,42 @@ export default defineComponent({
         // AAG-Online - bei Aufträgen mit verknüpftem Fahrzeug, nur wenn konfiguriert
         const canOpenAag = computed(() => props.fakturaType === 'order' && props.showVehicleButton && props.aagConfigured)
 
+        // Wiedervorlagen: Fälligkeit gegen das lokale Datum (YYYY-MM-DD lässt sich als Text vergleichen)
+        const todayIso = () => {
+            const d = new Date()
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        }
+        const followUpDue = computed(() => props.followUps.some(fu => String(fu.follow_up_date) <= todayIso()))
+        function followUpColor(fu) {
+            const date = String(fu.follow_up_date)
+            const today = todayIso()
+            if (date < today) return 'error'
+            if (date === today) return 'warning'
+            return 'primary'
+        }
+        function formatFollowUpDate(value) {
+            const [y, m, d] = String(value || '').split('-').map(Number)
+            if (!y || !m || !d) return value || ''
+            return new Date(y, m - 1, d).toLocaleDateString(locale.value, { day: '2-digit', month: '2-digit', year: 'numeric' })
+        }
+        // Tooltip der Verlauf-Taste: wer zuletzt geändert hat — hilfreich, wenn mehrere am Beleg arbeiten
+        const historyTooltip = computed(() => {
+            const lc = props.lastChange
+            if (!lc || !lc.itime) return t('FakturaView.history.title')
+            // Wie in der Chronik: automatisch, Shop, außerhalb von OSERP oder unbekannt
+            const src = lc.source ? String(lc.source) : ''
+            const name = lc.employee_name
+                || (src.startsWith('cron') ? t('FakturaView.history.automatic')
+                    : src === 'portal' ? t('FakturaView.history.source.portal')
+                    : !src ? t('FakturaView.history.external')
+                    : t('FakturaView.history.unknownEmployee'))
+            return t('FakturaView.history.title') + ' · ' + t('FakturaView.history.lastChange', { time: formatRelativeTime(lc.itime, locale.value), name })
+        })
+
+        function followUpAssignees(fu) {
+            return (fu.assigned_employees || []).map(e => e.employee_name).filter(Boolean).join(', ')
+        }
+
         return {
             t,
             canCreateQuotation,
@@ -699,7 +753,13 @@ export default defineComponent({
             canExportXInvoice,
             canImportSilverDAT,
             canImportGutachten,
-            canOpenAag
+            canOpenAag,
+            mergeProps,
+            followUpDue,
+            followUpColor,
+            formatFollowUpDate,
+            followUpAssignees,
+            historyTooltip
         }
     }
 })
@@ -711,7 +771,7 @@ export default defineComponent({
    ============================================ */
 
 .action-bar {
-    background-color: #f5f5f5;
+    background-color: var(--oserp-surface-soft);
     border-radius: 8px;
 }
 

@@ -1,0 +1,19 @@
+[Unit]
+Description=OpensourceERP E-Mail-Eingang (meldet neue E-Mails per IMAP IDLE live an die Kontakthistorie)
+After=network-online.target postgresql.service
+Wants=network-online.target postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/work/opensource-erp
+ExecStart=/usr/bin/php /home/work/opensource-erp/backend/cli/email-eingang.php
+Restart=always
+RestartSec=5
+TimeoutStopSec=15
+User=work
+Environment=HOME=/home/work
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

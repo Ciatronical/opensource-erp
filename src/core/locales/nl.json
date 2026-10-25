@@ -82,7 +82,8 @@
             "businessCard": "Visitekaartje scannen",
             "phoneSearch": "Telefoonzoekopdracht",
             "callTranscript": "Gespreksanalyse",
-            "banking": "Liquiditeitsprognose"
+            "banking": "Liquiditeitsprognose",
+            "orderConfirm": "Orderbevestiging"
         }
     },
     "passwordField": {

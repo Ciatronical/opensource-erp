@@ -82,7 +82,8 @@
             "businessCard": "Scanare carte de vizită",
             "phoneSearch": "Căutare după telefon",
             "callTranscript": "Analiza apelului",
-            "banking": "Prognoză de lichiditate"
+            "banking": "Prognoză de lichiditate",
+            "orderConfirm": "Confirmarea comenzii"
         }
     },
     "passwordField": {

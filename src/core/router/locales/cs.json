@@ -45,6 +45,7 @@
         "hr": "/personal",
         "hrPayroll": "/personal/mzdy",
         "hrVacation": "/personal/dovolena",
+        "hrPerformance": "/personal/vykon",
         "newDeliveryOrder": "/dodaci-list/novy",
         "setup": "/instalace",
         "login": "/prihlaseni",

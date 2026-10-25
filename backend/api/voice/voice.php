@@ -44,60 +44,19 @@ function transcribeAudio($data) {
         return;
     }
 
-    $url   = rtrim(_voiceCfg('whisper_url', 'http://127.0.0.1:3002'), '/') . '/transcribe';
-    $token = _voiceCfg('whisper_token', '');
-    $lang  = ($data['lang'] ?? 'de') === 'auto' ? 'auto' : 'de';
+    $db = DbhCompany::begin();
+    $config = $db->fetchKeyValue(
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('" . implode("', '", whisperConfigKeys()) . "')"
+    );
 
-    $headers = [
-        'Content-Type: application/octet-stream',
-        'X-Whisper-Lang: ' . $lang,
-    ];
-    if ($token !== '') {
-        $headers[] = 'X-Whisper-Token: ' . $token;
-    }
-
-    // Fachbegriffe-Glossar als initial_prompt (base64, damit Umlaute/Kommas den
-    // HTTP-Header nicht sprengen). Leeres Glossar -> kein Header, unveraendertes
-    // Verhalten.
-    $glossary = trim(_voiceCfg('whisper_glossary', ''));
-    if ($glossary !== '') {
-        $headers[] = 'X-Whisper-Prompt: ' . base64_encode($glossary);
-    }
-
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $audio,
-        CURLOPT_HTTPHEADER => $headers,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 120,
-    ]);
-    $resp = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $err  = curl_error($ch);
-    curl_close($ch);
-
-    if ($resp === false || $code === 0) {
-        resultInfo(false, 'WHISPER_UNREACHABLE',
-            'Whisper-Dienst nicht erreichbar (' . $err . '). Läuft oserp-whisper?');
-        return;
-    }
-    if ($code !== 200) {
-        resultInfo(false, 'WHISPER_HTTP_' . $code, substr((string)$resp, 0, 300));
+    try {
+        $result = whisperTranscribe($audio, $config, ($data['lang'] ?? 'de') === 'auto' ? 'auto' : 'de');
+    } catch (ApiError $e) {
+        resultInfo(false, $e->getId(), $e->getMessage());
         return;
     }
 
-    $result = json_decode($resp, true);
-    if (!is_array($result) || empty($result['ok'])) {
-        resultInfo(false, 'WHISPER_FAILED', 'Transkription fehlgeschlagen');
-        return;
-    }
-
-    resultInfo(true, '', [
-        'text' => trim($result['text'] ?? ''),
-        'language' => $result['language'] ?? null,
-        'duration' => $result['duration'] ?? null,
-    ]);
+    resultInfo(true, '', $result);
 }
 
 /**

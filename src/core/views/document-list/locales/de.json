@@ -34,7 +34,8 @@
             "partnumber": "Artikelnummer",
             "unit": "Einheit",
             "sellprice": "Verkaufspreis",
-            "onhand": "Bestand"
+            "onhand": "Bestand",
+            "confirmation": "Bestätigt"
         },
         "search": "Suchen (Nummer, Kunde, Bezeichnung)",
         "searchParts": "Suchen (Artikelnummer, Bezeichnung)",
@@ -154,6 +155,19 @@
             "service": "Dienstleistung",
             "assembly": "Erzeugnis",
             "assortment": "Sortiment"
+        },
+        "confirmation": {
+            "filterLabel": "Bestätigung",
+            "open": "Auftragseingang",
+            "suggested": "Vorschlag",
+            "confirmed": "Bestätigt",
+            "suggestedHint": "Die KI hat in Anruf, WhatsApp oder E-Mail eine Zusage oder Absage erkannt — bitte im Auftrag prüfen",
+            "suggestedTotal": "Zu prüfen",
+            "suggestedShort": "prüfen",
+            "openShort": "offen",
+            "via": "Bestätigt · {channel}",
+            "yes": "ja",
+            "no": "nein"
         }
     }
 }

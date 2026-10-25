@@ -696,9 +696,6 @@
         "aagOnlinePassword_help": "Passwort für AAG Online",
         "aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "mega macs-adres (URL)",
-        "gutmannMegamacsUrl_help": "Adres of URL-sjabloon van de mega macs X. Tijdelijke aanduidingen {hsn} {tsn} {vin} worden vervangen, bijv. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Zonder aanduidingen worden hsn/tsn/vin toegevoegd (vaak genegeerd door SPA). Tip: selecteer een voertuig op het apparaat en kopieer de adresbalk.",
         "hgsData": "HGS Data",
         "hgsDataUser": "HGS Data-gebruiker",
         "hgsDataUser_help": "Gebruikersnaam voor HGS Data (voertuig zoeken op HSN/TSN)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Bedrag automatisch sturen",
         "sumupAutoSend_help": "Wordt een factuur uit een offerte of order aangemaakt, dan gaat het openstaande bedrag direct naar de terminal (standaard: aan). Bij het openen van bestaande of betaalde facturen wordt nooit automatisch verzonden",
         "shopWebsite": "Website van het klantenportaal",
-        "shopWebsite_help": "De website waarop de HugoShop draait – gekoppeld in de verkoopkanalen, ingericht onder Systeem → Websites."
+        "shopWebsite_help": "De website waarop de HugoShop draait – gekoppeld in de verkoopkanalen, ingericht onder Systeem → Websites.",
+        "orderConfirmation": "Orderbevestiging",
+        "orderConfirmAi": "Akkoord herkennen met AI",
+        "orderConfirmAi_help": "Oproepen (opname), WhatsApp-berichten (ook spraakberichten en antwoordknoppen) en e-mails van klanten met een openstaande orderontvangst (niet gesloten, nog niet gefactureerd) worden getranscribeerd en door de AI gecontroleerd op een akkoord of afwijzing. “Suggestie”: de order toont het herkende akkoord met citaat en wordt met een klik bevestigd. “Automatisch”: eenduidige akkoorden via WhatsApp of telefoon (één openstaande order, geen voorwaarde, hoge zekerheid) worden direct bevestigd; e-mails blijven altijd een suggestie, omdat de afzender vervalst kan worden. Vereist: Anthropic-API-sleutel, Whisper-dienst en de dienst oserp-auftragsbestaetigung, voor e-mails bovendien de dienst oserp-email-eingang met een ingestelde mailbox. Oproepen mogen alleen met toestemming van de beller worden opgenomen.",
+        "orderConfirmAiOff": "Uit",
+        "orderConfirmAiSuggest": "Suggestie — bevestigen met een klik",
+        "orderConfirmAiAuto": "Automatisch bij eenduidig akkoord",
+        "orderConfirmAiDays": "Orderontvangsten van de laatste dagen",
+        "orderConfirmAiDays_help": "Alleen orderontvangsten die hoogstens zoveel dagen oud zijn, komen voor een akkoord in aanmerking (standaard 60). Oudere onbevestigde orders worden niet gecontroleerd."
     },
     "add": "Toevoegen",
     "add_fields": {

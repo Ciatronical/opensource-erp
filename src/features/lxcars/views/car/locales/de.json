@@ -375,16 +375,6 @@
             "tsnTooltip": "Fahrzeug über die FIN in AAG-Online suchen",
             "error": "AAG-Online konnte nicht geöffnet werden"
         },
-        "esi": {
-            "button": "ESI",
-            "tooltip": "Fahrzeug in Bosch ESI[tronic] über HSN/TSN öffnen",
-            "noKba": "Keine gültigen Schlüsselnummern (HSN/TSN) vorhanden"
-        },
-        "gutmann": {
-            "button": "Gutmann",
-            "tooltip": "Fahrzeug in Hella Gutmann mega macs über HSN/TSN öffnen",
-            "noKba": "Keine gültigen Schlüsselnummern (HSN/TSN) vorhanden"
-        },
         "hgs": {
             "button": "HGS-Data",
             "tooltip": "Fahrzeugdaten in HGS-Data öffnen",

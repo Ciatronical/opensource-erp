@@ -213,7 +213,7 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useViewHistory } from '@/core/composables/useViewHistory.js';
-import { transTypeRoute } from '@/core/constants/routes.js';
+import { transTypeRoute, TRANS_TYPE_ENTITIES } from '@/core/constants/routes.js';
 
 const { t, d } = useI18n();
 const router = useRouter();
@@ -324,9 +324,11 @@ function getLinkColor(transType) {
         vendor: 'purple',
         sales_quotation: 'cyan',
         sales_order: 'teal',
+        sales_order_intake: 'teal',
         sales_delivery_order: 'green',
         sales_invoice: 'lime',
-        purchase_quotation: 'indigo',
+        credit_note: 'orange',
+        request_quotation: 'indigo',
         purchase_order: 'deep-purple',
         purchase_delivery_order: 'pink',
         purchase_invoice: 'red'
@@ -340,9 +342,11 @@ function getLinkIcon(transType) {
         vendor: 'mdi-truck',
         sales_quotation: 'mdi-file-document-outline',
         sales_order: 'mdi-cart',
+        sales_order_intake: 'mdi-cart',
         sales_delivery_order: 'mdi-package-variant',
         sales_invoice: 'mdi-receipt',
-        purchase_quotation: 'mdi-file-question-outline',
+        credit_note: 'mdi-cash-refund',
+        request_quotation: 'mdi-file-question-outline',
         purchase_order: 'mdi-cart-arrow-down',
         purchase_delivery_order: 'mdi-package-variant-closed',
         purchase_invoice: 'mdi-receipt-text'
@@ -350,13 +354,6 @@ function getLinkIcon(transType) {
     return icons[transType] || 'mdi-link';
 }
 
-const historyTypeMap = {
-    customer: 'customer',
-    vendor: 'vendor',
-    sales_quotation: 'quotation',
-    sales_order: 'order',
-    sales_invoice: 'invoice',
-};
 
 function navigateToLink(link) {
     // Navigation basierend auf trans_type - EXAKT wie in follow-up-card.vue
@@ -364,7 +361,7 @@ function navigateToLink(link) {
 
     if (target) {
         saveToHistory({
-            type: historyTypeMap[link.trans_type] || link.trans_type,
+            type: TRANS_TYPE_ENTITIES[link.trans_type] || link.trans_type,
             id: link.trans_id,
             title: link.trans_info || '',
             subtitle: '',

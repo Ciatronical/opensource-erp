@@ -3,7 +3,8 @@
         "title": "Personnel",
         "hub": "Personnel et paie",
         "payroll": "Paie",
-        "vacation": "Planification des congés"
+        "vacation": "Planification des congés",
+        "performance": "Performance"
     },
     "HrView": {
         "title": "Personnel et paie",
@@ -32,7 +33,8 @@
             "payroll": "Paie",
             "vacation": "Planification des congés",
             "settings": "Données des salariés",
-            "tax": "Barème fiscal"
+            "tax": "Barème fiscal",
+            "performance": "Performance"
         },
         "dashboard": {
             "activeEmployees": "Salariés actifs",
@@ -164,6 +166,180 @@
             "noEmployees": "Aucun salarié actif trouvé.",
             "expandAll": "Tout déplier",
             "collapseAll": "Tout replier"
+        },
+        "performance": {
+            "period": {
+                "week": "Semaine",
+                "month": "Mois",
+                "quarter": "Trimestre",
+                "year": "Année"
+            },
+            "previous": "Précédent",
+            "next": "Suivant",
+            "today": "Aujourd'hui",
+            "quarterLabel": "T{q} {year}",
+            "comparedTo": "Comparé à {range}",
+            "weekShort": "S {n}",
+            "bucket": {
+                "day": "jour",
+                "week": "semaine",
+                "month": "mois"
+            },
+            "mechanics": "Mécaniciens",
+            "all": "Tous",
+            "activeCount": "{n} actifs sur la période",
+            "noActivity": "Aucune tâche terminée sur la période",
+            "noMechanics": "Aucune instruction de travail n'a été terminée sur la période choisie. Les mécaniciens proviennent du groupe d'employés du mode mécanicien (configuration de l'entreprise → LxCars).",
+            "showInactive": "Afficher {n} sans tâches terminées",
+            "hideInactive": "Masquer ceux sans tâches terminées",
+            "noData": "Aucune donnée sur la période",
+            "noComparison": "pas de comparaison",
+            "points": "{v} points",
+            "rankOf": "Rang {rank} sur {n} selon les heures réelles",
+            "activeDays": "{n} jours ouvrés avec tâches terminées",
+            "vacationDays": "{n} jours de congé",
+            "workingOn": "En cours : {task} · commande {order} · depuis {since}",
+            "others": "Autres ({n})",
+            "insights": "Constats",
+            "kpi": {
+                "hours": "Heures réelles",
+                "efficiency": "Rendement",
+                "utilization": "Taux d'occupation",
+                "done": "Tâches terminées",
+                "laborRevenue": "Main-d'œuvre (net)",
+                "ofAvailable": "sur {h} disponibles",
+                "inOrders": "dans {n} commandes",
+                "perHour": "{v} par heure réelle",
+                "team": "Équipe {v}"
+            },
+            "legend": {
+                "actual": "Réel",
+                "planned": "Temps alloué"
+            },
+            "trend": {
+                "hoursTitle": "Heures par {unit}",
+                "efficiencyTitle": "Rendement par {unit}",
+                "efficiencySubtitle": "Temps alloué ÷ réel · au-dessus de 100 % = plus rapide que le temps alloué",
+                "teamTitle": "Heures de l'équipe par {unit}",
+                "hoursSubtitle": "Cliquer sur une barre affiche les commandes"
+            },
+            "benchmark": {
+                "title": "Forces et faiblesses",
+                "subtitle": "Temps par tâche comparé à la moyenne de l'équipe",
+                "legend": "Écart par rapport à l'équipe",
+                "empty": "Aucune tâche que d'autres mécaniciens ont aussi réalisée sur la période",
+                "tooltipFaster": "{v} % plus rapide que l'équipe ({own} au lieu de {team}, {n}×)",
+                "tooltipSlower": "{v} % plus lent que l'équipe ({own} au lieu de {team}, {n}×)"
+            },
+            "heatmap": {
+                "title": "Profil d'activité",
+                "subtitle": "Temps de travail enregistré par jour de la semaine et heure de début",
+                "tooltip": "{day} à partir de {hour} h : {n} débuts de travail, {min} enregistrées"
+            },
+            "tasks": {
+                "title": "Tâches sur la période",
+                "task": "Tâche",
+                "count": "Nombre",
+                "total": "Total",
+                "avgActual": "Moy. réel",
+                "avgPlanned": "Moy. alloué",
+                "teamAvg": "Moy. équipe",
+                "vsTeam": "vs équipe",
+                "showAll": "Afficher les {n} tâches",
+                "showLess": "Afficher moins",
+                "subtitle": "Un clic ouvre la commande – avec plusieurs commandes, d'abord la liste"
+            },
+            "matrix": {
+                "title": "Matrice de performance",
+                "subtitle": "Taux d'occupation contre rendement, taille de la bulle = heures réelles. Un clic ouvre le mécanicien.",
+                "q1": "rapide & occupé",
+                "q2": "rapide, marge disponible",
+                "q3": "lent, peu occupé",
+                "q4": "occupé, au-dessus du temps alloué"
+            },
+            "compare": {
+                "title": "Heures comparées",
+                "subtitle": "Réel contre temps alloué par mécanicien"
+            },
+            "ranking": {
+                "title": "Classement",
+                "mechanic": "Mécanicien",
+                "trend": "Tendance",
+                "planned": "Alloué",
+                "orders": "Commandes",
+                "done": "Terminées",
+                "revenue": "Main-d'œuvre",
+                "checks": "Contrôle"
+            },
+            "spread": {
+                "title": "Plus grands écarts dans l'équipe",
+                "subtitle": "Tâches où les mécaniciens divergent le plus – indice pour la formation ou les temps alloués",
+                "task": "Tâche",
+                "count": "Nombre",
+                "teamAvg": "Moy. équipe",
+                "fastest": "Le plus rapide",
+                "slowest": "Le plus lent",
+                "factor": "Facteur"
+            },
+            "insight": {
+                "fasterThanTeam": "Rendement {v} points au-dessus de la moyenne de l'équipe.",
+                "slowerThanTeam": "Rendement {v} points en dessous de la moyenne de l'équipe.",
+                "strength": "Force : « {task} » {v} % plus rapide que l'équipe.",
+                "weakness": "Potentiel : « {task} » {v} % plus lent que l'équipe ({min} au lieu de {team}).",
+                "moreHours": "{v} % d'heures réelles de plus que sur la période précédente.",
+                "fewerHours": "{v} % d'heures réelles de moins que sur la période précédente.",
+                "lowUtilization": "Taux d'occupation de seulement {v} % – saisies de temps ou commandes manquantes ?",
+                "focus": "{v} % du temps est consacré à « {task} ».",
+                "teamBest": "Meilleur rendement : {name} avec {v} %.",
+                "teamRevenue": "{name} génère {v} % de la main-d'œuvre.",
+                "teamMoreHours": "L'équipe a {v} % d'heures réelles de plus que sur la période précédente.",
+                "teamFewerHours": "L'équipe a {v} % d'heures réelles de moins que sur la période précédente.",
+                "teamSpread": "« {task} » : {fast} est {factor} plus rapide que {slow} – partager l'expérience ou revoir le temps alloué.",
+                "running": "{n} mécaniciens travaillent actuellement avec un chronomètre en cours.",
+                "timerForgotten": "{h} ({v} % du temps réel) proviennent probablement de minuteurs oubliés – corriger les temps dans la commande.",
+                "teamTimerForgotten": "{h} ({v} % des heures de l’équipe) proviennent probablement de minuteurs oubliés – les indicateurs sont surestimés."
+            },
+            "checks": {
+                "title": "Plausibilité",
+                "subtitle": "Jours au-delà de {h} de temps de travail et temps individuels inhabituels",
+                "none": "Aucune anomalie sur la période – tous les temps saisis semblent plausibles.",
+                "filterAll": "Tous ({n})",
+                "filter": {
+                    "day": "Jours au-delà du temps de travail ({n})",
+                    "timer": "Minuteur oublié ? ({n})",
+                    "high": "Inhabituellement élevé ({n})",
+                    "low": "Inhabituellement bas ({n})"
+                },
+                "day": "Jour",
+                "order": "Commande",
+                "what": "Instruction",
+                "recorded": "Saisi",
+                "expected": "Référence",
+                "hint": "Remarque",
+                "dayDetail": "{n} instructions dans {orders} commandes",
+                "workTime": "Temps de travail {v}",
+                "planned": "Prévu {v}",
+                "usual": "habituel {v}",
+                "kind": {
+                    "day": "Au-delà du temps de travail",
+                    "timer": "Minuteur oublié ?",
+                    "high": "Inhabituellement élevé",
+                    "low": "Inhabituellement bas"
+                },
+                "showAll": "Afficher les {n} anomalies"
+            },
+            "orders": {
+                "title": "Commandes de la période",
+                "subtitle": "Un clic ouvre la commande",
+                "onlyBucket": "Seulement {v}",
+                "date": "Terminé",
+                "order": "Commande",
+                "vehicle": "Véhicule",
+                "work": "Travaux",
+                "flagged": "{n} temps inhabituel(s) – voir plausibilité",
+                "clickHint": "Cliquer pour afficher les commandes",
+                "showAll": "Afficher les {n} commandes"
+            }
         }
     }
 }

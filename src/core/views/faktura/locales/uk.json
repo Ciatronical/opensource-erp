@@ -65,8 +65,13 @@
             "createComplaint": "Створити рекламацію",
             "cancel": "Сторнувати",
             "saveAsDraft": "Зберегти як чернетку",
-            "history": "Історія",
             "followUp": "Нагадування",
+            "followUpOpen": "Відкриті нагадування: {n}",
+            "followUpNew": "Нове нагадування",
+            "followUpDone": "Виконано",
+            "followUpSaved": "Нагадування збережено",
+            "followUpMarkedDone": "Нагадування виконано",
+            "followUpError": "Не вдалося зберегти нагадування",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Видалити",
             "pdfPreview": "Попередній перегляд PDF",
@@ -182,8 +187,6 @@
             "openVehicle": "Транспортний засіб",
             "importSilverDAT": "Імпорт SilverDAT",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Відкрити автомобіль у ESI[tronic]",
-            "openGutmann": "Відкрити автомобіль у Hella Gutmann mega macs",
             "openHgs": "Відкрити дані автомобіля в HGS Data",
             "hgsError": "Не вдалося відкрити HGS Data",
             "aagError": "Could not open AAG-Online",
@@ -400,7 +403,6 @@
                 "saveFirst": "Збережіть рахунок перед створенням електронного рахунку."
             },
             "kmStandRequired": "Показання одометра обов'язкове — введіть його перед створенням рахунку.",
-            "orderConfirmed": "Підтверджено",
             "belegEdit": "Редагувати номер документа",
             "belegLock": "Заблокувати номер документа",
             "bankBookedEdit": "Проведено через банк — натисніть, щоб редагувати проводку",
@@ -445,6 +447,50 @@
                 "fullyPaid": "Рахунок повністю сплачено",
                 "alreadyPaid": "Оплату карткою на {amount} € уже було виконано – повторно нічого не надіслано",
                 "synced": "Оплату карткою на {amount} € додано із SumUp"
+            },
+            "confirmation": {
+                "open": "Ще не підтверджено",
+                "openHint": "Як клієнт дав згоду? Під час підтвердження фіксується поточна сума.",
+                "confirmed": "Підтверджено",
+                "notRecorded": "Спосіб підтвердження не зафіксовано.",
+                "suggestedAccept": "Виявлено згоду — перевірте",
+                "suggestedDecline": "Виявлено відмову",
+                "uncertain": "Виявлено з низькою впевненістю — уважно перевірте цитату.",
+                "condition": "Умова: {condition}",
+                "amountIncreased": "Зросла на {diff} після підтвердження (підтверджено: {amount})",
+                "auto": "автоматично (ШІ)",
+                "confirm": "Підтвердити",
+                "dismiss": "Відхилити",
+                "acknowledge": "Взяти до відома",
+                "reconfirm": "Підтвердити знову",
+                "record": "Доповнити дані",
+                "revoke": "Відкликати підтвердження",
+                "revokeQuestion": "Замовлення повернеться до стану «Прийом замовлення». Попереднє підтвердження залишиться видимим в історії.",
+                "more": "Інші дії",
+                "playCall": "Прослухати дзвінок",
+                "openChat": "Відкрити чат",
+                "recordingMissing": "Запис для цього дзвінка не знайдено",
+                "dialogTitle": "Підтвердити замовлення",
+                "howQuestion": "Як клієнт дав згоду?",
+                "when": "Час згоди",
+                "note": "Примітка (необов'язково)",
+                "notePlaceholder": "напр. що сказав клієнт",
+                "amountHint": "Підтверджується поточна сума {amount}. Якщо вона згодом зросте, замовлення це покаже.",
+                "cancel": "Скасувати",
+                "savedConfirmed": "Замовлення підтверджено",
+                "savedDismissed": "Пропозицію відхилено",
+                "savedAcknowledged": "Відмову взято до відома",
+                "savedRevoked": "Підтвердження відкликано",
+                "channel": {
+                    "phone": "Телефон",
+                    "email": "Електронна пошта",
+                    "whatsapp": "WhatsApp",
+                    "visit": "На місці",
+                    "signature": "Підпис",
+                    "portal": "Клієнтський портал",
+                    "other": "Інше"
+                },
+                "saveError": "Не вдалося — замовлення, ймовірно, тим часом було змінено. Вид перезавантажено, перевірте ще раз."
             }
         },
         "workflow": {
@@ -459,7 +505,11 @@
             "quotation": "Пропозиція",
             "delivery_order": "Накладна",
             "credit_note": "Кредитна нота",
-            "invoice_storno": "Сторно-рахунок"
+            "invoice_storno": "Сторно-рахунок",
+            "purchase_order": "Замовлення постачальнику",
+            "purchase_invoice": "Вхідний рахунок",
+            "request_quotation": "Запит пропозиції",
+            "purchase_delivery_order": "Прибуткова накладна"
         },
         "dialogs": {
             "deleteItem": {
@@ -592,6 +642,140 @@
         },
         "alerts": {
             "warning_no_permission": "Доступ заборонено: У вас немає необхідних прав для перегляду цього документа. Будь ласка, зверніться до адміністратора."
+        },
+        "history": {
+            "title": "Історія",
+            "reload": "Оновити",
+            "close": "Закрити",
+            "lastChange": "востаннє змінено {time}, {name}",
+            "changedBy": "{name} щойно змінив цей документ",
+            "createdInfo": "Створено {time}",
+            "filter": {
+                "all": "Усі",
+                "head": "Заголовок",
+                "items": "Позиції",
+                "events": "Статус і відправлення"
+            },
+            "filterEmployee": "Хто",
+            "search": "Пошук",
+            "timeTravel": "Машина часу",
+            "today": "Сьогодні",
+            "backToToday": "Повернутися до сьогодні",
+            "asOf": "Стан до зміни від {time} – тоді → сьогодні",
+            "stepsBack": "{n} зміна назад | {n} змін назад",
+            "noDiff": "Заголовок і позиції тоді були такими самими, як сьогодні.",
+            "travelItem": {
+                "added": "додано відтоді",
+                "removed": "видалено відтоді",
+                "changed": "змінено відтоді"
+            },
+            "noMatch": "Немає записів для цього фільтра.",
+            "empty": "Змін ще не зареєстровано. Історія почнеться з наступної зміни.",
+            "item": {
+                "added": "додано",
+                "removed": "видалено",
+                "changed": "змінено"
+            },
+            "milestone": {
+                "created": "Документ створено",
+                "deleted": "Документ видалено",
+                "confirmed": "Замовлення підтверджено",
+                "unconfirmed": "Підтвердження скасовано",
+                "closed": "Виконано",
+                "reopened": "Відкрито знову",
+                "paid": "Оплата {amount}",
+                "storno": "Сторновано",
+                "printed": "Надруковано"
+            },
+            "summary": {
+                "itemsAdded": "Додано {n} позицію | Додано {n} позицій",
+                "itemsChanged": "Змінено {n} позицію | Змінено {n} позицій",
+                "itemsRemoved": "Видалено {n} позицію | Видалено {n} позицій",
+                "amount": "Сума {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Збережено",
+                "printed": "Надруковано",
+                "posted": "Проведено",
+                "printedPosted": "Надруковано і проведено",
+                "screened": "Показано на екрані",
+                "mailed": "Надіслано електронною поштою",
+                "deleted": "Видалено",
+                "storno": "Сторновано",
+                "paymentPosted": "Оплату проведено",
+                "previewed": "Показано попередній перегляд",
+                "canceled": "Перервано"
+            },
+            "link": {
+                "to": "На його основі створено: {type} {number}",
+                "from": "Створено на основі: {type} {number}"
+            },
+            "followup": {
+                "created": "Нагадування створено: {subject} (термін {date})",
+                "done": "Нагадування виконано: {subject}"
+            },
+            "sent": {
+                "email": "Електронною поштою на {to}",
+                "whatsapp": "Через WhatsApp на {to}",
+                "post": "Поштою на {to}",
+                "dhl": "Відправлення DHL {to}",
+                "other": "Надіслано на {to}"
+            },
+            "fields": {
+                "parts_id": "Артикул",
+                "paid": "Оплачено",
+                "datepaid": "Дата оплати",
+                "record_type": "Тип документа",
+                "order_type": "Тип документа",
+                "quotation": "Пропозиція",
+                "storno": "Сторновано",
+                "storno_id": "Сторно до",
+                "dunning_config_id": "Рівень нагадування про оплату",
+                "cp_id": "Контактна особа",
+                "globalproject_id": "Проєкт",
+                "project_id": "Проєкт",
+                "optional": "Необов’язкова позиція",
+                "subtotal": "Проміжний підсумок",
+                "serialnumber": "Серійний номер",
+                "pricegroup_id": "Цінова група",
+                "price_factor_id": "Ціновий коефіцієнт",
+                "orderer_id": "Замовник",
+                "delivered": "Поставлено",
+                "proforma": "Проформа",
+                "order_probability": "Імовірність замовлення",
+                "expected_billing_date": "Очікувана дата виставлення рахунку",
+                "tax_point": "Дата надання послуги",
+                "vendor_confirmation_number": "Номер підтвердження постачальника",
+                "oreqnumber": "Номер запиту",
+                "invnumber_for_credit_note": "Номер рахунку для кредит-ноти",
+                "is_sepa_blocked": "SEPA заблоковано",
+                "order_status_id": "Статус замовлення",
+                "no_whatsapp": "Без WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Замовлення (підтверджене)",
+                "sales_order_intake": "Надходження замовлення (непідтверджене)",
+                "sales_quotation": "Пропозиція",
+                "request_quotation": "Запит пропозиції",
+                "purchase_quotation_intake": "Отримана пропозиція",
+                "purchase_order": "Замовлення постачальнику",
+                "purchase_order_confirmation": "Підтвердження замовлення постачальником",
+                "sales_delivery_order": "Накладна",
+                "purchase_delivery_order": "Накладна закупівлі",
+                "supplier_delivery_order": "Накладна на давальницький матеріал",
+                "rma_delivery_order": "Зворотна накладна"
+            },
+            "yes": "Так",
+            "no": "Ні",
+            "automatic": "Автоматично",
+            "external": "kivitendo / зовнішній",
+            "unknownEmployee": "Невідомо",
+            "source": {
+                "external": "поза OSERP",
+                "recurring": "періодичний рахунок",
+                "ebay": "Імпорт з eBay",
+                "portal": "Магазин / портал клієнта"
+            }
         }
     }
 }

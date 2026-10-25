@@ -88,6 +88,9 @@ function _documentListQuery($data, $withLimit) {
     // Rechnungsstatus gibt es nur bei Auftraegen: '' = alle, none = ohne Rechnung, invoiced = mit Rechnung
     $isOrder  = $documentType === 'order';
     $invoiced = $isOrder && in_array($data['invoiced'] ?? '', ['none', 'invoiced'], true) ? $data['invoiced'] : '';
+    // Bestätigung, ebenfalls nur bei Auftraegen: '' = alle, open = Auftragseingang,
+    // suggested = mit offenem KI-Vorschlag, confirmed = bestaetigt
+    $confirmed = $isOrder && in_array($data['confirmed'] ?? '', ['open', 'suggested', 'confirmed'], true) ? $data['confirmed'] : '';
 
     $table  = $config['table'];
     $number = $config['number'];
@@ -129,6 +132,9 @@ function _documentListQuery($data, $withLimit) {
     if ($status === 'closed') $where[] = "($closed)";
     if ($invoiced === 'none')     $where[] = "(inv.js->>'state') = 'none'";
     if ($invoiced === 'invoiced') $where[] = "(inv.js->>'state') = 'invoiced'";
+    if ($confirmed === 'open')      $where[] = "d.record_type = 'sales_order_intake'";
+    if ($confirmed === 'suggested') $where[] = "d.record_type = 'sales_order_intake' AND conf.suggestions > 0";
+    if ($confirmed === 'confirmed') $where[] = "d.record_type = 'sales_order'";
 
     $limitSql = '';
     if ($withLimit) {
@@ -148,6 +154,25 @@ function _documentListQuery($data, $withLimit) {
         ? 'CROSS JOIN LATERAL (SELECT oe_invoice_status(d.id) AS js OFFSET 0) inv'
         : 'CROSS JOIN LATERAL (SELECT NULL::json AS js) inv';
     $uninvoiced  = $isOrder ? "CASE WHEN (inv.js->>'state') = 'none' THEN 1 ELSE 0 END" : '0';
+
+    // Bestaetigung je Auftrag (oe_confirmation_oserp, Upstall crm): letzte gueltige
+    // Bestaetigung (Kanal, Zeitpunkt, automatisch?) und Zahl der offenen KI-Vorschlaege.
+    // confirmed ist NULL bei Einkaufsauftraegen und anderen Belegarten.
+    $confirmationJoin = $isOrder
+        ? "LEFT JOIN LATERAL (
+               SELECT CASE d.record_type WHEN 'sales_order' THEN TRUE WHEN 'sales_order_intake' THEN FALSE END AS confirmed,
+                      c.channel, c.agreed_at, (c.source = 'ai' AND c.employee_id IS NULL) AS auto,
+                      (SELECT count(*) FROM oe_confirmation_oserp s WHERE s.oe_id = d.id AND s.status = 'suggested') AS suggestions
+                 FROM (SELECT 1) one
+                 LEFT JOIN LATERAL (
+                     SELECT channel, agreed_at, source, employee_id FROM oe_confirmation_oserp
+                      WHERE oe_id = d.id AND status = 'confirmed' AND d.record_type = 'sales_order'
+                      ORDER BY decided_at DESC NULLS LAST, id DESC LIMIT 1
+                 ) c ON TRUE
+           ) conf ON TRUE"
+        : 'CROSS JOIN LATERAL (SELECT NULL::boolean AS confirmed, NULL::text AS channel, NULL::timestamptz AS agreed_at, NULL::boolean AS auto, 0 AS suggestions) conf';
+    $unconfirmed = $isOrder ? "CASE WHEN conf.confirmed = FALSE AND NOT COALESCE(d.closed, FALSE) THEN 1 ELSE 0 END" : '0';
+    $suggested   = $isOrder ? "CASE WHEN conf.confirmed = FALSE AND conf.suggestions > 0 THEN 1 ELSE 0 END" : '0';
 
     $sql = "SELECT d.id,
                    d.$number                        AS number,
@@ -177,16 +202,24 @@ function _documentListQuery($data, $withLimit) {
                    (inv.js->'invoices'->0->>'id')::int AS invoice_id,
                    inv.js->'invoices'->0->>'number' AS invoice_number,
                    inv.js->'invoices'->0->>'transdate' AS invoice_date,
+                   conf.confirmed                   AS confirmed,
+                   conf.channel                     AS confirmation_channel,
+                   conf.agreed_at                   AS confirmation_at,
+                   conf.auto                        AS confirmation_auto,
+                   conf.suggestions                 AS confirmation_suggestions,
                    COUNT(*)        OVER ()          AS total_count,
                    SUM($amount)    OVER ()          AS total_amount,
                    SUM($netamount) OVER ()          AS total_netamount,
                    SUM($tax)       OVER ()          AS total_tax,
                    SUM($open)      OVER ()          AS total_open,
                    SUM($uninvoiced) OVER ()         AS total_uninvoiced,
-                   SUM($amount * ($uninvoiced)) OVER () AS total_uninvoiced_amount
+                   SUM($amount * ($uninvoiced)) OVER () AS total_uninvoiced_amount,
+                   SUM($unconfirmed) OVER ()        AS total_unconfirmed,
+                   SUM($suggested)   OVER ()        AS total_suggested
               FROM $table d
               LEFT JOIN customer c ON c.id = d.customer_id
               $invoiceJoin
+              $confirmationJoin
              WHERE $whereSql
              ORDER BY d.transdate DESC NULLS LAST, d.id DESC
              $limitSql";
@@ -206,10 +239,13 @@ function _documentListQuery($data, $withLimit) {
  * @param string $data['to']           Belegdatum bis (YYYY-MM-DD)
  * @param string $data['status']       leer = alle, open = nur offene, closed = nur erledigte
  * @param string $data['invoiced']     nur Auftraege: leer = alle, none = ohne Rechnung, invoiced = mit Rechnung
+ * @param string $data['confirmed']    nur Auftraege: leer = alle, open = Auftragseingang, suggested = mit
+ *                                     KI-Vorschlag, confirmed = bestaetigt
  * @param int    $data['limit']        Maximale Trefferzahl (Standard 200, max 1000)
  * @testdata {"action": "searchDocuments", "documentType": "invoice", "status": "open", "limit": 50}
  * @testdata {"action": "searchDocuments", "documentType": "quotation", "q": "Müller"}
  * @testdata {"action": "searchDocuments", "documentType": "order", "invoiced": "none", "limit": 50}
+ * @testdata {"action": "searchDocuments", "documentType": "order", "confirmed": "suggested", "limit": 50}
  */
 function searchDocuments($data) {
     $query = _documentListQuery($data, true);
@@ -233,10 +269,13 @@ function searchDocuments($data) {
         // Auftraege ohne Rechnung (Anzahl und Brutto) — die Liste bietet sie als Schnellfilter an
         'uninvoiced'        => $first ? (int)$first['total_uninvoiced'] : 0,
         'uninvoiced_amount' => $first ? (float)$first['total_uninvoiced_amount'] : 0,
+        // Offene Auftragseingaenge und solche mit KI-Vorschlag — ebenfalls Schnellfilter
+        'unconfirmed'       => $first ? (int)$first['total_unconfirmed'] : 0,
+        'suggested'         => $first ? (int)$first['total_suggested'] : 0,
     ];
     foreach ($documents as &$row) {
         unset($row['total_count'], $row['total_amount'], $row['total_netamount'], $row['total_tax'], $row['total_open'],
-              $row['total_uninvoiced'], $row['total_uninvoiced_amount']);
+              $row['total_uninvoiced'], $row['total_uninvoiced_amount'], $row['total_unconfirmed'], $row['total_suggested']);
     }
     unset($row);
 
@@ -296,7 +335,8 @@ function _documentList_dateiZeitraum($from, $to) {
  * @param array  $data['labels']       Beschriftungen: title, period, number, date, duedate, customer,
  *                                     customernumber, description, net, tax, gross, paid, open, status,
  *                                     statusOpen, statusClosed, statusOverdue, total, documents,
- *                                     invoice, noInvoice, invoiceStorno
+ *                                     invoice, noInvoice, invoiceStorno, confirmation, confirmed,
+ *                                     unconfirmed
  * @testdata {"action": "exportDocumentList", "documentType": "invoice", "format": "csv", "from": "2026-01-01", "to": "2026-12-31"}
  * @testdata {"action": "exportDocumentList", "documentType": "invoice", "format": "pdf", "labels": {"title": "Rechnungen", "period": "Januar 2026"}}
  */
@@ -334,6 +374,9 @@ function exportDocumentList($data) {
         'invoice'        => 'Rechnung',
         'noInvoice'      => 'keine',
         'invoiceStorno'  => 'storniert',
+        'confirmation'   => 'Bestätigt',
+        'confirmed'      => 'ja',
+        'unconfirmed'    => 'nein',
     ], is_array($data['labels'] ?? null) ? array_map('strval', $data['labels']) : []);
 
     $db   = DbhCompany::begin();
@@ -364,6 +407,12 @@ function exportDocumentList($data) {
         }
         return $row['invoice_state'] === 'storno' ? $l['invoiceStorno'] : $l['noInvoice'];
     };
+    // Bestaetigt: Datum der Zusage (bzw. ja, wenn nicht erfasst), nein; leer bei Einkaufsauftraegen
+    $confirmationText = function ($row) use ($l) {
+        if ($row['confirmed'] === null) return '';
+        if (!$row['confirmed']) return $l['unconfirmed'];
+        return $row['confirmation_at'] ? _documentList_datum($row['confirmation_at']) : $l['confirmed'];
+    };
 
     $from = trim((string)($data['from'] ?? ''));
     $to   = trim((string)($data['to'] ?? ''));
@@ -372,9 +421,13 @@ function exportDocumentList($data) {
     if ($format === 'rows') {
         foreach ($rows as &$row) {
             unset($row['total_count'], $row['total_amount'], $row['total_netamount'], $row['total_tax'], $row['total_open'],
+                  $row['total_uninvoiced'], $row['total_uninvoiced_amount'], $row['total_unconfirmed'], $row['total_suggested'],
                   $row['sent_channels'], $row['customer_email'], $row['customer_cc'], $row['customer_bcc'], $row['print_type']);
             $row['status_text'] = $statusText($row);
-            if ($isOrder) $row['invoice_text'] = $invoiceText($row);
+            if ($isOrder) {
+                $row['invoice_text']      = $invoiceText($row);
+                $row['confirmation_text'] = $confirmationText($row);
+            }
         }
         unset($row);
         resultInfo(true, '', ['documents' => $rows, 'totals' => $totals, 'filename' => $dateiBasis . '.xlsx']);
@@ -388,7 +441,7 @@ function exportDocumentList($data) {
         if ($hasAmounts) $head = array_merge($head, [$l['net'], $l['tax'], $l['gross']]);
         if ($isAr) $head = array_merge($head, [$l['paid'], $l['open']]);
         $head[] = $l['status'];
-        if ($isOrder) $head[] = $l['invoice'];
+        if ($isOrder) array_push($head, $l['confirmation'], $l['invoice']);
         $lines = [implode(';', array_map('_documentList_csvQuote', $head))];
 
         foreach ($rows as $row) {
@@ -407,7 +460,10 @@ function exportDocumentList($data) {
                 $cells[] = _documentList_betrag($row['open_amount']);
             }
             $cells[] = _documentList_csvQuote($statusText($row));
-            if ($isOrder) $cells[] = _documentList_csvQuote($invoiceText($row));
+            if ($isOrder) {
+                $cells[] = _documentList_csvQuote($confirmationText($row));
+                $cells[] = _documentList_csvQuote($invoiceText($row));
+            }
             $lines[] = implode(';', $cells);
         }
 
@@ -418,7 +474,7 @@ function exportDocumentList($data) {
                 _documentList_betrag($totals['netamount']), _documentList_betrag($totals['tax']), _documentList_betrag($totals['amount'])]);
             if ($isAr) $cells = array_merge($cells, ['', _documentList_betrag($totals['open'])]);
             $cells[] = '';
-            if ($isOrder) $cells[] = '';
+            if ($isOrder) array_push($cells, '', '');
             $lines[] = implode(';', $cells);
         }
 
@@ -455,12 +511,13 @@ function exportDocumentList($data) {
         $pdf->columns = [
             ['w' => 26, 'label' => $l['number']],
             ['w' => 18, 'label' => $l['date']],
-            ['w' => 54, 'label' => $l['customer']],
-            ['w' => 60, 'label' => $l['description']],
+            ['w' => 46, 'label' => $l['customer']],
+            ['w' => 48, 'label' => $l['description']],
             ['w' => 23, 'label' => $l['net'],   'align' => 'R'],
             ['w' => 21, 'label' => $l['tax'],   'align' => 'R'],
             ['w' => 23, 'label' => $l['gross'], 'align' => 'R'],
             ['w' => 20, 'label' => $l['status']],
+            ['w' => 20, 'label' => $l['confirmation']],
             ['w' => 22, 'label' => $l['invoice']],
         ];
     } elseif ($hasAmounts) {
@@ -502,6 +559,9 @@ function exportDocumentList($data) {
         if ($isAr) $cells[] = ReportPdf::money($row['open_amount'], true);
         $cells[] = $status;
         if ($isOrder) {
+            $confirmation = ['text' => $confirmationText($row)];
+            if ($row['confirmed'] === false) $confirmation['color'] = [160, 100, 0];
+            $cells[] = $confirmation;
             $invoice = ['text' => $invoiceText($row)];
             if ($row['invoice_state'] !== 'invoiced') $invoice['color'] = $row['invoice_state'] === 'storno' ? [180, 30, 30] : [120, 120, 120];
             $cells[] = $invoice;
@@ -514,7 +574,7 @@ function exportDocumentList($data) {
                   ReportPdf::money($totals['netamount']), ReportPdf::money($totals['tax']), ReportPdf::money($totals['amount'])];
         if ($isAr) $cells[] = ReportPdf::money($totals['open']);
         $cells[] = '';
-        if ($isOrder) $cells[] = '';
+        if ($isOrder) array_push($cells, '', '');
         $pdf->totalRow($cells);
     }
 

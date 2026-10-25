@@ -60,6 +60,9 @@ function aiAssistants() {
         'business_card'    => ['key' => 'business_card_ai_model',    'default' => 'claude-haiku-4-5'],
         'phone_search'     => ['key' => 'phone_search_ai_model',     'default' => 'claude-sonnet-5'],
         'call_transcript'  => ['key' => 'call_transcript_ai_model',  'default' => 'claude-haiku-4-5'],
+        // Auftragsbestätigung: Zusage/Absage aus Anruf, WhatsApp, E-Mail erkennen — Zwischentöne
+        // („ja, aber erst nach Rücksprache“) und Bedingungen sicher trennen, daher Sonnet
+        'order_confirm'    => ['key' => 'order_confirm_ai_model',    'default' => 'claude-sonnet-5'],
         // Die Prognose erzwingt den Aufruf ihres Werkzeugs (tool_choice 'any').
         // Claude Fable 5.1 lehnt einen erzwungenen Werkzeugaufruf mit HTTP 400 ab.
         'banking'          => ['key' => 'banking_ai_model',          'default' => 'claude-opus-5',

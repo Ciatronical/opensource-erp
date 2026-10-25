@@ -65,8 +65,13 @@
             "createComplaint": "Reklamation erstellen",
             "cancel": "Annullera",
             "saveAsDraft": "Als Entwurf speichern",
-            "history": "Historik",
-            "followUp": "Wiedervorlage",
+            "followUp": "Uppföljning",
+            "followUpOpen": "Öppna uppföljningar: {n}",
+            "followUpNew": "Ny uppföljning",
+            "followUpDone": "Klar",
+            "followUpSaved": "Uppföljning sparad",
+            "followUpMarkedDone": "Uppföljning klar",
+            "followUpError": "Uppföljningen kunde inte sparas",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Radera",
             "pdfPreview": "PDF-Forhandsvisning",
@@ -182,8 +187,6 @@
             "openVehicle": "Fordon",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Öppna fordon i ESI[tronic]",
-            "openGutmann": "Öppna fordon i Hella Gutmann mega macs",
             "openHgs": "Öppna fordonsdata i HGS Data",
             "hgsError": "Kunde inte öppna HGS Data",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Fakturan är fullt betald",
                 "alreadyPaid": "Kortbetalning på {amount} € var redan genomförd – inget skickades igen",
                 "synced": "Kortbetalning på {amount} € tillagd från SumUp"
+            },
+            "confirmation": {
+                "open": "Inte bekräftad ännu",
+                "openHint": "Hur accepterade kunden? Vid bekräftelsen registreras det aktuella beloppet.",
+                "confirmed": "Bekräftad",
+                "notRecorded": "Hur bekräftelsen skedde är inte registrerat.",
+                "suggestedAccept": "Accept identifierad — granska",
+                "suggestedDecline": "Avböjande identifierat",
+                "uncertain": "Osäker identifiering — granska citatet noga.",
+                "condition": "Villkor: {condition}",
+                "amountIncreased": "Har ökat med {diff} sedan bekräftelsen (bekräftat: {amount})",
+                "auto": "automatiskt (AI)",
+                "confirm": "Bekräfta",
+                "dismiss": "Avvisa",
+                "acknowledge": "Kvittera",
+                "reconfirm": "Bekräfta igen",
+                "record": "Komplettera uppgifter",
+                "revoke": "Återkalla bekräftelse",
+                "revokeQuestion": "Ordern återgår till inkommen order. Den tidigare bekräftelsen förblir synlig i historiken.",
+                "more": "Fler åtgärder",
+                "playCall": "Lyssna på samtalet",
+                "openChat": "Öppna chatt",
+                "recordingMissing": "Ingen inspelning hittades för detta samtal",
+                "dialogTitle": "Bekräfta order",
+                "howQuestion": "Hur accepterade kunden?",
+                "when": "Tidpunkt för accepten",
+                "note": "Anteckning (valfritt)",
+                "notePlaceholder": "t.ex. vad kunden sa",
+                "amountHint": "Det aktuella beloppet på {amount} bekräftas. Om det ökar senare visar ordern det.",
+                "cancel": "Avbryt",
+                "savedConfirmed": "Order bekräftad",
+                "savedDismissed": "Förslag avvisat",
+                "savedAcknowledged": "Avböjande kvitterat",
+                "savedRevoked": "Bekräftelse återkallad",
+                "channel": {
+                    "phone": "Telefon",
+                    "email": "E-post",
+                    "whatsapp": "WhatsApp",
+                    "visit": "På plats",
+                    "signature": "Underskrift",
+                    "portal": "Kundportal",
+                    "other": "Övrigt"
+                },
+                "saveError": "Det gick inte — ordern har troligen ändrats under tiden. Vyn har laddats om, granska igen."
             }
         },
         "workflow": {
@@ -442,9 +489,13 @@
             "invoice": "Faktura",
             "order": "Order",
             "quotation": "Offert",
-            "delivery_order": "Foljesedel",
+            "delivery_order": "Följesedel",
             "credit_note": "Kreditnota",
-            "invoice_storno": "Annullering-Faktura"
+            "invoice_storno": "Annullering-Faktura",
+            "purchase_order": "Inköpsorder",
+            "purchase_invoice": "Leverantörsfaktura",
+            "request_quotation": "Offertförfrågan",
+            "purchase_delivery_order": "Inköpsföljesedel"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Vanligen wenden Sie sich an Ihren Administrator."
+        },
+        "history": {
+            "title": "Historik",
+            "reload": "Uppdatera",
+            "close": "Stäng",
+            "lastChange": "senast ändrad {time} av {name}",
+            "changedBy": "{name} har just ändrat detta dokument",
+            "createdInfo": "Skapad {time}",
+            "filter": {
+                "all": "Alla",
+                "head": "Huvud",
+                "items": "Rader",
+                "events": "Status & utskick"
+            },
+            "filterEmployee": "Vem",
+            "search": "Sök",
+            "timeTravel": "Tidsresa",
+            "today": "Idag",
+            "backToToday": "Tillbaka till idag",
+            "asOf": "Läge före redigeringen {time} – då → idag",
+            "stepsBack": "{n} redigering bakåt | {n} redigeringar bakåt",
+            "noDiff": "Huvud och rader var då desamma som idag.",
+            "travelItem": {
+                "added": "tillagd sedan dess",
+                "removed": "borttagen sedan dess",
+                "changed": "ändrad sedan dess"
+            },
+            "noMatch": "Inga poster för detta filter.",
+            "empty": "Inga ändringar registrerade ännu. Historiken börjar med nästa ändring.",
+            "item": {
+                "added": "tillagd",
+                "removed": "borttagen",
+                "changed": "ändrad"
+            },
+            "milestone": {
+                "created": "Dokument skapat",
+                "deleted": "Dokument raderat",
+                "confirmed": "Order bekräftad",
+                "unconfirmed": "Bekräftelse återkallad",
+                "closed": "Avslutad",
+                "reopened": "Återöppnad",
+                "paid": "Betalning {amount}",
+                "storno": "Makulerad",
+                "printed": "Utskriven"
+            },
+            "summary": {
+                "itemsAdded": "{n} rad tillagd | {n} rader tillagda",
+                "itemsChanged": "{n} rad ändrad | {n} rader ändrade",
+                "itemsRemoved": "{n} rad borttagen | {n} rader borttagna",
+                "amount": "Belopp {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Sparad",
+                "printed": "Utskriven",
+                "posted": "Bokförd",
+                "printedPosted": "Utskriven och bokförd",
+                "screened": "Visad på skärmen",
+                "mailed": "Skickad via e-post",
+                "deleted": "Raderad",
+                "storno": "Makulerad",
+                "paymentPosted": "Betalning bokförd",
+                "previewed": "Förhandsgranskning visad",
+                "canceled": "Avbruten"
+            },
+            "link": {
+                "to": "{type} {number} skapad härifrån",
+                "from": "Skapad från {type} {number}"
+            },
+            "followup": {
+                "created": "Uppföljning skapad: {subject} (förfaller {date})",
+                "done": "Uppföljning klar: {subject}"
+            },
+            "sent": {
+                "email": "Via e-post till {to}",
+                "whatsapp": "Via WhatsApp till {to}",
+                "post": "Per post till {to}",
+                "dhl": "DHL-försändelse {to}",
+                "other": "Skickad till {to}"
+            },
+            "fields": {
+                "parts_id": "Artikel",
+                "paid": "Betald",
+                "datepaid": "Betald den",
+                "record_type": "Dokumenttyp",
+                "order_type": "Dokumenttyp",
+                "quotation": "Offert",
+                "storno": "Makulerad",
+                "storno_id": "Makulering av",
+                "dunning_config_id": "Påminnelsenivå",
+                "cp_id": "Kontaktperson",
+                "globalproject_id": "Projekt",
+                "project_id": "Projekt",
+                "optional": "Valfri rad",
+                "subtotal": "Delsumma",
+                "serialnumber": "Serienummer",
+                "pricegroup_id": "Prisgrupp",
+                "price_factor_id": "Prisfaktor",
+                "orderer_id": "Beställare",
+                "delivered": "Levererad",
+                "proforma": "Proforma",
+                "order_probability": "Ordersannolikhet",
+                "expected_billing_date": "Förväntat faktureringsdatum",
+                "tax_point": "Beskattningstidpunkt",
+                "vendor_confirmation_number": "Leverantörens bekräftelsenummer",
+                "oreqnumber": "Förfrågningsnummer",
+                "invnumber_for_credit_note": "Fakturanummer för kreditfaktura",
+                "is_sepa_blocked": "SEPA spärrad",
+                "order_status_id": "Orderstatus",
+                "no_whatsapp": "Ingen WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Kundorder (bekräftad)",
+                "sales_order_intake": "Orderingång (obekräftad)",
+                "sales_quotation": "Offert",
+                "request_quotation": "Offertförfrågan",
+                "purchase_quotation_intake": "Inkommen offert",
+                "purchase_order": "Inköpsorder",
+                "purchase_order_confirmation": "Leverantörens orderbekräftelse",
+                "sales_delivery_order": "Följesedel",
+                "purchase_delivery_order": "Inköpsföljesedel",
+                "supplier_delivery_order": "Leverantörsföljesedel",
+                "rma_delivery_order": "Returföljesedel"
+            },
+            "yes": "Ja",
+            "no": "Nej",
+            "automatic": "Automatisk",
+            "external": "kivitendo / extern",
+            "unknownEmployee": "Okänd",
+            "source": {
+                "external": "utanför OSERP",
+                "recurring": "återkommande faktura",
+                "ebay": "eBay-import",
+                "portal": "Webbshop / kundportal"
+            }
         }
     }
 }

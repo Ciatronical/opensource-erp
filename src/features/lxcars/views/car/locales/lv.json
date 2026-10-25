@@ -344,16 +344,6 @@
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
         },
-        "esi": {
-            "button": "ESI",
-            "tooltip": "Atvērt transportlīdzekli Bosch ESI[tronic] pēc HSN/TSN",
-            "noKba": "Nav pieejami derīgi atslēgas numuri (HSN/TSN)"
-        },
-        "gutmann": {
-            "button": "Gutmann",
-            "tooltip": "Atvērt transportlīdzekli Hella Gutmann mega macs pēc HSN/TSN",
-            "noKba": "Nav pieejami derīgi atslēgas numuri (HSN/TSN)"
-        },
         "hgs": {
             "button": "HGS-Data",
             "tooltip": "Atvērt transportlīdzekļa datus HGS Data",

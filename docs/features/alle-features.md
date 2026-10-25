@@ -440,9 +440,14 @@ Eine einheitliche Oberfläche für alle Belege:
 - Belegdatum, Lieferdatum, Fälligkeitsdatum einzeln änderbar
 - **Kompakt- und Vollansicht** umschaltbar
 - **Entwürfe** speichern und später weiterbearbeiten
-- **Status offen/geschlossen**, Auftragsbestätigung setzen und zurücknehmen
-- **Beleghistorie** und Belegverknüpfungen (Record-Links)
-- **Wiedervorlage direkt am Beleg** anlegen
+- **Status offen/geschlossen**
+- **Auftragsbestätigung** sichtbar in der Auftragsmaske (Auftragseingang / bestätigt): Weg der Zusage (Telefon, E-Mail, WhatsApp, vor Ort, Unterschrift, Kundenportal), Zeitpunkt, Mitarbeiter, Notiz; Betrag zum Zeitpunkt der Bestätigung mit Hinweis bei späterer Erhöhung und „Neu bestätigen“; zurücknehmen mit Verlauf; Spalte, Filter und „Zu prüfen“-Zähler in der Auftragsliste, Export inklusive
+- **Zusagen per KI erkennen** *(Schalter `order_confirm_ai`: Vorschlag oder automatisch)*: Anrufe (Aufnahme, lokal transkribiert), WhatsApp inkl. Sprachnachrichten und E-Mails von Kunden mit offenem Auftragseingang prüft Claude auf Zusage/Absage, ordnet den Auftrag zu und zitiert den Kunden samt Bedingung; Bestätigen per Klick, automatisch nur bei eindeutiger Zusage per WhatsApp oder Telefon; berechnete Aufträge zählen nicht als offen; Dienst `oserp-auftragsbestaetigung`
+- **Belegverknüpfungen** (Record-Links)
+- **Wiedervorlage direkt am Beleg** — Glocke in der Aktionsleiste mit Zähler der offenen Wiedervorlagen (rot, sobald eine fällig ist), Liste mit Erledigt und Bearbeiten; Verknüpfung fest auf den Beleg mit dem kivitendo-Typ der Belegart (auch Gutschrift, Lieferschein und Einkaufsbelege)
+- **Verlauf (Belegchronik)** — wer hat wann was geändert: Kopf, Positionen, Fahrzeugdaten, Versand, Belegkette, Wiedervorlagen und kivitendo-Vorgeschichte in einer Zeitleiste; Bearbeitungen zusammengefasst und netto, Klartext statt IDs, Wendepunkte (bestätigt, erledigt, bezahlt, storniert), Herkunft (Mitarbeiter, automatisch, kivitendo/extern), Filter und Zeitreise-Regler; Hinweis, wenn jemand anderes den offenen Beleg ändert
+- **Belegart aus dem Datensatz** — Bestellung, Anfrage und Einkaufslieferschein öffnen über jeden Link richtig, Eingangsrechnungen im Journal; Rechte werden immer an der echten Belegart geprüft
+- **Lieferscheine** anlegen, bearbeiten, drucken und in Rechnungen umwandeln (Betrag, Buchung, Lieferschein erledigt), auch Einkaufslieferscheine
 - Löschen (konfigurierbar, welche Belegarten gelöscht werden dürfen)
 
 ### 5.3 Workflow / Konvertierung
@@ -531,6 +536,9 @@ Aus einem Beleg heraus erzeugen:
 
 - Karte im Kunden: **Anrufe, WhatsApp und E-Mails chronologisch** in einer Liste, mit Richtung, Mitarbeiter und Kurztext
 - Klick öffnet den Vorgang
+- **Kunde vor Ort**: Knopf im Kopf der Historie hält fest, was der Kunde persönlich gesagt hat; Zeitpunkt vorbelegt, Einträge änderbar/löschbar, kivitendo-kompatibel als Kundennotiz gespeichert
+- **Auftragsbestätigungen, Rücknahmen und KI-Vorschläge** (Zusage/Absage erkannt, mit Zitat) als eigene Einträge mit Filter; Klick öffnet den Auftrag, bei Zusagen am Telefon Aufnahme abspielbar
+- **Aktualisiert sich live** (kein Knopf): Anrufe, WhatsApp, Briefe, Vor-Ort-Einträge per SSE; neue E-Mails aus Posteingang und Gesendet meldet der Dienst `oserp-email-eingang` per IMAP IDLE sofort
 
 ### 6.4 Dateimanager
 
@@ -639,6 +647,7 @@ Drei Ansichten auf einer Datenbasis:
 - **Listenansicht** mit Sortierung und Filterung
 - **Kalenderansicht**
 - Verknüpfung mit Kunden, Aufträgen, Rechnungen und weiteren Entitäten (Suche über alle Typen)
+- **Direkt aus jedem Beleg** der Faktura anlegen; der Verknüpfungs-Chip springt zurück in den Beleg (alle Belegarten, reine Buchungen ins Journal)
 - Zuweisung an Mitarbeiter
 - Erledigt/offen mit **Undo**
 - Dashboard-Widget, gruppiert nach Priorität
@@ -916,7 +925,7 @@ Was sich sofort ändert:
 - Neues Hauptmenü **Fahrzeuge** (Auftragsliste, Scanliste, Neu anlegen, Verwalten — und bei aktiviertem Mechaniker-Modus zusätzlich „Meine Aufträge")
 - Im Menü **Kontakt** kommt **HU-Benachrichtigungen** dazu
 - In der **globalen Suche** werden Fahrzeuge mitgesucht
-- In der **Faktura** erscheinen zusätzliche Schaltflächen (Fahrzeug, SilverDAT, Gutachten-Import, AAG-Online, ESI[tronic], mega macs, HGS-Data, AU-Beleg)
+- In der **Faktura** erscheinen zusätzliche Schaltflächen (Fahrzeug, SilverDAT, Gutachten-Import, AAG-Online, HGS-Data, AU-Beleg)
 - Neuer Konfigurations-Tab **LxCars**, zusätzlich **ANPR**
 - Im **Kalender** wird die Werkstattauslastung je Bringetermin-Tag angezeigt
 - Im **Wiki** lassen sich Artikel einer HSN/TSN-Kombination zuordnen
@@ -1074,6 +1083,14 @@ Vereinfachte, tablet-taugliche Ansicht für die Werkstatt. Aktivierung und Mitar
 - **Team-Übersicht** für die Werkstattleitung — Team-Stunden, geplante Zeit, Effizienz, Auslastung gegen die Kapazität
 - Arbeitszeitberechnung mit **Arbeitsbeginn, Arbeitsende und Pausenabzug** aus der Konfiguration
 - Zugriff auf die Team-Auswertung über eine konfigurierbare Benutzergruppe
+- **Personal → Leistung** *(LxCars)* — Leistungsdaten aller Mechaniker im Personal-Modul (Recht „Produktivität" oder Werkstattleitungs-Gruppe):
+  - Zeitraum Woche/Monat/Quartal/Jahr mit Vorperioden-Vergleich, eine Abfrage für alle Mechaniker
+  - Alle: Leistungsmatrix (Auslastung × Leistungsgrad), Ist gegen Vorgabe, gestapelter Verlauf, Rangliste mit Kurzverlauf, größte Unterschiede im Team je Tätigkeit
+  - Einzeln: Kennzahlen mit Team-Wert, Stunden- und Leistungsgrad-Verlauf, Stärken/Schwächen je Tätigkeit gegenüber dem Team, Aktivitätsprofil Wochentag × Uhrzeit, laufender Timer mit Sprung zum Auftrag
+  - Auslastung berücksichtigt genehmigten Urlaub, Arbeitslohn-Umsatz anteilig nach Ist-Minuten, regelbasierte Erkenntnisse in Textform
+  - Ist-Zeit zählt am Tag des Arbeitsbeginns: jede Timer-Sitzung wird automatisch protokolliert (tageweise geteilt, Nettominuten), ohne zusätzliche Bedienung für den Mechaniker
+  - Plausibilitätskontrolle: Tage über der Arbeitszeit (z. B. 8 h), vermutlich vergessene Timer, ungewöhnlich hohe oder niedrige Zeiten gegenüber Vorgabe bzw. Team-Median; alles mit Sprung in den Auftrag
+  - Auftragsliste je Mechaniker, per Klick auf einen Diagramm-Balken auf Tag/Woche/Monat filterbar, Klick öffnet den Auftrag
 
 ### 16.16 HU-Serienbrief / HU-Benachrichtigungen
 
@@ -1100,14 +1117,6 @@ Vereinfachte, tablet-taugliche Ansicht für die Werkstatt. Aktivierung und Mitar
 
 - Login mit gecachter Session (HGS begrenzt gleichzeitige Sitzungen)
 - **HSN/TSN-Suche** löst die interne Fahrzeug-ID auf, die Fahrzeugdatenseite wird im Browser geöffnet
-
-**Gutmann mega macs**
-
-- Direktaufruf des Diagnosegeräts über die konfigurierte URL mit HSN/TSN/FIN
-
-**Bosch ESI[tronic]**
-
-- Aufruf bei gültiger HSN/TSN aus Auftrag und Fahrzeug
 
 **SilverDAT**
 
@@ -1159,7 +1168,6 @@ Automatische Kennzeichenerkennung an der Werkstattzufahrt.
 | Aufträge | Statusliste, auszublendender Status, KFZ-Ort-Optionen, Vorschautage |
 | HU | Vorlaufmonate, auslösende Leistungsbezeichnungen, Brieftext, WhatsApp-Versand |
 | AAG-Online | Benutzer, Passwort, zweites Passwort |
-| Gutmann | mega-macs-URL |
 | HGS-Data | Benutzer, Passwort |
 | Termine | Standard-Abgabezeit, Standard-Fertigstellungszeit, Zeitraster |
 | Etikettendrucker | Drucker für grüne Plakette, Drucker für Reifenetiketten |

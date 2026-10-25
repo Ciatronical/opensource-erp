@@ -45,6 +45,7 @@
         "hr": "/personal",
         "hrPayroll": "/personal/nomina",
         "hrVacation": "/personal/vacaciones",
+        "hrPerformance": "/personal/rendimiento",
         "newDeliveryOrder": "/albaran/nuevo",
         "setup": "/instalacion",
         "login": "/acceso",

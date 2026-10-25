@@ -61,6 +61,8 @@ function ebayCronInitCompanyDb(PDO $pdo): void {
     $prop = $reflection->getProperty('instance');
     $prop->setAccessible(true);
     $prop->setValue(null, new ApiDatabase($pdo));
+    // Belegchronik: Rechnungen aus dem eBay-Import, kein Mitarbeiter
+    DbhCompany::setActor(DbhCompany::begin(), null, 'cron:ebay');
 }
 
 /**

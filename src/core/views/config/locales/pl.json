@@ -694,9 +694,6 @@
         "aagOnlinePassword_help": "Hasło do AAG Online",
         "aagOnlinePassword2": "Hasło AAG Online (powtórzenie)",
         "aagOnlinePassword2_help": "Powtórzenie hasła w celu potwierdzenia",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "Adres mega macs (URL)",
-        "gutmannMegamacsUrl_help": "Adres lub szablon URL urządzenia mega macs X. Symbole {hsn} {tsn} {vin} są zastępowane, np. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Bez symboli hsn/tsn/vin są dołączane (SPA często ignoruje). Wskazówka: wybierz pojazd na urządzeniu i skopiuj pasek adresu.",
         "hgsData": "HGS Data",
         "hgsDataUser": "Użytkownik HGS Data",
         "hgsDataUser_help": "Nazwa użytkownika HGS Data (wyszukiwanie pojazdu wg HSN/TSN)",
@@ -1133,7 +1130,15 @@
         "sumupAutoSend": "Wysyłaj kwotę automatycznie",
         "sumupAutoSend_help": "Gdy faktura jest tworzona z oferty lub zlecenia, kwota pozostała do zapłaty jest od razu wysyłana do terminala (domyślnie: włączone). Przy otwieraniu istniejących lub opłaconych faktur nigdy nie następuje automatyczne wysyłanie",
         "shopWebsite": "Strona portalu klienta",
-        "shopWebsite_help": "Strona, na której działa HugoShop – przypisana w kanałach sprzedaży, skonfigurowana w System → Strony."
+        "shopWebsite_help": "Strona, na której działa HugoShop – przypisana w kanałach sprzedaży, skonfigurowana w System → Strony.",
+        "orderConfirmation": "Potwierdzenie zamówienia",
+        "orderConfirmAi": "Rozpoznawanie zgody przez AI",
+        "orderConfirmAi_help": "Połączenia (nagranie), wiadomości WhatsApp (także głosowe oraz przyciski odpowiedzi) i e-maile od klientów z otwartym przyjęciem zlecenia (niezamkniętym, jeszcze niezafakturowanym) są transkrybowane i sprawdzane przez AI pod kątem zgody lub odmowy. „Sugestia”: zamówienie pokazuje rozpoznaną zgodę z cytatem, potwierdzenie następuje jednym kliknięciem. „Automatycznie”: jednoznaczne zgody przez WhatsApp lub telefon (jedno otwarte zamówienie, brak warunku, wysoka pewność) są potwierdzane od razu; e-maile pozostają zawsze sugestią, ponieważ ich nadawcę można sfałszować. Wymagania: klucz API Anthropic, usługa Whisper i usługa oserp-auftragsbestaetigung, dla e-maili dodatkowo usługa oserp-email-eingang ze skonfigurowaną skrzynką pocztową. Połączenia można nagrywać wyłącznie za zgodą rozmówcy.",
+        "orderConfirmAiOff": "Wyłączone",
+        "orderConfirmAiSuggest": "Sugestia — potwierdzenie jednym kliknięciem",
+        "orderConfirmAiAuto": "Automatycznie przy jednoznacznej zgodzie",
+        "orderConfirmAiDays": "Przyjęcia zleceń z ostatnich dni",
+        "orderConfirmAiDays_help": "Pod uwagę brane są tylko przyjęcia zleceń nie starsze niż podana liczba dni (domyślnie 60). Starsze niepotwierdzone zamówienia nie są sprawdzane."
     },
     "add": "Dodaj",
     "add_fields": {

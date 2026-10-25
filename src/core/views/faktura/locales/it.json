@@ -65,8 +65,13 @@
             "createComplaint": "Crea reclamo",
             "cancel": "Annullare",
             "saveAsDraft": "Salva come bozza",
-            "history": "Cronologia",
             "followUp": "Promemoria",
+            "followUpOpen": "Promemoria aperti: {n}",
+            "followUpNew": "Nuovo promemoria",
+            "followUpDone": "Fatto",
+            "followUpSaved": "Promemoria salvato",
+            "followUpMarkedDone": "Promemoria completato",
+            "followUpError": "Impossibile salvare il promemoria",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Elimina",
             "pdfPreview": "Anteprima PDF",
@@ -182,8 +187,6 @@
             "openVehicle": "Veicolo",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – trasferisci veicolo e apri",
-            "openEsi": "Apri il veicolo in ESI[tronic]",
-            "openGutmann": "Apri il veicolo in Hella Gutmann mega macs",
             "openHgs": "Apri i dati del veicolo in HGS Data",
             "hgsError": "Impossibile aprire HGS Data",
             "aagError": "Impossibile aprire AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Fattura interamente pagata",
                 "alreadyPaid": "Il pagamento con carta di {amount} € era già stato effettuato – nulla è stato inviato di nuovo",
                 "synced": "Pagamento con carta di {amount} € registrato da SumUp"
+            },
+            "confirmation": {
+                "open": "Non ancora confermato",
+                "openHint": "Come ha accettato il cliente? Con la conferma viene registrato l’importo attuale.",
+                "confirmed": "Confermato",
+                "notRecorded": "La modalità di conferma non è stata registrata.",
+                "suggestedAccept": "Accettazione rilevata — verificare",
+                "suggestedDecline": "Rifiuto rilevato",
+                "uncertain": "Rilevamento incerto — verificare attentamente la citazione.",
+                "condition": "Condizione: {condition}",
+                "amountIncreased": "Aumentato di {diff} dalla conferma (confermato: {amount})",
+                "auto": "automaticamente (IA)",
+                "confirm": "Conferma",
+                "dismiss": "Scarta",
+                "acknowledge": "Prendi atto",
+                "reconfirm": "Riconferma",
+                "record": "Completa i dati",
+                "revoke": "Ritira la conferma",
+                "revokeQuestion": "L’ordine torna a essere un ingresso ordine. La conferma precedente resta visibile nella cronologia.",
+                "more": "Altre azioni",
+                "playCall": "Ascolta la chiamata",
+                "openChat": "Apri chat",
+                "recordingMissing": "Nessuna registrazione trovata per questa chiamata",
+                "dialogTitle": "Conferma ordine",
+                "howQuestion": "Come ha accettato il cliente?",
+                "when": "Momento dell’accettazione",
+                "note": "Nota (facoltativa)",
+                "notePlaceholder": "ad es. cosa ha detto il cliente",
+                "amountHint": "Viene confermato l’importo attuale di {amount}. Se in seguito aumenta, l’ordine lo segnalerà.",
+                "cancel": "Annulla",
+                "savedConfirmed": "Ordine confermato",
+                "savedDismissed": "Proposta scartata",
+                "savedAcknowledged": "Preso atto del rifiuto",
+                "savedRevoked": "Conferma ritirata",
+                "channel": {
+                    "phone": "Telefono",
+                    "email": "E-mail",
+                    "whatsapp": "WhatsApp",
+                    "visit": "In sede",
+                    "signature": "Firma",
+                    "portal": "Portale clienti",
+                    "other": "Altro"
+                },
+                "saveError": "Non ha funzionato — probabilmente l’ordine è stato modificato nel frattempo. La vista è stata ricaricata, verificare di nuovo."
             }
         },
         "workflow": {
@@ -444,7 +491,11 @@
             "quotation": "Preventivo",
             "delivery_order": "Bolla di consegna",
             "credit_note": "Nota di credito",
-            "invoice_storno": "Fattura di storno"
+            "invoice_storno": "Fattura di storno",
+            "purchase_order": "Ordine fornitore",
+            "purchase_invoice": "Fattura fornitore",
+            "request_quotation": "Richiesta di offerta",
+            "purchase_delivery_order": "Bolla fornitore"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."
+        },
+        "history": {
+            "title": "Cronologia",
+            "reload": "Aggiorna",
+            "close": "Chiudi",
+            "lastChange": "ultima modifica {time} da {name}",
+            "changedBy": "{name} ha appena modificato questo documento",
+            "createdInfo": "Creato il {time}",
+            "filter": {
+                "all": "Tutti",
+                "head": "Intestazione",
+                "items": "Righe",
+                "events": "Stato e invio"
+            },
+            "filterEmployee": "Chi",
+            "search": "Cerca",
+            "timeTravel": "Viaggio nel tempo",
+            "today": "Oggi",
+            "backToToday": "Torna a oggi",
+            "asOf": "Stato prima della modifica del {time} – allora → oggi",
+            "stepsBack": "{n} modifica indietro | {n} modifiche indietro",
+            "noDiff": "Intestazione e righe erano uguali a oggi.",
+            "travelItem": {
+                "added": "aggiunto da allora",
+                "removed": "rimosso da allora",
+                "changed": "modificato da allora"
+            },
+            "noMatch": "Nessuna voce per questo filtro.",
+            "empty": "Nessuna modifica ancora registrata. La cronologia inizia con la prossima modifica.",
+            "item": {
+                "added": "aggiunto",
+                "removed": "rimosso",
+                "changed": "modificato"
+            },
+            "milestone": {
+                "created": "Documento creato",
+                "deleted": "Documento eliminato",
+                "confirmed": "Ordine confermato",
+                "unconfirmed": "Conferma ritirata",
+                "closed": "Chiuso",
+                "reopened": "Riaperto",
+                "paid": "Pagamento {amount}",
+                "storno": "Stornato",
+                "printed": "Stampato"
+            },
+            "summary": {
+                "itemsAdded": "{n} riga aggiunta | {n} righe aggiunte",
+                "itemsChanged": "{n} riga modificata | {n} righe modificate",
+                "itemsRemoved": "{n} riga rimossa | {n} righe rimosse",
+                "amount": "Importo {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Salvato",
+                "printed": "Stampato",
+                "posted": "Registrato",
+                "printedPosted": "Stampato e registrato",
+                "screened": "Visualizzato a schermo",
+                "mailed": "Inviato via e-mail",
+                "deleted": "Eliminato",
+                "storno": "Stornato",
+                "paymentPosted": "Pagamento registrato",
+                "previewed": "Anteprima visualizzata",
+                "canceled": "Interrotto"
+            },
+            "link": {
+                "to": "{type} {number} creato da questo",
+                "from": "Creato da {type} {number}"
+            },
+            "followup": {
+                "created": "Promemoria creato: {subject} (scadenza {date})",
+                "done": "Promemoria completato: {subject}"
+            },
+            "sent": {
+                "email": "Via e-mail a {to}",
+                "whatsapp": "Via WhatsApp a {to}",
+                "post": "Per posta a {to}",
+                "dhl": "Spedizione DHL {to}",
+                "other": "Inviato a {to}"
+            },
+            "fields": {
+                "parts_id": "Articolo",
+                "paid": "Pagato",
+                "datepaid": "Pagato il",
+                "record_type": "Tipo documento",
+                "order_type": "Tipo documento",
+                "quotation": "Preventivo",
+                "storno": "Stornato",
+                "storno_id": "Storno di",
+                "dunning_config_id": "Livello di sollecito",
+                "cp_id": "Referente",
+                "globalproject_id": "Progetto",
+                "project_id": "Progetto",
+                "optional": "Riga opzionale",
+                "subtotal": "Subtotale",
+                "serialnumber": "Numero di serie",
+                "pricegroup_id": "Gruppo prezzi",
+                "price_factor_id": "Fattore prezzo",
+                "orderer_id": "Ordinante",
+                "delivered": "Consegnato",
+                "proforma": "Proforma",
+                "order_probability": "Probabilità d'ordine",
+                "expected_billing_date": "Data di fatturazione prevista",
+                "tax_point": "Data della prestazione",
+                "vendor_confirmation_number": "Numero di conferma del fornitore",
+                "oreqnumber": "Numero richiesta",
+                "invnumber_for_credit_note": "Numero fattura per nota di credito",
+                "is_sepa_blocked": "SEPA bloccato",
+                "order_status_id": "Stato ordine",
+                "no_whatsapp": "Nessun WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Ordine (confermato)",
+                "sales_order_intake": "Ordine ricevuto (non confermato)",
+                "sales_quotation": "Preventivo",
+                "request_quotation": "Richiesta di offerta",
+                "purchase_quotation_intake": "Offerta ricevuta",
+                "purchase_order": "Ordine d'acquisto",
+                "purchase_order_confirmation": "Conferma d'ordine del fornitore",
+                "sales_delivery_order": "Documento di trasporto",
+                "purchase_delivery_order": "Documento di trasporto d'acquisto",
+                "supplier_delivery_order": "Documento di trasporto conto lavoro",
+                "rma_delivery_order": "Documento di trasporto di reso"
+            },
+            "yes": "Sì",
+            "no": "No",
+            "automatic": "Automatico",
+            "external": "kivitendo / esterno",
+            "unknownEmployee": "Sconosciuto",
+            "source": {
+                "external": "fuori da OSERP",
+                "recurring": "fattura ricorrente",
+                "ebay": "importazione eBay",
+                "portal": "Negozio / portale clienti"
+            }
         }
     }
 }

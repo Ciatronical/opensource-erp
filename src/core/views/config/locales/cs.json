@@ -696,9 +696,6 @@
         "aagOnlinePassword_help": "Passwort für AAG Online",
         "aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "Adresa mega macs (URL)",
-        "gutmannMegamacsUrl_help": "Adresa nebo šablona URL zařízení mega macs X. Zástupné znaky {hsn} {tsn} {vin} se nahradí, např. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Bez zástupných znaků se hsn/tsn/vin připojí (SPA často ignoruje). Tip: vyberte vozidlo na zařízení a zkopírujte adresní řádek.",
         "hgsData": "HGS Data",
         "hgsDataUser": "Uživatel HGS Data",
         "hgsDataUser_help": "Uživatelské jméno pro HGS Data (vyhledávání vozidla podle HSN/TSN)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Odesílat částku automaticky",
         "sumupAutoSend_help": "Je-li faktura vytvořena z nabídky nebo zakázky, otevřená částka se ihned odešle na terminál (výchozí: zapnuto). Při otevření existujících nebo uhrazených faktur se nikdy neodesílá automaticky",
         "shopWebsite": "Web zákaznického portálu",
-        "shopWebsite_help": "Web, na kterém HugoShop běží – přiřazený v prodejních kanálech, nastavený v Systém → Weby."
+        "shopWebsite_help": "Web, na kterém HugoShop běží – přiřazený v prodejních kanálech, nastavený v Systém → Weby.",
+        "orderConfirmation": "Potvrzení objednávky",
+        "orderConfirmAi": "Rozpoznávat souhlasy pomocí AI",
+        "orderConfirmAi_help": "Hovory (nahrávka), zprávy WhatsApp (včetně hlasových zpráv a tlačítek odpovědi) a e-maily od zákazníků s otevřeným příjmem objednávky (neuzavřeným, zatím nevyúčtovaným) se přepisují a AI u nich kontroluje, zda obsahují souhlas nebo odmítnutí. „Návrh“: objednávka zobrazí rozpoznaný souhlas s citací, potvrzení proběhne kliknutím. „Automaticky“: jednoznačné souhlasy přes WhatsApp nebo telefon (jedna otevřená objednávka, žádná podmínka, vysoká jistota) se potvrdí ihned; e-maily zůstávají vždy návrhem, protože jejich odesílatele lze zfalšovat. Předpoklad: API klíč Anthropic, služba Whisper a služba oserp-auftragsbestaetigung, pro e-maily navíc služba oserp-email-eingang s nastavenou poštovní schránkou. Hovory se smí nahrávat jen se souhlasem volajícího.",
+        "orderConfirmAiOff": "Vypnuto",
+        "orderConfirmAiSuggest": "Návrh — potvrzení kliknutím",
+        "orderConfirmAiAuto": "Automaticky při jednoznačném souhlasu",
+        "orderConfirmAiDays": "Příjmy objednávek z posledních dnů",
+        "orderConfirmAiDays_help": "Pro souhlas přicházejí v úvahu jen příjmy objednávek, které nejsou starší než zadaný počet dnů (výchozí 60). Starší nepotvrzené objednávky se nekontrolují."
     },
     "add": "Přidat",
     "add_fields": {

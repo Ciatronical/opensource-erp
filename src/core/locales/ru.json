@@ -82,7 +82,8 @@
             "businessCard": "Сканирование визитки",
             "phoneSearch": "Поиск по телефону",
             "callTranscript": "Разбор звонка",
-            "banking": "Прогноз ликвидности"
+            "banking": "Прогноз ликвидности",
+            "orderConfirm": "Подтверждение заказа"
         }
     },
     "passwordField": {

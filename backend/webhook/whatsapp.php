@@ -270,6 +270,15 @@ function _processIncomingMessage(PDO $pdo, string $dbname, array $msg, array $co
         case 'sticker':
             $text = '[Sticker]';
             break;
+        // Antwort auf einen Knopf einer Vorlage bzw. einer interaktiven Nachricht:
+        // die Beschriftung des gedrückten Knopfs ist die Antwort des Kunden
+        case 'button':
+            $text = $msg['button']['text'] ?? $msg['button']['payload'] ?? '[button]';
+            break;
+        case 'interactive':
+            $reply = $msg['interactive']['button_reply'] ?? $msg['interactive']['list_reply'] ?? [];
+            $text = $reply['title'] ?? '[interactive]';
+            break;
         default:
             $text = "[{$type}]";
     }

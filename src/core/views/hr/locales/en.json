@@ -3,7 +3,8 @@
         "title": "HR",
         "hub": "HR & Payroll",
         "payroll": "Payroll",
-        "vacation": "Leave Planning"
+        "vacation": "Leave Planning",
+        "performance": "Performance"
     },
     "HrView": {
         "title": "HR & Payroll",
@@ -32,7 +33,8 @@
             "payroll": "Payroll",
             "vacation": "Leave Planning",
             "settings": "Employee Data",
-            "tax": "Tax Table"
+            "tax": "Tax Table",
+            "performance": "Performance"
         },
         "dashboard": {
             "activeEmployees": "Active Employees",
@@ -166,6 +168,180 @@
             "noEmployees": "No active employees found.",
             "expandAll": "Expand All",
             "collapseAll": "Collapse All"
+        },
+        "performance": {
+            "period": {
+                "week": "Week",
+                "month": "Month",
+                "quarter": "Quarter",
+                "year": "Year"
+            },
+            "previous": "Previous",
+            "next": "Next",
+            "today": "Today",
+            "quarterLabel": "Q{q} {year}",
+            "comparedTo": "Compared with {range}",
+            "weekShort": "Wk {n}",
+            "bucket": {
+                "day": "day",
+                "week": "week",
+                "month": "month"
+            },
+            "mechanics": "Mechanics",
+            "all": "All",
+            "activeCount": "{n} active in period",
+            "noActivity": "No completed tasks in period",
+            "noMechanics": "No work instructions were completed in the selected period. Mechanics come from the employee group of the mechanic mode (company configuration → LxCars).",
+            "showInactive": "Show {n} without completions",
+            "hideInactive": "Hide those without completions",
+            "noData": "No data in period",
+            "noComparison": "no comparison",
+            "points": "{v} points",
+            "rankOf": "Rank {rank} of {n} by actual hours",
+            "activeDays": "{n} working days with completions",
+            "vacationDays": "{n} days leave",
+            "workingOn": "Working on: {task} · order {order} · since {since}",
+            "others": "Others ({n})",
+            "insights": "Insights",
+            "kpi": {
+                "hours": "Actual hours",
+                "efficiency": "Efficiency",
+                "utilization": "Utilization",
+                "done": "Completed tasks",
+                "laborRevenue": "Labor revenue (net)",
+                "ofAvailable": "of {h} available",
+                "inOrders": "in {n} orders",
+                "perHour": "{v} per actual hour",
+                "team": "Team {v}"
+            },
+            "legend": {
+                "actual": "Actual",
+                "planned": "Target"
+            },
+            "trend": {
+                "hoursTitle": "Hours per {unit}",
+                "efficiencyTitle": "Efficiency per {unit}",
+                "efficiencySubtitle": "Target ÷ actual · above 100 % = faster than target",
+                "teamTitle": "Team hours per {unit}",
+                "hoursSubtitle": "Click a bar to show the orders"
+            },
+            "benchmark": {
+                "title": "Strengths and weaknesses",
+                "subtitle": "Time per task compared with the team average",
+                "legend": "Deviation from team",
+                "empty": "No task yet that other mechanics also performed in this period",
+                "tooltipFaster": "{v} % faster than the team ({own} instead of {team}, {n}×)",
+                "tooltipSlower": "{v} % slower than the team ({own} instead of {team}, {n}×)"
+            },
+            "heatmap": {
+                "title": "Activity profile",
+                "subtitle": "Recorded work time by weekday and start hour",
+                "tooltip": "{day} from {hour}:00: {n} work starts, {min} recorded"
+            },
+            "tasks": {
+                "title": "Tasks in period",
+                "task": "Task",
+                "count": "Count",
+                "total": "Total",
+                "avgActual": "Avg actual",
+                "avgPlanned": "Avg target",
+                "teamAvg": "Avg team",
+                "vsTeam": "vs team",
+                "showAll": "Show all {n} tasks",
+                "showLess": "Show less",
+                "subtitle": "Click opens the order – with several orders the list first"
+            },
+            "matrix": {
+                "title": "Performance matrix",
+                "subtitle": "Utilization against efficiency, bubble size = actual hours. Click opens the mechanic.",
+                "q1": "fast & busy",
+                "q2": "fast, capacity left",
+                "q3": "slow, low utilization",
+                "q4": "busy, over target"
+            },
+            "compare": {
+                "title": "Hours compared",
+                "subtitle": "Actual against target per mechanic"
+            },
+            "ranking": {
+                "title": "Ranking",
+                "mechanic": "Mechanic",
+                "trend": "Trend",
+                "planned": "Target",
+                "orders": "Orders",
+                "done": "Done",
+                "revenue": "Labor",
+                "checks": "Check"
+            },
+            "spread": {
+                "title": "Largest differences in the team",
+                "subtitle": "Tasks where mechanics differ the most – a hint for training or target times",
+                "task": "Task",
+                "count": "Count",
+                "teamAvg": "Avg team",
+                "fastest": "Fastest",
+                "slowest": "Slowest",
+                "factor": "Factor"
+            },
+            "insight": {
+                "fasterThanTeam": "Efficiency {v} points above the team average.",
+                "slowerThanTeam": "Efficiency {v} points below the team average.",
+                "strength": "Strength: “{task}” {v} % faster than the team.",
+                "weakness": "Potential: “{task}” {v} % slower than the team ({min} instead of {team}).",
+                "moreHours": "{v} % more actual hours than in the previous period.",
+                "fewerHours": "{v} % fewer actual hours than in the previous period.",
+                "lowUtilization": "Utilization only {v} % – missing time records or orders?",
+                "focus": "{v} % of the time goes to “{task}”.",
+                "teamBest": "Highest efficiency: {name} with {v} %.",
+                "teamRevenue": "{name} generates {v} % of the labor revenue.",
+                "teamMoreHours": "Team has {v} % more actual hours than in the previous period.",
+                "teamFewerHours": "Team has {v} % fewer actual hours than in the previous period.",
+                "teamSpread": "“{task}”: {fast} is {factor} faster than {slow} – share experience or review the target time.",
+                "running": "{n} mechanics are currently working with a running timer.",
+                "timerForgotten": "{h} ({v} % of actual time) probably come from forgotten timers – correct the times in the order.",
+                "teamTimerForgotten": "{h} ({v} % of team hours) probably come from forgotten timers – the figures are inflated."
+            },
+            "checks": {
+                "title": "Plausibility",
+                "subtitle": "Days above {h} working time and unusual single times",
+                "none": "No anomalies in this period – all recorded times look plausible.",
+                "filterAll": "All ({n})",
+                "filter": {
+                    "day": "Days above working time ({n})",
+                    "timer": "Timer forgotten? ({n})",
+                    "high": "Unusually high ({n})",
+                    "low": "Unusually low ({n})"
+                },
+                "day": "Day",
+                "order": "Order",
+                "what": "Instruction",
+                "recorded": "Recorded",
+                "expected": "Reference",
+                "hint": "Note",
+                "dayDetail": "{n} instructions in {orders} orders",
+                "workTime": "Working time {v}",
+                "planned": "Target {v}",
+                "usual": "usual {v}",
+                "kind": {
+                    "day": "Above working time",
+                    "timer": "Timer forgotten?",
+                    "high": "Unusually high",
+                    "low": "Unusually low"
+                },
+                "showAll": "Show all {n} anomalies"
+            },
+            "orders": {
+                "title": "Orders in this period",
+                "subtitle": "Click opens the order",
+                "onlyBucket": "Only {v}",
+                "date": "Completed",
+                "order": "Order",
+                "vehicle": "Vehicle",
+                "work": "Work",
+                "flagged": "{n} unusual time(s) – see plausibility",
+                "clickHint": "Click to show the orders",
+                "showAll": "Show all {n} orders"
+            }
         }
     }
 }

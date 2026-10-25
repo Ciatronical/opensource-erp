@@ -694,9 +694,6 @@
         "aagOnlinePassword_help": "AAG Online 的密码",
         "aagOnlinePassword2": "AAG Online 密码（确认）",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "mega macs 地址 (URL)",
-        "gutmannMegamacsUrl_help": "mega macs X 的地址或 URL 模板。占位符 {hsn} {tsn} {vin} 会被替换，例如 http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}。无占位符时附加 hsn/tsn/vin（SPA 界面常忽略）。提示：在设备上选择车辆并复制地址栏。",
         "hgsData": "HGS Data",
         "hgsDataUser": "HGS Data 用户",
         "hgsDataUser_help": "HGS Data 用户名（按 HSN/TSN 搜索车辆）",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "自动发送金额",
         "sumupAutoSend_help": "由报价单或订单生成发票时，未付金额会立即发送至终端（默认：开启）。打开已有或已付清的发票时绝不会自动发送",
         "shopWebsite": "客户门户网站",
-        "shopWebsite_help": "运行 HugoShop 的网站——在销售渠道中分配，在系统 → 网站中设置。"
+        "shopWebsite_help": "运行 HugoShop 的网站——在销售渠道中分配，在系统 → 网站中设置。",
+        "orderConfirmation": "订单确认",
+        "orderConfirmAi": "通过 AI 识别客户同意",
+        "orderConfirmAi_help": "对于有未确认订单接收（未关闭、尚未开票）的客户，其通话（录音）、WhatsApp 消息（包括语音消息和回复按钮）和电子邮件会被转写，并由 AI 检查其中是否表示同意或拒绝。“建议”：订单显示识别到的同意及其引文，点击即可确认。“自动”：通过 WhatsApp 或电话表达的明确同意（仅有一个未确认订单、无附加条件、高置信度）会立即确认；电子邮件始终仅作为建议，因为其发件人可能被伪造。前提条件：Anthropic API 密钥、Whisper 服务和 oserp-auftragsbestaetigung 服务，处理电子邮件还需要配置了邮箱的 oserp-email-eingang 服务。仅可在来电者同意的情况下对通话录音。",
+        "orderConfirmAiOff": "关闭",
+        "orderConfirmAiSuggest": "建议 — 点击确认",
+        "orderConfirmAiAuto": "明确同意时自动确认",
+        "orderConfirmAiDays": "最近几天内的订单接收",
+        "orderConfirmAiDays_help": "仅考虑不超过此天数的订单接收记录（默认 60）。更早的未确认订单不会被检查。"
     },
     "add": "添加",
     "add_fields": {

@@ -47,6 +47,7 @@
         "hr": "/personal",
         "hrPayroll": "/personal/lohn",
         "hrVacation": "/personal/urlaub",
+        "hrPerformance": "/personal/leistung",
         "setup": "/setup",
         "login": "/login",
         "emails": "/emails",

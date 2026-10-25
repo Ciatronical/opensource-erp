@@ -82,7 +82,8 @@
             "businessCard": "Lecture de carte de visite",
             "phoneSearch": "Recherche par téléphone",
             "callTranscript": "Analyse d'appel",
-            "banking": "Prévision de trésorerie"
+            "banking": "Prévision de trésorerie",
+            "orderConfirm": "Confirmation de commande"
         }
     },
     "passwordField": {

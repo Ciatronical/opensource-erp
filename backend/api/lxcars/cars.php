@@ -1170,8 +1170,7 @@ function syncOrderToCalendar($db, $oeId) {
         "SELECT o.id, o.customer_id,
                 COALESCE(c.name, '') AS customer_name,
                 e.bringetermin, e.fertigstellung,
-                (SELECT il.description FROM oe_instructions_lxcars il
-                 WHERE il.oe_id = o.id ORDER BY il.sort_order, il.id LIMIT 1) AS first_instruction
+                order_calendar_description(o.id) AS first_instruction
          FROM oe o
          LEFT JOIN customer c ON c.id = o.customer_id
          LEFT JOIN oe_ext e ON e.oe_id = o.id

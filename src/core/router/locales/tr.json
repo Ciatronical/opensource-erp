@@ -45,6 +45,7 @@
         "hr": "/personel",
         "hrPayroll": "/personel/bordro",
         "hrVacation": "/personel/izin",
+        "hrPerformance": "/personel/performans",
         "newDeliveryOrder": "/irsaliye/yeni",
         "setup": "/kurulum",
         "login": "/giris",

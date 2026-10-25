@@ -159,6 +159,16 @@
                         <v-btn value="none" size="small" color="warning" :title="t('DocumentList.invoice.noneHint')">{{ t('DocumentList.invoice.none') }}</v-btn>
                         <v-btn value="invoiced" size="small" color="success">{{ t('DocumentList.invoice.done') }}</v-btn>
                     </v-btn-toggle>
+                    <!-- Bestätigung: Auftragseingang, mit Vorschlag der KI, bestätigt -->
+                    <span class="text-body-2 text-medium-emphasis ms-md-4">
+                        <v-icon size="18" class="me-1">mdi-handshake-outline</v-icon>{{ t('DocumentList.confirmation.filterLabel') }}
+                    </span>
+                    <v-btn-toggle v-model="confirmed" mandatory density="compact" variant="outlined" rounded="lg" divided>
+                        <v-btn value="all" size="small">{{ t('DocumentList.statusAll') }}</v-btn>
+                        <v-btn value="open" size="small" color="warning">{{ t('DocumentList.confirmation.open') }}</v-btn>
+                        <v-btn value="suggested" size="small" color="info" :title="t('DocumentList.confirmation.suggestedHint')">{{ t('DocumentList.confirmation.suggested') }}</v-btn>
+                        <v-btn value="confirmed" size="small" color="success">{{ t('DocumentList.confirmation.confirmed') }}</v-btn>
+                    </v-btn-toggle>
                 </v-col>
             </template>
             <!-- Zwei Schalter, ein Zustand (partsScope): es ist immer nur
@@ -272,6 +282,20 @@
                 <span class="summary-value" :class="totals.uninvoiced > 0 ? 'text-warning' : ''">
                     {{ totals.uninvoiced }} · {{ formatCurrency(totals.uninvoiced_amount) }}
                 </span>
+            </div>
+            <!-- Zusagen/Absagen, die die KI erkannt hat und die noch geprüft werden wollen -->
+            <div
+                v-if="isOrder && totals.suggested > 0"
+                class="summary-item summary-item--action"
+                :class="{ 'summary-item--active': confirmed === 'suggested' }"
+                role="button"
+                tabindex="0"
+                :title="t('DocumentList.confirmation.suggestedHint')"
+                @click="confirmed = confirmed === 'suggested' ? 'all' : 'suggested'"
+                @keydown.enter.prevent="confirmed = confirmed === 'suggested' ? 'all' : 'suggested'"
+            >
+                <span class="summary-label">{{ t('DocumentList.confirmation.suggestedTotal') }}</span>
+                <span class="summary-value text-info">{{ totals.suggested }}</span>
             </div>
         </v-sheet>
 
@@ -405,6 +429,32 @@
                     <v-icon size="14" class="me-1">mdi-file-document-outline</v-icon>{{ t('DocumentList.invoice.noneShort') }}
                 </span>
             </template>
+            <!-- Aufträge: bestätigt (Kanal, Datum), Auftragseingang oder Vorschlag der KI -->
+            <template #item.confirmed="{ item }">
+                <v-chip
+                    v-if="item.confirmed === true"
+                    size="x-small"
+                    variant="tonal"
+                    color="success"
+                    :prepend-icon="confirmationChannelIcon(item.confirmation_channel || 'other')"
+                    :title="item.confirmation_channel ? t('DocumentList.confirmation.via', { channel: t('FakturaView.faktura.confirmation.channel.' + item.confirmation_channel) }) : t('DocumentList.confirmation.confirmed')"
+                >
+                    {{ item.confirmation_at ? formatDate(item.confirmation_at, locale) : t('DocumentList.confirmation.confirmed') }}
+                </v-chip>
+                <v-chip
+                    v-else-if="item.confirmed === false && item.confirmation_suggestions > 0"
+                    size="x-small"
+                    variant="tonal"
+                    color="info"
+                    prepend-icon="mdi-message-question-outline"
+                    :title="t('DocumentList.confirmation.suggestedHint')"
+                >
+                    {{ t('DocumentList.confirmation.suggestedShort') }}
+                </v-chip>
+                <span v-else-if="item.confirmed === false" class="text-caption text-medium-emphasis text-no-wrap">
+                    <v-icon size="14" class="me-1">mdi-clock-outline</v-icon>{{ t('DocumentList.confirmation.openShort') }}
+                </span>
+            </template>
             <template #item.closed="{ item }">
                 <span class="d-inline-flex align-center ga-1">
                     <v-icon
@@ -501,6 +551,7 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 import { downloadBase64File, openBase64Pdf } from '@/core/utils/download.js'
 import * as alerts from '@/core/utils/alerts.js'
 import * as toasts from '@/core/utils/toasts.js'
+import { confirmationChannelIcon } from '@/core/utils/orderConfirmation.js'
 
 // Alles, was sich je Listentyp unterscheidet, steht an genau einer Stelle.
 // create: Schaltfläche zum Anlegen — nur wo es eine eigene Neuanlage gibt.
@@ -547,7 +598,7 @@ export default {
         const isOrder = computed(() => listType.value === 'order')
 
         const rows = ref([])
-        const totals = ref({ count: 0, amount: 0, netamount: 0, tax: 0, open: 0, uninvoiced: 0, uninvoiced_amount: 0 })
+        const totals = ref({ count: 0, amount: 0, netamount: 0, tax: 0, open: 0, uninvoiced: 0, uninvoiced_amount: 0, unconfirmed: 0, suggested: 0 })
         const selected = ref([])
         const loading = ref(false)
         const error = ref('')
@@ -558,6 +609,8 @@ export default {
         const status = ref('all')
         // Aufträge: 'all', 'none' (ohne Rechnung), 'invoiced' (mit Rechnung) — filtert auf dem Server
         const invoiced = ref('all')
+        // Aufträge: 'all', 'open' (Auftragseingang), 'suggested' (Vorschlag der KI), 'confirmed' — auch per ?confirmed=…
+        const confirmed = ref(['open', 'suggested', 'confirmed'].includes(route.query.confirmed) ? route.query.confirmed : 'all')
         // Welche Artikel: 'active' (Vorgabe), 'obsolete' oder 'all'
         const partsScope = ref('active')
         const obsoleteOnly = computed({
@@ -704,7 +757,7 @@ export default {
         const LIMIT = 500
         const atLimit = computed(() => rows.value.length >= LIMIT)
         const hasFilter = computed(() =>
-            !!search.value || !!from.value || !!to.value || status.value !== 'all' || invoiced.value !== 'all' || partsScope.value !== 'active' || !!shopFilter.value
+            !!search.value || !!from.value || !!to.value || status.value !== 'all' || invoiced.value !== 'all' || confirmed.value !== 'all' || partsScope.value !== 'active' || !!shopFilter.value
             || weightMissing.value || shippingUnfit.value
         )
 
@@ -734,7 +787,12 @@ export default {
                 )
             }
             if (hasPayments.value) cols.push({ title: t('DocumentList.columns.open'), key: 'open_amount', align: 'end' })
-            if (isOrder.value) cols.push({ title: t('DocumentList.columns.invoice'), key: 'invoice_number', align: 'center' })
+            if (isOrder.value) {
+                cols.push(
+                    { title: t('DocumentList.columns.confirmation'), key: 'confirmed', align: 'center' },
+                    { title: t('DocumentList.columns.invoice'), key: 'invoice_number', align: 'center' },
+                )
+            }
             cols.push(
                 { title: t('DocumentList.columns.status'), key: 'closed', align: 'center' },
                 { title: '', key: 'actions', sortable: false, align: 'end', width: 120 },
@@ -761,7 +819,8 @@ export default {
         // Filter der Belegliste — Laden und Export nutzen exakt dieselben Werte
         function listParams() {
             return { documentType: listType.value, q: search.value || '', from: from.value || '', to: to.value || '', status: status.value === 'all' ? '' : status.value,
-                     invoiced: isOrder.value && invoiced.value !== 'all' ? invoiced.value : '' }
+                     invoiced: isOrder.value && invoiced.value !== 'all' ? invoiced.value : '',
+                     confirmed: isOrder.value && confirmed.value !== 'all' ? confirmed.value : '' }
         }
 
         async function load() {
@@ -775,10 +834,10 @@ export default {
                 const res = await axios.post('/api/faktura/', payload)
                 if (res.data?.success) {
                     rows.value = (isParts.value ? res.data.payload.parts : res.data.payload.documents) || []
-                    totals.value = res.data.payload.totals || { count: rows.value.length, amount: 0, netamount: 0, tax: 0, open: 0, uninvoiced: 0, uninvoiced_amount: 0 }
+                    totals.value = res.data.payload.totals || { count: rows.value.length, amount: 0, netamount: 0, tax: 0, open: 0, uninvoiced: 0, uninvoiced_amount: 0, unconfirmed: 0, suggested: 0 }
                 } else {
                     rows.value = []
-                    totals.value = { count: 0, amount: 0, netamount: 0, tax: 0, open: 0, uninvoiced: 0, uninvoiced_amount: 0 }
+                    totals.value = { count: 0, amount: 0, netamount: 0, tax: 0, open: 0, uninvoiced: 0, uninvoiced_amount: 0, unconfirmed: 0, suggested: 0 }
                     error.value = res.data?.payload || t('DocumentList.loadError')
                 }
             } catch {
@@ -794,7 +853,7 @@ export default {
 
         // Tippen laedt nach kurzer Pause nach — kein Suchknopf noetig
         let debounce = null
-        watch([search, from, to, status, invoiced, partsScope, shopFilter, channelId, weightMissing, shippingUnfit], () => {
+        watch([search, from, to, status, invoiced, confirmed, partsScope, shopFilter, channelId, weightMissing, shippingUnfit], () => {
             clearTimeout(debounce)
             debounce = setTimeout(load, 350)
         })
@@ -811,6 +870,7 @@ export default {
             to.value = ''
             status.value = 'all'
             invoiced.value = 'all'
+            confirmed.value = 'all'
             partsScope.value = 'active'
             shopFilterState.value = ''
             channelIdState.value = 0
@@ -873,6 +933,9 @@ export default {
                 invoice:       t('DocumentList.columns.invoice'),
                 noInvoice:     t('DocumentList.invoice.noneShort'),
                 invoiceStorno: t('DocumentList.invoice.storno'),
+                confirmation:  t('DocumentList.columns.confirmation'),
+                confirmed:     t('DocumentList.confirmation.yes'),
+                unconfirmed:   t('DocumentList.confirmation.no'),
             }
         }
 
@@ -909,7 +972,7 @@ export default {
             if (withAmounts) { col(l.net, 14); col(l.tax, 14); col(l.gross, 14) }
             if (withPayments) { col(l.paid, 14); col(l.open, 14) }
             col(l.status, 12)
-            if (isOrder.value) col(l.invoice, 14)
+            if (isOrder.value) { col(l.confirmation, 16); col(l.invoice, 14) }
 
             const toDate = v => (v ? new Date(v + 'T00:00:00') : null)
             const num = v => (v === null || v === undefined || v === '' ? null : Number(v))
@@ -920,7 +983,7 @@ export default {
                 if (withAmounts) row.push(num(r.netamount), num(r.tax), num(r.amount))
                 if (withPayments) row.push(num(r.paid), num(r.open_amount))
                 row.push(r.status_text)
-                if (isOrder.value) row.push(r.invoice_text || '')
+                if (isOrder.value) row.push(r.confirmation_text || '', r.invoice_text || '')
                 return row
             })
             if (withAmounts) {
@@ -930,7 +993,7 @@ export default {
                 row.push(null, null, null, Number(tot.netamount), Number(tot.tax), Number(tot.amount))
                 if (withPayments) row.push(null, Number(tot.open))
                 row.push(null)
-                if (isOrder.value) row.push(null)
+                if (isOrder.value) row.push(null, null)
                 data.push(row)
             }
 
@@ -1167,7 +1230,7 @@ export default {
         return {
             hasSentChannel, LIMIT,
             t, te, locale, config, isParts, isOrder, hasAmounts, hasPayments, rows, totals, selected, headers, loading, error, busy,
-            search, from, to, status, invoiced, openInvoice, periodPreset, periodItems,
+            search, from, to, status, invoiced, confirmed, confirmationChannelIcon, openInvoice, periodPreset, periodItems,
             obsoleteOnly, showAll, shopOnly, notInShop, weightMissing, shippingUnfit, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit,
             printerList, selectedPrinter, selectPrinter, printerSubtitle,
             formatDate, formatCurrency, formatQty, reset, openRow,

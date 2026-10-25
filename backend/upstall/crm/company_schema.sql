@@ -380,7 +380,7 @@ $BODY$;
 -- Schreibt den Anruf-Status (Asterisk DIALSTATUS) in die crmti-Zeile.
 -- Wird aus extensions.ael NACH dem Dial() via ODBC_CALLSTATUS aufgerufen, da der
 -- DIALSTATUS erst nach dem Wählversuch feststeht (CallIn/CallOut laufen davor).
--- Status != 'ANSWERED' bedeutet: nicht angenommen (eingehend verpasst bzw.
+-- Status ANSWER (DIALSTATUS) bedeutet angenommen, alles andere: nicht angenommen (eingehend verpasst bzw.
 -- ausgehend nicht erreicht) — das Frontend färbt solche Anrufe rot.
 -- Das erneute pg_notify aktualisiert Anrufliste/Info-Bar in Echtzeit.
 CREATE OR REPLACE FUNCTION callstatus(
@@ -520,6 +520,7 @@ COMMENT ON COLUMN calendar_events.mtime IS 'Zeitstempel der letzten Änderung';
 CREATE INDEX IF NOT EXISTS idx_calendar_events_uid ON calendar_events(uid);
 CREATE INDEX IF NOT EXISTS idx_calendar_events_dtstart ON calendar_events(dtstart);
 CREATE INDEX IF NOT EXISTS idx_calendar_events_category ON calendar_events(category_id);
+CREATE INDEX IF NOT EXISTS idx_calendar_events_order_id ON calendar_events(order_id) WHERE order_id IS NOT NULL;
 
 --- ============================================================================
 --- ZIPCODE TO LOCATION
@@ -981,6 +982,171 @@ DO $$ DECLARE t TEXT; BEGIN
         END IF;
     END LOOP;
 END $$;
+
+-- ═══════════════════════════════════════════════════════════════
+-- Belegchronik: wer hat wann was an einem Faktura-Beleg geändert
+--
+-- Dasselbe Muster wie die Zeitreise der Kundenmaske: ein Trigger auf den
+-- kivitendo-Beleg- und Positionstabellen schreibt je Änderung die geänderten
+-- Spalten als Diff ({spalte: {old, new}}) mit Mitarbeiter und Zeit. Die
+-- kivitendo-Tabellen bleiben unverändert. Die LxCars-Erweiterung hängt den
+-- Trigger zusätzlich an oe_ext/ar_ext (Fahrzeugdaten je Auftrag/Rechnung).
+--
+-- Mitarbeiter und Quelle setzt jede API-Anfrage zentral aus dem Login
+-- (DbhCompany::begin → set_config('oserp.employee_id' / 'oserp.source')),
+-- Cron-Skripte über DbhCompany::setActor (Quelle 'cron:…'). Ohne Quelle kam
+-- die Änderung nicht über OSERP — kivitendo, psql oder ein Reparatur-Skript.
+--
+-- Bewusst nicht protokolliert: technische und abgeleitete Spalten (Zeiten,
+-- Margen, Basismengen, Kopien von Belegnummer/-datum in den Positionen,
+-- Konten der Buchung). Unveränderte Speicherungen erzeugen keine Zeile.
+-- ═══════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS record_history_oserp (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    record_table TEXT NOT NULL,        -- oe, ar, ap, delivery_orders
+    record_id INTEGER NOT NULL,        -- ID des Belegs
+    table_name TEXT NOT NULL,          -- Quelle: Belegkopf, orderitems, invoice, delivery_order_items, oe_ext, ar_ext
+    row_id INTEGER,                    -- ID der Position
+    row_label TEXT,                    -- Positionstext zur Anzeige (auch nach dem Löschen)
+    action TEXT NOT NULL,              -- INSERT, UPDATE, DELETE
+    changes JSONB,                     -- {spalte: {"old": …, "new": …}}
+    employee_id INTEGER,
+    source TEXT,                       -- api, portal, cron:recurring, cron:ebay …; leer = außerhalb von OSERP
+    itime TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS record_history_oserp_record_idx ON record_history_oserp (record_table, record_id, itime DESC);
+
+CREATE OR REPLACE FUNCTION record_history_log() RETURNS trigger AS $$
+DECLARE
+    v_old       JSONB := CASE WHEN TG_OP = 'INSERT' THEN '{}'::jsonb ELSE to_jsonb(OLD) END;
+    v_new       JSONB := CASE WHEN TG_OP = 'DELETE' THEN '{}'::jsonb ELSE to_jsonb(NEW) END;
+    v_row       JSONB := CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END;
+    v_changes   JSONB;
+    v_table     TEXT;
+    v_record_id INTEGER;
+    v_row_id    INTEGER;
+    v_label     TEXT;
+    v_exists    BOOLEAN;
+    v_employee  INTEGER := NULLIF(current_setting('oserp.employee_id', true), '')::INTEGER;
+    v_source    TEXT    := NULLIF(current_setting('oserp.source', true), '');
+    -- Technisch/abgeleitet in allen Tabellen: Schlüssel, Zeiten, von kivitendo berechnete Margen
+    v_skip      TEXT[] := ARRAY['id', 'itime', 'mtime', 'trans_id', 'delivery_order_id', 'oe_id', 'ar_id',
+                                'marge_total', 'marge_percent', 'marge_price_factor', 'exchangerate'];
+BEGIN
+    IF TG_TABLE_NAME IN ('orderitems', 'invoice', 'delivery_order_items') THEN
+        -- Positionen: Kopien des Kopfs, Basismengen, Fremdwährungsduplikat, Lager/Buchungsziele,
+        -- Preisquellen, gelieferte Menge, LxCars-Altspalten status/u_id; die Positionsnummer
+        -- nummeriert OSERP beim Löschen und Sortieren für alle Positionen neu (Rauschen)
+        v_skip := v_skip || ARRAY['position', 'ordnumber', 'transdate', 'cusordnumber', 'donumber', 'base_qty', 'fxsellprice',
+                                  'lastcost', 'price_factor', 'allocated', 'assemblyitem', 'inventory_chart_id',
+                                  'expense_chart_id', 'tax_id', 'tax_chart_type', 'active_price_source',
+                                  'active_discount_source', 'ship', 'status', 'u_id', 'recurring_billing_mode',
+                                  'recurring_billing_invoice_id'];
+    ELSIF TG_TABLE_NAME IN ('oe_ext', 'ar_ext') THEN
+        v_skip := v_skip || ARRAY['asanetwork_sent_at', 'c_sk', 'c_zrd', 'c_zrk', 'c_bf', 'c_wd', 'other_car_ar_id'];
+    ELSE
+        -- Belegkopf: bei Anlage gesetzte Konstanten, Folgefelder der Zahlung, Schweizer QR-Rechnung,
+        -- kivitendo-Altlasten und die LxCars-Altspalten in oe (ersetzt durch oe_ext)
+        v_skip := v_skip || ARRAY['gldate', 'orddate', 'quodate', 'invoice', 'type', 'datepaid',
+                                  'delivery_customer_id', 'delivery_vendor_id', 'qr_reference',
+                                  'qr_unstructured_message', 'qrbill_without_amount', 'qrbill_data',
+                                  'c_id', 'car_manuf', 'car_status', 'car_type', 'delivery_time', 'finish_time',
+                                  'internalorder', 'km_stnd', 'printed', 'status'];
+    END IF;
+
+    -- Diff der sichtbaren Spalten; leere Zeichenkette und NULL gelten als gleich,
+    -- beim Anlegen zählen nur gefüllte Werte (sonst stünde jede leere Spalte drin)
+    SELECT jsonb_object_agg(d.key, jsonb_build_object('old', d.o_val, 'new', d.n_val))
+      INTO v_changes
+      FROM (
+          SELECT COALESCE(o.key, n.key) AS key,
+                 CASE WHEN o.value IN ('""'::jsonb, 'null'::jsonb) THEN NULL ELSE o.value END AS o_val,
+                 CASE WHEN n.value IN ('""'::jsonb, 'null'::jsonb) THEN NULL ELSE n.value END AS n_val
+            FROM jsonb_each(v_old) o
+            FULL JOIN jsonb_each(v_new) n ON o.key = n.key
+      ) d
+     WHERE d.o_val IS DISTINCT FROM d.n_val
+       AND d.key <> ALL (v_skip)
+       AND (TG_OP <> 'INSERT' OR (d.n_val IS NOT NULL AND d.n_val <> 'false'::jsonb AND d.n_val <> '0'::jsonb));
+
+    IF TG_OP = 'UPDATE' AND (v_changes IS NULL OR v_changes = '{}'::jsonb) THEN
+        RETURN NULL;
+    END IF;
+
+    CASE TG_TABLE_NAME
+        WHEN 'oe', 'ar', 'ap', 'delivery_orders' THEN
+            v_table := TG_TABLE_NAME;
+            v_record_id := (v_row->>'id')::INTEGER;
+            -- Belegnummer; Angebote/Anfragen: neues Schema record_type, altes quotation
+            v_label := COALESCE(NULLIF(v_row->>'invnumber', ''), NULLIF(v_row->>'donumber', ''),
+                                CASE WHEN COALESCE(v_row->>'record_type', '') LIKE '%quotation%'
+                                       OR v_row->>'quotation' = 'true' THEN NULLIF(v_row->>'quonumber', '') END,
+                                NULLIF(v_row->>'ordnumber', ''), NULLIF(v_row->>'quonumber', ''));
+        WHEN 'orderitems' THEN
+            v_table := 'oe';
+            v_record_id := (v_row->>'trans_id')::INTEGER;
+        WHEN 'delivery_order_items' THEN
+            v_table := 'delivery_orders';
+            v_record_id := (v_row->>'delivery_order_id')::INTEGER;
+        WHEN 'invoice' THEN
+            -- Positionen von Verkaufs- und Einkaufsrechnungen teilen sich die Tabelle;
+            -- ar und ap ziehen ihre IDs aus derselben Sequenz (glid)
+            v_record_id := (v_row->>'trans_id')::INTEGER;
+            IF EXISTS (SELECT 1 FROM ar WHERE id = v_record_id) THEN
+                v_table := 'ar';
+            ELSIF EXISTS (SELECT 1 FROM ap WHERE id = v_record_id) THEN
+                v_table := 'ap';
+            ELSE
+                RETURN NULL;   -- Kopf schon gelöscht: das Löschen des Belegs steht dort
+            END IF;
+        WHEN 'oe_ext' THEN
+            v_table := 'oe';
+            v_record_id := (v_row->>'oe_id')::INTEGER;
+        WHEN 'ar_ext' THEN
+            v_table := 'ar';
+            v_record_id := (v_row->>'ar_id')::INTEGER;
+        ELSE
+            RETURN NULL;
+    END CASE;
+
+    IF v_record_id IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    -- Löschen einer Position/Erweiterung, weil der ganze Beleg gelöscht wird
+    -- (Kaskade): das steht schon als Löschen des Belegs in der Chronik
+    IF TG_OP = 'DELETE' AND TG_TABLE_NAME NOT IN ('oe', 'ar', 'ap', 'delivery_orders') THEN
+        EXECUTE format('SELECT EXISTS (SELECT 1 FROM %I WHERE id = $1)', v_table) INTO v_exists USING v_record_id;
+        IF NOT v_exists THEN
+            RETURN NULL;
+        END IF;
+    END IF;
+
+    IF TG_TABLE_NAME IN ('orderitems', 'invoice', 'delivery_order_items') THEN
+        v_row_id := (v_row->>'id')::INTEGER;
+        v_label := left(NULLIF(trim(v_row->>'description'), ''), 120);
+    END IF;
+
+    INSERT INTO record_history_oserp (record_table, record_id, table_name, row_id, row_label, action, changes, employee_id, source)
+    VALUES (v_table, v_record_id, TG_TABLE_NAME, v_row_id, v_label, TG_OP, v_changes, v_employee, v_source);
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ DECLARE t TEXT; BEGIN
+    FOREACH t IN ARRAY ARRAY['oe', 'ar', 'ap', 'delivery_orders', 'orderitems', 'invoice', 'delivery_order_items'] LOOP
+        IF to_regclass(t) IS NOT NULL AND NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = t || '_record_history') THEN
+            EXECUTE format('CREATE TRIGGER %I AFTER INSERT OR UPDATE OR DELETE ON %I FOR EACH ROW EXECUTE FUNCTION record_history_log()', t || '_record_history', t);
+        END IF;
+    END LOOP;
+END $$;
+
+-- Notizen von Wiedervorlagen zeigen wie bei kivitendo auf ihre Wiedervorlage
+-- (notes.trans_id) — Altbestand aus OSERP ohne diesen Verweis nachziehen
+UPDATE notes n SET trans_id = fu.id
+  FROM follow_ups fu
+ WHERE fu.note_id = n.id AND n.trans_module = 'fu' AND n.trans_id IS NULL;
 
 CREATE TABLE IF NOT EXISTS whatsapp_templates (
     id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -4429,3 +4595,604 @@ AS $function$
         )
     )
 $function$;
+
+-- ============================================================================
+-- KONTAKTHISTORIE LIVE (SSE-Kanal contact_history_change)
+-- ============================================================================
+-- Die Kontakthistorie im CRM aktualisiert sich ohne Knopf: Briefe, deren Versand
+-- (E-Mail/Post) und „Kunde vor Ort"-Notizen melden sich per Trigger, neue E-Mails
+-- meldet der Dienst oserp-email-eingang (backend/cli/email-eingang.php) über
+-- contact_history_email_notify(). Nutzlast: {kind, cv_ids} — das Frontend lädt
+-- nur, wenn der offene Kunde/Lieferant betroffen ist.
+
+CREATE OR REPLACE FUNCTION contact_history_notify(p_kind TEXT, p_cv_ids INTEGER[]) RETURNS VOID AS $$
+BEGIN
+    p_cv_ids := array_remove(p_cv_ids, NULL);
+    IF cardinality(p_cv_ids) > 0 THEN
+        PERFORM pg_notify('contact_history_change', json_build_object('kind', p_kind, 'cv_ids', p_cv_ids)::TEXT);
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Briefe: Anlegen, Ändern, Löschen
+CREATE OR REPLACE FUNCTION notify_contact_history_letter() RETURNS trigger AS $$
+BEGIN
+    PERFORM contact_history_notify('letter', ARRAY[
+        COALESCE(NEW.customer_id, OLD.customer_id), COALESCE(NEW.vendor_id, OLD.vendor_id)]);
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Versand eines Briefs per E-Mail (record_links letter → email_journal)
+CREATE OR REPLACE FUNCTION notify_contact_history_letter_link() RETURNS trigger AS $$
+BEGIN
+    IF NEW.from_table = 'letter' THEN
+        PERFORM contact_history_notify('letter',
+            (SELECT ARRAY[customer_id, vendor_id] FROM letter WHERE id = NEW.from_id));
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Versand eines Briefs per Post (postal_dispatches)
+CREATE OR REPLACE FUNCTION notify_contact_history_letter_post() RETURNS trigger AS $$
+BEGIN
+    IF NEW.record_table = 'letter' THEN
+        PERFORM contact_history_notify('letter',
+            (SELECT ARRAY[customer_id, vendor_id] FROM letter WHERE id = NEW.record_id));
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Kunde vor Ort (kivitendo-Notiz am Kunden/Lieferanten, trans_module CT)
+CREATE OR REPLACE FUNCTION notify_contact_history_note() RETURNS trigger AS $$
+BEGIN
+    IF COALESCE(NEW.trans_module, OLD.trans_module) = 'CT' THEN
+        PERFORM contact_history_notify('visit', ARRAY[COALESCE(NEW.trans_id, OLD.trans_id)]);
+    END IF;
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'letter_contact_history_notify') THEN
+        CREATE TRIGGER letter_contact_history_notify
+            AFTER INSERT OR UPDATE OR DELETE ON letter
+            FOR EACH ROW EXECUTE FUNCTION notify_contact_history_letter();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'record_links_contact_history_notify') THEN
+        CREATE TRIGGER record_links_contact_history_notify
+            AFTER INSERT ON record_links
+            FOR EACH ROW EXECUTE FUNCTION notify_contact_history_letter_link();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'postal_dispatches_contact_history_notify') THEN
+        CREATE TRIGGER postal_dispatches_contact_history_notify
+            AFTER INSERT OR UPDATE OF status ON postal_dispatches
+            FOR EACH ROW EXECUTE FUNCTION notify_contact_history_letter_post();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'notes_contact_history_notify') THEN
+        CREATE TRIGGER notes_contact_history_notify
+            AFTER INSERT OR UPDATE OR DELETE ON notes
+            FOR EACH ROW EXECUTE FUNCTION notify_contact_history_note();
+    END IF;
+END $$;
+
+-- E-Mail-Adressen den Kunden/Lieferanten zuordnen — Hauptadresse (auch mit ; oder ,
+-- getrennt), weitere Adressen aus customer_ext/vendor_ext.emails und
+-- Ansprechpersonen, wie collectEmailAddresses() im Frontend. Eine Zeile je
+-- Treffer (Adresse klein geschrieben, Kunde/Lieferant); Kunden und Lieferanten
+-- teilen sich in kivitendo die id-Folge, die id allein ist also eindeutig.
+CREATE OR REPLACE FUNCTION cv_ids_by_email(p_addresses TEXT[])
+    RETURNS TABLE (addr TEXT, cv_id INTEGER)
+    LANGUAGE sql
+    STABLE
+AS $function$
+    WITH a AS (SELECT DISTINCT lower(trim(x)) AS addr FROM unnest(p_addresses) x WHERE trim(x) <> '')
+    SELECT DISTINCT t.addr, t.cv_id FROM (
+        SELECT trim(m) AS addr, c.id AS cv_id FROM customer c CROSS JOIN LATERAL regexp_split_to_table(lower(c.email), '\s*[;,]\s*') m
+         WHERE c.email IS NOT NULL AND trim(m) IN (SELECT addr FROM a)
+        UNION ALL
+        SELECT trim(m), v.id FROM vendor v CROSS JOIN LATERAL regexp_split_to_table(lower(v.email), '\s*[;,]\s*') m
+         WHERE v.email IS NOT NULL AND trim(m) IN (SELECT addr FROM a)
+        UNION ALL
+        SELECT trim(m), k.cp_cv_id FROM contacts k CROSS JOIN LATERAL regexp_split_to_table(lower(k.cp_email), '\s*[;,]\s*') m
+         WHERE k.cp_email IS NOT NULL AND trim(m) IN (SELECT addr FROM a)
+        UNION ALL
+        SELECT trim(m), x.customer_id FROM customer_ext x CROSS JOIN LATERAL jsonb_array_elements(x.emails) e
+               CROSS JOIN LATERAL regexp_split_to_table(lower(e->>'email'), '\s*[;,]\s*') m
+         WHERE jsonb_typeof(x.emails) = 'array' AND trim(m) IN (SELECT addr FROM a)
+        UNION ALL
+        SELECT trim(m), x.vendor_id FROM vendor_ext x CROSS JOIN LATERAL jsonb_array_elements(x.emails) e
+               CROSS JOIN LATERAL regexp_split_to_table(lower(e->>'email'), '\s*[;,]\s*') m
+         WHERE jsonb_typeof(x.emails) = 'array' AND trim(m) IN (SELECT addr FROM a)
+    ) t
+    WHERE t.cv_id IS NOT NULL
+$function$;
+
+-- Neue E-Mails (Posteingang und Gesendet): alle Adressen aus dem Umschlag
+-- (Von, An, Cc …) den Kunden/Lieferanten zuordnen (cv_ids_by_email) und die
+-- offenen Kontakthistorien benachrichtigen. Gibt die Anzahl betroffener
+-- Kunden/Lieferanten zurück.
+CREATE OR REPLACE FUNCTION contact_history_email_notify(p_addresses TEXT[]) RETURNS INTEGER AS $$
+DECLARE
+    v_ids INTEGER[];
+BEGIN
+    SELECT array_agg(DISTINCT cv_id) INTO v_ids FROM cv_ids_by_email(p_addresses);
+    PERFORM contact_history_notify('email', v_ids);
+    RETURN COALESCE(cardinality(v_ids), 0);
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================================
+-- AUFTRAGSBESTÄTIGUNG
+-- ============================================================================
+-- Ein Verkaufsauftrag ist Auftragseingang (oe.record_type sales_order_intake)
+-- oder bestätigt (sales_order). Wie, wann und von wem bestätigt wurde, steht in
+-- oe_confirmation_oserp — mit dem Betrag zum Zeitpunkt der Bestätigung, damit
+-- die Auftragsmaske einen späteren Anstieg anzeigen kann. Dieselbe Tabelle hält
+-- die Vorschläge der KI: Anrufe, WhatsApp und E-Mails von Kunden mit offenem
+-- Auftragseingang landen in oe_confirmation_queue_oserp, der Dienst
+-- oserp-auftragsbestaetigung (backend/cli/auftragsbestaetigung.php) liest bzw.
+-- hört sie ab und legt bei einer erkannten Zusage oder Absage einen Vorschlag
+-- an. Bestätigt wird erst per Klick — im Modus „auto“ nur eindeutige Zusagen
+-- (ein offener Auftrag, keine Bedingung, hohe Sicherheit) selbst.
+-- Schalter: defaults_oserp.order_confirm_ai (off | suggest | auto) und
+-- order_confirm_ai_days (Auftragseingänge der letzten n Tage, Vorgabe 60).
+
+-- status:  suggested (Vorschlag der KI) | confirmed | revoked (zurückgenommen) | dismissed (Vorschlag verworfen)
+-- intent:  accept (Zusage) | decline (Absage) — Absagen gibt es nur als Vorschlag
+-- source:  manual (von Hand erfasst) | ai (aus einem Vorschlag; employee_id NULL = automatisch bestätigt)
+-- channel: phone | email | whatsapp | visit (vor Ort) | signature | portal | other
+CREATE TABLE IF NOT EXISTS oe_confirmation_oserp
+(
+    id          integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    oe_id       integer NOT NULL REFERENCES oe (id) ON DELETE CASCADE,
+    status      text NOT NULL DEFAULT 'confirmed',
+    intent      text NOT NULL DEFAULT 'accept',
+    source      text NOT NULL DEFAULT 'manual',
+    channel     text NOT NULL DEFAULT 'other',
+    source_ref  text,
+    quote       text,
+    note        text,
+    conditions  text,
+    confidence  numeric(4,3),
+    amount      numeric(15,5),
+    netamount   numeric(15,5),
+    agreed_at   timestamptz NOT NULL DEFAULT now(),
+    employee_id integer REFERENCES employee (id) ON DELETE SET NULL,
+    created     timestamptz NOT NULL DEFAULT now(),
+    decided_at  timestamptz,
+    decided_by  integer REFERENCES employee (id) ON DELETE SET NULL,
+    revoked_at  timestamptz,
+    revoked_by  integer REFERENCES employee (id) ON DELETE SET NULL,
+    -- (oe_id, id) ist ohnehin eindeutig — die Bedingung liefert den Index für die Suche je Auftrag
+    CONSTRAINT oe_confirmation_oserp_oe_key UNIQUE (oe_id, id),
+    CONSTRAINT oe_confirmation_oserp_status_check  CHECK (status IN ('suggested', 'confirmed', 'revoked', 'dismissed')),
+    CONSTRAINT oe_confirmation_oserp_intent_check  CHECK (intent IN ('accept', 'decline')),
+    CONSTRAINT oe_confirmation_oserp_source_check  CHECK (source IN ('manual', 'ai')),
+    CONSTRAINT oe_confirmation_oserp_channel_check CHECK (channel IN ('phone', 'email', 'whatsapp', 'visit', 'signature', 'portal', 'other'))
+);
+
+COMMENT ON TABLE  oe_confirmation_oserp            IS 'Auftragsbestätigung: wie/wann/von wem ein Verkaufsauftrag bestätigt wurde, dazu KI-Vorschläge';
+COMMENT ON COLUMN oe_confirmation_oserp.source_ref IS 'Quelle des Vorschlags: whatsapp_messages.id, unique_call_id bzw. Postfach|UID der E-Mail';
+COMMENT ON COLUMN oe_confirmation_oserp.quote      IS 'Wörtliche Zusage/Absage des Kunden (bei Vorschlägen von der KI zitiert)';
+COMMENT ON COLUMN oe_confirmation_oserp.conditions IS 'Bedingung des Kunden, z. B. „nicht über 800 €“ — verhindert die automatische Bestätigung';
+COMMENT ON COLUMN oe_confirmation_oserp.amount     IS 'Bruttobetrag des Auftrags zum Zeitpunkt der Bestätigung';
+
+-- Warteschlange der Erkennung. status: new | done | skipped | error.
+-- Anrufe kommen ohne Inhalt — der Dienst wartet auf die Aufnahme (next_try).
+CREATE TABLE IF NOT EXISTS oe_confirmation_queue_oserp
+(
+    id          integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    channel     text NOT NULL,
+    source_ref  text NOT NULL,
+    customer_id integer NOT NULL,
+    received_at timestamptz NOT NULL DEFAULT now(),
+    subject     text,
+    content     text,
+    media_path  text,
+    status      text NOT NULL DEFAULT 'new',
+    attempts    integer NOT NULL DEFAULT 0,
+    next_try    timestamptz,
+    result      jsonb,
+    error       text,
+    created     timestamptz NOT NULL DEFAULT now(),
+    processed   timestamptz,
+    CONSTRAINT oe_confirmation_queue_oserp_source_key UNIQUE (channel, source_ref),
+    CONSTRAINT oe_confirmation_queue_oserp_status_key UNIQUE (status, id),
+    CONSTRAINT oe_confirmation_queue_oserp_status_check  CHECK (status IN ('new', 'done', 'skipped', 'error')),
+    CONSTRAINT oe_confirmation_queue_oserp_channel_check CHECK (channel IN ('phone', 'email', 'whatsapp'))
+);
+
+COMMENT ON TABLE  oe_confirmation_queue_oserp            IS 'Auftragsbestätigung: eingegangene Nachrichten/Anrufe, die die KI auf eine Zusage prüft';
+COMMENT ON COLUMN oe_confirmation_queue_oserp.media_path IS 'WhatsApp-Sprachnachricht, relativ zu backend/data/<db>';
+
+-- Modus der Erkennung: off | suggest | auto
+CREATE OR REPLACE FUNCTION oe_confirmation_mode()
+    RETURNS text
+    LANGUAGE sql
+    STABLE
+AS $function$
+    SELECT COALESCE((SELECT CASE WHEN value IN ('suggest', 'auto') THEN value END
+                       FROM defaults_oserp WHERE key = 'order_confirm_ai'), 'off')
+$function$;
+
+-- Offene Auftragseingänge eines Kunden zum Zeitpunkt p_before: angelegt bis
+-- dahin, nicht geschlossen, noch nicht berechnet (OSERP schließt einen Auftrag
+-- beim Umwandeln in die Rechnung nicht — eine erledigte Arbeit ist kein offener
+-- Auftrag) und jünger als order_confirm_ai_days (1–3650, Vorgabe 60) — nur auf
+-- sie bezieht die KI eine Zusage.
+-- Rückgabe: [{id, ordnumber, transdate, amount, netamount, description, items[]}], neueste zuerst
+CREATE OR REPLACE FUNCTION oe_confirmation_candidates(p_customer_id integer, p_before timestamptz)
+    RETURNS json
+    LANGUAGE sql
+    STABLE
+AS $function$
+    SELECT COALESCE(json_agg(json_build_object(
+               'id', o.id, 'ordnumber', o.ordnumber, 'transdate', o.transdate,
+               'amount', o.amount, 'netamount', o.netamount,
+               'description', NULLIF(o.transaction_description, ''),
+               'items', (SELECT COALESCE(json_agg(i.description ORDER BY i.position), '[]'::json)
+                           FROM (SELECT description, position FROM orderitems
+                                  WHERE trans_id = o.id ORDER BY position LIMIT 8) i)
+           ) ORDER BY o.transdate DESC, o.id DESC), '[]'::json)
+      FROM oe o
+     WHERE o.customer_id = p_customer_id
+       AND o.record_type = 'sales_order_intake'
+       AND NOT COALESCE(o.closed, FALSE)
+       AND o.itime::timestamptz <= COALESCE(p_before, now())
+       AND o.transdate >= CURRENT_DATE - LEAST(GREATEST(COALESCE(
+               (SELECT NULLIF(regexp_replace(value, '[^0-9]', '', 'g'), '')::numeric
+                  FROM defaults_oserp WHERE key = 'order_confirm_ai_days'), 60), 1), 3650)::int
+       AND (oe_invoice_status(o.id)->>'state') IS DISTINCT FROM 'invoiced'
+$function$;
+
+-- Offene Auftragseingänge jetzt (Einreihen, E-Mail-Vorauswahl)
+CREATE OR REPLACE FUNCTION oe_confirmation_candidates(p_customer_id integer)
+    RETURNS json
+    LANGUAGE sql
+    STABLE
+AS $function$
+    SELECT oe_confirmation_candidates(p_customer_id, now())
+$function$;
+
+-- Bestätigungsstand eines Verkaufsauftrags (NULL bei anderen Belegen):
+--   confirmed     bestätigt (record_type sales_order)
+--   amount        aktueller Bruttobetrag
+--   confirmation  letzte gültige Bestätigung {id, channel, agreed_at, quote, note, conditions,
+--                 amount, source, source_ref, auto, employee_name, decided_at} oder NULL
+--                 (bestätigt, aber nicht erfasst — z. B. von früher)
+--   suggestions   offene Vorschläge der KI [{id, intent, channel, agreed_at, quote,
+--                 conditions, confidence, source_ref}], neueste zuerst
+CREATE OR REPLACE FUNCTION oe_confirmation_status(p_oe_id integer)
+    RETURNS json
+    LANGUAGE sql
+    STABLE
+AS $function$
+    SELECT json_build_object(
+        'confirmed', o.record_type = 'sales_order',
+        'amount', o.amount,
+        'confirmation', (
+            SELECT json_build_object(
+                       'id', c.id, 'channel', c.channel, 'agreed_at', c.agreed_at,
+                       'quote', c.quote, 'note', c.note, 'conditions', c.conditions,
+                       'amount', c.amount, 'source', c.source, 'source_ref', c.source_ref,
+                       'auto', c.source = 'ai' AND c.employee_id IS NULL,
+                       'employee_name', e.name, 'decided_at', c.decided_at)
+              FROM oe_confirmation_oserp c
+              LEFT JOIN employee e ON e.id = c.employee_id
+             WHERE c.oe_id = o.id AND c.status = 'confirmed' AND o.record_type = 'sales_order'
+             ORDER BY c.decided_at DESC NULLS LAST, c.id DESC
+             LIMIT 1),
+        'suggestions', (
+            SELECT COALESCE(json_agg(json_build_object(
+                       'id', s.id, 'intent', s.intent, 'channel', s.channel, 'agreed_at', s.agreed_at,
+                       'quote', s.quote, 'conditions', s.conditions, 'confidence', s.confidence,
+                       'source_ref', s.source_ref
+                   ) ORDER BY s.agreed_at DESC, s.id DESC), '[]'::json)
+              FROM oe_confirmation_oserp s
+             WHERE s.oe_id = o.id AND s.status = 'suggested')
+    )
+      FROM oe o
+     WHERE o.id = p_oe_id
+       AND o.record_type IN ('sales_order', 'sales_order_intake')
+$function$;
+
+-- Bestätigen (p_confirmed) oder zurücknehmen. Bestätigen legt einen Eintrag mit
+-- Kanal, Zeitpunkt und aktuellem Betrag an — oder übernimmt den Vorschlag
+-- p_suggestion_id samt Zitat und dem Betrag zum Zeitpunkt der Kundennachricht;
+-- alle weiteren offenen Vorschläge (auch Absagen) sind damit entschieden. Ist der Auftrag schon bestätigt, wird neu bestätigt (etwa nach einer
+-- Preiserhöhung), die alte Bestätigung bleibt als Verlauf stehen. Zurücknehmen
+-- markiert alle Bestätigungen als revoked. Rückgabe: oe_confirmation_status,
+-- bei Fehlern {error: OE_NOT_FOUND | NOT_SALES_ORDER | SUGGESTION_NOT_FOUND}.
+CREATE OR REPLACE FUNCTION oe_confirm(
+    p_oe_id         integer,
+    p_confirmed     boolean,
+    p_employee_id   integer,
+    p_channel       text DEFAULT NULL,
+    p_agreed_at     timestamptz DEFAULT NULL,
+    p_note          text DEFAULT NULL,
+    p_suggestion_id integer DEFAULT NULL
+) RETURNS json AS $$
+DECLARE
+    v_type   text;
+    v_amount numeric;
+    v_net    numeric;
+BEGIN
+    SELECT record_type::text, COALESCE(amount, 0), COALESCE(netamount, 0) INTO v_type, v_amount, v_net
+      FROM oe WHERE id = p_oe_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RETURN json_build_object('error', 'OE_NOT_FOUND');
+    END IF;
+    IF v_type NOT IN ('sales_order', 'sales_order_intake') THEN
+        RETURN json_build_object('error', 'NOT_SALES_ORDER');
+    END IF;
+
+    IF p_confirmed THEN
+        IF p_suggestion_id IS NOT NULL THEN
+            UPDATE oe_confirmation_oserp
+               SET status = 'confirmed', employee_id = p_employee_id, decided_by = p_employee_id, decided_at = now(),
+                   amount = COALESCE(amount, v_amount), netamount = COALESCE(netamount, v_net),
+                   note = COALESCE(NULLIF(trim(p_note), ''), note)
+             WHERE id = p_suggestion_id AND oe_id = p_oe_id AND status = 'suggested' AND intent = 'accept';
+            IF NOT FOUND THEN
+                RETURN json_build_object('error', 'SUGGESTION_NOT_FOUND');
+            END IF;
+        ELSE
+            INSERT INTO oe_confirmation_oserp (oe_id, status, source, channel, agreed_at, note, amount, netamount, employee_id, decided_by, decided_at)
+            VALUES (p_oe_id, 'confirmed', 'manual',
+                    CASE WHEN p_channel IN ('phone', 'email', 'whatsapp', 'visit', 'signature', 'portal') THEN p_channel ELSE 'other' END,
+                    COALESCE(p_agreed_at, now()), NULLIF(trim(p_note), ''), v_amount, v_net, p_employee_id, p_employee_id, now());
+        END IF;
+        UPDATE oe_confirmation_oserp
+           SET status = 'dismissed', decided_by = p_employee_id, decided_at = now()
+         WHERE oe_id = p_oe_id AND status = 'suggested';
+        IF v_type <> 'sales_order' THEN
+            UPDATE oe SET record_type = 'sales_order' WHERE id = p_oe_id;
+        END IF;
+    ELSE
+        UPDATE oe_confirmation_oserp
+           SET status = 'revoked', revoked_by = p_employee_id, revoked_at = now()
+         WHERE oe_id = p_oe_id AND status = 'confirmed';
+        IF v_type <> 'sales_order_intake' THEN
+            UPDATE oe SET record_type = 'sales_order_intake' WHERE id = p_oe_id;
+        END IF;
+    END IF;
+
+    RETURN oe_confirmation_status(p_oe_id);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Vorschlag verwerfen (Zusage war keine) bzw. Absage zur Kenntnis nehmen.
+-- Rückgabe: oe_confirmation_status des Auftrags oder {error: SUGGESTION_NOT_FOUND}
+CREATE OR REPLACE FUNCTION oe_confirmation_dismiss(p_id integer, p_employee_id integer) RETURNS json AS $$
+DECLARE
+    v_oe_id integer;
+BEGIN
+    UPDATE oe_confirmation_oserp
+       SET status = 'dismissed', decided_by = p_employee_id, decided_at = now()
+     WHERE id = p_id AND status = 'suggested'
+    RETURNING oe_id INTO v_oe_id;
+    IF NOT FOUND THEN
+        RETURN json_build_object('error', 'SUGGESTION_NOT_FOUND');
+    END IF;
+    RETURN oe_confirmation_status(v_oe_id);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Ergebnis der KI für einen Eintrag der Warteschlange übernehmen: Vorschlag
+-- anlegen oder — Modus auto, eindeutige Zusage ohne Bedingung, Sicherheit ab
+-- 0,9, nur ein offener Auftrag und per WhatsApp oder Anruf — gleich bestätigen.
+-- E-Mails bestätigen nie selbst: der Absender einer E-Mail ist fälschbar, und
+-- eine gemeinsame Adresse kann zu mehreren Kunden gehören. Der Auftrag muss zu
+-- den offenen Auftragseingängen des Kunden beim Eingang der Nachricht gehören.
+-- Der Betrag wird schon hier festgehalten: zugesagt hat der Kunde zu diesem
+-- Stand. Rückgabe: suggested | confirmed | ignored
+CREATE OR REPLACE FUNCTION oe_confirmation_suggest(
+    p_queue_id   integer,
+    p_oe_id      integer,
+    p_intent     text,
+    p_quote      text,
+    p_conditions text,
+    p_confidence numeric
+) RETURNS text AS $$
+DECLARE
+    q           oe_confirmation_queue_oserp%ROWTYPE;
+    v_open      integer[];
+    v_amount    numeric;
+    v_net       numeric;
+    v_auto      boolean;
+BEGIN
+    SELECT * INTO q FROM oe_confirmation_queue_oserp WHERE id = p_queue_id;
+    IF NOT FOUND OR p_intent NOT IN ('accept', 'decline') THEN
+        RETURN 'ignored';
+    END IF;
+    SELECT array_agg((c->>'id')::int) INTO v_open
+      FROM json_array_elements(oe_confirmation_candidates(q.customer_id, q.received_at)) c;
+    IF NOT (p_oe_id = ANY (COALESCE(v_open, '{}'))) THEN
+        RETURN 'ignored';
+    END IF;
+    -- Dieselbe Nachricht schlägt für denselben Auftrag nur einmal vor
+    IF EXISTS (SELECT 1 FROM oe_confirmation_oserp
+                WHERE oe_id = p_oe_id AND source = 'ai' AND source_ref = q.source_ref AND channel = q.channel) THEN
+        RETURN 'ignored';
+    END IF;
+
+    v_auto := oe_confirmation_mode() = 'auto'
+              AND p_intent = 'accept'
+              AND COALESCE(trim(p_conditions), '') = ''
+              AND COALESCE(p_confidence, 0) >= 0.9
+              AND cardinality(v_open) = 1
+              AND q.channel IN ('whatsapp', 'phone');
+
+    SELECT COALESCE(amount, 0), COALESCE(netamount, 0) INTO v_amount, v_net FROM oe WHERE id = p_oe_id FOR UPDATE;
+    INSERT INTO oe_confirmation_oserp (oe_id, status, intent, source, channel, source_ref, quote, conditions,
+                                       confidence, agreed_at, amount, netamount, decided_at)
+    VALUES (p_oe_id, CASE WHEN v_auto THEN 'confirmed' ELSE 'suggested' END, p_intent, 'ai', q.channel, q.source_ref,
+            NULLIF(trim(p_quote), ''), NULLIF(trim(p_conditions), ''), p_confidence, q.received_at,
+            v_amount, v_net, CASE WHEN v_auto THEN now() END);
+    IF v_auto THEN
+        -- Wie beim Bestätigen von Hand: übrige offene Vorschläge sind entschieden
+        UPDATE oe_confirmation_oserp SET status = 'dismissed', decided_at = now()
+         WHERE oe_id = p_oe_id AND status = 'suggested';
+        UPDATE oe SET record_type = 'sales_order' WHERE id = p_oe_id;
+        RETURN 'confirmed';
+    END IF;
+    RETURN 'suggested';
+END;
+$$ LANGUAGE plpgsql;
+
+-- Eingang in die Warteschlange stellen — nur wenn die Erkennung an ist und der
+-- Kunde einen offenen Auftragseingang hat. Meldet dem Dienst per pg_notify.
+CREATE OR REPLACE FUNCTION oe_confirmation_enqueue(
+    p_channel     text,
+    p_source_ref  text,
+    p_customer_id integer,
+    p_received_at timestamptz,
+    p_subject     text,
+    p_content     text,
+    p_media_path  text
+) RETURNS boolean AS $$
+DECLARE
+    v_id integer;
+BEGIN
+    IF p_customer_id IS NULL OR p_source_ref IS NULL OR oe_confirmation_mode() = 'off'
+       OR json_array_length(oe_confirmation_candidates(p_customer_id)) = 0 THEN
+        RETURN FALSE;
+    END IF;
+    INSERT INTO oe_confirmation_queue_oserp (channel, source_ref, customer_id, received_at, subject, content, media_path)
+    VALUES (p_channel, p_source_ref, p_customer_id, COALESCE(p_received_at, now()), p_subject, p_content, p_media_path)
+    ON CONFLICT (channel, source_ref) DO NOTHING
+    RETURNING id INTO v_id;
+    IF v_id IS NOT NULL THEN
+        PERFORM pg_notify('order_confirm_queue', v_id::text);
+    END IF;
+    RETURN v_id IS NOT NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- E-Mail-Eingang (backend/cli/email-eingang.php): welche Absender gehören zu
+-- Kunden mit offenem Auftragseingang? Nur deren Nachrichten lädt der Dienst
+-- vollständig. Leer, wenn die Erkennung aus ist.
+CREATE OR REPLACE FUNCTION oe_confirmation_email_wanted(p_addresses text[])
+    RETURNS text[]
+    LANGUAGE sql
+    STABLE
+AS $function$
+    SELECT COALESCE(array_agg(DISTINCT m.addr), '{}')
+      FROM cv_ids_by_email(p_addresses) m
+     WHERE oe_confirmation_mode() <> 'off'
+       AND json_array_length(oe_confirmation_candidates(m.cv_id)) > 0
+$function$;
+
+-- E-Mail in die Warteschlange — je zugeordnetem Kunden ein Eintrag.
+-- p_ref: Postfach|UID. Rückgabe: Anzahl neuer Einträge
+CREATE OR REPLACE FUNCTION oe_confirmation_email_enqueue(
+    p_from        text,
+    p_ref         text,
+    p_received_at timestamptz,
+    p_subject     text,
+    p_body        text
+) RETURNS integer AS $$
+DECLARE
+    v_cv    integer;
+    v_count integer := 0;
+BEGIN
+    FOR v_cv IN SELECT DISTINCT cv_id FROM cv_ids_by_email(ARRAY[p_from]) LOOP
+        IF oe_confirmation_enqueue('email', p_ref || '#' || v_cv, v_cv, p_received_at, p_subject, p_body, NULL) THEN
+            v_count := v_count + 1;
+        END IF;
+    END LOOP;
+    RETURN v_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- WhatsApp: eingehende Texte, Antwortknöpfe und Sprachnachrichten. Ohne
+-- customer_id über die Rufnummer zuordnen (suchenummer, Ansprechpersonen →
+-- ihr Kunde). Ein Fehler hier darf den Eingang nie verhindern.
+CREATE OR REPLACE FUNCTION oe_confirmation_whatsapp_enqueue() RETURNS trigger AS $$
+DECLARE
+    v_cv integer := NEW.customer_id;
+    r    record;
+BEGIN
+    IF NEW.direction <> 'I' OR NEW.message_type NOT IN ('text', 'interactive', 'button', 'audio')
+       OR oe_confirmation_mode() = 'off' THEN
+        RETURN NEW;
+    END IF;
+    BEGIN
+        IF v_cv IS NULL THEN
+            r := suchenummer(NEW.phone_number);
+            IF r.typ = 'C' THEN
+                v_cv := r.id;
+            ELSIF r.typ = 'K' THEN
+                SELECT cp_cv_id INTO v_cv FROM contacts WHERE cp_id = r.id;
+            END IF;
+        END IF;
+        -- Sprachnachricht: message_text ist nur der Platzhalter „[Sprachnachricht]“ —
+        -- ohne Inhalt schreibt der Dienst die Aufnahme mit
+        PERFORM oe_confirmation_enqueue('whatsapp', NEW.id::text, v_cv, NEW.itime, NULL,
+            CASE WHEN NEW.message_type = 'audio' THEN NULL
+                 ELSE COALESCE(NULLIF(NEW.message_text, ''), NULLIF(NEW.media_caption, '')) END,
+            CASE WHEN NEW.message_type = 'audio' THEN NEW.media_url END);
+    EXCEPTION WHEN OTHERS THEN
+        RAISE WARNING 'oe_confirmation_whatsapp_enqueue: %', SQLERRM;
+    END;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Anrufe (callin/callout): der Kunde selbst (typ C) oder eine seiner
+-- Ansprechpersonen (typ K). Der Dienst wartet auf die Aufnahme und überspringt
+-- nicht angenommene Anrufe.
+CREATE OR REPLACE FUNCTION oe_confirmation_call_enqueue() RETURNS trigger AS $$
+DECLARE
+    v_cv integer;
+BEGIN
+    IF NEW.crmti_caller_typ NOT IN ('C', 'K') OR oe_confirmation_mode() = 'off' THEN
+        RETURN NEW;
+    END IF;
+    BEGIN
+        IF NEW.crmti_caller_typ = 'C' THEN
+            v_cv := NEW.crmti_caller_id;
+        ELSE
+            SELECT cp_cv_id INTO v_cv FROM contacts WHERE cp_id = NEW.crmti_caller_id;
+        END IF;
+        PERFORM oe_confirmation_enqueue('phone', COALESCE(NULLIF(NEW.unique_call_id, ''), 'crmti:' || NEW.crmti_id),
+            v_cv, NEW.crmti_init_time, NULL, NULL, NULL);
+    EXCEPTION WHEN OTHERS THEN
+        RAISE WARNING 'oe_confirmation_call_enqueue: %', SQLERRM;
+    END;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Änderungen an Bestätigungen/Vorschlägen: Auftragsmaske (faktura_change wie
+-- bei oe) und Kontakthistorie des Kunden live aktualisieren
+CREATE OR REPLACE FUNCTION notify_oe_confirmation() RETURNS trigger AS $$
+DECLARE
+    v_oe_id integer := COALESCE(NEW.oe_id, OLD.oe_id);
+BEGIN
+    PERFORM pg_notify('faktura_change', json_build_object('action', TG_OP, 'table', 'oe', 'id', v_oe_id)::TEXT);
+    PERFORM contact_history_notify('confirmation', (SELECT ARRAY[customer_id] FROM oe WHERE id = v_oe_id));
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'whatsapp_messages_order_confirm') THEN
+        CREATE TRIGGER whatsapp_messages_order_confirm
+            AFTER INSERT ON whatsapp_messages
+            FOR EACH ROW EXECUTE FUNCTION oe_confirmation_whatsapp_enqueue();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'crmti_order_confirm') THEN
+        CREATE TRIGGER crmti_order_confirm
+            AFTER INSERT ON crmti
+            FOR EACH ROW EXECUTE FUNCTION oe_confirmation_call_enqueue();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'oe_confirmation_oserp_notify') THEN
+        CREATE TRIGGER oe_confirmation_oserp_notify
+            AFTER INSERT OR UPDATE OR DELETE ON oe_confirmation_oserp
+            FOR EACH ROW EXECUTE FUNCTION notify_oe_confirmation();
+    END IF;
+END $$;

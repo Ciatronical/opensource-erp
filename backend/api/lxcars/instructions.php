@@ -199,17 +199,44 @@ function updateInstruction($data) {
         return;
     }
 
-    // done=true nur erlaubt wenn actual_minutes > 0
-    if (isset($fields['done']) && $fields['done']) {
+    $current = null;
+    if (isset($fields['done']) || isset($fields['actual_minutes'])) {
         $current = $db->getOne(
-            "SELECT actual_minutes FROM oe_instructions_lxcars WHERE id = :id",
+            "SELECT oe_id, employee_id, actual_minutes FROM oe_instructions_lxcars WHERE id = :id",
             [':id' => $id]
         );
+    }
+
+    // done=true nur erlaubt wenn actual_minutes > 0
+    if (isset($fields['done']) && $fields['done']) {
         $currentActual = intval($current['actual_minutes'] ?? 0);
         $pendingActual = isset($fields['actual_minutes']) ? intval($fields['actual_minutes']) : $currentActual;
         if ($pendingActual <= 0) {
             resultInfo(false, 'VALIDATION_ERROR: actual_minutes required before marking done');
             return;
+        }
+    }
+
+    // Von Hand erhöhte Ist-Minuten: die Mehrzeit zählt ab jetzt rückwärts als
+    // Ausführungszeit, damit auch ohne Timer feststeht, wann gearbeitet wurde
+    if ($current && isset($fields['actual_minutes'])) {
+        $delta = intval($fields['actual_minutes']) - intval($current['actual_minutes']);
+        if ($delta > 0) {
+            $emp = !empty($fields['employee_id']) ? intval($fields['employee_id']) : intval($current['employee_id'] ?? 0);
+            $end = new DateTime();
+            $begin = (clone $end)->modify('-' . $delta . ' minutes');
+            $db->execute(
+                "INSERT INTO oe_instruction_times_lxcars (instruction_id, oe_id, employee_id, started_at, stopped_at, minutes, source)
+                 VALUES (:instruction_id, :oe_id, :employee_id, :started_at, :stopped_at, :minutes, 'manual')",
+                [
+                    ':instruction_id' => $id,
+                    ':oe_id' => intval($current['oe_id']),
+                    ':employee_id' => $emp ?: null,
+                    ':started_at' => $begin->format('Y-m-d H:i:s'),
+                    ':stopped_at' => $end->format('Y-m-d H:i:s'),
+                    ':minutes' => $delta,
+                ]
+            );
         }
     }
 
@@ -747,6 +774,72 @@ function deleteMasterInstruction($data) {
 // ===== Zeiterfassung: Timer-API =====
 
 /**
+ * Hält eine Arbeitszeit-Sitzung fest (oe_instruction_times_lxcars).
+ *
+ * Läuft automatisch bei jedem Timer-Stopp, der Mechaniker tut nichts dafür.
+ * Eine Sitzung über mehrere Kalendertage (vergessener Timer, Arbeit über
+ * Nacht) wird je Tag geteilt und jeder Teil mit seinen Nettominuten bewertet
+ * – die Auswertungen rechnen die Zeit so dem Tag des Arbeitsbeginns zu.
+ * Tage ohne Nettominuten (Wochenende, außerhalb der Arbeitszeit) entfallen;
+ * ergibt die ganze Sitzung 0, bleibt wie bisher eine Minute am Startzeitpunkt.
+ *
+ * @param object $db Firmen-DB (ggf. innerhalb einer Transaktion)
+ * @param int $instructionId Anweisung
+ * @param int $oeId Auftrag
+ * @param int|null $employeeId Mechaniker, der die Zeit erfasst hat
+ * @param string $startStr Beginn (DB-Timestamp)
+ * @param string $endStr Ende (DB-Timestamp)
+ * @param string $pausen Pausen "HH:MM-HH:MM, ..."
+ * @param string $arbeitsbeginn "HH:MM"
+ * @param string $arbeitsende "HH:MM"
+ * @param string $source timer | manual
+ * @return int Gesamtminuten der Sitzung (mindestens 1)
+ */
+function _logInstructionTime($db, $instructionId, $oeId, $employeeId, $startStr, $endStr, $pausen, $arbeitsbeginn, $arbeitsende, $source = 'timer') {
+    $start = new DateTime($startStr);
+    $end = new DateTime($endStr);
+    if ($end < $start) $end = clone $start;
+
+    $insert = function ($from, $to, $minutes) use ($db, $instructionId, $oeId, $employeeId, $source) {
+        $db->execute(
+            "INSERT INTO oe_instruction_times_lxcars (instruction_id, oe_id, employee_id, started_at, stopped_at, minutes, source)
+             VALUES (:instruction_id, :oe_id, :employee_id, :started_at, :stopped_at, :minutes, :source)",
+            [
+                ':instruction_id' => $instructionId,
+                ':oe_id' => $oeId,
+                ':employee_id' => $employeeId ?: null,
+                ':started_at' => $from->format('Y-m-d H:i:s'),
+                ':stopped_at' => $to->format('Y-m-d H:i:s'),
+                ':minutes' => $minutes,
+                ':source' => $source,
+            ]
+        );
+    };
+
+    [$wsH, $wsM] = array_map('intval', explode(':', ($arbeitsbeginn ?: '08:00') . ':0'));
+    $total = 0;
+    $day = (clone $start)->setTime(0, 0, 0);
+    while ($day <= $end) {
+        $nextDay = (clone $day)->modify('+1 day');
+        $segStart = max($start, $day);
+        $segEnd = min($end, $nextDay);
+        $minutes = _calcNetMinutes($segStart->format('Y-m-d H:i:s'), $segEnd->format('Y-m-d H:i:s'), $pausen, $arbeitsbeginn, $arbeitsende);
+        if ($minutes > 0) {
+            // Beginn frühestens zum Arbeitsbeginn des Tages: dort fängt die gezählte Zeit an
+            $workStart = (clone $day)->setTime($wsH, $wsM, 0);
+            $insert(max($segStart, $workStart), $segEnd, $minutes);
+            $total += $minutes;
+        }
+        $day = $nextDay;
+    }
+    if ($total === 0) {
+        $insert($start, $end, 1);
+        $total = 1;
+    }
+    return $total;
+}
+
+/**
  * Startet den Timer fuer eine Arbeitsanweisung.
  * Stoppt automatisch jeden anderen laufenden Timer des gleichen Mitarbeiters
  * und addiert dessen verstrichene Zeit zu actual_minutes.
@@ -776,7 +869,7 @@ function startInstructionTimer($data) {
     try {
         // Anderen laufenden Timer dieses Mitarbeiters finden und stoppen
         $running = $db->getOne(
-            "SELECT id, timer_started_at, actual_minutes
+            "SELECT id, oe_id, timer_started_at, timer_employee_id, actual_minutes
              FROM oe_instructions_lxcars
              WHERE timer_employee_id = :emp AND timer_started_at IS NOT NULL AND id != :id",
             [':emp' => $employeeId, ':id' => $id]
@@ -787,12 +880,12 @@ function startInstructionTimer($data) {
 
         if ($running) {
             $stoppedId = intval($running['id']);
-            $elapsed = _calcNetMinutes(
-                $running['timer_started_at'],
-                date('Y-m-d H:i:s'),
+            // Sitzung festhalten; liefert dieselben Nettominuten wie der Stopp-Knopf
+            $stoppedMinutes = _logInstructionTime(
+                $db, $stoppedId, intval($running['oe_id']), intval($running['timer_employee_id']),
+                $running['timer_started_at'], date('Y-m-d H:i:s'),
                 $pausen, $arbeitsbeginn, $arbeitsende
             );
-            $stoppedMinutes = max(1, $elapsed);
             $newActual = intval($running['actual_minutes']) + $stoppedMinutes;
 
             $db->execute(
@@ -855,7 +948,7 @@ function stopInstructionTimer($data) {
     $arbeitsende = $data['arbeitsende'] ?? '17:00';
 
     $row = $db->getOne(
-        "SELECT timer_started_at, actual_minutes FROM oe_instructions_lxcars WHERE id = :id",
+        "SELECT oe_id, timer_started_at, timer_employee_id, actual_minutes FROM oe_instructions_lxcars WHERE id = :id",
         [':id' => $id]
     );
 
@@ -864,21 +957,28 @@ function stopInstructionTimer($data) {
         return;
     }
 
-    $elapsed = _calcNetMinutes(
-        $row['timer_started_at'],
-        date('Y-m-d H:i:s'),
-        $pausen, $arbeitsbeginn, $arbeitsende
-    );
-    $minutes = max(1, $elapsed);
-    $newActual = intval($row['actual_minutes']) + $minutes;
+    $db->beginTransaction();
+    try {
+        // Ausführungszeit automatisch festhalten (tageweise, Nettominuten)
+        $minutes = _logInstructionTime(
+            $db, $id, intval($row['oe_id']), intval($row['timer_employee_id']),
+            $row['timer_started_at'], date('Y-m-d H:i:s'),
+            $pausen, $arbeitsbeginn, $arbeitsende
+        );
+        $newActual = intval($row['actual_minutes']) + $minutes;
 
-    $db->execute(
-        "UPDATE oe_instructions_lxcars
-         SET timer_started_at = NULL, timer_employee_id = NULL,
-             actual_minutes = :actual, done_at = NOW()
-         WHERE id = :id",
-        [':actual' => $newActual, ':id' => $id]
-    );
+        $db->execute(
+            "UPDATE oe_instructions_lxcars
+             SET timer_started_at = NULL, timer_employee_id = NULL,
+                 actual_minutes = :actual, done_at = NOW()
+             WHERE id = :id",
+            [':actual' => $newActual, ':id' => $id]
+        );
+        $db->commit();
+    } catch (Exception $e) {
+        $db->rollBack();
+        throw new ApiError('API_DATABASE_ERROR', $e->getMessage());
+    }
 
     resultInfo(true, 'TIMER_STOPPED', [
         'elapsed_minutes' => $minutes,

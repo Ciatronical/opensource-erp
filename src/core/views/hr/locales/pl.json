@@ -3,7 +3,8 @@
         "title": "Kadry",
         "hub": "Kadry i płace",
         "payroll": "Naliczanie płac",
-        "vacation": "Planowanie urlopów"
+        "vacation": "Planowanie urlopów",
+        "performance": "Wydajność"
     },
     "HrView": {
         "title": "Kadry i płace",
@@ -32,7 +33,8 @@
             "payroll": "Naliczanie płac",
             "vacation": "Planowanie urlopów",
             "settings": "Dane pracowników",
-            "tax": "Tabela podatkowa"
+            "tax": "Tabela podatkowa",
+            "performance": "Wydajność"
         },
         "dashboard": {
             "activeEmployees": "Aktywni pracownicy",
@@ -164,6 +166,180 @@
             "noEmployees": "Nie znaleziono aktywnych pracowników.",
             "expandAll": "Rozwiń wszystko",
             "collapseAll": "Zwiń wszystko"
+        },
+        "performance": {
+            "period": {
+                "week": "Tydzień",
+                "month": "Miesiąc",
+                "quarter": "Kwartał",
+                "year": "Rok"
+            },
+            "previous": "Wstecz",
+            "next": "Dalej",
+            "today": "Dziś",
+            "quarterLabel": "{q}. kwartał {year}",
+            "comparedTo": "Porównanie z {range}",
+            "weekShort": "Tyg. {n}",
+            "bucket": {
+                "day": "dzień",
+                "week": "tydzień",
+                "month": "miesiąc"
+            },
+            "mechanics": "Mechanicy",
+            "all": "Wszyscy",
+            "activeCount": "{n} aktywnych w okresie",
+            "noActivity": "Brak ukończonych zadań w okresie",
+            "noMechanics": "W wybranym okresie nie ukończono żadnych zleceń pracy. Mechanicy pochodzą z grupy pracowników trybu mechanika (konfiguracja firmy → LxCars).",
+            "showInactive": "Pokaż {n} bez ukończonych zadań",
+            "hideInactive": "Ukryj bez ukończonych zadań",
+            "noData": "Brak danych w okresie",
+            "noComparison": "brak porównania",
+            "points": "{v} pkt",
+            "rankOf": "Miejsce {rank} z {n} według godzin rzeczywistych",
+            "activeDays": "{n} dni roboczych z ukończonymi zadaniami",
+            "vacationDays": "{n} dni urlopu",
+            "workingOn": "Pracuje teraz: {task} · zlecenie {order} · od {since}",
+            "others": "Pozostali ({n})",
+            "insights": "Wnioski",
+            "kpi": {
+                "hours": "Godziny rzeczywiste",
+                "efficiency": "Wydajność",
+                "utilization": "Obłożenie",
+                "done": "Ukończone zadania",
+                "laborRevenue": "Robocizna (netto)",
+                "ofAvailable": "z {h} dostępnych",
+                "inOrders": "w {n} zleceniach",
+                "perHour": "{v} za godzinę rzeczywistą",
+                "team": "Zespół {v}"
+            },
+            "legend": {
+                "actual": "Rzeczywiste",
+                "planned": "Norma"
+            },
+            "trend": {
+                "hoursTitle": "Godziny na {unit}",
+                "efficiencyTitle": "Wydajność na {unit}",
+                "efficiencySubtitle": "Norma ÷ rzeczywiste · powyżej 100 % = szybciej niż norma",
+                "teamTitle": "Godziny zespołu na {unit}",
+                "hoursSubtitle": "Kliknięcie słupka pokazuje zlecenia"
+            },
+            "benchmark": {
+                "title": "Mocne i słabe strony",
+                "subtitle": "Czas na zadanie w porównaniu ze średnią zespołu",
+                "legend": "Odchylenie od zespołu",
+                "empty": "Brak zadania, które w tym okresie wykonywali także inni mechanicy",
+                "tooltipFaster": "{v} % szybciej niż zespół ({own} zamiast {team}, {n}×)",
+                "tooltipSlower": "{v} % wolniej niż zespół ({own} zamiast {team}, {n}×)"
+            },
+            "heatmap": {
+                "title": "Profil aktywności",
+                "subtitle": "Zarejestrowany czas pracy według dnia tygodnia i godziny rozpoczęcia",
+                "tooltip": "{day} od {hour}:00: {n} rozpoczęć pracy, {min} zarejestrowanych"
+            },
+            "tasks": {
+                "title": "Zadania w okresie",
+                "task": "Zadanie",
+                "count": "Liczba",
+                "total": "Razem",
+                "avgActual": "Śr. rzecz.",
+                "avgPlanned": "Śr. norma",
+                "teamAvg": "Śr. zespół",
+                "vsTeam": "do zespołu",
+                "showAll": "Pokaż wszystkie {n} zadań",
+                "showLess": "Pokaż mniej",
+                "subtitle": "Kliknięcie otwiera zlecenie – przy kilku zleceniach najpierw listę"
+            },
+            "matrix": {
+                "title": "Macierz wydajności",
+                "subtitle": "Obłożenie względem wydajności, wielkość koła = godziny rzeczywiste. Kliknięcie otwiera mechanika.",
+                "q1": "szybko i z pełnym obłożeniem",
+                "q2": "szybko, jest rezerwa",
+                "q3": "wolno, małe obłożenie",
+                "q4": "pełne obłożenie, ponad normę"
+            },
+            "compare": {
+                "title": "Porównanie godzin",
+                "subtitle": "Rzeczywiste względem normy na mechanika"
+            },
+            "ranking": {
+                "title": "Ranking",
+                "mechanic": "Mechanik",
+                "trend": "Przebieg",
+                "planned": "Norma",
+                "orders": "Zlecenia",
+                "done": "Ukończone",
+                "revenue": "Robocizna",
+                "checks": "Kontrola"
+            },
+            "spread": {
+                "title": "Największe różnice w zespole",
+                "subtitle": "Zadania, przy których mechanicy różnią się najbardziej – wskazówka do szkolenia lub weryfikacji normy",
+                "task": "Zadanie",
+                "count": "Liczba",
+                "teamAvg": "Śr. zespół",
+                "fastest": "Najszybszy",
+                "slowest": "Najwolniejszy",
+                "factor": "Współczynnik"
+            },
+            "insight": {
+                "fasterThanTeam": "Wydajność {v} pkt powyżej średniej zespołu.",
+                "slowerThanTeam": "Wydajność {v} pkt poniżej średniej zespołu.",
+                "strength": "Mocna strona: „{task}” {v} % szybciej niż zespół.",
+                "weakness": "Potencjał: „{task}” {v} % wolniej niż zespół ({min} zamiast {team}).",
+                "moreHours": "{v} % więcej godzin rzeczywistych niż w poprzednim okresie.",
+                "fewerHours": "{v} % mniej godzin rzeczywistych niż w poprzednim okresie.",
+                "lowUtilization": "Obłożenie tylko {v} % – brakuje rejestracji czasu lub zleceń?",
+                "focus": "{v} % czasu przypada na „{task}”.",
+                "teamBest": "Najwyższa wydajność: {name} z {v} %.",
+                "teamRevenue": "{name} wypracowuje {v} % robocizny.",
+                "teamMoreHours": "Zespół ma {v} % więcej godzin rzeczywistych niż w poprzednim okresie.",
+                "teamFewerHours": "Zespół ma {v} % mniej godzin rzeczywistych niż w poprzednim okresie.",
+                "teamSpread": "„{task}”: {fast} jest {factor} szybszy niż {slow} – przekazać doświadczenie lub sprawdzić normę.",
+                "running": "{n} mechaników pracuje teraz z uruchomionym licznikiem.",
+                "timerForgotten": "{h} ({v} % czasu rzeczywistego) pochodzi prawdopodobnie z zapomnianych timerów – popraw czasy w zleceniu.",
+                "teamTimerForgotten": "{h} ({v} % godzin zespołu) pochodzi prawdopodobnie z zapomnianych timerów – wskaźniki są zawyżone."
+            },
+            "checks": {
+                "title": "Wiarygodność",
+                "subtitle": "Dni powyżej {h} czasu pracy i nietypowe pojedyncze czasy",
+                "none": "Brak nieprawidłowości w okresie – wszystkie zarejestrowane czasy wyglądają wiarygodnie.",
+                "filterAll": "Wszystkie ({n})",
+                "filter": {
+                    "day": "Dni powyżej czasu pracy ({n})",
+                    "timer": "Zapomniany timer? ({n})",
+                    "high": "Nietypowo wysoki ({n})",
+                    "low": "Nietypowo niski ({n})"
+                },
+                "day": "Dzień",
+                "order": "Zlecenie",
+                "what": "Polecenie",
+                "recorded": "Zarejestrowano",
+                "expected": "Odniesienie",
+                "hint": "Uwaga",
+                "dayDetail": "{n} poleceń w {orders} zleceniach",
+                "workTime": "Czas pracy {v}",
+                "planned": "Norma {v}",
+                "usual": "zwykle {v}",
+                "kind": {
+                    "day": "Powyżej czasu pracy",
+                    "timer": "Zapomniany timer?",
+                    "high": "Nietypowo wysoki",
+                    "low": "Nietypowo niski"
+                },
+                "showAll": "Pokaż wszystkie {n} nieprawidłowości"
+            },
+            "orders": {
+                "title": "Zlecenia w okresie",
+                "subtitle": "Kliknięcie otwiera zlecenie",
+                "onlyBucket": "Tylko {v}",
+                "date": "Wykonano",
+                "order": "Zlecenie",
+                "vehicle": "Pojazd",
+                "work": "Prace",
+                "flagged": "{n} nietypowy(ch) czas(ów) – zob. wiarygodność",
+                "clickHint": "Kliknij, aby pokazać zlecenia",
+                "showAll": "Pokaż wszystkie {n} zlecenia"
+            }
         }
     }
 }

@@ -65,8 +65,13 @@
             "createComplaint": "Reklamation erstellen",
             "cancel": "Annuller",
             "saveAsDraft": "Als Entwurf speichern",
-            "history": "Historik",
-            "followUp": "Wiedervorlage",
+            "followUp": "Opfølgning",
+            "followUpOpen": "Åbne opfølgninger: {n}",
+            "followUpNew": "Ny opfølgning",
+            "followUpDone": "Udført",
+            "followUpSaved": "Opfølgning gemt",
+            "followUpMarkedDone": "Opfølgning udført",
+            "followUpError": "Opfølgningen kunne ikke gemmes",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Slet",
             "pdfPreview": "PDF-Forhaandsvisning",
@@ -182,8 +187,6 @@
             "openVehicle": "Koeretoej",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Åbn køretøj i ESI[tronic]",
-            "openGutmann": "Åbn køretøj i Hella Gutmann mega macs",
             "openHgs": "Åbn køretøjsdata i HGS Data",
             "hgsError": "HGS Data kunne ikke åbnes",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Faktura fuldt betalt",
                 "alreadyPaid": "Kortbetaling på {amount} € var allerede gennemført – intet sendt igen",
                 "synced": "Kortbetaling på {amount} € tilføjet fra SumUp"
+            },
+            "confirmation": {
+                "open": "Endnu ikke bekræftet",
+                "openHint": "Hvordan accepterede kunden? Med bekræftelsen fastholdes det aktuelle beløb.",
+                "confirmed": "Bekræftet",
+                "notRecorded": "Det er ikke registreret, hvordan der blev bekræftet.",
+                "suggestedAccept": "Accept registreret — kontrollér venligst",
+                "suggestedDecline": "Afslag registreret",
+                "uncertain": "Registreret med lav sikkerhed — kontrollér citatet nøje.",
+                "condition": "Betingelse: {condition}",
+                "amountIncreased": "Steget med {diff} siden bekræftelsen (bekræftet: {amount})",
+                "auto": "automatisk (AI)",
+                "confirm": "Bekræft",
+                "dismiss": "Afvis",
+                "acknowledge": "Noteret",
+                "reconfirm": "Bekræft igen",
+                "record": "Tilføj oplysninger",
+                "revoke": "Træk bekræftelse tilbage",
+                "revokeQuestion": "Ordren går tilbage til ordreindgang. Den hidtidige bekræftelse forbliver synlig i historikken.",
+                "more": "Flere handlinger",
+                "playCall": "Afspil opkald",
+                "openChat": "Åbn chat",
+                "recordingMissing": "Ingen optagelse fundet for dette opkald",
+                "dialogTitle": "Bekræft ordre",
+                "howQuestion": "Hvordan accepterede kunden?",
+                "when": "Tidspunkt for accept",
+                "note": "Note (valgfri)",
+                "notePlaceholder": "f.eks. hvad kunden sagde",
+                "amountHint": "Det aktuelle beløb på {amount} bekræftes. Stiger det senere, viser ordren det.",
+                "cancel": "Annuller",
+                "savedConfirmed": "Ordre bekræftet",
+                "savedDismissed": "Forslag afvist",
+                "savedAcknowledged": "Afslag taget til efterretning",
+                "savedRevoked": "Bekræftelse trukket tilbage",
+                "channel": {
+                    "phone": "Telefon",
+                    "email": "E-mail",
+                    "whatsapp": "WhatsApp",
+                    "visit": "På stedet",
+                    "signature": "Underskrift",
+                    "portal": "Kundeportal",
+                    "other": "Andet"
+                },
+                "saveError": "Det lykkedes ikke — ordren er formentlig blevet ændret i mellemtiden. Visningen er genindlæst, kontrollér venligst igen."
             }
         },
         "workflow": {
@@ -444,7 +491,11 @@
             "quotation": "Tilbud",
             "delivery_order": "Følgeseddel",
             "credit_note": "Kreditnota",
-            "invoice_storno": "Annullering-Faktura"
+            "invoice_storno": "Annullering-Faktura",
+            "purchase_order": "Indkøbsordre",
+            "purchase_invoice": "Indgående faktura",
+            "request_quotation": "Forespørgsel",
+            "purchase_delivery_order": "Indkøbsfølgeseddel"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Venligst wenden Sie sich an Ihren Administrator."
+        },
+        "history": {
+            "title": "Historik",
+            "reload": "Opdater",
+            "close": "Luk",
+            "lastChange": "senest ændret {time} af {name}",
+            "changedBy": "{name} har lige ændret dette bilag",
+            "createdInfo": "Oprettet {time}",
+            "filter": {
+                "all": "Alle",
+                "head": "Hoved",
+                "items": "Linjer",
+                "events": "Status & forsendelse"
+            },
+            "filterEmployee": "Hvem",
+            "search": "Søg",
+            "timeTravel": "Tidsrejse",
+            "today": "I dag",
+            "backToToday": "Tilbage til i dag",
+            "asOf": "Status før redigeringen {time} – dengang → i dag",
+            "stepsBack": "{n} redigering tilbage | {n} redigeringer tilbage",
+            "noDiff": "Hoved og linjer var dengang som i dag.",
+            "travelItem": {
+                "added": "tilføjet siden",
+                "removed": "fjernet siden",
+                "changed": "ændret siden"
+            },
+            "noMatch": "Ingen poster for dette filter.",
+            "empty": "Ingen ændringer registreret endnu. Historikken begynder med næste ændring.",
+            "item": {
+                "added": "tilføjet",
+                "removed": "fjernet",
+                "changed": "ændret"
+            },
+            "milestone": {
+                "created": "Bilag oprettet",
+                "deleted": "Bilag slettet",
+                "confirmed": "Ordre bekræftet",
+                "unconfirmed": "Bekræftelse trukket tilbage",
+                "closed": "Afsluttet",
+                "reopened": "Genåbnet",
+                "paid": "Betaling {amount}",
+                "storno": "Annulleret",
+                "printed": "Udskrevet"
+            },
+            "summary": {
+                "itemsAdded": "{n} linje tilføjet | {n} linjer tilføjet",
+                "itemsChanged": "{n} linje ændret | {n} linjer ændret",
+                "itemsRemoved": "{n} linje fjernet | {n} linjer fjernet",
+                "amount": "Beløb {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Gemt",
+                "printed": "Udskrevet",
+                "posted": "Bogført",
+                "printedPosted": "Udskrevet og bogført",
+                "screened": "Vist på skærmen",
+                "mailed": "Sendt via e-mail",
+                "deleted": "Slettet",
+                "storno": "Annulleret",
+                "paymentPosted": "Betaling bogført",
+                "previewed": "Forhåndsvisning vist",
+                "canceled": "Afbrudt"
+            },
+            "link": {
+                "to": "{type} {number} oprettet herfra",
+                "from": "Oprettet fra {type} {number}"
+            },
+            "followup": {
+                "created": "Opfølgning oprettet: {subject} (forfalder {date})",
+                "done": "Opfølgning udført: {subject}"
+            },
+            "sent": {
+                "email": "Via e-mail til {to}",
+                "whatsapp": "Via WhatsApp til {to}",
+                "post": "Med post til {to}",
+                "dhl": "DHL-forsendelse {to}",
+                "other": "Sendt til {to}"
+            },
+            "fields": {
+                "parts_id": "Vare",
+                "paid": "Betalt",
+                "datepaid": "Betalt den",
+                "record_type": "Bilagstype",
+                "order_type": "Bilagstype",
+                "quotation": "Tilbud",
+                "storno": "Annulleret",
+                "storno_id": "Annullering af",
+                "dunning_config_id": "Rykkerniveau",
+                "cp_id": "Kontaktperson",
+                "globalproject_id": "Projekt",
+                "project_id": "Projekt",
+                "optional": "Valgfri linje",
+                "subtotal": "Subtotal",
+                "serialnumber": "Serienummer",
+                "pricegroup_id": "Prisgruppe",
+                "price_factor_id": "Prisfaktor",
+                "orderer_id": "Bestiller",
+                "delivered": "Leveret",
+                "proforma": "Proforma",
+                "order_probability": "Ordresandsynlighed",
+                "expected_billing_date": "Forventet faktureringsdato",
+                "tax_point": "Leveringstidspunkt",
+                "vendor_confirmation_number": "Leverandørens bekræftelsesnummer",
+                "oreqnumber": "Forespørgselsnummer",
+                "invnumber_for_credit_note": "Fakturanummer til kreditnota",
+                "is_sepa_blocked": "SEPA spærret",
+                "order_status_id": "Ordrestatus",
+                "no_whatsapp": "Ingen WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Salgsordre (bekræftet)",
+                "sales_order_intake": "Ordreindgang (ubekræftet)",
+                "sales_quotation": "Tilbud",
+                "request_quotation": "Tilbudsforespørgsel",
+                "purchase_quotation_intake": "Modtaget tilbud",
+                "purchase_order": "Indkøbsordre",
+                "purchase_order_confirmation": "Leverandørens ordrebekræftelse",
+                "sales_delivery_order": "Følgeseddel",
+                "purchase_delivery_order": "Indkøbsfølgeseddel",
+                "supplier_delivery_order": "Leverandørfølgeseddel",
+                "rma_delivery_order": "Returfølgeseddel"
+            },
+            "yes": "Ja",
+            "no": "Nej",
+            "automatic": "Automatisk",
+            "external": "kivitendo / ekstern",
+            "unknownEmployee": "Ukendt",
+            "source": {
+                "external": "uden for OSERP",
+                "recurring": "tilbagevendende faktura",
+                "ebay": "eBay-import",
+                "portal": "Shop / kundeportal"
+            }
         }
     }
 }

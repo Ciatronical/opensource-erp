@@ -65,8 +65,13 @@
             "createComplaint": "Reklamation erstellen",
             "cancel": "Stornieren",
             "saveAsDraft": "Als Entwurf speichern",
-            "history": "Verlauf",
             "followUp": "Připomínka",
+            "followUpOpen": "Otevřené připomínky: {n}",
+            "followUpNew": "Nová připomínka",
+            "followUpDone": "Hotovo",
+            "followUpSaved": "Připomínka uložena",
+            "followUpMarkedDone": "Připomínka vyřízena",
+            "followUpError": "Připomínku se nepodařilo uložit",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Smazat",
             "pdfPreview": "PDF-Vorschau",
@@ -182,8 +187,6 @@
             "openVehicle": "Fahrzeug",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Otevřít vozidlo v ESI[tronic]",
-            "openGutmann": "Otevřít vozidlo v Hella Gutmann mega macs",
             "openHgs": "Otevřít data vozidla v HGS Data",
             "hgsError": "HGS Data se nepodařilo otevřít",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Faktura plně uhrazena",
                 "alreadyPaid": "Platba kartou ve výši {amount} € již proběhla – nic nebylo odesláno znovu",
                 "synced": "Platba kartou ve výši {amount} € doplněna ze SumUp"
+            },
+            "confirmation": {
+                "open": "Zatím nepotvrzeno",
+                "openHint": "Jak zákazník souhlasil? Potvrzením se zaznamená aktuální částka.",
+                "confirmed": "Potvrzeno",
+                "notRecorded": "Způsob potvrzení nebyl zaznamenán.",
+                "suggestedAccept": "Rozpoznán souhlas — zkontrolujte prosím",
+                "suggestedDecline": "Rozpoznáno odmítnutí",
+                "uncertain": "Rozpoznáno s nízkou jistotou — citaci prosím pečlivě zkontrolujte.",
+                "condition": "Podmínka: {condition}",
+                "amountIncreased": "Od potvrzení částka vzrostla o {diff} (potvrzeno: {amount})",
+                "auto": "automaticky (AI)",
+                "confirm": "Potvrdit",
+                "dismiss": "Zamítnout",
+                "acknowledge": "Beru na vědomí",
+                "reconfirm": "Potvrdit znovu",
+                "record": "Doplnit údaje",
+                "revoke": "Odvolat potvrzení",
+                "revokeQuestion": "Objednávka se vrátí do stavu příjmu objednávky. Dosavadní potvrzení zůstane viditelné v historii.",
+                "more": "Další akce",
+                "playCall": "Přehrát hovor",
+                "openChat": "Otevřít chat",
+                "recordingMissing": "Pro tento hovor nebyla nalezena žádná nahrávka",
+                "dialogTitle": "Potvrdit objednávku",
+                "howQuestion": "Jak zákazník souhlasil?",
+                "when": "Čas souhlasu",
+                "note": "Poznámka (nepovinné)",
+                "notePlaceholder": "např. co zákazník řekl",
+                "amountHint": "Potvrzuje se aktuální částka {amount}. Pokud později vzroste, objednávka to zobrazí.",
+                "cancel": "Zrušit",
+                "savedConfirmed": "Objednávka potvrzena",
+                "savedDismissed": "Návrh zamítnut",
+                "savedAcknowledged": "Odmítnutí vzato na vědomí",
+                "savedRevoked": "Potvrzení odvoláno",
+                "channel": {
+                    "phone": "Telefon",
+                    "email": "E-mail",
+                    "whatsapp": "WhatsApp",
+                    "visit": "Na místě",
+                    "signature": "Podpis",
+                    "portal": "Zákaznický portál",
+                    "other": "Jiné"
+                },
+                "saveError": "To se nepodařilo — objednávka byla mezitím pravděpodobně změněna. Zobrazení bylo znovu načteno, zkontrolujte to prosím ještě jednou."
             }
         },
         "workflow": {
@@ -444,7 +491,11 @@
             "quotation": "Nabídka",
             "delivery_order": "Dodací list",
             "credit_note": "Dobropis",
-            "invoice_storno": "Storno-Rechnung"
+            "invoice_storno": "Storno-Rechnung",
+            "purchase_order": "Objednávka u dodavatele",
+            "purchase_invoice": "Přijatá faktura",
+            "request_quotation": "Poptávka",
+            "purchase_delivery_order": "Dodací list dodavatele"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."
+        },
+        "history": {
+            "title": "Historie",
+            "reload": "Obnovit",
+            "close": "Zavřít",
+            "lastChange": "naposledy změněno {time} uživatelem {name}",
+            "changedBy": "{name} právě změnil tento doklad",
+            "createdInfo": "Vytvořeno {time}",
+            "filter": {
+                "all": "Vše",
+                "head": "Hlavička",
+                "items": "Položky",
+                "events": "Stav a odeslání"
+            },
+            "filterEmployee": "Kdo",
+            "search": "Hledat",
+            "timeTravel": "Cesta časem",
+            "today": "Dnes",
+            "backToToday": "Zpět na dnešek",
+            "asOf": "Stav před úpravou z {time} – tehdy → dnes",
+            "stepsBack": "{n} úprava zpět | {n} úprav zpět",
+            "noDiff": "Hlavička a položky byly tehdy stejné jako dnes.",
+            "travelItem": {
+                "added": "od té doby přidáno",
+                "removed": "od té doby odstraněno",
+                "changed": "od té doby změněno"
+            },
+            "noMatch": "Pro tento filtr nejsou žádné záznamy.",
+            "empty": "Zatím nebyly zaznamenány žádné změny. Historie začne další změnou.",
+            "item": {
+                "added": "přidáno",
+                "removed": "odstraněno",
+                "changed": "změněno"
+            },
+            "milestone": {
+                "created": "Doklad vytvořen",
+                "deleted": "Doklad smazán",
+                "confirmed": "Zakázka potvrzena",
+                "unconfirmed": "Potvrzení zrušeno",
+                "closed": "Vyřízeno",
+                "reopened": "Znovu otevřeno",
+                "paid": "Platba {amount}",
+                "storno": "Stornováno",
+                "printed": "Vytištěno"
+            },
+            "summary": {
+                "itemsAdded": "{n} položka přidána | {n} položek přidáno",
+                "itemsChanged": "{n} položka změněna | {n} položek změněno",
+                "itemsRemoved": "{n} položka odstraněna | {n} položek odstraněno",
+                "amount": "Částka {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Uloženo",
+                "printed": "Vytištěno",
+                "posted": "Zaúčtováno",
+                "printedPosted": "Vytištěno a zaúčtováno",
+                "screened": "Zobrazeno na obrazovce",
+                "mailed": "Odesláno e-mailem",
+                "deleted": "Smazáno",
+                "storno": "Stornováno",
+                "paymentPosted": "Platba zaúčtována",
+                "previewed": "Zobrazen náhled",
+                "canceled": "Přerušeno"
+            },
+            "link": {
+                "to": "Z toho vytvořeno: {type} {number}",
+                "from": "Vytvořeno z: {type} {number}"
+            },
+            "followup": {
+                "created": "Připomínka vytvořena: {subject} (splatnost {date})",
+                "done": "Připomínka vyřízena: {subject}"
+            },
+            "sent": {
+                "email": "E-mailem na {to}",
+                "whatsapp": "Přes WhatsApp na {to}",
+                "post": "Poštou na {to}",
+                "dhl": "Zásilka DHL {to}",
+                "other": "Odesláno na {to}"
+            },
+            "fields": {
+                "parts_id": "Artikl",
+                "paid": "Zaplaceno",
+                "datepaid": "Zaplaceno dne",
+                "record_type": "Typ dokladu",
+                "order_type": "Typ dokladu",
+                "quotation": "Nabídka",
+                "storno": "Stornováno",
+                "storno_id": "Storno k",
+                "dunning_config_id": "Stupeň upomínky",
+                "cp_id": "Kontaktní osoba",
+                "globalproject_id": "Projekt",
+                "project_id": "Projekt",
+                "optional": "Volitelná položka",
+                "subtotal": "Mezisoučet",
+                "serialnumber": "Sériové číslo",
+                "pricegroup_id": "Cenová skupina",
+                "price_factor_id": "Cenový faktor",
+                "orderer_id": "Objednatel",
+                "delivered": "Dodáno",
+                "proforma": "Proforma",
+                "order_probability": "Pravděpodobnost zakázky",
+                "expected_billing_date": "Předpokládané datum fakturace",
+                "tax_point": "Datum zdanitelného plnění",
+                "vendor_confirmation_number": "Číslo potvrzení dodavatele",
+                "oreqnumber": "Číslo poptávky",
+                "invnumber_for_credit_note": "Číslo faktury k dobropisu",
+                "is_sepa_blocked": "SEPA blokováno",
+                "order_status_id": "Stav zakázky",
+                "no_whatsapp": "Bez WhatsApp"
+            },
+            "recordType": {
+                "sales_order": "Zakázka (potvrzená)",
+                "sales_order_intake": "Příjem zakázky (nepotvrzený)",
+                "sales_quotation": "Nabídka",
+                "request_quotation": "Poptávka",
+                "purchase_quotation_intake": "Přijatá nabídka",
+                "purchase_order": "Objednávka",
+                "purchase_order_confirmation": "Potvrzení objednávky dodavatelem",
+                "sales_delivery_order": "Dodací list",
+                "purchase_delivery_order": "Nákupní dodací list",
+                "supplier_delivery_order": "Dodací list materiálu zákazníka",
+                "rma_delivery_order": "Vratný dodací list"
+            },
+            "yes": "Ano",
+            "no": "Ne",
+            "automatic": "Automaticky",
+            "external": "kivitendo / externí",
+            "unknownEmployee": "Neznámý",
+            "source": {
+                "external": "mimo OSERP",
+                "recurring": "opakovaná faktura",
+                "ebay": "Import z eBay",
+                "portal": "Obchod / zákaznický portál"
+            }
         }
     }
 }

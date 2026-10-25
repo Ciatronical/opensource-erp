@@ -88,7 +88,7 @@ SQL, [':cid' => $customerId]);
         JOIN oe ON oe.id = oi.trans_id
         JOIN parts p ON p.id = oi.parts_id
         WHERE oe.customer_id = :cid
-          AND oe.record_type = 'sales_order'
+          AND oe.record_type IN ('sales_order', 'sales_order_intake')
           AND oe.transdate >= (CURRENT_DATE - INTERVAL '2 years')
           AND oi.parts_id IS NOT NULL
           AND oe.id != :current_oe_id

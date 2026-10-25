@@ -28,7 +28,10 @@ export const fakturaStore = defineStore('fakturaStore', () => {
             data.value = response.data.payload;
         }
         else {
-            throw new ApiError('ApiError', response.data.text, 'Error fetching faktura data: ' + response.data.text);
+            const error = new ApiError('ApiError', response.data.text, 'Error fetching faktura data: ' + response.data.text);
+            // FAKTURA_LEDGER_ONLY bringt das Ziel im Journal mit
+            error.payload = response.data.payload;
+            throw error;
         }
     }
 
@@ -463,26 +466,61 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     }
 
     /**
-     * Bestätigt einen Verkaufsauftrag oder setzt ihn auf Auftragseingang zurück
-     * (schaltet record_type sales_order ↔ sales_order_intake).
+     * Bestätigt einen Verkaufsauftrag oder nimmt die Bestätigung zurück
+     * (record_type sales_order ↔ sales_order_intake) und hält fest, wie der
+     * Kunde zugesagt hat. Der neue Bestätigungsstand landet direkt in data.
      *
      * @param {number} fakturaID - Auftrags-ID
-     * @param {boolean} confirmed - true = bestätigt, false = Auftragseingang
-     * @return {Promise<Object>} { record_type }
+     * @param {boolean} confirmed - true = bestätigen, false = zurücknehmen
+     * @param {Object} [opts] - { channel, agreed_at (ms), note, suggestion_id, employee_id }
+     * @return {Promise<Object>} { record_type, confirmation_status }
      */
-    async function setOrderConfirmed(fakturaID, confirmed) {
+    async function setOrderConfirmed(fakturaID, confirmed, opts = {}) {
         const response = await axios.post('/api/faktura/', {
             action: 'setOrderConfirmed',
-            fakturaID: fakturaID,
-            confirmed: confirmed
+            fakturaID,
+            confirmed,
+            channel: opts.channel || null,
+            agreed_at: opts.agreed_at || null,
+            note: opts.note || null,
+            suggestion_id: opts.suggestion_id || null,
+            employee_id: opts.employee_id || null,
         });
 
         if (response.data.success) {
+            applyConfirmationStatus(fakturaID, response.data.payload);
             return response.data.payload;
         }
-        else {
-            throw new ApiError('ApiError', response.data.text, 'Error confirming order: ' + response.data.text);
+        throw new ApiError('ApiError', response.data.text, 'Error confirming order: ' + response.data.text);
+    }
+
+    /**
+     * Verwirft einen Vorschlag der KI bzw. nimmt eine erkannte Absage zur Kenntnis
+     *
+     * @param {number} fakturaID - Auftrags-ID (zum Abgleich mit dem offenen Beleg)
+     * @param {number} suggestionId - oe_confirmation_oserp.id
+     * @param {number|null} employeeId - Mitarbeiter aus dem Store
+     * @return {Promise<Object>} { confirmation_status }
+     */
+    async function dismissOrderConfirmation(fakturaID, suggestionId, employeeId) {
+        const response = await axios.post('/api/faktura/', {
+            action: 'dismissOrderConfirmation',
+            id: suggestionId,
+            employee_id: employeeId || null,
+        });
+
+        if (response.data.success) {
+            applyConfirmationStatus(fakturaID, response.data.payload);
+            return response.data.payload;
         }
+        throw new ApiError('ApiError', response.data.text, 'Error dismissing suggestion: ' + response.data.text);
+    }
+
+    /** Antwort von setOrderConfirmed/dismissOrderConfirmation in den offenen Beleg übernehmen */
+    function applyConfirmationStatus(fakturaID, payload) {
+        if (!data.value?.common || Number(data.value.common.id) !== Number(fakturaID)) return;
+        if (payload.record_type) data.value.common.record_type = payload.record_type;
+        if (payload.confirmation_status) data.value.confirmation_status = payload.confirmation_status;
     }
 
     /**
@@ -947,6 +985,7 @@ export const fakturaStore = defineStore('fakturaStore', () => {
         updateFakturaItems,
         updateFakturaField,
         setOrderConfirmed,
+        dismissOrderConfirmation,
         updatePart,
         createPart,
         getTemplateList,

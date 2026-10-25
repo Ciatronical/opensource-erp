@@ -81,7 +81,7 @@ function generateOrderFromCall($data) {
         $result = $db->getOne(<<<SQL
             WITH tmp AS (UPDATE defaults SET sonumber = COALESCE(sonumber::INT, 0) + 1 RETURNING sonumber)
             INSERT INTO oe (ordnumber, transdate, employee_id, customer_id, taxzone_id, currency_id, record_type)
-            SELECT (SELECT sonumber FROM tmp), CURRENT_DATE, :employee_id, :customer_id, :taxzone_id, :currency_id, 'sales_order'
+            SELECT (SELECT sonumber FROM tmp), CURRENT_DATE, :employee_id, :customer_id, :taxzone_id, :currency_id, 'sales_order_intake'
             RETURNING id, ordnumber
 SQL, [
             ':employee_id' => $employeeId,

@@ -696,9 +696,6 @@
         "aagOnlinePassword_help": "Passwort für AAG Online",
         "aagOnlinePassword2": "AAG Online Passwort (Wiederholung)",
         "aagOnlinePassword2_help": "Passwort-Wiederholung zur Bestätigung",
-        "gutmann": "Hella Gutmann",
-        "gutmannMegamacsUrl": "Endereço mega macs (URL)",
-        "gutmannMegamacsUrl_help": "Endereço ou modelo de URL do mega macs X. Os marcadores {hsn} {tsn} {vin} são substituídos, p. ex. http://macsx-6129:8889/#/vehicle?hsn={hsn}&tsn={tsn}. Sem marcadores, hsn/tsn/vin são anexados (muitas vezes ignorados por SPA). Dica: selecione um veículo no aparelho e copie a barra de endereço.",
         "hgsData": "HGS Data",
         "hgsDataUser": "Utilizador HGS Data",
         "hgsDataUser_help": "Nome de utilizador para HGS Data (pesquisa de veículo por HSN/TSN)",
@@ -1046,7 +1043,15 @@
         "sumupAutoSend": "Enviar montante automaticamente",
         "sumupAutoSend_help": "Quando uma fatura é criada a partir de um orçamento ou de uma encomenda, o montante em aberto é enviado imediatamente para o terminal (predefinição: ligado). Ao abrir faturas existentes ou já pagas nunca é enviado automaticamente",
         "shopWebsite": "Site do portal do cliente",
-        "shopWebsite_help": "O site em que funciona o HugoShop – atribuído nos canais de venda, configurado em Sistema → Sites."
+        "shopWebsite_help": "O site em que funciona o HugoShop – atribuído nos canais de venda, configurado em Sistema → Sites.",
+        "orderConfirmation": "Confirmação de encomenda",
+        "orderConfirmAi": "Detetar aceitações com IA",
+        "orderConfirmAi_help": "As chamadas (gravação), as mensagens WhatsApp (incluindo mensagens de voz e botões de resposta) e os e-mails de clientes com uma entrada de encomenda em aberto (não fechada, ainda não faturada) são transcritos e verificados pela IA quanto a uma aceitação ou recusa. «Sugestão»: a encomenda mostra a aceitação detetada com a citação e é confirmada com um clique. «Automático»: aceitações inequívocas por WhatsApp ou telefone (uma única encomenda em aberto, sem condição, elevada certeza) são confirmadas de imediato; os e-mails ficam sempre como sugestão, porque o remetente pode ser falsificado. Requisitos: chave da API Anthropic, serviço Whisper e o serviço oserp-auftragsbestaetigung; para e-mails, adicionalmente o serviço oserp-email-eingang com uma caixa de correio configurada. As chamadas só podem ser gravadas com o consentimento de quem liga.",
+        "orderConfirmAiOff": "Desligado",
+        "orderConfirmAiSuggest": "Sugestão — confirmar com um clique",
+        "orderConfirmAiAuto": "Automático em caso de aceitação inequívoca",
+        "orderConfirmAiDays": "Entradas de encomenda dos últimos dias",
+        "orderConfirmAiDays_help": "Só são consideradas para uma aceitação as entradas de encomenda com, no máximo, este número de dias (predefinição 60). Encomendas não confirmadas mais antigas não são verificadas."
     },
     "add": "Adicionar",
     "add_fields": {

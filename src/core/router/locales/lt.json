@@ -45,6 +45,7 @@
         "hr": "/personalas",
         "hrPayroll": "/personalas/atlyginimas",
         "hrVacation": "/personalas/atostogos",
+        "hrPerformance": "/personalas/rezultatai",
         "newDeliveryOrder": "/pristatymas/naujas",
         "setup": "/diegimas",
         "login": "/prisijungimas",

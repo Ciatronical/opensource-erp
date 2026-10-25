@@ -24,7 +24,7 @@
                 </v-col>
 
                 <!-- Auftragsnummer (wenn nicht Auftrag) -->
-                <v-col v-if="fakturaType !== 'order'" cols="12" class="py-1">
+                <v-col v-if="docType !== 'order'" cols="12" class="py-1">
                     <v-text-field
                         :model-value="modelValue.ordnumber"
                         @update:model-value="onFieldChange('ordnumber', $event)"
@@ -51,8 +51,8 @@
                     />
                 </v-col>
 
-                <!-- Angebotsnummer (wenn nicht Angebot) -->
-                <v-col v-if="fakturaType !== 'quotation'" cols="12" class="py-1">
+                <!-- Angebotsnummer (wenn nicht Angebot; Lieferscheine haben keine) -->
+                <v-col v-if="!['quotation', 'delivery_order'].includes(docType)" cols="12" class="py-1">
                     <v-text-field
                         :model-value="modelValue.quonumber"
                         @update:model-value="onFieldChange('quonumber', $event)"
@@ -122,7 +122,7 @@
                 </v-col>
 
                 <!-- Fälligkeitsdatum (nur bei Rechnung) -->
-                <v-col v-if="fakturaType === 'invoice'" cols="12" class="py-1">
+                <v-col v-if="invoiceLike" cols="12" class="py-1">
                     <v-menu v-model="showPicker.duedate" :close-on-content-click="false" location="bottom start">
                         <template #activator="{ props: menuProps }">
                             <v-text-field
@@ -156,7 +156,7 @@
 <script>
 // src/core/views/faktura/cards/faktura.details.card.vue
 
-import { defineComponent, ref, reactive, watch } from 'vue'
+import { defineComponent, ref, reactive, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { parseShortDate, formatDateDE } from '@/features/lxcars/utils/validation.js'
 
@@ -170,12 +170,24 @@ export default defineComponent({
         fakturaType: {
             type: String,
             default: 'invoice',
-            validator: (value) => ['invoice', 'order', 'quotation', 'delivery_order'].includes(value)
+            validator: (value) => ['invoice', 'order', 'quotation', 'delivery_order', 'credit_note', 'invoice_storno',
+                'purchase_invoice', 'purchase_order', 'request_quotation', 'purchase_delivery_order'].includes(value)
         }
     },
     emits: ['update:modelValue', 'field-change'],
     setup(props, { emit }) {
         const { t } = useI18n()
+
+        // Einkaufsbelege haben dieselben Kopffelder wie ihr Verkaufs-Gegenstück
+        const PURCHASE_BASE = {
+            purchase_invoice: 'invoice',
+            purchase_order: 'order',
+            request_quotation: 'quotation',
+            purchase_delivery_order: 'delivery_order'
+        }
+        const docType = computed(() => PURCHASE_BASE[props.fakturaType] || props.fakturaType)
+        // Rechnungsartige Belege (ar/ap): Lieferdatum heißt deliverydate, es gibt eine Fälligkeit
+        const invoiceLike = computed(() => ['invoice', 'purchase_invoice', 'credit_note', 'invoice_storno'].includes(props.fakturaType))
 
         // Date picker state
         const showPicker = reactive({ transdate: false, deliverydate: false, duedate: false })
@@ -191,7 +203,7 @@ export default defineComponent({
         function syncDisplayDates() {
             displayDates.transdate = formatDateDE(props.modelValue.transdate)
             displayDates.deliverydate = formatDateDE(
-                props.fakturaType === 'invoice' ? props.modelValue.deliverydate : props.modelValue.reqdate
+                invoiceLike.value ? props.modelValue.deliverydate : props.modelValue.reqdate
             )
             displayDates.duedate = formatDateDE(props.modelValue.duedate)
         }
@@ -232,7 +244,7 @@ export default defineComponent({
          * Gibt die Belegnummer abhängig vom Dokumenttyp zurück
          */
         function getDocumentNumber() {
-            switch (props.fakturaType) {
+            switch (docType.value) {
                 case 'invoice':
                     return props.modelValue.invnumber
                 case 'order':
@@ -253,7 +265,7 @@ export default defineComponent({
             const updates = { ...props.modelValue }
             let fieldName = ''
 
-            switch (props.fakturaType) {
+            switch (docType.value) {
                 case 'invoice':
                     updates.invnumber = value
                     fieldName = 'invnumber'
@@ -280,7 +292,7 @@ export default defineComponent({
          * Gibt das Label für die Belegnummer abhängig vom Dokumenttyp zurück
          */
         function getDocumentNumberLabel() {
-            switch (props.fakturaType) {
+            switch (docType.value) {
                 case 'invoice':
                     return t('FakturaView.faktura.invoiceNumber')
                 case 'order':
@@ -298,7 +310,7 @@ export default defineComponent({
          * Gibt das Label für das Belegdatum abhängig vom Dokumenttyp zurück
          */
         function getDocumentDateLabel() {
-            switch (props.fakturaType) {
+            switch (docType.value) {
                 case 'invoice':
                     return t('FakturaView.faktura.invoiceDate')
                 case 'order':
@@ -317,14 +329,14 @@ export default defineComponent({
          * ar/ap verwenden 'deliverydate', oe verwendet 'reqdate'
          */
         function getDeliveryDateField() {
-            return props.fakturaType === 'invoice' ? 'deliverydate' : 'reqdate'
+            return invoiceLike.value ? 'deliverydate' : 'reqdate'
         }
 
         /**
          * Gibt das Lieferdatum zurück
          */
         function getDeliveryDate() {
-            return props.fakturaType === 'invoice'
+            return invoiceLike.value
                 ? props.modelValue.deliverydate
                 : props.modelValue.reqdate
         }
@@ -342,6 +354,8 @@ export default defineComponent({
 
         return {
             t,
+            docType,
+            invoiceLike,
             showPicker,
             displayDates,
             toDateObj,

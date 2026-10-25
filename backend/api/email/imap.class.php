@@ -60,6 +60,7 @@ class ImapClient {
 
     public function disconnect(): void {
         if ($this->socket) {
+            try { $this->idleDone(); } catch (\Exception $e) {}
             try { $this->command('LOGOUT'); } catch (\Exception $e) {}
             @fclose($this->socket);
             $this->socket = null;
@@ -218,6 +219,131 @@ class ImapClient {
         return null;
     }
 
+    // ==================== Überwachung (IDLE) ====================
+    // Für den Dienst oserp-email-eingang (backend/cli/email-eingang.php): Der Server
+    // meldet neue Nachrichten im ausgewählten Ordner von sich aus (RFC 2177), der
+    // Dienst wartet per stream_select() auf dem Socket. Ohne IDLE-Fähigkeit fragt
+    // der Dienst mit noop() regelmäßig nach.
+
+    private ?string $idleTag = null;
+    private string $idleBuffer = '';
+
+    /** Socket für stream_select() */
+    public function getSocket() {
+        return $this->socket;
+    }
+
+    /** Beherrscht der Server die Fähigkeit (z. B. IDLE)? */
+    public function hasCapability(string $capability): bool {
+        $resp = $this->command('CAPABILITY');
+        return (bool)preg_match('/^\* CAPABILITY .*\b' . preg_quote($capability, '/') . '\b/mi', $resp);
+    }
+
+    /** Nächste zu vergebende UID eines Ordners (alles darunter ist bekannt) */
+    public function uidNext(string $folder): int {
+        $resp = $this->command('STATUS "' . $this->escapeString($folder) . '" (UIDNEXT)');
+        return preg_match('/UIDNEXT (\d+)/', $resp, $m) ? (int)$m[1] : 0;
+    }
+
+    /**
+     * Alle Adressen aus dem Umschlag (Von, Absender, Antwort an, An, Cc, Bcc)
+     * der angegebenen Nachrichten, klein geschrieben und ohne Dubletten
+     */
+    /**
+     * Absenderadresse je Nachricht aus dem From-Kopf (UID → adresse, klein geschrieben)
+     *
+     * Verlässlicher als der From-Teil von ENVELOPE in parseEnvelopeResponse(): ein
+     * Anzeigename mit Klammern oder Anführungszeichen bringt den dortigen Regex aus dem Tritt.
+     */
+    public function fetchFromAddresses(array $uids): array {
+        if (empty($uids)) return [];
+        $resp = $this->command('UID FETCH ' . implode(',', $uids) . ' (UID BODY.PEEK[HEADER.FIELDS (FROM)])');
+        $result = [];
+        foreach (preg_split('/\n(?=\* \d+ FETCH)/', $resp) as $part) {
+            if (!preg_match('/UID (\d+)/', $part, $u)) continue;
+            if (!preg_match('/^From:[ \t]*((?:.*)(?:\r?\n[ \t].*)*)/mi', $part, $f)) continue;
+            $from = $f[1];
+            // <adresse> bevorzugen, sonst die erste Zeichenfolge mit @
+            if (preg_match('/<\s*([^<>\s]+@[^<>\s]+)\s*>/', $from, $a) || preg_match('/([^\s<>"(),;:]+@[^\s<>"(),;:]+)/', $from, $a)) {
+                $result[(int)$u[1]] = strtolower($a[1]);
+            }
+        }
+        return $result;
+    }
+
+    public function fetchEnvelopeAddresses(array $uids): array {
+        if (empty($uids)) return [];
+        $resp = $this->command('UID FETCH ' . implode(',', $uids) . ' (ENVELOPE)');
+        // Adressstruktur: (name adl mailbox host) — adl ist praktisch immer NIL
+        preg_match_all('/NIL "([^"\s]+)" "([^"\s]+)"\)/', $resp, $m, PREG_SET_ORDER);
+        $addresses = [];
+        foreach ($m as $a) $addresses[strtolower($a[1] . '@' . $a[2])] = true;
+        return array_keys($addresses);
+    }
+
+    /** IDLE beginnen; der Server meldet Änderungen danach unaufgefordert */
+    public function idleStart(): void {
+        $this->idleTag = 'A' . (++$this->tagCounter);
+        $this->idleBuffer = '';
+        fwrite($this->socket, $this->idleTag . " IDLE\r\n");
+        while (true) {
+            $line = $this->readLine();
+            if (str_starts_with($line, '+')) return;
+            if (str_starts_with($line, $this->idleTag . ' ')) {
+                $this->idleTag = null;
+                throw new \RuntimeException('IDLE abgelehnt: ' . $line);
+            }
+        }
+    }
+
+    /**
+     * Gemeldete Zeilen ohne Warten abholen (nach stream_select())
+     * @return bool true, wenn neue Nachrichten gemeldet wurden (EXISTS)
+     */
+    public function idleRead(): bool {
+        stream_set_blocking($this->socket, false);
+        try {
+            while (($chunk = fread($this->socket, 65536)) !== false && $chunk !== '') {
+                $this->idleBuffer .= $chunk;
+            }
+            $eof = feof($this->socket);
+        } finally {
+            stream_set_blocking($this->socket, true);
+        }
+        $exists = false;
+        while (($pos = strpos($this->idleBuffer, "\n")) !== false) {
+            $line = rtrim(substr($this->idleBuffer, 0, $pos), "\r");
+            $this->idleBuffer = substr($this->idleBuffer, $pos + 1);
+            if (preg_match('/^\* \d+ EXISTS/i', $line)) $exists = true;
+            if (preg_match('/^\* BYE/i', $line)) throw new \RuntimeException('IMAP-Server hat die Verbindung beendet');
+        }
+        if ($eof) throw new \RuntimeException('IMAP-Verbindung unterbrochen');
+        return $exists;
+    }
+
+    /**
+     * IDLE beenden (vor jedem weiteren Befehl nötig)
+     * @return bool true, wenn noch neue Nachrichten gemeldet wurden
+     */
+    public function idleDone(): bool {
+        if ($this->idleTag === null) return false;
+        fwrite($this->socket, "DONE\r\n");
+        $exists = (bool)preg_match('/^\* \d+ EXISTS/mi', $this->idleBuffer);
+        $this->idleBuffer = '';
+        while (true) {
+            $line = $this->readLine();
+            if (preg_match('/^\* \d+ EXISTS/i', $line)) $exists = true;
+            if (str_starts_with($line, $this->idleTag . ' ')) break;
+        }
+        $this->idleTag = null;
+        return $exists;
+    }
+
+    /** Nachfragen ohne IDLE: true, wenn der Server neue Nachrichten meldet */
+    public function noop(): bool {
+        return (bool)preg_match('/^\* \d+ EXISTS/mi', $this->command('NOOP'));
+    }
+
     // ==================== Interne Methoden ====================
 
     private function command(string $cmd): string {
@@ -235,7 +361,11 @@ class ImapClient {
                 $data = '';
                 while (strlen($data) < $literalLen) {
                     $chunk = fread($this->socket, $literalLen - strlen($data));
-                    if ($chunk === false) break;
+                    // Verbindung mitten im Literal weg: fread liefert dann '' statt false —
+                    // ohne diese Prüfung liefe die Schleife endlos
+                    if ($chunk === false || ($chunk === '' && feof($this->socket))) {
+                        throw new \RuntimeException('IMAP-Verbindung unterbrochen');
+                    }
                     $data .= $chunk;
                 }
                 $response .= $data;

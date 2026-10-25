@@ -165,11 +165,46 @@ Unter **Einstellungen > LxCars**:
 
 Zeigt pro Mitarbeiter:
 - Erledigte Anweisungen pro Tag/Woche/Monat
-- Geplante vs. tatsächliche Arbeitsminuten
+- Geplante vs. tatsächliche Arbeitsminuten — zugerechnet zum Tag des Arbeitsbeginns (automatisch protokollierte Timer-Sitzungen)
 - Bearbeitete Aufträge
 - Arbeitszeitberechnung (mit Pausenabzug)
 
 Die Arbeitszeiten sind konfigurierbar unter **Einstellungen > LxCars > Zeiterfassung** (Arbeitsbeginn, -ende, Pausen).
+
+### Leistung der Mechaniker (Personal → Leistung)
+
+Mit aktiviertem LxCars bekommt das Personal-Modul den Reiter **Leistung** (auch im Personal-Menü). Er ist nur sichtbar mit dem kivitendo-Recht **Produktivität** oder als Mitglied der konfigurierten Werkstattleitungs-Gruppe; das Backend prüft dasselbe.
+
+Links stehen alle Mechaniker (Mitarbeitergruppe des Mechaniker-Modus) mit Kurzverlauf, oben wird der Zeitraum gewählt (Woche, Monat, Quartal, Jahr, blättern, „Heute"). Jede Kennzahl trägt den Vergleich zur Vorperiode. Ein Aufruf liefert die Daten aller Mechaniker, der Wechsel zwischen ihnen lädt nichts nach.
+
+**Alle** — Vergleich des Teams:
+- Kennzahlen: Ist-Stunden, Leistungsgrad (Vorgabe ÷ Ist), Auslastung, erledigte Anweisungen, anteiliger Arbeitslohn
+- **Leistungsmatrix**: Auslastung gegen Leistungsgrad je Mechaniker, Kreisgröße = Stunden, Quadranten mit Team-Durchschnitt; Klick öffnet den Mechaniker
+- Stunden Ist gegen Vorgabe je Mechaniker, Team-Stunden je Tag/Woche/Monat gestapelt
+- Rangliste mit Verlauf, Veränderung zur Vorperiode, Urlaubstagen, Umsatz
+- **Größte Unterschiede im Team**: Tätigkeiten, bei denen schnellster und langsamster Mechaniker am weitesten auseinanderliegen — Hinweis auf Schulung oder falsche Vorgabezeit
+- Erkenntnisse in Textform (bester Leistungsgrad, Umsatzanteil, Trend, laufende Timer)
+
+**Einzelner Mechaniker**:
+- Kennzahlen mit Vorperiode und Team-Wert, Platz in der Rangliste, laufender Timer mit Sprung zum Auftrag
+- Stunden und Leistungsgrad je Tag/Woche/Monat (100-%-Linie)
+- **Stärken und Schwächen**: Zeit je Tätigkeit gegenüber dem Team-Durchschnitt derselben Tätigkeit
+- **Aktivitätsprofil**: Erledigungen nach Wochentag und Uhrzeit
+- Tätigkeitstabelle mit Anzahl, Ø Ist, Ø Vorgabe, Ø Team und Abweichung
+
+**Plausibilität** (bei „Alle" für das ganze Team, beim Mechaniker nur für ihn) — prüft jede erfasste Zeit des Zeitraums:
+- **Über Arbeitszeit**: Tage, an denen ein Mechaniker mehr als die Netto-Arbeitszeit je Tag (Arbeitsbeginn/-ende/Pausen der Zeiterfassung, z. B. 8 h) erfasst hat, mit allen Aufträgen des Tages. Plausible mehrtägige Arbeiten, die zur Vorgabe passen, zählen nicht mit, weil sie nur am Erledigungstag landen.
+- **Timer vergessen?**: eine einzelne Anweisung länger als ein Arbeitstag und mindestens doppelt so lang wie ihr Vergleichswert
+- **Ungewöhnlich hoch**: mindestens das Dreifache des Vergleichswerts und 30 min darüber
+- **Ungewöhnlich niedrig**: höchstens ein Drittel des Vergleichswerts (ab 20 min Vergleichswert), z. B. Timer nur kurz gestartet oder Vorgabe zu hoch
+- Vergleichswert ist die Vorgabezeit, ohne Vorgabe der Median derselben Tätigkeit im Team über 365 Tage
+- Filter-Chips je Art, Auftragsnummern öffnen direkt den Auftrag; Mechaniker-Liste und Rangliste zeigen die Anzahl der Auffälligkeiten, die Erkenntnisse nennen die Stunden aus vermutlich vergessenen Timern
+
+**Aufträge im Zeitraum** (einzelner Mechaniker): alle bearbeiteten Aufträge mit Kennzeichen, Kunde, Arbeiten, Ist und Vorgabe; Klick öffnet den Auftrag. Ein Klick auf einen Balken im Stunden-Diagramm filtert die Liste auf diesen Tag, diese Woche oder diesen Monat. Im Tagesraster zeigt das Diagramm die Arbeitszeit als Linie und Tage darüber rot; extreme Ausreißer werden abgeschnitten, damit die übrigen Tage lesbar bleiben.
+
+Berechnung: Auslastung = Ist-Minuten ÷ (Arbeitstage Mo–Fr abzüglich genehmigter Urlaubstage aus der Urlaubsplanung × Nettominuten je Tag aus der Zeiterfassungs-Konfiguration). Arbeitslohn = Netto-Dienstleistungspositionen des Auftrags, anteilig nach den Ist-Minuten des Mechanikers am Auftrag.
+
+**Zeitpunkt der Arbeit:** Ist-Zeit zählt am Tag des **Arbeitsbeginns**, nicht der Fertigstellung. Dafür hält das System jede Timer-Sitzung automatisch fest (Start, Stopp, Nettominuten, Mechaniker) — der Mechaniker bedient nur wie bisher Start und Stopp. Läuft ein Timer über Nacht oder mehrere Tage, wird die Sitzung tageweise geteilt und jeder Tag mit seinen Nettominuten bewertet. Von Hand nachgetragene Ist-Minuten zählen ab dem Eintrag rückwärts. Eine Anweisung gehört zum Zeitraum ihres ersten Arbeitsbeginns; für Altdaten ohne Protokoll wird der Beginn aus Fertigstellung minus Nettominuten (Arbeitstage rückwärts) geschätzt. Dieselbe Regel gilt für die Mechaniker-Auswertung im Benutzermenü.
 
 ## Etikettendruck
 

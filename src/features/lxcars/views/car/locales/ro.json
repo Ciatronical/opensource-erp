@@ -344,16 +344,6 @@
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
         },
-        "esi": {
-            "button": "ESI",
-            "tooltip": "Deschide vehiculul în Bosch ESI[tronic] după HSN/TSN",
-            "noKba": "Nu există numere de cheie valide (HSN/TSN)"
-        },
-        "gutmann": {
-            "button": "Gutmann",
-            "tooltip": "Deschide vehiculul în Hella Gutmann mega macs după HSN/TSN",
-            "noKba": "Nu există numere de cheie valide (HSN/TSN)"
-        },
         "hgs": {
             "button": "HGS-Data",
             "tooltip": "Deschide datele vehiculului în HGS Data",

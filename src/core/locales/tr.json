@@ -82,7 +82,8 @@
             "businessCard": "Kartvizit tarama",
             "phoneSearch": "Telefonla arama",
             "callTranscript": "Çağrı değerlendirmesi",
-            "banking": "Likidite tahmini"
+            "banking": "Likidite tahmini",
+            "orderConfirm": "Sipariş onayı"
         }
     },
     "passwordField": {

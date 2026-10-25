@@ -262,6 +262,10 @@ function createTask($data) {
         $fuResult = $mandant->fetch($fuQuery);
         $taskId = $fuResult['id'];
 
+        // Wie kivitendo (SL/FU.pm): Notiz zeigt auf die Wiedervorlage — darauf bauen der
+        // Lösch-Trigger follow_up_delete_notes und die Volltextsuche der Auftragsliste
+        $mandant->execute("UPDATE notes SET trans_id = :fu_id WHERE id = :note_id", ['fu_id' => $taskId, 'note_id' => $noteId]);
+
         // 3. Optional: Link erstellen
         if (!empty($data['transId']) && !empty($data['transType'])) {
             $transId = intval($data['transId']);

@@ -33,6 +33,9 @@
             <v-tab value="tax" prepend-icon="mdi-table-cog">
                 {{ t('HrView.tabs.tax') }}
             </v-tab>
+            <v-tab v-if="showPerformance" value="performance" prepend-icon="mdi-speedometer">
+                {{ t('HrView.tabs.performance') }}
+            </v-tab>
         </v-tabs>
 
         <v-tabs-window v-model="tab">
@@ -198,13 +201,19 @@
                 <HrTaxTab />
             </v-tabs-window-item>
 
+            <!-- LEISTUNG (LxCars) -->
+            <v-tabs-window-item v-if="showPerformance" value="performance">
+                <HrPerformanceTab />
+            </v-tabs-window-item>
+
         </v-tabs-window>
     </v-container>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { hrStore } from '@/core/stores/hr.store.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
@@ -212,19 +221,38 @@ import HrPayrollTab from './tabs/hr.payroll.tab.vue'
 import HrVacationTab from './tabs/hr.vacation.tab.vue'
 import HrSettingsTab from './tabs/hr.settings.tab.vue'
 import HrTaxTab from './tabs/hr.tax.tab.vue'
+import HrPerformanceTab from './tabs/hr.performance.tab.vue'
 
 const MONTH_NAMES = ['Januar','Februar','März','April','Mai','Juni',
     'Juli','August','September','Oktober','November','Dezember']
 
 export default {
     name: 'HrHubView',
-    components: { NavbarView, HrPayrollTab, HrVacationTab, HrSettingsTab, HrTaxTab },
+    components: { NavbarView, HrPayrollTab, HrVacationTab, HrSettingsTab, HrTaxTab, HrPerformanceTab },
     setup() {
         const { t } = useI18n()
         const hr = hrStore()
         const oserp = oserpStore()
+        const route = useRoute()
+        const router = useRouter()
 
-        const tab = ref('dashboard')
+        const showPerformance = computed(() => oserp.canSeeMechanicPerformance())
+        const TABS = ['dashboard', 'payroll', 'vacation', 'settings', 'tax', 'performance']
+
+        // Reiter aus der Adresse (?tab=…) übernehmen und dort mitschreiben,
+        // damit Menüeinträge und Lesezeichen direkt auf einen Reiter führen
+        function tabFromRoute() {
+            const q = String(route.query.tab || '')
+            if (!TABS.includes(q)) return 'dashboard'
+            if (q === 'performance' && !showPerformance.value) return 'dashboard'
+            return q
+        }
+        const tab = ref(tabFromRoute())
+        watch(() => route.query.tab, () => { const q = tabFromRoute(); if (q !== tab.value) tab.value = q })
+        watch(tab, v => {
+            const q = v === 'dashboard' ? undefined : v
+            if ((route.query.tab || undefined) !== q) router.replace({ query: { ...route.query, tab: q } })
+        })
         const dashboard = ref(null)
         const dashLoading = ref(false)
         const currentYear = new Date().getFullYear()
@@ -275,7 +303,7 @@ export default {
         onMounted(loadDashboard)
 
         return {
-            t, tab, dashboard, dashLoading, currentYear,
+            t, tab, dashboard, dashLoading, currentYear, showPerformance,
             myVacation, myUsedPercent, pendingCount,
             monthName, statusColor, statusLabel, formatDate,
             goToPayroll, goToVacation

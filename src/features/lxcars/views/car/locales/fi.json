@@ -344,16 +344,6 @@
             "tsnTooltip": "Search vehicle by VIN in AAG-Online",
             "error": "Could not open AAG-Online"
         },
-        "esi": {
-            "button": "ESI",
-            "tooltip": "Avaa ajoneuvo Bosch ESI[tronic]issa HSN/TSN:n avulla",
-            "noKba": "Kelvollisia avainnumeroita (HSN/TSN) ei ole saatavilla"
-        },
-        "gutmann": {
-            "button": "Gutmann",
-            "tooltip": "Avaa ajoneuvo Hella Gutmann mega macs:ssa HSN/TSN:n avulla",
-            "noKba": "Kelvollisia avainnumeroita (HSN/TSN) ei ole saatavilla"
-        },
         "hgs": {
             "button": "HGS-Data",
             "tooltip": "Avaa ajoneuvotiedot HGS Datassa",

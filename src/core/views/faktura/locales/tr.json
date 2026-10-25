@@ -65,8 +65,13 @@
             "createComplaint": "Reklamation erstellen",
             "cancel": "Stornieren",
             "saveAsDraft": "Als Entwurf speichern",
-            "history": "Verlauf",
-            "followUp": "Wiedervorlage",
+            "followUp": "Hatırlatma",
+            "followUpOpen": "Açık hatırlatmalar: {n}",
+            "followUpNew": "Yeni hatırlatma",
+            "followUpDone": "Tamamlandı",
+            "followUpSaved": "Hatırlatma kaydedildi",
+            "followUpMarkedDone": "Hatırlatma tamamlandı",
+            "followUpError": "Hatırlatma kaydedilemedi",
             "exportXInvoice": "Faktur-X / ZUGFeRD",
             "delete": "Sil",
             "pdfPreview": "PDF-Vorschau",
@@ -182,8 +187,6 @@
             "openVehicle": "Fahrzeug",
             "importSilverDAT": "SilverDAT Import",
             "openAag": "AAG-Online – transfer vehicle and open",
-            "openEsi": "Aracı ESI[tronic]'te aç",
-            "openGutmann": "Aracı Hella Gutmann mega macs'te aç",
             "openHgs": "Araç verilerini HGS Data'da aç",
             "hgsError": "HGS Data açılamadı",
             "aagError": "Could not open AAG-Online",
@@ -430,6 +433,50 @@
                 "fullyPaid": "Fatura tamamen ödendi",
                 "alreadyPaid": "{amount} € tutarındaki kart ödemesi zaten yapılmıştı – yeniden gönderilmedi",
                 "synced": "{amount} € tutarındaki kart ödemesi SumUp'tan eklendi"
+            },
+            "confirmation": {
+                "open": "Henüz onaylanmadı",
+                "openHint": "Müşteri kabulünü nasıl bildirdi? Onayla birlikte güncel tutar kayda alınır.",
+                "confirmed": "Onaylandı",
+                "notRecorded": "Onayın nasıl verildiği kayıtlı değil.",
+                "suggestedAccept": "Kabul algılandı — lütfen kontrol edin",
+                "suggestedDecline": "Ret algılandı",
+                "uncertain": "Belirsiz algılandı — lütfen alıntıyı dikkatle kontrol edin.",
+                "condition": "Koşul: {condition}",
+                "amountIncreased": "Onaydan bu yana {diff} arttı (onaylanan: {amount})",
+                "auto": "otomatik (YZ)",
+                "confirm": "Onayla",
+                "dismiss": "Reddet",
+                "acknowledge": "Anlaşıldı",
+                "reconfirm": "Yeniden onayla",
+                "record": "Bilgileri tamamla",
+                "revoke": "Onayı geri al",
+                "revokeQuestion": "Sipariş yeniden “Sipariş girişi” durumuna döner. Önceki onay geçmişte görünür kalır.",
+                "more": "Diğer işlemler",
+                "playCall": "Aramayı dinle",
+                "openChat": "Sohbeti aç",
+                "recordingMissing": "Bu arama için kayıt bulunamadı",
+                "dialogTitle": "Siparişi onayla",
+                "howQuestion": "Müşteri kabulünü nasıl bildirdi?",
+                "when": "Kabul zamanı",
+                "note": "Not (isteğe bağlı)",
+                "notePlaceholder": "ör. müşterinin söyledikleri",
+                "amountHint": "Güncel tutar olan {amount} onaylanır. Daha sonra artarsa sipariş bunu gösterir.",
+                "cancel": "İptal",
+                "savedConfirmed": "Sipariş onaylandı",
+                "savedDismissed": "Öneri reddedildi",
+                "savedAcknowledged": "Ret not edildi",
+                "savedRevoked": "Onay geri alındı",
+                "channel": {
+                    "phone": "Telefon",
+                    "email": "E-posta",
+                    "whatsapp": "WhatsApp",
+                    "visit": "Yerinde",
+                    "signature": "İmza",
+                    "portal": "Müşteri portalı",
+                    "other": "Diğer"
+                },
+                "saveError": "Bu işlem başarısız oldu — sipariş muhtemelen bu arada değiştirildi. Görünüm yeniden yüklendi, lütfen tekrar kontrol edin."
             }
         },
         "workflow": {
@@ -442,9 +489,13 @@
             "invoice": "Fatura",
             "order": "Sipariş",
             "quotation": "Teklif",
-            "delivery_order": "Lieferschein",
+            "delivery_order": "İrsaliye",
             "credit_note": "Gutschrift",
-            "invoice_storno": "Storno-Rechnung"
+            "invoice_storno": "Storno-Rechnung",
+            "purchase_order": "Satın alma siparişi",
+            "purchase_invoice": "Gelen fatura",
+            "request_quotation": "Teklif talebi",
+            "purchase_delivery_order": "Satın alma irsaliyesi"
         },
         "dialogs": {
             "deleteItem": {
@@ -577,6 +628,140 @@
         },
         "alerts": {
             "warning_no_permission": "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen, um dieses Dokument anzuzeigen. Bitte wenden Sie sich an Ihren Administrator."
+        },
+        "history": {
+            "title": "Geçmiş",
+            "reload": "Yenile",
+            "close": "Kapat",
+            "lastChange": "son değişiklik {time}, {name} tarafından",
+            "changedBy": "{name} bu belgeyi az önce değiştirdi",
+            "createdInfo": "Oluşturulma: {time}",
+            "filter": {
+                "all": "Tümü",
+                "head": "Başlık",
+                "items": "Kalemler",
+                "events": "Durum ve gönderim"
+            },
+            "filterEmployee": "Kim",
+            "search": "Ara",
+            "timeTravel": "Zaman yolculuğu",
+            "today": "Bugün",
+            "backToToday": "Bugüne dön",
+            "asOf": "{time} tarihli düzenlemeden önceki durum – o zaman → bugün",
+            "stepsBack": "{n} düzenleme geri | {n} düzenleme geri",
+            "noDiff": "Başlık ve kalemler o zaman da bugünkü gibiydi.",
+            "travelItem": {
+                "added": "o zamandan beri eklendi",
+                "removed": "o zamandan beri kaldırıldı",
+                "changed": "o zamandan beri değiştirildi"
+            },
+            "noMatch": "Bu filtre için kayıt yok.",
+            "empty": "Henüz değişiklik kaydedilmedi. Geçmiş bir sonraki değişiklikle başlar.",
+            "item": {
+                "added": "eklendi",
+                "removed": "kaldırıldı",
+                "changed": "değiştirildi"
+            },
+            "milestone": {
+                "created": "Belge oluşturuldu",
+                "deleted": "Belge silindi",
+                "confirmed": "Sipariş onaylandı",
+                "unconfirmed": "Onay geri alındı",
+                "closed": "Tamamlandı",
+                "reopened": "Yeniden açıldı",
+                "paid": "Ödeme {amount}",
+                "storno": "İptal edildi",
+                "printed": "Yazdırıldı"
+            },
+            "summary": {
+                "itemsAdded": "{n} kalem eklendi | {n} kalem eklendi",
+                "itemsChanged": "{n} kalem değiştirildi | {n} kalem değiştirildi",
+                "itemsRemoved": "{n} kalem kaldırıldı | {n} kalem kaldırıldı",
+                "amount": "Tutar {old} → {new}"
+            },
+            "legacy": {
+                "saved": "Kaydedildi",
+                "printed": "Yazdırıldı",
+                "posted": "Deftere işlendi",
+                "printedPosted": "Yazdırıldı ve deftere işlendi",
+                "screened": "Ekranda gösterildi",
+                "mailed": "E-posta ile gönderildi",
+                "deleted": "Silindi",
+                "storno": "İptal edildi",
+                "paymentPosted": "Ödeme deftere işlendi",
+                "previewed": "Önizleme gösterildi",
+                "canceled": "Vazgeçildi"
+            },
+            "link": {
+                "to": "Bundan {type} {number} oluşturuldu",
+                "from": "{type} {number} belgesinden oluşturuldu"
+            },
+            "followup": {
+                "created": "Hatırlatma oluşturuldu: {subject} (vade {date})",
+                "done": "Hatırlatma tamamlandı: {subject}"
+            },
+            "sent": {
+                "email": "E-posta ile gönderildi: {to}",
+                "whatsapp": "WhatsApp ile gönderildi: {to}",
+                "post": "Posta ile gönderildi: {to}",
+                "dhl": "DHL gönderisi {to}",
+                "other": "Gönderildi: {to}"
+            },
+            "fields": {
+                "parts_id": "Ürün",
+                "paid": "Ödendi",
+                "datepaid": "Ödeme tarihi",
+                "record_type": "Belge türü",
+                "order_type": "Belge türü",
+                "quotation": "Teklif",
+                "storno": "İptal edildi",
+                "storno_id": "İptal edilen belge",
+                "dunning_config_id": "İhtar seviyesi",
+                "cp_id": "İlgili kişi",
+                "globalproject_id": "Proje",
+                "project_id": "Proje",
+                "optional": "İsteğe bağlı kalem",
+                "subtotal": "Ara toplam",
+                "serialnumber": "Seri numarası",
+                "pricegroup_id": "Fiyat grubu",
+                "price_factor_id": "Fiyat faktörü",
+                "orderer_id": "Sipariş veren",
+                "delivered": "Teslim edildi",
+                "proforma": "Proforma",
+                "order_probability": "Sipariş olasılığı",
+                "expected_billing_date": "Tahmini fatura tarihi",
+                "tax_point": "Teslim/hizmet tarihi",
+                "vendor_confirmation_number": "Tedarikçi onay numarası",
+                "oreqnumber": "Talep numarası",
+                "invnumber_for_credit_note": "Alacak dekontu için fatura numarası",
+                "is_sepa_blocked": "SEPA engelli",
+                "order_status_id": "Sipariş durumu",
+                "no_whatsapp": "WhatsApp yok"
+            },
+            "recordType": {
+                "sales_order": "Sipariş (onaylı)",
+                "sales_order_intake": "Gelen sipariş (onaysız)",
+                "sales_quotation": "Teklif",
+                "request_quotation": "Teklif talebi",
+                "purchase_quotation_intake": "Gelen teklif",
+                "purchase_order": "Satın alma siparişi",
+                "purchase_order_confirmation": "Tedarikçi sipariş onayı",
+                "sales_delivery_order": "İrsaliye",
+                "purchase_delivery_order": "Satın alma irsaliyesi",
+                "supplier_delivery_order": "Tedarikçi irsaliyesi",
+                "rma_delivery_order": "İade irsaliyesi"
+            },
+            "yes": "Evet",
+            "no": "Hayır",
+            "automatic": "Otomatik",
+            "external": "kivitendo / harici",
+            "unknownEmployee": "Bilinmiyor",
+            "source": {
+                "external": "OSERP dışında",
+                "recurring": "tekrarlayan fatura",
+                "ebay": "eBay içe aktarımı",
+                "portal": "Mağaza / müşteri portalı"
+            }
         }
     }
 }
