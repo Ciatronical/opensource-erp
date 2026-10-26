@@ -84,7 +84,10 @@ function _documentListQuery($data, $withLimit) {
     $q      = trim((string)($data['q'] ?? ''));
     $from   = trim((string)($data['from'] ?? ''));
     $to     = trim((string)($data['to'] ?? ''));
-    $status = in_array($data['status'] ?? '', ['open', 'closed'], true) ? $data['status'] : '';
+    $table  = $config['table'];
+    $isAr   = $table === 'ar';
+    // storno = Stornobelege und stornierte Rechnungen, gibt es nur in ar
+    $status = in_array($data['status'] ?? '', $isAr ? ['open', 'closed', 'storno'] : ['open', 'closed'], true) ? $data['status'] : '';
     // Rechnungsstatus gibt es nur bei Auftraegen: '' = alle, none = ohne Rechnung, invoiced = mit Rechnung
     $isOrder  = $documentType === 'order';
     $invoiced = $isOrder && in_array($data['invoiced'] ?? '', ['none', 'invoiced'], true) ? $data['invoiced'] : '';
@@ -92,7 +95,6 @@ function _documentListQuery($data, $withLimit) {
     // suggested = mit offenem KI-Vorschlag, confirmed = bestaetigt
     $confirmed = $isOrder && in_array($data['confirmed'] ?? '', ['open', 'suggested', 'confirmed'], true) ? $data['confirmed'] : '';
 
-    $table  = $config['table'];
     $number = $config['number'];
 
     $hasAmounts = $table !== 'delivery_orders';
@@ -103,9 +105,10 @@ function _documentListQuery($data, $withLimit) {
     $paid       = $table === 'ar' ? 'd.paid' : 'NULL::numeric';
     $open       = $table === 'ar' ? '(d.amount - d.paid)' : 'NULL::numeric';
     $duedate    = $table === 'ar' ? 'd.duedate' : 'NULL::date';
-    // "Erledigt": Rechnung vollstaendig bezahlt bzw. Beleg geschlossen
-    $closed     = $table === 'ar'
-        ? 'ABS(d.amount) > 0 AND ABS(d.paid) >= ABS(d.amount)'
+    // "Erledigt": Rechnung vollstaendig bezahlt bzw. Beleg geschlossen; Stornobeleg
+    // und stornierte Rechnung (kivitendo: beide storno = true) sind ebenfalls erledigt
+    $closed     = $isAr
+        ? '((ABS(d.amount) > 0 AND ABS(d.paid) >= ABS(d.amount)) OR COALESCE(d.storno, FALSE))'
         : 'COALESCE(d.closed, FALSE)';
     $overdue    = $table === 'ar'
         ? "(NOT ($closed) AND d.duedate IS NOT NULL AND d.duedate < CURRENT_DATE)"
@@ -130,6 +133,7 @@ function _documentListQuery($data, $withLimit) {
     }
     if ($status === 'open')   $where[] = "NOT ($closed)";
     if ($status === 'closed') $where[] = "($closed)";
+    if ($status === 'storno') $where[] = 'COALESCE(d.storno, FALSE)';
     if ($invoiced === 'none')     $where[] = "(inv.js->>'state') = 'none'";
     if ($invoiced === 'invoiced') $where[] = "(inv.js->>'state') = 'invoiced'";
     if ($confirmed === 'open')      $where[] = "d.record_type = 'sales_order_intake'";
@@ -174,6 +178,19 @@ function _documentListQuery($data, $withLimit) {
     $unconfirmed = $isOrder ? "CASE WHEN conf.confirmed = FALSE AND NOT COALESCE(d.closed, FALSE) THEN 1 ELSE 0 END" : '0';
     $suggested   = $isOrder ? "CASE WHEN conf.confirmed = FALSE AND conf.suggestions > 0 THEN 1 ELSE 0 END" : '0';
 
+    // Storno (kivitendo): der Stornobeleg traegt storno_id = Originalrechnung, das
+    // Original nur storno = true. Gegenbeleg je Zeile ueber den Primaerschluessel; den
+    // Stornobeleg zum Original sucht die Unterabfrage nur fuer stornierte Zeilen.
+    $stornoJoin = $isAr
+        ? "LEFT JOIN ar sto ON sto.id = CASE
+               WHEN d.storno_id IS NOT NULL THEN d.storno_id
+               WHEN d.storno THEN (SELECT s.id FROM ar s WHERE s.storno_id = d.id ORDER BY s.id LIMIT 1)
+           END"
+        : 'CROSS JOIN LATERAL (SELECT NULL::int AS id, NULL::text AS invnumber, NULL::text AS type) sto';
+    $stornoState = $isAr
+        ? "CASE WHEN d.storno_id IS NOT NULL THEN 'storno' WHEN COALESCE(d.storno, FALSE) THEN 'cancelled' END"
+        : 'NULL::text';
+
     $sql = "SELECT d.id,
                    d.$number                        AS number,
                    d.transdate,
@@ -207,6 +224,10 @@ function _documentListQuery($data, $withLimit) {
                    conf.agreed_at                   AS confirmation_at,
                    conf.auto                        AS confirmation_auto,
                    conf.suggestions                 AS confirmation_suggestions,
+                   $stornoState                     AS storno_state,
+                   sto.id                           AS storno_ref_id,
+                   sto.invnumber                    AS storno_ref_number,
+                   sto.type                         AS storno_ref_type,
                    COUNT(*)        OVER ()          AS total_count,
                    SUM($amount)    OVER ()          AS total_amount,
                    SUM($netamount) OVER ()          AS total_netamount,
@@ -220,6 +241,7 @@ function _documentListQuery($data, $withLimit) {
               LEFT JOIN customer c ON c.id = d.customer_id
               $invoiceJoin
               $confirmationJoin
+              $stornoJoin
              WHERE $whereSql
              ORDER BY d.transdate DESC NULLS LAST, d.id DESC
              $limitSql";
@@ -237,12 +259,14 @@ function _documentListQuery($data, $withLimit) {
  * @param string $data['q']            Volltext ueber Belegnummer, Kunde und Beschreibung
  * @param string $data['from']         Belegdatum ab (YYYY-MM-DD)
  * @param string $data['to']           Belegdatum bis (YYYY-MM-DD)
- * @param string $data['status']       leer = alle, open = nur offene, closed = nur erledigte
+ * @param string $data['status']       leer = alle, open = nur offene, closed = nur erledigte,
+ *                                     storno = nur Stornobelege und stornierte Rechnungen (ar)
  * @param string $data['invoiced']     nur Auftraege: leer = alle, none = ohne Rechnung, invoiced = mit Rechnung
  * @param string $data['confirmed']    nur Auftraege: leer = alle, open = Auftragseingang, suggested = mit
  *                                     KI-Vorschlag, confirmed = bestaetigt
  * @param int    $data['limit']        Maximale Trefferzahl (Standard 200, max 1000)
  * @testdata {"action": "searchDocuments", "documentType": "invoice", "status": "open", "limit": 50}
+ * @testdata {"action": "searchDocuments", "documentType": "invoice", "status": "storno"}
  * @testdata {"action": "searchDocuments", "documentType": "quotation", "q": "Müller"}
  * @testdata {"action": "searchDocuments", "documentType": "order", "invoiced": "none", "limit": 50}
  * @testdata {"action": "searchDocuments", "documentType": "order", "confirmed": "suggested", "limit": 50}
@@ -334,7 +358,8 @@ function _documentList_dateiZeitraum($from, $to) {
  * @param string $data['format']       csv | pdf | rows
  * @param array  $data['labels']       Beschriftungen: title, period, number, date, duedate, customer,
  *                                     customernumber, description, net, tax, gross, paid, open, status,
- *                                     statusOpen, statusClosed, statusOverdue, total, documents,
+ *                                     statusOpen, statusClosed, statusOverdue, statusStorno,
+ *                                     statusCancelled, total, documents,
  *                                     invoice, noInvoice, invoiceStorno, confirmation, confirmed,
  *                                     unconfirmed
  * @testdata {"action": "exportDocumentList", "documentType": "invoice", "format": "csv", "from": "2026-01-01", "to": "2026-12-31"}
@@ -368,6 +393,8 @@ function exportDocumentList($data) {
         'statusOpen'     => 'Offen',
         'statusClosed'   => 'Erledigt',
         'statusOverdue'  => 'Überfällig',
+        'statusStorno'   => 'Storno zu',
+        'statusCancelled'=> 'Storniert durch',
         'total'          => 'Summe',
         'documents'      => 'Belege',
         'createdAt'      => 'Erstellt am',
@@ -396,6 +423,11 @@ function exportDocumentList($data) {
     ];
 
     $statusText = function ($row) use ($l) {
+        // Storno: mit Gegenbeleg, damit der Export ohne Nachschlagen lesbar bleibt
+        if ($row['storno_state']) {
+            $text = $row['storno_state'] === 'storno' ? $l['statusStorno'] : $l['statusCancelled'];
+            return $row['storno_ref_number'] ? $text . ' ' . $row['storno_ref_number'] : $text;
+        }
         if ($row['closed']) return $l['statusClosed'];
         return $row['overdue'] ? $l['statusOverdue'] : $l['statusOpen'];
     };

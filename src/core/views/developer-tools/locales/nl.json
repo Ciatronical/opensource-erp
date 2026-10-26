@@ -302,7 +302,20 @@
             "typeBug": "Bug",
             "typeFeature": "Feature",
             "typeTask": "Taak",
-            "typeImprovement": "Verbetering"
+            "typeImprovement": "Verbetering",
+            "attachments": "Bijlagen",
+            "attachFile": "Bestand bijvoegen",
+            "attachHint": "Plak een screenshot met Ctrl+V of sleep bestanden hierheen",
+            "dropHere": "Bestanden hier neerzetten",
+            "fileTooLarge": "\"{name}\" is groter dan {size} en is niet bijgevoegd",
+            "uploadFailed": "\"{name}\" kon niet worden geüpload",
+            "download": "Downloaden",
+            "confirmDeleteAttachment": "Bijlage \"{name}\" echt verwijderen?",
+            "deleteTicket": "Ticket verwijderen",
+            "confirmDeleteMany": "Wilt u echt {count} tickets verwijderen? Opmerkingen en bijlagen worden ook verwijderd.",
+            "selected": "{count} geselecteerd",
+            "clearSelection": "Selectie opheffen",
+            "deleted": "Ticket verwijderd | {count} tickets verwijderd"
         },
         "autoTest": {
             "title": "Automatische tests",

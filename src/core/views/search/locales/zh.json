@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "客户/供应商/联系人",
             "invoice": "发票",
+            "credit_note": "贷项通知单",
             "purchase_invoice": "进项发票",
             "quotation": "报价单",
             "order": "订单",
@@ -50,7 +51,8 @@
             "amount_to": "金额至",
             "status": "状态",
             "status_open": "未完成",
-            "status_closed": "已完成"
+            "status_closed": "已完成",
+            "status_storno": "已冲销"
         },
         "document_table": {
             "document_number": "单据编号",
@@ -61,6 +63,10 @@
             "status": "状态",
             "status_open": "未完成",
             "status_closed": "已完成",
+            "status_storno": "冲销",
+            "status_cancelled": "已冲销",
+            "status_storno_ref": "原始发票 {number}",
+            "status_cancelled_ref": "冲销单据 {number}",
             "created_at": "创建日期",
             "text_no_results": "未找到单据。"
         }

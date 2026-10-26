@@ -56,6 +56,7 @@ Das Datenbankschema aktualisiert sich selbst: bei Anmeldung und Firmenwechsel wi
 - **SQL-Tool**
 - **Datenbank-Backup**
 - **Log-Viewer**: das API-Debug-Log im Browser lesen und filtern
+- **Tickets**: Kanban- und Listenansicht, Kommentare, Labels; Screenshots per Strg+V oder Dateien per Drag&Drop an Ticket oder Kommentar hängen (abgelegt unter `data/<mandant>/tickets/<id>/`); Filter nach Status (mehrfach, auch über die Status-Chips), Mehrfachauswahl zum Löschen in der Listenansicht — z. B. alle erledigten auf einmal
 - `php tools/check-api-health.php` (Docblocks und Testdaten), `npm run check:routes` (Routen in allen Sprachen)
 
 ## Offsite-Backup (Borg)
@@ -64,7 +65,11 @@ Der Installer richtet auf Wunsch das nächtliche, verschlüsselte und deduplizie
 
 ## Dokumentation im System
 
-Dieses Handbuch liegt als Markdown in `docs/features/` und ist im System unter **Dokumentation** lesbar — gegliedert nach Kernsystem und Erweiterungen. Jede Datei trägt Metadaten (Titel, Kurzbeschreibung, Gruppe, Erweiterung, Rubrik), aus denen die Navigation entsteht. Der Knopf **Auf der Website veröffentlichen** überträgt den Feature-Katalog an opensource-erp.dev (siehe `docs/website-schnittstelle.md`).
+Dieses Handbuch liegt als Markdown in `docs/features/` und ist im System unter **Dokumentation** lesbar — gegliedert nach Kernsystem und Erweiterungen. Jede Datei trägt Metadaten (Titel, Kurzbeschreibung, Gruppe, Erweiterung, Rubrik), aus denen die Navigation entsteht. Der Knopf **Auf der Website veröffentlichen** überträgt den Feature-Katalog an opensourceerp.dev (siehe `docs/website-schnittstelle.md`).
+
+## Über OSERP
+
+**Firma → Über** öffnet eine eigene Seite: wie OSERP entstanden ist, welche Grundsätze das Projekt leiten, Dank an die Wegbegleiter, das Entwicklerteam und die Einladung zum Mitmachen mit Links zu GitHub, Website, Demo und Dokumentation. Sie ersetzt den früheren kleinen Über-Dialog. Die Seite ist öffentlich und auf der Loginseite verlinkt (angemeldet mit Menü, sonst mit Rückweg zur Anmeldung). Ihr Inhalt geht mit dem Feature-Katalog an die Website (siehe `docs/website-schnittstelle.md`). OSERP selbst ist für Suchmaschinen gesperrt (`noindex`), damit nur die Website gefunden wird.
 
 ## Weitere Grundlagen
 

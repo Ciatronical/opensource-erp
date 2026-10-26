@@ -1,0 +1,84 @@
+{
+    "AboutView": {
+        "title": "O OSERP",
+        "subtitle": "OpensourceERP – wolny, otwarty, z praktyki dla praktyki",
+        "history": {
+            "title": "Jak powstał OSERP",
+            "roots": "OSERP nie powstał przy desce kreślarskiej, lecz w codziennej pracy prawdziwych firm. Przez wiele lat pracowaliśmy z kivitendo i pisaliśmy do niego rozszerzenia – CRM, LxCars dla warsztatów samochodowych, integracje z telefonią, e-mailem i WhatsApp. Wykonywaliśmy tę pracę z przyjemnością, dzieliliśmy się nią otwarcie i ułatwialiśmy w ten sposób codzienną pracę wielu użytkownikom – i do dziś czujemy się częścią tej społeczności.",
+            "motivation": "Z czasem narodziło się pragnienie, którego nie dało się już spełnić samymi rozszerzeniami: nowoczesny interfejs na najwyższym poziomie technicznym, z innowacyjną obsługą i prawdziwym wsparciem AI. System ERP powinien być tak łatwy w obsłudze jak każda dobra aplikacja internetowa – szybki, przejrzysty i zrozumiały bez szkolenia, zarówno przy biurku, jak i na telefonie. Dlatego zbudowaliśmy interfejs od podstaw na nowo i nadaliśmy temu, co powstało, własną nazwę: OpensourceERP, w skrócie OSERP. Nie jest to zerwanie z kivitendo – OSERP wyrósł z tej społeczności.",
+            "ai": "Sztuczna inteligencja nie jest u nas modnym hasłem, lecz narzędziem do codziennej pracy: faktury ze skrzynki e-mail są rozpoznawane i przygotowywane jako propozycja księgowania, Weroni sprawdza ekspertyzy i formułuje teksty dla klientów i ubezpieczycieli, pozycje i teksty sprzedażowe są podpowiadane, a dokumentom można po prostu zadawać pytania. AI podsuwa propozycje – decyzję zawsze podejmuje człowiek.",
+            "compatible": "Od samego początku zależało nam na jednym: nikt nie powinien musieć zostawiać swoich danych. OSERP pracuje na tej samej strukturze bazy danych co kivitendo. Klienci, artykuły, dokumenty i księgowania pozostają tam, gdzie są; własne rozszerzenia zapisujemy we własnych tabelach, zamiast zmieniać cudze. Kto chce się przenieść, po prostu zabiera ze sobą całą swoją historię.",
+            "today": "Dziś z kilku rozszerzeń powstał kompletny system ERP: fakturowanie, księgowość z deklaracją VAT, bank i kasa, windykacja, magazyn, zarządzanie klientami z historią kontaktów, e-mail, WhatsApp i telefonia, kalendarz, sklep internetowy, moduł warsztatowy i wiele więcej – w 21 językach. Każdego dnia pracują z nim firmy i każdego dnia staje się on trochę lepszy."
+        },
+        "values": {
+            "title": "Co jest dla nas ważne",
+            "free": {
+                "title": "Udział nic nie kosztuje",
+                "text": "Bez opłat, bez członkostwa, bez wniosku o przyjęcie. Każdy, kto chce pomóc, jest mile widziany – wystarczy wskazówka, tłumaczenie lub pull request."
+            },
+            "ux": {
+                "title": "Obsługa przede wszystkim",
+                "text": "Oprogramowanie ma odciążać od pracy, a nie jej przysparzać. Pola są wstępnie wypełnione tam, gdzie to ma sens, drogi są krótkie, a to, co da się zrobić automatycznie, system wykonuje sam."
+            },
+            "data": {
+                "title": "Państwa dane należą do Państwa",
+                "text": "OSERP działa na Państwa własnym serwerze. Struktura bazy danych jest otwarta i kompatybilna – nie są Państwo związani z żadnym dostawcą, nawet z nami."
+            },
+            "practice": {
+                "title": "Z praktyki",
+                "text": "Niemal każda funkcja powstała dlatego, że potrzebowała jej prawdziwa firma: przy stole warsztatowym, przy ladzie lub przy biurku w księgowości."
+            },
+            "open": {
+                "title": "Otwarty dla wszystkich",
+                "text": "Kod źródłowy jest publicznie dostępny na GitHub. Każdy może sprawdzić, jak działa OSERP, dostosować go i ulepszyć."
+            }
+        },
+        "thanks": {
+            "title": "Dziękujemy",
+            "accountants": "System ERP jest tylko tak dobry, jak jego księgowość. To, że księgowość, bank i kasa działają dziś w OSERP tak, jak oczekują tego księgowi, zawdzięczamy przede wszystkim trzem osobom:",
+            "accountantsDetail": "Swoją wiedzą fachową, niezliczonymi pytaniami z codziennej praktyki i dużą cierpliwością pokazały nam, na czym naprawdę polega praca w księgowości – od księgowań dzielonych i zbiorczych, przez kontrolę kasy, aż po windykację i prawidłowo ustawione kody podatkowe. Wielu funkcji nie byłoby bez ich sugestii, a niektórych błędów nigdy byśmy nie znaleźli bez ich uważnego oka. Za to serdecznie dziękujemy.",
+            "yvonne": "Szczególnie dziękujemy Yvonne A. za pomysł automatycznej księgowości poprzez odczytywanie e-maili: faktury przychodzące e-mailem są rozpoznawane, odczytywane i udostępniane jako gotowa propozycja księgowania. Z jej pomysłu powstała funkcja, która w codziennej pracy oszczędza mnóstwo czasu.",
+            "weronika": "A do tego jest jeszcze Weronika Marek. Jej ciąża wywołała prawdziwy zryw innowacji: to ona dała impuls do stworzenia Weroni, naszej asystentki biurowej AI – i nie jest przypadkiem, że Weroni nosi jej imię. Dziś Weroni odpowiada na pytania dotyczące systemu, analizuje dane, rozpoznaje dokumenty i odciąża biuro od wielu zadań. Dziękujemy, Weroniko!",
+            "kivitendo": "Szczególne podziękowania kierujemy do Svena i Moritza, głównych twórców kivitendo, za wieloletnią dobrą współpracę. Pod nową nazwą nic się w tym nie zmieni – nasze drzwi są otwarte i cieszymy się z każdej dalszej wymiany doświadczeń.",
+            "vehicleScanner": "Kto korzysta z LxCars, ten go zna: skaner dowodów rejestracyjnych (Fahrzeugschein-Scanner) firmy Autosiastik Software GmbH z Kaltenkirchen, którego twórcą jest Rasmus Wachsmuth. Wystarczy jedno zdjęcie dowodu rejestracyjnego, a właściciel, pojazd i numery kodowe pojawiają się starannie w formularzu – zamiast mozolnego przepisywania. Rasmus Wachsmuth, Dennis Sonnwald i Domenic Marchowskie zasługują na wielkie podziękowania i wiele pochwał za świetną współpracę i usługę, która każdego dnia oszczędza warsztatom czas.",
+            "origins": "Nasze podziękowania należą się również wielu innym twórcom SQL-Ledger, Lx-Office i kivitendo. Na ich wieloletniej pracy opiera się fundament bazy danych, na którym stoi także OSERP. Bez nich ten projekt by nie istniał.",
+            "switzerland": "Serdeczne pozdrowienia przesyłamy oczywiście także do Szwajcarii – do revamp-it w Zurychu. Zespół sam korzysta z kivitendo od 2007 roku, od 2015 roku jest partnerem premium projektu i wprowadził „Kivitendo Modus Schweiz” (tryb szwajcarski) do głównego kodu, aby także szwajcarskie firmy mogły księgować według własnych zasad. Grüezi i merci vielmal!"
+        },
+        "team": {
+            "title": "Rozwój",
+            "text": "Za OSERP stoi duży zespół programistów, użytkowników i specjalistów, którzy codziennie pracują z tym oprogramowaniem i znają firmy, które z niego korzystają. Trzon zespołu programistów tworzą:"
+        },
+        "contribute": {
+            "title": "Zapraszamy do współpracy",
+            "intro": "OSERP żyje dzięki ludziom, którzy dzielą się swoją wiedzą. Są Państwo programistami i mają ochotę na system ERP, który jest nowoczesny? Znają Państwo branżę, której procesów jeszcze brakuje? W takim razie są Państwo we właściwym miejscu – zupełnie bez wpisowego.",
+            "ways": {
+                "code": {
+                    "title": "Programowanie",
+                    "text": "Naprawianie błędów, tworzenie funkcji, przyspieszanie procesów – z Vue 3, Vuetify, PHP 8 i PostgreSQL. Logika znajduje się w bazie danych, interfejs pozostaje lekki."
+                },
+                "translate": {
+                    "title": "Tłumaczenie",
+                    "text": "OSERP mówi w 21 językach. Rodzimi użytkownicy języka, którzy sprawdzają i poprawiają teksty, ogromnie nam pomagają."
+                },
+                "expertise": {
+                    "title": "Dzielenie się wiedzą",
+                    "text": "Księgowi, kierownicy warsztatów, handlowcy, rzemieślnicy: prosimy wyjaśnić nam swoje procesy. U nas dobre pomysły stają się funkcjami."
+                },
+                "test": {
+                    "title": "Testowanie i zgłaszanie błędów",
+                    "text": "Prosimy wypróbować OSERP w wersji demo i zgłaszać, co nie działa. Każde zgłoszenie sprawia, że oprogramowanie staje się lepsze dla wszystkich."
+                },
+                "docs": {
+                    "title": "Dokumentowanie",
+                    "text": "Podręcznik znajduje się w projekcie w formacie Markdown. Każde uzupełnienie pomaga nowym użytkownikom w rozpoczęciu pracy."
+                }
+            },
+            "howto": "Początek jest prosty: utworzyć fork projektu na GitHub, wprowadzić zmianę, złożyć pull request. Zasady programowania znajdują się w projekcie w pliku dev/programmierstil-richtlinien.md. Pytania są zawsze mile widziane – najlepiej bezpośrednio jako issue na GitHub.",
+            "github": "Kod źródłowy na GitHub",
+            "website": "Strona internetowa",
+            "demo": "Demo na żywo",
+            "docs": "Dokumentacja",
+            "closing": "Bez opłat. Bez wniosku o przyjęcie. Tylko radość z dobrego, wolnego oprogramowania – czekamy na Państwa."
+        }
+    }
+}

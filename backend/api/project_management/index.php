@@ -8,6 +8,8 @@
  */
 
 // Modul-Funktionen zuerst laden
+require_once __DIR__.'/../customer_vendor/filemanager.php';
+require_once __DIR__.'/../lib/mitarbeiter.php';
 require_once __DIR__.'/requirement_specs.php';
 require_once __DIR__.'/tickets.php';
 

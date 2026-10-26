@@ -302,7 +302,20 @@
             "typeBug": "Bug",
             "typeFeature": "Feature",
             "typeTask": "Aufgabe",
-            "typeImprovement": "Verbesserung"
+            "typeImprovement": "Verbesserung",
+            "attachments": "Přílohy",
+            "attachFile": "Připojit soubor",
+            "attachHint": "Vložte snímek obrazovky pomocí Ctrl+V nebo sem přetáhněte soubory",
+            "dropHere": "Pusťte soubory sem",
+            "fileTooLarge": "\"{name}\" je větší než {size} a nebyl připojen",
+            "uploadFailed": "\"{name}\" se nepodařilo nahrát",
+            "download": "Stáhnout",
+            "confirmDeleteAttachment": "Opravdu smazat přílohu \"{name}\"?",
+            "deleteTicket": "Smazat tiket",
+            "confirmDeleteMany": "Opravdu smazat tikety ({count})? Smažou se i komentáře a přílohy.",
+            "selected": "Vybráno: {count}",
+            "clearSelection": "Zrušit výběr",
+            "deleted": "Smazané tikety: {count}"
         },
         "autoTest": {
             "title": "Automatické testy",

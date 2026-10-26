@@ -302,7 +302,20 @@
             "typeBug": "Bug",
             "typeFeature": "Funcionalidad",
             "typeTask": "Tarea",
-            "typeImprovement": "Mejora"
+            "typeImprovement": "Mejora",
+            "attachments": "Adjuntos",
+            "attachFile": "Adjuntar archivo",
+            "attachHint": "Pega una captura con Ctrl+V o arrastra archivos aquí",
+            "dropHere": "Suelta los archivos aquí",
+            "fileTooLarge": "\"{name}\" supera {size} y no se ha adjuntado",
+            "uploadFailed": "No se pudo subir \"{name}\"",
+            "download": "Descargar",
+            "confirmDeleteAttachment": "¿Eliminar realmente el adjunto \"{name}\"?",
+            "deleteTicket": "Eliminar ticket",
+            "confirmDeleteMany": "¿Eliminar realmente {count} tickets? También se eliminarán los comentarios y adjuntos.",
+            "selected": "{count} seleccionados",
+            "clearSelection": "Quitar selección",
+            "deleted": "Ticket eliminado | {count} tickets eliminados"
         },
         "autoTest": {
             "title": "Pruebas automáticas",

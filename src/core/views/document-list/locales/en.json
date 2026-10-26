@@ -168,6 +168,14 @@
             "via": "Confirmed · {channel}",
             "yes": "yes",
             "no": "no"
+        },
+        "storno": {
+            "filter": "Cancelled",
+            "filterHint": "Cancellation documents and cancelled invoices",
+            "storno": "Cancellation of",
+            "cancelled": "Cancelled by",
+            "stornoOpen": "Open original invoice {number}",
+            "cancelledOpen": "Open cancellation document {number}"
         }
     }
 }

@@ -302,7 +302,20 @@
             "typeBug": "Bug",
             "typeFeature": "Feature",
             "typeTask": "Aufgabe",
-            "typeImprovement": "Verbesserung"
+            "typeImprovement": "Verbesserung",
+            "attachments": "Atașamente",
+            "attachFile": "Atașează fișier",
+            "attachHint": "Lipiți o captură de ecran cu Ctrl+V sau trageți fișierele aici",
+            "dropHere": "Plasați fișierele aici",
+            "fileTooLarge": "\"{name}\" depășește {size} și nu a fost atașat",
+            "uploadFailed": "\"{name}\" nu a putut fi încărcat",
+            "download": "Descarcă",
+            "confirmDeleteAttachment": "Ștergeți sigur atașamentul \"{name}\"?",
+            "deleteTicket": "Șterge tichetul",
+            "confirmDeleteMany": "Ștergeți sigur {count} tichete? Se șterg și comentariile și atașamentele.",
+            "selected": "{count} selectate",
+            "clearSelection": "Anulează selecția",
+            "deleted": "Tichet șters | {count} tichete șterse"
         },
         "autoTest": {
             "title": "Teste automate",

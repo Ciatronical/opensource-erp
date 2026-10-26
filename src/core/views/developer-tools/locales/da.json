@@ -302,7 +302,20 @@
             "typeBug": "Bug",
             "typeFeature": "Feature",
             "typeTask": "Aufgabe",
-            "typeImprovement": "Verbesserung"
+            "typeImprovement": "Verbesserung",
+            "attachments": "Vedhæftede filer",
+            "attachFile": "Vedhæft fil",
+            "attachHint": "Indsæt et skærmbillede med Ctrl+V eller træk filer hertil",
+            "dropHere": "Slip filerne her",
+            "fileTooLarge": "\"{name}\" er større end {size} og blev ikke vedhæftet",
+            "uploadFailed": "\"{name}\" kunne ikke uploades",
+            "download": "Download",
+            "confirmDeleteAttachment": "Vil du virkelig slette den vedhæftede fil \"{name}\"?",
+            "deleteTicket": "Slet ticket",
+            "confirmDeleteMany": "Vil du virkelig slette {count} tickets? Kommentarer og vedhæftede filer slettes også.",
+            "selected": "{count} valgt",
+            "clearSelection": "Ryd valg",
+            "deleted": "Ticket slettet | {count} tickets slettet"
         },
         "autoTest": {
             "title": "Automatische Tests",

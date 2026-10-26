@@ -303,7 +303,20 @@
             "typeBug": "Błąd",
             "typeFeature": "Funkcja",
             "typeTask": "Zadanie",
-            "typeImprovement": "Ulepszenie"
+            "typeImprovement": "Ulepszenie",
+            "attachments": "Załączniki",
+            "attachFile": "Dołącz plik",
+            "attachHint": "Wklej zrzut ekranu przez Ctrl+V lub przeciągnij tu pliki",
+            "dropHere": "Upuść pliki tutaj",
+            "fileTooLarge": "\"{name}\" przekracza {size} i nie został dołączony",
+            "uploadFailed": "Nie udało się przesłać \"{name}\"",
+            "download": "Pobierz",
+            "confirmDeleteAttachment": "Czy na pewno usunąć załącznik \"{name}\"?",
+            "deleteTicket": "Usuń zgłoszenie",
+            "confirmDeleteMany": "Czy na pewno usunąć zgłoszenia ({count})? Komentarze i załączniki również zostaną usunięte.",
+            "selected": "Zaznaczono: {count}",
+            "clearSelection": "Wyczyść zaznaczenie",
+            "deleted": "Usunięto zgłoszenia: {count}"
         },
         "autoTest": {
             "title": "Testy automatyczne",

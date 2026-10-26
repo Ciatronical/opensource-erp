@@ -1,0 +1,84 @@
+{
+    "AboutView": {
+        "title": "About OSERP",
+        "subtitle": "OpensourceERP – free, open and built from everyday practice",
+        "history": {
+            "title": "How OSERP came about",
+            "roots": "OSERP was not designed on a drawing board but grew out of the daily work of real businesses. For many years we worked with kivitendo and wrote extensions for it – a CRM, LxCars for car repair shops, integrations for telephony, e-mail and WhatsApp. We enjoyed this work, shared it openly and made everyday life easier for many users – and we still see ourselves as part of this community today.",
+            "motivation": "Over time a wish grew that extensions alone could no longer fulfil: a modern user interface built on the latest technology, with innovative operation and real AI support. An ERP system should be as easy to use as any good web application – fast, clear and understandable without training, at the desk just as on the phone. So we rebuilt the user interface from the ground up and gave the result a name of its own: OpensourceERP, OSERP for short. This is not a break with kivitendo – OSERP grew out of this community.",
+            "ai": "For us, artificial intelligence is not a buzzword but a tool for everyday work: invoices from the e-mail inbox are recognised and prepared as booking proposals, Weroni checks expert reports and drafts texts for customers and insurers, line items and sales texts are suggested, and documents can simply be asked questions. The AI makes suggestions – the decision is always made by a human.",
+            "compatible": "One thing mattered to us from the very beginning: nobody should have to leave their data behind. OSERP works with the same database structure as kivitendo. Customers, articles, documents and bookings stay where they are; our own extensions live in tables of their own instead of altering existing ones. Anyone who wants to switch simply takes their entire history with them.",
+            "today": "Today, a handful of extensions has grown into a complete ERP system: invoicing, accounting with VAT returns, bank and cash, dunning, warehouse, customer management with contact history, e-mail, WhatsApp and telephony, calendar, shop, a workshop module and much more – in 21 languages. Businesses work with it every day, and every day it gets a little better."
+        },
+        "values": {
+            "title": "What matters to us",
+            "free": {
+                "title": "Contributing is free",
+                "text": "No fee, no membership, no application. Anyone who wants to help is welcome – a hint, a translation or a pull request is all it takes."
+            },
+            "ux": {
+                "title": "Usability first",
+                "text": "Software should take work off your hands, not create it. Fields are pre-filled where it makes sense, paths are short, and whatever can be done automatically, the system does by itself."
+            },
+            "data": {
+                "title": "Your data belongs to you",
+                "text": "OSERP runs on your own server. The database structure is open and compatible – you are not tied to any vendor, not even to us."
+            },
+            "practice": {
+                "title": "Built from practice",
+                "text": "Almost every feature exists because a real business needed it: at the workbench, at the counter or at the accountant's desk."
+            },
+            "open": {
+                "title": "Open to everyone",
+                "text": "The source code is publicly available on GitHub. Everyone can read how OSERP works, adapt it and improve it."
+            }
+        },
+        "thanks": {
+            "title": "Thank you",
+            "accountants": "An ERP system is only as good as its accounting. That accounting, bank and cash in OSERP work the way accountants expect today is mainly thanks to three people:",
+            "accountantsDetail": "With their expertise, countless questions from everyday practice and a lot of patience, they showed us what really matters in accounting – from split and batch bookings to cash audits, dunning and correctly assigned tax keys. Many features would not exist without their suggestions, and some errors we would never have found without their careful eye. Our heartfelt thanks for that.",
+            "yvonne": "We particularly thank Yvonne A. for the idea of automatic bookkeeping by reading in e-mails: invoices that arrive by e-mail are recognised, read and provided as a ready-made booking proposal. Her idea has become a feature that saves a lot of time in everyday work.",
+            "weronika": "And then there is Weronika Marek. Her pregnancy sparked a real burst of innovation: it was the impetus for developing Weroni, our AI office clerk – and it is no coincidence that Weroni bears her name. Today Weroni answers questions about the system, analyses data, recognises documents and takes tasks off the office's hands. Thank you, Weronika!",
+            "kivitendo": "Special thanks go to Sven and Moritz, the core developers of kivitendo, for many years of good cooperation. That is not going to change under a new name – our door is open, and we look forward to every further exchange.",
+            "vehicleScanner": "Anyone who uses LxCars knows it: the vehicle registration scanner (Fahrzeugschein-Scanner) by Autosiastik Software GmbH from Kaltenkirchen, developed by Rasmus Wachsmuth. A photo of the registration document is all it takes, and owner, vehicle and key numbers appear neatly in the form – instead of being typed in by hand. Big thanks and lots of praise go to Rasmus Wachsmuth, Dennis Sonnwald and Domenic Marchowskie for the great cooperation and a service that saves workshops time every single day.",
+            "origins": "Our thanks also go to the many other developers of SQL-Ledger, Lx-Office and kivitendo. Their years of work laid the database foundation on which OSERP stands as well. Without them, this project would not exist.",
+            "switzerland": "And of course warm greetings go to Switzerland – to revamp-it in Zurich. The team has been using kivitendo itself since 2007, has been a premium partner of the project since 2015 and brought the “Kivitendo Modus Schweiz” (Swiss mode) into the main code, so that Swiss businesses can also book according to their own rules. Grüezi and merci vielmal!"
+        },
+        "team": {
+            "title": "Development",
+            "text": "OSERP is backed by a large team of developers, users and experts who work with the software every day and know the businesses that use it. The core of development is formed by:"
+        },
+        "contribute": {
+            "title": "Join us",
+            "intro": "OSERP thrives on people sharing their knowledge. Are you a developer who would like to work on an ERP system that feels modern? Do you know an industry whose workflows are still missing? Then you have come to the right place – no entrance fee required.",
+            "ways": {
+                "code": {
+                    "title": "Programming",
+                    "text": "Fix bugs, build features, speed up workflows – with Vue 3, Vuetify, PHP 8 and PostgreSQL. The logic lives in the database, the user interface stays lean."
+                },
+                "translate": {
+                    "title": "Translating",
+                    "text": "OSERP speaks 21 languages. Native speakers who review and improve texts help us enormously."
+                },
+                "expertise": {
+                    "title": "Sharing expertise",
+                    "text": "Accountants, workshop masters, retailers, craftsmen: explain your workflows to us. Good ideas become features."
+                },
+                "test": {
+                    "title": "Testing and reporting bugs",
+                    "text": "Try OSERP in the demo and tell us what does not work. Every report makes the software better for everyone."
+                },
+                "docs": {
+                    "title": "Documenting",
+                    "text": "The manual is kept as Markdown in the project. Every addition helps new users get started."
+                }
+            },
+            "howto": "Getting started is easy: fork the project on GitHub, make your change, open a pull request. The coding guidelines are in the project under dev/programmierstil-richtlinien.md. Questions are always welcome – ideally as an issue on GitHub.",
+            "github": "Source code on GitHub",
+            "website": "Website",
+            "demo": "Live demo",
+            "docs": "Documentation",
+            "closing": "No fee. No application. Just the joy of good, free software – we look forward to hearing from you."
+        }
+    }
+}

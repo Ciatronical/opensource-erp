@@ -165,7 +165,7 @@
           <template #prepend><v-icon size="small" class="me-2">mdi-book-open-variant</v-icon></template>
           <v-list-item-title class="text-body-2">{{ t('SystemMenu.docs') }}</v-list-item-title>
         </v-list-item>
-        <v-list-item @click="showAboutDialog = true; clientMenuOpen = false">
+        <v-list-item :to="{ name: 'about' }" @click="clientMenuOpen = false">
           <template #prepend><v-icon size="small" class="me-2">mdi-information-outline</v-icon></template>
           <v-list-item-title class="text-body-2">{{ t('SystemMenu.about') }}</v-list-item-title>
         </v-list-item>
@@ -336,7 +336,6 @@
   </v-overlay>
 
   <!-- Über-Dialog -->
-  <AboutDialog v-model="showAboutDialog" :app-title="appTitle" />
 
 </template>
 
@@ -353,7 +352,6 @@ import ResponsiveMenu from '@/core/components/menus/responsive.menus.vue'
 import GlobalSearchComponent from '@/core/components/navbar/global-search.component.vue'
 import InfoBarComponent from '@/core/components/navbar/info-bar.component.vue'
 import { sseConnected } from '@/core/composables/useInfoBar'
-import AboutDialog from '@/core/components/about/about.dialog.vue'
 import weroniIcon from '@/assets/weroni/weroni-24.png'
 import WeroniPanel from '@/features/weroni/components/weroni-panel.vue'
 import { weroniStore } from '@/features/weroni/stores/weroni.store.js'
@@ -369,7 +367,6 @@ export default {
     ResponsiveMenu,
     GlobalSearchComponent,
     InfoBarComponent,
-    AboutDialog,
     WeroniPanel,
     ChatPanel
   },
@@ -537,7 +534,6 @@ export default {
     // Firmenwechsel
     const accountMenuOpen = ref(false)
     const clientMenuOpen = ref(false)
-    const showAboutDialog = ref(false)
     const clientList = ref([])
 
     // Firmenliste einmalig beim Laden der Navbar holen
@@ -679,7 +675,6 @@ export default {
       clientList,
       doSwitchClient,
       companyLogo,
-      showAboutDialog,
       sseConnected,
       weroni,
       weroniIcon,

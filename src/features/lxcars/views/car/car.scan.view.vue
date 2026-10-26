@@ -1637,7 +1637,7 @@ export default {
             await tryAutoMatchCustomer()
 
             // Kunden-Suche immer ausführen (für Dropdown-Liste)
-            const name = formatOwnerName(scanResult.value.owner)
+            const name = scanResult.value.owner?.name || ''
             if (name) {
                 await searchCustomers(name)
             }
@@ -1684,7 +1684,7 @@ export default {
                     if (!selectedCustomer.value) {
                         const detailMatched = await tryAutoMatchCustomer()
                         if (!detailMatched) {
-                            const name = formatOwnerName(scanResult.value.owner)
+                            const name = scanResult.value.owner?.name || ''
                             if (name) searchCustomers(name)
                         }
                     }
@@ -1750,7 +1750,7 @@ export default {
                 await tryAutoMatchCustomer()
 
                 // Kunden-Suche immer ausführen (für Dropdown-Liste)
-                const name = formatOwnerName(result.owner)
+                const name = result.owner?.name || ''
                 if (name) {
                     await searchCustomers(name)
                 }
@@ -1866,16 +1866,16 @@ export default {
                 kraftstoff: scan.fuel || '',
             }
 
-            const ownerName = formatOwnerName({ name: [scan.firstname, scan.name1 || scan.name2].filter(Boolean).join(' ').trim() })
+            const ownerName = formatOwnerName(scan.firstname, scan.name1 || scan.name2)
             const owner = {
-                name:        ownerName,
+                name:        ownerName.name,
                 address1:    scan.address1 || '',
                 address2:    scan.address2 || '',
                 phone:       '',
                 email:       '',
                 greeting:    '',
                 business_id: businessTypes.value.length === 1 ? businessTypes.value[0].value : null,
-                natural_person: true,
+                natural_person: !ownerName.isCompany,
                 phone_numbers: [],
                 contact:     '',
                 cc:          '',
@@ -1887,29 +1887,54 @@ export default {
             return { car, kba, owner }
         }
 
-        // Halter-Name formatieren (erstes + letztes Wort, richtige Groß-/Kleinschreibung)
-        // Bindestrich-Namen (Hans-Peter) bleiben erhalten, einfache Zweitnamen werden entfernt
-        function formatOwnerName(owner) {
-            if (!owner) return ''
-            const fullName = (owner.name || '').trim()
-            if (!fullName) return ''
+        // Halter ist eine Firma/Behörde: Rechtsform, „&“, Ziffern oder typische Firmenwörter im Namen
+        const COMPANY_LEGAL_FORM = /(^|[^a-zäöüß])(g?gmbh|mbh|ag|kgaa|kg|ohg|gbr|ug|e\.\s?kfm\.?|e\.\s?k\.?|e\.\s?v\.?|eg|se|partg|ltd|inc|co|b\.v\.|s\.a\.)(?=$|[^a-zäöüß])/
+        const COMPANY_WORDS = new Set(['firma', 'stadt', 'kreis', 'land', 'gemeinde', 'kfz', 'taxi', 'drk', 'asb', 'bund'])
+        const COMPANY_STEMS = ['autohaus', 'gesellschaft', 'genossenschaft', 'stiftung', 'verein', 'verband', 'versicherung',
+            'verwaltung', 'gemeinde', 'landkreis', 'landratsamt', 'bundes', 'freistaat', 'stadtwerk', 'stadtverwaltung', 'leasing',
+            'vermietung', 'spedition', 'logistik', 'transport', 'service', 'handels', 'bauunternehmen', 'werkstatt', 'pflegedienst',
+            'klinik', 'praxis', 'kirche', 'polizei', 'feuerwehr', 'rettungsdienst', 'apotheke', 'fahrschule', 'betrieb', 'zentrum',
+            'holding', 'gruppe', 'consulting', 'technik', 'agrar', 'landwirtschaft', 'rental', 'mobility', 'fleet']
+        function isCompanyName(name) {
+            const lower = (name || '').toLowerCase()
+            if (!lower.trim()) return false
+            if (/[&\d]/.test(lower) || COMPANY_LEGAL_FORM.test(lower)) return true
+            if (lower.split(/[\s,.\-/()]+/).some(w => COMPANY_WORDS.has(w))) return true
+            return COMPANY_STEMS.some(stem => lower.includes(stem))
+        }
 
-            // Firmen nicht kürzen
-            const lower = fullName.toLowerCase()
-            if (lower.includes(' gmbh') || lower.includes(' ohg') || lower.includes(' ag') || lower.includes(' kg')) {
-                return fullName
-            }
+        // Rechtsformen in üblicher Schreibweise (nach Umwandlung aus GROSSBUCHSTABEN)
+        const LEGAL_FORM_SPELLING = { gmbh: 'GmbH', ggmbh: 'gGmbH', mbh: 'mbH', ag: 'AG', kgaa: 'KGaA', kg: 'KG', ohg: 'OHG',
+            gbr: 'GbR', ug: 'UG', eg: 'eG', se: 'SE', partg: 'PartG', ltd: 'Ltd', inc: 'Inc', co: 'Co', 'co.': 'Co.',
+            'e.k.': 'e.K.', 'e.kfm.': 'e.Kfm.', 'e.v.': 'e.V.' }
+        const NAME_PARTICLES = new Set(['von', 'van', 'der', 'den', 'de', 'zu', 'zum', 'zur', 'vom', 'du', 'di', 'da', 'la', 'le'])
+        // HANS-PETER → Hans-Peter
+        const capitalize = s => s.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join('-')
 
-            // Namensteil richtig formatieren (auch Bindestrich-Namen: HANS-PETER → Hans-Peter)
-            const capitalize = s => s.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join('-')
+        // Halter-Name aus C.1.2 (Vorname(n)) und C.1.1 (Name/Firma) bilden.
+        // Natürliche Person: nur der erste Vorname bleibt (Bindestrich-Namen bleiben ganz), der Nachname
+        // bleibt vollständig (von der Leyen, Müller Lüdenscheidt). Firmen werden nie gekürzt.
+        function formatOwnerName(firstname, lastname) {
+            const first = (firstname || '').trim()
+            const last = (lastname || '').trim()
+            const fullName = [first, last].filter(Boolean).join(' ')
+            if (!fullName) return { name: '', isCompany: false }
 
-            const parts = fullName.split(/\s+/)
-            if (parts.length > 2) {
-                return [parts[0], parts[parts.length - 1]]
-                    .map(capitalize)
+            if (isCompanyName(fullName)) {
+                // Nur reine GROSSBUCHSTABEN-Scans umformatieren, gemischte Schreibweise bleibt wie gedruckt
+                if (fullName !== fullName.toUpperCase()) return { name: fullName, isCompany: true }
+                const name = fullName.split(/\s+/)
+                    .map(w => LEGAL_FORM_SPELLING[w.toLowerCase()] || (/^[A-ZÄÖÜ]\.([A-ZÄÖÜ]\.?)+$/.test(w) ? w : capitalize(w)))
                     .join(' ')
+                return { name, isCompany: true }
             }
-            return parts.map(capitalize).join(' ')
+
+            // Ohne getrennten Vornamen ist unklar, wo der Nachname beginnt → nicht kürzen
+            const words = first ? [first.split(/\s+/)[0], ...last.split(/\s+/).filter(Boolean)] : fullName.split(/\s+/)
+            const name = words
+                .map((w, i) => i > 0 && NAME_PARTICLES.has(w.toLowerCase()) ? w.toLowerCase() : capitalize(w))
+                .join(' ')
+            return { name, isCompany: false }
         }
 
         // Backend-Daten normalisieren: Owner-Felder zusammenführen, Datumsformate konvertieren
@@ -1917,16 +1942,14 @@ export default {
             // Owner: firstname + name zusammenführen, fehlende Felder ergänzen
             if (!result.owner) result.owner = {}
             const o = result.owner
-            if (o.firstname) {
-                o.name = [o.firstname, o.name].filter(Boolean).join(' ').trim()
-                delete o.firstname
-            }
-            o.name = formatOwnerName(o)
+            const ownerName = formatOwnerName(o.firstname, o.name)
+            o.name = ownerName.name
+            delete o.firstname
+            if (!('natural_person' in o)) o.natural_person = !ownerName.isCompany
             if (!('phone' in o)) o.phone = ''
             if (!('email' in o)) o.email = ''
             if (!('greeting' in o)) o.greeting = ''
             if (!('business_id' in o)) o.business_id = businessTypes.value.length === 1 ? businessTypes.value[0].value : null
-            if (!('natural_person' in o)) o.natural_person = true
             if (!('phone_numbers' in o)) o.phone_numbers = []
             if (!('contact' in o)) o.contact = ''
             if (!('cc' in o)) o.cc = ''
@@ -1968,6 +1991,8 @@ export default {
 
         // Anrede über firstnameToGender-Tabelle ermitteln
         async function lookupGreeting(name) {
+            // Firmen bekommen keine Anrede Herr/Frau
+            if (scanResult.value.owner?.natural_person === false) return
             const firstname = (name || '').trim().split(/\s+/)[0]
             if (!firstname) return
             try {

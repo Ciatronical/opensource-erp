@@ -1,0 +1,84 @@
+{
+    "AboutView": {
+        "title": "Par OSERP",
+        "subtitle": "OpensourceERP – brīvs, atvērts un radīts praksē praksei",
+        "history": {
+            "title": "Kā radās OSERP",
+            "roots": "OSERP nav radīts pie rasēšanas dēļa, bet gan īstu uzņēmumu ikdienas darbā. Daudzus gadus mēs strādājām ar kivitendo un rakstījām tam paplašinājumus – CRM, LxCars autoservisiem, savienojumus ar telefoniju, e-pastu un WhatsApp. Mēs šo darbu darījām ar prieku, atklāti ar to dalījāmies un tā atvieglojām ikdienu daudziem lietotājiem – un vēl šodien jūtamies kā daļa no šīs kopienas.",
+            "motivation": "Laika gaitā radās vēlme, ko ar paplašinājumiem vien vairs nevarēja piepildīt: moderna lietotāja saskarne, kas atbilst jaunākajam tehnoloģiju līmenim, ar inovatīvu vadību un īstu mākslīgā intelekta atbalstu. ERP sistēmai jābūt tikpat viegli lietojamai kā jebkurai labai tīmekļa lietotnei – ātrai, pārskatāmai un saprotamai bez apmācības, gan pie rakstāmgalda, gan mobilajā tālrunī. Tāpēc mēs izveidojām lietotāja saskarni no jauna, no paša pamata, un devām rezultātam savu nosaukumu: OpensourceERP, saīsināti OSERP. Tas nav pārrāvums ar kivitendo – OSERP ir izaudzis no šīs kopienas.",
+            "ai": "Mums mākslīgais intelekts nav modes vārds, bet gan ikdienas darba rīks: rēķini no e-pasta pastkastes tiek atpazīti un sagatavoti kā grāmatojumu priekšlikumi, Weroni pārbauda ekspertu atzinumus un sagatavo tekstus klientiem un apdrošinātājiem, tiek ieteiktas pozīcijas un pārdošanas teksti, un dokumentiem var vienkārši uzdot jautājumus. Mākslīgais intelekts sniedz priekšlikumus – lēmumu vienmēr pieņem cilvēks.",
+            "compatible": "Viena lieta mums jau no paša sākuma bija svarīga: nevienam nav jāatstāj savi dati. OSERP strādā ar tādu pašu datubāzes struktūru kā kivitendo. Klienti, preces, dokumenti un grāmatojumi paliek savās vietās; savus paplašinājumus mēs glabājam atsevišķās tabulās, nevis mainām svešas. Kas vēlas pāriet, vienkārši paņem līdzi visu savu vēsturi.",
+            "today": "Šodien no dažiem paplašinājumiem ir izaugusi pilnvērtīga ERP sistēma: rēķinu izrakstīšana, grāmatvedība ar PVN deklarācijām, banka un kase, parādu atgādinājumi, noliktava, klientu pārvaldība ar kontaktu vēsturi, e-pasts, WhatsApp un telefonija, kalendārs, interneta veikals, autoservisa modulis un daudz kas cits – 21 valodā. Uzņēmumi ar to strādā katru dienu, un katru dienu tā kļūst mazliet labāka."
+        },
+        "values": {
+            "title": "Kas mums ir svarīgi",
+            "free": {
+                "title": "Piedalīšanās ir bez maksas",
+                "text": "Nekādas maksas, nekādas dalības, nekāda pieteikuma. Ikviens, kurš vēlas palīdzēt, ir laipni gaidīts – pietiek ar ieteikumu, tulkojumu vai pull request."
+            },
+            "ux": {
+                "title": "Lietojamība pirmajā vietā",
+                "text": "Programmatūrai jāatvieglo darbs, nevis jārada tas. Lauki ir aizpildīti iepriekš, kur tas ir lietderīgi, ceļi ir īsi, un to, ko var paveikt automātiski, sistēma izdara pati."
+            },
+            "data": {
+                "title": "Jūsu dati pieder Jums",
+                "text": "OSERP darbojas uz Jūsu paša servera. Datubāzes struktūra ir atvērta un saderīga – Jūs neesat piesaistīts nevienam piegādātājam, pat ne mums."
+            },
+            "practice": {
+                "title": "No prakses",
+                "text": "Gandrīz katra funkcija ir radusies tāpēc, ka to vajadzēja īstam uzņēmumam: pie darbgalda, pie letes vai pie grāmatveža rakstāmgalda."
+            },
+            "open": {
+                "title": "Atvērts visiem",
+                "text": "Pirmkods ir publiski pieejams GitHub. Ikviens var izlasīt, kā OSERP darbojas, to pielāgot un uzlabot."
+            }
+        },
+        "thanks": {
+            "title": "Paldies",
+            "accountants": "ERP sistēma ir tik laba, cik laba ir tās grāmatvedība. To, ka grāmatvedība, banka un kase OSERP šodien darbojas tā, kā grāmatveži to sagaida, mēs galvenokārt esam parādā trim cilvēkiem:",
+            "accountantsDetail": "Ar savām zināšanām, neskaitāmiem jautājumiem no ikdienas prakses un lielu pacietību viņi mums parādīja, kas grāmatvedībā patiešām ir svarīgs – no sadalītiem un apvienotiem grāmatojumiem līdz kases pārbaudei, parādu atgādinājumiem un pareizi iestatītām nodokļu atslēgām. Daudzu funkciju bez viņu ierosinājumiem nebūtu, un dažas kļūdas bez viņu vērīgā skatiena mēs nekad nebūtu atraduši. Par to – sirsnīgs paldies.",
+            "yvonne": "Īpašs paldies – Yvonne A. – par ideju par automātisku grāmatvedību, nolasot e-pastus: rēķini, kas pienāk pa e-pastu, tiek atpazīti, nolasīti un sniegti kā gatavs grāmatojuma priekšlikums. No viņas idejas ir izaugusi funkcija, kas ikdienā ietaupa daudz laika.",
+            "weronika": "Un tad vēl ir Weronika Marek. Viņas grūtniecība izraisīja īstu inovāciju uzplūdu: tā kļuva par impulsu, lai izstrādātu Weroni, mūsu mākslīgā intelekta biroja darbinieci, – un nav nejaušība, ka Weroni nes viņas vārdu. Šodien Weroni atbild uz jautājumiem par sistēmu, analizē datus, atpazīst dokumentus un atvieglo biroja darbu. Paldies, Weronika!",
+            "kivitendo": "Īpašs paldies pienākas kivitendo galvenajiem izstrādātājiem – Sven un Moritz – par ilggadējo labo sadarbību. Arī ar jauno nosaukumu tas nemainīsies – mūsu durvis ir atvērtas, un mēs priecāsimies par katru turpmāku viedokļu apmaiņu.",
+            "vehicleScanner": "Ikviens, kas lieto LxCars, to pazīst: transportlīdzekļa reģistrācijas apliecības skeneri (Fahrzeugschein-Scanner) no uzņēmuma Autosiastik Software GmbH (Kaltenkirchen), ko izstrādājis Rasmus Wachsmuth. Pietiek ar vienu reģistrācijas apliecības fotoattēlu, un īpašnieks, transportlīdzeklis un kodu numuri glīti parādās formā – tā vietā, lai tos mokoši rakstītu ar roku. Liels paldies un daudz uzslavu – Rasmus Wachsmuth, Dennis Sonnwald un Domenic Marchowskie – par lielisko sadarbību un pakalpojumu, kas darbnīcām ik dienu ietaupa laiku.",
+            "origins": "Mūsu pateicība pienākas arī daudzajiem citiem SQL-Ledger, Lx-Office un kivitendo izstrādātājiem. Uz viņu ilggadējā darba balstās datubāzes pamats, uz kura stāv arī OSERP. Bez viņiem šī projekta nebūtu.",
+            "switzerland": "Protams, sirsnīgi sveicieni dodas arī uz Šveici – revamp-it komandai Cīrihē. Komanda pati izmanto kivitendo kopš 2007. gada, kopš 2015. gada ir projekta Premium partneris un ir iekļāvusi galvenajā kodā „Kivitendo Modus Schweiz“, lai arī Šveices uzņēmumi varētu grāmatot pēc saviem noteikumiem. Grüezi un merci vielmal!"
+        },
+        "team": {
+            "title": "Izstrāde",
+            "text": "Aiz OSERP stāv liela komanda – izstrādātāji, lietotāji un speciālisti, kas ik dienu strādā ar programmatūru un pazīst uzņēmumus, kuri to izmanto. Izstrādes kodolu veido:"
+        },
+        "contribute": {
+            "title": "Piedalieties arī Jūs",
+            "intro": "OSERP dzīvo no tā, ka cilvēki dalās savās zināšanās. Jūs esat izstrādātājs un vēlaties strādāt pie ERP sistēmas, kas šķiet mūsdienīga? Jūs labi pārzināt nozari, kuras darba procesu vēl trūkst? Tad Jūs esat nonācis īstajā vietā – pilnīgi bez iestāšanās maksas.",
+            "ways": {
+                "code": {
+                    "title": "Programmēšana",
+                    "text": "Labot kļūdas, veidot funkcijas, paātrināt darba procesus – ar Vue 3, Vuetify, PHP 8 un PostgreSQL. Loģika atrodas datubāzē, saskarne ir viegla."
+                },
+                "translate": {
+                    "title": "Tulkošana",
+                    "text": "OSERP runā 21 valodā. Dzimtās valodas runātāji, kas pārbauda un uzlabo tekstus, mums ļoti palīdz."
+                },
+                "expertise": {
+                    "title": "Dalīšanās ar zināšanām",
+                    "text": "Grāmatveži, autoservisa meistari, tirgotāji, amatnieki: izskaidrojiet mums savus darba procesus. Labas idejas pie mums kļūst par funkcijām."
+                },
+                "test": {
+                    "title": "Testēšana un kļūdu ziņošana",
+                    "text": "Izmēģiniet OSERP demo versijā un ziņojiet, kas nedarbojas. Katrs ziņojums padara programmatūru labāku visiem."
+                },
+                "docs": {
+                    "title": "Dokumentēšana",
+                    "text": "Rokasgrāmata projektā tiek glabāta Markdown formātā. Katrs papildinājums palīdz jauniem lietotājiem sākt darbu."
+                }
+            },
+            "howto": "Sākt ir vienkārši: izveidojiet projekta fork GitHub, veiciet izmaiņas, iesniedziet pull request. Programmēšanas vadlīnijas atrodamas projektā: dev/programmierstil-richtlinien.md. Jautājumi vienmēr ir laipni gaidīti – vislabāk tieši kā issue GitHub.",
+            "github": "Pirmkods GitHub",
+            "website": "Tīmekļa vietne",
+            "demo": "Tiešsaistes demo",
+            "docs": "Dokumentācija",
+            "closing": "Nekādas maksas. Nekāda pieteikuma. Tikai prieks par labu, brīvu programmatūru – mēs ar prieku Jūs gaidām."
+        }
+    }
+}

@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Kund/Leverantor/Person",
             "invoice": "Fakturaen",
+            "credit_note": "Kreditfakturor",
             "purchase_invoice": "Kreditorenrechnungen",
             "quotation": "Offerte",
             "order": "Ordrar",
@@ -50,7 +51,8 @@
             "amount_to": "Belopp bis",
             "status": "Status",
             "status_open": "Oppen",
-            "status_closed": "Stangd"
+            "status_closed": "Stangd",
+            "status_storno": "Makulerad"
         },
         "document_table": {
             "document_number": "Dokumentnr.",
@@ -61,6 +63,10 @@
             "status": "Status",
             "status_open": "Oppen",
             "status_closed": "Stangd",
+            "status_storno": "Makulering",
+            "status_cancelled": "Makulerad",
+            "status_storno_ref": "Ursprunglig faktura {number}",
+            "status_cancelled_ref": "Makuleringsverifikat {number}",
             "created_at": "Erstellt am",
             "text_no_results": "inga Dokumente gefunden."
         }

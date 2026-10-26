@@ -116,7 +116,7 @@
             </v-col>
           </v-row>
 
-          <v-text-field v-model="publish.url" :label="t('DocsView.publish.url')" placeholder="https://opensource-erp.dev/api/features"
+          <v-text-field v-model="publish.url" :label="t('DocsView.publish.url')" placeholder="https://opensourceerp.dev/api/features"
                         prepend-inner-icon="mdi-link-variant" variant="outlined" density="compact" class="mb-2" />
           <v-text-field v-model="publish.token" :label="t('DocsView.publish.token')"
                         :hint="publish.has_token ? t('DocsView.publish.tokenKept') : ''" persistent-hint

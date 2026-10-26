@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Klant/Leverancier/Persoon",
             "invoice": "Facturen",
+            "credit_note": "Creditnota's",
             "purchase_invoice": "Inkoopfacturen",
             "quotation": "Offertes",
             "order": "Orders",
@@ -50,7 +51,8 @@
             "amount_to": "Bedrag tot",
             "status": "Status",
             "status_open": "Open",
-            "status_closed": "Afgesloten"
+            "status_closed": "Afgesloten",
+            "status_storno": "Geannuleerd"
         },
         "document_table": {
             "document_number": "Doc.nr.",
@@ -61,6 +63,10 @@
             "status": "Status",
             "status_open": "Open",
             "status_closed": "Afgesloten",
+            "status_storno": "Annulering",
+            "status_cancelled": "Geannuleerd",
+            "status_storno_ref": "Oorspronkelijke factuur {number}",
+            "status_cancelled_ref": "Annuleringsdocument {number}",
             "created_at": "Aangemaakt op",
             "text_no_results": "Geen documenten gevonden."
         }

@@ -1,0 +1,33 @@
+{
+    "history": ["roots", "motivation", "ai", "compatible", "today"],
+    "values": [
+        { "key": "free", "icon": "mdi-handshake-outline" },
+        { "key": "ux", "icon": "mdi-gesture-tap" },
+        { "key": "data", "icon": "mdi-database-lock-outline" },
+        { "key": "practice", "icon": "mdi-wrench-outline" },
+        { "key": "open", "icon": "mdi-lock-open-variant-outline" }
+    ],
+    "thanks": [
+        { "text": "accountants", "icon": "mdi-calculator-variant-outline", "people": ["Yvonne A.", "Gerda", "Olaf Stechow"] },
+        { "text": "accountantsDetail" },
+        { "text": "yvonne" },
+        { "text": "weronika", "icon": "mdi-account-heart-outline", "people": ["Weronika Marek"] },
+        { "text": "kivitendo", "icon": "mdi-code-braces", "people": ["Sven", "Moritz"] },
+        { "text": "vehicleScanner", "extension": "lxcars", "link": "https://www.fahrzeugschein-scanner.de", "icon": "mdi-card-account-details-outline", "people": ["Rasmus Wachsmuth", "Dennis Sonnwald", "Domenic Marchowskie"] },
+        { "text": "origins" },
+        { "text": "switzerland", "link": "https://revampit.ch" }
+    ],
+    "team": ["Ronny Zimmermann", "Dirk Schwartzer", "Martin Willig"],
+    "contribution_ways": [
+        { "key": "code", "icon": "mdi-code-tags" },
+        { "key": "translate", "icon": "mdi-translate" },
+        { "key": "expertise", "icon": "mdi-lightbulb-on-outline" },
+        { "key": "test", "icon": "mdi-bug-outline" },
+        { "key": "docs", "icon": "mdi-text-box-edit-outline" }
+    ],
+    "links": {
+        "github": "https://github.com/Ciatronical/opensource-erp",
+        "website": "https://opensourceerp.dev",
+        "demo": "https://demo.opensourceerp.dev/"
+    }
+}

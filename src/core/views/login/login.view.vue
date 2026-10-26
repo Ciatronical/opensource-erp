@@ -50,6 +50,10 @@
             <router-link :to="{ name: 'datenloeschung' }" class="text-caption text-grey text-decoration-none">
               {{ t('LoginView.dataDeletion') }}
             </router-link>
+            <span class="text-caption text-grey mx-2">|</span>
+            <router-link :to="{ name: 'about' }" class="text-caption text-grey text-decoration-none">
+              {{ t('AboutView.title') }}
+            </router-link>
             <v-alert v-if="updateLoading" type="info" variant="tonal" density="compact" class="mt-3">
               <v-progress-linear indeterminate color="info" class="mb-1" />
               {{ t('LoginView.updateButton') }}…

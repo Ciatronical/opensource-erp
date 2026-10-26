@@ -56,6 +56,7 @@
         "mechanicOrder": "/mecanico/encomenda",
         "mechanicCar": "/mecanico/veiculo",
         "privacy": "/privacidade",
+        "about": "/sobre",
         "dataDeletion": "/eliminacao-dados",
         "tafel": "/quadro-avisos/gestao",
         "newArticle": "/artigo/novo",

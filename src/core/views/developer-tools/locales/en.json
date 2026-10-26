@@ -344,7 +344,20 @@
             "typeBug": "Bug",
             "typeFeature": "Feature",
             "typeTask": "Task",
-            "typeImprovement": "Improvement"
+            "typeImprovement": "Improvement",
+            "attachments": "Attachments",
+            "attachFile": "Attach file",
+            "attachHint": "Paste a screenshot with Ctrl+V or drag files here",
+            "dropHere": "Drop files here",
+            "fileTooLarge": "\"{name}\" is larger than {size} and was not attached",
+            "uploadFailed": "\"{name}\" could not be uploaded",
+            "download": "Download",
+            "confirmDeleteAttachment": "Really delete attachment \"{name}\"?",
+            "deleteTicket": "Delete ticket",
+            "confirmDeleteMany": "Really delete {count} tickets? Comments and attachments will be deleted as well.",
+            "selected": "{count} selected",
+            "clearSelection": "Clear selection",
+            "deleted": "Ticket deleted | {count} tickets deleted"
         }
     },
     "cancel": "Cancel",

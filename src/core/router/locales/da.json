@@ -56,6 +56,7 @@
         "mechanicOrder": "/mekaniker/ordre",
         "mechanicCar": "/mekaniker/koeretoej",
         "privacy": "/privatliv",
+        "about": "/om",
         "dataDeletion": "/datasletning",
         "tafel": "/opslagstavle/administration",
         "newArticle": "/vare/ny",

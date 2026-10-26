@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Клієнт/Постачальник/Особа",
             "invoice": "Рахунки",
+            "credit_note": "Кредит-ноти",
             "purchase_invoice": "Вхідні рахунки",
             "quotation": "Пропозиції",
             "order": "Замовлення",
@@ -50,7 +51,8 @@
             "amount_to": "Сума до",
             "status": "Статус",
             "status_open": "Відкрито",
-            "status_closed": "Закрито"
+            "status_closed": "Закрито",
+            "status_storno": "Сторновано"
         },
         "document_table": {
             "document_number": "Номер докум.",
@@ -61,6 +63,10 @@
             "status": "Статус",
             "status_open": "Відкрито",
             "status_closed": "Закрито",
+            "status_storno": "Сторно",
+            "status_cancelled": "Сторновано",
+            "status_storno_ref": "Початковий рахунок {number}",
+            "status_cancelled_ref": "Документ сторно {number}",
             "created_at": "Створено",
             "text_no_results": "Документи не знайдені."
         }

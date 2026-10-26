@@ -302,7 +302,20 @@
             "typeBug": "Bug",
             "typeFeature": "Feature",
             "typeTask": "Aufgabe",
-            "typeImprovement": "Verbesserung"
+            "typeImprovement": "Verbesserung",
+            "attachments": "Liitteet",
+            "attachFile": "Liitä tiedosto",
+            "attachHint": "Liitä kuvakaappaus Ctrl+V:llä tai vedä tiedostot tähän",
+            "dropHere": "Pudota tiedostot tähän",
+            "fileTooLarge": "\"{name}\" on suurempi kuin {size}, eikä sitä liitetty",
+            "uploadFailed": "Tiedostoa \"{name}\" ei voitu ladata palvelimelle",
+            "download": "Lataa",
+            "confirmDeleteAttachment": "Poistetaanko liite \"{name}\"?",
+            "deleteTicket": "Poista tiketti",
+            "confirmDeleteMany": "Poistetaanko {count} tikettiä? Myös kommentit ja liitteet poistetaan.",
+            "selected": "{count} valittu",
+            "clearSelection": "Poista valinta",
+            "deleted": "Tiketti poistettu | {count} tikettiä poistettu"
         },
         "autoTest": {
             "title": "Automaattiset testit",

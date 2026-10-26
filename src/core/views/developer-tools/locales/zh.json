@@ -302,7 +302,20 @@
             "typeBug": "Bug",
             "typeFeature": "功能",
             "typeTask": "任务",
-            "typeImprovement": "改进"
+            "typeImprovement": "改进",
+            "attachments": "附件",
+            "attachFile": "添加附件",
+            "attachHint": "使用 Ctrl+V 粘贴截图，或将文件拖到此处",
+            "dropHere": "将文件拖放到此处",
+            "fileTooLarge": "\"{name}\" 超过 {size}，未添加",
+            "uploadFailed": "无法上传 \"{name}\"",
+            "download": "下载",
+            "confirmDeleteAttachment": "确定要删除附件 \"{name}\" 吗？",
+            "deleteTicket": "删除工单",
+            "confirmDeleteMany": "确定要删除 {count} 个工单吗？评论和附件也将一并删除。",
+            "selected": "已选择 {count} 个",
+            "clearSelection": "取消选择",
+            "deleted": "已删除 {count} 个工单"
         },
         "autoTest": {
             "title": "自动化测试",

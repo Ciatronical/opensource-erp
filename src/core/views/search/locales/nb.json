@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Kunde/Leverandoer/Person",
             "invoice": "Fakturaen",
+            "credit_note": "Kreditnotaer",
             "purchase_invoice": "Kreditorenrechnungen",
             "quotation": "Tilbude",
             "order": "Ordrer",
@@ -50,7 +51,8 @@
             "amount_to": "Beloep bis",
             "status": "Status",
             "status_open": "Aapen",
-            "status_closed": "Lukket"
+            "status_closed": "Lukket",
+            "status_storno": "Kreditert"
         },
         "document_table": {
             "document_number": "Dokumentnr.",
@@ -61,6 +63,10 @@
             "status": "Status",
             "status_open": "Aapen",
             "status_closed": "Lukket",
+            "status_storno": "Kreditering",
+            "status_cancelled": "Kreditert",
+            "status_storno_ref": "Opprinnelig faktura {number}",
+            "status_cancelled_ref": "Krediteringsbilag {number}",
             "created_at": "Erstellt am",
             "text_no_results": "ingen Dokumente gefunden."
         }

@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Client/Fournisseur/Personne",
             "invoice": "Factures",
+            "credit_note": "Avoirs",
             "purchase_invoice": "Factures fournisseur",
             "quotation": "Devis",
             "order": "Commandes",
@@ -50,7 +51,8 @@
             "amount_to": "Montant a",
             "status": "Statut",
             "status_open": "Ouvert",
-            "status_closed": "Cloture"
+            "status_closed": "Cloture",
+            "status_storno": "Annulé"
         },
         "document_table": {
             "document_number": "N. doc.",
@@ -61,6 +63,10 @@
             "status": "Statut",
             "status_open": "Ouvert",
             "status_closed": "Cloture",
+            "status_storno": "Annulation",
+            "status_cancelled": "Annulé",
+            "status_storno_ref": "Facture d'origine {number}",
+            "status_cancelled_ref": "Document d'annulation {number}",
             "created_at": "Cree le",
             "text_no_results": "Aucun document trouve."
         }

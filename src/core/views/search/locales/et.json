@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Kunde/Lieferant/Person",
             "invoice": "Rechnungen",
+            "credit_note": "Kreeditarved",
             "purchase_invoice": "Kreditorenrechnungen",
             "quotation": "Angebote",
             "order": "Aufträge",
@@ -50,7 +51,8 @@
             "amount_to": "Betrag bis",
             "status": "Olek",
             "status_open": "Avatud",
-            "status_closed": "Suletud"
+            "status_closed": "Suletud",
+            "status_storno": "Tühistatud"
         },
         "document_table": {
             "document_number": "Dokumentnr.",
@@ -61,6 +63,10 @@
             "status": "Olek",
             "status_open": "Avatud",
             "status_closed": "Suletud",
+            "status_storno": "Tühistus",
+            "status_cancelled": "Tühistatud",
+            "status_storno_ref": "Algne arve {number}",
+            "status_cancelled_ref": "Tühistusdokument {number}",
             "created_at": "Erstellt am",
             "text_no_results": "Keine Dokumente gefunden."
         }

@@ -735,21 +735,23 @@ function deleteSqlQuery($data) {
 }
 
 /**
- * Sucht nach Faktura-Dokumenten (Rechnungen, Angebote, Aufträge, Bestellungen, Lieferscheine)
+ * Sucht nach Faktura-Dokumenten (Rechnungen, Gutschriften, Angebote, Aufträge, Bestellungen, Lieferscheine)
  *
  * Filterlogik liegt in lib/belegsuche.php, damit der Sammeldruck (print/) dieselbe
  * Treffermenge bekommt. Liefert je Beleg auch die Kontaktdaten des Kunden/Lieferanten
  * (E-Mail, Telefon, CC/BCC, weitere Nummern) für Versand direkt aus der Trefferliste
  * sowie Summe und Anzahl aller Treffer.
  *
- * @param string $data['type'] Dokumenttyp: invoice, purchase_invoice, quotation, order, purchase_order, delivery_order
+ * @param string $data['type'] Dokumenttyp: invoice, credit_note, purchase_invoice, quotation, order, purchase_order, delivery_order
  * @param array $data['where'] Optionale Filter als Array:
  *   - document_number: ILIKE auf Dokumentnummer
  *   - cv_name: ILIKE auf Kunden-/Lieferantenname
  *   - transdate_from / transdate_to: Datumsbereich
  *   - amount_from / amount_to: Betragsbereich
- *   - status: 'open' oder 'closed'
+ *   - status: 'open', 'closed' oder 'storno' (nur Rechnungen/Gutschriften/Eingangsrechnungen)
  * @testdata {"type": "invoice", "where": {"document_number": "1"}}
+ * @testdata {"type": "invoice", "where": {"status": "storno"}}
+ * @testdata {"type": "credit_note", "where": {"status": "open"}}
  */
 function searchDocuments($data) {
     $mandant = DbhCompany::begin();
@@ -769,9 +771,19 @@ function searchDocuments($data) {
         ? "NULL::numeric AS sum_amount"
         : "COALESCE(SUM($tbl.amount), 0) AS sum_amount";
 
-    // Status-Select
+    // Status-Select; Stornobeleg (storno_id gesetzt) und stornierte Rechnung zuerst
+    $stornoJoin = '';
+    $stornoSelect = "NULL::text AS storno_ref_number";
     if (isset($cfg['status_expr'])) {
-        $statusSelect = "CASE WHEN ({$cfg['status_expr']}) > 0.01 THEN 'open' ELSE 'closed' END AS doc_status";
+        $statusSelect = "CASE WHEN $tbl.storno_id IS NOT NULL THEN 'storno'
+                              WHEN $tbl.storno IS TRUE THEN 'cancelled'
+                              WHEN ({$cfg['status_expr']}) > 0.01 THEN 'open' ELSE 'closed' END AS doc_status";
+        // Gegenbeleg ueber den Primaerschluessel; die Unterabfrage laeuft nur fuer stornierte Rechnungen
+        $stornoJoin = "LEFT JOIN $tbl AS sto ON sto.id = CASE
+                           WHEN $tbl.storno_id IS NOT NULL THEN $tbl.storno_id
+                           WHEN $tbl.storno THEN (SELECT s.id FROM $tbl s WHERE s.storno_id = $tbl.id ORDER BY s.id LIMIT 1)
+                       END";
+        $stornoSelect = "sto.invnumber AS storno_ref_number";
     } elseif (isset($cfg['status_field'])) {
         $statusSelect = "CASE WHEN $tbl.{$cfg['status_field']} IS TRUE THEN 'closed' ELSE 'open' END AS doc_status";
     } else {
@@ -821,9 +833,11 @@ function searchDocuments($data) {
             $tbl.transdate,
             $amountSelect,
             $statusSelect,
+            $stornoSelect,
             $tbl.itime
         {$suche['from']}
         LEFT JOIN $extTable AS ext ON ext.$extFk = cv.id
+        $stornoJoin
         {$suche['where']}
         ORDER BY $sortCol $sortOrder
         LIMIT $limit OFFSET $offset

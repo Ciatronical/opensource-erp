@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Klient/Dostawca/Osoba",
             "invoice": "Faktury",
+            "credit_note": "Faktury korygujące",
             "purchase_invoice": "Faktury zakupu",
             "quotation": "Oferty",
             "order": "Zamówienia",
@@ -50,7 +51,8 @@
             "amount_to": "Kwota do",
             "status": "Status",
             "status_open": "Otwarty",
-            "status_closed": "Zamknięty"
+            "status_closed": "Zamknięty",
+            "status_storno": "Stornowane"
         },
         "document_table": {
             "document_number": "Nr dokumentu",
@@ -61,6 +63,10 @@
             "status": "Status",
             "status_open": "Otwarty",
             "status_closed": "Zamknięty",
+            "status_storno": "Storno",
+            "status_cancelled": "Stornowane",
+            "status_storno_ref": "Faktura pierwotna {number}",
+            "status_cancelled_ref": "Dokument storna {number}",
             "created_at": "Utworzono",
             "text_no_results": "Nie znaleziono dokumentów."
         }

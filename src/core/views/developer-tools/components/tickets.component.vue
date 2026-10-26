@@ -29,7 +29,7 @@
         <!-- Filter-Leiste -->
         <v-card variant="tonal" class="mb-4 pa-3">
             <v-row dense align="center">
-                <v-col cols="12" sm="3">
+                <v-col cols="12" md="2">
                     <v-text-field
                         v-model="searchText"
                         :label="t('DeveloperTools.tickets.search')"
@@ -40,7 +40,27 @@
                         hide-details
                     />
                 </v-col>
-                <v-col cols="6" sm="2">
+                <v-col cols="6" md="2">
+                    <v-select
+                        v-model="filterStatus"
+                        :items="statusItems"
+                        item-title="text"
+                        item-value="value"
+                        :label="t('DeveloperTools.tickets.status')"
+                        variant="outlined"
+                        density="compact"
+                        multiple
+                        clearable
+                        hide-details
+                    >
+                        <template #selection="{ index }">
+                            <span v-if="index === 0" class="text-no-wrap">
+                                {{ getStatusLabel(filterStatus[0]) }}<span v-if="filterStatus.length > 1" class="text-medium-emphasis"> (+{{ filterStatus.length - 1 }})</span>
+                            </span>
+                        </template>
+                    </v-select>
+                </v-col>
+                <v-col cols="6" md="2">
                     <v-select
                         v-model="filterPriority"
                         :items="priorityItems"
@@ -53,7 +73,7 @@
                         hide-details
                     />
                 </v-col>
-                <v-col cols="6" sm="2">
+                <v-col cols="6" md="2">
                     <v-select
                         v-model="filterType"
                         :items="typeItems"
@@ -66,7 +86,7 @@
                         hide-details
                     />
                 </v-col>
-                <v-col cols="6" sm="2">
+                <v-col cols="6" md="2">
                     <v-select
                         v-model="filterProject"
                         :items="masterData.projects"
@@ -79,7 +99,7 @@
                         hide-details
                     />
                 </v-col>
-                <v-col cols="6" sm="3">
+                <v-col cols="6" md="2">
                     <v-select
                         v-model="filterAssignee"
                         :items="activeEmployees"
@@ -98,23 +118,23 @@
         <!-- Loading -->
         <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
 
-        <!-- Statistik-Chips -->
+        <!-- Statistik-Chips, zugleich Schnellfilter nach Status -->
         <div class="d-flex flex-wrap ga-2 mb-4" v-if="tickets.length > 0">
-            <v-chip size="small" variant="tonal" color="grey">
+            <v-chip size="small" :variant="filterStatus.length === 0 ? 'flat' : 'tonal'" color="grey" @click="filterStatus = []">
                 {{ t('DeveloperTools.tickets.total') }}: {{ tickets.length }}
             </v-chip>
-            <v-chip size="small" variant="tonal" color="info">
-                {{ t('DeveloperTools.tickets.statusOpen') }}: {{ ticketsByStatus('open').length }}
-            </v-chip>
-            <v-chip size="small" variant="tonal" color="warning">
-                {{ t('DeveloperTools.tickets.statusInProgress') }}: {{ ticketsByStatus('in_progress').length }}
-            </v-chip>
-            <v-chip size="small" variant="tonal" color="purple">
-                {{ t('DeveloperTools.tickets.statusReview') }}: {{ ticketsByStatus('review').length }}
-            </v-chip>
-            <v-chip size="small" variant="tonal" color="success">
-                {{ t('DeveloperTools.tickets.statusDone') }}: {{ ticketsByStatus('done').length }}
-            </v-chip>
+            <template v-for="s in statusItems" :key="s.value">
+                <v-chip
+                    v-if="s.value !== 'closed' || ticketsByStatus('closed').length > 0"
+                    size="small"
+                    :variant="filterStatus.includes(s.value) ? 'flat' : 'tonal'"
+                    :color="getStatusColor(s.value)"
+                    :prepend-icon="filterStatus.includes(s.value) ? 'mdi-filter' : undefined"
+                    @click="toggleStatusFilter(s.value)"
+                >
+                    {{ s.text }}: {{ ticketsByStatus(s.value).length }}
+                </v-chip>
+            </template>
         </div>
 
         <!-- Leere Ansicht -->
@@ -207,6 +227,10 @@
                                         <v-icon size="12" class="mr-1">mdi-comment-outline</v-icon>
                                         {{ ticket.comment_count }}
                                     </span>
+                                    <span v-if="ticket.attachment_count > 0" class="d-flex align-center">
+                                        <v-icon size="12" class="mr-1">mdi-paperclip</v-icon>
+                                        {{ ticket.attachment_count }}
+                                    </span>
                                 </div>
                             </div>
                         </v-card-text>
@@ -215,11 +239,40 @@
             </div>
         </div>
 
+        <!-- Auswahl-Leiste der Listenansicht -->
+        <v-alert
+            v-if="viewMode === 'list' && selectedIds.length > 0"
+            type="info"
+            variant="tonal"
+            density="compact"
+            icon="mdi-checkbox-multiple-marked"
+            class="mb-2"
+        >
+            <div class="d-flex align-center flex-wrap ga-2">
+                <span class="font-weight-medium">{{ t('DeveloperTools.tickets.selected', { count: selectedIds.length }) }}</span>
+                <v-spacer />
+                <v-btn size="small" variant="text" @click="selectedIds = []">
+                    {{ t('DeveloperTools.tickets.clearSelection') }}
+                </v-btn>
+                <v-btn size="small" variant="flat" color="error" prepend-icon="mdi-delete" :loading="deleting" @click="deleteSelectedTickets">
+                    {{ t('delete') }}
+                </v-btn>
+            </div>
+        </v-alert>
+
         <!-- LISTEN-ANSICHT -->
         <v-card v-if="viewMode === 'list' && filteredTickets.length > 0" variant="outlined">
             <v-table density="compact" hover>
                 <thead>
                     <tr>
+                        <th style="width: 40px" class="px-1">
+                            <v-checkbox-btn
+                                :model-value="allSelected"
+                                :indeterminate="selectedIds.length > 0 && !allSelected"
+                                density="compact"
+                                @update:model-value="toggleSelectAll"
+                            />
+                        </th>
                         <th style="width: 100px">#</th>
                         <th style="width: 80px">{{ t('DeveloperTools.tickets.priority') }}</th>
                         <th style="width: 80px">{{ t('DeveloperTools.tickets.type') }}</th>
@@ -236,10 +289,15 @@
                         v-for="ticket in filteredTickets"
                         :key="ticket.id"
                         class="cursor-pointer"
+                        :class="{ 'ticket-row-selected': selectedIds.includes(ticket.id) }"
                         @click="openDetailDialog(ticket)"
                     >
+                        <td class="px-1" @click.stop>
+                            <v-checkbox-btn v-model="selectedIds" :value="ticket.id" density="compact" />
+                        </td>
                         <td>
                             <span class="text-caption font-weight-bold">{{ ticket.ticket_number }}</span>
+                            <v-icon v-if="ticket.attachment_count > 0" size="12" class="ml-1 text-medium-emphasis">mdi-paperclip</v-icon>
                         </td>
                         <td>
                             <v-chip size="x-small" variant="flat" :color="getPriorityColor(ticket.priority)">
@@ -274,7 +332,7 @@
                         <td class="text-caption" :class="{ 'text-error': isOverdue(ticket) }">
                             {{ ticket.due_date ? formatDate(ticket.due_date) : '–' }}
                         </td>
-                        <td>
+                        <td class="text-no-wrap">
                             <v-btn size="x-small" icon="mdi-pencil" variant="text" @click.stop="openTicketDialog(ticket)" />
                             <v-btn size="x-small" icon="mdi-delete" variant="text" color="error" @click.stop="confirmDeleteTicket(ticket)" />
                         </td>
@@ -285,7 +343,19 @@
 
         <!-- TICKET-DETAIL DIALOG -->
         <v-dialog v-model="showDetailDialog" max-width="900" scrollable>
-            <v-card v-if="detailTicket">
+            <v-card
+                v-if="detailTicket"
+                class="ticket-drop-target"
+                @paste="onPaste($event, commentFiles)"
+                @dragenter="onDragEnter"
+                @dragover.prevent
+                @dragleave="onDragLeave"
+                @drop.prevent="onDropFiles($event, commentFiles)"
+            >
+                <div v-if="dropActive" class="ticket-drop-overlay">
+                    <v-icon size="48" color="primary">mdi-tray-arrow-down</v-icon>
+                    <div class="text-subtitle-1 font-weight-medium">{{ t('DeveloperTools.tickets.dropHere') }}</div>
+                </div>
                 <v-card-title class="d-flex align-center bg-primary text-white">
                     <v-chip size="small" variant="flat" color="white" text-color="primary" class="mr-2">
                         {{ detailTicket.ticket_number }}
@@ -293,6 +363,7 @@
                     {{ detailTicket.title }}
                     <v-spacer />
                     <v-btn icon="mdi-pencil" size="x-small" variant="text" color="white" class="mr-1" @click="openTicketDialog(detailTicket); showDetailDialog = false" />
+                    <v-btn icon="mdi-delete" size="x-small" variant="text" color="white" class="mr-1" :title="t('DeveloperTools.tickets.deleteTicket')" @click="confirmDeleteTicket(detailTicket)" />
                     <v-btn icon="mdi-close" size="x-small" variant="text" color="white" @click="showDetailDialog = false" />
                 </v-card-title>
 
@@ -378,6 +449,26 @@
 
                     <v-divider class="mb-4" />
 
+                    <!-- Anhänge am Ticket -->
+                    <div v-if="ticketAttachments.length > 0" class="mb-4">
+                        <div class="text-subtitle-2 font-weight-bold mb-2">
+                            <v-icon start size="small">mdi-paperclip</v-icon>
+                            {{ t('DeveloperTools.tickets.attachments') }}
+                            <v-chip size="x-small" class="ml-1">{{ ticketAttachments.length }}</v-chip>
+                        </div>
+                        <div class="ticket-attachments">
+                            <template v-for="a in ticketAttachments" :key="a.id">
+                                <div v-if="isImage(a)" class="ticket-thumb" :title="a.filename" @click="openPreview(a)">
+                                    <img :src="attachmentUrl(a)" :alt="a.filename" loading="lazy">
+                                    <v-btn class="ticket-thumb-delete" icon="mdi-close" size="x-small" variant="flat" density="comfortable" @click.stop="deleteAttachment(a)" />
+                                </div>
+                                <v-chip v-else :href="attachmentUrl(a)" target="_blank" variant="outlined" size="small" :prepend-icon="getFileIcon(a.mime_type)" closable @click:close.prevent="deleteAttachment(a)">
+                                    {{ a.filename }} <span class="text-medium-emphasis ml-1">{{ formatSize(a.file_size) }}</span>
+                                </v-chip>
+                            </template>
+                        </div>
+                    </div>
+
                     <!-- Kommentare -->
                     <div class="text-subtitle-2 font-weight-bold mb-2">
                         <v-icon start size="small">mdi-comment-multiple</v-icon>
@@ -395,29 +486,55 @@
                                     <span class="text-caption text-medium-emphasis">{{ formatDateTime(comment.itime) }}</span>
                                     <v-btn size="x-small" icon="mdi-delete" variant="text" color="error" class="ml-1" @click="deleteComment(comment.id)" />
                                 </div>
-                                <div style="white-space: pre-wrap">{{ comment.comment }}</div>
+                                <div v-if="comment.comment" style="white-space: pre-wrap">{{ comment.comment }}</div>
+                                <div v-if="commentAttachments(comment.id).length > 0" class="ticket-attachments mt-2">
+                                    <template v-for="a in commentAttachments(comment.id)" :key="a.id">
+                                        <div v-if="isImage(a)" class="ticket-thumb" :title="a.filename" @click="openPreview(a)">
+                                            <img :src="attachmentUrl(a)" :alt="a.filename" loading="lazy">
+                                        </div>
+                                        <v-chip v-else :href="attachmentUrl(a)" target="_blank" variant="outlined" size="small" :prepend-icon="getFileIcon(a.mime_type)">
+                                            {{ a.filename }} <span class="text-medium-emphasis ml-1">{{ formatSize(a.file_size) }}</span>
+                                        </v-chip>
+                                    </template>
+                                </div>
                             </v-card-text>
                         </v-card>
                     </div>
 
                     <!-- Neuer Kommentar -->
                     <v-textarea
+                        ref="commentField"
                         v-model="newComment"
                         :label="t('DeveloperTools.tickets.newComment')"
+                        :hint="t('DeveloperTools.tickets.attachHint')"
+                        persistent-hint
                         variant="outlined"
                         density="compact"
                         rows="2"
                         auto-grow
-                        hide-details
                         class="mt-3"
                     />
-                    <div class="d-flex justify-end mt-2">
+                    <div v-if="commentFiles.length > 0" class="ticket-attachments mt-2">
+                        <div v-for="(f, i) in commentFiles" :key="f.key" class="ticket-thumb" :title="f.file.name">
+                            <img v-if="f.preview" :src="f.preview" :alt="f.file.name">
+                            <div v-else class="ticket-thumb-file">
+                                <v-icon>{{ getFileIcon(f.file.type) }}</v-icon>
+                                <span>{{ f.file.name }}</span>
+                            </div>
+                            <v-btn class="ticket-thumb-delete" icon="mdi-close" size="x-small" variant="flat" density="comfortable" @click.stop="removeStaged(commentFiles, i)" />
+                        </div>
+                    </div>
+                    <div class="d-flex align-center justify-end ga-2 mt-2">
+                        <v-btn size="small" variant="text" prepend-icon="mdi-paperclip" @click="pickFiles(commentFiles)">
+                            {{ t('DeveloperTools.tickets.attachFile') }}
+                        </v-btn>
                         <v-btn
                             size="small"
                             color="primary"
                             variant="tonal"
                             prepend-icon="mdi-send"
-                            :disabled="!newComment.trim()"
+                            :disabled="!newComment.trim() && commentFiles.length === 0"
+                            :loading="sendingComment"
                             @click="addComment"
                         >
                             {{ t('DeveloperTools.tickets.addComment') }}
@@ -429,7 +546,18 @@
 
         <!-- TICKET ERSTELLEN/BEARBEITEN DIALOG -->
         <v-dialog v-model="showTicketDialog" max-width="800" persistent scrollable>
-            <v-card>
+            <v-card
+                class="ticket-drop-target"
+                @paste="onPaste($event, ticketFiles)"
+                @dragenter="onDragEnter"
+                @dragover.prevent
+                @dragleave="onDragLeave"
+                @drop.prevent="onDropFiles($event, ticketFiles)"
+            >
+                <div v-if="dropActive" class="ticket-drop-overlay">
+                    <v-icon size="48" color="primary">mdi-tray-arrow-down</v-icon>
+                    <div class="text-subtitle-1 font-weight-medium">{{ t('DeveloperTools.tickets.dropHere') }}</div>
+                </div>
                 <v-card-title class="d-flex align-center">
                     <v-icon start>mdi-ticket-confirmation</v-icon>
                     {{ editingTicket?.id ? t('DeveloperTools.tickets.editTicket') : t('DeveloperTools.tickets.newTicket') }}
@@ -453,12 +581,26 @@
                             <v-textarea
                                 v-model="editingTicket.description"
                                 :label="t('DeveloperTools.tickets.ticketDescription')"
+                                :hint="t('DeveloperTools.tickets.attachHint')"
+                                persistent-hint
                                 variant="outlined"
                                 density="comfortable"
                                 rows="3"
                                 auto-grow
-                                hide-details="auto"
                             />
+                            <div class="d-flex align-center flex-wrap ga-2 mt-2">
+                                <div v-for="(f, i) in ticketFiles" :key="f.key" class="ticket-thumb" :title="f.file.name">
+                                    <img v-if="f.preview" :src="f.preview" :alt="f.file.name">
+                                    <div v-else class="ticket-thumb-file">
+                                        <v-icon>{{ getFileIcon(f.file.type) }}</v-icon>
+                                        <span>{{ f.file.name }}</span>
+                                    </div>
+                                    <v-btn class="ticket-thumb-delete" icon="mdi-close" size="x-small" variant="flat" density="comfortable" @click.stop="removeStaged(ticketFiles, i)" />
+                                </div>
+                                <v-btn size="small" variant="text" prepend-icon="mdi-paperclip" @click="pickFiles(ticketFiles)">
+                                    {{ t('DeveloperTools.tickets.attachFile') }}
+                                </v-btn>
+                            </div>
                         </v-col>
                         <v-col cols="12" md="4">
                             <v-select
@@ -612,6 +754,27 @@
             </v-card>
         </v-dialog>
 
+        <!-- BILD-VORSCHAU -->
+        <v-dialog v-model="showPreview" max-width="1400">
+            <v-card v-if="previewAttachment" @keydown.left="stepPreview(-1)" @keydown.right="stepPreview(1)">
+                <v-card-title class="d-flex align-center">
+                    <v-icon start size="small">mdi-image</v-icon>
+                    <span class="text-body-1 text-truncate">{{ previewAttachment.filename }}</span>
+                    <span class="text-caption text-medium-emphasis ml-2">{{ formatSize(previewAttachment.file_size) }}</span>
+                    <v-spacer />
+                    <v-btn v-if="previewImages.length > 1" icon="mdi-chevron-left" size="small" variant="text" @click="stepPreview(-1)" />
+                    <v-btn v-if="previewImages.length > 1" icon="mdi-chevron-right" size="small" variant="text" @click="stepPreview(1)" />
+                    <v-btn icon="mdi-download" size="small" variant="text" :href="attachmentUrl(previewAttachment, true)" :title="t('DeveloperTools.tickets.download')" />
+                    <v-btn icon="mdi-close" size="small" variant="text" @click="showPreview = false" />
+                </v-card-title>
+                <v-card-text class="pa-2 text-center">
+                    <img :src="attachmentUrl(previewAttachment)" :alt="previewAttachment.filename" class="ticket-preview-image">
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+
+        <input ref="fileInput" type="file" multiple hidden @change="onFilesPicked">
+
         <!-- LABEL-VERWALTUNG DIALOG -->
         <v-dialog v-model="showLabelsDialog" max-width="500">
             <v-card>
@@ -656,21 +819,28 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { oserpStore } from '@/core/stores/oserp.store.js';
+import * as alerts from '@/core/utils/alerts.js';
+import * as toasts from '@/core/utils/toasts.js';
 
 const { t } = useI18n();
 const oserp = oserpStore();
 
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // wie FM_MAX_FILESIZE im Backend
+
 // State
 const loading = ref(false);
 const saving = ref(false);
+const deleting = ref(false);
+const selectedIds = ref([]);
 const tickets = ref([]);
 const masterData = ref({ projects: [], specs: [], labels: [] });
 const viewMode = ref(localStorage.getItem('tickets_viewMode') || 'kanban');
 const searchText = ref('');
+const filterStatus = ref([]);
 const filterPriority = ref(null);
 const filterType = ref(null);
 const filterProject = ref(null);
@@ -683,7 +853,21 @@ const showLabelsDialog = ref(false);
 const editingTicket = ref({});
 const detailTicket = ref(null);
 const detailComments = ref([]);
+const detailAttachments = ref([]);
 const newComment = ref('');
+const sendingComment = ref(false);
+
+// Anhänge: vorgemerkte Dateien je Dialog, hochgeladen beim Speichern bzw. Senden
+const commentFiles = ref([]);
+const ticketFiles = ref([]);
+const dropActive = ref(false);
+const fileInput = ref(null);
+const commentField = ref(null);
+const showPreview = ref(false);
+const previewAttachment = ref(null);
+let pickTarget = null;
+let dragDepth = 0;
+let stagedKey = 0;
 
 // Mitarbeiter aus dem Store (nur aktive, nicht-obsolete)
 const activeEmployees = computed(() => {
@@ -734,6 +918,7 @@ const filteredTickets = computed(() => {
         const s = searchText.value.toLowerCase();
         result = result.filter(t => t.title.toLowerCase().includes(s) || t.ticket_number.toLowerCase().includes(s) || (t.description || '').toLowerCase().includes(s));
     }
+    if (filterStatus.value?.length) result = result.filter(t => filterStatus.value.includes(t.status));
     if (filterPriority.value) result = result.filter(t => t.priority === filterPriority.value);
     if (filterType.value) result = result.filter(t => t.ticket_type === filterType.value);
     if (filterProject.value) result = result.filter(t => String(t.project_id) === String(filterProject.value));
@@ -747,6 +932,12 @@ function ticketsByStatus(status) {
 
 function ticketsByStatusFiltered(status) {
     return filteredTickets.value.filter(t => t.status === status);
+}
+
+function toggleStatusFilter(status) {
+    filterStatus.value = filterStatus.value.includes(status)
+        ? filterStatus.value.filter(s => s !== status)
+        : [...filterStatus.value, status];
 }
 
 // Hilfsfunktionen
@@ -846,6 +1037,7 @@ async function saveTicket() {
     try {
         const res = await axios.post('/api/project_management/', { action: 'saveTicket', ticket: editingTicket.value });
         if (res.data.success) {
+            await uploadStaged(res.data.payload.id, ticketFiles.value);
             showTicketDialog.value = false;
             await loadTickets();
         }
@@ -853,25 +1045,56 @@ async function saveTicket() {
     saving.value = false;
 }
 
-async function confirmDeleteTicket(ticket) {
-    if (!confirm(t('DeveloperTools.tickets.confirmDelete', { title: ticket.title }))) return;
+async function deleteTickets(ids) {
+    deleting.value = true;
     try {
-        await axios.post('/api/project_management/', { action: 'deleteTicket', id: ticket.id });
-        await loadTickets();
+        const res = await axios.post('/api/project_management/', { action: 'deleteTickets', ids });
+        if (res.data.success) {
+            const geloescht = res.data.payload.ids.map(String);
+            selectedIds.value = selectedIds.value.filter(id => !geloescht.includes(String(id)));
+            if (detailTicket.value && geloescht.includes(String(detailTicket.value.id))) showDetailDialog.value = false;
+            toasts.success(t('DeveloperTools.tickets.deleted', geloescht.length));
+            await loadTickets();
+        }
+    } catch (e) { console.error(e); }
+    deleting.value = false;
+}
+
+async function confirmDeleteTicket(ticket) {
+    const antwort = await alerts.warning(t('DeveloperTools.tickets.confirmDelete', { title: ticket.title }), '', t('delete'), t('cancel'));
+    if (antwort?.isConfirmed) await deleteTickets([ticket.id]);
+}
+
+async function deleteSelectedTickets() {
+    const antwort = await alerts.warning(t('DeveloperTools.tickets.confirmDeleteMany', { count: selectedIds.value.length }), '', t('delete'), t('cancel'));
+    if (antwort?.isConfirmed) await deleteTickets([...selectedIds.value]);
+}
+
+async function loadDetail(id) {
+    try {
+        const res = await axios.post('/api/project_management/', { action: 'getTicket', id });
+        if (res.data.success) {
+            detailTicket.value = res.data.payload.ticket;
+            detailComments.value = res.data.payload.comments;
+            detailAttachments.value = res.data.payload.attachments;
+            // Zähler auf Karte und Liste mitziehen
+            const t2 = tickets.value.find(t => String(t.id) === String(id));
+            if (t2) {
+                t2.comment_count = detailComments.value.length;
+                t2.attachment_count = detailAttachments.value.length;
+            }
+        }
     } catch (e) { console.error(e); }
 }
 
 async function openDetailDialog(ticket) {
     detailTicket.value = ticket;
+    detailComments.value = [];
+    detailAttachments.value = [];
+    clearStaged(commentFiles.value);
     showDetailDialog.value = true;
     newComment.value = '';
-    try {
-        const res = await axios.post('/api/project_management/', { action: 'getTicket', id: ticket.id });
-        if (res.data.success) {
-            detailTicket.value = res.data.payload.ticket;
-            detailComments.value = res.data.payload.comments;
-        }
-    } catch (e) { console.error(e); }
+    await loadDetail(ticket.id);
 }
 
 async function quickStatusChange(ticket, newStatus) {
@@ -884,29 +1107,190 @@ async function quickStatusChange(ticket, newStatus) {
 }
 
 async function addComment() {
-    if (!newComment.value.trim()) return;
+    if (!newComment.value.trim() && commentFiles.value.length === 0) return;
+    sendingComment.value = true;
     try {
-        await axios.post('/api/project_management/', {
-            action: 'addTicketComment',
-            ticket_id: detailTicket.value.id,
-            comment: newComment.value,
-        });
+        // Nur Dateien ohne Text: hängen direkt am Ticket
+        let commentId = null;
+        if (newComment.value.trim()) {
+            const res = await axios.post('/api/project_management/', {
+                action: 'addTicketComment',
+                ticket_id: detailTicket.value.id,
+                comment: newComment.value,
+            });
+            if (!res.data.success) return;
+            commentId = res.data.payload.id;
+        }
+        await uploadStaged(detailTicket.value.id, commentFiles.value, commentId);
         newComment.value = '';
-        // Kommentare neu laden
-        const res = await axios.post('/api/project_management/', { action: 'getTicket', id: detailTicket.value.id });
-        if (res.data.success) detailComments.value = res.data.payload.comments;
-        // Kommentarzahl aktualisieren
-        const t2 = tickets.value.find(t => String(t.id) === String(detailTicket.value.id));
-        if (t2) t2.comment_count = detailComments.value.length;
-    } catch (e) { console.error(e); }
+        await loadDetail(detailTicket.value.id);
+    } catch (e) {
+        console.error(e);
+    } finally {
+        sendingComment.value = false;
+    }
 }
 
 async function deleteComment(commentId) {
     try {
         await axios.post('/api/project_management/', { action: 'deleteTicketComment', id: commentId });
-        detailComments.value = detailComments.value.filter(c => String(c.id) !== String(commentId));
+        await loadDetail(detailTicket.value.id);
     } catch (e) { console.error(e); }
 }
+
+// Anhänge
+const ticketAttachments = computed(() => detailAttachments.value.filter(a => !a.comment_id));
+const previewImages = computed(() => detailAttachments.value.filter(isImage));
+
+function commentAttachments(commentId) {
+    return detailAttachments.value.filter(a => String(a.comment_id) === String(commentId));
+}
+function isImage(a) {
+    return /^image\/(png|jpe?g|gif|webp|bmp)$/.test(a.mime_type);
+}
+function attachmentUrl(a, download = false) {
+    return `/api/project_management/?action=getTicketAttachment&id=${a.id}${download ? '&download=1' : ''}`;
+}
+function getFileIcon(mime) {
+    if (!mime) return 'mdi-file-outline';
+    if (mime.startsWith('image/')) return 'mdi-file-image-outline';
+    if (mime === 'application/pdf') return 'mdi-file-pdf-box';
+    if (mime.startsWith('video/')) return 'mdi-file-video-outline';
+    if (mime.startsWith('text/')) return 'mdi-file-document-outline';
+    if (/zip|compressed|tar|rar|7z/.test(mime)) return 'mdi-folder-zip-outline';
+    if (/sheet|excel|csv/.test(mime)) return 'mdi-file-excel-outline';
+    if (/word|opendocument\.text/.test(mime)) return 'mdi-file-word-outline';
+    return 'mdi-file-outline';
+}
+function formatSize(bytes) {
+    const n = Number(bytes) || 0;
+    if (n < 1024) return `${n} B`;
+    if (n < 1024 * 1024) return `${(n / 1024).toLocaleString('de-DE', { maximumFractionDigits: 0 })} KB`;
+    return `${(n / 1024 / 1024).toLocaleString('de-DE', { maximumFractionDigits: 1 })} MB`;
+}
+
+function stageFiles(target, files) {
+    for (const file of files) {
+        if (file.size > MAX_FILE_SIZE) {
+            toasts.error(t('DeveloperTools.tickets.fileTooLarge', { name: file.name, size: formatSize(MAX_FILE_SIZE) }));
+            continue;
+        }
+        const preview = isImage({ mime_type: file.type }) ? URL.createObjectURL(file) : null;
+        target.push({ key: ++stagedKey, file, preview });
+    }
+}
+function removeStaged(target, index) {
+    const [f] = target.splice(index, 1);
+    if (f?.preview) URL.revokeObjectURL(f.preview);
+}
+function clearStaged(target) {
+    target.forEach(f => f.preview && URL.revokeObjectURL(f.preview));
+    target.splice(0);
+}
+
+// Strg+V: Screenshots aus der Zwischenablage. Mit Text dabei (Excel, Word)
+// bleibt es ein normales Einfügen.
+function onPaste(event, target) {
+    const files = [...(event.clipboardData?.files || [])];
+    if (files.length === 0 || event.clipboardData.getData('text/plain')) return;
+    event.preventDefault();
+    const jetzt = new Date();
+    const stamp = new Date(jetzt - jetzt.getTimezoneOffset() * 60000).toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-');
+    stageFiles(target, files.map((f, i) => /^image\.\w+$/i.test(f.name)
+        ? new File([f], `screenshot_${stamp}${files.length > 1 ? '_' + (i + 1) : ''}.${f.name.split('.').pop()}`, { type: f.type })
+        : f));
+    if (target === commentFiles.value) commentField.value?.focus();
+}
+
+function onDragEnter(event) {
+    if (!event.dataTransfer?.types?.includes('Files')) return;
+    dragDepth++;
+    dropActive.value = true;
+}
+function onDragLeave() {
+    if (dragDepth > 0 && --dragDepth === 0) dropActive.value = false;
+}
+function onDropFiles(event, target) {
+    dragDepth = 0;
+    dropActive.value = false;
+    stageFiles(target, [...(event.dataTransfer?.files || [])]);
+    if (target === commentFiles.value) commentField.value?.focus();
+}
+
+function pickFiles(target) {
+    pickTarget = target;
+    fileInput.value.value = '';
+    fileInput.value.click();
+}
+function onFilesPicked(event) {
+    if (pickTarget) stageFiles(pickTarget, [...event.target.files]);
+}
+
+function readBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+    });
+}
+
+async function uploadStaged(ticketId, target, commentId = null) {
+    for (const f of target) {
+        try {
+            const res = await axios.post('/api/project_management/', {
+                action: 'uploadTicketAttachment',
+                ticket_id: ticketId,
+                comment_id: commentId,
+                filename: f.file.name,
+                file_base64: await readBase64(f.file),
+            });
+            if (!res.data.success) {
+                throw new Error(typeof res.data.payload === 'string' ? res.data.payload : res.data.text);
+            }
+        } catch (e) {
+            console.error(e);
+            // Grund vom Server mit anzeigen, sonst bleibt die Ursache unsichtbar
+            toasts.error(t('DeveloperTools.tickets.uploadFailed', { name: f.file.name }), { text: e.message, timer: 10000 });
+        }
+    }
+    clearStaged(target);
+}
+
+async function deleteAttachment(a) {
+    const antwort = await alerts.warning(t('DeveloperTools.tickets.confirmDeleteAttachment', { name: a.filename }), '', t('delete'), t('cancel'));
+    if (!antwort?.isConfirmed) return;
+    try {
+        await axios.post('/api/project_management/', { action: 'deleteTicketAttachment', id: a.id });
+        await loadDetail(detailTicket.value.id);
+    } catch (e) { console.error(e); }
+}
+
+function openPreview(a) {
+    previewAttachment.value = a;
+    showPreview.value = true;
+}
+function stepPreview(richtung) {
+    const bilder = previewImages.value;
+    const i = bilder.findIndex(b => b.id === previewAttachment.value?.id);
+    previewAttachment.value = bilder[(i + richtung + bilder.length) % bilder.length];
+}
+
+// Mehrfachauswahl der Listenansicht
+const allSelected = computed(() => filteredTickets.value.length > 0
+    && filteredTickets.value.every(ticket => selectedIds.value.includes(ticket.id)));
+
+function toggleSelectAll(alle) {
+    selectedIds.value = alle ? filteredTickets.value.map(ticket => ticket.id) : [];
+}
+
+// Ausgefilterte Tickets fallen aus der Auswahl — gelöscht wird nur, was man sieht
+watch(filteredTickets, list => {
+    const sichtbar = new Set(list.map(ticket => ticket.id));
+    selectedIds.value = selectedIds.value.filter(id => sichtbar.has(id));
+});
+watch(showTicketDialog, offen => { if (!offen) clearStaged(ticketFiles.value); });
+watch(showDetailDialog, offen => { if (!offen) clearStaged(commentFiles.value); });
 
 // Label-Verwaltung
 async function saveLabel() {
@@ -926,7 +1310,6 @@ async function deleteLabel(id) {
 }
 
 // View-Mode Persistenz
-import { watch } from 'vue';
 watch(viewMode, v => localStorage.setItem('tickets_viewMode', v));
 
 onMounted(() => {
@@ -995,5 +1378,83 @@ onMounted(() => {
 
 .cursor-pointer {
     cursor: pointer;
+}
+
+.ticket-row-selected {
+    background: rgba(var(--v-theme-primary), 0.06);
+}
+
+/* Anhänge */
+.ticket-drop-target {
+    position: relative;
+}
+.ticket-drop-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--oserp-gap-sm);
+    background: rgba(var(--v-theme-surface), 0.92);
+    border: 2px dashed rgb(var(--v-theme-primary));
+    border-radius: var(--oserp-radius);
+    pointer-events: none;
+}
+.ticket-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--oserp-gap-sm);
+}
+.ticket-thumb {
+    position: relative;
+    width: 96px;
+    height: 72px;
+    border: 1px solid var(--oserp-border);
+    border-radius: var(--oserp-radius-sm);
+    background: var(--oserp-surface-soft);
+    overflow: hidden;
+    cursor: pointer;
+}
+.ticket-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.ticket-thumb-file {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: var(--oserp-gap-xs);
+    font-size: 0.7rem;
+    color: var(--oserp-text-muted);
+    text-align: center;
+}
+.ticket-thumb-file span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ticket-thumb-delete {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.ticket-thumb:hover .ticket-thumb-delete {
+    opacity: 1;
+}
+.ticket-preview-image {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
 }
 </style>

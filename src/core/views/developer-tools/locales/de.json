@@ -303,7 +303,20 @@
             "typeBug": "Bug",
             "typeFeature": "Feature",
             "typeTask": "Aufgabe",
-            "typeImprovement": "Verbesserung"
+            "typeImprovement": "Verbesserung",
+            "attachments": "Anhänge",
+            "attachFile": "Datei anhängen",
+            "attachHint": "Screenshot mit Strg+V einfügen oder Dateien hierher ziehen",
+            "dropHere": "Dateien hier ablegen",
+            "fileTooLarge": "\"{name}\" ist größer als {size} und wurde nicht angehängt",
+            "uploadFailed": "\"{name}\" konnte nicht hochgeladen werden",
+            "download": "Herunterladen",
+            "confirmDeleteAttachment": "Anhang \"{name}\" wirklich löschen?",
+            "deleteTicket": "Ticket löschen",
+            "confirmDeleteMany": "{count} Tickets wirklich löschen? Kommentare und Anhänge werden mitgelöscht.",
+            "selected": "{count} ausgewählt",
+            "clearSelection": "Auswahl aufheben",
+            "deleted": "Ticket gelöscht | {count} Tickets gelöscht"
         },
         "autoTest": {
             "title": "Automatische Tests",

@@ -60,6 +60,7 @@
         "mechanicOrder": "/mechanic/order",
         "mechanicCar": "/mechanic/car",
         "privacy": "/privacy",
+        "about": "/about",
         "dataDeletion": "/data-deletion",
         "newArticle": "/article/new",
         "admin": "/system/administration",
@@ -124,7 +125,7 @@
         "publish": {
             "button": "Publish on the website",
             "title": "Publish the feature catalogue on the website",
-            "intro": "The catalogue contains every page of this documentation with its metadata, sections and full text. The website opensource-erp.dev builds its feature pages from it. Everything is always transferred; the key stays stored.",
+            "intro": "The catalogue contains every page of this documentation with its metadata, sections and full text. The website opensourceerp.dev builds its feature pages from it. Everything is always transferred; the key stays stored.",
             "pages": "Pages",
             "extensions": "Extensions",
             "core": "Core system",

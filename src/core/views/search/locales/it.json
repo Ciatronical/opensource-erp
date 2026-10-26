@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Cliente/Fornitore/Persona",
             "invoice": "Fatture",
+            "credit_note": "Note di credito",
             "purchase_invoice": "Fatture fornitori",
             "quotation": "Preventivi",
             "order": "Ordini",
@@ -50,7 +51,8 @@
             "amount_to": "Importo a",
             "status": "Stato",
             "status_open": "Aperto",
-            "status_closed": "Chiuso"
+            "status_closed": "Chiuso",
+            "status_storno": "Stornato"
         },
         "document_table": {
             "document_number": "Nr. documento",
@@ -61,6 +63,10 @@
             "status": "Stato",
             "status_open": "Aperto",
             "status_closed": "Chiuso",
+            "status_storno": "Storno",
+            "status_cancelled": "Stornato",
+            "status_storno_ref": "Fattura originale {number}",
+            "status_cancelled_ref": "Documento di storno {number}",
             "created_at": "Creato il",
             "text_no_results": "Nessun documento trovato."
         }

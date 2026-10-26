@@ -5,7 +5,8 @@
 // trägt YAML-Front-Matter (title, summary, group, extension, category, order,
 // status, since, external, flag, kind) — daraus entstehen die Navigation nach
 // Kernsystem und Erweiterungen sowie der maschinenlesbare Feature-Katalog,
-// den die Website (opensource-erp.dev) übernimmt (docs/website-schnittstelle.md).
+// den die Website (opensourceerp.dev) übernimmt (docs/website-schnittstelle.md).
+// Der Katalog trägt außerdem die Seite „Über OSERP“ (docsAbout).
 //
 // Das Front Matter ist bewusst einfach gehalten (Schlüssel: Wert, Listen als
 // [a, b]); ein vollständiger YAML-Parser ist dafür nicht nötig.
@@ -253,7 +254,34 @@ function docsCatalog(): array {
         'source'       => 'docs/features',
         'extensions'   => array_values(docsExtensions()),
         'pages'        => $pages,
+        'about'        => docsAbout(),
     ];
+}
+
+/**
+ * Über-Seite für die Website: Aufbau, Namen und Links aus about.data.json,
+ * dazu die Texte aller Sprachen aus den Sprachdateien der Seite
+ *
+ * Dieselben Dateien, aus denen OSERP die Seite „Über OSERP“ baut — die
+ * Website zeigt damit immer denselben Stand. Sie ist die einzige Fassung, die
+ * Suchmaschinen sehen sollen; OSERP selbst trägt noindex (index.html).
+ *
+ * @return array|null null, wenn die Dateien fehlen
+ */
+function docsAbout(): ?array {
+    $dir  = __DIR__ . '/../../../src/core/views/about';
+    $data = json_decode((string)@file_get_contents($dir . '/about.data.json'), true);
+    if (!is_array($data)) return null;
+
+    $texts = [];
+    foreach (glob($dir . '/locales/*.json') ?: [] as $file) {
+        $locale = json_decode((string)file_get_contents($file), true);
+        if (is_array($locale['AboutView'] ?? null)) {
+            $texts[basename($file, '.json')] = $locale['AboutView'];
+        }
+    }
+    ksort($texts);
+    return $data + ['texts' => $texts];
 }
 
 /**
@@ -298,7 +326,7 @@ function getDocsPublishSettings($data) {
  *
  * @param string $data['url']   Adresse der Website-Schnittstelle (optional, sonst gespeichert)
  * @param string $data['token'] Zugangsschlüssel (optional, leer = gespeicherten behalten)
- * @testdata {"url": "https://opensource-erp.dev/api/features", "token": ""}
+ * @testdata {"url": "https://opensourceerp.dev/api/features", "token": ""}
  */
 function publishDocsToWebsite($data) {
     requireSystemAdmin();

@@ -92,7 +92,7 @@
 
         <!-- Filter -->
         <v-row dense class="mb-3">
-            <v-col cols="12" :md="isParts ? 8 : 4">
+            <v-col cols="12" :md="isParts ? 8 : (hasPayments ? 3 : 4)">
                 <v-text-field
                     v-model="search"
                     :label="t(isParts ? 'DocumentList.searchParts' : 'DocumentList.search')"
@@ -141,11 +141,15 @@
                         hide-details
                     />
                 </v-col>
-                <v-col cols="12" md="2" class="d-flex align-center">
+                <v-col cols="12" :md="hasPayments ? 3 : 2" class="d-flex align-center">
                     <v-btn-toggle v-model="status" mandatory density="compact" variant="outlined" rounded="lg" divided class="w-100">
                         <v-btn value="all" size="small" class="flex-grow-1">{{ t('DocumentList.statusAll') }}</v-btn>
                         <v-btn value="open" size="small" class="flex-grow-1" color="warning">{{ t('DocumentList.open') }}</v-btn>
                         <v-btn value="closed" size="small" class="flex-grow-1" color="success">{{ t('DocumentList.closed') }}</v-btn>
+                        <!-- Stornobelege und stornierte Rechnungen (kivitendo: storno = true) -->
+                        <v-btn v-if="hasPayments" value="storno" size="small" class="flex-grow-1" color="error" :title="t('DocumentList.storno.filterHint')">
+                            {{ t('DocumentList.storno.filter') }}
+                        </v-btn>
                     </v-btn-toggle>
                 </v-col>
                 <!-- Aufträge: wurde daraus schon eine Rechnung gemacht? Filtert auf dem
@@ -469,7 +473,20 @@
                         color="green-darken-1"
                         :title="t('DocumentList.sentWhatsapp')"
                     >mdi-whatsapp</v-icon>
+                    <!-- Storno: Klick öffnet den Gegenbeleg (Original bzw. Stornobeleg) -->
                     <v-chip
+                        v-if="item.storno_state"
+                        color="error"
+                        size="x-small"
+                        variant="tonal"
+                        prepend-icon="mdi-file-document-remove-outline"
+                        :title="item.storno_ref_number ? t(`DocumentList.storno.${item.storno_state}Open`, { number: item.storno_ref_number }) : undefined"
+                        @click.stop="openStornoRef(item)"
+                    >
+                        {{ t(`DocumentList.storno.${item.storno_state}`) }}<span v-if="item.storno_ref_number" class="ms-1">{{ item.storno_ref_number }}</span>
+                    </v-chip>
+                    <v-chip
+                        v-else
                         :color="item.closed ? 'success' : (item.overdue ? 'error' : 'warning')"
                         size="x-small"
                         variant="tonal"
@@ -552,6 +569,7 @@ import { downloadBase64File, openBase64Pdf } from '@/core/utils/download.js'
 import * as alerts from '@/core/utils/alerts.js'
 import * as toasts from '@/core/utils/toasts.js'
 import { confirmationChannelIcon } from '@/core/utils/orderConfirmation.js'
+import { entityRoute } from '@/core/constants/routes.js'
 
 // Alles, was sich je Listentyp unterscheidet, steht an genau einer Stelle.
 // create: Schaltfläche zum Anlegen — nur wo es eine eigene Neuanlage gibt.
@@ -605,8 +623,9 @@ export default {
         const search = ref('')
         const from = ref('')
         const to = ref('')
-        // 'all', 'open', 'closed' — filtert auf dem Server, damit Summen und Export dasselbe meinen
-        const status = ref('all')
+        // 'all', 'open', 'closed', 'storno' (nur Rechnungen/Gutschriften) — filtert auf dem Server,
+        // damit Summen und Export dasselbe meinen; auch per ?status=…
+        const status = ref(['open', 'closed', 'storno'].includes(route.query.status) ? route.query.status : 'all')
         // Aufträge: 'all', 'none' (ohne Rechnung), 'invoiced' (mit Rechnung) — filtert auf dem Server
         const invoiced = ref('all')
         // Aufträge: 'all', 'open' (Auftragseingang), 'suggested' (Vorschlag der KI), 'confirmed' — auch per ?confirmed=…
@@ -857,7 +876,12 @@ export default {
             clearTimeout(debounce)
             debounce = setTimeout(load, 350)
         })
-        watch(listType, () => { selected.value = []; load() })
+        watch(listType, () => {
+            selected.value = []
+            // „Storniert“ gibt es nur bei Rechnungen und Gutschriften
+            if (status.value === 'storno' && !hasPayments.value) status.value = 'all'
+            load()
+        })
         onMounted(() => {
             load()
             loadChannels()
@@ -880,6 +904,12 @@ export default {
 
         function openRow(_event, row) {
             router.push({ name: config.value.route, params: { id: row.item.id } })
+        }
+
+        // Gegenbeleg eines Stornos öffnen — Gutschriften haben ihre eigene Maske
+        function openStornoRef(item) {
+            const target = entityRoute(item.storno_ref_type === 'credit_note' ? 'credit_note' : 'invoice', item.storno_ref_id)
+            if (target) router.push(target)
         }
 
         // Rechnung zum Auftrag öffnen (Chip in der Spalte „Rechnung“)
@@ -927,6 +957,8 @@ export default {
                 statusOpen:    t('DocumentList.open'),
                 statusClosed:  t('DocumentList.closed'),
                 statusOverdue: t('DocumentList.overdue'),
+                statusStorno:    t('DocumentList.storno.storno'),
+                statusCancelled: t('DocumentList.storno.cancelled'),
                 total:         t('DocumentList.totals.total'),
                 documents:     t('DocumentList.totals.documents'),
                 createdAt:     t('DocumentList.totals.createdAt'),
@@ -1230,7 +1262,7 @@ export default {
         return {
             hasSentChannel, LIMIT,
             t, te, locale, config, isParts, isOrder, hasAmounts, hasPayments, rows, totals, selected, headers, loading, error, busy,
-            search, from, to, status, invoiced, confirmed, confirmationChannelIcon, openInvoice, periodPreset, periodItems,
+            search, from, to, status, invoiced, confirmed, confirmationChannelIcon, openInvoice, openStornoRef, periodPreset, periodItems,
             obsoleteOnly, showAll, shopOnly, notInShop, weightMissing, shippingUnfit, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit,
             printerList, selectedPrinter, selectPrinter, printerSubtitle,
             formatDate, formatCurrency, formatQty, reset, openRow,

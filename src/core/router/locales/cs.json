@@ -56,6 +56,7 @@
         "mechanicOrder": "/mechanik/objednavka",
         "mechanicCar": "/mechanik/vozidlo",
         "privacy": "/soukromi",
+        "about": "/o-aplikaci",
         "dataDeletion": "/vymaz-dat",
         "tafel": "/nastenka/sprava",
         "newArticle": "/artikl/novy",

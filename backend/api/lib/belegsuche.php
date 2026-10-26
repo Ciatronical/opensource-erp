@@ -1,8 +1,8 @@
 <?php
 // backend/api/lib/belegsuche.php
 //
-// Gemeinsame SQL-Bausteine fuer die Belegsuche (Rechnungen, Angebote, Auftraege,
-// Bestellungen, Lieferscheine). Wird von der Suche (customer_vendor/search.php)
+// Gemeinsame SQL-Bausteine fuer die Belegsuche (Rechnungen, Gutschriften, Angebote,
+// Auftraege, Bestellungen, Lieferscheine). Wird von der Suche (customer_vendor/search.php)
 // und vom Sammeldruck (print/print.php) benutzt, damit "alle Treffer drucken"
 // exakt dieselbe Treffermenge liefert wie die Ergebnistabelle.
 
@@ -11,7 +11,12 @@
  *
  * print_type_expr: SQL-Ausdruck, der je Zeile die Belegart fuer den Druck
  * liefert (PRINT_TEMPLATE_MAP in print/print.php). Gutschriften stehen in ar
- * mit type = 'credit_note', Lieferscheine tragen den Einkauf im record_type.
+ * mit type = 'credit_note' (ar_type grenzt sie von den Rechnungen ab),
+ * Lieferscheine tragen den Einkauf im record_type.
+ *
+ * status_expr: offener Betrag — ABS, weil Gutschriften negativ gebucht sind.
+ * Tabellen mit status_expr (ar, ap) kennen kivitendos Storno: Stornobeleg mit
+ * storno_id, stornierte Rechnung nur storno = true; beide gelten als erledigt.
  *
  * @return array
  */
@@ -23,9 +28,23 @@ function belegsucheKonfig(): array {
             'cv_table' => 'customer',
             'cv_fk' => 'customer_id',
             'cv_number_field' => 'customernumber',
-            'status_expr' => 'ar.amount - ar.paid',
+            'status_expr' => 'ABS(ar.amount - ar.paid)',
+            'ar_type' => "COALESCE(ar.type, '') <> 'credit_note'",
             'cv_src' => 'C',
-            'print_type_expr' => "CASE WHEN ar.type = 'credit_note' THEN 'credit_note' ELSE 'invoice' END",
+            'print_type_expr' => "'invoice'",
+        ],
+        'credit_note' => [
+            'table' => 'ar',
+            'number_field' => 'invnumber',
+            'cv_table' => 'customer',
+            'cv_fk' => 'customer_id',
+            'cv_number_field' => 'customernumber',
+            'status_expr' => 'ABS(ar.amount - ar.paid)',
+            'ar_type' => "ar.type = 'credit_note'",
+            // Gutschriften sind negativ gebucht, gesucht wird nach dem Betrag ohne Vorzeichen
+            'amount_expr' => 'ABS(ar.amount)',
+            'cv_src' => 'C',
+            'print_type_expr' => "'credit_note'",
         ],
         'purchase_invoice' => [
             'table' => 'ap',
@@ -33,7 +52,7 @@ function belegsucheKonfig(): array {
             'cv_table' => 'vendor',
             'cv_fk' => 'vendor_id',
             'cv_number_field' => 'vendornumber',
-            'status_expr' => 'ap.amount - ap.paid',
+            'status_expr' => 'ABS(ap.amount - ap.paid)',
             'cv_src' => 'V',
             'print_type_expr' => "NULL",
         ],
@@ -89,7 +108,7 @@ function belegsucheKonfig(): array {
  *
  * @param string $type  Belegart (Schluessel aus belegsucheKonfig)
  * @param array  $where Filter: document_number, cv_name, transdate_from/to,
- *                      amount_from/to, status ('open'|'closed')
+ *                      amount_from/to, status ('open'|'closed'|'storno' — storno nur ar/ap)
  * @return array ['cfg' => array, 'tbl' => string, 'from' => string (FROM + JOIN), 'where' => string (WHERE ...), 'params' => array]
  * @throws ApiError bei unbekannter Belegart
  */
@@ -138,28 +157,31 @@ function belegsucheBedingungen(string $type, array $where): array {
 
     // Betrag von/bis (Lieferscheine haben keinen Betrag)
     if ($tbl !== 'delivery_orders') {
+        $amountExpr = $cfg['amount_expr'] ?? "$tbl.amount";
         if (isset($where['amount_from']) && $where['amount_from'] !== '') {
             $paramIndex++;
             $paramName = ":p$paramIndex";
-            $conditions[] = "$tbl.amount >= $paramName";
+            $conditions[] = "$amountExpr >= $paramName";
             $params[$paramName] = floatval($where['amount_from']);
         }
         if (isset($where['amount_to']) && $where['amount_to'] !== '') {
             $paramIndex++;
             $paramName = ":p$paramIndex";
-            $conditions[] = "$tbl.amount <= $paramName";
+            $conditions[] = "$amountExpr <= $paramName";
             $params[$paramName] = floatval($where['amount_to']);
         }
     }
 
-    // Status (offen/geschlossen)
+    // Status (offen/geschlossen/storniert)
     if (!empty($where['status'])) {
         if (isset($cfg['status_expr'])) {
-            // AR/AP: offen = amount - paid > 0
+            // AR/AP: offen = Restbetrag > 0 und nicht storniert
             if ($where['status'] === 'open') {
-                $conditions[] = "({$cfg['status_expr']}) > 0.01";
+                $conditions[] = "({$cfg['status_expr']}) > 0.01 AND $tbl.storno IS NOT TRUE";
             } elseif ($where['status'] === 'closed') {
-                $conditions[] = "({$cfg['status_expr']}) <= 0.01";
+                $conditions[] = "(({$cfg['status_expr']}) <= 0.01 OR $tbl.storno IS TRUE)";
+            } elseif ($where['status'] === 'storno') {
+                $conditions[] = "$tbl.storno IS TRUE";
             }
         } elseif (isset($cfg['status_field'])) {
             // OE/delivery_orders: closed = true/false
@@ -169,6 +191,11 @@ function belegsucheBedingungen(string $type, array $where): array {
                 $conditions[] = "$tbl.{$cfg['status_field']} IS TRUE";
             }
         }
+    }
+
+    // Rechnung oder Gutschrift (beide in ar)
+    if (isset($cfg['ar_type'])) {
+        $conditions[] = $cfg['ar_type'];
     }
 
     // Record-Type-Filter fuer oe und delivery_orders

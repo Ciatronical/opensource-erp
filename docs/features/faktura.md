@@ -209,5 +209,11 @@ Die Auftragssuche ermöglicht das Finden von Belegen nach:
 - Belegnummer
 - Kundenname
 - Datum / Zeitraum
-- Status (offen/geschlossen)
-- Betrag
+- Status (offen/geschlossen, bei Rechnungen und Gutschriften auch storniert)
+- Betrag (bei Gutschriften ohne Vorzeichen)
+
+### Gutschriften und Stornos finden
+
+- **Gutschriften** haben eine eigene Liste (Verkauf → Gutschriften) und einen eigenen Reiter in der Suche. Die Rechnungsliste und der Rechnungsreiter zeigen keine Gutschriften. Offen/erledigt rechnet mit dem Betrag ohne Vorzeichen, weil Gutschriften negativ gebucht sind.
+- **Stornos** sind keine eigene Belegart, sondern ein Zustand der Rechnung. Rechnungs- und Gutschriftenliste haben den Filter **„Storniert“** (auch per `?status=storno`), der Statusreiter der Suche den Wert „Storniert“. Der Stornobeleg zeigt „Storno zu <Nr.>“, die Originalrechnung „Storniert durch <Nr.>“; ein Klick öffnet den Gegenbeleg. Beide gelten als erledigt, auch im Export.
+- Technik: kivitendo-Schema — der Stornobeleg trägt `storno_id` = Originalrechnung, das Original nur `storno = true`. Der Gegenbeleg wird über den Primärschlüssel verbunden, die Unterabfrage läuft nur für stornierte Zeilen (rund 5 ms für die Liste).

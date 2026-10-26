@@ -302,7 +302,20 @@
             "typeBug": "Помилка",
             "typeFeature": "Функція",
             "typeTask": "Завдання",
-            "typeImprovement": "Покращення"
+            "typeImprovement": "Покращення",
+            "attachments": "Вкладення",
+            "attachFile": "Прикріпити файл",
+            "attachHint": "Вставте скриншот через Ctrl+V або перетягніть файли сюди",
+            "dropHere": "Відпустіть файли тут",
+            "fileTooLarge": "\"{name}\" більший за {size} і не був прикріплений",
+            "uploadFailed": "Не вдалося завантажити \"{name}\"",
+            "download": "Завантажити",
+            "confirmDeleteAttachment": "Дійсно видалити вкладення \"{name}\"?",
+            "deleteTicket": "Видалити тікет",
+            "confirmDeleteMany": "Дійсно видалити тікети ({count})? Коментарі та вкладення також буде видалено.",
+            "selected": "Вибрано: {count}",
+            "clearSelection": "Зняти виділення",
+            "deleted": "Видалено тікетів: {count}"
         },
         "autoTest": {
             "title": "Автоматичні тести",

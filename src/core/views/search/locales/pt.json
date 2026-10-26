@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Cliente/Fornecedor/Pessoa",
             "invoice": "Faturas",
+            "credit_note": "Notas de crédito",
             "purchase_invoice": "Faturas de credores",
             "quotation": "Orçamentos",
             "order": "Encomendas",
@@ -50,7 +51,8 @@
             "amount_to": "Montante até",
             "status": "Estado",
             "status_open": "Pendente",
-            "status_closed": "Fechado"
+            "status_closed": "Fechado",
+            "status_storno": "Anulado"
         },
         "document_table": {
             "document_number": "Nr. documento",
@@ -61,6 +63,10 @@
             "status": "Estado",
             "status_open": "Pendente",
             "status_closed": "Fechado",
+            "status_storno": "Anulação",
+            "status_cancelled": "Anulado",
+            "status_storno_ref": "Fatura original {number}",
+            "status_cancelled_ref": "Documento de anulação {number}",
             "created_at": "Criado em",
             "text_no_results": "Nenhum documento encontrado."
         }

@@ -56,6 +56,7 @@
         "mechanicOrder": "/monteur/order",
         "mechanicCar": "/monteur/voertuig",
         "privacy": "/privacy",
+        "about": "/over",
         "dataDeletion": "/gegevensverwijdering",
         "tafel": "/prikbord/beheer",
         "newArticle": "/artikel/nieuw",

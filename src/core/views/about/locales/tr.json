@@ -1,0 +1,84 @@
+{
+    "AboutView": {
+        "title": "OSERP Hakkında",
+        "subtitle": "OpensourceERP – özgür, açık, uygulamadan doğdu ve uygulama için",
+        "history": {
+            "title": "OSERP nasıl doğdu",
+            "roots": "OSERP bir çizim masasında değil, gerçek işletmelerin günlük çalışmasında doğdu. Uzun yıllar boyunca kivitendo ile çalıştık ve onun için eklentiler yazdık – bir CRM, oto servisleri için LxCars, telefon, e-posta ve WhatsApp entegrasyonları. Bu işi severek yaptık, açıkça paylaştık ve böylece birçok kullanıcının günlük işini kolaylaştırdık – ve bugün hâlâ kendimizi bu topluluğun bir parçası olarak görüyoruz.",
+            "motivation": "Zamanla, yalnızca eklentilerle artık karşılanamayan bir istek büyüdü: en son teknolojiye dayanan, yenilikçi bir kullanıma ve gerçek yapay zekâ desteğine sahip modern bir kullanıcı arayüzü. Bir ERP sistemi her iyi web uygulaması kadar kolay kullanılabilmeli – hızlı, anlaşılır ve eğitim gerektirmeden kavranabilir; masa başında olduğu kadar telefonda da. Bu yüzden kullanıcı arayüzünü sıfırdan yeniden geliştirdik ve ortaya çıkan sonuca kendi adını verdik: OpensourceERP, kısaca OSERP. Bu, kivitendo'dan bir kopuş değil – OSERP bu topluluğun içinden doğdu.",
+            "ai": "Bizim için yapay zekâ bir moda sözcük değil, günlük işler için bir araçtır: E-posta gelen kutusundaki faturalar tanınır ve kayıt önerisi olarak hazırlanır, Weroni ekspertiz raporlarını inceler ve müşteriler ile sigorta şirketleri için metinler yazar, kalemler ve satış metinleri önerilir, belgelere de kolayca soru sorulabilir. Yapay zekâ önerilerde bulunur – kararı her zaman insan verir.",
+            "compatible": "En başından beri bizim için önemli olan bir şey vardı: Hiç kimse verilerini geride bırakmak zorunda kalmamalı. OSERP, kivitendo ile aynı veritabanı yapısıyla çalışır. Müşteriler, ürünler, belgeler ve muhasebe kayıtları oldukları yerde kalır; kendi eklentilerimizi başkalarının tablolarını değiştirmek yerine kendi tablolarımızda tutarız. Geçiş yapmak isteyen, tüm geçmişini kolayca yanında götürür.",
+            "today": "Bugün birkaç eklentiden eksiksiz bir ERP sistemi doğdu: faturalama, KDV beyannameli muhasebe, banka ve kasa, ihtar yönetimi, depo, iletişim geçmişli müşteri yönetimi, e-posta, WhatsApp ve telefon, takvim, mağaza, bir servis modülü ve çok daha fazlası – 21 dilde. İşletmeler her gün onunla çalışıyor ve her gün biraz daha iyi hale geliyor."
+        },
+        "values": {
+            "title": "Bizim için önemli olanlar",
+            "free": {
+                "title": "Katılım ücretsizdir",
+                "text": "Ücret yok, üyelik yok, başvuru yok. Yardım etmek isteyen herkese kapımız açık – bir ipucu, bir çeviri ya da bir pull request yeterli."
+            },
+            "ux": {
+                "title": "Önce kullanım kolaylığı",
+                "text": "Yazılım iş çıkarmamalı, işi üstlenmeli. Uygun olan yerlerde alanlar önceden doldurulur, yollar kısadır ve otomatik yapılabilecek her şeyi sistem kendisi halleder."
+            },
+            "data": {
+                "title": "Verileriniz size aittir",
+                "text": "OSERP kendi sunucunuzda çalışır. Veritabanı yapısı açık ve uyumludur – hiçbir sağlayıcıya, bize bile bağlı değilsiniz."
+            },
+            "practice": {
+                "title": "Uygulamadan doğdu",
+                "text": "Neredeyse her işlev, gerçek bir işletme ona ihtiyaç duyduğu için ortaya çıktı: tezgâhta, satış bankosunda ya da muhasebe masasında."
+            },
+            "open": {
+                "title": "Herkese açık",
+                "text": "Kaynak kodu GitHub'da herkese açıktır. Herkes OSERP'nin nasıl çalıştığını inceleyebilir, onu uyarlayabilir ve geliştirebilir."
+            }
+        },
+        "thanks": {
+            "title": "Teşekkürler",
+            "accountants": "Bir ERP sistemi ancak muhasebesi kadar iyidir. OSERP'de muhasebe, banka ve kasanın bugün muhasebecilerin beklediği şekilde çalışmasını en çok üç kişiye borçluyuz:",
+            "accountantsDetail": "Uzmanlıkları, günlük işlerden gelen sayısız soruları ve büyük sabırlarıyla bize muhasebede gerçekten neyin önemli olduğunu gösterdiler – bölünmüş ve toplu kayıtlardan kasa denetimine, ihtar yönetimine ve doğru atanmış vergi anahtarlarına kadar. Birçok işlev onların önerileri olmadan var olmazdı ve bazı hataları onların dikkatli gözü olmadan asla bulamazdık. Bunun için yürekten teşekkür ederiz.",
+            "yvonne": "E-postaların okunmasıyla otomatik muhasebe fikri için Yvonne A.'ya özellikle teşekkür ederiz: E-postayla gelen faturalar tanınır, okunur ve hazır bir kayıt önerisi olarak sunulur. Onun fikri, günlük işlerde çok zaman kazandıran bir işleve dönüştü.",
+            "weronika": "Ve bir de Weronika Marek var. Hamileliği gerçek bir yenilik atılımını tetikledi: Yapay zekâ ofis çalışanımız Weroni'nin geliştirilmesine vesile oldu – ve Weroni'nin onun adını taşıması tesadüf değil. Bugün Weroni sistemle ilgili soruları yanıtlıyor, verileri analiz ediyor, belgeleri tanıyor ve ofisin yükünü hafifletiyor. Teşekkürler, Weronika!",
+            "kivitendo": "Yıllardır süren iyi iş birliği için kivitendo'nun çekirdek geliştiricileri Sven ve Moritz'e özel olarak teşekkür ederiz. Yeni bir isim altında da bu değişmeyecek – kapımız açık ve her yeni fikir alışverişinden memnuniyet duyarız.",
+            "vehicleScanner": "LxCars kullanan herkes onu tanır: Kaltenkirchen merkezli Autosiastik Software GmbH'nin Rasmus Wachsmuth tarafından geliştirilen ruhsat tarayıcısı (Fahrzeugschein-Scanner). Ruhsatın tek bir fotoğrafı yeterli; araç sahibi, araç ve anahtar numaraları zahmetle elle yazılmak yerine forma düzgünce aktarılır. Harika iş birliği ve atölyelere her gün zaman kazandıran bir hizmet için Rasmus Wachsmuth, Dennis Sonnwald ve Domenic Marchowskie'ye çok teşekkür eder, onları yürekten tebrik ederiz.",
+            "origins": "Teşekkürümüz ayrıca SQL-Ledger, Lx-Office ve kivitendo'nun diğer birçok geliştiricisine. OSERP'nin de üzerinde durduğu veritabanı temeli, onların yıllara dayanan emeğine dayanıyor. Onlar olmasaydı bu proje de olmazdı.",
+            "switzerland": "Elbette en içten selamlarımız İsviçre'ye de – Zürih'teki revamp-it'e. Ekip 2007'den beri kivitendo'yu kendisi kullanıyor, 2015'ten beri projenin Premium ortağı ve İsviçreli işletmelerin de kendi kurallarına göre muhasebe kaydı yapabilmesi için “Kivitendo Modus Schweiz”i ana koda kazandırdı. Grüezi ve merci vielmal!"
+        },
+        "team": {
+            "title": "Geliştirme",
+            "text": "OSERP'nin arkasında, yazılımla her gün çalışan ve onu kullanan işletmeleri tanıyan geliştiricilerden, kullanıcılardan ve uzmanlardan oluşan büyük bir ekip var. Geliştirmenin çekirdeğini oluşturanlar:"
+        },
+        "contribute": {
+            "title": "Siz de katılın",
+            "intro": "OSERP, insanların bilgilerini paylaşmasıyla yaşar. Bir geliştirici misiniz ve modern hissettiren bir ERP sistemi üzerinde çalışmak ister misiniz? İş akışları henüz eksik olan bir sektörü iyi tanıyor musunuz? O halde doğru yerdesiniz – hem de hiçbir giriş ücreti olmadan.",
+            "ways": {
+                "code": {
+                    "title": "Programlama",
+                    "text": "Hataları düzeltin, işlevler geliştirin, iş akışlarını hızlandırın – Vue 3, Vuetify, PHP 8 ve PostgreSQL ile. Mantık veritabanında yer alır, arayüz ise sade kalır."
+                },
+                "translate": {
+                    "title": "Çeviri",
+                    "text": "OSERP 21 dil konuşuyor. Metinleri kontrol eden ve iyileştiren anadili konuşanlar bize çok büyük yardım sağlıyor."
+                },
+                "expertise": {
+                    "title": "Uzmanlık paylaşımı",
+                    "text": "Muhasebeciler, servis ustaları, satıcılar, zanaatkârlar: Bize iş akışlarınızı anlatın. İyi fikirler bizde işlevlere dönüşür."
+                },
+                "test": {
+                    "title": "Test etme ve hata bildirme",
+                    "text": "OSERP'yi demoda deneyin ve aksayan noktaları bize bildirin. Her bildirim yazılımı herkes için daha iyi hale getirir."
+                },
+                "docs": {
+                    "title": "Dokümantasyon yazma",
+                    "text": "Kılavuz, projede Markdown olarak bulunur. Her ekleme yeni kullanıcıların başlamasına yardımcı olur."
+                }
+            },
+            "howto": "Başlamak kolaydır: Projeyi GitHub'da fork edin, değişikliğinizi yapın, bir pull request açın. Kodlama yönergeleri projede dev/programmierstil-richtlinien.md altında bulunur. Sorularınız her zaman memnuniyetle karşılanır – en iyisi doğrudan GitHub'da bir issue olarak.",
+            "github": "GitHub'da kaynak kodu",
+            "website": "Web sitesi",
+            "demo": "Canlı demo",
+            "docs": "Dokümantasyon",
+            "closing": "Ücret yok. Başvuru yok. Sadece iyi, özgür yazılımın keyfi – sizi aramızda görmekten mutluluk duyarız."
+        }
+    }
+}

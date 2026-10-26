@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Kunde/Lieferant/Person",
             "invoice": "Rechnungen",
+            "credit_note": "Alacak dekontları",
             "purchase_invoice": "Kreditorenrechnungen",
             "quotation": "Angebote",
             "order": "Aufträge",
@@ -50,7 +51,8 @@
             "amount_to": "Betrag bis",
             "status": "Durum",
             "status_open": "Açık",
-            "status_closed": "Kapalı"
+            "status_closed": "Kapalı",
+            "status_storno": "İptal edildi"
         },
         "document_table": {
             "document_number": "Dokumentnr.",
@@ -61,6 +63,10 @@
             "status": "Durum",
             "status_open": "Açık",
             "status_closed": "Kapalı",
+            "status_storno": "İptal",
+            "status_cancelled": "İptal edildi",
+            "status_storno_ref": "Orijinal fatura {number}",
+            "status_cancelled_ref": "İptal belgesi {number}",
             "created_at": "Erstellt am",
             "text_no_results": "Keine Dokumente gefunden."
         }

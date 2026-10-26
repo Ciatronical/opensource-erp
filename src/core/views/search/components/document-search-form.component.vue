@@ -125,10 +125,14 @@ const cvNameLabel = computed(() => {
 });
 
 /**
- * Status-Optionen für das Dropdown
+ * Status-Optionen für das Dropdown; storniert gibt es nur bei Rechnungen und Gutschriften
  */
+const stornoTypes = ['invoice', 'credit_note', 'purchase_invoice'];
 const statusOptions = computed(() => [
     { title: t('SearchView.document_fields.status_open'), value: 'open' },
     { title: t('SearchView.document_fields.status_closed'), value: 'closed' },
+    ...(stornoTypes.includes(props.documentType)
+        ? [{ title: t('SearchView.document_fields.status_storno'), value: 'storno' }]
+        : []),
 ]);
 </script>

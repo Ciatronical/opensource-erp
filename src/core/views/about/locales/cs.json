@@ -1,0 +1,84 @@
+{
+    "AboutView": {
+        "title": "O OSERP",
+        "subtitle": "OpensourceERP – svobodný, otevřený a z praxe pro praxi",
+        "history": {
+            "title": "Jak OSERP vznikl",
+            "roots": "OSERP nevznikl na rýsovacím prkně, ale v každodenní práci skutečných firem. Mnoho let jsme pracovali s kivitendo a psali pro něj rozšíření – CRM, LxCars pro autoservisy, napojení na telefonii, e-mail a WhatsApp. Tuto práci jsme dělali rádi, otevřeně ji sdíleli a usnadnili tím každodenní práci mnoha uživatelům – a dodnes se cítíme jako součást této komunity.",
+            "motivation": "Postupem času v nás rostlo přání, které už samotná rozšíření nedokázala splnit: moderní uživatelské rozhraní na nejnovější technické úrovni, s inovativním ovládáním a skutečnou podporou AI. ERP systém by se měl ovládat stejně snadno jako každá dobrá webová aplikace – rychle, přehledně a srozumitelně bez školení, u stolu stejně jako na mobilu. Proto jsme rozhraní postavili od základu znovu a výsledku dali vlastní jméno: OpensourceERP, zkráceně OSERP. Nejde o rozchod s kivitendo – OSERP vyrostl z této komunity.",
+            "ai": "Umělá inteligence pro nás není módní slovo, ale nástroj pro každodenní práci: faktury z e-mailové schránky jsou rozpoznány a připraveny jako návrh zaúčtování, Weroni kontroluje znalecké posudky a formuluje texty pro zákazníky a pojišťovny, navrhuje se položky a prodejní texty a dokumentům lze jednoduše klást otázky. AI dává návrhy – rozhoduje vždy člověk.",
+            "compatible": "Od začátku nám záleželo na jedné věci: nikdo nemá být nucen nechat svá data za sebou. OSERP pracuje se stejnou strukturou databáze jako kivitendo. Zákazníci, artikly, doklady a účetní zápisy zůstávají tam, kde jsou; vlastní rozšíření ukládáme do vlastních tabulek, místo abychom měnili cizí. Kdo chce přejít, jednoduše si vezme celou svou historii s sebou.",
+            "today": "Dnes se z několika rozšíření stal kompletní ERP systém: fakturace, účetnictví s přiznáním k DPH, banka a pokladna, upomínky, sklad, správa zákazníků s historií kontaktů, e-mail, WhatsApp a telefonie, kalendář, e-shop, modul pro dílnu a mnoho dalšího – ve 21 jazycích. Firmy s ním pracují každý den a každý den je o kousek lepší."
+        },
+        "values": {
+            "title": "Na čem nám záleží",
+            "free": {
+                "title": "Zapojení nic nestojí",
+                "text": "Žádný poplatek, žádné členství, žádná přihláška. Kdo chce pomoci, je vítán – stačí tip, překlad nebo pull request."
+            },
+            "ux": {
+                "title": "Ovládání na prvním místě",
+                "text": "Software má práci ubírat, ne přidávat. Pole jsou předvyplněná tam, kde to dává smysl, cesty jsou krátké a co lze udělat automaticky, systém udělá sám."
+            },
+            "data": {
+                "title": "Vaše data patří vám",
+                "text": "OSERP běží na vašem vlastním serveru. Struktura databáze je otevřená a kompatibilní – nejste vázáni na žádného dodavatele, ani na nás."
+            },
+            "practice": {
+                "title": "Z praxe",
+                "text": "Téměř každá funkce vznikla proto, že ji potřebovala skutečná firma: u ponku, u pultu nebo u stolu v účtárně."
+            },
+            "open": {
+                "title": "Otevřený pro všechny",
+                "text": "Zdrojový kód je veřejně dostupný na GitHub. Každý si může přečíst, jak OSERP funguje, upravit ho a vylepšit."
+            }
+        },
+        "thanks": {
+            "title": "Děkujeme",
+            "accountants": "ERP systém je jen tak dobrý jako jeho účetnictví. To, že účetnictví, banka a pokladna v OSERP dnes fungují tak, jak účetní očekávají, vděčíme především třem lidem:",
+            "accountantsDetail": "Svými odbornými znalostmi, nespočtem otázek z každodenní praxe a velkou trpělivostí nám ukázali, na čem v účetnictví skutečně záleží – od rozdělených a hromadných zápisů přes kontrolu pokladny až po upomínky a správně nastavené daňové klíče. Mnoho funkcí by bez jejich podnětů neexistovalo a některé chyby bychom bez jejich bedlivého oka nikdy nenašli. Za to jim srdečně děkujeme.",
+            "yvonne": "Yvonne A. děkujeme zvláště za nápad automatického účetnictví pomocí načítání e-mailů: faktury, které přijdou e-mailem, jsou rozpoznány, vytěženy a připraveny jako hotový návrh zaúčtování. Z jejího nápadu se stala funkce, která v každodenní práci šetří spoustu času.",
+            "weronika": "A pak je tu Weronika Marek. Její těhotenství spustilo skutečnou vlnu inovací: dalo podnět k vývoji Weroni, naší AI kancelářské asistentky – a není náhoda, že Weroni nese její jméno. Weroni dnes odpovídá na otázky k systému, vyhodnocuje data, rozpoznává doklady a přebírá za kancelář řadu úkolů. Děkujeme, Weroniko!",
+            "kivitendo": "Zvláštní poděkování patří Svenovi a Moritzovi, hlavním vývojářům kivitendo, za dlouholetou dobrou spolupráci. Na tom se ani pod novým názvem nic nemá změnit – naše dveře jsou otevřené a budeme rádi za každou další výměnu zkušeností.",
+            "vehicleScanner": "Kdo používá LxCars, ten ho zná: skener technických průkazů (Fahrzeugschein-Scanner) od společnosti Autosiastik Software GmbH z města Kaltenkirchen, jehož autorem je Rasmus Wachsmuth. Stačí jedna fotografie technického průkazu a provozovatel, vozidlo i kódová čísla se úhledně objeví ve formuláři – místo pracného přepisování. Velký dík a uznání si zaslouží Rasmus Wachsmuth, Dennis Sonnwald a Domenic Marchowskie za skvělou spolupráci a službu, která dílnám každý den šetří čas.",
+            "origins": "Náš dík patří také mnoha dalším vývojářům SQL-Ledger, Lx-Office a kivitendo. Na jejich dlouholeté práci spočívá databázový základ, na kterém stojí i OSERP. Bez nich by tento projekt neexistoval.",
+            "switzerland": "Srdečné pozdravy samozřejmě posíláme také do Švýcarska – týmu revamp-it v Curychu. Tým sám používá kivitendo od roku 2007, od roku 2015 je prémiovým partnerem projektu a do hlavního kódu přinesl „Kivitendo Modus Schweiz“ (švýcarský režim), aby i švýcarské firmy mohly účtovat podle vlastních pravidel. Grüezi a merci vielmal!"
+        },
+        "team": {
+            "title": "Vývoj",
+            "text": "Za OSERP stojí velký tým vývojářů, uživatelů a odborníků, kteří se softwarem denně pracují a znají firmy, které ho používají. Jádro vývoje tvoří:"
+        },
+        "contribute": {
+            "title": "Zapojte se",
+            "intro": "OSERP žije z toho, že lidé přinášejí své znalosti. Jste vývojář a máte chuť na ERP systém, který působí moderně? Vyznáte se v oboru, jehož postupy zatím chybí? Pak jste u nás správně – zcela bez vstupního poplatku.",
+            "ways": {
+                "code": {
+                    "title": "Programování",
+                    "text": "Opravovat chyby, vytvářet funkce, zrychlovat procesy – s Vue 3, Vuetify, PHP 8 a PostgreSQL. Logika je v databázi, rozhraní je štíhlé."
+                },
+                "translate": {
+                    "title": "Překládání",
+                    "text": "OSERP mluví 21 jazyky. Rodilí mluvčí, kteří texty kontrolují a vylepšují, nám nesmírně pomáhají."
+                },
+                "expertise": {
+                    "title": "Sdílení odborných znalostí",
+                    "text": "Účetní, vedoucí dílen, obchodníci, řemeslníci: vysvětlete nám své postupy. Dobré nápady se u nás mění ve funkce."
+                },
+                "test": {
+                    "title": "Testování a hlášení chyb",
+                    "text": "Vyzkoušejte OSERP v demu a nahlaste, co vázne. Každé hlášení zlepšuje software pro všechny."
+                },
+                "docs": {
+                    "title": "Dokumentace",
+                    "text": "Příručka je v projektu uložena jako Markdown. Každé doplnění pomáhá novým uživatelům se zorientovat."
+                }
+            },
+            "howto": "Začít je snadné: udělat fork projektu na GitHub, provést změnu, otevřít pull request. Programátorské zásady najdete v projektu v souboru dev/programmierstil-richtlinien.md. Otázky jsou kdykoli vítány – nejlépe přímo jako issue na GitHub.",
+            "github": "Zdrojový kód na GitHub",
+            "website": "Webové stránky",
+            "demo": "Živé demo",
+            "docs": "Dokumentace",
+            "closing": "Žádný poplatek. Žádná přihláška. Jen radost z dobrého, svobodného softwaru – těšíme se na vás."
+        }
+    }
+}

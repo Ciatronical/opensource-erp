@@ -168,6 +168,14 @@
             "via": "Bestätigt · {channel}",
             "yes": "ja",
             "no": "nein"
+        },
+        "storno": {
+            "filter": "Storniert",
+            "filterHint": "Stornobelege und stornierte Rechnungen",
+            "storno": "Storno zu",
+            "cancelled": "Storniert durch",
+            "stornoOpen": "Originalrechnung {number} öffnen",
+            "cancelledOpen": "Stornobeleg {number} öffnen"
         }
     }
 }

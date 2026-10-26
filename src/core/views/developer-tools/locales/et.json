@@ -302,7 +302,20 @@
             "typeBug": "Viga",
             "typeFeature": "Funktsioon",
             "typeTask": "Ülesanne",
-            "typeImprovement": "Parendus"
+            "typeImprovement": "Parendus",
+            "attachments": "Manused",
+            "attachFile": "Lisa fail",
+            "attachHint": "Kleebi ekraanipilt Ctrl+V-ga või lohista failid siia",
+            "dropHere": "Aseta failid siia",
+            "fileTooLarge": "\"{name}\" on suurem kui {size} ja seda ei lisatud",
+            "uploadFailed": "Faili \"{name}\" ei õnnestunud üles laadida",
+            "download": "Laadi alla",
+            "confirmDeleteAttachment": "Kas kustutada manus \"{name}\"?",
+            "deleteTicket": "Kustuta pilet",
+            "confirmDeleteMany": "Kas kustutada {count} piletit? Ka kommentaarid ja manused kustutatakse.",
+            "selected": "{count} valitud",
+            "clearSelection": "Tühista valik",
+            "deleted": "Pilet kustutatud | {count} piletit kustutatud"
         },
         "autoTest": {
             "title": "Automatische Tests",

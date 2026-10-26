@@ -302,7 +302,20 @@
             "typeBug": "Klaida",
             "typeFeature": "Funkcija",
             "typeTask": "Užduotis",
-            "typeImprovement": "Pagerinimas"
+            "typeImprovement": "Pagerinimas",
+            "attachments": "Priedai",
+            "attachFile": "Pridėti failą",
+            "attachHint": "Įklijuokite ekrano kopiją su Ctrl+V arba nutempkite failus čia",
+            "dropHere": "Numeskite failus čia",
+            "fileTooLarge": "\"{name}\" viršija {size} ir nebuvo pridėtas",
+            "uploadFailed": "Nepavyko įkelti \"{name}\"",
+            "download": "Atsisiųsti",
+            "confirmDeleteAttachment": "Ar tikrai ištrinti priedą \"{name}\"?",
+            "deleteTicket": "Ištrinti užklausą",
+            "confirmDeleteMany": "Ar tikrai ištrinti užklausas ({count})? Komentarai ir priedai taip pat bus ištrinti.",
+            "selected": "Pasirinkta: {count}",
+            "clearSelection": "Atšaukti pasirinkimą",
+            "deleted": "Ištrinta užklausų: {count}"
         },
         "autoTest": {
             "title": "Automatische Tests",

@@ -26,6 +26,7 @@ const WhatsAppView = () => import('@/core/views/whatsapp/whatsapp.view.vue')
 const LettersView = () => import('@/core/views/letters/letters.view.vue')
 const LetterEditView = () => import('@/core/views/letters/letter.edit.view.vue')
 const DatenschutzView = () => import('@/core/views/datenschutz/datenschutz.view.vue')
+const AboutView = () => import('@/core/views/about/about.view.vue')
 const DatenloeschungView = () => import('@/core/views/datenschutz/datenloeschung.view.vue')
 const ArticleEditView = () => import('@/core/views/article/article.edit.view.vue')
 const WikiListView = () => import('@/core/views/wiki/wiki.list.view.vue')
@@ -997,6 +998,13 @@ function buildRoutes() {
             component: DocsView,
             props: true,
             meta: { hideCustomerBar: true },
+        },
+        {
+            ...routePath('routes.about'),
+            name: 'about',
+            component: AboutView,
+            // öffentlich, weil die Loginseite darauf verlinkt
+            meta: { public: true, hideCustomerBar: true },
         },
         // ── Öffentliche Seiten ──
         {

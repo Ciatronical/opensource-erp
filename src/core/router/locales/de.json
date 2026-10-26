@@ -60,6 +60,7 @@
         "mechanicOrder": "/mechaniker/auftrag",
         "mechanicCar": "/mechaniker/fahrzeug",
         "privacy": "/datenschutz",
+        "about": "/ueber",
         "dataDeletion": "/datenloeschung",
         "newArticle": "/artikel/neu",
         "admin": "/system/verwaltung",
@@ -124,7 +125,7 @@
         "publish": {
             "button": "Auf der Website veröffentlichen",
             "title": "Feature-Katalog auf der Website veröffentlichen",
-            "intro": "Der Katalog enthält alle Seiten dieser Dokumentation mit ihren Metadaten, Abschnitten und dem vollständigen Text. Die Website opensource-erp.dev baut daraus ihre Feature-Seiten. Übertragen wird immer alles; der Schlüssel bleibt gespeichert.",
+            "intro": "Der Katalog enthält alle Seiten dieser Dokumentation mit ihren Metadaten, Abschnitten und dem vollständigen Text. Die Website opensourceerp.dev baut daraus ihre Feature-Seiten. Übertragen wird immer alles; der Schlüssel bleibt gespeichert.",
             "pages": "Seiten",
             "extensions": "Erweiterungen",
             "core": "Kernsystem",

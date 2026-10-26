@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Клиент/Поставщик/Лицо",
             "invoice": "Счета",
+            "credit_note": "Кредит-ноты",
             "purchase_invoice": "Входящие счета",
             "quotation": "Предложения",
             "order": "Заказы",
@@ -50,7 +51,8 @@
             "amount_to": "Сумма до",
             "status": "Статус",
             "status_open": "Открыто",
-            "status_closed": "Закрыто"
+            "status_closed": "Закрыто",
+            "status_storno": "Сторнировано"
         },
         "document_table": {
             "document_number": "Номер докум.",
@@ -61,6 +63,10 @@
             "status": "Статус",
             "status_open": "Открыто",
             "status_closed": "Закрыто",
+            "status_storno": "Сторно",
+            "status_cancelled": "Сторнировано",
+            "status_storno_ref": "Исходный счёт {number}",
+            "status_cancelled_ref": "Документ сторно {number}",
             "created_at": "Создано",
             "text_no_results": "Документы не найдены."
         }

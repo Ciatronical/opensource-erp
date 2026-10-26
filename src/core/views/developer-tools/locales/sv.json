@@ -302,7 +302,20 @@
             "typeBug": "Bug",
             "typeFeature": "Feature",
             "typeTask": "Aufgabe",
-            "typeImprovement": "Verbesserung"
+            "typeImprovement": "Verbesserung",
+            "attachments": "Bilagor",
+            "attachFile": "Bifoga fil",
+            "attachHint": "Klistra in en skärmbild med Ctrl+V eller dra filer hit",
+            "dropHere": "Släpp filerna här",
+            "fileTooLarge": "\"{name}\" är större än {size} och bifogades inte",
+            "uploadFailed": "\"{name}\" kunde inte laddas upp",
+            "download": "Ladda ner",
+            "confirmDeleteAttachment": "Vill du verkligen radera bilagan \"{name}\"?",
+            "deleteTicket": "Radera ticket",
+            "confirmDeleteMany": "Vill du verkligen radera {count} tickets? Kommentarer och bilagor raderas också.",
+            "selected": "{count} valda",
+            "clearSelection": "Rensa urval",
+            "deleted": "Ticket raderad | {count} tickets raderade"
         },
         "autoTest": {
             "title": "Automatische Tests",

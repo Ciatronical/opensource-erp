@@ -484,7 +484,8 @@ Aus einem Beleg heraus erzeugen:
 ### 5.6 Belegsuche
 
 - **Auftragssuche** mit Filtern
-- **Gutschriftenliste**
+- **Gutschriftenliste** und eigener Gutschriften-Reiter in der Suche
+- **Stornos finden**: Filter „Storniert“ in Rechnungs-/Gutschriftenliste und Suche, Stornobeleg und Original mit Sprung zum Gegenbeleg
 - Globale Dokumentensuche über alle Belegarten (siehe [Globale Suche](#94-globale-suche))
 
 ---
@@ -693,6 +694,8 @@ Drei Ansichten auf einer Datenbasis:
 
 - **Pflichtenhefte**: anlegen, bearbeiten, löschen, Positionen als Baum (Abschnitte und Funktionsblöcke), Stammdaten für Typen, Status, Komplexitäten, Risiken
 - **Ticketsystem** mit **Kanban-Board**: Tickets anlegen, Status per Drag verschieben, Kommentare, **Labels**, Zuweisung an Mitarbeiter, Verknüpfung mit Projekten und Pflichtenheften
+- **Anhänge an Tickets und Kommentaren**: Screenshot per Strg+V einfügen, Dateien hineinziehen oder auswählen (bis 20 MB), Bilder als Vorschau mit Großansicht, übrige Dateien zum Öffnen/Herunterladen
+- **Tickets löschen**: einzeln im Ticket oder mehrere auf einmal per Auswahl in der Listenansicht (Status-Filter, z. B. alle erledigten) — Kommentare und Anhänge gehen mit
 
 ### 9.9 Dokumentation im System
 
@@ -897,7 +900,7 @@ Zwei sauber getrennte Typen:
 - **Einstellungssuche** über alle Reiter der Firmenkonfiguration, Treffer springt zum Abschnitt
 - **Verzeichnis- und Dateibrowser** für Pfadeinstellungen
 - **KI-Modellwahl** je Assistent und je Firma, am Prompt für die Sitzung umschaltbar
-- **Dokumentation im System** mit Metadaten je Seite, Gliederung nach Kern und Erweiterungen, **Veröffentlichung des Feature-Katalogs** auf opensource-erp.dev
+- **Dokumentation im System** mit Metadaten je Seite, Gliederung nach Kern und Erweiterungen, **Veröffentlichung des Feature-Katalogs** auf opensourceerp.dev
 
 ## 15. Developer- & Admin-Werkzeuge
 

@@ -1,4 +1,4 @@
-# Website-Schnittstelle: Feature-Katalog nach opensource-erp.dev
+# Website-Schnittstelle: Feature-Katalog nach opensourceerp.dev
 
 Stand 03.10.2026. Die Dokumentation im System (`docs/features/*.md`) ist die
 einzige Quelle für die Feature-Liste. Jede Seite trägt Front Matter; daraus
@@ -111,3 +111,55 @@ Vorschau und Export derselben Daten ohne Übertragung: Aktion `getDocsCatalog`
 Empfehlung für die Website: Feature-Übersicht aus `kind: overview` (Teil A
 Kernsystem, Teil B/C Erweiterungen), je Seite eine Unterseite aus `markdown`,
 Navigation aus `group`/`extension`/`category`/`order`.
+
+## Über OSERP (`about`)
+
+Seit 25.10.2026 trägt der Katalog zusätzlich die Seite **Über OSERP** —
+Entstehung, Grundsätze, Dank, Team, Mitmachen. Quelle sind dieselben Dateien,
+aus denen OSERP die Seite baut: Aufbau, Namen und Links in
+`src/core/views/about/about.data.json`, die Texte je Sprache in
+`src/core/views/about/locales/<sprache>.json` (Schlüssel `AboutView`). Fehlt
+die Datei, ist `about` `null`.
+
+```json
+"about": {
+  "history": ["roots", "motivation", "ai", "compatible", "today"],
+  "values": [{ "key": "free", "icon": "mdi-handshake-outline" }, "…"],
+  "thanks": [
+    { "text": "accountants", "icon": "mdi-calculator-variant-outline", "people": ["Yvonne A.", "Gerda", "Olaf Stechow"] },
+    { "text": "accountantsDetail" },
+    { "text": "vehicleScanner", "extension": "lxcars", "link": "https://www.fahrzeugschein-scanner.de", "icon": "…", "people": ["…"] },
+    { "text": "switzerland", "link": "https://revampit.ch" }
+  ],
+  "team": ["Ronny Zimmermann", "Dirk Schwartzer", "Martin Willig"],
+  "contribution_ways": [{ "key": "code", "icon": "mdi-code-tags" }, "…"],
+  "links": { "github": "…", "website": "https://opensourceerp.dev", "demo": "https://demo.opensourceerp.dev/" },
+  "texts": {
+    "de": { "title": "Über OSERP", "subtitle": "…", "history": { "title": "…", "roots": "…" }, "thanks": { "…": "…" }, "…": "…" },
+    "en": { "…": "…" }
+  }
+}
+```
+
+So setzt die Website die Seite zusammen (wie `about.view.vue`):
+
+| Abschnitt | Überschrift | Inhalt |
+| --- | --- | --- |
+| Entstehung | `texts.<l>.history.title` | je Schlüssel aus `history` ein Absatz `texts.<l>.history.<schlüssel>` |
+| Grundsätze | `values.title` | je Eintrag aus `values`: `values.<key>.title` + `values.<key>.text`, Symbol `icon` (Material Design Icons) |
+| Dank | `thanks.title` | je Block aus `thanks`: Absatz `thanks.<text>`, danach Link `link` (Linktext = Rechnername ohne `www.`), danach die Namen `people` |
+| Entwicklung | `team.title` | Absatz `team.text`, danach die Namen `team` |
+| Mitmachen | `contribute.title` | `contribute.intro`, je Eintrag aus `contribution_ways` Titel + Text unter `contribute.ways.<key>`, dann `contribute.howto`, Knöpfe aus `links` (Beschriftung `contribute.github` / `website` / `demo`), Schlusssatz `contribute.closing` |
+
+- Ein Block mit `extension` gehört zu einer Erweiterung. In OSERP erscheint
+  er nur, wenn sie aktiv ist; die Website zeigt ihn immer und darf ihn als
+  Teil der Erweiterung kennzeichnen.
+- Nicht jede Sprache hat jeden Schlüssel sofort: fehlt einer, Englisch
+  nehmen, dann Deutsch (wie OSERP).
+- `contribute.docs` (Knopf zur Dokumentation in OSERP) ist für die Website
+  nicht gedacht.
+
+**Suchmaschinen:** Die Website ist die einzige Fassung, die in Suchmaschinen
+gehört. OSERP trägt `noindex, nofollow` in `index.html` — für alle
+Installationen und die Demo —, damit die öffentliche Seite `/ueber` nicht mit
+der Website um denselben Inhalt konkurriert.

@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Cliente/Proveedor/Persona",
             "invoice": "Facturas",
+            "credit_note": "Notas de crédito",
             "purchase_invoice": "Facturas de acreedores",
             "quotation": "Presupuestos",
             "order": "Pedidos",
@@ -50,7 +51,8 @@
             "amount_to": "Importe hasta",
             "status": "Estado",
             "status_open": "Abierto",
-            "status_closed": "Cerrado"
+            "status_closed": "Cerrado",
+            "status_storno": "Anulado"
         },
         "document_table": {
             "document_number": "Nr. documento",
@@ -61,6 +63,10 @@
             "status": "Estado",
             "status_open": "Abierto",
             "status_closed": "Cerrado",
+            "status_storno": "Anulación",
+            "status_cancelled": "Anulado",
+            "status_storno_ref": "Factura original {number}",
+            "status_cancelled_ref": "Documento de anulación {number}",
             "created_at": "Creado el",
             "text_no_results": "No se encontraron documentos."
         }

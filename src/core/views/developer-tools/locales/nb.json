@@ -302,7 +302,20 @@
             "typeBug": "Bug",
             "typeFeature": "Feature",
             "typeTask": "Aufgabe",
-            "typeImprovement": "Verbesserung"
+            "typeImprovement": "Verbesserung",
+            "attachments": "Vedlegg",
+            "attachFile": "Legg ved fil",
+            "attachHint": "Lim inn et skjermbilde med Ctrl+V eller dra filer hit",
+            "dropHere": "Slipp filene her",
+            "fileTooLarge": "\"{name}\" er større enn {size} og ble ikke lagt ved",
+            "uploadFailed": "\"{name}\" kunne ikke lastes opp",
+            "download": "Last ned",
+            "confirmDeleteAttachment": "Vil du virkelig slette vedlegget \"{name}\"?",
+            "deleteTicket": "Slett ticket",
+            "confirmDeleteMany": "Vil du virkelig slette {count} tickets? Kommentarer og vedlegg slettes også.",
+            "selected": "{count} valgt",
+            "clearSelection": "Fjern utvalg",
+            "deleted": "Ticket slettet | {count} tickets slettet"
         },
         "autoTest": {
             "title": "Automatische Tests",

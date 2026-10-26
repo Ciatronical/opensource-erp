@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Customer/Vendor/Contact",
             "invoice": "Invoices",
+            "credit_note": "Credit notes",
             "purchase_invoice": "Purchase Invoices",
             "quotation": "Quotations",
             "order": "Orders",
@@ -50,7 +51,8 @@
             "amount_to": "Amount to",
             "status": "Status",
             "status_open": "Open",
-            "status_closed": "Closed"
+            "status_closed": "Closed",
+            "status_storno": "Cancelled"
         },
         "document_table": {
             "document_number": "Document No.",
@@ -61,6 +63,10 @@
             "status": "Status",
             "status_open": "Open",
             "status_closed": "Closed",
+            "status_storno": "Cancellation",
+            "status_cancelled": "Cancelled",
+            "status_storno_ref": "Original invoice {number}",
+            "status_cancelled_ref": "Cancellation document {number}",
             "created_at": "Created At",
             "text_no_results": "No documents found.",
             "summary": "No documents | 1 document · total {sum} | {count} documents · total {sum}",

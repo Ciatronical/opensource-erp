@@ -1,0 +1,84 @@
+{
+    "AboutView": {
+        "title": "Over OSERP",
+        "subtitle": "OpensourceERP – vrij, open en uit de praktijk voor de praktijk",
+        "history": {
+            "title": "Hoe OSERP ontstond",
+            "roots": "OSERP is niet op de tekentafel ontstaan, maar in de dagelijkse praktijk van echte bedrijven. Jarenlang hebben we met kivitendo gewerkt en er uitbreidingen voor geschreven – een CRM, LxCars voor autogarages, koppelingen met telefonie, e-mail en WhatsApp. We deden dit werk graag, deelden het openlijk en maakten daarmee het dagelijks werk van veel gebruikers makkelijker – en tot op de dag van vandaag voelen we ons deel van deze gemeenschap.",
+            "motivation": "Na verloop van tijd groeide een wens die met uitbreidingen alleen niet meer te vervullen was: een moderne gebruikersinterface volgens de nieuwste stand van de techniek, met een innovatieve bediening en echte AI-ondersteuning. Een ERP-systeem zou net zo eenvoudig te bedienen moeten zijn als elke goede webapplicatie – snel, overzichtelijk en zonder training te begrijpen, aan het bureau net zo goed als op de telefoon. Daarom hebben we de gebruikersinterface vanaf de grond opnieuw opgebouwd en het resultaat een eigen naam gegeven: OpensourceERP, kortweg OSERP. Een breuk met kivitendo is dat niet – OSERP is uit deze gemeenschap voortgekomen.",
+            "ai": "Kunstmatige intelligentie is bij ons geen modewoord, maar een hulpmiddel voor het dagelijks werk: facturen uit de e-mailinbox worden herkend en als boekingsvoorstel klaargezet, Weroni controleert expertiserapporten en stelt teksten op voor klanten en verzekeraars, regels en verkoopteksten worden voorgesteld, en aan documenten kun je eenvoudig vragen stellen. De AI doet voorstellen – de beslissing neemt altijd de mens.",
+            "compatible": "Eén ding vonden we vanaf het begin belangrijk: niemand hoeft zijn gegevens achter te laten. OSERP werkt met dezelfde databasestructuur als kivitendo. Klanten, artikelen, documenten en boekingen blijven waar ze zijn; eigen uitbreidingen slaan we op in eigen tabellen in plaats van die van anderen te wijzigen. Wie wil overstappen, neemt zijn complete geschiedenis gewoon mee.",
+            "today": "Vandaag zijn een paar uitbreidingen uitgegroeid tot een volledig ERP-systeem: facturatie, boekhouding met btw-aangifte, bank en kas, aanmaningen, voorraad, klantenbeheer met contacthistorie, e-mail, WhatsApp en telefonie, agenda, webshop, een werkplaatsmodule en nog veel meer – in 21 talen. Elke dag werken bedrijven ermee, en elke dag wordt het weer een stukje beter."
+        },
+        "values": {
+            "title": "Wat wij belangrijk vinden",
+            "free": {
+                "title": "Meedoen kost niets",
+                "text": "Geen bijdrage, geen lidmaatschap, geen toelatingsaanvraag. Wie wil helpen, is welkom – een tip, een vertaling of een pull request is genoeg."
+            },
+            "ux": {
+                "title": "Gebruiksgemak eerst",
+                "text": "Software moet werk uit handen nemen, niet veroorzaken. Velden zijn vooraf ingevuld waar dat zinvol is, de wegen zijn kort, en wat automatisch kan, regelt het systeem zelf."
+            },
+            "data": {
+                "title": "Uw gegevens zijn van u",
+                "text": "OSERP draait op uw eigen server. De databasestructuur is open en compatibel – u bent aan geen enkele leverancier gebonden, ook niet aan ons."
+            },
+            "practice": {
+                "title": "Uit de praktijk",
+                "text": "Bijna elke functie is ontstaan omdat een echt bedrijf haar nodig had: aan de werkbank, aan de toonbank of aan het bureau van de boekhouding."
+            },
+            "open": {
+                "title": "Open voor iedereen",
+                "text": "De broncode staat openbaar op GitHub. Iedereen kan nalezen hoe OSERP werkt, het aanpassen en verbeteren."
+            }
+        },
+        "thanks": {
+            "title": "Bedankt",
+            "accountants": "Een ERP-systeem is maar zo goed als zijn boekhouding. Dat boekhouding, bank en kas in OSERP vandaag zo werken als boekhouders verwachten, danken we vooral aan drie mensen:",
+            "accountantsDetail": "Met hun vakkennis, talloze vragen uit de praktijk en veel geduld hebben zij ons laten zien waar het in de boekhouding echt om draait – van gesplitste boekingen en verzamelboekingen via de kascontrole tot aanmaningen en correct ingestelde btw-codes. Veel functies zouden er zonder hun suggesties niet zijn, en sommige fouten hadden we zonder hun kritische blik nooit gevonden. Daarvoor onze hartelijke dank.",
+            "yvonne": "Yvonne A. danken we in het bijzonder voor het idee van de automatische boekhouding door het inlezen van e-mails: facturen die per e-mail binnenkomen, worden herkend, uitgelezen en als kant-en-klaar boekingsvoorstel klaargezet. Haar idee is uitgegroeid tot een functie die in de dagelijkse praktijk veel tijd bespaart.",
+            "weronika": "En dan is er Weronika Marek. Haar zwangerschap heeft een echte innovatiegolf in gang gezet: zij was de aanleiding voor de ontwikkeling van Weroni, onze AI-kantoorassistente – en het is geen toeval dat Weroni haar naam draagt. Weroni beantwoordt vandaag vragen over het systeem, analyseert gegevens, herkent documenten en neemt het kantoor taken uit handen. Bedankt, Weronika!",
+            "kivitendo": "Een bijzonder woord van dank gaat naar Sven en Moritz, de kernontwikkelaars van kivitendo, voor de jarenlange goede samenwerking. Daar mag ook onder een nieuwe naam niets aan veranderen – onze deur staat open, en we verheugen ons op elke verdere uitwisseling.",
+            "vehicleScanner": "Wie LxCars gebruikt, kent hem: de kentekenbewijsscanner (Fahrzeugschein-Scanner) van Autosiastik Software GmbH uit Kaltenkirchen, ontwikkeld door Rasmus Wachsmuth. Eén foto van het kentekenbewijs volstaat, en houder, voertuig en codenummers staan netjes in het formulier – in plaats van dat ze moeizaam overgetypt moeten worden. Grote dank en veel lof gaan naar Rasmus Wachsmuth, Dennis Sonnwald en Domenic Marchowskie voor de geweldige samenwerking en een dienst die werkplaatsen elke dag tijd bespaart.",
+            "origins": "Onze dank gaat ook uit naar de vele andere ontwikkelaars van SQL-Ledger, Lx-Office en kivitendo. Op hun jarenlange werk rust het databasefundament waarop ook OSERP staat. Zonder hen zou dit project niet bestaan.",
+            "switzerland": "Hartelijke groeten gaan natuurlijk ook naar Zwitserland – naar revamp-it in Zürich. Het team gebruikt kivitendo sinds 2007 zelf, is sinds 2015 premiumpartner van het project en heeft de ‘Kivitendo Modus Schweiz’ (Zwitserse modus) in de hoofdcode gebracht, zodat ook Zwitserse bedrijven volgens hun eigen regels kunnen boeken. Grüezi en merci vielmal!"
+        },
+        "team": {
+            "title": "Ontwikkeling",
+            "text": "Achter OSERP staat een groot team van ontwikkelaars, gebruikers en vakmensen die dagelijks met de software werken en de bedrijven kennen die haar gebruiken. De kern van de ontwikkeling bestaat uit:"
+        },
+        "contribute": {
+            "title": "Doe mee",
+            "intro": "OSERP bestaat dankzij mensen die hun kennis inbrengen. Bent u ontwikkelaar en hebt u zin in een ERP-systeem dat modern aanvoelt? Kent u een branche waarvan de processen nog ontbreken? Dan bent u bij ons aan het juiste adres – helemaal zonder entreegeld.",
+            "ways": {
+                "code": {
+                    "title": "Programmeren",
+                    "text": "Fouten oplossen, functies bouwen, processen versnellen – met Vue 3, Vuetify, PHP 8 en PostgreSQL. De logica zit in de database, de interface is slank."
+                },
+                "translate": {
+                    "title": "Vertalen",
+                    "text": "OSERP spreekt 21 talen. Moedertaalsprekers die teksten controleren en verbeteren, helpen ons enorm."
+                },
+                "expertise": {
+                    "title": "Vakkennis delen",
+                    "text": "Boekhouders, werkplaatschefs, handelaren, vakmensen: leg ons uw processen uit. Goede ideeën worden bij ons functies."
+                },
+                "test": {
+                    "title": "Testen en fouten melden",
+                    "text": "Probeer OSERP uit in de demo en meld wat er hapert. Elke melding maakt de software beter voor iedereen."
+                },
+                "docs": {
+                    "title": "Documenteren",
+                    "text": "De handleiding staat als Markdown in het project. Elke aanvulling helpt nieuwe gebruikers op weg."
+                }
+            },
+            "howto": "Beginnen is eenvoudig: het project op GitHub forken, de wijziging maken, een pull request indienen. De programmeerrichtlijnen staan in het project onder dev/programmierstil-richtlinien.md. Vragen zijn altijd welkom – het liefst direct als issue op GitHub.",
+            "github": "Broncode op GitHub",
+            "website": "Website",
+            "demo": "Live-demo",
+            "docs": "Documentatie",
+            "closing": "Geen bijdrage. Geen toelatingsaanvraag. Alleen het plezier in goede, vrije software – we kijken ernaar uit van u te horen."
+        }
+    }
+}

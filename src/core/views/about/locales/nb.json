@@ -1,0 +1,84 @@
+{
+    "AboutView": {
+        "title": "Om OSERP",
+        "subtitle": "OpensourceERP – fritt, åpent og fra praksis for praksis",
+        "history": {
+            "title": "Slik ble OSERP til",
+            "roots": "OSERP ble ikke til på tegnebrettet, men i hverdagen til ekte bedrifter. I mange år jobbet vi med kivitendo og skrev utvidelser til det – et CRM, LxCars for bilverksteder, integrasjoner med telefoni, e-post og WhatsApp. Vi gjorde dette arbeidet med glede, delte det åpent og gjorde hverdagen enklere for mange brukere – og den dag i dag føler vi oss som en del av dette fellesskapet.",
+            "motivation": "Med tiden vokste det fram et ønske som utvidelser alene ikke lenger kunne oppfylle: et moderne brukergrensesnitt på det nyeste tekniske nivået, med innovativ betjening og ekte AI-støtte. Et ERP-system bør være like enkelt å bruke som enhver god nettapplikasjon – raskt, oversiktlig og forståelig uten opplæring, ved skrivebordet like godt som på mobilen. Derfor bygde vi brukergrensesnittet helt fra bunnen av og ga resultatet et eget navn: OpensourceERP, forkortet OSERP. Dette er ikke et brudd med kivitendo – OSERP har vokst fram fra dette fellesskapet.",
+            "ai": "Hos oss er kunstig intelligens ikke et moteord, men et verktøy for hverdagen: Fakturaer fra e-postinnboksen gjenkjennes og klargjøres som posteringsforslag, Weroni gjennomgår takstrapporter og formulerer tekster til kunder og forsikringsselskaper, varelinjer og salgstekster blir foreslått, og man kan ganske enkelt stille spørsmål til dokumenter. AI-en kommer med forslag – det er alltid mennesket som tar avgjørelsen.",
+            "compatible": "Én ting var viktig for oss helt fra starten: Ingen skal måtte etterlate dataene sine. OSERP arbeider med den samme databasestrukturen som kivitendo. Kunder, varer, bilag og posteringer blir der de er; egne utvidelser legger vi i egne tabeller i stedet for å endre eksisterende. Den som vil bytte, tar ganske enkelt med seg hele historikken sin.",
+            "today": "I dag har noen få utvidelser vokst til et komplett ERP-system: fakturering, regnskap med mva-melding, bank og kasse, purring, lager, kundeadministrasjon med kontakthistorikk, e-post, WhatsApp og telefoni, kalender, nettbutikk, en verkstedmodul og mye mer – på 21 språk. Bedrifter jobber med det hver dag, og hver dag blir det litt bedre."
+        },
+        "values": {
+            "title": "Dette er viktig for oss",
+            "free": {
+                "title": "Det koster ingenting å bidra",
+                "text": "Ingen avgift, intet medlemskap, ingen søknad om opptak. Alle som vil hjelpe, er velkomne – et tips, en oversettelse eller en pull request er nok."
+            },
+            "ux": {
+                "title": "Brukervennlighet først",
+                "text": "Programvare skal ta arbeid fra deg, ikke skape det. Felt er forhåndsutfylt der det passer, veiene er korte, og det som kan ordnes automatisk, ordner systemet selv."
+            },
+            "data": {
+                "title": "Dataene dine tilhører deg",
+                "text": "OSERP kjører på din egen server. Databasestrukturen er åpen og kompatibel – du er ikke bundet til noen leverandør, heller ikke til oss."
+            },
+            "practice": {
+                "title": "Fra praksis",
+                "text": "Nesten hver eneste funksjon har oppstått fordi en ekte bedrift trengte den: ved arbeidsbenken, ved disken eller ved regnskapsførerens skrivebord."
+            },
+            "open": {
+                "title": "Åpent for alle",
+                "text": "Kildekoden ligger offentlig på GitHub. Alle kan se hvordan OSERP fungerer, tilpasse det og forbedre det."
+            }
+        },
+        "thanks": {
+            "title": "Takk",
+            "accountants": "Et ERP-system er bare så godt som regnskapet sitt. At regnskap, bank og kasse i OSERP i dag fungerer slik regnskapsførere forventer, kan vi først og fremst takke tre mennesker for:",
+            "accountantsDetail": "Med sin fagkunnskap, utallige spørsmål fra hverdagen og stor tålmodighet har de vist oss hva som virkelig betyr noe innen regnskap – fra splittede posteringer og samleposteringer via kassekontroll til purring og riktig satte mva-koder. Mange funksjoner ville ikke eksistert uten deres innspill, og enkelte feil ville vi aldri ha funnet uten deres kritiske blikk. Hjertelig takk for det.",
+            "yvonne": "Yvonne A. vil vi særlig takke for ideen om automatisk regnskapsføring ved innlesing av e-poster: Fakturaer som kommer inn på e-post, blir gjenkjent, lest av og gjort tilgjengelige som ferdige posteringsforslag. Ideen hennes har blitt en funksjon som sparer mye tid i hverdagen.",
+            "weronika": "Og så er det Weronika Marek. Svangerskapet hennes utløste et skikkelig innovasjonsløft: Det var startskuddet for utviklingen av Weroni, vår AI-kontorassistent – og det er ingen tilfeldighet at Weroni bærer navnet hennes. I dag svarer Weroni på spørsmål om systemet, analyserer data, gjenkjenner bilag og tar oppgaver av kontoret. Takk, Weronika!",
+            "kivitendo": "En spesiell takk går til Sven og Moritz, kjerneutviklerne av kivitendo, for mange års godt samarbeid. Det skal heller ikke endre seg under et nytt navn – døren vår står åpen, og vi setter pris på all videre utveksling.",
+            "vehicleScanner": "Alle som bruker LxCars, kjenner den: vognkortskanneren (Fahrzeugschein-Scanner) fra Autosiastik Software GmbH i Kaltenkirchen, utviklet av Rasmus Wachsmuth. Ett bilde av vognkortet er nok, så står eier, kjøretøy og nøkkelnumre pent i skjemaet – i stedet for å måtte tastes møysommelig inn for hånd. En stor takk og mye ros går til Rasmus Wachsmuth, Dennis Sonnwald og Domenic Marchowskie for det flotte samarbeidet og en tjeneste som sparer verkstedene tid hver eneste dag.",
+            "origins": "Vår takk går også til de mange andre utviklerne av SQL-Ledger, Lx-Office og kivitendo. Deres mangeårige arbeid er databasefundamentet som også OSERP står på. Uten dem ville ikke dette prosjektet eksistert.",
+            "switzerland": "Og selvsagt går det også hjertelige hilsener til Sveits – til revamp-it i Zürich. Teamet har selv brukt kivitendo siden 2007, har vært premiumpartner i prosjektet siden 2015 og har fått «Kivitendo Modus Schweiz» inn i hovedkoden, slik at også sveitsiske bedrifter kan føre regnskap etter sine egne regler. Grüezi og merci vielmal!"
+        },
+        "team": {
+            "title": "Utvikling",
+            "text": "Bak OSERP står et stort team av utviklere, brukere og fagfolk som jobber med programvaren hver dag og kjenner bedriftene som bruker den. Kjernen i utviklingen består av:"
+        },
+        "contribute": {
+            "title": "Bli med",
+            "intro": "OSERP lever av at folk bidrar med kunnskapen sin. Er du utvikler og har lyst på et ERP-system som føles moderne? Kjenner du en bransje der arbeidsflytene ennå mangler? Da har du kommet til rett sted – helt uten inngangspenger.",
+            "ways": {
+                "code": {
+                    "title": "Programmering",
+                    "text": "Rett feil, bygg funksjoner, gjør arbeidsflyter raskere – med Vue 3, Vuetify, PHP 8 og PostgreSQL. Logikken ligger i databasen, brukergrensesnittet er slankt."
+                },
+                "translate": {
+                    "title": "Oversettelse",
+                    "text": "OSERP snakker 21 språk. Folk med språket som morsmål som går gjennom og forbedrer tekstene, er til enorm hjelp for oss."
+                },
+                "expertise": {
+                    "title": "Del fagkunnskap",
+                    "text": "Regnskapsførere, verksmestere, forhandlere, håndverkere: Forklar oss arbeidsflytene dine. Gode idéer blir til funksjoner hos oss."
+                },
+                "test": {
+                    "title": "Test og meld fra om feil",
+                    "text": "Prøv OSERP i demoen og si fra om det som ikke fungerer. Hver tilbakemelding gjør programvaren bedre for alle."
+                },
+                "docs": {
+                    "title": "Dokumenter",
+                    "text": "Håndboken ligger som Markdown i prosjektet. Hvert tillegg hjelper nye brukere i gang."
+                }
+            },
+            "howto": "Det er enkelt å komme i gang: Fork prosjektet på GitHub, gjør endringen din og opprett en pull request. Retningslinjene for programmering ligger i prosjektet under dev/programmierstil-richtlinien.md. Spørsmål er alltid velkomne – helst direkte som en issue på GitHub.",
+            "github": "Kildekode på GitHub",
+            "website": "Nettside",
+            "demo": "Live-demo",
+            "docs": "Dokumentasjon",
+            "closing": "Ingen avgift. Ingen søknad om opptak. Bare gleden ved god, fri programvare – vi gleder oss til å høre fra deg."
+        }
+    }
+}

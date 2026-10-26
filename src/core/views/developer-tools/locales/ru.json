@@ -302,7 +302,20 @@
             "typeBug": "Ошибка",
             "typeFeature": "Функция",
             "typeTask": "Задача",
-            "typeImprovement": "Улучшение"
+            "typeImprovement": "Улучшение",
+            "attachments": "Вложения",
+            "attachFile": "Прикрепить файл",
+            "attachHint": "Вставьте скриншот через Ctrl+V или перетащите файлы сюда",
+            "dropHere": "Отпустите файлы здесь",
+            "fileTooLarge": "\"{name}\" больше {size} и не был прикреплён",
+            "uploadFailed": "Не удалось загрузить \"{name}\"",
+            "download": "Скачать",
+            "confirmDeleteAttachment": "Действительно удалить вложение \"{name}\"?",
+            "deleteTicket": "Удалить тикет",
+            "confirmDeleteMany": "Действительно удалить тикеты ({count})? Комментарии и вложения также будут удалены.",
+            "selected": "Выбрано: {count}",
+            "clearSelection": "Снять выделение",
+            "deleted": "Удалено тикетов: {count}"
         },
         "autoTest": {
             "title": "Автоматические тесты",

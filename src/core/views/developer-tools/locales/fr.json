@@ -302,7 +302,20 @@
             "typeBug": "Bug",
             "typeFeature": "Fonctionnalite",
             "typeTask": "Tache",
-            "typeImprovement": "Amelioration"
+            "typeImprovement": "Amelioration",
+            "attachments": "Pièces jointes",
+            "attachFile": "Joindre un fichier",
+            "attachHint": "Collez une capture d'écran avec Ctrl+V ou glissez des fichiers ici",
+            "dropHere": "Déposez les fichiers ici",
+            "fileTooLarge": "\"{name}\" dépasse {size} et n'a pas été joint",
+            "uploadFailed": "\"{name}\" n'a pas pu être envoyé",
+            "download": "Télécharger",
+            "confirmDeleteAttachment": "Voulez-vous vraiment supprimer la pièce jointe \"{name}\" ?",
+            "deleteTicket": "Supprimer le ticket",
+            "confirmDeleteMany": "Voulez-vous vraiment supprimer {count} tickets ? Les commentaires et pièces jointes seront également supprimés.",
+            "selected": "{count} sélectionné(s)",
+            "clearSelection": "Annuler la sélection",
+            "deleted": "Ticket supprimé | {count} tickets supprimés"
         },
         "autoTest": {
             "title": "Tests automatiques",

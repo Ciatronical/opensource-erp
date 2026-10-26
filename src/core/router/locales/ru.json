@@ -56,6 +56,7 @@
         "mechanicOrder": "/mekhanik/zakaz",
         "mechanicCar": "/mekhanik/avto",
         "privacy": "/konfidentsialnost",
+        "about": "/o-programme",
         "dataDeletion": "/udalenie-dannykh",
         "tafel": "/doska-obyavlenii/upravlenie",
         "newArticle": "/tovar/novyi",

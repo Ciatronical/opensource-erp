@@ -14,6 +14,7 @@
                     <v-tab v-if="oserp.isLxCars()" value="vehicle">{{ t('SearchView.tabs.vehicle') }}</v-tab>
                     <v-tab value="article">{{ t('SearchView.tabs.article') }}</v-tab>
                     <v-tab value="invoice">{{ t('SearchView.tabs.invoice') }}</v-tab>
+                    <v-tab value="credit_note">{{ t('SearchView.tabs.credit_note') }}</v-tab>
                     <v-tab value="purchase_invoice">{{ t('SearchView.tabs.purchase_invoice') }}</v-tab>
                     <v-tab value="quotation">{{ t('SearchView.tabs.quotation') }}</v-tab>
                     <v-tab value="order">{{ t('SearchView.tabs.order') }}</v-tab>
@@ -281,7 +282,21 @@
                         </template>
 
                         <template #item.doc_status="{ item }">
+                            <!-- Storno: Stornobeleg bzw. stornierte Rechnung, Gegenbeleg im Tooltip
+                                 (die Tabelle ist bei 1366 px schon voll) -->
                             <v-chip
+                                v-if="item.doc_status === 'storno' || item.doc_status === 'cancelled'"
+                                color="error"
+                                variant="tonal"
+                                size="small"
+                                :title="item.storno_ref_number
+                                    ? t(`SearchView.document_table.status_${item.doc_status}_ref`, { number: item.storno_ref_number })
+                                    : undefined"
+                            >
+                                {{ t(`SearchView.document_table.status_${item.doc_status}`) }}
+                            </v-chip>
+                            <v-chip
+                                v-else
                                 :color="item.doc_status === 'open' ? 'warning' : 'success'"
                                 variant="tonal"
                                 size="small"
@@ -604,7 +619,7 @@ const props = defineProps({
 // ──────────────────────────────────────────
 const activeTab = ref('customer_vendor');
 
-const documentTypes = ['invoice', 'purchase_invoice', 'quotation', 'order', 'purchase_order', 'delivery_order'];
+const documentTypes = ['invoice', 'credit_note', 'purchase_invoice', 'quotation', 'order', 'purchase_order', 'delivery_order'];
 
 /**
  * Prüft ob der aktive Tab ein Dokument-Tab ist
@@ -994,6 +1009,7 @@ const hasDocSearchCriteria = computed(() => {
  */
 const fakturaRouteMap = {
     invoice: 'faktura-invoice-view',
+    credit_note: 'faktura-credit-note-view',
     purchase_invoice: 'faktura-invoice-view',
     quotation: 'faktura-quotation-view',
     order: 'faktura-order-view',
@@ -1232,7 +1248,7 @@ const docSummary = computed(() => {
 // ──────────────────────────────────────────
 // Drucken / PDF / Versand aus der Trefferliste
 // ──────────────────────────────────────────
-const printableTypes = ['invoice', 'quotation', 'order', 'purchase_order', 'delivery_order'];
+const printableTypes = ['invoice', 'credit_note', 'quotation', 'order', 'purchase_order', 'delivery_order'];
 const isPrintableTab = computed(() => printableTypes.includes(activeTab.value));
 
 const docSelected = ref([]);          // IDs der markierten Belege
@@ -1589,6 +1605,7 @@ function formatAmount(value) {
  */
 const docTypeMap = {
     invoice: 'invoice',
+    credit_note: 'credit_note',
     purchase_invoice: 'purchase_invoice',
     quotation: 'quotation',
     order: 'order',

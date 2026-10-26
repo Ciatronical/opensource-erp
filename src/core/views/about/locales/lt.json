@@ -1,0 +1,84 @@
+{
+    "AboutView": {
+        "title": "Apie OSERP",
+        "subtitle": "OpensourceERP – laisva, atvira ir sukurta iš praktikos praktikai",
+        "history": {
+            "title": "Kaip atsirado OSERP",
+            "roots": "OSERP gimė ne ant braižybos lentos, o tikrų įmonių kasdieniame darbe. Daugelį metų dirbome su kivitendo ir rašėme jai plėtinius – CRM, LxCars automobilių servisams, telefonijos, el. pašto ir WhatsApp integracijas. Šį darbą dirbome mielai, juo atvirai dalijomės ir taip palengvinome kasdienybę daugeliui naudotojų – ir iki šiol jaučiamės šios bendruomenės dalimi.",
+            "motivation": "Laikui bėgant augo noras, kurio vien plėtiniais nebebuvo galima įgyvendinti: moderni naudotojo sąsaja, atitinkanti naujausią technikos lygį, su novatorišku valdymu ir tikru dirbtinio intelekto palaikymu. ERP sistema turėtų būti tokia pat lengvai valdoma kaip bet kuri gera žiniatinklio programa – greita, aiški ir suprantama be mokymų, tiek prie darbo stalo, tiek telefone. Todėl naudotojo sąsają sukūrėme iš naujo, nuo pat pagrindų, ir rezultatui suteikėme savą pavadinimą: OpensourceERP, trumpai OSERP. Tai nėra atotrūkis nuo kivitendo – OSERP išaugo iš šios bendruomenės.",
+            "ai": "Mums dirbtinis intelektas – ne madingas žodis, o kasdienio darbo įrankis: sąskaitos iš el. pašto dėžutės atpažįstamos ir paruošiamos kaip įrašų pasiūlymai, Weroni tikrina ekspertizių aktus ir rengia tekstus klientams bei draudikams, siūlomos pozicijos ir pardavimo tekstai, o dokumentams galima tiesiog užduoti klausimus. Dirbtinis intelektas teikia pasiūlymus – sprendžia visada žmogus.",
+            "compatible": "Viena mums nuo pat pradžių buvo svarbu: niekas neturi palikti savo duomenų. OSERP dirba su ta pačia duomenų bazės struktūra kaip kivitendo. Klientai, prekės, dokumentai ir įrašai lieka ten, kur yra; savo plėtinius laikome atskirose lentelėse, užuot keitę svetimas. Kas nori pereiti, tiesiog pasiima visą savo istoriją.",
+            "today": "Šiandien iš kelių plėtinių išaugo visavertė ERP sistema: sąskaitų išrašymas, buhalterinė apskaita su PVM deklaracijomis, bankas ir kasa, skolų priminimai, sandėlis, klientų valdymas su kontaktų istorija, el. paštas, WhatsApp ir telefonija, kalendorius, internetinė parduotuvė, autoserviso modulis ir dar daug kitų dalykų – 21 kalba. Įmonės su ja dirba kasdien, ir kasdien ji tampa šiek tiek geresnė."
+        },
+        "values": {
+            "title": "Kas mums svarbu",
+            "free": {
+                "title": "Dalyvavimas nemokamas",
+                "text": "Jokio mokesčio, jokios narystės, jokio stojimo prašymo. Kiekvienas, norintis padėti, yra laukiamas – pakanka patarimo, vertimo ar pull request."
+            },
+            "ux": {
+                "title": "Patogumas pirmiausia",
+                "text": "Programinė įranga turi palengvinti darbą, o ne jį kurti. Laukai užpildomi iš anksto, kur tai prasminga, keliai trumpi, o tai, ką galima atlikti automatiškai, sistema atlieka pati."
+            },
+            "data": {
+                "title": "Jūsų duomenys priklauso Jums",
+                "text": "OSERP veikia Jūsų pačių serveryje. Duomenų bazės struktūra atvira ir suderinama – Jūs nesate susietas su jokiu tiekėju, net ir su mumis."
+            },
+            "practice": {
+                "title": "Iš praktikos",
+                "text": "Beveik kiekviena funkcija atsirado todėl, kad jos prireikė tikrai įmonei: prie darbastalio, prie prekystalio ar prie buhalterio stalo."
+            },
+            "open": {
+                "title": "Atvira visiems",
+                "text": "Pirminis kodas viešai prieinamas GitHub. Kiekvienas gali pasiskaityti, kaip veikia OSERP, jį pritaikyti ir patobulinti."
+            }
+        },
+        "thanks": {
+            "title": "Ačiū",
+            "accountants": "ERP sistema yra tokia gera, kokia gera yra jos apskaita. Tai, kad apskaita, bankas ir kasa OSERP šiandien veikia taip, kaip tikisi buhalteriai, pirmiausia esame skolingi trims žmonėms:",
+            "accountantsDetail": "Savo profesinėmis žiniomis, begale klausimų iš kasdienės praktikos ir didele kantrybe jie mums parodė, kas apskaitoje iš tikrųjų svarbu – nuo išskaidytų ir suvestinių įrašų iki kasos patikrinimo, skolų priminimų ir teisingai nustatytų mokesčių kodų. Daugelio funkcijų be jų pasiūlymų nebūtų, o kai kurių klaidų be jų atidaus žvilgsnio niekada nebūtume radę. Už tai – nuoširdus ačiū.",
+            "yvonne": "Ypatinga padėka – Yvonne A. – už idėją automatizuoti buhalterinę apskaitą nuskaitant el. laiškus: el. paštu gaunamos sąskaitos atpažįstamos, nuskaitomos ir pateikiamos kaip paruoštas įrašo pasiūlymas. Iš jos idėjos išaugo funkcija, kuri kasdieniame darbe sutaupo daug laiko.",
+            "weronika": "Ir dar yra Weronika Marek. Jos nėštumas sukėlė tikrą inovacijų proveržį: jis tapo postūmiu sukurti Weroni, mūsų dirbtinio intelekto biuro darbuotoją, – ir neatsitiktinai Weroni vadinasi jos vardu. Šiandien Weroni atsako į klausimus apie sistemą, analizuoja duomenis, atpažįsta dokumentus ir perima dalį biuro užduočių. Ačiū, Weronika!",
+            "kivitendo": "Ypatinga padėka – pagrindiniams kivitendo kūrėjams Sven ir Moritz – už ilgametį gerą bendradarbiavimą. Tai nepasikeis ir su nauju pavadinimu – mūsų durys atviros, ir džiaugsimės kiekvienu tolesniu bendravimu.",
+            "vehicleScanner": "Kiekvienas LxCars naudotojas jį pažįsta: bendrovės Autosiastik Software GmbH (Kaltenkirchen) transporto priemonės registracijos liudijimo skeneris (Fahrzeugschein-Scanner), kurį sukūrė Rasmus Wachsmuth. Pakanka vienos registracijos liudijimo nuotraukos, ir savininkas, transporto priemonė bei kodų numeriai tvarkingai atsiranda formoje – užuot juos vargiai rinkus ranka. Didelė padėka ir daug pagyrų – Rasmus Wachsmuth, Dennis Sonnwald ir Domenic Marchowskie – už puikų bendradarbiavimą ir paslaugą, kuri kasdien taupo dirbtuvių laiką.",
+            "origins": "Mūsų padėka skirta ir daugeliui kitų SQL-Ledger, Lx-Office ir kivitendo kūrėjų. Jų ilgamečiu darbu remiasi duomenų bazės pamatas, ant kurio stovi ir OSERP. Be jų šio projekto nebūtų.",
+            "switzerland": "Žinoma, nuoširdžius linkėjimus siunčiame ir į Šveicariją – revamp-it komandai Ciūriche. Ši komanda pati naudoja kivitendo nuo 2007 metų, nuo 2015 metų yra projekto Premium partnerė ir į pagrindinį kodą įtraukė „Kivitendo Modus Schweiz“, kad ir Šveicarijos įmonės galėtų vesti apskaitą pagal savo taisykles. Grüezi ir merci vielmal!"
+        },
+        "team": {
+            "title": "Kūrimas",
+            "text": "OSERP kuria didelė komanda – programuotojai, naudotojai ir specialistai, kurie kasdien dirba su programine įranga ir pažįsta ją naudojančias įmones. Kūrimo branduolį sudaro:"
+        },
+        "contribute": {
+            "title": "Prisijunkite",
+            "intro": "OSERP gyvuoja todėl, kad žmonės dalijasi savo žiniomis. Esate kūrėjas ir norėtumėte dirbti su ERP sistema, kuri atrodo moderniai? Išmanote sritį, kurios darbo procesų dar trūksta? Tuomet atėjote į tinkamą vietą – visiškai be stojamojo mokesčio.",
+            "ways": {
+                "code": {
+                    "title": "Programavimas",
+                    "text": "Taisykite klaidas, kurkite funkcijas, spartinkite darbo procesus – su Vue 3, Vuetify, PHP 8 ir PostgreSQL. Logika yra duomenų bazėje, sąsaja lengva."
+                },
+                "translate": {
+                    "title": "Vertimas",
+                    "text": "OSERP kalba 21 kalba. Gimtakalbiai, tikrinantys ir tobulinantys tekstus, mums labai padeda."
+                },
+                "expertise": {
+                    "title": "Dalijimasis žiniomis",
+                    "text": "Buhalteriai, autoservisų meistrai, prekybininkai, amatininkai: paaiškinkite mums savo darbo procesus. Geros idėjos pas mus tampa funkcijomis."
+                },
+                "test": {
+                    "title": "Testavimas ir pranešimas apie klaidas",
+                    "text": "Išbandykite OSERP demonstracinėje versijoje ir praneškite, kas neveikia. Kiekvienas pranešimas padaro programinę įrangą geresnę visiems."
+                },
+                "docs": {
+                    "title": "Dokumentavimas",
+                    "text": "Vadovas projekte saugomas Markdown formatu. Kiekvienas papildymas padeda naujiems naudotojams pradėti."
+                }
+            },
+            "howto": "Pradėti paprasta: padarykite projekto fork GitHub, atlikite pakeitimą, pateikite pull request. Programavimo gairės yra projekte: dev/programmierstil-richtlinien.md. Klausimai visada laukiami – geriausia tiesiai kaip issue GitHub.",
+            "github": "Pirminis kodas GitHub",
+            "website": "Svetainė",
+            "demo": "Tiesioginė demonstracija",
+            "docs": "Dokumentacija",
+            "closing": "Jokio mokesčio. Jokio stojimo prašymo. Tik džiaugsmas dėl geros, laisvos programinės įrangos – laukiame Jūsų."
+        }
+    }
+}

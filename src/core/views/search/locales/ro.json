@@ -5,6 +5,7 @@
         "tabs": {
             "customer_vendor": "Kunde/Lieferant/Person",
             "invoice": "Rechnungen",
+            "credit_note": "Facturi de credit",
             "purchase_invoice": "Kreditorenrechnungen",
             "quotation": "Angebote",
             "order": "Aufträge",
@@ -50,7 +51,8 @@
             "amount_to": "Betrag bis",
             "status": "Status",
             "status_open": "Deschis",
-            "status_closed": "Închis"
+            "status_closed": "Închis",
+            "status_storno": "Stornat"
         },
         "document_table": {
             "document_number": "Dokumentnr.",
@@ -61,6 +63,10 @@
             "status": "Status",
             "status_open": "Deschis",
             "status_closed": "Închis",
+            "status_storno": "Stornare",
+            "status_cancelled": "Stornat",
+            "status_storno_ref": "Factura inițială {number}",
+            "status_cancelled_ref": "Document de stornare {number}",
             "created_at": "Erstellt am",
             "text_no_results": "Keine Dokumente gefunden."
         }

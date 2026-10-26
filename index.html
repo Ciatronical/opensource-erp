@@ -7,6 +7,16 @@
     <title>OpenSource ERP</title>
 
     <!--
+      Ein ERP gehört nicht in Suchmaschinen: weder die Loginseiten der
+      Installationen noch die öffentliche Seite „Über OSERP“. Deren Text steht
+      auf opensourceerp.dev (Feature-Katalog, docs/website-schnittstelle.md);
+      ohne noindex konkurrierten Demo und Kundeninstallationen mit der Website
+      um denselben Inhalt. Bewusst kein Disallow in einer robots.txt — dann
+      sähe die Suchmaschine das noindex nie.
+    -->
+    <meta name="robots" content="noindex, nofollow" />
+
+    <!--
       Reihenfolge der Vuetify-4-CSS-Layer festnageln.
 
       MUSS hier stehen und nicht in einer importierten CSS-Datei: Bei

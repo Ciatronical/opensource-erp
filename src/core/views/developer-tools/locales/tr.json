@@ -302,7 +302,20 @@
             "typeBug": "Bug",
             "typeFeature": "Feature",
             "typeTask": "Aufgabe",
-            "typeImprovement": "Verbesserung"
+            "typeImprovement": "Verbesserung",
+            "attachments": "Ekler",
+            "attachFile": "Dosya ekle",
+            "attachHint": "Ctrl+V ile ekran görüntüsü yapıştırın veya dosyaları buraya sürükleyin",
+            "dropHere": "Dosyaları buraya bırakın",
+            "fileTooLarge": "\"{name}\" {size} sınırını aşıyor ve eklenmedi",
+            "uploadFailed": "\"{name}\" yüklenemedi",
+            "download": "İndir",
+            "confirmDeleteAttachment": "\"{name}\" eki gerçekten silinsin mi?",
+            "deleteTicket": "Talebi sil",
+            "confirmDeleteMany": "{count} talep gerçekten silinsin mi? Yorumlar ve ekler de silinecek.",
+            "selected": "{count} seçildi",
+            "clearSelection": "Seçimi kaldır",
+            "deleted": "{count} talep silindi"
         },
         "autoTest": {
             "title": "Otomatik testler",

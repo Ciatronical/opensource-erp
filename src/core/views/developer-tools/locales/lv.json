@@ -302,7 +302,20 @@
             "typeBug": "Kļūda",
             "typeFeature": "Funkcija",
             "typeTask": "Uzdevums",
-            "typeImprovement": "Uzlabojums"
+            "typeImprovement": "Uzlabojums",
+            "attachments": "Pielikumi",
+            "attachFile": "Pievienot failu",
+            "attachHint": "Ielīmējiet ekrānuzņēmumu ar Ctrl+V vai velciet failus šeit",
+            "dropHere": "Nometiet failus šeit",
+            "fileTooLarge": "\"{name}\" ir lielāks par {size} un netika pievienots",
+            "uploadFailed": "Neizdevās augšupielādēt \"{name}\"",
+            "download": "Lejupielādēt",
+            "confirmDeleteAttachment": "Vai tiešām dzēst pielikumu \"{name}\"?",
+            "deleteTicket": "Dzēst pieteikumu",
+            "confirmDeleteMany": "Vai tiešām dzēst pieteikumus ({count})? Tiks dzēsti arī komentāri un pielikumi.",
+            "selected": "Atlasīti: {count}",
+            "clearSelection": "Notīrīt atlasi",
+            "deleted": "Dzēsti pieteikumi: {count}"
         },
         "autoTest": {
             "title": "Automatische Tests",

@@ -1,0 +1,84 @@
+{
+    "AboutView": {
+        "title": "OSERP-ist",
+        "subtitle": "OpensourceERP – vaba, avatud ning praktikast praktikale",
+        "history": {
+            "title": "Kuidas OSERP sündis",
+            "roots": "OSERP ei sündinud joonestuslaual, vaid päris ettevõtete igapäevatöös. Aastaid töötasime kivitendoga ja kirjutasime sellele laiendusi – CRM-i, LxCarsi autoremonditöökodadele, ühendused telefonisüsteemide, e-posti ja WhatsAppiga. Tegime seda tööd rõõmuga, jagasime seda avalikult ja muutsime nii paljude kasutajate igapäevaelu lihtsamaks – ning tunneme end tänaseni selle kogukonna osana.",
+            "motivation": "Aja jooksul kasvas soov, mida ainult laiendustega enam täita ei saanud: kaasaegne ja tehniliselt uusimal tasemel kasutajaliides, uuenduslik kasutusviis ja tõeline tehisintellekti tugi. ERP-süsteem peaks olema sama lihtsalt kasutatav kui iga hea veebirakendus – kiire, selge ja ilma koolituseta arusaadav, nii kirjutuslaua taga kui ka telefonis. Nii ehitasime kasutajaliidese täiesti uuesti üles ja andsime tulemusele oma nime: OpensourceERP, lühidalt OSERP. See ei ole lahkulöömine kivitendost – OSERP on kasvanud välja just sellest kogukonnast.",
+            "ai": "Meie jaoks ei ole tehisintellekt moesõna, vaid igapäevatöö tööriist: e-postkasti saabunud arved tuvastatakse ja neist valmistatakse ette kandeettepanekud, Weroni kontrollib ekspertiisiaruandeid ning koostab tekste klientidele ja kindlustusseltsidele, dokumendiridu ja müügitekste pakutakse välja ning dokumentidele saab lihtsalt küsimusi esitada. Tehisintellekt teeb ettepanekuid – otsuse langetab alati inimene.",
+            "compatible": "Üks asi oli meile algusest peale oluline: keegi ei tohiks olla sunnitud oma andmeid maha jätma. OSERP kasutab sama andmebaasistruktuuri kui kivitendo. Kliendid, artiklid, dokumendid ja kanded jäävad sinna, kus nad on; oma laiendused paigutame eraldi tabelitesse, selle asemel et olemasolevaid muuta. Kes soovib üle minna, võtab lihtsalt kogu oma ajaloo kaasa.",
+            "today": "Tänaseks on mõnest laiendusest kasvanud terviklik ERP-süsteem: arveldus, raamatupidamine koos käibedeklaratsiooniga, pank ja kassa, maksemeeldetuletused, ladu, kliendihaldus koos kontaktiajalooga, e-post, WhatsApp ja telefoniside, kalender, e-pood, töökoja moodul ja palju muud – 21 keeles. Ettevõtted töötavad sellega iga päev ning iga päevaga muutub see natuke paremaks."
+        },
+        "values": {
+            "title": "Mis on meile oluline",
+            "free": {
+                "title": "Osalemine on tasuta",
+                "text": "Ei mingit tasu, liikmesust ega vastuvõtutaotlust. Kõik, kes soovivad aidata, on teretulnud – piisab vihjest, tõlkest või pull requestist."
+            },
+            "ux": {
+                "title": "Kasutajasõbralikkus ennekõike",
+                "text": "Tarkvara peab tööd vähendama, mitte juurde tekitama. Väljad on eeltäidetud, kus see on mõistlik, teed on lühikesed ja mida saab teha automaatselt, teeb süsteem ise."
+            },
+            "data": {
+                "title": "Teie andmed kuuluvad teile",
+                "text": "OSERP töötab teie enda serveris. Andmebaasistruktuur on avatud ja ühilduv – te ei ole seotud ühegi teenusepakkujaga, isegi mitte meiega."
+            },
+            "practice": {
+                "title": "Praktikast",
+                "text": "Peaaegu iga funktsioon on loodud seetõttu, et päris ettevõte seda vajas: tööpingi ääres, leti taga või raamatupidaja kirjutuslaua taga."
+            },
+            "open": {
+                "title": "Avatud kõigile",
+                "text": "Lähtekood on avalikult GitHubis. Igaüks saab vaadata, kuidas OSERP töötab, seda kohandada ja täiustada."
+            }
+        },
+        "thanks": {
+            "title": "Aitäh",
+            "accountants": "ERP-süsteem on täpselt nii hea kui tema raamatupidamine. Et raamatupidamine, pank ja kassa töötavad OSERP-is täna nii, nagu raamatupidajad ootavad, on eelkõige kolme inimese teene:",
+            "accountantsDetail": "Oma erialateadmiste, lugematute igapäevaste küsimuste ja suure kannatlikkusega näitasid nad meile, mis raamatupidamises tegelikult oluline on – jagatud kannetest ja koondkannetest kassakontrollini, maksemeeldetuletustest õigesti määratud maksukoodideni. Paljusid funktsioone ei oleks ilma nende ettepanekuteta olemas ning mõnda viga poleks me ilma nende tähelepaneliku pilguta kunagi leidnud. Selle eest südamlik tänu.",
+            "yvonne": "Erilist tänu väärib Yvonne A. idee eest automatiseerida raamatupidamine e-kirjade sisselugemise abil: e-postiga saabuvad arved tuvastatakse, loetakse välja ja esitatakse valmis kandeettepanekuna. Tema ideest on saanud funktsioon, mis säästab igapäevatöös palju aega.",
+            "weronika": "Ja siis on veel Weronika Marek. Tema rasedus andis tõelise innovatsioonitõuke: see sai ajendiks arendada Weronit, meie AI kontoriassistenti – ja pole juhus, et Weroni kannab tema nime. Täna vastab Weroni küsimustele süsteemi kohta, analüüsib andmeid, tuvastab dokumente ja võtab kontorilt töid üle. Aitäh, Weronika!",
+            "kivitendo": "Eriline tänu Svenile ja Moritzile, kivitendo põhiarendajatele, aastatepikkuse hea koostöö eest. Ka uue nime all ei pea see muutuma – meie uks on avatud ja me rõõmustame iga edasise mõttevahetuse üle.",
+            "vehicleScanner": "Igaüks, kes kasutab LxCarsi, tunneb seda: Kaltenkircheni ettevõtte Autosiastik Software GmbH registreerimistunnistuse skanner (Fahrzeugschein-Scanner), mille on välja töötanud Rasmus Wachsmuth. Piisab ühest fotost registreerimistunnistusest ning omanik, sõiduk ja koodinumbrid on korrektselt vormil – selle asemel, et neid vaevaliselt käsitsi sisse trükkida. Suurt tänu ja kiitust väärivad Rasmus Wachsmuth, Dennis Sonnwald ja Domenic Marchowskie suurepärase koostöö ning teenuse eest, mis säästab töökodade aega iga päev.",
+            "origins": "Täname ka SQL-Ledgeri, Lx-Office’i ja kivitendo paljusid teisi arendajaid. Nende aastatepikkusele tööle toetub andmebaasivundament, millel seisab ka OSERP. Ilma nendeta poleks seda projekti olemas.",
+            "switzerland": "Loomulikult saadame südamlikud tervitused ka Šveitsi – Zürichis tegutsevale ettevõttele revamp-it. Meeskond on ise kivitendot kasutanud alates 2007. aastast, on olnud projekti premium-partner alates 2015. aastast ja toonud „Kivitendo Modus Schweiz“ põhikoodi, et ka Šveitsi ettevõtted saaksid raamatupidamist pidada oma reeglite järgi. Grüezi ja merci vielmal!"
+        },
+        "team": {
+            "title": "Arendus",
+            "text": "OSERPi taga on suur meeskond arendajatest, kasutajatest ja asjatundjatest, kes töötavad tarkvaraga iga päev ja tunnevad ettevõtteid, kes seda kasutavad. Arenduse tuumiku moodustavad:"
+        },
+        "contribute": {
+            "title": "Lööge kaasa",
+            "intro": "OSERP elab sellest, et inimesed panustavad oma teadmistega. Olete arendaja ja tahaksite töötada ERP-süsteemiga, mis tundub kaasaegne? Tunnete mõnda valdkonda, mille tööprotsessid veel puuduvad? Siis olete õiges kohas – ilma igasuguse sisseastumistasuta.",
+            "ways": {
+                "code": {
+                    "title": "Programmeerimine",
+                    "text": "Parandage vigu, looge funktsioone, kiirendage tööprotsesse – tehnoloogiatega Vue 3, Vuetify, PHP 8 ja PostgreSQL. Loogika asub andmebaasis, kasutajaliides on kerge."
+                },
+                "translate": {
+                    "title": "Tõlkimine",
+                    "text": "OSERP räägib 21 keelt. Emakeelekõnelejad, kes tekste üle vaatavad ja parandavad, aitavad meid tohutult."
+                },
+                "expertise": {
+                    "title": "Teadmiste jagamine",
+                    "text": "Raamatupidajad, töökojameistrid, kaupmehed, käsitöölised: selgitage meile oma tööprotsesse. Head ideed saavad meil funktsioonideks."
+                },
+                "test": {
+                    "title": "Testimine ja vigadest teatamine",
+                    "text": "Proovige OSERP-i demos ja andke teada, mis ei toimi. Iga teade muudab tarkvara kõigi jaoks paremaks."
+                },
+                "docs": {
+                    "title": "Dokumenteerimine",
+                    "text": "Käsiraamat on projektis Markdown-vormingus. Iga täiendus aitab uutel kasutajatel alustada."
+                }
+            },
+            "howto": "Alustamine on lihtne: tehke projektist GitHubis fork, tehke oma muudatus ja esitage pull request. Programmeerimisjuhised leiate projektist failist dev/programmierstil-richtlinien.md. Küsimused on alati teretulnud – kõige parem otse GitHubis issue kujul.",
+            "github": "Lähtekood GitHubis",
+            "website": "Veebileht",
+            "demo": "Live-demo",
+            "docs": "Dokumentatsioon",
+            "closing": "Ei mingit tasu. Ei mingit vastuvõtutaotlust. Ainult rõõm heast, vabast tarkvarast – ootame teid rõõmuga."
+        }
+    }
+}

@@ -1285,6 +1285,23 @@ CREATE TABLE ticket_label_assignments (
 
 COMMENT ON TABLE ticket_label_assignments IS 'Zuordnung von Labels zu Tickets (n:m)';
 
+CREATE TABLE ticket_attachments (
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ticket_id integer NOT NULL,
+    comment_id integer,
+    filename text NOT NULL,
+    mime_type text NOT NULL DEFAULT 'application/octet-stream',
+    file_size integer NOT NULL DEFAULT 0,
+    stored_path text NOT NULL,
+    employee_id integer,
+    itime timestamp without time zone DEFAULT now()
+);
+
+CREATE INDEX idx_ticket_attachments_ticket_id ON ticket_attachments(ticket_id);
+
+COMMENT ON TABLE ticket_attachments IS 'Dateien und Screenshots zu Tickets, optional an einem Kommentar';
+COMMENT ON COLUMN ticket_attachments.stored_path IS 'Pfad relativ zum Datenverzeichnis des Mandanten (tickets/<ticket_id>/…)';
+
 -- ============================================================================
 -- PFLICHTENHEFT STAMMDATEN (falls leer)
 -- ============================================================================
