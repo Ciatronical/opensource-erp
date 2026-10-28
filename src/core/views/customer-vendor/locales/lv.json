@@ -228,7 +228,18 @@
             "portalNoTemplate": "WhatsApp trūkst apstiprinātas veidnes “Klienta konta aktivizācija” (uzņēmuma konfigurācija → WhatsApp veidnes). Alternatīvi sūtiet pa e-pastu.",
             "portalNoEmail": "Klientam nav e-pasta adreses.",
             "portalSourceStaff": "no klienta kartītes",
-            "portalSourcePortal": "klienta pieprasīts"
+            "portalSourcePortal": "klienta pieprasīts",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "E-pasta sūtīšana nav iestatīta (uzņēmuma konfigurācija → e-pasta klients, izejošais pasts).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp nav iestatīts (uzņēmuma konfigurācija → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "WhatsApp trūkst apstiprinātas veidnes „Aktivizēt klienta kontu“ (uzņēmuma konfigurācija → WhatsApp veidnes).",
+                "ACTIVATION_NO_EMAIL": "Klientam nav derīgas e-pasta adreses.",
+                "ACTIVATION_NO_PHONE": "Klientam nav tālruņa numura.",
+                "ACTIVATION_HAS_ACCOUNT": "Klientam jau ir piekļuve klienta kontam.",
+                "ACTIVATION_DISABLED": "Šī tīmekļa vietne nepiedāvā konta aktivizēšanu (uzņēmuma konfigurācija → klientu portāls, „Piedāvāt aktivizēšanu“).",
+                "WEBSITE_CONFIG_MISSING": "Tīmekļa vietnei nav tīmekļa adreses (uzņēmuma konfigurācija → klientu portāls).",
+                "ACTIVATION_NOT_SENT": "Ziņu neizdevās nosūtīt."
+            }
         },
         "actions": {
             "save": "Saglabāt",

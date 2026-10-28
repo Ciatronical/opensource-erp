@@ -228,7 +228,18 @@
             "portalNoTemplate": "WhatsApp 缺少“激活客户账户”类型的已批准模板（公司配置 → WhatsApp 模板）。也可改用电子邮件发送。",
             "portalNoEmail": "客户没有电子邮件地址。",
             "portalSourceStaff": "来自客户档案",
-            "portalSourcePortal": "由客户请求"
+            "portalSourcePortal": "由客户请求",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "邮件发送未设置（公司配置 → 邮件客户端，发件服务器）。",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp 未设置（公司配置 → WhatsApp）。",
+                "TEMPLATE_NOT_FOUND": "WhatsApp 缺少“激活客户账户”类型的已批准模板（公司配置 → WhatsApp 模板）。",
+                "ACTIVATION_NO_EMAIL": "该客户没有有效的电子邮件地址。",
+                "ACTIVATION_NO_PHONE": "该客户没有电话号码。",
+                "ACTIVATION_HAS_ACCOUNT": "该客户已拥有客户账户的访问权限。",
+                "ACTIVATION_DISABLED": "此网站不提供账户激活（公司配置 → 客户门户，“提供激活”）。",
+                "WEBSITE_CONFIG_MISSING": "该网站没有网址（公司配置 → 客户门户）。",
+                "ACTIVATION_NOT_SENT": "消息无法发送。"
+            }
         },
         "actions": {
             "save": "保存",

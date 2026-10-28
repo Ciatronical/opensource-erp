@@ -228,7 +228,18 @@
             "portalNoTemplate": "Para WhatsApp falta una plantilla aprobada del tipo «Activar cuenta de cliente» (configuración de empresa → plantillas de WhatsApp). Alternativamente envíe por correo.",
             "portalNoEmail": "El cliente no tiene dirección de correo.",
             "portalSourceStaff": "desde la ficha del cliente",
-            "portalSourcePortal": "solicitado por el cliente"
+            "portalSourcePortal": "solicitado por el cliente",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "El envío de correo no está configurado (configuración de la empresa → cliente de correo, correo saliente).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp no está configurado (configuración de la empresa → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "WhatsApp necesita una plantilla aprobada del tipo «Activar cuenta de cliente» (configuración de la empresa → plantillas de WhatsApp).",
+                "ACTIVATION_NO_EMAIL": "El cliente no tiene una dirección de correo válida.",
+                "ACTIVATION_NO_PHONE": "El cliente no tiene número de teléfono.",
+                "ACTIVATION_HAS_ACCOUNT": "El cliente ya tiene acceso a la cuenta de cliente.",
+                "ACTIVATION_DISABLED": "Este sitio web no ofrece la activación de cuenta (configuración de la empresa → portal de clientes, «Ofrecer activación»).",
+                "WEBSITE_CONFIG_MISSING": "El sitio web no tiene dirección web (configuración de la empresa → portal de clientes).",
+                "ACTIVATION_NOT_SENT": "No se pudo enviar el mensaje."
+            }
         },
         "actions": {
             "save": "Guardar",

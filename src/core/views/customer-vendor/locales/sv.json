@@ -228,7 +228,18 @@
             "portalNoTemplate": "WhatsApp saknar en godkänd mall av typen ”Aktivera kundkonto” (företagskonfiguration → WhatsApp-mallar). Skicka annars via e-post.",
             "portalNoEmail": "Kunden har ingen e-postadress.",
             "portalSourceStaff": "från kundkortet",
-            "portalSourcePortal": "begärd av kunden"
+            "portalSourcePortal": "begärd av kunden",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "E-postutskick är inte inställt (företagskonfiguration → e-postklient, utgående post).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp är inte inställt (företagskonfiguration → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "WhatsApp saknar en godkänd mall av typen ”Aktivera kundkonto” (företagskonfiguration → WhatsApp-mallar).",
+                "ACTIVATION_NO_EMAIL": "Kunden har ingen giltig e-postadress.",
+                "ACTIVATION_NO_PHONE": "Kunden har inget telefonnummer.",
+                "ACTIVATION_HAS_ACCOUNT": "Kunden har redan åtkomst till kundkontot.",
+                "ACTIVATION_DISABLED": "Denna webbplats erbjuder inte kontoaktivering (företagskonfiguration → kundportal, ”Erbjud aktivering”).",
+                "WEBSITE_CONFIG_MISSING": "Webbplatsen har ingen webbadress (företagskonfiguration → kundportal).",
+                "ACTIVATION_NOT_SENT": "Meddelandet kunde inte skickas."
+            }
         },
         "actions": {
             "save": "Spara",

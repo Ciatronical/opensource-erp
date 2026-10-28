@@ -228,7 +228,18 @@
             "portalNoTemplate": "WhatsAppi jaoks puudub heakskiidetud mall tüüpi „Kliendikonto aktiveerimine“ (ettevõtte seadistus → WhatsAppi mallid). Alternatiivina saatke e-postiga.",
             "portalNoEmail": "Kliendil pole e-posti aadressi.",
             "portalSourceStaff": "kliendikaardilt",
-            "portalSourcePortal": "kliendi taotletud"
+            "portalSourcePortal": "kliendi taotletud",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "E-kirjade saatmine pole seadistatud (ettevõtte seadistus → e-posti klient, väljaminev post).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp pole seadistatud (ettevõtte seadistus → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "WhatsAppi jaoks puudub kinnitatud mall tüüpi „Aktiveeri kliendikonto“ (ettevõtte seadistus → WhatsAppi mallid).",
+                "ACTIVATION_NO_EMAIL": "Kliendil pole kehtivat e-posti aadressi.",
+                "ACTIVATION_NO_PHONE": "Kliendil pole telefoninumbrit.",
+                "ACTIVATION_HAS_ACCOUNT": "Kliendil on juba ligipääs kliendikontole.",
+                "ACTIVATION_DISABLED": "See veebisait ei paku konto aktiveerimist (ettevõtte seadistus → kliendiportaal, „Paku aktiveerimist“).",
+                "WEBSITE_CONFIG_MISSING": "Veebisaidil pole veebiaadressi (ettevõtte seadistus → kliendiportaal).",
+                "ACTIVATION_NOT_SENT": "Sõnumit ei õnnestunud saata."
+            }
         },
         "actions": {
             "save": "Salvesta",

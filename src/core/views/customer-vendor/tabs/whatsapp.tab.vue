@@ -507,7 +507,7 @@ export default {
     customerName: { type: String, default: '' }
   },
   setup(props) {
-    const { t, locale } = useI18n()
+    const { t, te, locale } = useI18n()
     const router = useRouter()
     const route = useRoute()
     const oserp = oserpStore()
@@ -548,6 +548,20 @@ export default {
       }
     }
 
+    /**
+     * Lesbarer Satz zur Fehlerantwort des Versands: der Fehlercode steht in
+     * text und wird übersetzt (portalErrors.*); ohne Übersetzung der Wortlaut
+     * des Backends (debug, bei geworfenen ApiErrors payload), sonst der
+     * allgemeine Satz
+     */
+    function portalFehlerText(data) {
+      const code = String(data?.text || '')
+      const key = `CustomerVendorEditView.whatsapp.portalErrors.${code}`
+      if (code && te(key)) return t(key)
+      const wortlaut = data?.debug || (typeof data?.payload === 'string' ? data.payload : '')
+      return wortlaut || t('CustomerVendorEditView.whatsapp.portalSendError')
+    }
+
     async function portalSenden() {
       portal.sending = true
       try {
@@ -563,10 +577,10 @@ export default {
           portal.status = resp.data.payload?.status || portal.status
           if (portal.via === 'whatsapp') fetchMessages()
         } else {
-          toast.error(resp.data?.debug || resp.data?.text || t('CustomerVendorEditView.whatsapp.portalSendError'))
+          toast.error(portalFehlerText(resp.data))
         }
       } catch (e) {
-        toast.error(e?.response?.data?.debug || t('CustomerVendorEditView.whatsapp.portalSendError'))
+        toast.error(portalFehlerText(e?.response?.data))
       } finally {
         portal.sending = false
       }

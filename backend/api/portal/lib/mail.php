@@ -37,7 +37,7 @@ function portalMailer($db): array {
     if ('' === $host || '' === $benutzer || '' === $kennwort) {
         throw new ApiError(
             'EMAIL_NOT_CONFIGURED',
-            'Der Mailversand ist nicht eingerichtet (Einstellungen -> E-Mail)'
+            'Der Mailversand ist nicht eingerichtet (Firmenkonfiguration → E-Mail-Client, Postausgang)'
         );
     }
 

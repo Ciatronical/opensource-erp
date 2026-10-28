@@ -522,7 +522,9 @@ function getPortalActivationStatus($data) {
  * @param int $data['website_id'] Webseite, deren Seite der Link öffnet
  * @param string $data['via'] whatsapp (Vorgabe) oder email
  * @param string $data['phone'] Nummer für WhatsApp; leer = Nummer des Kundenstamms
- * @return void sent, via, error
+ * @return void via, status; bei Fehler text = Fehlercode (ACTIVATION_HAS_ACCOUNT, ACTIVATION_DISABLED,
+ *              ACTIVATION_NO_EMAIL, ACTIVATION_NO_PHONE, WEBSITE_CONFIG_MISSING, EMAIL_NOT_CONFIGURED,
+ *              WHATSAPP_NOT_CONFIGURED, TEMPLATE_NOT_FOUND, ACTIVATION_NOT_SENT)
  * @testdata {"customer_id": 1, "website_id": 1, "via": "whatsapp"}
  */
 function sendPortalActivation($data) {
@@ -552,7 +554,9 @@ function sendPortalActivation($data) {
         'staff'
     );
     if (!$ergebnis['sent']) {
-        resultInfo(false, 'ACTIVATION_NOT_SENT', null, $ergebnis['error'] ?: 'Die Nachricht konnte nicht versendet werden');
+        // text trägt den Fehlercode (EMAIL_NOT_CONFIGURED, WHATSAPP_NOT_CONFIGURED,
+        // TEMPLATE_NOT_FOUND …), die Kundenakte übersetzt ihn; debug den Wortlaut
+        resultInfo(false, $ergebnis['code'] ?: 'ACTIVATION_NOT_SENT', null, $ergebnis['error'] ?: 'Die Nachricht konnte nicht versendet werden');
         return;
     }
     resultInfo(true, 'ACTIVATION_SENT', ['via' => $ergebnis['via'], 'status' => activationStatus($db, $customerId)]);

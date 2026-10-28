@@ -223,7 +223,7 @@ function activationCustomer($db, int $customerId): array {
  * @param string $via whatsapp oder email
  * @param string $phone Nummer für WhatsApp (leer = Nummer des Kundenstamms)
  * @param string $source portal oder staff
- * @return array{uuid: string, sent: bool, via: string, error: string}
+ * @return array{uuid: string, sent: bool, via: string, error: string, code: string} code: Fehlercode bei sent=false
  * @throws ApiError WEBSITE_CONFIG_MISSING (keine base_url), ACTIVATION_NO_PHONE, ACTIVATION_NO_EMAIL
  */
 function activationSend($db, int $customerId, int $website, string $via, string $phone, string $source): array {
@@ -239,7 +239,7 @@ function activationSend($db, int $customerId, int $website, string $via, string 
         }
         $token = activationCreate($db, $customerId, $website, '', $source);
         $ergebnis = activationSendMail($db, $website, $kunde, $token);
-        return ['uuid' => $token, 'sent' => $ergebnis['sent'], 'via' => 'email', 'error' => $ergebnis['error']];
+        return ['uuid' => $token, 'sent' => $ergebnis['sent'], 'via' => 'email', 'error' => $ergebnis['error'], 'code' => $ergebnis['code']];
     }
 
     $digits = portalPhoneDigits($phone, portalCountryCode($db));
@@ -253,7 +253,7 @@ function activationSend($db, int $customerId, int $website, string $via, string 
 
     $token = activationCreate($db, $customerId, $website, $digits, $source);
     $ergebnis = activationSendWhatsApp($db, $digits, $kunde, $token, $customerId);
-    return ['uuid' => $token, 'sent' => $ergebnis['sent'], 'via' => 'whatsapp', 'error' => $ergebnis['error']];
+    return ['uuid' => $token, 'sent' => $ergebnis['sent'], 'via' => 'whatsapp', 'error' => $ergebnis['error'], 'code' => $ergebnis['code']];
 }
 
 /**
@@ -284,9 +284,13 @@ function activationSendWhatsApp($db, string $digits, array $kunde, string $token
 
     if (empty($ergebnis['success'])) {
         writeLog('[PORTAL] Freischaltung per WhatsApp nicht versendet: '.($ergebnis['error'] ?? ''), true, DLOG_WRN);
-        return ['sent' => false, 'error' => (string)($ergebnis['error'] ?? '')];
+        return [
+            'sent'  => false,
+            'error' => (string)($ergebnis['error'] ?? ''),
+            'code'  => (string)($ergebnis['code'] ?? '') ?: 'ACTIVATION_NOT_SENT',
+        ];
     }
-    return ['sent' => true, 'error' => ''];
+    return ['sent' => true, 'error' => '', 'code' => ''];
 }
 
 /**
@@ -296,7 +300,7 @@ function activationSendWhatsApp($db, string $digits, array $kunde, string $token
  * @param int $website Webseite
  * @param array $kunde aus activationCustomer()
  * @param string $token Kennung
- * @return array{sent: bool, error: string}
+ * @return array{sent: bool, error: string, code: string} code: Fehlercode für die Oberfläche (EMAIL_NOT_CONFIGURED …)
  */
 function activationSendMail($db, int $website, array $kunde, string $token): array {
     try {
@@ -312,10 +316,14 @@ function activationSendMail($db, int $website, array $kunde, string $token): arr
             $mailer['from'], $mailer['from_name'],
             [$kunde['email']], 'Ihr Zugang zum Kundenkonto', $html
         );
-        return ['sent' => true, 'error' => ''];
+        return ['sent' => true, 'error' => '', 'code' => ''];
     } catch (Exception $e) {
         writeLog('[PORTAL] Freischaltung per Mail nicht versendet: '.$e->getMessage(), true, DLOG_WRN);
-        return ['sent' => false, 'error' => $e->getMessage()];
+        return [
+            'sent'  => false,
+            'error' => $e->getMessage(),
+            'code'  => $e instanceof ApiError ? $e->getId() : 'ACTIVATION_NOT_SENT',
+        ];
     }
 }
 

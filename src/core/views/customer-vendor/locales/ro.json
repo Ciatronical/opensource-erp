@@ -228,7 +228,18 @@
             "portalNoTemplate": "Pentru WhatsApp lipsește un șablon aprobat de tip „Activare cont client” (configurare firmă → șabloane WhatsApp). Alternativ trimiteți prin e-mail.",
             "portalNoEmail": "Clientul nu are adresă de e-mail.",
             "portalSourceStaff": "din fișa clientului",
-            "portalSourcePortal": "solicitat de client"
+            "portalSourcePortal": "solicitat de client",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "Trimiterea e-mailurilor nu este configurată (configurația firmei → client e-mail, poștă trimisă).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp nu este configurat (configurația firmei → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "Pentru WhatsApp lipsește un șablon aprobat de tip „Activează contul de client” (configurația firmei → șabloane WhatsApp).",
+                "ACTIVATION_NO_EMAIL": "Clientul nu are o adresă de e-mail validă.",
+                "ACTIVATION_NO_PHONE": "Clientul nu are număr de telefon.",
+                "ACTIVATION_HAS_ACCOUNT": "Clientul are deja acces la contul de client.",
+                "ACTIVATION_DISABLED": "Acest site nu oferă activarea contului (configurația firmei → portal clienți, „Oferă activarea”).",
+                "WEBSITE_CONFIG_MISSING": "Site-ul nu are adresă web (configurația firmei → portal clienți).",
+                "ACTIVATION_NOT_SENT": "Mesajul nu a putut fi trimis."
+            }
         },
         "actions": {
             "save": "Salvare",

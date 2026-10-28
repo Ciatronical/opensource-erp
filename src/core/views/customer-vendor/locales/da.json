@@ -228,7 +228,18 @@
             "portalNoTemplate": "WhatsApp mangler en godkendt skabelon af typen “Aktivér kundekonto” (firmakonfiguration → WhatsApp-skabeloner). Send alternativt pr. e-mail.",
             "portalNoEmail": "Kunden har ingen e-mailadresse.",
             "portalSourceStaff": "fra kundekartoteket",
-            "portalSourcePortal": "anmodet af kunden"
+            "portalSourcePortal": "anmodet af kunden",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "Mailafsendelse er ikke sat op (firmakonfiguration → e-mailklient, udgående post).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp er ikke sat op (firmakonfiguration → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "WhatsApp mangler en godkendt skabelon af typen „Aktivér kundekonto“ (firmakonfiguration → WhatsApp-skabeloner).",
+                "ACTIVATION_NO_EMAIL": "Kunden har ingen gyldig e-mailadresse.",
+                "ACTIVATION_NO_PHONE": "Kunden har intet telefonnummer.",
+                "ACTIVATION_HAS_ACCOUNT": "Kunden har allerede adgang til kundekontoen.",
+                "ACTIVATION_DISABLED": "Denne hjemmeside tilbyder ikke kontoaktivering (firmakonfiguration → kundeportal, „Tilbyd aktivering“).",
+                "WEBSITE_CONFIG_MISSING": "Hjemmesiden har ingen webadresse (firmakonfiguration → kundeportal).",
+                "ACTIVATION_NOT_SENT": "Beskeden kunne ikke sendes."
+            }
         },
         "actions": {
             "save": "Gem",

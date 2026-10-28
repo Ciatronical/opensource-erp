@@ -228,7 +228,18 @@
             "portalNoTemplate": "Dla WhatsApp brakuje zatwierdzonego szablonu typu „Aktywacja konta klienta” (konfiguracja firmy → szablony WhatsApp). Alternatywnie wyślij e-mailem.",
             "portalNoEmail": "Klient nie ma adresu e-mail.",
             "portalSourceStaff": "z karty klienta",
-            "portalSourcePortal": "na żądanie klienta"
+            "portalSourcePortal": "na żądanie klienta",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "Wysyłka e-mail nie jest skonfigurowana (konfiguracja firmy → klient e-mail, poczta wychodząca).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp nie jest skonfigurowany (konfiguracja firmy → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "Dla WhatsApp brakuje zatwierdzonego szablonu typu „Aktywuj konto klienta” (konfiguracja firmy → szablony WhatsApp).",
+                "ACTIVATION_NO_EMAIL": "Klient nie ma prawidłowego adresu e-mail.",
+                "ACTIVATION_NO_PHONE": "Klient nie ma numeru telefonu.",
+                "ACTIVATION_HAS_ACCOUNT": "Klient ma już dostęp do konta klienta.",
+                "ACTIVATION_DISABLED": "Ta strona nie oferuje aktywacji konta (konfiguracja firmy → portal klienta, „Oferuj aktywację”).",
+                "WEBSITE_CONFIG_MISSING": "Strona nie ma adresu internetowego (konfiguracja firmy → portal klienta).",
+                "ACTIVATION_NOT_SENT": "Nie udało się wysłać wiadomości."
+            }
         },
         "actions": {
             "save": "Zapisz",

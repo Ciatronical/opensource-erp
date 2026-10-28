@@ -228,7 +228,18 @@
             "portalNoTemplate": "WhatsApp mangler en godkjent mal av typen «Aktiver kundekonto» (firmakonfigurasjon → WhatsApp-maler). Send alternativt per e-post.",
             "portalNoEmail": "Kunden har ingen e-postadresse.",
             "portalSourceStaff": "fra kundekortet",
-            "portalSourcePortal": "forespurt av kunden"
+            "portalSourcePortal": "forespurt av kunden",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "E-postsending er ikke satt opp (firmakonfigurasjon → e-postklient, utgående post).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp er ikke satt opp (firmakonfigurasjon → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "WhatsApp mangler en godkjent mal av typen «Aktiver kundekonto» (firmakonfigurasjon → WhatsApp-maler).",
+                "ACTIVATION_NO_EMAIL": "Kunden har ingen gyldig e-postadresse.",
+                "ACTIVATION_NO_PHONE": "Kunden har ikke noe telefonnummer.",
+                "ACTIVATION_HAS_ACCOUNT": "Kunden har allerede tilgang til kundekontoen.",
+                "ACTIVATION_DISABLED": "Dette nettstedet tilbyr ikke kontoaktivering (firmakonfigurasjon → kundeportal, «Tilby aktivering»).",
+                "WEBSITE_CONFIG_MISSING": "Nettstedet har ingen nettadresse (firmakonfigurasjon → kundeportal).",
+                "ACTIVATION_NOT_SENT": "Meldingen kunne ikke sendes."
+            }
         },
         "actions": {
             "save": "Lagre",

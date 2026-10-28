@@ -249,7 +249,18 @@
             "portalNoTemplate": "Für WhatsApp fehlt eine genehmigte Vorlage vom Typ „Kundenkonto freischalten“ (Firmenkonfiguration → WhatsApp-Vorlagen). Alternativ per E-Mail senden.",
             "portalNoEmail": "Der Kunde hat keine E-Mail-Adresse.",
             "portalSourceStaff": "aus der Kundenakte",
-            "portalSourcePortal": "vom Kunden angefordert"
+            "portalSourcePortal": "vom Kunden angefordert",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "Der Mailversand ist nicht eingerichtet (Firmenkonfiguration → E-Mail-Client, Postausgang).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp ist nicht eingerichtet (Firmenkonfiguration → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "Für WhatsApp fehlt eine genehmigte Vorlage vom Typ „Kundenkonto freischalten“ (Firmenkonfiguration → WhatsApp-Vorlagen).",
+                "ACTIVATION_NO_EMAIL": "Der Kunde hat keine gültige E-Mail-Adresse.",
+                "ACTIVATION_NO_PHONE": "Der Kunde hat keine Telefonnummer.",
+                "ACTIVATION_HAS_ACCOUNT": "Der Kunde hat schon einen Zugang zum Kundenkonto.",
+                "ACTIVATION_DISABLED": "Diese Webseite bietet die Konto-Freischaltung nicht an (Firmenkonfiguration → Kundenportal, „Freischaltung anbieten“).",
+                "WEBSITE_CONFIG_MISSING": "Die Webseite hat keine Webadresse (Firmenkonfiguration → Kundenportal).",
+                "ACTIVATION_NOT_SENT": "Die Nachricht konnte nicht versendet werden."
+            }
         },
         "actions": {
             "save": "Speichern",

@@ -228,7 +228,18 @@
             "portalNoTemplate": "Voor WhatsApp ontbreekt een goedgekeurd sjabloon van het type ‘Klantaccount activeren’ (bedrijfsconfiguratie → WhatsApp-sjablonen). Of verstuur per e-mail.",
             "portalNoEmail": "De klant heeft geen e-mailadres.",
             "portalSourceStaff": "vanuit het klantdossier",
-            "portalSourcePortal": "door de klant aangevraagd"
+            "portalSourcePortal": "door de klant aangevraagd",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "E-mailverzending is niet ingericht (bedrijfsconfiguratie → e-mailclient, uitgaande post).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp is niet ingericht (bedrijfsconfiguratie → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "Voor WhatsApp ontbreekt een goedgekeurd sjabloon van het type „Klantaccount activeren” (bedrijfsconfiguratie → WhatsApp-sjablonen).",
+                "ACTIVATION_NO_EMAIL": "De klant heeft geen geldig e-mailadres.",
+                "ACTIVATION_NO_PHONE": "De klant heeft geen telefoonnummer.",
+                "ACTIVATION_HAS_ACCOUNT": "De klant heeft al toegang tot het klantaccount.",
+                "ACTIVATION_DISABLED": "Deze website biedt geen accountactivering aan (bedrijfsconfiguratie → klantenportaal, „Activering aanbieden”).",
+                "WEBSITE_CONFIG_MISSING": "De website heeft geen webadres (bedrijfsconfiguratie → klantenportaal).",
+                "ACTIVATION_NOT_SENT": "Het bericht kon niet worden verzonden."
+            }
         },
         "actions": {
             "save": "Opslaan",

@@ -228,7 +228,18 @@
             "portalNoTemplate": "Pro WhatsApp chybí schválená šablona typu „Aktivace zákaznického účtu“ (konfigurace firmy → šablony WhatsApp). Případně odešlete e-mailem.",
             "portalNoEmail": "Zákazník nemá e-mailovou adresu.",
             "portalSourceStaff": "z karty zákazníka",
-            "portalSourcePortal": "vyžádáno zákazníkem"
+            "portalSourcePortal": "vyžádáno zákazníkem",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "Odesílání e-mailů není nastaveno (konfigurace firmy → e-mailový klient, odchozí pošta).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp není nastaven (konfigurace firmy → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "Pro WhatsApp chybí schválená šablona typu „Aktivovat zákaznický účet“ (konfigurace firmy → šablony WhatsApp).",
+                "ACTIVATION_NO_EMAIL": "Zákazník nemá platnou e-mailovou adresu.",
+                "ACTIVATION_NO_PHONE": "Zákazník nemá telefonní číslo.",
+                "ACTIVATION_HAS_ACCOUNT": "Zákazník už má přístup k zákaznickému účtu.",
+                "ACTIVATION_DISABLED": "Tento web nenabízí aktivaci účtu (konfigurace firmy → zákaznický portál, „Nabízet aktivaci“).",
+                "WEBSITE_CONFIG_MISSING": "Web nemá webovou adresu (konfigurace firmy → zákaznický portál).",
+                "ACTIVATION_NOT_SENT": "Zprávu se nepodařilo odeslat."
+            }
         },
         "actions": {
             "save": "Uložit",

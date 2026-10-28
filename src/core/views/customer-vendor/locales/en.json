@@ -249,7 +249,18 @@
             "portalNoTemplate": "WhatsApp needs an approved template of type “Activate customer account” (client configuration → WhatsApp templates). Alternatively send by email.",
             "portalNoEmail": "The customer has no email address.",
             "portalSourceStaff": "from the customer file",
-            "portalSourcePortal": "requested by the customer"
+            "portalSourcePortal": "requested by the customer",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "Mail sending is not set up (company configuration → e-mail client, outgoing mail).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp is not set up (company configuration → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "WhatsApp needs an approved template of type “Activate customer account” (company configuration → WhatsApp templates).",
+                "ACTIVATION_NO_EMAIL": "The customer has no valid e-mail address.",
+                "ACTIVATION_NO_PHONE": "The customer has no phone number.",
+                "ACTIVATION_HAS_ACCOUNT": "The customer already has access to the customer account.",
+                "ACTIVATION_DISABLED": "This website does not offer account activation (company configuration → customer portal, “Offer activation”).",
+                "WEBSITE_CONFIG_MISSING": "The website has no web address (company configuration → customer portal).",
+                "ACTIVATION_NOT_SENT": "The message could not be sent."
+            }
         },
         "actions": {
             "save": "Save",

@@ -228,7 +228,18 @@
             "portalNoTemplate": "WhatsApp için “Müşteri hesabını etkinleştir” türünde onaylı bir şablon eksik (firma yapılandırması → WhatsApp şablonları). Alternatif olarak e-posta ile gönderin.",
             "portalNoEmail": "Müşterinin e-posta adresi yok.",
             "portalSourceStaff": "müşteri kartından",
-            "portalSourcePortal": "müşteri tarafından istendi"
+            "portalSourcePortal": "müşteri tarafından istendi",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "E-posta gönderimi ayarlanmamış (şirket yapılandırması → e-posta istemcisi, giden posta).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp ayarlanmamış (şirket yapılandırması → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "WhatsApp için „Müşteri hesabını etkinleştir“ türünde onaylı bir şablon eksik (şirket yapılandırması → WhatsApp şablonları).",
+                "ACTIVATION_NO_EMAIL": "Müşterinin geçerli bir e-posta adresi yok.",
+                "ACTIVATION_NO_PHONE": "Müşterinin telefon numarası yok.",
+                "ACTIVATION_HAS_ACCOUNT": "Müşterinin müşteri hesabına zaten erişimi var.",
+                "ACTIVATION_DISABLED": "Bu web sitesi hesap etkinleştirme sunmuyor (şirket yapılandırması → müşteri portalı, „Etkinleştirme sun“).",
+                "WEBSITE_CONFIG_MISSING": "Web sitesinin web adresi yok (şirket yapılandırması → müşteri portalı).",
+                "ACTIVATION_NOT_SENT": "Mesaj gönderilemedi."
+            }
         },
         "actions": {
             "save": "Kaydet",

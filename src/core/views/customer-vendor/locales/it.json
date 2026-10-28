@@ -228,7 +228,18 @@
             "portalNoTemplate": "Per WhatsApp manca un modello approvato di tipo «Attiva account cliente» (configurazione azienda → modelli WhatsApp). In alternativa invia per e-mail.",
             "portalNoEmail": "Il cliente non ha un indirizzo e-mail.",
             "portalSourceStaff": "dalla scheda cliente",
-            "portalSourcePortal": "richiesto dal cliente"
+            "portalSourcePortal": "richiesto dal cliente",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "L’invio di e-mail non è configurato (configurazione aziendale → client e-mail, posta in uscita).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsApp non è configurato (configurazione aziendale → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "Per WhatsApp manca un modello approvato di tipo «Attiva account cliente» (configurazione aziendale → modelli WhatsApp).",
+                "ACTIVATION_NO_EMAIL": "Il cliente non ha un indirizzo e-mail valido.",
+                "ACTIVATION_NO_PHONE": "Il cliente non ha un numero di telefono.",
+                "ACTIVATION_HAS_ACCOUNT": "Il cliente ha già accesso all’account cliente.",
+                "ACTIVATION_DISABLED": "Questo sito web non offre l’attivazione dell’account (configurazione aziendale → portale clienti, «Offrire l’attivazione»).",
+                "WEBSITE_CONFIG_MISSING": "Il sito web non ha un indirizzo web (configurazione aziendale → portale clienti).",
+                "ACTIVATION_NOT_SENT": "Il messaggio non è stato inviato."
+            }
         },
         "actions": {
             "save": "Salva",

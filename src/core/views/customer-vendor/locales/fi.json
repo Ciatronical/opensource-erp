@@ -228,7 +228,18 @@
             "portalNoTemplate": "WhatsAppiin puuttuu hyväksytty malli tyyppiä ”Asiakastilin aktivointi” (yrityksen asetukset → WhatsApp-mallit). Vaihtoehtoisesti lähetä sähköpostilla.",
             "portalNoEmail": "Asiakkaalla ei ole sähköpostiosoitetta.",
             "portalSourceStaff": "asiakaskortista",
-            "portalSourcePortal": "asiakkaan pyytämä"
+            "portalSourcePortal": "asiakkaan pyytämä",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "Sähköpostin lähetystä ei ole määritetty (yrityksen asetukset → sähköpostiohjelma, lähtevä posti).",
+                "WHATSAPP_NOT_CONFIGURED": "WhatsAppia ei ole määritetty (yrityksen asetukset → WhatsApp).",
+                "TEMPLATE_NOT_FOUND": "WhatsAppia varten puuttuu hyväksytty malli tyyppiä ”Aktivoi asiakastili” (yrityksen asetukset → WhatsApp-mallit).",
+                "ACTIVATION_NO_EMAIL": "Asiakkaalla ei ole kelvollista sähköpostiosoitetta.",
+                "ACTIVATION_NO_PHONE": "Asiakkaalla ei ole puhelinnumeroa.",
+                "ACTIVATION_HAS_ACCOUNT": "Asiakkaalla on jo pääsy asiakastilille.",
+                "ACTIVATION_DISABLED": "Tämä verkkosivusto ei tarjoa tilin aktivointia (yrityksen asetukset → asiakasportaali, ”Tarjoa aktivointia”).",
+                "WEBSITE_CONFIG_MISSING": "Verkkosivustolla ei ole verkko-osoitetta (yrityksen asetukset → asiakasportaali).",
+                "ACTIVATION_NOT_SENT": "Viestiä ei voitu lähettää."
+            }
         },
         "actions": {
             "save": "Tallenna",

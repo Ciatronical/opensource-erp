@@ -228,7 +228,18 @@
             "portalNoTemplate": "WhatsApp trūksta patvirtinto šablono „Kliento paskyros aktyvavimas“ (įmonės konfigūracija → WhatsApp šablonai). Arba siųskite el. paštu.",
             "portalNoEmail": "Klientas neturi el. pašto adreso.",
             "portalSourceStaff": "iš kliento kortelės",
-            "portalSourcePortal": "kliento užklausa"
+            "portalSourcePortal": "kliento užklausa",
+            "portalErrors": {
+                "EMAIL_NOT_CONFIGURED": "El. pašto siuntimas nesukonfigūruotas (įmonės konfigūracija → el. pašto klientas, išsiunčiamas paštas).",
+                "WHATSAPP_NOT_CONFIGURED": "„WhatsApp“ nesukonfigūruotas (įmonės konfigūracija → „WhatsApp“).",
+                "TEMPLATE_NOT_FOUND": "„WhatsApp“ trūksta patvirtinto šablono „Aktyvinti kliento paskyrą“ (įmonės konfigūracija → „WhatsApp“ šablonai).",
+                "ACTIVATION_NO_EMAIL": "Klientas neturi galiojančio el. pašto adreso.",
+                "ACTIVATION_NO_PHONE": "Klientas neturi telefono numerio.",
+                "ACTIVATION_HAS_ACCOUNT": "Klientas jau turi prieigą prie kliento paskyros.",
+                "ACTIVATION_DISABLED": "Ši svetainė nesiūlo paskyros aktyvinimo (įmonės konfigūracija → klientų portalas, „Siūlyti aktyvinimą“).",
+                "WEBSITE_CONFIG_MISSING": "Svetainė neturi interneto adreso (įmonės konfigūracija → klientų portalas).",
+                "ACTIVATION_NOT_SENT": "Nepavyko išsiųsti pranešimo."
+            }
         },
         "actions": {
             "save": "Išsaugoti",
