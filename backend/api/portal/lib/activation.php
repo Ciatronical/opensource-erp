@@ -156,25 +156,36 @@ function activationThrottlePhone($db, string $phone): bool {
  * @return string Kennung
  */
 function activationCreate($db, int $customerId, ?int $website, string $phone, string $source): string {
-    $zeile = $db->getOne(
-        "WITH alt AS (
-             UPDATE portal_activation_oserp SET used_at = NOW()
-              WHERE customer_id = :kunde_alt AND used_at IS NULL
-         )
-         INSERT INTO portal_activation_oserp (uuid, customer_id, website_id, phone, source, expires)
-         VALUES (:uuid, :customer_id, CAST(:website AS integer), :phone, :source,
-                 NOW() + CAST(:stunden || ' hours' AS interval))
-         RETURNING uuid",
-        [
-            ':kunde_alt'   => $customerId,
-            ':uuid'        => portalNewUuid(),
-            ':customer_id' => $customerId,
-            ':website'     => $website,
-            ':phone'       => $phone,
-            ':source'      => 'staff' === $source ? 'staff' : 'portal',
-            ':stunden'     => (string)PORTAL_ACTIVATION_HOURS,
-        ]
-    );
+    // Zwei Anweisungen, keine CTE: Innerhalb einer Anweisung sieht PostgreSQL
+    // die Änderung eines Teilschritts nicht, der eindeutige Index
+    // portal_activation_oserp_offen (eine offene Kennung je Kunde) meldete
+    // sonst die eben entwertete Kennung als Dublette
+    $db->beginTransaction();
+    try {
+        $db->execute(
+            "UPDATE portal_activation_oserp SET used_at = NOW()
+              WHERE customer_id = :customer_id AND used_at IS NULL",
+            [':customer_id' => $customerId]
+        );
+        $zeile = $db->getOne(
+            "INSERT INTO portal_activation_oserp (uuid, customer_id, website_id, phone, source, expires)
+             VALUES (:uuid, :customer_id, CAST(:website AS integer), :phone, :source,
+                     NOW() + CAST(:stunden || ' hours' AS interval))
+             RETURNING uuid",
+            [
+                ':uuid'        => portalNewUuid(),
+                ':customer_id' => $customerId,
+                ':website'     => $website,
+                ':phone'       => $phone,
+                ':source'      => 'staff' === $source ? 'staff' : 'portal',
+                ':stunden'     => (string)PORTAL_ACTIVATION_HOURS,
+            ]
+        );
+        $db->commit();
+    } catch (Exception $e) {
+        $db->rollBack();
+        throw $e;
+    }
     return (string)$zeile['uuid'];
 }
 
