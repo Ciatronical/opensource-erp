@@ -173,6 +173,15 @@ Zusätzlich liegen FPDF 1.86 und FPDI 2.6.4 als Kopie unter `backend/lib/`
 | aiohttp | Apache-2.0 AND MIT |
 | Google Chrome (Laufzeitvoraussetzung) | proprietär (Google-Nutzungsbedingungen) |
 
+## Druckvorlagen (`backend/templates-default`)
+
+| Vorlagensatz | Herkunft | Lizenz |
+|---|---|---|
+| `marei` | Vorlagensatz „marei“ von Marei Peischl aus dem kivitendo-Repository (`templates/print/marei`) | GPL-2.0-or-later (Copyright 2019–2022 Marei Peischl) |
+| `mersiha` | Abwandlung des Satzes `marei` | GPL-2.0-or-later |
+
+Die Copyright-Zeilen in den `.tex`-Dateien dieser Sätze müssen erhalten bleiben.
+
 ## System- und Infrastrukturkomponenten
 
 Werden vom Installer (`install/install.sh`) bzw. den Docker-Images bezogen und
