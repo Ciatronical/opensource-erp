@@ -8,6 +8,7 @@
         "dev": "vite --configLoader native",
         "check:api": "php tools/check-api-health.php",
         "check:routes": "node tools/check-routes.mjs",
+        "licenses": "node tools/generate-third-party-licenses.mjs",
         "build": "vite build --configLoader native",
         "build:portal-ui": "npm --prefix portal-ui run build",
         "preview": "vite preview --configLoader native"

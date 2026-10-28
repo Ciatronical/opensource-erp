@@ -407,4 +407,8 @@ Das Programm wird in der Hoffnung bereitgestellt, dass es nützlich ist, aber **
 
 Wer eine veränderte Fassung von OSERP als Netzdienst betreibt, muss den Nutzern dieses Dienstes den Quelltext der veränderten Fassung anbieten (§ 13 AGPL).
 
-Eine Übersicht der verwendeten Drittkomponenten und ihrer Lizenzen steht in [docs/drittkomponenten.md](docs/drittkomponenten.md).
+Eine Übersicht der verwendeten Drittkomponenten und ihrer Lizenzen steht in [docs/drittkomponenten.md](docs/drittkomponenten.md), die vollständigen Lizenztexte in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+
+Beiträge sind willkommen, siehe [CONTRIBUTING.md](CONTRIBUTING.md). Voraussetzung ist das [Contributor License Agreement](CLA.md).
+
+**Kommerzielle Lizenz auf Anfrage.** Wer OSERP ohne die Bedingungen der AGPL einsetzen möchte, etwa ohne Offenlegung eigener Anpassungen, kann bei Inter-Data eine kommerzielle Lizenz anfragen.

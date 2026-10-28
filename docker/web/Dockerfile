@@ -89,6 +89,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 # Backend kopieren (settings.ini ist im .dockerignore ausgeschlossen)
 COPY backend/ ./backend/
 
+# Lizenz und Lizenzhinweise der Drittkomponenten (Pflicht bei Weitergabe)
+COPY LICENSE THIRD_PARTY_LICENSES.md ./
+
 # PHP-Abhaengigkeiten installieren (vendor/autoload.php erzeugen)
 RUN cd backend && composer install --no-dev --no-interaction --no-progress --optimize-autoloader
 

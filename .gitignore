@@ -81,8 +81,12 @@ backend/composer.phar
 dev/.carparts-creds
 dev/carparts-cat-docs/
 
-#Github Verzeichnis ausschließen
-.github/
+#Github Verzeichnis ausschließen — Ausnahme: CLA-Workflow und Unterschriftendatei
+.github/*
+!.github/workflows/
+.github/workflows/*
+!.github/workflows/cla.yml
+!.github/cla-signatures.json
 
 # Persönliche Shell- und Git-Dateien gehören nie ins Projekt
 /.bash_profile

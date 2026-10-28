@@ -9,6 +9,12 @@ Pflege: Bei jeder Änderung an `package.json`, `portal-ui/package.json`,
 `backend/composer.json`, einer `requirements.txt` oder an den Paketlisten in
 `install/install.sh` bzw. `docker/` ist diese Datei nachzuziehen.
 
+Die vollständigen Lizenztexte der mitgelieferten npm- und Composer-Pakete
+erzeugt `npm run licenses` (Skript `tools/generate-third-party-licenses.mjs`)
+in die Datei `THIRD_PARTY_LICENSES.md` im Wurzelverzeichnis. Sie wird mit
+eingecheckt und ins Docker-Image kopiert, weil Vite beim Minifizieren die
+Lizenzkommentare aus dem Bündel entfernt.
+
 Prüfung der npm-Lizenzen (alle Pakete inkl. transitiver):
 
 ```bash
