@@ -83,7 +83,8 @@
             "phoneSearch": "Telefoonzoekopdracht",
             "callTranscript": "Gespreksanalyse",
             "banking": "Liquiditeitsprognose",
-            "orderConfirm": "Orderbevestiging"
+            "orderConfirm": "Orderbevestiging",
+            "ebay": "eBay (productpagina, titel, artikelkenmerken)"
         }
     },
     "passwordField": {

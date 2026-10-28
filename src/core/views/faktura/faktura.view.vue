@@ -1080,7 +1080,8 @@
             :sending="weroniSending"
             :error="weroniError"
             :review="weroniData?.review || null"
-            :created-at="weroniData?.created_at || ''"
+            :pending="!!weroniData?.extracted && !weroniData?.review"
+            :created-at="weroniData?.review ? weroniData.created_at : ''"
             :communicated="weroniData?.communicated || []"
             :customer="weroniData?.customer || null"
             :contact-email="contactEmail"
@@ -2703,9 +2704,11 @@ export default defineComponent({
         }
 
         async function onSilverdatImport() {
-            if (!silverdatImport || !fakturaId.value) return
+            if (!silverdatImport) return
 
             try {
+                // Neuer Auftrag: erst jetzt anlegen, damit ein abgebrochener Import keinen leeren Beleg hinterlässt
+                await ensureOrderAndGetId()
                 const result = await silverdatImport.doImport(
                     fakturaId.value, fakturaType.value
                 )
@@ -2764,10 +2767,18 @@ export default defineComponent({
 
         // Nach Dateiauswahl: Dialog mit Ladeanzeige öffnen, KI-Analyse läuft im Hintergrund
         async function onGutachtenFileSelect(event) {
-            if (!gutachtenImport || !fakturaId.value) return
+            if (!gutachtenImport) return
             const file = event.target?.files?.[0]
             if (!file) return
             gutachtenImport.showDialog.value = true
+            // Die Analyse braucht den Fahrzeug-Kontext des Auftrags – neuen Auftrag daher bei Dateiauswahl anlegen
+            try {
+                await ensureOrderAndGetId()
+            } catch (e) {
+                console.error('Gutachten: Auftrag anlegen fehlgeschlagen:', e)
+                gutachtenImport.importError.value = String(e?.message || e)
+                return
+            }
             await gutachtenImport.onFileSelect(event, fakturaId.value)
         }
 
@@ -2776,9 +2787,6 @@ export default defineComponent({
             try {
                 const result = await gutachtenImport.doImport(fakturaId.value, takeOver)
                 if (!result) return // doImport zeigt Fehler im Dialog
-                // Analyse-Ergebnis vor dem reset() sichern – Grundlage der Weroni-Rechtsprüfung
-                const analysis = gutachtenImport.lastAnalysis.value
-
                 // Kennzeichen gehört einem anderen Kunden: Rückfrage wie beim Schnellanlegen per Kennzeichen
                 if (result.exists_other_owner) {
                     const answer = await alerts.question(
@@ -2816,8 +2824,8 @@ export default defineComponent({
                     await vehicle.loadVehicleData(customerId)
                 }
 
-                // Weroni prüft das Gutachten und entscheidet – direkt im Anschluss
-                if (analysis) runWeroniReview(analysis, result)
+                // Weroni prüft erst auf Knopfdruck – der Button lädt die beim Import gespeicherte Analyse
+                weroniData.value = null
             } catch (e) {
                 console.error('Gutachten import handler error:', e)
                 if (gutachtenImport) {

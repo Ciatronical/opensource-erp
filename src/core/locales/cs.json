@@ -83,7 +83,8 @@
             "phoneSearch": "Vyhledávání podle telefonu",
             "callTranscript": "Vyhodnocení hovoru",
             "banking": "Prognóza likvidity",
-            "orderConfirm": "Potvrzení objednávky"
+            "orderConfirm": "Potvrzení objednávky",
+            "ebay": "eBay (produktová stránka, titulek, vlastnosti položky)"
         }
     },
     "passwordField": {

@@ -83,7 +83,8 @@
             "phoneSearch": "电话查询",
             "callTranscript": "通话分析",
             "banking": "流动性预测",
-            "orderConfirm": "订单确认"
+            "orderConfirm": "订单确认",
+            "ebay": "eBay（商品页面、标题、商品属性）"
         }
     },
     "passwordField": {

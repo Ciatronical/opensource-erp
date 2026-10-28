@@ -35,7 +35,7 @@ Die Webseite selbst — Hugo-Projekt, Theme, Inhalte — gehört dem Betreiber. 
 
 ### eBay
 
-Angebote, Bilder, Bestellimport samt Kundenzuordnung, Rechnung und Buchung, Cron-Abruf, Verbindungstest und Statusanzeige. Menge = Lagerbestand; bei 0 bleibt das Angebot als „ausverkauft" stehen.
+Eigenes eBay-Board: Verbinden per Anmeldung, bestehende Angebote übernehmen und zuordnen, Verkäufe mit Käuferprüfung (eindeutige automatisch abgerechnet), Versand melden, Produktseiten mit KI; dazu Einstellen über die Inventory-API mit Menge = Lagerbestand. Eigene Seite: [eBay](ebay.md).
 
 ### Kleinanzeigen
 

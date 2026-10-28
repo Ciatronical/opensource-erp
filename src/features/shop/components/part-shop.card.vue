@@ -603,6 +603,17 @@
                                             · {{ t('ShopView.partCard.listingId', { id: kanal.external_id }) }}
                                         </span>
                                         <div v-if="kanal.sync_error" class="text-caption">{{ kanal.sync_error }}</div>
+                                        <!-- eBay: Produktseite im eBay-Board gestalten (dev/shop-ebay.md) -->
+                                        <div v-if="kanal.type === 'ebay'" class="mt-2">
+                                            <v-btn
+                                                size="small"
+                                                variant="tonal"
+                                                prepend-icon="mdi-palette-outline"
+                                                :to="{ name: 'shop-ebay', query: { channel: kanal.channel_id, tab: 'offered', page: partsId } }"
+                                            >
+                                                {{ t('ShopView.ebay.designPage') }}
+                                            </v-btn>
+                                        </div>
                                         <!-- Kleinanzeigen: eingestellt wird im Board (dev/shop-kleinanzeigen.md) -->
                                         <div v-if="kanal.type === 'kleinanzeigen'" class="mt-2">
                                             <v-btn

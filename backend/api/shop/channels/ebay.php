@@ -42,9 +42,32 @@ const SHOP_EBAY_API_SANDBOX    = 'https://api.sandbox.ebay.com';
 // Ohne ihn hilft die Verkäuferkennung der letzten Bestellung.
 const SHOP_EBAY_IDENTITY_PROD    = 'https://apiz.ebay.com/commerce/identity/v1/user/';
 const SHOP_EBAY_IDENTITY_SANDBOX = 'https://apiz.sandbox.ebay.com/commerce/identity/v1/user/';
-// Bestellungen lesen (Import) und Inventar schreiben (Angebote)
+// Bestellungen lesen (Import) und Inventar schreiben (Angebote) — die Rechte
+// eines von Hand eingetragenen Refresh-Tokens
 const SHOP_EBAY_SCOPES         = 'https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly'
                                .' https://api.ebay.com/oauth/api_scope/sell.inventory';
+// Rechte bei „Mit eBay verbinden“ (dev/shop-ebay.md): dazu Versand melden
+// (sell.fulfillment), Richtlinien lesen und das Konto bestimmen. Gemerkt in
+// settings.scopes — ein Refresh fragt nie mehr an, als erteilt wurde.
+const SHOP_EBAY_SCOPES_CONNECT = 'https://api.ebay.com/oauth/api_scope'
+                               .' https://api.ebay.com/oauth/api_scope/sell.inventory'
+                               .' https://api.ebay.com/oauth/api_scope/sell.fulfillment'
+                               .' https://api.ebay.com/oauth/api_scope/sell.account.readonly'
+                               .' https://api.ebay.com/oauth/api_scope/commerce.identity.readonly';
+const SHOP_EBAY_AUTHORIZE_PROD    = 'https://auth.ebay.com/oauth2/authorize';
+const SHOP_EBAY_AUTHORIZE_SANDBOX = 'https://auth.sandbox.ebay.com/oauth2/authorize';
+// Trading-API (XML): übernommene Angebote lesen und ändern, die nicht über
+// die Inventory-API entstanden sind. Nimmt das OAuth-Token im Kopf
+// X-EBAY-API-IAF-TOKEN; Rechte (Scopes) prüft sie nicht.
+const SHOP_EBAY_TRADING_PROD    = 'https://api.ebay.com/ws/api.dll';
+const SHOP_EBAY_TRADING_SANDBOX = 'https://api.sandbox.ebay.com/ws/api.dll';
+const SHOP_EBAY_TRADING_LEVEL   = '1349';
+/** Site-ID der Trading-API je Marktplatz */
+const SHOP_EBAY_SITE_IDS = [
+    'EBAY_US' => 0, 'EBAY_GB' => 3, 'EBAY_AU' => 15, 'EBAY_AT' => 16, 'EBAY_BE' => 123, 'EBAY_FR' => 71,
+    'EBAY_DE' => 77, 'EBAY_IT' => 101, 'EBAY_NL' => 146, 'EBAY_ES' => 186, 'EBAY_CH' => 193, 'EBAY_PL' => 212,
+    'EBAY_IE' => 205, 'EBAY_CA' => 2,
+];
 const SHOP_EBAY_TOKEN_TTL      = 7200; // falls eBay kein expires_in liefert
 const SHOP_EBAY_TOKEN_SKEW     = 300;  // Puffer vor Ablauf
 
@@ -156,7 +179,7 @@ function shopEbayToken($db, int $kanal, bool $erneuern = false): string {
         CURLOPT_POSTFIELDS     => http_build_query([
             'grant_type'    => 'refresh_token',
             'refresh_token' => $refresh,
-            'scope'         => SHOP_EBAY_SCOPES,
+            'scope'         => trim((string)($cfg['scopes'] ?? '')) ?: SHOP_EBAY_SCOPES,
         ]),
     ]);
     $antwort = curl_exec($curl);
@@ -607,6 +630,16 @@ function shopEbayRecordErrors($db, int $kanal, int $partsId, callable $abgleich)
 function shopEbayPublishPartNow($db, int $kanal, int $partsId): string {
     $cfg = shopEbayConfig($db, $kanal);
 
+    // Übernommenes Angebot (dev/shop-ebay.md): das bestehende ändern, kein zweites anlegen
+    $alt = $db->getOne(
+        "SELECT sync_data ->> 'legacy_item_id' AS item_id FROM parts_channel_shop
+          WHERE parts_id = :parts_id AND channel_id = CAST(:kanal AS integer)",
+        [':parts_id' => $partsId, ':kanal' => $kanal]
+    );
+    if ('' !== trim((string)($alt['item_id'] ?? ''))) {
+        return shopEbayReviseLegacy($db, $kanal, $partsId);
+    }
+
     // Eine Abfrage für alles, was das Angebot braucht. Der Preis kommt in der
     // Art von parts.sellprice; eBay rechnet brutto.
     $artikel = $db->getOne(
@@ -619,6 +652,7 @@ function shopEbayPublishPartNow($db, int $kanal, int $partsId): string {
                 COALESCE(pc.settings ->> 'category_id', '') AS kategorie,
                 COALESCE(pc.settings ->> 'condition', '') AS zustand,
                 COALESCE(pc.sync_data ->> 'offer_id', '') AS offer_id,
+                COALESCE(pc.settings -> 'page' -> 'aspects', '[]'::jsonb) AS merkmale,
                 ROUND(CASE WHEN :brutto = 1 THEN k.preis
                            ELSE k.preis * (1 + shop_tax_rate(p.buchungsgruppen_id, :zone)) END, 2) AS preis,
                 -- Versand (dev/shop-versand.md, Schritt 8): Mindestabnahme als
@@ -719,11 +753,16 @@ function shopEbayPublishPartNow($db, int $kanal, int $partsId): string {
     $preis = number_format((float)$artikel['preis'] * $los, 2, '.', '');
     $skuPfad = rawurlencode($sku);
 
-    // 1. Inventory Item
+    // 1. Inventory Item — Artikelmerkmale aus der Produktseite (Marke, Herstellernummer …)
+    $produkt = ['title' => $titel, 'description' => $text, 'imageUrls' => $bilder];
+    $merkmale = shopEbayAspects(json_decode((string)$artikel['merkmale'], true) ?: []);
+    if ($merkmale) {
+        $produkt['aspects'] = $merkmale;
+    }
     $antwort = shopEbayApi($db, $kanal, 'PUT', '/sell/inventory/v1/inventory_item/'.$skuPfad, [
         'availability' => ['shipToLocationAvailability' => ['quantity' => $menge]],
         'condition'    => $zustand,
-        'product'      => ['title' => $titel, 'description' => $text, 'imageUrls' => $bilder],
+        'product'      => $produkt,
     ]);
     if ($antwort['status'] >= 400) {
         shopEbayFail($db, $kanal, $partsId, 'Produktdaten abgelehnt: '.shopEbayErrorMessage($antwort));
@@ -809,11 +848,17 @@ function shopEbayEndPart($db, int $kanal, int $partsId): string {
  */
 function shopEbayEndPartNow($db, int $kanal, int $partsId): string {
     $zeile = $db->getOne(
-        "SELECT COALESCE(sync_data ->> 'offer_id', '') AS offer_id
+        "SELECT COALESCE(sync_data ->> 'offer_id', '') AS offer_id,
+                COALESCE(sync_data ->> 'legacy_item_id', '') AS legacy_item_id
            FROM parts_channel_shop
           WHERE parts_id = :parts_id AND channel_id = CAST(:kanal AS integer)",
         [':parts_id' => $partsId, ':kanal' => $kanal]
     );
+    // Übernommene Angebote beendet OSERP nie von selbst — abgewählt heißt nur:
+    // nicht mehr abgleichen. Beenden geht bei eBay selbst.
+    if ('' !== (string)($zeile['legacy_item_id'] ?? '')) {
+        return 'übernommenes Angebot bleibt bei eBay stehen, wird nicht mehr abgeglichen';
+    }
     $offerId = (string)($zeile['offer_id'] ?? '');
     if ('' === $offerId) {
         return 'kein Angebot';
@@ -830,3 +875,5 @@ function shopEbayEndPartNow($db, int $kanal, int $partsId): string {
 
 // Bestellimport
 require_once __DIR__.'/ebay_orders.php';
+// Übernommene Angebote, Anmeldung bei eBay, Produktseiten
+require_once __DIR__.'/ebay_listings.php';

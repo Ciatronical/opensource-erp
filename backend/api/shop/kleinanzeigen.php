@@ -696,59 +696,6 @@ function importKleinanzeigenLeads($data) {
 }
 
 /**
- * Ruft Claude auf und liefert den Antworttext
- *
- * @param object $db Company-Datenbankverbindung
- * @param string $prompt Aufgabe
- * @param string|null $modell Modellwahl aus dem Request
- * @param int $maxTokens Antwortlänge
- * @return string
- * @throws ApiError MISSING_API_KEYS, CLAUDE_API_ERROR
- */
-function shopKleinanzeigenAsk($db, string $prompt, ?string $modell, int $maxTokens = 1200): string {
-    $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '".aiModelConfigKey('kleinanzeigen')."')"
-    );
-    $schluessel = trim($config['anthropic_api_key'] ?? '');
-    if ('' === $schluessel) {
-        throw new ApiError('MISSING_API_KEYS', 'Anthropic API-Key ist nicht konfiguriert (Firmenkonfiguration → KI)');
-    }
-
-    $curl = curl_init('https://api.anthropic.com/v1/messages');
-    curl_setopt_array($curl, [
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => json_encode([
-            'model'      => resolveAiModel($config, 'kleinanzeigen', $modell),
-            'max_tokens' => $maxTokens,
-            'messages'   => [['role' => 'user', 'content' => $prompt]],
-        ], JSON_UNESCAPED_UNICODE),
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 60,
-        CURLOPT_HTTPHEADER     => [
-            'Content-Type: application/json',
-            'x-api-key: '.$schluessel,
-            'anthropic-version: 2023-06-01',
-        ],
-    ]);
-    $antwort = curl_exec($curl);
-    $status = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    $fehler = curl_error($curl);
-    curl_close($curl);
-
-    if ($fehler) {
-        throw new ApiError('CLAUDE_API_ERROR', 'cURL-Fehler: '.$fehler);
-    }
-    if (200 !== $status) {
-        throw new ApiError('CLAUDE_API_ERROR', 'Claude API Fehler (HTTP '.$status.'): '.$antwort);
-    }
-    $text = aiResponseText(json_decode((string)$antwort, true));
-    if ('' === $text) {
-        throw new ApiError('CLAUDE_API_ERROR', 'Leere Antwort von Claude');
-    }
-    return $text;
-}
-
-/**
  * Lässt Claude Titel und Text einer Anzeige schreiben
  *
  * Aus Artikelstamm, Shop-Angaben (technische Daten, Eigenschaften), Preis
@@ -832,7 +779,7 @@ PROMPT;
         $prompt .= "\nHINWEIS DES VERKÄUFERS:\n".$hinweis."\n";
     }
 
-    $antwort = shopKleinanzeigenAsk($db, $prompt, $data['ai_model'] ?? null, 1500);
+    $antwort = shopAiAsk($db, 'kleinanzeigen', $prompt, $data['ai_model'] ?? null, 1500);
     $antwort = preg_replace('/^```(?:json)?\s*|\s*```$/m', '', trim($antwort));
     $ergebnis = json_decode($antwort, true);
     if (!is_array($ergebnis) || empty($ergebnis['title'])) {
@@ -893,7 +840,7 @@ ANFRAGE VON {$zeile['sender_name']}:
 {$zeile['message']}
 PROMPT;
 
-    resultInfo(true, '', ['reply' => shopKleinanzeigenAsk($db, $prompt, $data['ai_model'] ?? null, 600)]);
+    resultInfo(true, '', ['reply' => shopAiAsk($db, 'kleinanzeigen', $prompt, $data['ai_model'] ?? null, 600)]);
 }
 
 /**

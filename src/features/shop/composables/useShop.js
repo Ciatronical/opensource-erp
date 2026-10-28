@@ -111,6 +111,33 @@ export function useShop() {
     const syncKleinanzeigenAds = (channel_id) => call('syncKleinanzeigenAds', { channel_id })
     const replyKleinanzeigenLead = (lead_id, text) => call('replyKleinanzeigenLead', { lead_id, text })
 
+    // ── eBay (dev/shop-ebay.md) ──
+    /** Board: Kanal, Kennzahlen, Prüfung der Käufer, Verkäufe, Artikel im Kanal, Vorschläge */
+    const fetchEbayBoard = (channel_id) => call('getEbayBoard', channel_id ? { channel_id } : {})
+    const fetchEbayListings = (channel_id) => call('getEbayListings', { channel_id })
+    /** what: orders, listings oder all */
+    const syncEbay = (channel_id, what = 'all') => call('syncEbay', { channel_id, what })
+    const fetchEbayConnectUrl = (channel_id) => call('getEbayConnectUrl', { channel_id })
+    const finishEbayConnect = (channel_id, code, state) => call('finishEbayConnect', { channel_id, code, state })
+    /** customer_id 0 = neuer Kunde aus den Käuferdaten */
+    const decideEbayOrder = (order_id, customer_id, update_address = false) =>
+        call('decideEbayOrder', { order_id, customer_id, update_address })
+    const acceptEbayOrderSuggestions = (channel_id, order_ids = []) => call('acceptEbayOrderSuggestions', { channel_id, order_ids })
+    const setEbayOrderState = (order_id, state) => call('setEbayOrderState', { order_id, state })
+    const shipEbayOrder = (order_id, tracking_number, carrier) => call('shipEbayOrder', { order_id, tracking_number, carrier })
+    const linkEbayListing = (listing_id, parts_id) => call('linkEbayListing', { listing_id, parts_id })
+    const unlinkEbayListing = (listing_id, dismiss = false) => call('unlinkEbayListing', { listing_id, dismiss })
+    const acceptEbayListingSuggestions = (channel_id, listing_ids = []) => call('acceptEbayListingSuggestions', { channel_id, listing_ids })
+    const createEbayListingParts = (channel_id, listing_ids, take_stock) => call('createEbayListingParts', { channel_id, listing_ids, take_stock })
+    const addEbayParts = (channel_id, parts_ids) => call('addEbayParts', { channel_id, parts_ids })
+    // Produktseiten
+    const fetchEbayPage = (parts_id, channel_id) => call('getEbayPage', { parts_id, channel_id })
+    const previewEbayPage = (parts_id, channel_id, page) => call('previewEbayPage', { parts_id, channel_id, page })
+    const saveEbayPage = (parts_id, channel_id, page, publish = false) => call('saveEbayPage', { parts_id, channel_id, page, publish })
+    const generateEbayPage = (parts_id, channel_id, daten) => call('generateEbayPage', { parts_id, channel_id, ...daten })
+    const searchEbayParts = (q) => call('searchEbayParts', { q })
+    const searchEbayCustomers = (q) => call('searchEbayCustomers', { q })
+
     /** Einrichtungsstand: was fehlt, was schränkt ein */
     const fetchStatus = () => call('getShopStatus')
 
@@ -271,6 +298,26 @@ export function useShop() {
         extendKleinanzeigenAd,
         syncKleinanzeigenAds,
         replyKleinanzeigenLead,
+        fetchEbayBoard,
+        fetchEbayListings,
+        syncEbay,
+        fetchEbayConnectUrl,
+        finishEbayConnect,
+        decideEbayOrder,
+        acceptEbayOrderSuggestions,
+        setEbayOrderState,
+        shipEbayOrder,
+        linkEbayListing,
+        unlinkEbayListing,
+        acceptEbayListingSuggestions,
+        createEbayListingParts,
+        addEbayParts,
+        fetchEbayPage,
+        previewEbayPage,
+        saveEbayPage,
+        generateEbayPage,
+        searchEbayParts,
+        searchEbayCustomers,
         setOrderStatus,
         fetchOrderStatus,
         fetchPendingPayments,

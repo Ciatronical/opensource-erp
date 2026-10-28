@@ -83,7 +83,8 @@
             "phoneSearch": "Meklēšana pēc tālruņa",
             "callTranscript": "Zvana analīze",
             "banking": "Likviditātes prognoze",
-            "orderConfirm": "Pasūtījumu apstiprināšana"
+            "orderConfirm": "Pasūtījumu apstiprināšana",
+            "ebay": "eBay (produkta lapa, virsraksts, preces īpašības)"
         }
     },
     "passwordField": {

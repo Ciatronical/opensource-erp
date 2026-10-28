@@ -830,6 +830,13 @@ const ziele = computed(() => [
         titel: t('ShopView.kleinanzeigen.title'),
         text: t('ShopView.kleinanzeigen.subtitle'),
     },
+    // eBay-Board (dev/shop-ebay.md)
+    {
+        name: 'shop-ebay',
+        icon: 'mdi-shopping-outline',
+        titel: t('ShopView.ebay.title'),
+        text: t('ShopView.ebay.subtitle'),
+    },
     // Die Artikelliste des Kerns, vorgefiltert auf „Nur im Shop angebotene“
     // mit „Alle Verkaufskanäle“ (Vorgabe der Kanalauswahl)
     {

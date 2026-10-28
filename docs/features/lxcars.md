@@ -131,13 +131,13 @@ Fremde Schadengutachten und Kostenvoranschläge ohne Schnittstelle – PDF oder 
 
 ### Weroni Rechtsprüfung (Gutachten)
 
-Direkt nach der Übernahme prüft Weroni als digitale Rechtsassistentin der Werkstatt das komplette Gutachten – auch die Teile, die nicht als Positionen in den Auftrag wandern – trifft eine Entscheidung und formuliert die Kommunikation.
+Auf Knopfdruck prüft Weroni als digitale Rechtsassistentin der Werkstatt das importierte Gutachten komplett – auch die Teile, die nicht als Positionen in den Auftrag wandern – trifft eine Entscheidung und formuliert die Kommunikation.
 
 - **Prüfpunkte**: Reparaturkosten + Wertminderung gegen Wiederbeschaffungswert, 130-%-Regel, Wiederbeschaffungsaufwand (WBW − Restwert), Abrechnungsart und MwSt./Vorsteuerabzug, Stunden- und Lacksätze, Wertminderung, Nutzungsausfall (Tage, Gruppe, Tagessatz), Sachverständigenkosten, Unkostenpauschale, Restwertangebote, Haftpflicht/Kasko und Quote, Risiken für die Werkstatt (Abtretung, Werkstattrisiko, Kürzungen)
 - **Entscheidung mit Ampel**: Reparatur freigeben (grün), 130-%-Fall mit Auflagen (gelb), wirtschaftlicher Totalschaden oder Rückfrage (rot) – begründet mit Zahlen; wird in die internen Notizen des Auftrags geschrieben
 - **Ansprüche des Kunden** gegenüber der gegnerischen Haftpflicht als Aufstellung mit Beträgen und Rechtsgrundlage; Empfehlung für einen Anwalt, wenn sinnvoll (Kosten trägt im Haftpflichtfall der Gegner)
 - **Kommunikation**: fertiger, editierbarer Text an den Kunden (E-Mail oder WhatsApp, ohne Beleg-PDF) und ein förmliches Schreiben an die Versicherung (Reparaturfreigabe / Kostenübernahme, als E-Mail oder zum Kopieren); jeder Versand wird mit Kanal, Empfänger und Zeit protokolliert
-- Button **Waage** in der Aktionsleiste öffnet die letzte Prüfung jederzeit wieder; „Erneut prüfen" wiederholt sie mit dem gewählten Modell
+- Button **Waage** in der Aktionsleiste: nach dem Gutachten-Import startet „Jetzt prüfen" die Prüfung (die ausgelesenen Daten werden beim Import gespeichert, auch nach dem Neuladen verfügbar); danach öffnet er die letzte Prüfung jederzeit wieder, „Erneut prüfen" wiederholt sie mit dem gewählten Modell
 - Modell je Mandant unter **Firmeneinstellungen → KI** (Assistent „Weroni Rechtsprüfung (Gutachten)", Vorgabe Claude Opus 5)
 - Hinweis: fachliche Einschätzung, keine Rechtsberatung im Sinne des Rechtsdienstleistungsgesetzes – Weroni sagt das im Kundentext selbst
 

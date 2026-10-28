@@ -83,7 +83,8 @@
             "phoneSearch": "Telefonopslag",
             "callTranscript": "Analyse af opkald",
             "banking": "Likviditetsprognose",
-            "orderConfirm": "Ordrebekræftelse"
+            "orderConfirm": "Ordrebekræftelse",
+            "ebay": "eBay (produktside, titel, varespecifikationer)"
         }
     },
     "passwordField": {

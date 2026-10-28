@@ -83,7 +83,8 @@
             "phoneSearch": "Căutare după telefon",
             "callTranscript": "Analiza apelului",
             "banking": "Prognoză de lichiditate",
-            "orderConfirm": "Confirmarea comenzii"
+            "orderConfirm": "Confirmarea comenzii",
+            "ebay": "eBay (pagină de produs, titlu, caracteristicile articolului)"
         }
     },
     "passwordField": {

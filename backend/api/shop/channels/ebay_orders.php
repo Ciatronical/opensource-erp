@@ -2,14 +2,16 @@
 // backend/api/shop/channels/ebay_orders.php
 //
 // Bestellimport des eBay-Kanals (dev/shop-verkaufskanaele.md, Schritt 5,
-// Teil 2). Übernommen aus backend/api/ebay/import.php, Verhalten gleich:
+// Teil 2; Verkäufe mit Prüfung: dev/shop-ebay.md):
 //
-//   neue Bestellungen seit dem letzten Abruf (order_last_check des Kanals)
-//   → Kunde ohne Dubletten (bekannter eBay-Käufer, dann Adressvergleich,
-//     sonst neu)
-//   → eine Ausgangsrechnung je Bestellung, brutto wie bei eBay
-//   → Buchung ins Hauptbuch
+//   geänderte Bestellungen seit dem letzten Abruf (order_last_check)
+//   → ebay_order_upsert(): festhalten und einordnen — nicht bezahlt,
+//     storniert, vor dem Rechnungsbeginn (import_since), Käufer unklar
+//   → Käufer eindeutig (ebay_customer_match: sicher erkannt oder sicher neu)
+//     → eine Ausgangsrechnung, brutto wie bei eBay, Buchung, Lager
+//   → sonst Prüfung im eBay-Board; nach der Entscheidung dieselbe Rechnung
 //   → ebay_orders als Sperre gegen doppelte Rechnungen und als Nachweis
+//   → Sendungsnummern abgerechneter Bestellungen an eBay melden
 //
 // Geändert: eingeschaltet ist der Import über den Kanalschalter
 // (sales_channel_shop.active) statt ebay_enabled. Jeder eBay-Kanal ruft seine
@@ -68,74 +70,36 @@ function shopEbayEmployeeId($db, array $cfg): ?int {
 }
 
 /**
- * Kunde zu einer eBay-Bestellung, ohne Dubletten
+ * Legt den Kunden aus den Käuferdaten einer Bestellung an
  *
- * Reihenfolge: bekannter eBay-Käufer (aus allen eBay-Kanälen — der
- * Benutzername gilt bei eBay weltweit, der Kunde ist derselbe) →
- * Adressvergleich wie checkDuplicateCV
- * (Name > 0,7, Straße > 0,9, PLZ gleich) → neu anlegen.
+ * Rechnungsanschrift wie ebay_buyer(): Registrierungsadresse, sonst
+ * Lieferanschrift. Mit Firmennamen wird die Firma der Name und die Person
+ * Ansprechpartner. Steuerzone und Währung wie bei der Kontoanlage im Shop.
  *
  * @param object $db Company-Datenbankverbindung
- * @param array $bestellung Bestellung von eBay
+ * @param string $roh Bestellung von eBay als JSON
  * @return int customer.id
  */
-function shopEbayResolveCustomer($db, array $bestellung): int {
-    $kaeufer = trim($bestellung['buyer']['username'] ?? '');
-
-    if ('' !== $kaeufer) {
-        $zeile = $db->getOne(
-            "SELECT customer_id FROM ebay_orders
-              WHERE buyer_username = :kaeufer AND customer_id IS NOT NULL
-              ORDER BY id DESC LIMIT 1",
-            [':kaeufer' => $kaeufer]
-        );
-        if (!empty($zeile['customer_id'])) {
-            return (int)$zeile['customer_id'];
-        }
-    }
-
-    $empfaenger = $bestellung['fulfillmentStartInstructions'][0]['shippingStep']['shipTo'] ?? [];
-    $adresse    = $empfaenger['contactAddress'] ?? [];
-    $name       = trim($empfaenger['fullName'] ?? ('' !== $kaeufer ? $kaeufer : 'eBay-Kunde'));
-    $strasse    = trim(($adresse['addressLine1'] ?? '').' '.($adresse['addressLine2'] ?? ''));
-    $plz        = trim($adresse['postalCode'] ?? '');
-    $ort        = trim($adresse['city'] ?? '');
-
-    if ('' !== $name && '' !== $strasse && '' !== $plz) {
-        $treffer = $db->getOne(
-            "SELECT id FROM customer
-              WHERE LOWER(zipcode) = LOWER(:plz)
-                AND similarity(LOWER(name), LOWER(:name)) > 0.7
-                AND similarity(LOWER(street), LOWER(:strasse)) > 0.9
-              ORDER BY similarity(LOWER(name), LOWER(:name_sort)) DESC
-              LIMIT 1",
-            [':plz' => $plz, ':name' => $name, ':strasse' => $strasse, ':name_sort' => $name]
-        );
-        if ($treffer) {
-            return (int)$treffer['id'];
-        }
-    }
-
-    // Die E-Mail ist bei eBay oft maskiert — nur zur Information.
-    // Steuerzone und Währung wie bei der Kontoanlage im Shop (accountCreate):
-    // beide Spalten sind Pflicht, ohne sie scheitert die Anlage.
+function shopEbayCreateCustomer($db, string $roh): int {
     $zeile = $db->getOne(
-        "INSERT INTO customer (customernumber, name, street, zipcode, city, country, email,
+        "WITH k AS (SELECT ebay_buyer(CAST(:roh AS jsonb)) AS b)
+         INSERT INTO customer (customernumber, name, contact, street, zipcode, city, country, email, phone, notes,
                                taxzone_id, currency_id)
-         SELECT :nummer, :name, :strasse, :plz, :ort, :land, :email,
+         SELECT :nummer,
+                COALESCE(NULLIF(b ->> 'company', ''), NULLIF(b ->> 'name', ''), NULLIF(b ->> 'username', ''), 'eBay-Kunde'),
+                CASE WHEN b ->> 'company' <> '' THEN NULLIF(b ->> 'name', '') END,
+                b ->> 'street', b ->> 'zipcode', b ->> 'city', b ->> 'country',
+                NULLIF(b ->> 'email', ''), NULLIF(b ->> 'phone', ''),
+                'eBay-Käufer ' || COALESCE(NULLIF(b ->> 'username', ''), '?'),
                 COALESCE((SELECT id FROM tax_zones WHERE description ILIKE :taxzone ORDER BY sortkey LIMIT 1),
                          (SELECT id FROM tax_zones ORDER BY sortkey LIMIT 1)),
                 COALESCE((SELECT id FROM currencies WHERE name ILIKE :currency LIMIT 1),
                          (SELECT currency_id FROM defaults))
+           FROM k
          RETURNING id",
         [
+            ':roh'      => $roh,
             ':nummer'   => nextFreeNumber($db, 'customernumber', 'customer', 'customernumber'),
-            ':name'     => $name,
-            ':strasse'  => $strasse,
-            ':plz'      => $plz,
-            ':ort'      => $ort,
-            ':land'     => trim($adresse['countryCode'] ?? ''),
-            ':email'    => trim($empfaenger['email'] ?? ''),
             ':taxzone'  => shopConfigValue($db, 'shop_standard_taxzone', 'Inland'),
             ':currency' => shopConfigValue($db, 'shop_standard_currency', 'EUR'),
         ]
@@ -144,99 +108,91 @@ function shopEbayResolveCustomer($db, array $bestellung): int {
 }
 
 /**
- * Artikel zu einer eBay-Position: über die SKU (= Artikelnummer), sonst der
- * Sammelartikel des Kanals (default_parts_id)
+ * Rechnet eine geklärte Bestellung ab
+ *
+ * Kunde (vorhanden, neu oder mit neuer Anschrift), Rechnung brutto wie bei
+ * eBay, Positionen nach ebay_order_items() (eine Regel mit der Prüfung),
+ * Versandkosten, Lieferadresse und Vermerk in ebay_orders — in einer
+ * Transaktion. Danach Buchung und Lager wie bisher. Fehlt einer Position der
+ * Artikel, bricht es ab, bevor etwas entsteht.
  *
  * @param object $db Company-Datenbankverbindung
- * @param array $position Position der Bestellung
- * @param int $sammelartikel default_parts_id des Kanals, 0 = keiner
- * @return int parts.id
- * @throws ApiError EBAY_NO_PART
+ * @param int $bestellung ebay_orders.id
+ * @param int|null $kunde Kunde, null = aus den Käuferdaten neu anlegen
+ * @param bool $anschrift Anschrift des Kunden auf die von eBay setzen
+ * @param string $wer Login oder auto
+ * @return array ar_id, invnumber, customer_id, posted
+ * @throws ApiError EBAY_ORDER_NOT_FOUND, EBAY_ORDER_INVOICED, EBAY_NO_PART, EBAY_NO_SHIPPING_PART
  */
-function shopEbayResolvePart($db, array $position, int $sammelartikel): int {
-    $sku = trim($position['sku'] ?? '');
-    if ('' !== $sku) {
-        $zeile = $db->getOne(
-            "SELECT id FROM parts WHERE partnumber = :sku AND COALESCE(obsolete, false) = false LIMIT 1",
-            [':sku' => $sku]
-        );
-        if ($zeile) {
-            return (int)$zeile['id'];
-        }
+function shopEbayInvoiceOrder($db, int $bestellung, ?int $kunde, bool $anschrift, string $wer): array {
+    $zeile = $db->getOne(
+        "SELECT e.id, e.ebay_order_id, e.channel_id, e.ar_id, e.total, e.raw::text AS roh,
+                ebay_order_items(e.channel_id, e.raw) AS positionen,
+                COALESCE((e.raw -> 'pricingSummary' -> 'deliveryCost' ->> 'value')::numeric, 0) AS versand,
+                COALESCE(NULLIF(btrim(c.settings ->> 'default_parts_id'), '')::integer,
+                         (SELECT m.parts_id FROM shipping_method_shop m WHERE m.active ORDER BY m.rank DESC, m.id LIMIT 1)) AS versandartikel
+           FROM ebay_orders e
+           JOIN sales_channel_shop c ON c.id = e.channel_id
+          WHERE e.id = :id",
+        [':id' => $bestellung]
+    );
+    if (!$zeile) {
+        throw new ApiError('EBAY_ORDER_NOT_FOUND', 'eBay-Bestellung nicht gefunden');
     }
-    if ($sammelartikel > 0) {
-        return $sammelartikel;
+    if (!empty($zeile['ar_id'])) {
+        throw new ApiError('EBAY_ORDER_INVOICED', 'Für diese Bestellung gibt es schon eine Rechnung');
     }
-    throw new ApiError('EBAY_NO_PART', 'Kein Artikel für SKU "'.$sku.'" und kein Sammelartikel (default_parts_id) eingestellt');
-}
-
-/**
- * Importiert eine Bestellung, höchstens einmal
- *
- * Kunde, Rechnung, Positionen und Nachweis in einer Transaktion; gebucht wird
- * danach (postArInvoiceToLedger führt eine eigene Transaktion). Scheitert die
- * Buchung, bleibt die Rechnung ungebucht und posting_reason nennt den Grund.
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $kanal eBay-Kanal, von dem die Bestellung stammt
- * @param array $bestellung Bestellung von eBay
- * @param array $cfg Ergebnis von shopEbayConfig()
- * @return string imported oder skipped
- */
-function shopEbayImportOrder($db, int $kanal, array $bestellung, array $cfg): string {
-    $bestellId = trim($bestellung['orderId'] ?? '');
-    if ('' === $bestellId
-        || $db->getOne("SELECT 1 FROM ebay_orders WHERE ebay_order_id = :id", [':id' => $bestellId])) {
-        return 'skipped';
+    $kanal = (int)$zeile['channel_id'];
+    $positionen = json_decode((string)$zeile['positionen'], true) ?: [];
+    $ohne = array_filter($positionen, fn($p) => empty($p['parts_id']));
+    if ($ohne) {
+        throw new ApiError('EBAY_NO_PART', 'Kein Artikel für: '.implode(', ', array_map(fn($p) => '„'.$p['title'].'“', $ohne))
+            .' — Angebot unter „Angebote“ einem Artikel zuordnen oder einen Sammelartikel im Kanal eintragen');
     }
-
-    $sammelartikel = (int)($cfg['default_parts_id'] ?? 0);
-    $gesamt = (float)($bestellung['pricingSummary']['total']['value'] ?? 0);
+    $versand = (float)$zeile['versand'];
+    if ($versand > 0 && empty($zeile['versandartikel'])) {
+        throw new ApiError('EBAY_NO_SHIPPING_PART', 'Versandkosten ohne Artikel — eine Versandart oder einen Sammelartikel im Kanal einrichten');
+    }
+    $cfg = shopEbayConfig($db, $kanal);
 
     $db->beginTransaction();
     try {
-        $kunde = shopEbayResolveCustomer($db, $bestellung);
+        if (null === $kunde) {
+            $kunde = shopEbayCreateCustomer($db, (string)$zeile['roh']);
+        } elseif ($anschrift) {
+            // Umgezogen: die Rechnungsanschrift von eBay wird die des Kunden
+            $db->execute(
+                "UPDATE customer c
+                    SET street = NULLIF(b ->> 'street', ''), zipcode = NULLIF(b ->> 'zipcode', ''),
+                        city = NULLIF(b ->> 'city', ''), country = COALESCE(NULLIF(b ->> 'country', ''), c.country),
+                        phone = COALESCE(NULLIF(c.phone, ''), NULLIF(b ->> 'phone', '')),
+                        email = COALESCE(NULLIF(c.email, ''), NULLIF(b ->> 'email', '')),
+                        mtime = now()
+                   FROM (SELECT ebay_buyer(CAST(:roh AS jsonb)) AS b) k
+                  WHERE c.id = :id",
+                [':roh' => (string)$zeile['roh'], ':id' => $kunde]
+            );
+        }
 
         // eBay-Preise sind brutto
         $rechnung = createFakturaCore($db, 'invoice', $kunde, 'C', shopEbayEmployeeId($db, $cfg), ['taxincluded' => true]);
         $arId = (int)$rechnung['id'];
 
-        foreach ($bestellung['lineItems'] ?? [] as $position) {
-            $partsId = shopEbayResolvePart($db, $position, $sammelartikel);
-
-            // Lose (dev/shop-versand.md, W10): eBay zählt Lose, die Rechnung
-            // Stück — Losgröße aus der Mindestabnahme des Artikels, wie beim
-            // Einstellen (shopEbayPublishPartNow). Der Sammelartikel hat keine.
-            $los = 1;
-            if ($partsId !== $sammelartikel) {
-                $zeile = $db->getOne(
-                    "SELECT CASE WHEN min_qty > 1 THEN CEIL(min_qty)::integer ELSE 1 END AS los
-                       FROM parts_shipping_shop WHERE parts_id = :id",
-                    [':id' => $partsId]
-                );
-                $los = max(1, (int)($zeile['los'] ?? 1));
-            }
-            $stueck = max(1, (int)($position['quantity'] ?? 1)) * $los;
-
-            // lineItemCost ist der Betrag der ganzen Zeile (Preis × Menge),
-            // nicht der Stückpreis — früher stand er als Stückpreis in der
-            // Position, und die Position war bei Menge > 1 zu hoch
+        foreach ($positionen as $position) {
+            // lineItemCost ist der Betrag der ganzen Zeile, Stück = Menge × Los
             createFakturaItemCore($db, 'invoice', $arId, [
-                'parts_id'        => $partsId,
-                'description'     => $position['title'] ?? ('eBay-Artikel '.($position['sku'] ?? '')),
-                'longdescription' => '',
-                'qty'             => $stueck,
-                'sellprice'       => round((float)($position['lineItemCost']['value'] ?? 0) / $stueck, 5),
+                'parts_id'        => (int)$position['parts_id'],
+                'description'     => (string)($position['title'] ?: $position['description']),
+                'longdescription' => 'eBay '.$position['item_id'],
+                'qty'             => (int)$position['pieces'],
+                'sellprice'       => round((float)$position['total'] / max(1, (int)$position['pieces']), 5),
                 'discount'        => 0,
-                'unit'            => 'Stck',
+                'unit'            => trim((string)($position['unit'] ?? '')) ?: 'Stck',
             ]);
         }
-
-        // Versandkosten als eigene Position, sofern ein Sammelartikel da ist
-        $versand = (float)($bestellung['pricingSummary']['deliveryCost']['value'] ?? 0);
-        if ($versand > 0 && $sammelartikel > 0) {
+        if ($versand > 0) {
             createFakturaItemCore($db, 'invoice', $arId, [
-                'parts_id'        => $sammelartikel,
+                'parts_id'        => (int)$zeile['versandartikel'],
                 'description'     => 'Versandkosten',
                 'longdescription' => '',
                 'qty'             => 1,
@@ -246,68 +202,113 @@ function shopEbayImportOrder($db, int $kanal, array $bestellung, array $cfg): st
             ]);
         }
 
-        // Eigene Lieferadresse der Rechnung aus der Bestellung
-        // (dev/shop-adressen.md) — auch bei bekannten Käufern, deren
-        // Kundenstamm unverändert bleibt; ohne Angabe von eBay der Kundenstamm
+        // Lieferadresse der Bestellung an die Rechnung (dev/shop-adressen.md) —
+        // eigene Anweisung: shop_invoice_shipto ändert die Rechnungszeile selbst
         $db->getOne(
-            "SELECT shop_invoice_shipto(CAST(:ar_id AS integer), NULL,
-                                        shop_ebay_ship_to(CAST(:roh AS jsonb)), false)",
-            [':ar_id' => $arId, ':roh' => json_encode($bestellung, JSON_UNESCAPED_UNICODE)]
+            "SELECT shop_invoice_shipto(CAST(:ar_id AS integer), NULL, shop_ebay_ship_to(CAST(:roh AS jsonb)), false)",
+            [':ar_id' => $arId, ':roh' => (string)$zeile['roh']]
         );
-
-        // Rechnungsbetrag = von eBay gezahlter Bruttobetrag
-        $db->execute("UPDATE ar SET amount = :betrag WHERE id = :id", [':betrag' => $gesamt, ':id' => $arId]);
-
-        $db->execute(
-            "INSERT INTO ebay_orders (ebay_order_id, ar_id, customer_id, buyer_username, order_status,
-                                      total, posting_reason, raw, channel_id)
-             VALUES (:id, :ar, :kunde, :kaeufer, :stand, :gesamt, 'PENDING', :roh, CAST(:kanal AS integer))",
+        // Betrag = gezahlter Bruttobetrag, eBay-Bestellnummer als Bestellnummer
+        // des Kunden, Bestellung als abgerechnet vermerken
+        $db->getOne(
+            "WITH betrag AS (
+                 UPDATE ar SET amount = CAST(:betrag AS numeric),
+                               cusordnumber = COALESCE(NULLIF(cusordnumber, ''), :bestellnummer)
+                  WHERE id = CAST(:ar_betrag AS integer)
+             )
+             UPDATE ebay_orders
+                SET ar_id = CAST(:ar_vermerk AS integer), customer_id = CAST(:kunde AS integer), state = 'invoiced',
+                    posting_reason = 'PENDING', error = NULL,
+                    decided_by = COALESCE(decided_by, :wer), decided_at = COALESCE(decided_at, now()), mtime = now()
+              WHERE id = CAST(:id AS integer)
+             RETURNING id",
             [
-                ':kanal'   => $kanal,
-                ':id'      => $bestellId,
-                ':ar'      => $arId,
-                ':kunde'   => $kunde,
-                ':kaeufer' => trim($bestellung['buyer']['username'] ?? ''),
-                ':stand'   => $bestellung['orderFulfillmentStatus'] ?? null,
-                ':gesamt'  => $gesamt,
-                ':roh'     => json_encode($bestellung, JSON_UNESCAPED_UNICODE),
+                ':betrag' => (float)$zeile['total'], ':bestellnummer' => (string)$zeile['ebay_order_id'], ':ar_betrag' => $arId,
+                ':ar_vermerk' => $arId, ':kunde' => $kunde, ':wer' => $wer, ':id' => $bestellung,
             ]
         );
-
         $db->commit();
     } catch (\Throwable $e) {
         $db->rollBack();
         throw $e;
     }
 
+    // Buchen (eigene Transaktion) und Lager — verkauft ist die Ware in jedem Fall
+    $gebucht = false;
     try {
+        $probe = postArInvoiceToLedger($db, $arId, true);
+        // Rundungscent zwischen eBay-Summe und Positionen: das Hauptbuch rechnet
+        if (isset($probe['gross']) && abs((float)$probe['gross'] - (float)$zeile['total']) < 0.05) {
+            $db->execute("UPDATE ar SET amount = :brutto WHERE id = :ar_id", [':brutto' => $probe['gross'], ':ar_id' => $arId]);
+        }
         $buchung = postArInvoiceToLedger($db, $arId);
-        $grund = !empty($buchung['posted']) ? 'posted' : ($buchung['reason'] ?? 'UNKNOWN');
+        $gebucht = !empty($buchung['posted']);
+        $grund = $gebucht ? 'posted' : ($buchung['reason'] ?? 'UNKNOWN');
     } catch (\Throwable $e) {
         $grund = 'POST_ERROR';
     }
-    $db->execute(
-        "UPDATE ebay_orders SET posting_reason = :grund, mtime = now() WHERE ebay_order_id = :id",
-        [':grund' => $grund, ':id' => $bestellId]
+    // Nettobetrag aus den gebuchten Erlöszeilen — Listen und Auswertungen lesen ar.netamount
+    $db->getOne(
+        "WITH netto AS (
+             UPDATE ar SET netamount = COALESCE((SELECT sum(t.amount) FROM acc_trans t JOIN chart c ON c.id = t.chart_id
+                                                  WHERE t.trans_id = ar.id AND c.link LIKE '%AR_amount%'), netamount)
+              WHERE id = CAST(:ar_id AS integer)
+         )
+         UPDATE ebay_orders SET posting_reason = :grund, mtime = now() WHERE id = CAST(:id AS integer) RETURNING id",
+        [':ar_id' => $arId, ':grund' => $grund, ':id' => $bestellung]
     );
-
-    // Waren aus dem Lager ausbuchen (O14) — auch bei ungebuchter Rechnung:
-    // verkauft ist die Ware in jedem Fall
     shopBookStock($db, $arId);
 
-    return 'imported';
+    return ['ar_id' => $arId, 'invnumber' => (string)($rechnung['docNumber'] ?? ''), 'customer_id' => $kunde, 'posted' => $gebucht];
 }
 
 /**
- * Holt die neuen Bestellungen seit dem letzten Abruf und importiert sie
+ * Schreibt eine Bestellung von eBay fest und rechnet sie ab, wenn klar
  *
- * Der Zeitpunkt des Abrufs wird nur gemerkt, wenn alles durchlief — sonst
- * kommt die gescheiterte Bestellung beim nächsten Mal wieder dran; die
- * übrigen überspringt ebay_orders.
+ * Die Regel steht in ebay_order_upsert(); scheitert die Rechnung, bleibt die
+ * Bestellung in der Prüfung mit dem Fehler — der nächste Abruf versucht es
+ * erneut, der Benutzer sieht, woran es hängt.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal eBay-Kanal
- * @return array imported, skipped, fetched, errors
+ * @param array $bestellung Bestellung von eBay
+ * @return string invoiced, review, waiting_payment, cancelled, history, ignored oder error
+ */
+function shopEbayImportOrder($db, int $kanal, array $bestellung): string {
+    if ('' === trim($bestellung['orderId'] ?? '')) {
+        return 'skipped';
+    }
+    $zeile = $db->getOne(
+        "SELECT ebay_order_upsert(CAST(:kanal AS integer), CAST(:roh AS jsonb)) AS r",
+        [':kanal' => $kanal, ':roh' => json_encode($bestellung, JSON_UNESCAPED_UNICODE)]
+    );
+    $ergebnis = json_decode((string)($zeile['r'] ?? '{}'), true) ?: [];
+    if ('invoice' !== ($ergebnis['action'] ?? '')) {
+        return (string)($ergebnis['state'] ?? 'skipped');
+    }
+    try {
+        shopEbayInvoiceOrder($db, (int)$ergebnis['id'],
+                             isset($ergebnis['customer_id']) ? (int)$ergebnis['customer_id'] : null, false, 'auto');
+        return 'invoiced';
+    } catch (\Throwable $e) {
+        $db->execute("UPDATE ebay_orders SET state = 'review', error = :fehler, mtime = now() WHERE id = :id",
+                     [':fehler' => $e->getMessage(), ':id' => (int)$ergebnis['id']]);
+        return 'error';
+    }
+}
+
+/**
+ * Holt die geänderten Bestellungen seit dem letzten Abruf
+ *
+ * Nach dem Änderungsdatum (lastmodifieddate), nicht nach dem Kaufdatum: so
+ * kommt eine Bestellung wieder, wenn sie bezahlt, storniert oder erstattet
+ * wird. Zehn Minuten Überlappung fangen späte Änderungen bei eBay ab;
+ * ebay_order_upsert() verträgt Wiederholungen. Danach die Versandmeldungen.
+ * Der Zeitpunkt wird nur gemerkt, wenn alles durchlief.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
+ * @return array fetched, invoiced, review, waiting_payment, cancelled, history, errors, shipped
  * @throws ApiError EBAY_DISABLED, EBAY_API_ERROR, EBAY_ACCOUNT_IN_USE
  */
 function shopEbayImportOrders($db, int $kanal): array {
@@ -315,19 +316,23 @@ function shopEbayImportOrders($db, int $kanal): array {
         throw new ApiError('EBAY_DISABLED', 'Der eBay-Kanal ist abgeschaltet (Shop → Verkaufskanäle)');
     }
     $cfg = shopEbayConfig($db, $kanal);
+    // Erster Abruf: Rechnungen ab jetzt, ältere Verkäufe sind schon abgerechnet
+    if ('' === trim((string)($cfg['import_since'] ?? ''))) {
+        shopEbaySetConfig($db, $kanal, 'import_since', date('Y-m-d\TH:i'));
+    }
 
     $von = !empty($cfg['order_last_check'])
-        ? $cfg['order_last_check']
+        ? gmdate('Y-m-d\TH:i:s.000\Z', strtotime($cfg['order_last_check']) - 600)
         : gmdate('Y-m-d\TH:i:s.000\Z', time() - 86400);
     $bis = gmdate('Y-m-d\TH:i:s.000\Z');
 
-    $bilanz = ['imported' => 0, 'skipped' => 0, 'fetched' => 0, 'errors' => []];
+    $bilanz = ['fetched' => 0, 'invoiced' => 0, 'review' => 0, 'waiting_payment' => 0, 'cancelled' => 0,
+               'history' => 0, 'errors' => [], 'shipped' => 0];
     $grenze = 50;
     $versatz = 0;
-
     do {
         $antwort = shopEbayApi($db, $kanal, 'GET', '/sell/fulfillment/v1/order', null, [
-            'filter' => 'creationdate:['.$von.'..'.$bis.']',
+            'filter' => 'lastmodifieddate:['.$von.'..'.$bis.']',
             'limit'  => $grenze,
             'offset' => $versatz,
         ]);
@@ -340,7 +345,12 @@ function shopEbayImportOrders($db, int $kanal): array {
 
         foreach ($bestellungen as $bestellung) {
             try {
-                'imported' === shopEbayImportOrder($db, $kanal, $bestellung, $cfg) ? $bilanz['imported']++ : $bilanz['skipped']++;
+                $stand = shopEbayImportOrder($db, $kanal, $bestellung);
+                if ('error' === $stand) {
+                    $bilanz['errors'][] = ($bestellung['orderId'] ?? '?').': siehe Prüfung';
+                } elseif (isset($bilanz[$stand]) && is_int($bilanz[$stand])) {
+                    $bilanz[$stand]++;
+                }
             } catch (\Throwable $e) {
                 $bilanz['errors'][] = ($bestellung['orderId'] ?? '?').': '.$e->getMessage();
             }
@@ -348,10 +358,77 @@ function shopEbayImportOrders($db, int $kanal): array {
         $versatz += $grenze;
     } while ($versatz < $gesamt && $bestellungen);
 
-    if (!$bilanz['errors']) {
+    if (!array_filter($bilanz['errors'], fn($f) => !str_ends_with($f, ': siehe Prüfung'))) {
         shopEbaySetConfig($db, $kanal, 'order_last_check', $bis);
     }
+
+    // Sendungsnummern der abgerechneten Bestellungen an eBay melden
+    $bilanz['shipped'] = shopEbayPushTracking($db, $kanal);
     return $bilanz;
+}
+
+/**
+ * Meldet versandte Bestellungen an eBay: Sendungsnummer und Versanddienst
+ *
+ * Nimmt die eingetragene Nummer oder die des DHL-Etiketts der Rechnung.
+ * eBay setzt die Bestellung dann auf „Versendet“, der Käufer bekommt die
+ * Sendungsverfolgung. Braucht das Recht sell.fulfillment („Mit eBay
+ * verbinden“); ohne bleibt der Grund an der Bestellung stehen.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal eBay-Kanal
+ * @param int $nur nur diese Bestellung (ebay_orders.id), 0 = alle offenen
+ * @return int gemeldete Bestellungen
+ */
+function shopEbayPushTracking($db, int $kanal, int $nur = 0): int {
+    $offen = $db->getAll(
+        "SELECT e.id, e.ebay_order_id,
+                COALESCE(NULLIF(e.tracking_number, ''), d.shipment_no) AS nummer,
+                COALESCE(NULLIF(e.carrier, ''), 'DHL') AS dienst,
+                (SELECT jsonb_agg(jsonb_build_object('lineItemId', li ->> 'lineItemId', 'quantity', COALESCE((li ->> 'quantity')::int, 1)))
+                   FROM jsonb_array_elements(COALESCE(e.raw -> 'lineItems', '[]'::jsonb)) li)::text AS positionen
+           FROM ebay_orders e
+           LEFT JOIN LATERAL (SELECT x.shipment_no FROM dhl_shipments x
+                               WHERE x.record_type = 'invoice' AND x.record_id = e.ar_id
+                               ORDER BY x.id DESC LIMIT 1) d ON true
+          WHERE e.channel_id = CAST(:kanal AS integer)
+            AND e.ar_id IS NOT NULL AND e.shipped_at IS NULL
+            AND COALESCE(e.order_status, '') <> 'FULFILLED'
+            AND COALESCE(e.cancel_state, '') NOT IN ('CANCELED', 'CANCELLED')
+            AND COALESCE(NULLIF(e.tracking_number, ''), d.shipment_no) IS NOT NULL
+            AND (CAST(:nur AS integer) = 0 OR e.id = CAST(:nur_id AS integer))
+            -- abgelehnte Meldungen nicht bei jedem Abruf wiederholen
+            AND (e.ship_error IS NULL OR CAST(:nur_wieder AS integer) > 0)",
+        [':kanal' => $kanal, ':nur' => $nur, ':nur_id' => $nur, ':nur_wieder' => $nur]
+    ) ?: [];
+
+    $gemeldet = 0;
+    foreach ($offen as $zeile) {
+        $antwort = shopEbayApi($db, $kanal, 'POST',
+            '/sell/fulfillment/v1/order/'.rawurlencode((string)$zeile['ebay_order_id']).'/shipping_fulfillment', [
+                'lineItems'           => json_decode((string)$zeile['positionen'], true) ?: [],
+                'shippedDate'         => gmdate('Y-m-d\TH:i:s.000\Z'),
+                'shippingCarrierCode' => strtoupper((string)$zeile['dienst']),
+                'trackingNumber'      => preg_replace('/\s+/', '', (string)$zeile['nummer']),
+            ]);
+        $ok = $antwort['status'] < 400;
+        $db->execute(
+            "UPDATE ebay_orders
+                SET shipped_at = CASE WHEN :ok = 1 THEN now() END,
+                    tracking_number = :nummer, carrier = :dienst,
+                    ship_error = CASE WHEN :ok_fehler = 1 THEN NULL ELSE :fehler END,
+                    order_status = CASE WHEN :ok_stand = 1 THEN 'FULFILLED' ELSE order_status END, mtime = now()
+              WHERE id = :id",
+            [':ok' => $ok ? 1 : 0, ':ok_fehler' => $ok ? 1 : 0, ':ok_stand' => $ok ? 1 : 0,
+             ':nummer' => (string)$zeile['nummer'], ':dienst' => strtoupper((string)$zeile['dienst']),
+             ':fehler' => 403 === $antwort['status']
+                 ? 'eBay verweigert die Versandmeldung — Kanal neu „Mit eBay verbinden“, damit OSERP Versand melden darf'
+                 : shopEbayErrorMessage($antwort),
+             ':id' => (int)$zeile['id']]
+        );
+        $gemeldet += $ok ? 1 : 0;
+    }
+    return $gemeldet;
 }
 
 /**
@@ -371,14 +448,14 @@ function shopEbayStatus($db, int $kanal): array {
                     SELECT COUNT(*) AS total,
                            COUNT(*) FILTER (WHERE posting_reason = 'posted') AS posted,
                            COUNT(*) FILTER (WHERE posting_reason <> 'posted') AS unposted
-                      FROM ebay_orders WHERE channel_id = c.id) z) AS counts,
+                      FROM ebay_orders WHERE channel_id = c.id AND ar_id IS NOT NULL) z) AS counts,
                 (SELECT COALESCE(json_agg(r ORDER BY r.id DESC), '[]'::json) FROM (
                     SELECT e.id, e.ebay_order_id, e.buyer_username, e.total, e.posting_reason, e.itime,
                            a.invnumber, cu.name AS customer_name
                       FROM ebay_orders e
                       LEFT JOIN ar a ON a.id = e.ar_id
                       LEFT JOIN customer cu ON cu.id = e.customer_id
-                     WHERE e.channel_id = c.id
+                     WHERE e.channel_id = c.id AND e.ar_id IS NOT NULL
                      ORDER BY e.id DESC LIMIT 20) r) AS recent
            FROM sales_channel_shop c
           WHERE c.id = CAST(:kanal_zeile AS integer)",

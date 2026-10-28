@@ -3115,7 +3115,21 @@ CREATE TABLE IF NOT EXISTS ebay_orders (
     posting_reason  VARCHAR(40),                                -- Ergebnis von postArInvoiceToLedger (posted/AMOUNT_MISMATCH/...)
     raw             JSONB,                                      -- Rohbestellung von eBay (Audit/Reklamation)
     itime           TIMESTAMP DEFAULT NOW(),
-    mtime           TIMESTAMP DEFAULT NOW()
+    mtime           TIMESTAMP DEFAULT NOW(),
+    -- Verkäufe mit Prüfung (dev/shop-ebay.md): erst Käufer klären, dann Rechnung
+    state           VARCHAR(20) DEFAULT 'invoiced',             -- invoiced, review, waiting_payment, cancelled, history, error
+    match           JSONB,                                      -- Kundenabgleich: Stufe, Vorschlag, Kandidaten mit Gründen
+    payment_status  VARCHAR(30),                                -- eBay orderPaymentStatus (PAID, PENDING, FULLY_REFUNDED …)
+    cancel_state    VARCHAR(30),                                -- eBay cancelStatus.cancelState (NONE_REQUESTED, CANCELED …)
+    ordered_at      TIMESTAMP,                                  -- creationDate der Bestellung bei eBay
+    modified_at     TIMESTAMP,                                  -- lastModifiedDate bei eBay
+    error           TEXT,                                       -- letzter Fehler beim Abrechnen
+    decided_by      TEXT,                                       -- wer den Käufer geklärt hat (Login, auto)
+    decided_at      TIMESTAMP,
+    tracking_number TEXT,                                       -- Sendungsnummer, an eBay gemeldet
+    carrier         TEXT,                                       -- Versanddienst für eBay (DHL, DPD, HERMES …)
+    shipped_at      TIMESTAMP,                                  -- an eBay als versendet gemeldet
+    ship_error      TEXT                                        -- letzte Ablehnung der Versandmeldung
 );
 
 CREATE INDEX IF NOT EXISTS idx_ebay_orders_buyer ON ebay_orders(buyer_username);

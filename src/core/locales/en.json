@@ -82,6 +82,7 @@
             "gutachtenImport": "Appraisal import",
             "gutachtenReview": "Weroni legal review (appraisal)",
             "kleinanzeigen": "Kleinanzeigen (ad text, reply)",
+            "ebay": "eBay (product page, title, item specifics)",
             "accounting": "Document recognition",
             "businessCard": "Business card scan",
             "phoneSearch": "Phone lookup",

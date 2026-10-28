@@ -53,8 +53,25 @@
                         {{ error }}
                     </v-alert>
 
-                    <!-- Noch keine Prüfung -->
-                    <div v-if="!review && !error" class="d-flex flex-column align-center py-10 text-center">
+                    <!-- Gutachten importiert, Prüfung startet erst auf Knopfdruck -->
+                    <div v-if="!review && pending" class="d-flex flex-column align-center py-10 text-center">
+                        <v-icon size="48" color="deep-purple" class="mb-3">mdi-scale-balance</v-icon>
+                        <div class="text-body-1 mb-1">{{ t('FakturaView.faktura.weroni.pendingTitle') }}</div>
+                        <div class="text-body-2 text-medium-emphasis mb-4" style="max-width: 520px">
+                            {{ t('FakturaView.faktura.weroni.pendingHint') }}
+                        </div>
+                        <div class="d-flex flex-wrap justify-center ga-2">
+                            <v-btn color="deep-purple" variant="elevated" prepend-icon="mdi-scale-balance" @click="$emit('rerun')">
+                                {{ t('FakturaView.faktura.weroni.start') }}
+                            </v-btn>
+                            <v-btn variant="text" prepend-icon="mdi-file-pdf-box" @click="$emit('import-gutachten')">
+                                {{ t('FakturaView.faktura.importGutachten') }}
+                            </v-btn>
+                        </div>
+                    </div>
+
+                    <!-- Noch kein Gutachten -->
+                    <div v-else-if="!review && !error" class="d-flex flex-column align-center py-10 text-center">
                         <v-icon size="48" color="deep-purple" class="mb-3">mdi-scale-balance</v-icon>
                         <div class="text-body-1 mb-1">{{ t('FakturaView.faktura.weroni.emptyTitle') }}</div>
                         <div class="text-body-2 text-medium-emphasis mb-4" style="max-width: 520px">
@@ -320,6 +337,8 @@ export default defineComponent({
         sending: { type: String, default: '' },
         error: { type: String, default: '' },
         review: { type: Object, default: null },
+        // Analyse liegt vor, aber noch keine Prüfung
+        pending: { type: Boolean, default: false },
         createdAt: { type: String, default: '' },
         communicated: { type: Array, default: () => [] },
         customer: { type: Object, default: null },

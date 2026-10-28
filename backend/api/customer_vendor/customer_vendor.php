@@ -149,9 +149,16 @@ function getCV($data, $withConfig = []) {
         ? "false"
         : "COALESCE((SELECT hu_serienbrief_excluded FROM customer_ext WHERE customer_id = $cv_id), false)";
 
+    // LxCars: erste Arbeitsanweisung, ohne Anweisung die erste Position
+    $orderFirstPosition = "SELECT oi.description FROM orderitems oi WHERE oi.trans_id = oe.id ORDER BY oi.position LIMIT 1";
     $orderFirstDescription = $lxCars
-        ? "SELECT il.description FROM oe_instructions_lxcars il WHERE il.oe_id = oe.id ORDER BY il.sort_order, il.id LIMIT 1"
-        : "SELECT oi.description FROM orderitems oi WHERE oi.trans_id = oe.id ORDER BY oi.position LIMIT 1";
+        ? "SELECT COALESCE(
+               (SELECT il.description FROM oe_instructions_lxcars il
+                 WHERE il.oe_id = oe.id AND btrim(il.description) <> ''
+                 ORDER BY il.sort_order, il.id LIMIT 1),
+               ($orderFirstPosition)
+           ) AS description"
+        : $orderFirstPosition;
 
     $deliveryOrderType  = $isVendor ? 'purchase_delivery_order' : 'sales_delivery_order';
     $reclamationType    = $isVendor ? 'purchase_reclamation'    : 'sales_reclamation';

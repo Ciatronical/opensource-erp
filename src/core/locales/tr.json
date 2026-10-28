@@ -83,7 +83,8 @@
             "phoneSearch": "Telefonla arama",
             "callTranscript": "Çağrı değerlendirmesi",
             "banking": "Likidite tahmini",
-            "orderConfirm": "Sipariş onayı"
+            "orderConfirm": "Sipariş onayı",
+            "ebay": "eBay (ürün sayfası, başlık, ürün özellikleri)"
         }
     },
     "passwordField": {

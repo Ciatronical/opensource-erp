@@ -504,3 +504,60 @@ function shopBookStock($db, int $arId): int {
         return 0;
     }
 }
+
+/**
+ * Ruft Claude für einen KI-Assistenten des Shops auf und liefert den Antworttext
+ *
+ * Kleinanzeigen (Anzeigentexte, Antworten) und eBay (Produktseiten) — das
+ * Modell kommt aus der Einstellung des Assistenten oder der Wahl am Prompt.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $assistent Name aus aiAssistants(), etwa kleinanzeigen oder ebay
+ * @param string $prompt Aufgabe
+ * @param string|null $modell Modellwahl aus dem Request
+ * @param int $maxTokens Antwortlänge
+ * @return string
+ * @throws ApiError MISSING_API_KEYS, CLAUDE_API_ERROR
+ */
+function shopAiAsk($db, string $assistent, string $prompt, ?string $modell, int $maxTokens = 1200): string {
+    $config = $db->fetchKeyValue(
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '".aiModelConfigKey($assistent)."')"
+    );
+    $schluessel = trim($config['anthropic_api_key'] ?? '');
+    if ('' === $schluessel) {
+        throw new ApiError('MISSING_API_KEYS', 'Anthropic API-Key ist nicht konfiguriert (Firmenkonfiguration → KI)');
+    }
+
+    $curl = curl_init('https://api.anthropic.com/v1/messages');
+    curl_setopt_array($curl, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode([
+            'model'      => resolveAiModel($config, $assistent, $modell),
+            'max_tokens' => $maxTokens,
+            'messages'   => [['role' => 'user', 'content' => $prompt]],
+        ], JSON_UNESCAPED_UNICODE),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 120,
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'x-api-key: '.$schluessel,
+            'anthropic-version: 2023-06-01',
+        ],
+    ]);
+    $antwort = curl_exec($curl);
+    $status = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $fehler = curl_error($curl);
+    curl_close($curl);
+
+    if ($fehler) {
+        throw new ApiError('CLAUDE_API_ERROR', 'cURL-Fehler: '.$fehler);
+    }
+    if (200 !== $status) {
+        throw new ApiError('CLAUDE_API_ERROR', 'Claude API Fehler (HTTP '.$status.'): '.$antwort);
+    }
+    $text = aiResponseText(json_decode((string)$antwort, true));
+    if ('' === $text) {
+        throw new ApiError('CLAUDE_API_ERROR', 'Leere Antwort von Claude');
+    }
+    return $text;
+}

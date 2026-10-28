@@ -811,17 +811,21 @@ Siehe [Abschnitt 16.13](#1613-anpr--kennzeichenerkennung).
 ### 13.3 eBay *(extern, Verkaufskanal der Shop-Erweiterung)*
 
 eBay ist ein Verkaufskanal der Shop-Erweiterung und setzt sie voraus
-(`dev/shop-verkaufskanaele.md`). Einstellungen im Reiter Shop, Angebote in der
-Shop-Karte des Artikels.
+(`dev/shop-verkaufskanaele.md`, `dev/shop-ebay.md`). Arbeitsplatz ist das
+**eBay-Board** im Shop-Menü, Zugang und Vorgaben in der Kanalkarte. Seite:
+[eBay](ebay.md).
 
-- **Verbindungstest** (Token + Probeabruf), Sandbox und Produktion
-- **Bestellimport**: neue Bestellungen seit dem letzten Lauf, idempotent — Kunde wird ohne Dubletten ermittelt oder angelegt, Positionen werden per SKU auf Artikel gemappt, Rechnung wird erzeugt und gebucht, Waren werden vom eingestellten Lagerplatz ausgebucht
-- Manueller Abruf und automatischer Cronjob
-- **Status**: letzter Lauf, zuletzt importierte Bestellungen
-- **Angebote** über die Warteschlange: einstellen, aktualisieren, beenden; Preis mit Kanalaufschlag und Rundung auf ,99, Titel und Beschreibung je Kanal, Menge = Lagerbestand, Kategorie und Zustand je Artikel
-- **Automatischer Abgleich** bei Änderung von Preis, Bestand, Texten, Bildern oder Kanalauswahl
-- **Bilder** je Kanal, öffentliche Bild-URLs (https) für eBay
-- Stand des Angebots je Artikel mit Fehlermeldung
+- **Mit eBay verbinden** per Anmeldung im Popup (OAuth mit RuName), Token erneuern sich selbst; Sandbox und Produktion; Verbindungstest
+- **Angebote übernehmen**: alle laufenden Angebote des Kontos (auch aus dem Seller Hub, mit Varianten) lesen und Artikeln zuordnen — automatisch über SKU, EAN, Herstellernummer, als Vorschlag über den Titel, von Hand per Suche; **Als Artikel anlegen** mit Bild und auf Wunsch eBay-Menge als Bestand
+- **Abgleich übernommener Angebote** je Kanal: aus, Menge = Lager, Menge und Preis; Filter für Überverkauf, Mengen- und Preisabweichung; übernommene Angebote werden nie von OSERP beendet
+- **Verkäufe mit Käuferprüfung**: Abgleich gegen den Kundenstamm mit Punkten und Gründen (bekannter eBay-Käufer, E-Mail, Telefon, Name, Straße, PLZ); eindeutige Käufer werden automatisch abgerechnet, unklare im Reiter **Prüfen** mit Kandidaten, „Neuer Kunde“, Kundensuche, „Anschrift ändern“ bei Umzug, Tastaturbedienung und „Alle Vorschläge übernehmen“; Entscheidungen werden gelernt
+- **Rechnung** brutto mit Positionen nach Artikel und Los, Versandkosten, Lieferanschrift, eBay-Bestellnummer, Buchung, Nettobetrag, Lagerausbuchung
+- Bestellungen nach Änderungsdatum: **Wartet auf Zahlung**, storniert/erstattet ohne Rechnung, **Gutschrift nötig** bei späterem Storno, Rechnungsbeginn je Kanal
+- **Versand melden**: Sendungsnummer aus dem DHL-Etikett automatisch, andere Versanddienste von Hand — eBay setzt „Versendet“
+- **Produktseiten mit KI**: Editor mit Live-Vorschau (Rechner/Telefon), Vorlagen Klar/Modern/Kompakt, Farbe, Titel mit Alternativen, Stichpunkte, Text, technische Daten, eBay-Artikelmerkmale, Passform, Lieferumfang, Hinweise, Fußtexte aus dem Kanal; KI-Assistent **eBay** mit eigener Modellwahl
+- **Angebote einstellen** über die Warteschlange (Inventory-API): Preis mit Kanalaufschlag und Rundung auf ,99, Menge = Lagerbestand, Kategorie und Zustand je Artikel, Bilder je Kanal; automatischer Abgleich bei Änderung von Preis, Bestand, Texten, Bildern oder Kanalauswahl
+- **Lohnt sich bei eBay**: Ladenhüter mit Bestand als Vorschläge zum Anbieten
+- Cronjob: Bestellungen, Versandmeldungen, alle 6 Stunden Angebote
 
 ### 13.3a HugoShop & Verkaufskanäle *(Shop)*
 
@@ -1128,7 +1132,7 @@ Vereinfachte, tablet-taugliche Ansicht für die Werkstatt. Aktivierung und Mitar
 **Gutachten-Import (PDF/Foto per KI)**
 
 - Fremde Gutachten und Kostenvoranschläge jeder Herkunft als PDF oder Foto auslesen und den Auftrag damit ausfüllen: Fahrzeug (anlegen/verknüpfen/ergänzen), km-Stand, Gutachten- und Schadennummer, Versicherung sowie alle Kalkulationspositionen (Teile, Lohn, Lack, Nebenkosten) – Vorschau mit abwählbaren Positionen und Summenabgleich, Datei wird im Fahrzeugordner abgelegt
-- **Weroni Rechtsprüfung**: prüft das Gutachten nach dem Import vollständig (130-%-Regel, Wiederbeschaffungswert/Restwert, Wertminderung, Nutzungsausfall, Gutachterkosten, Haftung, Werkstattrisiko), entscheidet mit Ampel, stellt die Ansprüche des Kunden auf und formuliert die Kommunikation an Kunde (E-Mail/WhatsApp) und Versicherung – mit Versandprotokoll
+- **Weroni Rechtsprüfung**: prüft das importierte Gutachten auf Knopfdruck vollständig (130-%-Regel, Wiederbeschaffungswert/Restwert, Wertminderung, Nutzungsausfall, Gutachterkosten, Haftung, Werkstattrisiko), entscheidet mit Ampel, stellt die Ansprüche des Kunden auf und formuliert die Kommunikation an Kunde (E-Mail/WhatsApp) und Versicherung – mit Versandprotokoll
 
 ### 16.18 AU / Abgasuntersuchung („Special")
 

@@ -2715,6 +2715,19 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         ('ebay',     'ebay_merchant_location_key',            'merchant_location_key',            false),
         ('ebay',     'ebay_default_parts_id',                 'default_parts_id',                 false),
         ('ebay',     'ebay_employee_login',                   'employee_login',                   false),
+        -- eBay (dev/shop-ebay.md): „Mit eBay verbinden“ (RuName der
+        -- Rücksprungadresse), Verkäufe mit Prüfung, übernommene Angebote,
+        -- Produktseiten. Alte Schlüssel gab es nie.
+        ('ebay',     'ebay_ru_name',                          'ru_name',                          false),
+        ('ebay',     'ebay_auto_invoice',                     'auto_invoice',                     false),
+        ('ebay',     'ebay_import_since',                     'import_since',                     false),
+        ('ebay',     'ebay_legacy_sync',                      'legacy_sync',                      false),
+        ('ebay',     'ebay_default_buchungsgruppen_id',       'default_buchungsgruppen_id',       false),
+        ('ebay',     'ebay_page_template',                    'page_template',                    false),
+        ('ebay',     'ebay_page_color',                       'page_color',                       false),
+        ('ebay',     'ebay_page_shipping',                    'page_shipping',                    false),
+        ('ebay',     'ebay_page_returns',                     'page_returns',                     false),
+        ('ebay',     'ebay_page_about',                       'page_about',                       false),
         -- Kleinanzeigen (dev/shop-kleinanzeigen.md): keine Schnittstelle, die
         -- Schlüssel gab es nie in defaults_oserp — die Abschrift findet nichts.
         -- Konto und Standort der Anzeigen
@@ -3322,4 +3335,765 @@ CREATE OR REPLACE FUNCTION kleinanzeigen_board(p_channel_id integer) RETURNS jso
                                   ORDER BY (l.status = 'open') DESC, l.received_at DESC LIMIT 100) l
                            LEFT JOIN parts p ON p.id = l.parts_id)
            )
+$$;
+
+-- ============================================================================
+-- EBAY: ÜBERNOMMENE ANGEBOTE, VERKÄUFE MIT PRÜFUNG, PRODUKTSEITEN
+-- ============================================================================
+--
+-- dev/shop-ebay.md. Drei Teile:
+--
+--   Angebote   Was schon bei eBay steht (über Seller Hub eingestellt, nicht
+--              über OSERP), liest der Abgleich in ebay_listing_shop und ordnet
+--              es den Artikeln zu: Artikelnummer = SKU, EAN, Herstellernummer,
+--              sonst als Vorschlag über den Titel. Eine Zuordnung ist eine
+--              Kanalzeile (parts_channel_shop) mit sync_data.legacy_item_id —
+--              derselbe Weg wie beim Einstellen: Bestand und Preis lösen über
+--              die Trigger einen Auftrag aus, der das bestehende Angebot ändert
+--              statt ein zweites anzulegen. Ob OSERP Menge und Preis schreibt,
+--              sagt die Kanaleinstellung legacy_sync (off, stock, stock_price).
+--   Verkäufe   Bestellungen kommen nach ebay_orders (CRM-Basis) und werden erst
+--              abgerechnet, wenn der Käufer klar ist: ebay_customer_match()
+--              bewertet die Kunden des Stamms; eindeutige rechnet der Abruf
+--              sofort ab, unklare warten in der Prüfung (state review).
+--   Seiten     Die Produktseite (Beschreibung bei eBay) entsteht aus einem
+--              Aufbau in parts_channel_shop.settings.page — Abschnitte,
+--              Merkmale, Vorlage — und steht gerendert in description.
+
+CREATE TABLE IF NOT EXISTS ebay_listing_shop
+(
+    id                  integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    channel_id          integer NOT NULL REFERENCES sales_channel_shop (id) ON DELETE CASCADE,
+    item_id             text NOT NULL,
+    variation_sku       text NOT NULL DEFAULT '',
+    sku                 text,
+    title               text,
+    variation_text      text,
+    price               numeric(15,2),
+    currency            text,
+    quantity            integer,
+    quantity_sold       integer,
+    lot_size            integer NOT NULL DEFAULT 1,
+    ean                 text,
+    mpn                 text,
+    brand               text,
+    image_url           text,
+    view_url            text,
+    category_id         text,
+    category_name       text,
+    condition_name      text,
+    listing_type        text,
+    watch_count         integer,
+    start_time          timestamp without time zone,
+    end_time            timestamp without time zone,
+    status              text NOT NULL DEFAULT 'active',
+    parts_id            integer REFERENCES parts (id) ON DELETE SET NULL,
+    link_source         text,
+    suggestion_parts_id integer REFERENCES parts (id) ON DELETE SET NULL,
+    suggestion_score    numeric(5,1),
+    suggestion_source   text,
+    dismissed_parts_id  integer,
+    raw                 jsonb,
+    seen_at             timestamp without time zone,
+    itime               timestamp without time zone DEFAULT now(),
+    mtime               timestamp without time zone,
+    CONSTRAINT ebay_listing_shop_key UNIQUE (channel_id, item_id, variation_sku),
+    CONSTRAINT ebay_listing_shop_status_check CHECK (status IN ('active', 'ended'))
+);
+
+COMMENT ON TABLE  ebay_listing_shop                     IS 'Shop: Angebote eines eBay-Kontos, wie der Abgleich sie zuletzt sah — auch die außerhalb von OSERP eingestellten';
+COMMENT ON COLUMN ebay_listing_shop.item_id             IS 'eBay-Artikelnummer (ItemID)';
+COMMENT ON COLUMN ebay_listing_shop.variation_sku       IS 'SKU der Variante, leer bei Angeboten ohne Varianten — eine Zeile je Variante';
+COMMENT ON COLUMN ebay_listing_shop.quantity            IS 'Bei eBay verfügbare Menge (in Losen)';
+COMMENT ON COLUMN ebay_listing_shop.lot_size            IS 'Stück je Los; die Menge bei eBay zählt Lose';
+COMMENT ON COLUMN ebay_listing_shop.status              IS 'active (im letzten Abgleich gesehen) oder ended';
+COMMENT ON COLUMN ebay_listing_shop.parts_id            IS 'Zugeordneter Artikel; dazu gehört eine Kanalzeile mit sync_data.legacy_item_id';
+COMMENT ON COLUMN ebay_listing_shop.link_source         IS 'Wie zugeordnet: sku, ean, mpn, manual, created (aus dem Angebot angelegt), inventory (von OSERP eingestellt)';
+COMMENT ON COLUMN ebay_listing_shop.suggestion_parts_id IS 'Vorschlag des Abgleichs, wartet auf Bestätigung';
+COMMENT ON COLUMN ebay_listing_shop.dismissed_parts_id  IS 'Abgelehnter Vorschlag — wird nicht wieder vorgeschlagen';
+
+-- Neue eBay-Kanäle: Rechnungen eindeutiger Käufer gleich anlegen, an
+-- bestehenden Angeboten nichts schreiben, bis der Benutzer es einschaltet
+CREATE OR REPLACE FUNCTION shop_channel_default_settings(p_type text) RETURNS jsonb
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE p_type
+        WHEN 'hugoshop' THEN jsonb_build_object(
+            'downloads_link',                   '/downloads/%s',
+            'template_set',                     'standard',
+            'auto_publish',                     '1',
+            'channel_off_pages',                'draft',
+            'invoice_mail_subject',             'Ihre Rechnung (%s) vom %s',
+            'paypal_sandbox',                   '1',
+            'paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED')
+        WHEN 'ebay' THEN jsonb_build_object(
+            'environment',                      'production',
+            'marketplace_id',                   'EBAY_DE',
+            'content_language',                 'de-DE',
+            'currency',                         'EUR',
+            'default_condition',                'NEW',
+            'auto_invoice',                     '1',
+            'legacy_sync',                      'off',
+            'page_template',                    'klar',
+            'page_color',                       '#1f6feb')
+        -- Kleinanzeigen (dev/shop-kleinanzeigen.md): Preisart Verhandlungsbasis,
+        -- Abholung und Versand, Anzeigen nach 30 Tagen auffrischen
+        WHEN 'kleinanzeigen' THEN jsonb_build_object(
+            'price_type',                       'negotiable',
+            'shipping',                         'both',
+            'default_condition',                'good',
+            'refresh_days',                     '30',
+            'lead_mail_folder',                 'INBOX',
+            'text_style',                       'sachlich')
+        ELSE '{}'::jsonb END
+$$;
+
+-- Bestehende eBay-Kanäle bekommen die neuen Vorgaben, ohne Eingetragenes zu ändern
+UPDATE sales_channel_shop
+   SET settings = jsonb_build_object('auto_invoice', '1', 'legacy_sync', 'off',
+                                     'page_template', 'klar', 'page_color', '#1f6feb')
+                  || COALESCE(settings, '{}'::jsonb)
+ WHERE type = 'ebay'
+   AND NOT jsonb_exists(COALESCE(settings, '{}'::jsonb), 'legacy_sync');
+
+-- ── Normalformen für den Abgleich ──
+-- Kleinbuchstaben, Umlaute ausgeschrieben, Akzente weg, alles außer Buchstaben
+-- und Ziffern als ein Leerzeichen: „Müller-Lüdenscheidt“ = „mueller luedenscheidt“
+CREATE OR REPLACE FUNCTION ebay_norm(p text) RETURNS text
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT btrim(regexp_replace(
+               replace(replace(replace(replace(
+                   translate(lower(COALESCE(p, '')), 'áàâãåéèêëíìîïóòôõøúùûýÿçñ', 'aaaaaeeeeiiiiooooouuuyycn'),
+                   'ä', 'ae'), 'ö', 'oe'), 'ü', 'ue'), 'ß', 'ss'),
+               '[^a-z0-9]+', ' ', 'g'))
+$$;
+
+-- Name mit sortierten Wörtern: „Müller, Hans“ = „Hans Müller“
+CREATE OR REPLACE FUNCTION ebay_norm_name(p text) RETURNS text
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT COALESCE(string_agg(w, ' ' ORDER BY w), '')
+      FROM regexp_split_to_table(ebay_norm(p), ' ') w
+     WHERE w <> ''
+$$;
+
+-- Straße ohne Leerzeichen, Straße/Str. gleich: „Karl-Frank-Str. 30“ = „Karl Frank Straße 30“
+CREATE OR REPLACE FUNCTION ebay_norm_street(p text) RETURNS text
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT replace(regexp_replace(ebay_norm(p), '(strasse|str)( |$)', 'str\2', 'g'), ' ', '')
+$$;
+
+-- Telefon: die letzten neun Ziffern, Ländervorwahl 49 wie die Null; leer unter sechs Ziffern
+CREATE OR REPLACE FUNCTION ebay_norm_phone(p text) RETURNS text
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE WHEN length(z) >= 6 THEN right(z, 9) ELSE '' END
+      FROM (SELECT regexp_replace(regexp_replace(COALESCE(p, ''), '[^0-9+]', '', 'g'), '^(\+|00)49', '0') AS roh) r
+      CROSS JOIN LATERAL (SELECT regexp_replace(r.roh, '[^0-9]', '', 'g') AS z) d
+$$;
+
+-- Bruttopreis eines Artikels im Kanal — eBay rechnet brutto
+CREATE OR REPLACE FUNCTION ebay_gross_price(p_parts_id integer, p_channel_id integer) RETURNS numeric
+    LANGUAGE sql STABLE AS $$
+    SELECT ROUND(CASE WHEN COALESCE((SELECT lower(btrim(value)) FROM defaults_oserp WHERE key = 'shop_tax_included'), '')
+                           IN ('t', 'true', '1', 'y', 'yes')
+                      THEN shop_channel_price(p.id, p_channel_id)
+                      ELSE shop_channel_price(p.id, p_channel_id)
+                           * (1 + shop_tax_rate(p.buchungsgruppen_id,
+                                  COALESCE((SELECT value FROM defaults_oserp WHERE key = 'shop_standard_taxzone'), 'Inland')))
+                 END, 2)
+      FROM parts p WHERE p.id = p_parts_id
+$$;
+
+-- ── Käufer ──
+-- Der Käufer einer Bestellung in einer Form: Rechnungsanschrift ist die
+-- Registrierungsadresse (buyer.buyerRegistrationAddress), sonst die
+-- Lieferanschrift; ship ist immer die Lieferanschrift.
+CREATE OR REPLACE FUNCTION ebay_buyer(p_order jsonb) RETURNS jsonb
+    LANGUAGE sql IMMUTABLE AS $$
+    WITH r AS (
+        SELECT NULLIF(p_order -> 'buyer' -> 'buyerRegistrationAddress', 'null'::jsonb) AS reg,
+               NULLIF(p_order -> 'fulfillmentStartInstructions' -> 0 -> 'shippingStep' -> 'shipTo', 'null'::jsonb) AS ship
+    ), a AS (
+        SELECT r.reg, r.ship, COALESCE(r.reg, r.ship, '{}'::jsonb) AS bill FROM r
+    )
+    SELECT jsonb_build_object(
+        'username',   btrim(COALESCE(p_order -> 'buyer' ->> 'username', '')),
+        'name',       btrim(COALESCE(a.bill ->> 'fullName', '')),
+        'company',    btrim(COALESCE(a.bill ->> 'companyName', '')),
+        'street',     btrim(concat_ws(' ', a.bill -> 'contactAddress' ->> 'addressLine1', a.bill -> 'contactAddress' ->> 'addressLine2')),
+        'zipcode',    btrim(COALESCE(a.bill -> 'contactAddress' ->> 'postalCode', '')),
+        'city',       btrim(COALESCE(a.bill -> 'contactAddress' ->> 'city', '')),
+        'country',    btrim(COALESCE(a.bill -> 'contactAddress' ->> 'countryCode', '')),
+        'email',      lower(btrim(COALESCE(NULLIF(a.bill ->> 'email', ''), a.ship ->> 'email', ''))),
+        'phone',      btrim(COALESCE(NULLIF(a.bill -> 'primaryPhone' ->> 'phoneNumber', ''), a.ship -> 'primaryPhone' ->> 'phoneNumber', '')),
+        'registered', a.reg IS NOT NULL,
+        'ship', jsonb_build_object(
+            'name',    btrim(COALESCE(a.ship ->> 'fullName', '')),
+            'street',  btrim(concat_ws(' ', a.ship -> 'contactAddress' ->> 'addressLine1', a.ship -> 'contactAddress' ->> 'addressLine2')),
+            'zipcode', btrim(COALESCE(a.ship -> 'contactAddress' ->> 'postalCode', '')),
+            'city',    btrim(COALESCE(a.ship -> 'contactAddress' ->> 'city', '')),
+            'country', btrim(COALESCE(a.ship -> 'contactAddress' ->> 'countryCode', ''))))
+      FROM a
+$$;
+
+-- Wer ist der Käufer im Kundenstamm? Bewertet jeden denkbaren Kunden mit
+-- Punkten (höchstens 100) und sagt, wie sicher das ist:
+--
+--   bekannter eBay-Käufer (frühere Bestellung)   60
+--   gleiche E-Mail                               50
+--   gleiche Telefonnummer                        40
+--   Name gleich / ähnlich (≥ 0,75) / entfernt    40 / 25 / 10
+--   Straße gleich / ähnlich (≥ 0,8)              30 / 15
+--   PLZ gleich                                   15
+--
+--   sure    bester ≥ 85 und kein zweiter in Reichweite (< 60 oder 25 dahinter)
+--   new     keiner ≥ 40 — neuer Kunde, ebenso eindeutig
+--   review  alles dazwischen; dazu ein sicherer Treffer, dessen
+--           Registrierungsadresse nicht mehr zum Stamm passt (umgezogen?)
+--
+-- Lieferanschriften zählen mit (Straße, PLZ), lösen aber kein „umgezogen“
+-- aus: Lieferungen an Werkstatt oder Nachbarn sind normal.
+CREATE OR REPLACE FUNCTION ebay_customer_match(p_order jsonb) RETURNS jsonb
+    LANGUAGE sql STABLE AS $$
+    WITH k AS (
+        SELECT b AS kaeufer,
+               b ->> 'username' AS username,
+               ebay_norm_name(b ->> 'name') AS name_n,
+               ebay_norm_name(b ->> 'company') AS firma_n,
+               ebay_norm_street(b ->> 'street') AS strasse_n,
+               ebay_norm_street(b -> 'ship' ->> 'street') AS liefer_strasse_n,
+               lower(b ->> 'zipcode') AS plz,
+               lower(b -> 'ship' ->> 'zipcode') AS liefer_plz,
+               NULLIF(b ->> 'email', '') AS email,
+               ebay_norm_phone(b ->> 'phone') AS telefon,
+               (b ->> 'registered')::boolean AS registriert
+          FROM (SELECT ebay_buyer(p_order) AS b) x
+    ), bekannt AS (
+        SELECT e.customer_id, count(*) AS bestellungen
+          FROM ebay_orders e, k
+         WHERE k.username <> '' AND e.buyer_username = k.username AND e.customer_id IS NOT NULL
+         GROUP BY e.customer_id
+    ), kandidat AS (
+        SELECT c.*, x.emails AS weitere_emails, x.phone_numbers AS weitere_telefone, bk.bestellungen
+          FROM customer c
+          CROSS JOIN k
+          LEFT JOIN customer_ext x ON x.customer_id = c.id
+          LEFT JOIN bekannt bk ON bk.customer_id = c.id
+         WHERE NOT COALESCE(c.obsolete, false)
+           AND (bk.customer_id IS NOT NULL
+                OR (k.email IS NOT NULL AND lower(c.email) = k.email)
+                OR lower(btrim(c.zipcode)) IN (k.plz, k.liefer_plz)
+                OR (k.name_n <> '' AND similarity(ebay_norm_name(c.name), k.name_n) >= 0.5)
+                OR (k.telefon <> '' AND k.telefon IN (ebay_norm_phone(c.phone), ebay_norm_phone(c.phone3), ebay_norm_phone(c.fax))))
+    ), treffer AS (
+        SELECT c.id, c.customernumber, c.name, c.contact, c.street, c.zipcode, c.city, c.country, c.email, c.phone,
+               COALESCE(c.bestellungen, 0) AS ebay_bestellungen,
+               c.bestellungen IS NOT NULL AS bekannt,
+               k.email IS NOT NULL AND (lower(c.email) = k.email
+                   OR EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(c.weitere_emails) = 'array' THEN c.weitere_emails ELSE '[]'::jsonb END) m
+                               WHERE lower(btrim(m ->> 'email')) = k.email)) AS email_gleich,
+               k.telefon <> '' AND (k.telefon IN (ebay_norm_phone(c.phone), ebay_norm_phone(c.phone3), ebay_norm_phone(c.fax))
+                   OR EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(c.weitere_telefone) = 'array' THEN c.weitere_telefone ELSE '[]'::jsonb END) t
+                               WHERE ebay_norm_phone(t ->> 'number') = k.telefon)) AS telefon_gleich,
+               GREATEST(CASE WHEN k.name_n <> '' THEN similarity(ebay_norm_name(c.name), k.name_n) ELSE 0 END,
+                        CASE WHEN k.name_n <> '' THEN similarity(ebay_norm_name(c.contact), k.name_n) ELSE 0 END,
+                        CASE WHEN k.firma_n <> '' THEN similarity(ebay_norm_name(c.name), k.firma_n) ELSE 0 END) AS name_aehnlich,
+               (k.name_n <> '' AND ebay_norm_name(c.name) IN (k.name_n, k.firma_n))
+                   OR (k.name_n <> '' AND ebay_norm_name(c.contact) = k.name_n) AS name_gleich,
+               lower(btrim(c.zipcode)) = k.plz AS plz_rechnung,
+               lower(btrim(c.zipcode)) IN (k.plz, k.liefer_plz) AS plz_gleich,
+               ebay_norm_street(c.street) = k.strasse_n AND k.strasse_n <> '' AS strasse_rechnung,
+               ebay_norm_street(c.street) IN (k.strasse_n, k.liefer_strasse_n) AND ebay_norm_street(c.street) <> '' AS strasse_gleich,
+               -- ähnlich nur bei gleicher Hausnummer: Nachbarn sind keine Kandidaten
+               GREATEST(CASE WHEN regexp_replace(c.street, '\D', '', 'g') = regexp_replace(k.kaeufer ->> 'street', '\D', '', 'g')
+                             THEN similarity(ebay_norm_street(c.street), k.strasse_n) ELSE 0 END,
+                        CASE WHEN regexp_replace(c.street, '\D', '', 'g') = regexp_replace(k.kaeufer -> 'ship' ->> 'street', '\D', '', 'g')
+                             THEN similarity(ebay_norm_street(c.street), k.liefer_strasse_n) ELSE 0 END) AS strasse_aehnlich,
+               (SELECT count(*) FROM ar WHERE ar.customer_id = c.id) AS rechnungen,
+               k.registriert
+          FROM kandidat c CROSS JOIN k
+    ), bewertet AS (
+        SELECT t.*,
+               LEAST(100,
+                     CASE WHEN t.bekannt THEN 60 ELSE 0 END
+                   + CASE WHEN t.email_gleich THEN 50 ELSE 0 END
+                   + CASE WHEN t.telefon_gleich THEN 40 ELSE 0 END
+                   + CASE WHEN t.name_gleich THEN 40 WHEN t.name_aehnlich >= 0.75 THEN 25 WHEN t.name_aehnlich >= 0.5 THEN 10 ELSE 0 END
+                   + CASE WHEN t.strasse_gleich THEN 30 WHEN t.strasse_aehnlich >= 0.8 THEN 15 ELSE 0 END
+                   + CASE WHEN t.plz_gleich THEN 15 ELSE 0 END) AS punkte,
+               t.registriert AND NOT (t.plz_rechnung AND t.strasse_rechnung) AS anschrift_anders
+          FROM treffer t
+    ), rang AS (
+        SELECT b.*, row_number() OVER (ORDER BY b.punkte DESC, b.bekannt DESC, b.rechnungen DESC, b.id) AS nr
+          FROM bewertet b
+         WHERE b.punkte >= 40
+    ), spitze AS (
+        SELECT e.id AS erster_id, e.punkte AS erster_punkte, COALESCE(e.anschrift_anders, false) AS erster_anders,
+               (SELECT punkte FROM rang WHERE nr = 2) AS zweiter
+          FROM (SELECT 1) x LEFT JOIN rang e ON e.nr = 1
+    ), urteil AS (
+        SELECT s.*,
+               CASE WHEN s.erster_id IS NULL OR s.erster_punkte < 40 THEN 'new'
+                    WHEN s.erster_punkte >= 85 AND (s.zweiter IS NULL OR s.zweiter < 60 OR s.erster_punkte - s.zweiter >= 25)
+                         THEN CASE WHEN s.erster_anders THEN 'review' ELSE 'sure' END
+                    ELSE 'review' END AS stufe,
+               CASE WHEN s.erster_id IS NULL OR s.erster_punkte < 40 THEN NULL
+                    WHEN s.erster_punkte >= 85 AND s.zweiter >= 60 AND s.erster_punkte - s.zweiter < 25 THEN 'several'
+                    WHEN s.erster_punkte >= 85 AND s.erster_anders THEN 'address_changed'
+                    WHEN s.erster_punkte >= 85 THEN NULL
+                    ELSE 'uncertain' END AS grund
+          FROM spitze s
+    )
+    SELECT jsonb_build_object(
+               'state', u.stufe,
+               'reason', u.grund,
+               'customer_id', CASE WHEN u.stufe <> 'new' THEN u.erster_id END,
+               'buyer', (SELECT kaeufer FROM k),
+               'candidates', COALESCE((SELECT jsonb_agg(jsonb_build_object(
+                       'customer_id', r.id, 'customernumber', r.customernumber, 'name', r.name, 'contact', r.contact,
+                       'street', r.street, 'zipcode', r.zipcode, 'city', r.city, 'country', r.country,
+                       'email', r.email, 'phone', r.phone, 'score', r.punkte,
+                       'invoices', r.rechnungen, 'ebay_orders', r.ebay_bestellungen,
+                       'address_changed', r.anschrift_anders,
+                       'hits', jsonb_build_object(
+                           'known', r.bekannt, 'email', r.email_gleich, 'phone', r.telefon_gleich,
+                           'name', CASE WHEN r.name_gleich THEN 'same' WHEN r.name_aehnlich >= 0.75 THEN 'similar'
+                                        WHEN r.name_aehnlich >= 0.5 THEN 'weak' END,
+                           'street', CASE WHEN r.strasse_gleich THEN 'same' WHEN r.strasse_aehnlich >= 0.8 THEN 'similar' END,
+                           'zipcode', r.plz_gleich))
+                   ORDER BY r.nr) FROM rang r WHERE r.nr <= 5), '[]'::jsonb))
+      FROM urteil u
+$$;
+
+-- ── Positionen ──
+-- Artikel jeder Position einer Bestellung, eine Regel für Prüfung und
+-- Rechnung: SKU = Artikelnummer, sonst das zugeordnete Angebot (ItemID,
+-- Variante), sonst der Sammelartikel des Kanals. Stück = Menge × Los: bei
+-- übernommenen Angeboten das Los des Angebots, bei eingestellten die
+-- Mindestabnahme des Artikels (W10).
+CREATE OR REPLACE FUNCTION ebay_order_items(p_channel_id integer, p_order jsonb) RETURNS jsonb
+    LANGUAGE sql STABLE AS $$
+    WITH kanal AS (
+        SELECT NULLIF(btrim(c.settings ->> 'default_parts_id'), '')::integer AS sammel
+          FROM sales_channel_shop c WHERE c.id = p_channel_id
+    ), pos AS (
+        SELECT l.ord, l.e,
+               btrim(COALESCE(l.e ->> 'sku', '')) AS sku,
+               btrim(COALESCE(l.e ->> 'legacyItemId', '')) AS item_id,
+               btrim(COALESCE(l.e ->> 'legacyVariationId', '')) AS variante
+          FROM jsonb_array_elements(COALESCE(p_order -> 'lineItems', '[]'::jsonb)) WITH ORDINALITY l(e, ord)
+    ), zuordnung AS (
+        SELECT p.*,
+               (SELECT x.id FROM parts x WHERE p.sku <> '' AND x.partnumber = p.sku AND NOT COALESCE(x.obsolete, false) LIMIT 1) AS per_sku,
+               (SELECT li FROM ebay_listing_shop li
+                 WHERE li.channel_id = p_channel_id AND li.item_id = p.item_id AND li.parts_id IS NOT NULL
+                 ORDER BY (li.variation_sku = p.sku) DESC, li.variation_sku = '' DESC LIMIT 1) AS angebot
+          FROM pos p
+    ), ergebnis AS (
+        SELECT z.*,
+               COALESCE(z.per_sku, (z.angebot).parts_id, (SELECT sammel FROM kanal)) AS parts_id,
+               CASE WHEN z.per_sku IS NOT NULL THEN 'sku'
+                    WHEN (z.angebot).parts_id IS NOT NULL THEN 'listing'
+                    WHEN (SELECT sammel FROM kanal) IS NOT NULL THEN 'collective' END AS quelle,
+               CASE WHEN z.per_sku IS NULL AND (z.angebot).parts_id IS NOT NULL THEN GREATEST((z.angebot).lot_size, 1)
+                    WHEN z.per_sku IS NOT NULL THEN COALESCE((SELECT CASE WHEN ps.min_qty > 1 THEN CEIL(ps.min_qty)::int END
+                                                                 FROM parts_shipping_shop ps WHERE ps.parts_id = z.per_sku), 1)
+                    ELSE 1 END AS los
+          FROM zuordnung z
+    )
+    SELECT COALESCE(jsonb_agg(jsonb_build_object(
+               'line_item_id', e.e ->> 'lineItemId',
+               'title',        e.e ->> 'title',
+               'sku',          e.sku,
+               'item_id',      e.item_id,
+               'quantity',     GREATEST(COALESCE((e.e ->> 'quantity')::int, 1), 1),
+               'pieces',       GREATEST(COALESCE((e.e ->> 'quantity')::int, 1), 1) * e.los,
+               'total',        COALESCE((e.e -> 'lineItemCost' ->> 'value')::numeric, 0),
+               'parts_id',     e.parts_id,
+               'source',       e.quelle,
+               'partnumber',   p.partnumber,
+               'description',  p.description,
+               'unit',         p.unit,
+               'onhand',       p.onhand,
+               'image_url',    (SELECT li.image_url FROM ebay_listing_shop li
+                                 WHERE li.channel_id = p_channel_id AND li.item_id = e.item_id LIMIT 1))
+               ORDER BY e.ord), '[]'::jsonb)
+      FROM ergebnis e
+      LEFT JOIN parts p ON p.id = e.parts_id
+$$;
+
+-- ── Bestellung einordnen ──
+-- Schreibt eine Bestellung von eBay fest (neu oder geändert) und sagt, ob
+-- jetzt abzurechnen ist. Eine Regel für Abruf und Prüfung:
+--
+--   abgerechnet       bleibt abgerechnet; Zahlung und Storno werden
+--                     nachgetragen (das Board zeigt „Gutschrift nötig“)
+--   vor import_since  history — alte Verkäufe, schon anders abgerechnet
+--   ignoriert         bleibt ignoriert
+--   storniert/erstattet  cancelled
+--   nicht bezahlt     waiting_payment — kommt wieder, sobald bezahlt
+--   geklärt           (decided_at gesetzt, Fehler beim letzten Versuch) → abrechnen
+--   sonst             ebay_customer_match(): sure/new → abrechnen, wenn
+--                     auto_invoice; sonst und bei review → review
+--
+-- action = invoice: der Aufrufer legt die Rechnung an (customer_id leer =
+-- neuer Kunde) — Rechnungen schreibt PHP (createFakturaCore).
+CREATE OR REPLACE FUNCTION ebay_order_upsert(p_channel_id integer, p_order jsonb) RETURNS jsonb
+    LANGUAGE plpgsql AS $$
+DECLARE
+    v_kanal     sales_channel_shop;
+    v_zeile     ebay_orders;
+    v_bezahlt   text := upper(COALESCE(p_order ->> 'orderPaymentStatus', ''));
+    v_storno    text := upper(COALESCE(p_order -> 'cancelStatus' ->> 'cancelState', ''));
+    v_bestellt  timestamp := (p_order ->> 'creationDate')::timestamptz AT TIME ZONE 'UTC';
+    v_ab        timestamp;
+    v_auto      boolean;
+    v_abgleich  jsonb;
+    v_stufe     text;
+    v_aktion    text := 'none';
+    v_kunde     integer;
+    v_neu       boolean;
+BEGIN
+    v_neu := NOT EXISTS (SELECT 1 FROM ebay_orders WHERE ebay_order_id = p_order ->> 'orderId');
+    SELECT * INTO v_kanal FROM sales_channel_shop WHERE id = p_channel_id;
+    v_ab := NULLIF(btrim(v_kanal.settings ->> 'import_since'), '')::timestamp;
+    v_auto := COALESCE(lower(btrim(v_kanal.settings ->> 'auto_invoice')), '1') IN ('1', 't', 'true', 'on');
+
+    INSERT INTO ebay_orders (ebay_order_id, buyer_username, order_status, total, raw, channel_id, state,
+                             payment_status, cancel_state, ordered_at, modified_at, posting_reason)
+    VALUES (p_order ->> 'orderId', btrim(COALESCE(p_order -> 'buyer' ->> 'username', '')),
+            p_order ->> 'orderFulfillmentStatus',
+            COALESCE((p_order -> 'pricingSummary' -> 'total' ->> 'value')::numeric, 0),
+            p_order, p_channel_id, 'review', v_bezahlt, v_storno, v_bestellt,
+            (p_order ->> 'lastModifiedDate')::timestamptz AT TIME ZONE 'UTC', NULL)
+    ON CONFLICT (ebay_order_id) DO UPDATE
+       SET order_status   = EXCLUDED.order_status,
+           total          = CASE WHEN ebay_orders.ar_id IS NULL THEN EXCLUDED.total ELSE ebay_orders.total END,
+           raw            = EXCLUDED.raw,
+           payment_status = EXCLUDED.payment_status,
+           cancel_state   = EXCLUDED.cancel_state,
+           ordered_at     = EXCLUDED.ordered_at,
+           modified_at    = EXCLUDED.modified_at,
+           channel_id     = COALESCE(ebay_orders.channel_id, EXCLUDED.channel_id),
+           mtime          = now()
+    RETURNING * INTO v_zeile;
+
+    IF v_zeile.ar_id IS NOT NULL THEN
+        v_stufe := 'invoiced';
+    ELSIF v_zeile.state = 'ignored' THEN
+        v_stufe := 'ignored';
+    ELSIF v_ab IS NOT NULL AND v_bestellt < v_ab THEN
+        v_stufe := 'history';
+    ELSIF v_storno IN ('CANCELED', 'CANCELLED') OR v_bezahlt = 'FULLY_REFUNDED' THEN
+        v_stufe := 'cancelled';
+    ELSIF v_bezahlt NOT IN ('PAID', 'PARTIALLY_REFUNDED') THEN
+        v_stufe := 'waiting_payment';
+    ELSIF v_zeile.decided_at IS NOT NULL THEN
+        -- schon geklärt, letzter Versuch scheiterte: noch einmal
+        v_stufe := 'review';
+        v_aktion := 'invoice';
+        v_kunde := v_zeile.customer_id;
+    ELSE
+        v_abgleich := ebay_customer_match(p_order);
+        v_stufe := 'review';
+        IF v_auto AND v_abgleich ->> 'state' IN ('sure', 'new') THEN
+            v_aktion := 'invoice';
+            v_kunde := (v_abgleich ->> 'customer_id')::integer;
+        END IF;
+    END IF;
+
+    UPDATE ebay_orders
+       SET state       = v_stufe,
+           match       = COALESCE(v_abgleich, match),
+           customer_id = CASE WHEN ar_id IS NULL AND decided_at IS NULL THEN v_kunde ELSE customer_id END,
+           decided_by  = CASE WHEN v_aktion = 'invoice' AND decided_at IS NULL THEN 'auto' ELSE decided_by END
+     WHERE id = v_zeile.id;
+
+    RETURN jsonb_build_object('id', v_zeile.id, 'state', v_stufe, 'action', v_aktion, 'customer_id', v_kunde,
+                              'new', v_neu);
+END;
+$$;
+
+-- ── Angebote zuordnen ──
+-- Ordnet ein Angebot einem Artikel zu: Kanalzeile an (legacy_item_id), der
+-- Trigger stellt einen Auftrag ein, der Menge und Preis abgleicht (sofern
+-- legacy_sync es erlaubt). Ein Artikel hat je Kanal nur ein Angebot — eine
+-- frühere Zuordnung desselben Artikels in diesem Kanal wird gelöst.
+CREATE OR REPLACE FUNCTION ebay_listing_link(p_listing_id integer, p_parts_id integer, p_source text) RETURNS jsonb
+    LANGUAGE plpgsql AS $$
+DECLARE
+    v_angebot ebay_listing_shop;
+    v_angebot_von_oserp text;
+BEGIN
+    SELECT * INTO v_angebot FROM ebay_listing_shop WHERE id = p_listing_id;
+    IF v_angebot.id IS NULL THEN
+        RETURN jsonb_build_object('linked', false, 'reason', 'LISTING_NOT_FOUND');
+    END IF;
+
+    -- Von OSERP eingestellt (Inventory-API): nichts umhängen, das Angebot gehört dem Artikel
+    SELECT pc.external_id INTO v_angebot_von_oserp
+      FROM parts_channel_shop pc
+     WHERE pc.parts_id = p_parts_id AND pc.channel_id = v_angebot.channel_id
+       AND COALESCE(pc.sync_data ->> 'offer_id', '') <> '' AND COALESCE(pc.sync_status, '') <> 'ended';
+    IF v_angebot_von_oserp IS NOT NULL AND v_angebot_von_oserp <> v_angebot.item_id THEN
+        RETURN jsonb_build_object('linked', false, 'reason', 'EBAY_PART_HAS_OFFER', 'item_id', v_angebot_von_oserp);
+    END IF;
+
+    UPDATE ebay_listing_shop
+       SET parts_id = NULL, link_source = NULL, mtime = now()
+     WHERE channel_id = v_angebot.channel_id AND parts_id = p_parts_id AND id <> p_listing_id;
+
+    UPDATE ebay_listing_shop
+       SET parts_id = p_parts_id, link_source = p_source,
+           suggestion_parts_id = NULL, suggestion_score = NULL, suggestion_source = NULL, mtime = now()
+     WHERE id = p_listing_id;
+
+    IF v_angebot_von_oserp IS NULL THEN
+        INSERT INTO parts_channel_shop (parts_id, channel_id, active, external_id, sync_status, sync_mtime, sync_data)
+        VALUES (p_parts_id, v_angebot.channel_id, true, v_angebot.item_id, 'active', now(),
+                jsonb_build_object('legacy_item_id', v_angebot.item_id, 'legacy_variation_sku', v_angebot.variation_sku))
+        ON CONFLICT (parts_id, channel_id) DO UPDATE
+           SET active = true,
+               external_id = EXCLUDED.external_id,
+               sync_status = 'active',
+               sync_error = NULL,
+               sync_mtime = now(),
+               sync_data = (COALESCE(parts_channel_shop.sync_data, '{}'::jsonb) - 'offer_id') || EXCLUDED.sync_data;
+    END IF;
+    RETURN jsonb_build_object('linked', true);
+END;
+$$;
+
+-- Zuordnung lösen: die Kanalzeile verliert das Angebot und wird abgewählt —
+-- bei eBay ändert sich nichts (shopEbayEndPartNow lässt übernommene
+-- Angebote stehen)
+CREATE OR REPLACE FUNCTION ebay_listing_unlink(p_listing_id integer, p_dismiss boolean) RETURNS void
+    LANGUAGE sql AS $$
+    WITH angebot AS (
+        SELECT * FROM ebay_listing_shop WHERE id = p_listing_id
+    ), kanalzeile AS (
+        UPDATE parts_channel_shop pc
+           SET sync_data = COALESCE(pc.sync_data, '{}'::jsonb) - 'legacy_item_id' - 'legacy_variation_sku',
+               sync_status = 'ended', external_id = NULL, active = false
+          FROM angebot a
+         WHERE pc.parts_id = a.parts_id AND pc.channel_id = a.channel_id
+           AND pc.sync_data ->> 'legacy_item_id' = a.item_id
+    )
+    UPDATE ebay_listing_shop l
+       SET dismissed_parts_id = CASE WHEN p_dismiss THEN COALESCE(l.parts_id, l.suggestion_parts_id) ELSE l.dismissed_parts_id END,
+           parts_id = NULL, link_source = NULL,
+           suggestion_parts_id = NULL, suggestion_score = NULL, suggestion_source = NULL, mtime = now()
+      FROM angebot a
+     WHERE l.id = a.id
+$$;
+
+-- Ordnet alle offenen Angebote eines Kanals zu, so gut es geht:
+--   inventory  von OSERP eingestellt (external_id der Kanalzeile)
+--   sku        SKU = Artikelnummer
+--   ean        EAN gleich (nur Ziffern verglichen)
+--   mpn        Herstellernummer = Artikelnummer ohne Trennzeichen
+-- eindeutig → zugeordnet; Titel ähnlich (≥ 0,45) → Vorschlag. Ein Artikel,
+-- der schon ein Angebot hat, wird nicht automatisch ein zweites Mal vergeben.
+CREATE OR REPLACE FUNCTION ebay_listing_autolink(p_channel_id integer) RETURNS jsonb
+    LANGUAGE plpgsql AS $$
+DECLARE
+    z         record;
+    v_linked  integer := 0;
+    v_inv     integer := 0;
+BEGIN
+    -- Von OSERP eingestellte Angebote: kein Zuordnen nötig, nur kennzeichnen
+    WITH eigen AS (
+        UPDATE ebay_listing_shop l
+           SET parts_id = pc.parts_id, link_source = 'inventory', suggestion_parts_id = NULL, mtime = now()
+          FROM parts_channel_shop pc
+         WHERE l.channel_id = p_channel_id AND l.parts_id IS NULL
+           AND pc.channel_id = p_channel_id AND pc.external_id = l.item_id
+           AND COALESCE(pc.sync_data ->> 'offer_id', '') <> ''
+        RETURNING 1
+    ) SELECT count(*) INTO v_inv FROM eigen;
+
+    FOR z IN
+        WITH offen AS (
+            SELECT l.* FROM ebay_listing_shop l
+             WHERE l.channel_id = p_channel_id AND l.status = 'active' AND l.parts_id IS NULL
+        ), kandidat AS (
+            SELECT o.id AS listing_id, p.id AS parts_id, 'sku' AS quelle, 1 AS rang
+              FROM offen o JOIN parts p ON p.partnumber = btrim(COALESCE(NULLIF(o.variation_sku, ''), o.sku))
+             WHERE btrim(COALESCE(NULLIF(o.variation_sku, ''), o.sku, '')) <> '' AND NOT COALESCE(p.obsolete, false)
+            UNION
+            SELECT o.id, p.id, 'ean', 2
+              FROM offen o JOIN parts p ON regexp_replace(p.ean, '\D', '', 'g') = regexp_replace(o.ean, '\D', '', 'g')
+             WHERE length(regexp_replace(COALESCE(o.ean, ''), '\D', '', 'g')) >= 8 AND NOT COALESCE(p.obsolete, false)
+            UNION
+            SELECT o.id, p.id, 'mpn', 3
+              FROM offen o JOIN parts p ON lower(regexp_replace(p.partnumber, '[^A-Za-z0-9]', '', 'g'))
+                                         = lower(regexp_replace(o.mpn, '[^A-Za-z0-9]', '', 'g'))
+             WHERE length(regexp_replace(COALESCE(o.mpn, ''), '[^A-Za-z0-9]', '', 'g')) >= 4 AND NOT COALESCE(p.obsolete, false)
+        ), bester AS (
+            SELECT DISTINCT ON (k.listing_id) k.*,
+                   count(*) OVER (PARTITION BY k.listing_id, k.rang) AS mehrdeutig
+              FROM kandidat k
+             ORDER BY k.listing_id, k.rang
+        )
+        SELECT b.* FROM bester b
+         WHERE b.mehrdeutig = 1
+           AND NOT EXISTS (SELECT 1 FROM ebay_listing_shop x
+                            WHERE x.channel_id = p_channel_id AND x.parts_id = b.parts_id)
+           AND b.parts_id IS DISTINCT FROM (SELECT dismissed_parts_id FROM ebay_listing_shop WHERE id = b.listing_id)
+    LOOP
+        -- Zwei Angebote mit demselben Artikel: nur das erste bekommt ihn
+        CONTINUE WHEN EXISTS (SELECT 1 FROM ebay_listing_shop x WHERE x.channel_id = p_channel_id AND x.parts_id = z.parts_id);
+        PERFORM ebay_listing_link(z.listing_id, z.parts_id, z.quelle);
+        v_linked := v_linked + 1;
+    END LOOP;
+
+    -- Vorschläge über den Titel für den Rest
+    UPDATE ebay_listing_shop l
+       SET suggestion_parts_id = v.parts_id, suggestion_score = v.score, suggestion_source = 'title'
+      FROM (
+          SELECT l2.id,
+                 (SELECT p.id FROM parts p
+                   WHERE p.description % l2.title AND NOT COALESCE(p.obsolete, false) AND p.part_type = 'part'
+                     AND p.id IS DISTINCT FROM l2.dismissed_parts_id
+                   ORDER BY similarity(p.description, l2.title) DESC LIMIT 1) AS parts_id,
+                 (SELECT ROUND(max(similarity(p.description, l2.title))::numeric * 100, 1) FROM parts p
+                   WHERE p.description % l2.title AND NOT COALESCE(p.obsolete, false) AND p.part_type = 'part'
+                     AND p.id IS DISTINCT FROM l2.dismissed_parts_id) AS score
+            FROM ebay_listing_shop l2
+           WHERE l2.channel_id = p_channel_id AND l2.status = 'active' AND l2.parts_id IS NULL
+      ) v
+     WHERE l.id = v.id;
+    UPDATE ebay_listing_shop SET suggestion_parts_id = NULL, suggestion_score = NULL, suggestion_source = NULL
+     WHERE channel_id = p_channel_id AND parts_id IS NULL AND suggestion_score < 45;
+
+    RETURN jsonb_build_object('linked', v_linked, 'inventory', v_inv,
+                              'suggested', (SELECT count(*) FROM ebay_listing_shop
+                                             WHERE channel_id = p_channel_id AND parts_id IS NULL
+                                               AND suggestion_parts_id IS NOT NULL AND status = 'active'));
+END;
+$$;
+
+-- ── Ansicht ──
+-- Angebote eines Kanals mit dem, was OSERP dazu weiß: Lager, Kanalpreis,
+-- Abweichungen, letzter Fehler des Abgleichs
+CREATE OR REPLACE FUNCTION ebay_listings(p_channel_id integer) RETURNS jsonb
+    LANGUAGE sql STABLE AS $$
+    SELECT COALESCE(jsonb_agg(z ORDER BY z.status, (z.parts_id IS NULL) DESC, z.title), '[]'::jsonb)
+      FROM (
+        SELECT l.id, l.item_id, l.variation_sku, l.sku, l.title, l.variation_text, l.price, l.quantity,
+               l.quantity_sold, l.lot_size, l.ean, l.mpn, l.image_url, l.view_url, l.watch_count, l.status,
+               l.condition_name, l.category_name, l.end_time, l.link_source,
+               l.parts_id, p.partnumber, p.description, p.onhand, p.unit,
+               CASE WHEN p.id IS NOT NULL THEN ebay_gross_price(p.id, p_channel_id) END AS oserp_price,
+               CASE WHEN p.id IS NOT NULL THEN GREATEST(FLOOR(COALESCE(p.onhand, 0) / GREATEST(l.lot_size, 1)), 0)::int END AS oserp_quantity,
+               l.suggestion_parts_id, l.suggestion_score, l.suggestion_source,
+               s.partnumber AS suggestion_partnumber, s.description AS suggestion_description, s.onhand AS suggestion_onhand,
+               pc.sync_error, pc.sync_mtime,
+               -- mehr bei eBay als im Lager: Gefahr, zu verkaufen, was fehlt
+               p.id IS NOT NULL AND l.status = 'active' AND COALESCE(l.quantity, 0) * GREATEST(l.lot_size, 1) > COALESCE(p.onhand, 0) AS oversell,
+               p.id IS NOT NULL AND l.status = 'active'
+                   AND COALESCE(l.quantity, 0) <> GREATEST(FLOOR(COALESCE(p.onhand, 0) / GREATEST(l.lot_size, 1)), 0) AS stock_diff,
+               p.id IS NOT NULL AND l.status = 'active' AND l.link_source <> 'inventory'
+                   AND abs(COALESCE(l.price, 0) - COALESCE(ebay_gross_price(p.id, p_channel_id), 0)) >= 0.01 AS price_diff
+          FROM ebay_listing_shop l
+          LEFT JOIN parts p ON p.id = l.parts_id
+          LEFT JOIN parts s ON s.id = l.suggestion_parts_id
+          LEFT JOIN parts_channel_shop pc ON pc.parts_id = l.parts_id AND pc.channel_id = l.channel_id
+         WHERE l.channel_id = p_channel_id
+           AND (l.status = 'active' OR l.mtime >= now() - interval '30 days' OR l.parts_id IS NOT NULL)
+      ) z
+$$;
+
+-- Das Board des eBay-Kanals: Kanal, Kennzahlen, Prüfung, Verkäufe und die
+-- von OSERP eingestellten Artikel — eine Abfrage für die Ansicht
+CREATE OR REPLACE FUNCTION ebay_board(p_channel_id integer) RETURNS jsonb
+    LANGUAGE sql STABLE AS $$
+    WITH kanal AS (
+        SELECT c.id, c.name, c.active, COALESCE(c.settings, '{}'::jsonb) AS s,
+               EXISTS (SELECT 1 FROM sales_channel_secret_shop x
+                        WHERE x.channel_id = c.id AND x.key = 'refresh_token' AND btrim(x.value) <> '') AS verbunden
+          FROM sales_channel_shop c WHERE c.id = p_channel_id
+    ), bestellung AS (
+        SELECT e.*, a.invnumber, a.transdate, cu.name AS customer_name, cu.customernumber,
+               ebay_buyer(e.raw) AS kaeufer,
+               (SELECT d.shipment_no FROM dhl_shipments d
+                 WHERE d.record_type = 'invoice' AND d.record_id = e.ar_id ORDER BY d.id DESC LIMIT 1) AS dhl_nummer
+          FROM ebay_orders e
+          LEFT JOIN ar a ON a.id = e.ar_id
+          LEFT JOIN customer cu ON cu.id = e.customer_id
+         WHERE e.channel_id = p_channel_id
+    ), karte AS (
+        SELECT b.*,
+               b.ar_id IS NOT NULL AND (b.cancel_state IN ('CANCELED', 'CANCELLED') OR b.payment_status = 'FULLY_REFUNDED') AS gutschrift,
+               b.ar_id IS NOT NULL AND b.shipped_at IS NULL AND COALESCE(b.order_status, '') <> 'FULFILLED'
+                   AND COALESCE(b.cancel_state, '') NOT IN ('CANCELED', 'CANCELLED')
+                   AND COALESCE(b.payment_status, '') <> 'FULLY_REFUNDED' AS zu_versenden
+          FROM bestellung b
+    )
+    SELECT jsonb_build_object(
+        'channel', (SELECT jsonb_build_object(
+                        'channel_id', k.id, 'name', k.name, 'active', k.active, 'connected', k.verbunden,
+                        'environment', COALESCE(k.s ->> 'environment', 'production'),
+                        'account', k.s ->> 'account_id',
+                        'last_check', k.s ->> 'order_last_check',
+                        'listings_last_sync', k.s ->> 'listings_last_sync',
+                        'import_since', k.s ->> 'import_since',
+                        'auto_invoice', COALESCE(lower(btrim(k.s ->> 'auto_invoice')), '1') IN ('1', 't', 'true', 'on'),
+                        'legacy_sync', COALESCE(NULLIF(k.s ->> 'legacy_sync', ''), 'off'),
+                        'out_of_stock_control', k.s ->> 'out_of_stock_control',
+                        'collective_part', NULLIF(btrim(k.s ->> 'default_parts_id'), '') IS NOT NULL)
+                      FROM kanal k),
+        'counts', jsonb_build_object(
+            'review',          (SELECT count(*) FROM karte WHERE state = 'review'),
+            'errors',          (SELECT count(*) FROM karte WHERE state = 'review' AND error IS NOT NULL),
+            'waiting_payment', (SELECT count(*) FROM karte WHERE state = 'waiting_payment'),
+            'to_ship',         (SELECT count(*) FROM karte WHERE zu_versenden),
+            'credit_needed',   (SELECT count(*) FROM karte WHERE gutschrift),
+            'sold_30d',        (SELECT count(*) FROM karte WHERE ar_id IS NOT NULL AND ordered_at >= now() - interval '30 days'),
+            'revenue_30d',     (SELECT COALESCE(sum(total), 0) FROM karte WHERE ar_id IS NOT NULL AND ordered_at >= now() - interval '30 days'),
+            'history',         (SELECT count(*) FROM karte WHERE state = 'history'),
+            'listings',        (SELECT count(*) FROM ebay_listing_shop WHERE channel_id = p_channel_id AND status = 'active'),
+            'linked',          (SELECT count(*) FROM ebay_listing_shop WHERE channel_id = p_channel_id AND status = 'active' AND parts_id IS NOT NULL),
+            'unlinked',        (SELECT count(*) FROM ebay_listing_shop WHERE channel_id = p_channel_id AND status = 'active' AND parts_id IS NULL),
+            'suggested',       (SELECT count(*) FROM ebay_listing_shop WHERE channel_id = p_channel_id AND status = 'active'
+                                                                         AND parts_id IS NULL AND suggestion_parts_id IS NOT NULL),
+            'oversell',        (SELECT count(*) FROM ebay_listing_shop l JOIN parts p ON p.id = l.parts_id
+                                 WHERE l.channel_id = p_channel_id AND l.status = 'active'
+                                   AND COALESCE(l.quantity, 0) * GREATEST(l.lot_size, 1) > COALESCE(p.onhand, 0)),
+            'listing_value',   (SELECT COALESCE(sum(price * quantity), 0) FROM ebay_listing_shop WHERE channel_id = p_channel_id AND status = 'active'),
+            'offered',         (SELECT count(*) FROM parts_channel_shop WHERE channel_id = p_channel_id AND active),
+            'sync_errors',     (SELECT count(*) FROM parts_channel_shop WHERE channel_id = p_channel_id AND active AND sync_status = 'error')),
+        'review', (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                        'id', r.id, 'ebay_order_id', r.ebay_order_id, 'ordered_at', r.ordered_at, 'total', r.total,
+                        'buyer', r.kaeufer, 'match', r.match, 'error', r.error,
+                        'customer_id', r.customer_id, 'decided_at', r.decided_at,
+                        'items', ebay_order_items(p_channel_id, r.raw))
+                    ORDER BY r.ordered_at), '[]'::jsonb)
+                     FROM karte r WHERE r.state = 'review'),
+        'orders', (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                        'id', o.id, 'ebay_order_id', o.ebay_order_id, 'ordered_at', o.ordered_at, 'total', o.total,
+                        'state', o.state, 'payment_status', o.payment_status, 'cancel_state', o.cancel_state,
+                        'fulfillment', o.order_status,
+                        'buyer_username', o.buyer_username, 'buyer_name', o.kaeufer ->> 'name',
+                        'customer_id', o.customer_id, 'customer_name', o.customer_name, 'customernumber', o.customernumber,
+                        'ar_id', o.ar_id, 'invnumber', o.invnumber, 'posting_reason', o.posting_reason,
+                        'decided_by', o.decided_by, 'error', o.error,
+                        'tracking_number', COALESCE(o.tracking_number, o.dhl_nummer), 'carrier', COALESCE(o.carrier, CASE WHEN o.dhl_nummer IS NOT NULL THEN 'DHL' END),
+                        'shipped_at', o.shipped_at, 'ship_error', o.ship_error,
+                        'to_ship', o.zu_versenden, 'credit_needed', o.gutschrift,
+                        'items', (SELECT COALESCE(jsonb_agg(jsonb_build_object('title', li ->> 'title', 'quantity', li ->> 'quantity')), '[]'::jsonb)
+                                    FROM jsonb_array_elements(COALESCE(o.raw -> 'lineItems', '[]'::jsonb)) li))
+                    ORDER BY o.ordered_at DESC), '[]'::jsonb)
+                     FROM (SELECT * FROM karte WHERE state <> 'history' ORDER BY ordered_at DESC NULLS LAST LIMIT 300) o),
+        -- Von OSERP eingestellte und übernommene Artikel mit ihrem Abgleich
+        'offered', (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                        'parts_id', p.id, 'partnumber', p.partnumber, 'description', COALESCE(NULLIF(pc.title, ''), p.description),
+                        'onhand', p.onhand, 'unit', p.unit, 'price', ebay_gross_price(p.id, p_channel_id),
+                        'status', pc.sync_status, 'error', pc.sync_error, 'mtime', pc.sync_mtime,
+                        'listing_id', pc.external_id,
+                        'legacy', COALESCE(pc.sync_data ->> 'legacy_item_id', '') <> '',
+                        'has_page', COALESCE(pc.settings -> 'page', 'null'::jsonb) <> 'null'::jsonb,
+                        'images', (SELECT count(*) FROM parts_channel_image_shop i WHERE i.parts_id = p.id AND i.channel_id = p_channel_id))
+                    ORDER BY (pc.sync_status = 'error') DESC, p.description), '[]'::jsonb)
+                     FROM parts_channel_shop pc JOIN parts p ON p.id = pc.parts_id
+                    WHERE pc.channel_id = p_channel_id AND pc.active)
+    )
 $$;

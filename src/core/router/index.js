@@ -226,6 +226,12 @@ const ShopKleinanzeigenView = () => {
         ? import('@/features/shop/views/shop.kleinanzeigen.vue')
         : Promise.resolve(NotFoundView)
 }
+const ShopEbayView = () => {
+    const oserp = oserpStore()
+    return oserp.isExtensionEnabled('shop')
+        ? import('@/features/shop/views/shop.ebay.vue')
+        : Promise.resolve(NotFoundView)
+}
 const ShopShippingView = () => {
     const oserp = oserpStore()
     return oserp.isExtensionEnabled('shop')
@@ -892,6 +898,13 @@ function buildRoutes() {
             ...routePath('ShopView.routes.shopKleinanzeigen'),
             name: 'shop-kleinanzeigen',
             component: ShopKleinanzeigenView,
+            meta: { hideCustomerBar: true },
+        },
+        // eBay-Board: Prüfung der Käufer, Verkäufe, Angebote, Produktseiten (dev/shop-ebay.md)
+        {
+            ...routePath('ShopView.routes.shopEbay'),
+            name: 'shop-ebay',
+            component: ShopEbayView,
             meta: { hideCustomerBar: true },
         },
         // ── Banking ── (alle Funktionen in einem Hub zusammengefasst)

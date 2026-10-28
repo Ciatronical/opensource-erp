@@ -83,7 +83,8 @@
             "phoneSearch": "Telefoniotsing",
             "callTranscript": "Kõne analüüs",
             "banking": "Likviidsusprognoos",
-            "orderConfirm": "Tellimuse kinnitamine"
+            "orderConfirm": "Tellimuse kinnitamine",
+            "ebay": "eBay (tooteleht, pealkiri, toote omadused)"
         }
     },
     "passwordField": {

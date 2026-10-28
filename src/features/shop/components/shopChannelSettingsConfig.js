@@ -128,6 +128,9 @@ const ebay = [
             { name: "marketplace_id", type: "input", size: 20, fieldstyle: "max-width: 20ch", label: "crm_fields.ebayMarketplaceId", tooltip: "crm_fields.ebayMarketplaceId_help" },
             { name: "client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayClientId", tooltip: "crm_fields.ebayClientId_help" },
             { name: "client_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayClientSecret", tooltip: "crm_fields.ebayClientSecret_help" },
+            // „Mit eBay verbinden“ (dev/shop-ebay.md): eBay-Name der Rücksprungadresse;
+            // das Refresh-Token holt dann die Anmeldung selbst
+            { name: "ru_name", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayRuName", tooltip: "crm_fields.ebayRuName_help" },
             { name: "refresh_token", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayRefreshToken", tooltip: "crm_fields.ebayRefreshToken_help" },
             { name: "default_category_id", type: "input", size: 20, fieldstyle: "max-width: 30ch", label: "crm_fields.ebayCategoryId", tooltip: "crm_fields.ebayCategoryId_help" },
             {
@@ -148,6 +151,51 @@ const ebay = [
             // Bestellimport
             { name: "default_parts_id", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.ebayDefaultPartsId", tooltip: "crm_fields.ebayDefaultPartsId_help" },
             { name: "employee_login", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.ebayEmployeeLogin", tooltip: "crm_fields.ebayEmployeeLogin_help" },
+        ],
+    },
+    // Verkäufe mit Prüfung und übernommene Angebote (dev/shop-ebay.md)
+    {
+        name: "ebay_verkauf",
+        type: "group",
+        icon: "mdi-account-check-outline",
+        label: "crm_fields.ebaySales",
+        tooltip: "crm_fields.ebaySales_help",
+        fields: [
+            { name: "auto_invoice", type: "checkbox", label: "crm_fields.ebayAutoInvoice", tooltip: "crm_fields.ebayAutoInvoice_help" },
+            { name: "import_since", type: "input", inputType: "datetime-local", size: 20, fieldstyle: "max-width: 30ch", label: "crm_fields.ebayImportSince", tooltip: "crm_fields.ebayImportSince_help" },
+            {
+                name: "legacy_sync", type: "select", fieldstyle: "max-width: 50ch",
+                items: [
+                    { title: "crm_fields.ebayLegacySyncOff", value: "off" },
+                    { title: "crm_fields.ebayLegacySyncStock", value: "stock" },
+                    { title: "crm_fields.ebayLegacySyncStockPrice", value: "stock_price" },
+                ],
+                label: "crm_fields.ebayLegacySync", tooltip: "crm_fields.ebayLegacySync_help"
+            },
+            { name: "default_buchungsgruppen_id", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.ebayDefaultBuchungsgruppe", tooltip: "crm_fields.ebayDefaultBuchungsgruppe_help" },
+        ],
+    },
+    // Produktseiten: Gestaltung und die Texte im Fuß jeder Seite
+    {
+        name: "ebay_seiten",
+        type: "group",
+        icon: "mdi-palette-outline",
+        label: "crm_fields.ebayPages",
+        tooltip: "crm_fields.ebayPages_help",
+        fields: [
+            {
+                name: "page_template", type: "select", fieldstyle: "max-width: 30ch",
+                items: [
+                    { title: "ShopView.ebay.page.templates.klar", value: "klar" },
+                    { title: "ShopView.ebay.page.templates.modern", value: "modern" },
+                    { title: "ShopView.ebay.page.templates.kompakt", value: "kompakt" },
+                ],
+                label: "crm_fields.ebayPageTemplate", tooltip: "crm_fields.ebayPageTemplate_help"
+            },
+            { name: "page_color", type: "input", inputType: "color", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.ebayPageColor", tooltip: "crm_fields.ebayPageColor_help" },
+            { name: "page_shipping", type: "textarea", rows: 3, fieldstyle: "max-width: 70ch", label: "crm_fields.ebayPageShipping", tooltip: "crm_fields.ebayPageShipping_help" },
+            { name: "page_returns", type: "textarea", rows: 3, fieldstyle: "max-width: 70ch", label: "crm_fields.ebayPageReturns", tooltip: "crm_fields.ebayPageReturns_help" },
+            { name: "page_about", type: "textarea", rows: 3, fieldstyle: "max-width: 70ch", label: "crm_fields.ebayPageAbout", tooltip: "crm_fields.ebayPageAbout_help" },
         ],
     },
 ]

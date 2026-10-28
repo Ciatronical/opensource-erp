@@ -3,8 +3,11 @@
 /**
  * CLI-Script: eBay-Bestellimport
  *
- * Durchlaeuft alle Mandanten und importiert neue eBay-Bestellungen als
- * Ausgangsrechnungen (Kunde dublettenfrei, Rechnung + Hauptbuch-Buchung).
+ * Durchlaeuft alle Mandanten und holt die geaenderten eBay-Bestellungen:
+ * eindeutige Kaeufer werden gleich abgerechnet (Rechnung + Hauptbuch-Buchung),
+ * unklare warten in der Pruefung im eBay-Board (dev/shop-ebay.md). Danach
+ * Versandmeldungen an eBay und alle sechs Stunden der Abgleich der Angebote
+ * (nur bei Kanaelen, die per „Mit eBay verbinden“ angemeldet sind).
  * Beruecksichtigt werden Mandanten mit aktiver Shop-Erweiterung, dort jeder
  * eingeschaltete eBay-Kanal (Shop-Menue → Verkaufskanaele) — je
  * Kanal ein eBay-Konto (dev/shop-mehrere-kanaele.md). Ein Fehler in einem
@@ -116,16 +119,31 @@ foreach ($clients as $client) {
                 echo "[{$name}] Fehler: " . $e->getMessage() . "\n";
                 continue;
             }
-            $imported = intval($summary['imported'] ?? 0);
-            $skipped  = intval($summary['skipped'] ?? 0);
-            $totalImported += $imported;
+            $invoiced = intval($summary['invoiced'] ?? 0);
+            $review   = intval($summary['review'] ?? 0);
+            $totalImported += $invoiced;
 
-            if ($imported > 0 || $skipped > 0 || !empty($summary['errors'])) {
-                echo "[{$name}] eBay: {$imported} importiert, {$skipped} uebersprungen, "
+            if ($summary['fetched'] > 0 || !empty($summary['errors'])) {
+                echo "[{$name}] eBay: {$invoiced} abgerechnet, {$review} zur Pruefung, "
+                   . intval($summary['waiting_payment'] ?? 0) . " warten auf Zahlung, "
+                   . intval($summary['shipped'] ?? 0) . " Versand gemeldet, "
                    . intval($summary['fetched'] ?? 0) . " abgerufen\n";
             }
             foreach (($summary['errors'] ?? []) as $err) {
                 echo "[{$name}] eBay-Fehler: {$err}\n";
+            }
+
+            // Angebote alle sechs Stunden neu lesen: Mengen und Preise bei eBay
+            // aendern sich auch durch Verkaeufe und Aenderungen im Seller Hub
+            $letzter = shopChannelValue($db, (int)$kanal['id'], 'listings_last_sync');
+            if ('' !== shopChannelValue($db, (int)$kanal['id'], 'connected_at') && ('' === $letzter || strtotime($letzter) < time() - 6 * 3600)) {
+                try {
+                    $angebote = shopEbaySyncListings($db, (int)$kanal['id']);
+                    echo "[{$name}] eBay-Angebote: " . intval($angebote['fetched'] ?? 0) . " gelesen, "
+                       . intval($angebote['linked'] ?? 0) . " neu zugeordnet, " . intval($angebote['suggested'] ?? 0) . " Vorschlaege\n";
+                } catch (Exception $e) {
+                    echo "[{$name}] eBay-Angebote: " . $e->getMessage() . "\n";
+                }
             }
         }
     } catch (Exception $e) {

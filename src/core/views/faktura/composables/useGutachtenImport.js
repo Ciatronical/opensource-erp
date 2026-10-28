@@ -172,7 +172,8 @@ export function useGutachtenImport({ t }) {
                 appraisal: appraisal.value || {},
                 options: { ...options.value, take_over: takeOver },
                 fileBase64: options.value.store_pdf ? fileBase64.value : '',
-                filename: fileName.value
+                filename: fileName.value,
+                extracted: lastAnalysis.value
             })
         } catch (e) {
             console.error('Gutachten import error:', e)
@@ -214,7 +215,6 @@ export function useGutachtenImport({ t }) {
         confidence,
         aiNotes,
         deltaNet,
-        lastAnalysis,
         options,
         summary,
         vehicleAction,

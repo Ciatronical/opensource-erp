@@ -83,7 +83,8 @@
             "phoneSearch": "Puhelinhaku",
             "callTranscript": "Puhelun analyysi",
             "banking": "Maksuvalmiusennuste",
-            "orderConfirm": "Tilausvahvistus"
+            "orderConfirm": "Tilausvahvistus",
+            "ebay": "eBay (tuotesivu, otsikko, tuotteen ominaisuudet)"
         }
     },
     "passwordField": {

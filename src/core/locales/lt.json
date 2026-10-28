@@ -83,7 +83,8 @@
             "phoneSearch": "Paieška pagal telefoną",
             "callTranscript": "Skambučio analizė",
             "banking": "Likvidumo prognozė",
-            "orderConfirm": "Užsakymo patvirtinimas"
+            "orderConfirm": "Užsakymo patvirtinimas",
+            "ebay": "eBay (prekės puslapis, pavadinimas, prekės savybės)"
         }
     },
     "passwordField": {

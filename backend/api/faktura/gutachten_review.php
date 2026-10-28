@@ -94,9 +94,12 @@ SQL, [':model_key' => aiModelConfigKey('gutachten_review'), ':oe_id' => $oeId]);
     $employeeId = null;
     try { $employeeId = mitarbeiterId($data); } catch (\Throwable $e) { /* CLI/Test ohne Mitarbeiter */ }
 
-    // Speichern + Entscheidung in die internen Notizen — eine Abfrage
+    // Speichern + Entscheidung in die internen Notizen — eine Abfrage;
+    // die beim Import bereitgelegte, noch ungeprüfte Analyse wird dabei ersetzt
     $saved = $db->getOne(<<<SQL
-        WITH ins AS (
+        WITH del AS (
+            DELETE FROM gutachten_pruefung_lxcars WHERE oe_id = :oe_id3 AND review IS NULL
+        ), ins AS (
             INSERT INTO gutachten_pruefung_lxcars (oe_id, c_id, stored_path, extracted, review, verdict, ampel, ai_model, employee_id)
             VALUES (:oe_id, :c_id, :stored_path, CAST(:extracted AS jsonb), CAST(:review AS jsonb), :verdict, :ampel, :ai_model, :employee_id)
             RETURNING id, to_char(created_at, 'DD.MM.YYYY HH24:MI') AS created_at
@@ -119,6 +122,7 @@ SQL, [
         ':note'        => 'Weroni Rechtsprüfung (' . date('d.m.Y') . '): ' . $review['headline']
                           . ' [' . strtoupper($review['ampel']) . "]\n" . $review['decision'],
         ':oe_id2'      => $oeId,
+        ':oe_id3'      => $oeId,
     ]);
 
     resultInfo(true, 'OK', [
@@ -150,7 +154,7 @@ function getGutachtenReview($data) {
 
     $row = $db->getOne(<<<SQL
         SELECT p.id, to_char(p.created_at, 'DD.MM.YYYY HH24:MI') AS created_at, p.ai_model,
-               p.review, p.communicated, p.stored_path, p.extracted,
+               p.review, p.communicated, p.stored_path, p.extracted, p.c_id,
                json_build_object('id', o.customer_id, 'name', cu.name) AS customer
         FROM gutachten_pruefung_lxcars p
         JOIN oe o ON o.id = p.oe_id
@@ -171,6 +175,7 @@ SQL, [':oe_id' => $oeId]);
         'review'       => json_decode($row['review'] ?? 'null', true),
         'communicated' => json_decode($row['communicated'] ?? '[]', true) ?: [],
         'stored_path'  => $row['stored_path'],
+        'c_id'         => $row['c_id'] ? intval($row['c_id']) : null,
         'extracted'    => json_decode($row['extracted'] ?? 'null', true),
         'customer'     => json_decode($row['customer'] ?? 'null', true),
     ]);

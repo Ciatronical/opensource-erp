@@ -73,6 +73,15 @@
             >
                 {{ t('crm_fields.ebayPanelUi.refreshBtn') }}
             </v-btn>
+            <!-- eBay-Board (dev/shop-ebay.md): dort verbinden, prüfen, Angebote zuordnen -->
+            <v-btn
+                variant="tonal"
+                color="primary"
+                prepend-icon="mdi-shopping-outline"
+                :to="{ name: 'shop-ebay', query: channelId ? { channel: channelId } : {} }"
+            >
+                {{ t('ShopView.ebay.openBoard') }}
+            </v-btn>
         </div>
 
         <v-alert
@@ -187,9 +196,11 @@ async function syncOrders() {
         if (resp.data.success) {
             const p = resp.data.payload || {};
             message.type = (p.errors && p.errors.length) ? 'warning' : 'success';
-            message.text = t('crm_fields.ebayPanelUi.syncOk', {
-                imported: p.imported ?? 0,
-                skipped: p.skipped ?? 0
+            message.text = t('ShopView.ebay.syncResult', {
+                rechnungen: p.invoiced ?? 0,
+                pruefen: p.review ?? 0,
+                zahlung: p.waiting_payment ?? 0,
+                versand: p.shipped ?? 0
             }) + ((p.errors && p.errors.length) ? (' — ' + p.errors.join('; ')) : '');
             await loadStatus();
         } else {

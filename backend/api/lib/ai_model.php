@@ -54,6 +54,8 @@ function aiAssistants() {
         'gutachten_review' => ['key' => 'gutachten_review_ai_model', 'default' => 'claude-opus-5'],
         // Kleinanzeigen: Anzeigentexte und Antwortvorschläge — kurze Texte, Haiku reicht
         'kleinanzeigen'    => ['key' => 'kleinanzeigen_ai_model',    'default' => 'claude-haiku-4-5'],
+        // eBay-Produktseiten: Titel mit Suchbegriffen, Aufbau, Artikelmerkmale — verkaufen soll es, Sonnet
+        'ebay'             => ['key' => 'ebay_ai_model',             'default' => 'claude-sonnet-5'],
 
         // Hintergrundverarbeitung ohne Prompt — nur Mandanteneinstellung
         'accounting'       => ['key' => 'accounting_ai_model',       'default' => 'claude-opus-5'],

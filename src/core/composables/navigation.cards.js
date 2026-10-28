@@ -46,6 +46,8 @@ export function useNavigationCards() {
             // Kleinanzeigen-Board (dev/shop-kleinanzeigen.md): lesen wie die
             // Bestellungen, Anzeigen und Verkäufe mit den Rechten der Artikelpflege
             shopItems.push({ title: t('ShopView.kleinanzeigen.title'), to: { name: 'shop-kleinanzeigen' } })
+            // eBay-Board (dev/shop-ebay.md): Prüfung der Käufer, Verkäufe, Angebote
+            shopItems.push({ title: t('ShopView.ebay.title'), to: { name: 'shop-ebay' } })
             // Verkaufskanäle einrichten: nur mit dem Recht, das die Kanal-API verlangt
             if (oserp.checkPermission('edit_shop_config')) {
                 shopItems.push('-')

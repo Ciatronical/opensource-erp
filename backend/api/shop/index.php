@@ -29,5 +29,6 @@ require_once __DIR__.'/admin.php';
 require_once __DIR__.'/media.php';
 require_once __DIR__.'/assortment.php';  // Ansicht Sortiment: Gruppen und Kategorien
 require_once __DIR__.'/kleinanzeigen.php'; // Verkaufskanal Kleinanzeigen: Board, Anzeigen, Verkauf, Anfragen
+require_once __DIR__.'/ebay.php';          // Verkaufskanal eBay: Board, Prüfung der Käufer, Angebote, Produktseiten
 
 require_once __DIR__.'/../inc.php'; // muss immer unten stehen

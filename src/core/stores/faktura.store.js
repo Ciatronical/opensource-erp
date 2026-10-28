@@ -236,10 +236,10 @@ export const fakturaStore = defineStore('fakturaStore', () => {
     /**
      * Ausgelesenes Gutachten in den Auftrag übernehmen (Fahrzeug, km, Notizen, Positionen, Ablage)
      *
-     * @param {Object} p {oeId, items, buchungsgruppeId, vehicle, appraisal, options, fileBase64, filename}
+     * @param {Object} p {oeId, items, buchungsgruppeId, vehicle, appraisal, options, fileBase64, filename, extracted}
      * @return {Promise<Object>} {count, c_id, car_created, …} oder {exists_other_owner, owner_name, plate}
      */
-    async function applyGutachten({ oeId, items, buchungsgruppeId, vehicle, appraisal, options, fileBase64, filename }) {
+    async function applyGutachten({ oeId, items, buchungsgruppeId, vehicle, appraisal, options, fileBase64, filename, extracted }) {
         const response = await axios.post('/api/faktura/', {
             action: 'applyGutachtenToOrder',
             oe_id: oeId,
@@ -250,7 +250,8 @@ export const fakturaStore = defineStore('fakturaStore', () => {
             appraisal,
             options,
             file_base64: fileBase64 || '',
-            filename
+            filename,
+            extracted: extracted || null
         })
         if (!response.data.success) {
             throw new ApiError('ApiError', response.data.text, response.data.payload?.message || response.data.text)

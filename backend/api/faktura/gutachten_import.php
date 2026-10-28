@@ -119,6 +119,7 @@ SQL, [':model_key' => aiModelConfigKey('gutachten_import'), ':oe_id' => $oeId]);
  * @param array  $data['options']      {apply_vehicle, apply_km, apply_notes, store_pdf, take_over}
  * @param string $data['file_base64']  Datei für die Ablage (nur bei store_pdf)
  * @param string $data['filename']     Dateiname für die Ablage
+ * @param array  $data['extracted']    Optional: komplettes Analyse-Ergebnis, wird für die Weroni-Prüfung gespeichert
  * @testdata {"oe_id": 1, "buchungsgruppeTeile": 1, "buchungsgruppeArbeit": 1, "items": [{"description": "Stoßfänger vorn", "partnumber": "", "qty": 1, "sellprice": 250, "unit": "Stck", "part_type": "part", "longdescription": ""}], "vehicle": {"license_plate": "B-GU 1234", "vin": "", "manufacturer": "VW", "model": "Golf VIII", "first_registration": "2021-03-05", "color": "", "mileage": 45120}, "appraisal": {"number": "G-2026-001", "date": "2026-10-01", "appraiser": "SV Muster", "insurer": "Muster Versicherung", "claim_number": "SN-4711", "damage_date": "2026-09-28", "damage_description": "Frontschaden", "repair_costs_net": 250}, "options": {"apply_vehicle": true, "apply_km": true, "apply_notes": true, "store_pdf": false}}
  */
 function applyGutachtenToOrder($data) {
@@ -308,6 +309,24 @@ SQL, [':note' => $noteText, ':claim' => mb_substr($claim, 0, 30), ':oe_id' => $o
         if ($content !== false && strlen($content) <= FM_MAX_FILESIZE) {
             $storedPath = _gi_storeFile($content, $data['filename'] ?? 'gutachten.pdf', $cId, $customerId);
         }
+    }
+
+    // ── Analyse für Weroni bereitlegen: geprüft wird erst auf Knopfdruck ──
+    $extracted = is_array($data['extracted'] ?? null) ? $data['extracted'] : null;
+    if ($extracted) {
+        $db->execute(<<<SQL
+            WITH del AS (
+                DELETE FROM gutachten_pruefung_lxcars WHERE oe_id = :oe_id AND review IS NULL
+            )
+            INSERT INTO gutachten_pruefung_lxcars (oe_id, c_id, stored_path, extracted)
+            VALUES (:oe_id2, :c_id, :stored_path, CAST(:extracted AS jsonb))
+SQL, [
+            ':oe_id'       => $oeId,
+            ':oe_id2'      => $oeId,
+            ':c_id'        => $cId ?: null,
+            ':stored_path' => $storedPath,
+            ':extracted'   => json_encode($extracted, JSON_UNESCAPED_UNICODE),
+        ]);
     }
 
     resultInfo(true, 'IMPORTED', [

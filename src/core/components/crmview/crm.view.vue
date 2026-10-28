@@ -47,7 +47,7 @@
               hide-details
               clearable
               single-line
-              style="max-width: 240px;"
+              style="width: 220px; max-width: 100%;"
             />
           </template>
           <OccurrenceView :search-text="occurrenceFilter" />

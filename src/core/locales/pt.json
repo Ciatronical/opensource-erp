@@ -83,7 +83,8 @@
             "phoneSearch": "Pesquisa por telefone",
             "callTranscript": "Análise de chamada",
             "banking": "Previsão de liquidez",
-            "orderConfirm": "Confirmação de encomenda"
+            "orderConfirm": "Confirmação de encomenda",
+            "ebay": "eBay (página de produto, título, características do artigo)"
         }
     },
     "passwordField": {
