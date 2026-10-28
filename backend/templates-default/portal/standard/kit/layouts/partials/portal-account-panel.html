@@ -10,31 +10,38 @@
 {{- $class := .class -}}
 {{- /* Ziele ohne Angabe: params.portalui.paths bzw. die Vorgaben der Widgets (core/paths.js) */ -}}
 {{- $login := .loginUrl -}}
+{{- $noRedirect := .noRedirect -}}
 {{- if eq .page "overview" -}}
 <portal-account-overview
   {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-account-overview>
 {{- else if eq .page "profile" -}}
 <portal-account-profile
   {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-account-profile>
 {{- else if eq .page "address" -}}
 <portal-account-addresses
   {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-account-addresses>
 {{- else if eq .page "order" -}}
 <portal-account-orders
   {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-account-orders>
 {{- else if eq .page "payment" -}}
 <portal-account-payment
   {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-account-payment>
 {{- else if eq .page "vehicles" -}}
 {{- /* Fahrzeuge (LxCars): das Element kommt aus lxcars-widgets.js, das der
      Partial nur mit dem Merkmal lxcars laedt */ -}}
 <portal-vehicles
   {{- with $login }} login-url="{{ . }}"{{ end }}
+  {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-vehicles>
 {{- else -}}
 {{- errorf "portal-account: unbekannte Seite %q (erlaubt: overview, profile, address, order, payment, vehicles)" .page -}}

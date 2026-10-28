@@ -142,6 +142,18 @@ export class PortalLogin extends PortalElement {
     if (email) email.focus();
   }
 
+  /**
+   * Rueckweg aus der Adresse (?redirect=…): dorthin leiten die Kontoseiten
+   * einen nicht angemeldeten Besucher. Nur ein Pfad auf dieser Webseite
+   * zaehlt — kein fremder Host, kein //-Anfang, sonst koennte ein Link
+   * von aussen nach der Anmeldung woandershin schicken.
+   */
+  #returnUrl() {
+    if (typeof window === 'undefined') return '';
+    const ziel = new URLSearchParams(window.location.search).get('redirect') || '';
+    return /^\/(?!\/)/.test(ziel) ? ziel : '';
+  }
+
   async #onSubmit(event) {
     event.preventDefault();
     if (this._busy) return;
@@ -159,7 +171,7 @@ export class PortalLogin extends PortalElement {
     try {
       await login(email, password);
       emit(PORTAL_AUTH_CHANGED, { account: true });
-      window.location.href = this.redirectUrl || '/';
+      window.location.href = this.#returnUrl() || this.redirectUrl || '/';
     } catch (error) {
       this._error = t(error.code);
       this._busy = false;

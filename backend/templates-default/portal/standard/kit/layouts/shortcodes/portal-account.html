@@ -14,5 +14,6 @@
 </style>
 <div class="portal-account-layout">
 {{ partial "portal-account-nav.html" $nav }}
-{{ partial "portal-account-panel.html" (dict "page" $page "loginUrl" (.Get "login-url") "noAssets" true) }}
+{{- /* no-redirect="true": ohne Anmeldung den Hinweis zeigen statt zur Anmeldeseite zu leiten */ -}}
+{{ partial "portal-account-panel.html" (dict "page" $page "loginUrl" (.Get "login-url") "noRedirect" (eq (.Get "no-redirect" | default "false") "true") "noAssets" true) }}
 </div>

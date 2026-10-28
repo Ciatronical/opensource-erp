@@ -38,6 +38,8 @@ import { shopPath } from './paths.js';
 export class PortalAccountElement extends PortalElement {
   static properties = {
     loginUrl: { type: String, attribute: 'login-url' },
+    /** Ohne Anmeldung den Hinweis zeigen statt zur Anmeldeseite zu leiten */
+    noRedirect: { type: Boolean, attribute: 'no-redirect' },
     heading: { type: String },
     // 'loading' | 'ready' | 'anonymous' | 'error'
     _state: { state: true },
@@ -97,9 +99,27 @@ export class PortalAccountElement extends PortalElement {
   constructor() {
     super();
     this.loginUrl = shopPath('login');
+    this.noRedirect = false;
     this.heading = '';
     this._state = 'loading';
     this._error = '';
+  }
+
+  /** Erster Aufbau der Seite: nur dann wird ohne Anmeldung weitergeleitet */
+  #initial = true;
+
+  /**
+   * Ohne Anmeldung zur Anmeldeseite — mit dem Rueckweg hierher, den
+   * <portal-login> nach der Anmeldung nimmt (?redirect=…). Nur beim ersten
+   * Aufbau: nach einer Abmeldung auf derselben Seite fuehrt der Knopf
+   * selbst weiter, da darf nichts dazwischenfunken.
+   */
+  #anonymous() {
+    this._state = 'anonymous';
+    if (this.noRedirect || !this.#initial || typeof window === 'undefined' || !this.loginUrl) return;
+    const back = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const sep = this.loginUrl.includes('?') ? '&' : '?';
+    window.location.replace(`${this.loginUrl}${sep}redirect=${encodeURIComponent(back)}`);
   }
 
   connectedCallback() {
@@ -137,10 +157,14 @@ export class PortalAccountElement extends PortalElement {
   async reload() {
     this._state = 'loading';
     this._error = '';
+    const initial = this.#initial;
+    this.#initial = false;
     try {
       const context = await getContext();
       if (!context || !context.account) {
-        this._state = 'anonymous';
+        this.#initial = initial;
+        this.#anonymous();
+        this.#initial = false;
         return;
       }
       await this.load();
@@ -153,7 +177,9 @@ export class PortalAccountElement extends PortalElement {
       try {
         const context = await refreshContext();
         if (!context || !context.account) {
-          this._state = 'anonymous';
+          this.#initial = initial;
+          this.#anonymous();
+          this.#initial = false;
           return;
         }
       } catch {
