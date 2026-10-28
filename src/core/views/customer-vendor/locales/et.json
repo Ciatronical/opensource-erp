@@ -224,7 +224,7 @@
             "portalPhone": "Numbrile",
             "portalSent": "Link saadetud.",
             "portalSendError": "Linki ei õnnestunud saata.",
-            "portalNoWebsite": "Ühtegi sisse lülitatud veebilehte pole – seadistage see enne Süsteem → Veebilehed all.",
+            "portalNoWebsite": "Ükski veebisait ei paku konto aktiveerimist — lülitage ettevõtte seadistuses jaotises Funktsioonid → Kliendiportaal veebisait sisse ja märkige seal „Paku aktiveerimist“.",
             "portalNoTemplate": "WhatsAppi jaoks puudub heakskiidetud mall tüüpi „Kliendikonto aktiveerimine“ (ettevõtte seadistus → WhatsAppi mallid). Alternatiivina saatke e-postiga.",
             "portalNoEmail": "Kliendil pole e-posti aadressi.",
             "portalSourceStaff": "kliendikaardilt",

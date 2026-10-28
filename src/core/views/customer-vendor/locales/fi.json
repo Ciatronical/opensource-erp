@@ -224,7 +224,7 @@
             "portalPhone": "Numeroon",
             "portalSent": "Linkki lähetetty.",
             "portalSendError": "Linkkiä ei voitu lähettää.",
-            "portalNoWebsite": "Ei käytössä olevaa sivustoa – määritä ensin kohdassa Järjestelmä → Verkkosivut.",
+            "portalNoWebsite": "Mikään verkkosivusto ei tarjoa tilin aktivointia — ota yrityksen asetuksissa kohdassa Toiminnot → Asiakasportaali verkkosivusto käyttöön ja valitse ”Tarjoa aktivointia”.",
             "portalNoTemplate": "WhatsAppiin puuttuu hyväksytty malli tyyppiä ”Asiakastilin aktivointi” (yrityksen asetukset → WhatsApp-mallit). Vaihtoehtoisesti lähetä sähköpostilla.",
             "portalNoEmail": "Asiakkaalla ei ole sähköpostiosoitetta.",
             "portalSourceStaff": "asiakaskortista",

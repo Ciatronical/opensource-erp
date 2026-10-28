@@ -29,6 +29,8 @@ export class PortalActivate extends PortalElement {
     token: { type: String },
     redirectUrl: { type: String, attribute: 'redirect-url' },
     loginUrl: { type: String, attribute: 'login-url' },
+    /** Kontaktseite — Ausweg, wenn keine Nachricht ankommt */
+    contactUrl: { type: String, attribute: 'contact-url' },
     heading: { type: String },
     _step: { state: true },
     _info: { state: true },
@@ -110,6 +112,7 @@ export class PortalActivate extends PortalElement {
     this.token = '';
     this.redirectUrl = shopPath('account', '#focus');
     this.loginUrl = shopPath('login');
+    this.contactUrl = '';
     this.heading = '';
     // request | sent | token | done
     this._step = 'request';
@@ -217,10 +220,12 @@ export class PortalActivate extends PortalElement {
       <div class="done">
         <div class=${this.cls('alertSuccess')} role="status">${t('activate.sent')}</div>
         <p class="intro">${t('activate.sentHint')}</p>
+        <p class="hint">${t('activate.sentNothing')}</p>
         <div class="actions">
           <button class=${this.cls('button')} type="button" @click=${() => { this._step = 'request'; this._error = ''; }}>
             ${t('activate.again')}
           </button>
+          <a class=${this.cls('buttonSecondary')} href=${this.contactUrl || shopPath('contact')}>${t('activate.contact')}</a>
         </div>
       </div>
     `;

@@ -224,7 +224,7 @@
             "portalPhone": "La numărul",
             "portalSent": "Link trimis.",
             "portalSendError": "Linkul nu a putut fi trimis.",
-            "portalNoWebsite": "Niciun site activat – configurați unul mai întâi în Sistem → Site-uri.",
+            "portalNoWebsite": "Niciun site nu oferă activarea contului — în configurația firmei, la Funcții → Portal clienți, activați site-ul și bifați „Oferă activarea”.",
             "portalNoTemplate": "Pentru WhatsApp lipsește un șablon aprobat de tip „Activare cont client” (configurare firmă → șabloane WhatsApp). Alternativ trimiteți prin e-mail.",
             "portalNoEmail": "Clientul nu are adresă de e-mail.",
             "portalSourceStaff": "din fișa clientului",

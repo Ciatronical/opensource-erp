@@ -57,9 +57,17 @@ const website = [
     { name: "account_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.accountPage", tooltip: "WebsitesView.fields.accountPage_help", help: "WebsitesView.help.pages" },
     // Seite mit <shop-invoice> — Ziel des Links in den Mails
     { name: "invoice_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.invoicePage", tooltip: "WebsitesView.fields.invoicePage_help", help: "WebsitesView.help.invoicePage" },
-    // Seite mit <portal-activate> — Ziel des Links in der WhatsApp-Nachricht
-    { name: "activate_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.activatePage", tooltip: "WebsitesView.fields.activatePage_help", help: "WebsitesView.help.activatePage" },
     { name: "contact_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.contactPage", tooltip: "WebsitesView.fields.contactPage_help", help: "WebsitesView.help.pages" },
+
+    // Konto-Freischaltung für Bestandskunden: Vorgabe aus. Eingeschaltet
+    // bekommt das Paket die Seite „Konto freischalten“ und die Anmelde- und
+    // Registrierseite den Link dorthin; aus weist der öffentliche Zugang die
+    // Aktionen ab und die Kundenakte bietet die Webseite nicht zum Versand an
+    { name: "freischaltung", type: "headline", label: "WebsitesView.fields.activation" },
+
+    { name: "activation_enabled", type: "checkbox", label: "WebsitesView.fields.activationEnabled", tooltip: "WebsitesView.fields.activationEnabled_help", help: "WebsitesView.help.activationEnabled" },
+    // Seite mit <portal-activate> — Ziel des Links in der WhatsApp-Nachricht
+    { name: "activate_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", showIf: "activation_enabled", label: "WebsitesView.fields.activatePage", tooltip: "WebsitesView.fields.activatePage_help", help: "WebsitesView.help.activatePage" },
 
     { name: "veroeffentlichung", type: "headline", label: "WebsitesView.fields.publish" },
 

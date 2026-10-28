@@ -224,7 +224,7 @@
             "portalPhone": "Para o número",
             "portalSent": "Link enviado.",
             "portalSendError": "Não foi possível enviar o link.",
-            "portalNoWebsite": "Nenhum site ativado – configure um primeiro em Sistema → Sites.",
+            "portalNoWebsite": "Nenhum sítio web oferece a ativação de conta — na configuração da empresa, em Funções → Portal de clientes, ligue o sítio web e marque «Oferecer ativação».",
             "portalNoTemplate": "Falta para o WhatsApp um modelo aprovado do tipo «Ativar conta de cliente» (configuração da empresa → modelos WhatsApp). Em alternativa, envie por e-mail.",
             "portalNoEmail": "O cliente não tem endereço de e-mail.",
             "portalSourceStaff": "da ficha do cliente",

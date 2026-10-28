@@ -224,7 +224,7 @@
             "portalPhone": "发送到号码",
             "portalSent": "链接已发送。",
             "portalSendError": "无法发送链接。",
-            "portalNoWebsite": "没有已启用的网站——请先在系统 → 网站中设置。",
+            "portalNoWebsite": "没有网站提供账户激活 — 请在公司配置的“功能 → 客户门户”中开启该网站，并勾选“提供激活”。",
             "portalNoTemplate": "WhatsApp 缺少“激活客户账户”类型的已批准模板（公司配置 → WhatsApp 模板）。也可改用电子邮件发送。",
             "portalNoEmail": "客户没有电子邮件地址。",
             "portalSourceStaff": "来自客户档案",

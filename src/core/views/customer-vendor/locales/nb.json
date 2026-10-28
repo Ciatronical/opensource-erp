@@ -224,7 +224,7 @@
             "portalPhone": "Til nummeret",
             "portalSent": "Lenke sendt.",
             "portalSendError": "Lenken kunne ikke sendes.",
-            "portalNoWebsite": "Intet nettsted slått på – sett opp ett først under System → Nettsteder.",
+            "portalNoWebsite": "Ingen nettsteder tilbyr kontoaktivering — slå på nettstedet i firmakonfigurasjonen under Funksjoner → Kundeportal, og sett «Tilby aktivering» der.",
             "portalNoTemplate": "WhatsApp mangler en godkjent mal av typen «Aktiver kundekonto» (firmakonfigurasjon → WhatsApp-maler). Send alternativt per e-post.",
             "portalNoEmail": "Kunden har ingen e-postadresse.",
             "portalSourceStaff": "fra kundekortet",

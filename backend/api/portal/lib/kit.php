@@ -211,7 +211,9 @@ function portalKitPages($db, int $website): array {
         'orders'          => $konto.'rechnungen/',
         'payment'         => $konto.'zahlungsart/',
         'vehicles'        => $konto.'fahrzeuge/',
-        'activate'        => $pfad('activate_page', 'freischalten/'),
+        // Ohne Freischaltung kein Pfad: die Shortcodes lassen activate-url
+        // dann weg, der Link auf Anmelde- und Registrierseite entfällt
+        'activate'        => websiteActivationEnabled($db, $website) ? $pfad('activate_page', 'freischalten/') : '',
         'invoice'         => $pfad('invoice_page', 'rechnung/'),
         'contact'         => $kontakt,
         'contactthanks'   => $kontakt.'danke/',
@@ -231,6 +233,30 @@ function portalKitPages($db, int $website): array {
  */
 function portalKitPagesJson($db, int $website): string {
     return json_encode(portalKitPages($db, $website), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n";
+}
+
+/**
+ * Gehört eine Seitenvorlage ins Paket dieser Webseite?
+ *
+ * Eine Vorlage kann im Vorspann eine Voraussetzung nennen:
+ *   oserp_requires: activation   — Konto-Freischaltung eingeschaltet
+ *   oserp_requires: <merkmal>    — Merkmal der Webseite (shop, lxcars …)
+ * Ohne Angabe gehört sie immer dazu.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $website Webseite
+ * @param string $quelle Vorlagendatei
+ * @return bool
+ */
+function portalKitPageWanted($db, int $website, string $quelle): bool {
+    $kopf = (string)file_get_contents($quelle, false, null, 0, 2048);
+    if (!preg_match('/^oserp_requires:\s*([a-z_]+)\s*$/m', $kopf, $m)) {
+        return true;
+    }
+    if ('activation' === $m[1]) {
+        return websiteActivationEnabled($db, $website);
+    }
+    return !empty(portalKitFeatures($db, $website)[$m[1]]);
 }
 
 /**
@@ -364,6 +390,11 @@ function portalSyncKit($db, int $website, string $paket = 'oserp-portal'): array
     if (!$imPaket) {
         return $bilanz;
     }
+    // Seitenvorlagen mit Voraussetzung (oserp_requires: activation) nur, wenn
+    // die Webseite die Funktion anbietet — sonst fällt die Seite aus dem Paket
+    // und damit beim nächsten Abgleich aus der Webseite
+    $imPaket = array_filter($imPaket, fn($quelle, $relativ) => !str_starts_with($relativ, 'content/')
+        || portalKitPageWanted($db, $website, $quelle), ARRAY_FILTER_USE_BOTH);
     $ziel = portalPackageDir($db, $website, $paket, true);
 
     foreach ($imPaket as $relativ => $quelle) {

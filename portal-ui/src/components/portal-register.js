@@ -38,6 +38,8 @@ export class PortalRegister extends PortalElement {
     mode: { type: String },
     redirectUrl: { type: String, attribute: 'redirect-url' },
     loginUrl: { type: String, attribute: 'login-url' },
+    /** Seite „Konto freischalten“ — Bestandskunden ohne Zugang gehören dorthin, nicht in die Registrierung */
+    activateUrl: { type: String, attribute: 'activate-url' },
     dataProtectionUrl: { type: String, attribute: 'data-protection-url' },
     heading: { type: String },
     _salutations: { state: true },
@@ -99,6 +101,7 @@ export class PortalRegister extends PortalElement {
     this.mode = 'account';
     this.redirectUrl = shopPath('registered');
     this.loginUrl = shopPath('login');
+    this.activateUrl = '';
     this.dataProtectionUrl = shopPath('privacy');
     this.heading = '';
     this._salutations = [];
@@ -326,6 +329,11 @@ export class PortalRegister extends PortalElement {
     return html`
       ${this.heading
         ? html`<h2 class=${this.cls('heading')} part="heading">${this.heading}</h2>`
+        : nothing}
+      ${this.activateUrl && !this.isGuest
+        ? html`<p class="hint ${this.cls('muted')}">
+            <a href=${this.activateUrl} part="activate-link">${t('login.activate')}</a>
+          </p>`
         : nothing}
 
       <form id="form" class=${this.cls('form')} part="form" @submit=${this.#onSubmit} novalidate>

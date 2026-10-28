@@ -5,4 +5,4 @@ description: "Neues Kundenkonto anlegen"
 sitemap:
     disable: true
 ---
-{{< portal-register redirect-url="[[account]]" login-url="[[login]]" >}}
+{{< portal-register redirect-url="[[account]]" login-url="[[login]]" activate-url="[[activate]]" >}}

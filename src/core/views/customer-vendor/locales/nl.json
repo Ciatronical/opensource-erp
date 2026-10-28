@@ -224,7 +224,7 @@
             "portalPhone": "Naar het nummer",
             "portalSent": "Link verzonden.",
             "portalSendError": "De link kon niet worden verzonden.",
-            "portalNoWebsite": "Geen ingeschakelde website – richt er eerst een in onder Systeem → Websites.",
+            "portalNoWebsite": "Geen website biedt accountactivering aan — schakel in de bedrijfsconfiguratie onder Functies → Klantenportaal de website in en zet daar „Activering aanbieden”.",
             "portalNoTemplate": "Voor WhatsApp ontbreekt een goedgekeurd sjabloon van het type ‘Klantaccount activeren’ (bedrijfsconfiguratie → WhatsApp-sjablonen). Of verstuur per e-mail.",
             "portalNoEmail": "De klant heeft geen e-mailadres.",
             "portalSourceStaff": "vanuit het klantdossier",

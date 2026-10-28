@@ -224,7 +224,7 @@
             "portalPhone": "Uz numuru",
             "portalSent": "Saite nosūtīta.",
             "portalSendError": "Saiti neizdevās nosūtīt.",
-            "portalNoWebsite": "Nav ieslēgtas vietnes – vispirms iestatiet sadaļā Sistēma → Vietnes.",
+            "portalNoWebsite": "Neviena tīmekļa vietne nepiedāvā konta aktivizēšanu — uzņēmuma konfigurācijā sadaļā Funkcijas → Klientu portāls ieslēdziet tīmekļa vietni un atzīmējiet „Piedāvāt aktivizēšanu“.",
             "portalNoTemplate": "WhatsApp trūkst apstiprinātas veidnes “Klienta konta aktivizācija” (uzņēmuma konfigurācija → WhatsApp veidnes). Alternatīvi sūtiet pa e-pastu.",
             "portalNoEmail": "Klientam nav e-pasta adreses.",
             "portalSourceStaff": "no klienta kartītes",

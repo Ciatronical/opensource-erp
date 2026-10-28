@@ -224,7 +224,7 @@
             "portalPhone": "Til nummeret",
             "portalSent": "Link sendt.",
             "portalSendError": "Linket kunne ikke sendes.",
-            "portalNoWebsite": "Intet websted slået til – sæt først et op under System → Websteder.",
+            "portalNoWebsite": "Ingen hjemmeside tilbyder kontoaktivering — slå hjemmesiden til i firmakonfigurationen under Funktioner → Kundeportal, og sæt „Tilbyd aktivering“ der.",
             "portalNoTemplate": "WhatsApp mangler en godkendt skabelon af typen “Aktivér kundekonto” (firmakonfiguration → WhatsApp-skabeloner). Send alternativt pr. e-mail.",
             "portalNoEmail": "Kunden har ingen e-mailadresse.",
             "portalSourceStaff": "fra kundekartoteket",

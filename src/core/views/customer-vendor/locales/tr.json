@@ -224,7 +224,7 @@
             "portalPhone": "Numaraya",
             "portalSent": "Bağlantı gönderildi.",
             "portalSendError": "Bağlantı gönderilemedi.",
-            "portalNoWebsite": "Açık web sitesi yok – önce Sistem → Web siteleri altında bir tane kurun.",
+            "portalNoWebsite": "Hiçbir web sitesi hesap etkinleştirme sunmuyor — şirket yapılandırmasında İşlevler → Müşteri portalı altında web sitesini açın ve orada „Etkinleştirme sun“ seçeneğini işaretleyin.",
             "portalNoTemplate": "WhatsApp için “Müşteri hesabını etkinleştir” türünde onaylı bir şablon eksik (firma yapılandırması → WhatsApp şablonları). Alternatif olarak e-posta ile gönderin.",
             "portalNoEmail": "Müşterinin e-posta adresi yok.",
             "portalSourceStaff": "müşteri kartından",

@@ -481,7 +481,8 @@ function installWebsitePackage($data) {
  *
  * Für den Knopf „Zugang zum Kundenkonto senden“ in der Kundenakte: hat der
  * Kunde ein Konto, läuft eine Freischaltung, welche Nummern und Webseiten
- * gibt es.
+ * gibt es. Zur Auswahl stehen nur eingeschaltete Webseiten, die die
+ * Freischaltung anbieten (Einstellung activation_enabled).
  *
  * @param int $data['customer_id'] Kunde
  * @return void status (activationStatus), websites, whatsapp (eingerichtet)
@@ -500,7 +501,9 @@ function getPortalActivationStatus($data) {
         'status'   => activationStatus($db, (int)($data['customer_id'] ?? 0)),
         'websites' => $db->getAll(
             "SELECT id, name, active, settings ->> 'base_url' AS base_url FROM website_oserp
-              WHERE active ORDER BY sortkey NULLS LAST, id"
+              WHERE active
+                AND COALESCE(settings ->> 'activation_enabled', '0') IN ('1', 'true', 't', 'on', 'yes')
+              ORDER BY sortkey NULLS LAST, id"
         ) ?: [],
         'whatsapp' => 2 === (int)($whatsapp['n'] ?? 0),
         'template' => (bool)$db->getOne(
@@ -535,6 +538,10 @@ function sendPortalActivation($data) {
     $stand = activationStatus($db, $customerId);
     if ($stand['account']) {
         resultInfo(false, 'ACTIVATION_HAS_ACCOUNT', null, 'Der Kunde hat schon ein Konto');
+        return;
+    }
+    if (!websiteActivationEnabled($db, $website)) {
+        resultInfo(false, 'ACTIVATION_DISABLED', null, 'Die Konto-Freischaltung ist für diese Webseite nicht eingeschaltet');
         return;
     }
 

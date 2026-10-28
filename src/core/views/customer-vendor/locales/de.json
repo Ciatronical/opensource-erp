@@ -245,7 +245,7 @@
             "portalPhone": "An die Nummer",
             "portalSent": "Link gesendet.",
             "portalSendError": "Der Link konnte nicht gesendet werden.",
-            "portalNoWebsite": "Keine eingeschaltete Webseite — zuerst unter System → Webseiten einrichten.",
+            "portalNoWebsite": "Keine Webseite bietet die Konto-Freischaltung an — in der Firmenkonfiguration unter Funktionen → Kundenportal die Webseite einschalten und dort „Freischaltung anbieten“ setzen.",
             "portalNoTemplate": "Für WhatsApp fehlt eine genehmigte Vorlage vom Typ „Kundenkonto freischalten“ (Firmenkonfiguration → WhatsApp-Vorlagen). Alternativ per E-Mail senden.",
             "portalNoEmail": "Der Kunde hat keine E-Mail-Adresse.",
             "portalSourceStaff": "aus der Kundenakte",

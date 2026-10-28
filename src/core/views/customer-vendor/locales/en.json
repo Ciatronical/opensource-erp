@@ -245,7 +245,7 @@
             "portalPhone": "To the number",
             "portalSent": "Link sent.",
             "portalSendError": "The link could not be sent.",
-            "portalNoWebsite": "No website switched on — set one up first under System → Websites.",
+            "portalNoWebsite": "No website offers account activation — in the company configuration under Features → Customer portal, switch the website on and enable “Offer activation” there.",
             "portalNoTemplate": "WhatsApp needs an approved template of type “Activate customer account” (client configuration → WhatsApp templates). Alternatively send by email.",
             "portalNoEmail": "The customer has no email address.",
             "portalSourceStaff": "from the customer file",

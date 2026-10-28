@@ -12,5 +12,6 @@
 <portal-activate
   {{- with .Get `redirect-url` }} redirect-url="{{ . }}"{{ end }}
   {{- with .Get `login-url` }} login-url="{{ . }}"{{ end }}
+  {{- with .Get `contact-url` }} contact-url="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}
   {{- with .Get `class` }} class="{{ . }}"{{ end }}></portal-activate>

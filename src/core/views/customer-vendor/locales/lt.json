@@ -224,7 +224,7 @@
             "portalPhone": "Numeriu",
             "portalSent": "Nuoroda išsiųsta.",
             "portalSendError": "Nuorodos nepavyko išsiųsti.",
-            "portalNoWebsite": "Nėra įjungtos svetainės – pirmiausia sukonfigūruokite Sistema → Svetainės.",
+            "portalNoWebsite": "Nė viena svetainė nesiūlo paskyros aktyvinimo — įmonės konfigūracijoje, skiltyje Funkcijos → Klientų portalas, įjunkite svetainę ir pažymėkite „Siūlyti aktyvinimą“.",
             "portalNoTemplate": "WhatsApp trūksta patvirtinto šablono „Kliento paskyros aktyvavimas“ (įmonės konfigūracija → WhatsApp šablonai). Arba siųskite el. paštu.",
             "portalNoEmail": "Klientas neturi el. pašto adreso.",
             "portalSourceStaff": "iš kliento kortelės",

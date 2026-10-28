@@ -4446,6 +4446,7 @@ RETURNS TABLE (key text, secret boolean)
         ('register_page',   false),  -- Registrierung
         ('account_page',    false),  -- Kundenkonto; Unterseiten (Profil, Adressen, Rechnungen …) hängen daran
         ('invoice_page',    false),  -- Seite mit der Rechnungsansicht (Links in Mails)
+        ('activation_enabled', false), -- Konto-Freischaltung für Bestandskunden (WhatsApp) angeboten; Vorgabe aus
         ('activate_page',   false),  -- Seite „Konto freischalten“ (Link in der WhatsApp-Nachricht)
         ('contact_page',    false),  -- Kontaktformular
         ('contact_mail_to', false),  -- Empfänger des Kontaktformulars; leer = Absenderadresse der Firma
@@ -4493,6 +4494,7 @@ CREATE OR REPLACE FUNCTION website_default_settings() RETURNS jsonb
     LANGUAGE sql IMMUTABLE AS $$
     SELECT jsonb_build_object(
         'template_set',  'standard',
+        'activation_enabled', '0',
         'portal_path',   '/kunden/',
         'login_page',    'anmelden/',
         'register_page', 'registrieren/',

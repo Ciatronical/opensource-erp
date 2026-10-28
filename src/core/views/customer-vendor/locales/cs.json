@@ -224,7 +224,7 @@
             "portalPhone": "Na číslo",
             "portalSent": "Odkaz odeslán.",
             "portalSendError": "Odkaz se nepodařilo odeslat.",
-            "portalNoWebsite": "Žádný zapnutý web – nejdřív jej nastavte v Systém → Weby.",
+            "portalNoWebsite": "Žádný web nenabízí aktivaci účtu — v konfiguraci firmy v části Funkce → Zákaznický portál web zapněte a zaškrtněte „Nabízet aktivaci“.",
             "portalNoTemplate": "Pro WhatsApp chybí schválená šablona typu „Aktivace zákaznického účtu“ (konfigurace firmy → šablony WhatsApp). Případně odešlete e-mailem.",
             "portalNoEmail": "Zákazník nemá e-mailovou adresu.",
             "portalSourceStaff": "z karty zákazníka",

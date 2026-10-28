@@ -9,6 +9,7 @@
 <portal-register
   {{- with .Get `redirect-url` }} redirect-url="{{ . }}"{{ end }}
   {{- with .Get `login-url` }} login-url="{{ . }}"{{ end }}
+  {{- with .Get `activate-url` }} activate-url="{{ . }}"{{ end }}
   {{- with .Get `data-protection-url` }} data-protection-url="{{ . }}"{{ end }}
   {{- with .Get `mode` }} mode="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}

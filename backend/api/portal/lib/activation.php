@@ -319,12 +319,13 @@ function activationSendMail($db, int $website, array $kunde, string $token): arr
  * @param int $website Webseite der Anfrage
  * @param array $daten phone, zipcode, customernumber
  * @return array{sent: bool}
- * @throws ApiError PORTAL_CONTEXT_ERROR, MISSING_PHONE, MISSING_ZIPCODE
+ * @throws ApiError PORTAL_CONTEXT_ERROR, ACTIVATION_DISABLED, MISSING_PHONE, MISSING_ZIPCODE
  */
 function activationRequest($db, string $uuid, int $website, array $daten): array {
     portalContextRequire($db, $uuid);
+    activationRequireEnabled($db, $website);
 
-    $phone          = trim((string)($daten['phone'] ?? ''));
+    $phone         = trim((string)($daten['phone'] ?? ''));
     $zipcode        = trim((string)($daten['zipcode'] ?? ''));
     $customernumber = trim((string)($daten['customernumber'] ?? ''));
 
@@ -385,12 +386,33 @@ function activationInfoByToken($db, string $token): array {
 }
 
 /**
+ * Bricht ab, wenn die Webseite die Konto-Freischaltung nicht anbietet
+ *
+ * Einstellung activation_enabled der Webseite (Firmenkonfiguration →
+ * Kundenportal), Vorgabe aus. Gilt für Anfrage, Kennung und Abschluss von
+ * der Webseite wie für den Versand aus der Kundenakte.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $website Webseite
+ * @return void
+ * @throws ApiError ACTIVATION_DISABLED
+ */
+function activationRequireEnabled($db, int $website): void {
+    if (!websiteActivationEnabled($db, $website)) {
+        throw new ApiError('ACTIVATION_DISABLED', 'Die Konto-Freischaltung ist für diese Webseite nicht eingeschaltet');
+    }
+}
+
+/**
  * Die Kennung mit ihrem Kunden, geprüft
+ *
+ * Auch die Webseite der Kennung muss die Freischaltung noch anbieten: wird
+ * sie abgeschaltet, verfallen ausgegebene Links.
  *
  * @param object $db Company-Datenbankverbindung
  * @param string $token Kennung
  * @return array
- * @throws ApiError ACTIVATION_INVALID, ACTIVATION_EXPIRED
+ * @throws ApiError ACTIVATION_INVALID, ACTIVATION_EXPIRED, ACTIVATION_DISABLED
  */
 function activationRow($db, string $token): array {
     if (!preg_match('/^[0-9a-f]{32}$/', $token)) {
@@ -411,6 +433,7 @@ function activationRow($db, string $token): array {
     if (strtotime((string)$zeile['expires']) < time()) {
         throw new ApiError('ACTIVATION_EXPIRED', 'Dieser Link ist abgelaufen');
     }
+    activationRequireEnabled($db, (int)$zeile['website_id']);
     return $zeile;
 }
 

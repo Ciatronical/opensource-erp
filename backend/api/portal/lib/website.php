@@ -103,6 +103,21 @@ function websiteRequire($db, int $website, string $key): string {
 }
 
 /**
+ * Bietet die Webseite die Konto-Freischaltung für Bestandskunden an?
+ *
+ * Einstellung activation_enabled, Vorgabe aus. Aus heißt: kein Link auf
+ * Anmelde- und Registrierseite, keine Seite „Konto freischalten“ im Paket,
+ * und der öffentliche Zugang weist die Aktionen der Freischaltung ab.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $website Webseite
+ * @return bool
+ */
+function websiteActivationEnabled($db, int $website): bool {
+    return websiteBool($db, $website, 'activation_enabled', false);
+}
+
+/**
  * Ist die Webseite eingeschaltet?
  *
  * @param object $db Company-Datenbankverbindung

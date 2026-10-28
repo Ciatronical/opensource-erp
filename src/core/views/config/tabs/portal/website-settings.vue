@@ -133,7 +133,9 @@
                 </v-card-text>
             </v-card>
 
-            <template v-else>
+            <!-- showIf: Feld nur, solange der genannte Schalter gesetzt ist
+                 (Seite „Konto freischalten“ nur mit eingeschalteter Freischaltung) -->
+            <template v-else-if="!feld.showIf || werte[feld.showIf]">
                 <!-- focusout: beim Verlassen der Webadresse die HugoCMS-Adresse ableiten -->
                 <div @focusout="feldVerlassen(feld)">
                     <ShopConfigField
@@ -181,35 +183,38 @@
                             @click="mountsHilfe"
                         >mdi-information-outline</v-icon>
                     </v-alert>
-
-                    <!-- Paket installieren: Vorlagen, Widgets und Weiterleiter an
-                         HugoCMS — der dritte Prüfschritt braucht genau das -->
-                    <div class="d-flex flex-wrap align-center ga-2 mt-4">
-                        <v-btn
-                            variant="tonal"
-                            color="primary"
-                            size="small"
-                            prepend-icon="mdi-package-variant-closed"
-                            :loading="installiert"
-                            @click="installieren"
-                        >
-                            {{ t('WebsitesView.install') }}
-                        </v-btn>
-                        <span class="text-caption text-medium-emphasis">{{ t('WebsitesView.installHint') }}</span>
-                    </div>
-                    <v-alert
-                        v-if="installErgebnis"
-                        :type="installErgebnis.art"
-                        variant="tonal"
-                        density="compact"
-                        class="mt-2"
-                        style="max-width: 90ch"
-                    >
-                        <div v-for="(zeile, nr) in installErgebnis.zeilen" :key="nr">{{ zeile }}</div>
-                    </v-alert>
                 </div>
             </template>
         </template>
+
+        <!-- Paket installieren: Vorlagen, Widgets und Weiterleiter an HugoCMS.
+             Steht bewusst als letzter Schritt unter allen Einstellungen, weil es
+             den gespeicherten Stand aller Felder auf die Webseite überträgt;
+             der dritte Schritt von „Verbindung prüfen“ braucht genau das -->
+        <v-divider class="mt-6" />
+        <div class="d-flex flex-wrap align-center ga-2 mt-4">
+            <v-btn
+                variant="tonal"
+                color="primary"
+                size="small"
+                prepend-icon="mdi-package-variant-closed"
+                :loading="installiert"
+                @click="installieren"
+            >
+                {{ t('WebsitesView.install') }}
+            </v-btn>
+            <span class="text-caption text-medium-emphasis">{{ t('WebsitesView.installHint') }}</span>
+        </div>
+        <v-alert
+            v-if="installErgebnis"
+            :type="installErgebnis.art"
+            variant="tonal"
+            density="compact"
+            class="mt-2"
+            style="max-width: 90ch"
+        >
+            <div v-for="(zeile, nr) in installErgebnis.zeilen" :key="nr">{{ zeile }}</div>
+        </v-alert>
     </div>
 </template>
 
