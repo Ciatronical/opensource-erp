@@ -394,3 +394,17 @@ sudo lsof -i :8000
 docker compose logs -f web
 docker compose logs -f db
 ```
+
+---
+
+## Lizenz
+
+Copyright (C) 2026 Inter-Data (Ciatronical)
+
+OSERP ist freie Software: Sie dürfen es unter den Bedingungen der **GNU Affero General Public License, Version 3** oder (nach Ihrer Wahl) jeder späteren Version weitergeben und verändern. Der vollständige Lizenztext liegt in der Datei [LICENSE](LICENSE).
+
+Das Programm wird in der Hoffnung bereitgestellt, dass es nützlich ist, aber **ohne jede Gewährleistung**, auch ohne die stillschweigende Zusicherung der Marktgängigkeit oder der Eignung für einen bestimmten Zweck.
+
+Wer eine veränderte Fassung von OSERP als Netzdienst betreibt, muss den Nutzern dieses Dienstes den Quelltext der veränderten Fassung anbieten (§ 13 AGPL).
+
+Eine Übersicht der verwendeten Drittkomponenten und ihrer Lizenzen steht in [docs/drittkomponenten.md](docs/drittkomponenten.md).

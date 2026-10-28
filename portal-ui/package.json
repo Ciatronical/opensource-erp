@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "Widgets des Kundenportals, des Shops und der Fahrzeuge (LxCars) als Web Components mit Shadow-DOM (Lit). Teil von OpensourceERP.",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0-or-later",
   "main": "../backend/templates-default/portal/standard/kit/assets/portal-ui/portal-widgets.js",
   "scripts": {
     "build": "node scripts/build.mjs && node scripts/check-bundle.mjs",

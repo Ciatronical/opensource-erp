@@ -2,6 +2,7 @@
     "name": "opensource_erp",
     "private": true,
     "version": "4.0.0",
+    "license": "AGPL-3.0-or-later",
     "type": "module",
     "scripts": {
         "dev": "vite --configLoader native",
