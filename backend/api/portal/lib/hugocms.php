@@ -269,6 +269,44 @@ function portalHugoCmsGrantsFrom(array $antwort, array $pflicht = []): array {
     return ['freigaben' => $ergebnis, 'fehler' => ''];
 }
 
+/**
+ * Hugo-Version der Webseite, wie HugoCMS sie im Baustand nennt (hugo)
+ *
+ * Je Prozess gemerkt; eine schon geholte Antwort von shopbuildstatus kann
+ * der Aufrufer hineinreichen ($stand), dann entfällt der Aufruf. Leer, wenn
+ * HugoCMS nicht antwortet oder die Version nicht nennt (vor 2026-10-29).
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $website Webseite
+ * @param array|null $stand Antwort von portalHugoCmsCall(…, 'shopbuildstatus')
+ * @return string etwa „0.164.0“, oder ''
+ */
+function portalHugoVersion($db, int $website, ?array $stand = null): string {
+    static $gemerkt = [];
+    if (null === $stand && array_key_exists($website, $gemerkt)) {
+        return $gemerkt[$website];
+    }
+    $stand = $stand ?? portalHugoCmsCall($db, $website, 'shopbuildstatus');
+    $version = $stand['ok'] ? (string)($stand['data']['hugo'] ?? '') : '';
+    $gemerkt[$website] = preg_match('/^\d+(\.\d+)*$/', $version) ? $version : '';
+    return $gemerkt[$website];
+}
+
+/**
+ * Schlüssel der Bauoptionen im Vorspann einer Seite: build oder _build
+ *
+ * Hugo hat den Schlüssel mit 0.145 von „_build“ in „build“ umbenannt; ab
+ * da bricht „_build“ den Bau ab, davor bleibt „build“ ohne Wirkung (die
+ * Seite würde gerendert). Unbekannte Version: „build“ — ein überflüssiger
+ * Abschnitt ist das kleinere Übel als eine Webseite, die nicht mehr baut.
+ *
+ * @param string $version Hugo-Version, '' wenn unbekannt
+ * @return string
+ */
+function portalHugoBuildKey(string $version): string {
+    return '' !== $version && version_compare($version, '0.145.0', '<') ? '_build' : 'build';
+}
+
 // ── Übertragung und Bau ──
 //
 // Drei Schritte: Abgleich (Verzeichnis mit Prüfsummen), Übertragung (nur was

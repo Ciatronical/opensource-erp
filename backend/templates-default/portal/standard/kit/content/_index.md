@@ -1,6 +1,6 @@
 ---
 title: "Kundenportal"
-_build:
+[[hugo:build]]:
     render: never
     list: never
 sitemap:

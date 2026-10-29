@@ -266,7 +266,9 @@ function portalKitPageWanted($db, int $website, string $quelle): bool {
  *
  * Platzhalter: [[login]], [[account]], [[profile]] … die Pfade aus
  * portalKitPages; [[feature:shop]], [[feature:lxcars]] als true/false für
- * Shortcode-Schalter wie show-payment. Unbekannte Platzhalter werden leer.
+ * Shortcode-Schalter wie show-payment; [[hugo:build]] der Schlüssel der
+ * Bauoptionen passend zur Hugo-Version der Webseite (portalHugoBuildKey:
+ * build ab Hugo 0.145, davor _build). Unbekannte Platzhalter werden leer.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $website Webseite
@@ -277,7 +279,11 @@ function portalKitPageRender($db, int $website, string $quelle): string {
     $seiten = portalKitPages($db, $website);
     $features = portalKitFeatures($db, $website);
     $inhalt = (string)file_get_contents($quelle);
-    return preg_replace_callback('/\[\[(feature:)?([a-z]+)\]\]/', function (array $m) use ($seiten, $features) {
+    $bauschluessel = str_contains($inhalt, '[[hugo:build]]') ? portalHugoBuildKey(portalHugoVersion($db, $website)) : '';
+    return preg_replace_callback('/\[\[(feature:|hugo:)?([a-z]+)\]\]/', function (array $m) use ($seiten, $features, $bauschluessel) {
+        if ('hugo:' === $m[1]) {
+            return 'build' === $m[2] ? $bauschluessel : '';
+        }
         if ('' !== $m[1]) {
             return !empty($features[$m[2]]) ? 'true' : 'false';
         }
@@ -588,6 +594,9 @@ function portalPublishWebsite($db, int $website, callable $sagen, callable $fehl
         $fehler('HugoCMS: '.$stand['fehler']);
         return false;
     }
+    // Hugo-Version aus derselben Antwort vormerken — der Paketabgleich richtet
+    // den Vorspann der Seiten danach aus (portalKitPageRender)
+    portalHugoVersion($db, $website, $stand);
     $freigaben = portalHugoCmsGrantsFrom($stand);
     if ('' !== $freigaben['fehler']) {
         $fehler($freigaben['fehler']);
