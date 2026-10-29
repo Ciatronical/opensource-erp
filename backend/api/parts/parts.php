@@ -623,13 +623,13 @@ function createPart($data) {
         $partParams[':template_parts_id'] = $templateId;
         $vorlageSpalten = ', listprice, lastcost, makemodel, rop, shop, bom, image, drawing, microfiche,
                            partsgroup_id, ve, gv, formel, not_discountable, payment_id, price_factor_id,
-                           stockable, has_sernumber, warehouse_id, bin_id, classification_id, instruction,
+                           stockable, has_sernumber, warehouse_id, bin_id, classification_id,
                            order_qty, order_locked, tariff_code';
         $vorlageWerte = ', v.listprice, v.lastcost, COALESCE(v.makemodel, FALSE), v.rop, COALESCE(v.shop, FALSE),
                           COALESCE(v.bom, FALSE), v.image, v.drawing, v.microfiche,
                           v.partsgroup_id, v.ve, v.gv, v.formel, COALESCE(v.not_discountable, FALSE), v.payment_id,
                           v.price_factor_id, COALESCE(v.stockable, FALSE), COALESCE(v.has_sernumber, FALSE),
-                          v.warehouse_id, v.bin_id, COALESCE(v.classification_id, 0), COALESCE(v.instruction, FALSE),
+                          v.warehouse_id, v.bin_id, COALESCE(v.classification_id, 0),
                           COALESCE(v.order_qty, 0), COALESCE(v.order_locked, FALSE), v.tariff_code';
         // Die Vorlage muss es geben — sonst entsteht kein Artikel (Ergebnis leer)
         $vorlageQuelle = 'FROM parts v WHERE v.id = :template_parts_id';
