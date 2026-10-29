@@ -92,35 +92,61 @@ portalHookAdd('publish_files', function (array $dateien, $db, int $website, stri
     return $dateien;
 });
 
-// „Paket installieren“ einer Webseite mit HugoShop: der Lauf der
-// Shop-Erweiterung gleicht Paket und Produktseiten ab und baut
-portalHookAdd('install_package', function ($ergebnis, $db, int $website) {
+// „Paket installieren“ einer Webseite mit HugoShop: der Kern liefert selbst
+// (portalPublishWebsite). HugoCMS löscht bei der Übernahme, was die vorige
+// Lieferung enthielt und diese nicht mehr — deshalb führt die Lieferung
+// Produktseiten, Kategorieübersicht und Medien des Shops mit, mit denselben
+// Prüfsummen wie der Lauf der Shop-Erweiterung (shopHugoCmsSync). HugoCMS
+// fordert nur an, was ihm fehlt; Medien überträgt der Shop selbst in Stücken.
+// Vorher zieht eine ältere Bereitstellung je Kanal auf die Webseite um
+// (shopStagingDir) — der Haken läuft vor dem Paketabgleich des Kerns.
+portalHookAdd('publish_entries', function (array $beitrag, $db, int $website, array $stand): array {
     $kanal = shopChannelOfWebsiteOrZero($db, $website);
     if ($kanal <= 0) {
-        return null;
+        return $beitrag;
     }
-    $id = shopQueueJob($db, 'sync_kit', '', SHOP_KIT_INSTALL, $kanal);
-    if (0 === $id) {
-        $offen = $db->getOne(
-            "UPDATE batchjob_hugoshop b SET param = :param
-              WHERE b.channel_id = CAST(:kanal AS integer) AND b.function = 'sync_kit'
-                AND b.partnumber = '' AND b.result IS NULL
-          RETURNING b.id",
-            [':param' => SHOP_KIT_INSTALL, ':kanal' => $kanal]
-        );
-        $id = (int)($offen['id'] ?? 0);
+    $freigaben = shopHugoCmsGrantsFrom($stand);
+    if ('' !== $freigaben['fehler']) {
+        // Ohne die Freigaben des Shops ginge die Lieferung ohne Produktseiten
+        // hinaus und HugoCMS räumte sie ab — lieber gar nicht liefern
+        throw new ApiError('SHOP_HUGOCMS_GRANTS', $freigaben['fehler']);
     }
-    if ($id <= 0) {
-        throw new ApiError('SHOP_PUBLISH_START_FAILED', 'Der Auftrag ließ sich nicht anlegen.');
+    $freigaben = $freigaben['freigaben'];
+    $wurzel = shopStagingDir($db, $kanal);
+
+    $seiten = 0;
+    $liste = shopHugoCmsManifest($wurzel, $freigaben, (array)($stand['data']['accept'] ?? []));
+    foreach ($liste['dateien'] as $pfad => $pruefsumme) {
+        if (str_starts_with($pfad, $freigaben['package'].'/')) {
+            continue;   // das Paket liefert der Kern nach seinem Abgleich
+        }
+        $beitrag['eintraege'][$pfad] = ['sha256' => $pruefsumme];
+        if ('md' === strtolower(pathinfo($pfad, PATHINFO_EXTENSION))) {
+            $seiten++;
+        }
     }
-    if (shopPublishStatus($db)['running']) {
-        return ['queued' => true, 'started' => false, 'running' => true, 'job_id' => $id, 'channel_id' => $kanal];
+
+    $medien = shopHugoCmsMediaList($db, $freigaben);
+    foreach ($medien['dateien'] as $pfad => $datei) {
+        // Medien tragen ihre Größe: HugoCMS misst die Stücke daran
+        $beitrag['eintraege'][$pfad] = ['sha256' => $datei['sha256'], 'size' => $datei['size']];
     }
-    $start = shopPublishStartBackground($db, [$id]);
-    if ('' !== $start['fehler']) {
-        throw new ApiError('SHOP_PUBLISH_START_FAILED', $start['fehler']);
+    $stueckGroesse = (int)$freigaben['medien_stueck'] > 0
+        ? max(65536, min(SHOP_HUGOCMS_MEDIA_CHUNK_BYTES, (int)$freigaben['medien_stueck']))
+        : SHOP_HUGOCMS_MEDIA_CHUNK_BYTES;
+    $beitrag['extern'] = function (string $syncId, string $pfad) use ($db, $kanal, $medien, $stueckGroesse): ?string {
+        if (!isset($medien['dateien'][$pfad])) {
+            return null;
+        }
+        return shopHugoCmsMediaUpload($db, $kanal, $syncId, $pfad, $medien['dateien'][$pfad], $stueckGroesse);
+    };
+
+    $beitrag['meldungen'][] = sprintf('Shop: %d Produktseiten und %d Medien in der Lieferung', $seiten, count($medien['dateien']));
+    if ($medien['fehlend']) {
+        $beitrag['meldungen'][] = 'Shop: Medien ohne Datei, nicht geliefert: '.implode(', ', array_slice($medien['fehlend'], 0, 10))
+            .(count($medien['fehlend']) > 10 ? ' …' : '');
     }
-    return ['queued' => true, 'started' => true, 'running' => true, 'job_id' => $id, 'channel_id' => $kanal];
+    return $beitrag;
 });
 
 // ── Belege im Kundenkonto (portal/lib/documents.php) ──

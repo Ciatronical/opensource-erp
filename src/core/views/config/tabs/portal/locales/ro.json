@@ -26,7 +26,6 @@
         "install": "Instalează pachetul",
         "installHint": "Transferă șabloane, widgeturi și proxy-ul în HugoCMS și construiește site-ul.",
         "installNeeded": "Această modificare ajunge pe site doar după „Instalează pachetul”.",
-        "installQueued": "Sarcină creată – publicarea magazinului transferă pachetul (prezentare magazin).",
         "installDone": "Pachet transferat și site construit.",
         "installFailed": "Pachetul nu a fost transferat complet. Motiv:",
         "features": "Pe acest site:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Pe acest site rulează un canal de vânzare – schimbați mai întâi site-ul acolo.",
             "WEBSITE_NOT_DELETABLE": "Doar un site dezactivat poate fi șters.",
             "WEBSITE_KEY_TAKEN": "Această cheie aparține deja altui site.",
-            "NO_PERMISSION": "Lipsește dreptul „Creare și editare magazine online” pentru site-uri."
+            "NO_PERMISSION": "Lipsește dreptul „Creare și editare magazine online” pentru site-uri.",
+            "PORTAL_PUBLISH_BUSY": "O publicare rulează chiar acum (rularea magazinului sau o altă „Instalare pachet”). Încercați din nou peste puțin timp."
         },
         "proxyHint": "Site-ul ajunge la OpensourceERP prin proxy-ul /portal-api/ din pachet – sau printr-un reverse proxy care setează antetul X-Portal-Key.",
         "secretsNotice": "Cheile sunt completate și ascunse; pictograma ochi le afișează. Golirea unui câmp nu șterge cheia salvată.",

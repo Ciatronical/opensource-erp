@@ -1191,17 +1191,9 @@ function shopSiteTally(array &$bilanz, int $kanal, string $feld, int $anzahl = 1
  * @return bool false, wenn schon jemand arbeitet
  */
 function shopPublishLock($db): bool {
-    static $aufraeumerAngemeldet = false;
-
-    $zeile = $db->getOne("SELECT pg_try_advisory_lock(hashtext('oserp'), hashtext('shop_publish')) AS genommen");
-    $genommen = in_array($zeile['genommen'] ?? null, [true, 't', '1', 1], true);
-
-    if ($genommen && !$aufraeumerAngemeldet) {
-        $aufraeumerAngemeldet = true;
-        register_shutdown_function(static function () use ($db) { shopPublishUnlock($db); });
-    }
-
-    return $genommen;
+    // Dieselbe Sperre wie „Paket installieren“ des Kundenportals: beide
+    // schreiben in die Bereitstellung der Webseite und liefern an HugoCMS
+    return portalPublishLock($db);
 }
 
 /**
@@ -1214,11 +1206,7 @@ function shopPublishLock($db): bool {
  * @return void
  */
 function shopPublishUnlock($db): void {
-    try {
-        $db->getOne("SELECT pg_advisory_unlock(hashtext('oserp'), hashtext('shop_publish')) AS frei");
-    } catch (Throwable $e) {
-        // Verbindung fort, Sperre fort — nichts zu tun
-    }
+    portalPublishUnlock($db);
 }
 
 // ── Lauf im Hintergrund ──

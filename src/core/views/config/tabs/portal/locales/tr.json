@@ -26,7 +26,6 @@
         "install": "Paketi yükle",
         "installHint": "Şablonları, pencere öğelerini ve proxy'yi HugoCMS'ye aktarır ve web sitesini derletir.",
         "installNeeded": "Bu değişiklik web sitesine ancak „Paketi yükle“ sonrasında ulaşır.",
-        "installQueued": "Görev oluşturuldu – mağaza yayını paketi aktarır (mağaza genel bakışı).",
         "installDone": "Paket aktarıldı ve web sitesi derlendi.",
         "installFailed": "Paket tamamen aktarılamadı. Neden:",
         "features": "Bu web sitesinde:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Bu web sitesinde bir satış kanalı çalışıyor – önce orada web sitesini değiştirin.",
             "WEBSITE_NOT_DELETABLE": "Yalnızca kapalı bir web sitesi silinebilir.",
             "WEBSITE_KEY_TAKEN": "Bu anahtar zaten başka bir web sitesine ait.",
-            "NO_PERMISSION": "Web siteleri için “Web mağazası oluştur ve düzenle” hakkı eksik."
+            "NO_PERMISSION": "Web siteleri için “Web mağazası oluştur ve düzenle” hakkı eksik.",
+            "PORTAL_PUBLISH_BUSY": "Şu anda bir yayınlama çalışıyor (mağaza çalıştırması veya başka bir „Paketi kur“). Lütfen birazdan tekrar deneyin."
         },
         "proxyHint": "Web sitesi OpensourceERP'ye paketteki /portal-api/ proxy'si üzerinden – veya X-Portal-Key başlığını ayarlayan bir ters proxy üzerinden ulaşır.",
         "secretsNotice": "Anahtarlar doldurulmuş ve gizlidir; göz simgesi gösterir. Alanı boşaltmak kayıtlı anahtarı silmez.",

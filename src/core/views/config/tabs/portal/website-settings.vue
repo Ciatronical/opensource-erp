@@ -595,12 +595,7 @@ async function installieren(quelle = '') {
             return
         }
         const daten = antwort.data.payload || {}
-        // Paket übertragen oder beauftragt: die Hinweise „erst mit Paket installieren“ unter den Feldern erlöschen
-        if (daten.queued) {
-            installStand.value = installStandLesen()
-            installErgebnis.value = { art: 'info', zeilen: [t('WebsitesView.installQueued')] }
-            return
-        }
+        // Paket übertragen: die Hinweise „erst mit Paket installieren“ unter den Feldern erlöschen
         const zeilen = (daten.messages || []).map(m => m.text)
         if (daten.ok) installStand.value = installStandLesen()
         installErgebnis.value = daten.ok

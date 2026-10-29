@@ -26,7 +26,6 @@
         "install": "Nainstalovat balíček",
         "installHint": "Přenese šablony, widgety a proxy do HugoCMS a nechá web sestavit.",
         "installNeeded": "Tato změna se na webu projeví až po „Nainstalovat balíček“.",
-        "installQueued": "Úloha vytvořena – publikování obchodu přenese balíček (přehled obchodu).",
         "installDone": "Balíček přenesen a web sestaven.",
         "installFailed": "Balíček nebyl přenesen úplně. Důvod:",
         "features": "Na tomto webu:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Na tomto webu běží prodejní kanál – nejdřív tam web změňte.",
             "WEBSITE_NOT_DELETABLE": "Smazat lze jen vypnutý web.",
             "WEBSITE_KEY_TAKEN": "Tento klíč už patří jinému webu.",
-            "NO_PERMISSION": "Pro weby chybí právo „Vytvářet a upravovat e-shopy“."
+            "NO_PERMISSION": "Pro weby chybí právo „Vytvářet a upravovat e-shopy“.",
+            "PORTAL_PUBLISH_BUSY": "Právě probíhá publikování (běh obchodu nebo jiná „Instalace balíčku“). Zkuste to prosím za chvíli znovu."
         },
         "proxyHint": "Web se k OpensourceERP dostane přes proxy /portal-api/ v balíčku – nebo přes reverzní proxy, které nastaví hlavičku X-Portal-Key.",
         "secretsNotice": "Klíče jsou vyplněné a skryté; ikona oka je zobrazí. Vymazání pole uložený klíč nesmaže.",

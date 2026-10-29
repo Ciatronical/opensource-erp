@@ -26,7 +26,6 @@
         "install": "Installera paket",
         "installHint": "Överför mallar, widgetar och proxy till HugoCMS och låter bygga webbplatsen.",
         "installNeeded": "Den här ändringen når webbplatsen först efter ”Installera paket”.",
-        "installQueued": "Jobb skapat – butikspubliceringen överför paketet (butiksöversikt).",
         "installDone": "Paket överfört och webbplats byggd.",
         "installFailed": "Paketet överfördes inte fullständigt. Orsak:",
         "features": "På denna webbplats:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "En försäljningskanal körs på denna webbplats – byt webbplats där först.",
             "WEBSITE_NOT_DELETABLE": "Bara en avstängd webbplats kan tas bort.",
             "WEBSITE_KEY_TAKEN": "Denna nyckel tillhör redan en annan webbplats.",
-            "NO_PERMISSION": "Rättigheten ”Skapa och redigera webbutiker” saknas för webbplatserna."
+            "NO_PERMISSION": "Rättigheten ”Skapa och redigera webbutiker” saknas för webbplatserna.",
+            "PORTAL_PUBLISH_BUSY": "En publicering pågår just nu (butikskörning eller en annan ”Installera paket”). Försök igen om en stund."
         },
         "proxyHint": "Webbplatsen når OpensourceERP via proxyn /portal-api/ i paketet – eller via en reverse proxy som sätter headern X-Portal-Key.",
         "secretsNotice": "Nycklarna är ifyllda och dolda; ögonikonen visar dem. Ett tömt fält raderar inte den sparade nyckeln.",

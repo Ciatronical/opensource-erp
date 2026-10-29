@@ -517,12 +517,63 @@ function portalKitPhpFiles(string $paket = 'oserp-portal'): array {
 }
 
 /**
- * Veröffentlicht das Paket einer Webseite ohne Shop
+ * Sperre der Veröffentlichung — je Mandant, über alle Wege
  *
- * Für Webseiten, auf denen nur das Kundenportal läuft: Paket abgleichen, an
- * HugoCMS übertragen, bauen lassen — gleich hier, ohne Auftrag und Läufer.
- * Webseiten mit HugoShop veröffentlicht der Lauf der Shop-Erweiterung
- * (Haken install_package).
+ * „Paket installieren“ (Kern) und der Lauf der Shop-Erweiterung schreiben in
+ * dieselbe Bereitstellung und liefern an dieselbe Webseite. Eine Sperre in
+ * PostgreSQL (advisory lock) lässt nur einen zugleich: ein zweiter bekommt
+ * false und meldet „läuft gerade“. PHP-FPM hält die Verbindung über die
+ * Anfrage hinaus offen (PDO::ATTR_PERSISTENT), und die Sperre hängt an der
+ * Verbindung — deshalb gibt sie ein Aufräumer beim Beenden frei, falls der
+ * reguläre Weg ausfällt.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return bool false, wenn schon jemand arbeitet
+ */
+function portalPublishLock($db): bool {
+    static $aufraeumerAngemeldet = false;
+
+    $zeile = $db->getOne("SELECT pg_try_advisory_lock(hashtext('oserp'), hashtext('shop_publish')) AS genommen");
+    $genommen = in_array($zeile['genommen'] ?? null, [true, 't', '1', 1], true);
+
+    if ($genommen && !$aufraeumerAngemeldet) {
+        $aufraeumerAngemeldet = true;
+        register_shutdown_function(static function () use ($db) { portalPublishUnlock($db); });
+    }
+
+    return $genommen;
+}
+
+/**
+ * Gibt die Sperre der Veröffentlichung frei
+ *
+ * Mehrfach aufrufbar: hält die Verbindung sie nicht mehr, meldet PostgreSQL
+ * das nur zurück. Ist die Verbindung schon zu, ist die Sperre ohnehin weg.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return void
+ */
+function portalPublishUnlock($db): void {
+    try {
+        $db->getOne("SELECT pg_advisory_unlock(hashtext('oserp'), hashtext('shop_publish')) AS frei");
+    } catch (Throwable $e) {
+        // Verbindung fort, Sperre fort — nichts zu tun
+    }
+}
+
+/**
+ * Veröffentlicht das Paket einer Webseite: abgleichen, an HugoCMS übertragen, bauen
+ *
+ * Gleich hier, ohne Auftrag und Läufer — unabhängig davon, ob die
+ * Shop-Erweiterung aktiv ist. HugoCMS löscht bei der Übernahme, was die
+ * vorige Lieferung enthielt und diese nicht mehr; deshalb nennt die
+ * Lieferung alles, was die Webseite von OpensourceERP haben soll: das Paket
+ * aus der Bereitstellung, dazu was die Erweiterungen über den Haken
+ * publish_entries beitragen (der Shop seine Produktseiten,
+ * Kategorieübersicht und Medien). Der Haken läuft vor dem Paketabgleich,
+ * damit eine ältere Bereitstellung je Kanal vorher umziehen kann.
+ *
+ * Der Aufrufer hält die Sperre (portalPublishLock).
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $website Webseite
@@ -543,6 +594,13 @@ function portalPublishWebsite($db, int $website, callable $sagen, callable $fehl
         return false;
     }
     $paket = $freigaben['freigaben']['package'];
+
+    // Beitrag der Erweiterungen zur Lieferung: Einträge außerhalb des Pakets,
+    // eigene Übertragung großer Dateien (extern), Meldungen
+    $beitrag = portalHookFilter('publish_entries', ['eintraege' => [], 'extern' => null, 'meldungen' => []], $db, $website, $stand);
+    foreach ((array)($beitrag['meldungen'] ?? []) as $text) {
+        $sagen((string)$text);
+    }
 
     try {
         $abgleich = portalSyncKit($db, $website, $paket);
@@ -582,9 +640,12 @@ function portalPublishWebsite($db, int $website, callable $sagen, callable $fehl
             }
         }
     }
+    // Paket vor dem Beitrag: bei gleichem Pfad gilt die Datei des Pakets
+    $eintraege = $eintraege + (array)($beitrag['eintraege'] ?? []);
     ksort($eintraege);
 
-    $ergebnis = portalHugoCmsTransfer($db, $website, $eintraege, fn(string $pfad) => (string)@file_get_contents($wurzel.'/'.$pfad));
+    $ergebnis = portalHugoCmsTransfer($db, $website, $eintraege, fn(string $pfad) => (string)@file_get_contents($wurzel.'/'.$pfad),
+        is_callable($beitrag['extern'] ?? null) ? $beitrag['extern'] : null);
     if (!$ergebnis['ok']) {
         $fehler('Übertragung an HugoCMS fehlgeschlagen: '.$ergebnis['fehler']);
         return false;

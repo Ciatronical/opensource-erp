@@ -26,7 +26,6 @@
         "install": "Installer le paquet",
         "installHint": "Transfère les modèles, widgets et le proxy vers HugoCMS et fait construire le site.",
         "installNeeded": "Cette modification n'atteint le site web qu'après « Installer le paquet ».",
-        "installQueued": "Tâche créée – la publication de la boutique transfère le paquet (aperçu de la boutique).",
         "installDone": "Paquet transféré et site construit.",
         "installFailed": "Paquet transféré de façon incomplète. Raison :",
         "features": "Sur ce site :",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Un canal de vente fonctionne sur ce site – changez d'abord le site là-bas.",
             "WEBSITE_NOT_DELETABLE": "Seul un site désactivé peut être supprimé.",
             "WEBSITE_KEY_TAKEN": "Cette clé appartient déjà à un autre site.",
-            "NO_PERMISSION": "Le droit « Créer et modifier des boutiques en ligne » manque pour les sites."
+            "NO_PERMISSION": "Le droit « Créer et modifier des boutiques en ligne » manque pour les sites.",
+            "PORTAL_PUBLISH_BUSY": "Une publication est en cours (exécution de la boutique ou un autre « Installer le paquet »). Veuillez réessayer dans un instant."
         },
         "proxyHint": "Le site atteint OpensourceERP via le proxy /portal-api/ du paquet – ou via un reverse proxy qui définit l'en-tête X-Portal-Key.",
         "secretsNotice": "Les clés sont renseignées et masquées ; l’icône œil les affiche. Vider un champ ne supprime pas la clé enregistrée.",

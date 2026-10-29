@@ -26,7 +26,6 @@
         "install": "Install package",
         "installHint": "Transfers templates, widgets and the proxy to HugoCMS and has the website built.",
         "installNeeded": "This change only reaches the website after “Install package”.",
-        "installQueued": "Job created — the shop publishing transfers the package (shop overview).",
         "installDone": "Package transferred and website built.",
         "installFailed": "Package not fully transferred. Reason:",
         "features": "On this website:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "A sales channel runs on this website — change the website there first.",
             "WEBSITE_NOT_DELETABLE": "Only a switched-off website can be deleted.",
             "WEBSITE_KEY_TAKEN": "This key already belongs to another website.",
-            "NO_PERMISSION": "The right “Create and edit webshops” is missing for the websites."
+            "NO_PERMISSION": "The right “Create and edit webshops” is missing for the websites.",
+            "PORTAL_PUBLISH_BUSY": "A publication is running right now (shop run or another “Install package”). Please try again in a moment."
         },
         "proxyHint": "The website reaches OpensourceERP through the proxy /portal-api/ in the package — or through a reverse proxy that sets the header X-Portal-Key.",
         "secretsNotice": "The keys are filled in and masked; the eye icon reveals them. Clearing a field does not delete the stored key.",

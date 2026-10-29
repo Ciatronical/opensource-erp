@@ -26,7 +26,6 @@
         "install": "Zainstaluj pakiet",
         "installHint": "Przesyła szablony, widżety i proxy do HugoCMS i buduje stronę.",
         "installNeeded": "Ta zmiana trafi na stronę dopiero po „Zainstaluj pakiet”.",
-        "installQueued": "Zadanie utworzone – publikacja sklepu przesyła pakiet (przegląd sklepu).",
         "installDone": "Pakiet przesłany i strona zbudowana.",
         "installFailed": "Pakiet nie został w pełni przesłany. Powód:",
         "features": "Na tej stronie:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Na tej stronie działa kanał sprzedaży – najpierw zmień tam stronę.",
             "WEBSITE_NOT_DELETABLE": "Usunąć można tylko wyłączoną stronę.",
             "WEBSITE_KEY_TAKEN": "Ten klucz należy już do innej strony.",
-            "NO_PERMISSION": "Brak uprawnienia „Tworzenie i edycja sklepów internetowych” dla stron."
+            "NO_PERMISSION": "Brak uprawnienia „Tworzenie i edycja sklepów internetowych” dla stron.",
+            "PORTAL_PUBLISH_BUSY": "Trwa właśnie publikacja (uruchomienie sklepu lub inna „Instalacja pakietu”). Spróbuj ponownie za chwilę."
         },
         "proxyHint": "Strona łączy się z OpensourceERP przez proxy /portal-api/ w pakiecie – lub przez reverse proxy ustawiające nagłówek X-Portal-Key.",
         "secretsNotice": "Klucze są wypełnione i ukryte; ikona oka je pokazuje. Wyczyszczenie pola nie usuwa zapisanego klucza.",

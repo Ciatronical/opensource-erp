@@ -439,13 +439,13 @@ function getPortalTemplateSets($data) {
 /**
  * Überträgt das Paket einer Webseite an HugoCMS und lässt bauen
  *
- * Mit HugoShop auf der Webseite übernimmt das der Lauf der Shop-Erweiterung
- * (Haken install_package: Auftrag und Start im Hintergrund); ohne Shop
- * geschieht es gleich hier (portalPublishWebsite), die Meldungen kommen mit
- * der Antwort.
+ * Gleich hier (portalPublishWebsite), mit oder ohne Shop-Erweiterung; die
+ * Meldungen kommen mit der Antwort. Läuft gerade eine Veröffentlichung (Lauf
+ * der Shop-Erweiterung oder ein zweites „Paket installieren“), lehnt die
+ * Sperre ab: PORTAL_PUBLISH_BUSY.
  *
  * @param int $data['website_id'] Webseite
- * @return void queued, started, running, job_id (Shop) oder ok, messages (Kern)
+ * @return void ok, messages (art: info/error, text); bei Fehler text = PORTAL_PUBLISH_BUSY
  * @testdata {"website_id": 1}
  */
 function installWebsitePackage($data) {
@@ -458,9 +458,8 @@ function installWebsitePackage($data) {
         return;
     }
 
-    $auftrag = portalHookFilter('install_package', null, $db, $website);
-    if (null !== $auftrag) {
-        resultInfo(true, '', ['queued' => true] + (array)$auftrag);
+    if (!portalPublishLock($db)) {
+        resultInfo(false, 'PORTAL_PUBLISH_BUSY', null, 'Eine Veröffentlichung läuft gerade — bitte gleich noch einmal');
         return;
     }
 
@@ -471,7 +470,8 @@ function installWebsitePackage($data) {
         function (string $text) use (&$meldungen): void { $meldungen[] = ['art' => 'info', 'text' => $text]; },
         function (string $text) use (&$meldungen, &$fehler): void { $meldungen[] = ['art' => 'error', 'text' => $text]; $fehler++; }
     );
-    resultInfo(true, '', ['queued' => false, 'ok' => $ok && 0 === $fehler, 'messages' => $meldungen]);
+    portalPublishUnlock($db);
+    resultInfo(true, '', ['ok' => $ok && 0 === $fehler, 'messages' => $meldungen]);
 }
 
 // ── Freischaltung aus der Kundenakte (dev/shop-konto-freischaltung.md, F3) ──

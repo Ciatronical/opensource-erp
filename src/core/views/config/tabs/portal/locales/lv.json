@@ -26,7 +26,6 @@
         "install": "Instalēt pakotni",
         "installHint": "Pārsūta veidnes, logrīkus un starpniekserveri uz HugoCMS un liek uzbūvēt vietni.",
         "installNeeded": "Šīs izmaiņas vietni sasniegs tikai pēc „Instalēt pakotni“.",
-        "installQueued": "Uzdevums izveidots – veikala publicēšana pārsūtīs pakotni (veikala pārskats).",
         "installDone": "Pakotne pārsūtīta un vietne uzbūvēta.",
         "installFailed": "Pakotne netika pārsūtīta pilnībā. Iemesls:",
         "features": "Šajā vietnē:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Šajā vietnē darbojas pārdošanas kanāls – vispirms tur nomainiet vietni.",
             "WEBSITE_NOT_DELETABLE": "Dzēst var tikai izslēgtu vietni.",
             "WEBSITE_KEY_TAKEN": "Šī atslēga jau pieder citai vietnei.",
-            "NO_PERMISSION": "Vietnēm trūkst tiesību “Izveidot un rediģēt interneta veikalus”."
+            "NO_PERMISSION": "Vietnēm trūkst tiesību “Izveidot un rediģēt interneta veikalus”.",
+            "PORTAL_PUBLISH_BUSY": "Pašlaik notiek publicēšana (veikala palaišana vai cita „Instalēt pakotni“). Lūdzu, pēc brīža mēģiniet vēlreiz."
         },
         "proxyHint": "Vietne sasniedz OpensourceERP caur pakotnes starpniekserveri /portal-api/ – vai caur reverso starpniekserveri, kas iestata galveni X-Portal-Key.",
         "secretsNotice": "Atslēgas ir aizpildītas un paslēptas; acs ikona tās parāda. Iztukšots lauks saglabāto atslēgu nedzēš.",

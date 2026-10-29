@@ -26,7 +26,6 @@
         "install": "Installer pakke",
         "installHint": "Overfører maler, widgeter og proxy til HugoCMS og lar nettstedet bygges.",
         "installNeeded": "Denne endringen når nettstedet først etter «Installer pakke».",
-        "installQueued": "Oppgave opprettet – butikkpubliseringen overfører pakken (butikkoversikt).",
         "installDone": "Pakke overført og nettsted bygget.",
         "installFailed": "Pakken ble ikke overført fullstendig. Årsak:",
         "features": "På dette nettstedet:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "En salgskanal kjører på dette nettstedet – bytt nettsted der først.",
             "WEBSITE_NOT_DELETABLE": "Bare et avslått nettsted kan slettes.",
             "WEBSITE_KEY_TAKEN": "Denne nøkkelen tilhører allerede et annet nettsted.",
-            "NO_PERMISSION": "Rettigheten «Opprett og rediger nettbutikker» mangler for nettstedene."
+            "NO_PERMISSION": "Rettigheten «Opprett og rediger nettbutikker» mangler for nettstedene.",
+            "PORTAL_PUBLISH_BUSY": "En publisering kjører akkurat nå (butikkjøring eller en annen «Installer pakke»). Prøv igjen om et øyeblikk."
         },
         "proxyHint": "Nettstedet når OpensourceERP via proxyen /portal-api/ i pakken – eller via en reverse proxy som setter headeren X-Portal-Key.",
         "secretsNotice": "Nøklene er fylt ut og skjult; øye-ikonet viser dem. Et tømt felt sletter ikke den lagrede nøkkelen.",

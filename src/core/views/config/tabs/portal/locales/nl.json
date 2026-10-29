@@ -26,7 +26,6 @@
         "install": "Pakket installeren",
         "installHint": "Draagt sjablonen, widgets en de proxy over aan HugoCMS en laat de website bouwen.",
         "installNeeded": "Deze wijziging bereikt de website pas na „Pakket installeren”.",
-        "installQueued": "Opdracht aangemaakt – de shop-publicatie draagt het pakket over (shop-overzicht).",
         "installDone": "Pakket overgedragen en website gebouwd.",
         "installFailed": "Pakket niet volledig overgedragen. Reden:",
         "features": "Op deze website:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Op deze website draait een verkoopkanaal – wijzig daar eerst de website.",
             "WEBSITE_NOT_DELETABLE": "Alleen een uitgeschakelde website kan worden verwijderd.",
             "WEBSITE_KEY_TAKEN": "Deze sleutel hoort al bij een andere website.",
-            "NO_PERMISSION": "Voor de websites ontbreekt het recht ‘Webshops aanmaken en bewerken’."
+            "NO_PERMISSION": "Voor de websites ontbreekt het recht ‘Webshops aanmaken en bewerken’.",
+            "PORTAL_PUBLISH_BUSY": "Er loopt op dit moment een publicatie (shoprun of een andere „Pakket installeren“). Probeer het zo meteen opnieuw."
         },
         "proxyHint": "De website bereikt OpensourceERP via de proxy /portal-api/ in het pakket – of via een reverse proxy die de header X-Portal-Key zet.",
         "secretsNotice": "De sleutels zijn ingevuld en verborgen; het oogpictogram toont ze. Een leeggemaakt veld wist de opgeslagen sleutel niet.",

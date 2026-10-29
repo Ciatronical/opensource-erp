@@ -26,7 +26,6 @@
         "install": "Paket installieren",
         "installHint": "Überträgt Vorlagen, Widgets und Weiterleiter an HugoCMS und lässt die Webseite bauen.",
         "installNeeded": "Diese Änderung erreicht die Webseite erst mit „Paket installieren“.",
-        "installQueued": "Auftrag angelegt — die Shop-Veröffentlichung überträgt das Paket (Shop-Übersicht).",
         "installDone": "Paket übertragen und Webseite gebaut.",
         "installFailed": "Paket nicht vollständig übertragen. Grund:",
         "features": "Auf dieser Webseite:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Ein Verkaufskanal läuft auf dieser Webseite — zuerst dort die Webseite wechseln.",
             "WEBSITE_NOT_DELETABLE": "Nur eine abgeschaltete Webseite lässt sich löschen.",
             "WEBSITE_KEY_TAKEN": "Dieser Schlüssel gehört schon einer anderen Webseite.",
-            "NO_PERMISSION": "Für die Webseiten fehlt das Recht „Webshops anlegen und bearbeiten“."
+            "NO_PERMISSION": "Für die Webseiten fehlt das Recht „Webshops anlegen und bearbeiten“.",
+            "PORTAL_PUBLISH_BUSY": "Eine Veröffentlichung läuft gerade (Shop-Lauf oder ein anderes „Paket installieren“). Bitte gleich noch einmal versuchen."
         },
         "proxyHint": "Die Webseite erreicht OpensourceERP über den Weiterleiter /portal-api/ im Paket — oder über einen Reverse-Proxy, der den Kopf X-Portal-Key setzt.",
         "secretsNotice": "Die Schlüssel sind ausgefüllt und verdeckt; das Auge-Symbol zeigt sie an. Ein geleertes Feld löscht den gespeicherten Schlüssel nicht.",

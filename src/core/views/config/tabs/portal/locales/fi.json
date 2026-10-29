@@ -26,7 +26,6 @@
         "install": "Asenna paketti",
         "installHint": "Siirtää mallit, widgetit ja välittäjän HugoCMS:ään ja rakennuttaa sivuston.",
         "installNeeded": "Tämä muutos tulee verkkosivustolle vasta toiminnolla ”Asenna paketti”.",
-        "installQueued": "Tehtävä luotu – kaupan julkaisu siirtää paketin (kaupan yleiskuva).",
         "installDone": "Paketti siirretty ja sivusto rakennettu.",
         "installFailed": "Pakettia ei siirretty kokonaan. Syy:",
         "features": "Tällä sivustolla:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Tällä sivustolla toimii myyntikanava – vaihda sivusto ensin siellä.",
             "WEBSITE_NOT_DELETABLE": "Vain pois käytöstä oleva sivusto voidaan poistaa.",
             "WEBSITE_KEY_TAKEN": "Tämä avain kuuluu jo toiselle sivustolle.",
-            "NO_PERMISSION": "Sivustoihin puuttuu oikeus ”Luo ja muokkaa verkkokauppoja”."
+            "NO_PERMISSION": "Sivustoihin puuttuu oikeus ”Luo ja muokkaa verkkokauppoja”.",
+            "PORTAL_PUBLISH_BUSY": "Julkaisu on parhaillaan käynnissä (kaupan ajo tai toinen ”Asenna paketti”). Yritä hetken kuluttua uudelleen."
         },
         "proxyHint": "Sivusto tavoittaa OpensourceERP:n paketin välittäjän /portal-api/ kautta – tai käänteisen välityspalvelimen kautta, joka asettaa otsakkeen X-Portal-Key.",
         "secretsNotice": "Avaimet on täytetty ja piilotettu; silmäkuvake näyttää ne. Kentän tyhjentäminen ei poista tallennettua avainta.",

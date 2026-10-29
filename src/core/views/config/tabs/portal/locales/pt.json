@@ -26,7 +26,6 @@
         "install": "Instalar pacote",
         "installHint": "Transfere modelos, widgets e o proxy para o HugoCMS e manda construir o site.",
         "installNeeded": "Esta alteração só chega ao site após «Instalar pacote».",
-        "installQueued": "Tarefa criada – a publicação da loja transfere o pacote (resumo da loja).",
         "installDone": "Pacote transferido e site construído.",
         "installFailed": "Pacote não transferido na totalidade. Motivo:",
         "features": "Neste site:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Um canal de venda funciona neste site – mude primeiro o site lá.",
             "WEBSITE_NOT_DELETABLE": "Só um site desativado pode ser eliminado.",
             "WEBSITE_KEY_TAKEN": "Esta chave já pertence a outro site.",
-            "NO_PERMISSION": "Falta o direito «Criar e editar lojas online» para os sites."
+            "NO_PERMISSION": "Falta o direito «Criar e editar lojas online» para os sites.",
+            "PORTAL_PUBLISH_BUSY": "Está a decorrer uma publicação (execução da loja ou outro «Instalar pacote»). Tente novamente dentro de instantes."
         },
         "proxyHint": "O site chega ao OpensourceERP pelo proxy /portal-api/ do pacote – ou por um reverse proxy que define o cabeçalho X-Portal-Key.",
         "secretsNotice": "As chaves estão preenchidas e ocultas; o ícone de olho mostra-as. Esvaziar um campo não apaga a chave guardada.",

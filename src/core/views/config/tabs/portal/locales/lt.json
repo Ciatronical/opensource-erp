@@ -26,7 +26,6 @@
         "install": "Įdiegti paketą",
         "installHint": "Perkelia šablonus, valdiklius ir tarpinį serverį į HugoCMS ir liepia sukurti svetainę.",
         "installNeeded": "Šis pakeitimas svetainę pasieks tik po „Įdiegti paketą“.",
-        "installQueued": "Užduotis sukurta – parduotuvės publikavimas perkels paketą (parduotuvės apžvalga).",
         "installDone": "Paketas perkeltas ir svetainė sukurta.",
         "installFailed": "Paketas perkeltas ne iki galo. Priežastis:",
         "features": "Šioje svetainėje:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Šioje svetainėje veikia pardavimo kanalas – pirmiausia ten pakeiskite svetainę.",
             "WEBSITE_NOT_DELETABLE": "Ištrinti galima tik išjungtą svetainę.",
             "WEBSITE_KEY_TAKEN": "Šis raktas jau priklauso kitai svetainei.",
-            "NO_PERMISSION": "Svetainėms trūksta teisės „Kurti ir redaguoti el. parduotuves“."
+            "NO_PERMISSION": "Svetainėms trūksta teisės „Kurti ir redaguoti el. parduotuves“.",
+            "PORTAL_PUBLISH_BUSY": "Šiuo metu vyksta publikavimas (parduotuvės paleidimas arba kitas „Įdiegti paketą“). Pabandykite po akimirkos dar kartą."
         },
         "proxyHint": "Svetainė pasiekia OpensourceERP per paketo tarpinį serverį /portal-api/ – arba per atvirkštinį tarpinį serverį, nustatantį antraštę X-Portal-Key.",
         "secretsNotice": "Raktai užpildyti ir paslėpti; akies piktograma juos parodo. Ištuštintas laukas išsaugoto rakto neištrina.",

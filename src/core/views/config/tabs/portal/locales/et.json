@@ -26,7 +26,6 @@
         "install": "Paigalda pakett",
         "installHint": "Edastab mallid, vidinad ja edastaja HugoCMS-i ja laseb veebilehe ehitada.",
         "installNeeded": "See muudatus jõuab veebilehele alles pärast „Paigalda pakett“.",
-        "installQueued": "Töö loodud – poe avaldamine edastab paketi (poe ülevaade).",
         "installDone": "Pakett edastatud ja veebileht ehitatud.",
         "installFailed": "Paketti ei edastatud täielikult. Põhjus:",
         "features": "Sellel veebilehel:",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "Sellel veebilehel töötab müügikanal – vahetage seal enne veebileht.",
             "WEBSITE_NOT_DELETABLE": "Kustutada saab ainult välja lülitatud veebilehe.",
             "WEBSITE_KEY_TAKEN": "See võti kuulub juba teisele veebilehele.",
-            "NO_PERMISSION": "Veebilehtede jaoks puudub õigus „Veebipoodide loomine ja muutmine“."
+            "NO_PERMISSION": "Veebilehtede jaoks puudub õigus „Veebipoodide loomine ja muutmine“.",
+            "PORTAL_PUBLISH_BUSY": "Avaldamine on parajasti käimas (poe käivitus või teine „Paigalda pakett“). Palun proovige hetke pärast uuesti."
         },
         "proxyHint": "Veebileht jõuab OpensourceERP-ni paketi edastaja /portal-api/ kaudu – või pöördproksi kaudu, mis seab päise X-Portal-Key.",
         "secretsNotice": "Võtmed on täidetud ja peidetud; silma ikoon näitab neid. Välja tühjendamine ei kustuta salvestatud võtit.",

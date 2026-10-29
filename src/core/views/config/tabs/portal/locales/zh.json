@@ -26,7 +26,6 @@
         "install": "安装软件包",
         "installHint": "将模板、小部件和代理传输到 HugoCMS 并构建网站。",
         "installNeeded": "此更改需执行“安装软件包”后才会生效于网站。",
-        "installQueued": "已创建任务——商店发布将传输软件包（商店概览）。",
         "installDone": "软件包已传输，网站已构建。",
         "installFailed": "软件包未完整传送。原因：",
         "features": "此网站上：",
@@ -97,7 +96,8 @@
             "WEBSITE_IN_USE": "此网站上运行着销售渠道——请先在那里更换网站。",
             "WEBSITE_NOT_DELETABLE": "只能删除已关闭的网站。",
             "WEBSITE_KEY_TAKEN": "此密钥已属于另一个网站。",
-            "NO_PERMISSION": "缺少网站所需的“创建和编辑网店”权限。"
+            "NO_PERMISSION": "缺少网站所需的“创建和编辑网店”权限。",
+            "PORTAL_PUBLISH_BUSY": "当前正在进行发布（商店运行或另一次“安装软件包”）。请稍后重试。"
         },
         "proxyHint": "网站通过软件包中的代理 /portal-api/ 访问 OpensourceERP，或通过设置 X-Portal-Key 标头的反向代理。",
         "secretsNotice": "密钥已填入并隐藏；点击眼睛图标可显示。清空字段不会删除已保存的密钥。",
