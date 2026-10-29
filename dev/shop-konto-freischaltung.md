@@ -162,6 +162,18 @@ Kontext selbst (Schemaänderung in der Shop-Erweiterung).
   sichtbar, sobald eine Webseite des Kundenportals eingeschaltet ist; bei
   fehlendem Konto der Versand per WhatsApp oder Mail, danach „gesendet am …“.
   Bis 2026-10-29 war das eine Karte im WhatsApp-Reiter.
+- Sperren und Zurücksetzen (2026-10-29): Bei bestehendem Konto bietet der Reiter
+  „Zugang sperren“ / „Sperre aufheben“ (`setPortalAccountLock`) und „Zugang
+  zurücksetzen“ (`resetPortalAccount`, mit Rückfrage). Die Sperre steht in
+  `customer_ext.portal_locked_at` — getrennt von `customer.obsolete`, der Kunde
+  bleibt ein gültiger Kunde. Gesperrt: keine Anmeldung (`ACCOUNT_LOCKED`, erst
+  nach richtigem Kennwort, damit die Antwort die Sperre nicht verrät), keine
+  Freischaltung (`activationFindCustomer`, `activationRow`), keine Registrierung
+  mit seiner Adresse, kein Versand aus der Kundenakte; Sitzungen enden, offene
+  Kennungen verfallen. Zurücksetzen löscht nur `customer.user_password`: der
+  Kunde ist wieder ein Kunde ohne Konto, die Freischaltung findet ihn, der Link
+  lässt sich erneut senden; E-Mail-Adresse und Kundendaten bleiben, eine Sperre
+  bleibt bestehen und wird eigens aufgehoben.
 
 ## Grenzen und Risiken
 

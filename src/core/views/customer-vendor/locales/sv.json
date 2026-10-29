@@ -232,6 +232,20 @@
             "noEmail": "Kunden har ingen e-postadress.",
             "sourceStaff": "från kundkortet",
             "sourcePortal": "begärd av kunden",
+            "locked": "Åtkomsten har varit spärrad sedan {date}. Kunden kan inte logga in.",
+            "lockedNoAccount": "Åtkomsten har varit spärrad sedan {date}. Kunden kan inte aktivera något konto; en länk skickas först när spärren hävts.",
+            "lock": "Spärra åtkomst",
+            "unlock": "Häv spärr",
+            "lockDone": "Åtkomst spärrad. Kunden har loggats ut.",
+            "unlockDone": "Spärr hävd.",
+            "reset": "Återställ åtkomst",
+            "resetHint": "Återställning raderar lösenordet. Kunden sätter sedan upp åtkomsten på nytt via ”Aktivera kundkonto”; länken kan skickas härifrån. Kunduppgifterna behålls.",
+            "resetTitle": "Återställa åtkomst?",
+            "resetText": "Kundens lösenord raderas och kunden loggas ut. Därefter kan åtkomsten sättas upp på nytt via ”Aktivera kundkonto”. Kunduppgifter och e-postadressen {email} behålls.",
+            "resetConfirm": "Ja, återställ",
+            "cancel": "Avbryt",
+            "resetDone": "Åtkomst återställd. Länken för att sätta upp åtkomsten kan nu skickas igen.",
+            "actionError": "Åtgärden kunde inte utföras.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "E-postutskick är inte inställt (företagskonfiguration → e-postklient, utgående post).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp är inte inställt (företagskonfiguration → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Kunden har redan åtkomst till kundkontot.",
                 "ACTIVATION_DISABLED": "Denna webbplats erbjuder inte kontoaktivering (företagskonfiguration → kundportal, ”Erbjud aktivering”).",
                 "WEBSITE_CONFIG_MISSING": "Webbplatsen har ingen webbadress (företagskonfiguration → kundportal).",
-                "ACTIVATION_NOT_SENT": "Meddelandet kunde inte skickas."
+                "ACTIVATION_NOT_SENT": "Meddelandet kunde inte skickas.",
+                "ACCOUNT_LOCKED": "Kundens åtkomst är spärrad. Häv spärren först."
             }
         },
         "actions": {

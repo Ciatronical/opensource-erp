@@ -253,6 +253,20 @@
             "noEmail": "Der Kunde hat keine E-Mail-Adresse.",
             "sourceStaff": "aus der Kundenakte",
             "sourcePortal": "vom Kunden angefordert",
+            "locked": "Der Zugang ist seit {date} gesperrt. Der Kunde kann sich nicht anmelden.",
+            "lockedNoAccount": "Der Zugang ist seit {date} gesperrt. Der Kunde kann kein Konto freischalten; ein Link wird erst nach dem Aufheben gesendet.",
+            "lock": "Zugang sperren",
+            "unlock": "Sperre aufheben",
+            "lockDone": "Zugang gesperrt. Der Kunde ist abgemeldet.",
+            "unlockDone": "Sperre aufgehoben.",
+            "reset": "Zugang zurücksetzen",
+            "resetHint": "Zurücksetzen löscht das Kennwort. Der Kunde richtet den Zugang danach über „Kundenkonto freischalten“ neu ein; der Link lässt sich dann von hier senden. Die Kundendaten bleiben.",
+            "resetTitle": "Zugang zurücksetzen?",
+            "resetText": "Das Kennwort des Kunden wird gelöscht und er wird abgemeldet. Danach kann er den Zugang über „Kundenkonto freischalten“ neu einrichten. Kundendaten und E-Mail-Adresse {email} bleiben erhalten.",
+            "resetConfirm": "Ja, zurücksetzen",
+            "cancel": "Abbrechen",
+            "resetDone": "Zugang zurückgesetzt. Der Link zum Einrichten lässt sich jetzt neu senden.",
+            "actionError": "Die Aktion konnte nicht ausgeführt werden.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "Der Mailversand ist nicht eingerichtet (Firmenkonfiguration → E-Mail-Client, Postausgang).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp ist nicht eingerichtet (Firmenkonfiguration → WhatsApp).",
@@ -262,7 +276,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Der Kunde hat schon einen Zugang zum Kundenkonto.",
                 "ACTIVATION_DISABLED": "Diese Webseite bietet die Konto-Freischaltung nicht an (Firmenkonfiguration → Kundenportal, „Freischaltung anbieten“).",
                 "WEBSITE_CONFIG_MISSING": "Die Webseite hat keine Webadresse (Firmenkonfiguration → Kundenportal).",
-                "ACTIVATION_NOT_SENT": "Die Nachricht konnte nicht versendet werden."
+                "ACTIVATION_NOT_SENT": "Die Nachricht konnte nicht versendet werden.",
+                "ACCOUNT_LOCKED": "Der Zugang des Kunden ist gesperrt. Zuerst die Sperre aufheben."
             }
         },
         "actions": {

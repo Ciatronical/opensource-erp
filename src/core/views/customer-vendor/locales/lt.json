@@ -232,6 +232,20 @@
             "noEmail": "Klientas neturi el. pašto adreso.",
             "sourceStaff": "iš kliento kortelės",
             "sourcePortal": "kliento užklausa",
+            "locked": "Prieiga užblokuota nuo {date}. Klientas negali prisijungti.",
+            "lockedNoAccount": "Prieiga užblokuota nuo {date}. Klientas negali aktyvinti paskyros; nuoroda siunčiama tik panaikinus blokavimą.",
+            "lock": "Blokuoti prieigą",
+            "unlock": "Panaikinti blokavimą",
+            "lockDone": "Prieiga užblokuota. Klientas atjungtas.",
+            "unlockDone": "Blokavimas panaikintas.",
+            "reset": "Atstatyti prieigą",
+            "resetHint": "Atstatymas ištrina slaptažodį. Po to klientas prieigą nustato iš naujo per „Aktyvinti kliento paskyrą“; nuorodą galima išsiųsti iš čia. Kliento duomenys išlieka.",
+            "resetTitle": "Atstatyti prieigą?",
+            "resetText": "Kliento slaptažodis bus ištrintas, o klientas atjungtas. Po to prieigą galima nustatyti iš naujo per „Aktyvinti kliento paskyrą“. Kliento duomenys ir el. pašto adresas {email} išlieka.",
+            "resetConfirm": "Taip, atstatyti",
+            "cancel": "Atšaukti",
+            "resetDone": "Prieiga atstatyta. Nustatymo nuorodą dabar galima išsiųsti iš naujo.",
+            "actionError": "Veiksmo atlikti nepavyko.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "El. pašto siuntimas nesukonfigūruotas (įmonės konfigūracija → el. pašto klientas, išsiunčiamas paštas).",
                 "WHATSAPP_NOT_CONFIGURED": "„WhatsApp“ nesukonfigūruotas (įmonės konfigūracija → „WhatsApp“).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Klientas jau turi prieigą prie kliento paskyros.",
                 "ACTIVATION_DISABLED": "Ši svetainė nesiūlo paskyros aktyvinimo (įmonės konfigūracija → klientų portalas, „Siūlyti aktyvinimą“).",
                 "WEBSITE_CONFIG_MISSING": "Svetainė neturi interneto adreso (įmonės konfigūracija → klientų portalas).",
-                "ACTIVATION_NOT_SENT": "Nepavyko išsiųsti pranešimo."
+                "ACTIVATION_NOT_SENT": "Nepavyko išsiųsti pranešimo.",
+                "ACCOUNT_LOCKED": "Kliento prieiga užblokuota. Pirmiausia panaikinkite blokavimą."
             }
         },
         "actions": {

@@ -31,7 +31,7 @@ Agent) pflegen Anzeigen aus Feeds, tun das aber ebenfalls ohne offizielle API.
 | K7 | Anfragen aus den **Benachrichtigungs-Mails** (Postfach des E-Mail-Moduls, IMAP mit PEEK), Tabelle `kleinanzeigen_lead_shop`, je Mail einmal (`mail_uid` = Ordner:UID). Geantwortet wird bei Kleinanzeigen; OSERP hält Stand und Antwortvorschlag. |
 | K8 | Der Mail-Parser arbeitet **tolerant**: Anzeigennummer aus dem Link, Absender aus dem Betreff, Zuordnung über Nummer oder Titel; was sich nicht zuordnen lässt, bleibt als Anfrage ohne Artikel sichtbar. |
 | K9 | **Feed** (CSV/JSON) für Drittwerkzeuge unter `backend/webhook/kleinanzeigen-feed.php`, geschützt durch `feed_key` (Geheimnis des Kanals). Nur Entwürfe und Online-Anzeigen, Bilder als absolute Adressen über `part-image.php`. |
-| K10 | Grundausstattung: einmal je Mandant ein abgeschalteter Kanal „Kleinanzeigen“ (Merker `shop_kleinanzeigen_seeded`), damit er in bestehenden Datenbanken erscheint und ein gelöschter nicht wiederkommt. |
+| K10 | Grundausstattung: bis 2026-10-29 einmal je Mandant ein abgeschalteter Kanal „Kleinanzeigen“ (Merker `shop_kleinanzeigen_seeded`). Seitdem wird er nicht mehr von selbst angelegt; der Betreiber legt ihn unter „Verkaufskanäle“ an, wenn er ihn braucht. |
 | K11 | KI-Assistent `kleinanzeigen` (`kleinanzeigen_ai_model`, Vorgabe Haiku 4.5) für Anzeigentexte und Antwortvorschläge; am Dialog umschaltbar. Antwort als JSON (`title`, `text`), bei Abweichung erste Zeile = Titel. |
 
 ## Bausteine

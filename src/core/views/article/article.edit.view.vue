@@ -271,6 +271,7 @@
                         :parts-id="isNewMode ? null : id"
                         :template-parts-id="vorlage ? vorlage.id : null"
                         :suggested-link="shopLinkSuggestion"
+                        :partnumber="shopPartnumber"
                         :sellprice="article.sellprice"
                         :buchungsgruppen-id="article.buchungsgruppen_id"
                         :description="article.description"
@@ -325,6 +326,7 @@ import { useHourlyRate } from '@/core/composables/useHourlyRate.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as toasts from '@/core/utils/toasts.js'
 import axios from 'axios'
+import { shopSlug } from '@/features/shop/utils/slug.js'
 
 // Die Shop-Karte gehört zur Shop-Erweiterung: erst laden, wenn sie gebraucht wird
 const PartShopCard = defineAsyncComponent(() => import('@/features/shop/components/part-shop.card.vue'))
@@ -590,15 +592,11 @@ export default defineComponent({
         // Vorschlag für die Produktseite: Nummer und Beschreibung als Pfad aus
         // Kleinbuchstaben, Ziffern und Bindestrichen — so wie die Produktseiten
         // der bisherigen Shops heißen
-        const shopLinkSuggestion = computed(() => {
-            const nummer = String(article.value.partnumber || nextPartnumber.value || '')
-            return (nummer + ' ' + (article.value.description || ''))
-                .toLowerCase()
-                .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
-                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-+|-+$/g, '')
-        })
+        // Vorschlag für die Produktseite: nur die Beschreibung, ohne Artikelnummer.
+        // Die Karte trägt ihn bei der Neuanlage ein und hängt die Nummer nur an,
+        // wenn ein anderer Artikel die Seite schon belegt
+        const shopLinkSuggestion = computed(() => shopSlug(article.value.description))
+        const shopPartnumber = computed(() => String(article.value.partnumber || nextPartnumber.value || ''))
 
         const requiredRule = v =>
             (v !== null && v !== undefined && String(v).trim() !== '') || t('ArticleEditView.messages.required')
@@ -830,7 +828,8 @@ export default defineComponent({
             abschnitte,
             zuAbschnitt,
             shopCard,
-            shopLinkSuggestion
+            shopLinkSuggestion,
+            shopPartnumber
         }
     }
 })

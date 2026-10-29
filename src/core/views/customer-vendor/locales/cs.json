@@ -232,6 +232,20 @@
             "noEmail": "Zákazník nemá e-mailovou adresu.",
             "sourceStaff": "z karty zákazníka",
             "sourcePortal": "vyžádáno zákazníkem",
+            "locked": "Přístup je od {date} zablokován. Zákazník se nemůže přihlásit.",
+            "lockedNoAccount": "Přístup je od {date} zablokován. Zákazník nemůže aktivovat účet; odkaz se odešle až po zrušení blokace.",
+            "lock": "Zablokovat přístup",
+            "unlock": "Zrušit blokaci",
+            "lockDone": "Přístup zablokován. Zákazník byl odhlášen.",
+            "unlockDone": "Blokace zrušena.",
+            "reset": "Obnovit přístup",
+            "resetHint": "Obnovení smaže heslo. Zákazník si poté přístup znovu nastaví přes „Aktivovat zákaznický účet“; odkaz lze odeslat odsud. Údaje zákazníka zůstanou zachovány.",
+            "resetTitle": "Obnovit přístup?",
+            "resetText": "Heslo zákazníka bude smazáno a zákazník odhlášen. Poté si může přístup znovu nastavit přes „Aktivovat zákaznický účet“. Údaje zákazníka a e-mailová adresa {email} zůstanou zachovány.",
+            "resetConfirm": "Ano, obnovit",
+            "cancel": "Zrušit",
+            "resetDone": "Přístup obnoven. Odkaz k nastavení lze nyní odeslat znovu.",
+            "actionError": "Akci nebylo možné provést.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "Odesílání e-mailů není nastaveno (konfigurace firmy → e-mailový klient, odchozí pošta).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp není nastaven (konfigurace firmy → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Zákazník už má přístup k zákaznickému účtu.",
                 "ACTIVATION_DISABLED": "Tento web nenabízí aktivaci účtu (konfigurace firmy → zákaznický portál, „Nabízet aktivaci“).",
                 "WEBSITE_CONFIG_MISSING": "Web nemá webovou adresu (konfigurace firmy → zákaznický portál).",
-                "ACTIVATION_NOT_SENT": "Zprávu se nepodařilo odeslat."
+                "ACTIVATION_NOT_SENT": "Zprávu se nepodařilo odeslat.",
+                "ACCOUNT_LOCKED": "Přístup zákazníka je zablokován. Nejprve zrušte blokaci."
             }
         },
         "actions": {

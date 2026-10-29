@@ -232,6 +232,20 @@
             "noEmail": "Kunden har ingen e-postadresse.",
             "sourceStaff": "fra kundekortet",
             "sourcePortal": "forespurt av kunden",
+            "locked": "Tilgangen har vært sperret siden {date}. Kunden kan ikke logge inn.",
+            "lockedNoAccount": "Tilgangen har vært sperret siden {date}. Kunden kan ikke aktivere en konto; en lenke sendes først når sperren er opphevet.",
+            "lock": "Sperr tilgang",
+            "unlock": "Opphev sperre",
+            "lockDone": "Tilgang sperret. Kunden er logget ut.",
+            "unlockDone": "Sperre opphevet.",
+            "reset": "Tilbakestill tilgang",
+            "resetHint": "Tilbakestilling sletter passordet. Kunden setter deretter opp tilgangen på nytt via «Aktiver kundekonto»; lenken kan sendes herfra. Kundedataene beholdes.",
+            "resetTitle": "Tilbakestille tilgang?",
+            "resetText": "Kundens passord slettes, og kunden logges ut. Deretter kan tilgangen settes opp på nytt via «Aktiver kundekonto». Kundedata og e-postadressen {email} beholdes.",
+            "resetConfirm": "Ja, tilbakestill",
+            "cancel": "Avbryt",
+            "resetDone": "Tilgang tilbakestilt. Lenken for oppsett kan nå sendes på nytt.",
+            "actionError": "Handlingen kunne ikke utføres.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "E-postsending er ikke satt opp (firmakonfigurasjon → e-postklient, utgående post).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp er ikke satt opp (firmakonfigurasjon → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Kunden har allerede tilgang til kundekontoen.",
                 "ACTIVATION_DISABLED": "Dette nettstedet tilbyr ikke kontoaktivering (firmakonfigurasjon → kundeportal, «Tilby aktivering»).",
                 "WEBSITE_CONFIG_MISSING": "Nettstedet har ingen nettadresse (firmakonfigurasjon → kundeportal).",
-                "ACTIVATION_NOT_SENT": "Meldingen kunne ikke sendes."
+                "ACTIVATION_NOT_SENT": "Meldingen kunne ikke sendes.",
+                "ACCOUNT_LOCKED": "Kundens tilgang er sperret. Opphev sperren først."
             }
         },
         "actions": {

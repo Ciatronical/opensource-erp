@@ -196,6 +196,16 @@ Kanalschalter `auto_publish`. Bekommt die Seite dabei einen neuen Dateinamen
 (neue Produktseiten-Kennung oder Artikelnummer), trägt der Auftrag den alten
 in `param`, und der Lauf entfernt die Seite unter dem alten Namen.
 
+**Produktseite in der Artikelmaske** (2026-10-29). Der Vorschlag ist nur noch die
+Beschreibung ohne Artikelnummer (`shopSlug()`, `src/features/shop/utils/slug.js`)
+und wird bei der Neuanlage als Wert eingetragen; belegt ein anderer Artikel den
+Namen, hängt die Karte die Artikelnummer an. Leer heißt weiterhin Seite nach
+Artikelnummer — die Karte sendet kein Ersatz mehr. Nach der Eingabe prüft
+`checkShopPageName` (`shopPageNameOwner()`, Vergleich über
+`shop_page_file_name()` gegen alle Artikel, auch die ohne Kennung) und zeigt den
+belegenden Artikel am Feld; `savePartShopData` lehnt mit `PAGE_NAME_TAKEN` ab.
+Bestehende Artikel behalten ihren Stand, der Knopf im Feld übernimmt den
+Vorschlag bewusst (neue Adresse der Seite).
 ### Wo Fehler landen
 
 | Art | Wo sie steht |

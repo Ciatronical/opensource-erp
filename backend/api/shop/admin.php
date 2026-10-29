@@ -609,6 +609,26 @@ function getPartShopData($data) {
 }
 
 /**
+ * Prüft, ob ein anderer Artikel die Produktseite schon belegt
+ *
+ * Für die Artikelmaske: nach der Eingabe im Feld „Produktseite“ und beim
+ * Übernehmen des Vorschlags. Verglichen wird der Dateiname der Seite
+ * (shopPageNameOwner), auch gegen Artikel ohne Kennung.
+ *
+ * @param int $data['parts_id'] Artikel, der den Namen tragen soll (0 oder leer bei der Neuanlage)
+ * @param string $data['hyperlink'] gewünschte Produktseite
+ * @return void owner: null oder id, partnumber, description des anderen Artikels
+ * @testdata {"parts_id": 1, "hyperlink": "bremsscheibe"}
+ */
+function checkShopPageName($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+    resultInfo(true, '', [
+        'owner' => shopPageNameOwner($db, (int)($data['parts_id'] ?? 0), (string)($data['hyperlink'] ?? '')),
+    ]);
+}
+
+/**
  * Speichert die Shop-Angaben eines Artikels und seine Verkaufskanäle
  *
  * Ein Vorgang: Shop-Angaben in parts_ext anlegen oder ändern und die
@@ -650,6 +670,14 @@ function savePartShopData($data) {
     $partsId = (int)($data['parts_id'] ?? 0);
     if (0 === $partsId) {
         resultInfo(false, 'VALIDATION_ERROR', null, 'parts_id fehlt');
+        return;
+    }
+
+    // Die Produktseite darf keinem anderen Artikel gehören: beide schrieben
+    // sonst dieselbe Datei. Der Besitzer geht mit, die Maske zeigt ihn an
+    $besitzer = shopPageNameOwner($db, $partsId, (string)($data['hyperlink'] ?? ''));
+    if ($besitzer) {
+        resultInfo(false, 'PAGE_NAME_TAKEN', $besitzer, 'Die Produktseite gehört schon Artikel '.$besitzer['partnumber']);
         return;
     }
 

@@ -232,6 +232,20 @@
             "noEmail": "客户没有电子邮件地址。",
             "sourceStaff": "来自客户档案",
             "sourcePortal": "由客户请求",
+            "locked": "访问自 {date} 起已被锁定。客户无法登录。",
+            "lockedNoAccount": "访问自 {date} 起已被锁定。客户无法激活账户；只有解除锁定后才会发送链接。",
+            "lock": "锁定访问",
+            "unlock": "解除锁定",
+            "lockDone": "访问已锁定。客户已被登出。",
+            "unlockDone": "锁定已解除。",
+            "reset": "重置访问",
+            "resetHint": "重置会删除密码。之后客户通过“激活客户账户”重新设置访问；链接可从此处发送。客户数据保留。",
+            "resetTitle": "重置访问？",
+            "resetText": "客户的密码将被删除，客户将被登出。之后可通过“激活客户账户”重新设置访问。客户数据和电子邮件地址 {email} 保留。",
+            "resetConfirm": "是，重置",
+            "cancel": "取消",
+            "resetDone": "访问已重置。现在可以重新发送设置链接。",
+            "actionError": "无法执行该操作。",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "邮件发送未设置（公司配置 → 邮件客户端，发件服务器）。",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp 未设置（公司配置 → WhatsApp）。",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "该客户已拥有客户账户的访问权限。",
                 "ACTIVATION_DISABLED": "此网站不提供账户激活（公司配置 → 客户门户，“提供激活”）。",
                 "WEBSITE_CONFIG_MISSING": "该网站没有网址（公司配置 → 客户门户）。",
-                "ACTIVATION_NOT_SENT": "消息无法发送。"
+                "ACTIVATION_NOT_SENT": "消息无法发送。",
+                "ACCOUNT_LOCKED": "该客户的访问已被锁定。请先解除锁定。"
             }
         },
         "actions": {

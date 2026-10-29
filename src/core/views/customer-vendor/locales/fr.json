@@ -232,6 +232,20 @@
             "noEmail": "Le client n'a pas d'adresse e-mail.",
             "sourceStaff": "depuis la fiche client",
             "sourcePortal": "demandé par le client",
+            "locked": "L’accès est bloqué depuis le {date}. Le client ne peut pas se connecter.",
+            "lockedNoAccount": "L’accès est bloqué depuis le {date}. Le client ne peut pas activer de compte ; un lien n’est envoyé qu’après la levée du blocage.",
+            "lock": "Bloquer l’accès",
+            "unlock": "Lever le blocage",
+            "lockDone": "Accès bloqué. Le client a été déconnecté.",
+            "unlockDone": "Blocage levé.",
+            "reset": "Réinitialiser l’accès",
+            "resetHint": "La réinitialisation supprime le mot de passe. Le client configure ensuite à nouveau l’accès via « Activer le compte client » ; le lien peut être envoyé d’ici. Les données du client sont conservées.",
+            "resetTitle": "Réinitialiser l’accès ?",
+            "resetText": "Le mot de passe du client sera supprimé et le client déconnecté. Il pourra ensuite reconfigurer l’accès via « Activer le compte client ». Les données du client et l’adresse e-mail {email} sont conservées.",
+            "resetConfirm": "Oui, réinitialiser",
+            "cancel": "Annuler",
+            "resetDone": "Accès réinitialisé. Le lien de configuration peut être renvoyé.",
+            "actionError": "L’action n’a pas pu être exécutée.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "L’envoi d’e-mails n’est pas configuré (configuration de l’entreprise → client e-mail, courrier sortant).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp n’est pas configuré (configuration de l’entreprise → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Le client a déjà un accès au compte client.",
                 "ACTIVATION_DISABLED": "Ce site web ne propose pas l’activation du compte (configuration de l’entreprise → portail client, « Proposer l’activation »).",
                 "WEBSITE_CONFIG_MISSING": "Le site web n’a pas d’adresse web (configuration de l’entreprise → portail client).",
-                "ACTIVATION_NOT_SENT": "Le message n’a pas pu être envoyé."
+                "ACTIVATION_NOT_SENT": "Le message n’a pas pu être envoyé.",
+                "ACCOUNT_LOCKED": "L’accès du client est bloqué. Levez d’abord le blocage."
             }
         },
         "actions": {

@@ -172,9 +172,12 @@ läuft wie bisher — dafür gibt es Übergangsregeln, die in den Schritten 2 bi
   (Merker `shop_auto_add_migrated`). Der Trigger auf `parts_ext` nimmt neue
   Artikel in jeden Kanal mit dem Schalter auf; das Löschen einer
   `parts_ext`-Zeile schaltet den Artikel in allen HugoShops ab.
-- Grundausstattung (ein HugoShop, ein eBay-Kanal) nur einmal je Mandant
-  (Merker `shop_channels_seeded`), damit ein gelöschter Kanal nicht
-  wiederkommt.
+- Grundausstattung nur einmal je Mandant (Merker `shop_channels_seeded`),
+  damit ein gelöschter Kanal nicht wiederkommt. Seit 2026-10-29 nur noch ein
+  HugoShop; der eBay-Kanal entsteht nur, wenn die alte eBay-Anbindung des
+  Kerns in Gebrauch war (`ebay_enabled` oder Zeilen in `ebay_listings`),
+  Kleinanzeigen gar nicht mehr von selbst. Ein neuer Mandant legt weitere
+  Kanäle unter „Verkaufskanäle" an.
 
 **Geheimnisse:** neue Tabelle `sales_channel_secret_shop (channel_id, key,
 value)`.

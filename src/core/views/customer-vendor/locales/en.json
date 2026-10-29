@@ -253,6 +253,20 @@
             "noEmail": "The customer has no email address.",
             "sourceStaff": "from the customer file",
             "sourcePortal": "requested by the customer",
+            "locked": "Access has been locked since {date}. The customer cannot log in.",
+            "lockedNoAccount": "Access has been locked since {date}. The customer cannot activate an account; a link is only sent after the lock is lifted.",
+            "lock": "Lock access",
+            "unlock": "Lift lock",
+            "lockDone": "Access locked. The customer has been logged out.",
+            "unlockDone": "Lock lifted.",
+            "reset": "Reset access",
+            "resetHint": "Resetting deletes the password. The customer then sets up access again via “Activate customer account”; the link can be sent from here. Customer data is kept.",
+            "resetTitle": "Reset access?",
+            "resetText": "The customer’s password will be deleted and the customer logged out. Afterwards access can be set up again via “Activate customer account”. Customer data and the e-mail address {email} are kept.",
+            "resetConfirm": "Yes, reset",
+            "cancel": "Cancel",
+            "resetDone": "Access reset. The setup link can now be sent again.",
+            "actionError": "The action could not be carried out.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "Mail sending is not set up (company configuration → e-mail client, outgoing mail).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp is not set up (company configuration → WhatsApp).",
@@ -262,7 +276,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "The customer already has access to the customer account.",
                 "ACTIVATION_DISABLED": "This website does not offer account activation (company configuration → customer portal, “Offer activation”).",
                 "WEBSITE_CONFIG_MISSING": "The website has no web address (company configuration → customer portal).",
-                "ACTIVATION_NOT_SENT": "The message could not be sent."
+                "ACTIVATION_NOT_SENT": "The message could not be sent.",
+                "ACCOUNT_LOCKED": "The customer’s access is locked. Lift the lock first."
             }
         },
         "actions": {

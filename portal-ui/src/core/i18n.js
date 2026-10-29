@@ -352,6 +352,7 @@ const de = {
 
   ACCOUNT_NOT_FOUND: 'Das Kundenkonto mit dieser E-Mail existiert nicht.',
   WRONG_PASSWORD: 'Das Passwort ist falsch.',
+  ACCOUNT_LOCKED: 'Der Zugang zu diesem Kundenkonto ist gesperrt. Bitte wenden Sie sich an uns.',
   ACCOUNT_EXISTS: 'Das Kundenkonto existiert bereits.',
   PORTAL_CONTEXT_ERROR: 'Ihre Sitzung ist abgelaufen. Bitte laden Sie die Seite neu.',
   PORTAL_NETWORK_ERROR: 'Die Verbindung zum Shop ist fehlgeschlagen. Bitte versuchen Sie es erneut.',
@@ -746,6 +747,7 @@ const en = {
 
   ACCOUNT_NOT_FOUND: 'No account exists for this email address.',
   WRONG_PASSWORD: 'The password is incorrect.',
+  ACCOUNT_LOCKED: 'Access to this account has been locked. Please contact us.',
   ACCOUNT_EXISTS: 'This account already exists.',
   PORTAL_CONTEXT_ERROR: 'Your session has expired. Please reload the page.',
   PORTAL_NETWORK_ERROR: 'Could not reach the shop. Please try again.',

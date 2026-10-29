@@ -164,6 +164,9 @@ function customerRegister($db, string $uuid, array $daten): array {
     if (customerEmailTaken($db, $email)) {
         throw new ApiError("ACCOUNT_EXISTS", 'Zu dieser Adresse gibt es schon ein Konto');
     }
+    if (!$gast && portalAccountLockedByEmail($db, $email)) {
+        throw new ApiError("ACCOUNT_LOCKED", 'Der Zugang zu dieser Adresse ist gesperrt');
+    }
 
     // Firmenkonto: der Firmenname steht im Namen, die Person im Ansprechpartner
     $firmenkonto = isset($daten['account_type']) && 'false' === (string)$daten['account_type'];
@@ -730,4 +733,131 @@ function contactFormDefaults($db, ?int $customerId, string $sprache = 'de'): arr
     $daten['salutation']   = $kunde['greeting'];
 
     return $daten;
+}
+
+// ============================================================================
+// SPERRE UND ZURÜCKSETZEN (Kundenakte, Reiter „Kundenkonto“)
+// ============================================================================
+//
+// Die Sperre steht in customer_ext.portal_locked_at — getrennt von
+// customer.obsolete, damit ein gesperrter Kunde ein gültiger Kunde bleibt
+// (Belege, Fahrzeuge, Auswertungen). Gesperrt heißt: keine Anmeldung, keine
+// Freischaltung, keine Registrierung mit seiner Adresse; laufende Sitzungen
+// enden beim Sperren.
+//
+// Zurücksetzen löscht nur das Kennwort. Der Kunde ist danach wieder ein
+// Kunde ohne Konto, den die Konto-Freischaltung findet
+// (activationFindCustomer) — er richtet E-Mail-Adresse und Kennwort neu
+// ein. Eine Sperre bleibt dabei bestehen und wird eigens aufgehoben.
+
+/**
+ * Ist der Zugang des Kunden gesperrt?
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $customerId Kunde
+ * @return bool
+ */
+function portalAccountLocked($db, int $customerId): bool {
+    $zeile = $db->getOne(
+        "SELECT 1 AS da FROM customer_ext WHERE customer_id = :id AND portal_locked_at IS NOT NULL",
+        [':id' => $customerId]
+    );
+    return (bool)$zeile;
+}
+
+/**
+ * Gehört die Adresse einem gesperrten Kunden?
+ *
+ * Für die Registrierung: sonst legte sich ein gesperrter Kunde mit derselben
+ * Adresse ein zweites Konto an.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $email Adresse
+ * @return bool
+ */
+function portalAccountLockedByEmail($db, string $email): bool {
+    $zeile = $db->getOne(
+        "SELECT 1 AS da FROM customer c
+           JOIN customer_ext ce ON ce.customer_id = c.id
+          WHERE ce.portal_locked_at IS NOT NULL AND lower(c.email) = lower(:email)
+          LIMIT 1",
+        [':email' => trim($email)]
+    );
+    return (bool)$zeile;
+}
+
+/**
+ * Beendet alle Sitzungen des Kunden und entwertet offene Freischaltungs-Kennungen
+ *
+ * Wie beim Abmelden bleibt, was am Kunden hängt (Warenkorb des Shops).
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $customerId Kunde
+ * @return void
+ */
+function portalAccountEndSessions($db, int $customerId): void {
+    $db->execute("DELETE FROM portal_context_oserp WHERE customer_id = :id", [':id' => $customerId]);
+    $db->execute(
+        "UPDATE portal_activation_oserp SET used_at = NOW() WHERE customer_id = :id AND used_at IS NULL",
+        [':id' => $customerId]
+    );
+}
+
+/**
+ * Sperrt den Zugang oder hebt die Sperre auf
+ *
+ * Sperren beendet die Sitzungen des Kunden. Kennwort und E-Mail-Adresse
+ * bleiben: nach dem Aufheben meldet er sich an wie zuvor. Eine bestehende
+ * Sperre behält ihren Zeitpunkt.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $customerId Kunde
+ * @param bool $sperren true sperrt, false hebt auf
+ * @return void
+ * @throws ApiError PORTAL_DATABASE_ERROR
+ */
+function portalAccountLock($db, int $customerId, bool $sperren): void {
+    $db->beginTransaction();
+    try {
+        $db->execute(
+            "INSERT INTO customer_ext (customer_id, portal_locked_at)
+             VALUES (:id, CASE WHEN CAST(:sperren AS boolean) THEN NOW() END)
+             ON CONFLICT (customer_id) DO UPDATE
+                SET portal_locked_at = CASE WHEN CAST(:sperren AS boolean)
+                                            THEN COALESCE(customer_ext.portal_locked_at, NOW()) END",
+            [':id' => $customerId, ':sperren' => $sperren ? 't' : 'f']
+        );
+        if ($sperren) {
+            portalAccountEndSessions($db, $customerId);
+        }
+        $db->commit();
+    } catch (Exception $e) {
+        $db->rollBack();
+        throw new ApiError('PORTAL_DATABASE_ERROR', 'Die Sperre konnte nicht gesetzt werden: '.$e->getMessage());
+    }
+}
+
+/**
+ * Setzt den Zugang zurück: das Kennwort wird gelöscht
+ *
+ * Der Kunde ist danach ein Kunde ohne Konto — die Konto-Freischaltung
+ * findet ihn wieder, aus der Kundenakte lässt sich der Link erneut senden.
+ * Kundendaten und E-Mail-Adresse bleiben, Sitzungen enden, offene Kennungen
+ * verfallen. Eine Sperre bleibt bestehen.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $customerId Kunde
+ * @return void
+ * @throws ApiError PORTAL_DATABASE_ERROR
+ */
+function portalAccountReset($db, int $customerId): void {
+    $db->beginTransaction();
+    try {
+        $db->execute("UPDATE customer SET user_password = NULL WHERE id = :id", [':id' => $customerId]);
+        portalAccountEndSessions($db, $customerId);
+        $db->commit();
+    } catch (Exception $e) {
+        $db->rollBack();
+        throw new ApiError('PORTAL_DATABASE_ERROR', 'Der Zugang konnte nicht zurückgesetzt werden: '.$e->getMessage());
+    }
 }

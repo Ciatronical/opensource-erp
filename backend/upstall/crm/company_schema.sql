@@ -4423,9 +4423,14 @@ END $$;
 
 ALTER TABLE customer_ext ADD COLUMN IF NOT EXISTS portal_guest boolean NOT NULL DEFAULT false;
 ALTER TABLE customer_ext ADD COLUMN IF NOT EXISTS portal_shipto_id integer;
+-- Sperre des Zugangs (2026-10-29): gesetzt = der Kunde kann sich nicht
+-- anmelden und kein Konto freischalten, laufende Sitzungen enden. Getrennt
+-- von customer.obsolete: ein gesperrter Kunde bleibt ein gültiger Kunde.
+ALTER TABLE customer_ext ADD COLUMN IF NOT EXISTS portal_locked_at timestamp without time zone;
 
 COMMENT ON COLUMN customer_ext.portal_guest     IS 'Kundenportal: Gast (ohne Kennwort, etwa Gastbestellung im Shop)';
 COMMENT ON COLUMN customer_ext.portal_shipto_id IS 'Kundenportal: gewählte Standard-Lieferadresse';
+COMMENT ON COLUMN customer_ext.portal_locked_at IS 'Kundenportal: Zugang gesperrt seit (NULL = nicht gesperrt)';
 
 -- SET NULL und nicht CASCADE: ein Zeiger auf eine Einstellung, keine
 -- Besitzbeziehung. Mit CASCADE risse das Löschen einer Lieferadresse die

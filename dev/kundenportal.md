@@ -286,6 +286,7 @@ Portal ohne sie.
 | 6 | HugoCMS: Paketname `oserp-portal/`, Benennung | umgesetzt 2026-10-22 (siehe unten) |
 | F | WhatsApp-Freischaltung: Vorlage mit Schaltfläche, Knopf in der Kundenakte | umgesetzt 2026-10-21 (Vorlage muss bei Meta genehmigt werden) |
 | F | Reiter „Kundenkonto“ in der Kundenakte statt Karte im WhatsApp-Reiter, sichtbar nur mit eingeschalteter Webseite (`company_config.portal_websites`) | umgesetzt 2026-10-29 |
+| F | Zugang sperren / Sperre aufheben und Zugang zurücksetzen im Reiter „Kundenkonto“ (`customer_ext.portal_locked_at`; gesperrt: keine Anmeldung, Freischaltung oder Registrierung; zurückgesetzt: Kennwort weg, Freischaltung erneut möglich) | umgesetzt 2026-10-29 |
 
 ### Umgesetzt (2026-10-21) — wo was liegt
 

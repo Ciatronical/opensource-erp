@@ -232,6 +232,20 @@
             "noEmail": "Klientam nav e-pasta adreses.",
             "sourceStaff": "no klienta kartītes",
             "sourcePortal": "klienta pieprasīts",
+            "locked": "Piekļuve ir bloķēta kopš {date}. Klients nevar pieteikties.",
+            "lockedNoAccount": "Piekļuve ir bloķēta kopš {date}. Klients nevar aktivizēt kontu; saite tiek nosūtīta tikai pēc bloķēšanas atcelšanas.",
+            "lock": "Bloķēt piekļuvi",
+            "unlock": "Atcelt bloķēšanu",
+            "lockDone": "Piekļuve bloķēta. Klients ir atteicies no sistēmas.",
+            "unlockDone": "Bloķēšana atcelta.",
+            "reset": "Atiestatīt piekļuvi",
+            "resetHint": "Atiestatīšana dzēš paroli. Pēc tam klients piekļuvi iestata no jauna, izmantojot „Aktivizēt klienta kontu“; saiti var nosūtīt no šejienes. Klienta dati saglabājas.",
+            "resetTitle": "Vai atiestatīt piekļuvi?",
+            "resetText": "Klienta parole tiks dzēsta, un klients tiks atteikts no sistēmas. Pēc tam piekļuvi var iestatīt no jauna, izmantojot „Aktivizēt klienta kontu“. Klienta dati un e-pasta adrese {email} saglabājas.",
+            "resetConfirm": "Jā, atiestatīt",
+            "cancel": "Atcelt",
+            "resetDone": "Piekļuve atiestatīta. Iestatīšanas saiti tagad var nosūtīt vēlreiz.",
+            "actionError": "Darbību neizdevās veikt.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "E-pasta sūtīšana nav iestatīta (uzņēmuma konfigurācija → e-pasta klients, izejošais pasts).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp nav iestatīts (uzņēmuma konfigurācija → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Klientam jau ir piekļuve klienta kontam.",
                 "ACTIVATION_DISABLED": "Šī tīmekļa vietne nepiedāvā konta aktivizēšanu (uzņēmuma konfigurācija → klientu portāls, „Piedāvāt aktivizēšanu“).",
                 "WEBSITE_CONFIG_MISSING": "Tīmekļa vietnei nav tīmekļa adreses (uzņēmuma konfigurācija → klientu portāls).",
-                "ACTIVATION_NOT_SENT": "Ziņu neizdevās nosūtīt."
+                "ACTIVATION_NOT_SENT": "Ziņu neizdevās nosūtīt.",
+                "ACCOUNT_LOCKED": "Klienta piekļuve ir bloķēta. Vispirms atceliet bloķēšanu."
             }
         },
         "actions": {

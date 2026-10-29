@@ -232,6 +232,20 @@
             "noEmail": "Kliendil pole e-posti aadressi.",
             "sourceStaff": "kliendikaardilt",
             "sourcePortal": "kliendi taotletud",
+            "locked": "Juurdepääs on alates {date} blokeeritud. Klient ei saa sisse logida.",
+            "lockedNoAccount": "Juurdepääs on alates {date} blokeeritud. Klient ei saa kontot aktiveerida; link saadetakse alles pärast blokeeringu tühistamist.",
+            "lock": "Blokeeri juurdepääs",
+            "unlock": "Tühista blokeering",
+            "lockDone": "Juurdepääs blokeeritud. Klient on välja logitud.",
+            "unlockDone": "Blokeering tühistatud.",
+            "reset": "Lähtesta juurdepääs",
+            "resetHint": "Lähtestamine kustutab parooli. Seejärel seadistab klient juurdepääsu uuesti „Kliendikonto aktiveerimise“ kaudu; lingi saab saata siit. Kliendi andmed säilivad.",
+            "resetTitle": "Kas lähtestada juurdepääs?",
+            "resetText": "Kliendi parool kustutatakse ja klient logitakse välja. Seejärel saab juurdepääsu uuesti seadistada „Kliendikonto aktiveerimise“ kaudu. Kliendi andmed ja e-posti aadress {email} säilivad.",
+            "resetConfirm": "Jah, lähtesta",
+            "cancel": "Loobu",
+            "resetDone": "Juurdepääs lähtestatud. Seadistuslingi saab nüüd uuesti saata.",
+            "actionError": "Toimingut ei õnnestunud teha.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "E-kirjade saatmine pole seadistatud (ettevõtte seadistus → e-posti klient, väljaminev post).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp pole seadistatud (ettevõtte seadistus → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Kliendil on juba ligipääs kliendikontole.",
                 "ACTIVATION_DISABLED": "See veebisait ei paku konto aktiveerimist (ettevõtte seadistus → kliendiportaal, „Paku aktiveerimist“).",
                 "WEBSITE_CONFIG_MISSING": "Veebisaidil pole veebiaadressi (ettevõtte seadistus → kliendiportaal).",
-                "ACTIVATION_NOT_SENT": "Sõnumit ei õnnestunud saata."
+                "ACTIVATION_NOT_SENT": "Sõnumit ei õnnestunud saata.",
+                "ACCOUNT_LOCKED": "Kliendi juurdepääs on blokeeritud. Tühistage kõigepealt blokeering."
             }
         },
         "actions": {

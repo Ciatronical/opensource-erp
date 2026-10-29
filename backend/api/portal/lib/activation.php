@@ -80,6 +80,7 @@ function activationFindCustomer($db, string $phone, string $zipcode, string $cus
                LEFT JOIN customer_ext ce ON ce.customer_id = c.id
               WHERE NOT COALESCE(c.obsolete, false)
                 AND (c.user_password IS NULL OR COALESCE(ce.portal_guest, false))
+                AND ce.portal_locked_at IS NULL
                 AND portal_phone_digits(:phone, :land) <> ''
                 AND (portal_phone_digits(c.phone, :land) = portal_phone_digits(:phone, :land)
                      OR EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(ce.phone_numbers, '[]'::jsonb)) pn
@@ -431,7 +432,7 @@ function activationRequireEnabled($db, int $website): void {
  * @param object $db Company-Datenbankverbindung
  * @param string $token Kennung
  * @return array
- * @throws ApiError ACTIVATION_INVALID, ACTIVATION_EXPIRED, ACTIVATION_DISABLED
+ * @throws ApiError ACTIVATION_INVALID, ACTIVATION_EXPIRED, ACTIVATION_DISABLED, ACCOUNT_LOCKED
  */
 function activationRow($db, string $token): array {
     if (!preg_match('/^[0-9a-f]{32}$/', $token)) {
@@ -440,9 +441,11 @@ function activationRow($db, string $token): array {
     $zeile = $db->getOne(
         "SELECT a.uuid, a.customer_id, a.website_id, a.expires, a.used_at,
                 c.name, COALESCE(c.zipcode, '') AS zipcode, COALESCE(c.city, '') AS city,
-                COALESCE(c.email, '') AS email, COALESCE(c.obsolete, false) AS obsolete
+                COALESCE(c.email, '') AS email, COALESCE(c.obsolete, false) AS obsolete,
+                ce.portal_locked_at IS NOT NULL AS locked
            FROM portal_activation_oserp a
            JOIN customer c ON c.id = a.customer_id
+           LEFT JOIN customer_ext ce ON ce.customer_id = c.id
           WHERE a.uuid = :uuid",
         [':uuid' => $token]
     );
@@ -451,6 +454,9 @@ function activationRow($db, string $token): array {
     }
     if (strtotime((string)$zeile['expires']) < time()) {
         throw new ApiError('ACTIVATION_EXPIRED', 'Dieser Link ist abgelaufen');
+    }
+    if (in_array($zeile['locked'], [true, 't', 1, '1'], true)) {
+        throw new ApiError('ACCOUNT_LOCKED', 'Der Zugang ist gesperrt');
     }
     activationRequireEnabled($db, (int)$zeile['website_id']);
     return $zeile;
@@ -513,12 +519,13 @@ function activationComplete($db, string $uuid, string $token, string $email, str
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $customerId Kunde
- * @return array{account: bool, guest: bool, email: string, phone: string, open: array|null, last: array|null}
+ * @return array{account: bool, guest: bool, locked: bool, locked_at: string|null, email: string, phone: string, open: array|null, last: array|null}
  */
 function activationStatus($db, int $customerId): array {
     $zeile = $db->getOne(
         "SELECT c.user_password IS NOT NULL AND NOT COALESCE(ce.portal_guest, false) AS account,
                 COALESCE(ce.portal_guest, false) AS guest,
+                ce.portal_locked_at AS locked_at,
                 COALESCE(c.email, '') AS email, COALESCE(c.phone, '') AS phone,
                 (SELECT row_to_json(o) FROM (
                     SELECT a.created, a.expires, a.source, a.phone, a.website_id
@@ -541,6 +548,8 @@ function activationStatus($db, int $customerId): array {
     return [
         'account' => in_array($zeile['account'], [true, 't', 1, '1'], true),
         'guest'   => in_array($zeile['guest'],   [true, 't', 1, '1'], true),
+        'locked'  => null !== $zeile['locked_at'],
+        'locked_at' => $zeile['locked_at'],
         'email'   => (string)$zeile['email'],
         'phone'   => (string)$zeile['phone'],
         'open'    => is_string($zeile['open']) ? json_decode($zeile['open'], true) : $zeile['open'],

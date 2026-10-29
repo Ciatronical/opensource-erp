@@ -232,6 +232,20 @@
             "noEmail": "Klient nie ma adresu e-mail.",
             "sourceStaff": "z karty klienta",
             "sourcePortal": "na żądanie klienta",
+            "locked": "Dostęp jest zablokowany od {date}. Klient nie może się zalogować.",
+            "lockedNoAccount": "Dostęp jest zablokowany od {date}. Klient nie może aktywować konta; link zostanie wysłany dopiero po zdjęciu blokady.",
+            "lock": "Zablokuj dostęp",
+            "unlock": "Zdejmij blokadę",
+            "lockDone": "Dostęp zablokowany. Klient został wylogowany.",
+            "unlockDone": "Blokada zdjęta.",
+            "reset": "Zresetuj dostęp",
+            "resetHint": "Reset usuwa hasło. Klient konfiguruje potem dostęp na nowo przez „Aktywuj konto klienta”; link można wysłać stąd. Dane klienta pozostają.",
+            "resetTitle": "Zresetować dostęp?",
+            "resetText": "Hasło klienta zostanie usunięte, a klient wylogowany. Potem będzie mógł skonfigurować dostęp na nowo przez „Aktywuj konto klienta”. Dane klienta i adres e-mail {email} pozostają.",
+            "resetConfirm": "Tak, zresetuj",
+            "cancel": "Anuluj",
+            "resetDone": "Dostęp zresetowany. Link do konfiguracji można teraz wysłać ponownie.",
+            "actionError": "Nie udało się wykonać działania.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "Wysyłka e-mail nie jest skonfigurowana (konfiguracja firmy → klient e-mail, poczta wychodząca).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp nie jest skonfigurowany (konfiguracja firmy → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Klient ma już dostęp do konta klienta.",
                 "ACTIVATION_DISABLED": "Ta strona nie oferuje aktywacji konta (konfiguracja firmy → portal klienta, „Oferuj aktywację”).",
                 "WEBSITE_CONFIG_MISSING": "Strona nie ma adresu internetowego (konfiguracja firmy → portal klienta).",
-                "ACTIVATION_NOT_SENT": "Nie udało się wysłać wiadomości."
+                "ACTIVATION_NOT_SENT": "Nie udało się wysłać wiadomości.",
+                "ACCOUNT_LOCKED": "Dostęp klienta jest zablokowany. Najpierw zdejmij blokadę."
             }
         },
         "actions": {

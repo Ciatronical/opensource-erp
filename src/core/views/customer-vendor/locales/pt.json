@@ -232,6 +232,20 @@
             "noEmail": "O cliente não tem endereço de e-mail.",
             "sourceStaff": "da ficha do cliente",
             "sourcePortal": "pedido pelo cliente",
+            "locked": "O acesso está bloqueado desde {date}. O cliente não consegue iniciar sessão.",
+            "lockedNoAccount": "O acesso está bloqueado desde {date}. O cliente não pode ativar uma conta; a ligação só é enviada depois de levantado o bloqueio.",
+            "lock": "Bloquear acesso",
+            "unlock": "Levantar bloqueio",
+            "lockDone": "Acesso bloqueado. A sessão do cliente foi terminada.",
+            "unlockDone": "Bloqueio levantado.",
+            "reset": "Repor acesso",
+            "resetHint": "Repor apaga a palavra-passe. O cliente volta depois a configurar o acesso através de «Ativar conta de cliente»; a ligação pode ser enviada daqui. Os dados do cliente mantêm-se.",
+            "resetTitle": "Repor o acesso?",
+            "resetText": "A palavra-passe do cliente será apagada e a sessão terminada. Depois poderá configurar de novo o acesso através de «Ativar conta de cliente». Os dados do cliente e o endereço de e-mail {email} mantêm-se.",
+            "resetConfirm": "Sim, repor",
+            "cancel": "Cancelar",
+            "resetDone": "Acesso reposto. A ligação de configuração pode agora ser enviada de novo.",
+            "actionError": "Não foi possível executar a ação.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "O envio de e-mail não está configurado (configuração da empresa → cliente de e-mail, correio de saída).",
                 "WHATSAPP_NOT_CONFIGURED": "O WhatsApp não está configurado (configuração da empresa → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "O cliente já tem acesso à conta de cliente.",
                 "ACTIVATION_DISABLED": "Este sítio web não oferece a ativação de conta (configuração da empresa → portal de clientes, «Oferecer ativação»).",
                 "WEBSITE_CONFIG_MISSING": "O sítio web não tem endereço web (configuração da empresa → portal de clientes).",
-                "ACTIVATION_NOT_SENT": "Não foi possível enviar a mensagem."
+                "ACTIVATION_NOT_SENT": "Não foi possível enviar a mensagem.",
+                "ACCOUNT_LOCKED": "O acesso do cliente está bloqueado. Levante primeiro o bloqueio."
             }
         },
         "actions": {

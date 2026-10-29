@@ -332,6 +332,37 @@ function shopPageSlug(string $hyperlink, string $partnumber): string {
 }
 
 /**
+ * Belegt ein anderer Artikel diese Produktseite?
+ *
+ * Alle Produktseiten eines Shops liegen in einem Verzeichnis; zwei Artikel
+ * mit demselben Dateinamen (shop_page_file_name: Produktseiten-Kennung,
+ * sonst Artikelnummer) überschrieben sich gegenseitig. Verglichen wird
+ * deshalb der Dateiname, über alle Artikel — auch die ohne eingetragene
+ * Kennung, deren Seite nach der Artikelnummer heißt.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $partsId Artikel, der den Namen tragen soll (0 bei der Neuanlage)
+ * @param string $name gewünschte Produktseite (parts_ext.hugoshop_hyperlink)
+ * @return array|null id, partnumber, description des anderen Artikels; null, wenn frei
+ */
+function shopPageNameOwner($db, int $partsId, string $name): ?array {
+    if ('' === trim($name)) {
+        return null;
+    }
+    $zeile = $db->getOne(
+        "SELECT p.id, p.partnumber, p.description
+           FROM parts p
+           LEFT JOIN parts_ext pe ON pe.parts_id = p.id
+          WHERE p.id <> :parts_id
+            AND shop_page_file_name(pe.hugoshop_hyperlink, p.partnumber) = shop_page_file_name(:name, '')
+          ORDER BY p.id
+          LIMIT 1",
+        [':parts_id' => $partsId, ':name' => $name]
+    );
+    return $zeile ?: null;
+}
+
+/**
  * Ein Einstellungswert eines Kanals als Wahrheitswert
  *
  * @param object $db Company-Datenbankverbindung

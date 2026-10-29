@@ -232,6 +232,20 @@
             "noEmail": "Clientul nu are adresă de e-mail.",
             "sourceStaff": "din fișa clientului",
             "sourcePortal": "solicitat de client",
+            "locked": "Accesul este blocat din {date}. Clientul nu se poate autentifica.",
+            "lockedNoAccount": "Accesul este blocat din {date}. Clientul nu poate activa un cont; linkul se trimite abia după ridicarea blocării.",
+            "lock": "Blochează accesul",
+            "unlock": "Ridică blocarea",
+            "lockDone": "Acces blocat. Clientul a fost deconectat.",
+            "unlockDone": "Blocare ridicată.",
+            "reset": "Resetează accesul",
+            "resetHint": "Resetarea șterge parola. Clientul își configurează apoi din nou accesul prin „Activare cont client”; linkul poate fi trimis de aici. Datele clientului rămân.",
+            "resetTitle": "Resetați accesul?",
+            "resetText": "Parola clientului va fi ștearsă, iar clientul deconectat. Apoi își poate configura din nou accesul prin „Activare cont client”. Datele clientului și adresa de e-mail {email} rămân.",
+            "resetConfirm": "Da, resetează",
+            "cancel": "Anulează",
+            "resetDone": "Acces resetat. Linkul de configurare poate fi trimis din nou.",
+            "actionError": "Acțiunea nu a putut fi executată.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "Trimiterea e-mailurilor nu este configurată (configurația firmei → client e-mail, poștă trimisă).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp nu este configurat (configurația firmei → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Clientul are deja acces la contul de client.",
                 "ACTIVATION_DISABLED": "Acest site nu oferă activarea contului (configurația firmei → portal clienți, „Oferă activarea”).",
                 "WEBSITE_CONFIG_MISSING": "Site-ul nu are adresă web (configurația firmei → portal clienți).",
-                "ACTIVATION_NOT_SENT": "Mesajul nu a putut fi trimis."
+                "ACTIVATION_NOT_SENT": "Mesajul nu a putut fi trimis.",
+                "ACCOUNT_LOCKED": "Accesul clientului este blocat. Ridicați mai întâi blocarea."
             }
         },
         "actions": {

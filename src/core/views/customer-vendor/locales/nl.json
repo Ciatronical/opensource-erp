@@ -232,6 +232,20 @@
             "noEmail": "De klant heeft geen e-mailadres.",
             "sourceStaff": "vanuit het klantdossier",
             "sourcePortal": "door de klant aangevraagd",
+            "locked": "De toegang is sinds {date} geblokkeerd. De klant kan niet inloggen.",
+            "lockedNoAccount": "De toegang is sinds {date} geblokkeerd. De klant kan geen account activeren; een link wordt pas verzonden nadat de blokkering is opgeheven.",
+            "lock": "Toegang blokkeren",
+            "unlock": "Blokkering opheffen",
+            "lockDone": "Toegang geblokkeerd. De klant is afgemeld.",
+            "unlockDone": "Blokkering opgeheven.",
+            "reset": "Toegang opnieuw instellen",
+            "resetHint": "Opnieuw instellen wist het wachtwoord. De klant richt de toegang daarna opnieuw in via „Klantaccount activeren“; de link kan van hieruit worden verzonden. De klantgegevens blijven behouden.",
+            "resetTitle": "Toegang opnieuw instellen?",
+            "resetText": "Het wachtwoord van de klant wordt gewist en de klant wordt afgemeld. Daarna kan de toegang opnieuw worden ingericht via „Klantaccount activeren“. Klantgegevens en het e-mailadres {email} blijven behouden.",
+            "resetConfirm": "Ja, opnieuw instellen",
+            "cancel": "Annuleren",
+            "resetDone": "Toegang opnieuw ingesteld. De link voor het inrichten kan nu opnieuw worden verzonden.",
+            "actionError": "De actie kon niet worden uitgevoerd.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "E-mailverzending is niet ingericht (bedrijfsconfiguratie → e-mailclient, uitgaande post).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp is niet ingericht (bedrijfsconfiguratie → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "De klant heeft al toegang tot het klantaccount.",
                 "ACTIVATION_DISABLED": "Deze website biedt geen accountactivering aan (bedrijfsconfiguratie → klantenportaal, „Activering aanbieden”).",
                 "WEBSITE_CONFIG_MISSING": "De website heeft geen webadres (bedrijfsconfiguratie → klantenportaal).",
-                "ACTIVATION_NOT_SENT": "Het bericht kon niet worden verzonden."
+                "ACTIVATION_NOT_SENT": "Het bericht kon niet worden verzonden.",
+                "ACCOUNT_LOCKED": "De toegang van de klant is geblokkeerd. Hef eerst de blokkering op."
             }
         },
         "actions": {

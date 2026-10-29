@@ -232,6 +232,20 @@
             "noEmail": "Asiakkaalla ei ole sähköpostiosoitetta.",
             "sourceStaff": "asiakaskortista",
             "sourcePortal": "asiakkaan pyytämä",
+            "locked": "Pääsy on estetty {date} alkaen. Asiakas ei voi kirjautua sisään.",
+            "lockedNoAccount": "Pääsy on estetty {date} alkaen. Asiakas ei voi aktivoida tiliä; linkki lähetetään vasta eston poistamisen jälkeen.",
+            "lock": "Estä pääsy",
+            "unlock": "Poista esto",
+            "lockDone": "Pääsy estetty. Asiakas on kirjattu ulos.",
+            "unlockDone": "Esto poistettu.",
+            "reset": "Nollaa pääsy",
+            "resetHint": "Nollaus poistaa salasanan. Asiakas ottaa pääsyn sen jälkeen uudelleen käyttöön toiminnolla ”Aktivoi asiakastili”; linkin voi lähettää täältä. Asiakastiedot säilyvät.",
+            "resetTitle": "Nollataanko pääsy?",
+            "resetText": "Asiakkaan salasana poistetaan ja asiakas kirjataan ulos. Sen jälkeen pääsyn voi ottaa uudelleen käyttöön toiminnolla ”Aktivoi asiakastili”. Asiakastiedot ja sähköpostiosoite {email} säilyvät.",
+            "resetConfirm": "Kyllä, nollaa",
+            "cancel": "Peruuta",
+            "resetDone": "Pääsy nollattu. Käyttöönottolinkin voi nyt lähettää uudelleen.",
+            "actionError": "Toimintoa ei voitu suorittaa.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "Sähköpostin lähetystä ei ole määritetty (yrityksen asetukset → sähköpostiohjelma, lähtevä posti).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsAppia ei ole määritetty (yrityksen asetukset → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Asiakkaalla on jo pääsy asiakastilille.",
                 "ACTIVATION_DISABLED": "Tämä verkkosivusto ei tarjoa tilin aktivointia (yrityksen asetukset → asiakasportaali, ”Tarjoa aktivointia”).",
                 "WEBSITE_CONFIG_MISSING": "Verkkosivustolla ei ole verkko-osoitetta (yrityksen asetukset → asiakasportaali).",
-                "ACTIVATION_NOT_SENT": "Viestiä ei voitu lähettää."
+                "ACTIVATION_NOT_SENT": "Viestiä ei voitu lähettää.",
+                "ACCOUNT_LOCKED": "Asiakkaan pääsy on estetty. Poista ensin esto."
             }
         },
         "actions": {

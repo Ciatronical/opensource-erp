@@ -232,6 +232,20 @@
             "noEmail": "El cliente no tiene dirección de correo.",
             "sourceStaff": "desde la ficha del cliente",
             "sourcePortal": "solicitado por el cliente",
+            "locked": "El acceso está bloqueado desde el {date}. El cliente no puede iniciar sesión.",
+            "lockedNoAccount": "El acceso está bloqueado desde el {date}. El cliente no puede activar una cuenta; el enlace solo se envía tras levantar el bloqueo.",
+            "lock": "Bloquear acceso",
+            "unlock": "Levantar bloqueo",
+            "lockDone": "Acceso bloqueado. Se ha cerrado la sesión del cliente.",
+            "unlockDone": "Bloqueo levantado.",
+            "reset": "Restablecer acceso",
+            "resetHint": "Restablecer borra la contraseña. Después el cliente vuelve a configurar el acceso mediante «Activar cuenta de cliente»; el enlace puede enviarse desde aquí. Los datos del cliente se conservan.",
+            "resetTitle": "¿Restablecer el acceso?",
+            "resetText": "Se borrará la contraseña del cliente y se cerrará su sesión. Después podrá configurar de nuevo el acceso mediante «Activar cuenta de cliente». Los datos del cliente y la dirección de correo {email} se conservan.",
+            "resetConfirm": "Sí, restablecer",
+            "cancel": "Cancelar",
+            "resetDone": "Acceso restablecido. El enlace de configuración puede enviarse de nuevo.",
+            "actionError": "No se pudo ejecutar la acción.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "El envío de correo no está configurado (configuración de la empresa → cliente de correo, correo saliente).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp no está configurado (configuración de la empresa → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "El cliente ya tiene acceso a la cuenta de cliente.",
                 "ACTIVATION_DISABLED": "Este sitio web no ofrece la activación de cuenta (configuración de la empresa → portal de clientes, «Ofrecer activación»).",
                 "WEBSITE_CONFIG_MISSING": "El sitio web no tiene dirección web (configuración de la empresa → portal de clientes).",
-                "ACTIVATION_NOT_SENT": "No se pudo enviar el mensaje."
+                "ACTIVATION_NOT_SENT": "No se pudo enviar el mensaje.",
+                "ACCOUNT_LOCKED": "El acceso del cliente está bloqueado. Levante primero el bloqueo."
             }
         },
         "actions": {

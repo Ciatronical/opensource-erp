@@ -44,6 +44,7 @@ function portalContext($db, string $uuid) {
     return $db->getOne(
         "SELECT con.uuid, con.cart_uuid, con.customer_id, con.website_id, con.active,
                 COALESCE(cust.portal_guest, true) AS guest,
+                cust.portal_locked_at IS NOT NULL   AS locked,
                 cust.portal_shipto_id             AS shipto_id
            FROM portal_context_oserp con
            LEFT JOIN customer_ext cust ON cust.customer_id = con.customer_id
@@ -81,12 +82,17 @@ function portalContextRequire($db, string $uuid): array {
  * @param object $db Company-Datenbankverbindung
  * @param string $uuid Wert des Kontext-Cookies
  * @return array Kontextzeile, customer_id ist gesetzt
- * @throws ApiError PORTAL_CONTEXT_ERROR, CUSTOMER_NOT_FOUND
+ * @throws ApiError PORTAL_CONTEXT_ERROR, CUSTOMER_NOT_FOUND, ACCOUNT_LOCKED
  */
 function portalContextCustomer($db, string $uuid): array {
     $context = portalContextRequire($db, $uuid);
     if (empty($context['customer_id'])) {
         throw new ApiError("CUSTOMER_NOT_FOUND", 'Kein Kunde in dieser Sitzung');
+    }
+    // Gesperrt nach der Anmeldung: die Sitzung wurde beim Sperren beendet,
+    // das hier fängt den Rest (etwa eine Sitzung aus einem laufenden Aufruf)
+    if (in_array($context['locked'] ?? false, [true, 't', 1, '1'], true)) {
+        throw new ApiError("ACCOUNT_LOCKED", 'Der Zugang ist gesperrt');
     }
     return $context;
 }
@@ -177,13 +183,13 @@ function portalContextSetCustomer($db, string $uuid, int $customerId): void {
  * @param string $email E-Mail-Adresse des Kunden
  * @param string $password Kennwort im Klartext
  * @return array{customer_id: int}
- * @throws ApiError PORTAL_CONTEXT_ERROR, ACCOUNT_NOT_FOUND, WRONG_PASSWORD
+ * @throws ApiError PORTAL_CONTEXT_ERROR, ACCOUNT_NOT_FOUND, WRONG_PASSWORD, ACCOUNT_LOCKED
  */
 function portalLoginCustomer($db, string $uuid, string $email, string $password): array {
     portalContextRequire($db, $uuid);
 
     $konto = $db->getOne(
-        "SELECT c.id, c.user_password
+        "SELECT c.id, c.user_password, ch.portal_locked_at IS NOT NULL AS locked
            FROM customer c
            JOIN customer_ext ch ON ch.customer_id = c.id
           WHERE lower(c.email) = lower(:email) AND c.obsolete = FALSE AND ch.portal_guest = false
@@ -201,6 +207,11 @@ function portalLoginCustomer($db, string $uuid, string $email, string $password)
             $konto ? "WRONG_PASSWORD" : "ACCOUNT_NOT_FOUND",
             $konto ? 'Kennwort stimmt nicht' : 'Kein Konto zu dieser Adresse'
         );
+    }
+
+    // Erst nach dem richtigen Kennwort: sonst verriete die Antwort die Sperre
+    if (in_array($konto['locked'], [true, 't', 1, '1'], true)) {
+        throw new ApiError("ACCOUNT_LOCKED", 'Der Zugang ist gesperrt');
     }
 
     $customerId = (int)$konto['id'];

@@ -378,35 +378,46 @@ CREATE OR REPLACE FUNCTION shop_channel_default_settings(p_type text) RETURNS js
         ELSE '{}'::jsonb END
 $$;
 
--- Grundausstattung, einmal je Mandant: ein HugoShop und ein eBay-Kanal. Der
--- Merker verhindert, dass ein später gelöschter Kanal (M5) beim nächsten
--- Schema-Update wiederkommt; eine bestehende Datenbank hat beide schon.
--- eBay ist eingeschaltet, wenn die bisherige eBay-Anbindung es war
--- (ebay_enabled); danach gilt der Schalter unter „Verkaufskanäle".
+-- Grundausstattung, einmal je Mandant: ein HugoShop. Der Merker
+-- (shop_channels_seeded) verhindert, dass ein später gelöschter Kanal (M5) beim
+-- nächsten Schema-Update wiederkommt; eine bestehende Datenbank hat ihn schon.
+-- Weitere Kanäle legt der Betreiber unter „Verkaufskanäle" an — ein neuer
+-- Mandant bekommt nicht mehr von selbst eBay und Kleinanzeigen dazu (bis
+-- 2026-10-29 kamen beide mit, eBay eingeschaltet nach ebay_enabled,
+-- Kleinanzeigen abgeschaltet mit eigenem Merker shop_kleinanzeigen_seeded).
 INSERT INTO sales_channel_shop (type, name, sortkey, auto_add_parts, settings)
 SELECT 'hugoshop', 'HugoShop', 1, true, shop_channel_default_settings('hugoshop')
  WHERE NOT EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'shop_channels_seeded')
    AND NOT EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'hugoshop');
 
-INSERT INTO sales_channel_shop (type, name, sortkey, active, settings)
-SELECT 'ebay', 'eBay', 2, COALESCE((SELECT lower(btrim(value)) IN ('1', 't', 'true', 'on')
-                                     FROM defaults_oserp WHERE key = 'ebay_enabled'), false),
-       shop_channel_default_settings('ebay')
- WHERE NOT EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'shop_channels_seeded')
-   AND NOT EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'ebay');
+-- Ein eBay-Kanal nur, wenn die alte eBay-Anbindung des Kerns in Gebrauch war
+-- (ebay_enabled gesetzt oder Angebote in ebay_listings): er nimmt deren
+-- Angebote auf (Übernahme unten, shop_ebay_migrated) und ist eingeschaltet,
+-- wenn die alte Anbindung es war; danach gilt der Schalter unter
+-- „Verkaufskanäle". ebay_listings kommt aus dem CRM-Schema und wird nur
+-- angefasst, wenn es die Tabelle gibt.
+DO $$
+DECLARE
+    alt_an  boolean;
+    alt_da  boolean;
+BEGIN
+    IF EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'shop_channels_seeded')
+       OR EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'ebay') THEN
+        RETURN;
+    END IF;
+    alt_an := COALESCE((SELECT lower(btrim(value)) IN ('1', 't', 'true', 'on')
+                          FROM defaults_oserp WHERE key = 'ebay_enabled'), false);
+    alt_da := alt_an;
+    IF NOT alt_da AND to_regclass('ebay_listings') IS NOT NULL THEN
+        alt_da := EXISTS (SELECT 1 FROM ebay_listings);
+    END IF;
+    IF alt_da THEN
+        INSERT INTO sales_channel_shop (type, name, sortkey, active, settings)
+        VALUES ('ebay', 'eBay', 2, alt_an, shop_channel_default_settings('ebay'));
+    END IF;
+END $$;
 
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_channels_seeded', '1') ON CONFLICT (key) DO NOTHING;
-
--- Kleinanzeigen kam später (dev/shop-kleinanzeigen.md): einmal je Mandant ein
--- abgeschalteter Kanal mit eigenem Merker, damit er in bestehenden
--- Datenbanken erscheint und ein gelöschter nicht wiederkommt.
-INSERT INTO sales_channel_shop (type, name, sortkey, active, auto_add_parts, settings)
-SELECT 'kleinanzeigen', 'Kleinanzeigen',
-       COALESCE((SELECT max(sortkey) FROM sales_channel_shop), 0) + 1,
-       false, false, shop_channel_default_settings('kleinanzeigen')
- WHERE NOT EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'shop_kleinanzeigen_seeded')
-   AND NOT EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'kleinanzeigen');
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_kleinanzeigen_seeded', '1') ON CONFLICT (key) DO NOTHING;
 
 -- Name ist Pflicht und eindeutig. Bestehende Kanäle heißen nach ihrer Art;
 -- gibt es eine Art mehrfach, bekommen die weiteren ihre Kennung angehängt.

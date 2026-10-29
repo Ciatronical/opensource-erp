@@ -99,22 +99,38 @@
                     </v-autocomplete>
                 </v-col>
 
-                <!-- Produktseite: leer = Vorschlag der Maske -->
+                <!-- Produktseite (parts_ext.hugoshop_hyperlink): leer = Seite nach der
+                     Artikelnummer. Bei der Neuanlage trägt die Karte den Vorschlag der
+                     Maske ein; nach der Eingabe prüft sie, ob ein anderer Artikel die
+                     Seite schon belegt (checkShopPageName). Bei bestehenden Artikeln
+                     übernimmt der Knopf im Feld den Vorschlag -->
                 <v-col cols="12" sm="6" class="py-1">
                     <v-text-field
                         v-model="daten.hyperlink"
                         :label="t('ShopView.partCard.hyperlink')"
                         :hint="t('ShopView.partCard.hyperlinkHint')"
-                        :placeholder="suggestedLink"
+                        :placeholder="partsId ? partnumber : suggestedLink"
                         persistent-placeholder
+                        :error-messages="seiteBelegt ? [t('ShopView.partCard.hyperlinkTaken', seiteBelegt)] : []"
                         :readonly="!darfBearbeiten"
                         variant="outlined"
                         density="compact"
                         hide-details="auto"
                         autocomplete="off"
+                        @update:model-value="hyperlinkGetippt"
+                        @blur="seitePruefen"
                     >
-                        <template v-if="shopLink" #append-inner>
+                        <template v-if="shopLink || vorschlagMoeglich" #append-inner>
                             <v-btn
+                                v-if="vorschlagMoeglich"
+                                icon="mdi-auto-fix"
+                                size="x-small"
+                                variant="text"
+                                :title="t('ShopView.partCard.hyperlinkSuggest', { link: suggestedLink })"
+                                @click="vorschlagUebernehmen"
+                            />
+                            <v-btn
+                                v-if="shopLink"
                                 icon="mdi-open-in-new"
                                 size="x-small"
                                 variant="text"
@@ -646,6 +662,7 @@ import { useShop } from '@/features/shop/composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
 import ShopKeyValueEditor from './shop-key-value.editor.vue'
 import ShopPartMedia from './shop-part-media.vue'
+import { shopSlug } from '@/features/shop/utils/slug.js'
 
 const props = defineProps({
     /** Artikel; leer bei der Neuanlage */
@@ -654,6 +671,8 @@ const props = defineProps({
     templatePartsId: { type: [String, Number], default: null },
     /** Vorschlag für die Produktseite, solange keine eingetragen ist */
     suggestedLink: { type: String, default: '' },
+    /** Artikelnummer bzw. die nächste freie — Seite ohne Kennung, Anhang an einen vergebenen Vorschlag */
+    partnumber: { type: String, default: '' },
     /** Verkaufspreis aus der Maske — Grundpreis der Preisvorschau */
     sellprice: { type: [Number, String], default: 0 },
     /** Buchungsgruppe aus der Maske — bestimmt den Steuersatz der Vorschau */
@@ -1130,7 +1149,7 @@ function nutzdaten(partsId) {
     return {
         parts_id: Number(partsId),
         category_id: d.category_id || 0,
-        hyperlink: d.hyperlink.trim() || props.suggestedLink,
+        hyperlink: d.hyperlink.trim(),
         breadcrumbs: ohneLeere(d.breadcrumbs),
         images: ohneLeere(d.images),
         technical_data: zuObjekt(d.technical_data),
@@ -1184,9 +1203,81 @@ const linkKanal = computed(() => aktiveKanaele.value.find(k => k.type === 'hugos
     || daten.value.channels.find(k => k.type === 'hugoshop') || null)
 
 const shopLink = computed(() => {
-    const ziel = daten.value.hyperlink.trim() || props.suggestedLink
+    const ziel = daten.value.hyperlink.trim() || props.partnumber
     if (!props.partsId || !ziel) return ''
     return formatLink(linkKanal.value?.products_link || '', ziel.toLowerCase())
+})
+
+// ── Produktseite: Vorschlag und Prüfung auf Doppelte (checkShopPageName) ──
+// Bei der Neuanlage wird der Vorschlag der Maske (Beschreibung ohne
+// Artikelnummer) als Wert eingetragen und folgt der Beschreibung, bis der
+// Benutzer das Feld anfasst. Belegt ein anderer Artikel den Namen, bekommt
+// er die Artikelnummer angehängt. Bestehende Artikel behalten ihren Stand:
+// leer heißt Seite nach Artikelnummer, der Knopf im Feld übernimmt den
+// Vorschlag bewusst — eine neue Kennung ist eine neue Adresse der Seite.
+const hyperlinkBeruehrt = ref(false)
+const seiteBelegt = ref(null)   // { id, partnumber, description } des anderen Artikels
+let pruefTimer = null
+let pruefLauf = 0
+
+const vorschlagMoeglich = computed(() =>
+    darfBearbeiten.value && !!props.partsId && !daten.value.hyperlink.trim() && !!props.suggestedLink)
+
+function hyperlinkGetippt() {
+    hyperlinkBeruehrt.value = true
+    clearTimeout(pruefTimer)
+    pruefTimer = setTimeout(() => seitePruefen(), 600)
+}
+
+/** Belegt ein anderer Artikel diese Produktseite? Dessen Nummer und Beschreibung, sonst null */
+async function seiteBesitzer(name) {
+    const resp = await axios.post('/api/shop/', {
+        action: 'checkShopPageName', parts_id: Number(props.partsId) || 0, hyperlink: name,
+    })
+    return resp.data?.success ? (resp.data.payload?.owner || null) : null
+}
+
+/** Prüfung nach der Eingabe; eine spätere Eingabe macht die laufende Antwort ungültig */
+async function seitePruefen() {
+    clearTimeout(pruefTimer)
+    const name = daten.value.hyperlink.trim()
+    const lauf = ++pruefLauf
+    if (!name) { seiteBelegt.value = null; return }
+    try {
+        const besitzer = await seiteBesitzer(name)
+        if (lauf === pruefLauf) seiteBelegt.value = besitzer
+    } catch {
+        // Prüfung gerade nicht möglich — das Speichern prüft noch einmal
+    }
+}
+
+/** Vorschlag eintragen; ist er vergeben, mit angehängter Artikelnummer */
+async function vorschlagAnwenden() {
+    const vorschlag = props.suggestedLink
+    if (!vorschlag) return
+    const lauf = ++pruefLauf
+    let name = vorschlag
+    try {
+        if (await seiteBesitzer(name) && props.partnumber) name = `${vorschlag}-${shopSlug(props.partnumber)}`
+    } catch {
+        // ohne Prüfung bleibt der einfache Vorschlag
+    }
+    if (lauf !== pruefLauf) return
+    daten.value.hyperlink = name
+    seitePruefen()
+}
+
+function vorschlagUebernehmen() {
+    hyperlinkBeruehrt.value = true
+    vorschlagAnwenden()
+}
+
+// Neuanlage: der Vorschlag folgt der Beschreibung, solange das Feld unberührt ist
+watch(() => props.suggestedLink, () => {
+    if (props.partsId || hyperlinkBeruehrt.value) return
+    clearTimeout(pruefTimer)
+    if (!props.suggestedLink) { daten.value.hyperlink = ''; seiteBelegt.value = null; return }
+    pruefTimer = setTimeout(() => vorschlagAnwenden(), 600)
 })
 
 // Bilder und Downloads pflegt ShopPartMedia (dev/shop-medienbibliothek.md)
@@ -1197,6 +1288,8 @@ const shopLink = computed(() => {
 async function laden() {
     bereit = false
     fehler.value = ''
+    hyperlinkBeruehrt.value = false
+    seiteBelegt.value = null
 
     // Auch bei der Neuanlage: die Kanäle und Steuersätze kommen mit; mit
     // Vorlage ihre Angaben
@@ -1257,6 +1350,9 @@ async function laden() {
         // Vorlage: der Stand beim Kanal (Abgleich, Kennung, Bilder) gehört ihr;
         // die Bilder kommen beim Anlegen mit, bis dahin zählt die Karte sie nur
         versandartikelVon.value = ''
+        // auch ihre Produktseite: der neue Artikel bekommt den Vorschlag der Maske
+        daten.value.hyperlink = ''
+        vorschlagAnwenden()
         for (const kanal of daten.value.channels) {
             Object.assign(kanal, { sync_status: '', sync_error: '', external_id: '', shipping_message: '', shipping_prices: [] })
             kanal.template_images = kanal.images.length
@@ -1295,6 +1391,7 @@ async function speichern(partsId) {
 
     if (shop.error.value) {
         fehler.value = fehlerText()
+        if (shop.errorCode.value === 'PAGE_NAME_TAKEN') seiteBelegt.value = shop.errorPayload.value || null
     } else {
         zuletzt = neuerStand
     }

@@ -232,6 +232,20 @@
             "noEmail": "Il cliente non ha un indirizzo e-mail.",
             "sourceStaff": "dalla scheda cliente",
             "sourcePortal": "richiesto dal cliente",
+            "locked": "L’accesso è bloccato dal {date}. Il cliente non può accedere.",
+            "lockedNoAccount": "L’accesso è bloccato dal {date}. Il cliente non può attivare un account; il link viene inviato solo dopo la rimozione del blocco.",
+            "lock": "Blocca accesso",
+            "unlock": "Rimuovi blocco",
+            "lockDone": "Accesso bloccato. Il cliente è stato disconnesso.",
+            "unlockDone": "Blocco rimosso.",
+            "reset": "Reimposta accesso",
+            "resetHint": "La reimpostazione cancella la password. Il cliente configura poi di nuovo l’accesso tramite «Attiva account cliente»; il link può essere inviato da qui. I dati del cliente restano.",
+            "resetTitle": "Reimpostare l’accesso?",
+            "resetText": "La password del cliente verrà cancellata e il cliente disconnesso. Potrà poi configurare di nuovo l’accesso tramite «Attiva account cliente». I dati del cliente e l’indirizzo e-mail {email} restano.",
+            "resetConfirm": "Sì, reimposta",
+            "cancel": "Annulla",
+            "resetDone": "Accesso reimpostato. Il link di configurazione può essere inviato di nuovo.",
+            "actionError": "Non è stato possibile eseguire l’azione.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "L’invio di e-mail non è configurato (configurazione aziendale → client e-mail, posta in uscita).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp non è configurato (configurazione aziendale → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Il cliente ha già accesso all’account cliente.",
                 "ACTIVATION_DISABLED": "Questo sito web non offre l’attivazione dell’account (configurazione aziendale → portale clienti, «Offrire l’attivazione»).",
                 "WEBSITE_CONFIG_MISSING": "Il sito web non ha un indirizzo web (configurazione aziendale → portale clienti).",
-                "ACTIVATION_NOT_SENT": "Il messaggio non è stato inviato."
+                "ACTIVATION_NOT_SENT": "Il messaggio non è stato inviato.",
+                "ACCOUNT_LOCKED": "L’accesso del cliente è bloccato. Rimuovere prima il blocco."
             }
         },
         "actions": {

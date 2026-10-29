@@ -232,6 +232,20 @@
             "noEmail": "Müşterinin e-posta adresi yok.",
             "sourceStaff": "müşteri kartından",
             "sourcePortal": "müşteri tarafından istendi",
+            "locked": "Erişim {date} tarihinden beri engelli. Müşteri oturum açamaz.",
+            "lockedNoAccount": "Erişim {date} tarihinden beri engelli. Müşteri hesap etkinleştiremez; bağlantı ancak engel kaldırıldıktan sonra gönderilir.",
+            "lock": "Erişimi engelle",
+            "unlock": "Engeli kaldır",
+            "lockDone": "Erişim engellendi. Müşterinin oturumu kapatıldı.",
+            "unlockDone": "Engel kaldırıldı.",
+            "reset": "Erişimi sıfırla",
+            "resetHint": "Sıfırlama parolayı siler. Müşteri daha sonra erişimi „Müşteri hesabını etkinleştir“ üzerinden yeniden kurar; bağlantı buradan gönderilebilir. Müşteri verileri korunur.",
+            "resetTitle": "Erişim sıfırlansın mı?",
+            "resetText": "Müşterinin parolası silinir ve oturumu kapatılır. Ardından erişimi „Müşteri hesabını etkinleştir“ üzerinden yeniden kurabilir. Müşteri verileri ve {email} e-posta adresi korunur.",
+            "resetConfirm": "Evet, sıfırla",
+            "cancel": "İptal",
+            "resetDone": "Erişim sıfırlandı. Kurulum bağlantısı artık yeniden gönderilebilir.",
+            "actionError": "İşlem gerçekleştirilemedi.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "E-posta gönderimi ayarlanmamış (şirket yapılandırması → e-posta istemcisi, giden posta).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp ayarlanmamış (şirket yapılandırması → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Müşterinin müşteri hesabına zaten erişimi var.",
                 "ACTIVATION_DISABLED": "Bu web sitesi hesap etkinleştirme sunmuyor (şirket yapılandırması → müşteri portalı, „Etkinleştirme sun“).",
                 "WEBSITE_CONFIG_MISSING": "Web sitesinin web adresi yok (şirket yapılandırması → müşteri portalı).",
-                "ACTIVATION_NOT_SENT": "Mesaj gönderilemedi."
+                "ACTIVATION_NOT_SENT": "Mesaj gönderilemedi.",
+                "ACCOUNT_LOCKED": "Müşterinin erişimi engelli. Önce engeli kaldırın."
             }
         },
         "actions": {

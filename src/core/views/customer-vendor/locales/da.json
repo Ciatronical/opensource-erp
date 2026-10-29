@@ -232,6 +232,20 @@
             "noEmail": "Kunden har ingen e-mailadresse.",
             "sourceStaff": "fra kundekartoteket",
             "sourcePortal": "anmodet af kunden",
+            "locked": "Adgangen har været spærret siden {date}. Kunden kan ikke logge ind.",
+            "lockedNoAccount": "Adgangen har været spærret siden {date}. Kunden kan ikke aktivere en konto; et link sendes først, når spærringen er ophævet.",
+            "lock": "Spær adgang",
+            "unlock": "Ophæv spærring",
+            "lockDone": "Adgang spærret. Kunden er logget ud.",
+            "unlockDone": "Spærring ophævet.",
+            "reset": "Nulstil adgang",
+            "resetHint": "Nulstilling sletter adgangskoden. Kunden opretter derefter adgangen igen via „Aktivér kundekonto“; linket kan sendes herfra. Kundedata bevares.",
+            "resetTitle": "Nulstil adgang?",
+            "resetText": "Kundens adgangskode slettes, og kunden logges ud. Derefter kan adgangen oprettes igen via „Aktivér kundekonto“. Kundedata og e-mailadressen {email} bevares.",
+            "resetConfirm": "Ja, nulstil",
+            "cancel": "Annuller",
+            "resetDone": "Adgang nulstillet. Linket til opsætning kan nu sendes igen.",
+            "actionError": "Handlingen kunne ikke udføres.",
             "errors": {
                 "EMAIL_NOT_CONFIGURED": "Mailafsendelse er ikke sat op (firmakonfiguration → e-mailklient, udgående post).",
                 "WHATSAPP_NOT_CONFIGURED": "WhatsApp er ikke sat op (firmakonfiguration → WhatsApp).",
@@ -241,7 +255,8 @@
                 "ACTIVATION_HAS_ACCOUNT": "Kunden har allerede adgang til kundekontoen.",
                 "ACTIVATION_DISABLED": "Denne hjemmeside tilbyder ikke kontoaktivering (firmakonfiguration → kundeportal, „Tilbyd aktivering“).",
                 "WEBSITE_CONFIG_MISSING": "Hjemmesiden har ingen webadresse (firmakonfiguration → kundeportal).",
-                "ACTIVATION_NOT_SENT": "Beskeden kunne ikke sendes."
+                "ACTIVATION_NOT_SENT": "Beskeden kunne ikke sendes.",
+                "ACCOUNT_LOCKED": "Kundens adgang er spærret. Ophæv først spærringen."
             }
         },
         "actions": {

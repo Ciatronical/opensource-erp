@@ -522,7 +522,7 @@ function getPortalActivationStatus($data) {
  * @param int $data['website_id'] Webseite, deren Seite der Link öffnet
  * @param string $data['via'] whatsapp (Vorgabe) oder email
  * @param string $data['phone'] Nummer für WhatsApp; leer = Nummer des Kundenstamms
- * @return void via, status; bei Fehler text = Fehlercode (ACTIVATION_HAS_ACCOUNT, ACTIVATION_DISABLED,
+ * @return void via, status; bei Fehler text = Fehlercode (ACTIVATION_HAS_ACCOUNT, ACCOUNT_LOCKED, ACTIVATION_DISABLED,
  *              ACTIVATION_NO_EMAIL, ACTIVATION_NO_PHONE, WEBSITE_CONFIG_MISSING, EMAIL_NOT_CONFIGURED,
  *              WHATSAPP_NOT_CONFIGURED, TEMPLATE_NOT_FOUND, ACTIVATION_NOT_SENT)
  * @testdata {"customer_id": 1, "website_id": 1, "via": "whatsapp"}
@@ -540,6 +540,10 @@ function sendPortalActivation($data) {
     $stand = activationStatus($db, $customerId);
     if ($stand['account']) {
         resultInfo(false, 'ACTIVATION_HAS_ACCOUNT', null, 'Der Kunde hat schon ein Konto');
+        return;
+    }
+    if ($stand['locked']) {
+        resultInfo(false, 'ACCOUNT_LOCKED', null, 'Der Zugang des Kunden ist gesperrt');
         return;
     }
     if (!websiteActivationEnabled($db, $website)) {
@@ -560,4 +564,58 @@ function sendPortalActivation($data) {
         return;
     }
     resultInfo(true, 'ACTIVATION_SENT', ['via' => $ergebnis['via'], 'status' => activationStatus($db, $customerId)]);
+}
+
+/**
+ * Sperrt den Zugang eines Kunden zum Kundenkonto oder hebt die Sperre auf
+ *
+ * Aus der Kundenakte. Gesperrt kann sich der Kunde nicht anmelden und kein
+ * Konto freischalten; laufende Sitzungen enden. Kennwort und E-Mail-Adresse
+ * bleiben — nach dem Aufheben meldet er sich an wie zuvor. Getrennt von
+ * „veraltet“ (customer.obsolete): der Kunde bleibt ein gültiger Kunde.
+ *
+ * @param int $data['customer_id'] Kunde
+ * @param bool $data['locked'] true sperrt, false hebt die Sperre auf
+ * @return void status (activationStatus)
+ * @testdata {"customer_id": 1, "locked": true}
+ */
+function setPortalAccountLock($data) {
+    permit(['customer_vendor_edit', 'customer_vendor_all_edit', 'edit_shop_config'], false);
+    $db = portalAdminDb();
+
+    $customerId = (int)($data['customer_id'] ?? 0);
+    if ($customerId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Kunde wird gebraucht');
+        return;
+    }
+    activationStatus($db, $customerId); // wirft ACCOUNT_NOT_FOUND
+    $sperren = in_array($data['locked'] ?? false, [true, 'true', 1, '1', 't'], true);
+    portalAccountLock($db, $customerId, $sperren);
+    resultInfo(true, $sperren ? 'ACCOUNT_LOCKED' : 'ACCOUNT_UNLOCKED', ['status' => activationStatus($db, $customerId)]);
+}
+
+/**
+ * Setzt den Zugang eines Kunden zurück: das Kennwort wird gelöscht
+ *
+ * Aus der Kundenakte. Danach ist der Kunde wieder ein Kunde ohne Konto: die
+ * Konto-Freischaltung findet ihn, und der Link lässt sich erneut senden.
+ * Kundendaten und E-Mail-Adresse bleiben, Sitzungen enden, offene Kennungen
+ * verfallen. Eine Sperre bleibt bestehen (setPortalAccountLock).
+ *
+ * @param int $data['customer_id'] Kunde
+ * @return void status (activationStatus)
+ * @testdata {"customer_id": 1}
+ */
+function resetPortalAccount($data) {
+    permit(['customer_vendor_edit', 'customer_vendor_all_edit', 'edit_shop_config'], false);
+    $db = portalAdminDb();
+
+    $customerId = (int)($data['customer_id'] ?? 0);
+    if ($customerId <= 0) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Kunde wird gebraucht');
+        return;
+    }
+    activationStatus($db, $customerId); // wirft ACCOUNT_NOT_FOUND
+    portalAccountReset($db, $customerId);
+    resultInfo(true, 'ACCOUNT_RESET', ['status' => activationStatus($db, $customerId)]);
 }
