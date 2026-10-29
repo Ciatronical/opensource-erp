@@ -76,7 +76,20 @@
             "portalPath_help": "Fælles begyndelse på alle portalsider, fx /kunden/ eller /kundenportal/. Standard /kunden/.",
             "activation": "Kontoaktivering for eksisterende kunder",
             "activationEnabled": "Tilbyd aktivering",
-            "activationEnabled_help": "Eksisterende kunder uden kundekonto kan få oprettet adgang via WhatsApp. Fra = intet link, ingen side. Standard: fra."
+            "activationEnabled_help": "Eksisterende kunder uden kundekonto kan få oprettet adgang via WhatsApp. Fra = intet link, ingen side. Standard: fra.",
+            "documents": "Bilag i kundekontoen",
+            "documentsInvoices": "Fakturaer",
+            "documentsInvoices_help": "Kunden ser sine fakturaer og henter dem som PDF. Standard: til.",
+            "documentsOrders": "Ordrer",
+            "documentsOrders_help": "Kunden ser sine ordrer (ordrebekræftelser) med PDF.",
+            "documentsQuotations": "Tilbud",
+            "documentsQuotations_help": "Kunden ser de tilbud, han har modtaget, med PDF.",
+            "documentsDeliveryOrders": "Følgesedler",
+            "documentsDeliveryOrders_help": "Kunden ser sine følgesedler med PDF, uden priser.",
+            "documentsReclamations": "Reklamationer",
+            "documentsReclamations_help": "Kunden ser sine reklamationer med årsag pr. linje. Uden PDF.",
+            "documentsShopOrders": "Ordrer (webshop)",
+            "documentsShopOrders_help": "Kun med shop-udvidelsen: ordrer fra webshoppen som egen fane med betalings- og leveringsstatus. Standard: til."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Et websted med dette navn findes allerede.",
@@ -115,7 +128,8 @@
             "templateSet": "Skabelonsættet bestemmer, hvordan login, kundekonto, fakturaer og kontaktformular ser ud på webstedet. „Standard“ tilpasser sig webstedets udseende og rækker i de fleste tilfælde.\n\nEgne sæt kan en udvikler oprette i firmaets skabelonmappe under portal/; de vises så her til valg.\n\nEfter et skift køres „Installer pakke“, så webstedet får de nye skabeloner.",
             "contactMailTo": "Udfylder en kunde kontaktformularen på webstedet, sender OpensourceERP henvendelsen som e-mail til denne adresse.\n\nEr feltet tomt, går henvendelsen til firmaets afsenderadresse fra firmakonfigurationen.\n\nFlere modtagere understøttes ikke — brug en fælles postkasse eller en distributionsliste.",
             "pages": "På disse adresser opretter „Installer pakke“ portalsiderne på webstedet — færdige med den passende byggesten. Det kræver posten for oserp-portal/content i webstedsprojektets config.json (se hjælpen ved „Test forbindelse“).\n\nAdressen angives fra webstedets rod, med skråstreg i starten og slutningen, fx /kunden/anmelden/. Kontoens undersider (profil, adresser, fakturaer, med shop betalingsmåden, med køretøjer køretøjerne) hænger under kundekontoens adresse.\n\nSamme adresser bruger widgets til deres links og OpensourceERP til links i e-mails og WhatsApp-beskeder. Vil man selv designe en side, opretter man i HugoCMS en egen side på samme adresse — den går forud for siden fra pakken.\n\nEfter en ændring køres „Installer pakke“.\n\nKundeportalens mappe er den fælles begyndelse: en side uden indledende skråstreg (fx anmelden/) hænger under den — /kunden/ og anmelden/ bliver til /kunden/anmelden/. Skal en anden mappe gælde, er det nok at ændre dette ene felt. En side med indledende skråstreg (fx /login/) står for sig selv.",
-            "activationEnabled": "Kunder, der allerede har købt hos jer, men endnu ikke har en kundekonto, kan selv oprette adgang: på hjemmesiden indtaster de deres mobilnummer og postnummer eller kundenummer og modtager et link via WhatsApp.\n\nSlået til opretter „Installer pakke“ siden „Aktivér konto“ på hjemmesiden, og login- og registreringssiden viser linket dertil. Linket kan også sendes fra kundekortet.\n\nSlået fra er der hverken side eller link, og aktiveringsanmodninger afvises. Kør „Installer pakke“ efter omstillingen, så hjemmesiden får den nye tilstand.\n\nAfsendelse via WhatsApp kræver en opsat WhatsApp-adgang og skabelonen „Aktivér kundekonto“ godkendt af Meta."
+            "activationEnabled": "Kunder, der allerede har købt hos jer, men endnu ikke har en kundekonto, kan selv oprette adgang: på hjemmesiden indtaster de deres mobilnummer og postnummer eller kundenummer og modtager et link via WhatsApp.\n\nSlået til opretter „Installer pakke“ siden „Aktivér konto“ på hjemmesiden, og login- og registreringssiden viser linket dertil. Linket kan også sendes fra kundekortet.\n\nSlået fra er der hverken side eller link, og aktiveringsanmodninger afvises. Kør „Installer pakke“ efter omstillingen, så hjemmesiden får den nye tilstand.\n\nAfsendelse via WhatsApp kræver en opsat WhatsApp-adgang og skabelonen „Aktivér kundekonto“ godkendt af Meta.",
+            "documents": "På siden „Bilag“ i sin kundekonto ser kunden de bilag, der er markeret her, hver type som sin egen fane, med dato, beløb, status og linjer. Fakturaer, ordrer, tilbud og følgesedler kan hentes som PDF; OpensourceERP udskriver endnu ikke reklamationer, så knappen mangler der.\n\nStandard: kun fakturaer. Markeringerne virker straks, „Installer pakke“ er ikke nødvendig. Er intet markeret, viser siden en besked i stedet for en liste.\n\nAlle bilag fra kundekortet vises, ikke kun dem der er oprettet via hjemmesiden: værkstedets kunde ser altså også værkstedsfakturaen. Med shop-udvidelsen viser shop-fakturaer desuden betalings- og leveringsstatus.\n\nMed shop-udvidelsen findes desuden „Ordrer (webshop)“: fakturaerne fra webshoppen som egen fane med betalings- og leveringsstatus. Er den slået til, vises disse fakturaer ikke længere under „Fakturaer“ — hvert bilag står kun én gang."
         },
         "hugocmsFromBaseUrl": "Overtag webadresse",
         "hugocmsFromBaseUrl_help": "Sætter adressen til HugoCMS-fjernadgang ud fra webstedets webadresse med /cms-api/ til sidst.",

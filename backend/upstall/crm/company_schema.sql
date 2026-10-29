@@ -4464,6 +4464,14 @@ RETURNS TABLE (key text, secret boolean)
         ('activate_page',   false),  -- Seite „Konto freischalten“ (Link in der WhatsApp-Nachricht)
         ('contact_page',    false),  -- Kontaktformular
         ('contact_mail_to', false),  -- Empfänger des Kontaktformulars; leer = Absenderadresse der Firma
+        -- Belege im Kundenkonto (Seite „Belege“): je Belegart ein Schalter,
+        -- Vorgabe nur Rechnungen (websiteDocumentTypes, lib/documents.php)
+        ('documents_invoices',        false),  -- Rechnungen
+        ('documents_orders',          false),  -- Aufträge
+        ('documents_quotations',      false),  -- Angebote
+        ('documents_delivery_orders', false),  -- Lieferscheine
+        ('documents_reclamations',    false),  -- Reklamationen
+        ('documents_shop_orders',     false),  -- Shop-Bestellungen (Rechnungen aus dem Online-Shop) — nur mit Shop-Erweiterung, Vorgabe an
         -- Veröffentlichung
         ('template_set',    false),  -- Vorlagensatz des Pakets (backend/templates-default/portal/<satz>/kit/)
         ('hugocms_url',     false),  -- cms-api-Adresse der Webseite in HugoCMS
@@ -4509,6 +4517,12 @@ CREATE OR REPLACE FUNCTION website_default_settings() RETURNS jsonb
     SELECT jsonb_build_object(
         'template_set',  'standard',
         'activation_enabled', '0',
+        'documents_invoices', '1',
+        'documents_orders', '0',
+        'documents_quotations', '0',
+        'documents_delivery_orders', '0',
+        'documents_reclamations', '0',
+        'documents_shop_orders', '1',
         'portal_path',   '/kunden/',
         'login_page',    'anmelden/',
         'register_page', 'registrieren/',

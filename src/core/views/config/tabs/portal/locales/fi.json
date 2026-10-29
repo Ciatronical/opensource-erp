@@ -76,7 +76,20 @@
             "portalPath_help": "Kaikkien portaalisivujen yhteinen alku, esimerkiksi /kunden/ tai /kundenportal/. Oletus /kunden/.",
             "activation": "Tilin aktivointi nykyisille asiakkaille",
             "activationEnabled": "Tarjoa aktivointia",
-            "activationEnabled_help": "Nykyiset asiakkaat ilman asiakastiliä voivat saada tunnukset WhatsAppin kautta. Pois = ei linkkiä, ei sivua. Oletus: pois."
+            "activationEnabled_help": "Nykyiset asiakkaat ilman asiakastiliä voivat saada tunnukset WhatsAppin kautta. Pois = ei linkkiä, ei sivua. Oletus: pois.",
+            "documents": "Tositteet asiakastilillä",
+            "documentsInvoices": "Laskut",
+            "documentsInvoices_help": "Asiakas näkee laskunsa ja lataa ne PDF-muodossa. Oletus: käytössä.",
+            "documentsOrders": "Tilaukset",
+            "documentsOrders_help": "Asiakas näkee tilauksensa (tilausvahvistukset) PDF-muodossa.",
+            "documentsQuotations": "Tarjoukset",
+            "documentsQuotations_help": "Asiakas näkee saamansa tarjoukset PDF-muodossa.",
+            "documentsDeliveryOrders": "Lähetteet",
+            "documentsDeliveryOrders_help": "Asiakas näkee lähetteensä PDF-muodossa, ilman hintoja.",
+            "documentsReclamations": "Reklamaatiot",
+            "documentsReclamations_help": "Asiakas näkee reklamaationsa rivikohtaisine syineen. Ei PDF:ää.",
+            "documentsShopOrders": "Tilaukset (verkkokauppa)",
+            "documentsShopOrders_help": "Vain kauppalaajennuksen kanssa: verkkokaupan tilaukset omana välilehtenä maksu- ja toimitustiloineen. Oletus: käytössä."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Tämän niminen sivusto on jo olemassa.",
@@ -115,7 +128,8 @@
             "templateSet": "Mallisarja määrää, miltä kirjautuminen, asiakastili, laskut ja yhteydenottolomake näyttävät sivustolla. ”Standard” mukautuu sivuston ulkoasuun ja riittää useimmiten.\n\nKehittäjä voi luoda omia sarjoja yrityksen mallihakemistoon portal/-kansioon; ne näkyvät sitten tässä valittavina.\n\nVaihdon jälkeen suorita ”Asenna paketti”, jotta sivusto saa uudet mallit.",
             "contactMailTo": "Kun asiakas täyttää sivuston yhteydenottolomakkeen, OpensourceERP lähettää viestin sähköpostina tähän osoitteeseen.\n\nJos kenttä jää tyhjäksi, viesti menee yrityksen lähettäjäosoitteeseen yrityksen asetuksista.\n\nUseita vastaanottajia ei tueta – käytä yhteistä postilaatikkoa tai jakelulistaa.",
             "pages": "Näihin osoitteisiin ”Asenna paketti” luo portaalisivut sivustolle – valmiina sopivan rakennuspalikan kanssa. Se edellyttää sivustoprojektin config.json-tiedostossa merkintää oserp-portal/content (ks. ohje kohdassa ”Testaa yhteys”).\n\nOsoite annetaan sivuston juuresta, vinoviiva alussa ja lopussa, esimerkiksi /kunden/anmelden/. Tilin alasivut (profiili, osoitteet, laskut, kaupan kanssa maksutapa, ajoneuvojen kanssa ajoneuvot) ovat asiakastilin osoitteen alla.\n\nWidgetit käyttävät samoja osoitteita linkeissään ja OpensourceERP sähköpostien ja WhatsApp-viestien linkeissä. Jos haluat suunnitella sivun itse, luo HugoCMS:ssä oma sivu samaan osoitteeseen – se ohittaa paketin sivun.\n\nMuutoksen jälkeen suorita ”Asenna paketti”.\n\nAsiakasportaalin hakemisto on yhteinen alku: sivu ilman alkuvinoviivaa (esim. anmelden/) on sen alla – /kunden/ ja anmelden/ muodostavat /kunden/anmelden/. Toista hakemistoa varten riittää tämän yhden kentän muuttaminen. Sivu, joka alkaa vinoviivalla (esim. /login/), on itsenäinen.",
-            "activationEnabled": "Asiakkaat, jotka ovat jo ostaneet teiltä mutta joilla ei vielä ole asiakastiliä, voivat luoda tunnukset itse: he syöttävät verkkosivustolla matkapuhelinnumeronsa ja postinumeron tai asiakasnumeron ja saavat linkin WhatsAppin kautta.\n\nKäytössä ”Asenna paketti” luo verkkosivustolle sivun ”Aktivoi tili”, ja kirjautumis- ja rekisteröintisivu näyttävät linkin sinne. Linkin voi lähettää myös asiakaskortista.\n\nPois käytöstä ei ole sivua eikä linkkiä, ja aktivointipyynnöt hylätään. Suorita vaihdon jälkeen ”Asenna paketti”, jotta verkkosivusto saa uuden tilan.\n\nLähetys WhatsAppin kautta edellyttää määritettyä WhatsApp-yhteyttä ja Metan hyväksymää mallia ”Aktivoi asiakastili”."
+            "activationEnabled": "Asiakkaat, jotka ovat jo ostaneet teiltä mutta joilla ei vielä ole asiakastiliä, voivat luoda tunnukset itse: he syöttävät verkkosivustolla matkapuhelinnumeronsa ja postinumeron tai asiakasnumeron ja saavat linkin WhatsAppin kautta.\n\nKäytössä ”Asenna paketti” luo verkkosivustolle sivun ”Aktivoi tili”, ja kirjautumis- ja rekisteröintisivu näyttävät linkin sinne. Linkin voi lähettää myös asiakaskortista.\n\nPois käytöstä ei ole sivua eikä linkkiä, ja aktivointipyynnöt hylätään. Suorita vaihdon jälkeen ”Asenna paketti”, jotta verkkosivusto saa uuden tilan.\n\nLähetys WhatsAppin kautta edellyttää määritettyä WhatsApp-yhteyttä ja Metan hyväksymää mallia ”Aktivoi asiakastili”.",
+            "documents": "Asiakastilin sivulla ”Tositteet” asiakas näkee tässä valitut tositteet, kukin laji omana välilehtenään, päivämäärän, summan, tilan ja rivien kera. Laskut, tilaukset, tarjoukset ja lähetteet voi ladata PDF-muodossa; OpensourceERP ei vielä tulosta reklamaatioita, joten painike puuttuu niistä.\n\nOletus: vain laskut. Valinnat tulevat voimaan heti, ”Asenna paketti” ei ole tarpeen. Jos mitään ei ole valittu, sivu näyttää ilmoituksen luettelon sijaan.\n\nNäytetään kaikki asiakaskortin tositteet, ei vain verkkosivuston kautta syntyneet: korjaamon asiakas näkee siis myös korjaamolaskun. Kauppalaajennuksen kanssa kaupan laskut näyttävät lisäksi maksu- ja toimitustilan.\n\nKauppalaajennuksen kanssa on lisäksi ”Tilaukset (verkkokauppa)”: verkkokaupan laskut omana välilehtenä maksu- ja toimitustiloineen. Kun se on käytössä, nämä laskut eivät enää näy kohdassa ”Laskut” – jokainen tosite on luettelossa vain kerran."
         },
         "hugocmsFromBaseUrl": "Käytä verkko-osoitetta",
         "hugocmsFromBaseUrl_help": "Asettaa HugoCMS:n etäkäyttöosoitteen sivuston verkko-osoitteesta lisäten /cms-api/.",

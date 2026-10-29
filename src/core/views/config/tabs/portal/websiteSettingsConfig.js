@@ -69,6 +69,20 @@ const website = [
     // Seite mit <portal-activate> — Ziel des Links in der WhatsApp-Nachricht
     { name: "activate_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", showIf: "activation_enabled", label: "WebsitesView.fields.activatePage", tooltip: "WebsitesView.fields.activatePage_help", help: "WebsitesView.help.activatePage" },
 
+    // Belege im Kundenkonto (Seite „Belege“): je Belegart ein Schalter,
+    // Vorgabe nur Rechnungen (mit Shop auch Bestellungen). Wirkt sofort, ohne
+    // „Paket installieren“ — das Widget fragt die Belegarten beim Aufruf ab.
+    // extension: Feld nur, wenn die Erweiterung aktiv ist
+    { name: "belege", type: "headline", label: "WebsitesView.fields.documents" },
+
+    { name: "documents_invoices", type: "checkbox", label: "WebsitesView.fields.documentsInvoices", tooltip: "WebsitesView.fields.documentsInvoices_help", help: "WebsitesView.help.documents" },
+    // Nur mit Shop-Erweiterung (extension): Bestellungen des Online-Shops als eigener Reiter
+    { name: "documents_shop_orders", type: "checkbox", extension: "shop", label: "WebsitesView.fields.documentsShopOrders", tooltip: "WebsitesView.fields.documentsShopOrders_help", help: "WebsitesView.help.documents" },
+    { name: "documents_orders", type: "checkbox", label: "WebsitesView.fields.documentsOrders", tooltip: "WebsitesView.fields.documentsOrders_help", help: "WebsitesView.help.documents" },
+    { name: "documents_quotations", type: "checkbox", label: "WebsitesView.fields.documentsQuotations", tooltip: "WebsitesView.fields.documentsQuotations_help", help: "WebsitesView.help.documents" },
+    { name: "documents_delivery_orders", type: "checkbox", label: "WebsitesView.fields.documentsDeliveryOrders", tooltip: "WebsitesView.fields.documentsDeliveryOrders_help", help: "WebsitesView.help.documents" },
+    { name: "documents_reclamations", type: "checkbox", label: "WebsitesView.fields.documentsReclamations", tooltip: "WebsitesView.fields.documentsReclamations_help", help: "WebsitesView.help.documents" },
+
     { name: "veroeffentlichung", type: "headline", label: "WebsitesView.fields.publish" },
 
     { name: "template_set", type: "dynamic-select", source: "templateSets", itemTitle: "title", itemValue: "name", fieldstyle: "max-width: 60ch", label: "WebsitesView.fields.templateSet", tooltip: "WebsitesView.fields.templateSet_help", help: "WebsitesView.help.templateSet" },

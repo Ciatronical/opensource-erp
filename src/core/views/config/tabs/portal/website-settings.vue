@@ -226,6 +226,7 @@ import ShopConfigField from '@/core/views/config/tabs/shop-config-field.componen
 import websiteSettingsConfig, { websiteSettingFields } from './websiteSettingsConfig.js'
 import * as toasts from '@/core/utils/toasts.js'
 import { useHelpPanel } from '@/core/composables/useHelpPanel.js'
+import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const props = defineProps({
     websiteId: { type: Number, required: true },
@@ -247,8 +248,11 @@ const props = defineProps({
 
 const { t, te } = useI18n()
 
-const felder = computed(() => websiteSettingsConfig)
-const alleFelder = computed(() => websiteSettingFields())
+const oserp = oserpStore()
+// Felder einer Erweiterung (extension) nur, wenn sie aktiv ist — Gruppen mitsamt ihren Feldern
+const erweiterungAktiv = feld => !feld.extension || oserp.isExtensionEnabled(feld.extension)
+const felder = computed(() => websiteSettingsConfig.filter(erweiterungAktiv))
+const alleFelder = computed(() => websiteSettingFields().filter(erweiterungAktiv))
 const quellen = computed(() => ({ templateSets: props.templateSets }))
 
 const WAHR = [true, 't', 'true', '1', 1, 'y', 'yes']

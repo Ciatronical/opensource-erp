@@ -76,7 +76,20 @@
             "portalPath_help": "Společný začátek všech stránek portálu, například /kunden/ nebo /kundenportal/. Výchozí /kunden/.",
             "activation": "Aktivace účtu pro stávající zákazníky",
             "activationEnabled": "Nabízet aktivaci",
-            "activationEnabled_help": "Stávající zákazníci bez zákaznického účtu mohou získat přístup přes WhatsApp. Vypnuto = žádný odkaz, žádná stránka. Výchozí: vypnuto."
+            "activationEnabled_help": "Stávající zákazníci bez zákaznického účtu mohou získat přístup přes WhatsApp. Vypnuto = žádný odkaz, žádná stránka. Výchozí: vypnuto.",
+            "documents": "Doklady v zákaznickém účtu",
+            "documentsInvoices": "Faktury",
+            "documentsInvoices_help": "Zákazník vidí své faktury a stáhne je jako PDF. Výchozí: zapnuto.",
+            "documentsOrders": "Zakázky",
+            "documentsOrders_help": "Zákazník vidí své zakázky (potvrzení objednávek) s PDF.",
+            "documentsQuotations": "Nabídky",
+            "documentsQuotations_help": "Zákazník vidí nabídky, které obdržel, s PDF.",
+            "documentsDeliveryOrders": "Dodací listy",
+            "documentsDeliveryOrders_help": "Zákazník vidí své dodací listy s PDF, bez cen.",
+            "documentsReclamations": "Reklamace",
+            "documentsReclamations_help": "Zákazník vidí své reklamace s důvodem u každé položky. Bez PDF.",
+            "documentsShopOrders": "Objednávky (e-shop)",
+            "documentsShopOrders_help": "Jen s rozšířením obchodu: objednávky z e-shopu jako vlastní záložka se stavem platby a dodání. Výchozí: zapnuto."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Web s tímto názvem už existuje.",
@@ -115,7 +128,8 @@
             "templateSet": "Sada šablon určuje, jak na webu vypadají přihlášení, zákaznický účet, faktury a kontaktní formulář. „Standard“ se přizpůsobí vzhledu webu a většinou stačí.\n\nVlastní sady může vývojář založit v adresáři šablon firmy pod portal/; pak se zde objeví k výběru.\n\nPo změně spusťte „Instalovat balíček“, aby web dostal nové šablony.",
             "contactMailTo": "Vyplní-li zákazník kontaktní formulář na webu, pošle OpensourceERP dotaz e-mailem na tuto adresu.\n\nZůstane-li pole prázdné, jde dotaz na adresu odesílatele firmy z konfigurace firmy.\n\nVíce příjemců není podporováno — použijte sdílenou schránku nebo distribuční seznam.",
             "pages": "Na těchto adresách založí „Instalovat balíček“ stránky portálu na webu — hotové s příslušným stavebním prvkem. K tomu potřebuje config.json projektu webu záznam pro oserp-portal/content (viz nápověda u „Zkontrolovat spojení“).\n\nAdresa se uvádí od kořene webu, s lomítkem na začátku i na konci, například /kunden/anmelden/. Podstránky účtu (profil, adresy, faktury, s obchodem způsob platby, s vozidly vozidla) visí pod adresou zákaznického účtu.\n\nStejné adresy používají widgety pro své odkazy a OpensourceERP pro odkazy v e-mailech a zprávách WhatsApp. Kdo chce stránku navrhnout sám, založí v HugoCMS na stejné adrese vlastní stránku — ta má přednost před stránkou z balíčku.\n\nPo změně spusťte „Instalovat balíček“.\n\nAdresář zákaznického portálu je společný začátek: stránka bez úvodního lomítka (např. anmelden/) visí pod ním — z /kunden/ a anmelden/ vznikne /kunden/anmelden/. Má-li platit jiný adresář, stačí změnit toto jedno pole. Stránka s úvodním lomítkem (např. /login/) stojí sama za sebe.",
-            "activationEnabled": "Zákazníci, kteří u vás již nakoupili, ale ještě nemají zákaznický účet, si mohou přístup zřídit sami: na webu zadají číslo mobilu a PSČ nebo zákaznické číslo a obdrží odkaz přes WhatsApp.\n\nPři zapnutí vytvoří „Instalovat balíček“ na webu stránku „Aktivovat účet“ a přihlašovací i registrační stránka zobrazí odkaz na ni. Odkaz lze odeslat také z karty zákazníka.\n\nPři vypnutí není ani stránka, ani odkaz, a žádosti o aktivaci jsou odmítnuty. Po přepnutí spusťte „Instalovat balíček“, aby web dostal nový stav.\n\nOdeslání přes WhatsApp vyžaduje nastavený přístup WhatsApp a šablonu „Aktivovat zákaznický účet“ schválenou společností Meta."
+            "activationEnabled": "Zákazníci, kteří u vás již nakoupili, ale ještě nemají zákaznický účet, si mohou přístup zřídit sami: na webu zadají číslo mobilu a PSČ nebo zákaznické číslo a obdrží odkaz přes WhatsApp.\n\nPři zapnutí vytvoří „Instalovat balíček“ na webu stránku „Aktivovat účet“ a přihlašovací i registrační stránka zobrazí odkaz na ni. Odkaz lze odeslat také z karty zákazníka.\n\nPři vypnutí není ani stránka, ani odkaz, a žádosti o aktivaci jsou odmítnuty. Po přepnutí spusťte „Instalovat balíček“, aby web dostal nový stav.\n\nOdeslání přes WhatsApp vyžaduje nastavený přístup WhatsApp a šablonu „Aktivovat zákaznický účet“ schválenou společností Meta.",
+            "documents": "Na stránce „Doklady“ svého účtu vidí zákazník doklady zde zaškrtnuté, každý druh jako vlastní záložku, s datem, částkou, stavem a položkami. Faktury, zakázky, nabídky a dodací listy nabízejí stažení PDF; OpensourceERP reklamace zatím netiskne, tlačítko tam proto chybí.\n\nVýchozí: jen faktury. Zaškrtnutí působí okamžitě, „Instalovat balíček“ není třeba. Není-li nic zaškrtnuto, stránka zobrazí upozornění místo seznamu.\n\nZobrazují se všechny doklady zákaznické karty, nejen ty vzniklé přes web: zákazník dílny tedy vidí i fakturu dílny. S rozšířením obchodu zobrazují faktury obchodu navíc stav platby a dodání.\n\nS rozšířením obchodu je navíc „Objednávky (e-shop)“: faktury z e-shopu jako vlastní záložka se stavem platby a dodání. Je-li zapnuto, tyto faktury už nejsou pod „Faktury“ — každý doklad je uveden jen jednou."
         },
         "hugocmsFromBaseUrl": "Převzít webovou adresu",
         "hugocmsFromBaseUrl_help": "Nastaví adresu vzdáleného přístupu k HugoCMS z webové adresy webu s /cms-api/ na konci.",

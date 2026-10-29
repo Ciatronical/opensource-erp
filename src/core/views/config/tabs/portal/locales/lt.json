@@ -76,7 +76,20 @@
             "portalPath_help": "Bendra visų portalo puslapių pradžia, pavyzdžiui, /kunden/ arba /kundenportal/. Numatytasis /kunden/.",
             "activation": "Paskyros aktyvinimas esamiems klientams",
             "activationEnabled": "Siūlyti aktyvinimą",
-            "activationEnabled_help": "Esami klientai be kliento paskyros gali gauti prieigą per „WhatsApp“. Išjungta = nei nuorodos, nei puslapio. Numatyta: išjungta."
+            "activationEnabled_help": "Esami klientai be kliento paskyros gali gauti prieigą per „WhatsApp“. Išjungta = nei nuorodos, nei puslapio. Numatyta: išjungta.",
+            "documents": "Dokumentai kliento paskyroje",
+            "documentsInvoices": "Sąskaitos faktūros",
+            "documentsInvoices_help": "Klientas mato savo sąskaitas faktūras ir atsisiunčia jas PDF formatu. Numatyta: įjungta.",
+            "documentsOrders": "Užsakymai",
+            "documentsOrders_help": "Klientas mato savo užsakymus (užsakymų patvirtinimus) su PDF.",
+            "documentsQuotations": "Pasiūlymai",
+            "documentsQuotations_help": "Klientas mato gautus pasiūlymus su PDF.",
+            "documentsDeliveryOrders": "Važtaraščiai",
+            "documentsDeliveryOrders_help": "Klientas mato savo važtaraščius su PDF, be kainų.",
+            "documentsReclamations": "Reklamacijos",
+            "documentsReclamations_help": "Klientas mato savo reklamacijas su kiekvienos eilutės priežastimi. Be PDF.",
+            "documentsShopOrders": "Užsakymai (internetinė parduotuvė)",
+            "documentsShopOrders_help": "Tik su parduotuvės plėtiniu: internetinės parduotuvės užsakymai atskirame skirtuke su mokėjimo ir pristatymo būsena. Numatyta: įjungta."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Svetainė tokiu pavadinimu jau yra.",
@@ -115,7 +128,8 @@
             "templateSet": "Šablonų rinkinys nustato, kaip svetainėje atrodo prisijungimas, kliento paskyra, sąskaitos ir kontaktų forma. „Standard“ prisitaiko prie svetainės išvaizdos ir dažniausiai pakanka.\n\nSavus rinkinius kūrėjas gali sukurti įmonės šablonų kataloge portal/; tada jie čia pasirodo pasirinkimui.\n\nPakeitus paleiskite „Įdiegti paketą“, kad svetainė gautų naujus šablonus.",
             "contactMailTo": "Kai klientas svetainėje užpildo kontaktų formą, OpensourceERP užklausą el. paštu siunčia šiuo adresu.\n\nJei laukas liks tuščias, užklausa keliauja įmonės siuntėjo adresu iš įmonės konfigūracijos.\n\nKeli gavėjai nenumatyti — tam naudokite bendrą pašto dėžutę arba platinimo sąrašą.",
             "pages": "Šiais adresais „Įdiegti paketą“ sukuria portalo puslapius svetainėje — parengtus su tinkamu bloku. Tam svetainės projekto config.json reikia įrašo oserp-portal/content (žr. pagalbą prie „Tikrinti ryšį“).\n\nAdresas nurodomas nuo svetainės šaknies, su pasviruoju brūkšniu pradžioje ir pabaigoje, pavyzdžiui, /kunden/anmelden/. Paskyros popuslapiai (profilis, adresai, sąskaitos, su parduotuve mokėjimo būdas, su transporto priemonėmis transporto priemonės) priklauso nuo kliento paskyros adreso.\n\nTuos pačius adresus valdikliai naudoja savo nuorodoms, o OpensourceERP — nuorodoms el. laiškuose ir WhatsApp žinutėse. Kas nori puslapį kurti pats, HugoCMS tuo pačiu adresu sukuria savo puslapį — jis turi pirmenybę prieš paketo puslapį.\n\nPo pakeitimo paleiskite „Įdiegti paketą“.\n\nKlientų portalo katalogas yra bendra pradžia: puslapis be pradinio brūkšnio (pvz., anmelden/) kabo po juo — iš /kunden/ ir anmelden/ gaunasi /kunden/anmelden/. Kitam katalogui užtenka pakeisti šį vieną lauką. Puslapis su pradiniu brūkšniu (pvz., /login/) stovi atskirai.",
-            "activationEnabled": "Klientai, kurie jau pirko iš jūsų, bet dar neturi kliento paskyros, gali patys susikurti prieigą: svetainėje jie įveda mobiliojo numerį ir pašto kodą arba kliento numerį ir gauna nuorodą per „WhatsApp“.\n\nĮjungus, „Įdiegti paketą“ svetainėje sukuria puslapį „Aktyvinti paskyrą“, o prisijungimo ir registracijos puslapiai rodo nuorodą į jį. Nuorodą taip pat galima išsiųsti iš kliento kortelės.\n\nIšjungus nėra nei puslapio, nei nuorodos, o aktyvinimo užklausos atmetamos. Perjungę paleiskite „Įdiegti paketą“, kad svetainė gautų naują būseną.\n\nSiuntimui per „WhatsApp“ reikia sukonfigūruotos „WhatsApp“ prieigos ir „Meta“ patvirtinto šablono „Aktyvinti kliento paskyrą“."
+            "activationEnabled": "Klientai, kurie jau pirko iš jūsų, bet dar neturi kliento paskyros, gali patys susikurti prieigą: svetainėje jie įveda mobiliojo numerį ir pašto kodą arba kliento numerį ir gauna nuorodą per „WhatsApp“.\n\nĮjungus, „Įdiegti paketą“ svetainėje sukuria puslapį „Aktyvinti paskyrą“, o prisijungimo ir registracijos puslapiai rodo nuorodą į jį. Nuorodą taip pat galima išsiųsti iš kliento kortelės.\n\nIšjungus nėra nei puslapio, nei nuorodos, o aktyvinimo užklausos atmetamos. Perjungę paleiskite „Įdiegti paketą“, kad svetainė gautų naują būseną.\n\nSiuntimui per „WhatsApp“ reikia sukonfigūruotos „WhatsApp“ prieigos ir „Meta“ patvirtinto šablono „Aktyvinti kliento paskyrą“.",
+            "documents": "Kliento paskyros puslapyje „Dokumentai“ klientas mato čia pažymėtus dokumentus, kiekvieną rūšį atskirame skirtuke, su data, suma, būsena ir eilutėmis. Sąskaitas faktūras, užsakymus, pasiūlymus ir važtaraščius galima atsisiųsti PDF formatu; „OpensourceERP“ reklamacijų dar nespausdina, todėl ten mygtuko nėra.\n\nNumatyta: tik sąskaitos faktūros. Žymėjimai veikia iš karto, „Įdiegti paketą“ nereikia. Jei niekas nepažymėta, puslapis rodo pranešimą vietoj sąrašo.\n\nRodomi visi kliento kortelės dokumentai, ne tik sukurti per svetainę: dirbtuvių klientas mato ir dirbtuvių sąskaitą. Su parduotuvės plėtiniu parduotuvės sąskaitos papildomai rodo mokėjimo ir pristatymo būseną.\n\nSu parduotuvės plėtiniu papildomai yra „Užsakymai (internetinė parduotuvė)“: internetinės parduotuvės sąskaitos faktūros atskirame skirtuke su mokėjimo ir pristatymo būsena. Kai jis įjungtas, šios sąskaitos nebe rodomos skiltyje „Sąskaitos faktūros“ – kiekvienas dokumentas pateikiamas tik kartą."
         },
         "hugocmsFromBaseUrl": "Perimti žiniatinklio adresą",
         "hugocmsFromBaseUrl_help": "Nustato nuotolinės HugoCMS prieigos adresą iš svetainės žiniatinklio adreso su /cms-api/ gale.",

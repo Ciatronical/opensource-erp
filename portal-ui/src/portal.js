@@ -15,7 +15,7 @@ import { PortalAccountNav } from './components/portal-account-nav.js';
 import { PortalAccountOverview } from './components/portal-account-overview.js';
 import { PortalAccountProfile } from './components/portal-account-profile.js';
 import { PortalAccountPayment } from './components/portal-account-payment.js';
-import { PortalAccountOrders } from './components/portal-account-orders.js';
+import { PortalAccountDocuments } from './components/portal-account-documents.js';
 import { PortalAccountAddresses } from './components/portal-account-addresses.js';
 import { PortalAccountButtons } from './components/portal-account-buttons.js';
 import { PortalContact } from './components/portal-contact.js';
@@ -44,9 +44,9 @@ on(PORTAL_AUTH_CHANGED, () => {
 
 registerBundle('portal', [
   'portal-login', 'portal-register', 'portal-account-nav', 'portal-account-overview', 'portal-account-profile',
-  'portal-account-payment', 'portal-account-orders', 'portal-account-addresses', 'portal-account-buttons',
+  'portal-account-payment', 'portal-account-documents', 'portal-account-addresses', 'portal-account-buttons',
   'portal-contact', 'portal-activate',
   'portal-login', 'portal-register', 'portal-account-nav', 'portal-account-overview', 'portal-account-profile',
-  'portal-account-payment', 'portal-account-orders', 'portal-account-addresses', 'portal-account-buttons',
+  'portal-account-payment', 'portal-account-documents', 'portal-account-addresses', 'portal-account-buttons',
   'portal-contact',
 ]);

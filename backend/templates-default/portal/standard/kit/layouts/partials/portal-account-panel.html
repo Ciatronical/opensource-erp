@@ -1,6 +1,6 @@
 {{- /*
   Waehlt das Panel-Element zur Seite aus. Erwartet ein dict:
-    page   overview | profile | address | order | payment
+    page   overview | profile | address | documents | payment | vehicles
     class  Layout-Klassen fuer den Host, optional
 */ -}}
 {{- /* noAssets: der Aufrufer bindet das Bundle selbst ein. Bewusst
@@ -26,11 +26,14 @@
   {{- with $login }} login-url="{{ . }}"{{ end }}
   {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-account-addresses>
-{{- else if eq .page "order" -}}
-<portal-account-orders
+{{- else if or (eq .page "documents") (eq .page "order") -}}
+{{- /* Belege: Rechnungen, Auftraege, Angebote, Lieferscheine, Reklamationen
+     nach den Schaltern der Webseite in OpensourceERP; "order" ist der alte
+     Name der Seite */ -}}
+<portal-account-documents
   {{- with $login }} login-url="{{ . }}"{{ end }}
   {{- if $noRedirect }} no-redirect{{ end }}
-  {{- with $class }} class="{{ . }}"{{ end }}></portal-account-orders>
+  {{- with $class }} class="{{ . }}"{{ end }}></portal-account-documents>
 {{- else if eq .page "payment" -}}
 <portal-account-payment
   {{- with $login }} login-url="{{ . }}"{{ end }}
@@ -44,5 +47,5 @@
   {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-vehicles>
 {{- else -}}
-{{- errorf "portal-account: unbekannte Seite %q (erlaubt: overview, profile, address, order, payment, vehicles)" .page -}}
+{{- errorf "portal-account: unbekannte Seite %q (erlaubt: overview, profile, address, documents, payment, vehicles)" .page -}}
 {{- end -}}

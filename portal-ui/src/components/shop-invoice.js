@@ -84,7 +84,7 @@ export class ShopInvoice extends PortalElement {
   constructor() {
     super();
     this.apiUrl = apiUrl();
-    this.ordersUrl = shopPath('orders');
+    this.ordersUrl = shopPath('documents');
     this.continueUrl = shopPath('categories');
     this.heading = '';
     this._state = 'loading';

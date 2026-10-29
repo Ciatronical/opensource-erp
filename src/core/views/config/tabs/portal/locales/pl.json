@@ -76,7 +76,20 @@
             "portalPath_help": "Wspólny początek wszystkich stron portalu, na przykład /kunden/ lub /kundenportal/. Domyślnie /kunden/.",
             "activation": "Aktywacja konta dla dotychczasowych klientów",
             "activationEnabled": "Oferuj aktywację",
-            "activationEnabled_help": "Dotychczasowi klienci bez konta klienta mogą uzyskać dostęp przez WhatsApp. Wyłączone = brak linku i strony. Domyślnie: wyłączone."
+            "activationEnabled_help": "Dotychczasowi klienci bez konta klienta mogą uzyskać dostęp przez WhatsApp. Wyłączone = brak linku i strony. Domyślnie: wyłączone.",
+            "documents": "Dokumenty na koncie klienta",
+            "documentsInvoices": "Faktury",
+            "documentsInvoices_help": "Klient widzi swoje faktury i pobiera je jako PDF. Domyślnie: włączone.",
+            "documentsOrders": "Zamówienia",
+            "documentsOrders_help": "Klient widzi swoje zamówienia (potwierdzenia zamówień) z PDF.",
+            "documentsQuotations": "Oferty",
+            "documentsQuotations_help": "Klient widzi otrzymane oferty, z PDF.",
+            "documentsDeliveryOrders": "Dokumenty dostawy",
+            "documentsDeliveryOrders_help": "Klient widzi swoje dokumenty dostawy z PDF, bez cen.",
+            "documentsReclamations": "Reklamacje",
+            "documentsReclamations_help": "Klient widzi swoje reklamacje z powodem przy każdej pozycji. Bez PDF.",
+            "documentsShopOrders": "Zamówienia (sklep internetowy)",
+            "documentsShopOrders_help": "Tylko z rozszerzeniem sklepu: zamówienia ze sklepu internetowego jako osobna zakładka ze statusem płatności i dostawy. Domyślnie: włączone."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Strona o tej nazwie już istnieje.",
@@ -115,7 +128,8 @@
             "templateSet": "Zestaw szablonów określa, jak logowanie, konto klienta, faktury i formularz kontaktowy wyglądają w witrynie. „Standard” dopasowuje się do wyglądu witryny i zwykle wystarcza.\n\nWłasne zestawy programista może założyć w katalogu szablonów firmy pod portal/; pojawiają się wtedy tutaj do wyboru.\n\nPo zmianie uruchom „Zainstaluj pakiet”, aby witryna otrzymała nowe szablony.",
             "contactMailTo": "Gdy klient wypełni formularz kontaktowy w witrynie, OpensourceERP wysyła zapytanie e-mailem na ten adres.\n\nJeśli pole pozostanie puste, zapytanie trafia na adres nadawcy firmy z konfiguracji firmy.\n\nWielu odbiorców nie przewidziano — użyj wspólnej skrzynki lub listy dystrybucyjnej.",
             "pages": "Pod tymi adresami „Zainstaluj pakiet” zakłada strony portalu w witrynie — gotowe z odpowiednim elementem. Wymaga to wpisu dla oserp-portal/content w config.json projektu witryny (zob. pomoc przy „Testuj połączenie”).\n\nAdres podaje się od korzenia witryny, z ukośnikiem na początku i na końcu, na przykład /kunden/anmelden/. Podstrony konta (profil, adresy, faktury, ze sklepem sposób płatności, z pojazdami pojazdy) zależą od adresu konta klienta.\n\nTych samych adresów używają widżety do swoich linków, a OpensourceERP do linków w e-mailach i wiadomościach WhatsApp. Kto chce zaprojektować stronę samodzielnie, zakłada w HugoCMS własną stronę pod tym samym adresem — ma ona pierwszeństwo przed stroną z pakietu.\n\nPo zmianie uruchom „Zainstaluj pakiet”.\n\nKatalog portalu klienta to wspólny początek: strona bez początkowego ukośnika (np. anmelden/) zależy od niego — z /kunden/ i anmelden/ powstaje /kunden/anmelden/. Aby użyć innego katalogu, wystarczy zmienić to jedno pole. Strona z początkowym ukośnikiem (np. /login/) jest samodzielna.",
-            "activationEnabled": "Klienci, którzy już u Państwa kupowali, ale nie mają jeszcze konta klienta, mogą sami założyć dostęp: na stronie internetowej podają numer telefonu komórkowego oraz kod pocztowy lub numer klienta i otrzymują link przez WhatsApp.\n\nPo włączeniu „Zainstaluj pakiet” tworzy na stronie stronę „Aktywuj konto”, a strony logowania i rejestracji pokazują do niej link. Link można też wysłać z kartoteki klienta.\n\nPo wyłączeniu nie ma ani strony, ani linku, a prośby o aktywację są odrzucane. Po przełączeniu proszę uruchomić „Zainstaluj pakiet”, aby strona otrzymała nowy stan.\n\nWysyłka przez WhatsApp wymaga skonfigurowanego dostępu WhatsApp i zatwierdzonego przez Meta szablonu „Aktywuj konto klienta”."
+            "activationEnabled": "Klienci, którzy już u Państwa kupowali, ale nie mają jeszcze konta klienta, mogą sami założyć dostęp: na stronie internetowej podają numer telefonu komórkowego oraz kod pocztowy lub numer klienta i otrzymują link przez WhatsApp.\n\nPo włączeniu „Zainstaluj pakiet” tworzy na stronie stronę „Aktywuj konto”, a strony logowania i rejestracji pokazują do niej link. Link można też wysłać z kartoteki klienta.\n\nPo wyłączeniu nie ma ani strony, ani linku, a prośby o aktywację są odrzucane. Po przełączeniu proszę uruchomić „Zainstaluj pakiet”, aby strona otrzymała nowy stan.\n\nWysyłka przez WhatsApp wymaga skonfigurowanego dostępu WhatsApp i zatwierdzonego przez Meta szablonu „Aktywuj konto klienta”.",
+            "documents": "Na stronie „Dokumenty” swojego konta klient widzi dokumenty zaznaczone tutaj, każdy rodzaj jako osobną zakładkę, z datą, kwotą, statusem i pozycjami. Faktury, zamówienia, oferty i dokumenty dostawy oferują pobranie PDF; OpensourceERP nie drukuje jeszcze reklamacji, więc tam brakuje przycisku.\n\nDomyślnie: tylko faktury. Zaznaczenia działają natychmiast, „Zainstaluj pakiet” nie jest potrzebne. Jeśli nic nie zaznaczono, strona pokazuje komunikat zamiast listy.\n\nPokazywane są wszystkie dokumenty kartoteki klienta, nie tylko utworzone przez stronę: klient warsztatu widzi więc także fakturę warsztatową. Z rozszerzeniem sklepu faktury sklepowe pokazują dodatkowo status płatności i dostawy.\n\nZ rozszerzeniem sklepu dostępne jest dodatkowo „Zamówienia (sklep internetowy)”: faktury ze sklepu internetowego jako osobna zakładka ze statusem płatności i dostawy. Gdy jest włączone, te faktury nie pojawiają się już w „Fakturach” — każdy dokument jest wymieniony tylko raz."
         },
         "hugocmsFromBaseUrl": "Przejmij adres internetowy",
         "hugocmsFromBaseUrl_help": "Ustawia adres zdalnego dostępu do HugoCMS na podstawie adresu witryny z dopiskiem /cms-api/.",

@@ -208,7 +208,9 @@ function portalKitPages($db, int $website): array {
         'account'         => $konto,
         'profile'         => $konto.'profil/',
         'addresses'       => $konto.'adressen/',
-        'orders'          => $konto.'rechnungen/',
+        // Belege: Rechnungen, Aufträge, Angebote, Lieferscheine, Reklamationen
+        // nach den Schaltern documents_* der Webseite (lib/documents.php)
+        'documents'       => $konto.'belege/',
         'payment'         => $konto.'zahlungsart/',
         'vehicles'        => $konto.'fahrzeuge/',
         // Ohne Freischaltung kein Pfad: die Shortcodes lassen activate-url

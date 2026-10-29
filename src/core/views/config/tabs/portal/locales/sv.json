@@ -76,7 +76,20 @@
             "portalPath_help": "Gemensam början för alla portalsidor, till exempel /kunden/ eller /kundenportal/. Standard /kunden/.",
             "activation": "Kontoaktivering för befintliga kunder",
             "activationEnabled": "Erbjud aktivering",
-            "activationEnabled_help": "Befintliga kunder utan kundkonto kan få åtkomst via WhatsApp. Av = ingen länk, ingen sida. Standard: av."
+            "activationEnabled_help": "Befintliga kunder utan kundkonto kan få åtkomst via WhatsApp. Av = ingen länk, ingen sida. Standard: av.",
+            "documents": "Dokument i kundkontot",
+            "documentsInvoices": "Fakturor",
+            "documentsInvoices_help": "Kunden ser sina fakturor och laddar ner dem som PDF. Standard: på.",
+            "documentsOrders": "Order",
+            "documentsOrders_help": "Kunden ser sina order (orderbekräftelser) med PDF.",
+            "documentsQuotations": "Offerter",
+            "documentsQuotations_help": "Kunden ser de offerter han fått, med PDF.",
+            "documentsDeliveryOrders": "Följesedlar",
+            "documentsDeliveryOrders_help": "Kunden ser sina följesedlar med PDF, utan priser.",
+            "documentsReclamations": "Reklamationer",
+            "documentsReclamations_help": "Kunden ser sina reklamationer med orsak per rad. Utan PDF.",
+            "documentsShopOrders": "Beställningar (webbutik)",
+            "documentsShopOrders_help": "Endast med butikstillägget: beställningar från webbutiken som egen flik med betalnings- och leveransstatus. Standard: på."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "En webbplats med detta namn finns redan.",
@@ -115,7 +128,8 @@
             "templateSet": "Malluppsättningen avgör hur inloggning, kundkonto, fakturor och kontaktformulär ser ut på webbplatsen. ”Standard” anpassar sig till webbplatsens utseende och räcker i de flesta fall.\n\nEgna uppsättningar kan en utvecklare skapa i företagets mallkatalog under portal/; de visas då här att välja.\n\nEfter ett byte kör ”Installera paket” så att webbplatsen får de nya mallarna.",
             "contactMailTo": "Fyller en kund i kontaktformuläret på webbplatsen skickar OpensourceERP förfrågan som e-post till den här adressen.\n\nLämnas fältet tomt går förfrågan till företagets avsändaradress från företagskonfigurationen.\n\nFlera mottagare stöds inte — använd en delad brevlåda eller en sändlista.",
             "pages": "På dessa adresser skapar ”Installera paket” portalsidorna på webbplatsen — färdiga med rätt byggsten. Det kräver posten för oserp-portal/content i webbplatsprojektets config.json (se hjälpen vid ”Testa anslutning”).\n\nAdressen anges från webbplatsens rot, med snedstreck i början och slutet, till exempel /kunden/anmelden/. Kontots undersidor (profil, adresser, fakturor, med butik betalsättet, med fordon fordonen) ligger under kundkontots adress.\n\nSamma adresser använder widgetarna för sina länkar och OpensourceERP för länkarna i e-post och WhatsApp-meddelanden. Den som vill utforma en sida själv skapar i HugoCMS en egen sida på samma adress — den går före sidan från paketet.\n\nEfter en ändring kör ”Installera paket”.\n\nKundportalens katalog är den gemensamma början: en sida utan inledande snedstreck (t.ex. anmelden/) ligger under den — /kunden/ och anmelden/ blir /kunden/anmelden/. För en annan katalog räcker det att ändra detta enda fält. En sida med inledande snedstreck (t.ex. /login/) står för sig själv.",
-            "activationEnabled": "Kunder som redan har handlat hos er men ännu inte har ett kundkonto kan själva skapa åtkomst: på webbplatsen anger de mobilnummer och postnummer eller kundnummer och får en länk via WhatsApp.\n\nPåslaget skapar ”Installera paket” sidan ”Aktivera konto” på webbplatsen, och inloggnings- och registreringssidan visar länken dit. Länken kan också skickas från kundkortet.\n\nAvstängt finns varken sida eller länk, och aktiveringsförfrågningar avvisas. Kör ”Installera paket” efter ändringen så att webbplatsen får det nya läget.\n\nUtskick via WhatsApp kräver en konfigurerad WhatsApp-åtkomst och mallen ”Aktivera kundkonto” godkänd av Meta."
+            "activationEnabled": "Kunder som redan har handlat hos er men ännu inte har ett kundkonto kan själva skapa åtkomst: på webbplatsen anger de mobilnummer och postnummer eller kundnummer och får en länk via WhatsApp.\n\nPåslaget skapar ”Installera paket” sidan ”Aktivera konto” på webbplatsen, och inloggnings- och registreringssidan visar länken dit. Länken kan också skickas från kundkortet.\n\nAvstängt finns varken sida eller länk, och aktiveringsförfrågningar avvisas. Kör ”Installera paket” efter ändringen så att webbplatsen får det nya läget.\n\nUtskick via WhatsApp kräver en konfigurerad WhatsApp-åtkomst och mallen ”Aktivera kundkonto” godkänd av Meta.",
+            "documents": "På sidan ”Dokument” i sitt kundkonto ser kunden de dokument som är ikryssade här, varje typ som egen flik, med datum, belopp, status och rader. Fakturor, order, offerter och följesedlar kan laddas ner som PDF; OpensourceERP skriver ännu inte ut reklamationer, så knappen saknas där.\n\nStandard: endast fakturor. Kryssen gäller omedelbart, ”Installera paket” behövs inte. Är inget ikryssat visar sidan ett meddelande i stället för en lista.\n\nAlla dokument i kundkortet visas, inte bara de som skapats via webbplatsen: verkstadens kund ser alltså även verkstadsfakturan. Med butikstillägget visar butiksfakturor dessutom betalnings- och leveransstatus.\n\nMed butikstillägget finns dessutom ”Beställningar (webbutik)”: fakturorna från webbutiken som egen flik med betalnings- och leveransstatus. Är den påslagen visas dessa fakturor inte längre under ”Fakturor” – varje dokument står bara en gång."
         },
         "hugocmsFromBaseUrl": "Använd webbadressen",
         "hugocmsFromBaseUrl_help": "Sätter adressen för HugoCMS-fjärråtkomst utifrån webbplatsens webbadress med /cms-api/ på slutet.",
