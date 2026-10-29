@@ -52,6 +52,7 @@ function getCV($data, $withConfig = []) {
             // Übergangslösung Rollout: liest je nach Migrationsstand aus
             // extensions_oserp oder noch aus defaults_oserp
             $extensionsSelect = extensionsSelectSql($mandant, true);
+            $portalWebsites = portalWebsitesSelectSql($mandant);
             $configQuery = <<<SQL
                 SELECT json_build_object(
                     'logged_in_employee', (
@@ -64,6 +65,7 @@ function getCV($data, $withConfig = []) {
                     'company_config', (
                         SELECT json_build_object(
                             'extensions', {$extensionsSelect},
+                            'portal_websites', {$portalWebsites},
                             -- 'features' ist der alte Schlüssel: noch geladene Frontend-Bundles
                             -- lesen ihn, bis der Benutzer die Seite neu lädt. Entfällt im
                             -- Release nach dem Rollout.
@@ -202,6 +204,7 @@ function getCV($data, $withConfig = []) {
     $auth->fetchSessionData();
     // Übergangslösung Rollout: siehe extensionsSelectSql()
     $extensionsSelect = extensionsSelectSql($mandant, true);
+    $portalWebsites = portalWebsitesSelectSql($mandant);
     // Kassenkonten: dort vergibt die Kasse die Belegnummer, das Belegfeld ist gesperrt
     $kassenkonto = kassenkontoBedingung('chart');
     $query = <<<SQL
@@ -219,6 +222,7 @@ function getCV($data, $withConfig = []) {
                     (
                         SELECT json_build_object(
                             'extensions', {$extensionsSelect},
+                            'portal_websites', {$portalWebsites},
                             -- 'features' ist der alte Schlüssel: noch geladene Frontend-Bundles
                             -- lesen ihn, bis der Benutzer die Seite neu lädt. Entfällt im
                             -- Release nach dem Rollout.

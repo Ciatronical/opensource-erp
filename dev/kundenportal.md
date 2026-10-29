@@ -285,6 +285,7 @@ Portal ohne sie.
 | 5 | LxCars: öffentliche Aktionen und Widget Fahrzeuge | umgesetzt 2026-10-21 |
 | 6 | HugoCMS: Paketname `oserp-portal/`, Benennung | umgesetzt 2026-10-22 (siehe unten) |
 | F | WhatsApp-Freischaltung: Vorlage mit Schaltfläche, Knopf in der Kundenakte | umgesetzt 2026-10-21 (Vorlage muss bei Meta genehmigt werden) |
+| F | Reiter „Kundenkonto“ in der Kundenakte statt Karte im WhatsApp-Reiter, sichtbar nur mit eingeschalteter Webseite (`company_config.portal_websites`) | umgesetzt 2026-10-29 |
 
 ### Umgesetzt (2026-10-21) — wo was liegt
 
@@ -304,7 +305,7 @@ Portal ohne sie.
 | `public/bootstrap.php`, `public/actions.php` | öffentlicher Zugang mit Aktionsregister; `backend/portal/index.php` führt hierher (`backend/shop/index.php` seit 2026-10-22 entfernt) |
 | `admin.php`, `index.php` | Admin-API `/api/portal/`: Webseiten, Tests, Paket installieren, Freischaltung aus der Kundenakte |
 
-**Shop:** `lib/shop.php` (Lader), `lib/portal_hooks.php` (Haken), `shopChannelOfWebsite()`, `shopSiteValue()` (liest Webseitenwerte über den Kanal); `lib/context.php` und der alte `public/bootstrap.php` sind weg, `lib/account.php` enthält nur noch die Kasse. **LxCars:** `public/actions.php` (`portalVehicles`), `lib/portal_hooks.php`. **Widgets:** `portal-ui/` (vorher `portal-ui/`) baut `portal-widgets.js`, `shop-widgets.js`, `lxcars-widgets.js` plus geteilte `chunk-*.js` nach `backend/templates-default/portal/standard/kit/assets/portal-ui/`; neue Elemente `portal-activate`, `portal-vehicles`, Aliasse `portal-*`. **Oberfläche:** `src/core/views/config/tabs/portal/`, Firmenkonfiguration → Funktionen → Kundenportal, Kanalkarte mit Webseitenauswahl, Kundenakte → WhatsApp mit Karte „Zugang zum Kundenkonto“, Vorlageneditor mit Schaltfläche.
+**Shop:** `lib/shop.php` (Lader), `lib/portal_hooks.php` (Haken), `shopChannelOfWebsite()`, `shopSiteValue()` (liest Webseitenwerte über den Kanal); `lib/context.php` und der alte `public/bootstrap.php` sind weg, `lib/account.php` enthält nur noch die Kasse. **LxCars:** `public/actions.php` (`portalVehicles`), `lib/portal_hooks.php`. **Widgets:** `portal-ui/` (vorher `portal-ui/`) baut `portal-widgets.js`, `shop-widgets.js`, `lxcars-widgets.js` plus geteilte `chunk-*.js` nach `backend/templates-default/portal/standard/kit/assets/portal-ui/`; neue Elemente `portal-activate`, `portal-vehicles`, Aliasse `portal-*`. **Oberfläche:** `src/core/views/config/tabs/portal/`, Firmenkonfiguration → Funktionen → Kundenportal, Kanalkarte mit Webseitenauswahl, Kundenakte (CRM-Ansicht) → Reiter „Kundenkonto“ (`customer-vendor/tabs/portal.tab.vue`, nur bei Kunden und nur, wenn eine Webseite eingeschaltet ist: `company_config.portal_websites` aus `portalWebsitesSelectSql()`, Store `hasPortalWebsite()`), Vorlageneditor mit Schaltfläche.
 
 **Abweichungen vom Plan**
 

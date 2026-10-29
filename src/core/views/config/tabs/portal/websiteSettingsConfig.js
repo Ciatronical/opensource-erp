@@ -10,6 +10,10 @@
 // und WebsitesView.help.* (Erklärung in der Hilfsanzeige, Klick auf das
 // Info-Symbol) — in Alltagssprache für Administratoren ohne
 // Programmierkenntnisse. Die Kanalkarte des Shops bleibt bei crm_fields.*.
+//
+// install: true — die Änderung erreicht die Webseite erst mit „Paket
+// installieren“ (Seiten, Vorlagensatz, Freischaltung). Die Karte zeigt dann
+// unter dem Feld den Hinweis mit dem Knopf „Paket installieren“, bis installiert wurde.
 
 const website = [
     // Webadresse der Webseite — die wichtigste Angabe, deshalb ganz oben, noch
@@ -50,14 +54,14 @@ const website = [
     { name: "seiten", type: "headline", label: "WebsitesView.fields.pages" },
 
     // Gemeinsamer Anfang: Seiten ohne führenden Schrägstrich hängen daran
-    { name: "portal_path", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.portalPath", tooltip: "WebsitesView.fields.portalPath_help", help: "WebsitesView.help.pages" },
-    { name: "login_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.loginPage", tooltip: "WebsitesView.fields.loginPage_help", help: "WebsitesView.help.pages" },
-    { name: "register_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.registerPage", tooltip: "WebsitesView.fields.registerPage_help", help: "WebsitesView.help.pages" },
+    { name: "portal_path", install: true, type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.portalPath", tooltip: "WebsitesView.fields.portalPath_help", help: "WebsitesView.help.pages" },
+    { name: "login_page", install: true, type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.loginPage", tooltip: "WebsitesView.fields.loginPage_help", help: "WebsitesView.help.pages" },
+    { name: "register_page", install: true, type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.registerPage", tooltip: "WebsitesView.fields.registerPage_help", help: "WebsitesView.help.pages" },
     // Unterseiten (Profil, Adressen, Rechnungen, Zahlungsart, Fahrzeuge) hängen an dieser Adresse
-    { name: "account_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.accountPage", tooltip: "WebsitesView.fields.accountPage_help", help: "WebsitesView.help.pages" },
+    { name: "account_page", install: true, type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.accountPage", tooltip: "WebsitesView.fields.accountPage_help", help: "WebsitesView.help.pages" },
     // Seite mit <shop-invoice> — Ziel des Links in den Mails
-    { name: "invoice_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.invoicePage", tooltip: "WebsitesView.fields.invoicePage_help", help: "WebsitesView.help.invoicePage" },
-    { name: "contact_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.contactPage", tooltip: "WebsitesView.fields.contactPage_help", help: "WebsitesView.help.pages" },
+    { name: "invoice_page", install: true, type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.invoicePage", tooltip: "WebsitesView.fields.invoicePage_help", help: "WebsitesView.help.invoicePage" },
+    { name: "contact_page", install: true, type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "WebsitesView.fields.contactPage", tooltip: "WebsitesView.fields.contactPage_help", help: "WebsitesView.help.pages" },
 
     // Konto-Freischaltung für Bestandskunden: Vorgabe aus. Eingeschaltet
     // bekommt das Paket die Seite „Konto freischalten“ und die Anmelde- und
@@ -65,9 +69,9 @@ const website = [
     // Aktionen ab und die Kundenakte bietet die Webseite nicht zum Versand an
     { name: "freischaltung", type: "headline", label: "WebsitesView.fields.activation" },
 
-    { name: "activation_enabled", type: "checkbox", label: "WebsitesView.fields.activationEnabled", tooltip: "WebsitesView.fields.activationEnabled_help", help: "WebsitesView.help.activationEnabled" },
+    { name: "activation_enabled", install: true, type: "checkbox", label: "WebsitesView.fields.activationEnabled", tooltip: "WebsitesView.fields.activationEnabled_help", help: "WebsitesView.help.activationEnabled" },
     // Seite mit <portal-activate> — Ziel des Links in der WhatsApp-Nachricht
-    { name: "activate_page", type: "input", size: 40, fieldstyle: "max-width: 40ch", showIf: "activation_enabled", label: "WebsitesView.fields.activatePage", tooltip: "WebsitesView.fields.activatePage_help", help: "WebsitesView.help.activatePage" },
+    { name: "activate_page", install: true, type: "input", size: 40, fieldstyle: "max-width: 40ch", showIf: "activation_enabled", label: "WebsitesView.fields.activatePage", tooltip: "WebsitesView.fields.activatePage_help", help: "WebsitesView.help.activatePage" },
 
     // Belege im Kundenkonto (Seite „Belege“): je Belegart ein Schalter,
     // Vorgabe nur Rechnungen (mit Shop auch Bestellungen). Wirkt sofort, ohne
@@ -85,7 +89,7 @@ const website = [
 
     { name: "veroeffentlichung", type: "headline", label: "WebsitesView.fields.publish" },
 
-    { name: "template_set", type: "dynamic-select", source: "templateSets", itemTitle: "title", itemValue: "name", fieldstyle: "max-width: 60ch", label: "WebsitesView.fields.templateSet", tooltip: "WebsitesView.fields.templateSet_help", help: "WebsitesView.help.templateSet" },
+    { name: "template_set", install: true, type: "dynamic-select", source: "templateSets", itemTitle: "title", itemValue: "name", fieldstyle: "max-width: 60ch", label: "WebsitesView.fields.templateSet", tooltip: "WebsitesView.fields.templateSet_help", help: "WebsitesView.help.templateSet" },
 
     { name: "kontakt", type: "headline", label: "WebsitesView.fields.contact" },
 

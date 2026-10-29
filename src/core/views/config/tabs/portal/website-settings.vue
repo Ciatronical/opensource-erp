@@ -146,6 +146,35 @@
                     />
                 </div>
 
+                <!-- install: die Änderung erreicht die Webseite erst mit „Paket installieren“ —
+                     Hinweis mit dem Knopf an Ort und Stelle, bis das Paket installiert wurde;
+                     die Rückmeldung bleibt unter diesem Feld stehen, auch wenn der Hinweis erlischt -->
+                <v-alert v-if="installNoetig(feld)" type="info" variant="tonal" density="compact" class="mb-2" style="max-width: 70ch">
+                    <div class="d-flex flex-wrap align-center ga-2">
+                        <span>{{ t('WebsitesView.installNeeded') }}</span>
+                        <v-btn
+                            variant="tonal"
+                            color="primary"
+                            size="small"
+                            prepend-icon="mdi-package-variant-closed"
+                            :loading="installiert"
+                            @click="installieren(feld.name)"
+                        >
+                            {{ t('WebsitesView.install') }}
+                        </v-btn>
+                    </div>
+                </v-alert>
+                <v-alert
+                    v-if="installErgebnis && installQuelle === feld.name"
+                    :type="installErgebnis.art"
+                    variant="tonal"
+                    density="compact"
+                    class="mb-4"
+                    style="max-width: 90ch"
+                >
+                    <div v-for="(zeile, nr) in installErgebnis.zeilen" :key="nr">{{ zeile }}</div>
+                </v-alert>
+
                 <!-- Adresse des Portal-Zugangs prüfen: plausibel, direkt, über die Webseite -->
                 <div v-if="feld.action === 'backendTest'" class="mb-4">
                     <div class="text-caption text-medium-emphasis mb-2" style="max-width: 70ch">
@@ -199,14 +228,14 @@
                 size="small"
                 prepend-icon="mdi-package-variant-closed"
                 :loading="installiert"
-                @click="installieren"
+                @click="installieren()"
             >
                 {{ t('WebsitesView.install') }}
             </v-btn>
             <span class="text-caption text-medium-emphasis">{{ t('WebsitesView.installHint') }}</span>
         </div>
         <v-alert
-            v-if="installErgebnis"
+            v-if="installErgebnis && !installQuelle"
             :type="installErgebnis.art"
             variant="tonal"
             density="compact"
@@ -314,6 +343,22 @@ if ('' === String(werte.base_url || '').trim()) {
 }
 
 let zuletzt = JSON.stringify(nutzdaten())
+
+// ── Änderungen, die erst „Paket installieren“ auf die Webseite bringt (install: true) ──
+// Stand beim Laden bzw. nach der letzten Installation; weicht ein Wert davon
+// ab, steht unter dem Feld der Hinweis mit dem Knopf „Paket installieren“
+const installFelder = computed(() => alleFelder.value.filter(feld => feld.install))
+function installStandLesen() {
+    const stand = {}
+    installFelder.value.forEach(feld => { stand[feld.name] = werte[feld.name] })
+    return stand
+}
+const installStand = ref(installStandLesen())
+function installNoetig(feld) {
+    return !!feld.install && installStand.value[feld.name] !== werte[feld.name]
+}
+// Feld, von dem aus zuletzt installiert wurde ('' = Knopf am Ende der Karte): dort steht die Rückmeldung
+const installQuelle = ref('')
 
 // Lässt sich aus dem Namen eine Adresse ableiten, steht sie gleich im Feld —
 // nach „zuletzt“, damit sie wie die Adresse des Zugangs als Änderung zählt
@@ -535,9 +580,14 @@ async function backendPruefen() {
 const installiert = ref(false)
 const installErgebnis = ref(null)
 
-async function installieren() {
+/** @param string quelle Name des Feldes, unter dem der Knopf stand; leer = Knopf am Ende der Karte */
+async function installieren(quelle = '') {
+    installQuelle.value = quelle
     installiert.value = true
     installErgebnis.value = null
+    // Eine ausstehende Speicherung erst abschließen — das Paket trägt den gespeicherten Stand
+    clearTimeout(timer)
+    await speichern()
     try {
         const antwort = await axios.post('/api/portal/', { action: 'installWebsitePackage', website_id: props.websiteId })
         if (!antwort.data?.success) {
@@ -545,11 +595,14 @@ async function installieren() {
             return
         }
         const daten = antwort.data.payload || {}
+        // Paket übertragen oder beauftragt: die Hinweise „erst mit Paket installieren“ unter den Feldern erlöschen
         if (daten.queued) {
+            installStand.value = installStandLesen()
             installErgebnis.value = { art: 'info', zeilen: [t('WebsitesView.installQueued')] }
             return
         }
         const zeilen = (daten.messages || []).map(m => m.text)
+        if (daten.ok) installStand.value = installStandLesen()
         installErgebnis.value = daten.ok
             ? { art: 'success', zeilen: [t('WebsitesView.installDone'), ...zeilen] }
             : { art: 'warning', zeilen: [t('WebsitesView.installFailed'), ...zeilen] }

@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} activări deschise",
         "install": "Instalează pachetul",
         "installHint": "Transferă șabloane, widgeturi și proxy-ul în HugoCMS și construiește site-ul.",
+        "installNeeded": "Această modificare ajunge pe site doar după „Instalează pachetul”.",
         "installQueued": "Sarcină creată – publicarea magazinului transferă pachetul (prezentare magazin).",
         "installDone": "Pachet transferat și site construit.",
         "installFailed": "Pachetul nu a fost transferat complet. Motiv:",

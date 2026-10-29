@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} otwartych aktywacji",
         "install": "Zainstaluj pakiet",
         "installHint": "Przesyła szablony, widżety i proxy do HugoCMS i buduje stronę.",
+        "installNeeded": "Ta zmiana trafi na stronę dopiero po „Zainstaluj pakiet”.",
         "installQueued": "Zadanie utworzone – publikacja sklepu przesyła pakiet (przegląd sklepu).",
         "installDone": "Pakiet przesłany i strona zbudowana.",
         "installFailed": "Pakiet nie został w pełni przesłany. Powód:",

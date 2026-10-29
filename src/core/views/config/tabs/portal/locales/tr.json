@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} açık etkinleştirme",
         "install": "Paketi yükle",
         "installHint": "Şablonları, pencere öğelerini ve proxy'yi HugoCMS'ye aktarır ve web sitesini derletir.",
+        "installNeeded": "Bu değişiklik web sitesine ancak „Paketi yükle“ sonrasında ulaşır.",
         "installQueued": "Görev oluşturuldu – mağaza yayını paketi aktarır (mağaza genel bakışı).",
         "installDone": "Paket aktarıldı ve web sitesi derlendi.",
         "installFailed": "Paket tamamen aktarılamadı. Neden:",

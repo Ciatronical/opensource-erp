@@ -14,6 +14,7 @@ function getCompanyConfig($data) {
 
     // Übergangslösung Rollout: siehe extensionsSelectSql()
     $extensionsSelect = extensionsSelectSql($db, true);
+    $portalWebsites = portalWebsitesSelectSql($db);
     // Kassenkonten: dort vergibt die Kasse die Belegnummer, das Belegfeld ist gesperrt
     $kassenkonto = kassenkontoBedingung('chart');
 
@@ -22,6 +23,7 @@ function getCompanyConfig($data) {
             'company_config', (
                 SELECT json_build_object(
                     'extensions', {$extensionsSelect},
+                    'portal_websites', {$portalWebsites},
                     -- 'features' ist der alte Schlüssel: noch geladene Frontend-Bundles
                     -- lesen ihn, bis der Benutzer die Seite neu lädt. Entfällt im
                     -- Release nach dem Rollout.

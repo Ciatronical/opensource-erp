@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} ativações abertas",
         "install": "Instalar pacote",
         "installHint": "Transfere modelos, widgets e o proxy para o HugoCMS e manda construir o site.",
+        "installNeeded": "Esta alteração só chega ao site após «Instalar pacote».",
         "installQueued": "Tarefa criada – a publicação da loja transfere o pacote (resumo da loja).",
         "installDone": "Pacote transferido e site construído.",
         "installFailed": "Pacote não transferido na totalidade. Motivo:",

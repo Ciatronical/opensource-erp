@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} avatud aktiveerimist",
         "install": "Paigalda pakett",
         "installHint": "Edastab mallid, vidinad ja edastaja HugoCMS-i ja laseb veebilehe ehitada.",
+        "installNeeded": "See muudatus jõuab veebilehele alles pärast „Paigalda pakett“.",
         "installQueued": "Töö loodud – poe avaldamine edastab paketi (poe ülevaade).",
         "installDone": "Pakett edastatud ja veebileht ehitatud.",
         "installFailed": "Paketti ei edastatud täielikult. Põhjus:",

@@ -303,6 +303,8 @@ async function speichern(seite) {
         }
         zuletzt[seite.id] = stand
         seite.active = WAHR.includes(antwort.data.payload?.active)
+        // Zähler der eingeschalteten Webseiten in der Sitzung nachziehen (Reiter „Kundenkonto“ der Kundenakte)
+        oserp.loadCompanyConfig().catch(() => {})
     } catch (e) {
         toasts.error(fehlerText(e?.response?.data, 'WebsitesView.saveError'))
     } finally {
@@ -364,6 +366,7 @@ async function loeschen() {
         toasts.success(t('WebsitesView.deleted'))
         loeschDialog.value = false
         await laden()
+        oserp.loadCompanyConfig().catch(() => {})
     } catch (e) {
         toasts.error(fehlerText(e?.response?.data, 'WebsitesView.saveError'))
     } finally {

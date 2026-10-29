@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} open activations",
         "install": "Install package",
         "installHint": "Transfers templates, widgets and the proxy to HugoCMS and has the website built.",
+        "installNeeded": "This change only reaches the website after “Install package”.",
         "installQueued": "Job created — the shop publishing transfers the package (shop overview).",
         "installDone": "Package transferred and website built.",
         "installFailed": "Package not fully transferred. Reason:",

@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} open activeringen",
         "install": "Pakket installeren",
         "installHint": "Draagt sjablonen, widgets en de proxy over aan HugoCMS en laat de website bouwen.",
+        "installNeeded": "Deze wijziging bereikt de website pas na „Pakket installeren”.",
         "installQueued": "Opdracht aangemaakt – de shop-publicatie draagt het pakket over (shop-overzicht).",
         "installDone": "Pakket overgedragen en website gebouwd.",
         "installFailed": "Pakket niet volledig overgedragen. Reden:",

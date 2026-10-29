@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} atvērtas aktivizācijas",
         "install": "Instalēt pakotni",
         "installHint": "Pārsūta veidnes, logrīkus un starpniekserveri uz HugoCMS un liek uzbūvēt vietni.",
+        "installNeeded": "Šīs izmaiņas vietni sasniegs tikai pēc „Instalēt pakotni“.",
         "installQueued": "Uzdevums izveidots – veikala publicēšana pārsūtīs pakotni (veikala pārskats).",
         "installDone": "Pakotne pārsūtīta un vietne uzbūvēta.",
         "installFailed": "Pakotne netika pārsūtīta pilnībā. Iemesls:",

@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} öppna aktiveringar",
         "install": "Installera paket",
         "installHint": "Överför mallar, widgetar och proxy till HugoCMS och låter bygga webbplatsen.",
+        "installNeeded": "Den här ändringen når webbplatsen först efter ”Installera paket”.",
         "installQueued": "Jobb skapat – butikspubliceringen överför paketet (butiksöversikt).",
         "installDone": "Paket överfört och webbplats byggd.",
         "installFailed": "Paketet överfördes inte fullständigt. Orsak:",

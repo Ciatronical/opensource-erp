@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} offene Freischaltungen",
         "install": "Paket installieren",
         "installHint": "Überträgt Vorlagen, Widgets und Weiterleiter an HugoCMS und lässt die Webseite bauen.",
+        "installNeeded": "Diese Änderung erreicht die Webseite erst mit „Paket installieren“.",
         "installQueued": "Auftrag angelegt — die Shop-Veröffentlichung überträgt das Paket (Shop-Übersicht).",
         "installDone": "Paket übertragen und Webseite gebaut.",
         "installFailed": "Paket nicht vollständig übertragen. Grund:",

@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} atviros aktyvacijos",
         "install": "Įdiegti paketą",
         "installHint": "Perkelia šablonus, valdiklius ir tarpinį serverį į HugoCMS ir liepia sukurti svetainę.",
+        "installNeeded": "Šis pakeitimas svetainę pasieks tik po „Įdiegti paketą“.",
         "installQueued": "Užduotis sukurta – parduotuvės publikavimas perkels paketą (parduotuvės apžvalga).",
         "installDone": "Paketas perkeltas ir svetainė sukurta.",
         "installFailed": "Paketas perkeltas ne iki galo. Priežastis:",

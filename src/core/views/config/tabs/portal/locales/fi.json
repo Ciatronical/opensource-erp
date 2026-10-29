@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} avointa aktivointia",
         "install": "Asenna paketti",
         "installHint": "Siirtää mallit, widgetit ja välittäjän HugoCMS:ään ja rakennuttaa sivuston.",
+        "installNeeded": "Tämä muutos tulee verkkosivustolle vasta toiminnolla ”Asenna paketti”.",
         "installQueued": "Tehtävä luotu – kaupan julkaisu siirtää paketin (kaupan yleiskuva).",
         "installDone": "Paketti siirretty ja sivusto rakennettu.",
         "installFailed": "Pakettia ei siirretty kokonaan. Syy:",

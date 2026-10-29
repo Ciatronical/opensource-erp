@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} otevřených aktivací",
         "install": "Nainstalovat balíček",
         "installHint": "Přenese šablony, widgety a proxy do HugoCMS a nechá web sestavit.",
+        "installNeeded": "Tato změna se na webu projeví až po „Nainstalovat balíček“.",
         "installQueued": "Úloha vytvořena – publikování obchodu přenese balíček (přehled obchodu).",
         "installDone": "Balíček přenesen a web sestaven.",
         "installFailed": "Balíček nebyl přenesen úplně. Důvod:",
