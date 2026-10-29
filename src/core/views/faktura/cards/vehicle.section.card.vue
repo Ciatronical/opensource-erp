@@ -7,6 +7,19 @@
             <v-icon class="mr-2" size="small">mdi-car</v-icon>
             {{ t('FakturaView.faktura.vehicleSection') }}
             <v-spacer />
+            <!-- Gutmann-Diagnose (docs/features/gutmann.md): nur mit Schalter feature_gutmann und gewähltem Fahrzeug -->
+            <v-btn
+                v-if="gutmannEnabled && selectedCarId"
+                variant="tonal"
+                size="small"
+                color="blue-grey-darken-1"
+                class="mr-2"
+                :title="t('FakturaView.faktura.gutmannTooltip')"
+                :to="{ name: 'gutmann' }"
+            >
+                <v-icon start size="small">mdi-car-wrench</v-icon>
+                {{ t('FakturaView.faktura.gutmannButton') }}
+            </v-btn>
             <v-chip
                 v-if="!isInvoice"
                 :color="oeExtData.intern ? 'warning' : 'default'"
@@ -226,6 +239,7 @@
 <script>
 import { defineComponent, ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { oserpStore } from '@/core/stores/oserp.store.js'
 
 export default defineComponent({
     name: 'VehicleSectionCard',
@@ -255,6 +269,8 @@ export default defineComponent({
     ],
     setup(props, { expose, emit }) {
         const { t } = useI18n()
+        const oserp = oserpStore()
+        const gutmannEnabled = computed(() => oserp.isGutmannEnabled())
 
         // Kennzeichen-Schnellanlage: Enter auf einen unbekannten Suchtext legt das Fahrzeug an
         const carSearch = ref('')
@@ -285,7 +301,7 @@ export default defineComponent({
         }
         expose({ focusCarSelect })
 
-        return { t, localShowBringetermin, localShowFertigstellung, carAutocomplete, carSearch, carNoDataText, onCarEnter }
+        return { t, localShowBringetermin, localShowFertigstellung, carAutocomplete, carSearch, carNoDataText, onCarEnter, gutmannEnabled }
     }
 })
 </script>

@@ -207,6 +207,8 @@
                 "error": "Vehicle could not be created"
             },
             "vehicleSection": "Vehicle / Order Data",
+            "gutmannButton": "Gutmann",
+            "gutmannTooltip": "Open diagnostics with the Hella Gutmann mega macs",
             "kmStand": "Mileage",
             "kmStandRequired": "Mileage is required – please enter it before creating the invoice.",
             "kmPlausibility": {

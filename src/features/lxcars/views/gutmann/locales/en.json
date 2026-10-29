@@ -1,0 +1,25 @@
+{
+    "GutmannView": {
+        "title": "Gutmann",
+        "subtitle": "Diagnostics with the Hella Gutmann mega macs",
+        "connected": "Device connected",
+        "reload": "Reconnect",
+        "openWindow": "Open in new window",
+        "offline": {
+            "title": "The mega macs is not responding",
+            "text": "Switch the device on and connect it to the workshop network (Wi-Fi), then click “Reconnect”."
+        },
+        "denied": {
+            "title": "The server refuses the forwarding",
+            "text": "The Apache forwarding on the server is outdated or restricted. Run once again:"
+        },
+        "emergency": {
+            "button": "Emergency: open device directly",
+            "hint": "Opens {url} in a new tab – works only inside the workshop network and without a warning page only in Chrome."
+        },
+        "missing": {
+            "title": "Proxy not set up",
+            "text": "The Apache forwarding to the device is missing on the server. Run once on the server:"
+        }
+    }
+}

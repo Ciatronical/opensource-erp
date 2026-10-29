@@ -1,0 +1,25 @@
+{
+    "GutmannView": {
+        "title": "Gutmann",
+        "subtitle": "Diagnose mit dem Hella Gutmann mega macs",
+        "connected": "Gerät verbunden",
+        "reload": "Neu verbinden",
+        "openWindow": "In neuem Fenster",
+        "offline": {
+            "title": "Das mega macs antwortet nicht",
+            "text": "Gerät einschalten und mit dem Werkstattnetz (WLAN) verbinden, danach „Neu verbinden“."
+        },
+        "denied": {
+            "title": "Der Server lässt die Weiterleitung nicht durch",
+            "text": "Die Apache-Weiterleitung auf dem Server ist veraltet oder eingeschränkt. Einmal erneut ausführen:"
+        },
+        "emergency": {
+            "button": "Notfall: Gerät direkt öffnen",
+            "hint": "Öffnet {url} in einem neuen Tab – geht nur im Werkstattnetz und nur mit Chrome ohne Warnseite."
+        },
+        "missing": {
+            "title": "Weiterleitung nicht eingerichtet",
+            "text": "Auf dem Server fehlt die Apache-Weiterleitung zum Gerät. Einmalig auf dem Server ausführen:"
+        }
+    }
+}

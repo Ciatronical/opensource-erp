@@ -380,6 +380,10 @@
             "tooltip": "Fahrzeugdaten in HGS-Data öffnen",
             "error": "HGS-Data konnte nicht geöffnet werden"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Diagnose mit dem Hella Gutmann mega macs öffnen"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Ktype wird ermittelt …",

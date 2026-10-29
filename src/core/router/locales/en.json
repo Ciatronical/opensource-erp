@@ -57,6 +57,7 @@
         "editLetter": "/letter/edit",
         "docs": "/docs",
         "mechanic": "/mechanic",
+        "gutmann": "/gutmann-diagnostics",
         "mechanicOrder": "/mechanic/order",
         "mechanicCar": "/mechanic/car",
         "privacy": "/privacy",

@@ -115,6 +115,16 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     /**
+     * Gutmann-Diagnose (mega macs in LxCars) — Standard: aus, weil die
+     * Apache-Weiterleitung erst eingerichtet werden muss (install/gutmann-proxy.sh)
+     */
+    function isGutmannEnabled() {
+        if (!isLxCars()) return false;
+        const v = getClientDefaultValue('feature_gutmann', null);
+        return v === true || v === 'true' || v === '1' || v === 1;
+    }
+
+    /**
      * Prüft ob NVR aktiviert ist (Standard: true wenn nicht explizit deaktiviert)
      */
     function isNvrEnabled() {
@@ -952,6 +962,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         isAnprEnabled,
         isRecurringEnabled,
         isNvrEnabled,
+        isGutmannEnabled,
         checkPermission,
         permit,
         isAdmin,

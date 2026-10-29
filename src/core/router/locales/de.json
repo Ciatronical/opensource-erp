@@ -57,6 +57,7 @@
         "editLetter": "/brief/bearbeiten",
         "docs": "/docs",
         "mechanic": "/mechaniker",
+        "gutmann": "/gutmann-diagnose",
         "mechanicOrder": "/mechaniker/auftrag",
         "mechanicCar": "/mechaniker/fahrzeug",
         "privacy": "/datenschutz",

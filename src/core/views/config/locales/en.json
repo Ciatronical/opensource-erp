@@ -505,6 +505,10 @@
         "manual_fix": "Run manually in terminal:",
         "retry": "Retry"
     },
+    "workshopFeatures": "Workshop",
+    "featureGutmann": "Gutmann diagnostics",
+    "featureGutmannDesc": "Hella Gutmann mega macs as a page inside LxCars, in OSERP colours. Menu item under Vehicles and a button in the vehicle form.",
+    "featureGutmannHint": "Needs the forwarding to the device on the server once:",
     "cameraAndSurveillance": "Camera & Surveillance",
     "featureAnprDesc": "License plate recognition via camera (ANPR service)",
     "featureNvrDesc": "Live streams & object detection (go2rtc + camera-monitor)",

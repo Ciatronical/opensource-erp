@@ -507,6 +507,10 @@
         "manual_fix": "Manuell im Terminal ausführen:",
         "retry": "Erneut versuchen"
     },
+    "workshopFeatures": "Werkstatt",
+    "featureGutmann": "Gutmann-Diagnose",
+    "featureGutmannDesc": "Hella Gutmann mega macs als Seite in LxCars, in den Farben von OSERP. Menüpunkt unter Fahrzeuge und Knopf in der Fahrzeugmaske.",
+    "featureGutmannHint": "Braucht einmalig die Weiterleitung zum Gerät auf dem Server:",
     "cameraAndSurveillance": "Kamera & Überwachung",
     "featureAnprDesc": "Kennzeichenerkennung per Kamera (ANPR-Dienst)",
     "featureNvrDesc": "Live-Streams & Objekterkennung (go2rtc + camera-monitor)",

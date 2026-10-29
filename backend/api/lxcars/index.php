@@ -24,6 +24,7 @@ require_once __DIR__.'/performance.php';
 require_once __DIR__.'/anpr.php';
 require_once __DIR__.'/sales_text.php';
 require_once __DIR__.'/special_tools.php';
+require_once __DIR__.'/gutmann.php';
 // Spezialwerkzeug im Shop: Aufträge einstellen (shopQueueJob) und Seitennamen
 // bilden (shopQueueRemovePage) — die Fachschicht der Shop-Erweiterung
 require_once __DIR__.'/../shop/lib/config.php';

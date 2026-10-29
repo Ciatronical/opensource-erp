@@ -45,6 +45,11 @@
                 <v-icon start size="small">mdi-database-search-outline</v-icon>
                 {{ t('CarEditView.hgs.button') }}
             </v-btn>
+            <!-- mega macs als Seite in LxCars; das Fahrzeug kommt über den offenen Auftrag (asanetwork) ins Gerät -->
+            <v-btn v-if="gutmannAvailable" variant="tonal" size="small" color="blue-grey-darken-1" :title="t('CarEditView.gutmann.tooltip')" :to="{ name: 'gutmann' }">
+                <v-icon start size="small">mdi-car-wrench</v-icon>
+                {{ t('CarEditView.gutmann.button') }}
+            </v-btn>
             <template v-if="!readonly">
                 <v-btn v-if="isEditMode" variant="tonal" size="small" color="success" @click="openCarRegistration">
                     <v-icon start size="small">mdi-card-account-details</v-icon>
@@ -2043,6 +2048,9 @@ export default {
             isEditMode.value && isKbaValid(car.value.c_2, car.value.c_3)
         )
 
+        // Gutmann-Diagnose (docs/features/gutmann.md): Schalter feature_gutmann
+        const gutmannAvailable = computed(() => isEditMode.value && oserpData.isGutmannEnabled())
+
         async function openHgs() {
             // Sofort öffnen (Popup-Blocker vermeiden); URL setzen, sobald sie vorliegt.
             const win = openAppWindow('hgs-data')
@@ -2778,7 +2786,7 @@ export default {
             toggleShield, orderFilter, filteredOrders, orderHeaders,
             formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
             showAagTsnButton, aagAvailable, aagLoading, openAag, aagConfigured,
-            hgsAvailable, hgsLoading, openHgs,
+            hgsAvailable, hgsLoading, openHgs, gutmannAvailable,
             ktypeNo, ktypeDesc, ktypeLoading, resolveKtypeBg,
             installedEnginesList, triggerSave,
             yellowLabelPrinting, tyreLabelPrinting, onPrintYellowLabel, onPrintTyreLabel,

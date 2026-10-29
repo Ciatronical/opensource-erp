@@ -28,6 +28,11 @@ export function useNavigationCards() {
                 lxcarsItems.push('-')
                 lxcarsItems.push({ title: t('MechanicView.title'), to: { name: 'mechanic' } })
             }
+            // Hella Gutmann mega macs als Seite (docs/features/gutmann.md)
+            if (oserp.isGutmannEnabled()) {
+                lxcarsItems.push('-')
+                lxcarsItems.push({ title: t('GutmannView.title'), to: { name: 'gutmann' } })
+            }
             result.push({ title: t('CarView.title'), icon: 'mdi-car', items: lxcarsItems })
         }
 

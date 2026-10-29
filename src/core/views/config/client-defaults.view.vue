@@ -698,6 +698,7 @@ const featureFields = [
     { name: 'feature_recurring',      label: 'featureRecurring',     tooltip: 'featureRecurringDesc',     headline: 'salesFeatures' },
     { name: 'feature_reverse_charge', label: 'featureReverseCharge', tooltip: 'featureReverseChargeDesc', headline: 'salesFeatures' },
     { name: 'reverse_charge_text',    label: 'reverseChargeText',    tooltip: 'reverseChargeTextHint',    headline: 'salesFeatures' },
+    { name: 'feature_gutmann',        label: 'featureGutmann',       tooltip: 'featureGutmannDesc',       headline: 'workshopFeatures' },
     { name: 'feature_anpr',           label: 'ANPR',                 tooltip: 'featureAnprDesc',          headline: 'cameraAndSurveillance', plain: true },
     { name: 'feature_nvr',            label: 'NVR',                  tooltip: 'featureNvrDesc',           headline: 'cameraAndSurveillance', plain: true },
 ];
@@ -977,6 +978,9 @@ async function loadConfig() {
     // soll nur erscheinen, wenn die Firma sie wirklich braucht.
     const rc = crmDefaults.value.feature_reverse_charge;
     crmDefaults.value.feature_reverse_charge = (rc === true || rc === 'true' || rc === '1' || rc === 1);
+    // Gutmann-Diagnose ebenfalls AUS, bis die Apache-Weiterleitung steht
+    const gm = crmDefaults.value.feature_gutmann;
+    crmDefaults.value.feature_gutmann = (gm === true || gm === 'true' || gm === '1' || gm === 1);
 }
 
 /**

@@ -1,0 +1,202 @@
+/*
+ * OSERP-Farben für die Hella-Gutmann-Oberfläche (mega macs X).
+ *
+ * Wird von Apache hinter die Stylesheets des Geräts gehängt (install/
+ * gutmann-proxy.sh). Das Gerät färbt alles über CSS-Variablen (Material-
+ * Schema --hgs-sys-color-* plus einige Einzelvariablen); hier bekommen sie die
+ * Werte aus src/main.js (Vuetify-Themes) und src/core/styles/tokens.css.
+ * Umschalten über data-oserp am <html>, gesetzt von gutmann-bridge.js.
+ *
+ * Die doppelten Selektoren (mit und ohne [data-theme]) gewinnen gegen die
+ * Designs des Geräts ([data-theme=new] usw.), ohne !important zu brauchen.
+ * Aufbau und Symbole bleiben die des Geräts — es wird nur eingefärbt.
+ */
+
+/* ───────── Hell (Vuetify light: primary #1976D2, Flächen weiß/#f5f6f8) ───────── */
+html[data-oserp="light"],
+html[data-oserp="light"][data-theme] {
+    --global-font-family-sans-serif: Roboto, -apple-system, "Segoe UI", Arial, Helvetica, sans-serif;
+
+    --hgs-sys-color-primary: #1976d2;
+    --hgs-sys-color-on-primary: #ffffff;
+    --hgs-sys-color-primary-container: #d6e9fb;
+    --hgs-sys-color-on-primary-container: #0d47a1;
+    --hgs-sys-color-primary-fixed: #d6e9fb;
+    --hgs-sys-color-primary-fixed-dim: #90caf9;
+    --hgs-sys-color-on-primary-fixed: #0d47a1;
+    --hgs-sys-color-on-primary-fixed-variant: #1565c0;
+    --hgs-sys-color-inverse-primary: #90caf9;
+
+    --hgs-sys-color-secondary: #616161;
+    --hgs-sys-color-on-secondary: #ffffff;
+    --hgs-sys-color-secondary-container: #e0e0e0;
+    --hgs-sys-color-on-secondary-container: #212121;
+    --hgs-sys-color-secondary-fixed: #e0e0e0;
+    --hgs-sys-color-secondary-fixed-dim: #bdbdbd;
+    --hgs-sys-color-on-secondary-fixed: #212121;
+    --hgs-sys-color-on-secondary-fixed-variant: #424242;
+
+    --hgs-sys-color-tertiary: #1565c0;
+    --hgs-sys-color-on-tertiary: #ffffff;
+    --hgs-sys-color-tertiary-container: #d6e9fb;
+    --hgs-sys-color-on-tertiary-container: #0d47a1;
+    --hgs-sys-color-tertiary-fixed: #d6e9fb;
+    --hgs-sys-color-tertiary-fixed-dim: #90caf9;
+    --hgs-sys-color-on-tertiary-fixed: #0d47a1;
+    --hgs-sys-color-on-tertiary-fixed-variant: #1565c0;
+
+    --hgs-sys-color-surface: #ffffff;
+    --hgs-sys-color-surface-bright: #ffffff;
+    --hgs-sys-color-surface-dim: #e6e8eb;
+    --hgs-sys-color-surface-container-lowest: #ffffff;
+    --hgs-sys-color-surface-container-low: #f5f6f8;
+    --hgs-sys-color-surface-container: #eef0f3;
+    --hgs-sys-color-surface-container-high: #e8eaee;
+    --hgs-sys-color-surface-container-highest: #e1e4e8;
+    --hgs-sys-color-on-surface: #1e1e1e;
+    --hgs-sys-color-on-surface-variant: #4a4f57;
+    --hgs-sys-color-outline: #777c84;
+    --hgs-sys-color-outline-variant: #d8dbe0;
+    --hgs-sys-color-inverse-surface: #2d3136;
+    --hgs-sys-color-inverse-on-surface: #eef1f4;
+
+    /* Einzelvariablen, die das Gerät nicht aus dem Schema ableitet */
+    --hgs-color-background-app: #f5f6f8;
+    --hgs-background-light-dark: #f5f6f8;
+    --hgs-on-background: #1e1e1e;
+    --hgs-text-and-icon-primary: #1e1e1e;
+    --hgs-text-and-icon-secondary: #5f6368;
+    --hgs-stroke: #777c84;
+    --hgs-canvas-borderColor: #1e1e1e;
+    --hgs-licence-plate-border-color: #777c84;
+    --hgs-button-group-borderColor: #b9bdc4;
+
+    --hgs-app-launcher-color: #1976d2;
+    --hgs-app-launcher-active-color: #1565c0;
+    --hgs-app-launcher-home-bgColor: #f5f6f8;
+    --hgs-app-launcher-hover-color: #d6e9fb;
+    --applauncher-widgetBgColor: #e3f0fb;
+    --applauncher-tile-active-color: #d6e9fb;
+    --applauncher-tile-hover-color: #d6e9fb;
+    --applauncher-tile-active-text-color: #1e1e1e;
+    --applauncher-tile-hover-text-color: #1e1e1e;
+
+    --hgs-active-Color: #d6e9fb;
+    --hgs-active-hover-color: #d6e9fb;
+    --hgs-hover-bgColor: #e3f0fb;
+    --hgs-activity-button-circle-color: #1565c0;
+    --hgs-component-view-color-element-active: #d6e9fb;
+    --hgs-dtc-adapterhint-bg-color: #e3f0fb;
+    --hgs-multiList-active-bgcolor: #d6e9fb;
+    --hgs-multiList-active-color: #1e1e1e;
+    --hgs-navigation-header-active-background: #d6e9fb;
+    --hgs-navigation-label-active-color: #d6e9fb;
+    --hgs-navigation-label-hover-bg-color: #e3f0fb;
+    --hgs-navigation-label-hover-color: #1e1e1e;
+    --hgs-statusbar-background: #f5f6f8;
+    --hgs-statusbar-icon-color: #4a4f57;
+    --hgs-statusbar-menu-hover: #e3f0fb;
+    --hgs-statusbar-submenu-background: #eef0f3;
+    --hgs-statusbar-submenu-active-background: #d6e9fb;
+    --hgs-statusbar-submenu-hover-text-color: #1565c0;
+    --hgs-text-field-searchbar-bg-color: #f5f6f8;
+    --hgs-text-radio-active-color: #d6e9fb;
+    --hgs-titlebar-active-arrow-bg-color: #d6e9fb;
+    --hgs-vhSelection-color-active-action: #d6e9fb;
+}
+
+/* ───────── Dunkel (Vuetify dark: primary #90CAF9, Flächen #121212/#1e1e1e) ───────── */
+html[data-oserp="dark"],
+html[data-oserp="dark"][data-theme] {
+    --global-font-family-sans-serif: Roboto, -apple-system, "Segoe UI", Arial, Helvetica, sans-serif;
+
+    --hgs-sys-color-primary: #90caf9;
+    --hgs-sys-color-on-primary: #0d47a1;
+    --hgs-sys-color-primary-container: #1565c0;
+    --hgs-sys-color-on-primary-container: #e3f2fd;
+    --hgs-sys-color-primary-fixed: #1565c0;
+    --hgs-sys-color-primary-fixed-dim: #1976d2;
+    --hgs-sys-color-on-primary-fixed: #e3f2fd;
+    --hgs-sys-color-on-primary-fixed-variant: #bbdefb;
+    --hgs-sys-color-inverse-primary: #1976d2;
+
+    --hgs-sys-color-secondary: #b0bec5;
+    --hgs-sys-color-on-secondary: #1e1e1e;
+    --hgs-sys-color-secondary-container: #424242;
+    --hgs-sys-color-on-secondary-container: #e0e0e0;
+    --hgs-sys-color-secondary-fixed: #424242;
+    --hgs-sys-color-secondary-fixed-dim: #616161;
+    --hgs-sys-color-on-secondary-fixed: #e0e0e0;
+    --hgs-sys-color-on-secondary-fixed-variant: #bdbdbd;
+
+    --hgs-sys-color-tertiary: #90caf9;
+    --hgs-sys-color-on-tertiary: #0d47a1;
+    --hgs-sys-color-tertiary-container: #1565c0;
+    --hgs-sys-color-on-tertiary-container: #e3f2fd;
+    --hgs-sys-color-tertiary-fixed: #1565c0;
+    --hgs-sys-color-tertiary-fixed-dim: #1976d2;
+    --hgs-sys-color-on-tertiary-fixed: #e3f2fd;
+    --hgs-sys-color-on-tertiary-fixed-variant: #bbdefb;
+
+    --hgs-sys-color-surface: #121212;
+    --hgs-sys-color-surface-bright: #2c2c2c;
+    --hgs-sys-color-surface-dim: #0e0e0e;
+    --hgs-sys-color-surface-container-lowest: #0e0e0e;
+    --hgs-sys-color-surface-container-low: #1a1a1a;
+    --hgs-sys-color-surface-container: #1e1e1e;
+    --hgs-sys-color-surface-container-high: #262626;
+    --hgs-sys-color-surface-container-highest: #2e2e2e;
+    --hgs-sys-color-on-surface: #e8e8e8;
+    --hgs-sys-color-on-surface-variant: #bdbdbd;
+    --hgs-sys-color-outline: #8a8a8a;
+    --hgs-sys-color-outline-variant: #3a3a3a;
+    --hgs-sys-color-inverse-surface: #e8e8e8;
+    --hgs-sys-color-inverse-on-surface: #1e1e1e;
+
+    --hgs-color-background-app: #121212;
+    --hgs-background-light-dark: #1e1e1e;
+    --hgs-on-background: #e8e8e8;
+    --hgs-text-and-icon-primary: #e8e8e8;
+    --hgs-text-and-icon-secondary: #bdbdbd;
+    --hgs-text-and-icon-disabled: #5a5a5a;
+    --hgs-stroke: #8a8a8a;
+    --hgs-monochrome-s3: #8a8a8a;
+    --hgs-disabled-border: #3a3a3a;
+    --hgs-divider-color: #3a3a3a;
+    --hgs-licence-plate-border-color: #8a8a8a;
+    --hgs-scrollbar-bgColor: #262626;
+    --hgs-scrollbar-track: #262626;
+    --hgs-stripped-background: #262626;
+
+    --hgs-app-launcher-color: #1976d2;
+    --hgs-app-launcher-active-color: #1565c0;
+    --hgs-app-launcher-home-bgColor: #1e1e1e;
+    --applauncher-widgetBgColor: #262626;
+    --applauncher-tile-hover-color: #1e3a5f;
+
+    --hgs-active-Color: #1e3a5f;
+    --hgs-component-view-color-element-active: #1e3a5f;
+    --hgs-multiList-active-color: #e8e8e8;
+    --hgs-titlebar-active-arrow-bg-color: #1e3a5f;
+    --hgs-vhSelection-color-active-action: #1e3a5f;
+}
+
+/* ───────── Radien wie OSERP (tokens.css: 10px / 6px) ───────── */
+html[data-oserp],
+html[data-oserp][data-theme] {
+    --hgs-global-border-radius: 10px;
+    --hgs-default-border-radius: 10px;
+    --hgs-button-border-radius: 6px;
+    --hgs-statusbar-button-border-radius: 6px;
+    --hgs-navigation-item-border-radius: 8px;
+    --hgs-overlay-border-radius: 10px;
+    --hgs-selection-wrapper-border-radius: 10px;
+    --hgs-input-text-field-border-radius: 6px;
+}
+
+/* Der Startbildschirm des Geräts setzt body/#app fest auf Anthrazit —
+   danach soll die OSERP-Fläche durchscheinen, nicht das Grau. */
+html[data-oserp] body,
+html[data-oserp] #app {
+    background-color: var(--hgs-color-background-app);
+}

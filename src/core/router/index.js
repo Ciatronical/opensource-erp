@@ -155,6 +155,16 @@ function routePath(key, suffix = '', extraAliases = []) {
     return unique.length ? { path, alias: unique } : { path };
 }
 
+// Gutmann-Diagnose: nur mit LxCars und eingeschaltetem Schalter feature_gutmann
+const GutmannView = () => {
+    const oserp = oserpStore()
+    if (oserp.isLxCars() && oserp.isGutmannEnabled()) {
+        return import('@/features/lxcars/views/gutmann/gutmann.view.vue')
+    } else {
+        return Promise.resolve(NotFoundView)
+    }
+}
+
 const CarEditView = () => {
     const oserp = oserpStore()
 
@@ -441,6 +451,12 @@ function buildRoutes() {
             ...routePath('routes.mechanic'),
             name: 'mechanic',
             component: MechanicView,
+        },
+        {
+            ...routePath('routes.gutmann'),
+            name: 'gutmann',
+            component: GutmannView,
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('routes.mechanicOrder', '/:id(\\d+)'),

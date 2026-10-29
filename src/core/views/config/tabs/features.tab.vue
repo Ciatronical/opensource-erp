@@ -123,6 +123,52 @@
         </template>
 
         <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- WERKSTATT -->
+        <!-- Gutmann-Diagnose: mega macs als Seite in LxCars. Braucht die
+             Apache-Weiterleitung (install/gutmann-proxy.sh), darum Standard aus. -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <template v-if="crmDefaults && oserp.isLxCars()">
+            <h3 class="text-h6 mb-4">{{ $t('workshopFeatures') }}</h3>
+
+            <v-row class="mb-2">
+                <v-col cols="12" md="6">
+                    <v-card
+                        data-field-name="feature_gutmann"
+                        :variant="crmDefaults.feature_gutmann ? 'outlined' : 'tonal'"
+                        :color="crmDefaults.feature_gutmann ? 'primary' : undefined"
+                        class="feature-card"
+                    >
+                        <v-card-text class="pa-4">
+                            <div class="d-flex align-center justify-space-between ga-3">
+                                <div class="d-flex align-center ga-3 flex-grow-1" style="min-width: 0">
+                                    <v-icon size="32" :color="crmDefaults.feature_gutmann ? 'primary' : 'grey'">mdi-car-wrench</v-icon>
+                                    <div>
+                                        <div class="text-subtitle-1 font-weight-bold">{{ $t('featureGutmann') }}</div>
+                                        <div class="text-caption text-medium-emphasis">{{ $t('featureGutmannDesc') }}</div>
+                                    </div>
+                                </div>
+                                <v-switch
+                                    v-model="crmDefaults.feature_gutmann"
+                                    :true-value="true"
+                                    :false-value="false"
+                                    color="primary"
+                                    hide-details
+                                    density="compact"
+                                    inset
+                                    class="flex-shrink-0"
+                                />
+                            </div>
+                            <v-alert v-if="crmDefaults.feature_gutmann" type="info" variant="tonal" density="compact" class="mt-3">
+                                {{ $t('featureGutmannHint') }}
+                                <code class="d-block mt-1">sudo ./install/gutmann-proxy.sh &lt;adresse:port&gt;</code>
+                            </v-alert>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </template>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
         <!-- VERKAUF -->
         <!-- Wiederkehrende Rechnungen: schaltet nur das Angebot ab (Hinweis im
              Auftrag, Menüpunkt). Bestehende Abrechnungen laufen weiter und
@@ -639,8 +685,10 @@
 import { defineProps } from 'vue';
 import { useI18n } from 'vue-i18n'
 import PasswordField from '@/core/components/password-field.vue';
+import { oserpStore } from '@/core/stores/oserp.store.js';
 
 const { t } = useI18n();
+const oserp = oserpStore();
 
 const props = defineProps({
     defaults: {

@@ -1125,6 +1125,12 @@ Vereinfachte, tablet-taugliche Ansicht für die Werkstatt. Aktivierung und Mitar
 - Login mit gecachter Session (HGS begrenzt gleichzeitige Sitzungen)
 - **HSN/TSN-Suche** löst die interne Fahrzeug-ID auf, die Fahrzeugdatenseite wird im Browser geöffnet
 
+**Gutmann-Diagnose (mega macs X)** *(Schalter `feature_gutmann`)*
+
+- Oberfläche des Diagnosegeräts als Seite in LxCars (Menü Fahrzeuge → Gutmann, Knopf in der Fahrzeugmaske), eingefärbt wie OSERP, Hell/Dunkel folgt live
+- Läuft in jedem Browser und von überall über die Apache-Weiterleitung `/gutmann/`
+- Fahrzeuge kommen über asanetwork/NETMAN ins Gerät
+
 **SilverDAT**
 
 - **VXS-Import**: Kalkulationspositionen aus SilverDAT als Auftrags- bzw. Rechnungspositionen übernehmen (Bulk-Import über einen Dialog)
@@ -1226,6 +1232,7 @@ Automatische Kennzeichenerkennung an der Werkstattzufahrt.
 | `lxcars` | Kompletter Werkstattbereich (siehe Teil B) |
 | `feature_anpr` | ANPR-Kennzeichenerkennung inkl. Konfigurations-Tab (Standard: an) |
 | `feature_nvr` | Videoüberwachung / NVR (Standard: an) |
+| `feature_gutmann` | Gutmann-Diagnose: Hella Gutmann mega macs als Seite in LxCars, OSERP-Farben, jeder Browser (Standard: aus, braucht `install/gutmann-proxy.sh`) |
 | `feature_datev` | DATEV-Funktionen |
 | `feature_ustva` | UStVA-Kennzahlen in den kivitendo-Auswertungen |
 | `feature_reverse_charge` | Reverse Charge (§ 13b UStG): Steuerzone, Kontenzuordnung, Kennzahl 60 und Hinweissatz (Standard: aus) |
