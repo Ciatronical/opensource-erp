@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "Cancelar",
@@ -545,8 +545,8 @@
             "buttons": "Botão com link",
             "buttonText": "Texto do botão",
             "buttonUrl": "Endereço do botão",
-            "buttonUrlHint": "Com {{1}} no fim para a parte variável, p. ex. https://www.example.pt/ativar/?token={{1}} – a página «Ativar conta» do site.",
-            "buttonExample": "Exemplo para {{1}} (a Meta exige-o ao submeter)"
+            "buttonUrlHint": "Com {'{{'}1{'}}'} no fim para a parte variável, p. ex. https://www.example.pt/ativar/?token={'{{'}1{'}}'} – a página «Ativar conta» do site.",
+            "buttonExample": "Exemplo para {'{{'}1{'}}'} (a Meta exige-o ao submeter)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

@@ -633,7 +633,7 @@
             "headerType": "Header Type",
             "headerText": "Header Text",
             "bodyText": "Body Text",
-            "bodyTextHint": "Available placeholders: {'{{'}mitarbeiter_name{'}}'}  = employee name | {'{{'}kunde_name{'}}'}  = customer name | {'{{'}1{'}}'}, {'{{'}2{'}}'}  etc. = Meta variables",
+            "bodyTextHint": "Available placeholders: {'{{'}mitarbeiter_name{'}}'}  = employee name · {'{{'}kunde_name{'}}'}  = customer name · {'{{'}1{'}}'}, {'{{'}2{'}}'}  etc. = Meta variables",
             "footerText": "Footer Text",
             "preview": "Preview",
             "cancel": "Cancel",
@@ -677,8 +677,8 @@
             "buttons": "Button with link",
             "buttonText": "Button label",
             "buttonUrl": "Button address",
-            "buttonUrlHint": "With {{1}} at the end for the variable part, e.g. https://www.example.com/activate/?token={{1}} — the website's “Set up access” page.",
-            "buttonExample": "Example for {{1}} (Meta requires it when submitting)"
+            "buttonUrlHint": "With {'{{'}1{'}}'} at the end for the variable part, e.g. https://www.example.com/activate/?token={'{{'}1{'}}'} — the website's “Set up access” page.",
+            "buttonExample": "Example for {'{{'}1{'}}'} (Meta requires it when submitting)"
         },
         "whatsappTplAssignments": "Template Assignments",
         "whatsappTplChat": "Chat",

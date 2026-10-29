@@ -501,7 +501,7 @@
             "headerType": "Typ nagłówka",
             "headerText": "Tekst nagłówka",
             "bodyText": "Tekst treści",
-            "bodyTextHint": "Dostępne symbole zastępcze: {'{{'}mitarbeiter_name{'}}'}  = Nazwa pracownika | {'{{'}kunde_name{'}}'}  = Nazwa klienta | {'{{'}1{'}}'}, {'{{'}2{'}}'}  itd. = Zmienne Meta",
+            "bodyTextHint": "Dostępne symbole zastępcze: {'{{'}mitarbeiter_name{'}}'}  = Nazwa pracownika · {'{{'}kunde_name{'}}'}  = Nazwa klienta · {'{{'}1{'}}'}, {'{{'}2{'}}'}  itd. = Zmienne Meta",
             "footerText": "Tekst stopki",
             "preview": "Podgląd",
             "cancel": "Anuluj",
@@ -545,8 +545,8 @@
             "buttons": "Przycisk z linkiem",
             "buttonText": "Etykieta przycisku",
             "buttonUrl": "Adres przycisku",
-            "buttonUrlHint": "Z {{1}} na końcu dla zmiennej części, np. https://www.example.pl/aktywacja/?token={{1}} – strona „Aktywacja konta” witryny.",
-            "buttonExample": "Przykład dla {{1}} (wymagany przez Meta przy zgłaszaniu)"
+            "buttonUrlHint": "Z {'{{'}1{'}}'} na końcu dla zmiennej części, np. https://www.example.pl/aktywacja/?token={'{{'}1{'}}'} – strona „Aktywacja konta” witryny.",
+            "buttonExample": "Przykład dla {'{{'}1{'}}'} (wymagany przez Meta przy zgłaszaniu)"
         },
         "whatsappTplAssignments": "Przypisanie szablonów",
         "whatsappTplChat": "Chat",

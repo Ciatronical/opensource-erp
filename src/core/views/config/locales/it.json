@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "Annulla",
@@ -545,8 +545,8 @@
             "buttons": "Pulsante con link",
             "buttonText": "Etichetta del pulsante",
             "buttonUrl": "Indirizzo del pulsante",
-            "buttonUrlHint": "Con {{1}} alla fine per la parte variabile, es. https://www.example.it/attiva/?token={{1}}: la pagina «Attiva account» del sito.",
-            "buttonExample": "Esempio per {{1}} (richiesto da Meta all'invio)"
+            "buttonUrlHint": "Con {'{{'}1{'}}'} alla fine per la parte variabile, es. https://www.example.it/attiva/?token={'{{'}1{'}}'}: la pagina «Attiva account» del sito.",
+            "buttonExample": "Esempio per {'{{'}1{'}}'} (richiesto da Meta all'invio)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

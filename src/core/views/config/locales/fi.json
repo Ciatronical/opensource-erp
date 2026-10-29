@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "Peruuta",
@@ -545,8 +545,8 @@
             "buttons": "Painike linkillä",
             "buttonText": "Painikkeen teksti",
             "buttonUrl": "Painikkeen osoite",
-            "buttonUrlHint": "Lopussa {{1}} muuttuvaa osaa varten, esim. https://www.example.fi/aktivoi/?token={{1}} – sivuston sivu ”Tilin aktivointi”.",
-            "buttonExample": "Esimerkki kohdalle {{1}} (Meta vaatii lähetettäessä)"
+            "buttonUrlHint": "Lopussa {'{{'}1{'}}'} muuttuvaa osaa varten, esim. https://www.example.fi/aktivoi/?token={'{{'}1{'}}'} – sivuston sivu ”Tilin aktivointi”.",
+            "buttonExample": "Esimerkki kohdalle {'{{'}1{'}}'} (Meta vaatii lähetettäessä)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

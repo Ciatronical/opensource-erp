@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "Atcelt",
@@ -545,8 +545,8 @@
             "buttons": "Poga ar saiti",
             "buttonText": "Pogas uzraksts",
             "buttonUrl": "Pogas adrese",
-            "buttonUrlHint": "Beigās {{1}} mainīgajai daļai, piem. https://www.example.lv/aktivizet/?token={{1}} – vietnes lapa “Konta aktivizācija”.",
-            "buttonExample": "Piemērs {{1}} (Meta pieprasa iesniedzot)"
+            "buttonUrlHint": "Beigās {'{{'}1{'}}'} mainīgajai daļai, piem. https://www.example.lv/aktivizet/?token={'{{'}1{'}}'} – vietnes lapa “Konta aktivizācija”.",
+            "buttonExample": "Piemērs {'{{'}1{'}}'} (Meta pieprasa iesniedzot)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

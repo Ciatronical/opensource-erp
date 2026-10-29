@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "Anulare",
@@ -545,8 +545,8 @@
             "buttons": "Buton cu link",
             "buttonText": "Eticheta butonului",
             "buttonUrl": "Adresa butonului",
-            "buttonUrlHint": "Cu {{1}} la sfârșit pentru partea variabilă, de ex. https://www.example.ro/activare/?token={{1}} – pagina „Activare cont” a site-ului.",
-            "buttonExample": "Exemplu pentru {{1}} (Meta îl cere la trimitere)"
+            "buttonUrlHint": "Cu {'{{'}1{'}}'} la sfârșit pentru partea variabilă, de ex. https://www.example.ro/activare/?token={'{{'}1{'}}'} – pagina „Activare cont” a site-ului.",
+            "buttonExample": "Exemplu pentru {'{{'}1{'}}'} (Meta îl cere la trimitere)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

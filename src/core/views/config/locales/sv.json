@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundnname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundnname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Forhandsvisning",
             "cancel": "Avbryt",
@@ -545,8 +545,8 @@
             "buttons": "Knapp med länk",
             "buttonText": "Knapptext",
             "buttonUrl": "Knappens adress",
-            "buttonUrlHint": "Med {{1}} i slutet för den variabla delen, t.ex. https://www.example.se/aktivera/?token={{1}} – webbplatsens sida ”Aktivera konto”.",
-            "buttonExample": "Exempel för {{1}} (Meta kräver det vid inlämning)"
+            "buttonUrlHint": "Med {'{{'}1{'}}'} i slutet för den variabla delen, t.ex. https://www.example.se/aktivera/?token={'{{'}1{'}}'} – webbplatsens sida ”Aktivera konto”.",
+            "buttonExample": "Exempel för {'{{'}1{'}}'} (Meta kräver det vid inlämning)"
         },
         "whatsappTplAssignments": "Malln-Zuordnung",
         "whatsappTplChat": "Chat",

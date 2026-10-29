@@ -635,7 +635,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "Abbrechen",
@@ -679,8 +679,8 @@
             "buttons": "Schaltfläche mit Link",
             "buttonText": "Beschriftung der Schaltfläche",
             "buttonUrl": "Adresse der Schaltfläche",
-            "buttonUrlHint": "Mit {{1}} am Ende für den veränderlichen Teil, etwa https://www.example.de/freischalten/?token={{1}} — die Seite „Konto freischalten“ der Webseite.",
-            "buttonExample": "Beispiel für {{1}} (verlangt Meta beim Einreichen)"
+            "buttonUrlHint": "Mit {'{{'}1{'}}'} am Ende für den veränderlichen Teil, etwa https://www.example.de/freischalten/?token={'{{'}1{'}}'} — die Seite „Konto freischalten“ der Webseite.",
+            "buttonExample": "Beispiel für {'{{'}1{'}}'} (verlangt Meta beim Einreichen)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

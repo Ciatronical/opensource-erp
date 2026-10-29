@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "Annuleren",
@@ -545,8 +545,8 @@
             "buttons": "Knop met link",
             "buttonText": "Knoptekst",
             "buttonUrl": "Adres van de knop",
-            "buttonUrlHint": "Met {{1}} aan het einde voor het variabele deel, bijv. https://www.example.nl/activeren/?token={{1}} – de pagina ‘Account activeren’ van de website.",
-            "buttonExample": "Voorbeeld voor {{1}} (Meta vereist dit bij het indienen)"
+            "buttonUrlHint": "Met {'{{'}1{'}}'} aan het einde voor het variabele deel, bijv. https://www.example.nl/activeren/?token={'{{'}1{'}}'} – de pagina ‘Account activeren’ van de website.",
+            "buttonExample": "Voorbeeld voor {'{{'}1{'}}'} (Meta vereist dit bij het indienen)"
         },
         "whatsappTplAssignments": "Sjabloontoewijzing",
         "whatsappTplChat": "Chat",

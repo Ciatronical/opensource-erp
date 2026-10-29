@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "Скасувати",
@@ -545,8 +545,8 @@
             "buttons": "Кнопка з посиланням",
             "buttonText": "Напис на кнопці",
             "buttonUrl": "Адреса кнопки",
-            "buttonUrlHint": "З {{1}} наприкінці для змінної частини, напр. https://www.example.ua/aktyvatsiya/?token={{1}} — сторінка «Активація облікового запису» сайту.",
-            "buttonExample": "Приклад для {{1}} (Meta вимагає при поданні)"
+            "buttonUrlHint": "З {'{{'}1{'}}'} наприкінці для змінної частини, напр. https://www.example.ua/aktyvatsiya/?token={'{{'}1{'}}'} — сторінка «Активація облікового запису» сайту.",
+            "buttonExample": "Приклад для {'{{'}1{'}}'} (Meta вимагає при поданні)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

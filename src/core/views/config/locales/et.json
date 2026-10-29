@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "Tühista",
@@ -545,8 +545,8 @@
             "buttons": "Nupp lingiga",
             "buttonText": "Nupu silt",
             "buttonUrl": "Nupu aadress",
-            "buttonUrlHint": "Lõpus {{1}} muutuva osa jaoks, nt https://www.example.ee/aktiveeri/?token={{1}} – veebilehe leht „Konto aktiveerimine“.",
-            "buttonExample": "Näide {{1}} jaoks (Meta nõuab esitamisel)"
+            "buttonUrlHint": "Lõpus {'{{'}1{'}}'} muutuva osa jaoks, nt https://www.example.ee/aktiveeri/?token={'{{'}1{'}}'} – veebilehe leht „Konto aktiveerimine“.",
+            "buttonExample": "Näide {'{{'}1{'}}'} jaoks (Meta nõuab esitamisel)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

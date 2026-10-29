@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundername | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundername · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Forhaandsvisning",
             "cancel": "Annuller",
@@ -545,8 +545,8 @@
             "buttons": "Knap med link",
             "buttonText": "Knaptekst",
             "buttonUrl": "Knappens adresse",
-            "buttonUrlHint": "Med {{1}} til sidst for den variable del, fx https://www.example.dk/aktiver/?token={{1}} – webstedets side “Aktivér konto”.",
-            "buttonExample": "Eksempel for {{1}} (Meta kræver det ved indsendelse)"
+            "buttonUrlHint": "Med {'{{'}1{'}}'} til sidst for den variable del, fx https://www.example.dk/aktiver/?token={'{{'}1{'}}'} – webstedets side “Aktivér konto”.",
+            "buttonExample": "Eksempel for {'{{'}1{'}}'} (Meta kræver det ved indsendelse)"
         },
         "whatsappTplAssignments": "Skabelonn-Zuordnung",
         "whatsappTplChat": "Chat",

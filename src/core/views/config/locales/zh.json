@@ -501,7 +501,7 @@
             "headerType": "头部类型",
             "headerText": "头部文本",
             "bodyText": "正文文本",
-            "bodyTextHint": "可用占位符：{'{{'}mitarbeiter_name{'}}'}  = 员工姓名 | {'{{'}kunde_name{'}}'}  = 客户姓名 | {'{{'}1{'}}'}, {'{{'}2{'}}'}  等 = Meta 变量",
+            "bodyTextHint": "可用占位符：{'{{'}mitarbeiter_name{'}}'}  = 员工姓名 · {'{{'}kunde_name{'}}'}  = 客户姓名 · {'{{'}1{'}}'}, {'{{'}2{'}}'}  等 = Meta 变量",
             "footerText": "页脚文本",
             "preview": "预览",
             "cancel": "取消",
@@ -545,8 +545,8 @@
             "buttons": "带链接的按钮",
             "buttonText": "按钮文字",
             "buttonUrl": "按钮地址",
-            "buttonUrlHint": "末尾带 {{1}} 作为可变部分，例如 https://www.example.cn/activate/?token={{1}}——网站的“激活账户”页面。",
-            "buttonExample": "{{1}} 的示例（Meta 提交时要求）"
+            "buttonUrlHint": "末尾带 {'{{'}1{'}}'} 作为可变部分，例如 https://www.example.cn/activate/?token={'{{'}1{'}}'}——网站的“激活账户”页面。",
+            "buttonExample": "{'{{'}1{'}}'} 的示例（Meta 提交时要求）"
         },
         "whatsappTplAssignments": "模板分配",
         "whatsappTplChat": "聊天",

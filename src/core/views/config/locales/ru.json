@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "Отмена",
@@ -545,8 +545,8 @@
             "buttons": "Кнопка со ссылкой",
             "buttonText": "Надпись на кнопке",
             "buttonUrl": "Адрес кнопки",
-            "buttonUrlHint": "С {{1}} в конце для переменной части, напр. https://www.example.ru/aktivaciya/?token={{1}} — страница «Активация аккаунта» сайта.",
-            "buttonExample": "Пример для {{1}} (Meta требует при отправке)"
+            "buttonUrlHint": "С {'{{'}1{'}}'} в конце для переменной части, напр. https://www.example.ru/aktivaciya/?token={'{{'}1{'}}'} — страница «Активация аккаунта» сайта.",
+            "buttonExample": "Пример для {'{{'}1{'}}'} (Meta требует при отправке)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

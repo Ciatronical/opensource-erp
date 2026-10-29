@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "Atšaukti",
@@ -545,8 +545,8 @@
             "buttons": "Mygtukas su nuoroda",
             "buttonText": "Mygtuko užrašas",
             "buttonUrl": "Mygtuko adresas",
-            "buttonUrlHint": "Pabaigoje {{1}} kintamai daliai, pvz. https://www.example.lt/aktyvuoti/?token={{1}} – svetainės puslapis „Paskyros aktyvavimas“.",
-            "buttonExample": "Pavyzdys {{1}} (Meta reikalauja pateikiant)"
+            "buttonUrlHint": "Pabaigoje {'{{'}1{'}}'} kintamai daliai, pvz. https://www.example.lt/aktyvuoti/?token={'{{'}1{'}}'} – svetainės puslapis „Paskyros aktyvavimas“.",
+            "buttonExample": "Pavyzdys {'{{'}1{'}}'} (Meta reikalauja pateikiant)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

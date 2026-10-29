@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Náhled",
             "cancel": "Zrušit",
@@ -545,8 +545,8 @@
             "buttons": "Tlačítko s odkazem",
             "buttonText": "Popisek tlačítka",
             "buttonUrl": "Adresa tlačítka",
-            "buttonUrlHint": "S {{1}} na konci pro proměnnou část, např. https://www.example.cz/aktivace/?token={{1}} – stránka „Aktivace účtu“ webu.",
-            "buttonExample": "Příklad pro {{1}} (Meta jej vyžaduje při odeslání)"
+            "buttonUrlHint": "S {'{{'}1{'}}'} na konci pro proměnnou část, např. https://www.example.cz/aktivace/?token={'{{'}1{'}}'} – stránka „Aktivace účtu“ webu.",
+            "buttonExample": "Příklad pro {'{{'}1{'}}'} (Meta jej vyžaduje při odeslání)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",

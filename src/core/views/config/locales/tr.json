@@ -501,7 +501,7 @@
             "headerType": "Header-Typ",
             "headerText": "Header-Text",
             "bodyText": "Body-Text",
-            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername | {'{{'}kunde_name{'}}'}  = Kundenname | {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
+            "bodyTextHint": "Verfügbare Platzhalter: {'{{'}mitarbeiter_name{'}}'}  = Mitarbeitername · {'{{'}kunde_name{'}}'}  = Kundenname · {'{{'}1{'}}'}, {'{{'}2{'}}'}  usw. = Meta-Variablen",
             "footerText": "Footer-Text",
             "preview": "Vorschau",
             "cancel": "İptal",
@@ -545,8 +545,8 @@
             "buttons": "Bağlantılı düğme",
             "buttonText": "Düğme etiketi",
             "buttonUrl": "Düğme adresi",
-            "buttonUrlHint": "Değişken kısım için sonda {{1}} ile, örn. https://www.example.com.tr/etkinlestir/?token={{1}} – web sitesinin “Hesabı etkinleştir” sayfası.",
-            "buttonExample": "{{1}} için örnek (Meta gönderimde ister)"
+            "buttonUrlHint": "Değişken kısım için sonda {'{{'}1{'}}'} ile, örn. https://www.example.com.tr/etkinlestir/?token={'{{'}1{'}}'} – web sitesinin “Hesabı etkinleştir” sayfası.",
+            "buttonExample": "{'{{'}1{'}}'} için örnek (Meta gönderimde ister)"
         },
         "whatsappTplAssignments": "Vorlagen-Zuordnung",
         "whatsappTplChat": "Chat",
