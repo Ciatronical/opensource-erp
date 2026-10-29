@@ -151,7 +151,7 @@ src/
 │   ├── portal-account-overview.js
 │   ├── portal-account-profile.js
 │   ├── portal-account-payment.js
-│   ├── portal-account-orders.js
+│   ├── portal-account-documents.js   Belege: Rechnungen, Auftraege, Angebote, Lieferscheine, Reklamationen
 │   ├── portal-account-addresses.js
 │   ├── shop-checkout.js            Kasse
 │   ├── shop-invoice.js             Seite nach der Bestellung
@@ -286,7 +286,7 @@ mit `errorf` ab:
 | `overview` | `<portal-account-overview>` |
 | `profile` | `<portal-account-profile>` |
 | `address` | `<portal-account-addresses>` |
-| `order` | `<portal-account-orders>` |
+| `documents` (alt: `order`) | `<portal-account-documents>` — Belegarten nach den Schaltern der Webseite (`documents_*`), Vorgabe nur Rechnungen |
 | `payment` | `<portal-account-payment>` |
 
 **Warum ein Wrapper-Shortcode?** `personal-data-nav.html` öffnete
@@ -321,7 +321,7 @@ nicht ablesbar. Ein anonymer Besucher bekommt
 | --- | --- |
 | `personalOverview`, `personalProfil`, `personalPayment` | `ACCOUNT_NOT_FOUND` |
 | `accountAddresses` | `CUSTOMER_NOT_FOUND` (eigene Prüfung) bzw. `ACCOUNT_NOT_FOUND` |
-| `personalOrders` | `CUSTOMER_NOT_FOUND` |
+| `personalOrders`, `personalDocuments` | `CUSTOMER_NOT_FOUND` |
 
 — dieselben Codes, die auch ein gelöschter oder kaputter Kundendatensatz
 auslöst. Zwei verschiedene Ursachen, ein Code.

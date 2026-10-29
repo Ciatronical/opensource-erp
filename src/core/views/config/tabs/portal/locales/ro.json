@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} activări deschise",
         "install": "Instalează pachetul",
         "installHint": "Transferă șabloane, widgeturi și proxy-ul în HugoCMS și construiește site-ul.",
+        "installNeeded": "Această modificare ajunge pe site doar după „Instalează pachetul”.",
         "installQueued": "Sarcină creată – publicarea magazinului transferă pachetul (prezentare magazin).",
         "installDone": "Pachet transferat și site construit.",
         "installFailed": "Pachetul nu a fost transferat complet. Motiv:",
@@ -76,7 +77,20 @@
             "portalPath_help": "Începutul comun al tuturor paginilor portalului, de exemplu /kunden/ sau /kundenportal/. Implicit /kunden/.",
             "activation": "Activarea contului pentru clienții existenți",
             "activationEnabled": "Oferă activarea",
-            "activationEnabled_help": "Clienții existenți fără cont de client pot obține acces prin WhatsApp. Dezactivat = fără link, fără pagină. Implicit: dezactivat."
+            "activationEnabled_help": "Clienții existenți fără cont de client pot obține acces prin WhatsApp. Dezactivat = fără link, fără pagină. Implicit: dezactivat.",
+            "documents": "Documente în contul de client",
+            "documentsInvoices": "Facturi",
+            "documentsInvoices_help": "Clientul își vede facturile și le descarcă ca PDF. Implicit: activat.",
+            "documentsOrders": "Comenzi",
+            "documentsOrders_help": "Clientul își vede comenzile (confirmările de comandă) cu PDF.",
+            "documentsQuotations": "Oferte",
+            "documentsQuotations_help": "Clientul vede ofertele primite, cu PDF.",
+            "documentsDeliveryOrders": "Avize de livrare",
+            "documentsDeliveryOrders_help": "Clientul își vede avizele de livrare cu PDF, fără prețuri.",
+            "documentsReclamations": "Reclamații",
+            "documentsReclamations_help": "Clientul își vede reclamațiile cu motivul pe fiecare poziție. Fără PDF.",
+            "documentsShopOrders": "Comenzi (magazin online)",
+            "documentsShopOrders_help": "Doar cu extensia de magazin: comenzile din magazinul online într-o filă proprie, cu starea plății și a livrării. Implicit: activat."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Există deja un site cu acest nume.",
@@ -115,7 +129,8 @@
             "templateSet": "Setul de șabloane determină cum arată pe site autentificarea, contul de client, facturile și formularul de contact. „Standard” se adaptează aspectului site-ului și este suficient în majoritatea cazurilor.\n\nSeturi proprii poate crea un dezvoltator în directorul de șabloane al firmei sub portal/; ele apar apoi aici la alegere.\n\nDupă o schimbare rulați „Instalează pachetul”, pentru ca site-ul să primească noile șabloane.",
             "contactMailTo": "Când un client completează formularul de contact de pe site, OpensourceERP trimite solicitarea prin e-mail la această adresă.\n\nDacă câmpul rămâne gol, solicitarea merge la adresa de expeditor a firmei din configurația firmei.\n\nMai mulți destinatari nu sunt prevăzuți — folosiți o căsuță poștală comună sau o listă de distribuție.",
             "pages": "La aceste adrese „Instalează pachetul” creează paginile portalului pe site — gata, cu blocul potrivit. Pentru aceasta config.json al proiectului site-ului are nevoie de intrarea pentru oserp-portal/content (vezi ajutorul la „Testează conexiunea”).\n\nAdresa se indică de la rădăcina site-ului, cu bară oblică la început și la sfârșit, de exemplu /kunden/anmelden/. Subpaginile contului (profil, adrese, facturi, cu magazin metoda de plată, cu vehicule vehiculele) depind de adresa contului de client.\n\nAceleași adrese le folosesc widgeturile pentru linkurile lor și OpensourceERP pentru linkurile din e-mailuri și mesajele WhatsApp. Cine vrea să conceapă singur o pagină creează în HugoCMS o pagină proprie la aceeași adresă — aceasta are prioritate față de cea din pachet.\n\nDupă o modificare rulați „Instalează pachetul”.\n\nDirectorul portalului clienților este începutul comun: o pagină fără bară oblică la început (de ex. anmelden/) depinde de el — din /kunden/ și anmelden/ rezultă /kunden/anmelden/. Pentru alt director este suficient să schimbați acest singur câmp. O pagină cu bară oblică la început (de ex. /login/) stă de sine stătător.",
-            "activationEnabled": "Clienții care au cumpărat deja de la dvs., dar nu au încă un cont de client, își pot crea singuri accesul: pe site introduc numărul de mobil și codul poștal sau numărul de client și primesc un link prin WhatsApp.\n\nActivat, „Instalează pachetul” creează pe site pagina „Activează contul”, iar paginile de autentificare și înregistrare afișează linkul către ea. Linkul poate fi trimis și din fișa clientului.\n\nDezactivat, nu există nici pagină, nici link, iar cererile de activare sunt respinse. După comutare, rulați „Instalează pachetul” pentru ca site-ul să primească noua stare.\n\nTrimiterea prin WhatsApp necesită un acces WhatsApp configurat și șablonul „Activează contul de client” aprobat de Meta."
+            "activationEnabled": "Clienții care au cumpărat deja de la dvs., dar nu au încă un cont de client, își pot crea singuri accesul: pe site introduc numărul de mobil și codul poștal sau numărul de client și primesc un link prin WhatsApp.\n\nActivat, „Instalează pachetul” creează pe site pagina „Activează contul”, iar paginile de autentificare și înregistrare afișează linkul către ea. Linkul poate fi trimis și din fișa clientului.\n\nDezactivat, nu există nici pagină, nici link, iar cererile de activare sunt respinse. După comutare, rulați „Instalează pachetul” pentru ca site-ul să primească noua stare.\n\nTrimiterea prin WhatsApp necesită un acces WhatsApp configurat și șablonul „Activează contul de client” aprobat de Meta.",
+            "documents": "Pe pagina „Documente” a contului său, clientul vede documentele bifate aici, fiecare tip într-o filă proprie, cu dată, sumă, stare și poziții. Facturile, comenzile, ofertele și avizele de livrare oferă descărcare PDF; OpensourceERP nu tipărește încă reclamațiile, deci acolo lipsește butonul.\n\nImplicit: doar facturi. Bifele au efect imediat, nu este nevoie de „Instalează pachetul”. Dacă nu este bifat nimic, pagina afișează o notă în loc de listă.\n\nSunt afișate toate documentele fișei clientului, nu doar cele create prin site: clientul atelierului vede astfel și factura atelierului. Cu extensia de magazin, facturile magazinului afișează în plus starea plății și a livrării.\n\nCu extensia de magazin există în plus „Comenzi (magazin online)”: facturile din magazinul online într-o filă proprie, cu starea plății și a livrării. Dacă este activat, aceste facturi nu mai apar la „Facturi” – fiecare document este listat o singură dată."
         },
         "hugocmsFromBaseUrl": "Preia adresa web",
         "hugocmsFromBaseUrl_help": "Setează adresa de acces la distanță la HugoCMS din adresa web a site-ului, cu /cms-api/ la final.",

@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} ativações abertas",
         "install": "Instalar pacote",
         "installHint": "Transfere modelos, widgets e o proxy para o HugoCMS e manda construir o site.",
+        "installNeeded": "Esta alteração só chega ao site após «Instalar pacote».",
         "installQueued": "Tarefa criada – a publicação da loja transfere o pacote (resumo da loja).",
         "installDone": "Pacote transferido e site construído.",
         "installFailed": "Pacote não transferido na totalidade. Motivo:",
@@ -76,7 +77,20 @@
             "portalPath_help": "Início comum de todas as páginas do portal, por exemplo /kunden/ ou /kundenportal/. Predefinição /kunden/.",
             "activation": "Ativação de conta para clientes existentes",
             "activationEnabled": "Oferecer ativação",
-            "activationEnabled_help": "Clientes existentes sem conta de cliente podem obter um acesso via WhatsApp. Desligado = sem ligação nem página. Predefinição: desligado."
+            "activationEnabled_help": "Clientes existentes sem conta de cliente podem obter um acesso via WhatsApp. Desligado = sem ligação nem página. Predefinição: desligado.",
+            "documents": "Documentos na conta de cliente",
+            "documentsInvoices": "Faturas",
+            "documentsInvoices_help": "O cliente vê as suas faturas e descarrega-as em PDF. Predefinição: ligado.",
+            "documentsOrders": "Encomendas",
+            "documentsOrders_help": "O cliente vê as suas encomendas (confirmações de encomenda) com PDF.",
+            "documentsQuotations": "Orçamentos",
+            "documentsQuotations_help": "O cliente vê os orçamentos que recebeu, com PDF.",
+            "documentsDeliveryOrders": "Guias de remessa",
+            "documentsDeliveryOrders_help": "O cliente vê as suas guias de remessa com PDF, sem preços.",
+            "documentsReclamations": "Reclamações",
+            "documentsReclamations_help": "O cliente vê as suas reclamações com o motivo por linha. Sem PDF.",
+            "documentsShopOrders": "Encomendas (loja online)",
+            "documentsShopOrders_help": "Só com a extensão de loja: encomendas da loja online num separador próprio com estado de pagamento e entrega. Predefinição: ligado."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Já existe um site com este nome.",
@@ -115,7 +129,8 @@
             "templateSet": "O conjunto de modelos determina o aspeto do início de sessão, da conta de cliente, das faturas e do formulário de contacto no site. «Padrão» adapta-se ao aspeto do site e chega na maioria dos casos.\n\nUm programador pode criar conjuntos próprios no diretório de modelos da empresa em portal/; aparecem depois aqui para escolha.\n\nApós uma mudança, executar «Instalar pacote» para que o site receba os novos modelos.",
             "contactMailTo": "Quando um cliente preenche o formulário de contacto no site, o OpensourceERP envia o pedido por e-mail para este endereço.\n\nSe o campo ficar vazio, o pedido vai para o endereço de remetente da empresa da configuração da empresa.\n\nNão estão previstos vários destinatários — usar uma caixa de correio partilhada ou uma lista de distribuição.",
             "pages": "Nestes endereços «Instalar pacote» cria as páginas do portal no site — prontas, com o bloco correspondente. Para isso o config.json do projeto do site precisa da entrada para oserp-portal/content (ver a ajuda em «Testar ligação»).\n\nO endereço é indicado a partir da raiz do site, com barra no início e no fim, por exemplo /kunden/anmelden/. As subpáginas da conta (perfil, moradas, faturas, com loja a forma de pagamento, com veículos os veículos) ficam sob o endereço da conta de cliente.\n\nOs widgets usam os mesmos endereços para as suas ligações, e o OpensourceERP para as ligações em e-mails e mensagens WhatsApp. Quem quiser desenhar uma página por si cria no HugoCMS uma página própria no mesmo endereço — tem prioridade sobre a do pacote.\n\nApós uma alteração, executar «Instalar pacote».\n\nO diretório do portal de clientes é o início comum: uma página sem barra inicial (p. ex. anmelden/) fica abaixo dele — de /kunden/ e anmelden/ resulta /kunden/anmelden/. Para outro diretório basta alterar este único campo. Uma página com barra inicial (p. ex. /login/) é independente.",
-            "activationEnabled": "Clientes que já compraram consigo mas ainda não têm conta de cliente podem criar o próprio acesso: no sítio web introduzem o número de telemóvel e o código postal ou número de cliente e recebem uma ligação via WhatsApp.\n\nLigado, «Instalar pacote» cria a página «Ativar conta» no sítio web, e as páginas de início de sessão e de registo mostram a ligação. A ligação também pode ser enviada a partir da ficha do cliente.\n\nDesligado, não há página nem ligação, e os pedidos de ativação são recusados. Depois de alterar, execute «Instalar pacote» para que o sítio web receba o novo estado.\n\nO envio via WhatsApp requer um acesso WhatsApp configurado e o modelo «Ativar conta de cliente» aprovado pela Meta."
+            "activationEnabled": "Clientes que já compraram consigo mas ainda não têm conta de cliente podem criar o próprio acesso: no sítio web introduzem o número de telemóvel e o código postal ou número de cliente e recebem uma ligação via WhatsApp.\n\nLigado, «Instalar pacote» cria a página «Ativar conta» no sítio web, e as páginas de início de sessão e de registo mostram a ligação. A ligação também pode ser enviada a partir da ficha do cliente.\n\nDesligado, não há página nem ligação, e os pedidos de ativação são recusados. Depois de alterar, execute «Instalar pacote» para que o sítio web receba o novo estado.\n\nO envio via WhatsApp requer um acesso WhatsApp configurado e o modelo «Ativar conta de cliente» aprovado pela Meta.",
+            "documents": "Na página «Documentos» da sua conta, o cliente vê os documentos aqui assinalados, cada tipo no seu próprio separador, com data, valor, estado e linhas. Faturas, encomendas, orçamentos e guias de remessa oferecem descarga em PDF; o OpensourceERP ainda não imprime reclamações, pelo que aí falta o botão.\n\nPredefinição: só faturas. As marcas têm efeito imediato, não é preciso «Instalar pacote». Se nada estiver assinalado, a página mostra um aviso em vez de uma lista.\n\nSão mostrados todos os documentos da ficha do cliente, não só os criados através do sítio web: o cliente da oficina vê também a fatura da oficina. Com a extensão de loja, as faturas da loja mostram ainda o estado de pagamento e de entrega.\n\nCom a extensão de loja existe ainda «Encomendas (loja online)»: as faturas da loja online num separador próprio com estado de pagamento e entrega. Quando está ligado, estas faturas deixam de aparecer em «Faturas»: cada documento consta uma só vez."
         },
         "hugocmsFromBaseUrl": "Usar endereço web",
         "hugocmsFromBaseUrl_help": "Define o endereço de acesso remoto ao HugoCMS a partir do endereço web do site com /cms-api/ no fim.",

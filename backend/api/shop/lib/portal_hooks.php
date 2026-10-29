@@ -122,3 +122,64 @@ portalHookAdd('install_package', function ($ergebnis, $db, int $website) {
     }
     return ['queued' => true, 'started' => true, 'running' => true, 'job_id' => $id, 'channel_id' => $kanal];
 });
+
+// ── Belege im Kundenkonto (portal/lib/documents.php) ──
+//
+// Bestellungen des Shops als eigene Belegart shop_orders: Rechnungen mit
+// Zeile in ar_link_hugoshop. Schalter documents_shop_orders der Webseite,
+// Vorgabe an. Hat die Art ihren Reiter, fallen diese Rechnungen aus dem
+// Reiter „Rechnungen“ heraus — jeder Beleg steht nur einmal.
+
+/**
+ * Rechnungen des Kunden, die Shop-Bestellungen sind
+ *
+ * @return int[] ar.id
+ */
+function shopOrderInvoiceIds($db, int $customerId): array {
+    return array_map('intval', array_column($db->getAll(
+        "SELECT al.ar_id FROM ar_link_hugoshop al
+           JOIN ar ON ar.id = al.ar_id
+          WHERE ar.customer_id = :customer_id",
+        [':customer_id' => $customerId]
+    ) ?: [], 'ar_id'));
+}
+
+// Belegart „Bestellungen“ hinter den Rechnungen
+portalHookAdd('document_types', function (array $typen, $db, int $website): array {
+    $neu = [];
+    foreach ($typen as $typ => $info) {
+        $neu[$typ] = $info;
+        if ('invoices' === $typ) {
+            $neu['shop_orders'] = ['setting' => 'documents_shop_orders', 'print' => 'invoice', 'default' => true];
+        }
+    }
+    return $neu;
+});
+
+// Zeilen: Bestellungen sind Rechnungen mit Shop-Verknüpfung; Rechnungen ohne
+// sie, sobald die Bestellungen ihren eigenen Reiter haben
+portalHookAdd('document_rows', function ($zeilen, $db, int $customerId, string $typ, int $website) {
+    if ('shop_orders' === $typ) {
+        $ids = shopOrderInvoiceIds($db, $customerId);
+        return array_values(array_filter(
+            documentInvoiceRows(customerInvoices($db, $customerId)['orders']),
+            fn(array $r) => in_array((int)$r['id'], $ids, true)
+        ));
+    }
+    if ('invoices' === $typ && is_array($zeilen) && in_array('shop_orders', websiteDocumentTypes($db, $website), true)) {
+        $ids = shopOrderInvoiceIds($db, $customerId);
+        return array_values(array_filter($zeilen, fn(array $r) => !in_array((int)$r['id'], $ids, true)));
+    }
+    return $zeilen;
+});
+
+// Ansicht einer Bestellung: die Rechnungsansicht, nur für Shop-Rechnungen
+portalHookAdd('document_detail', function ($detail, $db, int $customerId, string $typ, int $id, int $website) {
+    if ('shop_orders' !== $typ) {
+        return $detail;
+    }
+    if (!in_array($id, shopOrderInvoiceIds($db, $customerId), true)) {
+        return null;
+    }
+    return documentInvoiceDetail($db, $customerId, $typ, $id, $website);
+});

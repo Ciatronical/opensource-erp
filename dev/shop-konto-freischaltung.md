@@ -158,8 +158,10 @@ Kontext selbst (Schemaänderung in der Shop-Erweiterung).
 - Aktion `sendShopActivation` (Admin-API, Recht `shop_part_edit` oder
   ein eigenes `shop_customer_edit`): legt die Kennung an (`source = staff`)
   und sendet die Vorlage an eine gewählte Nummer des Kunden.
-- Knopf im WhatsApp-Reiter der Kundenakte, sichtbar bei aktiver
-  Shop-Erweiterung und fehlendem Shop-Konto; zeigt danach „gesendet am …“.
+- Reiter „Kundenkonto“ in der Kundenakte (CRM-Ansicht, `tabs/portal.tab.vue`),
+  sichtbar, sobald eine Webseite des Kundenportals eingeschaltet ist; bei
+  fehlendem Konto der Versand per WhatsApp oder Mail, danach „gesendet am …“.
+  Bis 2026-10-29 war das eine Karte im WhatsApp-Reiter.
 
 ## Grenzen und Risiken
 

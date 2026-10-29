@@ -32,7 +32,8 @@ export class PortalAccountNav extends PortalElement {
     overviewUrl: { type: String, attribute: 'overview-url' },
     profileUrl: { type: String, attribute: 'profile-url' },
     addressUrl: { type: String, attribute: 'address-url' },
-    orderUrl: { type: String, attribute: 'order-url' },
+    // Belege (Rechnungen, Aufträge, Angebote, Lieferscheine, Reklamationen)
+    documentsUrl: { type: String, attribute: 'documents-url' },
     paymentUrl: { type: String, attribute: 'payment-url' },
     // Die alte Navigation kannte die Zahlungsarten nicht; erreichbar war die
     // Seite nur ueber "Bearbeiten" auf der Uebersicht. Der Eintrag laesst
@@ -85,7 +86,7 @@ export class PortalAccountNav extends PortalElement {
     this.overviewUrl = shopPath('account', '#focus');
     this.profileUrl = shopPath('profile', '#focus');
     this.addressUrl = shopPath('addresses', '#focus');
-    this.orderUrl = shopPath('orders', '#focus');
+    this.documentsUrl = shopPath('documents', '#focus');
     this.paymentUrl = shopPath('payment', '#focus');
     this.showPayment = false;
     this.showVehicles = false;
@@ -127,7 +128,7 @@ export class PortalAccountNav extends PortalElement {
       { key: 'overview', url: this.overviewUrl, label: t('account.nav.overview') },
       { key: 'profile', url: this.profileUrl, label: t('account.nav.profile') },
       { key: 'address', url: this.addressUrl, label: t('account.nav.address') },
-      { key: 'order', url: this.orderUrl, label: t('account.nav.order') },
+      { key: 'documents', url: this.documentsUrl, label: t('account.nav.documents') },
     ];
     if (this.showPayment) {
       items.push({ key: 'payment', url: this.paymentUrl, label: t('account.nav.payment') });
@@ -139,6 +140,8 @@ export class PortalAccountNav extends PortalElement {
   }
 
   render() {
+    // "order" ist der alte Name der Belegseite
+    const current = this.current === 'order' ? 'documents' : this.current;
     return html`
       <nav part="nav" aria-label=${t('account.nav.label')}>
         <ul>
@@ -148,7 +151,7 @@ export class PortalAccountNav extends PortalElement {
           ${this.#items().map(
             (item) => html`
               <li part="item">
-                ${item.key === this.current
+                ${item.key === current
                   ? html`<span aria-current="page">${item.label}</span>`
                   : html`<a href=${item.url}>${item.label}</a>`}
               </li>

@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} avatud aktiveerimist",
         "install": "Paigalda pakett",
         "installHint": "Edastab mallid, vidinad ja edastaja HugoCMS-i ja laseb veebilehe ehitada.",
+        "installNeeded": "See muudatus jõuab veebilehele alles pärast „Paigalda pakett“.",
         "installQueued": "Töö loodud – poe avaldamine edastab paketi (poe ülevaade).",
         "installDone": "Pakett edastatud ja veebileht ehitatud.",
         "installFailed": "Paketti ei edastatud täielikult. Põhjus:",
@@ -76,7 +77,20 @@
             "portalPath_help": "Kõigi portaalilehtede ühine algus, näiteks /kunden/ või /kundenportal/. Vaikimisi /kunden/.",
             "activation": "Konto aktiveerimine olemasolevatele klientidele",
             "activationEnabled": "Paku aktiveerimist",
-            "activationEnabled_help": "Olemasolevad kliendid ilma kliendikontota saavad WhatsAppi kaudu ligipääsu. Väljas = ei linki ega lehte. Vaikimisi: väljas."
+            "activationEnabled_help": "Olemasolevad kliendid ilma kliendikontota saavad WhatsAppi kaudu ligipääsu. Väljas = ei linki ega lehte. Vaikimisi: väljas.",
+            "documents": "Dokumendid kliendikontol",
+            "documentsInvoices": "Arved",
+            "documentsInvoices_help": "Klient näeb oma arveid ja laadib need PDF-ina alla. Vaikimisi: sees.",
+            "documentsOrders": "Tellimused",
+            "documentsOrders_help": "Klient näeb oma tellimusi (tellimuse kinnitusi) PDF-iga.",
+            "documentsQuotations": "Pakkumised",
+            "documentsQuotations_help": "Klient näeb saadud pakkumisi PDF-iga.",
+            "documentsDeliveryOrders": "Saatelehed",
+            "documentsDeliveryOrders_help": "Klient näeb oma saatelehti PDF-iga, ilma hindadeta.",
+            "documentsReclamations": "Pretensioonid",
+            "documentsReclamations_help": "Klient näeb oma pretensioone koos põhjusega iga rea kohta. Ilma PDF-ita.",
+            "documentsShopOrders": "Tellimused (veebipood)",
+            "documentsShopOrders_help": "Ainult poelaiendusega: veebipoe tellimused omaette vahekaardina koos makse- ja tarneolekuga. Vaikimisi: sees."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Selle nimega veebileht on juba olemas.",
@@ -115,7 +129,8 @@
             "templateSet": "Mallikomplekt määrab, kuidas sisselogimine, kliendikonto, arved ja kontaktvorm veebisaidil välja näevad. „Standard“ kohandub veebisaidi välimusega ja piisab enamasti.\n\nOma komplekte saab arendaja luua ettevõtte mallikataloogis portal/ all; seejärel ilmuvad need siia valikusse.\n\nPärast vahetust käivitage „Paigalda pakett“, et veebisait saaks uued mallid.",
             "contactMailTo": "Kui klient täidab veebisaidil kontaktvormi, saadab OpensourceERP päringu e-kirjaga sellele aadressile.\n\nKui väli jääb tühjaks, läheb päring ettevõtte saatja-aadressile ettevõtte seadetest.\n\nMitut saajat ei toetata — kasutage selleks ühispostkasti või jaotusloendit.",
             "pages": "Nendel aadressidel loob „Paigalda pakett“ portaalilehed veebisaidile — valmis koos sobiva ehitusplokiga. Selleks vajab veebisaidi projekti config.json kirjet oserp-portal/content jaoks (vt abi jaotises „Kontrolli ühendust“).\n\nAadress antakse veebisaidi juurest, kaldkriipsuga alguses ja lõpus, näiteks /kunden/anmelden/. Konto alamlehed (profiil, aadressid, arved, poega makseviis, sõidukitega sõidukid) asuvad kliendikonto aadressi all.\n\nSamu aadresse kasutavad vidinad oma linkide jaoks ja OpensourceERP e-kirjade ja WhatsAppi sõnumite linkide jaoks. Kes tahab lehte ise kujundada, loob HugoCMS-is samal aadressil oma lehe — see läheb paketi lehest ette.\n\nPärast muudatust käivitage „Paigalda pakett“.\n\nKliendiportaali kataloog on ühine algus: ilma algkaldkriipsuta leht (nt anmelden/) asub selle all — /kunden/ ja anmelden/ annavad /kunden/anmelden/. Teise kataloogi jaoks piisab selle ühe välja muutmisest. Algkaldkriipsuga leht (nt /login/) seisab omaette.",
-            "activationEnabled": "Kliendid, kes on teilt juba ostnud, kuid kellel pole veel kliendikontot, saavad ligipääsu ise luua: nad sisestavad veebisaidil mobiilinumbri ja sihtnumbri või kliendinumbri ning saavad WhatsAppi kaudu lingi.\n\nSisselülitatuna loob „Paigalda pakett“ veebisaidile lehe „Aktiveeri konto“ ning sisselogimis- ja registreerimisleht näitavad linki sinna. Linki saab saata ka kliendikaardilt.\n\nVäljalülitatuna pole ei lehte ega linki ning aktiveerimistaotlused lükatakse tagasi. Pärast ümberlülitamist käivitage „Paigalda pakett“, et veebisait saaks uue seisu.\n\nSaatmine WhatsAppi kaudu eeldab seadistatud WhatsAppi ligipääsu ja Meta kinnitatud malli „Aktiveeri kliendikonto“."
+            "activationEnabled": "Kliendid, kes on teilt juba ostnud, kuid kellel pole veel kliendikontot, saavad ligipääsu ise luua: nad sisestavad veebisaidil mobiilinumbri ja sihtnumbri või kliendinumbri ning saavad WhatsAppi kaudu lingi.\n\nSisselülitatuna loob „Paigalda pakett“ veebisaidile lehe „Aktiveeri konto“ ning sisselogimis- ja registreerimisleht näitavad linki sinna. Linki saab saata ka kliendikaardilt.\n\nVäljalülitatuna pole ei lehte ega linki ning aktiveerimistaotlused lükatakse tagasi. Pärast ümberlülitamist käivitage „Paigalda pakett“, et veebisait saaks uue seisu.\n\nSaatmine WhatsAppi kaudu eeldab seadistatud WhatsAppi ligipääsu ja Meta kinnitatud malli „Aktiveeri kliendikonto“.",
+            "documents": "Kliendikonto lehel „Dokumendid“ näeb klient siin märgitud dokumente, iga liik omaette vahekaardina, koos kuupäeva, summa, oleku ja ridadega. Arveid, tellimusi, pakkumisi ja saatelehti saab PDF-ina alla laadida; OpensourceERP ei trüki pretensioone veel, seal nupp puudub.\n\nVaikimisi: ainult arved. Märked toimivad kohe, „Paigalda pakett“ pole vajalik. Kui midagi pole märgitud, näitab leht loendi asemel teadet.\n\nKuvatakse kõik kliendikaardi dokumendid, mitte ainult veebisaidi kaudu tekkinud: töökoja klient näeb seega ka töökoja arvet. Poelaiendusega näitavad poe arved lisaks makse- ja tarneolekut.\n\nPoelaiendusega on lisaks „Tellimused (veebipood)“: veebipoe arved omaette vahekaardina koos makse- ja tarneolekuga. Kui see on sees, ei ilmu need arved enam jaotises „Arved“ – iga dokument on loendis vaid korra."
         },
         "hugocmsFromBaseUrl": "Võta veebiaadress üle",
         "hugocmsFromBaseUrl_help": "Seab HugoCMS-i kaugjuurdepääsu aadressi veebisaidi veebiaadressist, lõpus /cms-api/.",

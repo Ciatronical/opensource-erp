@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} activations en cours",
         "install": "Installer le paquet",
         "installHint": "Transfère les modèles, widgets et le proxy vers HugoCMS et fait construire le site.",
+        "installNeeded": "Cette modification n'atteint le site web qu'après « Installer le paquet ».",
         "installQueued": "Tâche créée – la publication de la boutique transfère le paquet (aperçu de la boutique).",
         "installDone": "Paquet transféré et site construit.",
         "installFailed": "Paquet transféré de façon incomplète. Raison :",
@@ -76,7 +77,20 @@
             "portalPath_help": "Début commun de toutes les pages du portail, par exemple /kunden/ ou /kundenportal/. Par défaut /kunden/.",
             "activation": "Activation du compte pour les clients existants",
             "activationEnabled": "Proposer l’activation",
-            "activationEnabled_help": "Les clients existants sans compte client peuvent faire créer un accès via WhatsApp. Désactivé = ni lien ni page. Par défaut : désactivé."
+            "activationEnabled_help": "Les clients existants sans compte client peuvent faire créer un accès via WhatsApp. Désactivé = ni lien ni page. Par défaut : désactivé.",
+            "documents": "Documents dans le compte client",
+            "documentsInvoices": "Factures",
+            "documentsInvoices_help": "Le client voit ses factures et les télécharge en PDF. Par défaut : activé.",
+            "documentsOrders": "Commandes",
+            "documentsOrders_help": "Le client voit ses commandes (confirmations de commande) avec PDF.",
+            "documentsQuotations": "Devis",
+            "documentsQuotations_help": "Le client voit les devis qu’il a reçus, avec PDF.",
+            "documentsDeliveryOrders": "Bons de livraison",
+            "documentsDeliveryOrders_help": "Le client voit ses bons de livraison avec PDF, sans prix.",
+            "documentsReclamations": "Réclamations",
+            "documentsReclamations_help": "Le client voit ses réclamations avec le motif par ligne. Sans PDF.",
+            "documentsShopOrders": "Commandes (boutique en ligne)",
+            "documentsShopOrders_help": "Extension boutique uniquement : commandes de la boutique en ligne dans un onglet propre, avec statut de paiement et de livraison. Par défaut : activé."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Un site avec ce nom existe déjà.",
@@ -115,7 +129,8 @@
             "templateSet": "Le jeu de modèles détermine l’apparence de la connexion, du compte client, des factures et du formulaire de contact sur le site. « Standard » s’adapte à l’apparence du site et suffit dans la plupart des cas.\n\nUn développeur peut créer des jeux personnalisés dans le répertoire des modèles de l’entreprise sous portal/ ; ils apparaissent alors ici au choix.\n\nAprès un changement, exécuter « Installer le paquet » pour que le site reçoive les nouveaux modèles.",
             "contactMailTo": "Quand un client remplit le formulaire de contact du site, OpensourceERP envoie la demande par e-mail à cette adresse.\n\nSi le champ reste vide, la demande va à l’adresse d’expéditeur de l’entreprise définie dans la configuration de l’entreprise.\n\nPlusieurs destinataires ne sont pas prévus — utiliser une boîte partagée ou une liste de diffusion.",
             "pages": "À ces adresses, « Installer le paquet » crée les pages du portail sur le site — prêtes, avec la brique correspondante. Cela nécessite l’entrée pour oserp-portal/content dans le config.json du projet du site (voir l’aide à « Tester la connexion »).\n\nL’adresse s’indique depuis la racine du site, avec une barre oblique au début et à la fin, par exemple /kunden/anmelden/. Les sous-pages du compte (profil, adresses, factures, avec boutique le mode de paiement, avec véhicules les véhicules) dépendent de l’adresse du compte client.\n\nLes widgets utilisent les mêmes adresses pour leurs liens, et OpensourceERP pour les liens des e-mails et messages WhatsApp. Pour concevoir une page soi-même, créer dans HugoCMS sa propre page à la même adresse — elle prime sur celle du paquet.\n\nAprès une modification, exécuter « Installer le paquet ».\n\nLe répertoire du portail client est le début commun : une page sans barre oblique initiale (par ex. anmelden/) en dépend — /kunden/ et anmelden/ donnent /kunden/anmelden/. Pour un autre répertoire, il suffit de modifier ce seul champ. Une page avec barre oblique initiale (par ex. /login/) est indépendante.",
-            "activationEnabled": "Les clients qui ont déjà acheté chez vous mais n’ont pas encore de compte client peuvent créer eux-mêmes un accès : sur le site web, ils saisissent leur numéro de mobile et leur code postal ou numéro de client et reçoivent un lien via WhatsApp.\n\nActivé, « Installer le paquet » crée la page « Activer le compte » sur le site web, et les pages de connexion et d’inscription affichent le lien vers celle-ci. Le lien peut aussi être envoyé depuis la fiche client.\n\nDésactivé, il n’y a ni page ni lien, et les demandes d’activation sont refusées. Après le changement, exécutez « Installer le paquet » pour que le site web reçoive le nouvel état.\n\nL’envoi via WhatsApp nécessite un accès WhatsApp configuré et le modèle « Activer le compte client » approuvé par Meta."
+            "activationEnabled": "Les clients qui ont déjà acheté chez vous mais n’ont pas encore de compte client peuvent créer eux-mêmes un accès : sur le site web, ils saisissent leur numéro de mobile et leur code postal ou numéro de client et reçoivent un lien via WhatsApp.\n\nActivé, « Installer le paquet » crée la page « Activer le compte » sur le site web, et les pages de connexion et d’inscription affichent le lien vers celle-ci. Le lien peut aussi être envoyé depuis la fiche client.\n\nDésactivé, il n’y a ni page ni lien, et les demandes d’activation sont refusées. Après le changement, exécutez « Installer le paquet » pour que le site web reçoive le nouvel état.\n\nL’envoi via WhatsApp nécessite un accès WhatsApp configuré et le modèle « Activer le compte client » approuvé par Meta.",
+            "documents": "Sur la page « Documents » de son compte client, le client voit les documents cochés ici, chaque type dans son propre onglet, avec date, montant, statut et lignes. Les factures, commandes, devis et bons de livraison proposent un téléchargement PDF ; OpensourceERP n’imprime pas encore les réclamations, le bouton y manque donc.\n\nPar défaut : factures uniquement. Les cases agissent immédiatement, aucune « Installation du paquet » n’est nécessaire. Si rien n’est coché, la page affiche un avis au lieu d’une liste.\n\nTous les documents de la fiche client sont affichés, pas seulement ceux créés via le site web : le client de l’atelier voit donc aussi la facture de l’atelier. Avec l’extension boutique, les factures de la boutique affichent en plus le statut de paiement et de livraison.\n\nAvec l’extension boutique, il existe en plus « Commandes (boutique en ligne) » : les factures de la boutique en ligne dans un onglet propre, avec statut de paiement et de livraison. Lorsqu’il est activé, ces factures n’apparaissent plus sous « Factures » : chaque document n’est listé qu’une fois."
         },
         "hugocmsFromBaseUrl": "Reprendre l’adresse web",
         "hugocmsFromBaseUrl_help": "Définit l’adresse d’accès distant à HugoCMS à partir de l’adresse web du site, avec /cms-api/ à la fin.",

@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} open activations",
         "install": "Install package",
         "installHint": "Transfers templates, widgets and the proxy to HugoCMS and has the website built.",
+        "installNeeded": "This change only reaches the website after “Install package”.",
         "installQueued": "Job created — the shop publishing transfers the package (shop overview).",
         "installDone": "Package transferred and website built.",
         "installFailed": "Package not fully transferred. Reason:",
@@ -76,7 +77,20 @@
             "portalPath_help": "Common start of all portal pages, for example /kunden/ or /kundenportal/. Default /kunden/.",
             "activation": "Account activation for existing customers",
             "activationEnabled": "Offer activation",
-            "activationEnabled_help": "Existing customers without a customer account can have access set up via WhatsApp. Off = no link, no page. Default: off."
+            "activationEnabled_help": "Existing customers without a customer account can have access set up via WhatsApp. Off = no link, no page. Default: off.",
+            "documents": "Documents in the customer account",
+            "documentsInvoices": "Invoices",
+            "documentsInvoices_help": "The customer sees their invoices and downloads them as PDF. Default: on.",
+            "documentsOrders": "Orders",
+            "documentsOrders_help": "The customer sees their orders (order confirmations) with PDF.",
+            "documentsQuotations": "Quotations",
+            "documentsQuotations_help": "The customer sees the quotations they received, with PDF.",
+            "documentsDeliveryOrders": "Delivery notes",
+            "documentsDeliveryOrders_help": "The customer sees their delivery notes with PDF, without prices.",
+            "documentsReclamations": "Complaints",
+            "documentsReclamations_help": "The customer sees their complaints with the reason per item. No PDF.",
+            "documentsShopOrders": "Orders (online shop)",
+            "documentsShopOrders_help": "Shop extension only: orders from the online shop as their own tab with payment and delivery status. Default: on."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "A website with this name already exists.",
@@ -115,7 +129,8 @@
             "templateSet": "The template set determines how login, customer account, invoices and contact form look on the website. “Standard” adapts to the website’s look and is sufficient in most cases.\n\nA developer can create custom sets in the company’s template directory under portal/; they then appear here for selection.\n\nAfter switching, run “Install package” so the website receives the new templates.",
             "contactMailTo": "When a customer fills in the contact form on the website, OpensourceERP sends the request as an e-mail to this address.\n\nIf the field is empty, the request goes to the company’s sender address from the company configuration.\n\nMultiple recipients are not supported — use a shared mailbox or a distribution list instead.",
             "pages": "At these addresses “Install package” creates the portal pages on the website — ready, with the matching building block. This needs the entry for oserp-portal/content in the website project’s config.json (see the help at “Test connection”).\n\nThe address is given from the root of the website, with a slash at the start and end, for example /kunden/anmelden/. The subpages of the account (profile, addresses, invoices, with a shop the payment method, with vehicles the vehicles) hang below the customer account address.\n\nThe widgets use the same addresses for their links, and OpensourceERP for the links in e-mails and WhatsApp messages. To design a page yourself, create your own page in HugoCMS at the same address — it takes precedence over the page from the package.\n\nAfter a change, run “Install package”.\n\nThe customer portal directory is the common start: a page without a leading slash (e.g. anmelden/) hangs below it — /kunden/ and anmelden/ become /kunden/anmelden/. To use a different directory, changing this one field is enough. A page with a leading slash (e.g. /login/) stands on its own.",
-            "activationEnabled": "Customers who have already bought from you but do not have a customer account yet can set up access themselves: on the website they enter their mobile number and postcode or customer number and receive a link via WhatsApp.\n\nWhen switched on, “Install package” creates the “Activate account” page on the website, and the login and registration pages show the link to it. The link can also be sent from the customer file.\n\nWhen switched off there is neither page nor link, and activation requests are rejected. After switching, please run “Install package” so the website receives the new state.\n\nSending via WhatsApp requires a configured WhatsApp access and the template “Activate customer account” approved by Meta."
+            "activationEnabled": "Customers who have already bought from you but do not have a customer account yet can set up access themselves: on the website they enter their mobile number and postcode or customer number and receive a link via WhatsApp.\n\nWhen switched on, “Install package” creates the “Activate account” page on the website, and the login and registration pages show the link to it. The link can also be sent from the customer file.\n\nWhen switched off there is neither page nor link, and activation requests are rejected. After switching, please run “Install package” so the website receives the new state.\n\nSending via WhatsApp requires a configured WhatsApp access and the template “Activate customer account” approved by Meta.",
+            "documents": "On the “Documents” page of the customer account the customer sees the documents ticked here, each type as its own tab, with date, amount, status and items. Invoices, orders, quotations and delivery notes offer a PDF download; OpensourceERP does not print complaints yet, so that button is missing there.\n\nDefault: invoices only. The ticks take effect immediately, no “Install package” is needed. If nothing is ticked, the page shows a notice instead of a list.\n\nAll documents of the customer record are shown, not only those created through the website, so a workshop customer also sees the workshop invoice. With the shop extension, shop invoices additionally show payment and delivery status.\n\nWith the shop extension there is also “Orders (online shop)”: the invoices from the online shop as their own tab with payment and delivery status. When it is switched on, these invoices no longer appear under “Invoices”, so each document is listed once."
         },
         "hugocmsFromBaseUrl": "Use website address",
         "hugocmsFromBaseUrl_help": "Sets the HugoCMS remote access address from the website address with /cms-api/ appended.",

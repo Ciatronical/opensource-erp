@@ -85,6 +85,15 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     /**
+     * Ist eine Webseite des Kundenportals eingeschaltet? (company_config.portal_websites,
+     * Firmenkonfiguration → Funktionen → Kundenportal) — die Kundenakte zeigt dann den
+     * Reiter „Kundenkonto“ mit dem Zugang zum Kundenkonto
+     */
+    function hasPortalWebsite() {
+        return Number(session.company_config?.portal_websites || 0) > 0;
+    }
+
+    /**
      * Prüft ob die Erweiterung LxCars aktiviert ist
      */
     function isLxCars() {
@@ -957,6 +966,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         deleteConfigValue,
         getClientDefaultValue,
         isExtensionEnabled,
+        hasPortalWebsite,
         isLxCars,
         canSeeMechanicPerformance,
         isAnprEnabled,

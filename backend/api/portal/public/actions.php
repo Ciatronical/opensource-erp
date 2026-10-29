@@ -66,8 +66,15 @@ function portalRedirect(string $ziel): void {
  * Liefert ein Rechnungs-PDF aus und räumt die Datei weg
  */
 function portalSendPdf($db, int $arId): void {
-    $pdf = invoicePdf($db, $arId);
+    portalSendPdfFile(invoicePdf($db, $arId));
+}
 
+/**
+ * Liefert eine erzeugte PDF-Datei aus und räumt sie weg
+ *
+ * @param array{path: string, filename: string} $pdf
+ */
+function portalSendPdfFile(array $pdf): void {
     header('Content-Type: application/pdf');
     header('Content-Disposition: attachment; filename="'.$pdf['filename'].'"');
     header('Content-Length: '.(string)filesize($pdf['path']));
@@ -330,21 +337,58 @@ function sendContactMail($db, string $uuid, array $daten, int $website) {
 }
 
 // ============================================================================
-// RECHNUNGEN
+// BELEGE (lib/documents.php) — Rechnungen, Aufträge, Angebote, Lieferscheine,
+// Reklamationen, je nach Einstellung der Webseite
 // ============================================================================
 
+/**
+ * Belege einer Art — ohne type die erste eingeschaltete Belegart
+ *
+ * Antwort: name (Kunde), types (eingeschaltete Belegarten, Reihenfolge der
+ * Reiter), type (die gelieferte), pdf (gibt es dazu ein PDF), documents (Zeilen)
+ */
+function personalDocuments($db, string $uuid, array $daten, int $website) {
+    $kunde = portalCustomerId($db, $uuid);
+    $typ = documentTypeRequire($db, $website, (string)portalVar($daten, 'type', ''));
+    resultInfo(true, '', [
+        'name'      => customerInvoicingData($db, $kunde)['name'],
+        'types'     => websiteDocumentTypes($db, $website),
+        'type'      => $typ,
+        'pdf'       => documentTypeHasPdf($db, $website, $typ),
+        'documents' => customerDocuments($db, $kunde, $typ, $website),
+    ]);
+}
+
+/** Ein Beleg des Kunden mit Positionen */
+function personalDocument($db, string $uuid, array $daten, int $website) {
+    $typ = documentTypeRequire($db, $website, (string)portalVar($daten, 'type', ''));
+    resultInfo(true, '', customerDocument($db, portalCustomerId($db, $uuid), $typ, portalVarInt($daten, 'id'), $website));
+}
+
+/** PDF eines eigenen Belegs */
+function downloadDocument($db, string $uuid, array $daten, int $website) {
+    $typ = documentTypeRequire($db, $website, (string)portalVar($daten, 'type', ''));
+    $id = documentOfCustomer($db, portalCustomerId($db, $uuid), $typ, portalVarInt($daten, 'id'), $website);
+    portalSendPdfFile(documentPdf($db, $typ, $id, $website));
+}
+
+// ── Rechnungen: die bisherigen Aktionen, gebunden an den Schalter „Rechnungen“ ──
+
 /** Rechnungen des Kunden */
-function personalOrders($db, string $uuid, array $daten) {
+function personalOrders($db, string $uuid, array $daten, int $website) {
+    documentTypeRequire($db, $website, 'invoices');
     resultInfo(true, '', customerInvoices($db, portalCustomerId($db, $uuid)));
 }
 
 /** Eine Rechnung des Kunden */
 function personalOrder($db, string $uuid, array $daten, int $website) {
+    documentTypeRequire($db, $website, 'invoices');
     resultInfo(true, '', customerInvoice($db, portalCustomerId($db, $uuid), portalVarInt($daten, 'id'), $website));
 }
 
 /** Rechnungs-PDF einer eigenen Rechnung */
-function downloadInvoice($db, string $uuid, array $daten) {
+function downloadInvoice($db, string $uuid, array $daten, int $website) {
+    documentTypeRequire($db, $website, 'invoices');
     portalSendPdf($db, invoiceOfCustomer($db, portalCustomerId($db, $uuid), portalVarInt($daten, 'payment-id')));
 }
 
@@ -406,6 +450,8 @@ function portalPublicActions(): array {
         'personalOverview', 'personalProfil', 'updatePersonalProfil',
         'personalPayment', 'changePaymentMethod', 'updateEmail', 'updatePassword',
         'contactInit', 'sendContactMail',
+        // Belege (Rechnungen, Aufträge, Angebote, Lieferscheine, Reklamationen)
+        'personalDocuments', 'personalDocument', 'downloadDocument',
         // Rechnungen
         'personalOrders', 'personalOrder', 'downloadInvoice', 'downloadInvoiceLink',
         // Freischaltung

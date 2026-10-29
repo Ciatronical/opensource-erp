@@ -2838,10 +2838,14 @@ DROP FUNCTION IF EXISTS defaults_oserp_shop_channel_sync();
 -- (website_secret_oserp); der alte Index am Kanal entfällt
 DROP INDEX IF EXISTS sales_channel_secret_shop_public_key;
 
--- Übernahme (dev/kundenportal.md): Jeder HugoShop ohne Webseite bekommt eine
--- aus seinen bisherigen Einstellungen — Name wie der Kanal, Zugang, Adresse,
--- HugoCMS; die Schlüssel verlassen den Kanal. Danach zeigen Sitzungen und
--- Rechnungslinks auf die Webseite (unten). Läuft nur einmal je Kanal.
+-- Übernahme (dev/kundenportal.md): Ein HugoShop ohne Webseite, der vor dem
+-- Kundenportal eingerichtet war (Adresse, Zugang oder HugoCMS in seinen
+-- Einstellungen), bekommt eine Webseite aus diesen Einstellungen — Name und
+-- Schaltzustand wie der Kanal; die Schlüssel verlassen den Kanal. Danach
+-- zeigen Sitzungen und Rechnungslinks auf die Webseite (unten). Läuft nur
+-- einmal je Kanal. Der leere HugoShop-Kanal einer frischen Aktivierung
+-- bekommt keine Webseite: die legt man unter Firmenkonfiguration →
+-- Kundenportal an und ordnet sie dem Kanal im Feld „Webseite“ zu.
 DO $$
 DECLARE
     k        record;
@@ -2851,11 +2855,17 @@ BEGIN
     IF to_regclass('website_oserp') IS NULL THEN
         RETURN;
     END IF;
-    FOR k IN SELECT id, name, settings FROM sales_channel_shop
-              WHERE type = 'hugoshop' AND website_id IS NULL ORDER BY id
+    FOR k IN SELECT c.id, c.name, c.active, c.settings FROM sales_channel_shop c
+              WHERE c.type = 'hugoshop' AND c.website_id IS NULL
+                AND (COALESCE(c.settings ->> 'base_url', '') <> ''
+                     OR COALESCE(c.settings ->> 'backend_url', '') <> ''
+                     OR COALESCE(c.settings ->> 'hugocms_url', '') <> ''
+                     OR EXISTS (SELECT 1 FROM sales_channel_secret_shop s
+                                 WHERE s.channel_id = c.id AND s.key IN ('public_key', 'hugocms_key') AND s.value <> ''))
+              ORDER BY c.id
     LOOP
         INSERT INTO website_oserp (name, active, sortkey, settings)
-        VALUES (COALESCE(NULLIF(k.name, ''), 'Webseite ' || k.id), true, k.id,
+        VALUES (COALESCE(NULLIF(k.name, ''), 'Webseite ' || k.id), COALESCE(k.active, false), k.id,
                 website_default_settings()
                 || COALESCE((SELECT jsonb_object_agg(e.key, e.value)
                                FROM jsonb_each(COALESCE(k.settings, '{}'::jsonb)) e
@@ -3582,7 +3592,7 @@ CREATE OR REPLACE FUNCTION ebay_customer_match(p_order jsonb) RETURNS jsonb
                 OR (k.email IS NOT NULL AND lower(c.email) = k.email)
                 OR lower(btrim(c.zipcode)) IN (k.plz, k.liefer_plz)
                 OR (k.name_n <> '' AND similarity(ebay_norm_name(c.name), k.name_n) >= 0.5)
-                OR (k.telefon <> '' AND k.telefon IN (ebay_norm_phone(c.phone), ebay_norm_phone(c.phone3), ebay_norm_phone(c.fax))))
+                OR (k.telefon <> '' AND k.telefon IN (ebay_norm_phone(c.phone), ebay_norm_phone(c.fax))))
     ), treffer AS (
         SELECT c.id, c.customernumber, c.name, c.contact, c.street, c.zipcode, c.city, c.country, c.email, c.phone,
                COALESCE(c.bestellungen, 0) AS ebay_bestellungen,
@@ -3590,7 +3600,7 @@ CREATE OR REPLACE FUNCTION ebay_customer_match(p_order jsonb) RETURNS jsonb
                k.email IS NOT NULL AND (lower(c.email) = k.email
                    OR EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(c.weitere_emails) = 'array' THEN c.weitere_emails ELSE '[]'::jsonb END) m
                                WHERE lower(btrim(m ->> 'email')) = k.email)) AS email_gleich,
-               k.telefon <> '' AND (k.telefon IN (ebay_norm_phone(c.phone), ebay_norm_phone(c.phone3), ebay_norm_phone(c.fax))
+               k.telefon <> '' AND (k.telefon IN (ebay_norm_phone(c.phone), ebay_norm_phone(c.fax))
                    OR EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(c.weitere_telefone) = 'array' THEN c.weitere_telefone ELSE '[]'::jsonb END) t
                                WHERE ebay_norm_phone(t ->> 'number') = k.telefon)) AS telefon_gleich,
                GREATEST(CASE WHEN k.name_n <> '' THEN similarity(ebay_norm_name(c.name), k.name_n) ELSE 0 END,

@@ -42,6 +42,12 @@
                 <v-icon start>mdi-whatsapp</v-icon>
                 {{ t('CrmView.whatsapp') }}
             </v-tab>
+            <!-- Kundenkonto: Zugang zum Kundenportal auf der Webseite — nur bei Kunden
+                 und nur, wenn eine Webseite eingeschaltet ist (Firmenkonfiguration → Kundenportal) -->
+            <v-tab v-if="cvProfile?.id && cvProfile?.src !== 'V' && oserpData.hasPortalWebsite()" value="portal">
+                <v-icon start>mdi-account-key-outline</v-icon>
+                {{ t('CrmView.portal') }}
+            </v-tab>
             <!-- Belegabruf: Lieferanten-Portal einmal vormachen, danach holt die
                  Belegsuche die Rechnungen automatisch (nur bei Lieferanten) -->
             <v-tab v-if="cvProfile?.id && cvProfile?.src === 'V'" value="belegabruf">
@@ -385,6 +391,11 @@
                 />
             </v-window-item>
 
+            <!-- Kundenkonto (Kundenportal) -->
+            <v-window-item v-if="cvProfile?.id && cvProfile?.src !== 'V' && oserpData.hasPortalWebsite()" value="portal">
+                <portal-tab :cv-id="cvProfile.id" :phone-numbers="cvPhoneNumbers" />
+            </v-window-item>
+
             <!-- Belegabruf (Lieferanten-Portal) -->
             <v-window-item v-if="cvProfile?.id && cvProfile?.src === 'V'" value="belegabruf">
                 <div class="pa-3">
@@ -406,6 +417,7 @@ import PhoneActionBar from '@/core/components/phone-action-bar.vue'
 const FilesTab = defineAsyncComponent(() => import('@/core/views/customer-vendor/tabs/files.tab.vue'))
 import EmailsTab from '@/core/views/customer-vendor/tabs/emails.tab.vue'
 import WhatsappTab from '@/core/views/customer-vendor/tabs/whatsapp.tab.vue'
+import PortalTab from '@/core/views/customer-vendor/tabs/portal.tab.vue'
 import BelegQuellenConfig from '@/core/views/config/tabs/beleg-quellen.config.vue'
 import { formatPhone } from '@/core/utils/phoneFormat.js'
 import { collectEmailAddresses } from '@/core/utils/cvContactAddresses.js'

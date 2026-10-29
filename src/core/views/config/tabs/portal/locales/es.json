@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} activaciones abiertas",
         "install": "Instalar paquete",
         "installHint": "Transfiere plantillas, widgets y el proxy a HugoCMS y hace construir el sitio.",
+        "installNeeded": "Este cambio solo llega al sitio web tras «Instalar paquete».",
         "installQueued": "Tarea creada: la publicación de la tienda transfiere el paquete (resumen de la tienda).",
         "installDone": "Paquete transferido y sitio construido.",
         "installFailed": "El paquete no se transfirió por completo. Motivo:",
@@ -76,7 +77,20 @@
             "portalPath_help": "Inicio común de todas las páginas del portal, por ejemplo /kunden/ o /kundenportal/. Valor predeterminado /kunden/.",
             "activation": "Activación de cuenta para clientes existentes",
             "activationEnabled": "Ofrecer activación",
-            "activationEnabled_help": "Los clientes existentes sin cuenta de cliente pueden obtener un acceso por WhatsApp. Desactivado = sin enlace ni página. Predeterminado: desactivado."
+            "activationEnabled_help": "Los clientes existentes sin cuenta de cliente pueden obtener un acceso por WhatsApp. Desactivado = sin enlace ni página. Predeterminado: desactivado.",
+            "documents": "Documentos en la cuenta de cliente",
+            "documentsInvoices": "Facturas",
+            "documentsInvoices_help": "El cliente ve sus facturas y las descarga en PDF. Predeterminado: activado.",
+            "documentsOrders": "Pedidos",
+            "documentsOrders_help": "El cliente ve sus pedidos (confirmaciones de pedido) con PDF.",
+            "documentsQuotations": "Presupuestos",
+            "documentsQuotations_help": "El cliente ve los presupuestos que recibió, con PDF.",
+            "documentsDeliveryOrders": "Albaranes",
+            "documentsDeliveryOrders_help": "El cliente ve sus albaranes con PDF, sin precios.",
+            "documentsReclamations": "Reclamaciones",
+            "documentsReclamations_help": "El cliente ve sus reclamaciones con el motivo por línea. Sin PDF.",
+            "documentsShopOrders": "Pedidos (tienda en línea)",
+            "documentsShopOrders_help": "Solo con la extensión de tienda: pedidos de la tienda en línea en una pestaña propia con estado de pago y de entrega. Predeterminado: activado."
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "Ya existe un sitio web con este nombre.",
@@ -115,7 +129,8 @@
             "templateSet": "El conjunto de plantillas determina el aspecto del inicio de sesión, la cuenta de cliente, las facturas y el formulario de contacto en el sitio web. «Estándar» se adapta al aspecto del sitio y basta en la mayoría de los casos.\n\nUn desarrollador puede crear conjuntos propios en el directorio de plantillas de la empresa bajo portal/; después aparecen aquí para elegir.\n\nTras un cambio, ejecutar «Instalar paquete» para que el sitio reciba las nuevas plantillas.",
             "contactMailTo": "Cuando un cliente rellena el formulario de contacto del sitio web, OpensourceERP envía la consulta por correo a esta dirección.\n\nSi el campo queda vacío, la consulta va a la dirección de remitente de la empresa de la configuración de la empresa.\n\nNo se admiten varios destinatarios; usar un buzón compartido o una lista de distribución.",
             "pages": "En estas direcciones «Instalar paquete» crea las páginas del portal en el sitio web, listas con el bloque correspondiente. Para ello el config.json del proyecto del sitio necesita la entrada para oserp-portal/content (véase la ayuda en «Probar conexión»).\n\nLa dirección se indica desde la raíz del sitio, con barra al principio y al final, por ejemplo /kunden/anmelden/. Las subpáginas de la cuenta (perfil, direcciones, facturas, con tienda la forma de pago, con vehículos los vehículos) cuelgan de la dirección de la cuenta de cliente.\n\nLos widgets usan las mismas direcciones para sus enlaces, y OpensourceERP para los enlaces en correos y mensajes de WhatsApp. Quien quiera diseñar una página por sí mismo crea en HugoCMS una página propia en la misma dirección; tiene prioridad sobre la del paquete.\n\nTras un cambio, ejecutar «Instalar paquete».\n\nEl directorio del portal de clientes es el inicio común: una página sin barra inicial (p. ej. anmelden/) cuelga de él; de /kunden/ y anmelden/ resulta /kunden/anmelden/. Para usar otro directorio basta con cambiar este único campo. Una página con barra inicial (p. ej. /login/) va por su cuenta.",
-            "activationEnabled": "Los clientes que ya le han comprado pero aún no tienen cuenta de cliente pueden crear su acceso por sí mismos: en el sitio web introducen su número de móvil y su código postal o número de cliente y reciben un enlace por WhatsApp.\n\nActivado, «Instalar paquete» crea la página «Activar cuenta» en el sitio web, y las páginas de inicio de sesión y de registro muestran el enlace. El enlace también puede enviarse desde la ficha del cliente.\n\nDesactivado, no hay ni página ni enlace, y las solicitudes de activación se rechazan. Tras cambiarlo, ejecute «Instalar paquete» para que el sitio web reciba el nuevo estado.\n\nEl envío por WhatsApp requiere un acceso de WhatsApp configurado y la plantilla «Activar cuenta de cliente» aprobada por Meta."
+            "activationEnabled": "Los clientes que ya le han comprado pero aún no tienen cuenta de cliente pueden crear su acceso por sí mismos: en el sitio web introducen su número de móvil y su código postal o número de cliente y reciben un enlace por WhatsApp.\n\nActivado, «Instalar paquete» crea la página «Activar cuenta» en el sitio web, y las páginas de inicio de sesión y de registro muestran el enlace. El enlace también puede enviarse desde la ficha del cliente.\n\nDesactivado, no hay ni página ni enlace, y las solicitudes de activación se rechazan. Tras cambiarlo, ejecute «Instalar paquete» para que el sitio web reciba el nuevo estado.\n\nEl envío por WhatsApp requiere un acceso de WhatsApp configurado y la plantilla «Activar cuenta de cliente» aprobada por Meta.",
+            "documents": "En la página «Documentos» de su cuenta de cliente, el cliente ve los documentos marcados aquí, cada tipo en su propia pestaña, con fecha, importe, estado y líneas. Facturas, pedidos, presupuestos y albaranes ofrecen descarga en PDF; OpensourceERP aún no imprime reclamaciones, por lo que allí falta el botón.\n\nPredeterminado: solo facturas. Las marcas actúan de inmediato, no hace falta «Instalar paquete». Si no hay nada marcado, la página muestra un aviso en lugar de una lista.\n\nSe muestran todos los documentos de la ficha del cliente, no solo los creados a través del sitio web: el cliente del taller también ve la factura del taller. Con la extensión de tienda, las facturas de la tienda muestran además el estado de pago y de entrega.\n\nCon la extensión de tienda existe además «Pedidos (tienda en línea)»: las facturas de la tienda en línea en una pestaña propia con estado de pago y de entrega. Si está activado, estas facturas ya no aparecen en «Facturas»: cada documento se lista una sola vez."
         },
         "hugocmsFromBaseUrl": "Usar la dirección web",
         "hugocmsFromBaseUrl_help": "Establece la dirección de acceso remoto a HugoCMS a partir de la dirección web del sitio añadiendo /cms-api/.",

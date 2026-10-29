@@ -3,70 +3,6 @@
 <template>
   <v-row class="pa-2 pa-sm-3 whatsapp-tab">
     <v-col cols="12">
-      <!-- Zugang zum Kundenkonto auf der Webseite (Kundenportal, dev/shop-konto-freischaltung.md F3):
-           hat der Kunde noch keinen, schickt der Mitarbeiter ihm den Link per WhatsApp oder Mail -->
-      <v-card v-if="src === 'C' && portal.status" variant="outlined" class="mb-3">
-        <v-card-item>
-          <template #prepend><v-icon icon="mdi-account-key-outline" /></template>
-          <v-card-title class="text-subtitle-1">{{ t('CustomerVendorEditView.whatsapp.portalTitle') }}</v-card-title>
-        </v-card-item>
-        <v-card-text class="pt-0">
-          <div v-if="portal.status.account" class="text-body-2">
-            <v-icon size="small" color="success" class="mr-1">mdi-check-circle</v-icon>
-            {{ t('CustomerVendorEditView.whatsapp.portalHasAccount', { email: portal.status.email }) }}
-          </div>
-          <template v-else>
-            <div class="text-body-2 mb-2">{{ t('CustomerVendorEditView.whatsapp.portalNoAccount') }}</div>
-            <div v-if="portal.status.open" class="text-caption text-medium-emphasis mb-2">
-              {{ t('CustomerVendorEditView.whatsapp.portalOpen', {
-                date: zeitpunkt(portal.status.open.created),
-                via: portal.status.open.phone ? 'WhatsApp' : t('CustomerVendorEditView.whatsapp.portalViaEmail'),
-                expires: zeitpunkt(portal.status.open.expires)
-              }) }}
-              ({{ t(portal.status.open.source === 'staff' ? 'CustomerVendorEditView.whatsapp.portalSourceStaff' : 'CustomerVendorEditView.whatsapp.portalSourcePortal') }})
-            </div>
-            <v-alert v-if="!portal.websites.length" type="info" variant="tonal" density="compact" class="mb-2">
-              {{ t('CustomerVendorEditView.whatsapp.portalNoWebsite') }}
-            </v-alert>
-            <div v-else class="d-flex flex-wrap align-center ga-2">
-              <v-select
-                v-model="portal.websiteId"
-                :items="portal.websites.map(w => ({ value: Number(w.id), title: w.name }))"
-                :label="t('CustomerVendorEditView.whatsapp.portalWebsite')"
-                variant="outlined" density="compact" hide-details style="max-width: 260px"
-              />
-              <v-select
-                v-model="portal.via"
-                :items="[{ value: 'whatsapp', title: 'WhatsApp' }, { value: 'email', title: t('CustomerVendorEditView.whatsapp.portalViaEmail') }]"
-                :label="t('CustomerVendorEditView.whatsapp.portalVia')"
-                variant="outlined" density="compact" hide-details style="max-width: 180px"
-              />
-              <v-select
-                v-if="portal.via === 'whatsapp' && phoneNumbers.length > 1"
-                v-model="portal.phone"
-                :items="phoneNumbers"
-                :label="t('CustomerVendorEditView.whatsapp.portalPhone')"
-                variant="outlined" density="compact" hide-details style="max-width: 220px"
-              />
-              <v-btn
-                color="primary" variant="tonal" prepend-icon="mdi-send-lock"
-                :loading="portal.sending"
-                :disabled="!portal.websiteId || (portal.via === 'whatsapp' && (!portal.whatsapp || !portal.template)) || (portal.via === 'email' && !portal.status.email)"
-                @click="portalSenden"
-              >
-                {{ t('CustomerVendorEditView.whatsapp.portalSend') }}
-              </v-btn>
-            </div>
-            <div v-if="portal.via === 'whatsapp' && portal.websites.length && !portal.template" class="text-caption text-warning mt-2">
-              {{ t('CustomerVendorEditView.whatsapp.portalNoTemplate') }}
-            </div>
-            <div v-if="portal.via === 'email' && !portal.status.email" class="text-caption text-warning mt-2">
-              {{ t('CustomerVendorEditView.whatsapp.portalNoEmail') }}
-            </div>
-          </template>
-        </v-card-text>
-      </v-card>
-
       <!-- Kein WhatsApp konfiguriert -->
       <v-alert v-if="configError" type="warning" variant="tonal" density="compact" class="mb-3">
         <v-icon start>mdi-cog-outline</v-icon>
@@ -507,7 +443,7 @@ export default {
     customerName: { type: String, default: '' }
   },
   setup(props) {
-    const { t, te, locale } = useI18n()
+    const { t, locale } = useI18n()
     const router = useRouter()
     const route = useRoute()
     const oserp = oserpStore()
@@ -519,79 +455,6 @@ export default {
     const chatContainer = ref(null)
     const selectedPhone = ref('')
     const configError = ref(false)
-
-    // Zugang zum Kundenkonto auf der Webseite (Kundenportal): Stand und Versand
-    // des Links aus der Kundenakte (getPortalActivationStatus, sendPortalActivation)
-    const portal = reactive({
-      status: null, websites: [], whatsapp: false, template: false,
-      websiteId: 0, via: 'whatsapp', phone: '', sending: false,
-    })
-
-    async function portalLaden() {
-      if (props.src !== 'C' || !props.cvId) { portal.status = null; return }
-      try {
-        const resp = await axios.post('/api/portal/', { action: 'getPortalActivationStatus', customer_id: props.cvId })
-        if (!resp.data?.success) { portal.status = null; return }
-        const daten = resp.data.payload || {}
-        portal.status = daten.status || null
-        portal.websites = daten.websites || []
-        portal.whatsapp = !!daten.whatsapp
-        portal.template = !!daten.template
-        if (!portal.websiteId || !portal.websites.some(w => Number(w.id) === portal.websiteId)) {
-          portal.websiteId = portal.websites.length ? Number(portal.websites[0].id) : 0
-        }
-        if (!portal.phone) portal.phone = props.phoneNumbers[0] || ''
-        if (!portal.whatsapp && portal.status?.email) portal.via = 'email'
-      } catch {
-        // Kein Kundenportal (Modul fehlt oder kein Recht): die Karte bleibt weg
-        portal.status = null
-      }
-    }
-
-    /**
-     * Lesbarer Satz zur Fehlerantwort des Versands: der Fehlercode steht in
-     * text und wird übersetzt (portalErrors.*); ohne Übersetzung der Wortlaut
-     * des Backends (debug, bei geworfenen ApiErrors payload), sonst der
-     * allgemeine Satz
-     */
-    function portalFehlerText(data) {
-      const code = String(data?.text || '')
-      const key = `CustomerVendorEditView.whatsapp.portalErrors.${code}`
-      if (code && te(key)) return t(key)
-      const wortlaut = data?.debug || (typeof data?.payload === 'string' ? data.payload : '')
-      return wortlaut || t('CustomerVendorEditView.whatsapp.portalSendError')
-    }
-
-    async function portalSenden() {
-      portal.sending = true
-      try {
-        const resp = await axios.post('/api/portal/', {
-          action: 'sendPortalActivation',
-          customer_id: props.cvId,
-          website_id: portal.websiteId,
-          via: portal.via,
-          phone: portal.via === 'whatsapp' ? (portal.phone || props.phoneNumbers[0] || '') : '',
-        })
-        if (resp.data?.success) {
-          toast.success(t('CustomerVendorEditView.whatsapp.portalSent'))
-          portal.status = resp.data.payload?.status || portal.status
-          if (portal.via === 'whatsapp') fetchMessages()
-        } else {
-          toast.error(portalFehlerText(resp.data))
-        }
-      } catch (e) {
-        toast.error(portalFehlerText(e?.response?.data))
-      } finally {
-        portal.sending = false
-      }
-    }
-
-    /** Zeitstempel der Datenbank für die Anzeige */
-    function zeitpunkt(wert) {
-      if (!wert) return ''
-      const datum = new Date(String(wert).replace(' ', 'T'))
-      return isNaN(datum) ? String(wert) : datum.toLocaleString(locale.value)
-    }
 
     // Audio-/Bild-Loading-Status (lokal pro Instanz)
     const audioLoading = reactive({})
@@ -674,7 +537,6 @@ export default {
 
     onMounted(() => {
       configError.value = !hasConfig.value
-      portalLaden()
       if (props.phoneNumbers.length > 0) {
         // Telefonnummer aus Query vorauswählen (von PhoneActionBar-Klick)
         const queryPhone = route.query.whatsappPhone
@@ -719,8 +581,6 @@ export default {
       if (props.phoneNumbers.length > 0) {
         selectedPhone.value = props.phoneNumbers[0]
       }
-      portal.phone = ''
-      portalLaden()
       messages.value = []
       if (hasConfig.value && props.phoneNumbers.length > 0) {
         fetchMessages()
@@ -1132,7 +992,6 @@ export default {
     return {
       t, messages, loading, sending, newMessage,
       chatContainer, selectedPhone, configError,
-      portal, portalSenden, zeitpunkt,
       attachedFile, fileInputRef, showDocPicker, docPickerLoading, customerFiles,
       audioCache, audioLoading, savingMedia,
       imageCache, imageLoading,

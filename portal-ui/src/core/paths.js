@@ -44,6 +44,8 @@ const DEFAULTS = {
   privacy: 'datenschutz/',
   // Kundenportal: Zugang für Bestandskunden, Fahrzeuge (LxCars)
   activate: 'freischalten/',
+  // Belege des Kontos (Rechnungen, Aufträge, Angebote, Lieferscheine, Reklamationen)
+  documents: 'belege/',
   vehicles: 'fahrzeuge/',
 };
 

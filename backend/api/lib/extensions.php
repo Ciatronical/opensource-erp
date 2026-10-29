@@ -104,3 +104,20 @@ function getActiveExtensions($db): array {
 function isExtensionActive($db, string $extension): bool {
     return in_array($extension, getActiveExtensions($db), true);
 }
+
+/**
+ * Liefert den SQL-Ausdruck, der die eingeschalteten Webseiten des Kundenportals zählt
+ *
+ * Für die Sitzungsabfragen (company_config.portal_websites): die Kundenakte
+ * zeigt den Reiter „Kundenkonto“ nur, wenn mindestens eine Webseite
+ * eingeschaltet ist (Firmenkonfiguration → Funktionen → Kundenportal). Vor dem
+ * ersten Schema-Update fehlt website_oserp — der Name darf dann nicht in der
+ * Abfrage stehen, sonst scheitert schon das Parsen.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return string SQL-Teilausdruck (Zahl)
+ */
+function portalWebsitesSelectSql($db): string {
+    $row = $db->getOne("SELECT to_regclass('public.website_oserp') AS w", []);
+    return empty($row['w']) ? '0' : '(SELECT COUNT(*) FROM website_oserp WHERE active)';
+}

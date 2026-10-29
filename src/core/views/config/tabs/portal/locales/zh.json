@@ -25,6 +25,7 @@
         "activationsOpen": "{anzahl} 个待激活",
         "install": "安装软件包",
         "installHint": "将模板、小部件和代理传输到 HugoCMS 并构建网站。",
+        "installNeeded": "此更改需执行“安装软件包”后才会生效于网站。",
         "installQueued": "已创建任务——商店发布将传输软件包（商店概览）。",
         "installDone": "软件包已传输，网站已构建。",
         "installFailed": "软件包未完整传送。原因：",
@@ -76,7 +77,20 @@
             "portalPath_help": "所有门户页面的公共起始路径，例如 /kunden/ 或 /kundenportal/。默认 /kunden/。",
             "activation": "现有客户的账户激活",
             "activationEnabled": "提供激活",
-            "activationEnabled_help": "没有客户账户的现有客户可通过 WhatsApp 获得访问权限。关闭 = 无链接、无页面。默认：关闭。"
+            "activationEnabled_help": "没有客户账户的现有客户可通过 WhatsApp 获得访问权限。关闭 = 无链接、无页面。默认：关闭。",
+            "documents": "客户账户中的单据",
+            "documentsInvoices": "发票",
+            "documentsInvoices_help": "客户可查看其发票并下载 PDF。默认：开启。",
+            "documentsOrders": "订单",
+            "documentsOrders_help": "客户可查看其订单（订单确认）并下载 PDF。",
+            "documentsQuotations": "报价单",
+            "documentsQuotations_help": "客户可查看收到的报价单并下载 PDF。",
+            "documentsDeliveryOrders": "送货单",
+            "documentsDeliveryOrders_help": "客户可查看其送货单并下载 PDF，不含价格。",
+            "documentsReclamations": "投诉",
+            "documentsReclamations_help": "客户可查看其投诉及每项的原因。无 PDF。",
+            "documentsShopOrders": "订单（在线商店）",
+            "documentsShopOrders_help": "仅限商店扩展：在线商店的订单作为独立标签页，含付款和送货状态。默认：开启。"
         },
         "errors": {
             "WEBSITE_NAME_TAKEN": "已存在同名网站。",
@@ -115,7 +129,8 @@
             "templateSet": "模板集决定登录、客户账户、发票和联系表单在网站上的外观。“标准”会适应网站外观，大多数情况下足够。\n\n开发人员可在公司模板目录的 portal/ 下创建自定义集，之后会在此处显示供选择。\n\n切换后请执行“安装软件包”，以便网站获得新模板。",
             "contactMailTo": "当客户在网站上填写联系表单时，OpensourceERP 会将请求以电子邮件形式发送到此地址。\n\n如果字段留空，请求将发送到公司配置中的公司发件人地址。\n\n不支持多个收件人 — 请使用共享邮箱或分发列表。",
             "pages": "“安装软件包”会在这些地址上在网站中创建门户页面 — 已带有相应的组件。这需要网站项目的 config.json 中包含 oserp-portal/content 的条目（参见“测试连接”处的帮助）。\n\n地址从网站根目录开始填写，开头和结尾都带斜杠，例如 /kunden/anmelden/。账户的子页面（个人资料、地址、发票，有商店时的付款方式，有车辆时的车辆）挂在客户账户地址之下。\n\n组件的链接以及 OpensourceERP 在电子邮件和 WhatsApp 消息中的链接都使用这些相同的地址。若想自行设计某个页面，请在 HugoCMS 中以相同地址创建自己的页面 — 它优先于软件包中的页面。\n\n更改后请执行“安装软件包”。\n\n客户门户目录是公共起始路径：不以斜杠开头的页面（例如 anmelden/）挂在其下 — /kunden/ 与 anmelden/ 组合为 /kunden/anmelden/。若要使用其他目录，只需更改这一个字段。以斜杠开头的页面（例如 /login/）则独立存在。",
-            "activationEnabled": "已在您这里购买过但尚无客户账户的客户可自行开通访问权限：他们在网站上输入手机号以及邮政编码或客户编号，然后通过 WhatsApp 收到链接。\n\n开启后，“安装软件包”会在网站上创建“激活账户”页面，登录页和注册页会显示指向该页面的链接。该链接也可从客户档案发送。\n\n关闭后既无页面也无链接，激活请求会被拒绝。切换后请执行“安装软件包”，以便网站获得新状态。\n\n通过 WhatsApp 发送需要已配置的 WhatsApp 访问权限以及经 Meta 批准的模板“激活客户账户”。"
+            "activationEnabled": "已在您这里购买过但尚无客户账户的客户可自行开通访问权限：他们在网站上输入手机号以及邮政编码或客户编号，然后通过 WhatsApp 收到链接。\n\n开启后，“安装软件包”会在网站上创建“激活账户”页面，登录页和注册页会显示指向该页面的链接。该链接也可从客户档案发送。\n\n关闭后既无页面也无链接，激活请求会被拒绝。切换后请执行“安装软件包”，以便网站获得新状态。\n\n通过 WhatsApp 发送需要已配置的 WhatsApp 访问权限以及经 Meta 批准的模板“激活客户账户”。",
+            "documents": "在客户账户的“单据”页面，客户可看到此处勾选的单据，每种类型为一个独立标签页，含日期、金额、状态和明细。发票、订单、报价单和送货单提供 PDF 下载；OpensourceERP 尚不打印投诉，因此该处没有按钮。\n\n默认：仅发票。勾选立即生效，无需“安装软件包”。若未勾选任何项，页面显示提示而非列表。\n\n显示客户档案中的全部单据，而不仅是通过网站产生的单据：维修厂的客户也能看到维修厂发票。启用商店扩展后，商店发票还会显示付款和送货状态。\n\n启用商店扩展后还有“订单（在线商店）”：在线商店的发票作为独立标签页，含付款和送货状态。开启后，这些发票不再出现在“发票”下，每张单据只列出一次。"
         },
         "hugocmsFromBaseUrl": "采用网站地址",
         "hugocmsFromBaseUrl_help": "根据网站地址并在末尾加上 /cms-api/ 设置 HugoCMS 远程访问地址。",
