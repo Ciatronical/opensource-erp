@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "Wordt op de factuurpagina getoond zolang de klant niet betaald heeft.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Wordt op de factuurpagina getoond zolang de klant niet betaald heeft.",
+        "shopPaypalBrandName": "Naam bij PayPal",
+        "shopPaypalBrandName_help": "Verschijnt op de PayPal-pagina als ontvanger, bijvoorbeeld de naam van de website. Leeg: de bedrijfsnaam uit de bedrijfsgegevens.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "PayPal-testomgeving gebruiken",
         "shopPaypalSandbox_help": "Zolang dit is ingesteld worden er geen echte betalingen uitgevoerd.",

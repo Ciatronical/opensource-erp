@@ -2522,6 +2522,10 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_payment_bank', '') ON CONF
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_payment_iban', '') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_payment_bic', '') ON CONFLICT (key) DO NOTHING;
 
+-- Name, den PayPal dem Kunden als Empfänger zeigt (brand_name). Leer: der
+-- Firmenname aus defaults.company. Bis 30.10.2026 ging der Kontoinhaber mit.
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_paypal_brand_name', '') ON CONFLICT (key) DO NOTHING;
+
 -- PayPal, Uebergang: die erste Fassung dieser Erweiterung kannte nur ein
 -- Zugangsdatenpaar. Wo es gefuellt ist, wandert es in die
 -- Echtbetrieb-Schluessel — von dort uebernimmt es die Abschrift in den

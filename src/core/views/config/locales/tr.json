@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "Müşteri ödeme yapmadığı sürece fatura sayfasında gösterilir.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Müşteri ödeme yapmadığı sürece fatura sayfasında gösterilir.",
+        "shopPaypalBrandName": "PayPal’daki ad",
+        "shopPaypalBrandName_help": "PayPal sayfasında alıcı olarak görünür, örneğin web sitesinin adı. Boş: şirket verilerindeki şirket adı.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "PayPal test ortamını kullan",
         "shopPaypalSandbox_help": "Bu açık olduğu sürece gerçek ödeme yapılmaz.",

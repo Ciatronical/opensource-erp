@@ -223,6 +223,27 @@ function paypalAccessToken($db, int $kanal): string {
 }
 
 /**
+ * Der Name, den PayPal dem Kunden als Empfänger zeigt
+ *
+ * Steht im Kopf der PayPal-Seite und in „Abbrechen und zurück zu …“.
+ * Einstellung „Name bei PayPal“ (shop_paypal_brand_name); leer: der Firmenname
+ * aus den Firmendaten. Bis 30.10.2026 ging hier der Kontoinhaber der
+ * Bankverbindung mit — bei einer Person als Inhaber stand dann deren Name
+ * statt des Shops (autoprofis24.de). PayPal nimmt höchstens 127 Zeichen.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return string leer, wenn weder Einstellung noch Firmenname gesetzt sind
+ */
+function paymentBrandName($db): string {
+    $name = shopConfigValue($db, 'shop_paypal_brand_name');
+    if ('' === $name) {
+        $zeile = $db->getOne("SELECT company FROM defaults LIMIT 1", []);
+        $name  = trim((string)($zeile['company'] ?? ''));
+    }
+    return mb_substr($name, 0, 127);
+}
+
+/**
  * Legt bei PayPal eine Bestellung an und liefert die Adresse zur Freigabe
  *
  * Die Sitzungskennung geht als reference_id mit — sie ist der einzige Faden
@@ -270,6 +291,28 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
 
     $rueckweg = rtrim(websiteRequire($db, $website, 'base_url'), '/').'/portal-api/';
 
+    // Was PayPal dem Kunden zeigt. Ohne Namen bleibt brand_name weg — PayPal
+    // zeigt dann den Namen des PayPal-Kontos.
+    $erlebnis = [
+        'payment_method_preference' => shopChannelValue($db, $kanal, 'paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED'),
+        'locale'       => 'de-DE',
+        'landing_page' => 'LOGIN',
+        'user_action'  => 'PAY_NOW',
+        // Die Adresse steht fest — bei PayPal laesst sie sich nicht
+        // aendern, sonst stimmte der Versand je Land nicht mehr
+        'shipping_preference' => 'SET_PROVIDED_ADDRESS',
+        // failed: wohin, wenn die Zahlung zwar zurückkommt, aber scheitert.
+        // Ohne dieses Ziel kannte der Rückweg nur die Erfolgsseite und
+        // endete im Fehlerfall auf einer leeren Antwort.
+        'return_url' => $rueckweg.'?action=endPayment&page='.rawurlencode($erfolgSeite)
+                        .'&failed='.rawurlencode($abbruchSeite),
+        'cancel_url' => $rueckweg.'?action=paymentCanceled&page='.rawurlencode($abbruchSeite),
+    ];
+    $marke = paymentBrandName($db);
+    if ('' !== $marke) {
+        $erlebnis['brand_name'] = $marke;
+    }
+
     $antwort = paypalRequest($db, $kanal, '/v2/checkout/orders', 'POST', [
         'intent' => 'CAPTURE',
         'purchase_units' => [[
@@ -283,22 +326,7 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
                 'value'         => number_format($betrag, 2, '.', ''),
             ],
         ]],
-        'payment_source' => ['paypal' => ['experience_context' => [
-            'payment_method_preference' => shopChannelValue($db, $kanal, 'paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED'),
-            'brand_name'   => shopConfigValue($db, 'shop_payment_account_owner'),
-            'locale'       => 'de-DE',
-            'landing_page' => 'LOGIN',
-            'user_action'  => 'PAY_NOW',
-            // Die Adresse steht fest — bei PayPal laesst sie sich nicht
-            // aendern, sonst stimmte der Versand je Land nicht mehr
-            'shipping_preference' => 'SET_PROVIDED_ADDRESS',
-            // failed: wohin, wenn die Zahlung zwar zurückkommt, aber scheitert.
-            // Ohne dieses Ziel kannte der Rückweg nur die Erfolgsseite und
-            // endete im Fehlerfall auf einer leeren Antwort.
-            'return_url' => $rueckweg.'?action=endPayment&page='.rawurlencode($erfolgSeite)
-                            .'&failed='.rawurlencode($abbruchSeite),
-            'cancel_url' => $rueckweg.'?action=paymentCanceled&page='.rawurlencode($abbruchSeite),
-        ]]],
+        'payment_source' => ['paypal' => ['experience_context' => $erlebnis]],
     ], [
         'Content-Type: application/json',
         'Authorization: Bearer '.paypalAccessToken($db, $kanal),

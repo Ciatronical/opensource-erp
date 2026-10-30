@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "Rodoma sąskaitos puslapyje, kol klientas neapmokėjo.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Rodoma sąskaitos puslapyje, kol klientas neapmokėjo.",
+        "shopPaypalBrandName": "Pavadinimas „PayPal“",
+        "shopPaypalBrandName_help": "Rodomas „PayPal“ puslapyje kaip gavėjas, pavyzdžiui, svetainės pavadinimas. Tuščia: įmonės pavadinimas iš įmonės duomenų.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "Naudoti „PayPal“ bandomąją aplinką",
         "shopPaypalSandbox_help": "Kol tai įjungta, tikri mokėjimai nevykdomi.",

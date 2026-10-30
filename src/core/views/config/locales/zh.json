@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "在客户尚未付款期间显示在发票页面上。",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "在客户尚未付款期间显示在发票页面上。",
+        "shopPaypalBrandName": "PayPal 显示名称",
+        "shopPaypalBrandName_help": "在 PayPal 页面上显示为收款方，例如网站名称。留空：使用公司数据中的公司名称。",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "使用 PayPal 测试环境",
         "shopPaypalSandbox_help": "只要启用此项，就不会发生真实付款。",

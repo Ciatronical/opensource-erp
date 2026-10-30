@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "Zobrazuje se na stránce faktury, dokud zákazník nezaplatil.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Zobrazuje se na stránce faktury, dokud zákazník nezaplatil.",
+        "shopPaypalBrandName": "Název u PayPal",
+        "shopPaypalBrandName_help": "Zobrazuje se na stránce PayPal jako příjemce, například název webu. Prázdné: název firmy z firemních údajů.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "Použít testovací prostředí PayPal",
         "shopPaypalSandbox_help": "Dokud je toto zapnuto, neprovádějí se skutečné platby.",

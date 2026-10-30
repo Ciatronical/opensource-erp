@@ -58,6 +58,13 @@ const shopDefaultsConfig = [
     { name: "shop_payment_iban", type: "input", size: 34, fieldstyle: "max-width: 35ch", label: "crm_fields.shopPaymentIban", tooltip: "crm_fields.shopPaymentIban_help" },
     { name: "shop_payment_bic", type: "input", size: 11, fieldstyle: "max-width: 20ch", label: "crm_fields.shopPaymentBic", tooltip: "crm_fields.shopPaymentBic_help" },
 
+    // Name, den PayPal dem Kunden als Empfänger zeigt (brand_name des
+    // Auftrags). Leer: der Firmenname aus den Firmendaten. Nicht der
+    // Kontoinhaber — bei einer Person als Inhaber stünde sonst deren Name
+    { name: "shop_paypal", type: "headline", label: "crm_fields.shopPaypal" },
+
+    { name: "shop_paypal_brand_name", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopPaypalBrandName", tooltip: "crm_fields.shopPaypalBrandName_help" },
+
     // Lieferstatus für den Kunden (dev/shop-bestellstatus.md): Anzeige auf der
     // Rechnungsseite im Shop und Mail bei Änderung — nur HugoShop, Vorgabe aus.
     // Bestell- und Lieferstatus selbst stehen in der Liste der Bestellungen.

@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "Отображается на странице счёта, пока клиент не оплатил.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Отображается на странице счёта, пока клиент не оплатил.",
+        "shopPaypalBrandName": "Название в PayPal",
+        "shopPaypalBrandName_help": "Отображается на странице PayPal как получатель, например название сайта. Пусто: название фирмы из данных фирмы.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "Использовать тестовую среду PayPal",
         "shopPaypalSandbox_help": "Пока это включено, реальные платежи не выполняются.",

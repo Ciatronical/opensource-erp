@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "Vises på fakturasiden så lenge kunden ikke har betalt.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Vises på fakturasiden så lenge kunden ikke har betalt.",
+        "shopPaypalBrandName": "Navn hos PayPal",
+        "shopPaypalBrandName_help": "Vises på PayPal-siden som mottaker, for eksempel navnet på nettstedet. Tomt: firmanavnet fra firmaopplysningene.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "Bruk PayPals testmiljø",
         "shopPaypalSandbox_help": "Så lenge dette er slått på, utføres ingen reelle betalinger.",

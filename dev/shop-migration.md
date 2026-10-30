@@ -369,7 +369,7 @@ eine neue Fachfunktion nicht dadurch öffentlich, dass jemand sie einbindet.
 ### Cookie und Herkunft
 
 Ohne Eintrag in `shop_allowed_origins` läuft der Shop über einen Proxy unter
-derselben Adresse: keine Freigabe-Kopfzeilen, Cookie `SameSite=Strict`. Steht
+derselben Adresse: keine Freigabe-Kopfzeilen, Cookie `SameSite=Lax`. Steht
 dort eine Adresse und die Anfrage kommt von ihr, werden die Freigaben gesetzt
 und das Cookie auf `SameSite=None; Secure` — sonst schickt der Browser es bei
 fremder Herkunft nicht mit. Eine nicht eingetragene Herkunft bekommt keine
@@ -404,7 +404,7 @@ blieb unangetastet, alles danach entfernt.
   den öffentlichen Zugang **nicht** erreichbar, ebenso wenig die
   Fachfunktionen (`cartAdd`, `customerRegister`, `shopConfigValue`, …), der
   Mandantensucher selbst und die Admin-Aktion `getShopStatus`
-- Cookie wird gesetzt, ist `HttpOnly` und `SameSite=Strict`, bleibt über
+- Cookie wird gesetzt, ist `HttpOnly` und `SameSite=Lax`, bleibt über
   Anfragen hinweg bestehen; ein unbrauchbarer Wert wird ersetzt
 - Warenkorb füllen und lesen, Konto anlegen, anmelden, abmelden — danach kein
   Kontozugriff mehr
@@ -719,7 +719,7 @@ Oberfläche nicht.
 
 `web/oserp/portal-api-proxy.php` tritt an die Stelle von `web/portal-api/index.php`.
 Er hält den Aufruf same-origin — sonst schickt der Browser das Cookie
-`PORTALCLIENTID` (`SameSite=Strict`) nicht mit und der Warenkorb wäre bei
+`PORTALCLIENTID` (`SameSite=Lax`) nicht mit und der Warenkorb wäre bei
 jeder Anfrage leer — und trägt den Shop-Schlüssel nach, sodass der Browser ihn
 nie sieht.
 

@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "Näytetään laskusivulla, kunnes asiakas on maksanut.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Näytetään laskusivulla, kunnes asiakas on maksanut.",
+        "shopPaypalBrandName": "Nimi PayPalissa",
+        "shopPaypalBrandName_help": "Näytetään PayPal-sivulla vastaanottajana, esimerkiksi verkkosivuston nimi. Tyhjä: yrityksen nimi yritystiedoista.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "Käytä PayPalin testiympäristöä",
         "shopPaypalSandbox_help": "Niin kauan kuin tämä on käytössä, oikeita maksuja ei suoriteta.",

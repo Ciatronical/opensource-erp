@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "Tiek rādīts rēķina lapā, kamēr klients nav samaksājis.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Tiek rādīts rēķina lapā, kamēr klients nav samaksājis.",
+        "shopPaypalBrandName": "Nosaukums PayPal",
+        "shopPaypalBrandName_help": "Tiek rādīts PayPal lapā kā saņēmējs, piemēram, vietnes nosaukums. Tukšs: uzņēmuma nosaukums no uzņēmuma datiem.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "Izmantot PayPal testa vidi",
         "shopPaypalSandbox_help": "Kamēr tas ir ieslēgts, īsti maksājumi netiek veikti.",

@@ -147,6 +147,7 @@ function portalPublicRegistry($db): array {
     $register = [
         'actions'     => portalPublicActions(),
         'sessionless' => portalSessionlessActions(),
+        'external'    => portalExternalActions(),
         'closed'      => [],
     ];
 
@@ -169,6 +170,10 @@ function portalPublicRegistry($db): array {
         $ohne = $erweiterung.'SessionlessActions';
         if (function_exists($ohne)) {
             $register['sessionless'] = array_merge($register['sessionless'], $ohne());
+        }
+        $aussen = $erweiterung.'ExternalActions';
+        if (function_exists($aussen)) {
+            $register['external'] = array_merge($register['external'], $aussen());
         }
         $zu = $erweiterung.'PublicClosed';
         if (function_exists($zu)) {
@@ -214,6 +219,30 @@ function portalPublicCors($db, int $website): bool {
 }
 
 /**
+ * Die Sitzungskennung aus dem Cookie, sofern sie zu dieser Webseite gehört
+ *
+ * Nur die selbst vergebene Form wird angenommen. Ein Cookie aus fremder Hand
+ * landete sonst als Kennung in der Tabelle und blähte sie auf. Eine Kennung
+ * einer anderen Webseite unter demselben Host zählt nicht.
+ *
+ * @param object $db Firmen-Datenbankverbindung
+ * @param int $website Webseite der Anfrage
+ * @return string Kennung, '' ohne brauchbares Cookie
+ */
+function portalPublicContextUuidVorhanden($db, int $website): string {
+    $vorhanden = $_COOKIE[PORTAL_CONTEXT_COOKIE] ?? '';
+    if (!is_string($vorhanden) || !preg_match('/^[0-9a-f]{32}$/', $vorhanden)) {
+        return '';
+    }
+    $fremd = $db->getOne(
+        "SELECT 1 AS fremd FROM portal_context_oserp
+          WHERE uuid = :uuid AND website_id <> CAST(:website AS integer)",
+        [':uuid' => $vorhanden, ':website' => $website]
+    );
+    return $fremd ? '' : $vorhanden;
+}
+
+/**
  * Liefert die Kennung der Besuchersitzung und setzt notfalls das Cookie
  *
  * Die Kennung ist frei wählbar — sie kommt aus dem Cookie und damit vom
@@ -236,19 +265,9 @@ function portalPublicCors($db, int $website): bool {
  * @return string Sitzungskennung
  */
 function portalPublicContextUuid($db, int $website, bool $fremdeHerkunft): string {
-    $vorhanden = $_COOKIE[PORTAL_CONTEXT_COOKIE] ?? '';
-
-    // Nur die selbst vergebene Form annehmen. Ein Cookie aus fremder Hand
-    // landet sonst als Kennung in der Tabelle und bläht sie auf.
-    if (is_string($vorhanden) && preg_match('/^[0-9a-f]{32}$/', $vorhanden)) {
-        $fremd = $db->getOne(
-            "SELECT 1 AS fremd FROM portal_context_oserp
-              WHERE uuid = :uuid AND website_id <> CAST(:website AS integer)",
-            [':uuid' => $vorhanden, ':website' => $website]
-        );
-        if (!$fremd) {
-            return $vorhanden;
-        }
+    $vorhanden = portalPublicContextUuidVorhanden($db, $website);
+    if ('' !== $vorhanden) {
+        return $vorhanden;
     }
 
     $uuid = portalNewUuid();
@@ -347,7 +366,15 @@ function portalPublicDispatch(): void {
             return;
         }
 
-        $uuid = portalPublicContextUuid($db, $website, $fremdeHerkunft);
+        // Rücksprung von außen (PayPal): der Browser kommt von einer fremden
+        // Seite, und bei dieser Navigation schickt er das Sitzungs-Cookie nicht
+        // unbedingt mit. Hier keine neue Sitzung vergeben — das neue Cookie
+        // ersetzte die angemeldete Sitzung, und der Kunde stünde abgemeldet
+        // da (autoprofis24.de, 30.10.2026). Die Aktion holt ihre Sitzung
+        // anderswoher (endPayment: reference_id der PayPal-Bestellung).
+        $uuid = in_array($aktion, $register['external'], true)
+            ? portalPublicContextUuidVorhanden($db, $website)
+            : portalPublicContextUuid($db, $website, $fremdeHerkunft);
 
         // Abgeschalteter Shop: nichts Neues verkaufen. Was schon läuft — eine
         // begonnene Zahlung, Konto, Rechnungen — bleibt erreichbar.

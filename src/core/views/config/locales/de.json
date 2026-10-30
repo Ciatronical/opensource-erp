@@ -1149,6 +1149,8 @@
         "shopPaymentIban_help": "Erscheint auf der Rechnungsseite, wenn der Kunde noch nicht bezahlt hat.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Erscheint auf der Rechnungsseite, wenn der Kunde noch nicht bezahlt hat.",
+        "shopPaypalBrandName": "Name bei PayPal",
+        "shopPaypalBrandName_help": "Erscheint auf der PayPal-Seite als Empfänger, zum Beispiel der Name der Webseite. Leer: der Firmenname aus den Firmendaten.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "PayPal-Testumgebung verwenden",
         "shopPaypalSandbox_help": "Solange dies gesetzt ist, werden keine echten Zahlungen ausgelöst.",

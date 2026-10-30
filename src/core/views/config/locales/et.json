@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "Kuvatakse arve lehel, kuni klient ei ole maksnud.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Kuvatakse arve lehel, kuni klient ei ole maksnud.",
+        "shopPaypalBrandName": "Nimi PayPalis",
+        "shopPaypalBrandName_help": "Kuvatakse PayPali lehel saajana, näiteks veebisaidi nimi. Tühi: ettevõtte nimi ettevõtte andmetest.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "Kasuta PayPali testkeskkonda",
         "shopPaypalSandbox_help": "Kuni see on sisse lülitatud, päris makseid ei tehta.",

@@ -1147,6 +1147,8 @@
         "shopPaymentIban_help": "Shown on the invoice page while the customer has not paid yet.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Shown on the invoice page while the customer has not paid yet.",
+        "shopPaypalBrandName": "Name shown at PayPal",
+        "shopPaypalBrandName_help": "Shown on the PayPal page as the recipient, for example the name of the website. Empty: the company name from the company data.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "Use PayPal sandbox",
         "shopPaypalSandbox_help": "While this is set, no real payments are triggered.",

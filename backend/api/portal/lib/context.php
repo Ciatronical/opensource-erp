@@ -249,8 +249,11 @@ function portalContextCookie(string $uuid, bool $fremdeHerkunft = false): void {
         'secure'   => $fremdeHerkunft || !empty($_SERVER['HTTPS']),
         'httponly' => true,
         // Bei Zugriff von einer anderen Adresse schickt der Browser das
-        // Cookie nur mit None; im Proxy-Betrieb bleibt Strict.
-        'samesite' => $fremdeHerkunft ? 'None' : 'Strict',
+        // Cookie nur mit None. Im Proxy-Betrieb Lax, nicht Strict: Strict
+        // bliebe beim Rücksprung von PayPal (Navigation von einer fremden
+        // Seite) aus, Lax kommt mit und hält das Cookie weiter von fremden
+        // POST-Anfragen fern (30.10.2026).
+        'samesite' => $fremdeHerkunft ? 'None' : 'Lax',
     ]);
     $_COOKIE[PORTAL_CONTEXT_COOKIE] = $uuid;
 }

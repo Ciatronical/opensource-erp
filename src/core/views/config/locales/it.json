@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "Mostrato sulla pagina della fattura finché il cliente non ha pagato.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Mostrato sulla pagina della fattura finché il cliente non ha pagato.",
+        "shopPaypalBrandName": "Nome su PayPal",
+        "shopPaypalBrandName_help": "Appare sulla pagina PayPal come destinatario, ad esempio il nome del sito web. Vuoto: il nome dell’azienda dai dati aziendali.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "Usare l'ambiente di prova PayPal",
         "shopPaypalSandbox_help": "Finché è attivo non vengono eseguiti pagamenti reali.",

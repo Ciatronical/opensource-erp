@@ -418,6 +418,7 @@ die Fehlermeldung den Feldnamen aus der Oberfläche, nicht den Schlüssel.
 | Zugang | `shop_cart_lifetime_hours`, `shop_context_lifetime_hours` |
 | Rechnungsstellung | `shop_contact_login`, `shop_target_account`, `shop_incoming_account`, `shop_standard_taxzone`, `shop_standard_currency`, `shop_tax_included`, `shop_active_price_source`, `shop_stock_bin_id` |
 | Bankverbindung | `shop_payment_account_owner`, `shop_payment_bank`, `shop_payment_iban`, `shop_payment_bic` |
+| PayPal | `shop_paypal_brand_name` — Name, den PayPal dem Kunden zeigt; leer: Firmenname |
 | Bestellungen | `shop_delivery_status_show`, `shop_delivery_status_mail` (dev/shop-bestellstatus.md) |
 | Veröffentlichung | `shop_job_retention_days`, `shop_thumbnail_size`, `ebay_public_host` |
 | Suche | `shop_search_weighting` |

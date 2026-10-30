@@ -469,3 +469,16 @@ function portalPublicActions(): array {
 function portalSessionlessActions(): array {
     return ['portalPing'];
 }
+
+/**
+ * Aktionen, die der Browser von einer fremden Seite aus ruft
+ *
+ * Für sie vergibt der Zugang keine neue Sitzung, wenn das Cookie fehlt
+ * (portalPublicContextUuidVorhanden). Der Kern hat keine; die
+ * Shop-Erweiterung meldet den Rücksprung von PayPal.
+ *
+ * @return string[]
+ */
+function portalExternalActions(): array {
+    return [];
+}

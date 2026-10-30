@@ -329,6 +329,22 @@ function shopSessionlessActions(): array {
 }
 
 /**
+ * Aktionen, die der Browser von PayPal aus ruft
+ *
+ * Die Weiterleitung von paypal.com ist eine Navigation von einer fremden
+ * Seite; das Sitzungs-Cookie kommt dabei nicht sicher mit. Ohne Eintrag hier
+ * vergäbe der Zugang eine neue Sitzung, und das neue Cookie ersetzte die
+ * angemeldete: der Kunde käme abgemeldet zurück. endPayment findet seine
+ * Sitzung über die reference_id der PayPal-Bestellung, paymentCanceled
+ * leitet nur weiter.
+ *
+ * @return string[]
+ */
+function shopExternalActions(): array {
+    return ['endPayment', 'paymentCanceled'];
+}
+
+/**
  * Aktionen, die ein abgeschalteter HugoShop ablehnt (V16)
  *
  * Nur, was einen neuen Kauf beginnt. endPayment bleibt offen: eine bei PayPal

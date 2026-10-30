@@ -983,6 +983,8 @@
         "shopPaymentIban_help": "Wyświetlane na stronie faktury, dopóki klient nie zapłacił.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Wyświetlane na stronie faktury, dopóki klient nie zapłacił.",
+        "shopPaypalBrandName": "Nazwa w PayPal",
+        "shopPaypalBrandName_help": "Wyświetlana na stronie PayPal jako odbiorca, na przykład nazwa strony internetowej. Puste: nazwa firmy z danych firmy.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "Używaj środowiska testowego PayPal",
         "shopPaypalSandbox_help": "Dopóki jest włączone, nie są realizowane prawdziwe płatności.",

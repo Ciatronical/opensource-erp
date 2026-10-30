@@ -850,6 +850,8 @@
         "shopPaymentIban_help": "Se afișează pe pagina facturii cât timp clientul nu a plătit.",
         "shopPaymentBic": "BIC",
         "shopPaymentBic_help": "Se afișează pe pagina facturii cât timp clientul nu a plătit.",
+        "shopPaypalBrandName": "Nume la PayPal",
+        "shopPaypalBrandName_help": "Apare pe pagina PayPal ca destinatar, de exemplu numele site-ului web. Gol: numele firmei din datele firmei.",
         "shopPaypal": "PayPal",
         "shopPaypalSandbox": "Folosește mediul de test PayPal",
         "shopPaypalSandbox_help": "Cât timp este activ nu se efectuează plăți reale.",

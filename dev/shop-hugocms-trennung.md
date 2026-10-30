@@ -59,7 +59,7 @@ Lieferantenimport). Die Regeln für Arbeiten an HugoCMS stehen in
   `kit/static/portal-api/index.php`, das auf dem Webserver der Webseite läuft —
   als PHP-Skript, nicht als eigener Proxy-Server.
   - Es hält die Aufrufe der Widgets auf der Adresse der Webseite. Das
-    Sitzungs-Cookie (`SameSite=Strict`) kommt deshalb an.
+    Sitzungs-Cookie (`SameSite=Lax`) kommt deshalb an.
   - Den Shop-Schlüssel (`X-Portal-Key`) trägt es serverseitig aus
     `oserp-portal/config.json` nach (bis E9 `config.php`).
   - Es reicht `Set-Cookie`, `Content-Disposition` und `Location` durch.
