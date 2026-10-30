@@ -83,6 +83,29 @@
             </div>
         </v-alert>
 
+        <!-- Ohne Land der Firmenadresse meldet der Warenkorb für Besucher ohne
+             Lieferadresse „Land unbekannt“ — die Ursache liegt in den Firmendaten -->
+        <v-alert
+            v-if="status?.company_country_missing"
+            type="warning"
+            variant="tonal"
+            density="compact"
+            class="mb-4"
+        >
+            <div class="d-flex flex-wrap align-center ga-2">
+                <span>{{ t('ShopView.status.companyCountryMissing') }}</span>
+                <v-spacer />
+                <v-btn
+                    size="small"
+                    variant="tonal"
+                    prepend-icon="mdi-domain"
+                    :to="{ name: 'client-defaults', query: { tab: 'company', focus: 'address_country' } }"
+                >
+                    {{ t('ShopView.status.companyCountryOpen') }}
+                </v-btn>
+            </div>
+        </v-alert>
+
         <!-- Hinweise des Mandanten: gelten für alle Verkaufskanäle -->
         <v-alert
             v-if="status && (status.hints.length || status.publish_problems?.length)"

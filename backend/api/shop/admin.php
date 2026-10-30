@@ -35,6 +35,9 @@ function getShopStatus($data) {
             -- Versand (dev/shop-versand.md): ohne aktive Versandart mit
             -- Preisstufe läuft jede Bestellung als „Standard“ ohne Kosten
             shop_shipping_configured() AS versandart,
+            -- Mandantenland (defaults.address_country): ohne Zuordnung meldet der
+            -- Warenkorb für Gäste „Land der Lieferadresse unbekannt“ (shop_country_code)
+            shop_country_code('') IS NOT NULL AS firmenland,
             (SELECT COUNT(*) FROM employee WHERE login = :kontakt AND NOT deleted) > 0 AS kontakt,
             (SELECT COUNT(*) FROM chart WHERE description ILIKE :forderungskonto) > 0 AS forderungskonto,
             (SELECT COUNT(*) FROM tax_zones WHERE description ILIKE :taxzone) > 0 AS taxzone,
@@ -177,6 +180,11 @@ function getShopStatus($data) {
     // keinen Versand — kein fehlender Punkt, aber eine eigene Warnung
     $versandFehlt = $hugoshops && !$wahr($stand['versandart']);
 
+    // Ohne Land der Firmenadresse rechnet der Warenkorb für Besucher ohne
+    // Lieferadresse keinen Versand: Meldung „Land unbekannt“, obwohl die
+    // Ursache in den Firmendaten liegt (Firmenkonfiguration → Firmendaten)
+    $firmenlandFehlt = $hugoshops && !$wahr($stand['firmenland']);
+
     // eBay-Kanäle: ohne diese Angaben lehnt eBay jedes Angebot ab
     foreach (array_filter($kanaele, fn($k) => 'ebay' === $k['type']) as $kanal) {
         $ebay = function_exists('shopEbayConfig') ? shopEbayConfig($db, (int)$kanal['id']) : [];
@@ -225,6 +233,7 @@ function getShopStatus($data) {
         // Je HugoShop, der noch keine Bestellungen annimmt: Name und was fehlt
         'blocking_channels' => $kanalFehlt,
         'shipping_missing' => $versandFehlt,
+        'company_country_missing' => $firmenlandFehlt,
         // Mandant: gilt für alle Kanäle; je Kanal: hint_channels
         'hints'     => $hinweise,
         'hint_channels' => $kanalHinweise,

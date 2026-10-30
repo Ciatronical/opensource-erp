@@ -50,7 +50,8 @@
                 />
             </v-col>
 
-            <v-col cols="12">
+            <!-- data-field-name: Sprungziel aus der Shop-Übersicht (?focus=address_country) -->
+            <v-col cols="12" data-field-name="address_country">
                 <v-text-field
                     v-model="defaults.address_country"
                     :label="$t('country')"

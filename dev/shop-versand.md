@@ -553,7 +553,12 @@ Einrichtungsfehler und verschickte Ware ohne Versandkosten.
 
 Shop-Übersicht: `getShopStatus` liefert `shipping_missing` (nur bei
 eingeschaltetem HugoShop); die Übersicht zeigt eine gelbe Warnung mit Knopf
-zur Ansicht „Versandarten". Kein blockierender Punkt: der Shop gilt als
+zur Ansicht „Versandarten". Ebenso `company_country_missing` (2026-10-30): Ist
+`defaults.address_country` leer oder keinem Land zugeordnet, meldet der
+Warenkorb für Besucher ohne Lieferadresse `country_unknown` („Land der
+Lieferadresse unbekannt“), obwohl die Ursache in den Firmendaten liegt — die
+Übersicht warnt mit Knopf zur Firmenkonfiguration (Reiter Firmendaten, Feld
+Land, `?tab=company&focus=address_country`). Kein blockierender Punkt: der Shop gilt als
 einsatzbereit. Der bisherige blockierende Punkt „Versandartikel fehlt"
 entfällt.
 

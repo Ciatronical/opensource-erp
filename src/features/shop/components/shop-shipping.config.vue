@@ -129,6 +129,17 @@
                 </v-card-item>
 
                 <v-card-text class="pt-0">
+                    <!-- Gespeichert wird automatisch, aber erst mit vollständigen Pflichtangaben.
+                         Ohne diesen Hinweis blieb eine neue Versandart ohne Preis still ungespeichert. -->
+                    <v-alert
+                        v-if="!methodeGueltig(methode)"
+                        type="info"
+                        variant="tonal"
+                        density="compact"
+                        class="mb-3"
+                    >
+                        {{ t('ShopView.shippingConfig.notSavedMissing', { fields: methodeFehlt(methode).join(', ') }) }}
+                    </v-alert>
                     <v-row dense>
                         <v-col cols="12" sm="6" md="4" class="py-1">
                             <v-text-field
@@ -554,6 +565,27 @@ function methodeGueltig(m) {
         && m.rates.every(s => preisPruefen(s.price) === true && kostenPruefen(s.cost) === true
             && Number(s.weight_from || 0) >= 0 && Number(s.qty_from || 0) >= 0)
         && !doppelteStufe(m)
+}
+
+/**
+ * Was einer Versandart zum Speichern fehlt, als Feldnamen aus der Oberfläche —
+ * für den Hinweis auf der Karte. Leer, wenn methodeGueltig.
+ */
+function methodeFehlt(m) {
+    const fehlt = []
+    if (leer(m.description)) fehlt.push(t('ShopView.shippingConfig.description'))
+    if (leer(m.part.description)) fehlt.push(t('ShopView.shippingConfig.partDescription'))
+    if (!m.part.buchungsgruppen_id) fehlt.push(t('ShopView.shippingConfig.buchungsgruppe'))
+    if (m.id && leer(m.part.partnumber)) fehlt.push(t('ShopView.shippingConfig.partnumber'))
+    if (![m.max_weight, m.max_length, m.max_girth, m.max_width, m.max_height, m.max_size].every(w => grenzePruefen(w) === true)) {
+        fehlt.push(t('ShopView.shippingConfig.limitInvalid'))
+    }
+    if (!m.rates.every(s => preisPruefen(s.price) === true)) fehlt.push(t('ShopView.shippingConfig.price'))
+    if (!m.rates.every(s => kostenPruefen(s.cost) === true && Number(s.weight_from || 0) >= 0 && Number(s.qty_from || 0) >= 0)) {
+        fehlt.push(t('ShopView.shippingConfig.rates'))
+    }
+    if (doppelteStufe(m)) fehlt.push(t('ShopView.shippingConfig.duplicateRate'))
+    return fehlt
 }
 
 // ── Laden ──
