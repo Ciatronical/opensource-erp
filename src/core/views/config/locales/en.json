@@ -2154,5 +2154,12 @@
     "toolsFeatures": "Tools",
     "featureSqlTool": "SQL tool (developer tools)",
     "featureSqlToolDesc": "Run arbitrary SQL statements directly on the database. Off by default; only system administrators can see and use it, and every execution is logged with user, IP and statement.",
-    "featureSqlToolOnHint": "The SQL tool is enabled. Changes take effect immediately and unchecked on the database – switch it off again after use."
+    "featureSqlToolOnHint": "The SQL tool is enabled. Changes take effect immediately and unchecked on the database – switch it off again after use.",
+    "setupWizard": {
+        "back": "Back",
+        "next": "Next",
+        "finish": "Finish",
+        "close": "Close",
+        "stepOf": "Step {step} of {total}"
+    }
 }

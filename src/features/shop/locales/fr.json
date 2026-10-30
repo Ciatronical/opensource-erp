@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Concevoir la page produit eBay"
+        },
+        "setup": {
+            "title": "Configurer la boutique",
+            "start": "Configurer la boutique pas à pas",
+            "finishButton": "Terminer",
+            "webseite": {
+                "intro": "La boutique fonctionne sur un site web du portail client : les clients s’y connectent, et c’est là que se trouvent le panier, la caisse et les pages produits. Choisissez le site sur lequel la boutique doit fonctionner.",
+                "none": "Aucun site web du portail client n’est encore activé. Configurez d’abord le portail client ; vous poursuivrez ensuite ici avec la boutique.",
+                "setupPortal": "Configurer le portail client maintenant",
+                "portalAgain": "Vérifier ou reconfigurer le portail client d’un site"
+            },
+            "kanal": {
+                "intro": "Un canal de vente regroupe tout ce qui appartient à une boutique : prix et majorations, règles d’expédition, accès PayPal et adresses des pages de la boutique. Choisissez un HugoShop existant ou créez-en un nouveau.",
+                "explain": "En général, il y a une boutique par site web. Plusieurs canaux ne sont nécessaires que si les mêmes articles sont vendus sur différents sites à des conditions différentes.",
+                "parts": "{count} articles proposés",
+                "inactive": "désactivé",
+                "new": "Créer une nouvelle boutique"
+            },
+            "rechnung": {
+                "intro": "Chaque commande devient immédiatement une facture. Pour cela, OpensourceERP a besoin de quelques paramètres comptables valables pour toutes les boutiques.",
+                "explain": "Le compte clients, la zone fiscale et la devise sont obligatoires, sinon aucune facture ne peut être comptabilisée. Le contact est le collaborateur indiqué comme gestionnaire sur les factures de la boutique. L’emplacement de stock définit d’où la marchandise vendue est sortie ; vide signifie aucun mouvement de stock."
+            },
+            "zahlung": {
+                "intro": "Les clients paient sur facture par virement ou immédiatement via PayPal.",
+                "bank": "Les coordonnées bancaires figurent sur la page de facture tant que le client n’a pas payé. Le titulaire est la personne ou l’entreprise propriétaire du compte.",
+                "paypal": "Pour PayPal, il vous faut une application REST API du compte développeur PayPal (developer.paypal.com) avec Client ID et Secret. Commencez par l’environnement de test : aucun argent réel n’y circule. Le « nom chez PayPal » est ce que les clients voient comme destinataire sur la page PayPal.",
+                "paypalOptional": "Sans identifiants PayPal, la boutique ne propose que l’achat sur facture. Vous pouvez configurer PayPal plus tard dans la carte du canal de vente."
+            },
+            "versand": {
+                "intro": "OpensourceERP calcule les frais d’expédition à partir des modes d’expédition que vous gérez dans la vue « Modes d’expédition », selon le poids, les dimensions et le pays de livraison.",
+                "explain": "Sans mode d’expédition, les commandes passent en « Standard » sans frais d’expédition. Le seuil de franco et les pays de livraison s’appliquent à cette boutique. Pays de livraison vide signifie : tous les pays disposant d’une zone d’expédition.",
+                "methodsMissing": "Aucun mode d’expédition avec tarif n’est encore configuré. Créez-en au moins un, p. ex. « Colis DHL » avec un prix, puis revérifiez ici.",
+                "methodsOk": "Les modes d’expédition sont configurés.",
+                "recheck": "Revérifier"
+            },
+            "seiten": {
+                "intro": "Les pages produits et catégories sont créées à ces adresses sur le site. Les valeurs par défaut correspondent au jeu de modèles ; ne les modifiez que si votre site utilise d’autres chemins.",
+                "explain": "Les motifs d’adresse doivent correspondre à la configuration Hugo du site (taxonomie, permalinks, mounts). La vérification ci-dessous compare les deux et propose les entrées adaptées pour config.json si quelque chose ne concorde pas.",
+                "publish": "Avec la publication automatique, chaque changement de prix ou de texte arrive immédiatement sur le site. Sans elle, des tâches s’accumulent que vous exécutez à la main dans la vue d’ensemble.",
+                "testHint": "La vérification est obligatoire : on ne continue que lorsque HugoCMS est joignable et que la configuration Hugo correspond aux adresses."
+            },
+            "paket": {
+                "intro": "Pour finir, les composants de la boutique arrivent sur le site et OpensourceERP vérifie toute la configuration.",
+                "step1": "1. Installer le paquet",
+                "installHint": "Transfère les modèles et widgets de la boutique à HugoCMS et fait construire le site. Cela s’exécute en arrière-plan et peut prendre une minute.",
+                "installStarted": "Le transfert est en cours. Vous suivez l’état dans la vue d’ensemble de la boutique sous « Publication ».",
+                "installRunning": "Un autre transfert est en cours ; la tâche sera exécutée ensuite.",
+                "installQueued": "La tâche est planifiée et sera exécutée à la prochaine exécution.",
+                "step2": "2. Vérifier la configuration",
+                "checkHint": "La même vérification que dans la vue d’ensemble : s’il manque quelque chose, la boutique n’accepte pas encore de commandes.",
+                "check": "Vérifier la configuration",
+                "ready": "Tout est complet. La boutique peut accepter des commandes."
+            },
+            "fertig": {
+                "intro": "La configuration de « {name} » est terminée. Voici les données essentielles :",
+                "notReady": "La vérification signale encore des données manquantes. Vous pouvez quand même activer la boutique ; les commandes ne seront possibles que lorsque tout sera complet.",
+                "activate": "Activer la boutique maintenant",
+                "activateHint": "Activée, la boutique accepte les commandes et publie les articles.",
+                "done": "La boutique est configurée.",
+                "nextSteps": "Ensuite : libérer les articles de l’assortiment pour la boutique et publier les pages produits. Les deux se trouvent dans le menu de la boutique sous « Assortiment » et dans la vue d’ensemble."
+            },
+            "steps": {
+                "webseite": "Site web",
+                "kanal": "Canal de vente",
+                "rechnung": "Facturation",
+                "zahlung": "Paiement",
+                "versand": "Expédition",
+                "seiten": "Pages de la boutique",
+                "paket": "Paquet",
+                "fertig": "Terminé"
+            }
         }
     }
 }

@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Nástroje",
     "featureSqlTool": "Nástroj SQL (Developer-Tools)",
     "featureSqlToolDesc": "Provádění libovolných příkazů SQL přímo v databázi. Ve výchozím stavu vypnuto; vidí a používají jej pouze správci systému, každé provedení se zaznamená s uživatelem, IP a příkazem.",
-    "featureSqlToolOnHint": "Nástroj SQL je povolen. Změny se projeví okamžitě a bez kontroly v databázi – po práci jej opět vypněte."
+    "featureSqlToolOnHint": "Nástroj SQL je povolen. Změny se projeví okamžitě a bez kontroly v databázi – po práci jej opět vypněte.",
+    "setupWizard": {
+        "back": "Zpět",
+        "next": "Dále",
+        "finish": "Dokončit",
+        "close": "Zavřít",
+        "stepOf": "Krok {step} z {total}"
+    }
 }

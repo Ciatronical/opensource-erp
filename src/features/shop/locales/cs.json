@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Navrhnout produktovou stránku eBay"
+        },
+        "setup": {
+            "title": "Nastavit obchod",
+            "start": "Nastavit obchod krok za krokem",
+            "finishButton": "Dokončit",
+            "webseite": {
+                "intro": "Obchod běží na webu zákaznického portálu: tam se zákazníci přihlašují, tam je košík, pokladna a produktové stránky. Vyberte web, na kterém má obchod běžet.",
+                "none": "Zatím není zapnutý žádný web zákaznického portálu. Nejprve nastavte zákaznický portál, poté zde pokračujete s obchodem.",
+                "setupPortal": "Nastavit zákaznický portál nyní",
+                "portalAgain": "Zkontrolovat nebo znovu nastavit portál webu"
+            },
+            "kanal": {
+                "intro": "Prodejní kanál sdružuje vše, co patří k jednomu obchodu: ceny a přirážky, pravidla dopravy, přístup k PayPal a adresy stránek obchodu. Vyberte stávající HugoShop nebo založte nový.",
+                "explain": "Obvykle existuje jeden obchod na web. Více kanálů potřebujete jen tehdy, když se stejné položky prodávají na různých webech za různých podmínek.",
+                "parts": "{count} položek v nabídce",
+                "inactive": "vypnuto",
+                "new": "Založit nový obchod"
+            },
+            "rechnung": {
+                "intro": "Každá objednávka se ihned stane fakturou. K tomu OpensourceERP potřebuje několik účetních nastavení platných pro všechny obchody.",
+                "explain": "Účet pohledávek, daňová zóna a měna jsou povinné, jinak nelze fakturu zaúčtovat. Kontakt je zaměstnanec uvedený na fakturách obchodu. Skladové místo určuje, odkud se prodané zboží odepisuje; prázdné = bez skladového pohybu."
+            },
+            "zahlung": {
+                "intro": "Zákazníci platí na fakturu převodem nebo ihned přes PayPal.",
+                "bank": "Bankovní spojení se zobrazuje na stránce faktury, dokud zákazník nezaplatil. Majitel účtu je osoba nebo firma, které účet patří.",
+                "paypal": "Pro PayPal potřebujete REST API aplikaci z vývojářského účtu PayPal (developer.paypal.com) s Client ID a Secret. Začněte testovacím prostředím: tam se nepohybují skutečné peníze. „Název u PayPal“ je to, co zákazníci vidí jako příjemce na stránce PayPal.",
+                "paypalOptional": "Bez přístupových údajů PayPal nabízí obchod jen nákup na fakturu. PayPal můžete nastavit později na kartě prodejního kanálu."
+            },
+            "versand": {
+                "intro": "Náklady na dopravu počítá OpensourceERP ze způsobů dopravy, které spravujete v pohledu „Způsoby dopravy“, podle hmotnosti, rozměrů a země doručení.",
+                "explain": "Bez způsobu dopravy běží objednávky jako „Standard“ bez nákladů na dopravu. Hranice dopravy zdarma a země doručení platí pro tento obchod. Prázdné země doručení = všechny země se zónou dopravy.",
+                "methodsMissing": "Zatím není nastaven žádný způsob dopravy s cenou. Založte alespoň jeden, např. „Balík DHL“ s cenou, a zde znovu zkontrolujte.",
+                "methodsOk": "Způsoby dopravy jsou nastaveny.",
+                "recheck": "Znovu zkontrolovat"
+            },
+            "seiten": {
+                "intro": "Na těchto adresách vznikají produktové a kategoriové stránky na webu. Výchozí hodnoty odpovídají sadě šablon; měňte je jen, pokud váš web používá jiné cesty.",
+                "explain": "Vzory adres musí odpovídat konfiguraci Hugo webu (taxonomie, permalinks, mounty). Kontrola níže obojí porovná a navrhne položky pro config.json, pokud něco nesedí.",
+                "publish": "S automatickým zveřejňováním jde každá změna ceny či textu ihned na web. Bez něj se hromadí úlohy, které spouštíte ručně v přehledu.",
+                "testHint": "Kontrola je povinná: dál lze pokračovat, až je HugoCMS dostupné a konfigurace Hugo odpovídá adresám."
+            },
+            "paket": {
+                "intro": "Nakonec se prvky obchodu dostanou na web a OpensourceERP zkontroluje celé nastavení.",
+                "step1": "1. Instalovat balíček",
+                "installHint": "Přenese šablony a widgety obchodu do HugoCMS a nechá web sestavit. Běží na pozadí a může trvat minutu.",
+                "installStarted": "Přenos běží. Stav vidíte v přehledu obchodu pod „Zveřejňování“.",
+                "installRunning": "Právě běží jiný přenos; úloha se provede poté.",
+                "installQueued": "Úloha je naplánována a provede se při příštím běhu.",
+                "step2": "2. Zkontrolovat nastavení",
+                "checkHint": "Stejná kontrola jako v přehledu obchodu: chybí-li něco, obchod zatím nepřijímá objednávky.",
+                "check": "Zkontrolovat nastavení",
+                "ready": "Vše je kompletní. Obchod může přijímat objednávky."
+            },
+            "fertig": {
+                "intro": "Nastavení „{name}“ je dokončeno. Nejdůležitější údaje:",
+                "notReady": "Kontrola nastavení stále hlásí chybějící údaje. Obchod můžete přesto zapnout; objednávky jsou možné, až bude vše kompletní.",
+                "activate": "Zapnout obchod nyní",
+                "activateHint": "Zapnutý obchod přijímá objednávky a zveřejňuje položky.",
+                "done": "Obchod je nastaven.",
+                "nextSteps": "Další krok: uvolněte položky v sortimentu pro obchod a zveřejněte produktové stránky. Obojí najdete v nabídce obchodu pod „Sortiment“ a v přehledu."
+            },
+            "steps": {
+                "webseite": "Web",
+                "kanal": "Prodejní kanál",
+                "rechnung": "Fakturace",
+                "zahlung": "Platba",
+                "versand": "Doprava",
+                "seiten": "Stránky obchodu",
+                "paket": "Balíček",
+                "fertig": "Hotovo"
+            }
         }
     }
 }

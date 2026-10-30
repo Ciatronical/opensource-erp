@@ -10,6 +10,7 @@
 <template>
     <NavbarView />
     <v-container fluid>
+        <ShopSetupDialog v-model="setupOffen" @done="laden" />
 
         <v-row align="center" class="mb-3">
             <v-col>
@@ -18,7 +19,19 @@
                     {{ t('ShopView.menu.title') }}
                 </h1>
             </v-col>
-            <v-col cols="auto">
+            <v-col cols="auto" class="d-flex align-center ga-2">
+                <!-- Einrichtung Schritt für Schritt (shop-setup.dialog.vue); ?setup=1 öffnet
+                     sie gleich — so kommt man nach dem Einschalten der Erweiterung hierher -->
+                <v-btn
+                    v-if="oserp.checkPermission('edit_shop_config')"
+                    :color="status && !status.ready ? 'primary' : undefined"
+                    :variant="status && !status.ready ? 'flat' : 'tonal'"
+                    size="small"
+                    prepend-icon="mdi-clipboard-check-outline"
+                    @click="setupOffen = true"
+                >
+                    {{ t('ShopView.setup.start') }}
+                </v-btn>
                 <v-btn variant="text" size="small" :loading="shop.loading.value" @click="laden">
                     <v-icon start>mdi-refresh</v-icon>
                     {{ t('ShopView.common.reload') }}
@@ -632,7 +645,8 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import ShopSetupDialog from '@/features/shop/components/shop-setup.dialog.vue'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { useShop } from '@/features/shop/composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
@@ -641,10 +655,13 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const { t, te, locale } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const oserp = oserpStore()
 const shop = useShop()
 
 const status = ref(null)
+/** Einrichtung Schritt für Schritt offen */
+const setupOffen = ref(false)
 const auftraege = ref([])
 const veroeffentlicht = ref(false)
 const sofort = ref(false)
@@ -1305,6 +1322,11 @@ async function standBeimOeffnen() {
 onMounted(async () => {
     await laden()
     await standBeimOeffnen()
+    // Nach dem Einschalten der Erweiterung (client-defaults.view.vue) gleich einrichten
+    if (route.query.setup) {
+        setupOffen.value = true
+        router.replace({ name: 'shop-overview' })
+    }
 })
 
 onBeforeUnmount(beobachtenBeenden)

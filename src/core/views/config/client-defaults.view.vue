@@ -353,7 +353,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, provide, defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 import axios from 'axios';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';
@@ -390,6 +390,7 @@ const MasterListsTab = defineAsyncComponent(() => import('./tabs/master-lists.ta
 
 const { t } = useI18n();
 const route = useRoute();
+const router = useRouter();
 
 // Store-Zugriff
 const store = oserpStore();
@@ -1126,6 +1127,14 @@ async function applyExtensionChange() {
             console.error('Schema-Update fehlgeschlagen:', updateResponse.data);
         }
 
+        // Shop neu eingeschaltet: nach dem Neuladen gleich die Einrichtung
+        // Schritt für Schritt (shop.hub.vue öffnet sie mit ?setup=1; ohne
+        // eingeschaltete Webseite zuerst die des Kundenportals)
+        const vorher = availableExtensions.value.filter(e => e.active).map(e => e.name);
+        if (pendingExtensions.value.includes('shop') && !vorher.includes('shop')) {
+            sessionStorage.setItem('oserp.setupAfterReload', 'shop');
+        }
+
         // 3. App neu laden — Menü, Routen und Store lesen die Erweiterungen neu ein
         window.location.reload();
     } catch (error) {
@@ -1263,6 +1272,12 @@ function cleanData(data) {
 
 // Lade Konfiguration beim Mounten
 onMounted(async () => {
+    // Erweiterung Shop wurde gerade eingeschaltet: zur Einrichtung (shop.hub.vue)
+    if (sessionStorage.getItem('oserp.setupAfterReload') === 'shop') {
+        sessionStorage.removeItem('oserp.setupAfterReload');
+        router.push({ name: 'shop-overview', query: { setup: '1' } });
+        return;
+    }
     window.addEventListener('keydown', onGlobalKeydown);
     await loadConfig();
     await loadExtensions();

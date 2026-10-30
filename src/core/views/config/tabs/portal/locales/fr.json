@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Interrupteur du site web"
+        },
+        "setup": {
+            "title": "Configurer le portail client",
+            "start": "Configurer pas à pas",
+            "reconfigure": "Vérifier et modifier la configuration",
+            "finishButton": "Terminer",
+            "webseite": {
+                "intro": "Le portail client fonctionne sur un site web géré avec HugoCMS. Vos clients s’y connectent, consultent leurs factures et documents et modifient leurs données. Choisissez le site à configurer ou créez-en un nouveau.",
+                "hint": "Cet assistant vous guide à travers toutes les données, vérifie chaque connexion et active le site à la fin. Vous pouvez le fermer à tout moment et reprendre plus tard ; tout ce qui a été saisi reste enregistré.",
+                "noAddress": "pas encore d’adresse web",
+                "inactive": "désactivé",
+                "new": "Créer un nouveau site web",
+                "nameHint": "Un nom pour la vue d’ensemble, p. ex. le nom de domaine. Les clients ne le voient pas."
+            },
+            "adresse": {
+                "intro": "À quelle adresse vos clients ouvrent-ils le site web ?",
+                "invalid": "Saisissez une adresse complète avec https://, p. ex. https://www.example.fr/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP envoie les pages et composants du portail client à HugoCMS, le programme avec lequel le site est géré. Il lui faut pour cela l’adresse et la clé de HugoCMS.",
+                "testHint": "La vérification est obligatoire : on ne continue que lorsque HugoCMS est joignable et accepte la clé."
+            },
+            "zugang": {
+                "intro": "Le site web communique avec OpensourceERP via un relais. Vous définissez ici comment il s’identifie et où vont les requêtes.",
+                "keyGenerated": "Une nouvelle clé a été générée pour le site. Elle est transmise avec le paquet ; vous n’avez rien à saisir.",
+                "advanced": "Avancé : accès sans relais (CORS)"
+            },
+            "seiten": {
+                "intro": "Les pages du portail client sont créées à ces adresses sur le site. Les valeurs par défaut conviennent à la plupart des sites.",
+                "invalid": "Veuillez vérifier : {fields}. Sont autorisés les minuscules, chiffres et traits d’union, avec une barre oblique à la fin ; le répertoire commence par une barre oblique.",
+                "preview": "Les adresses seront :"
+            },
+            "funktionen": {
+                "intro": "Définissez l’apparence du portail et ce que les clients y voient. Tout peut être modifié plus tard dans la carte du site."
+            },
+            "paket": {
+                "intro": "Le portail client arrive maintenant sur le site. Trois étapes : installer le paquet, mettre en place le relais, vérifier la connexion.",
+                "step1": "1. Installer le paquet",
+                "step2": "2. Mettre en place le relais",
+                "proxyText": "HugoCMS n’accepte pas les fichiers PHP. Le fichier du relais doit donc être copié une fois à la main sur le serveur web. Le config.json du projet Hugo a aussi besoin des entrées du paquet, voir ci-dessous. Les deux ne sont nécessaires que la première fois.",
+                "proxyFile": "Copiez ce fichier d’OpensourceERP à cet endroit du site :",
+                "step3": "3. Vérifier la connexion",
+                "allGood": "Les trois étapes sont réussies. Le site joint OpensourceERP."
+            },
+            "fertig": {
+                "intro": "La configuration de « {name} » est terminée. Voici les données essentielles :",
+                "notVerified": "La connexion via le site n’a pas été vérifiée avec succès. Vous pouvez quand même activer le site, mais les clients ne pourront se connecter que lorsque le relais et config.json seront corrects.",
+                "activate": "Activer le site maintenant",
+                "done": "Le portail client est configuré."
+            },
+            "steps": {
+                "webseite": "Site web",
+                "adresse": "Adresse web",
+                "hugocms": "HugoCMS",
+                "zugang": "Accès",
+                "seiten": "Pages",
+                "funktionen": "Fonctions",
+                "paket": "Paquet",
+                "fertig": "Terminé"
+            }
         }
     }
 }

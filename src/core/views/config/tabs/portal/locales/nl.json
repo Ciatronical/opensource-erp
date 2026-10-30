@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Schakelaar van de website"
+        },
+        "setup": {
+            "title": "Klantenportaal instellen",
+            "start": "Stap voor stap instellen",
+            "reconfigure": "Instelling controleren en wijzigen",
+            "finishButton": "Afronden",
+            "webseite": {
+                "intro": "Het klantenportaal draait op een website die met HugoCMS wordt beheerd. Daar melden uw klanten zich aan, zien ze hun facturen en documenten en wijzigen ze hun gegevens. Kies de website die u wilt instellen of maak een nieuwe aan.",
+                "hint": "Deze dialoog leidt u door alle gegevens, controleert elke verbinding en schakelt de website aan het einde in. U kunt hem altijd sluiten en later verdergaan; alles wat u hebt ingevoerd blijft bewaard.",
+                "noAddress": "nog geen webadres",
+                "inactive": "uitgeschakeld",
+                "new": "Nieuwe website aanmaken",
+                "nameHint": "Een naam voor het overzicht, bijv. de domeinnaam. Klanten zien hem niet."
+            },
+            "adresse": {
+                "intro": "Op welk adres openen uw klanten de website?",
+                "invalid": "Voer een volledig adres in met https://, bijv. https://www.example.nl/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP stuurt de pagina’s en bouwstenen van het klantenportaal naar HugoCMS, het programma waarmee de website wordt beheerd. Daarvoor zijn het adres en de sleutel uit HugoCMS nodig.",
+                "testHint": "De controle is verplicht: u kunt pas verder als HugoCMS bereikbaar is en de sleutel accepteert."
+            },
+            "zugang": {
+                "intro": "De website communiceert met OpensourceERP via een doorgever. Hier legt u vast waarmee hij zich identificeert en waar de aanvragen heen gaan.",
+                "keyGenerated": "Er is een nieuwe sleutel voor de website gegenereerd. Hij gaat met het pakket mee; u hoeft hem nergens in te voeren.",
+                "advanced": "Geavanceerd: toegang zonder doorgever (CORS)"
+            },
+            "seiten": {
+                "intro": "Op deze adressen ontstaan de pagina’s van het klantenportaal op de website. De standaardwaarden passen bij de meeste websites.",
+                "invalid": "Controleer: {fields}. Toegestaan zijn kleine letters, cijfers en koppeltekens, met een schuine streep aan het einde; de map begint met een schuine streep.",
+                "preview": "De adressen worden:"
+            },
+            "funktionen": {
+                "intro": "Bepaal hoe het klantenportaal eruitziet en wat klanten er zien. Alles kan later in de kaart van de website worden gewijzigd."
+            },
+            "paket": {
+                "intro": "Nu komt het klantenportaal op de website. Drie stappen: pakket installeren, doorgever plaatsen, verbinding controleren.",
+                "step1": "1. Pakket installeren",
+                "step2": "2. Doorgever plaatsen",
+                "proxyText": "HugoCMS accepteert geen PHP-bestanden. Het bestand van de doorgever moet daarom eenmaal handmatig naar de webserver worden gekopieerd. Bovendien heeft de config.json van het Hugo-project de vermeldingen voor het pakket nodig, zie hieronder. Beide zijn alleen de eerste keer nodig.",
+                "proxyFile": "Kopieer dit bestand uit OpensourceERP naar deze plek op de website:",
+                "step3": "3. Verbinding controleren",
+                "allGood": "Alle drie de stappen zijn geslaagd. De website bereikt OpensourceERP."
+            },
+            "fertig": {
+                "intro": "De instelling van „{name}“ is voltooid. Dit zijn de belangrijkste gegevens:",
+                "notVerified": "De verbinding via de website is niet succesvol gecontroleerd. U kunt de website toch inschakelen, maar klanten kunnen zich pas aanmelden als doorgever en config.json kloppen.",
+                "activate": "Website nu inschakelen",
+                "done": "Het klantenportaal is ingesteld."
+            },
+            "steps": {
+                "webseite": "Website",
+                "adresse": "Webadres",
+                "hugocms": "HugoCMS",
+                "zugang": "Toegang",
+                "seiten": "Pagina's",
+                "funktionen": "Functies",
+                "paket": "Pakket",
+                "fertig": "Klaar"
+            }
         }
     }
 }

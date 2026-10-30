@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Utforma eBay-produktsida"
+        },
+        "setup": {
+            "title": "Sätt upp butik",
+            "start": "Sätt upp butiken steg för steg",
+            "finishButton": "Slutför",
+            "webseite": {
+                "intro": "Butiken körs på en kundportals-webbplats: där loggar kunderna in och där finns varukorg, kassa och produktsidor. Välj webbplatsen som butiken ska köras på.",
+                "none": "Ingen kundportals-webbplats är påslagen ännu. Sätt först upp kundportalen; därefter fortsätter du här med butiken.",
+                "setupPortal": "Sätt upp kundportalen nu",
+                "portalAgain": "Granska eller sätt upp en webbplats kundportal på nytt"
+            },
+            "kanal": {
+                "intro": "En försäljningskanal samlar allt som hör till en butik: priser och påslag, fraktregler, PayPal-åtkomst och butikssidornas adresser. Välj en befintlig HugoShop eller skapa en ny.",
+                "explain": "Vanligtvis finns en butik per webbplats. Flera kanaler behövs bara om samma artiklar säljs på olika webbplatser till olika villkor.",
+                "parts": "{count} artiklar erbjuds",
+                "inactive": "avstängd",
+                "new": "Skapa ny butik"
+            },
+            "rechnung": {
+                "intro": "Varje beställning blir genast en faktura. För det behöver OpensourceERP några bokföringsinställningar som gäller alla butiker.",
+                "explain": "Kundfordringskonto, skattezon och valuta är obligatoriska, annars kan ingen faktura bokföras. Kontakten är den medarbetare som står som handläggare på butiksfakturor. Lagerplatsen avgör varifrån sålda varor bokas ut; tom betyder ingen lagerbokning."
+            },
+            "zahlung": {
+                "intro": "Kunder betalar mot faktura via överföring eller direkt via PayPal.",
+                "bank": "Bankuppgifterna visas på fakturasidan så länge kunden inte har betalat. Kontoinnehavare är den person eller det företag som äger kontot.",
+                "paypal": "För PayPal behöver du en REST-API-app från PayPals utvecklarkonto (developer.paypal.com) med Client-ID och Secret. Börja med testmiljön: där flyttas inga riktiga pengar. ”Namn hos PayPal” är det kunderna ser som mottagare på PayPal-sidan.",
+                "paypalOptional": "Utan PayPal-uppgifter erbjuder butiken bara köp mot faktura. Du kan sätta upp PayPal senare i försäljningskanalens kort."
+            },
+            "versand": {
+                "intro": "OpensourceERP beräknar fraktkostnader utifrån fraktsätten du underhåller i vyn ”Fraktsätt”, efter vikt, mått och leveransland.",
+                "explain": "Utan fraktsätt går beställningar som ”Standard” utan fraktkostnad. Fraktfrigränsen och leveransländerna gäller för denna butik. Tomma leveransländer betyder: alla länder med en fraktzon.",
+                "methodsMissing": "Inget fraktsätt med pris är uppsatt ännu. Skapa minst ett, t.ex. ”DHL-paket” med ett pris, och kontrollera här igen.",
+                "methodsOk": "Fraktsätt är uppsatta.",
+                "recheck": "Kontrollera igen"
+            },
+            "seiten": {
+                "intro": "På dessa adresser skapas produkt- och kategorisidor på webbplatsen. Standardvärdena passar mallsetet; ändra dem bara om din webbplats använder andra sökvägar.",
+                "explain": "Adressmönstren måste passa webbplatsens Hugo-konfiguration (taxonomi, permalinks, mounts). Kontrollen nedan jämför båda och föreslår passande poster för config.json om något inte stämmer.",
+                "publish": "Med automatisk publicering går varje pris- eller textändring direkt till webbplatsen. Utan den samlas jobb som du kör manuellt i översikten.",
+                "testHint": "Kontrollen är obligatorisk: du kan gå vidare först när HugoCMS kan nås och Hugo-konfigurationen passar adresserna."
+            },
+            "paket": {
+                "intro": "Slutligen kommer butikens komponenter till webbplatsen och OpensourceERP kontrollerar hela uppsättningen.",
+                "step1": "1. Installera paket",
+                "installHint": "Överför butikens mallar och widgetar till HugoCMS och bygger webbplatsen. Det körs i bakgrunden och kan ta en minut.",
+                "installStarted": "Överföringen pågår. Status ser du i butiksöversikten under ”Publicering”.",
+                "installRunning": "En annan överföring pågår; jobbet körs efteråt.",
+                "installQueued": "Jobbet är schemalagt och körs vid nästa körning.",
+                "step2": "2. Kontrollera uppsättning",
+                "checkHint": "Samma kontroll som i butiksöversikten: saknas något tar butiken ännu inte emot beställningar.",
+                "check": "Kontrollera uppsättning",
+                "ready": "Allt är komplett. Butiken kan ta emot beställningar."
+            },
+            "fertig": {
+                "intro": "Uppsättningen av ”{name}” är klar. De viktigaste uppgifterna:",
+                "notReady": "Kontrollen rapporterar fortfarande saknade uppgifter. Du kan ändå slå på butiken; beställningar är möjliga först när allt är komplett.",
+                "activate": "Slå på butiken nu",
+                "activateHint": "Påslagen tar butiken emot beställningar och publicerar artiklar.",
+                "done": "Butiken är uppsatt.",
+                "nextSteps": "Nästa: frige artiklar i sortimentet för butiken och publicera produktsidorna. Båda finns i butiksmenyn under ”Sortiment” och i översikten."
+            },
+            "steps": {
+                "webseite": "Webbplats",
+                "kanal": "Försäljningskanal",
+                "rechnung": "Fakturering",
+                "zahlung": "Betalning",
+                "versand": "Frakt",
+                "seiten": "Butikssidor",
+                "paket": "Paket",
+                "fertig": "Klart"
+            }
         }
     }
 }

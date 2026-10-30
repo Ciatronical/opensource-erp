@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Zaprojektuj stronę produktu eBay"
+        },
+        "setup": {
+            "title": "Konfiguracja sklepu",
+            "start": "Skonfiguruj sklep krok po kroku",
+            "finishButton": "Zakończ",
+            "webseite": {
+                "intro": "Sklep działa na stronie portalu klienta: tam klienci się logują, tam są koszyk, kasa i strony produktów. Wybierz stronę, na której ma działać sklep.",
+                "none": "Żadna strona portalu klienta nie jest jeszcze włączona. Najpierw skonfiguruj portal klienta; potem kontynuujesz tutaj ze sklepem.",
+                "setupPortal": "Skonfiguruj portal klienta teraz",
+                "portalAgain": "Sprawdź lub skonfiguruj ponownie portal strony"
+            },
+            "kanal": {
+                "intro": "Kanał sprzedaży łączy wszystko, co należy do jednego sklepu: ceny i narzuty, zasady wysyłki, dostęp do PayPal i adresy stron sklepu. Wybierz istniejący HugoShop lub utwórz nowy.",
+                "explain": "Zwykle na jedną stronę przypada jeden sklep. Kilka kanałów potrzeba tylko wtedy, gdy te same artykuły sprzedaje się na różnych stronach na różnych warunkach.",
+                "parts": "Oferowane artykuły: {count}",
+                "inactive": "wyłączony",
+                "new": "Utwórz nowy sklep"
+            },
+            "rechnung": {
+                "intro": "Każde zamówienie od razu staje się fakturą. Do tego OpensourceERP potrzebuje kilku ustawień księgowych wspólnych dla wszystkich sklepów.",
+                "explain": "Konto należności, strefa podatkowa i waluta są obowiązkowe, inaczej nie da się zaksięgować faktury. Kontakt to pracownik widniejący jako wystawiający na fakturach sklepu. Miejsce magazynowe określa, skąd rozchodowany jest sprzedany towar; puste oznacza brak księgowania magazynowego."
+            },
+            "zahlung": {
+                "intro": "Klienci płacą na fakturę przelewem lub od razu przez PayPal.",
+                "bank": "Dane bankowe są widoczne na stronie faktury, dopóki klient nie zapłaci. Właściciel konta to osoba lub firma, do której należy konto.",
+                "paypal": "Do PayPal potrzebna jest aplikacja REST API z konta deweloperskiego PayPal (developer.paypal.com) z Client ID i Secret. Zacznij od środowiska testowego: nie przepływają tam prawdziwe pieniądze. „Nazwa w PayPal” to to, co klienci widzą jako odbiorcę na stronie PayPal.",
+                "paypalOptional": "Bez danych dostępowych PayPal sklep oferuje tylko zakup na fakturę. PayPal można skonfigurować później na karcie kanału sprzedaży."
+            },
+            "versand": {
+                "intro": "Koszty wysyłki OpensourceERP oblicza z metod wysyłki, którymi zarządzasz w widoku „Metody wysyłki”, według wagi, wymiarów i kraju dostawy.",
+                "explain": "Bez metody wysyłki zamówienia idą jako „Standard” bez kosztów wysyłki. Próg darmowej wysyłki i kraje dostawy dotyczą tego sklepu. Puste kraje dostawy oznaczają: wszystkie kraje ze strefą wysyłki.",
+                "methodsMissing": "Nie skonfigurowano jeszcze żadnej metody wysyłki z ceną. Utwórz co najmniej jedną, np. „Paczka DHL” z ceną, i sprawdź tutaj ponownie.",
+                "methodsOk": "Metody wysyłki są skonfigurowane.",
+                "recheck": "Sprawdź ponownie"
+            },
+            "seiten": {
+                "intro": "Pod tymi adresami powstają strony produktów i kategorii na stronie. Wartości domyślne pasują do zestawu szablonów; zmieniaj je tylko, jeśli Twoja strona używa innych ścieżek.",
+                "explain": "Wzorce adresów muszą pasować do konfiguracji Hugo strony (taksonomia, permalinks, mounty). Sprawdzenie poniżej porównuje oba i proponuje pasujące wpisy do config.json, jeśli coś się nie zgadza.",
+                "publish": "Z automatyczną publikacją każda zmiana ceny lub tekstu trafia od razu na stronę. Bez niej gromadzą się zadania, które uruchamiasz ręcznie w przeglądzie.",
+                "testHint": "Sprawdzenie jest obowiązkowe: dalej można przejść dopiero, gdy HugoCMS jest osiągalny, a konfiguracja Hugo pasuje do adresów."
+            },
+            "paket": {
+                "intro": "Na koniec elementy sklepu trafiają na stronę, a OpensourceERP sprawdza całą konfigurację.",
+                "step1": "1. Zainstaluj pakiet",
+                "installHint": "Przenosi szablony i widżety sklepu do HugoCMS i buduje stronę. Działa w tle i może potrwać minutę.",
+                "installStarted": "Przenoszenie trwa. Stan widać w przeglądzie sklepu w sekcji „Publikacja”.",
+                "installRunning": "Trwa inne przenoszenie; zadanie zostanie wykonane po nim.",
+                "installQueued": "Zadanie jest zaplanowane i zostanie wykonane przy następnym uruchomieniu.",
+                "step2": "2. Sprawdź konfigurację",
+                "checkHint": "To samo sprawdzenie co w przeglądzie sklepu: jeśli czegoś brakuje, sklep jeszcze nie przyjmuje zamówień.",
+                "check": "Sprawdź konfigurację",
+                "ready": "Wszystko kompletne. Sklep może przyjmować zamówienia."
+            },
+            "fertig": {
+                "intro": "Konfiguracja „{name}” jest zakończona. Najważniejsze dane:",
+                "notReady": "Sprawdzenie nadal zgłasza brakujące dane. Mimo to możesz włączyć sklep; zamówienia będą możliwe dopiero, gdy wszystko będzie kompletne.",
+                "activate": "Włącz sklep teraz",
+                "activateHint": "Włączony sklep przyjmuje zamówienia i publikuje artykuły.",
+                "done": "Sklep jest skonfigurowany.",
+                "nextSteps": "Następnie: zwolnij artykuły w asortymencie dla sklepu i opublikuj strony produktów. Oba znajdziesz w menu sklepu w „Asortyment” i w przeglądzie."
+            },
+            "steps": {
+                "webseite": "Strona",
+                "kanal": "Kanał sprzedaży",
+                "rechnung": "Fakturowanie",
+                "zahlung": "Płatność",
+                "versand": "Wysyłka",
+                "seiten": "Strony sklepu",
+                "paket": "Pakiet",
+                "fertig": "Gotowe"
+            }
         }
     }
 }

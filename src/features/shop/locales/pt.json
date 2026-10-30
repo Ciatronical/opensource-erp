@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Criar página de produto eBay"
+        },
+        "setup": {
+            "title": "Configurar loja",
+            "start": "Configurar a loja passo a passo",
+            "finishButton": "Concluir",
+            "webseite": {
+                "intro": "A loja funciona num site do portal do cliente: aí os clientes iniciam sessão e aí estão o carrinho, a caixa e as páginas de produto. Escolha o site em que a loja deve funcionar.",
+                "none": "Ainda não há nenhum site do portal do cliente ativado. Configure primeiro o portal do cliente; depois continua aqui com a loja.",
+                "setupPortal": "Configurar o portal do cliente agora",
+                "portalAgain": "Rever ou reconfigurar o portal do cliente de um site"
+            },
+            "kanal": {
+                "intro": "Um canal de venda reúne tudo o que pertence a uma loja: preços e margens, regras de envio, acesso PayPal e os endereços das páginas da loja. Escolha um HugoShop existente ou crie um novo.",
+                "explain": "Normalmente há uma loja por site. Só precisa de vários canais se os mesmos artigos forem vendidos em sites diferentes com condições diferentes.",
+                "parts": "{count} artigos oferecidos",
+                "inactive": "desativado",
+                "new": "Criar uma loja nova"
+            },
+            "rechnung": {
+                "intro": "Cada encomenda torna-se de imediato uma fatura. Para isso o OpensourceERP precisa de algumas predefinições contabilísticas válidas para todas as lojas.",
+                "explain": "Conta de clientes, zona fiscal e moeda são obrigatórias, senão não se pode lançar nenhuma fatura. O contacto é o colaborador indicado como responsável nas faturas da loja. O local de armazém define de onde sai a mercadoria vendida; vazio significa sem movimento de armazém."
+            },
+            "zahlung": {
+                "intro": "Os clientes pagam à fatura por transferência ou de imediato via PayPal.",
+                "bank": "Os dados bancários aparecem na página da fatura enquanto o cliente não tiver pago. Titular é a pessoa ou empresa a quem a conta pertence.",
+                "paypal": "Para o PayPal precisa de uma app REST API da conta de programador PayPal (developer.paypal.com) com Client ID e Secret. Comece pelo ambiente de testes: aí não circula dinheiro real. O «nome no PayPal» é o que os clientes veem como destinatário na página do PayPal.",
+                "paypalOptional": "Sem credenciais PayPal a loja oferece apenas a compra à fatura. Pode configurar o PayPal mais tarde no cartão do canal de venda."
+            },
+            "versand": {
+                "intro": "O OpensourceERP calcula os portes a partir dos métodos de envio que mantém na vista «Métodos de envio», por peso, dimensões e país de entrega.",
+                "explain": "Sem método de envio as encomendas seguem como «Padrão» sem portes. O limiar de portes grátis e os países de entrega aplicam-se a esta loja. Países de entrega vazios significa: todos os países com uma zona de envio.",
+                "methodsMissing": "Ainda não há nenhum método de envio com tarifa. Crie pelo menos um, p. ex. «Encomenda DHL» com um preço, e verifique aqui de novo.",
+                "methodsOk": "Os métodos de envio estão configurados.",
+                "recheck": "Verificar de novo"
+            },
+            "seiten": {
+                "intro": "Nestes endereços são criadas as páginas de produto e de categoria no site. Os valores predefinidos correspondem ao conjunto de modelos; altere-os apenas se o seu site usar outros caminhos.",
+                "explain": "Os padrões de endereço têm de corresponder à configuração Hugo do site (taxonomia, permalinks, mounts). A verificação abaixo compara ambos e sugere as entradas adequadas para o config.json se algo não encaixar.",
+                "publish": "Com a publicação automática, cada alteração de preço ou texto vai de imediato para o site. Sem ela acumulam-se tarefas que executa à mão na vista geral.",
+                "testHint": "A verificação é obrigatória: só se avança quando o HugoCMS está acessível e a configuração Hugo corresponde aos endereços."
+            },
+            "paket": {
+                "intro": "Por fim, os componentes da loja chegam ao site e o OpensourceERP verifica toda a configuração.",
+                "step1": "1. Instalar pacote",
+                "installHint": "Transfere os modelos e widgets da loja para o HugoCMS e manda construir o site. Corre em segundo plano e pode demorar um minuto.",
+                "installStarted": "A transferência está em curso. Vê o estado na vista geral da loja em «Publicação».",
+                "installRunning": "Está em curso outra transferência; a tarefa será executada depois.",
+                "installQueued": "A tarefa está agendada e será executada na próxima execução.",
+                "step2": "2. Verificar configuração",
+                "checkHint": "A mesma verificação da vista geral: se faltar algo, a loja ainda não aceita encomendas.",
+                "check": "Verificar configuração",
+                "ready": "Tudo completo. A loja pode aceitar encomendas."
+            },
+            "fertig": {
+                "intro": "A configuração de «{name}» está concluída. Os dados mais importantes:",
+                "notReady": "A verificação ainda assinala dados em falta. Pode ativar a loja na mesma; as encomendas só serão possíveis quando tudo estiver completo.",
+                "activate": "Ativar a loja agora",
+                "activateHint": "Ativada, a loja aceita encomendas e publica artigos.",
+                "done": "A loja está configurada.",
+                "nextSteps": "A seguir: libertar artigos do sortido para a loja e publicar as páginas de produto. Ambos no menu da loja em «Sortido» e na vista geral."
+            },
+            "steps": {
+                "webseite": "Site",
+                "kanal": "Canal de venda",
+                "rechnung": "Faturação",
+                "zahlung": "Pagamento",
+                "versand": "Envio",
+                "seiten": "Páginas da loja",
+                "paket": "Pacote",
+                "fertig": "Concluído"
+            }
         }
     }
 }

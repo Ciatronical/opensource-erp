@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Přepínač webu"
+        },
+        "setup": {
+            "title": "Nastavit zákaznický portál",
+            "start": "Nastavit krok za krokem",
+            "reconfigure": "Zkontrolovat a změnit nastavení",
+            "finishButton": "Dokončit",
+            "webseite": {
+                "intro": "Zákaznický portál běží na webu spravovaném pomocí HugoCMS. Tam se zákazníci přihlašují, vidí své faktury a doklady a mění své údaje. Vyberte web, který chcete nastavit, nebo založte nový.",
+                "hint": "Tento dialog vás provede všemi údaji, ověří každé spojení a na konci web zapne. Kdykoli jej můžete zavřít a pokračovat později; vše dosud zadané zůstane uloženo.",
+                "noAddress": "zatím bez webové adresy",
+                "inactive": "vypnuto",
+                "new": "Založit nový web",
+                "nameHint": "Název pro přehled, např. doména. Zákazníci jej nevidí."
+            },
+            "adresse": {
+                "intro": "Na jaké adrese zákazníci web otevírají?",
+                "invalid": "Zadejte úplnou adresu s https://, např. https://www.example.cz/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP posílá stránky a prvky zákaznického portálu do HugoCMS, programu, kterým se web spravuje. K tomu potřebuje adresu a klíč z HugoCMS.",
+                "testHint": "Kontrola je povinná: dál lze pokračovat, až je HugoCMS dostupné a přijme klíč."
+            },
+            "zugang": {
+                "intro": "Web komunikuje s OpensourceERP přes přesměrovač. Zde určíte, čím se prokazuje a kam jdou požadavky.",
+                "keyGenerated": "Byl vytvořen nový klíč webu. Přenese se s balíčkem; nikde jej nemusíte zadávat.",
+                "advanced": "Rozšířené: přístup bez přesměrovače (CORS)"
+            },
+            "seiten": {
+                "intro": "Na těchto adresách vzniknou stránky zákaznického portálu. Výchozí hodnoty vyhovují většině webů.",
+                "invalid": "Zkontrolujte: {fields}. Povolena jsou malá písmena, číslice a pomlčky, s lomítkem na konci; adresář začíná lomítkem.",
+                "preview": "Adresy budou:"
+            },
+            "funktionen": {
+                "intro": "Určete, jak portál vypadá a co v něm zákazníci vidí. Vše lze později změnit na kartě webu."
+            },
+            "paket": {
+                "intro": "Nyní se portál dostane na web. Tři kroky: instalovat balíček, nasadit přesměrovač, ověřit spojení.",
+                "step1": "1. Instalovat balíček",
+                "step2": "2. Nasadit přesměrovač",
+                "proxyText": "HugoCMS nepřijímá PHP soubory. Soubor přesměrovače se proto musí jednou ručně zkopírovat na webový server. Také config.json projektu Hugo potřebuje položky pro balíček, viz níže. Obojí je nutné jen poprvé.",
+                "proxyFile": "Zkopírujte tento soubor z OpensourceERP na toto místo webu:",
+                "step3": "3. Ověřit spojení",
+                "allGood": "Všechny tři kroky prošly. Web dosáhne na OpensourceERP."
+            },
+            "fertig": {
+                "intro": "Nastavení „{name}“ je dokončeno. Nejdůležitější údaje:",
+                "notVerified": "Spojení přes web nebylo úspěšně ověřeno. Web můžete přesto zapnout; zákazníci se však přihlásí, až budou přesměrovač a config.json v pořádku.",
+                "activate": "Zapnout web nyní",
+                "done": "Zákaznický portál je nastaven."
+            },
+            "steps": {
+                "webseite": "Web",
+                "adresse": "Webová adresa",
+                "hugocms": "HugoCMS",
+                "zugang": "Přístup",
+                "seiten": "Stránky",
+                "funktionen": "Funkce",
+                "paket": "Balíček",
+                "fertig": "Hotovo"
+            }
         }
     }
 }

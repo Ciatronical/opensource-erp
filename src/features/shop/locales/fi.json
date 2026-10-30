@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Muotoile eBay-tuotesivu"
+        },
+        "setup": {
+            "title": "Kaupan käyttöönotto",
+            "start": "Ota kauppa käyttöön vaihe vaiheelta",
+            "finishButton": "Valmis",
+            "webseite": {
+                "intro": "Kauppa toimii asiakasportaalin verkkosivustolla: siellä asiakkaat kirjautuvat ja siellä ovat ostoskori, kassa ja tuotesivut. Valitse sivusto, jolla kaupan tulee toimia.",
+                "none": "Yhtään asiakasportaalin sivustoa ei ole vielä kytketty päälle. Ota ensin asiakasportaali käyttöön; sen jälkeen jatketaan tässä kaupan kanssa.",
+                "setupPortal": "Ota asiakasportaali käyttöön nyt",
+                "portalAgain": "Tarkista sivuston asiakasportaali tai ota se uudelleen käyttöön"
+            },
+            "kanal": {
+                "intro": "Myyntikanava kokoaa kaiken yhteen kauppaan kuuluvan: hinnat ja lisät, toimitussäännöt, PayPal-tunnukset ja kaupan sivujen osoitteet. Valitse olemassa oleva HugoShop tai luo uusi.",
+                "explain": "Yleensä sivustoa kohden on yksi kauppa. Useita kanavia tarvitaan vain, jos samoja tuotteita myydään eri sivustoilla eri ehdoin.",
+                "parts": "{count} tuotetta tarjolla",
+                "inactive": "pois käytöstä",
+                "new": "Luo uusi kauppa"
+            },
+            "rechnung": {
+                "intro": "Jokaisesta tilauksesta tulee heti lasku. Siihen OpensourceERP tarvitsee muutaman kirjanpidon oletuksen, jotka koskevat kaikkia kauppoja.",
+                "explain": "Myyntisaamistili, veroalue ja valuutta ovat pakollisia, muuten laskua ei voi kirjata. Yhteyshenkilö on työntekijä, joka näkyy kaupan laskujen käsittelijänä. Varastopaikka määrää, mistä myyty tavara kirjataan ulos; tyhjä tarkoittaa ei varastokirjausta."
+            },
+            "zahlung": {
+                "intro": "Asiakkaat maksavat laskulla tilisiirtona tai heti PayPalilla.",
+                "bank": "Pankkitiedot näkyvät laskusivulla, kunnes asiakas on maksanut. Tilinomistaja on henkilö tai yritys, jolle tili kuuluu.",
+                "paypal": "PayPalia varten tarvitset REST API -sovelluksen PayPalin kehittäjätililtä (developer.paypal.com) Client ID:llä ja Secretillä. Aloita testiympäristöstä: siellä ei liiku oikeaa rahaa. ”Nimi PayPalissa” on se, minkä asiakkaat näkevät vastaanottajana PayPal-sivulla.",
+                "paypalOptional": "Ilman PayPal-tunnuksia kauppa tarjoaa vain laskuostoksen. Voit ottaa PayPalin käyttöön myöhemmin myyntikanavan kortissa."
+            },
+            "versand": {
+                "intro": "OpensourceERP laskee toimituskulut toimitustavoista, joita ylläpidät näkymässä ”Toimitustavat”, painon, mittojen ja toimitusmaan mukaan.",
+                "explain": "Ilman toimitustapaa tilaukset kulkevat ”Vakio”-tapana ilman toimituskuluja. Ilmaisen toimituksen raja ja toimitusmaat koskevat tätä kauppaa. Tyhjät toimitusmaat tarkoittavat kaikkia maita, joilla on toimitusvyöhyke.",
+                "methodsMissing": "Yhtään hinnoiteltua toimitustapaa ei ole vielä määritetty. Luo vähintään yksi, esim. ”DHL-paketti” hintoineen, ja tarkista tässä uudelleen.",
+                "methodsOk": "Toimitustavat on määritetty.",
+                "recheck": "Tarkista uudelleen"
+            },
+            "seiten": {
+                "intro": "Näihin osoitteisiin luodaan tuote- ja kategoriasivut sivustolle. Oletukset vastaavat mallisarjaa; muuta niitä vain, jos sivustosi käyttää muita polkuja.",
+                "explain": "Osoitemallien on vastattava sivuston Hugo-määritystä (taksonomia, permalinks, mountit). Alla oleva tarkistus vertaa molempia ja ehdottaa sopivat config.json-merkinnät, jos jokin ei täsmää.",
+                "publish": "Automaattisella julkaisulla jokainen hinta- tai tekstimuutos menee heti sivustolle. Ilman sitä kertyy tehtäviä, jotka suoritat käsin yleisnäkymässä.",
+                "testHint": "Tarkistus on pakollinen: eteenpäin pääsee vasta, kun HugoCMS vastaa ja Hugo-määritys täsmää osoitteisiin."
+            },
+            "paket": {
+                "intro": "Lopuksi kaupan komponentit siirtyvät sivustolle ja OpensourceERP tarkistaa koko käyttöönoton.",
+                "step1": "1. Asenna paketti",
+                "installHint": "Siirtää kaupan mallit ja widgetit HugoCMS:ään ja rakentaa sivuston. Tämä tapahtuu taustalla ja voi kestää minuutin.",
+                "installStarted": "Siirto on käynnissä. Tilan näet kaupan yleisnäkymästä kohdasta ”Julkaisu”.",
+                "installRunning": "Toinen siirto on käynnissä; tehtävä suoritetaan sen jälkeen.",
+                "installQueued": "Tehtävä on ajastettu ja suoritetaan seuraavalla ajolla.",
+                "step2": "2. Tarkista käyttöönotto",
+                "checkHint": "Sama tarkistus kuin kaupan yleisnäkymässä: jos jotain puuttuu, kauppa ei vielä ota tilauksia vastaan.",
+                "check": "Tarkista käyttöönotto",
+                "ready": "Kaikki valmista. Kauppa voi ottaa tilauksia vastaan."
+            },
+            "fertig": {
+                "intro": "Kaupan ”{name}” käyttöönotto on valmis. Tärkeimmät tiedot:",
+                "notReady": "Käyttöönoton tarkistus ilmoittaa yhä puuttuvista tiedoista. Voit silti kytkeä kaupan päälle; tilaukset ovat mahdollisia vasta, kun kaikki on valmista.",
+                "activate": "Kytke kauppa päälle nyt",
+                "activateHint": "Päällä ollessaan kauppa ottaa tilauksia vastaan ja julkaisee tuotteita.",
+                "done": "Kauppa on otettu käyttöön.",
+                "nextSteps": "Seuraavaksi: vapauta valikoiman tuotteet kauppaan ja julkaise tuotesivut. Molemmat löytyvät kaupan valikosta kohdasta ”Valikoima” ja yleisnäkymästä."
+            },
+            "steps": {
+                "webseite": "Verkkosivusto",
+                "kanal": "Myyntikanava",
+                "rechnung": "Laskutus",
+                "zahlung": "Maksu",
+                "versand": "Toimitus",
+                "seiten": "Kaupan sivut",
+                "paket": "Paketti",
+                "fertig": "Valmis"
+            }
         }
     }
 }

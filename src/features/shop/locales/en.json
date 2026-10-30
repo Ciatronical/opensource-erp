@@ -1168,6 +1168,77 @@
                 }
             },
             "designPage": "Design eBay product page"
+        },
+        "setup": {
+            "title": "Set up shop",
+            "start": "Set up shop step by step",
+            "finishButton": "Finish",
+            "webseite": {
+                "intro": "The shop runs on a customer portal website: customers sign in there, and cart, checkout and product pages live there. Choose the website the shop should run on.",
+                "none": "No customer portal website is switched on yet. Set up the customer portal first; afterwards you continue here with the shop.",
+                "setupPortal": "Set up customer portal now",
+                "portalAgain": "Review or set up a website’s customer portal again"
+            },
+            "kanal": {
+                "intro": "A sales channel bundles everything that belongs to one shop: prices and markups, shipping rules, PayPal access and the addresses of the shop pages. Choose an existing HugoShop or create a new one.",
+                "explain": "Usually there is one shop per website. You only need several channels if the same items are sold on different websites under different conditions.",
+                "parts": "{count} items offered",
+                "inactive": "switched off",
+                "new": "Create a new shop"
+            },
+            "rechnung": {
+                "intro": "Every order immediately becomes an invoice. For this OpensourceERP needs a few accounting defaults that apply to all shops.",
+                "explain": "Receivables account, tax zone and currency are mandatory, otherwise no invoice can be posted. The contact is the employee shown as clerk on shop invoices. The stock bin defines where sold goods are booked out from; empty means no stock posting."
+            },
+            "zahlung": {
+                "intro": "Customers pay on invoice by bank transfer or immediately via PayPal.",
+                "bank": "The bank details appear on the invoice page while the customer has not paid yet. Account holder is the person or company owning the account.",
+                "paypal": "For PayPal you need a REST API app from the PayPal developer account (developer.paypal.com) with client ID and secret. Start with the sandbox: no real money moves there. The “name at PayPal” is what customers see as recipient on the PayPal page.",
+                "paypalOptional": "Without PayPal credentials the shop offers purchase on invoice only. You can set up PayPal later in the sales channel card."
+            },
+            "versand": {
+                "intro": "OpensourceERP calculates shipping costs from the shipping methods you maintain in the “Shipping methods” view, by weight, dimensions and delivery country.",
+                "explain": "Without a shipping method, orders run as “Standard” without shipping costs. The free shipping threshold and the delivery countries apply to this shop. Empty delivery countries means: all countries that belong to a shipping zone.",
+                "methodsMissing": "No shipping method with a rate is set up yet. Create at least one, e.g. “DHL parcel” with a price, and check again here.",
+                "methodsOk": "Shipping methods are set up.",
+                "recheck": "Check again"
+            },
+            "seiten": {
+                "intro": "The product and category pages are created at these addresses on the website. The defaults match the template set; change them only if your website uses other paths.",
+                "explain": "The address patterns must match the Hugo configuration of the website (taxonomy, permalinks, mounts). The check below compares both and suggests the matching entries for config.json if something does not fit.",
+                "publish": "With automatic publishing every price or text change goes to the website immediately. Without it, jobs pile up that you run by hand in the overview.",
+                "testHint": "The check is mandatory: you can only continue once HugoCMS is reachable and the Hugo configuration matches the addresses."
+            },
+            "paket": {
+                "intro": "Finally the shop widgets go onto the website, and OpensourceERP checks the whole setup.",
+                "step1": "1. Install package",
+                "installHint": "Transfers the shop’s templates and widgets to HugoCMS and builds the website. This runs in the background and may take a minute.",
+                "installStarted": "The transfer is running. You can follow it in the shop overview under “Publishing”.",
+                "installRunning": "Another transfer is running; the job will run afterwards.",
+                "installQueued": "The job is scheduled and will run on the next run.",
+                "step2": "2. Check setup",
+                "checkHint": "The same check as in the shop overview: if something is missing, the shop does not accept orders yet.",
+                "check": "Check setup",
+                "ready": "Everything complete. The shop can accept orders."
+            },
+            "fertig": {
+                "intro": "The setup of “{name}” is complete. These are the key settings:",
+                "notReady": "The setup check still reports missing data. You can switch the shop on anyway; orders are only possible once everything is complete.",
+                "activate": "Switch shop on now",
+                "activateHint": "Switched on, the shop accepts orders and publishes items.",
+                "done": "The shop is set up.",
+                "nextSteps": "Next: release items in the assortment for the shop and publish the product pages. Both are in the shop menu under “Assortment” and in the overview."
+            },
+            "steps": {
+                "webseite": "Website",
+                "kanal": "Sales channel",
+                "rechnung": "Invoicing",
+                "zahlung": "Payment",
+                "versand": "Shipping",
+                "seiten": "Shop pages",
+                "paket": "Package",
+                "fertig": "Done"
+            }
         }
     }
 }

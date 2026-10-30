@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Webstedets kontakt"
+        },
+        "setup": {
+            "title": "Opsæt kundeportal",
+            "start": "Opsæt trin for trin",
+            "reconfigure": "Gennemgå og ændr opsætning",
+            "finishButton": "Afslut",
+            "webseite": {
+                "intro": "Kundeportalen kører på et websted, der vedligeholdes med HugoCMS. Der logger kunderne ind, ser deres fakturaer og bilag og ændrer deres data. Vælg det websted, du vil opsætte, eller opret et nyt.",
+                "hint": "Dialogen fører dig gennem alle oplysninger, tester hver forbindelse og slår webstedet til til sidst. Du kan lukke den når som helst og fortsætte senere; alt indtastet forbliver gemt.",
+                "noAddress": "endnu ingen webadresse",
+                "inactive": "slået fra",
+                "new": "Opret nyt websted",
+                "nameHint": "Et navn til oversigten, f.eks. domænenavnet. Kunder ser det ikke."
+            },
+            "adresse": {
+                "intro": "På hvilken adresse åbner dine kunder webstedet?",
+                "invalid": "Angiv en fuld adresse med https://, f.eks. https://www.example.dk/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP sender kundeportalens sider og komponenter til HugoCMS, programmet webstedet vedligeholdes med. Dertil kræves adresse og nøgle fra HugoCMS.",
+                "testHint": "Testen er obligatorisk: du kan først fortsætte, når HugoCMS kan nås og accepterer nøglen."
+            },
+            "zugang": {
+                "intro": "Webstedet taler med OpensourceERP via en viderestilling. Her fastlægger du, hvordan det identificerer sig, og hvor forespørgsler går hen.",
+                "keyGenerated": "Der blev oprettet en ny nøgle til webstedet. Den overføres med pakken; du skal ikke indtaste den nogen steder.",
+                "advanced": "Udvidet: adgang uden viderestilling (CORS)"
+            },
+            "seiten": {
+                "intro": "På disse adresser oprettes kundeportalens sider på webstedet. Standardværdierne passer til de fleste websteder.",
+                "invalid": "Kontrollér: {fields}. Tilladt er små bogstaver, cifre og bindestreger med skråstreg til sidst; mappen begynder med skråstreg.",
+                "preview": "Adresserne bliver:"
+            },
+            "funktionen": {
+                "intro": "Fastlæg, hvordan kundeportalen ser ud, og hvad kunderne ser. Alt kan ændres senere på webstedets kort."
+            },
+            "paket": {
+                "intro": "Nu kommer kundeportalen på webstedet. Tre trin: installér pakken, stil viderestillingen til rådighed, test forbindelsen.",
+                "step1": "1. Installér pakke",
+                "step2": "2. Stil viderestilling til rådighed",
+                "proxyText": "HugoCMS accepterer ikke PHP-filer. Viderestillingens fil skal derfor kopieres til webserveren manuelt én gang. Desuden skal Hugo-projektets config.json have posterne til pakken, se nedenfor. Begge dele er kun nødvendige første gang.",
+                "proxyFile": "Kopiér denne fil fra OpensourceERP til dette sted på webstedet:",
+                "step3": "3. Test forbindelse",
+                "allGood": "Alle tre trin er bestået. Webstedet når OpensourceERP."
+            },
+            "fertig": {
+                "intro": "Opsætningen af „{name}“ er afsluttet. De vigtigste oplysninger:",
+                "notVerified": "Forbindelsen via webstedet blev ikke testet med succes. Du kan alligevel slå webstedet til, men kunder kan først logge ind, når viderestilling og config.json er korrekte.",
+                "activate": "Slå webstedet til nu",
+                "done": "Kundeportalen er opsat."
+            },
+            "steps": {
+                "webseite": "Websted",
+                "adresse": "Webadresse",
+                "hugocms": "HugoCMS",
+                "zugang": "Adgang",
+                "seiten": "Sider",
+                "funktionen": "Funktioner",
+                "paket": "Pakke",
+                "fertig": "Færdig"
+            }
         }
     }
 }

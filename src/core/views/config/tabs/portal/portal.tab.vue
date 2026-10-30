@@ -45,6 +45,15 @@
                     >
                         {{ t('WebsitesView.create') }}
                     </v-btn>
+                    <!-- Einrichtung Schritt für Schritt (portal-setup.dialog.vue): legt an,
+                         prüft und schaltet ein — für den ersten Anlauf und zum Nachbessern -->
+                    <v-btn
+                        variant="tonal"
+                        prepend-icon="mdi-clipboard-check-outline"
+                        @click="einrichtungStarten(0)"
+                    >
+                        {{ t('WebsitesView.setup.start') }}
+                    </v-btn>
                 </div>
             </section-card>
 
@@ -63,6 +72,13 @@
                 </template>
                 <template #actions>
                     <v-progress-circular v-if="speichert[seite.id]" indeterminate size="16" width="2" class="mr-2" />
+                    <v-btn
+                        icon="mdi-clipboard-check-outline"
+                        variant="text"
+                        size="small"
+                        :title="t('WebsitesView.setup.reconfigure')"
+                        @click="einrichtungStarten(seite.id)"
+                    />
                     <v-btn
                         v-if="!seite.active && !seite.channels.length"
                         icon="mdi-delete-outline"
@@ -160,6 +176,7 @@
 
         <!-- Hilfsanzeige für Felder mit Langfassung der Hilfe (field.help) — zunächst
              nur hier, zum Ausprobieren -->
+        <PortalSetupDialog v-model="setupOffen" :website-id="setupWebsite" @done="laden" />
         <help-panel />
     </div>
 </template>
@@ -172,6 +189,7 @@ import axios from 'axios'
 import SectionCard from '@/core/components/layout/section-card.vue'
 import HelpPanel from '@/core/components/layout/help-panel.vue'
 import WebsiteSettings from './website-settings.vue'
+import PortalSetupDialog from './portal-setup.dialog.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toasts from '@/core/utils/toasts.js'
 
@@ -195,6 +213,13 @@ const speichert = ref({})
 const einstellungenOffen = ref({})
 const neu = reactive({ name: '' })
 const legtAn = ref(false)
+/** Einrichtung Schritt für Schritt: offen, und welche Webseite (0 = wählen oder anlegen) */
+const setupOffen = ref(false)
+const setupWebsite = ref(0)
+function einrichtungStarten(id) {
+    setupWebsite.value = Number(id) || 0
+    setupOffen.value = true
+}
 
 const WAHR = [true, 't', 'true', '1', 1]
 

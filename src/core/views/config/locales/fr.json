@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Outils",
     "featureSqlTool": "Outil SQL (Developer-Tools)",
     "featureSqlToolDesc": "Exécutez des commandes SQL arbitraires directement sur la base de données. Désactivé par défaut ; seuls les administrateurs système le voient et peuvent l’utiliser, et chaque exécution est journalisée avec l’utilisateur, l’IP et la commande.",
-    "featureSqlToolOnHint": "L’outil SQL est activé. Les modifications prennent effet immédiatement et sans contrôle sur la base de données – désactivez-le à nouveau après utilisation."
+    "featureSqlToolOnHint": "L’outil SQL est activé. Les modifications prennent effet immédiatement et sans contrôle sur la base de données – désactivez-le à nouveau après utilisation.",
+    "setupWizard": {
+        "back": "Retour",
+        "next": "Suivant",
+        "finish": "Terminer",
+        "close": "Fermer",
+        "stepOf": "Étape {step} sur {total}"
+    }
 }

@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Työkalut",
     "featureSqlTool": "SQL-työkalu (Developer-Tools)",
     "featureSqlToolDesc": "Suorita mielivaltaisia SQL-komentoja suoraan tietokannassa. Oletuksena pois päältä; vain järjestelmänvalvojat näkevät ja voivat käyttää sitä, ja jokainen suoritus kirjataan käyttäjän, IP-osoitteen ja komennon kanssa.",
-    "featureSqlToolOnHint": "SQL-työkalu on sallittu. Muutokset tulevat voimaan heti ja ilman tarkistusta tietokannassa – kytke se pois päältä työn jälkeen."
+    "featureSqlToolOnHint": "SQL-työkalu on sallittu. Muutokset tulevat voimaan heti ja ilman tarkistusta tietokannassa – kytke se pois päältä työn jälkeen.",
+    "setupWizard": {
+        "back": "Takaisin",
+        "next": "Seuraava",
+        "finish": "Valmis",
+        "close": "Sulje",
+        "stepOf": "Vaihe {step}/{total}"
+    }
 }

@@ -564,3 +564,32 @@ abzulegen.
 | Weiterleiter 404, obwohl signiert übertragen | Der Webserver liefert unter der Basisadresse nicht das `public/` dieser Webseite aus, oder die Basisadresse stimmt nicht |
 | „Ein Lauf ist noch unterwegs" | Sperrdatei in `backend/tmp/` — ein vorheriger Lauf hängt |
 | Neue Einstellungen fehlen nach einem Update | Das Schema-Update beim Login prüft Prüfsummen, siehe `shop-veroeffentlichung.md` |
+
+## Einrichtungsdialog Shop (2026-10-30)
+
+`src/features/shop/components/shop-setup.dialog.vue` führt Schritt für
+Schritt durch die Einrichtung eines HugoShops; Knopf „Shop Schritt für
+Schritt einrichten“ in der Shop-Übersicht (hervorgehoben, solange der Shop
+nicht einsatzbereit ist). Zum Neukonfigurieren mit `channel-id` öffnen.
+Rahmen: `src/core/components/setup/einrichtung-dialog.vue`.
+
+Schritte: Webseite des Kundenportals (ohne eingeschaltete Webseite läuft
+zuerst der Einrichtungsdialog des Kundenportals, eingebettet) → Verkaufskanal
+wählen oder anlegen (`createShopChannel`, `saveShopChannel` mit `website_id`)
+→ Rechnungsstellung (Mandantenvorgaben aus `shopDefaultsConfig.js`,
+`saveCrmDefaults`; Forderungskonto, Steuerzone und Währung Pflicht) → Zahlung
+(Bankverbindung, Name bei PayPal, PayPal-Zugang des Kanals; PayPal ist
+optional und wird gesagt) → Versand (Firmenland und Versandarten aus
+`getShopStatus`, Freigrenze und Lieferländer des Kanals) → Shopseiten
+(Adressmuster, Veröffentlichung, Mail; Pflichtprüfung `testShopHugoCms`
+mit Konfigurationsprüfung) → Paket (`installPortalUi` für den Kanal,
+Einrichtungsprüfung `getShopStatus` mit den Punkten dieses Kanals) → Fertig
+(Kanal einschalten, nächste Schritte). Texte `ShopView.setup.*` in 21
+Sprachen.
+
+**Nach dem Einschalten der Erweiterung** (Firmenkonfiguration → Erweiterungen)
+setzt `client-defaults.view.vue` vor dem Neuladen die Marke
+`sessionStorage.oserp.setupAfterReload = shop`; nach dem Neuladen führt sie
+zur Shop-Übersicht mit `?setup=1`, die den Dialog öffnet. Ist noch keine
+Webseite des Kundenportals eingeschaltet, kommt zuerst der Dialog des
+Kundenportals, danach der des Shops.

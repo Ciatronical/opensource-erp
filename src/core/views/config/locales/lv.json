@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Rīki",
     "featureSqlTool": "SQL rīks (Developer-Tools)",
     "featureSqlToolDesc": "Izpildiet jebkādas SQL komandas tieši datubāzē. Pēc noklusējuma izslēgts; to redz un lieto tikai sistēmas administratori, un katra izpilde tiek reģistrēta ar lietotāju, IP un komandu.",
-    "featureSqlToolOnHint": "SQL rīks ir atļauts. Izmaiņas stājas spēkā uzreiz un bez pārbaudes datubāzē – pēc darba to atkal izslēdziet."
+    "featureSqlToolOnHint": "SQL rīks ir atļauts. Izmaiņas stājas spēkā uzreiz un bez pārbaudes datubāzē – pēc darba to atkal izslēdziet.",
+    "setupWizard": {
+        "back": "Atpakaļ",
+        "next": "Tālāk",
+        "finish": "Pabeigt",
+        "close": "Aizvērt",
+        "stepOf": "{step}. solis no {total}"
+    }
 }

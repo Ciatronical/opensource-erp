@@ -2154,5 +2154,12 @@
     "toolsFeatures": "Werkzeuge",
     "featureSqlTool": "SQL-Werkzeug (Developer-Tools)",
     "featureSqlToolDesc": "Beliebige SQL-Befehle direkt auf der Datenbank ausführen. Standardmäßig aus; nur Systemadministratoren sehen und nutzen es, jede Ausführung wird mit Benutzer, IP und Befehl protokolliert.",
-    "featureSqlToolOnHint": "Das SQL-Werkzeug ist freigegeben. Änderungen wirken sofort und ohne Prüfung auf die Datenbank – nach der Arbeit wieder abschalten."
+    "featureSqlToolOnHint": "Das SQL-Werkzeug ist freigegeben. Änderungen wirken sofort und ohne Prüfung auf die Datenbank – nach der Arbeit wieder abschalten.",
+    "setupWizard": {
+        "back": "Zurück",
+        "next": "Weiter",
+        "finish": "Fertig",
+        "close": "Schließen",
+        "stepOf": "Schritt {step} von {total}"
+    }
 }

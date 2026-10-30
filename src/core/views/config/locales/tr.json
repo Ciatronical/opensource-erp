@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Araçlar",
     "featureSqlTool": "SQL aracı (Developer-Tools)",
     "featureSqlToolDesc": "Veritabanında doğrudan istediğiniz SQL komutlarını çalıştırın. Varsayılan olarak kapalıdır; yalnızca sistem yöneticileri görür ve kullanır, her çalıştırma kullanıcı, IP ve komutla birlikte kaydedilir.",
-    "featureSqlToolOnHint": "SQL aracı etkin. Değişiklikler veritabanında hemen ve kontrolsüz olarak geçerli olur – işiniz bitince tekrar kapatın."
+    "featureSqlToolOnHint": "SQL aracı etkin. Değişiklikler veritabanında hemen ve kontrolsüz olarak geçerli olur – işiniz bitince tekrar kapatın.",
+    "setupWizard": {
+        "back": "Geri",
+        "next": "İleri",
+        "finish": "Bitir",
+        "close": "Kapat",
+        "stepOf": "Adım {step} / {total}"
+    }
 }

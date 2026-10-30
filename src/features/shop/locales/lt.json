@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Kurti eBay prekės puslapį"
+        },
+        "setup": {
+            "title": "Parduotuvės nustatymas",
+            "start": "Nustatyti parduotuvę žingsnis po žingsnio",
+            "finishButton": "Užbaigti",
+            "webseite": {
+                "intro": "Parduotuvė veikia klientų portalo svetainėje: ten klientai prisijungia, ten yra krepšelis, kasa ir prekių puslapiai. Pasirinkite svetainę, kurioje turi veikti parduotuvė.",
+                "none": "Dar neįjungta nė viena klientų portalo svetainė. Pirmiausia nustatykite klientų portalą, tada čia tęsite su parduotuve.",
+                "setupPortal": "Nustatyti klientų portalą dabar",
+                "portalAgain": "Patikrinti arba iš naujo nustatyti svetainės portalą"
+            },
+            "kanal": {
+                "intro": "Pardavimo kanalas sujungia viską, kas priklauso vienai parduotuvei: kainas ir antkainius, pristatymo taisykles, PayPal prieigą ir parduotuvės puslapių adresus. Pasirinkite esamą HugoShop arba sukurkite naują.",
+                "explain": "Paprastai vienai svetainei tenka viena parduotuvė. Kelių kanalų reikia tik tada, kai tos pačios prekės parduodamos skirtingose svetainėse skirtingomis sąlygomis.",
+                "parts": "Siūloma prekių: {count}",
+                "inactive": "išjungtas",
+                "new": "Sukurti naują parduotuvę"
+            },
+            "rechnung": {
+                "intro": "Kiekvienas užsakymas iš karto tampa sąskaita. Tam OpensourceERP reikia kelių apskaitos nustatymų, galiojančių visoms parduotuvėms.",
+                "explain": "Gautinų sumų sąskaita, mokesčių zona ir valiuta privalomi, kitaip sąskaitos užregistruoti negalima. Kontaktas – darbuotojas, nurodomas parduotuvės sąskaitose kaip vykdytojas. Sandėlio vieta nurodo, iš kur nurašomos parduotos prekės; tuščia reiškia be sandėlio įrašo."
+            },
+            "zahlung": {
+                "intro": "Klientai moka pagal sąskaitą pavedimu arba iš karto per PayPal.",
+                "bank": "Banko rekvizitai rodomi sąskaitos puslapyje, kol klientas nesumokėjo. Sąskaitos savininkas – asmuo arba įmonė, kuriai priklauso sąskaita.",
+                "paypal": "PayPal reikia REST API programėlės iš PayPal kūrėjo paskyros (developer.paypal.com) su Client ID ir Secret. Pradėkite nuo bandomosios aplinkos: ten tikri pinigai nejuda. „Pavadinimas PayPal“ – tai, ką klientai mato kaip gavėją PayPal puslapyje.",
+                "paypalOptional": "Be PayPal prieigos duomenų parduotuvė siūlo tik pirkimą pagal sąskaitą. PayPal galite nustatyti vėliau pardavimo kanalo kortelėje."
+            },
+            "versand": {
+                "intro": "Pristatymo išlaidas OpensourceERP skaičiuoja pagal pristatymo būdus, kuriuos tvarkote rodinyje „Pristatymo būdai“ – pagal svorį, matmenis ir pristatymo šalį.",
+                "explain": "Be pristatymo būdo užsakymai vykdomi kaip „Standartinis“ be pristatymo išlaidų. Nemokamo pristatymo riba ir pristatymo šalys galioja šiai parduotuvei. Tuščios pristatymo šalys reiškia: visos šalys, turinčios pristatymo zoną.",
+                "methodsMissing": "Dar nenustatytas nė vienas pristatymo būdas su kaina. Sukurkite bent vieną, pvz., „DHL siuntinys“ su kaina, ir patikrinkite čia dar kartą.",
+                "methodsOk": "Pristatymo būdai nustatyti.",
+                "recheck": "Tikrinti dar kartą"
+            },
+            "seiten": {
+                "intro": "Šiais adresais svetainėje sukuriami prekių ir kategorijų puslapiai. Numatytosios reikšmės atitinka šablonų rinkinį; keiskite jas tik tada, jei jūsų svetainė naudoja kitus kelius.",
+                "explain": "Adresų šablonai turi atitikti svetainės Hugo konfigūraciją (taksonomija, permalinks, mounts). Žemiau esanti patikra palygina abu ir pasiūlo tinkamus config.json įrašus, jei kas nors nesutampa.",
+                "publish": "Su automatiniu skelbimu kiekvienas kainos ar teksto pakeitimas iš karto patenka į svetainę. Be jo kaupiasi užduotys, kurias apžvalgoje vykdote rankiniu būdu.",
+                "testHint": "Patikra privaloma: toliau galima tik tada, kai HugoCMS pasiekiamas ir Hugo konfigūracija atitinka adresus."
+            },
+            "paket": {
+                "intro": "Galiausiai parduotuvės komponentai patenka į svetainę, o OpensourceERP patikrina visą nustatymą.",
+                "step1": "1. Įdiegti paketą",
+                "installHint": "Perkelia parduotuvės šablonus ir valdiklius į HugoCMS ir sukuria svetainę. Tai vyksta fone ir gali užtrukti minutę.",
+                "installStarted": "Perkėlimas vyksta. Būseną matysite parduotuvės apžvalgoje skiltyje „Skelbimas“.",
+                "installRunning": "Šiuo metu vyksta kitas perkėlimas; užduotis bus įvykdyta po jo.",
+                "installQueued": "Užduotis suplanuota ir bus įvykdyta kito paleidimo metu.",
+                "step2": "2. Patikrinti nustatymą",
+                "checkHint": "Ta pati patikra kaip parduotuvės apžvalgoje: jei ko nors trūksta, parduotuvė užsakymų dar nepriima.",
+                "check": "Patikrinti nustatymą",
+                "ready": "Viskas užpildyta. Parduotuvė gali priimti užsakymus."
+            },
+            "fertig": {
+                "intro": "„{name}“ nustatymas baigtas. Svarbiausi duomenys:",
+                "notReady": "Nustatymo patikra vis dar praneša apie trūkstamus duomenis. Parduotuvę vis tiek galite įjungti; užsakymai bus galimi tik kai viskas bus užpildyta.",
+                "activate": "Įjungti parduotuvę dabar",
+                "activateHint": "Įjungta parduotuvė priima užsakymus ir skelbia prekes.",
+                "done": "Parduotuvė nustatyta.",
+                "nextSteps": "Toliau: asortimente paleiskite prekes parduotuvei ir paskelbkite prekių puslapius. Abu rasite parduotuvės meniu skiltyje „Asortimentas“ ir apžvalgoje."
+            },
+            "steps": {
+                "webseite": "Svetainė",
+                "kanal": "Pardavimo kanalas",
+                "rechnung": "Sąskaitos",
+                "zahlung": "Mokėjimas",
+                "versand": "Pristatymas",
+                "seiten": "Parduotuvės puslapiai",
+                "paket": "Paketas",
+                "fertig": "Baigta"
+            }
         }
     }
 }

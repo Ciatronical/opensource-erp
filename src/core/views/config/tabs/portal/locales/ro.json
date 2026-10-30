@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Comutatorul site-ului"
+        },
+        "setup": {
+            "title": "Configurarea portalului pentru clienți",
+            "start": "Configurează pas cu pas",
+            "reconfigure": "Verifică și modifică configurarea",
+            "finishButton": "Finalizează",
+            "webseite": {
+                "intro": "Portalul pentru clienți rulează pe un site întreținut cu HugoCMS. Acolo clienții se autentifică, își văd facturile și documentele și își modifică datele. Alegeți site-ul de configurat sau creați unul nou.",
+                "hint": "Acest dialog vă ghidează prin toate datele, verifică fiecare conexiune și activează site-ul la final. Îl puteți închide oricând și continua mai târziu; tot ce ați introdus rămâne salvat.",
+                "noAddress": "încă fără adresă web",
+                "inactive": "dezactivat",
+                "new": "Creează un site nou",
+                "nameHint": "Un nume pentru prezentarea generală, de ex. domeniul. Clienții nu îl văd."
+            },
+            "adresse": {
+                "intro": "La ce adresă deschid clienții site-ul?",
+                "invalid": "Introduceți o adresă completă cu https://, de ex. https://www.example.ro/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP trimite paginile și componentele portalului către HugoCMS, programul cu care se întreține site-ul. Are nevoie de adresa și cheia din HugoCMS.",
+                "testHint": "Verificarea este obligatorie: se poate continua doar când HugoCMS este accesibil și acceptă cheia."
+            },
+            "zugang": {
+                "intro": "Site-ul comunică cu OpensourceERP printr-un redirecționator. Aici stabiliți cum se identifică și unde ajung cererile.",
+                "keyGenerated": "A fost generată o cheie nouă pentru site. Este transmisă odată cu pachetul; nu trebuie introdusă nicăieri.",
+                "advanced": "Avansat: acces fără redirecționator (CORS)"
+            },
+            "seiten": {
+                "intro": "La aceste adrese sunt create paginile portalului pe site. Valorile implicite se potrivesc majorității site-urilor.",
+                "invalid": "Verificați: {fields}. Sunt permise litere mici, cifre și cratime, cu bară oblică la final; directorul începe cu bară oblică.",
+                "preview": "Adresele vor fi:"
+            },
+            "funktionen": {
+                "intro": "Stabiliți cum arată portalul și ce văd clienții. Totul se poate modifica ulterior în cardul site-ului."
+            },
+            "paket": {
+                "intro": "Acum portalul ajunge pe site. Trei pași: instalați pachetul, puneți la dispoziție redirecționatorul, verificați conexiunea.",
+                "step1": "1. Instalează pachetul",
+                "step2": "2. Pune la dispoziție redirecționatorul",
+                "proxyText": "HugoCMS nu acceptă fișiere PHP. De aceea fișierul redirecționatorului trebuie copiat o dată manual pe serverul web. În plus, config.json al proiectului Hugo are nevoie de intrările pachetului, vezi mai jos. Ambele sunt necesare doar prima dată.",
+                "proxyFile": "Copiați acest fișier din OpensourceERP în acest loc al site-ului:",
+                "step3": "3. Verifică conexiunea",
+                "allGood": "Toți cei trei pași au reușit. Site-ul ajunge la OpensourceERP."
+            },
+            "fertig": {
+                "intro": "Configurarea „{name}” este încheiată. Cele mai importante date:",
+                "notVerified": "Conexiunea prin site nu a fost verificată cu succes. Puteți activa site-ul oricum, dar clienții se vor putea autentifica doar când redirecționatorul și config.json sunt corecte.",
+                "activate": "Activează site-ul acum",
+                "done": "Portalul pentru clienți este configurat."
+            },
+            "steps": {
+                "webseite": "Site",
+                "adresse": "Adresă web",
+                "hugocms": "HugoCMS",
+                "zugang": "Acces",
+                "seiten": "Pagini",
+                "funktionen": "Funcții",
+                "paket": "Pachet",
+                "fertig": "Gata"
+            }
         }
     }
 }

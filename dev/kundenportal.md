@@ -329,3 +329,28 @@ Portal ohne sie.
 - Die Webseiten des Kundenportals sind seit 2026-10-23 ein Reiter der Firmenkonfiguration (Gruppe Funktionen → „Kundenportal“, `src/core/views/config/tabs/portal/portal.tab.vue`, Aufruf `?tab=portal&website=<id>`); die eigene Route `websites` und der Menüpunkt System → Webseiten sind entfernt.
 - Der HugoCMS-Transport liegt im Kern (`lib/hugocms.php`), die Lieferung des Shops (Produktseiten, Medien, Vorschaubilder) bleibt in `backend/api/shop/lib/hugocms.php` und ruft den Kern über `portalHugoCmsTransfer()`.
 - Eine Webseite trägt höchstens einen HugoShop (eindeutiger Index `sales_channel_shop_website_hugoshop`); die Bereitstellung gehört der Webseite, die bisherige je Kanal zieht beim ersten Zugriff um.
+
+## Einrichtungsdialog Kundenportal (2026-10-30)
+
+`src/core/views/config/tabs/portal/portal-setup.dialog.vue` führt Schritt für
+Schritt durch die Einrichtung einer Webseite des Kundenportals — für den
+ersten Anlauf und zum Nachbessern (Knopf „Schritt für Schritt einrichten“
+im Reiter Kundenportal; je Webseite „Einrichtung prüfen und ändern“, dann
+mit den gespeicherten Werten vorbelegt). Der Rahmen (Schrittleiste, Zurück/
+Weiter/Fertig, Texte `setupWizard.*`) ist `src/core/components/setup/
+einrichtung-dialog.vue` und wird vom Shop mitbenutzt.
+
+Schritte: Webseite wählen oder anlegen (`createWebsite`) → Webadresse →
+HugoCMS mit Pflichtprüfung (`testWebsiteHugoCms`, zeigt auch die
+Konfigurationsprüfung) → Zugang (Schlüssel wird erzeugt, Adresse des
+Portal-Zugangs vorbelegt) → Seiten (Pfade geprüft: Kleinbuchstaben, Ziffern,
+Bindestriche, Schrägstrich am Ende; Vorschau der Adressen) → Funktionen
+(Vorlagensatz, Freischaltung, Belege, Kontaktadresse) → Paket (`install
+WebsitePackage`, Anleitung für den Weiterleiter und die Mounts der
+config.json, Pflichtprüfung `testWebsiteBackendUrl`) → Fertig (Zusammen-
+fassung, Webseite einschalten über `saveWebsite`). Jeder Schritt erklärt
+sein Thema mit den Hilfetexten der Felder (`WebsitesView.help.*`), speichert
+beim Weitergehen über `saveWebsiteSettings` und lässt nur weiter, wenn die
+Angaben stimmen oder die Prüfung bestanden ist. Dieselben Felder wie in der
+Karte der Webseite (`websiteSettingsConfig.js`, `shop-config-field`). Texte
+`WebsitesView.setup.*` in 21 Sprachen.

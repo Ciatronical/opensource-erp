@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "网站开关"
+        },
+        "setup": {
+            "title": "设置客户门户",
+            "start": "逐步设置",
+            "reconfigure": "检查并修改设置",
+            "finishButton": "完成",
+            "webseite": {
+                "intro": "客户门户运行在一个用 HugoCMS 维护的网站上。客户在那里登录、查看发票和单据并修改自己的数据。请选择要设置的网站，或新建一个。",
+                "hint": "此向导将引导您填写所有信息，检查每个连接，并在最后启用网站。您可以随时关闭并稍后继续，已输入的内容都会保存。",
+                "noAddress": "尚无网址",
+                "inactive": "已关闭",
+                "new": "新建网站",
+                "nameHint": "用于总览的名称，例如域名。客户看不到它。"
+            },
+            "adresse": {
+                "intro": "客户通过哪个地址访问网站？",
+                "invalid": "请输入以 https:// 开头的完整地址，例如 https://www.example.com/。"
+            },
+            "hugocms": {
+                "intro": "OpensourceERP 将客户门户的页面和组件发送给 HugoCMS，即维护网站所用的程序。为此需要 HugoCMS 中的地址和密钥。",
+                "testHint": "检查是必需的：只有在 HugoCMS 可访问且接受密钥后才能继续。"
+            },
+            "zugang": {
+                "intro": "网站通过转发器与 OpensourceERP 通信。在此设置它如何验证身份以及请求发往何处。",
+                "keyGenerated": "已为网站生成新密钥。它随软件包一起传输，您无需在任何地方输入。",
+                "advanced": "高级：不经转发器的访问（CORS）"
+            },
+            "seiten": {
+                "intro": "客户门户的页面将在网站的这些地址下创建。默认值适用于大多数网站。",
+                "invalid": "请检查：{fields}。允许小写字母、数字和连字符，以斜杠结尾；目录以斜杠开头。",
+                "preview": "地址如下："
+            },
+            "funktionen": {
+                "intro": "确定客户门户的外观以及客户能看到的内容。所有内容之后都可在网站卡片中更改。"
+            },
+            "paket": {
+                "intro": "现在客户门户将部署到网站。三个步骤：安装软件包、放置转发器、检查连接。",
+                "step1": "1. 安装软件包",
+                "step2": "2. 放置转发器",
+                "proxyText": "HugoCMS 不接受 PHP 文件。因此转发器文件需要手动复制到网页服务器一次。此外，Hugo 项目的 config.json 需要软件包的条目，见下文。两者仅在首次需要。",
+                "proxyFile": "将 OpensourceERP 中的此文件复制到网站的此位置：",
+                "step3": "3. 检查连接",
+                "allGood": "三个步骤全部通过。网站可以访问 OpensourceERP。"
+            },
+            "fertig": {
+                "intro": "“{name}”的设置已完成。最重要的信息：",
+                "notVerified": "通过网站的连接未成功验证。您仍可启用网站，但只有在转发器和 config.json 正确后客户才能登录。",
+                "activate": "立即启用网站",
+                "done": "客户门户已设置完成。"
+            },
+            "steps": {
+                "webseite": "网站",
+                "adresse": "网址",
+                "hugocms": "HugoCMS",
+                "zugang": "访问",
+                "seiten": "页面",
+                "funktionen": "功能",
+                "paket": "软件包",
+                "fertig": "完成"
+            }
         }
     }
 }

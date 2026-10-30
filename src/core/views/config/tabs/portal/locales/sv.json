@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Webbplatsens strömbrytare"
+        },
+        "setup": {
+            "title": "Sätt upp kundportal",
+            "start": "Sätt upp steg för steg",
+            "reconfigure": "Granska och ändra inställningen",
+            "finishButton": "Slutför",
+            "webseite": {
+                "intro": "Kundportalen körs på en webbplats som sköts med HugoCMS. Där loggar kunderna in, ser sina fakturor och underlag och ändrar sina uppgifter. Välj webbplatsen du vill sätta upp eller skapa en ny.",
+                "hint": "Dialogen leder dig genom alla uppgifter, testar varje anslutning och slår på webbplatsen i slutet. Du kan stänga den när som helst och fortsätta senare; allt du angett förblir sparat.",
+                "noAddress": "ännu ingen webbadress",
+                "inactive": "avstängd",
+                "new": "Skapa ny webbplats",
+                "nameHint": "Ett namn för översikten, t.ex. domännamnet. Kunderna ser det inte."
+            },
+            "adresse": {
+                "intro": "På vilken adress öppnar dina kunder webbplatsen?",
+                "invalid": "Ange en fullständig adress med https://, t.ex. https://www.example.se/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP skickar kundportalens sidor och komponenter till HugoCMS, programmet som webbplatsen sköts med. Det behöver adressen och nyckeln från HugoCMS.",
+                "testHint": "Testet är obligatoriskt: du kan gå vidare först när HugoCMS kan nås och godtar nyckeln."
+            },
+            "zugang": {
+                "intro": "Webbplatsen pratar med OpensourceERP via en vidarebefordrare. Här bestämmer du hur den identifierar sig och vart förfrågningarna går.",
+                "keyGenerated": "En ny nyckel för webbplatsen skapades. Den överförs med paketet; du behöver inte ange den någonstans.",
+                "advanced": "Avancerat: åtkomst utan vidarebefordrare (CORS)"
+            },
+            "seiten": {
+                "intro": "På dessa adresser skapas kundportalens sidor på webbplatsen. Standardvärdena passar de flesta webbplatser.",
+                "invalid": "Kontrollera: {fields}. Tillåtet är små bokstäver, siffror och bindestreck med snedstreck i slutet; katalogen börjar med snedstreck.",
+                "preview": "Adresserna blir:"
+            },
+            "funktionen": {
+                "intro": "Bestäm hur kundportalen ser ut och vad kunderna ser. Allt kan ändras senare i webbplatsens kort."
+            },
+            "paket": {
+                "intro": "Nu kommer kundportalen till webbplatsen. Tre steg: installera paketet, tillhandahåll vidarebefordraren, testa anslutningen.",
+                "step1": "1. Installera paket",
+                "step2": "2. Tillhandahåll vidarebefordrare",
+                "proxyText": "HugoCMS tar inte emot PHP-filer. Vidarebefordrarens fil måste därför kopieras manuellt till webbservern en gång. Dessutom behöver Hugo-projektets config.json posterna för paketet, se nedan. Båda behövs bara första gången.",
+                "proxyFile": "Kopiera denna fil från OpensourceERP till denna plats på webbplatsen:",
+                "step3": "3. Testa anslutning",
+                "allGood": "Alla tre steg är godkända. Webbplatsen når OpensourceERP."
+            },
+            "fertig": {
+                "intro": "Uppsättningen av ”{name}” är klar. De viktigaste uppgifterna:",
+                "notVerified": "Anslutningen via webbplatsen testades inte med framgång. Du kan ändå slå på webbplatsen, men kunderna kan logga in först när vidarebefordraren och config.json stämmer.",
+                "activate": "Slå på webbplatsen nu",
+                "done": "Kundportalen är uppsatt."
+            },
+            "steps": {
+                "webseite": "Webbplats",
+                "adresse": "Webbadress",
+                "hugocms": "HugoCMS",
+                "zugang": "Åtkomst",
+                "seiten": "Sidor",
+                "funktionen": "Funktioner",
+                "paket": "Paket",
+                "fertig": "Klart"
+            }
         }
     }
 }
