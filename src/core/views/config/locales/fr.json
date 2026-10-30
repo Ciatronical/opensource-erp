@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Figure dans le pied de chaque page, p. ex. délai de retour et procédure.",
         "ebayPageAbout": "Texte À propos",
         "ebayPageAbout_help": "Figure dans le pied de chaque page – en bref, ce qui caractérise la boutique.",
-        "ebayRefreshToken_help": "Refresh-Token OAuth de longue durée. « Connecter à eBay » dans le tableau eBay le définit lui-même – à saisir manuellement uniquement s'il en existe déjà un."
+        "ebayRefreshToken_help": "Refresh-Token OAuth de longue durée. « Connecter à eBay » dans le tableau eBay le définit lui-même – à saisir manuellement uniquement s'il en existe déjà un.",
+        "shopSiteCheck": "Configuration Hugo du site web",
+        "shopSiteCheckOk": "La configuration Hugo du site web correspond au paquet et aux réglages.",
+        "shopSiteCheckFix": "Entrée pour le config.json du site web :",
+        "shopSiteCheck_UNAVAILABLE": "La configuration Hugo n’a pas pu être vérifiée : {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo avertit au chargement de la configuration : {text} Une future version de Hugo ne l’acceptera plus.",
+        "shopSiteCheck_MOUNT_MISSING": "Le mount {source} → {target} manque dans la configuration du site web. Sans lui, Hugo ne voit pas cette partie du paquet.",
+        "shopSiteCheck_MOUNT_TARGET": "Le mount {source} pointe vers {actual}, attendu : {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds désactive {kinds}. Hugo ne génère alors ni l’aperçu des catégories ni les pages de catégorie. Supprimez ces entrées.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "La taxonomie {taxonomy} de la fiche du canal n’est pas déclarée dans le site web (taxonomies). Hugo ne génère aucune page de catégorie pour elle.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Les adresses des catégories ne concordent pas : la fiche du canal attend {expected}, Hugo place les pages de la taxonomie {taxonomy} sous {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy vaut {actual}, la fiche du canal utilise {taxonomy}. Le thème n’affiche alors les catégories que comme une simple liste et les widgets ne connaissent pas l’aperçu.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "La page d’aperçu {file} manque. Sans elle, l’aperçu des catégories n’a pour titre que le nom de la taxonomie.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "L’autorisation des pages produit ({dir}) n’est dans aucun mount sur content. Hugo ne voit pas les pages produit.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "L’autorisation de l’aperçu des catégories ({file}) n’est dans aucun mount sur data. Les modèles ne la trouvent pas."
     },
     "add": "Ajouter",
     "add_fields": {

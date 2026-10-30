@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "显示在每个页面的页脚，例如退货期限和流程。",
         "ebayPageAbout": "关于我们文本",
         "ebayPageAbout_help": "显示在每个页面的页脚——简要说明本店的特色。",
-        "ebayRefreshToken_help": "长期有效的 OAuth Refresh-Token。eBay 面板中的“连接 eBay”会自动设置它——仅在已有令牌时手动填入。"
+        "ebayRefreshToken_help": "长期有效的 OAuth Refresh-Token。eBay 面板中的“连接 eBay”会自动设置它——仅在已有令牌时手动填入。",
+        "shopSiteCheck": "网站的 Hugo 配置",
+        "shopSiteCheckOk": "网站的 Hugo 配置与软件包和设置相符。",
+        "shopSiteCheckFix": "网站 config.json 的条目：",
+        "shopSiteCheck_UNAVAILABLE": "无法检查 Hugo 配置：{error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo 在加载配置时发出警告：{text} 未来的 Hugo 版本将不再接受此项。",
+        "shopSiteCheck_MOUNT_MISSING": "网站配置中缺少挂载 {source} → {target}。没有它，Hugo 看不到软件包的这一部分。",
+        "shopSiteCheck_MOUNT_TARGET": "挂载 {source} 指向 {actual}，预期为 {target}。",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds 关闭了 {kinds}。Hugo 因此既不生成类别总览，也不生成类别页面。请删除这些条目。",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "渠道卡中的分类法 {taxonomy} 未在网站中注册（taxonomies）。Hugo 不会为其生成类别页面。",
+        "shopSiteCheck_SHOP_PERMALINKS": "类别地址不一致：渠道卡预期 {expected}，Hugo 将分类法 {taxonomy} 的页面放在 {actual} 下（permalinks）。",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy 为 {actual}，渠道卡使用 {taxonomy}。主题因此只以简单列表显示类别，小部件也不知道总览。",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "缺少总览页面 {file}。没有它，类别总览的标题只是分类法的名称。",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "产品页面的授权目录（{dir}）不在任何挂载到 content 的挂载中。Hugo 看不到产品页面。",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "类别总览的授权文件（{file}）不在任何挂载到 data 的挂载中。模板找不到它。"
     },
     "add": "添加",
     "add_fields": {

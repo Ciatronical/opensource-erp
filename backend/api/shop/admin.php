@@ -2664,6 +2664,12 @@ function installPortalUi($data) {
  * HugoCMS festgelegt hat (dev/shop-hugocms-verzeichnisse.md) — die Kanalkarte
  * zeigt sie nur an — und wo der Vorlagensatz die Kategorieübersicht erwartet.
  *
+ * Dazu die Konfigurationsprüfung der Webseite (site_checks, seit 2026-10-30):
+ * Befunde aus portalSiteChecks() — Mounts des Pakets, Hugos Warnungen,
+ * Taxonomie und Adressen der Kategorien (shopSiteChecks). null mit
+ * site_checks_error, wenn HugoCMS die Konfiguration nicht liefert;
+ * site_checks_outdated, wenn es den Befehl noch nicht kennt.
+ *
  * @param string $data['url'] Adresse aus dem Formular (optional)
  * @param string $data['key'] Schlüssel aus dem Formular (optional)
  * @param string $data['template_set'] Vorlagensatz aus dem Formular (optional)
@@ -2694,12 +2700,24 @@ function testShopHugoCms($data) {
         $vorlage = '';
     }
 
+    // Konfigurationsprüfung der Webseite (lib/sitecheck.php des Portals und
+    // des Shops): passt die Hugo-Konfiguration zu Paket und Kanalkarte? Die
+    // Haken der Erweiterungen müssen dafür geladen sein
+    portalExtensionsLoad($db);
+    $website = shopWebsiteOfChannel($db, $kanal);
+    $konfiguration = $website > 0
+        ? portalSiteConfigFetch($db, $website, ['url' => (string)($data['url'] ?? ''), 'key' => (string)($data['key'] ?? '')])
+        : ['ok' => false, 'fehler' => 'Dem Kanal ist keine Webseite zugeordnet', 'veraltet' => false, 'data' => null];
+
     // Für die Meldung zu den signierten PHP-Dateien: hat diese Installation
     // einen Signaturschlüssel? (dev/shop-php-signatur.md)
     resultInfo(true, '', (array)$antwort['data'] + [
         'oserp_signing_key'        => shopSigningPublicKey(),
         'grants_error'             => shopHugoCmsGrantsFrom($antwort)['fehler'],
         'template_category_groups' => $vorlage,
+        'site_checks'              => $konfiguration['ok'] ? portalSiteChecks($db, $website, (array)$konfiguration['data'], $antwort) : null,
+        'site_checks_error'        => $konfiguration['ok'] ? '' : $konfiguration['fehler'],
+        'site_checks_outdated'     => (bool)$konfiguration['veraltet'],
     ]);
 }
 

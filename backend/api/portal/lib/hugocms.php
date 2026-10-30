@@ -89,6 +89,7 @@ function portalHugoCmsErrorText(array $fehler, string $gesendet = ''): string {
         'HUGO-BIN-NOT-CONFIGURED' => 'In HugoCMS ist kein Hugo-Programm eingestellt',
         'HUGO-BIN-MISSING'     => 'HugoCMS findet das Hugo-Programm nicht',
         'HUGO-SOURCE-MISSING'  => 'HugoCMS findet das Verzeichnis der Webseite nicht',
+        'HUGO-CONFIG-FAILED'   => 'Hugo konnte die Konfiguration der Webseite nicht lesen',
         'UNKNOWN-COMMAND'      => 'Diese HugoCMS-Version kennt die OpensourceERP-Anbindung noch nicht',
         'SHOP-PATH-NOT-ALLOWED' => 'HugoCMS nimmt diese Datei nicht an, sie liegt außerhalb der Freigaben',
         'SHOP-GRANT-UNUSABLE'  => 'In HugoCMS ist eine Freigabe unbrauchbar eingetragen — in den Projekteinstellungen unter „OpensourceERP“ prüfen und speichern',
@@ -129,10 +130,11 @@ function portalHugoCmsErrorText(array $fehler, string $gesendet = ''): string {
  * @param array $daten weitere Felder im Rumpf eines POST, neben cmd
  * @param array|null $stueck Binärdaten als Datei-Upload (multipart/form-data) statt JSON:
  *                           feld (Name des Datei-Felds), inhalt (Bytes); $daten gehen als Formularfelder mit
- * @return array ok, status (HTTP), data (Antwort bei Erfolg), fehler (Text, leer bei Erfolg)
+ * @return array ok, status (HTTP), data (Antwort bei Erfolg), fehler (Text, leer bei Erfolg),
+ *               key (Schlüssel der Fehlermeldung von HugoCMS, etwa UNKNOWN-COMMAND; leer bei Erfolg)
  */
 function portalHugoCmsCall($db, int $website, string $befehl, string $methode = 'GET', int $zeitgrenze = 20, array $zugang = [], array $daten = [], ?array $stueck = null): array {
-    $ergebnis = ['ok' => false, 'status' => 0, 'data' => null, 'fehler' => ''];
+    $ergebnis = ['ok' => false, 'status' => 0, 'data' => null, 'fehler' => '', 'key' => ''];
 
     $eingabe = fn(string $feld, string $schluessel) => '' !== trim((string)($zugang[$feld] ?? ''))
         ? trim((string)$zugang[$feld])
@@ -198,6 +200,8 @@ function portalHugoCmsCall($db, int $website, string $befehl, string $methode = 
         return $ergebnis;
     }
     if (true !== $daten['ok']) {
+        // Schlüssel der Meldung, etwa UNKNOWN-COMMAND — für Aufrufer, die ein altes HugoCMS erkennen wollen
+        $ergebnis['key'] = (string)($daten['error']['key'] ?? '');
         $ergebnis['fehler'] = portalHugoCmsErrorText((array)($daten['error'] ?? []), $schluessel);
         return $ergebnis;
     }

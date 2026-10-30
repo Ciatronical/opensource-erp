@@ -46,6 +46,10 @@ portalHookAdd('invoice_positions', 'shopInvoicePositionsDecorate');
 // Mailvorlagen des Shops (Rechnung, Lieferstatus, Widerruf)
 portalMailTemplateDirAdd(__DIR__.'/../templates');
 
+// Konfigurationsprüfung der Webseite („Verbindung prüfen“): Taxonomie und
+// Adressen der Shop-Kategorien, Freigaben in den Mounts (lib/sitecheck.php)
+portalHookAdd('site_checks', 'shopSiteChecks');
+
 // ── Veröffentlichung (dev/kundenportal.md, Stufe 4) ──
 
 /**

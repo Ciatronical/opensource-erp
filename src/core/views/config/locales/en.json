@@ -1541,7 +1541,21 @@
         "orderConfirmAiSuggest": "Suggestion — confirm with a click",
         "orderConfirmAiAuto": "Automatic for unambiguous acceptance",
         "orderConfirmAiDays": "Order intakes of the last days",
-        "orderConfirmAiDays_help": "Only order intakes no older than this many days are considered for an acceptance (default 60). Older unconfirmed orders are not checked."
+        "orderConfirmAiDays_help": "Only order intakes no older than this many days are considered for an acceptance (default 60). Older unconfirmed orders are not checked.",
+        "shopSiteCheck": "Hugo configuration of the website",
+        "shopSiteCheckOk": "The Hugo configuration of the website matches the package and the settings.",
+        "shopSiteCheckFix": "Entry for the website’s config.json:",
+        "shopSiteCheck_UNAVAILABLE": "The Hugo configuration could not be checked: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo warns when loading the configuration: {text} A future Hugo version will no longer accept this.",
+        "shopSiteCheck_MOUNT_MISSING": "The mount {source} → {target} is missing from the website configuration. Without it Hugo does not see this part of the package.",
+        "shopSiteCheck_MOUNT_TARGET": "The mount {source} points to {actual}, expected is {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds switches off {kinds}. Hugo then generates neither the category overview nor the category pages. Remove these entries.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "The taxonomy {taxonomy} from the channel card is not registered in the website (taxonomies). Hugo generates no category pages for it.",
+        "shopSiteCheck_SHOP_PERMALINKS": "The category addresses do not match: the channel card expects {expected}, Hugo places the pages of the taxonomy {taxonomy} under {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy is {actual}, the channel card uses {taxonomy}. The theme then shows the categories only as a plain list, and the widgets do not know the overview.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "The overview page {file} is missing. Without it the category overview carries only the taxonomy name as its title.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "The product pages grant ({dir}) lies in no mount on content. Hugo does not see the product pages.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "The category overview grant ({file}) lies in no mount on data. The templates cannot find it."
     },
     "add": "Add",
     "add_fields": {

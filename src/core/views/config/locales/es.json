@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Aparece en el pie de cada página, p. ej. plazo y procedimiento de devolución.",
         "ebayPageAbout": "Texto Sobre nosotros",
         "ebayPageAbout_help": "Aparece en el pie de cada página: en pocas palabras, lo que distingue al comercio.",
-        "ebayRefreshToken_help": "Refresh-Token OAuth de larga duración. «Conectar con eBay» en el panel de eBay lo establece por sí mismo; introducir a mano solo si ya existe uno."
+        "ebayRefreshToken_help": "Refresh-Token OAuth de larga duración. «Conectar con eBay» en el panel de eBay lo establece por sí mismo; introducir a mano solo si ya existe uno.",
+        "shopSiteCheck": "Configuración Hugo del sitio web",
+        "shopSiteCheckOk": "La configuración Hugo del sitio web coincide con el paquete y los ajustes.",
+        "shopSiteCheckFix": "Entrada para el config.json del sitio web:",
+        "shopSiteCheck_UNAVAILABLE": "No se pudo comprobar la configuración Hugo: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo avisa al cargar la configuración: {text} Una versión futura de Hugo ya no lo aceptará.",
+        "shopSiteCheck_MOUNT_MISSING": "Falta el mount {source} → {target} en la configuración del sitio web. Sin él, Hugo no ve esta parte del paquete.",
+        "shopSiteCheck_MOUNT_TARGET": "El mount {source} apunta a {actual}; se espera {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds desactiva {kinds}. Hugo no genera entonces ni el resumen de categorías ni las páginas de categoría. Elimine estas entradas.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "La taxonomía {taxonomy} de la tarjeta del canal no está registrada en el sitio web (taxonomies). Hugo no genera páginas de categoría para ella.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Las direcciones de las categorías no coinciden: la tarjeta del canal espera {expected}, Hugo coloca las páginas de la taxonomía {taxonomy} en {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy es {actual}, la tarjeta del canal usa {taxonomy}. El tema muestra entonces las categorías solo como una lista simple y los widgets no conocen el resumen.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Falta la página de resumen {file}. Sin ella, el resumen de categorías lleva solo el nombre de la taxonomía como título.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "La autorización para páginas de producto ({dir}) no está en ningún mount sobre content. Hugo no ve las páginas de producto.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "La autorización para el resumen de categorías ({file}) no está en ningún mount sobre data. Las plantillas no la encuentran."
     },
     "add": "Añadir",
     "add_fields": {

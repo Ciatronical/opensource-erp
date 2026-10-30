@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Compare nel piè di pagina di ogni pagina, es. termine di reso e procedura.",
         "ebayPageAbout": "Testo Chi siamo",
         "ebayPageAbout_help": "Compare nel piè di pagina di ogni pagina – in breve, cosa contraddistingue il negozio.",
-        "ebayRefreshToken_help": "Refresh-Token OAuth di lunga durata. «Collega a eBay» nel pannello eBay lo imposta da solo – inserirlo a mano solo se ne esiste già uno."
+        "ebayRefreshToken_help": "Refresh-Token OAuth di lunga durata. «Collega a eBay» nel pannello eBay lo imposta da solo – inserirlo a mano solo se ne esiste già uno.",
+        "shopSiteCheck": "Configurazione Hugo del sito web",
+        "shopSiteCheckOk": "La configurazione Hugo del sito web corrisponde al pacchetto e alle impostazioni.",
+        "shopSiteCheckFix": "Voce per il config.json del sito web:",
+        "shopSiteCheck_UNAVAILABLE": "Non è stato possibile verificare la configurazione Hugo: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo avvisa durante il caricamento della configurazione: {text} Una futura versione di Hugo non lo accetterà più.",
+        "shopSiteCheck_MOUNT_MISSING": "Il mount {source} → {target} manca nella configurazione del sito web. Senza di esso Hugo non vede questa parte del pacchetto.",
+        "shopSiteCheck_MOUNT_TARGET": "Il mount {source} punta a {actual}, atteso {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds disattiva {kinds}. Hugo non genera quindi né la panoramica delle categorie né le pagine delle categorie. Rimuovere queste voci.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "La tassonomia {taxonomy} della scheda canale non è registrata nel sito web (taxonomies). Hugo non genera pagine di categoria per essa.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Gli indirizzi delle categorie non corrispondono: la scheda canale attende {expected}, Hugo colloca le pagine della tassonomia {taxonomy} sotto {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy è {actual}, la scheda canale usa {taxonomy}. Il tema mostra allora le categorie solo come elenco semplice e i widget non conoscono la panoramica.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Manca la pagina di panoramica {file}. Senza di essa la panoramica delle categorie ha come titolo solo il nome della tassonomia.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "L’autorizzazione per le pagine prodotto ({dir}) non si trova in alcun mount su content. Hugo non vede le pagine prodotto.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "L’autorizzazione per la panoramica delle categorie ({file}) non si trova in alcun mount su data. I modelli non la trovano."
     },
     "add": "Aggiungi",
     "add_fields": {

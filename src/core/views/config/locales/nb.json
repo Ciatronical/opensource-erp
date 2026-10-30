@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Står i bunnen av hver side, f.eks. returfrist og fremgangsmåte.",
         "ebayPageAbout": "Tekst Om oss",
         "ebayPageAbout_help": "Står i bunnen av hver side – kort om hva som kjennetegner butikken.",
-        "ebayRefreshToken_help": "Langlivet OAuth-Refresh-Token. «Koble til eBay» i eBay-tavlen setter det selv – legg bare inn manuelt hvis det allerede finnes ett."
+        "ebayRefreshToken_help": "Langlivet OAuth-Refresh-Token. «Koble til eBay» i eBay-tavlen setter det selv – legg bare inn manuelt hvis det allerede finnes ett.",
+        "shopSiteCheck": "Nettstedets Hugo-konfigurasjon",
+        "shopSiteCheckOk": "Nettstedets Hugo-konfigurasjon passer til pakken og innstillingene.",
+        "shopSiteCheckFix": "Oppføring for nettstedets config.json:",
+        "shopSiteCheck_UNAVAILABLE": "Hugo-konfigurasjonen kunne ikke kontrolleres: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo advarer ved innlasting av konfigurasjonen: {text} En fremtidig Hugo-versjon godtar ikke lenger dette.",
+        "shopSiteCheck_MOUNT_MISSING": "Mountet {source} → {target} mangler i nettstedets konfigurasjon. Uten det ser ikke Hugo denne delen av pakken.",
+        "shopSiteCheck_MOUNT_TARGET": "Mountet {source} peker på {actual}, forventet er {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds slår av {kinds}. Hugo lager da verken kategorioversikten eller kategorisidene. Fjern disse oppføringene.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Taksonomien {taxonomy} fra kanalkortet er ikke registrert på nettstedet (taxonomies). Hugo lager ingen kategorisider for den.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Kategorienes adresser stemmer ikke overens: kanalkortet forventer {expected}, Hugo legger sidene for taksonomien {taxonomy} under {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy er {actual}, kanalkortet bruker {taxonomy}. Temaet viser da kategoriene bare som en enkel liste, og widgetene kjenner ikke oversikten.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Oversiktssiden {file} mangler. Uten den har kategorioversikten bare taksonomiens navn som tittel.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Frigivelsen for produktsider ({dir}) ligger ikke i noe mount på content. Hugo ser ikke produktsidene.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Frigivelsen for kategorioversikten ({file}) ligger ikke i noe mount på data. Malene finner den ikke."
     },
     "add": "Legg til",
     "add_fields": {

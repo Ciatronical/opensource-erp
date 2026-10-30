@@ -201,6 +201,57 @@ unter dem Titel und in den Kategorielisten; ohne Stufen entfällt
 `description`. `metaDescription` behält die Artikelnummer vorn. Der Satz
 `sonic24` ist unverändert.
 
+## Konfigurationsprüfung der Webseite (30.10.2026)
+
+**Anlass:** Im Beispielprojekt `inter-data_ab_29_10_26` entstanden weder
+Kategorienübersicht noch Kategorieseiten. Vier Ursachen, alle in der
+`config.json` der Webseite: `disableKinds` schaltete `taxonomy` und `term` ab,
+die Taxonomie der Kanalkarte war nicht unter `taxonomies` angemeldet, die
+Adressen aus `category_link` passten nicht zu dem, was Hugo ohne `permalinks`
+erzeugt, und `params.portalui.taxonomy` fehlte, sodass das Theme die
+Shop-Darstellung nicht gewählt hätte. Nichts davon meldete ein Lauf — Hugo
+baut eine solche Webseite fehlerfrei, nur ohne die Seiten.
+
+**Was „Verbindung prüfen und Freigaben abrufen“ seither tut** (Kanalkarte und
+Firmenkonfiguration → Kundenportal): Nach `shopbuildstatus` fragt die
+Prüfung bei HugoCMS `shopsiteconfig` ab (seit HugoCMS 2026-10-30,
+`Shop\SiteConfig`): die Konfiguration, wie Hugo sie auflöst (`hugo config
+--format json` — damit stimmt es auch mit `config/_default/`, TOML und den
+Mounts des Themes), Hugos Warnungen beim Laden und ob je Taxonomie eine
+`_index.md` liegt. Bewertet wird in OpensourceERP, weil nur hier Kanalkarte
+und Portaleinstellungen bekannt sind:
+
+| Befund | Art | Prüft | Vorschlag |
+| --- | --- | --- | --- |
+| `MOUNT_MISSING`, `MOUNT_TARGET` | Fehler | Kern: die vier Mounts des Pakets (`static`, `layouts`, `assets/portal-ui` genau; `content` irgendwo unter `content/`, die Paketseiten tragen `url`) | der Mount-Eintrag |
+| `HUGO_WARNING` | Warnung | Kern: Warnungen von Hugo, etwa `languageCode` (abgekündigt 0.158) — wir bauen immer mit der neuesten Version | — |
+| `SHOP_KINDS_DISABLED` | Fehler | `disableKinds` enthält `taxonomy` oder `term` | `disableKinds` ohne beide |
+| `SHOP_TAXONOMY_MISSING` | Fehler | `category_taxonomy` der Kanalkarte steht nicht in `taxonomies` | `taxonomies` mit den vorhandenen plus der Shop-Taxonomie (ein eigener Block ersetzt Hugos Vorgaben) |
+| `SHOP_PERMALINKS` | Fehler | Übersicht und Begriffsseite aus `permalinks` (Liste mit `target.kind`, Zuordnung nach Seitenart oder flach; ohne Eintrag `/<Taxonomie>/` und `/<Taxonomie>/:slug/`) gegen `category_link`; `:title` gilt wie `:slug`, Anker wie `#focus` zählen nicht | `permalinks` für `taxonomy` und `term` |
+| `SHOP_PORTALUI_TAXONOMY` | Warnung | `params.portalui.taxonomy` ist nicht die Shop-Taxonomie — Theme zeigt die schlichte Liste, Widgets kennen die Übersicht nicht | der Parameter |
+| `SHOP_TAXONOMY_INDEX` | Warnung | `content/<Taxonomie>/_index.md` fehlt | Vorspann mit `category_title` |
+| `SHOP_CONTENT_UNMOUNTED`, `SHOP_DATA_UNMOUNTED` | Fehler | Freigaben `contentDir` und `categoryGroups` liegen in keinem Mount auf `content` beziehungsweise `data` | — |
+
+Antwortfelder von `testShopHugoCms` und `testWebsiteHugoCms`: `site_checks`
+(Liste aus `code`, `art`, `params`, `fix`; leer = nichts zu beanstanden),
+`site_checks_error` (HugoCMS liefert die Konfiguration nicht: kein Hugo, altes
+HugoCMS), `site_checks_outdated` (HugoCMS kennt den Befehl noch nicht). Die
+Karten zeigen die Befunde unter dem Ergebnis der Verbindungsprüfung, jeden mit
+dem Eintrag für die `config.json` (`crm_fields.shopSiteCheck_<code>`).
+Geschrieben wird in die Webseite nichts: Hugo-Projekte sind zu verschieden,
+die Konfiguration gehört der Webseite.
+
+**Wo:** Kern `backend/api/portal/lib/sitecheck.php` (`portalSiteConfigFetch`,
+`portalSiteChecks`, `portalSiteFinding`, `portalSiteMounts/Mounted`), Haken
+`site_checks`; Shop `backend/api/shop/lib/sitecheck.php` (`shopSiteChecks`,
+`shopSitePermalinks`, `shopSitePathKey`, `shopSitePathOnly`), angemeldet in
+`lib/portal_hooks.php`; Oberfläche `shop-channel-settings.vue` und
+`website-settings.vue` (`siteBefunde`, `siteFehler`). `portalHugoCmsCall()`
+gibt seit heute auch `key` zurück (Schlüssel der HugoCMS-Fehlermeldung), damit
+`UNKNOWN-COMMAND` als „altes HugoCMS“ erkannt wird. Hugo schreibt die
+Schlüssel der aufgelösten Konfiguration klein (`accountbuttons`), die
+Prüfungen vergleichen deshalb ohne Groß- und Kleinschreibung.
+
 ## Kategorien unter einem eigenen Pfad (16.10.2026)
 
 Eine Webseite, deren Taxonomie `kategorien` schon die eigenen Themen trägt

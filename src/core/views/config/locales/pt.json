@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Aparece no rodapé de cada página, p. ex. prazo de devolução e procedimento.",
         "ebayPageAbout": "Texto Sobre nós",
         "ebayPageAbout_help": "Aparece no rodapé de cada página – em breve, o que distingue a loja.",
-        "ebayRefreshToken_help": "Refresh-Token OAuth de longa duração. „Ligar ao eBay“ no painel eBay define-o automaticamente – introduzir à mão apenas se já existir um."
+        "ebayRefreshToken_help": "Refresh-Token OAuth de longa duração. „Ligar ao eBay“ no painel eBay define-o automaticamente – introduzir à mão apenas se já existir um.",
+        "shopSiteCheck": "Configuração Hugo do sítio web",
+        "shopSiteCheckOk": "A configuração Hugo do sítio web corresponde ao pacote e às definições.",
+        "shopSiteCheckFix": "Entrada para o config.json do sítio web:",
+        "shopSiteCheck_UNAVAILABLE": "Não foi possível verificar a configuração Hugo: {error}",
+        "shopSiteCheck_HUGO_WARNING": "O Hugo avisa ao carregar a configuração: {text} Uma futura versão do Hugo deixará de aceitar isto.",
+        "shopSiteCheck_MOUNT_MISSING": "Falta o mount {source} → {target} na configuração do sítio web. Sem ele, o Hugo não vê esta parte do pacote.",
+        "shopSiteCheck_MOUNT_TARGET": "O mount {source} aponta para {actual}; esperado é {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds desativa {kinds}. O Hugo não gera então nem a vista geral das categorias nem as páginas de categoria. Remova estas entradas.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "A taxonomia {taxonomy} da ficha do canal não está registada no sítio web (taxonomies). O Hugo não gera páginas de categoria para ela.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Os endereços das categorias não coincidem: a ficha do canal espera {expected}, o Hugo coloca as páginas da taxonomia {taxonomy} em {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy é {actual}, a ficha do canal usa {taxonomy}. O tema mostra então as categorias apenas como lista simples e os widgets não conhecem a vista geral.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Falta a página de vista geral {file}. Sem ela, a vista geral das categorias tem como título apenas o nome da taxonomia.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "A autorização para páginas de produto ({dir}) não está em nenhum mount sobre content. O Hugo não vê as páginas de produto.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "A autorização para a vista geral das categorias ({file}) não está em nenhum mount sobre data. Os modelos não a encontram."
     },
     "add": "Adicionar",
     "add_fields": {

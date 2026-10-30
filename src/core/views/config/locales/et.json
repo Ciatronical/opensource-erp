@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Asub iga lehe jaluses, nt tagastustähtaeg ja kord.",
         "ebayPageAbout": "Tekst Meist",
         "ebayPageAbout_help": "Asub iga lehe jaluses – lühidalt, mis poodi iseloomustab.",
-        "ebayRefreshToken_help": "Pikaajaline OAuth Refresh-Token. „Ühenda eBayga“ eBay töölaual seab selle ise – käsitsi sisestada ainult siis, kui see on juba olemas."
+        "ebayRefreshToken_help": "Pikaajaline OAuth Refresh-Token. „Ühenda eBayga“ eBay töölaual seab selle ise – käsitsi sisestada ainult siis, kui see on juba olemas.",
+        "shopSiteCheck": "Veebilehe Hugo konfiguratsioon",
+        "shopSiteCheckOk": "Veebilehe Hugo konfiguratsioon sobib paketi ja seadetega.",
+        "shopSiteCheckFix": "Kirje veebilehe config.json-faili:",
+        "shopSiteCheck_UNAVAILABLE": "Hugo konfiguratsiooni ei õnnestunud kontrollida: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo hoiatab konfiguratsiooni laadimisel: {text} Tulevane Hugo versioon seda enam ei aktsepteeri.",
+        "shopSiteCheck_MOUNT_MISSING": "Veebilehe konfiguratsioonis puudub mount {source} → {target}. Ilma selleta Hugo seda paketi osa ei näe.",
+        "shopSiteCheck_MOUNT_TARGET": "Mount {source} osutab asukohale {actual}, oodatakse {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds lülitab välja {kinds}. Hugo ei loo siis ei kategooriate ülevaadet ega kategoorialehti. Eemaldage need kirjed.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Kanalikaardi taksonoomia {taxonomy} ei ole veebilehel registreeritud (taxonomies). Hugo ei loo selle jaoks kategoorialehti.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Kategooriate aadressid ei sobi kokku: kanalikaart ootab {expected}, Hugo paigutab taksonoomia {taxonomy} lehed asukohta {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy on {actual}, kanalikaart kasutab {taxonomy}. Teema näitab kategooriaid siis ainult lihtsa loendina ja vidinad ülevaadet ei tunne.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Ülevaateleht {file} puudub. Ilma selleta kannab kategooriate ülevaade pealkirjana ainult taksonoomia nime.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Tootelehtede luba ({dir}) ei asu üheski content-mountis. Hugo tootelehti ei näe.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Kategooriate ülevaate luba ({file}) ei asu üheski data-mountis. Mallid seda ei leia."
     },
     "add": "Lisa",
     "add_fields": {

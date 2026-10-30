@@ -356,6 +356,11 @@ function deleteWebsite($data) {
  * dürfen aus dem Formular kommen (noch nicht gespeichert); leer heißt: der
  * gespeicherte Wert gilt.
  *
+ * Dazu die Konfigurationsprüfung der Webseite (site_checks, seit 2026-10-30,
+ * portalSiteChecks): Mounts des Pakets, Hugos Warnungen beim Laden und die
+ * Prüfungen der Erweiterungen; null mit site_checks_error, wenn HugoCMS die
+ * Konfiguration nicht liefert, site_checks_outdated bei altem HugoCMS.
+ *
  * @param int $data['website_id'] Webseite
  * @param string $data['url'] Adresse aus dem Formular (optional)
  * @param string $data['key'] Schlüssel aus dem Formular (optional)
@@ -375,10 +380,17 @@ function testWebsiteHugoCms($data) {
         resultInfo(false, 'PORTAL_HUGOCMS_FAILED', null, $antwort['fehler']);
         return;
     }
+    // Konfigurationsprüfung der Webseite (lib/sitecheck.php): Mounts des
+    // Pakets, Hugos Warnungen, dazu die Prüfungen der Erweiterungen
+    $zugang = ['url' => (string)($data['url'] ?? ''), 'key' => (string)($data['key'] ?? '')];
+    $konfiguration = portalSiteConfigFetch($db, $website, $zugang);
     resultInfo(true, '', (array)$antwort['data'] + [
-        'oserp_signing_key' => portalSigningPublicKey(),
-        'grants_error'      => portalHugoCmsGrantsFrom($antwort)['fehler'],
-        'features'          => portalKitFeatures($db, $website),
+        'oserp_signing_key'    => portalSigningPublicKey(),
+        'grants_error'         => portalHugoCmsGrantsFrom($antwort)['fehler'],
+        'features'             => portalKitFeatures($db, $website),
+        'site_checks'          => $konfiguration['ok'] ? portalSiteChecks($db, $website, (array)$konfiguration['data'], $antwort) : null,
+        'site_checks_error'    => $konfiguration['ok'] ? '' : $konfiguration['fehler'],
+        'site_checks_outdated' => (bool)$konfiguration['veraltet'],
     ]);
 }
 

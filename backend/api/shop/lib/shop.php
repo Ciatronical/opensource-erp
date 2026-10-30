@@ -29,5 +29,6 @@ require_once __DIR__.'/special_tools.php';
 require_once __DIR__.'/publish.php';
 require_once __DIR__.'/categories.php';
 require_once __DIR__.'/hugocms.php';
+require_once __DIR__.'/sitecheck.php';     // Konfigurationsprüfung der Webseite (Haken site_checks)
 require_once __DIR__.'/channel_images.php';
 require_once __DIR__.'/media.php';

@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Отображается в подвале каждой страницы, напр. срок возврата и порядок действий.",
         "ebayPageAbout": "Текст «О нас»",
         "ebayPageAbout_help": "Отображается в подвале каждой страницы — коротко о том, чем отличается магазин.",
-        "ebayRefreshToken_help": "Долгоживущий OAuth Refresh-Token. «Подключить eBay» в панели eBay устанавливает его сам — вводить вручную только если он уже есть."
+        "ebayRefreshToken_help": "Долгоживущий OAuth Refresh-Token. «Подключить eBay» в панели eBay устанавливает его сам — вводить вручную только если он уже есть.",
+        "shopSiteCheck": "Конфигурация Hugo сайта",
+        "shopSiteCheckOk": "Конфигурация Hugo сайта соответствует пакету и настройкам.",
+        "shopSiteCheckFix": "Запись для config.json сайта:",
+        "shopSiteCheck_UNAVAILABLE": "Не удалось проверить конфигурацию Hugo: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo предупреждает при загрузке конфигурации: {text} Будущая версия Hugo больше не примет это.",
+        "shopSiteCheck_MOUNT_MISSING": "В конфигурации сайта отсутствует mount {source} → {target}. Без него Hugo не видит эту часть пакета.",
+        "shopSiteCheck_MOUNT_TARGET": "Mount {source} указывает на {actual}, ожидается {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds отключает {kinds}. Тогда Hugo не создаёт ни обзор категорий, ни страницы категорий. Удалите эти записи.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Таксономия {taxonomy} из карточки канала не зарегистрирована на сайте (taxonomies). Hugo не создаёт для неё страницы категорий.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Адреса категорий не совпадают: карточка канала ожидает {expected}, Hugo размещает страницы таксономии {taxonomy} по адресу {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy равно {actual}, карточка канала использует {taxonomy}. Тема тогда показывает категории только простым списком, а виджеты не знают обзор.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Отсутствует страница обзора {file}. Без неё заголовком обзора категорий служит только имя таксономии.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Разрешение для страниц товаров ({dir}) не входит ни в один mount на content. Hugo не видит страницы товаров.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Разрешение для обзора категорий ({file}) не входит ни в один mount на data. Шаблоны его не находят."
     },
     "add": "Добавить",
     "add_fields": {

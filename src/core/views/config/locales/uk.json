@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Розміщується в нижній частині кожної сторінки, напр. термін і порядок повернення.",
         "ebayPageAbout": "Текст «Про нас»",
         "ebayPageAbout_help": "Розміщується в нижній частині кожної сторінки – коротко, чим вирізняється магазин.",
-        "ebayRefreshToken_help": "Довгостроковий OAuth Refresh-Token. «Підключити eBay» на панелі eBay встановлює його самостійно – вводити вручну лише тоді, коли він уже є."
+        "ebayRefreshToken_help": "Довгостроковий OAuth Refresh-Token. «Підключити eBay» на панелі eBay встановлює його самостійно – вводити вручну лише тоді, коли він уже є.",
+        "shopSiteCheck": "Конфігурація Hugo сайту",
+        "shopSiteCheckOk": "Конфігурація Hugo сайту відповідає пакету й налаштуванням.",
+        "shopSiteCheckFix": "Запис для config.json сайту:",
+        "shopSiteCheck_UNAVAILABLE": "Не вдалося перевірити конфігурацію Hugo: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo попереджає під час завантаження конфігурації: {text} Майбутня версія Hugo більше цього не прийме.",
+        "shopSiteCheck_MOUNT_MISSING": "У конфігурації сайту бракує mount {source} → {target}. Без нього Hugo не бачить цієї частини пакета.",
+        "shopSiteCheck_MOUNT_TARGET": "Mount {source} вказує на {actual}, очікується {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds вимикає {kinds}. Тоді Hugo не створює ні огляду категорій, ні сторінок категорій. Вилучіть ці записи.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Таксономію {taxonomy} з картки каналу не зареєстровано на сайті (taxonomies). Hugo не створює для неї сторінок категорій.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Адреси категорій не збігаються: картка каналу очікує {expected}, Hugo розміщує сторінки таксономії {taxonomy} за адресою {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy дорівнює {actual}, картка каналу використовує {taxonomy}. Тема тоді показує категорії лише простим списком, а віджети не знають огляду.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Бракує сторінки огляду {file}. Без неї заголовком огляду категорій є лише назва таксономії.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Дозвіл для сторінок товарів ({dir}) не входить до жодного mount на content. Hugo не бачить сторінок товарів.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Дозвіл для огляду категорій ({file}) не входить до жодного mount на data. Шаблони його не знаходять."
     },
     "add": "Додати",
     "add_fields": {

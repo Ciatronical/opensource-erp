@@ -81,6 +81,33 @@
                             <div v-for="(zeile, nr) in hugocmsErgebnis.zeilen" :key="nr">{{ zeile }}</div>
                         </v-alert>
 
+                        <!-- Konfigurationsprüfung der Webseite (site_checks): passt die
+                             Hugo-Konfiguration zu Paket und Einstellungen? Befunde mit dem
+                             Eintrag für die config.json; geschrieben wird dort nichts -->
+                        <div v-if="siteBefunde || siteFehler" class="mt-4" style="max-width: 90ch">
+                            <div class="text-subtitle-2">{{ t('crm_fields.shopSiteCheck') }}</div>
+                            <v-alert v-if="siteFehler" type="info" variant="tonal" density="compact" class="mt-2">
+                                {{ t('crm_fields.shopSiteCheck_UNAVAILABLE', { error: siteFehler }) }}
+                            </v-alert>
+                            <v-alert v-else-if="!siteBefunde.length" type="success" variant="tonal" density="compact" class="mt-2">
+                                {{ t('crm_fields.shopSiteCheckOk') }}
+                            </v-alert>
+                            <v-alert
+                                v-for="(befund, nr) in siteBefunde"
+                                :key="nr"
+                                :type="befund.art"
+                                variant="tonal"
+                                density="compact"
+                                class="mt-2"
+                            >
+                                <div>{{ t(`crm_fields.shopSiteCheck_${befund.code}`, befund.params || {}) }}</div>
+                                <template v-if="befund.fix">
+                                    <div class="text-caption mt-2">{{ t('crm_fields.shopSiteCheckFix') }}</div>
+                                    <pre class="text-body-2 mt-1" style="white-space: pre-wrap">{{ befund.fix }}</pre>
+                                </template>
+                            </v-alert>
+                        </div>
+
                         <!-- Freigaben in HugoCMS, nur lesend -->
                         <div v-if="freigaben" class="pt-1 mt-4" style="max-width: 70ch">
                             <div class="text-subtitle-2">{{ t('crm_fields.shopHugoCmsGrants') }}</div>
@@ -612,6 +639,10 @@ async function installieren(quelle = '') {
 
 const hugocmsPrueft = ref(false)
 const hugocmsErgebnis = ref(null)
+/** Konfigurationsprüfung der Webseite (site_checks): Liste der Befunde, null = keine Prüfung */
+const siteBefunde = ref(null)
+/** Grund, wenn HugoCMS die Konfiguration nicht liefert (altes HugoCMS, kein Hugo) */
+const siteFehler = ref('')
 const freigaben = ref(null)
 
 const FREIGABEN = [
@@ -637,6 +668,8 @@ async function hugocmsPruefen() {
     hugocmsPrueft.value = true
     hugocmsErgebnis.value = null
     freigaben.value = null
+    siteBefunde.value = null
+    siteFehler.value = ''
     try {
         const antwort = await axios.post('/api/portal/', {
             action: 'testWebsiteHugoCms',
@@ -651,6 +684,8 @@ async function hugocmsPruefen() {
         const stand = antwort.data.payload || {}
         hugocmsErgebnis.value = hugocmsBericht(stand)
         freigaben.value = !stand.grants_error && stand.grants ? stand.grants : null
+        siteBefunde.value = Array.isArray(stand.site_checks) ? stand.site_checks : null
+        siteFehler.value = stand.site_checks ? '' : (stand.site_checks_error || '')
     } catch (e) {
         hugocmsErgebnis.value = { art: 'error', zeilen: [e?.message || t('crm_fields.shopHugoCmsFailed')] }
     } finally {

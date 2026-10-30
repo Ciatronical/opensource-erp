@@ -22,6 +22,7 @@ require_once __DIR__.'/activation.php';
 require_once __DIR__.'/signing.php';
 require_once __DIR__.'/hugocms.php';
 require_once __DIR__.'/kit.php';
+require_once __DIR__.'/sitecheck.php';
 
 /**
  * Lädt die Haken der aktiven Erweiterungen

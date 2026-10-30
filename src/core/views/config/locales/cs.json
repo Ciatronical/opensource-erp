@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Je v zápatí každé stránky, např. lhůta pro vrácení a postup.",
         "ebayPageAbout": "Text O nás",
         "ebayPageAbout_help": "Je v zápatí každé stránky – krátce, čím se obchod vyznačuje.",
-        "ebayRefreshToken_help": "Dlouhodobý OAuth Refresh-Token. „Připojit k eBay“ v eBay boardu ho nastaví sám – zadat ručně jen tehdy, pokud už nějaký existuje."
+        "ebayRefreshToken_help": "Dlouhodobý OAuth Refresh-Token. „Připojit k eBay“ v eBay boardu ho nastaví sám – zadat ručně jen tehdy, pokud už nějaký existuje.",
+        "shopSiteCheck": "Konfigurace Hugo webu",
+        "shopSiteCheckOk": "Konfigurace Hugo webu odpovídá balíčku a nastavení.",
+        "shopSiteCheckFix": "Záznam pro config.json webu:",
+        "shopSiteCheck_UNAVAILABLE": "Konfiguraci Hugo se nepodařilo zkontrolovat: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo varuje při načítání konfigurace: {text} Budoucí verze Hugo to již nepřijme.",
+        "shopSiteCheck_MOUNT_MISSING": "V konfiguraci webu chybí mount {source} → {target}. Bez něj Hugo tuto část balíčku nevidí.",
+        "shopSiteCheck_MOUNT_TARGET": "Mount {source} ukazuje na {actual}, očekává se {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds vypíná {kinds}. Hugo pak nevytvoří ani přehled kategorií, ani stránky kategorií. Tyto položky odstraňte.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Taxonomie {taxonomy} z karty kanálu není na webu zaregistrována (taxonomies). Hugo pro ni nevytvoří žádné stránky kategorií.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Adresy kategorií si neodpovídají: karta kanálu očekává {expected}, Hugo ukládá stránky taxonomie {taxonomy} pod {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy je {actual}, karta kanálu používá {taxonomy}. Šablona pak zobrazí kategorie jen jako prostý seznam a widgety přehled neznají.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Chybí stránka přehledu {file}. Bez ní nese přehled kategorií jako název jen jméno taxonomie.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Oprávnění pro stránky produktů ({dir}) neleží v žádném mountu na content. Hugo stránky produktů nevidí.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Oprávnění pro přehled kategorií ({file}) neleží v žádném mountu na data. Šablony jej nenajdou."
     },
     "add": "Přidat",
     "add_fields": {

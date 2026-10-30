@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Näkyy jokaisen sivun alatunnisteessa, esim. palautusaika ja menettely.",
         "ebayPageAbout": "Teksti Tietoa meistä",
         "ebayPageAbout_help": "Näkyy jokaisen sivun alatunnisteessa – lyhyesti, mikä tekee liikkeestä erityisen.",
-        "ebayRefreshToken_help": "Pitkäikäinen OAuth-Refresh-Token. ”Yhdistä eBayhin” eBay-näkymässä asettaa sen itse – syötä käsin vain, jos sellainen on jo olemassa."
+        "ebayRefreshToken_help": "Pitkäikäinen OAuth-Refresh-Token. ”Yhdistä eBayhin” eBay-näkymässä asettaa sen itse – syötä käsin vain, jos sellainen on jo olemassa.",
+        "shopSiteCheck": "Verkkosivuston Hugo-kokoonpano",
+        "shopSiteCheckOk": "Verkkosivuston Hugo-kokoonpano vastaa pakettia ja asetuksia.",
+        "shopSiteCheckFix": "Merkintä verkkosivuston config.json-tiedostoon:",
+        "shopSiteCheck_UNAVAILABLE": "Hugo-kokoonpanoa ei voitu tarkistaa: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo varoittaa kokoonpanoa ladattaessa: {text} Tuleva Hugo-versio ei enää hyväksy tätä.",
+        "shopSiteCheck_MOUNT_MISSING": "Mount {source} → {target} puuttuu verkkosivuston kokoonpanosta. Ilman sitä Hugo ei näe tätä paketin osaa.",
+        "shopSiteCheck_MOUNT_TARGET": "Mount {source} osoittaa kohteeseen {actual}, odotettu on {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds poistaa käytöstä {kinds}. Hugo ei silloin luo kategoriakatsausta eikä kategoriasivuja. Poista nämä merkinnät.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Kanavakortin taksonomiaa {taxonomy} ei ole rekisteröity verkkosivustolle (taxonomies). Hugo ei luo sille kategoriasivuja.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Kategorioiden osoitteet eivät täsmää: kanavakortti odottaa {expected}, Hugo sijoittaa taksonomian {taxonomy} sivut kohteeseen {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy on {actual}, kanavakortti käyttää {taxonomy}. Teema näyttää kategoriat silloin vain yksinkertaisena luettelona, eivätkä widgetit tunne katsausta.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Katsaussivu {file} puuttuu. Ilman sitä kategoriakatsauksen otsikkona on vain taksonomian nimi.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Tuotesivujen vapautus ({dir}) ei ole missään content-mountissa. Hugo ei näe tuotesivuja.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Kategoriakatsauksen vapautus ({file}) ei ole missään data-mountissa. Mallipohjat eivät löydä sitä."
     },
     "add": "Lisää",
     "add_fields": {

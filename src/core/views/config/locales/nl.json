@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Staat in de voet van elke pagina, bijv. retourtermijn en procedure.",
         "ebayPageAbout": "Tekst Over ons",
         "ebayPageAbout_help": "Staat in de voet van elke pagina – kort, wat de winkel kenmerkt.",
-        "ebayRefreshToken_help": "Langlevend OAuth-Refresh-Token. „Met eBay verbinden“ in het eBay-board stelt het zelf in – alleen handmatig invoeren als er al een beschikbaar is."
+        "ebayRefreshToken_help": "Langlevend OAuth-Refresh-Token. „Met eBay verbinden“ in het eBay-board stelt het zelf in – alleen handmatig invoeren als er al een beschikbaar is.",
+        "shopSiteCheck": "Hugo-configuratie van de website",
+        "shopSiteCheckOk": "De Hugo-configuratie van de website past bij het pakket en de instellingen.",
+        "shopSiteCheckFix": "Vermelding voor de config.json van de website:",
+        "shopSiteCheck_UNAVAILABLE": "De Hugo-configuratie kon niet worden gecontroleerd: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo waarschuwt bij het laden van de configuratie: {text} Een toekomstige Hugo-versie accepteert dit niet meer.",
+        "shopSiteCheck_MOUNT_MISSING": "De mount {source} → {target} ontbreekt in de configuratie van de website. Zonder deze ziet Hugo dit deel van het pakket niet.",
+        "shopSiteCheck_MOUNT_TARGET": "De mount {source} wijst naar {actual}, verwacht wordt {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds schakelt {kinds} uit. Hugo maakt dan noch het categorieoverzicht noch de categoriepagina’s. Verwijder deze vermeldingen.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "De taxonomie {taxonomy} uit de kanaalkaart is niet aangemeld in de website (taxonomies). Hugo maakt er geen categoriepagina’s voor.",
+        "shopSiteCheck_SHOP_PERMALINKS": "De adressen van de categorieën passen niet bij elkaar: de kanaalkaart verwacht {expected}, Hugo plaatst de pagina’s van de taxonomie {taxonomy} onder {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy is {actual}, de kanaalkaart gebruikt {taxonomy}. Het thema toont de categorieën dan alleen als eenvoudige lijst en de widgets kennen het overzicht niet.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "De overzichtspagina {file} ontbreekt. Zonder deze draagt het categorieoverzicht alleen de naam van de taxonomie als titel.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "De vrijgave voor productpagina’s ({dir}) ligt in geen enkele mount op content. Hugo ziet de productpagina’s niet.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "De vrijgave voor het categorieoverzicht ({file}) ligt in geen enkele mount op data. De sjablonen vinden het niet."
     },
     "add": "Toevoegen",
     "add_fields": {

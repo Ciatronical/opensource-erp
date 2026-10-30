@@ -1543,7 +1543,21 @@
         "orderConfirmAiSuggest": "Vorschlag — bestätigen per Klick",
         "orderConfirmAiAuto": "Automatisch bei eindeutiger Zusage",
         "orderConfirmAiDays": "Auftragseingänge der letzten Tage",
-        "orderConfirmAiDays_help": "Nur Auftragseingänge, die höchstens so viele Tage alt sind, kommen für eine Zusage in Frage (Vorgabe 60). Ältere unbestätigte Aufträge werden nicht geprüft."
+        "orderConfirmAiDays_help": "Nur Auftragseingänge, die höchstens so viele Tage alt sind, kommen für eine Zusage in Frage (Vorgabe 60). Ältere unbestätigte Aufträge werden nicht geprüft.",
+        "shopSiteCheck": "Hugo-Konfiguration der Webseite",
+        "shopSiteCheckOk": "Die Hugo-Konfiguration der Webseite passt zu Paket und Einstellungen.",
+        "shopSiteCheckFix": "Eintrag für die config.json der Webseite:",
+        "shopSiteCheck_UNAVAILABLE": "Die Hugo-Konfiguration ließ sich nicht prüfen: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo warnt beim Laden der Konfiguration: {text} Eine künftige Hugo-Version nimmt das nicht mehr an.",
+        "shopSiteCheck_MOUNT_MISSING": "Der Mount {source} → {target} fehlt in der Konfiguration der Webseite. Ohne ihn sieht Hugo diesen Teil des Pakets nicht.",
+        "shopSiteCheck_MOUNT_TARGET": "Der Mount {source} zeigt auf {actual}, erwartet wird {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds schaltet {kinds} ab. Hugo erzeugt dann weder die Kategorienübersicht noch die Kategorieseiten. Die Einträge entfernen.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Die Taxonomie {taxonomy} aus der Kanalkarte ist in der Webseite nicht angemeldet (taxonomies). Hugo erzeugt dafür keine Kategorieseiten.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Die Adressen der Kategorien passen nicht zusammen: Die Kanalkarte erwartet {expected}, Hugo legt die Seiten der Taxonomie {taxonomy} unter {actual} ab (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy ist {actual}, die Kanalkarte nutzt {taxonomy}. Das Theme zeigt die Kategorien dann nur als einfache Liste, und die Widgets kennen die Übersicht nicht.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Die Übersichtsseite {file} fehlt. Ohne sie trägt die Kategorienübersicht nur den Namen der Taxonomie als Titel.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Die Freigabe für Produktseiten ({dir}) liegt in keinem Mount auf content. Hugo sieht die Produktseiten nicht.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Die Freigabe für die Kategorieübersicht ({file}) liegt in keinem Mount auf data. Die Vorlagen finden sie nicht."
     },
     "add": "Hinzufügen",
     "add_fields": {

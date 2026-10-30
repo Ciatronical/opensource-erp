@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Rodomas kiekvieno puslapio poraštėje, pvz., grąžinimo terminas ir tvarka.",
         "ebayPageAbout": "Tekstas „Apie mus“",
         "ebayPageAbout_help": "Rodomas kiekvieno puslapio poraštėje – trumpai, kuo išsiskiria parduotuvė.",
-        "ebayRefreshToken_help": "Ilgalaikis OAuth Refresh-Token. „Prijungti prie eBay“ eBay skydelyje nustato jį pats – rankiniu būdu įvesti tik tada, jei jis jau yra."
+        "ebayRefreshToken_help": "Ilgalaikis OAuth Refresh-Token. „Prijungti prie eBay“ eBay skydelyje nustato jį pats – rankiniu būdu įvesti tik tada, jei jis jau yra.",
+        "shopSiteCheck": "Svetainės Hugo konfigūracija",
+        "shopSiteCheckOk": "Svetainės Hugo konfigūracija atitinka paketą ir nustatymus.",
+        "shopSiteCheckFix": "Įrašas svetainės config.json failui:",
+        "shopSiteCheck_UNAVAILABLE": "Hugo konfigūracijos patikrinti nepavyko: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo įspėja įkeliant konfigūraciją: {text} Būsima Hugo versija to nebepriims.",
+        "shopSiteCheck_MOUNT_MISSING": "Svetainės konfigūracijoje trūksta mount {source} → {target}. Be jo Hugo nemato šios paketo dalies.",
+        "shopSiteCheck_MOUNT_TARGET": "Mount {source} rodo į {actual}, tikimasi {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds išjungia {kinds}. Tuomet Hugo nesukuria nei kategorijų apžvalgos, nei kategorijų puslapių. Pašalinkite šiuos įrašus.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Kanalo kortelės taksonomija {taxonomy} svetainėje neužregistruota (taxonomies). Hugo jai nesukuria kategorijų puslapių.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Kategorijų adresai nesutampa: kanalo kortelė tikisi {expected}, Hugo taksonomijos {taxonomy} puslapius deda į {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy yra {actual}, kanalo kortelė naudoja {taxonomy}. Tuomet tema rodo kategorijas tik kaip paprastą sąrašą, o valdikliai apžvalgos nežino.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Trūksta apžvalgos puslapio {file}. Be jo kategorijų apžvalgos pavadinimas yra tik taksonomijos vardas.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Produktų puslapių leidimas ({dir}) nėra jokiame content mount. Hugo produktų puslapių nemato.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Kategorijų apžvalgos leidimas ({file}) nėra jokiame data mount. Šablonai jo neranda."
     },
     "add": "Pridėti",
     "add_fields": {

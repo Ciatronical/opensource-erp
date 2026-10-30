@@ -1164,7 +1164,21 @@
         "orderConfirmAiSuggest": "Sugestia — potwierdzenie jednym kliknięciem",
         "orderConfirmAiAuto": "Automatycznie przy jednoznacznej zgodzie",
         "orderConfirmAiDays": "Przyjęcia zleceń z ostatnich dni",
-        "orderConfirmAiDays_help": "Pod uwagę brane są tylko przyjęcia zleceń nie starsze niż podana liczba dni (domyślnie 60). Starsze niepotwierdzone zamówienia nie są sprawdzane."
+        "orderConfirmAiDays_help": "Pod uwagę brane są tylko przyjęcia zleceń nie starsze niż podana liczba dni (domyślnie 60). Starsze niepotwierdzone zamówienia nie są sprawdzane.",
+        "shopSiteCheck": "Konfiguracja Hugo strony internetowej",
+        "shopSiteCheckOk": "Konfiguracja Hugo strony internetowej pasuje do pakietu i ustawień.",
+        "shopSiteCheckFix": "Wpis do pliku config.json strony internetowej:",
+        "shopSiteCheck_UNAVAILABLE": "Nie udało się sprawdzić konfiguracji Hugo: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo ostrzega przy wczytywaniu konfiguracji: {text} Przyszła wersja Hugo już tego nie zaakceptuje.",
+        "shopSiteCheck_MOUNT_MISSING": "W konfiguracji strony brakuje mountu {source} → {target}. Bez niego Hugo nie widzi tej części pakietu.",
+        "shopSiteCheck_MOUNT_TARGET": "Mount {source} wskazuje na {actual}, oczekiwane jest {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds wyłącza {kinds}. Hugo nie tworzy wtedy ani przeglądu kategorii, ani stron kategorii. Usuń te wpisy.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Taksonomia {taxonomy} z karty kanału nie jest zarejestrowana na stronie (taxonomies). Hugo nie tworzy dla niej stron kategorii.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Adresy kategorii nie pasują do siebie: karta kanału oczekuje {expected}, Hugo umieszcza strony taksonomii {taxonomy} pod {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy to {actual}, karta kanału używa {taxonomy}. Motyw pokazuje wtedy kategorie tylko jako prostą listę, a widżety nie znają przeglądu.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Brakuje strony przeglądu {file}. Bez niej przegląd kategorii ma jako tytuł tylko nazwę taksonomii.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Uprawnienie do stron produktów ({dir}) nie leży w żadnym mouncie na content. Hugo nie widzi stron produktów.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Uprawnienie do przeglądu kategorii ({file}) nie leży w żadnym mouncie na data. Szablony go nie znajdują."
     },
     "add": "Dodaj",
     "add_fields": {

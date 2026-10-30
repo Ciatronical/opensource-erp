@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Apare în subsolul fiecărei pagini, de ex. termenul de retur și procedura.",
         "ebayPageAbout": "Text Despre noi",
         "ebayPageAbout_help": "Apare în subsolul fiecărei pagini – pe scurt, ce definește magazinul.",
-        "ebayRefreshToken_help": "Refresh-Token OAuth de lungă durată. „Conectare cu eBay” din panoul eBay îl setează singur – se introduce manual doar dacă există deja unul."
+        "ebayRefreshToken_help": "Refresh-Token OAuth de lungă durată. „Conectare cu eBay” din panoul eBay îl setează singur – se introduce manual doar dacă există deja unul.",
+        "shopSiteCheck": "Configurația Hugo a site-ului",
+        "shopSiteCheckOk": "Configurația Hugo a site-ului se potrivește cu pachetul și setările.",
+        "shopSiteCheckFix": "Intrare pentru config.json al site-ului:",
+        "shopSiteCheck_UNAVAILABLE": "Configurația Hugo nu a putut fi verificată: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo avertizează la încărcarea configurației: {text} O versiune viitoare Hugo nu va mai accepta acest lucru.",
+        "shopSiteCheck_MOUNT_MISSING": "Mount-ul {source} → {target} lipsește din configurația site-ului. Fără el, Hugo nu vede această parte a pachetului.",
+        "shopSiteCheck_MOUNT_TARGET": "Mount-ul {source} indică spre {actual}, se așteaptă {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds dezactivează {kinds}. Hugo nu generează atunci nici prezentarea categoriilor, nici paginile de categorie. Eliminați aceste intrări.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Taxonomia {taxonomy} din fișa canalului nu este înregistrată în site (taxonomies). Hugo nu generează pagini de categorie pentru ea.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Adresele categoriilor nu se potrivesc: fișa canalului așteaptă {expected}, Hugo plasează paginile taxonomiei {taxonomy} sub {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy este {actual}, fișa canalului folosește {taxonomy}. Tema afișează atunci categoriile doar ca listă simplă, iar widgeturile nu cunosc prezentarea.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Pagina de prezentare {file} lipsește. Fără ea, prezentarea categoriilor are ca titlu doar numele taxonomiei.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Permisiunea pentru paginile de produs ({dir}) nu se află în niciun mount pe content. Hugo nu vede paginile de produs.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Permisiunea pentru prezentarea categoriilor ({file}) nu se află în niciun mount pe data. Șabloanele nu o găsesc."
     },
     "add": "Adăugare",
     "add_fields": {

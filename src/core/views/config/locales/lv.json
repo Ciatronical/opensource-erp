@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Redzams katras lapas kājenē, piem., atgriešanas termiņš un kārtība.",
         "ebayPageAbout": "Teksts Par mums",
         "ebayPageAbout_help": "Redzams katras lapas kājenē – īsi par to, kas raksturo veikalu.",
-        "ebayRefreshToken_help": "Ilgtermiņa OAuth Refresh-Token. „Savienot ar eBay“ eBay panelī to iestata pats – ievadīt manuāli tikai tad, ja tāds jau ir."
+        "ebayRefreshToken_help": "Ilgtermiņa OAuth Refresh-Token. „Savienot ar eBay“ eBay panelī to iestata pats – ievadīt manuāli tikai tad, ja tāds jau ir.",
+        "shopSiteCheck": "Vietnes Hugo konfigurācija",
+        "shopSiteCheckOk": "Vietnes Hugo konfigurācija atbilst pakotnei un iestatījumiem.",
+        "shopSiteCheckFix": "Ieraksts vietnes config.json failam:",
+        "shopSiteCheck_UNAVAILABLE": "Hugo konfigurāciju neizdevās pārbaudīt: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo brīdina, ielādējot konfigurāciju: {text} Nākamā Hugo versija to vairs nepieņems.",
+        "shopSiteCheck_MOUNT_MISSING": "Vietnes konfigurācijā trūkst mount {source} → {target}. Bez tā Hugo šo pakotnes daļu neredz.",
+        "shopSiteCheck_MOUNT_TARGET": "Mount {source} norāda uz {actual}, gaidīts {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds izslēdz {kinds}. Hugo tad neveido ne kategoriju pārskatu, ne kategoriju lapas. Noņemiet šos ierakstus.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Kanāla kartes taksonomija {taxonomy} vietnē nav reģistrēta (taxonomies). Hugo tai neveido kategoriju lapas.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Kategoriju adreses nesakrīt: kanāla karte gaida {expected}, Hugo taksonomijas {taxonomy} lapas novieto zem {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy ir {actual}, kanāla karte izmanto {taxonomy}. Tēma tad rāda kategorijas tikai kā vienkāršu sarakstu, un logrīki pārskatu nepazīst.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Trūkst pārskata lapas {file}. Bez tās kategoriju pārskata virsraksts ir tikai taksonomijas nosaukums.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Produktu lapu atļauja ({dir}) neatrodas nevienā content mount. Hugo produktu lapas neredz.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Kategoriju pārskata atļauja ({file}) neatrodas nevienā data mount. Veidnes to neatrod."
     },
     "add": "Pievienot",
     "add_fields": {

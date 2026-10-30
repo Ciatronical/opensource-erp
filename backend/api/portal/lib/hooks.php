@@ -12,6 +12,7 @@
 //   invoice_positions  ($positionen, $db, $arId, $website)  Positionen — Produktlinks, Vorschaubilder
 //   publish_files      ($dateien, $db, $website, $satz) Dateien des Pakets einer Webseite
 //   publish_media      ($medien, $db, $website)         Medien, die zur Webseite gehören
+//   site_checks        ($befunde, $db, $website, $site, $stand)  Konfigurationsprüfung der Webseite — der Shop prüft Taxonomie und Adressen der Kategorien
 //
 // Eine Erweiterung hängt sich mit portalHookAdd() an, beim Laden ihrer
 // Bibliothek (backend/api/shop/lib/portal_hooks.php). Zwei Formen:

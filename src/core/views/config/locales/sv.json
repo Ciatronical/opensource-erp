@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Visas i sidfoten på varje sida, t.ex. returfrist och tillvägagångssätt.",
         "ebayPageAbout": "Text Om oss",
         "ebayPageAbout_help": "Visas i sidfoten på varje sida – kort om vad som utmärker butiken.",
-        "ebayRefreshToken_help": "Långlivad OAuth-Refresh-Token. ”Anslut till eBay” i eBay-panelen sätter den själv – ange bara manuellt om en redan finns."
+        "ebayRefreshToken_help": "Långlivad OAuth-Refresh-Token. ”Anslut till eBay” i eBay-panelen sätter den själv – ange bara manuellt om en redan finns.",
+        "shopSiteCheck": "Webbplatsens Hugo-konfiguration",
+        "shopSiteCheckOk": "Webbplatsens Hugo-konfiguration passar paketet och inställningarna.",
+        "shopSiteCheckFix": "Post för webbplatsens config.json:",
+        "shopSiteCheck_UNAVAILABLE": "Hugo-konfigurationen kunde inte kontrolleras: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo varnar vid inläsning av konfigurationen: {text} En framtida Hugo-version godtar inte längre detta.",
+        "shopSiteCheck_MOUNT_MISSING": "Mounten {source} → {target} saknas i webbplatsens konfiguration. Utan den ser Hugo inte denna del av paketet.",
+        "shopSiteCheck_MOUNT_TARGET": "Mounten {source} pekar på {actual}, förväntat är {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds stänger av {kinds}. Hugo skapar då varken kategoriöversikten eller kategorisidorna. Ta bort dessa poster.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Taxonomin {taxonomy} från kanalkortet är inte registrerad på webbplatsen (taxonomies). Hugo skapar inga kategorisidor för den.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Kategoriernas adresser stämmer inte överens: kanalkortet förväntar {expected}, Hugo lägger sidorna för taxonomin {taxonomy} under {actual} (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy är {actual}, kanalkortet använder {taxonomy}. Temat visar då kategorierna bara som en enkel lista, och widgetarna känner inte till översikten.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Översiktssidan {file} saknas. Utan den har kategoriöversikten bara taxonomins namn som titel.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Frigivningen för produktsidor ({dir}) ligger inte i någon mount på content. Hugo ser inte produktsidorna.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Frigivningen för kategoriöversikten ({file}) ligger inte i någon mount på data. Mallarna hittar den inte."
     },
     "add": "Lagg till",
     "add_fields": {

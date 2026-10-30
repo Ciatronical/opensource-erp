@@ -1079,7 +1079,21 @@
         "ebayPageReturns_help": "Her sayfanın alt bilgisinde yer alır, örn. iade süresi ve süreci.",
         "ebayPageAbout": "Hakkımızda metni",
         "ebayPageAbout_help": "Her sayfanın alt bilgisinde yer alır – kısaca mağazayı ne öne çıkarıyor.",
-        "ebayRefreshToken_help": "Uzun ömürlü OAuth Refresh-Token. eBay panosundaki „eBay ile bağlan“ bunu kendisi ayarlar – yalnızca zaten mevcutsa elle girin."
+        "ebayRefreshToken_help": "Uzun ömürlü OAuth Refresh-Token. eBay panosundaki „eBay ile bağlan“ bunu kendisi ayarlar – yalnızca zaten mevcutsa elle girin.",
+        "shopSiteCheck": "Web sitesinin Hugo yapılandırması",
+        "shopSiteCheckOk": "Web sitesinin Hugo yapılandırması paket ve ayarlarla uyumlu.",
+        "shopSiteCheckFix": "Web sitesinin config.json dosyası için kayıt:",
+        "shopSiteCheck_UNAVAILABLE": "Hugo yapılandırması denetlenemedi: {error}",
+        "shopSiteCheck_HUGO_WARNING": "Hugo yapılandırmayı yüklerken uyarıyor: {text} Gelecekteki bir Hugo sürümü bunu artık kabul etmeyecek.",
+        "shopSiteCheck_MOUNT_MISSING": "Web sitesi yapılandırmasında {source} → {target} mount’u eksik. Onsuz Hugo paketin bu bölümünü görmez.",
+        "shopSiteCheck_MOUNT_TARGET": "{source} mount’u {actual} konumunu gösteriyor, beklenen {target}.",
+        "shopSiteCheck_SHOP_KINDS_DISABLED": "disableKinds {kinds} türlerini kapatıyor. Hugo o zaman ne kategori genel görünümünü ne de kategori sayfalarını oluşturur. Bu kayıtları kaldırın.",
+        "shopSiteCheck_SHOP_TAXONOMY_MISSING": "Kanal kartındaki {taxonomy} taksonomisi web sitesinde kayıtlı değil (taxonomies). Hugo bunun için kategori sayfası oluşturmaz.",
+        "shopSiteCheck_SHOP_PERMALINKS": "Kategori adresleri uyuşmuyor: kanal kartı {expected} bekliyor, Hugo {taxonomy} taksonomisinin sayfalarını {actual} altına koyuyor (permalinks).",
+        "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy {actual}, kanal kartı {taxonomy} kullanıyor. Tema o zaman kategorileri yalnızca düz liste olarak gösterir ve bileşenler genel görünümü tanımaz.",
+        "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Genel görünüm sayfası {file} eksik. Onsuz kategori genel görünümünün başlığı yalnızca taksonomi adıdır.",
+        "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Ürün sayfaları izni ({dir}) content üzerindeki hiçbir mount’ta değil. Hugo ürün sayfalarını görmez.",
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Kategori genel görünümü izni ({file}) data üzerindeki hiçbir mount’ta değil. Şablonlar onu bulamaz."
     },
     "add": "Ekle",
     "add_fields": {
