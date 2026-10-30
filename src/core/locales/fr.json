@@ -85,7 +85,9 @@
             "banking": "Prévision de trésorerie",
             "orderConfirm": "Confirmation de commande",
             "ebay": "eBay (page produit, titre, caractéristiques de l'objet)"
-        }
+        },
+        "externalDisabled": "IA externe désactivée",
+        "externalDisabledHint": "L’IA externe (cloud) est désactivée dans la configuration de l’entreprise sous « IA et santé » – cet assistant n’est pas disponible."
     },
     "passwordField": {
         "show": "Afficher le mot de passe",

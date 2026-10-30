@@ -127,7 +127,10 @@
                     "rows": "Zeilen",
                     "actions": "Toimingud"
                 }
-            }
+            },
+            "disabledTitle": "SQL-tööriist välja lülitatud",
+            "disabledText": "SQL-tööriist on vaikimisi väljas. Süsteemiadministraator saab selle lubada ettevõtte seadistuses jaotises Funktsioonid → Tööriistad; iga käivitus logitakse.",
+            "openConfig": "Ava ettevõtte seadistus"
         },
         "table_list": {
             "title": "kivitendo Tabellen",
@@ -357,6 +360,30 @@
             "error_running": "Fehler beim Ausführen der Tests",
             "ms": "{time} ms",
             "cancel": "Tühista"
+        },
+        "sqlLog": {
+            "title": "SQL-tööriista logi",
+            "intro": "Iga käivitus, muudatus, kustutamine, tagasilükkamine ja viga koos kasutaja, IP ja käsuga – uuemad eespool. Logi ei saa kustutada.",
+            "refresh": "Värskenda",
+            "search": "Otsi logist",
+            "empty": "Kirjeid veel pole",
+            "columns": {
+                "time": "Aeg",
+                "user": "Kasutaja",
+                "action": "Toiming",
+                "database": "Andmebaas",
+                "ok": "OK",
+                "statement": "Käsk",
+                "rows": "Ridu",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Käivita",
+                "updateTableRow": "Muuda rida",
+                "deleteTableRow": "Kustuta rida",
+                "denied": "Tagasi lükatud"
+            }
         }
     },
     "cancel": "Tühista",

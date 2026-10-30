@@ -7,12 +7,84 @@
     KI-Positionsvorschläge. "Gesundheit" im Sinne von ergonomischem, tippen-armem
     Arbeiten — die Spracheingabe entlastet Kollegen, die schlecht tippen können.
 
+    Ganz oben der zentrale Schalter „Externe KI (Cloud) verwenden" mit dem
+    Datenschutzhinweis — aus heißt: kein Assistent ruft die Anthropic-API auf.
+
     Alle Werte landen als key/value in defaults_oserp (Prop `crmDefaults`), das
     der Parent per Deep-Watcher automatisch speichert.
 -->
 <template>
     <div>
+        <!-- ============ Externe KI (Cloud) ============
+             Zentraler Schalter: aus heißt, kein Assistent ruft die Anthropic-API
+             auf (Backend: resolveAiModel → AI_EXTERNAL_DISABLED). Der Hinweis
+             steht bewusst vor den Schlüsseln — wer Cloud-KI einschaltet, soll
+             wissen, welche Daten das Haus verlassen. -->
+        <h3 class="text-h6 mb-1">{{ t('aiHealth.cloudTitle') }}</h3>
+        <p class="text-body-2 text-medium-emphasis mb-3">{{ t('aiHealth.cloudIntro') }}</p>
+
+        <v-alert type="warning" variant="tonal" density="compact" class="mb-4" data-field-name="ai_external_enabled">
+            <div class="font-weight-medium mb-1">{{ t('aiHealth.cloudNoticeTitle') }}</div>
+            <div class="text-body-2">{{ t('aiHealth.cloudNotice') }}</div>
+            <v-switch
+                v-model="crmDefaults.ai_external_enabled"
+                :true-value="true"
+                :false-value="false"
+                :label="t('aiHealth.cloudSwitch')"
+                color="primary"
+                hide-details
+                density="compact"
+                inset
+                class="mt-2"
+            />
+        </v-alert>
+
+        <v-alert v-if="!crmDefaults.ai_external_enabled" type="info" variant="tonal" density="compact" class="mb-4">
+            {{ t('aiHealth.cloudOffHint') }}
+        </v-alert>
+
+        <v-row>
+            <v-col cols="12" md="6">
+                <password-field
+                    v-model="crmDefaults.anthropic_api_key"
+                    :label="t('crm_fields.anthropicApiKey')"
+                    :hint="t('crm_fields.anthropicApiKey_help')"
+                    persistent-hint
+                    autocomplete="new-password"
+                    variant="outlined"
+                    density="compact"
+                    :disabled="!crmDefaults.ai_external_enabled"
+                />
+            </v-col>
+            <v-col cols="12" md="6">
+                <password-field
+                    v-model="crmDefaults.openai_api_key"
+                    :label="t('crm_fields.openaiApiKey')"
+                    :hint="t('crm_fields.openaiApiKey_help')"
+                    persistent-hint
+                    autocomplete="new-password"
+                    variant="outlined"
+                    density="compact"
+                    :disabled="!crmDefaults.ai_external_enabled"
+                />
+            </v-col>
+            <v-col cols="12">
+                <v-btn
+                    variant="text"
+                    color="primary"
+                    size="small"
+                    prepend-icon="mdi-credit-card-outline"
+                    href="https://console.anthropic.com/settings/billing"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    {{ t('crm_fields.anthropicBilling') }}
+                </v-btn>
+            </v-col>
+        </v-row>
+
         <!-- ============ Spracheingabe (Whisper) ============ -->
+        <v-divider class="my-6" />
         <h3 class="text-h6 mb-1">{{ t('aiHealth.voiceTitle') }}</h3>
         <p class="text-body-2 text-medium-emphasis mb-4">{{ t('aiHealth.voiceIntro') }}</p>
 
@@ -157,6 +229,7 @@
                     persistent-hint
                     variant="outlined"
                     density="compact"
+                    :disabled="!crmDefaults.ai_external_enabled"
                 >
                     <!-- `item` ist hier das rohe Objekt aus modelItems, nicht Vuetifys
                          Wrapper — ein Zugriff auf item.raw laeuft ins Leere. -->
@@ -167,48 +240,6 @@
             </v-col>
         </v-row>
 
-        <!-- ============ Cloud-KI-Schlüssel ============ -->
-        <v-divider class="my-6" />
-        <h3 class="text-h6 mb-1">{{ t('crm_fields.ai') }}</h3>
-        <p class="text-body-2 text-medium-emphasis mb-4">{{ t('aiHealth.cloudKeysIntro') }}</p>
-
-        <v-row>
-            <v-col cols="12" md="6">
-                <password-field
-                    v-model="crmDefaults.openai_api_key"
-                    :label="t('crm_fields.openaiApiKey')"
-                    :hint="t('crm_fields.openaiApiKey_help')"
-                    persistent-hint
-                    autocomplete="new-password"
-                    variant="outlined"
-                    density="compact"
-                />
-            </v-col>
-            <v-col cols="12" md="6">
-                <password-field
-                    v-model="crmDefaults.anthropic_api_key"
-                    :label="t('crm_fields.anthropicApiKey')"
-                    :hint="t('crm_fields.anthropicApiKey_help')"
-                    persistent-hint
-                    autocomplete="new-password"
-                    variant="outlined"
-                    density="compact"
-                />
-            </v-col>
-            <v-col cols="12">
-                <v-btn
-                    variant="text"
-                    color="primary"
-                    size="small"
-                    prepend-icon="mdi-credit-card-outline"
-                    href="https://console.anthropic.com/settings/billing"
-                    target="_blank"
-                    rel="noopener"
-                >
-                    {{ t('crm_fields.anthropicBilling') }}
-                </v-btn>
-            </v-col>
-        </v-row>
     </div>
 </template>
 

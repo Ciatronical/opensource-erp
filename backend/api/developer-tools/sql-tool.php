@@ -2,6 +2,125 @@
 // backend/api/developer-tools/sql-tool.php
 
 /**
+ * Zugang zum SQL-Werkzeug — Freigabe, Administratorrolle, Protokoll
+ *
+ * Das Werkzeug ist standardmäßig AUS (defaults_oserp.developer_sql_tool_enabled,
+ * Firmenkonfiguration → Features → Werkzeuge) und auch eingeschaltet nur für
+ * Systemadministratoren (isSystemAdmin). Jede Ausführung, Änderung, Löschung,
+ * Ablehnung und jeder Fehler steht in sql_tool_log — mit Benutzer, IP und
+ * Statement. Das Protokoll kennt keinen Löschpfad über die API.
+ *
+ * @return array ['user_id', 'login', 'enabled', 'admin', 'ip']
+ */
+function sqlToolContext() {
+    static $ctx = null;
+    if ($ctx === null) {
+        $auth   = DbhAuth::begin();
+        $userId = (int)$auth->getUserId();
+        $login  = (string)$auth->getLogin();
+        $row    = DbhCompany::begin()->getOne(
+            "SELECT value FROM defaults_oserp WHERE key = 'developer_sql_tool_enabled'"
+        );
+        $ctx = [
+            'user_id' => $userId,
+            'login'   => $login,
+            'enabled' => in_array(strtolower(trim((string)($row['value'] ?? ''))), ['1', 'true', 't'], true),
+            'admin'   => isSystemAdmin($userId, $login),
+            'ip'      => $_SERVER['REMOTE_ADDR'] ?? null,
+        ];
+    }
+    return $ctx;
+}
+
+/**
+ * Riegel vor jeder Funktion des SQL-Werkzeugs
+ *
+ * Abgewiesene Zugriffe landen ebenfalls im Protokoll (action 'denied').
+ *
+ * @param string      $action    Name der API-Funktion
+ * @param string      $database  company | auth
+ * @param string|null $statement Statement, das ausgeführt werden sollte (wenn bekannt)
+ * @return array Kontext aus sqlToolContext()
+ * @throws ApiError SQL_TOOL_DISABLED | SQL_TOOL_FORBIDDEN
+ */
+function sqlToolGuard($action, $database = 'company', $statement = null) {
+    $ctx = sqlToolContext();
+    if ($ctx['enabled'] && $ctx['admin']) {
+        return $ctx;
+    }
+    $reason = !$ctx['enabled'] ? 'SQL_TOOL_DISABLED' : 'SQL_TOOL_FORBIDDEN';
+    sqlToolLog('denied', $database, $statement ?? $action, false, $reason . ' (' . $action . ')');
+    throw new ApiError($reason, $reason === 'SQL_TOOL_DISABLED'
+        ? 'Das SQL-Werkzeug ist abgeschaltet (Firmenkonfiguration → Features → Werkzeuge).'
+        : 'Das SQL-Werkzeug steht nur Systemadministratoren offen.');
+}
+
+/**
+ * Schreibt einen Eintrag ins Audit-Protokoll sql_tool_log
+ *
+ * Ein Fehler beim Protokollieren darf die eigentliche Antwort nicht
+ * verhindern — er wird ins API-Log geschrieben.
+ *
+ * @param string      $action    executeSql | updateTableRow | deleteTableRow | denied
+ * @param string      $database  company | auth
+ * @param string|null $statement Ausgeführtes SQL
+ * @param bool        $success
+ * @param string|null $error     Fehlermeldung oder Ablehnungsgrund
+ * @param int|null    $rowCount
+ * @param float|null  $ms        Laufzeit in Millisekunden
+ */
+function sqlToolLog($action, $database, $statement, $success, $error = null, $rowCount = null, $ms = null) {
+    $ctx = sqlToolContext();
+    try {
+        DbhCompany::begin()->execute(
+            "INSERT INTO sql_tool_log (user_id, login, action, database_type, statement, success, error, row_count, execution_ms, ip)
+             VALUES (:user_id, :login, :action, :database, :statement, CAST(:success AS boolean), :error,
+                     CAST(:row_count AS integer), CAST(:ms AS numeric), :ip)",
+            [
+                ':user_id'   => $ctx['user_id'] ?: null,
+                ':login'     => $ctx['login'] !== '' ? $ctx['login'] : null,
+                ':action'    => $action,
+                ':database'  => $database === 'auth' ? 'auth' : 'company',
+                ':statement' => $statement !== null ? mb_substr((string)$statement, 0, 20000) : null,
+                ':success'   => $success ? 't' : 'f',
+                ':error'     => $error !== null ? mb_substr((string)$error, 0, 4000) : null,
+                ':row_count' => $rowCount,
+                ':ms'        => $ms,
+                ':ip'        => $ctx['ip'],
+            ]
+        );
+    } catch (Exception $e) {
+        writeLog('sql_tool_log konnte nicht geschrieben werden: ' . $e->getMessage(), true, DLOG_ERR);
+    }
+}
+
+/**
+ * Liefert das Audit-Protokoll des SQL-Werkzeugs (neueste zuerst)
+ *
+ * Nur für Systemadministratoren — auch wenn das Werkzeug abgeschaltet ist,
+ * damit frühere Nutzung nachvollziehbar bleibt.
+ *
+ * @param int $data['limit'] Maximale Anzahl Einträge (optional, Standard 200, max 2000)
+ * @testdata {"limit": 200}
+ */
+function getSqlToolLog($data) {
+    $ctx = sqlToolContext();
+    if (!$ctx['admin']) {
+        throw new ApiError('SQL_TOOL_FORBIDDEN', 'Das Protokoll des SQL-Werkzeugs steht nur Systemadministratoren offen.');
+    }
+    $limit = max(1, min(2000, (int)($data['limit'] ?? 200)));
+    $rows = DbhCompany::begin()->getAll(
+        "SELECT id, user_id, login, action, database_type, statement, success, error, row_count, execution_ms, ip,
+                to_char(itime, 'YYYY-MM-DD HH24:MI:SS') AS itime
+           FROM sql_tool_log
+          ORDER BY id DESC
+          LIMIT :limit",
+        [':limit' => $limit]
+    );
+    resultInfo(true, '', ['log' => $rows, 'enabled' => $ctx['enabled']]);
+}
+
+/**
  * Führt eine SQL-Abfrage aus (unterstützt mehrere Queries getrennt durch Semikolon)
  *
  * @param string $data['query'] SQL-Query(s) - mehrere Queries mit Semikolon getrennt möglich
@@ -21,20 +140,8 @@ function executeSql($data) {
     // Kommentare werden im splitSqlStatements()-Parser entfernt,
     // damit Strings mit -- oder /* */ nicht zerstoert werden.
 
-    $auth = DbhAuth::begin();
-    $sessionQuery = "SELECT s.user_id
-                     FROM auth.session_oserp s
-                     WHERE s.session_id = :session_id";
-
-    $context = $auth->getOne($sessionQuery, [':session_id' => $auth->getCookie()]);
-
-    if (!$context) {
-        // writeLog("ERROR: Keine Session bei executeSql");
-        resultInfo(false, 'Keine gültige Session');
-        return;
-    }
-
-    $userId = $context['user_id'];
+    // Freigabe + Administratorrolle; abgewiesene Versuche stehen im Protokoll
+    $userId = sqlToolGuard('executeSql', $database, $queryInput)['user_id'];
 
     // Wähle Datenbank basierend auf Parameter für Query-Ausführung
     if ($database === 'auth') {
@@ -110,6 +217,7 @@ function executeSql($data) {
 
                 // Speichere Query in History
                 saveQueryToHistory($companyDb, $userId, $query, $executionTime, $rowCount, $database);
+                sqlToolLog('executeSql', $database, $query, true, null, $rowCount, $executionTime);
             } else {
                 $affectedRows = $stmt->rowCount();
                 $totalRows += $affectedRows;
@@ -140,6 +248,7 @@ function executeSql($data) {
 
                 // Speichere Query in History
                 saveQueryToHistory($companyDb, $userId, $query, $executionTime, $affectedRows, $database);
+                sqlToolLog('executeSql', $database, $query, true, null, $affectedRows, $executionTime);
             }
         }
 
@@ -179,8 +288,7 @@ function executeSql($data) {
         }
     } catch (PDOException $e) {
         $executionTime = isset($startTime) ? round((microtime(true) - $startTime) * 1000, 2) : 0;
-        // writeLog("ERROR: SQL-Abfrage fehlgeschlagen: " . $e->getMessage());
-        // writeLog("Query: " . $queryInput);
+        sqlToolLog('executeSql', $database, $query ?? $queryInput, false, $e->getMessage(), null, $executionTime);
         resultInfo(false, 'SQL-Fehler: ' . $e->getMessage());
     }
 }
@@ -291,6 +399,7 @@ function getTablePrimaryKeyInternal($db, $tableName, $schema = 'public') {
  * @testdata {"table": "customer", "database": "company"}
  */
 function getTablePrimaryKey($data) {
+    sqlToolGuard('getTablePrimaryKey', $data['database'] ?? 'company');
     if (!isset($data['table']) || empty(trim($data['table']))) {
         resultInfo(false, 'Kein Tabellenname angegeben');
         return;
@@ -327,6 +436,7 @@ function getTablePrimaryKey($data) {
  * @testdata {"table": "customer", "primary_key": "id", "primary_value": 1, "updates": {"name": "Test"}, "database": "company"}
  */
 function updateTableRow($data) {
+    sqlToolGuard('updateTableRow', $data['database'] ?? 'company');
     // Validierung
     if (!isset($data['table']) || empty(trim($data['table']))) {
         resultInfo(false, 'Kein Tabellenname angegeben');
@@ -405,9 +515,11 @@ function updateTableRow($data) {
     $fullTableName = ($database === 'auth') ? "auth.\"$tableName\"" : "\"$tableName\"";
 
     $query = "UPDATE $fullTableName SET $setClause WHERE \"$primaryKey\" = :pk_value";
+    $logStatement = $query . ' -- ' . json_encode($params, JSON_UNESCAPED_UNICODE);
 
     try {
         $db->execute($query, $params);
+        sqlToolLog('updateTableRow', $database, $logStatement, true, null, 1);
 
         // Lade aktualisierte Zeile
         $selectQuery = "SELECT * FROM $fullTableName WHERE \"$primaryKey\" = :pk_value";
@@ -417,7 +529,7 @@ function updateTableRow($data) {
             'updated_row' => $updatedRow
         ]);
     } catch (PDOException $e) {
-        // writeLog("ERROR: Update fehlgeschlagen: " . $e->getMessage());
+        sqlToolLog('updateTableRow', $database, $logStatement, false, $e->getMessage());
         resultInfo(false, 'Update fehlgeschlagen: ' . $e->getMessage());
     }
 }
@@ -432,6 +544,7 @@ function updateTableRow($data) {
  * @testdata {"table": "customer", "primary_key": "id", "primary_value": 1, "database": "company"}
  */
 function deleteTableRow($data) {
+    sqlToolGuard('deleteTableRow', $data['database'] ?? 'company');
     // Validierung
     if (!isset($data['table']) || empty(trim($data['table']))) {
         resultInfo(false, 'Kein Tabellenname angegeben');
@@ -492,15 +605,17 @@ function deleteTableRow($data) {
     }
 
     $query = "DELETE FROM $fullTableName WHERE \"$primaryKey\" = :pk_value";
+    $logStatement = $query . ' -- ' . json_encode([':pk_value' => $primaryValue, 'row' => $deletedRow], JSON_UNESCAPED_UNICODE);
 
     try {
         $db->execute($query, [':pk_value' => $primaryValue]);
+        sqlToolLog('deleteTableRow', $database, $logStatement, true, null, 1);
 
         resultInfo(true, 'Zeile erfolgreich gelöscht', [
             'deleted_row' => $deletedRow
         ]);
     } catch (PDOException $e) {
-        // writeLog("ERROR: Delete fehlgeschlagen: " . $e->getMessage());
+        sqlToolLog('deleteTableRow', $database, $logStatement, false, $e->getMessage());
 
         // Prüfe auf Foreign Key Constraint
         if (strpos($e->getMessage(), 'foreign key constraint') !== false ||
@@ -541,6 +656,7 @@ function saveQueryToHistory($db, $userId, $query, $executionTime, $rowCount, $da
  * @testdata {"limit": 50, "database": "company"}
  */
 function getQueryHistory($data) {
+    sqlToolGuard('getQueryHistory', $data['database'] ?? 'company');
     $auth = DbhAuth::begin();
     $sessionQuery = "SELECT s.user_id
                      FROM auth.session_oserp s
@@ -586,6 +702,7 @@ function getQueryHistory($data) {
  * @testdata {"id": 1}
  */
 function deleteQueryFromHistory($data) {
+    sqlToolGuard('deleteQueryFromHistory', $data['database'] ?? 'company');
     if (!isset($data['id'])) {
         resultInfo(false, 'Keine Query-ID angegeben');
         return;
@@ -627,6 +744,7 @@ function deleteQueryFromHistory($data) {
  * @testdata {"database": "company"}
  */
 function clearQueryHistory($data) {
+    sqlToolGuard('clearQueryHistory', $data['database'] ?? 'company');
     $auth = DbhAuth::begin();
     $sessionQuery = "SELECT s.user_id
                      FROM auth.session_oserp s
@@ -663,6 +781,7 @@ function clearQueryHistory($data) {
  * @testdata {"database": "company"}
  */
 function getTableNames($data) {
+    sqlToolGuard('getTableNames', $data['database'] ?? 'company');
     $database = isset($data['database']) ? $data['database'] : 'company';
 
     if ($database === 'auth') {
@@ -696,6 +815,7 @@ function getTableNames($data) {
  * @testdata {"table": "customer", "database": "company"}
  */
 function getColumnNames($data) {
+    sqlToolGuard('getColumnNames', $data['database'] ?? 'company');
     if (!isset($data['table']) || empty(trim($data['table']))) {
         resultInfo(false, 'Kein Tabellenname angegeben');
         return;
@@ -740,6 +860,7 @@ function getColumnNames($data) {
  * @testdata {}
  */
 function getSqlKeywords($data) {
+    sqlToolGuard('getSqlKeywords', $data['database'] ?? 'company');
     $keywords = [
         'SELECT', 'INSERT', 'UPDATE', 'DELETE',
         'FROM', 'WHERE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'OUTER JOIN',
@@ -772,6 +893,7 @@ function getSqlKeywords($data) {
  * @testdata {}
  */
 function getDatabaseNames($data) {
+    sqlToolGuard('getDatabaseNames', $data['database'] ?? 'company');
     $auth = DbhAuth::begin();
     $sessionQuery = "SELECT c.dbname as company_db
                      FROM auth.session_oserp s
@@ -808,6 +930,7 @@ function getDatabaseNames($data) {
  * @testdata {"table": "employee_config_oserp", "database": "company"}
  */
 function getTableStructure($data) {
+    sqlToolGuard('getTableStructure', $data['database'] ?? 'company');
     $tableName = $data['table'] ?? null;
     $database = $data['database'] ?? 'company';
 
@@ -890,6 +1013,7 @@ function getTableStructure($data) {
  * @return string JSON mit Tabellenliste
  */
 function getKivitendoTables($data) {
+    sqlToolGuard('getKivitendoTables', $data['database'] ?? 'company');
     $database = $data['database'] ?? 'company';
 
     if ($database === 'auth') {

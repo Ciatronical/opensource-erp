@@ -143,6 +143,8 @@ function getCV($data, $withConfig = []) {
     $emailsSelect       = "(SELECT emails FROM $extTable WHERE $extFk = $cv_id)";
     $urlsSelect         = "(SELECT urls FROM $extTable WHERE $extFk = $cv_id)";
     $keywordsSelect     = "(SELECT keywords FROM $extTable WHERE $extFk = $cv_id)";
+    // Letzte USt-IdNr.-Bestätigung (eVatR/VIES) — Nachweis-Kurzfassung für die Maske
+    $ustidCheckSelect   = "(SELECT ustid_check FROM $extTable WHERE $extFk = $cv_id)";
     // LxCars: kundenweiter HU-Benachrichtigungs-Ausschluss (nur Kunde). Kunde zaehlt
     // mehr als Fahrzeug — ist dies true, sind alle Fahrzeuge des Kunden ausgeschlossen.
     // Die Spalte legt erst upstall/lxcars/company_schema.sql an. Ohne aktives Feature
@@ -473,6 +475,7 @@ function getCV($data, $withConfig = []) {
                                             $emailsSelect AS emails,
                                             $urlsSelect AS urls,
                                             $keywordsSelect AS keywords,
+                                            $ustidCheckSelect AS ustid_check,
                                             $huExcludedSelect AS hu_serienbrief_excluded
                                         FROM $cvTable t WHERE t.id = $cv_id
                                     ) AS cv
@@ -1169,6 +1172,10 @@ function saveCV($data) {
         $keywords = $data['profile']['keywords'];
         unset($data['profile']['keywords']);
     }
+
+    // ustid_check kommt aus customer_ext/vendor_ext und wird nur von checkVatId()
+    // geschrieben — beim Speichern der Maske nie in die customer-Tabelle.
+    unset($data['profile']['ustid_check']);
 
     // hu_serienbrief_excluded (LxCars, nur Kunde) vor dem Loop extrahieren und aus
     // profile entfernen — liegt in customer_ext, nicht in der customer-Tabelle.

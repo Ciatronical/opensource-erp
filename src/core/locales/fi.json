@@ -85,7 +85,9 @@
             "banking": "Maksuvalmiusennuste",
             "orderConfirm": "Tilausvahvistus",
             "ebay": "eBay (tuotesivu, otsikko, tuotteen ominaisuudet)"
-        }
+        },
+        "externalDisabled": "Ulkoinen tekoäly pois",
+        "externalDisabledHint": "Ulkoinen tekoäly (pilvi) on kytketty pois yritysasetuksissa kohdassa ”Tekoäly ja tila” – tämä avustaja ei ole käytettävissä."
     },
     "passwordField": {
         "show": "Näytä salasana",

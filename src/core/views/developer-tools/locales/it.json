@@ -127,7 +127,10 @@
                     "rows": "Righe",
                     "actions": "Azioni"
                 }
-            }
+            },
+            "disabledTitle": "Strumento SQL disattivato",
+            "disabledText": "Lo strumento SQL è disattivato per impostazione predefinita. Un amministratore di sistema può abilitarlo nella configurazione aziendale sotto Funzioni → Strumenti; ogni esecuzione viene registrata.",
+            "openConfig": "Apri configurazione aziendale"
         },
         "table_list": {
             "title": "Tabelle kivitendo",
@@ -357,6 +360,30 @@
             "error_running": "Errore nell'esecuzione dei test",
             "ms": "{time} ms",
             "cancel": "Annulla"
+        },
+        "sqlLog": {
+            "title": "Registro dello strumento SQL",
+            "intro": "Ogni esecuzione, modifica, eliminazione, rifiuto ed errore con utente, IP e comando – prima i più recenti. Il registro non può essere eliminato.",
+            "refresh": "Aggiorna",
+            "search": "Cerca nel registro",
+            "empty": "Ancora nessuna voce",
+            "columns": {
+                "time": "Ora",
+                "user": "Utente",
+                "action": "Azione",
+                "database": "Database",
+                "ok": "OK",
+                "statement": "Comando",
+                "rows": "Righe",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Esegui",
+                "updateTableRow": "Modifica riga",
+                "deleteTableRow": "Elimina riga",
+                "denied": "Rifiutato"
+            }
         }
     },
     "cancel": "Annulla",

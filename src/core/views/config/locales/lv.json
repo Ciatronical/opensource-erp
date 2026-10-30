@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Mākslīgais intelekts",
         "misc": "Dažādi",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Notiek konfigurācijas ielāde …",
     "portalTab": {
         "title": "Klientu portāls"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "Ārējais MI (mākonis)",
+        "cloudIntro": "MI asistenti (Weroni, transportlīdzekļu čats, dokumentu atpazīšana, pārdošanas teksti, ekspertīzes, likviditātes prognoze, pasūtījuma apstiprinājums …) darbojas, izmantojot Anthropic API. Balss ievade (Whisper) un lokālais LLM tam nav pakļauti un darbojas jūsu uzņēmumā.",
+        "cloudNoticeTitle": "Datu aizsardzības piezīme",
+        "cloudNotice": "Ieslēdzot ārējo MI, saturs tiek nodots Anthropic (ASV) – atkarībā no asistenta klientu un transportlīdzekļu dati, dokumenti, ziņojumi, zvanu transkripti un grāmatvedības dati. Pirms ieslēgšanas pārbaudiet, vai ir noslēgts datu apstrādes līgums un vai datu subjekti ir informēti. Izslēgts nozīmē: neviens asistents nepiekļūst mākonim, nekas neatstāj uzņēmumu.",
+        "cloudSwitch": "Izmantot ārējo MI (mākonis)",
+        "cloudOffHint": "Ārējais MI ir izslēgts. Visi mākoņa asistenti ir neaktīvi; Weroni, modeļa izvēle un atslēgas ir pelēkotas. Lokālais MI un balss ievade turpina darboties."
+    },
+    "toolsFeatures": "Rīki",
+    "featureSqlTool": "SQL rīks (Developer-Tools)",
+    "featureSqlToolDesc": "Izpildiet jebkādas SQL komandas tieši datubāzē. Pēc noklusējuma izslēgts; to redz un lieto tikai sistēmas administratori, un katra izpilde tiek reģistrēta ar lietotāju, IP un komandu.",
+    "featureSqlToolOnHint": "SQL rīks ir atļauts. Izmaiņas stājas spēkā uzreiz un bez pārbaudes datubāzē – pēc darba to atkal izslēdziet."
 }

@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Inteligență artificială",
         "misc": "Diverse",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Se încarcă configurația …",
     "portalTab": {
         "title": "Portalul clienților"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "IA externă (cloud)",
+        "cloudIntro": "Asistenții IA (Weroni, chat pentru vehicule, recunoașterea documentelor, texte de vânzare, expertize, prognoza lichidității, confirmarea comenzii …) funcționează prin API-ul Anthropic. Introducerea vocală (Whisper) și LLM-ul local nu sunt afectate și rulează la dumneavoastră în firmă.",
+        "cloudNoticeTitle": "Notă privind protecția datelor",
+        "cloudNotice": "Cu IA externă activată, conținutul este transmis către Anthropic (SUA) – în funcție de asistent, date despre clienți și vehicule, documente, mesaje, transcrieri ale apelurilor și date contabile. Înainte de activare, verificați dacă există un contract de prelucrare a datelor și dacă persoanele vizate au fost informate. Dezactivat înseamnă: niciun asistent nu apelează cloud-ul, nimic nu părăsește firma.",
+        "cloudSwitch": "Utilizează IA externă (cloud)",
+        "cloudOffHint": "IA externă este dezactivată. Toți asistenții cloud sunt inactivi; Weroni, alegerea modelului și cheile sunt estompate. IA locală și introducerea vocală continuă să funcționeze."
+    },
+    "toolsFeatures": "Instrumente",
+    "featureSqlTool": "Instrument SQL (Developer-Tools)",
+    "featureSqlToolDesc": "Executați comenzi SQL arbitrare direct în baza de date. Dezactivat implicit; doar administratorii de sistem îl văd și îl pot folosi, iar fiecare execuție este înregistrată cu utilizator, IP și comandă.",
+    "featureSqlToolOnHint": "Instrumentul SQL este activat. Modificările au efect imediat și fără verificare asupra bazei de date – dezactivați-l din nou după lucru."
 }

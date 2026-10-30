@@ -77,8 +77,27 @@
                                             />
                                         </v-window-item>
 
-                                        <v-window-item value="sql">
-                                            <sql-tool-component />
+                                        <!-- SQL-Werkzeug: nur Systemadministratoren sehen den Reiter;
+                                             ohne Freigabe (Firmenkonfiguration → Features → Werkzeuge)
+                                             steht hier der Hinweis statt des Werkzeugs. Das Protokoll
+                                             bleibt in beiden Fällen lesbar. -->
+                                        <v-window-item v-if="oserp.isAdmin()" value="sql">
+                                            <v-alert v-if="!sqlToolEnabled" type="info" variant="tonal" class="mb-4">
+                                                <div class="font-weight-medium">{{ t('DeveloperTools.sql.disabledTitle') }}</div>
+                                                <div class="text-body-2 mt-1">{{ t('DeveloperTools.sql.disabledText') }}</div>
+                                                <v-btn
+                                                    class="mt-2"
+                                                    size="small"
+                                                    color="primary"
+                                                    variant="tonal"
+                                                    prepend-icon="mdi-cog"
+                                                    :to="{ name: 'client-defaults', query: { tab: 'features' } }"
+                                                >
+                                                    {{ t('DeveloperTools.sql.openConfig') }}
+                                                </v-btn>
+                                            </v-alert>
+                                            <sql-tool-component v-else />
+                                            <sql-tool-log-component class="mt-4" />
                                         </v-window-item>
 
                                         <v-window-item value="api-tester">
@@ -120,12 +139,14 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';
 import MessagesView from '@/core/components/messages/messages.view.vue';
 import DatabaseBackupComponent from './components/database-backup.component.vue';
 import SqlToolComponent from './components/sql-tool.component.vue';
+import SqlToolLogComponent from './components/sql-tool-log.component.vue';
+import { oserpStore } from '@/core/stores/oserp.store.js';
 import ApiTesterComponent from './components/api-tester.component.vue';
 import StoreViewerComponent from './components/store-viewer.component.vue';
 import SchemaUpdateComponent from './components/schema-update.component.vue';
@@ -135,9 +156,14 @@ import TicketsComponent from './components/tickets.component.vue';
 import LogViewerComponent from './components/log-viewer.component.vue';
 
 const { t } = useI18n();
+const oserp = oserpStore();
 
-// Tab-Definitionen
-const tabItems = [
+// SQL-Werkzeug: Freigabe aus der Firmenkonfiguration (Backend prüft dasselbe)
+const sqlToolEnabled = computed(() => oserp.isSqlToolEnabled());
+
+// Tab-Definitionen — der SQL-Reiter nur für Systemadministratoren
+const tabItems = computed(() => allTabItems.filter(tab => tab.value !== 'sql' || oserp.isAdmin()));
+const allTabItems = [
     { value: 'backup', icon: 'mdi-database-export', labelKey: 'DeveloperTools.tabs.backup' },
     { value: 'sql', icon: 'mdi-code-braces', labelKey: 'DeveloperTools.tabs.sql' },
     { value: 'api-tester', icon: 'mdi-api', labelKey: 'DeveloperTools.tabs.apiTester' },
@@ -152,6 +178,7 @@ const tabItems = [
 // Aktiver Tab mit localStorage-Persistenz
 const DEVTOOLS_TAB_KEY = 'devtools_activeTab';
 const activeTab = ref(localStorage.getItem(DEVTOOLS_TAB_KEY) || 'backup');
+if (activeTab.value === 'sql' && !oserp.isAdmin()) activeTab.value = 'backup';
 
 function setActiveTab(value) {
     activeTab.value = value;

@@ -89,7 +89,9 @@
             "callTranscript": "Anruf-Auswertung",
             "banking": "Liquiditätsprognose",
             "orderConfirm": "Auftragsbestätigung"
-        }
+        },
+        "externalDisabled": "Externe KI aus",
+        "externalDisabledHint": "Externe KI (Cloud) ist in der Firmenkonfiguration unter „KI und Gesundheit“ abgeschaltet – dieser Assistent steht nicht zur Verfügung."
     },
     "passwordField": {
         "show": "Passwort anzeigen",

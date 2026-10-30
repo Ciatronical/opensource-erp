@@ -85,7 +85,9 @@
             "banking": "Previsión de liquidez",
             "orderConfirm": "Confirmación de pedidos",
             "ebay": "eBay (página de producto, título, características del artículo)"
-        }
+        },
+        "externalDisabled": "IA externa desactivada",
+        "externalDisabledHint": "La IA externa (nube) está desactivada en la configuración de la empresa, en «IA y estado»; este asistente no está disponible."
     },
     "passwordField": {
         "show": "Mostrar contraseña",

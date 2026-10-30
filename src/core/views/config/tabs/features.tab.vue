@@ -50,6 +50,56 @@
         </template>
 
         <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- WERKZEUGE (nur Systemadministratoren) -->
+        <!-- SQL-Werkzeug der Developer-Tools: standardmäßig aus, nur für
+             Administratoren, jede Ausführung landet in sql_tool_log. -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <template v-if="crmDefaults && oserp.isAdmin()">
+            <h3 class="text-h6 mb-4">{{ $t('toolsFeatures') }}</h3>
+
+            <v-row class="mb-2">
+                <v-col cols="12" md="6">
+                    <v-card
+                        data-field-name="developer_sql_tool_enabled"
+                        :variant="crmDefaults.developer_sql_tool_enabled ? 'outlined' : 'tonal'"
+                        :color="crmDefaults.developer_sql_tool_enabled ? 'primary' : undefined"
+                        class="feature-card"
+                    >
+                        <v-card-text class="pa-4">
+                            <div class="d-flex align-center justify-space-between ga-3">
+                                <div class="d-flex align-center ga-3 flex-grow-1" style="min-width: 0">
+                                    <v-icon size="32" :color="crmDefaults.developer_sql_tool_enabled ? 'primary' : 'grey'">mdi-database-cog-outline</v-icon>
+                                    <div>
+                                        <div class="text-subtitle-1 font-weight-bold">{{ $t('featureSqlTool') }}</div>
+                                        <div class="text-caption text-medium-emphasis">{{ $t('featureSqlToolDesc') }}</div>
+                                    </div>
+                                </div>
+                                <v-switch
+                                    v-model="crmDefaults.developer_sql_tool_enabled"
+                                    :true-value="true"
+                                    :false-value="false"
+                                    color="primary"
+                                    hide-details
+                                    density="compact"
+                                    inset
+                                    class="flex-shrink-0"
+                                />
+                            </div>
+                            <v-alert
+                                v-if="crmDefaults.developer_sql_tool_enabled"
+                                type="warning" variant="tonal" density="compact" class="mt-3"
+                            >
+                                {{ $t('featureSqlToolOnHint') }}
+                            </v-alert>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+
+            <v-divider class="my-6" />
+        </template>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
         <!-- KAMERA & ÜBERWACHUNG -->
         <!-- ═══════════════════════════════════════════════════════════════ -->
         <template v-if="crmDefaults">

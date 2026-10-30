@@ -552,7 +552,7 @@ function shopBookStock($db, int $arId): int {
  */
 function shopAiAsk($db, string $assistent, string $prompt, ?string $modell, int $maxTokens = 1200): string {
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '".aiModelConfigKey($assistent)."')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_external_enabled', '".aiModelConfigKey($assistent)."')"
     );
     $schluessel = trim($config['anthropic_api_key'] ?? '');
     if ('' === $schluessel) {

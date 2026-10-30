@@ -127,7 +127,10 @@
                     "rows": "Zeilen",
                     "actions": "Aktionen"
                 }
-            }
+            },
+            "disabledTitle": "SQL-verktyg avstängt",
+            "disabledText": "SQL-verktyget är avstängt som standard. En systemadministratör kan aktivera det i företagskonfigurationen under Funktioner → Verktyg; varje körning loggas.",
+            "openConfig": "Öppna företagskonfiguration"
         },
         "table_list": {
             "title": "kivitendo Tabellen",
@@ -357,6 +360,30 @@
             "error_running": "Fel vid Ausführen der Tests",
             "ms": "{time} ms",
             "cancel": "Avbryt"
+        },
+        "sqlLog": {
+            "title": "Logg för SQL-verktyget",
+            "intro": "Varje körning, ändring, radering, avvisning och fel med användare, IP och kommando – senaste först. Loggen kan inte raderas.",
+            "refresh": "Uppdatera",
+            "search": "Sök i loggen",
+            "empty": "Inga poster ännu",
+            "columns": {
+                "time": "Tid",
+                "user": "Användare",
+                "action": "Åtgärd",
+                "database": "Databas",
+                "ok": "OK",
+                "statement": "Kommando",
+                "rows": "Rader",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Kör",
+                "updateTableRow": "Ändra rad",
+                "deleteTableRow": "Radera rad",
+                "denied": "Avvisad"
+            }
         }
     },
     "cancel": "Avbryt",

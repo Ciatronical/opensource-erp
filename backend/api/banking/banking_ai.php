@@ -20,7 +20,7 @@ function getAILiquidityForecast($data) {
     if (!$accountId) { resultInfo(false, 'VALIDATION_ERROR', 'Bankkonto-ID fehlt'); return; }
 
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('banking') . "')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_external_enabled', '" . aiModelConfigKey('banking') . "')"
     );
     $apiKey = getenv('ANTHROPIC_API_KEY') ?: ($config['anthropic_api_key'] ?? '');
     if (!$apiKey) {

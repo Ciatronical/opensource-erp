@@ -17,6 +17,7 @@ Das CRM-System verwaltet Kunden, Lieferanten, Kontakte und die gesamte Kommunika
 
 Jeder Kontakt hat:
 - **Stammdaten**: Name, Adresse, Telefon, E-Mail, Steuernummer, USt-IdNr.
+- **USt-IdNr. bestätigen** (Knopf am Feld): qualifizierte Bestätigungsabfrage beim Bundeszentralamt für Steuern (**eVatR**, REST) — Name und Ort, optional PLZ und Straße werden gegen die Registerdaten des Mitgliedstaats geprüft und je Feld als Übereinstimmung angezeigt (A stimmt, B stimmt nicht, C nicht angefragt, D nicht mitgeteilt). Voraussetzung: eigene deutsche USt-IdNr. in der Firmenkonfiguration. Ohne sie, für deutsche Nummern oder ohne Name/Ort läuft die Prüfung über **VIES** (mit eigener EU-Nummer inklusive Konsultationsnummer). **Jede Abfrage wird als Nachweis gespeichert** (§ 18e UStG): vollständig in `ustid_check_log`, die Kurzfassung der letzten Prüfung am Kunden bzw. Lieferanten (`customer_ext`/`vendor_ext.ustid_check`) mit Datum, Dienst und Ergebnis — die Maske warnt, wenn der Nachweis zu einer anderen Nummer gehört
 - **Mehrere Telefonnummern, E-Mail-Adressen und URLs**: zusätzlich zu Haupt-Telefon, Haupt-E-Mail und Homepage beliebig viele weitere Einträge, jeweils mit Bezeichnung (z.B. „Buchhaltung", „Bestellungen", „Kundenportal")
 - **Bankverbindung**: IBAN, BIC für SEPA-Zahlungen
 - **Lieferadressen**: Mehrere abweichende Adressen möglich

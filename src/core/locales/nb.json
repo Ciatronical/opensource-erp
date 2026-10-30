@@ -85,7 +85,9 @@
             "banking": "Likviditetsprognose",
             "orderConfirm": "Ordrebekreftelse",
             "ebay": "eBay (produktside, tittel, artikkelegenskaper)"
-        }
+        },
+        "externalDisabled": "Ekstern KI av",
+        "externalDisabledHint": "Ekstern KI (sky) er slått av i firmakonfigurasjonen under «KI og status» – denne assistenten er ikke tilgjengelig."
     },
     "passwordField": {
         "show": "Vis passord",

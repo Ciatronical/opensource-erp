@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Filsystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Artificiell intelligens",
         "misc": "Verschiedenes",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Konfigurationen läses in …",
     "portalTab": {
         "title": "Kundportal"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "Extern AI (moln)",
+        "cloudIntro": "AI-assistenterna (Weroni, fordonschatt, dokumentigenkänning, försäljningstexter, värderingar, likviditetsprognos, orderbekräftelse …) körs via Anthropic-API:et. Röstinmatning (Whisper) och den lokala LLM:en påverkas inte och körs hos er.",
+        "cloudNoticeTitle": "Information om dataskydd",
+        "cloudNotice": "När extern AI är påslagen överförs innehåll till Anthropic (USA) – beroende på assistent kund- och fordonsdata, dokument, meddelanden, samtalstranskriptioner och bokföringsdata. Kontrollera före påslagning att ett personuppgiftsbiträdesavtal finns och att de registrerade har informerats. Av betyder: ingen assistent anropar molnet, inget lämnar företaget.",
+        "cloudSwitch": "Använd extern AI (moln)",
+        "cloudOffHint": "Extern AI är avstängd. Alla molnassistenter är inaktiva; Weroni, modellvalet och nycklarna är nedtonade. Lokal AI och röstinmatning fungerar fortfarande."
+    },
+    "toolsFeatures": "Verktyg",
+    "featureSqlTool": "SQL-verktyg (Developer-Tools)",
+    "featureSqlToolDesc": "Kör godtyckliga SQL-kommandon direkt i databasen. Avstängt som standard; endast systemadministratörer ser och använder det, och varje körning loggas med användare, IP och kommando.",
+    "featureSqlToolOnHint": "SQL-verktyget är aktiverat. Ändringar får effekt direkt och utan kontroll i databasen – stäng av det igen efter arbetet."
 }

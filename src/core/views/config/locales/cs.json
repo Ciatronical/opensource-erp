@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Umělá inteligence",
         "misc": "Různé",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Načítá se konfigurace …",
     "portalTab": {
         "title": "Zákaznický portál"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "Externí AI (cloud)",
+        "cloudIntro": "AI asistenti (Weroni, chat o vozidlech, rozpoznávání dokladů, prodejní texty, posudky, prognóza likvidity, potvrzení objednávky …) běží přes API Anthropic. Hlasový vstup (Whisper) a lokální LLM tím nejsou dotčeny a pracují přímo u vás.",
+        "cloudNoticeTitle": "Upozornění k ochraně údajů",
+        "cloudNotice": "Při zapnuté externí AI se obsah přenáší společnosti Anthropic (USA) – podle asistenta jde o data zákazníků a vozidel, doklady, zprávy, přepisy hovorů a účetní data. Před zapnutím ověřte, zda existuje smlouva o zpracování osobních údajů a zda jsou dotčené osoby informovány. Vypnuto znamená: žádný asistent nevolá cloud, nic neopouští váš provoz.",
+        "cloudSwitch": "Používat externí AI (cloud)",
+        "cloudOffHint": "Externí AI je vypnutá. Všechny cloudoví asistenti jsou neaktivní; Weroni, výběr modelu a klíče jsou zašedlé. Lokální AI a hlasový vstup fungují dál."
+    },
+    "toolsFeatures": "Nástroje",
+    "featureSqlTool": "Nástroj SQL (Developer-Tools)",
+    "featureSqlToolDesc": "Provádění libovolných příkazů SQL přímo v databázi. Ve výchozím stavu vypnuto; vidí a používají jej pouze správci systému, každé provedení se zaznamená s uživatelem, IP a příkazem.",
+    "featureSqlToolOnHint": "Nástroj SQL je povolen. Změny se projeví okamžitě a bez kontroly v databázi – po práci jej opět vypněte."
 }

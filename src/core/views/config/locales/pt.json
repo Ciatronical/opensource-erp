@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Inteligência artificial",
         "misc": "Diversos",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "A carregar a configuração …",
     "portalTab": {
         "title": "Portal de clientes"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "IA externa (nuvem)",
+        "cloudIntro": "Os assistentes de IA (Weroni, chat de veículos, reconhecimento de documentos, textos de venda, peritagens, previsão de liquidez, confirmação de encomenda …) funcionam através da API da Anthropic. A entrada de voz (Whisper) e o LLM local não são afetados e funcionam nas suas instalações.",
+        "cloudNoticeTitle": "Aviso sobre proteção de dados",
+        "cloudNotice": "Com a IA externa ativada, os conteúdos são transmitidos à Anthropic (EUA) – consoante o assistente, dados de clientes e veículos, documentos, mensagens, transcrições de chamadas e dados contabilísticos. Antes de a ativar, verifique se existe um contrato de subcontratação de dados e se os titulares foram informados. Desativada significa: nenhum assistente acede à nuvem, nada sai da empresa.",
+        "cloudSwitch": "Utilizar IA externa (nuvem)",
+        "cloudOffHint": "A IA externa está desativada. Todos os assistentes na nuvem estão inativos; Weroni, a seleção de modelo e as chaves estão a cinzento. A IA local e a entrada de voz continuam a funcionar."
+    },
+    "toolsFeatures": "Ferramentas",
+    "featureSqlTool": "Ferramenta SQL (Developer-Tools)",
+    "featureSqlToolDesc": "Execute comandos SQL arbitrários diretamente na base de dados. Desativada por predefinição; apenas os administradores do sistema a veem e utilizam, e cada execução é registada com utilizador, IP e comando.",
+    "featureSqlToolOnHint": "A ferramenta SQL está ativada. As alterações têm efeito imediato e sem verificação na base de dados – desative-a novamente após o trabalho."
 }

@@ -30,7 +30,7 @@ function weroniChat($data) {
 
     // Konfiguration laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'weroni_enabled', 'weroni_mode', 'weroni_system_prompt', '" . aiModelConfigKey('weroni') . "')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_external_enabled', 'weroni_enabled', 'weroni_mode', 'weroni_system_prompt', '" . aiModelConfigKey('weroni') . "')"
     );
 
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
@@ -549,7 +549,7 @@ function weroniAnalyzeDocument($data) {
 
     // API-Key laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('weroni') . "')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_external_enabled', '" . aiModelConfigKey('weroni') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {

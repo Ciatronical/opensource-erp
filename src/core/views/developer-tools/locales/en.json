@@ -128,7 +128,10 @@
                     "rows": "Rows",
                     "actions": "Actions"
                 }
-            }
+            },
+            "disabledTitle": "SQL tool switched off",
+            "disabledText": "The SQL tool is off by default. A system administrator can enable it in the company configuration under Features → Tools; every execution is logged.",
+            "openConfig": "Open company configuration"
         },
         "table_list": {
             "title": "kivitendo Tables",
@@ -358,6 +361,30 @@
             "selected": "{count} selected",
             "clearSelection": "Clear selection",
             "deleted": "Ticket deleted | {count} tickets deleted"
+        },
+        "sqlLog": {
+            "title": "SQL tool log",
+            "intro": "Every execution, change, deletion, denial and error with user, IP and statement – newest first. The log cannot be deleted.",
+            "refresh": "Refresh",
+            "search": "Search the log",
+            "empty": "No entries yet",
+            "columns": {
+                "time": "Time",
+                "user": "User",
+                "action": "Action",
+                "database": "Database",
+                "ok": "OK",
+                "statement": "Statement",
+                "rows": "Rows",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Execute",
+                "updateTableRow": "Update row",
+                "deleteTableRow": "Delete row",
+                "denied": "Denied"
+            }
         }
     },
     "cancel": "Cancel",

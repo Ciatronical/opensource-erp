@@ -154,6 +154,27 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     /**
+     * Externe KI (Anthropic-Cloud) freigegeben? Zentraler Schalter in
+     * Firmenkonfiguration → KI und Gesundheit. Nicht gesetzt = an (der Upstall
+     * legt den Schlüssel an: bestehende Installationen mit Schlüssel bleiben an,
+     * neue starten aus). Das Backend lehnt jeden Aufruf mit AI_EXTERNAL_DISABLED ab.
+     */
+    function isExternalAiEnabled() {
+        const v = getClientDefaultValue('ai_external_enabled', null);
+        if (v === null) return true;
+        return v === true || v === 'true' || v === 't' || v === '1' || v === 1;
+    }
+
+    /**
+     * SQL-Werkzeug (Developer-Tools) freigegeben? Standard: aus. Sichtbar und
+     * nutzbar nur für Systemadministratoren — das Backend prüft dasselbe.
+     */
+    function isSqlToolEnabled() {
+        const v = getClientDefaultValue('developer_sql_tool_enabled', null);
+        return v === true || v === 'true' || v === 't' || v === '1' || v === 1;
+    }
+
+    /**
      * Steuerzone für Reverse Charge (§ 13b UStG) — null, wenn nie angelegt.
      * Ein Beleg in dieser Zone bekommt 0 % und den Hinweissatz auf dem Ausdruck.
      */
@@ -973,6 +994,8 @@ export const oserpStore = defineStore('oserpStore', () => {
         isRecurringEnabled,
         isNvrEnabled,
         isGutmannEnabled,
+        isExternalAiEnabled,
+        isSqlToolEnabled,
         checkPermission,
         permit,
         isAdmin,

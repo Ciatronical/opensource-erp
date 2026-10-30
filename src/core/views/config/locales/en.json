@@ -17,7 +17,12 @@
         "localAiIntro": "Self-hosted LLM (Ollama) for AI features without the cloud — item suggestions, sales texts, workshop-master chat.",
         "weightsTitle": "AI item suggestions",
         "weightsIntro": "Weighting of how strongly historical records influence the AI item suggestions.",
-        "cloudKeysIntro": "Keys for cloud AI services. Only needed if no local AI is used."
+        "cloudTitle": "External AI (cloud)",
+        "cloudIntro": "The AI assistants (Weroni, vehicle chat, document recognition, sales texts, appraisals, liquidity forecast, order confirmation …) run via the Anthropic API. Voice input (Whisper) and the local LLM are unaffected and stay on premises.",
+        "cloudNoticeTitle": "Privacy notice",
+        "cloudNotice": "With external AI switched on, content is transmitted to Anthropic (USA) – depending on the assistant: customer and vehicle data, documents, messages, call transcripts and accounting data. Before switching it on, check that a data processing agreement is in place and that data subjects are informed. Off means: no assistant calls the cloud, nothing leaves the premises.",
+        "cloudSwitch": "Use external AI (cloud)",
+        "cloudOffHint": "External AI is switched off. All cloud assistants are inactive; Weroni, the model selection and the keys are greyed out. Local AI and voice input keep working."
     },
     "search": "Search",
     "searchFields": "Search Fields",
@@ -564,7 +569,6 @@
         "dirGroup_help": "Group owner for created directories (e.g. www-data). If empty, group is not changed.",
         "dirMode": "Directory Permissions",
         "dirMode_help": "Filesystem permissions for created directories (e.g. 0775). Default: 0755",
-        "ai": "Artificial Intelligence",
         "misc": "Miscellaneous",
         "listLimit": "List Limit",
         "listLimit_help": "Maximum number of entries in lists",
@@ -2130,5 +2134,9 @@
     "letter": "Letter (last number, next letter gets counter + 1)",
     "portalTab": {
         "title": "Customer portal"
-    }
+    },
+    "toolsFeatures": "Tools",
+    "featureSqlTool": "SQL tool (developer tools)",
+    "featureSqlToolDesc": "Run arbitrary SQL statements directly on the database. Off by default; only system administrators can see and use it, and every execution is logged with user, IP and statement.",
+    "featureSqlToolOnHint": "The SQL tool is enabled. Changes take effect immediately and unchecked on the database – switch it off again after use."
 }

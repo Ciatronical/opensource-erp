@@ -85,7 +85,9 @@
             "banking": "Likviidsusprognoos",
             "orderConfirm": "Tellimuse kinnitamine",
             "ebay": "eBay (tooteleht, pealkiri, toote omadused)"
-        }
+        },
+        "externalDisabled": "Väline tehisintellekt väljas",
+        "externalDisabledHint": "Väline tehisintellekt (pilv) on ettevõtte seadistuses jaotises „Tehisintellekt ja seisund“ välja lülitatud – see assistent ei ole saadaval."
     },
     "passwordField": {
         "show": "Näita parooli",

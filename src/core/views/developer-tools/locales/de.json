@@ -128,7 +128,10 @@
                     "rows": "Zeilen",
                     "actions": "Aktionen"
                 }
-            }
+            },
+            "disabledTitle": "SQL-Werkzeug abgeschaltet",
+            "disabledText": "Das SQL-Werkzeug ist standardmäßig aus. Ein Systemadministrator kann es in der Firmenkonfiguration unter Features → Werkzeuge freigeben; jede Ausführung wird protokolliert.",
+            "openConfig": "Firmenkonfiguration öffnen"
         },
         "table_list": {
             "title": "kivitendo Tabellen",
@@ -358,6 +361,30 @@
             "error_running": "Fehler beim Ausführen der Tests",
             "ms": "{time} ms",
             "cancel": "Abbrechen"
+        },
+        "sqlLog": {
+            "title": "Protokoll des SQL-Werkzeugs",
+            "intro": "Jede Ausführung, Änderung, Löschung, Ablehnung und jeder Fehler mit Benutzer, IP und Befehl – neueste zuerst. Das Protokoll kann nicht gelöscht werden.",
+            "refresh": "Aktualisieren",
+            "search": "Im Protokoll suchen",
+            "empty": "Noch keine Einträge",
+            "columns": {
+                "time": "Zeit",
+                "user": "Benutzer",
+                "action": "Aktion",
+                "database": "Datenbank",
+                "ok": "OK",
+                "statement": "Befehl",
+                "rows": "Zeilen",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Ausführen",
+                "updateTableRow": "Zeile ändern",
+                "deleteTableRow": "Zeile löschen",
+                "denied": "Abgewiesen"
+            }
         }
     },
     "cancel": "Abbrechen",

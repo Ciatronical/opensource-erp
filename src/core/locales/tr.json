@@ -85,7 +85,9 @@
             "banking": "Likidite tahmini",
             "orderConfirm": "Sipariş onayı",
             "ebay": "eBay (ürün sayfası, başlık, ürün özellikleri)"
-        }
+        },
+        "externalDisabled": "Harici yapay zekâ kapalı",
+        "externalDisabledHint": "Harici yapay zekâ (bulut), firma yapılandırmasında “Yapay zekâ ve durum” altında kapatılmıştır – bu asistan kullanılamaz."
     },
     "passwordField": {
         "show": "Parolayı göster",

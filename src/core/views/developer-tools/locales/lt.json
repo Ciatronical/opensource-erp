@@ -127,7 +127,10 @@
                     "rows": "Zeilen",
                     "actions": "Veiksmai"
                 }
-            }
+            },
+            "disabledTitle": "SQL įrankis išjungtas",
+            "disabledText": "SQL įrankis pagal numatytuosius nustatymus išjungtas. Sistemos administratorius gali jį įjungti įmonės konfigūracijoje skiltyje Funkcijos → Įrankiai; kiekvienas vykdymas registruojamas.",
+            "openConfig": "Atidaryti įmonės konfigūraciją"
         },
         "table_list": {
             "title": "kivitendo Tabellen",
@@ -357,6 +360,30 @@
             "error_running": "Fehler beim Ausführen der Tests",
             "ms": "{time} ms",
             "cancel": "Atšaukti"
+        },
+        "sqlLog": {
+            "title": "SQL įrankio žurnalas",
+            "intro": "Kiekvienas vykdymas, pakeitimas, ištrynimas, atmetimas ir klaida su naudotoju, IP ir komanda – naujausi viršuje. Žurnalo ištrinti negalima.",
+            "refresh": "Atnaujinti",
+            "search": "Ieškoti žurnale",
+            "empty": "Įrašų dar nėra",
+            "columns": {
+                "time": "Laikas",
+                "user": "Naudotojas",
+                "action": "Veiksmas",
+                "database": "Duomenų bazė",
+                "ok": "OK",
+                "statement": "Komanda",
+                "rows": "Eilučių",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Vykdyti",
+                "updateTableRow": "Keisti eilutę",
+                "deleteTableRow": "Ištrinti eilutę",
+                "denied": "Atmesta"
+            }
         }
     },
     "cancel": "Atšaukti",

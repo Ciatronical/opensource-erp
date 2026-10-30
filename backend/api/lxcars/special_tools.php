@@ -968,7 +968,7 @@ function analyzeSpecialTool($data) {
     if (!$id) throw new ApiError('VALIDATION_ERROR', 'id erforderlich');
 
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('special_tools') . "')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_external_enabled', '" . aiModelConfigKey('special_tools') . "')"
     );
     $apiKey = trim($config['anthropic_api_key'] ?? '');
     if ($apiKey === '') {

@@ -85,7 +85,9 @@
             "banking": "Likviditetsprognos",
             "orderConfirm": "Orderbekräftelse",
             "ebay": "eBay (produktsida, titel, artikelegenskaper)"
-        }
+        },
+        "externalDisabled": "Extern AI av",
+        "externalDisabledHint": "Extern AI (moln) är avstängd i företagskonfigurationen under ”AI och status” – den här assistenten är inte tillgänglig."
     },
     "passwordField": {
         "show": "Visa lösenord",

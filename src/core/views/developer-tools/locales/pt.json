@@ -127,7 +127,10 @@
                     "rows": "Linhas",
                     "actions": "Ações"
                 }
-            }
+            },
+            "disabledTitle": "Ferramenta SQL desativada",
+            "disabledText": "A ferramenta SQL está desativada por predefinição. Um administrador do sistema pode ativá-la na configuração da empresa em Funcionalidades → Ferramentas; cada execução é registada.",
+            "openConfig": "Abrir configuração da empresa"
         },
         "table_list": {
             "title": "Tabelas kivitendo",
@@ -357,6 +360,30 @@
             "error_running": "Erro ao executar os testes",
             "ms": "{time} ms",
             "cancel": "Cancelar"
+        },
+        "sqlLog": {
+            "title": "Registo da ferramenta SQL",
+            "intro": "Cada execução, alteração, eliminação, recusa e erro com utilizador, IP e comando – os mais recentes primeiro. O registo não pode ser eliminado.",
+            "refresh": "Atualizar",
+            "search": "Pesquisar no registo",
+            "empty": "Ainda sem entradas",
+            "columns": {
+                "time": "Hora",
+                "user": "Utilizador",
+                "action": "Ação",
+                "database": "Base de dados",
+                "ok": "OK",
+                "statement": "Comando",
+                "rows": "Linhas",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Executar",
+                "updateTableRow": "Alterar linha",
+                "deleteTableRow": "Eliminar linha",
+                "denied": "Recusado"
+            }
         }
     },
     "cancel": "Cancelar",

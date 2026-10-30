@@ -85,7 +85,9 @@
             "banking": "Prognoza płynności",
             "orderConfirm": "Potwierdzenie zamówienia",
             "ebay": "eBay (strona produktu, tytuł, cechy przedmiotu)"
-        }
+        },
+        "externalDisabled": "Zewnętrzna AI wyłączona",
+        "externalDisabledHint": "Zewnętrzna AI (chmura) jest wyłączona w konfiguracji firmy w sekcji „AI i stan” – ten asystent jest niedostępny."
     },
     "passwordField": {
         "show": "Pokaż hasło",

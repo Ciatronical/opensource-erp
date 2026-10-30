@@ -19,7 +19,16 @@
         })
 -->
 <template>
-    <v-menu location="bottom end" :close-on-content-click="false" v-model="open">
+    <!-- Externe KI abgeschaltet (Firmenkonfiguration → KI und Gesundheit): der
+         Assistent würde mit AI_EXTERNAL_DISABLED scheitern — das steht hier dran. -->
+    <v-tooltip v-if="!externalAi" location="top" :text="t('aiModels.externalDisabledHint')">
+        <template #activator="{ props: tipProps }">
+            <v-chip v-bind="tipProps" :size="size" color="warning" variant="tonal" prepend-icon="mdi-cloud-off-outline">
+                {{ t('aiModels.externalDisabled') }}
+            </v-chip>
+        </template>
+    </v-tooltip>
+    <v-menu v-else location="bottom end" :close-on-content-click="false" v-model="open">
         <template #activator="{ props: menuProps }">
             <v-tooltip location="top" :text="t('aiModels.tooltip')">
                 <template #activator="{ props: tipProps }">
@@ -82,9 +91,14 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { aiModelStore } from '@/core/stores/ai-model.store.js';
+import { oserpStore } from '@/core/stores/oserp.store.js';
 import { aiModelsFor, aiModelLabel } from '@/core/constants/aiModels.js';
 
 const { t } = useI18n();
+const oserp = oserpStore();
+
+/** Zentraler Schalter „Externe KI (Cloud) verwenden" */
+const externalAi = computed(() => oserp.isExternalAiEnabled());
 
 const props = defineProps({
     /** Kennung des Assistenten aus AI_ASSISTANTS */

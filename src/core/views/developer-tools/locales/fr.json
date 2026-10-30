@@ -127,7 +127,10 @@
                     "rows": "Lignes",
                     "actions": "Actions"
                 }
-            }
+            },
+            "disabledTitle": "Outil SQL désactivé",
+            "disabledText": "L’outil SQL est désactivé par défaut. Un administrateur système peut l’activer dans la configuration de l’entreprise sous Fonctionnalités → Outils ; chaque exécution est journalisée.",
+            "openConfig": "Ouvrir la configuration de l’entreprise"
         },
         "table_list": {
             "title": "Tables kivitendo",
@@ -357,6 +360,30 @@
             "error_running": "Erreur lors de l'execution des tests",
             "ms": "{time} ms",
             "cancel": "Annuler"
+        },
+        "sqlLog": {
+            "title": "Journal de l’outil SQL",
+            "intro": "Chaque exécution, modification, suppression, refus et erreur avec utilisateur, IP et commande – les plus récents en premier. Le journal ne peut pas être supprimé.",
+            "refresh": "Actualiser",
+            "search": "Rechercher dans le journal",
+            "empty": "Aucune entrée pour l’instant",
+            "columns": {
+                "time": "Heure",
+                "user": "Utilisateur",
+                "action": "Action",
+                "database": "Base de données",
+                "ok": "OK",
+                "statement": "Commande",
+                "rows": "Lignes",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Exécuter",
+                "updateTableRow": "Modifier la ligne",
+                "deleteTableRow": "Supprimer la ligne",
+                "denied": "Refusé"
+            }
         }
     },
     "cancel": "Annuler",

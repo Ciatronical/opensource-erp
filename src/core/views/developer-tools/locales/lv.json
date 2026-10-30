@@ -127,7 +127,10 @@
                     "rows": "Zeilen",
                     "actions": "Darbības"
                 }
-            }
+            },
+            "disabledTitle": "SQL rīks izslēgts",
+            "disabledText": "SQL rīks pēc noklusējuma ir izslēgts. Sistēmas administrators to var atļaut uzņēmuma konfigurācijā sadaļā Funkcijas → Rīki; katra izpilde tiek reģistrēta.",
+            "openConfig": "Atvērt uzņēmuma konfigurāciju"
         },
         "table_list": {
             "title": "kivitendo Tabellen",
@@ -357,6 +360,30 @@
             "error_running": "Fehler beim Ausführen der Tests",
             "ms": "{time} ms",
             "cancel": "Atcelt"
+        },
+        "sqlLog": {
+            "title": "SQL rīka žurnāls",
+            "intro": "Katra izpilde, izmaiņa, dzēšana, noraidīšana un kļūda ar lietotāju, IP un komandu – jaunākie pirmie. Žurnālu nevar dzēst.",
+            "refresh": "Atjaunot",
+            "search": "Meklēt žurnālā",
+            "empty": "Vēl nav ierakstu",
+            "columns": {
+                "time": "Laiks",
+                "user": "Lietotājs",
+                "action": "Darbība",
+                "database": "Datubāze",
+                "ok": "OK",
+                "statement": "Komanda",
+                "rows": "Rindas",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Izpildīt",
+                "updateTableRow": "Mainīt rindu",
+                "deleteTableRow": "Dzēst rindu",
+                "denied": "Noraidīts"
+            }
         }
     },
     "cancel": "Atcelt",

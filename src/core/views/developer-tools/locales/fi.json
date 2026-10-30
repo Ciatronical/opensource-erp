@@ -127,7 +127,10 @@
                     "rows": "Rivit",
                     "actions": "Toiminnot"
                 }
-            }
+            },
+            "disabledTitle": "SQL-työkalu pois päältä",
+            "disabledText": "SQL-työkalu on oletuksena pois päältä. Järjestelmänvalvoja voi sallia sen yritysasetuksissa kohdassa Ominaisuudet → Työkalut; jokainen suoritus kirjataan.",
+            "openConfig": "Avaa yritysasetukset"
         },
         "table_list": {
             "title": "kivitendo Tabellen",
@@ -357,6 +360,30 @@
             "error_running": "Fehler beim Ausführen der Tests",
             "ms": "{time} ms",
             "cancel": "Peruuta"
+        },
+        "sqlLog": {
+            "title": "SQL-työkalun loki",
+            "intro": "Jokainen suoritus, muutos, poisto, hylkäys ja virhe käyttäjän, IP-osoitteen ja komennon kanssa – uusimmat ensin. Lokia ei voi poistaa.",
+            "refresh": "Päivitä",
+            "search": "Hae lokista",
+            "empty": "Ei vielä merkintöjä",
+            "columns": {
+                "time": "Aika",
+                "user": "Käyttäjä",
+                "action": "Toiminto",
+                "database": "Tietokanta",
+                "ok": "OK",
+                "statement": "Komento",
+                "rows": "Rivejä",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Suorita",
+                "updateTableRow": "Muuta riviä",
+                "deleteTableRow": "Poista rivi",
+                "denied": "Hylätty"
+            }
         }
     },
     "cancel": "Peruuta",

@@ -196,7 +196,7 @@ class AuftragsbestaetigungDienst {
 
         $config = $pdo->query(
             "SELECT key, value FROM defaults_oserp
-              WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('order_confirm') . "', '"
+              WHERE key IN ('anthropic_api_key', 'ai_external_enabled', '" . aiModelConfigKey('order_confirm') . "', '"
                   . implode("', '", whisperConfigKeys()) . "')"
         )->fetchAll(PDO::FETCH_KEY_PAIR);
 

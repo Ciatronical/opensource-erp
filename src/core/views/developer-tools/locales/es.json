@@ -127,7 +127,10 @@
                     "rows": "Filas",
                     "actions": "Acciones"
                 }
-            }
+            },
+            "disabledTitle": "Herramienta SQL desactivada",
+            "disabledText": "La herramienta SQL está desactivada por defecto. Un administrador del sistema puede habilitarla en la configuración de la empresa, en Funciones → Herramientas; cada ejecución se registra.",
+            "openConfig": "Abrir configuración de la empresa"
         },
         "table_list": {
             "title": "Tablas de kivitendo",
@@ -357,6 +360,30 @@
             "error_running": "Error al ejecutar las pruebas",
             "ms": "{time} ms",
             "cancel": "Cancelar"
+        },
+        "sqlLog": {
+            "title": "Registro de la herramienta SQL",
+            "intro": "Cada ejecución, modificación, eliminación, rechazo y error con usuario, IP y comando, primero los más recientes. El registro no se puede borrar.",
+            "refresh": "Actualizar",
+            "search": "Buscar en el registro",
+            "empty": "Aún no hay entradas",
+            "columns": {
+                "time": "Hora",
+                "user": "Usuario",
+                "action": "Acción",
+                "database": "Base de datos",
+                "ok": "OK",
+                "statement": "Comando",
+                "rows": "Filas",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Ejecutar",
+                "updateTableRow": "Modificar fila",
+                "deleteTableRow": "Eliminar fila",
+                "denied": "Rechazado"
+            }
         }
     },
     "cancel": "Cancelar",

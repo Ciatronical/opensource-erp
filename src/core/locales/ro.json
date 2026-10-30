@@ -85,7 +85,9 @@
             "banking": "Prognoză de lichiditate",
             "orderConfirm": "Confirmarea comenzii",
             "ebay": "eBay (pagină de produs, titlu, caracteristicile articolului)"
-        }
+        },
+        "externalDisabled": "IA externă dezactivată",
+        "externalDisabledHint": "IA externă (cloud) este dezactivată în configurația firmei, la „IA și stare” – acest asistent nu este disponibil."
     },
     "passwordField": {
         "show": "Afișează parola",

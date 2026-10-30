@@ -89,7 +89,9 @@
             "callTranscript": "Call analysis",
             "banking": "Liquidity forecast",
             "orderConfirm": "Order confirmation"
-        }
+        },
+        "externalDisabled": "External AI off",
+        "externalDisabledHint": "External AI (cloud) is switched off in the company configuration under “AI and Health” – this assistant is not available."
     },
     "passwordField": {
         "show": "Show password",

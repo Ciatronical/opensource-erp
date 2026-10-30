@@ -428,9 +428,10 @@ export default {
     }
 
     // Weroni
+    // Weroni läuft über die Anthropic-Cloud — ohne freigegebene externe KI kein Panel
     const weroniEnabled = computed(() => {
         const v = oserpData.getClientDefaultValue('weroni_enabled', false)
-        return v === true || v === 'true' || v === 't' || v === '1'
+        return (v === true || v === 'true' || v === 't' || v === '1') && oserpData.isExternalAiEnabled()
     })
     const weroniPending = computed(() => weroni.pendingQuestionCount > 0)
 

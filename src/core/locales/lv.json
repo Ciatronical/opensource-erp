@@ -85,7 +85,9 @@
             "banking": "Likviditātes prognoze",
             "orderConfirm": "Pasūtījumu apstiprināšana",
             "ebay": "eBay (produkta lapa, virsraksts, preces īpašības)"
-        }
+        },
+        "externalDisabled": "Ārējais MI izslēgts",
+        "externalDisabledHint": "Ārējais MI (mākonis) ir izslēgts uzņēmuma konfigurācijā sadaļā „MI un stāvoklis“ – šis asistents nav pieejams."
     },
     "passwordField": {
         "show": "Rādīt paroli",

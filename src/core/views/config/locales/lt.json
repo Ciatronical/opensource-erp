@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Dirbtinis intelektas",
         "misc": "Įvairūs",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Įkeliama konfigūracija …",
     "portalTab": {
         "title": "Klientų portalas"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "Išorinis DI (debesis)",
+        "cloudIntro": "DI asistentai (Weroni, transporto priemonių pokalbis, dokumentų atpažinimas, pardavimo tekstai, ekspertizės, likvidumo prognozė, užsakymo patvirtinimas …) veikia per Anthropic API. Balso įvestis (Whisper) ir vietinis LLM to neveikia ir veikia jūsų įmonėje.",
+        "cloudNoticeTitle": "Pastaba dėl duomenų apsaugos",
+        "cloudNotice": "Įjungus išorinį DI, turinys perduodamas Anthropic (JAV) – priklausomai nuo asistento klientų ir transporto priemonių duomenys, dokumentai, pranešimai, skambučių transkripcijos ir apskaitos duomenys. Prieš įjungdami patikrinkite, ar yra duomenų tvarkymo sutartis ir ar duomenų subjektai informuoti. Išjungta reiškia: joks asistentas nesikreipia į debesį, niekas nepalieka įmonės.",
+        "cloudSwitch": "Naudoti išorinį DI (debesį)",
+        "cloudOffHint": "Išorinis DI išjungtas. Visi debesies asistentai neaktyvūs; Weroni, modelio pasirinkimas ir raktai pilki. Vietinis DI ir balso įvestis toliau veikia."
+    },
+    "toolsFeatures": "Įrankiai",
+    "featureSqlTool": "SQL įrankis (Developer-Tools)",
+    "featureSqlToolDesc": "Vykdykite bet kokias SQL komandas tiesiogiai duomenų bazėje. Pagal numatytuosius nustatymus išjungta; matyti ir naudoti gali tik sistemos administratoriai, o kiekvienas vykdymas registruojamas nurodant naudotoją, IP ir komandą.",
+    "featureSqlToolOnHint": "SQL įrankis įjungtas. Pakeitimai įsigalioja iš karto ir be patikros duomenų bazėje – baigę darbą vėl jį išjunkite."
 }

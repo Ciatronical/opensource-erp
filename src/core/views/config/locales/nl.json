@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Maprechten",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Kunstmatige intelligentie",
         "misc": "Diversen",
         "listLimit": "Lijstlimiet",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Configuratie wordt geladen …",
     "portalTab": {
         "title": "Klantenportaal"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "Externe AI (cloud)",
+        "cloudIntro": "De AI-assistenten (Weroni, voertuigchat, documentherkenning, verkoopteksten, taxaties, liquiditeitsprognose, orderbevestiging …) draaien via de Anthropic-API. Spraakinvoer (Whisper) en de lokale LLM worden hierdoor niet beïnvloed en werken binnen uw bedrijf.",
+        "cloudNoticeTitle": "Opmerking over gegevensbescherming",
+        "cloudNotice": "Wanneer externe AI is ingeschakeld, wordt inhoud doorgegeven aan Anthropic (VS) – afhankelijk van de assistent klant- en voertuiggegevens, documenten, berichten, gesprekstranscripties en boekhoudgegevens. Controleer vóór het inschakelen of er een verwerkersovereenkomst is en of de betrokkenen zijn geïnformeerd. Uit betekent: geen enkele assistent roept de cloud aan, er verlaat niets het bedrijf.",
+        "cloudSwitch": "Externe AI (cloud) gebruiken",
+        "cloudOffHint": "Externe AI is uitgeschakeld. Alle cloudassistenten zijn inactief; Weroni, de modelkeuze en de sleutels zijn grijs. Lokale AI en spraakinvoer blijven werken."
+    },
+    "toolsFeatures": "Hulpmiddelen",
+    "featureSqlTool": "SQL-hulpmiddel (Developer-Tools)",
+    "featureSqlToolDesc": "Voer willekeurige SQL-opdrachten rechtstreeks uit op de database. Standaard uit; alleen systeembeheerders zien en gebruiken het, en elke uitvoering wordt gelogd met gebruiker, IP en opdracht.",
+    "featureSqlToolOnHint": "Het SQL-hulpmiddel is vrijgegeven. Wijzigingen werken direct en zonder controle door op de database – schakel het na gebruik weer uit."
 }

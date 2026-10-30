@@ -127,7 +127,10 @@
                     "rows": "Rijen",
                     "actions": "Acties"
                 }
-            }
+            },
+            "disabledTitle": "SQL-hulpmiddel uitgeschakeld",
+            "disabledText": "Het SQL-hulpmiddel is standaard uit. Een systeembeheerder kan het vrijgeven in de bedrijfsconfiguratie onder Functies → Hulpmiddelen; elke uitvoering wordt gelogd.",
+            "openConfig": "Bedrijfsconfiguratie openen"
         },
         "table_list": {
             "title": "kivitendo tabellen",
@@ -357,6 +360,30 @@
             "error_running": "Fout bij het uitvoeren van de tests",
             "ms": "{time} ms",
             "cancel": "Annuleren"
+        },
+        "sqlLog": {
+            "title": "Logboek van het SQL-hulpmiddel",
+            "intro": "Elke uitvoering, wijziging, verwijdering, weigering en fout met gebruiker, IP en opdracht – nieuwste eerst. Het logboek kan niet worden verwijderd.",
+            "refresh": "Vernieuwen",
+            "search": "Zoeken in het logboek",
+            "empty": "Nog geen items",
+            "columns": {
+                "time": "Tijd",
+                "user": "Gebruiker",
+                "action": "Actie",
+                "database": "Database",
+                "ok": "OK",
+                "statement": "Opdracht",
+                "rows": "Rijen",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Uitvoeren",
+                "updateTableRow": "Rij wijzigen",
+                "deleteTableRow": "Rij verwijderen",
+                "denied": "Geweigerd"
+            }
         }
     },
     "cancel": "Annuleren",

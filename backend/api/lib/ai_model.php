@@ -90,7 +90,57 @@ function aiModelConfigKey($assistant) {
 }
 
 /**
+ * Schlüssel des zentralen Schalters für externe KI (Cloud)
+ *
+ * Steht neben 'anthropic_api_key' in jeder Konfigurationsabfrage eines
+ * Assistenten, damit resolveAiModel() den Schalter ohne zweite Abfrage sieht.
+ *
+ * @return string Schlüssel in defaults_oserp
+ */
+function aiExternalConfigKey() {
+    return 'ai_external_enabled';
+}
+
+/**
+ * Ist externe KI (Anthropic-Cloud) für diesen Mandanten freigegeben?
+ *
+ * Firmenkonfiguration → KI und Gesundheit → „Externe KI (Cloud) verwenden".
+ * Der Upstall legt den Schlüssel an: bestehende Installationen mit Schlüssel
+ * bleiben an, neue Installationen starten aus. Fehlt der Schlüssel in der
+ * übergebenen Konfiguration (Aufrufer hat ihn nicht geladen), gilt „an" —
+ * jede Konfigurationsabfrage eines Assistenten nimmt ihn deshalb mit.
+ *
+ * @param array $config Bereits geladene defaults_oserp-Werte (key => value)
+ * @return bool
+ */
+function aiExternalEnabled($config) {
+    if (!array_key_exists(aiExternalConfigKey(), $config) || $config[aiExternalConfigKey()] === null) {
+        return true;
+    }
+    return in_array(strtolower(trim((string)$config[aiExternalConfigKey()])), ['1', 'true', 't'], true);
+}
+
+/**
+ * Bricht ab, wenn externe KI abgeschaltet ist
+ *
+ * Zentraler Riegel: resolveAiModel() ruft ihn vor jedem Anthropic-Aufruf.
+ * Aufrufer ohne Modellwahl (Hintergrunddienste) rufen ihn selbst.
+ *
+ * @param array $config Bereits geladene defaults_oserp-Werte
+ * @throws ApiError AI_EXTERNAL_DISABLED
+ */
+function aiAssertExternalEnabled($config) {
+    if (!aiExternalEnabled($config)) {
+        throw new ApiError('AI_EXTERNAL_DISABLED',
+            'Externe KI (Cloud) ist in der Firmenkonfiguration abgeschaltet (KI und Gesundheit).');
+    }
+}
+
+/**
  * Ermittelt das Modell für einen Assistenten
+ *
+ * Vorher der zentrale Riegel: ist externe KI abgeschaltet, gibt es kein
+ * Modell und damit keinen Aufruf (AI_EXTERNAL_DISABLED).
  *
  * Reihenfolge: Wahl am Prompt, dann Mandanteneinstellung, dann Vorgabe.
  * Werte ausserhalb von aiModelChoices() werden verworfen — eine veraltete
@@ -101,8 +151,10 @@ function aiModelConfigKey($assistant) {
  * @param string $assistant Name aus aiAssistants()
  * @param string|null $override Modellwahl aus dem Request (nur für die Sitzung)
  * @return string Modell-ID für die Anthropic-API
+ * @throws ApiError AI_EXTERNAL_DISABLED
  */
 function resolveAiModel($config, $assistant, $override = null) {
+    aiAssertExternalEnabled($config);
     $assistants = aiAssistants();
     if (!isset($assistants[$assistant])) {
         throw new ApiError('AI_ASSISTANT_UNKNOWN', 'Unbekannter KI-Assistent: ' . $assistant);

@@ -446,7 +446,6 @@
         "dirGroup_help": "Właściciel grupy dla utworzonych katalogów (np. www-data). Jeśli puste, grupa nie jest zmieniana.",
         "dirMode": "Uprawnienia katalogów",
         "dirMode_help": "Uprawnienia systemu plików dla utworzonych katalogów (np. 0775). Domyślnie: 0755",
-        "ai": "Sztuczna inteligencja",
         "misc": "Różne",
         "listLimit": "Limit listy",
         "listLimit_help": "Maksymalna liczba wpisów na listach",
@@ -1559,7 +1558,12 @@
         "localAiIntro": "Samodzielnie hostowany model językowy (Ollama) dla funkcji AI bez chmury — propozycje pozycji, teksty sprzedażowe, czat mistrza warsztatu.",
         "weightsTitle": "Propozycje pozycji od AI",
         "weightsIntro": "Waga, z jaką historyczne dokumenty wpływają na propozycje pozycji od AI.",
-        "cloudKeysIntro": "Klucze do chmurowych usług AI. Potrzebne tylko wtedy, gdy nie używasz lokalnej AI."
+        "cloudTitle": "Zewnętrzna AI (chmura)",
+        "cloudIntro": "Asystenci AI (Weroni, czat o pojazdach, rozpoznawanie dokumentów, teksty sprzedażowe, ekspertyzy, prognoza płynności, potwierdzenie zamówienia …) działają za pośrednictwem API Anthropic. Wprowadzanie głosowe (Whisper) i lokalny LLM nie są tym objęte i działają w Państwa firmie.",
+        "cloudNoticeTitle": "Informacja o ochronie danych",
+        "cloudNotice": "Po włączeniu zewnętrznej AI treści są przekazywane do Anthropic (USA) – w zależności od asystenta dane klientów i pojazdów, dokumenty, wiadomości, transkrypcje rozmów i dane księgowe. Przed włączeniem proszę sprawdzić, czy istnieje umowa powierzenia przetwarzania danych i czy osoby, których dane dotyczą, zostały poinformowane. Wyłączone oznacza: żaden asystent nie korzysta z chmury, nic nie opuszcza firmy.",
+        "cloudSwitch": "Używaj zewnętrznej AI (chmura)",
+        "cloudOffHint": "Zewnętrzna AI jest wyłączona. Wszyscy asystenci chmurowi są nieaktywni; Weroni, wybór modelu i klucze są wyszarzone. Lokalna AI i wprowadzanie głosowe nadal działają."
     },
     "searchResults": "Wyniki wyszukiwania",
     "templateSetAppliesImmediately": "Stosowane natychmiast i obowiązuje dla wszystkich dokumentów",
@@ -1619,5 +1623,9 @@
     "loadingConfiguration": "Wczytywanie konfiguracji …",
     "portalTab": {
         "title": "Portal klienta"
-    }
+    },
+    "toolsFeatures": "Narzędzia",
+    "featureSqlTool": "Narzędzie SQL (Developer-Tools)",
+    "featureSqlToolDesc": "Wykonywanie dowolnych poleceń SQL bezpośrednio w bazie danych. Domyślnie wyłączone; widzą je i mogą z niego korzystać tylko administratorzy systemu, a każde wykonanie jest rejestrowane z użytkownikiem, IP i poleceniem.",
+    "featureSqlToolOnHint": "Narzędzie SQL jest udostępnione. Zmiany działają natychmiast i bez kontroli na bazie danych – po zakończeniu pracy proszę je ponownie wyłączyć."
 }

@@ -17,7 +17,12 @@
         "localAiIntro": "Selbst gehosteter LLM (Ollama) für KI-Funktionen ohne Cloud — Positionsvorschläge, Verkaufstexte, Werkstattmeister-Chat.",
         "weightsTitle": "KI-Positionsvorschläge",
         "weightsIntro": "Gewichtung, wie stark historische Belege in die KI-Positionsvorschläge einfließen.",
-        "cloudKeysIntro": "Schlüssel für Cloud-KI-Dienste. Nur nötig, wenn keine lokale KI genutzt wird."
+        "cloudTitle": "Externe KI (Cloud)",
+        "cloudIntro": "Die KI-Assistenten (Weroni, Fahrzeug-Chat, Belegerkennung, Verkaufstexte, Gutachten, Liquiditätsprognose, Auftragsbestätigung …) laufen über die Anthropic-API. Spracheingabe (Whisper) und das lokale LLM bleiben davon unberührt und arbeiten im Haus.",
+        "cloudNoticeTitle": "Hinweis zum Datenschutz",
+        "cloudNotice": "Mit eingeschalteter externer KI werden Inhalte an Anthropic (USA) übertragen – je nach Assistent Kunden- und Fahrzeugdaten, Belege, Nachrichten, Anruftranskripte und Buchungsdaten. Prüfen Sie vor dem Einschalten, ob ein Auftragsverarbeitungsvertrag und eine Information der Betroffenen vorliegen. Aus bedeutet: kein Assistent ruft die Cloud auf, es verlässt nichts das Haus.",
+        "cloudSwitch": "Externe KI (Cloud) verwenden",
+        "cloudOffHint": "Externe KI ist abgeschaltet. Alle Cloud-Assistenten sind inaktiv; Weroni, die Modellwahl und die Schlüssel sind ausgegraut. Lokale KI und Spracheingabe funktionieren weiter."
     },
     "search": "Suchen",
     "searchFields": "Felder durchsuchen",
@@ -566,7 +571,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Künstliche Intelligenz",
         "misc": "Verschiedenes",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -2130,5 +2134,9 @@
     "letter": "Brief (letzte Nummer, nächster Brief erhält Zähler + 1)",
     "portalTab": {
         "title": "Kundenportal"
-    }
+    },
+    "toolsFeatures": "Werkzeuge",
+    "featureSqlTool": "SQL-Werkzeug (Developer-Tools)",
+    "featureSqlToolDesc": "Beliebige SQL-Befehle direkt auf der Datenbank ausführen. Standardmäßig aus; nur Systemadministratoren sehen und nutzen es, jede Ausführung wird mit Benutzer, IP und Befehl protokolliert.",
+    "featureSqlToolOnHint": "Das SQL-Werkzeug ist freigegeben. Änderungen wirken sofort und ohne Prüfung auf die Datenbank – nach der Arbeit wieder abschalten."
 }

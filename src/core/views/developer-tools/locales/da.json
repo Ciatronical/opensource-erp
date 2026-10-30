@@ -127,7 +127,10 @@
                     "rows": "Zeilen",
                     "actions": "Aktionen"
                 }
-            }
+            },
+            "disabledTitle": "SQL-værktøj slået fra",
+            "disabledText": "SQL-værktøjet er som standard slået fra. En systemadministrator kan aktivere det i firmakonfigurationen under Funktioner → Værktøjer; hver kørsel logges.",
+            "openConfig": "Åbn firmakonfiguration"
         },
         "table_list": {
             "title": "kivitendo Tabellen",
@@ -357,6 +360,30 @@
             "error_running": "Fejl ved Ausführen der Tests",
             "ms": "{time} ms",
             "cancel": "Annuller"
+        },
+        "sqlLog": {
+            "title": "Log for SQL-værktøjet",
+            "intro": "Hver kørsel, ændring, sletning, afvisning og hver fejl med bruger, IP og kommando – nyeste først. Loggen kan ikke slettes.",
+            "refresh": "Opdater",
+            "search": "Søg i loggen",
+            "empty": "Ingen poster endnu",
+            "columns": {
+                "time": "Tid",
+                "user": "Bruger",
+                "action": "Handling",
+                "database": "Database",
+                "ok": "OK",
+                "statement": "Kommando",
+                "rows": "Rækker",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Udfør",
+                "updateTableRow": "Ændr række",
+                "deleteTableRow": "Slet række",
+                "denied": "Afvist"
+            }
         }
     },
     "cancel": "Annuller",

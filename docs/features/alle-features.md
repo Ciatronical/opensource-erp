@@ -517,7 +517,7 @@ Aus einem Beleg heraus erzeugen:
 ### 6.2 Eingabehilfen & Prüfungen
 
 - **Dublettenprüfung** beim Anlegen über pg_trgm-Ähnlichkeit
-- **USt-IdNr.-Validierung** über die EU-Schnittstelle **VIES**
+- **USt-IdNr.-Bestätigung**: qualifizierte Abfrage beim BZSt (**eVatR**, Name/Ort/PLZ/Straße gegen Registerdaten), sonst **VIES** mit Konsultationsnummer; jede Abfrage als **Nachweis nach § 18e UStG** am Kunden/Lieferanten und im Protokoll gespeichert *(extern)*
 - **PLZ-Lookup** — Ort automatisch aus der Postleitzahl
 - **E-Mail-Validierung** mit Format- **und** DNS-Prüfung (MX/A-Record)
 - **Mehrere E-Mail-Adressen und URLs je Kunde/Lieferant** mit Bezeichnung, klickbar in Kundenkarte und Formular — E-Mail-Links wahlweise über den internen E-Mail-Client oder das externe Mailprogramm (mailto:) *(Schalter)*
@@ -762,6 +762,7 @@ Drei Ansichten auf einer Datenbasis:
 - **Anthropic Claude** — Zusammenfassungen, Vorschläge, Liquiditätsprognose, Dokumentenanalyse, Websuche
 - **OpenAI Whisper** — Anruftranskription
 - API-Keys und Gewichtungen im Tab „KI und Gesundheit"
+- **Zentraler Schalter „Externe KI (Cloud) verwenden“** mit Datenschutzhinweis — aus heißt, kein Assistent (auch kein Hintergrunddienst) ruft die Cloud auf; neue Installationen starten aus *(Schalter)*
 
 ---
 
@@ -910,7 +911,7 @@ Zwei sauber getrennte Typen:
 
 - **API-Tester**: alle API-Ordner und Funktionen auflisten, Parameter samt Typinformationen anzeigen, Beispielwerte aus den `@testdata`-Angaben generieren und Aufrufe direkt absetzen
 - **Automatische Tests**: alle API-Funktionen durchtesten, Routen ermitteln, **Workflow-Tests** über mehrstufige Geschäftsprozesse
-- **SQL-Werkzeug**: mehrere Statements, Ergebnisse **direkt editierbar** (Primärschlüssel wird automatisch ermittelt), Zeilen ändern und löschen, Autovervollständigung für Tabellen, Spalten und Keywords, Tabellenstruktur mit Spaltenkommentaren
+- **SQL-Werkzeug**: mehrere Statements, Ergebnisse **direkt editierbar** (Primärschlüssel wird automatisch ermittelt), Zeilen ändern und löschen, Autovervollständigung für Tabellen, Spalten und Keywords, Tabellenstruktur mit Spaltenkommentaren — **standardmäßig abgeschaltet, nur für Systemadministratoren, jede Ausführung protokolliert** (`sql_tool_log`, nicht löschbar, Protokoll im Reiter sichtbar) *(Schalter)*
 - **Query-History** je Benutzer: speichern, laden, einzeln oder komplett löschen
 - **Datenbank-Backup**: manuell und automatisch erstellen (`pg_dump`), auflisten, wiederherstellen, herunterladen, einzeln oder komplett löschen — je Datenbank
 - **Schema-Verwaltung / Migrationssystem**

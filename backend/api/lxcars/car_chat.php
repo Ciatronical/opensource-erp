@@ -53,7 +53,7 @@ function sendCarChatMessage($data) {
 
     // API-Key laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'lxcars_chat_system_prompt', '" . aiModelConfigKey('car_chat') . "')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_external_enabled', 'lxcars_chat_system_prompt', '" . aiModelConfigKey('car_chat') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {

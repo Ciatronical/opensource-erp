@@ -137,7 +137,7 @@ function _iv_importDocument($db, string $fileContent, string $filename, string $
     } else {
     // API-Key laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('accounting') . "', 'accounting_default_tax_rate')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_external_enabled', '" . aiModelConfigKey('accounting') . "', 'accounting_default_tax_rate')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {

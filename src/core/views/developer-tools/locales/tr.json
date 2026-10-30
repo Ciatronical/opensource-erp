@@ -127,7 +127,10 @@
                     "rows": "Satırlar",
                     "actions": "İşlemler"
                 }
-            }
+            },
+            "disabledTitle": "SQL aracı kapalı",
+            "disabledText": "SQL aracı varsayılan olarak kapalıdır. Bir sistem yöneticisi bunu firma yapılandırmasında Özellikler → Araçlar altında etkinleştirebilir; her çalıştırma kaydedilir.",
+            "openConfig": "Firma yapılandırmasını aç"
         },
         "table_list": {
             "title": "kivitendo Tabellen",
@@ -357,6 +360,30 @@
             "error_running": "Fehler beim Ausführen der Tests",
             "ms": "{time} ms",
             "cancel": "İptal"
+        },
+        "sqlLog": {
+            "title": "SQL aracı günlüğü",
+            "intro": "Her çalıştırma, değişiklik, silme, reddetme ve hata; kullanıcı, IP ve komutla birlikte – en yeniler önce. Günlük silinemez.",
+            "refresh": "Yenile",
+            "search": "Günlükte ara",
+            "empty": "Henüz kayıt yok",
+            "columns": {
+                "time": "Zaman",
+                "user": "Kullanıcı",
+                "action": "İşlem",
+                "database": "Veritabanı",
+                "ok": "Tamam",
+                "statement": "Komut",
+                "rows": "Satır",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Çalıştır",
+                "updateTableRow": "Satırı değiştir",
+                "deleteTableRow": "Satırı sil",
+                "denied": "Reddedildi"
+            }
         }
     },
     "cancel": "İptal",

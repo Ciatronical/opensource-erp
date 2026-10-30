@@ -52,7 +52,7 @@ function reviewGutachten($data) {
     // Eine Abfrage: Schlüssel + Modell, Werkstatt, Auftrag, Kunde, Fahrzeug
     $row = $db->getOne(<<<SQL
         SELECT (SELECT json_object_agg(key, value) FROM defaults_oserp
-                 WHERE key IN ('anthropic_api_key', 'weroni_system_prompt', :model_key)) AS config,
+                 WHERE key IN ('anthropic_api_key', 'ai_external_enabled', 'weroni_system_prompt', :model_key)) AS config,
                (SELECT json_build_object(
                            'werkstatt',     d.company,
                            'ordnumber',     o.ordnumber,

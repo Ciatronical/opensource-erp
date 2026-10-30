@@ -174,6 +174,7 @@ CREATE TABLE customer_ext (
     emails JSONB,
     urls JSONB,
     keywords TEXT,
+    ustid_check JSONB,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT customer_ext_customer_id_unique UNIQUE (customer_id)
@@ -183,6 +184,7 @@ COMMENT ON TABLE customer_ext IS 'Erweiterte Kontaktdaten für Kunden (Telefonnu
 COMMENT ON COLUMN customer_ext.id IS 'Primärschlüssel (automatisch generiert)';
 COMMENT ON COLUMN customer_ext.customer_id IS 'Referenz zum Kunden';
 COMMENT ON COLUMN customer_ext.phone_numbers IS 'JSON-Array mit Telefonnummern';
+COMMENT ON COLUMN customer_ext.ustid_check IS 'Letzte USt-IdNr.-Bestätigung (eVatR/VIES) als Nachweis-Kurzfassung, Details in ustid_check_log';
 COMMENT ON COLUMN customer_ext.phone_labels IS 'JSON-Array mit Bezeichnungen für Telefonnummern';
 COMMENT ON COLUMN customer_ext.emails IS 'JSON-Array mit E-Mail-Adressen [{label, email}]';
 COMMENT ON COLUMN customer_ext.urls IS 'JSON-Array mit Web-Adressen [{label, url}]';
@@ -204,6 +206,7 @@ CREATE TABLE vendor_ext (
     emails JSONB,
     urls JSONB,
     keywords TEXT,
+    ustid_check JSONB,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT vendor_ext_vendor_id_unique UNIQUE (vendor_id)
@@ -5254,3 +5257,77 @@ DO $$ BEGIN
             FOR EACH ROW EXECUTE FUNCTION notify_oe_confirmation();
     END IF;
 END $$;
+
+-- ============================================================================
+-- USt-IdNr.-BESTÄTIGUNG (eVatR / VIES) — Nachweis nach § 18e UStG
+-- ============================================================================
+-- Jede Bestätigungsabfrage wird vollständig protokolliert: Anfrage, Antwort
+-- des BZSt (qualifiziert: Vergleichsergebnisse A/B/C/D zu Name, Ort, PLZ,
+-- Straße) bzw. von VIES (Konsultationsnummer). Die Kurzfassung der letzten
+-- Prüfung liegt in customer_ext.ustid_check / vendor_ext.ustid_check und
+-- erscheint in der Kundenmaske. Das Protokoll wird nie über die Oberfläche
+-- gelöscht — es ist der Nachweis gegenüber dem Finanzamt.
+CREATE TABLE IF NOT EXISTS ustid_check_log (
+    id              SERIAL PRIMARY KEY,
+    cv_id           INTEGER,                         -- customer.id bzw. vendor.id (NULL: noch nicht gespeicherter Stamm)
+    src             CHAR(1) NOT NULL DEFAULT 'C'     -- C = Kunde, V = Lieferant
+                    CHECK (src IN ('C', 'V')),
+    ustid           TEXT NOT NULL,                   -- geprüfte USt-IdNr. (bereinigt)
+    own_ustid       TEXT,                            -- anfragende USt-IdNr. (defaults.co_ustid)
+    service         VARCHAR(10) NOT NULL             -- evatr | vies
+                    CHECK (service IN ('evatr', 'vies')),
+    qualified       BOOLEAN NOT NULL DEFAULT false,  -- Name/Ort mitgeprüft
+    valid           BOOLEAN,                         -- NULL: Dienst hat nicht geantwortet
+    status          TEXT,                            -- evatr-0000 … bzw. VIES-Fehlercode
+    request         JSONB NOT NULL,                  -- gesendete Felder
+    response        JSONB,                           -- vollständige Antwort
+    employee_id     INTEGER,                         -- wer geprüft hat
+    login           TEXT,
+    itime           TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ustid_check_log_cv ON ustid_check_log(src, cv_id, itime DESC);
+
+COMMENT ON TABLE ustid_check_log IS 'Nachweis aller USt-IdNr.-Bestätigungsabfragen (eVatR qualifiziert / VIES) — nicht löschbar über die Oberfläche';
+
+-- ============================================================================
+-- SQL-WERKZEUG (Developer-Tools): Freigabe und Protokoll
+-- ============================================================================
+-- Das SQL-Werkzeug ist standardmäßig AUS (developer_sql_tool_enabled = 0) und
+-- auch eingeschaltet nur für Systemadministratoren erreichbar. Jede Ausführung
+-- — auch abgewiesene und fehlgeschlagene — landet in sql_tool_log. Die Tabelle
+-- ist reines Audit: kein DELETE über die API, nur Lesen für Administratoren.
+INSERT INTO defaults_oserp (key, value) VALUES ('developer_sql_tool_enabled', '0')
+ON CONFLICT (key) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS sql_tool_log (
+    id              SERIAL PRIMARY KEY,
+    user_id         INTEGER,                         -- auth.user.id
+    login           TEXT,
+    action          VARCHAR(30) NOT NULL,            -- executeSql | updateTableRow | deleteTableRow | denied
+    database_type   VARCHAR(20) NOT NULL DEFAULT 'company',
+    statement       TEXT,                            -- ausgeführtes SQL (bei Änderungen inkl. Parametern)
+    success         BOOLEAN NOT NULL DEFAULT false,
+    error           TEXT,                            -- Fehlermeldung oder Ablehnungsgrund
+    row_count       INTEGER,
+    execution_ms    NUMERIC(10,2),
+    ip              TEXT,
+    itime           TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_sql_tool_log_itime ON sql_tool_log(itime DESC);
+
+COMMENT ON TABLE sql_tool_log IS 'Audit-Protokoll des SQL-Werkzeugs: jede Ausführung, Ablehnung und jeder Fehler mit Benutzer und IP';
+
+-- ============================================================================
+-- EXTERNE KI (Cloud) — zentraler Schalter
+-- ============================================================================
+-- ai_external_enabled schaltet alle Aufrufe an die Anthropic-API ab (resolveAiModel()
+-- wirft AI_EXTERNAL_DISABLED). Bestehende Installationen mit hinterlegtem Schlüssel
+-- bleiben eingeschaltet, neue Installationen starten AUS — Cloud-KI ist Opt-in.
+INSERT INTO defaults_oserp (key, value)
+SELECT 'ai_external_enabled',
+       CASE WHEN EXISTS (SELECT 1 FROM defaults_oserp
+                          WHERE key = 'anthropic_api_key' AND btrim(COALESCE(value, '')) <> '')
+            THEN '1' ELSE '0' END
+ON CONFLICT (key) DO NOTHING;

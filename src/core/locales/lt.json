@@ -85,7 +85,9 @@
             "banking": "Likvidumo prognozė",
             "orderConfirm": "Užsakymo patvirtinimas",
             "ebay": "eBay (prekės puslapis, pavadinimas, prekės savybės)"
-        }
+        },
+        "externalDisabled": "Išorinis DI išjungtas",
+        "externalDisabledHint": "Išorinis DI (debesis) išjungtas įmonės konfigūracijoje skiltyje „DI ir būsena“ – šis asistentas nepasiekiamas."
     },
     "passwordField": {
         "show": "Rodyti slaptažodį",

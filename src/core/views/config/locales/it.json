@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Intelligenza artificiale",
         "misc": "Varie",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Caricamento della configurazione …",
     "portalTab": {
         "title": "Portale clienti"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "IA esterna (cloud)",
+        "cloudIntro": "Gli assistenti IA (Weroni, chat veicoli, riconoscimento documenti, testi di vendita, perizie, previsione di liquidità, conferma d’ordine …) funzionano tramite l’API di Anthropic. L’input vocale (Whisper) e l’LLM locale non ne sono interessati e restano in sede.",
+        "cloudNoticeTitle": "Informativa sulla protezione dei dati",
+        "cloudNotice": "Con l’IA esterna attivata, i contenuti vengono trasmessi ad Anthropic (USA) – a seconda dell’assistente dati di clienti e veicoli, documenti, messaggi, trascrizioni di chiamate e dati contabili. Prima di attivarla, verifichi che esista un contratto di trattamento dei dati e che gli interessati siano informati. Disattivata significa: nessun assistente chiama il cloud, nulla lascia l’azienda.",
+        "cloudSwitch": "Usa IA esterna (cloud)",
+        "cloudOffHint": "L’IA esterna è disattivata. Tutti gli assistenti cloud sono inattivi; Weroni, la scelta del modello e le chiavi sono disattivati. L’IA locale e l’input vocale continuano a funzionare."
+    },
+    "toolsFeatures": "Strumenti",
+    "featureSqlTool": "Strumento SQL (Developer-Tools)",
+    "featureSqlToolDesc": "Esegue comandi SQL arbitrari direttamente sul database. Disattivato per impostazione predefinita; solo gli amministratori di sistema lo vedono e lo usano, e ogni esecuzione viene registrata con utente, IP e comando.",
+    "featureSqlToolOnHint": "Lo strumento SQL è abilitato. Le modifiche hanno effetto immediato e senza controllo sul database – lo disattivi di nuovo dopo l’uso."
 }

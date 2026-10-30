@@ -25,7 +25,7 @@ function suggestPositions($data) {
 
     // API-Key laden
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_gewicht_rechnungen', 'ai_gewicht_auftraege', 'ai_gewicht_angebote', '" . aiModelConfigKey('ai_positions') . "')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_external_enabled', 'ai_gewicht_rechnungen', 'ai_gewicht_auftraege', 'ai_gewicht_angebote', '" . aiModelConfigKey('ai_positions') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {
@@ -219,7 +219,7 @@ function suggestPlannedTimes($data) {
 
     // API-Key
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', '" . aiModelConfigKey('ai_positions') . "')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_external_enabled', '" . aiModelConfigKey('ai_positions') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {

@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Tehisintellekt",
         "misc": "Mitmesugust",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Seadistuse laadimine …",
     "portalTab": {
         "title": "Kliendiportaal"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "Väline tehisintellekt (pilv)",
+        "cloudIntro": "Tehisintellekti assistendid (Weroni, sõidukivestlus, dokumendituvastus, müügitekstid, hinnangud, likviidsusprognoos, tellimuse kinnitus …) töötavad Anthropicu API kaudu. Häälsisend (Whisper) ja kohalik LLM sellest ei sõltu ning töötavad teie juures kohapeal.",
+        "cloudNoticeTitle": "Andmekaitse märkus",
+        "cloudNotice": "Välise tehisintellekti sisselülitamisel edastatakse sisu Anthropicule (USA) – olenevalt assistendist kliendi- ja sõidukiandmed, dokumendid, sõnumid, kõnede transkriptsioonid ja raamatupidamisandmed. Kontrollige enne sisselülitamist, et olemas on isikuandmete töötlemise leping ja andmesubjektidele on teavet antud. Väljas tähendab: ükski assistent ei kasuta pilve, miski ei lahku ettevõttest.",
+        "cloudSwitch": "Kasuta välist tehisintellekti (pilv)",
+        "cloudOffHint": "Väline tehisintellekt on välja lülitatud. Kõik pilveassistendid on passiivsed; Weroni, mudelivalik ja võtmed on hallid. Kohalik tehisintellekt ja häälsisend töötavad edasi."
+    },
+    "toolsFeatures": "Tööriistad",
+    "featureSqlTool": "SQL-tööriist (Developer-Tools)",
+    "featureSqlToolDesc": "Käivita suvalisi SQL-käske otse andmebaasis. Vaikimisi väljas; seda näevad ja kasutavad ainult süsteemiadministraatorid ning iga käivitus logitakse kasutaja, IP ja käsuga.",
+    "featureSqlToolOnHint": "SQL-tööriist on lubatud. Muudatused jõustuvad kohe ja kontrollimata andmebaasis – lülitage see pärast tööd uuesti välja."
 }

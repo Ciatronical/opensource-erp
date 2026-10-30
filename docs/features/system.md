@@ -1,6 +1,6 @@
 ---
 title: System und Werkzeuge
-summary: Firmen- und Systemeinstellungen, Einstellungssuche, Update, Developer-Tools, Log-Viewer, KI-Modellwahl
+summary: Firmen- und Systemeinstellungen, Einstellungssuche, Update, Developer-Tools (SQL-Tool abgesichert und protokolliert), Log-Viewer, KI-Modellwahl, Schalter für externe KI
 group: core
 category: System
 order: 91
@@ -17,6 +17,7 @@ Alle Einstellungen einer Firma liegen in `defaults_oserp` (Schlüssel-Wert) und 
 - **Verzeichnis- und Dateibrowser** für Pfadeinstellungen: auf dem Server suchen statt Pfade abzutippen
 - **Erweiterungen** (LxCars, Shop …) werden hier ein- und ausgeschaltet; dabei läuft das Datenbank-Update der Erweiterung
 - **KI-Modellwahl** je Assistent (Fahrzeug-Chat, Weroni, Verkaufstext, Positionsvorschläge, Dokument-Chat, Spezialwerkzeug, Belegerkennung …); am Prompt kann der Benutzer das Modell für seine Sitzung umschalten
+- **Externe KI (Cloud) abschalten**: ein zentraler Schalter im Reiter „KI und Gesundheit“ mit Datenschutzhinweis — aus bedeutet, kein Assistent ruft die Anthropic-API auf (siehe Abschnitt „Externe KI und Datenschutz“)
 - Gesundheitsprüfung der KI-Dienste (API-Schlüssel, lokales LLM)
 
 ## Stammdaten-Listen
@@ -53,11 +54,19 @@ Das Datenbankschema aktualisiert sich selbst: bei Anmeldung und Firmenwechsel wi
 
 - **API-Tester**: alle API-Funktionen mit ihren Testdaten (`@testdata`) aufrufen
 - **Auto-Test** und **Test-Parser**
-- **SQL-Tool**
+- **SQL-Tool**: beliebige SQL-Befehle auf Firmen- oder Auth-Datenbank. **Standardmäßig abgeschaltet**, Freigabe nur durch einen Systemadministrator in der Firmenkonfiguration (Features → Werkzeuge); auch freigegeben sehen und nutzen es nur Systemadministratoren. **Jede Ausführung wird protokolliert** — auch Zeilenänderungen aus der Ergebnistabelle, abgewiesene Zugriffe und Fehler — mit Benutzer, IP, Datenbank, Befehl, Laufzeit (Tabelle `sql_tool_log`, nicht löschbar, im Reiter als Protokoll sichtbar)
 - **Datenbank-Backup**
 - **Log-Viewer**: das API-Debug-Log im Browser lesen und filtern
 - **Tickets**: Kanban- und Listenansicht, Kommentare, Labels; Screenshots per Strg+V oder Dateien per Drag&Drop an Ticket oder Kommentar hängen (abgelegt unter `data/<mandant>/tickets/<id>/`); Filter nach Status (mehrfach, auch über die Status-Chips), Mehrfachauswahl zum Löschen in der Listenansicht — z. B. alle erledigten auf einmal
 - `php tools/check-api-health.php` (Docblocks und Testdaten), `npm run check:routes` (Routen in allen Sprachen)
+
+## Externe KI und Datenschutz
+
+Die KI-Assistenten (Weroni, Fahrzeug-Chat, Belegerkennung, Verkaufstexte, Gutachten-Import und -Prüfung, Liquiditätsprognose, Auftragsbestätigung, Kleinanzeigen/eBay-Texte) laufen über die Anthropic-API in der Cloud. Spracheingabe (Whisper) und das lokale LLM (Ollama) arbeiten dagegen im Haus.
+
+- **Zentraler Schalter** „Externe KI (Cloud) verwenden“ in Firmenkonfiguration → KI und Gesundheit, direkt über den API-Schlüsseln, mit **deutlichem Datenschutzhinweis**: welche Daten je nach Assistent übertragen werden (Kunden- und Fahrzeugdaten, Belege, Nachrichten, Anruftranskripte, Buchungsdaten) und dass vor dem Einschalten Auftragsverarbeitungsvertrag und Betroffeneninformation zu prüfen sind
+- **Aus heißt aus**: das Backend lehnt jeden Aufruf zentral ab (`resolveAiModel()` → `AI_EXTERNAL_DISABLED`), auch die Hintergrunddienste (Weroni-Monitor, Auftragsbestätigung); Weroni-Panel, Modellwahl am Prompt und die Shop-Assistenten zeigen den Zustand an
+- **Opt-in**: neue Installationen starten mit abgeschalteter externer KI; bestehende Installationen mit hinterlegtem Schlüssel bleiben eingeschaltet (Schlüssel `ai_external_enabled` in `defaults_oserp`)
 
 ## Offsite-Backup (Borg)
 

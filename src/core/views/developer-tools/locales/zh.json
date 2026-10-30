@@ -127,7 +127,10 @@
                     "rows": "行数",
                     "actions": "操作"
                 }
-            }
+            },
+            "disabledTitle": "SQL 工具已关闭",
+            "disabledText": "SQL 工具默认关闭。系统管理员可在公司配置的“功能 → 工具”中启用；每次执行都会被记录。",
+            "openConfig": "打开公司配置"
         },
         "table_list": {
             "title": "kivitendo 表",
@@ -357,6 +360,30 @@
             "error_running": "运行测试时出错",
             "ms": "{time} ms",
             "cancel": "取消"
+        },
+        "sqlLog": {
+            "title": "SQL 工具日志",
+            "intro": "每次执行、更改、删除、拒绝和错误，均含用户、IP 和命令——最新的在前。日志无法删除。",
+            "refresh": "刷新",
+            "search": "搜索日志",
+            "empty": "暂无条目",
+            "columns": {
+                "time": "时间",
+                "user": "用户",
+                "action": "操作",
+                "database": "数据库",
+                "ok": "OK",
+                "statement": "命令",
+                "rows": "行数",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "执行",
+                "updateTableRow": "修改行",
+                "deleteTableRow": "删除行",
+                "denied": "已拒绝"
+            }
         }
     },
     "cancel": "取消",

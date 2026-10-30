@@ -85,7 +85,9 @@
             "banking": "流动性预测",
             "orderConfirm": "订单确认",
             "ebay": "eBay（商品页面、标题、商品属性）"
-        }
+        },
+        "externalDisabled": "外部 AI 已关闭",
+        "externalDisabledHint": "外部 AI（云端）已在公司配置的“AI 与状态”中关闭——此助手不可用。"
     },
     "passwordField": {
         "show": "显示密码",

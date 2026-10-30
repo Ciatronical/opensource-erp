@@ -127,7 +127,10 @@
                     "rows": "Řádky",
                     "actions": "Akce"
                 }
-            }
+            },
+            "disabledTitle": "Nástroj SQL vypnut",
+            "disabledText": "Nástroj SQL je ve výchozím stavu vypnutý. Správce systému jej může povolit v konfiguraci firmy v části Funkce → Nástroje; každé provedení se zaznamenává.",
+            "openConfig": "Otevřít konfiguraci firmy"
         },
         "table_list": {
             "title": "kivitendo Tabellen",
@@ -357,6 +360,30 @@
             "error_running": "Fehler beim Ausführen der Tests",
             "ms": "{time} ms",
             "cancel": "Zrušit"
+        },
+        "sqlLog": {
+            "title": "Protokol nástroje SQL",
+            "intro": "Každé provedení, změna, smazání, zamítnutí a chyba s uživatelem, IP a příkazem – nejnovější nahoře. Protokol nelze smazat.",
+            "refresh": "Obnovit",
+            "search": "Hledat v protokolu",
+            "empty": "Zatím žádné záznamy",
+            "columns": {
+                "time": "Čas",
+                "user": "Uživatel",
+                "action": "Akce",
+                "database": "Databáze",
+                "ok": "OK",
+                "statement": "Příkaz",
+                "rows": "Řádky",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Provést",
+                "updateTableRow": "Změnit řádek",
+                "deleteTableRow": "Smazat řádek",
+                "denied": "Zamítnuto"
+            }
         }
     },
     "cancel": "Zrušit",

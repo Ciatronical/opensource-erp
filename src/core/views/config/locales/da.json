@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Filsystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Kunstig intelligens",
         "misc": "Verschiedenes",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Konfigurationen indlæses …",
     "portalTab": {
         "title": "Kundeportal"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "Ekstern AI (cloud)",
+        "cloudIntro": "AI-assistenterne (Weroni, køretøjschat, bilagsgenkendelse, salgstekster, vurderinger, likviditetsprognose, ordrebekræftelse …) kører via Anthropic-API'et. Stemmeinput (Whisper) og den lokale LLM påvirkes ikke og kører internt hos jer.",
+        "cloudNoticeTitle": "Oplysninger om databeskyttelse",
+        "cloudNotice": "Når ekstern AI er slået til, overføres indhold til Anthropic (USA) – afhængigt af assistenten kunde- og køretøjsdata, bilag, beskeder, opkaldstransskriptioner og bogføringsdata. Kontrollér før aktivering, at der foreligger en databehandleraftale, og at de registrerede er informeret. Fra betyder: ingen assistent kalder skyen, intet forlader virksomheden.",
+        "cloudSwitch": "Brug ekstern AI (cloud)",
+        "cloudOffHint": "Ekstern AI er slået fra. Alle cloud-assistenter er inaktive; Weroni, modelvalget og nøglerne er nedtonet. Lokal AI og stemmeinput fungerer stadig."
+    },
+    "toolsFeatures": "Værktøjer",
+    "featureSqlTool": "SQL-værktøj (Developer-Tools)",
+    "featureSqlToolDesc": "Kør vilkårlige SQL-kommandoer direkte på databasen. Som standard slået fra; kun systemadministratorer kan se og bruge det, og hver kørsel logges med bruger, IP og kommando.",
+    "featureSqlToolOnHint": "SQL-værktøjet er aktiveret. Ændringer træder i kraft med det samme og uden kontrol i databasen – slå det fra igen efter brug."
 }

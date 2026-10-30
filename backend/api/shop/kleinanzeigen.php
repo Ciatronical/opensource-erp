@@ -115,7 +115,8 @@ function getKleinanzeigenBoard($data) {
                 (SELECT COALESCE(json_agg(json_build_object('channel_id', c.id, 'name', c.name, 'active', c.active)
                                           ORDER BY c.sortkey NULLS LAST, c.id), '[]'::json)
                    FROM sales_channel_shop c WHERE c.type = 'kleinanzeigen') AS channels,
-                COALESCE((SELECT btrim(value) <> '' FROM defaults_oserp WHERE key = 'anthropic_api_key'), false) AS ai_ready,
+                COALESCE((SELECT btrim(value) <> '' FROM defaults_oserp WHERE key = 'anthropic_api_key'), false)
+                    AND COALESCE((SELECT value IN ('1', 'true', 't') FROM defaults_oserp WHERE key = 'ai_external_enabled'), true) AS ai_ready,
                 COALESCE((SELECT btrim(value) <> '' FROM defaults_oserp WHERE key = 'email_imap_host'), false)
                     AND COALESCE((SELECT btrim(value) <> '' FROM defaults_oserp WHERE key = 'email_username'), false) AS mail_ready",
         [':kanal' => $kanal, ':kanal_vorschlaege' => $kanal, ':limit' => max(1, min(200, (int)($data['suggestions'] ?? 30)))]

@@ -446,7 +446,6 @@
         "dirGroup_help": "创建目录的组所有者（如 www-data）。留空则不更改组。",
         "dirMode": "目录权限",
         "dirMode_help": "创建目录的文件系统权限（如 0775）。默认：0755",
-        "ai": "人工智能",
         "misc": "其他",
         "listLimit": "列表限制",
         "listLimit_help": "列表中的最大条目数",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "正在加载配置 …",
     "portalTab": {
         "title": "客户门户"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "外部 AI（云端）",
+        "cloudIntro": "AI 助手（Weroni、车辆聊天、单据识别、销售文案、鉴定报告、流动性预测、订单确认 …）通过 Anthropic API 运行。语音输入（Whisper）和本地 LLM 不受影响，仍在贵公司本地运行。",
+        "cloudNoticeTitle": "数据保护提示",
+        "cloudNotice": "启用外部 AI 后，内容将传输给 Anthropic（美国）——视助手而定，包括客户和车辆数据、单据、消息、通话转写和会计数据。启用前，请确认已签订数据处理协议，并已告知相关数据主体。关闭表示：没有任何助手调用云端，任何数据都不会离开公司。",
+        "cloudSwitch": "使用外部 AI（云端）",
+        "cloudOffHint": "外部 AI 已关闭。所有云端助手均未启用；Weroni、模型选择和密钥已置灰。本地 AI 和语音输入仍可正常使用。"
+    },
+    "toolsFeatures": "工具",
+    "featureSqlTool": "SQL 工具（Developer-Tools）",
+    "featureSqlToolDesc": "直接在数据库上执行任意 SQL 命令。默认关闭；仅系统管理员可见并可使用，每次执行都会记录用户、IP 和命令。",
+    "featureSqlToolOnHint": "SQL 工具已启用。更改会立即生效，且不经检查直接作用于数据库——使用完毕后请再次关闭。"
 }

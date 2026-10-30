@@ -13,7 +13,7 @@
  *   php backend/cli/weroni-monitor.php
  *
  * Cron (alle 5 Minuten):
- *   */5 * * * * cd /home/work/opensource-erp && php backend/cli/weroni-monitor.php >> backend/log/weroni-monitor.log 2>&1
+ *   (jede 5. Minute) cd /home/work/opensource-erp && php backend/cli/weroni-monitor.php >> backend/log/weroni-monitor.log 2>&1
  */
 
 if (php_sapi_name() !== 'cli') {
@@ -27,6 +27,7 @@ require_once $baseDir.'/logging.php';
 require_once $baseDir.'/database.php';
 require_once $baseDir.'/session.php';
 require_once $baseDir.'/weroni/tools.php';
+require_once $baseDir.'/lib/ai_model.php';
 
 function getClients(): array {
     $pdo = connectPDO(DB_HOST, DB_PORT, DB_AUTH_NAME, DB_AUTH_USER, DB_AUTH_PASS);
@@ -364,11 +365,13 @@ foreach ($clients as $client) {
 
         // Prüfen ob Weroni aktiviert ist
         $config = $db->fetchKeyValue(
-            "SELECT key, value FROM defaults_oserp WHERE key IN ('weroni_enabled', 'weroni_mode', 'anthropic_api_key')"
+            "SELECT key, value FROM defaults_oserp WHERE key IN ('weroni_enabled', 'weroni_mode', 'anthropic_api_key', 'ai_external_enabled')"
         );
 
         $enabled = ($config['weroni_enabled'] ?? '') === 'true' || ($config['weroni_enabled'] ?? '') === 't';
         if (!$enabled) continue;
+        // Zentraler Schalter „Externe KI (Cloud)" — aus heißt: nichts verlässt das Haus
+        if (!aiExternalEnabled($config)) continue;
 
         // Neue Items sammeln
         $items = collectNewItems($db);

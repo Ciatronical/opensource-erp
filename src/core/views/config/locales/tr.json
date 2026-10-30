@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Yapay Zeka",
         "misc": "Çeşitli",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Yapılandırma yükleniyor …",
     "portalTab": {
         "title": "Müşteri portalı"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "Harici yapay zekâ (bulut)",
+        "cloudIntro": "Yapay zekâ asistanları (Weroni, araç sohbeti, belge tanıma, satış metinleri, ekspertiz raporları, likidite tahmini, sipariş onayı …) Anthropic API üzerinden çalışır. Sesli giriş (Whisper) ve yerel LLM bundan etkilenmez ve işletmenizde çalışmaya devam eder.",
+        "cloudNoticeTitle": "Veri koruma bildirimi",
+        "cloudNotice": "Harici yapay zekâ açıkken içerikler Anthropic’e (ABD) iletilir – asistana bağlı olarak müşteri ve araç verileri, belgeler, mesajlar, çağrı dökümleri ve muhasebe verileri. Açmadan önce bir veri işleme sözleşmesinin bulunduğunu ve ilgili kişilerin bilgilendirildiğini kontrol edin. Kapalı demek: hiçbir asistan buluta erişmez, hiçbir şey işletmeden dışarı çıkmaz.",
+        "cloudSwitch": "Harici yapay zekâyı (bulut) kullan",
+        "cloudOffHint": "Harici yapay zekâ kapalı. Tüm bulut asistanları devre dışıdır; Weroni, model seçimi ve anahtarlar soluk gösterilir. Yerel yapay zekâ ve sesli giriş çalışmaya devam eder."
+    },
+    "toolsFeatures": "Araçlar",
+    "featureSqlTool": "SQL aracı (Developer-Tools)",
+    "featureSqlToolDesc": "Veritabanında doğrudan istediğiniz SQL komutlarını çalıştırın. Varsayılan olarak kapalıdır; yalnızca sistem yöneticileri görür ve kullanır, her çalıştırma kullanıcı, IP ve komutla birlikte kaydedilir.",
+    "featureSqlToolOnHint": "SQL aracı etkin. Değişiklikler veritabanında hemen ve kontrolsüz olarak geçerli olur – işiniz bitince tekrar kapatın."
 }

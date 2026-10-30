@@ -85,7 +85,9 @@
             "banking": "Likviditetsprognose",
             "orderConfirm": "Ordrebekræftelse",
             "ebay": "eBay (produktside, titel, varespecifikationer)"
-        }
+        },
+        "externalDisabled": "Ekstern AI fra",
+        "externalDisabledHint": "Ekstern AI (cloud) er slået fra i firmakonfigurationen under „AI og sundhed“ – denne assistent er ikke tilgængelig."
     },
     "passwordField": {
         "show": "Vis adgangskode",

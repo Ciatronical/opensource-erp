@@ -128,7 +128,10 @@
                     "actions": "Akcje"
                 }
             },
-            "auto_limited": "Ograniczono do {limit} wierszy"
+            "auto_limited": "Ograniczono do {limit} wierszy",
+            "disabledTitle": "Narzędzie SQL wyłączone",
+            "disabledText": "Narzędzie SQL jest domyślnie wyłączone. Administrator systemu może je udostępnić w konfiguracji firmy w sekcji Funkcje → Narzędzia; każde wykonanie jest rejestrowane.",
+            "openConfig": "Otwórz konfigurację firmy"
         },
         "table_list": {
             "title": "Tabele kivitendo",
@@ -358,6 +361,30 @@
             "error_running": "Błąd podczas wykonywania testów",
             "ms": "{time} ms",
             "cancel": "Anuluj"
+        },
+        "sqlLog": {
+            "title": "Dziennik narzędzia SQL",
+            "intro": "Każde wykonanie, zmiana, usunięcie, odrzucenie i błąd z użytkownikiem, IP i poleceniem – najnowsze na górze. Dziennika nie można usunąć.",
+            "refresh": "Odśwież",
+            "search": "Szukaj w dzienniku",
+            "empty": "Brak wpisów",
+            "columns": {
+                "time": "Czas",
+                "user": "Użytkownik",
+                "action": "Akcja",
+                "database": "Baza danych",
+                "ok": "OK",
+                "statement": "Polecenie",
+                "rows": "Wiersze",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Wykonaj",
+                "updateTableRow": "Zmień wiersz",
+                "deleteTableRow": "Usuń wiersz",
+                "denied": "Odrzucono"
+            }
         }
     },
     "cancel": "Anuluj",

@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Verzeichnis-Rechte",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Tekoäly",
         "misc": "Muut",
         "listLimit": "Listen-Limit",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Ladataan asetuksia …",
     "portalTab": {
         "title": "Asiakasportaali"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "Ulkoinen tekoäly (pilvi)",
+        "cloudIntro": "Tekoälyavustajat (Weroni, ajoneuvokeskustelu, tositteiden tunnistus, myyntitekstit, lausunnot, maksuvalmiusennuste, tilausvahvistus …) toimivat Anthropicin API:n kautta. Puhesyöte (Whisper) ja paikallinen LLM eivät ole tästä riippuvaisia ja toimivat paikallisesti yrityksessänne.",
+        "cloudNoticeTitle": "Tietosuojailmoitus",
+        "cloudNotice": "Kun ulkoinen tekoäly on käytössä, sisältöä siirretään Anthropicille (USA) – avustajasta riippuen asiakas- ja ajoneuvotietoja, tositteita, viestejä, puhelujen litterointeja ja kirjanpitotietoja. Tarkista ennen käyttöönottoa, että henkilötietojen käsittelysopimus on olemassa ja rekisteröidyille on tiedotettu. Pois päältä tarkoittaa: mikään avustaja ei käytä pilveä, mikään ei poistu yrityksestä.",
+        "cloudSwitch": "Käytä ulkoista tekoälyä (pilvi)",
+        "cloudOffHint": "Ulkoinen tekoäly on pois päältä. Kaikki pilviavustajat ovat epäaktiivisia; Weroni, mallin valinta ja avaimet ovat harmaina. Paikallinen tekoäly ja puhesyöte toimivat edelleen."
+    },
+    "toolsFeatures": "Työkalut",
+    "featureSqlTool": "SQL-työkalu (Developer-Tools)",
+    "featureSqlToolDesc": "Suorita mielivaltaisia SQL-komentoja suoraan tietokannassa. Oletuksena pois päältä; vain järjestelmänvalvojat näkevät ja voivat käyttää sitä, ja jokainen suoritus kirjataan käyttäjän, IP-osoitteen ja komennon kanssa.",
+    "featureSqlToolOnHint": "SQL-työkalu on sallittu. Muutokset tulevat voimaan heti ja ilman tarkistusta tietokannassa – kytke se pois päältä työn jälkeen."
 }

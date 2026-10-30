@@ -127,7 +127,10 @@
                     "rows": "Rânduri",
                     "actions": "Acțiuni"
                 }
-            }
+            },
+            "disabledTitle": "Instrument SQL dezactivat",
+            "disabledText": "Instrumentul SQL este dezactivat implicit. Un administrator de sistem îl poate activa în configurația firmei, la Funcții → Instrumente; fiecare execuție este înregistrată.",
+            "openConfig": "Deschide configurația firmei"
         },
         "table_list": {
             "title": "kivitendo Tabellen",
@@ -357,6 +360,30 @@
             "error_running": "Fehler beim Ausführen der Tests",
             "ms": "{time} ms",
             "cancel": "Anulare"
+        },
+        "sqlLog": {
+            "title": "Jurnalul instrumentului SQL",
+            "intro": "Fiecare execuție, modificare, ștergere, respingere și eroare cu utilizator, IP și comandă – cele mai recente primele. Jurnalul nu poate fi șters.",
+            "refresh": "Reîmprospătează",
+            "search": "Caută în jurnal",
+            "empty": "Încă nu există intrări",
+            "columns": {
+                "time": "Ora",
+                "user": "Utilizator",
+                "action": "Acțiune",
+                "database": "Bază de date",
+                "ok": "OK",
+                "statement": "Comandă",
+                "rows": "Rânduri",
+                "ms": "ms",
+                "ip": "IP"
+            },
+            "actions": {
+                "executeSql": "Execută",
+                "updateTableRow": "Modifică rândul",
+                "deleteTableRow": "Șterge rândul",
+                "denied": "Respins"
+            }
         }
     },
     "cancel": "Anulare",

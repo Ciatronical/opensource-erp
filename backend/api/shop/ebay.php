@@ -73,7 +73,8 @@ function getEbayBoard($data) {
                 (SELECT COALESCE(json_agg(json_build_object('channel_id', c.id, 'name', c.name, 'active', c.active)
                                           ORDER BY c.sortkey NULLS LAST, c.id), '[]'::json)
                    FROM sales_channel_shop c WHERE c.type = 'ebay') AS channels,
-                COALESCE((SELECT btrim(value) <> '' FROM defaults_oserp WHERE key = 'anthropic_api_key'), false) AS ai_ready,
+                COALESCE((SELECT btrim(value) <> '' FROM defaults_oserp WHERE key = 'anthropic_api_key'), false)
+                    AND COALESCE((SELECT value IN ('1', 'true', 't') FROM defaults_oserp WHERE key = 'ai_external_enabled'), true) AS ai_ready,
                 (SELECT btrim(value) FROM defaults_oserp WHERE key = 'ebay_public_host') AS public_host",
         [':kanal' => $kanal ?? 0, ':kanal_board' => $kanal ?? 0, ':kanal_vorschlaege' => $kanal ?? 0, ':kanal_da' => $kanal ?? 0]
     );

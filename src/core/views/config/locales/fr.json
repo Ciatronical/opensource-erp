@@ -446,7 +446,6 @@
         "dirGroup_help": "Gruppenbesitzer für erzeugte Verzeichnisse (z.B. www-data). Wenn leer, wird die Gruppe nicht geändert.",
         "dirMode": "Droits de repertoire",
         "dirMode_help": "Dateisystem-Rechte für erzeugte Verzeichnisse (z.B. 0775). Standard: 0755",
-        "ai": "Intelligence artificielle",
         "misc": "Divers",
         "listLimit": "Limite de liste",
         "listLimit_help": "Maximale Anzahl von Einträgen in Listen",
@@ -1365,5 +1364,17 @@
     "loadingConfiguration": "Chargement de la configuration …",
     "portalTab": {
         "title": "Portail client"
-    }
+    },
+    "aiHealth": {
+        "cloudTitle": "IA externe (cloud)",
+        "cloudIntro": "Les assistants IA (Weroni, chat véhicule, reconnaissance de documents, textes de vente, expertises, prévision de trésorerie, confirmation de commande …) fonctionnent via l’API d’Anthropic. La saisie vocale (Whisper) et le LLM local ne sont pas concernés et restent sur site.",
+        "cloudNoticeTitle": "Information sur la protection des données",
+        "cloudNotice": "Lorsque l’IA externe est activée, des contenus sont transmis à Anthropic (États-Unis) – selon l’assistant : données clients et véhicules, documents, messages, transcriptions d’appels et données comptables. Avant l’activation, vérifiez qu’un contrat de sous-traitance existe et que les personnes concernées sont informées. Désactivée signifie : aucun assistant n’appelle le cloud, rien ne quitte l’entreprise.",
+        "cloudSwitch": "Utiliser l’IA externe (cloud)",
+        "cloudOffHint": "L’IA externe est désactivée. Tous les assistants cloud sont inactifs ; Weroni, le choix du modèle et les clés sont grisés. L’IA locale et la saisie vocale continuent de fonctionner."
+    },
+    "toolsFeatures": "Outils",
+    "featureSqlTool": "Outil SQL (Developer-Tools)",
+    "featureSqlToolDesc": "Exécutez des commandes SQL arbitraires directement sur la base de données. Désactivé par défaut ; seuls les administrateurs système le voient et peuvent l’utiliser, et chaque exécution est journalisée avec l’utilisateur, l’IP et la commande.",
+    "featureSqlToolOnHint": "L’outil SQL est activé. Les modifications prennent effet immédiatement et sans contrôle sur la base de données – désactivez-le à nouveau après utilisation."
 }

@@ -84,7 +84,7 @@ function generateSalesText($data) {
     }
 
     $config = $db->fetchKeyValue(
-        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'lxcars_sell_system_prompt', '" . aiModelConfigKey('sales_text') . "')"
+        "SELECT key, value FROM defaults_oserp WHERE key IN ('anthropic_api_key', 'ai_external_enabled', 'lxcars_sell_system_prompt', '" . aiModelConfigKey('sales_text') . "')"
     );
     $anthropicKey = trim($config['anthropic_api_key'] ?? '');
     if (empty($anthropicKey)) {

@@ -638,7 +638,7 @@ const tabGroups = computed(() => [
                     .map((feld) => ({ key: feld.name, title: t(feld.label), panel: feld.name, keywords: [] })),
             }] : []),
             ...(store.isAnprEnabled() ? [{ value: 'anpr', title: 'ANPR', icon: 'mdi-car-search', keywords: ['anpr', 'kennzeichen', 'kamera', 'nummernschild'] }] : []),
-            { value: 'ai_health', title: t('aiHealth.tabTitle'), icon: 'mdi-robot-happy-outline', keywords: ['ki', 'ai', 'whisper', 'llm', 'ollama', 'spracheingabe', 'glossar', 'fachbegriffe', 'gesundheit', 'health', 'cloud', 'api-key', 'positionsvorschläge', 'modell', 'model', 'claude', 'opus', 'sonnet', 'haiku', 'assistent'] },
+            { value: 'ai_health', title: t('aiHealth.tabTitle'), icon: 'mdi-robot-happy-outline', keywords: ['ki', 'ai', 'whisper', 'llm', 'ollama', 'spracheingabe', 'glossar', 'fachbegriffe', 'gesundheit', 'health', 'cloud', 'api-key', 'positionsvorschläge', 'modell', 'model', 'claude', 'opus', 'sonnet', 'haiku', 'assistent', 'extern', 'externe ki', 'datenschutz', 'abschalten', 'anthropic'] },
         ]
     },
     {
@@ -699,6 +699,7 @@ const featureFields = [
     { name: 'feature_reverse_charge', label: 'featureReverseCharge', tooltip: 'featureReverseChargeDesc', headline: 'salesFeatures' },
     { name: 'reverse_charge_text',    label: 'reverseChargeText',    tooltip: 'reverseChargeTextHint',    headline: 'salesFeatures' },
     { name: 'feature_gutmann',        label: 'featureGutmann',       tooltip: 'featureGutmannDesc',       headline: 'workshopFeatures' },
+    { name: 'developer_sql_tool_enabled', label: 'featureSqlTool',   tooltip: 'featureSqlToolDesc',       headline: 'toolsFeatures' },
     { name: 'feature_anpr',           label: 'ANPR',                 tooltip: 'featureAnprDesc',          headline: 'cameraAndSurveillance', plain: true },
     { name: 'feature_nvr',            label: 'NVR',                  tooltip: 'featureNvrDesc',           headline: 'cameraAndSurveillance', plain: true },
 ];
@@ -965,7 +966,7 @@ async function loadConfig() {
 
     // Feature-Booleans normalisieren (DB liefert Strings wie 'true'/'false'/'1'/'0')
     // Nicht gesetzt = Standard aktiviert
-    for (const key of ['feature_anpr', 'feature_nvr', 'feature_recurring', 'sumup_auto_send']) {
+    for (const key of ['feature_anpr', 'feature_nvr', 'feature_recurring', 'sumup_auto_send', 'ai_external_enabled']) {
         const v = crmDefaults.value[key];
         crmDefaults.value[key] = (v === null || v === undefined)
             ? true
@@ -978,6 +979,11 @@ async function loadConfig() {
     // soll nur erscheinen, wenn die Firma sie wirklich braucht.
     const rc = crmDefaults.value.feature_reverse_charge;
     crmDefaults.value.feature_reverse_charge = (rc === true || rc === 'true' || rc === '1' || rc === 1);
+
+    // SQL-Werkzeug (Developer-Tools) ist bewusst standardmäßig AUS — nur
+    // Systemadministratoren schalten es ein, jede Nutzung wird protokolliert.
+    const sqlTool = crmDefaults.value.developer_sql_tool_enabled;
+    crmDefaults.value.developer_sql_tool_enabled = (sqlTool === true || sqlTool === 'true' || sqlTool === '1' || sqlTool === 1);
     // Gutmann-Diagnose ebenfalls AUS, bis die Apache-Weiterleitung steht
     const gm = crmDefaults.value.feature_gutmann;
     crmDefaults.value.feature_gutmann = (gm === true || gm === 'true' || gm === '1' || gm === 1);

@@ -85,7 +85,9 @@
             "banking": "Liquiditeitsprognose",
             "orderConfirm": "Orderbevestiging",
             "ebay": "eBay (productpagina, titel, artikelkenmerken)"
-        }
+        },
+        "externalDisabled": "Externe AI uit",
+        "externalDisabledHint": "Externe AI (cloud) is uitgeschakeld in de bedrijfsconfiguratie onder ‘AI en status’ – deze assistent is niet beschikbaar."
     },
     "passwordField": {
         "show": "Wachtwoord tonen",

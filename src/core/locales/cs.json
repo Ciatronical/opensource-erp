@@ -85,7 +85,9 @@
             "banking": "Prognóza likvidity",
             "orderConfirm": "Potvrzení objednávky",
             "ebay": "eBay (produktová stránka, titulek, vlastnosti položky)"
-        }
+        },
+        "externalDisabled": "Externí AI vypnuta",
+        "externalDisabledHint": "Externí AI (cloud) je vypnuta v konfiguraci firmy v části „AI a stav systému“ – tento asistent není k dispozici."
     },
     "passwordField": {
         "show": "Zobrazit heslo",
