@@ -8,6 +8,7 @@ import { normalizeCart, cartTotals } from '../core/cart-data.js';
 import { t } from '../core/i18n.js';
 import { sameOriginHref } from '../core/links.js';
 import { shopPath, apiUrl, sitePath } from '../core/paths.js';
+import { renderShippingOptions, shippingOptionStyles, countryName } from '../core/shipping-options.js';
 
 /**
  * <shop-cart billing-page="/rechnung/" canceled-page="/bezahlung-abgebrochen/"></shop-cart>
@@ -49,10 +50,13 @@ export class ShopCart extends PortalElement {
     _error: { state: true },
     _message: { state: true },
     _busy: { state: true },
+    // Versandwahl laeuft gerade (chooseShipping)
+    _shippingBusy: { state: true },
   };
 
   static styles = [
     PortalElement.baseStyles,
+    shippingOptionStyles,
     css`
       .count {
         font-size: 1.25rem;
@@ -155,6 +159,9 @@ export class ShopCart extends PortalElement {
         font-weight: 400;
         margin-left: 0.5rem;
       }
+      .shipping-choice {
+        margin: 0.75rem 0;
+      }
       .note {
         font-weight: 300;
         margin: 1rem 0;
@@ -232,6 +239,37 @@ export class ShopCart extends PortalElement {
 
   get #isCheckout() {
     return this.mode === 'checkout';
+  }
+
+  /**
+   * Antwort einer Warenkorb-Aktion uebernehmen, die ein anderes Element
+   * ausgeloest hat — <shop-checkout> nach chooseShipping. Erspart die zweite
+   * Abfrage; der Warenkorb bleibt der eine Ort, der den Stand haelt und
+   * meldet.
+   */
+  apply(data) {
+    this._cart = normalizeCart(data);
+    this._error = '';
+    this.#announce();
+  }
+
+  /**
+   * Versandart im Warenkorb waehlen (dev/shop-versand.md, „Versandwahl in
+   * der Kasse“): dieselbe Liste wie in der Kasse, die Wahl bleibt am
+   * Warenkorb und gilt dort weiter. Gerechnet wird hier mit der
+   * Standard-Lieferadresse des Kontos bzw. dem Land der Firmenadresse — der
+   * Laenderhinweis unter der Liste sagt das.
+   */
+  async #chooseShipping(id) {
+    if (this._shippingBusy) return;
+    this._shippingBusy = true;
+    try {
+      this.apply(await apiRequest('chooseShipping', { shipping_method: id }));
+    } catch (error) {
+      this._error = t(error.code || 'PORTAL_API_ERROR');
+    } finally {
+      this._shippingBusy = false;
+    }
   }
 
   /**
@@ -486,6 +524,23 @@ export class ShopCart extends PortalElement {
     const currency = this._cart.currency;
     return html`
       <div class="totals">
+        ${!this.#isCheckout && this._cart.totals.shippingOptions.length
+          ? html`
+              <div class="shipping-choice">
+                <p class="line-label">${t('checkout.shipping')}</p>
+                ${renderShippingOptions({
+                  options: this._cart.totals.shippingOptions,
+                  currency,
+                  cls: (role) => this.cls(role),
+                  busy: this._shippingBusy,
+                  onChoose: (id) => this.#chooseShipping(id),
+                  group: 'shipping-cart',
+                })}
+                ${this._cart.totals.shippingCountry
+                  ? html`<p class="note ${this.cls('muted')}">
+                      ${t('cart.shippingCountryHint').replace('{country}', countryName(this._cart.totals.shippingCountry))}
+                    </p>`
+                  : nothing}
         ${shippingStatus !== 'ok' && shippingStatus !== 'no_goods'
           ? html`<div class="shop-message ${this.cls('alertError')}" role="alert">
               ${t(`shipping.${shippingStatus}`)}
@@ -495,6 +550,9 @@ export class ShopCart extends PortalElement {
                 ? t('cart.shippingFree')
                 : html`${t('cart.shipping')}: ${formatPrice(shipping)} ${currency}*`}
             </p>`}
+              </div>
+            `
+          : nothing}
         <p class="note ${this.cls('muted')}">${t('cart.netNote')}</p>
         <p>
           ${t('cart.netTotal')}: ${formatPrice(netto)} ${currency}

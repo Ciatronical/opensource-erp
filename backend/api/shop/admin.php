@@ -534,9 +534,12 @@ function getPartShopData($data) {
                  WHERE p.id = :parts_id) a) AS part,
             (SELECT json_build_object(
                  'part', (SELECT row_to_json(v) FROM (
-                             SELECT ps.shipping_method_id, ps.length, ps.width, ps.height,
+                             SELECT ps.length, ps.width, ps.height,
                                     ps.min_qty, ps.delivery_term_id
                                FROM parts_shipping_shop ps WHERE ps.parts_id = :parts_id_versand) v),
+                 -- erlaubte Versandarten (Mehrfachzuordnung, 2026-10-30); leer = alle
+                 'method_ids', (SELECT COALESCE(json_agg(pm.shipping_method_id ORDER BY pm.shipping_method_id), '[]')
+                                  FROM parts_shipping_method_shop pm WHERE pm.parts_id = :parts_id_zuordnung),
                  'methods', (SELECT COALESCE(json_agg(json_build_object(
                                         'id', m.id, 'description', m.description, 'active', m.active)
                                         ORDER BY m.rank DESC, m.description), '[]')
@@ -594,6 +597,7 @@ function getPartShopData($data) {
             ':parts_id'        => (int)($data['parts_id'] ?? 0),
             ':parts_id_bilder' => (int)($data['parts_id'] ?? 0),
             ':parts_id_versand' => (int)($data['parts_id'] ?? 0),
+            ':parts_id_zuordnung' => (int)($data['parts_id'] ?? 0),
             ':parts_id_pruefung' => (int)($data['parts_id'] ?? 0),
             ':parts_id_preise'   => (int)($data['parts_id'] ?? 0),
             ':taxzone'         => shopConfigValue($db, 'shop_standard_taxzone', 'Inland'),
@@ -664,13 +668,13 @@ function checkShopPageName($data) {
  *              verfügbar), settings (kanaleigene Angaben, etwa
  *              category_id und condition bei eBay)
  * @param array $data['shipping'] Versandangaben (dev/shop-versand.md, Schritt 5):
- *              shipping_method_id (leer = die günstigste passende), length,
+ *              shipping_method_ids (erlaubte Versandarten, leer = alle), length,
  *              width, height (cm), min_qty (Mindestabnahme, bei eBay die
  *              Losgröße), delivery_term_id (Lieferbedingung). Fehlt das Feld,
  *              bleiben die Angaben unverändert
  * @param int $data['template_parts_id'] „Als neu verwenden“: Vorlage, deren Kanalbilder übernommen werden (optional)
  * @return void
- * @testdata {"parts_id": 1, "category_id": 1, "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}], "shipping": {"shipping_method_id": null, "length": 40, "width": 30, "height": 20, "min_qty": null, "delivery_term_id": null}}
+ * @testdata {"parts_id": 1, "category_id": 1, "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}], "shipping": {"shipping_method_ids": [], "length": 40, "width": 30, "height": 20, "min_qty": null, "delivery_term_id": null}}
  */
 function savePartShopData($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
@@ -714,6 +718,8 @@ function savePartShopData($data) {
     }
 
     // Versandangaben: Zahlen größer 0 oder leer. Fehlt das Feld, bleiben sie.
+    // Erlaubte Versandarten als PostgreSQL-Array; unbekannte Ids scheitern am Fremdschlüssel
+    $versandarten = '{'.implode(',', array_map('intval', (array)(($data['shipping'] ?? [])['shipping_method_ids'] ?? []))).'}';
     $versandSetzen = isset($data['shipping']) && is_array($data['shipping']);
     $versand = $versandSetzen ? $data['shipping'] : [];
     $mass = [];
@@ -797,20 +803,36 @@ function savePartShopData($data) {
              ), versand AS (
                  -- Versandangaben (Schritt 5); unbekannte Versandart oder
                  -- Lieferbedingung scheitern am Fremdschlüssel
-                 INSERT INTO parts_shipping_shop (parts_id, shipping_method_id, length, width, height,
+                 INSERT INTO parts_shipping_shop (parts_id, length, width, height,
                                                   min_qty, delivery_term_id)
-                 SELECT ext.parts_id, CAST(NULLIF(:versandart, 0) AS integer),
+                 SELECT ext.parts_id,
                         CAST(:laenge AS numeric), CAST(:breite AS numeric), CAST(:hoehe AS numeric),
                         CAST(:mindestmenge AS numeric), CAST(NULLIF(:lieferbedingung, 0) AS integer)
                    FROM ext
                   WHERE :versand_setzen = 1
                  ON CONFLICT (parts_id) DO UPDATE SET
-                        shipping_method_id = EXCLUDED.shipping_method_id,
                         length             = EXCLUDED.length,
                         width              = EXCLUDED.width,
                         height             = EXCLUDED.height,
                         min_qty            = EXCLUDED.min_qty,
                         delivery_term_id   = EXCLUDED.delivery_term_id
+             ), zuordnung_weg AS (
+                 -- Erlaubte Versandarten (Mehrfachzuordnung, 2026-10-30): nur
+                 -- die entfallenen löschen und die neuen einfügen — Löschen und
+                 -- Neuanlegen derselben Zeile in einer Anweisung verlöre sie
+                 DELETE FROM parts_shipping_method_shop pm
+                  USING ext
+                  WHERE pm.parts_id = ext.parts_id
+                    AND :versand_setzen_weg = 1
+                    AND NOT (pm.shipping_method_id = ANY (CAST(:versandarten_weg AS integer[])))
+                 RETURNING 1
+             ), zuordnung_neu AS (
+                 INSERT INTO parts_shipping_method_shop (parts_id, shipping_method_id)
+                 SELECT ext.parts_id, x
+                   FROM ext, unnest(CAST(:versandarten_neu AS integer[])) AS x
+                  WHERE :versand_setzen_neu = 1
+                 ON CONFLICT DO NOTHING
+                 RETURNING 1
              )
              SELECT v.channel_id, p.partnumber, pe.hugoshop_hyperlink
                FROM vorher v
@@ -830,7 +852,10 @@ function savePartShopData($data) {
                 ':kanaele'      => json_encode($kanaele),
                 ':vollstaendig' => $vollstaendig ? 1 : 0,
                 ':versand_setzen'  => $versandSetzen ? 1 : 0,
-                ':versandart'      => (int)($versand['shipping_method_id'] ?? 0),
+                ':versand_setzen_weg' => $versandSetzen ? 1 : 0,
+                ':versand_setzen_neu' => $versandSetzen ? 1 : 0,
+                ':versandarten_weg'   => $versandarten,
+                ':versandarten_neu'   => $versandarten,
                 ':laenge'          => $mass['length'],
                 ':breite'          => $mass['width'],
                 ':hoehe'           => $mass['height'],
@@ -1226,7 +1251,8 @@ function getShopShipping($data) {
                          'max_girth', m.max_girth, 'max_width', m.max_width, 'max_height', m.max_height,
                          'max_size', m.max_size, 'free_shipping_applies', m.free_shipping_applies,
                          'ebay_fulfillment_policy_id', m.ebay_fulfillment_policy_id, 'active', m.active,
-                         'parts', (SELECT count(*) FROM parts_shipping_shop ps WHERE ps.shipping_method_id = m.id),
+                         'customer_note', m.customer_note, 'selectable', m.selectable,
+                         'parts', (SELECT count(*) FROM parts_shipping_method_shop pm WHERE pm.shipping_method_id = m.id),
                          'rates', (SELECT COALESCE(json_agg(json_build_object(
                                           'channel_id', r.channel_id, 'zone_id', r.zone_id,
                                           'weight_from', r.weight_from, 'qty_from', r.qty_from, 'price', r.price,
@@ -1329,10 +1355,12 @@ function getShopShipping($data) {
  * @param float|null $data['max_size'] Größe nach Hermes (längste + kürzeste Seite) in cm, leer = ohne
  * @param bool $data['free_shipping_applies'] Freigrenze gilt
  * @param string $data['ebay_fulfillment_policy_id'] eBay-Versandrichtlinie, leer = die allgemeine
+ * @param string $data['customer_note'] Hinweis für Kunden in der Kasse (Lieferzeit, Abholort), leer = keiner
+ * @param bool $data['selectable'] Für Kunden wählbar (Vorgabe true); false = nur über die Zuordnung eines Artikels
  * @param bool $data['active'] aktiv
  * @param array $data['rates'] Liste aus channel_id, zone_id (leer = alle), weight_from, qty_from, price
  *              und cost (Kosten des Versanddienstleisters, netto, leer = nicht gepflegt)
- * @testdata {"id": 0, "description": "DHL Paket", "vendor_id": null, "part": {"partnumber": "", "description": "Versand", "buchungsgruppen_id": 1, "suggested": true}, "rank": 10, "max_weight": 31.5, "max_length": 120, "max_girth": 300, "max_width": null, "max_height": null, "max_size": null, "free_shipping_applies": true, "ebay_fulfillment_policy_id": "", "active": true, "rates": [{"channel_id": null, "zone_id": null, "weight_from": 0, "qty_from": 0, "price": 5.99, "cost": 4.49}]}
+ * @testdata {"id": 0, "description": "DHL Paket", "vendor_id": null, "part": {"partnumber": "", "description": "Versand", "buchungsgruppen_id": 1, "suggested": true}, "rank": 10, "max_weight": 31.5, "max_length": 120, "max_girth": 300, "max_width": null, "max_height": null, "max_size": null, "free_shipping_applies": true, "ebay_fulfillment_policy_id": "", "customer_note": "Lieferung in 2–3 Werktagen", "selectable": true, "active": true, "rates": [{"channel_id": null, "zone_id": null, "weight_from": 0, "qty_from": 0, "price": 5.99, "cost": 4.49}]}
  */
 function saveShopShippingMethod($data) {
     permit(['edit_shop_config'], false);
@@ -1407,13 +1435,14 @@ function saveShopShippingMethod($data) {
                  INSERT INTO shipping_method_shop AS m
                         (id, description, vendor_id, parts_id, rank, max_weight, max_length, max_girth,
                          max_width, max_height, max_size,
-                         free_shipping_applies, ebay_fulfillment_policy_id, active)
+                         free_shipping_applies, ebay_fulfillment_policy_id, active, customer_note, selectable)
                  OVERRIDING SYSTEM VALUE
                  SELECT COALESCE(NULLIF(:id, 0), nextval(pg_get_serial_sequence('shipping_method_shop', 'id'))),
                         :description, CAST(NULLIF(:vendor_id, 0) AS integer), :parts_id, :rank,
                         CAST(:max_weight AS numeric), CAST(:max_length AS numeric), CAST(:max_girth AS numeric),
                         CAST(:max_width AS numeric), CAST(:max_height AS numeric), CAST(:max_size AS numeric),
-                        :free_shipping_applies, NULLIF(btrim(:ebay_policy), ''), :active
+                        :free_shipping_applies, NULLIF(btrim(:ebay_policy), ''), :active,
+                        NULLIF(btrim(:customer_note), ''), :selectable
                   WHERE NULLIF(:id_neu, 0) IS NULL
                      OR EXISTS (SELECT 1 FROM shipping_method_shop WHERE id = :id_vorhanden)
                  ON CONFLICT (id) DO UPDATE SET
@@ -1424,7 +1453,8 @@ function saveShopShippingMethod($data) {
                         max_height = EXCLUDED.max_height, max_size = EXCLUDED.max_size,
                         free_shipping_applies = EXCLUDED.free_shipping_applies,
                         ebay_fulfillment_policy_id = EXCLUDED.ebay_fulfillment_policy_id,
-                        active = EXCLUDED.active, mtime = now()
+                        active = EXCLUDED.active, customer_note = EXCLUDED.customer_note,
+                        selectable = EXCLUDED.selectable, mtime = now()
                  RETURNING m.id
              ), neu AS (
                  SELECT s.*
@@ -1466,6 +1496,9 @@ function saveShopShippingMethod($data) {
                 ':free_shipping_applies' => !empty($data['free_shipping_applies']),
                 ':ebay_policy'           => (string)($data['ebay_fulfillment_policy_id'] ?? ''),
                 ':active'                => !empty($data['active']),
+                ':customer_note'         => (string)($data['customer_note'] ?? ''),
+                // Vorgabe freigeschaltet: ältere Oberflächen schicken das Feld nicht
+                ':selectable'            => !array_key_exists('selectable', $data) || !empty($data['selectable']),
                 ':stufen'                => json_encode($stufen),
             ]
         );

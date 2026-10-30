@@ -81,7 +81,8 @@ function cartOfContext($db, string $uuid): string {
  *               inc_shipping_costs: bool, total_sum_inc_shipping: float,
  *               netto_total_sum_inc_shipping: float, shipping_status: string,
  *               shipping_method_id: ?int, shipping_method: string, shipping_parts_id: ?int,
- *               shipping_free: bool, shipping_account: bool}
+ *               shipping_free: bool, shipping_account: bool, shipping_options: array,
+ *               shipping_country: string}
  */
 function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, string $land = ''): array {
     // Gerundet wird je Position, danach summiert. Sonst weicht die Summe von
@@ -144,6 +145,16 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, str
                           / :precision) * :precision AS netto
                FROM versand v
                LEFT JOIN satz st ON true
+         ), optionen AS (
+             -- Versandwahl in der Kasse (dev/shop-versand.md, 2026-10-30):
+             -- alle Versandarten mit Preis, Verfuegbarkeit und Grund
+             SELECT COALESCE(json_agg(json_build_object(
+                        'id', o.shipping_method_id, 'name', o.description, 'note', o.customer_note,
+                        'price', o.price, 'free', o.free, 'available', o.available,
+                        'reason', o.reason, 'selected', o.selected,
+                        'forced', o.forced, 'required_by', o.required_by)), '[]'::json) AS liste
+               FROM summen s
+               CROSS JOIN LATERAL shop_cart_shipping_options(:cart_uuid, :land, s.total_sum) o
          )
          SELECT s.total_sum,
                 s.netto_total_sum,
@@ -156,7 +167,11 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, str
                 (v.status = 'ok' AND COALESCE(v.price, 0) > 0) AS inc_shipping_costs,
                 s.total_sum + COALESCE(b.brutto, 0) AS total_sum_inc_shipping,
                 s.netto_total_sum + COALESCE(b.netto, 0) AS netto_total_sum_inc_shipping,
-                (v.parts_id IS NULL OR (SELECT income_accno_id FROM satz) IS NOT NULL) AS shipping_account
+                (v.parts_id IS NULL OR (SELECT income_accno_id FROM satz) IS NOT NULL) AS shipping_account,
+                (SELECT liste FROM optionen) AS shipping_options
+                -- Land, mit dem gerechnet wurde (Code): Standard-Lieferadresse, Rechnungsadresse
+                -- oder Mandantenland — der Warenkorb nennt es dem Kunden
+                , shop_country_code(:land) AS shipping_country
            FROM summen s
            CROSS JOIN versand v
            CROSS JOIN betrag b",
@@ -183,6 +198,8 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, str
         'shipping_parts_id'            => isset($zeile['shipping_parts_id']) ? (int)$zeile['shipping_parts_id'] : null,
         'shipping_free'                => $wahr($zeile['shipping_free'] ?? 'f'),
         'shipping_account'             => $wahr($zeile['shipping_account'] ?? 't'),
+        'shipping_options'             => json_decode((string)($zeile['shipping_options'] ?? '[]'), true) ?: [],
+        'shipping_country'             => (string)($zeile['shipping_country'] ?? ''),
     ];
 }
 
@@ -569,15 +586,68 @@ function cartSummary($db, string $cartUuid, ?int $customerId): array {
  * shippingStatus ok heisst: es gibt eine passende Versandart. Sonst sperrt die
  * Kasse das Bezahlen und nennt den Grund (cartRequireShipping).
  *
+ * shippingOptions (Versandwahl in der Kasse, dev/shop-versand.md,
+ * 2026-10-30): alle Versandarten des Kanals mit Preis, Verfuegbarkeit und
+ * Grund; selected ist die, mit der gerechnet wird. Leer ohne eingerichtete
+ * Versandart oder ohne Ware.
+ *
  * @param array $summen Ergebnis von cartTotals()
  * @return array
  */
 function cartShippingShape(array $summen): array {
+    $wahr = fn($wert) => in_array($wert, ['t', true, 1, '1'], true);
     return [
-        'shippingStatus' => $summen['shipping_status'],
-        'shippingMethod' => $summen['shipping_method'],
-        'shippingFree'   => $summen['shipping_free'],
+        'shippingStatus'   => $summen['shipping_status'],
+        'shippingMethod'   => $summen['shipping_method'],
+        'shippingMethodId' => $summen['shipping_method_id'],
+        // ISO-Code des Lieferlands, mit dem gerechnet wurde (leer = unbekannt)
+        'shippingCountry'  => $summen['shipping_country'] ?? '',
+        'shippingFree'     => $summen['shipping_free'],
+        'shippingOptions'  => array_map(fn($o) => [
+            'id'        => (int)$o['id'],
+            'name'      => (string)$o['name'],
+            'note'      => (string)($o['note'] ?? ''),
+            'price'     => null === $o['price'] ? null : (float)$o['price'],
+            'free'      => $wahr($o['free']),
+            'available' => $wahr($o['available']),
+            'reason'    => (string)($o['reason'] ?? ''),
+            'selected'  => $wahr($o['selected']),
+            // durch eine Artikelzuordnung vorgegeben; requiredBy nennt die Artikel
+            'forced'    => $wahr($o['forced'] ?? false),
+            'requiredBy' => (string)($o['required_by'] ?? ''),
+        ], $summen['shipping_options'] ?? []),
     ];
+}
+
+/**
+ * Merkt die in der Kasse gewaehlte Versandart am Warenkorb
+ *
+ * Versandwahl in der Kasse (dev/shop-versand.md, 2026-10-30). 0 hebt die
+ * Wahl auf (wieder die Vorauswahl: guenstigste kostenpflichtige, bei gleichem
+ * Preis die ranghoechste, kostenlose zuletzt). Ob die Versandart zu dieser Bestellung passt und waehlbar
+ * ist, entscheidet erst die Berechnung: wenn nicht, faellt
+ * shop_shipping_select auf die Vorauswahl zurueck, und die Kasse zeigt das.
+ * Nur aktive Versandarten werden angenommen.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $cartUuid Warenkorb-Kennung
+ * @param int $methodId Versandart, 0 = keine Wahl
+ * @return void
+ * @throws ApiError SHIPPING_METHOD_NOT_FOUND
+ */
+function cartChooseShipping($db, string $cartUuid, int $methodId): void {
+    $zeile = $db->getOne(
+        "UPDATE carts_hugoshop
+            SET shipping_method_id = CAST(NULLIF(:id, 0) AS integer), active = now()
+          WHERE uuid = :cart_uuid
+            AND (:id_frei = 0 OR EXISTS (SELECT 1 FROM shipping_method_shop m
+                                          WHERE m.id = :id_aktiv AND m.active))
+      RETURNING uuid",
+        [':id' => $methodId, ':id_frei' => $methodId, ':id_aktiv' => $methodId, ':cart_uuid' => $cartUuid]
+    );
+    if (!$zeile && $methodId > 0) {
+        throw new ApiError('SHIPPING_METHOD_NOT_FOUND', 'Diese Versandart gibt es nicht');
+    }
 }
 
 /**
@@ -697,9 +767,14 @@ function cartRequireShipping(array $korb): void {
  * @return void
  */
 function cartClear($db, string $cartUuid): void {
+    // Mit den Positionen geht die Versandwahl (Versandwahl in der Kasse,
+    // 2026-10-30): die naechste Bestellung beginnt wieder mit der Vorauswahl
     $db->execute(
-        "DELETE FROM cart_parts_hugoshop WHERE cart_uuid = :cart_uuid",
-        [':cart_uuid' => $cartUuid]
+        "WITH weg AS (
+             DELETE FROM cart_parts_hugoshop WHERE cart_uuid = :cart_uuid RETURNING 1
+         )
+         UPDATE carts_hugoshop SET shipping_method_id = NULL WHERE uuid = :korb",
+        [':cart_uuid' => $cartUuid, ':korb' => $cartUuid]
     );
 }
 

@@ -1296,7 +1296,7 @@ CREATE TABLE IF NOT EXISTS shipping_method_shop
 COMMENT ON TABLE  shipping_method_shop             IS 'Shop: Versandart';
 COMMENT ON COLUMN shipping_method_shop.vendor_id   IS 'Anbieter (Lieferant), NULL = allgemeine Versandart';
 COMMENT ON COLUMN shipping_method_shop.parts_id    IS 'Versandartikel (Dienstleistung, je Versandart ein eigener): Bezeichnung, Erlöskonto und Steuer der Versandposition';
-COMMENT ON COLUMN shipping_method_shop.rank        IS 'Rang: bei verschiedenen zugeordneten Versandarten gilt die ranghöchste (W1)';
+COMMENT ON COLUMN shipping_method_shop.rank        IS 'Rang: entscheidet bei gleichem Preis über die Vorauswahl; bei eBay die Richtlinie der ranghöchsten erlaubten (W1, W4)';
 COMMENT ON COLUMN shipping_method_shop.max_weight  IS 'Höchstgewicht der Sendung in der Einheit von parts.weight, NULL = ohne Grenze';
 COMMENT ON COLUMN shipping_method_shop.max_length  IS 'Längste Kante des größten Artikels in cm, NULL = ohne Grenze';
 COMMENT ON COLUMN shipping_method_shop.max_girth   IS 'Gurtmaß des größten Artikels in cm (Länge + 2 × Breite + 2 × Höhe), NULL = ohne Grenze';
@@ -1315,6 +1315,15 @@ COMMENT ON COLUMN shipping_method_shop.max_height IS 'Höhe (kürzeste Seite) de
 COMMENT ON COLUMN shipping_method_shop.max_size   IS 'Größe nach Hermes: längste + kürzeste Seite in cm, NULL = ohne Grenze';
 COMMENT ON COLUMN shipping_method_shop.free_shipping_applies IS 'Freigrenze des Kanals gilt für diese Versandart (W6)';
 COMMENT ON COLUMN shipping_method_shop.ebay_fulfillment_policy_id IS 'eBay-Versandrichtlinie für Angebote mit dieser Versandart, NULL = die allgemeine';
+
+-- Versandwahl in der Kasse (dev/shop-versand.md, 2026-10-30): ein Hinweis
+-- für den Kunden an der Versandart (Lieferzeit, Abholort, Bedingungen) und
+-- die Freischaltung: nicht freigeschaltete Versandarten sind für Kunden nicht
+-- frei wählbar, kommen aber zum Zug, wenn eine Artikelzuordnung sie vorgibt
+ALTER TABLE shipping_method_shop ADD COLUMN IF NOT EXISTS customer_note text;
+ALTER TABLE shipping_method_shop ADD COLUMN IF NOT EXISTS selectable boolean NOT NULL DEFAULT true;
+COMMENT ON COLUMN shipping_method_shop.customer_note IS 'Hinweis für den Kunden in der Kasse (Lieferzeit, Abholort …), NULL = keiner';
+COMMENT ON COLUMN shipping_method_shop.selectable    IS 'Für Kunden wählbar; false = nur über die Zuordnung eines Artikels';
 
 -- Ein Versandartikel je Versandart (2026-10-02): die Maske der Versandart
 -- verwaltet ihren Artikel — Nummer, Bezeichnung, Buchungsgruppe. Teilten sich
@@ -1392,11 +1401,11 @@ CREATE TABLE IF NOT EXISTS sales_channel_country_shop
 
 COMMENT ON TABLE sales_channel_country_shop IS 'Shop: Lieferländer je Verkaufskanal, keine Zeile = alle';
 
--- Versandangaben je Artikel (Schritt 5). Das Gewicht bleibt in parts.weight.
+-- Versandangaben je Artikel (Schritt 5). Das Gewicht bleibt in parts.weight;
+-- die erlaubten Versandarten stehen seit 2026-10-30 in parts_shipping_method_shop.
 CREATE TABLE IF NOT EXISTS parts_shipping_shop
 (
     parts_id           integer NOT NULL PRIMARY KEY REFERENCES parts (id) ON DELETE CASCADE,
-    shipping_method_id integer REFERENCES shipping_method_shop (id) ON DELETE SET NULL,
     length             numeric(15,5),
     width              numeric(15,5),
     height             numeric(15,5),
@@ -1405,7 +1414,6 @@ CREATE TABLE IF NOT EXISTS parts_shipping_shop
 );
 
 COMMENT ON TABLE  parts_shipping_shop                    IS 'Shop: Versandangaben eines Artikels';
-COMMENT ON COLUMN parts_shipping_shop.shipping_method_id IS 'Zugeordnete Versandart, NULL = die günstigste passende';
 COMMENT ON COLUMN parts_shipping_shop.length             IS 'Länge in cm';
 COMMENT ON COLUMN parts_shipping_shop.width              IS 'Breite in cm';
 COMMENT ON COLUMN parts_shipping_shop.height             IS 'Höhe in cm';
@@ -1427,7 +1435,6 @@ BEGIN
     IF TG_OP = 'UPDATE'
        AND OLD.delivery_term_id IS NOT DISTINCT FROM NEW.delivery_term_id
        AND OLD.min_qty IS NOT DISTINCT FROM NEW.min_qty
-       AND OLD.shipping_method_id IS NOT DISTINCT FROM NEW.shipping_method_id
        AND OLD.length IS NOT DISTINCT FROM NEW.length
        AND OLD.width IS NOT DISTINCT FROM NEW.width
        AND OLD.height IS NOT DISTINCT FROM NEW.height THEN
@@ -1447,10 +1454,78 @@ $$ LANGUAGE plpgsql;
 DO $$ BEGIN
     DROP TRIGGER IF EXISTS trigger_parts_shipping_shop_auto_publish ON parts_shipping_shop;
     CREATE TRIGGER trigger_parts_shipping_shop_auto_publish
-        AFTER INSERT OR UPDATE OF delivery_term_id, min_qty, shipping_method_id, length, width, height
+        AFTER INSERT OR UPDATE OF delivery_term_id, min_qty, length, width, height
         ON parts_shipping_shop
         FOR EACH ROW
         EXECUTE FUNCTION parts_shipping_shop_auto_publish();
+END $$;
+
+-- Mehrfachzuordnung (dev/shop-versand.md, „Versandwahl in der Kasse“,
+-- 2026-10-30): ein Artikel kann mehrere Versandarten erlauben. Keine Zeile =
+-- alle Versandarten; Zeilen = nur diese. Im Warenkorb gilt die Schnittmenge
+-- der eingeschränkten Artikel (shop_cart_shipping_metrics). Ersetzt die
+-- Einzelzuordnung parts_shipping_shop.shipping_method_id; vorhandene
+-- Zuordnungen werden einmalig übernommen, die Spalte danach entfernt.
+CREATE TABLE IF NOT EXISTS parts_shipping_method_shop
+(
+    parts_id           integer NOT NULL REFERENCES parts (id) ON DELETE CASCADE,
+    shipping_method_id integer NOT NULL REFERENCES shipping_method_shop (id) ON DELETE CASCADE,
+    PRIMARY KEY (parts_id, shipping_method_id)
+);
+
+COMMENT ON TABLE parts_shipping_method_shop IS 'Shop: erlaubte Versandarten eines Artikels, keine Zeile = alle';
+
+CREATE INDEX IF NOT EXISTS parts_shipping_method_shop_method_idx
+    ON parts_shipping_method_shop (shipping_method_id);
+
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'parts_shipping_shop' AND column_name = 'shipping_method_id') THEN
+        INSERT INTO parts_shipping_method_shop (parts_id, shipping_method_id)
+        SELECT ps.parts_id, ps.shipping_method_id
+          FROM parts_shipping_shop ps
+         WHERE ps.shipping_method_id IS NOT NULL
+        ON CONFLICT DO NOTHING;
+        -- Der Trigger auf parts_shipping_shop wurde oben schon ohne die Spalte
+        -- neu angelegt, sonst hinge er an ihr
+        ALTER TABLE parts_shipping_shop DROP COLUMN shipping_method_id;
+    END IF;
+END $$;
+
+-- Erlaubte aktive Versandarten eines Artikels; NULL = keine Einschränkung
+-- (keine Zuordnung, oder nur inaktive — wie bisher bei inaktiver Zuordnung).
+CREATE OR REPLACE FUNCTION shop_part_allowed_methods(p_parts_id integer) RETURNS integer[]
+    LANGUAGE sql STABLE AS $$
+    SELECT array_agg(pm.shipping_method_id ORDER BY pm.shipping_method_id)
+      FROM parts_shipping_method_shop pm
+      JOIN shipping_method_shop m ON m.id = pm.shipping_method_id AND m.active
+     WHERE pm.parts_id = p_parts_id
+$$;
+
+-- Zuordnung geändert: wie bei den übrigen Versandangaben neu veröffentlichen
+-- (shop_part_shipping_check entscheidet, ob die Seite bleibt)
+CREATE OR REPLACE FUNCTION parts_shipping_method_shop_auto_publish() RETURNS trigger AS $$
+BEGIN
+    IF NOT shop_extension_active() THEN
+        RETURN NULL;
+    END IF;
+    PERFORM shop_queue_job('publish_part', p.partnumber, NULL, c.id)
+       FROM parts p
+       JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.active
+       JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active
+      WHERE p.id = COALESCE(NEW.parts_id, OLD.parts_id)
+        AND (c.type <> 'hugoshop' OR shop_auto_publish_enabled(c.id));
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    DROP TRIGGER IF EXISTS trigger_parts_shipping_method_shop_auto_publish ON parts_shipping_method_shop;
+    CREATE TRIGGER trigger_parts_shipping_method_shop_auto_publish
+        AFTER INSERT OR DELETE
+        ON parts_shipping_method_shop
+        FOR EACH ROW
+        EXECUTE FUNCTION parts_shipping_method_shop_auto_publish();
 END $$;
 
 -- Ist der Artikel ein Versandartikel — der einer Versandart? Versandartikel
@@ -1472,7 +1547,8 @@ CREATE OR REPLACE FUNCTION shop_shipping_configured() RETURNS boolean
 $$;
 
 -- Versandart und Preis aus den Kennzahlen einer Sendung — die eine Regel für
--- den Warenkorb (shop_cart_shipping) und die Preisanzeige je Artikel
+-- den Warenkorb (shop_cart_shipping), die Versandwahl in der Kasse
+-- (shop_cart_shipping_options) und die Preisanzeige je Artikel
 -- (shop_part_shipping_prices). Regeln siehe shop_cart_shipping; Lieferland
 -- und Lieferländer prüft der Aufrufer, hier kommt nur die Zone an (NULL =
 -- alle übrigen Länder).
@@ -1485,33 +1561,53 @@ $$;
 --   p_kante, p_breite, p_hoehe, p_groesse, p_gurt
 --                  größte Werte der Artikel (längste, mittlere, kürzeste
 --                  Seite, längste + kürzeste, Gurtmaß); NULL = nicht gepflegt
---   p_zugeordnet   ranghöchste zugeordnete aktive Versandart, NULL = keine
+--   p_erlaubt      erlaubte Versandarten aus den Zuordnungen der Artikel
+--                  (Schnittmenge), NULL = keine Einschränkung, leer = keine
+--                  Versandart erfüllt alle Zuordnungen
 --   p_warenwert    Bruttowarenwert für die Freigrenze
--- Ergebnisspalte cost kam hinzu (2026-10-02) — CREATE OR REPLACE lässt
--- andere Spalten nicht zu, deshalb erst entfernen.
-DROP FUNCTION IF EXISTS shop_shipping_select(integer, integer, numeric, numeric, boolean, numeric, numeric,
-                                             numeric, numeric, numeric, integer, numeric);
-CREATE FUNCTION shop_shipping_select(p_kanal integer, p_zone integer, p_menge numeric,
-                                                p_gewicht numeric, p_ohne_gewicht boolean,
-                                                p_kante numeric, p_breite numeric, p_hoehe numeric,
-                                                p_groesse numeric, p_gurt numeric,
-                                                p_zugeordnet integer, p_warenwert numeric)
-RETURNS TABLE (status text, shipping_method_id integer, description text, parts_id integer,
-               price numeric, free boolean, cost numeric)
-LANGUAGE plpgsql STABLE AS $$
-#variable_conflict use_column
-DECLARE
-    gewaehlt record;
-BEGIN
-    IF NOT shop_shipping_configured() THEN
-        RETURN QUERY SELECT 'ok'::text, NULL::integer, 'Standard'::text, NULL::integer, 0::numeric, true, NULL::numeric;
-        RETURN;
-    END IF;
-
-    -- Je Versandart (die zugeordnete oder alle aktiven): passt sie, und zu
-    -- welchem Preis
-    SELECT m.id, m.description, m.parts_id, m.rank, m.free_shipping_applies, stufe.price, stufe.cost
-      INTO gewaehlt
+--   p_gewaehlt     in der Kasse gewählte Versandart, NULL = keine Wahl
+--
+-- shop_shipping_candidates (Versandwahl in der Kasse, 2026-10-30): jede
+-- aktive Versandart, die den Kanal bedient (eine Preisstufe für ihn oder für
+-- alle Kanäle), mit Preis und Freiheit und dem Grund, wenn sie für diese
+-- Sendung nicht in Frage kommt. Die Kasse zeigt die wählbaren, nicht
+-- passende ausgegraut.
+--   rate_price  Preis der Stufe vor der Freigrenze — kostenpflichtig heißt rate_price > 0
+--   selectable  für Kunden freigeschaltet (shipping_method_shop.selectable)
+--   forced      durch eine Artikelzuordnung vorgegeben (in p_erlaubt) — gilt
+--               auch ohne Freischaltung (Bedeutung 1: nicht frei wählbar,
+--               aber durch Zuordnung erzwingbar)
+--   available   kommt in Frage
+--   reason      assigned_other  ein Artikel lässt diese Versandart nicht zu
+--               not_selectable  nicht freigeschaltet und nicht vorgegeben
+--               weight_missing  Ware ohne Gewicht, die Versandart braucht eins (W8)
+--               no_rate         keine Preisstufe für Kanal und Zone
+--               too_heavy       über dem Höchstgewicht
+--               too_large       über einer Abmessungsgrenze
+--               NULL            kommt in Frage
+-- Fehlende Abmessungen gelten als passend (Vergleich mit NULL ist nicht wahr).
+-- Frühere Fassungen (anderer Parameter- oder Ergebnistyp) weg, sonst entstünde eine zweite
+DROP FUNCTION IF EXISTS shop_shipping_candidates(integer, integer, numeric, numeric, boolean, numeric, numeric,
+                                                 numeric, numeric, numeric, integer, numeric);
+DROP FUNCTION IF EXISTS shop_shipping_candidates(integer, integer, numeric, numeric, boolean, numeric, numeric,
+                                                 numeric, numeric, numeric, integer[], numeric);
+CREATE OR REPLACE FUNCTION shop_shipping_candidates(p_kanal integer, p_zone integer, p_menge numeric,
+                                                    p_gewicht numeric, p_ohne_gewicht boolean,
+                                                    p_kante numeric, p_breite numeric, p_hoehe numeric,
+                                                    p_groesse numeric, p_gurt numeric,
+                                                    p_erlaubt integer[], p_warenwert numeric)
+RETURNS TABLE (shipping_method_id integer, description text, customer_note text, parts_id integer,
+               rank integer, price numeric, free boolean, cost numeric, rate_price numeric,
+               selectable boolean, forced boolean, available boolean, reason text)
+LANGUAGE sql STABLE AS $$
+    WITH grenze AS (
+        SELECT c.free_shipping_from FROM sales_channel_shop c WHERE c.id = p_kanal
+    )
+    SELECT m.id, m.description, m.customer_note, m.parts_id, m.rank,
+           CASE WHEN f.frei THEN 0::numeric ELSE stufe.price END,
+           f.frei, stufe.cost, stufe.price,
+           m.selectable, v.vorgegeben,
+           g.grund IS NULL, g.grund
       FROM shipping_method_shop m
       LEFT JOIN LATERAL (
            SELECT r.price, r.cost
@@ -1525,34 +1621,89 @@ BEGIN
                      r.weight_from DESC, r.qty_from DESC
             LIMIT 1
       ) stufe ON true
+      CROSS JOIN LATERAL (
+           SELECT p_erlaubt IS NOT NULL AND m.id = ANY (p_erlaubt) AS vorgegeben
+      ) v
+      CROSS JOIN LATERAL (
+           SELECT CASE
+                    WHEN p_erlaubt IS NOT NULL AND NOT v.vorgegeben THEN 'assigned_other'
+                    WHEN NOT m.selectable AND NOT v.vorgegeben THEN 'not_selectable'
+                    WHEN p_ohne_gewicht AND (m.max_weight IS NOT NULL
+                                             OR EXISTS (SELECT 1 FROM shipping_rate_shop r
+                                                         WHERE r.shipping_method_id = m.id AND r.weight_from > 0))
+                         THEN 'weight_missing'
+                    WHEN stufe.price IS NULL THEN 'no_rate'
+                    WHEN m.max_weight IS NOT NULL AND p_gewicht > m.max_weight THEN 'too_heavy'
+                    WHEN (m.max_length IS NOT NULL AND p_kante   > m.max_length)
+                      OR (m.max_width  IS NOT NULL AND p_breite  > m.max_width)
+                      OR (m.max_height IS NOT NULL AND p_hoehe   > m.max_height)
+                      OR (m.max_size   IS NOT NULL AND p_groesse > m.max_size)
+                      OR (m.max_girth  IS NOT NULL AND p_gurt    > m.max_girth) THEN 'too_large'
+                  END AS grund
+      ) g
+      CROSS JOIN LATERAL (
+           SELECT m.free_shipping_applies
+                  AND (SELECT free_shipping_from FROM grenze) IS NOT NULL
+                  AND p_warenwert >= (SELECT free_shipping_from FROM grenze) AS frei
+      ) f
      WHERE m.active
-       AND (p_zugeordnet IS NULL OR m.id = p_zugeordnet)
-       AND stufe.price IS NOT NULL
-       AND (m.max_weight IS NULL OR p_gewicht <= m.max_weight)
-       AND (m.max_length IS NULL OR p_kante IS NULL OR p_kante <= m.max_length)
-       AND (m.max_width IS NULL OR p_breite IS NULL OR p_breite <= m.max_width)
-       AND (m.max_height IS NULL OR p_hoehe IS NULL OR p_hoehe <= m.max_height)
-       AND (m.max_size IS NULL OR p_groesse IS NULL OR p_groesse <= m.max_size)
-       AND (m.max_girth IS NULL OR p_gurt IS NULL OR p_gurt <= m.max_girth)
-       AND NOT (p_ohne_gewicht AND (m.max_weight IS NOT NULL
-                                    OR EXISTS (SELECT 1 FROM shipping_rate_shop r
-                                                WHERE r.shipping_method_id = m.id AND r.weight_from > 0)))
-     ORDER BY stufe.price, m.rank DESC, m.id
+       AND EXISTS (SELECT 1 FROM shipping_rate_shop r
+                    WHERE r.shipping_method_id = m.id
+                      AND (r.channel_id IS NULL OR r.channel_id = p_kanal))
+$$;
+
+-- Die Versandart, mit der gerechnet wird: die in der Kasse gewählte, wenn sie
+-- in Frage kommt, sonst die Vorauswahl: die günstigste kostenpflichtige
+-- Versandart (Stufenpreis > 0, auch wenn die Freigrenze sie gerade frei
+-- macht), bei gleichem Preis die ranghöchste; kostenlose Versandarten (Preis
+-- 0, etwa Selbstabholung) nur, wenn keine kostenpflichtige in Frage kommt —
+-- Abholung ist für den Kunden meist die ungünstigste Wahl (Entscheidung 2,
+-- Fassung 2026-10-30).
+-- Kommt keine in Frage, nennt status den Grund: weight_missing (Versand auf
+-- Anfrage) vor assigned_unfit (description nennt die erlaubten) vor no_method.
+-- Die Parameterliste hat sich geändert (p_erlaubt statt p_zugeordnet,
+-- p_gewaehlt) — CREATE OR REPLACE lässt das nicht zu, alte Fassungen weg.
+DROP FUNCTION IF EXISTS shop_shipping_select(integer, integer, numeric, numeric, boolean, numeric, numeric,
+                                             numeric, numeric, numeric, integer, numeric);
+DROP FUNCTION IF EXISTS shop_shipping_select(integer, integer, numeric, numeric, boolean, numeric, numeric,
+                                             numeric, numeric, numeric, integer, numeric, integer);
+CREATE OR REPLACE FUNCTION shop_shipping_select(p_kanal integer, p_zone integer, p_menge numeric,
+                                                p_gewicht numeric, p_ohne_gewicht boolean,
+                                                p_kante numeric, p_breite numeric, p_hoehe numeric,
+                                                p_groesse numeric, p_gurt numeric,
+                                                p_erlaubt integer[], p_warenwert numeric,
+                                                p_gewaehlt integer DEFAULT NULL)
+RETURNS TABLE (status text, shipping_method_id integer, description text, parts_id integer,
+               price numeric, free boolean, cost numeric)
+LANGUAGE plpgsql STABLE AS $$
+#variable_conflict use_column
+DECLARE
+    gewaehlt record;
+BEGIN
+    IF NOT shop_shipping_configured() THEN
+        RETURN QUERY SELECT 'ok'::text, NULL::integer, 'Standard'::text, NULL::integer, 0::numeric, true, NULL::numeric;
+        RETURN;
+    END IF;
+
+    SELECT k.* INTO gewaehlt
+      FROM shop_shipping_candidates(p_kanal, p_zone, p_menge, p_gewicht, p_ohne_gewicht,
+                                    p_kante, p_breite, p_hoehe, p_groesse, p_gurt, p_erlaubt, p_warenwert) k
+     WHERE k.available
+     ORDER BY (k.shipping_method_id = p_gewaehlt) DESC NULLS LAST,
+              (COALESCE(k.rate_price, 0) > 0) DESC, k.price, k.rank DESC, k.shipping_method_id
      LIMIT 1;
 
-    IF gewaehlt.id IS NULL THEN
-        -- Warum keine passt: fehlendes Gewicht hat Vorrang (Versand auf
-        -- Anfrage), dann die feste Zuordnung
+    IF gewaehlt.shipping_method_id IS NULL THEN
         IF p_ohne_gewicht AND EXISTS (
-               SELECT 1 FROM shipping_method_shop m
-                WHERE m.active AND (p_zugeordnet IS NULL OR m.id = p_zugeordnet)
-                  AND (m.max_weight IS NOT NULL
-                       OR EXISTS (SELECT 1 FROM shipping_rate_shop r
-                                   WHERE r.shipping_method_id = m.id AND r.weight_from > 0))) THEN
+               SELECT 1
+                 FROM shop_shipping_candidates(p_kanal, p_zone, p_menge, p_gewicht, p_ohne_gewicht,
+                                               p_kante, p_breite, p_hoehe, p_groesse, p_gurt, p_erlaubt, p_warenwert) k
+                WHERE k.reason = 'weight_missing') THEN
             RETURN QUERY SELECT 'weight_missing'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false, NULL::numeric;
-        ELSIF p_zugeordnet IS NOT NULL THEN
-            RETURN QUERY SELECT 'assigned_unfit'::text, p_zugeordnet,
-                                (SELECT m.description FROM shipping_method_shop m WHERE m.id = p_zugeordnet),
+        ELSIF p_erlaubt IS NOT NULL THEN
+            RETURN QUERY SELECT 'assigned_unfit'::text, NULL::integer,
+                                (SELECT string_agg(m.description, ', ' ORDER BY m.rank DESC, m.description)
+                                   FROM shipping_method_shop m WHERE m.id = ANY (p_erlaubt)),
                                 NULL::integer, 0::numeric, false, NULL::numeric;
         ELSE
             RETURN QUERY SELECT 'no_method'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false, NULL::numeric;
@@ -1561,17 +1712,80 @@ BEGIN
     END IF;
 
     RETURN QUERY
-    SELECT 'ok'::text, gewaehlt.id, gewaehlt.description, gewaehlt.parts_id,
-           CASE WHEN frei THEN 0::numeric ELSE gewaehlt.price END, frei, gewaehlt.cost
-      FROM (SELECT gewaehlt.free_shipping_applies
-                   AND (SELECT c.free_shipping_from FROM sales_channel_shop c WHERE c.id = p_kanal) IS NOT NULL
-                   AND p_warenwert >= (SELECT c.free_shipping_from FROM sales_channel_shop c WHERE c.id = p_kanal)
-                   AS frei) f;
+    SELECT 'ok'::text, gewaehlt.shipping_method_id, gewaehlt.description, gewaehlt.parts_id,
+           gewaehlt.price, gewaehlt.free, gewaehlt.cost;
 END;
 $$;
 
 -- ── Berechnung (dev/shop-versand.md, Schritt 6) ──
 --
+-- Kennzahlen der Ware eines Warenkorbs für die Versandregeln, eine Zeile —
+-- gemeinsam für shop_cart_shipping und shop_cart_shipping_options.
+--   kanal        HugoShop des Warenkorbs (carts_hugoshop.channel_id)
+--   menge        Stückzahl der Ware (ohne Versandartikel)
+--   gewicht      Gesamtgewicht
+--   ohne_gewicht mindestens eine Ware ohne Gewicht
+--   kante, breite, hoehe, groesse, gurt
+--                größte Werte der Artikel: sortiert verglichen, wie die
+--                Versanddienstleister messen — längste Seite = Länge,
+--                mittlere = Breite, kürzeste = Höhe; Breite, Höhe und Größe
+--                nur mit allen drei Maßen (die Summe ist NULL, sobald eines fehlt)
+--   erlaubt      Schnittmenge der erlaubten Versandarten aller Artikel mit
+--                Zuordnung (shop_part_allowed_methods); NULL = kein Artikel
+--                eingeschränkt; leer = die Zuordnungen schließen sich aus
+--   restricted_by Bezeichnungen der eingeschränkten Artikel, für die Kasse
+--   gewaehlt     in der Kasse gewählte Versandart (carts_hugoshop.shipping_method_id)
+CREATE OR REPLACE FUNCTION shop_cart_shipping_metrics(p_cart_uuid text)
+RETURNS TABLE (kanal integer, menge numeric, gewicht numeric, ohne_gewicht boolean,
+               kante numeric, breite numeric, hoehe numeric, groesse numeric, gurt numeric,
+               erlaubt integer[], restricted_by text, gewaehlt integer)
+-- plpgsql, nicht sql: carts_hugoshop entsteht weiter unten in dieser Datei, und
+-- eine SQL-Funktion prüfte ihre Spalten schon beim Anlegen
+LANGUAGE plpgsql STABLE AS $$
+BEGIN
+    RETURN QUERY
+    WITH nur AS (
+        -- Artikel mit Zuordnung und ihre erlaubten Versandarten
+        SELECT c.parts_id, shop_part_allowed_methods(c.parts_id) AS erlaubt
+          FROM cart_parts_hugoshop c
+         WHERE c.cart_uuid = p_cart_uuid
+           AND NOT shop_is_shipping_part(c.parts_id)
+           AND shop_part_allowed_methods(c.parts_id) IS NOT NULL
+    )
+    SELECT (SELECT k.channel_id FROM carts_hugoshop k WHERE k.uuid = p_cart_uuid),
+           COALESCE(sum(c.amount), 0)::numeric,
+           COALESCE(sum(c.amount * COALESCE(p.weight, 0)), 0)::numeric,
+           COALESCE(bool_or(p.part_type <> 'service' AND COALESCE(p.weight, 0) <= 0), false),
+           max(GREATEST(ps.length, ps.width, ps.height)),
+           max(ps.length + ps.width + ps.height
+               - GREATEST(ps.length, ps.width, ps.height) - LEAST(ps.length, ps.width, ps.height)),
+           max(CASE WHEN ps.length + ps.width + ps.height IS NOT NULL
+                    THEN LEAST(ps.length, ps.width, ps.height) END),
+           max(CASE WHEN ps.length + ps.width + ps.height IS NOT NULL
+                    THEN GREATEST(ps.length, ps.width, ps.height) + LEAST(ps.length, ps.width, ps.height) END),
+           max(GREATEST(ps.length, ps.width, ps.height)
+               + 2 * (COALESCE(ps.length, 0) + COALESCE(ps.width, 0) + COALESCE(ps.height, 0)
+                      - GREATEST(ps.length, ps.width, ps.height))),
+           -- Schnittmenge: nur Versandarten, die jeder eingeschränkte Artikel erlaubt
+           (SELECT CASE WHEN count(*) = 0 THEN NULL
+                        ELSE COALESCE((SELECT array_agg(x.m ORDER BY x.m)
+                                         FROM (SELECT u.m
+                                                 FROM nur, unnest(nur.erlaubt) AS u(m)
+                                                GROUP BY u.m
+                                               HAVING count(*) = (SELECT count(*) FROM nur)) x),
+                                      '{}'::integer[]) END
+              FROM nur),
+           (SELECT string_agg(pn.description, ', ' ORDER BY pn.description)
+              FROM nur JOIN parts pn ON pn.id = nur.parts_id),
+           (SELECT k.shipping_method_id FROM carts_hugoshop k WHERE k.uuid = p_cart_uuid)
+      FROM cart_parts_hugoshop c
+      JOIN parts p ON p.id = c.parts_id
+      LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
+     WHERE c.cart_uuid = p_cart_uuid
+       AND NOT shop_is_shipping_part(c.parts_id);
+END;
+$$;
+
 -- Versandart und Preis eines HugoShop-Warenkorbs. Eine Stelle für Warenkorb,
 -- PayPal und Rechnung — alle sehen denselben Betrag. Kanal ist der HugoShop
 -- des Warenkorbs: Preisstufen, Lieferländer und Freigrenze gelten je Kanal.
@@ -1587,17 +1801,22 @@ $$;
 --     Bestellung läuft als „Standard" ohne Versandkosten, ohne Versandartikel
 --     — die Rechnung bekommt keine Versandposition. Lieferländer gelten
 --     trotzdem.
---   - Haben Artikel eine aktive Versandart zugeordnet, gilt die ranghöchste
---     davon (W1) — passt sie nicht, ist keine Bestellung möglich (W2). Ohne
---     Zuordnung gilt die günstigste passende aktive (Entscheidung 2).
+--   - Artikel können Versandarten zugeordnet haben (erlaubte Menge,
+--     parts_shipping_method_shop). Für die Sendung gilt die Schnittmenge
+--     aller eingeschränkten Artikel; ist sie leer oder passt keine daraus,
+--     ist keine Bestellung möglich (W1, W2 in der Fassung vom 2026-10-30).
+--   - Nicht freigeschaltete Versandarten (selectable = false) kommen nur in
+--     Frage, wenn eine Zuordnung sie vorgibt.
+--   - Aus den in Frage kommenden gilt die in der Kasse gewählte, sonst die
+--     günstigste kostenpflichtige, bei gleichem Preis die ranghöchste,
+--     kostenlose zuletzt (Entscheidung 2).
 --   - Eine Versandart passt, wenn Gewicht, längste Kante, Breite (mittlere
 --     Seite), Höhe (kürzeste Seite), Größe (längste + kürzeste Seite) und
 --     Gurtmaß des größten Artikels in ihre Grenzen fallen und es eine
 --     Preisstufe für Kanal und Land gibt. Fehlende Abmessungen gelten als
---     passend; fehlt einer
---     Ware das Gewicht, passen nur Versandarten, die keins brauchen (keine
---     Gewichtsgrenze, keine Stufe ab einem Gewicht > 0) — sonst „Versand auf
---     Anfrage" (W8, W9).
+--     passend; fehlt einer Ware das Gewicht, passen nur Versandarten, die
+--     keins brauchen (keine Gewichtsgrenze, keine Stufe ab einem Gewicht > 0)
+--     — sonst „Versand auf Anfrage" (W8, W9).
 --   - Preisstufe: eigener Kanal vor allen, eigene Zone vor allen übrigen
 --     Ländern, dann die höchste erreichte Gewichts- und Stückzahlstufe.
 --   - Freigrenze des Kanals: ab dem Wert ist der Versand frei, wenn die
@@ -1612,52 +1831,13 @@ RETURNS TABLE (status text, shipping_method_id integer, description text, parts_
 LANGUAGE plpgsql STABLE AS $$
 #variable_conflict use_column
 DECLARE
-    -- Der Warenkorb gehört einem HugoShop (carts_hugoshop.channel_id)
-    kanal        integer := (SELECT k.channel_id FROM carts_hugoshop k WHERE k.uuid = p_cart_uuid);
-    land         text    := shop_country_code(p_country);
-    zone         integer;
-    menge        numeric;
-    gewicht      numeric;
-    ohne_gewicht boolean;
-    kante        numeric;
-    breite       numeric;
-    hoehe        numeric;
-    groesse      numeric;
-    gurt         numeric;
-    zugeordnet   integer;
+    k    record;
+    land text := shop_country_code(p_country);
+    zone integer;
 BEGIN
-    -- Ware und ihre Kennzahlen
-    SELECT COALESCE(sum(c.amount), 0),
-           COALESCE(sum(c.amount * COALESCE(p.weight, 0)), 0),
-           bool_or(p.part_type <> 'service' AND COALESCE(p.weight, 0) <= 0),
-           max(GREATEST(ps.length, ps.width, ps.height)),
-           -- Sortiert, nur mit allen drei Maßen: mittlere Seite (Breite),
-           -- kürzeste (Höhe), längste + kürzeste (Größe nach Hermes). Die
-           -- Summe ist NULL, sobald ein Maß fehlt.
-           max(ps.length + ps.width + ps.height
-               - GREATEST(ps.length, ps.width, ps.height) - LEAST(ps.length, ps.width, ps.height)),
-           max(CASE WHEN ps.length + ps.width + ps.height IS NOT NULL
-                    THEN LEAST(ps.length, ps.width, ps.height) END),
-           max(CASE WHEN ps.length + ps.width + ps.height IS NOT NULL
-                    THEN GREATEST(ps.length, ps.width, ps.height) + LEAST(ps.length, ps.width, ps.height) END),
-           max(GREATEST(ps.length, ps.width, ps.height)
-               + 2 * (COALESCE(ps.length, 0) + COALESCE(ps.width, 0) + COALESCE(ps.height, 0)
-                      - GREATEST(ps.length, ps.width, ps.height))),
-           (SELECT m.id
-              FROM cart_parts_hugoshop c2
-              JOIN parts_shipping_shop ps2 ON ps2.parts_id = c2.parts_id
-              JOIN shipping_method_shop m ON m.id = ps2.shipping_method_id AND m.active
-             WHERE c2.cart_uuid = p_cart_uuid
-             ORDER BY m.rank DESC, m.id
-             LIMIT 1)
-      INTO menge, gewicht, ohne_gewicht, kante, breite, hoehe, groesse, gurt, zugeordnet
-      FROM cart_parts_hugoshop c
-      JOIN parts p ON p.id = c.parts_id
-      LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
-     WHERE c.cart_uuid = p_cart_uuid
-       AND NOT shop_is_shipping_part(c.parts_id);
+    SELECT * INTO k FROM shop_cart_shipping_metrics(p_cart_uuid);
 
-    IF menge <= 0 THEN
+    IF k.menge <= 0 THEN
         RETURN QUERY SELECT 'no_goods'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false;
         RETURN;
     END IF;
@@ -1665,9 +1845,9 @@ BEGIN
         RETURN QUERY SELECT 'country_unknown'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false;
         RETURN;
     END IF;
-    IF EXISTS (SELECT 1 FROM sales_channel_country_shop cc WHERE cc.channel_id = kanal)
+    IF EXISTS (SELECT 1 FROM sales_channel_country_shop cc WHERE cc.channel_id = k.kanal)
        AND NOT EXISTS (SELECT 1 FROM sales_channel_country_shop cc
-                        WHERE cc.channel_id = kanal AND cc.iso_code = land) THEN
+                        WHERE cc.channel_id = k.kanal AND cc.iso_code = land) THEN
         RETURN QUERY SELECT 'country_not_delivered'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false;
         RETURN;
     END IF;
@@ -1676,8 +1856,75 @@ BEGIN
     -- Versandart und Preis: dieselbe Regel wie für die Anzeige je Artikel
     RETURN QUERY
     SELECT v.status, v.shipping_method_id, v.description, v.parts_id, v.price, v.free
-      FROM shop_shipping_select(kanal, zone, menge, gewicht, ohne_gewicht,
-                                kante, breite, hoehe, groesse, gurt, zugeordnet, p_goods_value) v;
+      FROM shop_shipping_select(k.kanal, zone, k.menge, k.gewicht, k.ohne_gewicht,
+                                k.kante, k.breite, k.hoehe, k.groesse, k.gurt, k.erlaubt, p_goods_value,
+                                k.gewaehlt) v;
+END;
+$$;
+
+-- Versandwahl in der Kasse (dev/shop-versand.md, 2026-10-30): die
+-- Versandarten, die der Kunde zu diesem Warenkorb und Lieferland sieht —
+-- freigeschaltete und durch Zuordnung vorgegebene —, mit Preis,
+-- Verfügbarkeit und Grund. selected ist die, mit der shop_cart_shipping
+-- rechnet (die gewählte, wenn sie in Frage kommt, sonst die günstigste
+-- kostenpflichtige, bei gleichem Preis die ranghöchste, kostenlose zuletzt);
+-- forced und required_by sagen, welche
+-- Artikel eine Versandart vorgeben. Ist das Land unbekannt oder kein
+-- Lieferland, ist keine verfügbar, der Grund steht an jeder, der Preis bleibt
+-- leer. Ohne eingerichtete Versandart gibt es nichts zu wählen: leer.
+-- Reihenfolge: verfügbare zuerst, kostenpflichtige vor kostenlosen, dann
+-- günstigste oben, bei gleichem Preis die ranghöchste.
+CREATE OR REPLACE FUNCTION shop_cart_shipping_options(p_cart_uuid text, p_country text, p_goods_value numeric)
+RETURNS TABLE (shipping_method_id integer, description text, customer_note text,
+               price numeric, free boolean, available boolean, reason text, selected boolean,
+               forced boolean, required_by text)
+LANGUAGE plpgsql STABLE AS $$
+#variable_conflict use_column
+DECLARE
+    k        record;
+    land     text := shop_country_code(p_country);
+    zone     integer;
+    sperre   text;
+    gewaehlt integer;
+BEGIN
+    IF NOT shop_shipping_configured() THEN
+        RETURN;
+    END IF;
+    SELECT * INTO k FROM shop_cart_shipping_metrics(p_cart_uuid);
+    IF k.menge <= 0 THEN
+        RETURN;
+    END IF;
+
+    IF land IS NULL THEN
+        sperre := 'country_unknown';
+    ELSIF EXISTS (SELECT 1 FROM sales_channel_country_shop cc WHERE cc.channel_id = k.kanal)
+          AND NOT EXISTS (SELECT 1 FROM sales_channel_country_shop cc
+                           WHERE cc.channel_id = k.kanal AND cc.iso_code = land) THEN
+        sperre := 'country_not_delivered';
+    END IF;
+    SELECT zc.zone_id INTO zone FROM shipping_zone_country_shop zc WHERE zc.iso_code = land;
+
+    IF sperre IS NULL THEN
+        SELECT v.shipping_method_id INTO gewaehlt
+          FROM shop_shipping_select(k.kanal, zone, k.menge, k.gewicht, k.ohne_gewicht,
+                                    k.kante, k.breite, k.hoehe, k.groesse, k.gurt, k.erlaubt, p_goods_value,
+                                    k.gewaehlt) v;
+    END IF;
+
+    RETURN QUERY
+    SELECT c.shipping_method_id, c.description, c.customer_note,
+           CASE WHEN sperre IS NULL THEN c.price END,
+           c.free,
+           sperre IS NULL AND c.available,
+           COALESCE(sperre, c.reason),
+           COALESCE(c.shipping_method_id = gewaehlt, false),
+           c.forced,
+           CASE WHEN c.forced THEN k.restricted_by END
+      FROM shop_shipping_candidates(k.kanal, zone, k.menge, k.gewicht, k.ohne_gewicht,
+                                    k.kante, k.breite, k.hoehe, k.groesse, k.gurt, k.erlaubt, p_goods_value) c
+     WHERE c.selectable OR c.forced
+     ORDER BY (sperre IS NULL AND c.available) DESC,
+              (COALESCE(c.rate_price, 0) > 0) DESC, c.price, c.rank DESC, c.shipping_method_id;
 END;
 $$;
 
@@ -1731,7 +1978,7 @@ DECLARE
     hoehe        numeric;
     groesse      numeric;
     gurt         numeric;
-    zugeordnet   integer;
+    erlaubt      integer[];
     einheit      text := (SELECT d.weightunit FROM defaults d LIMIT 1);
 BEGIN
     SELECT GREATEST(COALESCE(ps.min_qty, 1), 1),
@@ -1748,8 +1995,8 @@ BEGIN
            GREATEST(ps.length, ps.width, ps.height)
                + 2 * (COALESCE(ps.length, 0) + COALESCE(ps.width, 0) + COALESCE(ps.height, 0)
                       - GREATEST(ps.length, ps.width, ps.height)),
-           (SELECT m.id FROM shipping_method_shop m WHERE m.id = ps.shipping_method_id AND m.active)
-      INTO menge, gewicht, ohne_gewicht, kante, breite, hoehe, groesse, gurt, zugeordnet
+           shop_part_allowed_methods(p.id)
+      INTO menge, gewicht, ohne_gewicht, kante, breite, hoehe, groesse, gurt, erlaubt
       FROM parts p
       LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
      WHERE p.id = p_parts_id;
@@ -1765,7 +2012,9 @@ BEGIN
         SELECT 1
           FROM shipping_method_shop m
          WHERE m.active
-           AND (zugeordnet IS NULL OR m.id = zugeordnet)
+           AND (erlaubt IS NULL OR m.id = ANY (erlaubt))
+           -- nicht freigeschaltete nur, wenn eine Zuordnung sie vorgibt
+           AND (m.selectable OR erlaubt IS NOT NULL)
            AND (m.max_weight IS NULL OR gewicht <= m.max_weight)
            AND (m.max_length IS NULL OR kante IS NULL OR kante <= m.max_length)
            AND (m.max_width IS NULL OR breite IS NULL OR breite <= m.max_width)
@@ -1788,14 +2037,16 @@ BEGIN
     -- Warum keine passt — in derselben Reihenfolge wie im Warenkorb
     IF ohne_gewicht AND EXISTS (
            SELECT 1 FROM shipping_method_shop m
-            WHERE m.active AND (zugeordnet IS NULL OR m.id = zugeordnet)
+            WHERE m.active AND (erlaubt IS NULL OR m.id = ANY (erlaubt))
+              AND (m.selectable OR erlaubt IS NOT NULL)
               AND (m.max_weight IS NOT NULL
                    OR EXISTS (SELECT 1 FROM shipping_rate_shop r
                                WHERE r.shipping_method_id = m.id AND r.weight_from > 0))) THEN
         RETURN QUERY SELECT 'weight_missing'::text, NULL::text, gewicht, kante, breite, hoehe, groesse, gurt, einheit;
-    ELSIF zugeordnet IS NOT NULL THEN
+    ELSIF erlaubt IS NOT NULL THEN
         RETURN QUERY SELECT 'assigned_unfit'::text,
-                            (SELECT m.description FROM shipping_method_shop m WHERE m.id = zugeordnet),
+                            (SELECT string_agg(m.description, ', ' ORDER BY m.rank DESC, m.description)
+                               FROM shipping_method_shop m WHERE m.id = ANY (erlaubt)),
                             gewicht, kante, breite, hoehe, groesse, gurt, einheit;
     ELSE
         RETURN QUERY SELECT 'no_method'::text, NULL::text, gewicht, kante, breite, hoehe, groesse, gurt, einheit;
@@ -1834,7 +2085,7 @@ DECLARE
     hoehe        numeric;
     groesse      numeric;
     gurt         numeric;
-    zugeordnet   integer;
+    erlaubt      integer[];
     warenwert    numeric;
     grenze       numeric := (SELECT c.free_shipping_from FROM sales_channel_shop c WHERE c.id = p_channel_id);
     brutto       boolean := COALESCE((SELECT lower(btrim(d.value)) FROM defaults_oserp d
@@ -1857,7 +2108,7 @@ BEGIN
            GREATEST(ps.length, ps.width, ps.height)
                + 2 * (COALESCE(ps.length, 0) + COALESCE(ps.width, 0) + COALESCE(ps.height, 0)
                       - GREATEST(ps.length, ps.width, ps.height)),
-           (SELECT m.id FROM shipping_method_shop m WHERE m.id = ps.shipping_method_id AND m.active),
+           shop_part_allowed_methods(p.id),
            -- Bruttowarenwert wie im Warenkorb: Kanalpreis, bei Nettopreisen mit
            -- dem Steuersatz der Standard-Steuerzone
            GREATEST(COALESCE(ps.min_qty, 1), 1) * COALESCE(shop_channel_price(p.id, p_channel_id), 0)
@@ -1867,7 +2118,7 @@ BEGIN
                       ELSE 1 + shop_tax_rate(p.buchungsgruppen_id,
                                              COALESCE((SELECT d.value FROM defaults_oserp d
                                                         WHERE d.key = 'shop_standard_taxzone'), 'Inland')) END
-      INTO menge, gewicht, ohne_gewicht, kante, breite, hoehe, groesse, gurt, zugeordnet, warenwert
+      INTO menge, gewicht, ohne_gewicht, kante, breite, hoehe, groesse, gurt, erlaubt, warenwert
       FROM parts p
       LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
      WHERE p.id = p_parts_id;
@@ -1906,7 +2157,7 @@ BEGIN
                     ELSE v.price END,
                v.cost
           FROM shop_shipping_select(p_channel_id, z.id, menge, gewicht, ohne_gewicht,
-                                    kante, breite, hoehe, groesse, gurt, zugeordnet, warenwert) v;
+                                    kante, breite, hoehe, groesse, gurt, erlaubt, warenwert, NULL) v;
     END LOOP;
 END;
 $$;
@@ -1932,6 +2183,14 @@ CREATE TABLE IF NOT EXISTS carts_hugoshop
 
 COMMENT ON TABLE  carts_hugoshop        IS 'Shop: Warenkorb, auch ohne angemeldeten Kunden';
 COMMENT ON COLUMN carts_hugoshop.active IS 'Letzte Benutzung — Grundlage fuer das Aufraeumen';
+
+-- Versandwahl in der Kasse (dev/shop-versand.md, 2026-10-30): die Versandart,
+-- die der Kunde gewählt hat. NULL = keine Wahl, es gilt die Vorauswahl
+-- (günstigste kostenpflichtige, siehe shop_shipping_select); passt die
+-- gewählte nicht mehr, ebenso. Die Rechnung setzt die Wahl zurück (cartClear).
+ALTER TABLE carts_hugoshop ADD COLUMN IF NOT EXISTS shipping_method_id integer
+    REFERENCES shipping_method_shop (id) ON DELETE SET NULL;
+COMMENT ON COLUMN carts_hugoshop.shipping_method_id IS 'In der Kasse gewählte Versandart, NULL = die Vorauswahl (günstigste kostenpflichtige)';
 
 CREATE TABLE IF NOT EXISTS cart_parts_hugoshop
 (

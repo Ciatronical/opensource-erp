@@ -30,7 +30,26 @@ export function cartTotals(data) {
     // Aeltere Backends liefern nichts — dann gilt ok.
     shippingStatus: data.shippingStatus || 'ok',
     shippingMethod: data.shippingMethod || '',
+    shippingMethodId: data.shippingMethodId === null || data.shippingMethodId === undefined ? null : Number(data.shippingMethodId),
     shippingFree: !!data.shippingFree,
+    // ISO-Code des Lieferlands, mit dem das Backend gerechnet hat (leer = unbekannt)
+    shippingCountry: data.shippingCountry || '',
+    // Versandwahl in der Kasse (dev/shop-versand.md, 2026-10-30): alle
+    // Versandarten mit Preis, Verfuegbarkeit und Grund; selected ist die, mit
+    // der das Backend rechnet. Leer bei aelteren Backends und ohne Versandarten.
+    shippingOptions: (data.shippingOptions || []).map((o) => ({
+      id: Number(o.id),
+      name: o.name || '',
+      note: o.note || '',
+      price: o.price === null || o.price === undefined ? null : toNumber(o.price),
+      free: !!o.free,
+      available: !!o.available,
+      reason: o.reason || '',
+      selected: !!o.selected,
+      // durch eine Artikelzuordnung vorgegeben; requiredBy nennt die Artikel
+      forced: !!o.forced,
+      requiredBy: o.requiredBy || '',
+    })),
   };
 }
 

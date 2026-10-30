@@ -334,6 +334,31 @@
                         </v-col>
                     </v-row>
 
+                    <!-- Versandwahl in der Kasse (dev/shop-versand.md, 2026-10-30):
+                         was der Kunde zu dieser Versandart liest -->
+                    <v-text-field
+                        v-model="methode.customer_note"
+                        :label="t('ShopView.shippingConfig.customerNote')"
+                        :hint="t('ShopView.shippingConfig.customerNoteHint')"
+                        persistent-hint
+                        variant="outlined"
+                        density="compact"
+                        autocomplete="off"
+                        class="mt-2"
+                    />
+
+                    <!-- Freischaltung (Bedeutung 1): nicht freigeschaltet = für Kunden nicht
+                         frei wählbar, kommt aber zum Zug, wenn ein Artikel sie vorgibt -->
+                    <v-checkbox
+                        v-model="methode.selectable"
+                        :label="t('ShopView.shippingConfig.selectable')"
+                        :hint="t('ShopView.shippingConfig.selectableHint')"
+                        persistent-hint
+                        color="primary"
+                        density="compact"
+                        class="mt-1"
+                    />
+
                     <v-checkbox
                         v-model="methode.free_shipping_applies"
                         :label="t('ShopView.shippingConfig.freeShippingApplies')"
@@ -617,6 +642,9 @@ function alsMethode(m) {
         max_size: zahlOderLeer(m.max_size),
         free_shipping_applies: WAHR.includes(m.free_shipping_applies),
         ebay_fulfillment_policy_id: m.ebay_fulfillment_policy_id || '',
+        customer_note: m.customer_note || '',
+        // Vorgabe freigeschaltet (neue Versandart, ältere Antworten ohne das Feld)
+        selectable: m.selectable === undefined || m.selectable === null ? true : WAHR.includes(m.selectable),
         active: WAHR.includes(m.active),
         parts: Number(m.parts) || 0,
         rates: (m.rates || []).map(s => ({
@@ -703,6 +731,8 @@ function methodeNutzdaten(m) {
         max_size: zahl(m.max_size),
         free_shipping_applies: m.free_shipping_applies,
         ebay_fulfillment_policy_id: m.ebay_fulfillment_policy_id.trim(),
+        customer_note: m.customer_note.trim(),
+        selectable: m.selectable,
         active: m.active,
         rates: m.rates.map(s => ({
             channel_id: s.channel_id || null,

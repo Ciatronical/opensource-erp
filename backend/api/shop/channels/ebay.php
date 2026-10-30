@@ -656,12 +656,17 @@ function shopEbayPublishPartNow($db, int $kanal, int $partsId): string {
                 ROUND(CASE WHEN :brutto = 1 THEN k.preis
                            ELSE k.preis * (1 + shop_tax_rate(p.buchungsgruppen_id, :zone)) END, 2) AS preis,
                 -- Versand (dev/shop-versand.md, Schritt 8): Mindestabnahme als
-                -- Los (W5, W10), Versandrichtlinie der zugeordneten Versandart
-                -- (W4), ausgeschlossene Lieferbedingung (W11)
+                -- Los (W5, W10), Versandrichtlinie der ranghöchsten erlaubten
+                -- Versandart mit Richtlinie (W4, Mehrfachzuordnung 2026-10-30),
+                -- ausgeschlossene Lieferbedingung (W11)
                 p.unit, ps.min_qty,
                 (SELECT NULLIF(btrim(m.ebay_fulfillment_policy_id), '')
-                   FROM shipping_method_shop m
-                  WHERE m.id = ps.shipping_method_id AND m.active) AS versandrichtlinie,
+                   FROM parts_shipping_method_shop pm
+                   JOIN shipping_method_shop m ON m.id = pm.shipping_method_id AND m.active
+                  WHERE pm.parts_id = p.id
+                    AND NULLIF(btrim(m.ebay_fulfillment_policy_id), '') IS NOT NULL
+                  ORDER BY m.rank DESC, m.id
+                  LIMIT 1) AS versandrichtlinie,
                 (ps.delivery_term_id IS NOT NULL
                  AND COALESCE(c.settings -> 'excluded_delivery_terms', '[]'::jsonb) @> to_jsonb(ps.delivery_term_id))
                     AS lieferzeit_zu_lang

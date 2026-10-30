@@ -204,11 +204,16 @@
                     </div>
                 </v-col>
                 <v-col cols="12" sm="6" class="py-1">
+                    <!-- Erlaubte Versandarten (Mehrfachzuordnung, 2026-10-30): leer = alle,
+                         mehrere = nur diese; im Warenkorb gilt die Schnittmenge aller Artikel -->
                     <v-select
-                        v-model="daten.shipping.shipping_method_id"
+                        v-model="daten.shipping.shipping_method_ids"
                         :items="versandartAuswahl"
-                        :label="t('ShopView.partCard.shippingMethod')"
-                        :hint="t('ShopView.partCard.shippingMethodHint')"
+                        multiple
+                        chips
+                        closable-chips
+                        :label="t('ShopView.partCard.shippingMethods')"
+                        :hint="t('ShopView.partCard.shippingMethodsHint')"
                         persistent-hint
                         :readonly="!darfBearbeiten"
                         variant="outlined"
@@ -771,7 +776,7 @@ const WAHR_WERTE = [true, 't', 'true', 1, '1']
 
 /** Versandangaben (parts_shipping_shop); leer = nicht gepflegt */
 function leererVersand() {
-    return { shipping_method_id: null, length: '', width: '', height: '', min_qty: '', delivery_term_id: null }
+    return { shipping_method_ids: [], length: '', width: '', height: '', min_qty: '', delivery_term_id: null }
 }
 const zahlText = wert => (wert === null || wert === undefined || wert === '' ? '' : String(Number(wert)))
 const zahlOderNull = wert => (wert === null || wert === undefined || String(wert).trim() === '' ? null : Number(wert))
@@ -788,12 +793,10 @@ const lieferbedingungen = ref([])
 const gewichtseinheit = ref('')
 const gewicht = ref(null)
 
-const versandartAuswahl = computed(() => [
-    { value: null, title: t('ShopView.partCard.shippingMethodCheapest') },
-    ...versandarten.value
-        .filter(m => m.active || m.id === daten.value.shipping.shipping_method_id)
-        .map(m => ({ value: Number(m.id), title: m.active ? m.description : `${m.description} (${t('ShopView.partCard.inactive')})` })),
-])
+// Inaktive nur, wenn sie noch zugeordnet sind
+const versandartAuswahl = computed(() => versandarten.value
+    .filter(m => m.active || (daten.value.shipping.shipping_method_ids || []).includes(Number(m.id)))
+    .map(m => ({ value: Number(m.id), title: m.active ? m.description : `${m.description} (${t('ShopView.partCard.inactive')})` })))
 /** Ungültige Lieferbedingungen nur, wenn sie gerade gewählt ist */
 const lieferbedingungAuswahl = computed(() => lieferbedingungen.value
     .filter(d => !d.obsolete || d.id === daten.value.shipping.delivery_term_id)
@@ -1156,7 +1159,7 @@ function nutzdaten(partsId) {
         properties: zuObjekt(d.properties),
         downloads: zuObjekt(d.downloads),
         shipping: {
-            shipping_method_id: d.shipping.shipping_method_id || null,
+            shipping_method_ids: (d.shipping.shipping_method_ids || []).map(Number),
             length: zahlOderNull(d.shipping.length),
             width: zahlOderNull(d.shipping.width),
             height: zahlOderNull(d.shipping.height),
@@ -1336,7 +1339,7 @@ async function laden() {
         downloads: zuPaaren(lies(zeile?.hugoshop_downloads)),
         channels: kanaele.map(alsKanal),
         shipping: versand.part ? {
-            shipping_method_id: versand.part.shipping_method_id ? Number(versand.part.shipping_method_id) : null,
+            shipping_method_ids: (versand.method_ids || []).map(Number),
             length: zahlText(versand.part.length),
             width: zahlText(versand.part.width),
             height: zahlText(versand.part.height),

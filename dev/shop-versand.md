@@ -24,7 +24,7 @@ von Hand entstehen (Entscheidung 7).
 | Nr. | Frage | Entscheidung |
 | --- | --- | --- |
 | 1 | Wie werden die Kriterien kombiniert? | Preis aus Versandart × Länderzone × Gewichtsstufe, wahlweise mit Stückzahlstufe; Abmessungen schließen eine Versandart aus, statt den Preis zu bestimmen |
-| 2 | Wer wählt die Versandart? | Dem Artikel kann eine Versandart zugeordnet werden; ohne Zuordnung gilt die günstigste passende. Der Kunde wählt nicht |
+| 2 | Wer wählt die Versandart? | ~~Dem Artikel kann eine Versandart zugeordnet werden; ohne Zuordnung gilt die günstigste passende. Der Kunde wählt nicht~~ Seit 2026-10-30: Dem Artikel können mehrere Versandarten erlaubt werden (Schnittmenge im Warenkorb); der Kunde wählt in der Kasse unter den in Frage kommenden, vorausgewählt ist die günstigste kostenpflichtige, kostenlose wie Selbstabholung zuletzt (siehe „Versandwahl in der Kasse“) |
 | 3 | Bestellung über der Grenze einer Versandart | Versandart ausschließen, keine Aufteilung in mehrere Pakete |
 | 4 | Freigrenze | je Verkaufskanal |
 | 5 | Mindestabnahme | je Artikel |
@@ -768,3 +768,101 @@ Shop-Rechnungen vollständig schreiben).
 gelaufen (kein Zugriff aus der Entwicklungsumgebung), die Oberfläche nicht im
 Browser. Geprüft sind PHP-Syntax, Vue-Übersetzung und JSON der Sprachdateien.
 Wirksam erst nach dem Upstall der Shop-Erweiterung.
+
+## Versandwahl in der Kasse, Mehrfachzuordnung und Freischaltung (2026-10-30)
+
+Drei zusammenhängende Änderungen; der erste Anlauf vom selben Tag wurde
+verworfen und neu aufgesetzt. Freigegebene Schemaänderungen (alle nur in
+Tabellen der Erweiterung): `carts_hugoshop.shipping_method_id`,
+`shipping_method_shop.customer_note`, `shipping_method_shop.selectable`,
+neue Tabelle `parts_shipping_method_shop`; die Spalte
+`parts_shipping_shop.shipping_method_id` ist nach der Übernahme entfernt.
+
+### Mehrfachzuordnung (ersetzt Entscheidung 2, W1, W2)
+
+Ein Artikel erlaubt keine, eine oder mehrere Versandarten
+(`parts_shipping_method_shop`, Feld „Erlaubte Versandarten“ in der
+Artikelkarte; leer = alle). Für eine Sendung gilt die **Schnittmenge** der
+erlaubten Mengen aller eingeschränkten Artikel (`shop_cart_shipping_metrics`,
+`shop_part_allowed_methods`); Artikel ohne Einschränkung zählen nicht. Ist
+die Schnittmenge leer oder passt keine Versandart daraus, ist keine
+Bestellung möglich (Status `assigned_unfit`, `description` nennt die
+erlaubten). Der Rang löst keine Konflikte mehr auf; er entscheidet bei
+gleichem Preis über die Vorauswahl und bei eBay über die Versandrichtlinie: die der ranghöchsten erlaubten
+Versandart mit Richtlinie, sonst die allgemeine des Kanals (W4). Inaktive
+Zuordnungen zählen wie bisher nicht. Änderungen an der Zuordnung lösen die
+Neuveröffentlichung aus wie die übrigen Versandangaben (Trigger auf
+`parts_shipping_method_shop`). Bisherige Einzelzuordnungen sind übernommen
+und verhalten sich gleich — außer dass zwei Artikel mit verschiedenen
+Einzelzuordnungen im selben Warenkorb jetzt gesperrt werden statt über den
+Rang aufgelöst.
+
+### Freischaltung (Bedeutung 1)
+
+`shipping_method_shop.selectable` (Vorgabe wahr), Checkbox „Für Kunden
+wählbar“. Nicht freigeschaltete Versandarten erscheinen in der Kasse nicht
+und werden auch nicht automatisch gewählt — **außer** eine Artikelzuordnung
+gibt sie vor: dann gelten sie und stehen in der Kasse mit dem Hinweis
+„Vorgegeben durch: ‹Artikel›“. Ein Artikel ohne Einschränkung, zu dem nur
+eine nicht freigeschaltete Versandart passt, ist nicht bestellbar und wird
+nicht veröffentlicht (`shop_part_shipping_check` prüft `selectable OR
+erlaubt`). Typischer Einsatz: „Spedition“ nur für Sperrgut, nicht als freie
+Wahl.
+
+### Versandwahl in der Kasse
+
+Der Kunde sieht in der Kasse unter der Lieferadresse alle in Frage kommenden
+Versandarten mit Name, Hinweis für Kunden und Preis („versandkostenfrei“ ab
+Freigrenze, „kostenlos“ bei Preis 0); nicht passende ausgegraut mit Grund
+(`shipping.reason.*`: zu schwer, zu groß, nicht für dieses Lieferland,
+Gewicht eines Artikels fehlt, ein Artikel lässt sie nicht zu). **Vorausgewählt
+ist die günstigste kostenpflichtige Versandart** (Stufenpreis > 0, auch wenn
+die Freigrenze sie gerade frei macht), bei gleichem Preis die ranghöchste;
+kostenlose Versandarten — „Selbstabholung“ ist eine gewöhnliche Versandart
+mit Preis 0 — stehen zuletzt und gelten nur, wenn keine kostenpflichtige in
+Frage kommt (Entscheidung des Users vom 2026-10-30: Abholung ist für den
+Kunden meist die ungünstigste Wahl). Dieselbe Reihenfolge hat die Liste.
+Gibt es nur eine, steht sie als Text; ist nur eine von mehreren möglich,
+sagt ein Hinweis das.
+
+- Die Wahl steht am Warenkorb (`carts_hugoshop.shipping_method_id`) und
+  übersteht Seitenwechsel und PayPal; `cartClear` (Rechnung) setzt sie
+  zurück. Passt die gewählte nicht mehr, gilt wieder die Vorauswahl.
+- `shop_shipping_candidates(…)`: jede aktive Versandart des Kanals mit Preis,
+  `selectable`, `forced` (durch Zuordnung vorgegeben), `available` und
+  `reason` (`assigned_other`, `not_selectable`, `weight_missing`, `no_rate`,
+  `too_heavy`, `too_large`). `shop_shipping_select(…, p_erlaubt integer[],
+  p_warenwert, p_gewaehlt)` wählt daraus; `shop_cart_shipping` (Aufruf und
+  Ergebnis unverändert) und `shop_part_shipping_prices` nutzen es.
+  `shop_cart_shipping_options(cart, land, warenwert)` ist die Liste der
+  Kasse (nur `selectable OR forced`, mit `selected`, `forced`,
+  `required_by`).
+- Backend: `cartTotals` holt die Optionen in derselben Abfrage wie die
+  Summen; `cartShippingShape` gibt `shippingOptions` und `shippingMethodId`
+  aus. Öffentliche Aktion `chooseShipping` (`shipping_method`, 0 = Vorauswahl;
+  Antwort wie `checkout`), bei abgeschaltetem Shop gesperrt.
+  `cartChooseShipping` nimmt nur aktive Versandarten
+  (`SHIPPING_METHOD_NOT_FOUND`). PayPal und Rechnung rechnen unverändert über
+  `cartRead` → `shop_cart_shipping`.
+- Widget: Die Auswahlliste ist ein gemeinsamer Baustein
+  (`portal-ui/src/core/shipping-options.js`) und steht in der Kasse
+  (`<shop-checkout>`, Block „Versandart“) **und im Warenkorb** (`<shop-cart>`,
+  unter der Versandzeile). Beide rufen `chooseShipping`; die Kasse gibt die
+  Antwort an `<shop-cart>.apply()`, der Warenkorb übernimmt sie selbst. Im
+  Warenkorb kennt das System die Lieferadresse noch nicht endgültig — es
+  rechnet mit der Standard-Lieferadresse des Kontos, bei Gästen mit dem Land
+  der Firmenadresse; `cartTotals` liefert dieses Land als ISO-Code
+  (`shippingCountry`), der Warenkorb zeigt darunter „Versandkosten für
+  Lieferungen nach ‹Land›. In der Kasse können Sie eine andere Lieferadresse
+  wählen.“ (Landesname über `Intl.DisplayNames` in der Seitensprache, kein
+  fester Text). Texte Deutsch und Englisch in `i18n.js`; Bündel neu gebaut.
+- Admin: `getShopShipping`/`saveShopShippingMethod` mit `customer_note` und
+  `selectable`; `getShopPart` liefert `shipping.method_ids`,
+  `savePartShopData` nimmt `shipping.shipping_method_ids` (löscht nur
+  entfallene Zeilen und fügt neue ein — Löschen und Neuanlegen derselben
+  Zeile in einer Anweisung verlöre sie).
+
+**Nicht getestet:** ein Durchlauf im Browser und mit PayPal; die
+SQL-Funktionen und die PHP-Bibliothek sind gegen die lokale Testdatenbank
+geprüft (zurückgerollte Transaktion). Wirksam erst nach dem Upstall der
+Shop-Erweiterung.

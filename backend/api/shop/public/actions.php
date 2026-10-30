@@ -159,6 +159,22 @@ function checkout($db, string $uuid, array $daten) {
 }
 
 /**
+ * Kasse: Versandart wählen (dev/shop-versand.md, Versandwahl 2026-10-30)
+ *
+ * shipping_method = Versandart, 0 = wieder die Vorauswahl. Antwort wie
+ * checkout: der Warenkorb mit der neuen Berechnung und der Optionsliste —
+ * die Kasse zeigt danach, was gilt (passt die Wahl nicht, die Vorauswahl).
+ */
+function chooseShipping($db, string $uuid, array $daten) {
+    $context = portalContextRequire($db, $uuid);
+    if (empty($context['cart_uuid'])) {
+        throw new ApiError('CART_NOT_FOUND', 'Zu dieser Sitzung gibt es keinen Warenkorb');
+    }
+    cartChooseShipping($db, $context['cart_uuid'], portalVarInt($daten, 'shipping_method'));
+    getCart($db, $uuid, $daten);
+}
+
+/**
  * Wandelt den Warenkorb in eine Rechnung — Zahlung auf Rechnung
  *
  * Der Weg über PayPal läuft über beginPayment/endPayment.
@@ -307,7 +323,7 @@ function shopPublicActions(): array {
         // Suche
         'fastSearch', 'moreSearchResults', 'fullSearch', 'findSpecialTools',
         // Bestellung und Rechnung
-        'checkout', 'invoicing', 'getInvoiceSummary',
+        'checkout', 'chooseShipping', 'invoicing', 'getInvoiceSummary',
         // Zahlung
         'beginPayment', 'endPayment', 'paymentCanceled',
         // Auswertung, Widerruf
@@ -355,7 +371,7 @@ function shopExternalActions(): array {
  * @return string[]
  */
 function shopClosedActions(): array {
-    return ['inCart', 'changeQuantity', 'checkout', 'invoicing', 'beginPayment'];
+    return ['inCart', 'changeQuantity', 'checkout', 'chooseShipping', 'invoicing', 'beginPayment'];
 }
 
 /**

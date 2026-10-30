@@ -12,6 +12,7 @@ import {
   emptyShipping,
 } from '../core/checkout-data.js';
 import { gtmBeginCheckout } from '../core/gtm.js';
+import { renderShippingOptions, shippingOptionStyles } from '../core/shipping-options.js';
 import './shop-cart.js';
 import './portal-register.js';
 import { shopPath, apiUrl, sitePath } from '../core/paths.js';
@@ -42,6 +43,17 @@ import { shopPath, apiUrl, sitePath } from '../core/paths.js';
  * (checkout.html:5). Es ist die zweite Zahlungsart, also gehoert es dorthin,
  * wo ueber die Zahlung entschieden wird.
  *
+ * VERSANDWAHL (dev/shop-versand.md, 2026-10-30)
+ * Unter der Lieferadresse stehen alle Versandarten des Shops mit Preis:
+ * die guenstigste kostenpflichtige vorausgewaehlt (kostenlose wie Abholung
+ * zuletzt, bei gleichem Preis die ranghoechste),
+ * nicht passende ausgegraut mit Grund (zu schwer, zu gross, nicht fuer
+ * dieses Land, ein Artikel laesst sie nicht zu). Nur freigeschaltete
+ * Versandarten stehen zur Wahl; eine durch Artikel vorgegebene nennt die
+ * Artikel. Die Wahl geht an chooseShipping und bleibt am Warenkorb; die
+ * Antwort geht an <shop-cart>, der die Summen neu meldet. Gibt es nur eine
+ * Versandart, steht sie als Text.
+ *
  * WARUM DER WARENKORB EIN EIGENES ELEMENT BLEIBT
  * <shop-cart mode="checkout"> zeigt dieselbe Liste wie /warenkorb/, nur ohne
  * den Fuss. Es meldet den geladenen Warenkorb ueber shop:cart-changed —
@@ -61,8 +73,10 @@ export class ShopCheckout extends PortalElement {
     _account: { state: true },
     _mode: { state: true },
     _selectedId: { state: true },
-    // Versandstand aus dem Warenkorb ({status, method}); null = noch unbekannt
+    // Versandstand aus dem Warenkorb ({status, method, methodId, options}); null = noch unbekannt
     _shipping: { state: true },
+    // Versandwahl laeuft gerade (chooseShipping)
+    _shippingBusy: { state: true },
     // Gast: Lieferadresse aus dem Formular, fuer den Versand je Land
     _guestShipping: { state: true },
     _form: { state: true },
@@ -74,6 +88,7 @@ export class ShopCheckout extends PortalElement {
 
   static styles = [
     PortalElement.baseStyles,
+    shippingOptionStyles,
     css`
       .layout {
         display: grid;
@@ -145,6 +160,8 @@ export class ShopCheckout extends PortalElement {
 
   #unsubscribe = [];
   #checkoutReported = false;
+  // Waehrung des Warenkorbs, fuer die Preise der Versandarten
+  #currency = '';
   // Zuletzt an <shop-cart> gegebene Lieferadresse — nur bei inhaltlicher
   // Aenderung ein neues Objekt, sonst laede der Warenkorb bei jedem Rendern neu
   #cartAddresses = null;
@@ -172,6 +189,7 @@ export class ShopCheckout extends PortalElement {
     // gesperrt. 0 heisst nachweislich leer.
     this._count = null;
     this._shipping = null;
+    this._shippingBusy = false;
     this._guestShipping = null;
   }
 
@@ -199,9 +217,12 @@ export class ShopCheckout extends PortalElement {
     if (!detail || typeof detail.count !== 'number') return;
     this._count = detail.count;
     if (detail.cart) {
+      this.#currency = detail.cart.currency;
       this._shipping = {
         status: detail.cart.totals.shippingStatus,
         method: detail.cart.totals.shippingMethod,
+        methodId: detail.cart.totals.shippingMethodId,
+        options: detail.cart.totals.shippingOptions,
       };
     }
     if (detail.cart && !this.#checkoutReported) {
@@ -287,6 +308,30 @@ export class ShopCheckout extends PortalElement {
       street: quelle.street || '',
       country: quelle.country || '',
     };
+  }
+
+  /**
+   * Versandart waehlen: die Wahl bleibt am Warenkorb (chooseShipping), die
+   * Antwort ist der neu gerechnete Warenkorb und geht an <shop-cart>. Mit der
+   * Lieferadresse der Kasse wie bei checkout — der Preis haengt am Land.
+   */
+  async #chooseShipping(id) {
+    if (this._shippingBusy) return;
+    this._shippingBusy = true;
+    this._error = '';
+    try {
+      const addresses = this.#addressesForCart();
+      const data = await apiRequest('chooseShipping', {
+        shipping_method: id,
+        ...(addresses ? { adresses: addresses } : {}),
+      });
+      const cart = this.$('cart');
+      if (cart && typeof cart.apply === 'function') cart.apply(data);
+    } catch (error) {
+      this._error = t(error.code || 'PORTAL_API_ERROR');
+    } finally {
+      this._shippingBusy = false;
+    }
   }
 
   /** Bestellen nur mit passender Versandart (Status ok) */
@@ -458,7 +503,7 @@ export class ShopCheckout extends PortalElement {
         </section>
         <section part="cart">
           <h2 class="section-title ${this.cls('heading')}">${t('checkout.cart')}</h2>
-          <shop-cart mode="checkout" continue-url="/" .addresses=${this.#addressesForCart()}></shop-cart>
+          <shop-cart id="cart" mode="checkout" continue-url="/" .addresses=${this.#addressesForCart()}></shop-cart>
           ${this.#renderBuy()}
         </section>
       </div>
@@ -483,6 +528,7 @@ export class ShopCheckout extends PortalElement {
         <p class="block-title">${t('checkout.delivery')}</p>
         ${this._mode === 'new' ? this.#renderNewAddress() : this.#renderPickAddress()}
       </div>
+      ${this.#renderShipping()}
     `;
   }
 
@@ -638,6 +684,32 @@ export class ShopCheckout extends PortalElement {
         data-protection-url=${this.dataProtectionUrl}
         redirect-url=${`${window.location.pathname}#focus`}
       ></portal-register>
+      ${this.#renderShipping()}
+    `;
+  }
+
+  // ---- Versandart ----
+
+  #renderShipping() {
+    const shipping = this._shipping;
+    if (!shipping || !shipping.options || !shipping.options.length) return nothing;
+    const options = shipping.options;
+    const available = options.filter((o) => o.available).length;
+    return html`
+      <div class="block">
+        <p class="block-title">${t('checkout.shipping')}</p>
+        ${renderShippingOptions({
+          options,
+          currency: this.#currency,
+          cls: (role) => this.cls(role),
+          busy: this._shippingBusy,
+          onChoose: (id) => this.#chooseShipping(id),
+          group: 'shipping-checkout',
+        })}
+        ${options.length > 1 && available === 1
+          ? html`<p class="note ${this.cls('muted')}">${t('checkout.shippingOnlyOne')}</p>`
+          : nothing}
+      </div>
     `;
   }
 
