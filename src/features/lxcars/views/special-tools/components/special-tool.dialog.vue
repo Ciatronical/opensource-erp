@@ -304,9 +304,9 @@
                                         @update:model-value="pinVehicle"
                                     >
                                         <template #item="{ props: p, item }">
-                                            <v-list-item v-bind="p" :title="item.raw.label" :subtitle="vehicleMeta(item.raw, true)">
+                                            <v-list-item v-bind="p" :title="item.label" :subtitle="vehicleMeta(item, true)">
                                                 <template #append>
-                                                    <v-chip v-if="item.raw.matched" size="x-small" variant="tonal" color="success">
+                                                    <v-chip v-if="item.matched" size="x-small" variant="tonal" color="success">
                                                         {{ t('SpecialToolsView.vehicles.alreadyMatched') }}
                                                     </v-chip>
                                                 </template>

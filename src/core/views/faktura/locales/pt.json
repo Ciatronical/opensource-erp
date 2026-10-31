@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fehler beim Import",
                 "invalidFile": "Ungültige Datei — nur VXS-XML-Dateien werden unterstützt",
-                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen"
+                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen",
+                "repairDays": "Duração da reparação segundo o cálculo: {days} dias"
             },
             "statusOpen": "Pendente",
             "statusClosed": "Concluído",
@@ -477,6 +478,34 @@
                     "other": "Outro"
                 },
                 "saveError": "Não funcionou — a encomenda foi provavelmente alterada entretanto. A vista foi recarregada, verifique novamente."
+            },
+            "repairTime": {
+                "label": "Tempo de reparação",
+                "print": "Imprimir",
+                "printHint": "Imprimir o tempo de reparação na ordem e na fatura",
+                "printHistory": "Imprimir tempo de reparação",
+                "placeholder": "p. ex. 3 dias, 4,5 h",
+                "running": "em curso: {time}",
+                "invalid": "Tempo de reparação não reconhecido – p. ex. 3 dias, 4,5 h ou 1 dia 2 h",
+                "saveError": "Não foi possível guardar o tempo de reparação",
+                "sourceLabel": "Tempo de reparação – origem",
+                "source": {
+                    "auto": "Medido: da data de entrega (ou criação da ordem) até à última instrução de trabalho assinalada. Limpar o campo repõe a medição.",
+                    "manuell": "Introduzido manualmente. Limpar o campo repõe o tempo medido.",
+                    "gutachten": "Retirado da peritagem. Limpar o campo repõe o tempo medido.",
+                    "running": "A medição decorre desde a data de entrega ou criação da ordem e termina com a última instrução de trabalho assinalada. Pode introduzir um valor próprio a qualquer momento.",
+                    "none": "Medido assim que a ordem é guardada – ou introduza à mão (p. ex. 3 dias, 4,5 h)"
+                },
+                "units": {
+                    "day": "dia",
+                    "days": "dias",
+                    "hours": "h",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Aplicar e imprimir a duração da reparação ({days} dias)",
+                "optRepairTimeNone": "A peritagem não indica duração da reparação"
             }
         },
         "workflow": {

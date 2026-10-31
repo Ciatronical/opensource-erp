@@ -56,6 +56,7 @@
 \newkomavar{transaction}
 \newkomavar[\lieferschein{}~\nr]{delivery}
 \newkomavar[\angebot{}~\nr]{quote}
+\newkomavar[\reparaturzeitlabel]{repairtime}
 \newkomavar[\auftragsnummer]{orderID}
 \newkomavar[\projektnummer]{projectID}
 \setkomavar*{fromphone}{\textTelefon}
@@ -633,6 +634,7 @@ p{\dim_eval:n {\linewidth-\l_kivi_tab_pricetotal_dim-\bool_if:NTF \g__kivi_Tabul
       \locationentry{yourref}
       \locationentry{delivery}
       \locationentry{quote}
+      \locationentry{repairtime}
       \locationentry{orderID}
       \locationentry{projectID}
       \locationentry{taxpoint}

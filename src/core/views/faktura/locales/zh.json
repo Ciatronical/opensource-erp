@@ -219,7 +219,8 @@
                 "success": "已导入 {count} 个项目",
                 "error": "导入时出错",
                 "invalidFile": "无效文件 — 仅支持 VXS-XML 文件",
-                "noBuchungsgruppe": "请选择记账组"
+                "noBuchungsgruppe": "请选择记账组",
+                "repairDays": "根据计算的维修工期：{days} 天"
             },
             "statusOpen": "未完成",
             "statusClosed": "已完成",
@@ -477,6 +478,34 @@
                     "other": "其他"
                 },
                 "saveError": "操作未成功 — 订单可能已在此期间被修改。页面已重新加载，请再次核实。"
+            },
+            "repairTime": {
+                "label": "维修时间",
+                "print": "打印",
+                "printHint": "在工单和发票上打印维修时间",
+                "printHistory": "打印维修时间",
+                "placeholder": "例如 3 天、4.5 小时",
+                "running": "进行中：{time}",
+                "invalid": "无法识别维修时间 – 例如 3 天、4.5 小时或 1 天 2 小时",
+                "saveError": "维修时间保存失败",
+                "sourceLabel": "维修时间 – 来源",
+                "source": {
+                    "auto": "测量值：从送车时间（否则为工单创建）到最后一条勾选的工作指令。清空字段即恢复测量值。",
+                    "manuell": "手动输入。清空字段即恢复测量值。",
+                    "gutachten": "取自鉴定报告。清空字段即恢复测量值。",
+                    "running": "自送车时间或工单创建起计时，至最后一条勾选的工作指令结束。可随时输入自定义值。",
+                    "none": "工单保存后开始测量 – 或手动输入（例如 3 天、4.5 小时）"
+                },
+                "units": {
+                    "day": "天",
+                    "days": "天",
+                    "hours": "小时",
+                    "min": "分钟"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "采用并打印维修工期（{days} 天）",
+                "optRepairTimeNone": "鉴定报告中没有维修工期"
             }
         },
         "workflow": {

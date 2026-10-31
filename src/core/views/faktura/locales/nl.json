@@ -219,7 +219,8 @@
                 "success": "{count} posities geimporteerd",
                 "error": "Fout bij import",
                 "invalidFile": "Ongeldig bestand - alleen VXS-XML-bestanden worden ondersteund",
-                "noBuchungsgruppe": "Selecteer boekingsgroepen"
+                "noBuchungsgruppe": "Selecteer boekingsgroepen",
+                "repairDays": "Reparatieduur volgens calculatie: {days} dagen"
             },
             "statusOpen": "Open",
             "statusClosed": "Afgerond",
@@ -477,6 +478,34 @@
                     "other": "Overig"
                 },
                 "saveError": "Dat is niet gelukt — de order is waarschijnlijk intussen gewijzigd. De weergave is opnieuw geladen, controleer het nog een keer."
+            },
+            "repairTime": {
+                "label": "Reparatietijd",
+                "print": "Afdrukken",
+                "printHint": "Reparatietijd op order en factuur afdrukken",
+                "printHistory": "Reparatietijd afdrukken",
+                "placeholder": "bijv. 3 dagen, 4,5 uur",
+                "running": "loopt: {time}",
+                "invalid": "Reparatietijd niet herkend – bijv. 3 dagen, 4,5 uur of 1 dag 2 uur",
+                "saveError": "Reparatietijd kon niet worden opgeslagen",
+                "sourceLabel": "Reparatietijd – bron",
+                "source": {
+                    "auto": "Gemeten: van de afgiftedatum (anders orderaanmaak) tot de laatst afgevinkte werkinstructie. Veld leegmaken keert terug naar de meting.",
+                    "manuell": "Handmatig ingevoerd. Veld leegmaken keert terug naar de gemeten tijd.",
+                    "gutachten": "Overgenomen uit het expertiserapport. Veld leegmaken keert terug naar de gemeten tijd.",
+                    "running": "De meting loopt vanaf de afgiftedatum of orderaanmaak en eindigt met de laatst afgevinkte werkinstructie. Een eigen waarde kan altijd worden ingevoerd.",
+                    "none": "Wordt gemeten zodra de order is opgeslagen – of handmatig invoeren (bijv. 3 dagen, 4,5 uur)"
+                },
+                "units": {
+                    "day": "dag",
+                    "days": "dagen",
+                    "hours": "uur",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Reparatieduur overnemen en afdrukken ({days} dagen)",
+                "optRepairTimeNone": "Geen reparatieduur in het expertiserapport"
             }
         },
         "workflow": {

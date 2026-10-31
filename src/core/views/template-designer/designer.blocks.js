@@ -417,13 +417,13 @@ const FIELD_GROUPS = {
 
 /** Felder, die intern sind oder für Texte nichts hergeben */
 const HIDDEN_FIELDS = new Set(['language_code', 'currency', 'media', 'formname', 'storno', 'is_storno', 'is_credit_note', 'is_invoice',
-    'is_kfz', 'has_positions', 'has_instructions', 'has_maengel', 'hu_bestanden', 'hu_nicht_bestanden', 'hu_ueberfaellig',
+    'is_kfz', 'has_positions', 'has_instructions', 'has_maengel', 'has_reparaturzeit', 'hu_bestanden', 'hu_nicht_bestanden', 'hu_ueberfaellig',
     'has_ersatzteile', 'has_arbeiten', 'gedruckt', 'taxzone_id', 'qr_image', 'filename', 'template_meta', 'epc_amount']);
 
 /** Bedingungsfelder: Wahrheitswerte, die sich für "nur anzeigen wenn" eignen */
 export const CONDITION_FIELDS = ['notes', 'payment_terms', 'shiptoname', 'ordnumber', 'quonumber', 'donumber', 'cusordnumber',
     'department_1', 'cp_name', 'ustid', 'deliverydate', 'duedate', 'reqdate', 'is_storno', 'is_credit_note', 'is_kfz',
-    'has_instructions', 'has_maengel', 'has_positions'];
+    'has_instructions', 'has_maengel', 'has_positions', 'reparaturzeit'];
 
 /**
  * Feldkatalog aus den Beispieldaten des Backends, gruppiert und beschriftet

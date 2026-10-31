@@ -231,15 +231,63 @@
                         </template>
                     </v-text-field>
                 </v-col>
+                <!-- Reparaturzeit (docs/features/lxcars.md → Reparaturzeit): gemessen, von Hand oder aus dem Gutachten;
+                     Schalter „Drucken“ bringt sie auf Auftrag und Rechnung -->
+                <v-col cols="12" sm="8" :md="isInvoice ? 4 : 5" :lg="isInvoice ? 4 : 4" class="py-1">
+                    <div class="repair-time">
+                        <v-text-field
+                            :model-value="repairTimeInput"
+                            :label="t('FakturaView.faktura.repairTime.label')"
+                            :placeholder="repairTimePlaceholder"
+                            persistent-placeholder
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            autocomplete="off"
+                            clearable
+                            class="repair-time__field"
+                            :class="{ 'repair-time__field--running': repairTimeRunning }"
+                            @update:model-value="repairTimeInput = $event ?? ''"
+                            @blur="commitRepairTime"
+                            @keydown.enter.prevent="commitRepairTime"
+                            @click:clear="clearRepairTime"
+                        >
+                            <template #prepend-inner>
+                                <v-tooltip location="bottom">
+                                    <template #activator="{ props: tipProps }">
+                                        <v-icon v-bind="tipProps" size="small" class="repair-time__icon">{{ repairTimeIcon }}</v-icon>
+                                    </template>
+                                    {{ repairTimeHint }}
+                                </v-tooltip>
+                            </template>
+                        </v-text-field>
+                        <v-tooltip location="bottom">
+                            <template #activator="{ props: tipProps }">
+                                <v-checkbox
+                                    v-bind="tipProps"
+                                    :model-value="!!oeExtData.reparaturzeit_drucken"
+                                    :label="t('FakturaView.faktura.repairTime.print')"
+                                    density="compact"
+                                    hide-details
+                                    class="repair-time__print"
+                                    @update:model-value="$emit('oe-ext-field-change', 'reparaturzeit_drucken', !!$event)"
+                                />
+                            </template>
+                            {{ t('FakturaView.faktura.repairTime.printHint') }}
+                        </v-tooltip>
+                    </div>
+                </v-col>
             </v-row>
         </v-card-text>
     </v-card>
 </template>
 
 <script>
-import { defineComponent, ref, computed, watch } from 'vue'
+import { defineComponent, ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { oserpStore } from '@/core/stores/oserp.store.js'
+import * as toast from '@/core/utils/toasts.js'
+import { formatRepairTime, parseRepairTime } from '@/features/lxcars/utils/repairTime.js'
 
 export default defineComponent({
     name: 'VehicleSectionCard',
@@ -265,7 +313,7 @@ export default defineComponent({
     emits: [
         'toggle-intern', 'blur-km-stand', 'car-change', 'car-create',
         'oe-ext-field-change', 'picker-date-select', 'picker-time-select', 'clear-datetime',
-        'update:display-km-stand'
+        'update:display-km-stand', 'repair-time-change'
     ],
     setup(props, { expose, emit }) {
         const { t } = useI18n()
@@ -301,7 +349,60 @@ export default defineComponent({
         }
         expose({ focusCarSelect })
 
-        return { t, localShowBringetermin, localShowFertigstellung, carAutocomplete, carSearch, carNoDataText, onCarEnter, gutmannEnabled }
+        // ── Reparaturzeit ──
+        // Anzeige ist der formatierte Wert; beim Verlassen/Enter wird die Eingabe
+        // geparst (3 Tage, 4,5 Std, 1:30 …) und als Minuten gemeldet. Ohne Wert zeigt
+        // der Platzhalter die laufende Messung ab Abgabetermin bzw. Auftragsanlage.
+        const repairTimeInput = ref('')
+        watch(() => props.oeExtData.reparaturzeit_minuten, v => { repairTimeInput.value = formatRepairTime(v, t) }, { immediate: true })
+
+        const nowTick = ref(Date.now())
+        const tickTimer = setInterval(() => { nowTick.value = Date.now() }, 60000)
+        onBeforeUnmount(() => clearInterval(tickTimer))
+
+        const repairTimeRunningMinutes = computed(() => {
+            if (props.isInvoice || props.oeExtData.reparaturzeit_minuten || !props.oeExtData.reparaturzeit_start) return 0
+            const start = Date.parse(String(props.oeExtData.reparaturzeit_start).replace(' ', 'T'))
+            if (Number.isNaN(start)) return 0
+            return Math.floor((nowTick.value - start) / 60000)
+        })
+        const repairTimeRunning = computed(() => repairTimeRunningMinutes.value > 0)
+        const repairTimePlaceholder = computed(() => repairTimeRunning.value
+            ? t('FakturaView.faktura.repairTime.running', { time: formatRepairTime(repairTimeRunningMinutes.value, t) })
+            : t('FakturaView.faktura.repairTime.placeholder'))
+
+        const repairTimeIcon = computed(() => ({
+            auto: 'mdi-timer-check-outline',
+            manuell: 'mdi-pencil-outline',
+            gutachten: 'mdi-file-document-check-outline'
+        })[props.oeExtData.reparaturzeit_quelle] || (repairTimeRunning.value ? 'mdi-timer-sand' : 'mdi-timer-outline'))
+        const repairTimeHint = computed(() => {
+            const q = props.oeExtData.reparaturzeit_quelle
+            if (q) return t('FakturaView.faktura.repairTime.source.' + q)
+            return repairTimeRunning.value
+                ? t('FakturaView.faktura.repairTime.source.running')
+                : t('FakturaView.faktura.repairTime.source.none')
+        })
+
+        function commitRepairTime() {
+            const minutes = parseRepairTime(repairTimeInput.value)
+            if (Number.isNaN(minutes)) {
+                toast.warning(t('FakturaView.faktura.repairTime.invalid'))
+                repairTimeInput.value = formatRepairTime(props.oeExtData.reparaturzeit_minuten, t)
+                return
+            }
+            const current = props.oeExtData.reparaturzeit_minuten ? Number(props.oeExtData.reparaturzeit_minuten) : null
+            repairTimeInput.value = formatRepairTime(minutes, t)
+            if (minutes === current) return
+            emit('repair-time-change', minutes)
+        }
+        function clearRepairTime() {
+            repairTimeInput.value = ''
+            if (props.oeExtData.reparaturzeit_minuten) emit('repair-time-change', null)
+        }
+
+        return { t, localShowBringetermin, localShowFertigstellung, carAutocomplete, carSearch, carNoDataText, onCarEnter, gutmannEnabled,
+                 repairTimeInput, repairTimeRunning, repairTimePlaceholder, repairTimeIcon, repairTimeHint, commitRepairTime, clearRepairTime }
     }
 })
 </script>
@@ -338,6 +439,36 @@ export default defineComponent({
 .faktura-card__body :deep(.v-field--variant-outlined) {
     --v-field-padding-start: 12px;
     --v-field-padding-end: 12px;
+}
+
+/* Raster statt Flex: die Kartenregel „.v-input { flex: unset }“ würde das Feld sonst auf Inhaltsbreite schrumpfen */
+.repair-time {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--oserp-space-2, 8px);
+}
+
+.repair-time__field {
+    min-width: 0;
+    width: 100%;
+}
+
+.repair-time__field--running :deep(input::placeholder) {
+    opacity: 0.85;
+}
+
+.repair-time__icon {
+    opacity: 0.6;
+    cursor: help;
+}
+
+.repair-time__print {
+    flex: 0 0 auto;
+}
+
+.repair-time__print :deep(.v-label) {
+    font-size: 13px;
 }
 
 .date-picker-icon {

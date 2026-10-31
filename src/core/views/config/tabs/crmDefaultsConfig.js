@@ -82,6 +82,10 @@ const crmDefaultsConfig = [
     { name: "whatsapp_reminder_enabled", type: "checkbox", label: "crm_fields.whatsappReminderEnabled", tooltip: "crm_fields.whatsappReminderEnabled_help" },
     { name: "whatsapp_reminder_hours", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.whatsappReminderHours", tooltip: "crm_fields.whatsappReminderHours_help" },
 
+    { name: "mailings", type: "headline", label: "crm_fields.mailings" },
+    { name: "whatsapp_template_cost", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.whatsappTemplateCost", tooltip: "crm_fields.whatsappTemplateCost_help" },
+    { name: "mailing_letter_cost", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.mailingLetterCost", tooltip: "crm_fields.mailingLetterCost_help" },
+
     { name: "telegram", type: "headline", label: "crm_fields.telegram" },
 
     { name: "telegram_enabled", type: "checkbox", label: "crm_fields.telegramEnabled", tooltip: "crm_fields.telegramEnabled_help" },

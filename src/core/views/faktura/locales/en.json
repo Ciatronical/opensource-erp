@@ -318,7 +318,9 @@
                 "nothingFound": "Neither vehicle nor items were recognised in the document",
                 "analyzeError": "The appraisal could not be read",
                 "importError": "Error while taking over",
-                "invalidFile": "Invalid file – only PDF or images (JPEG, PNG, WebP) are supported"
+                "invalidFile": "Invalid file – only PDF or images (JPEG, PNG, WebP) are supported",
+                "optRepairTime": "Apply and print repair duration ({days} days)",
+                "optRepairTimeNone": "No repair duration in the appraisal"
             },
             "openAag": "AAG-Online – transfer vehicle and open",
             "openHgs": "Open vehicle data in HGS Data",
@@ -353,7 +355,8 @@
                 "success": "{count} items imported",
                 "error": "Import error",
                 "invalidFile": "Invalid file — only VXS XML files are supported",
-                "noBuchungsgruppe": "Please select posting groups"
+                "noBuchungsgruppe": "Please select posting groups",
+                "repairDays": "Repair duration per calculation: {days} days"
             },
             "statusOpen": "Open",
             "statusClosed": "Completed",
@@ -609,6 +612,30 @@
                     "other": "Other"
                 },
                 "saveError": "That did not work — the order was probably changed in the meantime. The view has been reloaded, please check again."
+            },
+            "repairTime": {
+                "label": "Repair time",
+                "print": "Print",
+                "printHint": "Print the repair time on the order and the invoice",
+                "printHistory": "Print repair time",
+                "placeholder": "e.g. 3 days, 4.5 h",
+                "running": "running: {time}",
+                "invalid": "Repair time not understood – e.g. 3 days, 4.5 h or 1 day 2 h",
+                "saveError": "Repair time could not be saved",
+                "sourceLabel": "Repair time – source",
+                "source": {
+                    "auto": "Measured: from the drop-off date (otherwise order creation) to the last ticked work instruction. Clearing the field returns to the measurement.",
+                    "manuell": "Entered manually. Clearing the field returns to the measured time.",
+                    "gutachten": "Taken from the appraisal. Clearing the field returns to the measured time.",
+                    "running": "Measurement running since the drop-off date or order creation; it ends with the last ticked work instruction. You can enter your own value at any time.",
+                    "none": "Measured once the order is saved – or enter it manually (e.g. 3 days, 4.5 h)"
+                },
+                "units": {
+                    "day": "day",
+                    "days": "days",
+                    "hours": "h",
+                    "min": "min"
+                }
             }
         },
         "workflow": {

@@ -37,6 +37,7 @@
                             <strong>{{ vehicleInfo.manufacturer }} {{ vehicleInfo.model }}</strong>
                             <span v-if="vehicleInfo.licensePlate">{{ vehicleInfo.licensePlate }}</span>
                             <span v-if="vehicleInfo.mileage">{{ vehicleInfo.mileage.toLocaleString('de-DE') }} km</span>
+                            <span v-if="vehicleInfo.repairDays">{{ t('FakturaView.faktura.silverdat.repairDays', { days: vehicleInfo.repairDays }) }}</span>
                             <span v-if="vehicleInfo.vin" class="text-grey text-caption">VIN: {{ vehicleInfo.vin }}</span>
                         </div>
                     </v-alert>

@@ -110,7 +110,7 @@
                                                     <div class="text-caption mb-2">{{ existingDatabases.length ? $t('setup.auth.modeExistingHint') : $t('setup.auth.noneFound') }}</div>
                                                     <v-select v-if="auth.mode === 'existing'" v-model="auth.existingName" :items="existingDatabases" item-title="name" item-value="name" :label="$t('setup.auth.select')" variant="outlined" density="compact" @click.stop>
                                                         <template #item="{ props: itemProps, item }">
-                                                            <v-list-item v-bind="itemProps" :subtitle="dbSubtitle(item.raw)" />
+                                                            <v-list-item v-bind="itemProps" :subtitle="dbSubtitle(item)" />
                                                         </template>
                                                     </v-select>
                                                 </div>

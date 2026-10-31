@@ -23,6 +23,8 @@ const CalendarView = () => import('@/core/views/calendar/calendar.view.vue')
 const TasksView = () => import('@/core/views/tasks/tasks.view.vue')
 const EmailView = () => import('@/core/views/email/email.view.vue')
 const WhatsAppView = () => import('@/core/views/whatsapp/whatsapp.view.vue')
+const MailingsView = () => import('@/core/views/mailings/mailings.view.vue')
+const MailingEditView = () => import('@/core/views/mailings/mailing.edit.view.vue')
 const LettersView = () => import('@/core/views/letters/letters.view.vue')
 const LetterEditView = () => import('@/core/views/letters/letter.edit.view.vue')
 const DatenschutzView = () => import('@/core/views/datenschutz/datenschutz.view.vue')
@@ -495,6 +497,23 @@ function buildRoutes() {
             ...routePath('routes.editLetter', '/:id(\\d+)'),
             name: 'letter-edit',
             component: LetterEditView,
+            props: true,
+        },
+        {
+            // Rundschreiben: Übersicht, neues Rundschreiben, Rundschreiben bearbeiten
+            ...routePath('routes.mailings'),
+            name: 'mailings',
+            component: MailingsView,
+        },
+        {
+            ...routePath('routes.newMailing'),
+            name: 'mailing-new',
+            component: MailingEditView,
+        },
+        {
+            ...routePath('routes.editMailing', '/:id(\\d+)'),
+            name: 'mailing-edit',
+            component: MailingEditView,
             props: true,
         },
         {

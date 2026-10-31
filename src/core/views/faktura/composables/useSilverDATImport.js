@@ -58,6 +58,21 @@ function parseVXS(xmlString) {
         }
     }
 
+    // ── Reparaturdauer (Tage), sofern die Kalkulation sie ausweist ──
+    // Der Elementname schwankt je nach Export; nur eindeutige Dauer-Felder zählen,
+    // keine Arbeitszeiten. Wird als Reparaturzeit des Auftrags übernommen und gedruckt.
+    const durationRe = /^(repairduration|repairdurationdays|repairdays|durationofrepair|reparaturdauer)$/i
+    let repairDays = 0
+    for (const el of doc.getElementsByTagName('*')) {
+        if (el.children.length === 0 && durationRe.test(el.localName || '')) {
+            const n = parseFloat((el.textContent || '').replace(',', '.'))
+            if (n > 0) { repairDays = Math.ceil(n); break }
+        }
+    }
+    if (repairDays > 0) {
+        vehicleInfo = { manufacturer: '', model: '', licensePlate: '', vin: '', mileage: null, ...(vehicleInfo || {}), repairDays }
+    }
+
     // ── CalcResultCommon – enthält die berechneten Positionen ──
     const calcResult = doc.getElementsByTagNameNS(ns, 'CalcResultCommon')[0]
     if (!calcResult) throw new Error('Kein CalcResultCommon im VXS gefunden')

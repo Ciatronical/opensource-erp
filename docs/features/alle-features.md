@@ -606,6 +606,14 @@ Aus einem Beleg heraus erzeugen:
 - **Belege per Post**: Rechnungen, Angebote, Aufträge, Lieferscheine aus der Faktura mit demselben Dialog einliefern; Chip „Post" im Versandstatus
 - Briefe in der **Kontakthistorie** des Kunden/Lieferanten neben Anrufen, WhatsApp und E-Mails, mit Versandwegen und eigenem Filter
 
+### 8.2b Rundschreiben
+
+- Eine Nachricht an **bis zu 300 Kunden/Lieferanten** unter Kontakt → Rundschreiben, Bausteine `{{anrede}}`, `{{name}}`, `{{kundennummer}}`, `{{firma}}`, `{{mitarbeiter}}`, Vorschau je Empfänger, gestaltete E-Mail optional
+- **Kanäle in Reihenfolge**: Telegram (kostenlos, Chat-ID über Nummer-Teilen am Bot), WhatsApp (kostenlos nur im 24-Stunden-Fenster, sonst nur mit bewusst gewählter Vorlage und Kostenschätzung), E-Mail – jeder Empfänger genau einmal, gleiche Ziele nur einmal
+- **Empfänger**: Suche, Vorschlag (Kundentyp, Umsatz der letzten Monate, Ort, erreichbarer Kanal), **Verteiler** speichern/laden/aktualisieren
+- **Etappenversand** mit Pause, Zeitfenster am Tag, zufälligem Abstand, automatischer Pause nach Fehlern; läuft im Hintergrund (Cron) und solange die Seite offen ist
+- Fortschritt je Empfänger, Pausieren/Fortsetzen/Abbrechen, Fehlgeschlagene erneut, Rundschreiben als Vorlage kopieren
+
 ### 8.3 Telegram
 
 - **Telegram-Bot-Anbindung** (kostenlos, kein Drittanbieter nötig)
@@ -1266,6 +1274,7 @@ Automatische Kennzeichenerkennung an der Werkstattzufahrt.
 | **camera-monitor** | Auswertung der Kamerastreams, Ereigniserzeugung |
 | **plate-recognition** | ANPR-Erkennungsdienst *(LxCars)* |
 | `whatsapp-reminders.php` | Terminerinnerungen und HU-Benachrichtigungen versenden |
+| `mailings.php` | Rundschreiben in Etappen versenden (alle 5 Minuten) |
 | `ebay-orders.php` | eBay-Bestellungen importieren |
 | `post-unbooked-invoices.php` | Noch nicht verbuchte Rechnungen nachbuchen |
 | `weroni-monitor.php` | Weroni-Aufgaben im Hintergrund abarbeiten |

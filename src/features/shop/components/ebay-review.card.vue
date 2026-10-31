@@ -152,7 +152,7 @@
                         @update:model-value="andererGewaehlt"
                     >
                         <template #item="{ props: eintrag, item }">
-                            <v-list-item v-bind="eintrag" :subtitle="`${item.raw.customernumber} · ${[item.raw.street, item.raw.zipcode, item.raw.city].filter(Boolean).join(' ')}`" />
+                            <v-list-item v-bind="eintrag" :subtitle="`${item.customernumber} · ${[item.street, item.zipcode, item.city].filter(Boolean).join(' ')}`" />
                         </template>
                     </v-autocomplete>
 

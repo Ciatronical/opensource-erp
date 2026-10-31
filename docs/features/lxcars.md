@@ -67,6 +67,19 @@ Jede Anweisung hat:
 
 Die Vorschlagsliste beim Eintippen ist klug sortiert wie die Artikelsuche in der Faktura: Anweisungsnummer exakt, Beschreibung beginnt mit dem Begriff, Nummer beginnt mit, Wortanfang, enthalten — darin nach Verwendungshäufigkeit (Gewicht aus **Firmenkonfiguration → Grunddaten → Artikelsuche in Belegen**). Diktierte Sätze finden den Eintrag weiterhin über Einzelwörter.
 
+### Reparaturzeit
+
+Jeder Werkstattauftrag misst seine Reparaturzeit von selbst — und druckt sie auf Wunsch auf Auftrag und Rechnung (etwa für den Nutzungsausfall gegenüber der Versicherung).
+
+- **Messung**: Start ist der Abgabetermin, ohne Abgabetermin die Anlage des Auftrags. Ende ist die letzte abgehakte Arbeitsanweisung. Solange noch eine Anweisung offen ist, zeigt das Feld „Reparaturzeit“ in der Karte „Fahrzeug / Auftragsdaten“ die laufende Messung als Platzhalter (z. B. „läuft: 1 Tag 3 Std“); mit dem letzten Haken steht der Wert fest und erscheint sofort in allen offenen Belegmasken. Wird eine Anweisung wieder geöffnet, läuft die Messung weiter
+- **Von Hand**: In das Feld einfach „3 Tage“, „4,5 Std“, „1 Tag 2 Std“, „1:30“ oder „90 min“ tippen (eine nackte Zahl gilt als Stunden). Ein eigener Wert hat Vorrang vor der Messung; Feld leeren setzt auf die gemessene Zeit zurück. Das Symbol vor dem Feld zeigt die Quelle (Stoppuhr = gemessen, Stift = von Hand, Dokument = Gutachten)
+- **Drucken**: Schalter „Drucken“ hinter dem Feld, Vorgabe aus. Eingeschaltet erscheint die Zeit als „Reparaturdauer“ auf dem Kfz-Auftrag (neben der Fertigstellung) und auf der Rechnung (in den LxCars-Sätzen unter dem Kennzeichen, in den Standardsätzen bei den Belegdaten im Kopf) — in allen mitgelieferten Vorlagensätzen, auch auf Englisch („Repair time“). Druckvariablen: `reparaturzeit` (Text wie „2 Tage 8 Std“), `reparaturzeit_quelle` (auto/manuell/gutachten, z. B. für den Zusatz „laut Gutachten“), Bedingung `<%if reparaturzeit%>`
+- **Gutachten**: Beim Gutachten-Import (PDF/Foto) und beim SilverDAT-Import (XML, sofern die Kalkulation eine Reparaturdauer ausweist) wird die Reparaturdauer in Tagen übernommen und der Druckschalter eingeschaltet — im Vorschaudialog abwählbar
+- **Rechnung**: Bei der Umwandlung wandert der Wert samt Druckschalter mit in die Rechnung, wo er sich ebenso ändern lässt
+- **Belegchronik**: Jede Änderung (gemessen, von Hand, Gutachten, Druckschalter) steht im Verlauf des Belegs
+
+Technik: Spalten `reparaturzeit_minuten`, `reparaturzeit_drucken`, `reparaturzeit_quelle` in `oe_ext`/`ar_ext`; die Messung erledigen die Trigger `instructions_reparaturzeit_sync` (Anweisungen) und `oe_ext_reparaturzeit_bringetermin` (Abgabetermin geändert) über `reparaturzeit_sync()` in der Datenbank — es läuft kein Cron, nichts muss aktualisiert werden.
+
 ## Mechaniker-Modus
 
 Der Mechaniker-Modus ist eine vereinfachte Ansicht für Werkstattmitarbeiter.
@@ -124,6 +137,7 @@ Fremde Schadengutachten und Kostenvoranschläge ohne Schnittstelle – PDF oder 
 - Schaltfläche **Gutachten (PDF)** in der Aktionsleiste des Auftrags (nur bei aktivem LxCars); Datei wählen, Claude liest alle Seiten, dann erscheint die Vorschau
 - **Fahrzeug**: Kennzeichen, FIN, Hersteller/Modell, Erstzulassung, Farbe. Hat der Auftrag noch kein Fahrzeug, wird es angelegt und verknüpft; ein verknüpftes Fahrzeug wird nur um leere Felder ergänzt, nie überschrieben. Gehört das Kennzeichen einem anderen Kunden, fragt das System wie beim Schnellanlegen nach
 - **Auftrag**: km-Stand, Gutachten-Nr., Datum, Sachverständiger, Versicherung, Schadennummer und Schadenbeschreibung in die internen Notizen; die Schadennummer zusätzlich als Kundenauftragsnummer (falls leer)
+- **Reparaturdauer**: Die Reparaturdauer laut Gutachten (Tage) wird als Reparaturzeit des Auftrags übernommen und zum Druck markiert (siehe „Reparaturzeit“ unter Werkstattaufträge); im Dialog abwählbar
 - **Positionen** wie beim SilverDAT-Import: Ersatzteile (Teilenummer nur, wenn gedruckt), Arbeitslohn in AW/Std mit Verrechnungssatz, Lackierlohn und -material, Nebenkosten (Kleinteile, Entsorgung, Achsvermessung …). Wertminderung, Nutzungsausfall, Gutachterkosten, Restwert und Summenzeilen werden bewusst nicht übernommen
 - Jede Position ist in der Vorschau abwählbar; die Summe der gewählten Positionen wird mit den Reparaturkosten laut Gutachten abgeglichen, Abweichungen über 1 % werden markiert
 - Die Datei wird im Fahrzeugordner unter `gutachten/` abgelegt (ohne Fahrzeug beim Kunden)

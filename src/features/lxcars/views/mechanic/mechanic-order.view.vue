@@ -104,6 +104,7 @@
                         @picker-date-select="vehicle.onPickerDateSelect"
                         @picker-time-select="vehicle.onPickerTimeSelect"
                         @clear-datetime="vehicle.onClearDatetime"
+                        @repair-time-change="vehicle.onRepairTimeChange"
                     />
                 </section>
 
@@ -780,12 +781,15 @@ function connectSSE() {
     sseSource.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data)
-            const relevantTables = ['oe', 'orderitems', 'oe_instructions_lxcars', 'oe_defects', 'oe_parts_requests_lxcars']
+            const relevantTables = ['oe', 'orderitems', 'oe_instructions_lxcars', 'oe_defects', 'oe_parts_requests_lxcars', 'oe_ext']
             if (!relevantTables.includes(data.table)) return
             if (Number(data.id) !== Number(fakturaId.value)) return
 
             if (data.table === 'oe_instructions_lxcars') {
                 instructionsRef.value?.loadInstructions()
+            } else if (data.table === 'oe_ext') {
+                // Reparaturzeit gemessen → Fahrzeugkarte nachladen
+                vehicle?.loadVehicleData(null)
             } else if (data.table === 'oe_defects') {
                 maengelRef.value?.loadMaengel()
             } else if (data.table === 'oe_parts_requests_lxcars') {

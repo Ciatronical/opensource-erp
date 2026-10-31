@@ -2929,10 +2929,8 @@ SQL;
         if ($lxcarsActive && $sourceExtTable && $targetExtTable) {
             $sourceExtIdCol = ($sourceExtTable === 'ar_ext') ? 'ar_id' : 'oe_id';
 
-            // Fahrzeug + km_stand + fertigstellung laden
-            $extCols = 'c_id, km_stand';
-            if ($sourceExtTable === 'oe_ext') $extCols .= ', fertigstellung';
-            if ($sourceExtTable === 'ar_ext') $extCols .= ', fertigstellung';
+            // Fahrzeug + km_stand + fertigstellung + Reparaturzeit (docs/features/lxcars.md) laden
+            $extCols = 'c_id, km_stand, fertigstellung, reparaturzeit_minuten, reparaturzeit_drucken, reparaturzeit_quelle';
 
             $sourceExt = $company->getOne(
                 "SELECT {$extCols} FROM {$sourceExtTable} WHERE {$sourceExtIdCol} = :sourceId",
@@ -2943,19 +2941,30 @@ SQL;
                 $cId = intval($sourceExt['c_id']);
                 $kmStand = $sourceExt['km_stand'] !== null ? intval($sourceExt['km_stand']) : null;
                 $fertigstellung = $sourceExt['fertigstellung'] ?? null;
+                $repMinuten = $sourceExt['reparaturzeit_minuten'] !== null ? intval($sourceExt['reparaturzeit_minuten']) : null;
+                $repDrucken = (($sourceExt['reparaturzeit_drucken'] ?? false) === true || ($sourceExt['reparaturzeit_drucken'] ?? '') === 't') ? 't' : 'f';
+                // Die Rechnung übernimmt den Wert des Auftrags als festen Eintrag;
+                // ein gemessener Wert ('auto') läuft auf der Rechnung nicht weiter
+                $repQuelle  = $sourceExt['reparaturzeit_quelle'] ?? null;
+                $repParams  = [':rep_min' => $repMinuten, ':rep_drucken' => $repDrucken, ':rep_quelle' => $repQuelle];
 
                 if ($targetExtTable === 'ar_ext') {
                     $company->execute(
-                        "INSERT INTO ar_ext (ar_id, c_id, km_stand, fertigstellung)
-                         VALUES (:newId, :c_id, :km_stand, :fertigstellung)
-                         ON CONFLICT (ar_id) DO UPDATE SET c_id = EXCLUDED.c_id, km_stand = EXCLUDED.km_stand, fertigstellung = EXCLUDED.fertigstellung",
-                        [':newId' => $newId, ':c_id' => $cId, ':km_stand' => $kmStand, ':fertigstellung' => $fertigstellung]
+                        "INSERT INTO ar_ext (ar_id, c_id, km_stand, fertigstellung, reparaturzeit_minuten, reparaturzeit_drucken, reparaturzeit_quelle)
+                         VALUES (:newId, :c_id, :km_stand, :fertigstellung, :rep_min, :rep_drucken, :rep_quelle)
+                         ON CONFLICT (ar_id) DO UPDATE SET c_id = EXCLUDED.c_id, km_stand = EXCLUDED.km_stand, fertigstellung = EXCLUDED.fertigstellung,
+                             reparaturzeit_minuten = EXCLUDED.reparaturzeit_minuten, reparaturzeit_drucken = EXCLUDED.reparaturzeit_drucken,
+                             reparaturzeit_quelle = EXCLUDED.reparaturzeit_quelle",
+                        [':newId' => $newId, ':c_id' => $cId, ':km_stand' => $kmStand, ':fertigstellung' => $fertigstellung] + $repParams
                     );
                 } else {
                     $company->execute(
-                        "INSERT INTO oe_ext (oe_id, c_id, km_stand) VALUES (:newId, :c_id, :km_stand)
-                         ON CONFLICT (oe_id) DO UPDATE SET c_id = EXCLUDED.c_id, km_stand = EXCLUDED.km_stand",
-                        [':newId' => $newId, ':c_id' => $cId, ':km_stand' => $kmStand]
+                        "INSERT INTO oe_ext (oe_id, c_id, km_stand, reparaturzeit_minuten, reparaturzeit_drucken, reparaturzeit_quelle)
+                         VALUES (:newId, :c_id, :km_stand, :rep_min, :rep_drucken, :rep_quelle)
+                         ON CONFLICT (oe_id) DO UPDATE SET c_id = EXCLUDED.c_id, km_stand = EXCLUDED.km_stand,
+                             reparaturzeit_minuten = EXCLUDED.reparaturzeit_minuten, reparaturzeit_drucken = EXCLUDED.reparaturzeit_drucken,
+                             reparaturzeit_quelle = EXCLUDED.reparaturzeit_quelle",
+                        [':newId' => $newId, ':c_id' => $cId, ':km_stand' => $kmStand] + $repParams
                     );
                 }
 

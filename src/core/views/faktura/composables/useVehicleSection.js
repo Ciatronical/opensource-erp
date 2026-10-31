@@ -6,6 +6,7 @@ import * as toast from '@/core/utils/toasts.js'
 import * as alerts from '@/core/utils/alerts.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { getValues } from '@/core/utils/configColors.js'
+import { repairDaysToMinutes } from '@/features/lxcars/utils/repairTime.js'
 
 export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
 
@@ -37,7 +38,12 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         c_zrd: null,
         c_zrk: null,
         c_bf: null,
-        c_wd: null
+        c_wd: null,
+        // Reparaturzeit (docs/features/lxcars.md → Reparaturzeit)
+        reparaturzeit_minuten: null,
+        reparaturzeit_drucken: false,
+        reparaturzeit_quelle: null,
+        reparaturzeit_start: null
     })
 
     // Dropdown-Optionen für kfz_ort (aus Firmeneinstellungen, Fallback auf i18n)
@@ -283,6 +289,45 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         }
     }
 
+    // ── Reparaturzeit ──
+    // Minuten + Quelle gehen zusammen ans Backend (ein Aufruf, kein Debounce: die
+    // Eingabe ist beim Verlassen des Feldes abgeschlossen). Gelöscht (null) ⇒ Quelle
+    // NULL, das Backend trägt die gemessene Zeit wieder ein, danach neu laden.
+
+    async function _saveRepairTime(payload) {
+        Object.assign(oeExtData.value, payload)
+        if (!fakturaId.value) return
+        try {
+            if (isInvoice.value) {
+                await carsStore.updateArExt(fakturaId.value, payload)
+            } else {
+                await carsStore.updateOeExt(fakturaId.value, payload)
+                if (payload.reparaturzeit_minuten === null) await loadVehicleData(null)
+            }
+        } catch (e) {
+            console.error('Error saving repair time:', e)
+            toast.error(t('FakturaView.faktura.repairTime.saveError'))
+        }
+    }
+
+    function onRepairTimeChange(minutes) {
+        return _saveRepairTime({
+            reparaturzeit_minuten: minutes,
+            reparaturzeit_quelle: minutes === null ? null : 'manuell'
+        })
+    }
+
+    /** Reparaturdauer aus Gutachten/Kalkulation (Tage): wird gedruckt */
+    function applyAppraisalRepairTime(days) {
+        const minutes = repairDaysToMinutes(days)
+        if (!minutes) return Promise.resolve()
+        return _saveRepairTime({
+            reparaturzeit_minuten: minutes,
+            reparaturzeit_quelle: 'gutachten',
+            reparaturzeit_drucken: true
+        })
+    }
+
     // ── Fahrzeug wechseln ──
 
     function onCarChange(carId) {
@@ -395,6 +440,10 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         oeExtData.value.c_zrk = car?.c_zrk ?? null
         oeExtData.value.c_bf = car?.c_bf || null
         oeExtData.value.c_wd = car?.c_wd || null
+        oeExtData.value.reparaturzeit_minuten = car?.reparaturzeit_minuten ? Number(car.reparaturzeit_minuten) : null
+        oeExtData.value.reparaturzeit_drucken = car?.reparaturzeit_drucken === true || car?.reparaturzeit_drucken === 't'
+        oeExtData.value.reparaturzeit_quelle = car?.reparaturzeit_quelle || null
+        oeExtData.value.reparaturzeit_start = car?.reparaturzeit_start || null
     }
 
     // Wird mit vorgeladenen Daten aus getLxCarsFakturaInit aufgerufen (preloaded != null)
@@ -491,6 +540,8 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         onPickerTimeSelect,
         onClearDatetime,
         onOeExtFieldChange,
+        onRepairTimeChange,
+        applyAppraisalRepairTime,
         onCarChange,
         createCarFromPlate,
         loadVehicleData,

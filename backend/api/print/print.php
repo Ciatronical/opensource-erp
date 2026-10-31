@@ -1283,6 +1283,9 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
                     ext.c_id,
                     ext.km_stand,
                     ext.fertigstellung,
+                    ext.reparaturzeit_minuten,
+                    ext.reparaturzeit_drucken,
+                    ext.reparaturzeit_quelle,
                     car.c_ln,
                     car.c_m,
                     car.c_mt,
@@ -1300,6 +1303,9 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
                     ext.bringetermin,
                     ext.fertigstellung,
                     ext.gedruckt,
+                    ext.reparaturzeit_minuten,
+                    ext.reparaturzeit_drucken,
+                    ext.reparaturzeit_quelle,
                     car.c_ln,
                     car.c_m,
                     car.c_mt,
@@ -1494,6 +1500,13 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         $variables['km_stand']      = !empty($carData['km_stand']) ? number_format(intval($carData['km_stand']), 0, '', '.') : '';
         $variables['bringetermin']  = formatDate($carData['bringetermin'] ?? '');
         $variables['fertigstellung'] = formatDate($carData['fertigstellung'] ?? '');
+        // Reparaturzeit (docs/features/lxcars.md → Reparaturzeit): nur mit Druckschalter,
+        // reparaturzeit_quelle = auto | manuell | gutachten für Zusätze wie "laut Gutachten"
+        $repDrucken = (($carData['reparaturzeit_drucken'] ?? false) === true || ($carData['reparaturzeit_drucken'] ?? '') === 't');
+        $repMinuten = intval($carData['reparaturzeit_minuten'] ?? 0);
+        $variables['reparaturzeit']        = ($repDrucken && $repMinuten > 0) ? formatRepairTime($repMinuten) : '';
+        $variables['reparaturzeit_quelle'] = $variables['reparaturzeit'] !== '' ? ($carData['reparaturzeit_quelle'] ?? '') : '';
+        $variables['has_reparaturzeit']    = $variables['reparaturzeit'] !== '' ? '1' : '';
         $variables['has_instructions'] = count($instructions) > 0 ? '1' : '';
         $variables['has_maengel']   = count($maengel) > 0 ? '1' : '';
 
@@ -1661,6 +1674,22 @@ function formatDate(?string $date): string {
     $ts = strtotime($date);
     if ($ts === false) return $date;
     return date('d.m.Y', $ts);
+}
+
+/**
+ * Reparaturzeit in Minuten als Text: "5 Tage", "2 Tage 8 Std", "4 Std 30 Min", "45 Min"
+ * (Vorlagen sind deutsch, wie die übrigen Festtexte der Druckvariablen)
+ */
+function formatRepairTime(int $minutes): string {
+    if ($minutes <= 0) return '';
+    $days  = intdiv($minutes, 1440);
+    $hours = intdiv($minutes % 1440, 60);
+    $mins  = $minutes % 60;
+    $parts = [];
+    if ($days > 0)  $parts[] = $days . ' ' . ($days === 1 ? 'Tag' : 'Tage');
+    if ($hours > 0) $parts[] = $hours . ' Std';
+    if ($mins > 0 && $days === 0) $parts[] = $mins . ' Min';
+    return implode(' ', $parts);
 }
 
 /**

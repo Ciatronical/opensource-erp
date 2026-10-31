@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fel vid Import",
                 "invalidFile": "Ogiltige Fil — nur VXS-XML-Filen werden unterstützt",
-                "noBuchungsgruppe": "Vanligen Bokforingsgruppn auswählen"
+                "noBuchungsgruppe": "Vanligen Bokforingsgruppn auswählen",
+                "repairDays": "Reparationstid enligt kalkyl: {days} dagar"
             },
             "statusOpen": "Oppen",
             "statusClosed": "Slutford",
@@ -477,6 +478,34 @@
                     "other": "Övrigt"
                 },
                 "saveError": "Det gick inte — ordern har troligen ändrats under tiden. Vyn har laddats om, granska igen."
+            },
+            "repairTime": {
+                "label": "Reparationstid",
+                "print": "Skriv ut",
+                "printHint": "Skriv ut reparationstiden på order och faktura",
+                "printHistory": "Skriv ut reparationstid",
+                "placeholder": "t.ex. 3 dagar, 4,5 timmar",
+                "running": "pågår: {time}",
+                "invalid": "Reparationstiden kunde inte tolkas – t.ex. 3 dagar, 4,5 timmar eller 1 dag 2 timmar",
+                "saveError": "Reparationstiden kunde inte sparas",
+                "sourceLabel": "Reparationstid – källa",
+                "source": {
+                    "auto": "Uppmätt: från inlämningstid (annars orderns skapande) till den sista avbockade arbetsinstruktionen. Töm fältet för att återgå till mätningen.",
+                    "manuell": "Angiven manuellt. Töm fältet för att återgå till den uppmätta tiden.",
+                    "gutachten": "Hämtad från värderingen. Töm fältet för att återgå till den uppmätta tiden.",
+                    "running": "Mätningen pågår från inlämningstid eller orderns skapande och slutar med den sista avbockade arbetsinstruktionen. Ett eget värde kan anges när som helst.",
+                    "none": "Mäts när ordern är sparad – eller ange manuellt (t.ex. 3 dagar, 4,5 timmar)"
+                },
+                "units": {
+                    "day": "dag",
+                    "days": "dagar",
+                    "hours": "tim",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Överta och skriv ut reparationstid ({days} dagar)",
+                "optRepairTimeNone": "Ingen reparationstid i värderingen"
             }
         },
         "workflow": {

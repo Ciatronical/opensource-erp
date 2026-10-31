@@ -215,6 +215,7 @@ import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 import axios from 'axios'
 import { formatRelativeTime } from '@/core/utils/dateFormatter.js'
+import { formatRepairTime } from '@/features/lxcars/utils/repairTime.js'
 
 const props = defineProps({
     modelValue: { type: Boolean, default: false },
@@ -605,6 +606,7 @@ const FAKTURA_LABELS = {
 const EXT_LABELS = {
     km_stand: 'kmStand', kfz_ort: 'kfzOrt', status: 'status', gedruckt: 'gedruckt', intern: 'intern',
     bringetermin: 'bringetermin', fertigstellung: 'fertigstellung', c_id: 'licensePlate', kennzeichen: 'licensePlate',
+    reparaturzeit_minuten: 'repairTime.label', reparaturzeit_drucken: 'repairTime.printHistory', reparaturzeit_quelle: 'repairTime.sourceLabel',
 }
 
 function fieldLabel(key, table) {
@@ -644,6 +646,8 @@ function formatValue(key, value, table) {
     if (MONEY_KEYS.includes(key)) return formatMoney(value)
     if (key === 'discount') return formatNumber(Number(value) * 100, 2) + ' %'
     if (key === 'qty' || key === 'km_stand') return formatNumber(value, key === 'qty' ? 3 : 0)
+    if (key === 'reparaturzeit_minuten') return formatRepairTime(value, t) || String(value)
+    if (key === 'reparaturzeit_quelle') return te('FakturaView.faktura.repairTime.source.' + value) ? t('FakturaView.faktura.repairTime.source.' + value) : String(value)
     // fertigstellung: Zeitstempel in oe_ext, Datum in ar_ext
     if (key === 'fertigstellung' && table === 'oe_ext') return formatDateTime(value)
     if (DATE_KEYS.includes(key)) return formatDate(value)

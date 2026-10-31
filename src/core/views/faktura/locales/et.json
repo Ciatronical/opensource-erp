@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fehler beim Import",
                 "invalidFile": "Ungültige Datei — nur VXS-XML-Dateien werden unterstützt",
-                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen"
+                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen",
+                "repairDays": "Remondi kestus kalkulatsiooni järgi: {days} päeva"
             },
             "statusOpen": "Avatud",
             "statusClosed": "Tehtud",
@@ -477,6 +478,34 @@
                     "other": "Muu"
                 },
                 "saveError": "See ei õnnestunud — tellimust on vahepeal tõenäoliselt muudetud. Vaade laaditi uuesti, palun kontrollige veel kord."
+            },
+            "repairTime": {
+                "label": "Remondiaeg",
+                "print": "Prindi",
+                "printHint": "Prindi remondiaeg tellimusele ja arvele",
+                "printHistory": "Prindi remondiaeg",
+                "placeholder": "nt 3 päeva, 4,5 tundi",
+                "running": "käib: {time}",
+                "invalid": "Remondiaega ei mõistetud – nt 3 päeva, 4,5 tundi või 1 päev 2 tundi",
+                "saveError": "Remondiaega ei õnnestunud salvestada",
+                "sourceLabel": "Remondiaeg – allikas",
+                "source": {
+                    "auto": "Mõõdetud: toomisajast (muidu tellimuse loomisest) viimase linnukesega tööjuhiseni. Välja tühjendamine taastab mõõtmise.",
+                    "manuell": "Käsitsi sisestatud. Välja tühjendamine taastab mõõdetud aja.",
+                    "gutachten": "Võetud ekspertiisist. Välja tühjendamine taastab mõõdetud aja.",
+                    "running": "Mõõtmine käib alates toomisajast või tellimuse loomisest ja lõpeb viimase linnukesega tööjuhisega. Oma väärtuse võib igal ajal sisestada.",
+                    "none": "Mõõdetakse, kui tellimus on salvestatud – või sisesta käsitsi (nt 3 päeva, 4,5 tundi)"
+                },
+                "units": {
+                    "day": "päev",
+                    "days": "päeva",
+                    "hours": "t",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Võta remondi kestus üle ja prindi ({days} päeva)",
+                "optRepairTimeNone": "Ekspertiisis puudub remondi kestus"
             }
         },
         "workflow": {

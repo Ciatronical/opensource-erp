@@ -55,6 +55,9 @@
         "letters": "/letters",
         "newLetter": "/letter/new",
         "editLetter": "/letter/edit",
+        "mailings": "/mailings",
+        "newMailing": "/mailings/new",
+        "editMailing": "/mailings/edit",
         "docs": "/docs",
         "mechanic": "/mechanic",
         "gutmann": "/gutmann-diagnostics",
@@ -89,7 +92,8 @@
         "callHistory": "Call History",
         "emails": "Emails",
         "whatsapp": "WhatsApp",
-        "letters": "Letters"
+        "letters": "Letters",
+        "mailings": "Mailings"
     },
     "SalesMenu": {
         "title": "Sales",

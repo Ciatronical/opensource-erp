@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fehler beim Import",
                 "invalidFile": "Ungültige Datei — nur VXS-XML-Dateien werden unterstützt",
-                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen"
+                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen",
+                "repairDays": "Korjauksen kesto laskelman mukaan: {days} päivää"
             },
             "statusOpen": "Avoin",
             "statusClosed": "Valmis",
@@ -477,6 +478,34 @@
                     "other": "Muu"
                 },
                 "saveError": "Se ei onnistunut — tilausta on todennäköisesti muutettu sillä välin. Näkymä on ladattu uudelleen, tarkista vielä kerran."
+            },
+            "repairTime": {
+                "label": "Korjausaika",
+                "print": "Tulosta",
+                "printHint": "Tulosta korjausaika tilaukseen ja laskuun",
+                "printHistory": "Tulosta korjausaika",
+                "placeholder": "esim. 3 päivää, 4,5 tuntia",
+                "running": "käynnissä: {time}",
+                "invalid": "Korjausaikaa ei ymmärretty – esim. 3 päivää, 4,5 tuntia tai 1 päivä 2 tuntia",
+                "saveError": "Korjausaikaa ei voitu tallentaa",
+                "sourceLabel": "Korjausaika – lähde",
+                "source": {
+                    "auto": "Mitattu: tuontiajasta (muuten tilauksen luonnista) viimeiseen kuitattuun työohjeeseen. Kentän tyhjentäminen palauttaa mittauksen.",
+                    "manuell": "Syötetty käsin. Kentän tyhjentäminen palauttaa mitatun ajan.",
+                    "gutachten": "Otettu lausunnosta. Kentän tyhjentäminen palauttaa mitatun ajan.",
+                    "running": "Mittaus käy tuontiajasta tai tilauksen luonnista ja päättyy viimeiseen kuitattuun työohjeeseen. Oman arvon voi syöttää milloin tahansa.",
+                    "none": "Mitataan, kun tilaus on tallennettu – tai syötä käsin (esim. 3 päivää, 4,5 tuntia)"
+                },
+                "units": {
+                    "day": "päivä",
+                    "days": "päivää",
+                    "hours": "h",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Ota korjauksen kesto käyttöön ja tulosta ({days} päivää)",
+                "optRepairTimeNone": "Lausunnossa ei ole korjauksen kestoa"
             }
         },
         "workflow": {

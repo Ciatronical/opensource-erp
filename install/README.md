@@ -252,6 +252,20 @@ cd backend/portal-runner && npm install && npx puppeteer browsers install chrome
 Alles Weitere (Quellen, Aufnahme mit dem Chrome-Recorder, Grenzen) steht in `docs/belegsuche.md`.
 
 
+### Rundschreiben (Kontakt → Rundschreiben)
+
+Versendet die faelligen Etappen laufender Rundschreiben (Telegram, WhatsApp,
+E-Mail) fuer alle Mandanten: je Etappe die eingestellte Anzahl, danach Pause,
+nur im Zeitfenster des Rundschreibens. Solange die Rundschreiben-Seite im
+Browser offen ist, stoesst sie Etappen auch selbst an; der Cron sorgt dafuer,
+dass der Versand ohne Browser weiterlaeuft.
+
+```
+0-59/5 * * * * cd /home/work/opensource-erp && php backend/cli/mailings.php >> log/mailings.log 2>&1
+```
+
+Nur ein Mandant: `--client <id>`. Details in `docs/features/rundschreiben.md`.
+
 ### WhatsApp-Erinnerungen (Termine + HU)
 
 Automatischer Versand von WhatsApp-Erinnerungen an Kunden. Das Script durchlauft alle Mandanten und versendet:

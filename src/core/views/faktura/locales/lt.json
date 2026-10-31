@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fehler beim Import",
                 "invalidFile": "Ungültige Datei — nur VXS-XML-Dateien werden unterstützt",
-                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen"
+                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen",
+                "repairDays": "Remonto trukmė pagal kalkuliaciją: {days} d."
             },
             "statusOpen": "Atidaryta",
             "statusClosed": "Atlikta",
@@ -477,6 +478,34 @@
                     "other": "Kita"
                 },
                 "saveError": "Nepavyko — užsakymas tikriausiai buvo pakeistas per tą laiką. Rodinys įkeltas iš naujo, peržiūrėkite dar kartą."
+            },
+            "repairTime": {
+                "label": "Remonto laikas",
+                "print": "Spausdinti",
+                "printHint": "Spausdinti remonto laiką užsakyme ir sąskaitoje",
+                "printHistory": "Spausdinti remonto laiką",
+                "placeholder": "pvz. 3 dienos, 4,5 val.",
+                "running": "vyksta: {time}",
+                "invalid": "Remonto laikas neatpažintas – pvz. 3 dienos, 4,5 val. arba 1 diena 2 val.",
+                "saveError": "Nepavyko išsaugoti remonto laiko",
+                "sourceLabel": "Remonto laikas – šaltinis",
+                "source": {
+                    "auto": "Išmatuota: nuo pristatymo termino (kitaip – užsakymo sukūrimo) iki paskutinio pažymėto darbo nurodymo. Išvalius lauką grįžtama prie matavimo.",
+                    "manuell": "Įvesta ranka. Išvalius lauką grįžtama prie išmatuoto laiko.",
+                    "gutachten": "Perimta iš ekspertizės. Išvalius lauką grįžtama prie išmatuoto laiko.",
+                    "running": "Matavimas vyksta nuo pristatymo termino arba užsakymo sukūrimo ir baigiasi paskutiniu pažymėtu darbo nurodymu. Savo reikšmę galima įvesti bet kada.",
+                    "none": "Matuojama, kai užsakymas išsaugotas – arba įveskite ranka (pvz. 3 dienos, 4,5 val.)"
+                },
+                "units": {
+                    "day": "diena",
+                    "days": "dienos",
+                    "hours": "val.",
+                    "min": "min."
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Perimti ir spausdinti remonto trukmę ({days} d.)",
+                "optRepairTimeNone": "Ekspertizėje remonto trukmės nėra"
             }
         },
         "workflow": {

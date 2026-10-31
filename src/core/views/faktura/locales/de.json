@@ -318,7 +318,9 @@
                 "nothingFound": "Im Dokument wurden weder Fahrzeug noch Positionen erkannt",
                 "analyzeError": "Gutachten konnte nicht ausgelesen werden",
                 "importError": "Fehler bei der Übernahme",
-                "invalidFile": "Ungültige Datei – nur PDF oder Bilder (JPEG, PNG, WebP) werden unterstützt"
+                "invalidFile": "Ungültige Datei – nur PDF oder Bilder (JPEG, PNG, WebP) werden unterstützt",
+                "optRepairTime": "Reparaturdauer übernehmen und drucken ({days} Tage)",
+                "optRepairTimeNone": "Keine Reparaturdauer im Gutachten"
             },
             "openAag": "AAG-Online – Fahrzeug übertragen und öffnen",
             "openHgs": "Fahrzeugdaten in HGS-Data öffnen",
@@ -353,7 +355,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fehler beim Import",
                 "invalidFile": "Ungültige Datei — nur VXS-XML-Dateien werden unterstützt",
-                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen"
+                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen",
+                "repairDays": "Reparaturdauer laut Kalkulation: {days} Tage"
             },
             "statusOpen": "Offen",
             "statusClosed": "Erledigt",
@@ -609,6 +612,30 @@
                     "other": "Sonstiges"
                 },
                 "saveError": "Das hat nicht geklappt — der Auftrag wurde vermutlich inzwischen geändert. Die Anzeige ist neu geladen, bitte noch einmal prüfen."
+            },
+            "repairTime": {
+                "label": "Reparaturzeit",
+                "print": "Drucken",
+                "printHint": "Reparaturzeit auf Auftrag und Rechnung drucken",
+                "printHistory": "Reparaturzeit drucken",
+                "placeholder": "z. B. 3 Tage, 4,5 Std",
+                "running": "läuft: {time}",
+                "invalid": "Reparaturzeit nicht verstanden – z. B. 3 Tage, 4,5 Std oder 1 Tag 2 Std",
+                "saveError": "Reparaturzeit konnte nicht gespeichert werden",
+                "sourceLabel": "Reparaturzeit – Quelle",
+                "source": {
+                    "auto": "Gemessen: vom Abgabetermin (sonst Auftragsanlage) bis zur letzten abgehakten Arbeitsanweisung. Feld leeren setzt auf die Messung zurück.",
+                    "manuell": "Von Hand eingetragen. Feld leeren setzt auf die gemessene Zeit zurück.",
+                    "gutachten": "Aus dem Gutachten übernommen. Feld leeren setzt auf die gemessene Zeit zurück.",
+                    "running": "Messung läuft seit Abgabetermin bzw. Auftragsanlage und endet mit der letzten abgehakten Arbeitsanweisung. Ein eigener Wert kann jederzeit eingetragen werden.",
+                    "none": "Wird gemessen, sobald der Auftrag gespeichert ist – oder von Hand eintragen (z. B. 3 Tage, 4,5 Std)"
+                },
+                "units": {
+                    "day": "Tag",
+                    "days": "Tage",
+                    "hours": "Std",
+                    "min": "Min"
+                }
             }
         },
         "workflow": {

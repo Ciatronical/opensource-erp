@@ -175,6 +175,7 @@ CREATE TABLE customer_ext (
     urls JSONB,
     keywords TEXT,
     ustid_check JSONB,
+    telegram_chat_id TEXT,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT customer_ext_customer_id_unique UNIQUE (customer_id)
@@ -188,6 +189,7 @@ COMMENT ON COLUMN customer_ext.ustid_check IS 'Letzte USt-IdNr.-Bestätigung (eV
 COMMENT ON COLUMN customer_ext.phone_labels IS 'JSON-Array mit Bezeichnungen für Telefonnummern';
 COMMENT ON COLUMN customer_ext.emails IS 'JSON-Array mit E-Mail-Adressen [{label, email}]';
 COMMENT ON COLUMN customer_ext.urls IS 'JSON-Array mit Web-Adressen [{label, url}]';
+COMMENT ON COLUMN customer_ext.telegram_chat_id IS 'Telegram-Chat-ID des Kunden; wird gesetzt, wenn der Kunde dem Firmen-Bot seine Rufnummer teilt (Rundschreiben)';
 COMMENT ON COLUMN customer_ext.itime IS 'Zeitstempel der Erstellung';
 COMMENT ON COLUMN customer_ext.mtime IS 'Zeitstempel der letzten Änderung';
 
@@ -207,6 +209,7 @@ CREATE TABLE vendor_ext (
     urls JSONB,
     keywords TEXT,
     ustid_check JSONB,
+    telegram_chat_id TEXT,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT vendor_ext_vendor_id_unique UNIQUE (vendor_id)
@@ -219,6 +222,7 @@ COMMENT ON COLUMN vendor_ext.phone_numbers IS 'JSON-Array mit Telefonnummern';
 COMMENT ON COLUMN vendor_ext.phone_labels IS 'JSON-Array mit Bezeichnungen für Telefonnummern';
 COMMENT ON COLUMN vendor_ext.emails IS 'JSON-Array mit E-Mail-Adressen [{label, email}]';
 COMMENT ON COLUMN vendor_ext.urls IS 'JSON-Array mit Web-Adressen [{label, url}]';
+COMMENT ON COLUMN vendor_ext.telegram_chat_id IS 'Telegram-Chat-ID des Lieferanten (siehe customer_ext.telegram_chat_id)';
 COMMENT ON COLUMN vendor_ext.itime IS 'Zeitstempel der Erstellung';
 COMMENT ON COLUMN vendor_ext.mtime IS 'Zeitstempel der letzten Änderung';
 
@@ -5331,3 +5335,115 @@ SELECT 'ai_external_enabled',
                           WHERE key = 'anthropic_api_key' AND btrim(COALESCE(value, '')) <> '')
             THEN '1' ELSE '0' END
 ON CONFLICT (key) DO NOTHING;
+
+-- ============================================================================
+-- RUNDSCHREIBEN (Kontakt → Rundschreiben)
+-- ============================================================================
+-- Eine Nachricht an viele Kunden/Lieferanten (höchstens 300 je Rundschreiben)
+-- über Telegram, WhatsApp oder E-Mail. Verteiler sind gespeicherte Empfänger-
+-- listen und wiederverwendbar; jedes Rundschreiben hält seine eigenen Empfänger
+-- mit Kanal, Ziel und Versandstatus. Der Versand läuft in Etappen (Hintergrund,
+-- backend/cli/mailings.php), damit weder Meta noch Telegram die Nummer sperren
+-- und WhatsApp nur im kostenlosen 24-Stunden-Fenster oder bewusst per Vorlage
+-- genutzt wird.
+
+CREATE TABLE IF NOT EXISTS mailing_lists (
+    id          INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name        TEXT NOT NULL,
+    description TEXT,
+    employee_id INTEGER,
+    itime       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    mtime       TIMESTAMPTZ
+);
+
+COMMENT ON TABLE mailing_lists IS 'Verteiler für Rundschreiben: benannte, wiederverwendbare Empfängerlisten';
+
+CREATE TABLE IF NOT EXISTS mailing_list_members (
+    id              INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    mailing_list_id INTEGER NOT NULL REFERENCES mailing_lists(id) ON DELETE CASCADE,
+    cv_src          CHAR(1) NOT NULL,
+    cv_id           INTEGER NOT NULL,
+    itime           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT mailing_list_members_unique UNIQUE (mailing_list_id, cv_src, cv_id)
+);
+
+COMMENT ON TABLE mailing_list_members IS 'Mitglieder eines Verteilers (C = Kunde, V = Lieferant)';
+
+CREATE TABLE IF NOT EXISTS mailings (
+    id                   INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    title                TEXT NOT NULL,
+    subject              TEXT,
+    body_text            TEXT,
+    body_html            TEXT,
+    channels             JSONB NOT NULL DEFAULT '["whatsapp","telegram"]'::jsonb,
+    whatsapp_template_id INTEGER,
+    email_mode           TEXT NOT NULL DEFAULT 'always',
+    letter_mode          TEXT NOT NULL DEFAULT 'off',
+    batch_size           INTEGER NOT NULL DEFAULT 20,
+    batch_pause_minutes  INTEGER NOT NULL DEFAULT 10,
+    send_from            TIME NOT NULL DEFAULT '09:00',
+    send_until           TIME NOT NULL DEFAULT '20:00',
+    status               TEXT NOT NULL DEFAULT 'draft',
+    mailing_list_id      INTEGER,
+    next_batch_at        TIMESTAMPTZ,
+    started_at           TIMESTAMPTZ,
+    finished_at          TIMESTAMPTZ,
+    last_error           TEXT,
+    employee_id          INTEGER,
+    itime                TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    mtime                TIMESTAMPTZ
+);
+
+COMMENT ON TABLE mailings IS 'Rundschreiben: Nachricht, Kanalreihenfolge, Etappen und Versandstatus';
+COMMENT ON COLUMN mailings.channels IS 'Messenger in Prioritätsreihenfolge, z. B. ["whatsapp","telegram"]; je Empfänger gilt der erste verfügbare';
+COMMENT ON COLUMN mailings.email_mode IS 'always = E-Mail zusätzlich an alle mit Adresse | fallback = nur ohne erreichbaren Messenger | off';
+COMMENT ON COLUMN mailings.letter_mode IS 'E-Brief über den Postdienst: off | fallback = nur wer sonst nicht erreichbar ist | always = zusätzlich an alle mit Postanschrift';
+COMMENT ON COLUMN mailings.whatsapp_template_id IS 'Genehmigte WhatsApp-Vorlage für Empfänger ohne offenes 24-Stunden-Fenster (kostenpflichtig); NULL = dann kein WhatsApp';
+COMMENT ON COLUMN mailings.batch_size IS 'Nachrichten je Etappe';
+COMMENT ON COLUMN mailings.batch_pause_minutes IS 'Pause zwischen zwei Etappen in Minuten';
+COMMENT ON COLUMN mailings.send_from IS 'Versand nur ab dieser Uhrzeit';
+COMMENT ON COLUMN mailings.send_until IS 'Versand nur bis zu dieser Uhrzeit';
+COMMENT ON COLUMN mailings.status IS 'draft | running | paused | done | cancelled';
+COMMENT ON COLUMN mailings.next_batch_at IS 'Frühester Zeitpunkt der nächsten Etappe';
+COMMENT ON COLUMN mailings.last_error IS 'Grund einer automatischen Pause (fünf Fehler in Folge)';
+
+CREATE TABLE IF NOT EXISTS mailing_recipients (
+    id          INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    mailing_id  INTEGER NOT NULL REFERENCES mailings(id) ON DELETE CASCADE,
+    cv_src      CHAR(1) NOT NULL,
+    cv_id       INTEGER NOT NULL,
+    channel     TEXT,
+    target      TEXT,
+    status      TEXT NOT NULL DEFAULT 'pending',
+    error       TEXT,
+    batch_no    INTEGER,
+    reference   TEXT,
+    sent_at     TIMESTAMPTZ,
+    email_target    TEXT,
+    email_status    TEXT,
+    email_error     TEXT,
+    email_reference TEXT,
+    email_sent_at   TIMESTAMPTZ,
+    letter_target    TEXT,
+    letter_status    TEXT,
+    letter_error     TEXT,
+    letter_reference TEXT,
+    letter_sent_at   TIMESTAMPTZ,
+    itime       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT mailing_recipients_unique UNIQUE (mailing_id, cv_src, cv_id)
+);
+
+COMMENT ON TABLE mailing_recipients IS 'Empfänger eines Rundschreibens mit gewähltem Kanal, Ziel und Versandstatus';
+COMMENT ON COLUMN mailing_recipients.channel IS 'telegram | whatsapp | whatsapp_template | email — festgelegt beim Start';
+COMMENT ON COLUMN mailing_recipients.target IS 'Chat-ID, Rufnummer (E.164) oder E-Mail-Adresse';
+COMMENT ON COLUMN mailing_recipients.status IS 'pending | sent | failed | skipped';
+COMMENT ON COLUMN mailing_recipients.reference IS 'WhatsApp-Nachrichten-ID, Telegram-message_id oder email_journal.id';
+COMMENT ON COLUMN mailing_recipients.email_target IS 'Zusätzliche E-Mail neben dem Messenger (email_mode = always); NULL = keine';
+COMMENT ON COLUMN mailing_recipients.email_status IS 'pending | sent | failed der zusätzlichen E-Mail';
+COMMENT ON COLUMN mailing_recipients.letter_target IS 'Postanschrift des zusätzlichen Briefs (letter_mode = always); NULL = keiner';
+COMMENT ON COLUMN mailing_recipients.letter_reference IS 'postal_dispatches.id des zusätzlichen Briefs';
+
+CREATE INDEX IF NOT EXISTS idx_mailing_recipients_mailing ON mailing_recipients(mailing_id, status);
+CREATE INDEX IF NOT EXISTS idx_mailings_status ON mailings(status, next_batch_at);
+CREATE INDEX IF NOT EXISTS idx_customer_ext_telegram ON customer_ext(telegram_chat_id) WHERE telegram_chat_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_vendor_ext_telegram ON vendor_ext(telegram_chat_id) WHERE telegram_chat_id IS NOT NULL;

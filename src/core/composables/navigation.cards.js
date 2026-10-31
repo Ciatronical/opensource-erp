@@ -100,6 +100,8 @@ export function useNavigationCards() {
         // Briefe: kivitendo-Rechte für Verkaufs- bzw. Einkaufsbriefe
         if (oserp.checkPermission('sales_letter_edit') || oserp.checkPermission('purchase_letter_edit')) {
             contactItems.push({ title: t('ContactMenu.letters'), to: { name: 'letters' } })
+            // Rundschreiben an viele Kunden/Lieferanten — dieselben Rechte wie Briefe
+            contactItems.push({ title: t('ContactMenu.mailings'), to: { name: 'mailings' } })
         }
         contactItems.push('-', { title: t('Tafel.title'), to: { name: 'tafel' } })
         if (oserp.isLxCars()) {

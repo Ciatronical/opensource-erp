@@ -69,7 +69,12 @@ if (!$dbInfo) {
 
 try {
     $pdo = _connectCompanyDb($dbInfo);
-    _processVoiceMessage($pdo, $dbInfo, $input['message']);
+    // Kunden, die dem Bot „Start" sagen oder ihre Rufnummer teilen, werden für
+    // Rundschreiben verknüpft (customer_ext.telegram_chat_id); alles andere
+    // sind Sprachnotizen der Mitarbeiter.
+    if (!_processContactRegistration($pdo, $input['message'])) {
+        _processVoiceMessage($pdo, $dbInfo, $input['message']);
+    }
 } catch (\Throwable $e) {
     error_log('[TELEGRAM WEBHOOK] ' . $e->getMessage());
 }
@@ -165,6 +170,103 @@ function _resolveSenderName(PDO $pdo, string $chatId, array $from): string {
         $name = '@' . $from['username'];
     }
     return $name !== '' ? $name : 'Unbekannt';
+}
+
+/**
+ * Kunden-Registrierung für Rundschreiben.
+ *
+ * „/start" (der Knopf, den Telegram beim Öffnen von t.me/<Bot> zeigt) wird mit
+ * der Bitte beantwortet, die eigene Rufnummer zu teilen — Telegram bietet dafür
+ * einen Knopf an, der Kunde muss nichts tippen. Kommt der Kontakt, wird die
+ * Nummer gegen Kunden und Lieferanten (Stammsatz, Zusatznummern, Ansprech-
+ * personen) geprüft und die Chat-ID in customer_ext/vendor_ext gespeichert.
+ * Ab dann erreichen Rundschreiben den Kunden kostenlos per Telegram.
+ *
+ * @return bool true, wenn die Nachricht hier erledigt wurde
+ */
+function _processContactRegistration(PDO $pdo, array $message): bool {
+    $chatId   = (string)($message['chat']['id'] ?? ($message['from']['id'] ?? ''));
+    $botToken = _cfg($pdo, 'telegram_bot_token', '');
+    if ($chatId === '' || $botToken === '') return false;
+
+    $text = trim((string)($message['text'] ?? ''));
+    if ($text !== '' && preg_match('~^/start~i', $text)) {
+        $company = _companyName($pdo);
+        _sendTelegramMessage($botToken, $chatId,
+            "Willkommen bei {$company}!\nDamit wir Sie zuordnen können, teilen Sie bitte einmalig Ihre Telefonnummer über den Knopf unten. "
+            ."Danach erhalten Sie unsere Mitteilungen hier in Telegram.",
+            ['keyboard' => [[['text' => "\u{1F4F1} Telefonnummer teilen", 'request_contact' => true]]],
+             'one_time_keyboard' => true, 'resize_keyboard' => true]);
+        return true;
+    }
+
+    $contact = $message['contact'] ?? null;
+    if (!$contact || empty($contact['phone_number'])) return false;
+
+    // Nur die eigene Nummer zählt (Telegram liefert user_id des Kontakts mit)
+    $fromId = (string)($message['from']['id'] ?? '');
+    if (!empty($contact['user_id']) && $fromId !== '' && (string)$contact['user_id'] !== $fromId) {
+        _sendTelegramMessage($botToken, $chatId, "Bitte teilen Sie Ihre eigene Telefonnummer über den Knopf.", ['remove_keyboard' => true]);
+        return true;
+    }
+
+    $digits = preg_replace('/[^0-9]/', '', (string)$contact['phone_number']);
+    if (str_starts_with($digits, '00')) $digits = substr($digits, 2);
+    $cc = _cfg($pdo, 'whatsapp_country_code', '49');
+    if (str_starts_with($digits, '0')) $digits = $cc . substr($digits, 1);
+    $tail = substr($digits, -8);
+
+    $match = null;
+    if (strlen($tail) >= 7) {
+        $stmt = $pdo->prepare(<<<SQL
+            WITH nums AS (
+                SELECT 'C' AS src, c.id, c.name, regexp_replace(COALESCE(c.phone, ''), '[^0-9]', '', 'g') AS d FROM customer c
+                UNION ALL SELECT 'C', x.customer_id, c.name, regexp_replace(COALESCE(e->>'number', ''), '[^0-9]', '', 'g')
+                    FROM customer_ext x JOIN customer c ON c.id = x.customer_id, jsonb_array_elements(COALESCE(x.phone_numbers, '[]'::jsonb)) e
+                UNION ALL SELECT 'C', c.id, c.name, regexp_replace(COALESCE(cp.cp_mobile1, ''), '[^0-9]', '', 'g')
+                    FROM contacts cp JOIN customer c ON c.id = cp.cp_cv_id
+                UNION ALL SELECT 'V', v.id, v.name, regexp_replace(COALESCE(v.phone, ''), '[^0-9]', '', 'g') FROM vendor v
+                UNION ALL SELECT 'V', x.vendor_id, v.name, regexp_replace(COALESCE(e->>'number', ''), '[^0-9]', '', 'g')
+                    FROM vendor_ext x JOIN vendor v ON v.id = x.vendor_id, jsonb_array_elements(COALESCE(x.phone_numbers, '[]'::jsonb)) e
+            )
+            SELECT src, id, name FROM nums WHERE length(d) >= 7 AND d LIKE '%' || :tail
+            ORDER BY CASE src WHEN 'C' THEN 0 ELSE 1 END, id LIMIT 1
+        SQL);
+        $stmt->execute([':tail' => $tail]);
+        $match = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    if (!$match) {
+        _sendTelegramMessage($botToken, $chatId,
+            "Danke! Zu dieser Nummer haben wir noch keinen Kundeneintrag. Melden Sie sich gern bei uns, dann verknüpfen wir Sie.",
+            ['remove_keyboard' => true]);
+        return true;
+    }
+
+    $table = $match['src'] === 'V' ? 'vendor_ext' : 'customer_ext';
+    $col   = $match['src'] === 'V' ? 'vendor_id' : 'customer_id';
+    $stmt = $pdo->prepare(
+        "INSERT INTO {$table} ({$col}, telegram_chat_id, itime) VALUES (:id, :chat, NOW())
+         ON CONFLICT ({$col}) DO UPDATE SET telegram_chat_id = EXCLUDED.telegram_chat_id, mtime = NOW()"
+    );
+    $stmt->execute([':id' => (int)$match['id'], ':chat' => $chatId]);
+
+    _sendTelegramMessage($botToken, $chatId,
+        "\u{2705} Vielen Dank, " . $match['name'] . "! Sie sind jetzt verknüpft und erhalten unsere Mitteilungen hier.",
+        ['remove_keyboard' => true]);
+    return true;
+}
+
+/**
+ * Firmenname aus kivitendos defaults (für Begrüßungstexte).
+ */
+function _companyName(PDO $pdo): string {
+    try {
+        $row = $pdo->query("SELECT company FROM defaults LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+        return trim((string)($row['company'] ?? '')) ?: 'uns';
+    } catch (\Exception $e) {
+        return 'uns';
+    }
 }
 
 /**
@@ -744,13 +846,16 @@ function _transcribe(PDO $pdo, string $audioBytes): ?array {
 }
 
 /**
- * Kurze Textnachricht an einen Telegram-Chat senden (Bestaetigung).
+ * Kurze Textnachricht an einen Telegram-Chat senden (Bestaetigung), optional mit
+ * Antwort-Tastatur (reply_markup, z. B. Kontakt-Anfrage oder Tastatur entfernen).
  */
-function _sendTelegramMessage(string $botToken, string $chatId, string $text): void {
+function _sendTelegramMessage(string $botToken, string $chatId, string $text, ?array $replyMarkup = null): void {
+    $fields = ['chat_id' => $chatId, 'text' => $text];
+    if ($replyMarkup !== null) $fields['reply_markup'] = json_encode($replyMarkup);
     $ch = curl_init("https://api.telegram.org/bot{$botToken}/sendMessage");
     curl_setopt_array($ch, [
         CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => http_build_query(['chat_id' => $chatId, 'text' => $text]),
+        CURLOPT_POSTFIELDS => http_build_query($fields),
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 10,
     ]);

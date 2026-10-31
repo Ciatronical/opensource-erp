@@ -270,6 +270,7 @@
                     @picker-date-select="vehicle.onPickerDateSelect"
                     @picker-time-select="vehicle.onPickerTimeSelect"
                     @clear-datetime="vehicle.onClearDatetime"
+                    @repair-time-change="vehicle.onRepairTimeChange"
                 />
             </section>
 
@@ -1058,6 +1059,7 @@
             :options="gutachtenImport.options.value"
             :vehicle-action="gutachtenImport.vehicleAction.value"
             :plate-mismatch="gutachtenImport.plateMismatch.value"
+            :repair-days="gutachtenImport.repairDays.value"
             :confidence="gutachtenImport.confidence.value"
             :ai-notes="gutachtenImport.aiNotes.value"
             :analyzing="gutachtenImport.analyzing.value"
@@ -1901,13 +1903,16 @@ export default defineComponent({
                     // Nur Ereignisse der eigenen Haupttabelle: oe- und ar-IDs stammen aus
                     // verschiedenen Sequenzen und können gleich sein
                     const sseTables = {
-                        oe: ['oe', 'orderitems', 'oe_instructions_lxcars', 'oe_defects', 'oe_parts_requests_lxcars'],
+                        oe: ['oe', 'orderitems', 'oe_instructions_lxcars', 'oe_defects', 'oe_parts_requests_lxcars', 'oe_ext'],
                         ar: ['ar', 'invoice', 'ar_defects']
                     }[recordTable.value] || []
                     if (!sseTables.includes(data.table)) return
                     if (Number(data.id) !== Number(fakturaId.value)) return
                     if (data.table === 'oe_instructions_lxcars') {
                         instructionsRef.value?.loadInstructions()
+                    } else if (data.table === 'oe_ext') {
+                        // Reparaturzeit gemessen (letzte Anweisung abgehakt) → Fahrzeugkarte nachladen
+                        vehicle?.loadVehicleData(null)
                     } else if (data.table === 'oe_defects' || data.table === 'ar_defects') {
                         maengelRef.value?.loadMaengel()
                     } else if (data.table === 'oe_parts_requests_lxcars') {
@@ -2715,10 +2720,16 @@ export default defineComponent({
 
                 if (!result) return // doImport zeigt Fehler im Dialog
 
+                // Reparaturdauer der Kalkulation vor dem Zurücksetzen sichern
+                const repairDays = Number(silverdatImport.vehicleInfo.value?.repairDays || 0)
+
                 // Dialog sofort schließen
                 silverdatImport.showDialog.value = false
                 silverdatImport.reset()
                 toasts.success(t('FakturaView.faktura.silverdat.success', { count: result.count || 0 }))
+
+                // Reparaturzeit laut Kalkulation übernehmen und zum Druck markieren
+                if (vehicle && repairDays > 0) await vehicle.applyAppraisalRepairTime(repairDays)
 
                 // Faktura-Daten komplett neu laden (Items mit allen Properties)
                 await faktura.fetchFakturaData(fakturaId.value, fakturaType.value)

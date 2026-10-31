@@ -786,7 +786,8 @@ function getLxCarsFakturaInit($data) {
         if ($isInvoice) {
             $carData = $db->getOne(
                 "SELECT c.c_id, c.c_ln, COALESCE(c.c_text, '') AS c_text,
-                        e.km_stand, e.fertigstellung, COALESCE(k.fhzart, '') AS fhzart
+                        e.km_stand, e.fertigstellung, COALESCE(k.fhzart, '') AS fhzart,
+                        e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle
                  FROM ar_ext e
                  LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
                  LEFT JOIN kba_lxcars k ON k.id = c.kba_id
@@ -801,9 +802,14 @@ function getLxCarsFakturaInit($data) {
                         c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
                         to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
                         COALESCE(k.fhzart, '') AS fhzart,
+                        e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle,
+                        CASE WHEN EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id)
+                              AND NOT EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id AND NOT i.done)
+                             THEN NULL ELSE COALESCE(e.bringetermin, o.itime) END AS reparaturzeit_start,
                         COALESCE((SELECT value FROM defaults_oserp WHERE key = 'lxcars_default_abgabezeit'), '08:00') AS _def_bring,
                         COALESCE((SELECT value FROM defaults_oserp WHERE key = 'lxcars_default_fertigstellungszeit'), '17:00') AS _def_fertig
                  FROM oe_ext e
+                 JOIN oe o ON o.id = e.oe_id
                  LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
                  LEFT JOIN kba_lxcars k ON k.id = c.kba_id
                  WHERE e.oe_id = :id",
@@ -871,8 +877,13 @@ function getCarForOrder($data) {
                 e.bringetermin, e.fertigstellung, e.no_whatsapp,
                 c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
                 to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
-                COALESCE(k.fhzart, '') AS fhzart
+                COALESCE(k.fhzart, '') AS fhzart,
+                e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle,
+                CASE WHEN EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id)
+                      AND NOT EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id AND NOT i.done)
+                     THEN NULL ELSE COALESCE(e.bringetermin, o.itime) END AS reparaturzeit_start
          FROM oe_ext e
+         JOIN oe o ON o.id = e.oe_id
          LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
          LEFT JOIN kba_lxcars k ON k.id = c.kba_id
          WHERE e.oe_id = :oe_id",
@@ -892,7 +903,7 @@ function getCarForOrder($data) {
         }
     }
 
-    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'kfz_ort' => null, 'status' => null, 'gedruckt' => false, 'intern' => false, 'bringetermin' => null, 'fertigstellung' => null, 'no_whatsapp' => false, 'c_sk' => false, 'c_zrd' => null, 'c_zrk' => null, 'c_bf' => null, 'c_wd' => null, 'fhzart' => '']);
+    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'kfz_ort' => null, 'status' => null, 'gedruckt' => false, 'intern' => false, 'bringetermin' => null, 'fertigstellung' => null, 'no_whatsapp' => false, 'c_sk' => false, 'c_zrd' => null, 'c_zrk' => null, 'c_bf' => null, 'c_wd' => null, 'fhzart' => '', 'reparaturzeit_minuten' => null, 'reparaturzeit_drucken' => false, 'reparaturzeit_quelle' => null, 'reparaturzeit_start' => null]);
 }
 
 /**
@@ -936,11 +947,17 @@ function linkCarToFaktura($data) {
 }
 
 /**
- * Aktualisiert oe_ext-Felder (km_stand, kfz_ort, gedruckt, intern, bringetermin, fertigstellung)
+ * Aktualisiert oe_ext-Felder (km_stand, kfz_ort, gedruckt, intern, bringetermin, fertigstellung,
+ * reparaturzeit_minuten, reparaturzeit_drucken, reparaturzeit_quelle)
  * c_id wird hier NICHT angefasst — dafür ist linkCarToFaktura zuständig.
+ *
+ * Reparaturzeit (docs/features/lxcars.md → Reparaturzeit): ein Wert mit Quelle
+ * manuell/gutachten bleibt stehen; wird er gelöscht (NULL), rechnet
+ * reparaturzeit_sync() die gemessene Zeit sofort wieder ein.
  *
  * @param int $data['oe_id'] Auftrags-ID
  * @param array $data['data'] Key-Value-Paare der zu ändernden Felder
+ * @testdata {"oe_id": 1, "data": {"reparaturzeit_minuten": 2880, "reparaturzeit_quelle": "manuell"}}
  */
 function updateOeExt($data) {
     $db = DbhCompany::begin();
@@ -948,7 +965,8 @@ function updateOeExt($data) {
     $fields = $data['data'];
 
     // Whitelist: nur erlaubte oe_ext-Felder (Wartungsfelder gehen direkt ins Fahrzeug)
-    $allowedOeExt = ['km_stand', 'kfz_ort', 'status', 'gedruckt', 'intern', 'bringetermin', 'fertigstellung', 'no_whatsapp'];
+    $allowedOeExt = ['km_stand', 'kfz_ort', 'status', 'gedruckt', 'intern', 'bringetermin', 'fertigstellung', 'no_whatsapp',
+                     'reparaturzeit_minuten', 'reparaturzeit_drucken', 'reparaturzeit_quelle'];
 
     $setClauses = [];
     $params = [':oe_id' => $oeId];
@@ -960,10 +978,12 @@ function updateOeExt($data) {
 
         $paramName = ':' . $key;
 
-        if ($key === 'km_stand') {
+        if ($key === 'km_stand' || $key === 'reparaturzeit_minuten') {
             $value = $value !== null && $value !== '' ? intval($value) : null;
-        } elseif ($key === 'gedruckt' || $key === 'intern' || $key === 'no_whatsapp') {
+        } elseif ($key === 'gedruckt' || $key === 'intern' || $key === 'no_whatsapp' || $key === 'reparaturzeit_drucken') {
             $value = $value ? 't' : 'f';
+        } elseif ($key === 'reparaturzeit_quelle') {
+            $value = in_array($value, ['auto', 'manuell', 'gutachten'], true) ? $value : null;
         } elseif ($key === 'bringetermin' || $key === 'fertigstellung') {
             if (!empty($value)) {
                 if (preg_match('/00:00:00$/', $value) || !preg_match('/\d{2}:\d{2}:\d{2}$/', $value)) {
@@ -1051,6 +1071,11 @@ function updateOeExt($data) {
     // automatisch Kalendereintrag erstellen/aktualisieren
     if (isset($fields['bringetermin']) || isset($fields['fertigstellung'])) {
         syncOrderToCalendar($db, $oeId);
+    }
+
+    // Reparaturzeit gelöscht: gemessene Zeit (sofern alle Anweisungen abgehakt) wieder eintragen
+    if (array_key_exists('reparaturzeit_minuten', $fields) && ($fields['reparaturzeit_minuten'] === null || $fields['reparaturzeit_minuten'] === '')) {
+        $db->execute("SELECT reparaturzeit_sync(:oe_id)", [':oe_id' => $oeId]);
     }
 
     resultInfo(true, 'UPDATED');
@@ -1266,7 +1291,8 @@ function getCarForInvoice($data) {
     $row = $db->getOne(
         "SELECT c.c_id, c.c_ln, COALESCE(c.c_text, '') AS c_text,
                 e.km_stand, e.fertigstellung,
-                COALESCE(k.fhzart, '') AS fhzart
+                COALESCE(k.fhzart, '') AS fhzart,
+                e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle
          FROM ar_ext e
          LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
          LEFT JOIN kba_lxcars k ON k.id = c.kba_id
@@ -1274,7 +1300,7 @@ function getCarForInvoice($data) {
         [':ar_id' => $arId]
     );
 
-    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'fertigstellung' => null, 'fhzart' => '']);
+    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'fertigstellung' => null, 'fhzart' => '', 'reparaturzeit_minuten' => null, 'reparaturzeit_drucken' => false, 'reparaturzeit_quelle' => null]);
 }
 
 /**
@@ -1308,7 +1334,7 @@ function linkCarToInvoice($data) {
 }
 
 /**
- * Aktualisiert ar_ext-Felder (km_stand)
+ * Aktualisiert ar_ext-Felder (km_stand, fertigstellung, reparaturzeit_minuten, reparaturzeit_drucken, reparaturzeit_quelle)
  * c_id wird hier NICHT angefasst — dafür ist linkCarToInvoice zuständig.
  *
  * @param int $data['ar_id'] Rechnungs-ID
@@ -1320,7 +1346,7 @@ function updateArExt($data) {
     $arId = intval($data['ar_id']);
     $fields = $data['data'];
 
-    $allowed = ['km_stand', 'fertigstellung'];
+    $allowed = ['km_stand', 'fertigstellung', 'reparaturzeit_minuten', 'reparaturzeit_drucken', 'reparaturzeit_quelle'];
 
     $setClauses = [];
     $params = [':ar_id' => $arId];
@@ -1332,11 +1358,17 @@ function updateArExt($data) {
 
         $paramName = ':' . $key;
 
-        if ($key === 'km_stand') {
+        if ($key === 'km_stand' || $key === 'reparaturzeit_minuten') {
             $value = $value !== null && $value !== '' ? intval($value) : null;
         }
         if ($key === 'fertigstellung') {
             $value = !empty($value) ? $value : null;
+        }
+        if ($key === 'reparaturzeit_drucken') {
+            $value = $value ? 't' : 'f';
+        }
+        if ($key === 'reparaturzeit_quelle') {
+            $value = in_array($value, ['auto', 'manuell', 'gutachten'], true) ? $value : null;
         }
 
         $setClauses[] = "$key = $paramName";

@@ -70,6 +70,11 @@ CREATE TABLE IF NOT EXISTS oe_ext (
     kennzeichen      text,
     no_whatsapp    boolean DEFAULT false,
     asanetwork_sent_at timestamp,
+    -- Reparaturzeit (docs/features/lxcars.md → Reparaturzeit): Minuten, Druckschalter,
+    -- Quelle 'auto' (gemessen) | 'manuell' | 'gutachten'
+    reparaturzeit_minuten integer,
+    reparaturzeit_drucken boolean DEFAULT false,
+    reparaturzeit_quelle  text,
     CONSTRAINT oe_ext_pkey PRIMARY KEY (oe_id)
 );
 
@@ -80,6 +85,9 @@ CREATE TABLE IF NOT EXISTS ar_ext (
     c_id           integer REFERENCES cars_lxcars(c_id) ON DELETE SET NULL,
     km_stand       integer,
     fertigstellung date,
+    reparaturzeit_minuten integer,
+    reparaturzeit_drucken boolean DEFAULT false,
+    reparaturzeit_quelle  text,
     CONSTRAINT ar_ext_pkey PRIMARY KEY (ar_id)
 );
 
@@ -469,6 +477,114 @@ DO $$ BEGIN
             AFTER INSERT OR UPDATE OR DELETE ON oe_instructions_lxcars
             FOR EACH ROW
             EXECUTE FUNCTION notify_instruction_change();
+    END IF;
+END $$;
+
+-- Reparaturzeit messen (docs/features/lxcars.md → Reparaturzeit)
+-- Start = Bringetermin, ohne Bringetermin die Anlage des Auftrags (oe.itime);
+-- Ende = letzte abgehakte Arbeitsanweisung. Solange eine Anweisung offen ist
+-- oder keine existiert, gibt es keinen Messwert. Ein von Hand eingetragener
+-- oder aus dem Gutachten übernommener Wert (Quelle manuell/gutachten) bleibt
+-- unangetastet; nur Quelle NULL/auto wird nachgeführt.
+CREATE OR REPLACE FUNCTION reparaturzeit_messen(p_oe_id INTEGER, p_bringetermin TIMESTAMP) RETURNS INTEGER AS $$
+    SELECT CASE
+             WHEN COUNT(i.id) = 0
+               OR COUNT(*) FILTER (WHERE NOT i.done) > 0
+               OR MAX(i.done_at) IS NULL
+               OR MAX(i.done_at) <= COALESCE(p_bringetermin, o.itime, o.transdate::timestamp)
+             THEN NULL
+             ELSE FLOOR(EXTRACT(EPOCH FROM (MAX(i.done_at) - COALESCE(p_bringetermin, o.itime, o.transdate::timestamp))) / 60)::INTEGER
+           END
+      FROM oe o
+      LEFT JOIN oe_instructions_lxcars i ON i.oe_id = o.id
+     WHERE o.id = p_oe_id
+     GROUP BY o.itime, o.transdate
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION reparaturzeit_sync(p_oe_id INTEGER) RETURNS VOID AS $$
+DECLARE
+    v_alt     INTEGER;
+    v_quelle  TEXT;
+    v_bringe  TIMESTAMP;
+    v_neu     INTEGER;
+BEGIN
+    IF p_oe_id IS NULL THEN RETURN; END IF;
+    SELECT reparaturzeit_minuten, reparaturzeit_quelle, bringetermin
+      INTO v_alt, v_quelle, v_bringe
+      FROM oe_ext WHERE oe_id = p_oe_id;
+    IF v_quelle IS NOT NULL AND v_quelle <> 'auto' THEN RETURN; END IF;
+    v_neu := reparaturzeit_messen(p_oe_id, v_bringe);
+    IF v_neu IS NOT DISTINCT FROM v_alt THEN RETURN; END IF;
+    INSERT INTO oe_ext (oe_id, reparaturzeit_minuten, reparaturzeit_quelle)
+    VALUES (p_oe_id, v_neu, CASE WHEN v_neu IS NULL THEN NULL ELSE 'auto' END)
+    ON CONFLICT (oe_id) DO UPDATE
+        SET reparaturzeit_minuten = EXCLUDED.reparaturzeit_minuten,
+            reparaturzeit_quelle  = EXCLUDED.reparaturzeit_quelle;
+    -- Offene Belegmasken laden die Fahrzeugdaten neu (SSE-Kanal der Faktura)
+    PERFORM pg_notify('faktura_change', json_build_object(
+        'action', 'UPDATE', 'table', 'oe_ext', 'id', p_oe_id)::TEXT);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION reparaturzeit_instructions_sync() RETURNS trigger AS $$
+DECLARE
+    v_old INTEGER;
+    v_new INTEGER;
+BEGIN
+    -- Feldzugriffe getrennt: NEW/OLD sind je nach Operation NULL
+    IF TG_OP <> 'INSERT' THEN v_old := OLD.oe_id; END IF;
+    IF TG_OP <> 'DELETE' THEN v_new := NEW.oe_id; END IF;
+    IF v_old IS NOT NULL THEN PERFORM reparaturzeit_sync(v_old); END IF;
+    IF v_new IS NOT NULL AND v_new IS DISTINCT FROM v_old THEN PERFORM reparaturzeit_sync(v_new); END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Bringetermin geändert: gemessene Zeit im selben Schritt nachrechnen (BEFORE, kein Rekursionsrisiko)
+CREATE OR REPLACE FUNCTION reparaturzeit_bringetermin_sync() RETURNS trigger AS $$
+BEGIN
+    IF NEW.reparaturzeit_quelle IS NOT DISTINCT FROM 'auto' AND NEW.bringetermin IS DISTINCT FROM OLD.bringetermin THEN
+        NEW.reparaturzeit_minuten := reparaturzeit_messen(NEW.oe_id, NEW.bringetermin);
+        IF NEW.reparaturzeit_minuten IS NULL THEN NEW.reparaturzeit_quelle := NULL; END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'instructions_reparaturzeit_sync') THEN
+        CREATE TRIGGER instructions_reparaturzeit_sync
+            AFTER INSERT OR DELETE OR UPDATE OF done, done_at, oe_id ON oe_instructions_lxcars
+            FOR EACH ROW EXECUTE FUNCTION reparaturzeit_instructions_sync();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'oe_ext_reparaturzeit_bringetermin') THEN
+        CREATE TRIGGER oe_ext_reparaturzeit_bringetermin
+            BEFORE UPDATE OF bringetermin ON oe_ext
+            FOR EACH ROW EXECUTE FUNCTION reparaturzeit_bringetermin_sync();
+    END IF;
+END $$;
+
+-- Einmaliger Nachtrag für Aufträge, deren Anweisungen vor Einführung der Reparaturzeit
+-- schon abgehakt waren (der Trigger greift nur bei künftigen Änderungen). Markiert sich
+-- in defaults_oserp, damit das nicht bei jedem Upstall erneut läuft.
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM defaults_oserp WHERE key = 'reparaturzeit_backfill_done') THEN
+        -- Nachtrag ohne Belegchronik-Einträge: der Messwert alter Aufträge ist keine Änderung durch einen Benutzer
+        IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'oe_ext_record_history') THEN
+            ALTER TABLE oe_ext DISABLE TRIGGER oe_ext_record_history;
+        END IF;
+        UPDATE oe_ext e
+           SET reparaturzeit_minuten = m.minuten, reparaturzeit_quelle = 'auto'
+          FROM (SELECT e2.oe_id, reparaturzeit_messen(e2.oe_id, e2.bringetermin) AS minuten
+                  FROM oe_ext e2
+                 WHERE e2.reparaturzeit_minuten IS NULL AND e2.reparaturzeit_quelle IS NULL
+                   AND EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e2.oe_id)) m
+         WHERE m.oe_id = e.oe_id AND m.minuten IS NOT NULL;
+        IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'oe_ext_record_history') THEN
+            ALTER TABLE oe_ext ENABLE TRIGGER oe_ext_record_history;
+        END IF;
+        INSERT INTO defaults_oserp (key, value) VALUES ('reparaturzeit_backfill_done', to_char(now(), 'YYYY-MM-DD HH24:MI'))
+        ON CONFLICT (key) DO NOTHING;
     END IF;
 END $$;
 

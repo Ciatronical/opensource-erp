@@ -280,36 +280,20 @@ function getPostalPrice($data) {
 }
 
 /**
- * Dokument per Post einliefern (oder als selbst gedruckt vermerken).
+ * Kern des Postversands, auch für Rundschreiben: Dokument rendern, Einlieferung
+ * protokollieren und beim Anbieter abgeben. Wirft ApiError bei Fehlern.
  *
- * Ablauf: PDF erzeugen → Zeile anlegen (queued) → beim Anbieter einliefern →
- * Zeile mit Auftragsnummer, Status, Preis fortschreiben. Schlägt die
- * Einlieferung fehl, bleibt die Zeile mit status = error und Fehlertext
- * stehen, damit der Vorgang nachvollziehbar ist und wiederholt werden kann.
- *
- * @param string $data['record_type'] Belegart: letter, invoice, order …
- * @param int    $data['record_id']   ID des Briefs bzw. Belegs
- * @param string $data['channel']     provider (Dienstleister aus der Konfiguration) | manual (selbst drucken und frankieren)
- * @param bool   $data['color']       Farbdruck
- * @param bool   $data['duplex']      Beidseitig
- * @param string $data['registered']  '' | r1 (Einwurf-Einschreiben) | r2 (Einschreiben)
- * @testdata {"record_type": "invoice", "record_id": 1, "channel": "manual", "color": false, "duplex": true, "registered": ""}
+ * @param array $opts channel (provider|manual), color, duplex, registered (r1|r2|null)
+ * @return array{id:int, provider:string, doc:array}
  */
-function sendPostal($data) {
-    $recordType = (string)($data['record_type'] ?? '');
-    $recordId   = intval($data['record_id'] ?? 0);
+function postalDispatch($db, string $recordType, int $recordId, array $opts, ?int $employeeId): array {
     $table      = postalRecordTable($recordType);
-    postalPermit($recordType);
-    if ($recordId <= 0) throw new ApiError('VALIDATION_ERROR', 'record_id fehlt');
-
-    $db   = DbhCompany::begin();
-    $cfg  = postalConfig($db);
-    $channel    = ($data['channel'] ?? 'provider') === 'manual' ? 'manual' : 'provider';
-    $color      = !empty($data['color']);
-    $duplex     = !empty($data['duplex']);
-    $registered = in_array($data['registered'] ?? '', ['r1', 'r2'], true) ? $data['registered'] : null;
+    $cfg        = postalConfig($db);
+    $channel    = ($opts['channel'] ?? 'provider') === 'manual' ? 'manual' : 'provider';
+    $color      = !empty($opts['color']);
+    $duplex     = !empty($opts['duplex']);
+    $registered = in_array($opts['registered'] ?? '', ['r1', 'r2'], true) ? $opts['registered'] : null;
     $provider   = $channel === 'manual' ? 'manual' : $cfg['provider'];
-
     if ($channel === 'provider') {
         $problem = postalConfigProblem($cfg);
         if ($problem !== null) throw new ApiError('POSTAL_NOT_CONFIGURED', 'Briefversand nicht eingerichtet: ' . $problem);
@@ -341,7 +325,7 @@ function sendPostal($data) {
         ':registered' => $registered, ':shipping' => $shipping, ':pages' => $pages,
         ':filename' => $doc['filename'], ':pdf' => base64_encode($doc['pdf']),
         ':rname' => $doc['recipient_name'], ':raddr' => $doc['recipient_address'],
-        ':emp' => mitarbeiterId($data),
+        ':emp' => $employeeId,
     ]);
     $id = intval($row['id']);
 
@@ -381,7 +365,41 @@ function sendPostal($data) {
             [':err' => $e->getMessage(), ':id' => $id]);
         throw ($e instanceof ApiError) ? $e : new ApiError('POSTAL_SEND_FAILED', $e->getMessage());
     }
+    return ['id' => $id, 'provider' => $provider, 'doc' => $doc];
+}
 
+/**
+ * Dokument per Post einliefern (oder als selbst gedruckt vermerken).
+ *
+ * Ablauf: PDF erzeugen → Zeile anlegen (queued) → beim Anbieter einliefern →
+ * Zeile mit Auftragsnummer, Status, Preis fortschreiben. Schlägt die
+ * Einlieferung fehl, bleibt die Zeile mit status = error und Fehlertext
+ * stehen, damit der Vorgang nachvollziehbar ist und wiederholt werden kann.
+ *
+ * @param string $data['record_type'] Belegart: letter, invoice, order …
+ * @param int    $data['record_id']   ID des Briefs bzw. Belegs
+ * @param string $data['channel']     provider (Dienstleister aus der Konfiguration) | manual (selbst drucken und frankieren)
+ * @param bool   $data['color']       Farbdruck
+ * @param bool   $data['duplex']      Beidseitig
+ * @param string $data['registered']  '' | r1 (Einwurf-Einschreiben) | r2 (Einschreiben)
+ * @testdata {"record_type": "invoice", "record_id": 1, "channel": "manual", "color": false, "duplex": true, "registered": ""}
+ */
+function sendPostal($data) {
+    $recordType = (string)($data['record_type'] ?? '');
+    $recordId   = intval($data['record_id'] ?? 0);
+    postalRecordTable($recordType);
+    postalPermit($recordType);
+    if ($recordId <= 0) throw new ApiError('VALIDATION_ERROR', 'record_id fehlt');
+    $db = DbhCompany::begin();
+    $dispatch = postalDispatch($db, $recordType, $recordId, [
+        'channel'    => ($data['channel'] ?? 'provider') === 'manual' ? 'manual' : 'provider',
+        'color'      => !empty($data['color']),
+        'duplex'     => !empty($data['duplex']),
+        'registered' => $data['registered'] ?? null,
+    ], mitarbeiterId($data));
+    $id       = $dispatch['id'];
+    $provider = $dispatch['provider'];
+    $doc      = $dispatch['doc'];
     $result = ['entry' => postalDispatchRow($db, $id)];
     if ($provider === 'manual') {
         // Selbst drucken: das Versandexemplar gleich mitgeben

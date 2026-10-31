@@ -33,7 +33,9 @@ export function useGutachtenImport({ t }) {
     const lastAnalysis = ref(null)   // komplettes Analyse-Ergebnis – Grundlage der Weroni-Rechtsprüfung
 
     // Was übernommen werden soll – vorbelegt, abwählbar im Dialog
-    const options = ref({ apply_vehicle: true, apply_km: true, apply_notes: true, store_pdf: true })
+    const options = ref({ apply_vehicle: true, apply_km: true, apply_notes: true, store_pdf: true, apply_repair_time: true })
+    // Reparaturdauer laut Gutachten (Tage) – wird als Reparaturzeit des Auftrags übernommen und gedruckt
+    const repairDays = computed(() => Number(lastAnalysis.value?.legal?.reparaturdauer_tage || 0))
 
     const selectedItems = computed(() => items.value.filter(i => i.selected))
 
@@ -171,6 +173,7 @@ export function useGutachtenImport({ t }) {
                 vehicle: vehicle.value || {},
                 appraisal: appraisal.value || {},
                 options: { ...options.value, take_over: takeOver },
+                repairDays: repairDays.value,
                 fileBase64: options.value.store_pdf ? fileBase64.value : '',
                 filename: fileName.value,
                 extracted: lastAnalysis.value
@@ -199,7 +202,7 @@ export function useGutachtenImport({ t }) {
         mimeType.value = ''
         analyzing.value = false
         importing.value = false
-        options.value = { apply_vehicle: true, apply_km: true, apply_notes: true, store_pdf: true }
+        options.value = { apply_vehicle: true, apply_km: true, apply_notes: true, store_pdf: true, apply_repair_time: true }
     }
 
     return {
@@ -216,6 +219,7 @@ export function useGutachtenImport({ t }) {
         aiNotes,
         deltaNet,
         options,
+        repairDays,
         summary,
         vehicleAction,
         plateMismatch,

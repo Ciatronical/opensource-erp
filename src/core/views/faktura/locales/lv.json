@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fehler beim Import",
                 "invalidFile": "Ungültige Datei — nur VXS-XML-Dateien werden unterstützt",
-                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen"
+                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen",
+                "repairDays": "Remonta ilgums pēc kalkulācijas: {days} dienas"
             },
             "statusOpen": "Atvērts",
             "statusClosed": "Izpildīts",
@@ -477,6 +478,34 @@
                     "other": "Cits"
                 },
                 "saveError": "Tas neizdevās — pasūtījums pa to laiku, visticamāk, ir mainīts. Skats ir pārlādēts, lūdzu, pārbaudiet vēlreiz."
+            },
+            "repairTime": {
+                "label": "Remonta laiks",
+                "print": "Drukāt",
+                "printHint": "Drukāt remonta laiku pasūtījumā un rēķinā",
+                "printHistory": "Drukāt remonta laiku",
+                "placeholder": "piem. 3 dienas, 4,5 st.",
+                "running": "notiek: {time}",
+                "invalid": "Remonta laiks nav atpazīts – piem. 3 dienas, 4,5 st. vai 1 diena 2 st.",
+                "saveError": "Remonta laiku neizdevās saglabāt",
+                "sourceLabel": "Remonta laiks – avots",
+                "source": {
+                    "auto": "Izmērīts: no nodošanas termiņa (citādi – pasūtījuma izveides) līdz pēdējai atķeksētajai darba instrukcijai. Lauka iztīrīšana atgriež mērījumu.",
+                    "manuell": "Ievadīts manuāli. Lauka iztīrīšana atgriež izmērīto laiku.",
+                    "gutachten": "Pārņemts no ekspertīzes. Lauka iztīrīšana atgriež izmērīto laiku.",
+                    "running": "Mērījums notiek no nodošanas termiņa vai pasūtījuma izveides un beidzas ar pēdējo atķeksēto darba instrukciju. Savu vērtību var ievadīt jebkurā brīdī.",
+                    "none": "Tiek mērīts, tiklīdz pasūtījums ir saglabāts – vai ievadiet manuāli (piem. 3 dienas, 4,5 st.)"
+                },
+                "units": {
+                    "day": "diena",
+                    "days": "dienas",
+                    "hours": "st.",
+                    "min": "min."
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Pārņemt un drukāt remonta ilgumu ({days} dienas)",
+                "optRepairTimeNone": "Ekspertīzē nav remonta ilguma"
             }
         },
         "workflow": {

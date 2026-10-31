@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fehler beim Import",
                 "invalidFile": "Ungültige Datei — nur VXS-XML-Dateien werden unterstützt",
-                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen"
+                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen",
+                "repairDays": "Durata della riparazione secondo il calcolo: {days} giorni"
             },
             "statusOpen": "Aperto",
             "statusClosed": "Completato",
@@ -477,6 +478,34 @@
                     "other": "Altro"
                 },
                 "saveError": "Non ha funzionato — probabilmente l’ordine è stato modificato nel frattempo. La vista è stata ricaricata, verificare di nuovo."
+            },
+            "repairTime": {
+                "label": "Tempo di riparazione",
+                "print": "Stampa",
+                "printHint": "Stampare il tempo di riparazione su ordine e fattura",
+                "printHistory": "Stampa tempo di riparazione",
+                "placeholder": "es. 3 giorni, 4,5 ore",
+                "running": "in corso: {time}",
+                "invalid": "Tempo di riparazione non riconosciuto – es. 3 giorni, 4,5 ore o 1 giorno 2 ore",
+                "saveError": "Impossibile salvare il tempo di riparazione",
+                "sourceLabel": "Tempo di riparazione – origine",
+                "source": {
+                    "auto": "Misurato: dalla data di consegna (altrimenti dalla creazione dell'ordine) all'ultima istruzione di lavoro spuntata. Svuotare il campo ripristina la misurazione.",
+                    "manuell": "Inserito manualmente. Svuotare il campo ripristina il tempo misurato.",
+                    "gutachten": "Ripreso dalla perizia. Svuotare il campo ripristina il tempo misurato.",
+                    "running": "La misurazione corre dalla data di consegna o dalla creazione dell'ordine e termina con l'ultima istruzione di lavoro spuntata. Un valore proprio può essere inserito in qualsiasi momento.",
+                    "none": "Misurato non appena l'ordine è salvato – oppure inserire a mano (es. 3 giorni, 4,5 ore)"
+                },
+                "units": {
+                    "day": "giorno",
+                    "days": "giorni",
+                    "hours": "ore",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Applicare e stampare la durata della riparazione ({days} giorni)",
+                "optRepairTimeNone": "Nessuna durata della riparazione nella perizia"
             }
         },
         "workflow": {

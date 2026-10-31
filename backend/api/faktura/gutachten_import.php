@@ -116,7 +116,8 @@ SQL, [':model_key' => aiModelConfigKey('gutachten_import'), ':oe_id' => $oeId]);
  * @param int    $data['buchungsgruppeArbeit'] Buchungsgruppe Arbeit/Lack
  * @param array  $data['vehicle']      {license_plate, vin, manufacturer, model, first_registration, color, mileage}
  * @param array  $data['appraisal']    {number, date, appraiser, insurer, claim_number, damage_date, damage_description, repair_costs_net}
- * @param array  $data['options']      {apply_vehicle, apply_km, apply_notes, store_pdf, take_over}
+ * @param array  $data['options']      {apply_vehicle, apply_km, apply_notes, store_pdf, take_over, apply_repair_time}
+ * @param int    $data['repair_days']  Reparaturdauer laut Gutachten in Tagen (Reparaturzeit des Auftrags, wird gedruckt)
  * @param string $data['file_base64']  Datei für die Ablage (nur bei store_pdf)
  * @param string $data['filename']     Dateiname für die Ablage
  * @param array  $data['extracted']    Optional: komplettes Analyse-Ergebnis, wird für die Weroni-Prüfung gespeichert
@@ -143,6 +144,8 @@ function applyGutachtenToOrder($data) {
     $applyNotes   = !empty($options['apply_notes']);
     $storePdf     = !empty($options['store_pdf']);
     $takeOver     = !empty($options['take_over']);
+    $repairDays   = intval($data['repair_days'] ?? 0);
+    $applyRepair  = !empty($options['apply_repair_time']) && $repairDays > 0;
 
     $plate   = _gi_normalizePlate($vehicle['license_plate'] ?? '');
     $vin     = _gi_normalizeVin($vehicle['vin'] ?? '');
@@ -263,6 +266,18 @@ SQL, [':c_ow' => $customerId, ':c_ln' => $plate, ':vin' => $vin, ':c_mt' => $mod
             );
         }
 
+        // ── Reparaturzeit laut Gutachten (docs/features/lxcars.md → Reparaturzeit):
+        //    Tage als Minuten, Quelle 'gutachten', Druck auf Auftrag/Rechnung eingeschaltet ──
+        if ($applyRepair) {
+            $db->execute(
+                "INSERT INTO oe_ext (oe_id, reparaturzeit_minuten, reparaturzeit_drucken, reparaturzeit_quelle)
+                 VALUES (:oe_id, :minuten, true, 'gutachten')
+                 ON CONFLICT (oe_id) DO UPDATE SET reparaturzeit_minuten = EXCLUDED.reparaturzeit_minuten,
+                     reparaturzeit_drucken = true, reparaturzeit_quelle = 'gutachten'",
+                [':oe_id' => $oeId, ':minuten' => $repairDays * 1440]
+            );
+        }
+
         // ── Gutachtendaten: interne Notizen + Schadennummer als Kundenauftragsnummer ──
         if ($applyNotes) {
             $noteText = _gi_buildNote($appraisal);
@@ -338,6 +353,7 @@ SQL, [
         'taken_over'    => $takenOver,
         'km_applied'    => $applyKm && $mileage ? $mileage : null,
         'notes_applied' => $applyNotes,
+        'repair_days_applied' => $applyRepair ? $repairDays : null,
         'stored_path'   => $storedPath,
     ]);
 }
@@ -424,6 +440,7 @@ Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt (kein Markdown, kein Text
 REGELN FÜR DIE POSITIONEN:
 - Übernimm NUR die Reparaturkalkulation: Ersatzteile, Arbeitslohn (Mechanik/Karosserie/Elektrik), Lackierung (Lohn und Material), Zuschläge und Nebenkosten der Reparatur (Kleinersatzteile, Verbrauchsmaterial, Entsorgung, Achsvermessung, Fahrzeug reinigen, Probefahrt, Diagnose, Kalibrierung).
 - NICHT übernehmen: Wertminderung, Nutzungsausfall, Mietwagen, Sachverständigenhonorar/Gutachterkosten, Restwert, Wiederbeschaffungswert, Reparaturdauer, Zwischensummen, Gesamtsummen, Mehrwertsteuer-Zeilen, Überschriften, Hinweiszeilen.
+- Die Reparaturdauer (Arbeitstage laut Gutachten, oft "Reparaturdauer", "Wiederherstellungsdauer" oder "Dauer der Instandsetzung") gehört als ganze Zahl in legal.reparaturdauer_tage; steht sie in Stunden, auf volle Tage aufrunden.
 - Alle Preise NETTO (ohne Mehrwertsteuer). Steht nur ein Bruttobetrag, rechne mit dem im Dokument genannten Steuersatz auf netto zurück.
 - category "part": Ersatzteile. qty = Stückzahl, unit "Stck", sellprice = Einzelpreis netto. Teilenummer nur, wenn sie im Dokument steht — nie erfinden.
 - category "labour": Arbeitspositionen (Aus-/Einbau, Instandsetzen, Erneuern, Prüfen). qty = Zeiteinheiten laut Dokument (AW oder Stunden), unit entsprechend "AW" oder "Std", sellprice = Verrechnungssatz je Einheit. Steht nur ein Gesamtbetrag ohne Zeit, dann qty 1, unit "Stck", sellprice = Betrag.

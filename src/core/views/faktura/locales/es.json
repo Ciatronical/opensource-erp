@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fehler beim Import",
                 "invalidFile": "Ungültige Datei — nur VXS-XML-Dateien werden unterstützt",
-                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen"
+                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen",
+                "repairDays": "Duración de la reparación según cálculo: {days} días"
             },
             "statusOpen": "Abierto",
             "statusClosed": "Completado",
@@ -477,6 +478,34 @@
                     "other": "Otro"
                 },
                 "saveError": "No ha funcionado — probablemente el pedido se ha modificado entre tanto. La vista se ha recargado, revise de nuevo por favor."
+            },
+            "repairTime": {
+                "label": "Tiempo de reparación",
+                "print": "Imprimir",
+                "printHint": "Imprimir el tiempo de reparación en el pedido y la factura",
+                "printHistory": "Imprimir tiempo de reparación",
+                "placeholder": "p. ej. 3 días, 4,5 h",
+                "running": "en curso: {time}",
+                "invalid": "Tiempo de reparación no reconocido – p. ej. 3 días, 4,5 h o 1 día 2 h",
+                "saveError": "No se pudo guardar el tiempo de reparación",
+                "sourceLabel": "Tiempo de reparación – origen",
+                "source": {
+                    "auto": "Medido: desde la fecha de entrega (o la creación del pedido) hasta la última instrucción de trabajo marcada. Vaciar el campo vuelve a la medición.",
+                    "manuell": "Introducido manualmente. Vaciar el campo vuelve al tiempo medido.",
+                    "gutachten": "Tomado del peritaje. Vaciar el campo vuelve al tiempo medido.",
+                    "running": "La medición corre desde la fecha de entrega o la creación del pedido y termina con la última instrucción de trabajo marcada. Puede introducir un valor propio en cualquier momento.",
+                    "none": "Se mide en cuanto se guarda el pedido – o introdúzcalo a mano (p. ej. 3 días, 4,5 h)"
+                },
+                "units": {
+                    "day": "día",
+                    "days": "días",
+                    "hours": "h",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Aplicar e imprimir la duración de la reparación ({days} días)",
+                "optRepairTimeNone": "El peritaje no indica duración de la reparación"
             }
         },
         "workflow": {

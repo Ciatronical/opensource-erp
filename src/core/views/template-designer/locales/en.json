@@ -307,7 +307,9 @@
             "kba": "KBA number",
             "baujahr": "First registration",
             "hu_au": "Inspection due",
-            "farbe": "Colour"
+            "farbe": "Colour",
+            "reparaturzeit": "Repair time",
+            "reparaturzeit_quelle": "Repair time – source"
         },
         "canvas": {
             "noImage": "No image selected",

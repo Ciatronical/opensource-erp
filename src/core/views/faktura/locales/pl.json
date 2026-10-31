@@ -219,7 +219,8 @@
                 "success": "{count} pozycji zaimportowanych",
                 "error": "Błąd podczas importu",
                 "invalidFile": "Nieprawidłowy plik - obsługiwane są tylko pliki VXS-XML",
-                "noBuchungsgruppe": "Proszę wybrać grupy księgowania"
+                "noBuchungsgruppe": "Proszę wybrać grupy księgowania",
+                "repairDays": "Czas trwania naprawy wg kalkulacji: {days} dni"
             },
             "statusOpen": "Otwarty",
             "statusClosed": "Zamknięty",
@@ -491,6 +492,34 @@
                     "other": "Inne"
                 },
                 "saveError": "To się nie udało — zamówienie zostało prawdopodobnie w międzyczasie zmienione. Widok został ponownie załadowany, proszę sprawdzić jeszcze raz."
+            },
+            "repairTime": {
+                "label": "Czas naprawy",
+                "print": "Drukuj",
+                "printHint": "Drukuj czas naprawy na zleceniu i fakturze",
+                "printHistory": "Drukuj czas naprawy",
+                "placeholder": "np. 3 dni, 4,5 godz.",
+                "running": "trwa: {time}",
+                "invalid": "Nie rozpoznano czasu naprawy – np. 3 dni, 4,5 godz. lub 1 dzień 2 godz.",
+                "saveError": "Nie udało się zapisać czasu naprawy",
+                "sourceLabel": "Czas naprawy – źródło",
+                "source": {
+                    "auto": "Zmierzony: od terminu podstawienia (inaczej od utworzenia zlecenia) do ostatniej odhaczonej instrukcji roboczej. Wyczyszczenie pola przywraca pomiar.",
+                    "manuell": "Wpisany ręcznie. Wyczyszczenie pola przywraca zmierzony czas.",
+                    "gutachten": "Przejęty z opinii rzeczoznawcy. Wyczyszczenie pola przywraca zmierzony czas.",
+                    "running": "Pomiar trwa od terminu podstawienia lub utworzenia zlecenia i kończy się ostatnią odhaczoną instrukcją roboczą. Własną wartość można wpisać w każdej chwili.",
+                    "none": "Mierzony po zapisaniu zlecenia – lub wpisz ręcznie (np. 3 dni, 4,5 godz.)"
+                },
+                "units": {
+                    "day": "dzień",
+                    "days": "dni",
+                    "hours": "godz.",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Przejmij i drukuj czas trwania naprawy ({days} dni)",
+                "optRepairTimeNone": "Brak czasu trwania naprawy w opinii"
             }
         },
         "workflow": {

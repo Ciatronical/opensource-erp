@@ -706,6 +706,9 @@
         "whatsappReminderEnabled_help": "Automatically send WhatsApp reminders to customers before appointments",
         "whatsappReminderHours": "Reminder (hours before)",
         "whatsappReminderHours_help": "How many hours before the appointment should the reminder be sent (default: 24)",
+        "mailings": "Mailings",
+        "whatsappTemplateCost": "Cost per WhatsApp template message (EUR)",
+        "whatsappTemplateCost_help": "What Meta charges per (marketing) template message, e.g. 0.11. Mailings use it to show the expected cost before sending; empty = no estimate.",
         "infoBarMaxWhatsapps": "Max. WhatsApp Messages",
         "infoBarMaxWhatsapps_help": "Maximum number of WhatsApp messages shown in the info bar (default: 5)",
         "payment": "Payment",
@@ -1557,7 +1560,9 @@
         "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy is {actual}, the channel card uses {taxonomy}. The theme then shows the categories only as a plain list, and the widgets do not know the overview.",
         "shopSiteCheck_SHOP_TAXONOMY_INDEX": "The overview page {file} is missing. Without it the category overview carries only the taxonomy name as its title.",
         "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "The product pages grant ({dir}) lies in no mount on content. Hugo does not see the product pages.",
-        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "The category overview grant ({file}) lies in no mount on data. The templates cannot find it."
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "The category overview grant ({file}) lies in no mount on data. The templates cannot find it.",
+        "mailingLetterCost": "Cost per hybrid letter (EUR)",
+        "mailingLetterCost_help": "What the postal provider (PIN AG, LetterXpress) charges per letter, e.g. 0.95. Mailings use it to estimate costs before sending; empty = no estimate."
     },
     "add": "Add",
     "add_fields": {

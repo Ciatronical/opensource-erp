@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fehler beim Import",
                 "invalidFile": "Ungültige Datei — nur VXS-XML-Dateien werden unterstützt",
-                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen"
+                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen",
+                "repairDays": "Hesaplamaya göre onarım süresi: {days} gün"
             },
             "statusOpen": "Açık",
             "statusClosed": "Tamamlandı",
@@ -477,6 +478,34 @@
                     "other": "Diğer"
                 },
                 "saveError": "Bu işlem başarısız oldu — sipariş muhtemelen bu arada değiştirildi. Görünüm yeniden yüklendi, lütfen tekrar kontrol edin."
+            },
+            "repairTime": {
+                "label": "Onarım süresi",
+                "print": "Yazdır",
+                "printHint": "Onarım süresini sipariş ve faturaya yazdır",
+                "printHistory": "Onarım süresini yazdır",
+                "placeholder": "örn. 3 gün, 4,5 saat",
+                "running": "sürüyor: {time}",
+                "invalid": "Onarım süresi anlaşılamadı – örn. 3 gün, 4,5 saat veya 1 gün 2 saat",
+                "saveError": "Onarım süresi kaydedilemedi",
+                "sourceLabel": "Onarım süresi – kaynak",
+                "source": {
+                    "auto": "Ölçüldü: teslim tarihinden (yoksa sipariş oluşturulmasından) son işaretlenen iş talimatına kadar. Alanı boşaltmak ölçüme geri döner.",
+                    "manuell": "Elle girildi. Alanı boşaltmak ölçülen süreye geri döner.",
+                    "gutachten": "Ekspertiz raporundan alındı. Alanı boşaltmak ölçülen süreye geri döner.",
+                    "running": "Ölçüm teslim tarihinden veya sipariş oluşturulmasından itibaren sürer ve son işaretlenen iş talimatıyla biter. İstenildiği zaman kendi değeriniz girilebilir.",
+                    "none": "Sipariş kaydedilince ölçülür – veya elle girin (örn. 3 gün, 4,5 saat)"
+                },
+                "units": {
+                    "day": "gün",
+                    "days": "gün",
+                    "hours": "saat",
+                    "min": "dk"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Onarım süresini al ve yazdır ({days} gün)",
+                "optRepairTimeNone": "Ekspertizde onarım süresi yok"
             }
         },
         "workflow": {

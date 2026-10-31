@@ -307,7 +307,9 @@
             "kba": "KBA-Nummer",
             "baujahr": "Erstzulassung",
             "hu_au": "HU/AU",
-            "farbe": "Farbe"
+            "farbe": "Farbe",
+            "reparaturzeit": "Reparaturdauer",
+            "reparaturzeit_quelle": "Reparaturdauer – Quelle"
         },
         "canvas": {
             "noImage": "Kein Bild gewählt",

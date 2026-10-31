@@ -219,7 +219,8 @@
                 "success": "{count} postes importes",
                 "error": "Erreur lors de l'import",
                 "invalidFile": "Fichier invalide - seuls les fichiers VXS-XML sont pris en charge",
-                "noBuchungsgruppe": "Veuillez selectionner les groupes comptables"
+                "noBuchungsgruppe": "Veuillez selectionner les groupes comptables",
+                "repairDays": "Durée de réparation selon le calcul : {days} jours"
             },
             "statusOpen": "Ouvert",
             "statusClosed": "Termine",
@@ -477,6 +478,34 @@
                     "other": "Autre"
                 },
                 "saveError": "Cela n’a pas fonctionné — la commande a probablement été modifiée entre-temps. L’affichage a été rechargé, veuillez vérifier à nouveau."
+            },
+            "repairTime": {
+                "label": "Durée de réparation",
+                "print": "Imprimer",
+                "printHint": "Imprimer la durée de réparation sur l'ordre et la facture",
+                "printHistory": "Imprimer la durée de réparation",
+                "placeholder": "p. ex. 3 jours, 4,5 h",
+                "running": "en cours : {time}",
+                "invalid": "Durée de réparation non reconnue – p. ex. 3 jours, 4,5 h ou 1 jour 2 h",
+                "saveError": "La durée de réparation n'a pas pu être enregistrée",
+                "sourceLabel": "Durée de réparation – source",
+                "source": {
+                    "auto": "Mesurée : de la date de dépôt (sinon la création de l'ordre) à la dernière instruction de travail cochée. Vider le champ revient à la mesure.",
+                    "manuell": "Saisie manuellement. Vider le champ revient à la durée mesurée.",
+                    "gutachten": "Reprise de l'expertise. Vider le champ revient à la durée mesurée.",
+                    "running": "La mesure court depuis la date de dépôt ou la création de l'ordre et se termine avec la dernière instruction de travail cochée. Une valeur propre peut être saisie à tout moment.",
+                    "none": "Mesurée dès que l'ordre est enregistré – ou saisir à la main (p. ex. 3 jours, 4,5 h)"
+                },
+                "units": {
+                    "day": "jour",
+                    "days": "jours",
+                    "hours": "h",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Reprendre et imprimer la durée de réparation ({days} jours)",
+                "optRepairTimeNone": "Aucune durée de réparation dans l'expertise"
             }
         },
         "workflow": {

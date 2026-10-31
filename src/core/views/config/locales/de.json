@@ -708,6 +708,9 @@
         "whatsappReminderEnabled_help": "Automatisch WhatsApp-Erinnerungen an Kunden vor Terminen senden",
         "whatsappReminderHours": "Erinnerung (Stunden vorher)",
         "whatsappReminderHours_help": "Wie viele Stunden vor dem Termin soll die Erinnerung gesendet werden (Standard: 24)",
+        "mailings": "Rundschreiben",
+        "whatsappTemplateCost": "Kosten je WhatsApp-Vorlagennachricht (EUR)",
+        "whatsappTemplateCost_help": "Was Meta je Vorlagennachricht (Marketing) berechnet, z. B. 0,11. Rundschreiben zeigen damit vor dem Start die voraussichtlichen Kosten; leer = keine Schätzung.",
         "infoBarMaxWhatsapps": "Max. WhatsApp-Nachrichten",
         "infoBarMaxWhatsapps_help": "Maximale Anzahl angezeigter WhatsApp-Nachrichten in der Infoleiste (Standard: 5)",
         "telegram": "Telegram",
@@ -1559,7 +1562,9 @@
         "shopSiteCheck_SHOP_PORTALUI_TAXONOMY": "params.portalui.taxonomy ist {actual}, die Kanalkarte nutzt {taxonomy}. Das Theme zeigt die Kategorien dann nur als einfache Liste, und die Widgets kennen die Übersicht nicht.",
         "shopSiteCheck_SHOP_TAXONOMY_INDEX": "Die Übersichtsseite {file} fehlt. Ohne sie trägt die Kategorienübersicht nur den Namen der Taxonomie als Titel.",
         "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Die Freigabe für Produktseiten ({dir}) liegt in keinem Mount auf content. Hugo sieht die Produktseiten nicht.",
-        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Die Freigabe für die Kategorieübersicht ({file}) liegt in keinem Mount auf data. Die Vorlagen finden sie nicht."
+        "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Die Freigabe für die Kategorieübersicht ({file}) liegt in keinem Mount auf data. Die Vorlagen finden sie nicht.",
+        "mailingLetterCost": "Kosten je E-Brief (EUR)",
+        "mailingLetterCost_help": "Was der Postdienst (PIN AG, LetterXpress) je Brief berechnet, z. B. 0,95. Rundschreiben zeigen damit vor dem Start die voraussichtlichen Kosten; leer = keine Schätzung."
     },
     "add": "Hinzufügen",
     "add_fields": {

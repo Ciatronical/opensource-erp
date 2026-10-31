@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fehler beim Import",
                 "invalidFile": "Ungültige Datei — nur VXS-XML-Dateien werden unterstützt",
-                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen"
+                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen",
+                "repairDays": "Doba opravy podle kalkulace: {days} dní"
             },
             "statusOpen": "Otevřený",
             "statusClosed": "Hotovo",
@@ -477,6 +478,34 @@
                     "other": "Jiné"
                 },
                 "saveError": "To se nepodařilo — objednávka byla mezitím pravděpodobně změněna. Zobrazení bylo znovu načteno, zkontrolujte to prosím ještě jednou."
+            },
+            "repairTime": {
+                "label": "Doba opravy",
+                "print": "Tisknout",
+                "printHint": "Tisknout dobu opravy na zakázce a faktuře",
+                "printHistory": "Tisknout dobu opravy",
+                "placeholder": "např. 3 dny, 4,5 hod",
+                "running": "běží: {time}",
+                "invalid": "Doba opravy nebyla rozpoznána – např. 3 dny, 4,5 hod nebo 1 den 2 hod",
+                "saveError": "Dobu opravy se nepodařilo uložit",
+                "sourceLabel": "Doba opravy – zdroj",
+                "source": {
+                    "auto": "Měřeno: od termínu přistavení (jinak od založení zakázky) do posledního odškrtnutého pracovního pokynu. Vymazání pole vrátí měření.",
+                    "manuell": "Zadáno ručně. Vymazání pole vrátí naměřený čas.",
+                    "gutachten": "Převzato z posudku. Vymazání pole vrátí naměřený čas.",
+                    "running": "Měření běží od termínu přistavení nebo založení zakázky a končí posledním odškrtnutým pracovním pokynem. Vlastní hodnotu lze kdykoli zadat.",
+                    "none": "Měří se po uložení zakázky – nebo zadejte ručně (např. 3 dny, 4,5 hod)"
+                },
+                "units": {
+                    "day": "den",
+                    "days": "dní",
+                    "hours": "hod",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Převzít a tisknout dobu opravy ({days} dní)",
+                "optRepairTimeNone": "V posudku není uvedena doba opravy"
             }
         },
         "workflow": {

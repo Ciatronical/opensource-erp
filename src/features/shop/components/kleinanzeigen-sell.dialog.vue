@@ -92,7 +92,7 @@
                     class="mb-2"
                 >
                     <template #item="{ props: itemProps, item }">
-                        <v-list-item v-bind="itemProps" :subtitle="[item.raw.customernumber, item.raw.zipcode, item.raw.city].filter(Boolean).join(' · ')" />
+                        <v-list-item v-bind="itemProps" :subtitle="[item.customernumber, item.zipcode, item.city].filter(Boolean).join(' · ')" />
                     </template>
                 </v-autocomplete>
 

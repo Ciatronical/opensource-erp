@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fehler beim Import",
                 "invalidFile": "Ungültige Datei — nur VXS-XML-Dateien werden unterstützt",
-                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen"
+                "noBuchungsgruppe": "Bitte Buchungsgruppen auswählen",
+                "repairDays": "Durata reparației conform calculației: {days} zile"
             },
             "statusOpen": "Deschis",
             "statusClosed": "Finalizat",
@@ -477,6 +478,34 @@
                     "other": "Altele"
                 },
                 "saveError": "Nu a funcționat — comanda a fost probabil modificată între timp. Afișarea a fost reîncărcată, verificați din nou."
+            },
+            "repairTime": {
+                "label": "Timp de reparație",
+                "print": "Tipărire",
+                "printHint": "Tipărește timpul de reparație pe comandă și factură",
+                "printHistory": "Tipărește timpul de reparație",
+                "placeholder": "de ex. 3 zile, 4,5 ore",
+                "running": "în curs: {time}",
+                "invalid": "Timpul de reparație nu a fost recunoscut – de ex. 3 zile, 4,5 ore sau 1 zi 2 ore",
+                "saveError": "Timpul de reparație nu a putut fi salvat",
+                "sourceLabel": "Timp de reparație – sursă",
+                "source": {
+                    "auto": "Măsurat: de la data predării (altfel crearea comenzii) până la ultima instrucțiune de lucru bifată. Golirea câmpului revine la măsurare.",
+                    "manuell": "Introdus manual. Golirea câmpului revine la timpul măsurat.",
+                    "gutachten": "Preluat din expertiză. Golirea câmpului revine la timpul măsurat.",
+                    "running": "Măsurarea rulează de la data predării sau crearea comenzii și se încheie cu ultima instrucțiune de lucru bifată. O valoare proprie poate fi introdusă oricând.",
+                    "none": "Se măsoară după salvarea comenzii – sau introduceți manual (de ex. 3 zile, 4,5 ore)"
+                },
+                "units": {
+                    "day": "zi",
+                    "days": "zile",
+                    "hours": "ore",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Preia și tipărește durata reparației ({days} zile)",
+                "optRepairTimeNone": "Expertiza nu conține durata reparației"
             }
         },
         "workflow": {

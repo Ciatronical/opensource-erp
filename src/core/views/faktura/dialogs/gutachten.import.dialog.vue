@@ -165,6 +165,16 @@
                                 density="compact"
                                 hide-details
                             />
+                            <!-- Reparaturdauer laut Gutachten → Reparaturzeit des Auftrags, wird gedruckt -->
+                            <v-checkbox
+                                v-model="options.apply_repair_time"
+                                :label="repairDays > 0
+                                    ? t('FakturaView.faktura.gutachten.optRepairTime', { days: repairDays })
+                                    : t('FakturaView.faktura.gutachten.optRepairTimeNone')"
+                                :disabled="!(repairDays > 0)"
+                                density="compact"
+                                hide-details
+                            />
                         </div>
 
                         <!-- Positionen -->
@@ -305,6 +315,7 @@ export default defineComponent({
         options: { type: Object, default: () => ({}) },
         vehicleAction: { type: String, default: 'none' },
         plateMismatch: { type: Boolean, default: false },
+        repairDays: { type: Number, default: 0 },
         confidence: { type: Number, default: 0 },
         aiNotes: { type: String, default: '' },
         analyzing: { type: Boolean, default: false },
@@ -337,6 +348,7 @@ export default defineComponent({
             || (props.options.apply_vehicle && (props.vehicleAction === 'create' || props.vehicleAction === 'linked'))
             || (props.options.apply_km && props.vehicle?.mileage)
             || (props.options.apply_notes && props.appraisal?.number)
+            || (props.options.apply_repair_time && props.repairDays > 0)
         )
 
         // Abweichung der gewählten Positionen zu den Reparaturkosten laut Gutachten (> 1 %)

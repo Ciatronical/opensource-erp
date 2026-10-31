@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Fejl ved Import",
                 "invalidFile": "Ugyldige Fil — nur VXS-XML-Filen werden unterstützt",
-                "noBuchungsgruppe": "Venligst Bogfoeringsgruppen auswählen"
+                "noBuchungsgruppe": "Venligst Bogfoeringsgruppen auswählen",
+                "repairDays": "Reparationsvarighed ifølge kalkulation: {days} dage"
             },
             "statusOpen": "Aaben",
             "statusClosed": "Afsluttet",
@@ -477,6 +478,34 @@
                     "other": "Andet"
                 },
                 "saveError": "Det lykkedes ikke — ordren er formentlig blevet ændret i mellemtiden. Visningen er genindlæst, kontrollér venligst igen."
+            },
+            "repairTime": {
+                "label": "Reparationstid",
+                "print": "Udskriv",
+                "printHint": "Udskriv reparationstiden på ordre og faktura",
+                "printHistory": "Udskriv reparationstid",
+                "placeholder": "f.eks. 3 dage, 4,5 timer",
+                "running": "løber: {time}",
+                "invalid": "Reparationstid ikke forstået – f.eks. 3 dage, 4,5 timer eller 1 dag 2 timer",
+                "saveError": "Reparationstiden kunne ikke gemmes",
+                "sourceLabel": "Reparationstid – kilde",
+                "source": {
+                    "auto": "Målt: fra afleveringstidspunkt (ellers ordreoprettelse) til sidste afkrydsede arbejdsanvisning. Tøm feltet for at vende tilbage til målingen.",
+                    "manuell": "Indtastet manuelt. Tøm feltet for at vende tilbage til den målte tid.",
+                    "gutachten": "Overtaget fra vurderingen. Tøm feltet for at vende tilbage til den målte tid.",
+                    "running": "Målingen løber fra afleveringstidspunkt eller ordreoprettelse og slutter med den sidste afkrydsede arbejdsanvisning. En egen værdi kan altid indtastes.",
+                    "none": "Måles, når ordren er gemt – eller indtast manuelt (f.eks. 3 dage, 4,5 timer)"
+                },
+                "units": {
+                    "day": "dag",
+                    "days": "dage",
+                    "hours": "timer",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Overtag og udskriv reparationsvarighed ({days} dage)",
+                "optRepairTimeNone": "Ingen reparationsvarighed i vurderingen"
             }
         },
         "workflow": {

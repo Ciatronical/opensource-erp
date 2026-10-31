@@ -219,7 +219,8 @@
                 "success": "{count} Positionen importiert",
                 "error": "Feil ved Import",
                 "invalidFile": "Ugyldige Fil — nur VXS-XML-Filen werden unterstützt",
-                "noBuchungsgruppe": "Vennligst Bokfoeringsgruppen auswählen"
+                "noBuchungsgruppe": "Vennligst Bokfoeringsgruppen auswählen",
+                "repairDays": "Reparasjonsvarighet ifølge kalkyle: {days} dager"
             },
             "statusOpen": "Aapen",
             "statusClosed": "Fullfoert",
@@ -477,6 +478,34 @@
                     "other": "Annet"
                 },
                 "saveError": "Det gikk ikke — ordren er sannsynligvis blitt endret i mellomtiden. Visningen er lastet inn på nytt, kontroller igjen."
+            },
+            "repairTime": {
+                "label": "Reparasjonstid",
+                "print": "Skriv ut",
+                "printHint": "Skriv ut reparasjonstiden på ordre og faktura",
+                "printHistory": "Skriv ut reparasjonstid",
+                "placeholder": "f.eks. 3 dager, 4,5 timer",
+                "running": "løper: {time}",
+                "invalid": "Reparasjonstid ikke forstått – f.eks. 3 dager, 4,5 timer eller 1 dag 2 timer",
+                "saveError": "Reparasjonstiden kunne ikke lagres",
+                "sourceLabel": "Reparasjonstid – kilde",
+                "source": {
+                    "auto": "Målt: fra innleveringstidspunkt (ellers ordreopprettelse) til siste avkryssede arbeidsinstruks. Tøm feltet for å gå tilbake til målingen.",
+                    "manuell": "Lagt inn manuelt. Tøm feltet for å gå tilbake til målt tid.",
+                    "gutachten": "Hentet fra takstrapporten. Tøm feltet for å gå tilbake til målt tid.",
+                    "running": "Målingen løper fra innleveringstidspunkt eller ordreopprettelse og slutter med siste avkryssede arbeidsinstruks. En egen verdi kan legges inn når som helst.",
+                    "none": "Måles når ordren er lagret – eller legg inn manuelt (f.eks. 3 dager, 4,5 timer)"
+                },
+                "units": {
+                    "day": "dag",
+                    "days": "dager",
+                    "hours": "timer",
+                    "min": "min"
+                }
+            },
+            "gutachten": {
+                "optRepairTime": "Overta og skriv ut reparasjonsvarighet ({days} dager)",
+                "optRepairTimeNone": "Ingen reparasjonsvarighet i takstrapporten"
             }
         },
         "workflow": {

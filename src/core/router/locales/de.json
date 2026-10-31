@@ -55,6 +55,9 @@
         "letters": "/briefe",
         "newLetter": "/brief/neu",
         "editLetter": "/brief/bearbeiten",
+        "mailings": "/rundschreiben",
+        "newMailing": "/rundschreiben/neu",
+        "editMailing": "/rundschreiben/bearbeiten",
         "docs": "/docs",
         "mechanic": "/mechaniker",
         "gutmann": "/gutmann-diagnose",
@@ -89,7 +92,8 @@
         "callHistory": "Anrufliste",
         "emails": "E-Mails",
         "whatsapp": "WhatsApp",
-        "letters": "Briefe"
+        "letters": "Briefe",
+        "mailings": "Rundschreiben"
     },
     "SalesMenu": {
         "title": "Verkauf",
