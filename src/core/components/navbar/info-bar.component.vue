@@ -80,6 +80,7 @@ export default {
 
     function chipColor(item) {
       if (item.type === 'completed') return 'success'
+      if (item.type === 'mailing') return item.data.status === 'done' ? 'success' : 'warning'
       if (item.type === 'parts') return 'deep-orange'
       if (item.type === 'missing_order') return 'orange-darken-3'
       if (item.type === 'anpr') return 'light-blue'
@@ -94,6 +95,7 @@ export default {
 
     function chipIcon(item) {
       if (item.type === 'completed') return 'mdi-check-circle'
+      if (item.type === 'mailing') return 'mdi-bullhorn-outline'
       if (item.type === 'parts') return 'mdi-cart-arrow-down'
       if (item.type === 'missing_order') return 'mdi-clipboard-alert-outline'
       if (item.type === 'anpr') return 'mdi-car-side'
@@ -108,6 +110,7 @@ export default {
 
     function chipLabel(item) {
       if (item.type === 'completed') return (item.name || ('#' + item.data.oe_id)) + ' ✔'
+      if (item.type === 'mailing') return item.name + (item.data.status === 'done' ? ' ✔' : ' ⏸')
       if (item.type === 'parts') return item.name || ('#' + item.data.oe_id)
       if (item.type === 'missing_order') return (item.name || '?') + ' ' + t('InfoBar.noOrder')
       if (item.type === 'anpr') return item.name || ''
@@ -117,6 +120,14 @@ export default {
     function chipTitle(item) {
       if (item.type === 'completed') {
         return (item.data.customer_name || item.data.ordnumber) + ' — alle Arbeiten erledigt'
+      }
+      if (item.type === 'mailing') {
+        const m = item.data
+        if (m.status !== 'done') return t('InfoBar.mailingPaused', { title: m.title, error: m.last_error || '' })
+        let text = t('InfoBar.mailingDone', { title: m.title, sent: m.sent })
+        if (m.failed) text += ', ' + t('InfoBar.mailingFailed', { n: m.failed })
+        if (m.emails || m.letters) text += ' (' + t('InfoBar.mailingExtras', { emails: m.emails, letters: m.letters }) + ')'
+        return text + ' — ' + formatDateTime(item.timestamp)
       }
       if (item.type === 'parts') {
         const base = item.data.customer_name || item.data.ordnumber || ('#' + item.data.oe_id)
@@ -135,6 +146,7 @@ export default {
 
     function openItem(item) {
       if (item.type === 'completed') router.push({ name: 'faktura-order-view', params: { id: item.data.oe_id } })
+      else if (item.type === 'mailing') router.push({ name: 'mailing-edit', params: { id: item.data.id } })
       else if (item.type === 'parts') openOrderWithParts(item.data)
       else if (item.type === 'anpr') openAnprDetection(item.data)
       else if (item.type === 'call') openCall(item.data)

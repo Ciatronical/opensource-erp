@@ -74,6 +74,10 @@
         "selectVendor": "Search vendor...",
         "markOrdered": "Mark {count} as ordered",
         "yesterday": "Yesterday",
-        "noOrder": "no order"
+        "noOrder": "no order",
+        "mailingDone": "Mailing “{title}” finished: {sent} sent",
+        "mailingFailed": "{n} failed",
+        "mailingExtras": "plus {emails} emails, {letters} letters",
+        "mailingPaused": "Mailing “{title}” paused: {error}"
     }
 }

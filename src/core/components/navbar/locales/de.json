@@ -74,6 +74,10 @@
         "selectVendor": "Lieferant suchen...",
         "markOrdered": "{count} als bestellt markieren",
         "yesterday": "Gestern",
-        "noOrder": "kein Auftrag"
+        "noOrder": "kein Auftrag",
+        "mailingDone": "Rundschreiben „{title}“ abgeschlossen: {sent} gesendet",
+        "mailingFailed": "{n} fehlgeschlagen",
+        "mailingExtras": "zusätzlich {emails} E-Mails, {letters} Briefe",
+        "mailingPaused": "Rundschreiben „{title}“ pausiert: {error}"
     }
 }

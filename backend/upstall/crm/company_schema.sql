@@ -176,6 +176,9 @@ CREATE TABLE customer_ext (
     keywords TEXT,
     ustid_check JSONB,
     telegram_chat_id TEXT,
+    reach_channel    TEXT,
+    reach_failed     TEXT,
+    reach_at         TIMESTAMPTZ,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT customer_ext_customer_id_unique UNIQUE (customer_id)
@@ -190,6 +193,8 @@ COMMENT ON COLUMN customer_ext.phone_labels IS 'JSON-Array mit Bezeichnungen fü
 COMMENT ON COLUMN customer_ext.emails IS 'JSON-Array mit E-Mail-Adressen [{label, email}]';
 COMMENT ON COLUMN customer_ext.urls IS 'JSON-Array mit Web-Adressen [{label, url}]';
 COMMENT ON COLUMN customer_ext.telegram_chat_id IS 'Telegram-Chat-ID des Kunden; wird gesetzt, wenn der Kunde dem Firmen-Bot seine Rufnummer teilt (Rundschreiben)';
+COMMENT ON COLUMN customer_ext.reach_channel IS 'Gelernt: Messenger, über den der Kunde zuletzt erreicht wurde (whatsapp | telegram | sms) – wird bei der Kanalwahl bevorzugt';
+COMMENT ON COLUMN customer_ext.reach_failed IS 'Gelernt: Messenger, der zuletzt gescheitert ist – wird nachrangig gewählt';
 COMMENT ON COLUMN customer_ext.itime IS 'Zeitstempel der Erstellung';
 COMMENT ON COLUMN customer_ext.mtime IS 'Zeitstempel der letzten Änderung';
 
@@ -210,6 +215,9 @@ CREATE TABLE vendor_ext (
     keywords TEXT,
     ustid_check JSONB,
     telegram_chat_id TEXT,
+    reach_channel    TEXT,
+    reach_failed     TEXT,
+    reach_at         TIMESTAMPTZ,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT vendor_ext_vendor_id_unique UNIQUE (vendor_id)
@@ -223,6 +231,7 @@ COMMENT ON COLUMN vendor_ext.phone_labels IS 'JSON-Array mit Bezeichnungen für 
 COMMENT ON COLUMN vendor_ext.emails IS 'JSON-Array mit E-Mail-Adressen [{label, email}]';
 COMMENT ON COLUMN vendor_ext.urls IS 'JSON-Array mit Web-Adressen [{label, url}]';
 COMMENT ON COLUMN vendor_ext.telegram_chat_id IS 'Telegram-Chat-ID des Lieferanten (siehe customer_ext.telegram_chat_id)';
+COMMENT ON COLUMN vendor_ext.reach_channel IS 'Gelernt: zuletzt erfolgreicher Messenger (siehe customer_ext.reach_channel)';
 COMMENT ON COLUMN vendor_ext.itime IS 'Zeitstempel der Erstellung';
 COMMENT ON COLUMN vendor_ext.mtime IS 'Zeitstempel der letzten Änderung';
 
@@ -5351,12 +5360,14 @@ CREATE TABLE IF NOT EXISTS mailing_lists (
     id          INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name        TEXT NOT NULL,
     description TEXT,
+    criteria    JSONB,
     employee_id INTEGER,
     itime       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     mtime       TIMESTAMPTZ
 );
 
 COMMENT ON TABLE mailing_lists IS 'Verteiler für Rundschreiben: benannte, wiederverwendbare Empfängerlisten';
+COMMENT ON COLUMN mailing_lists.criteria IS 'Dynamischer Verteiler: Vorschlagskriterien {src, business_id, months, city, channel}; Mitglieder werden beim Laden und beim Versandstart neu ermittelt. NULL = feste Liste';
 
 CREATE TABLE IF NOT EXISTS mailing_list_members (
     id              INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -5375,10 +5386,11 @@ CREATE TABLE IF NOT EXISTS mailings (
     subject              TEXT,
     body_text            TEXT,
     body_html            TEXT,
-    channels             JSONB NOT NULL DEFAULT '["whatsapp","telegram"]'::jsonb,
+    channels             JSONB NOT NULL DEFAULT '["whatsapp","telegram","sms"]'::jsonb,
     whatsapp_template_id INTEGER,
     email_mode           TEXT NOT NULL DEFAULT 'always',
     letter_mode          TEXT NOT NULL DEFAULT 'off',
+    list_ids             JSONB NOT NULL DEFAULT '[]'::jsonb,
     batch_size           INTEGER NOT NULL DEFAULT 20,
     batch_pause_minutes  INTEGER NOT NULL DEFAULT 10,
     send_from            TIME NOT NULL DEFAULT '09:00',
@@ -5395,8 +5407,9 @@ CREATE TABLE IF NOT EXISTS mailings (
 );
 
 COMMENT ON TABLE mailings IS 'Rundschreiben: Nachricht, Kanalreihenfolge, Etappen und Versandstatus';
-COMMENT ON COLUMN mailings.channels IS 'Messenger in Prioritätsreihenfolge, z. B. ["whatsapp","telegram"]; je Empfänger gilt der erste verfügbare';
+COMMENT ON COLUMN mailings.channels IS 'Messenger in Prioritätsreihenfolge, z. B. ["whatsapp","telegram","sms"]; je Empfänger gilt der erste verfügbare – gelernter Kanal zuerst, unbestätigte WhatsApp-Nummer zuletzt; scheitert ein Messenger, springt der nächste ein';
 COMMENT ON COLUMN mailings.email_mode IS 'always = E-Mail zusätzlich an alle mit Adresse | fallback = nur ohne erreichbaren Messenger | off';
+COMMENT ON COLUMN mailings.list_ids IS 'Gewählte Verteiler (mailing_lists.id) als Quellen der Empfängerliste';
 COMMENT ON COLUMN mailings.letter_mode IS 'E-Brief über den Postdienst: off | fallback = nur wer sonst nicht erreichbar ist | always = zusätzlich an alle mit Postanschrift';
 COMMENT ON COLUMN mailings.whatsapp_template_id IS 'Genehmigte WhatsApp-Vorlage für Empfänger ohne offenes 24-Stunden-Fenster (kostenpflichtig); NULL = dann kein WhatsApp';
 COMMENT ON COLUMN mailings.batch_size IS 'Nachrichten je Etappe';
@@ -5412,6 +5425,7 @@ CREATE TABLE IF NOT EXISTS mailing_recipients (
     mailing_id  INTEGER NOT NULL REFERENCES mailings(id) ON DELETE CASCADE,
     cv_src      CHAR(1) NOT NULL,
     cv_id       INTEGER NOT NULL,
+    origin      TEXT,
     channel     TEXT,
     target      TEXT,
     status      TEXT NOT NULL DEFAULT 'pending',
@@ -5434,6 +5448,7 @@ CREATE TABLE IF NOT EXISTS mailing_recipients (
 );
 
 COMMENT ON TABLE mailing_recipients IS 'Empfänger eines Rundschreibens mit gewähltem Kanal, Ziel und Versandstatus';
+COMMENT ON COLUMN mailing_recipients.origin IS 'Herkunft: manual | suggest | list:<mailing_lists.id> – Verteiler lassen sich dadurch wieder abwählen';
 COMMENT ON COLUMN mailing_recipients.channel IS 'telegram | whatsapp | whatsapp_template | email — festgelegt beim Start';
 COMMENT ON COLUMN mailing_recipients.target IS 'Chat-ID, Rufnummer (E.164) oder E-Mail-Adresse';
 COMMENT ON COLUMN mailing_recipients.status IS 'pending | sent | failed | skipped';

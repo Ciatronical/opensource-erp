@@ -13,7 +13,9 @@
     <v-container fluid class="pt-2 px-2 px-sm-4 mailings">
         <page-header :title="t('MailingsView.title')" :subtitle="t('MailingsView.subtitle')">
             <div class="d-flex flex-wrap ga-1">
-                <v-chip v-for="c in channelChips" :key="c.key" size="small" variant="tonal" :color="c.ok ? c.color : 'grey'" :prepend-icon="c.icon" :title="c.ok ? t('MailingsView.channelReady') : t('MailingsView.channelNotConfigured')">
+                <v-chip v-for="c in channelChips" :key="c.key" size="small" variant="tonal" :color="c.ok ? c.color : 'grey'" :prepend-icon="c.icon"
+                        :title="c.ok ? t('MailingsView.channelReady') : t('MailingsView.configureChannel')" :append-icon="c.ok ? undefined : 'mdi-cog-outline'"
+                        @click="c.ok ? null : openChannelConfig(c.key)">
                     {{ t('MailingRecipients.channel.' + c.key) }}
                 </v-chip>
             </div>
@@ -76,10 +78,30 @@
                         </template>
                         <template #item.channels="{ item }">
                             <div class="d-flex flex-wrap ga-1">
-                                <template v-if="Object.keys(item.by_channel || {}).length">
-                                    <v-chip v-for="(n, ch) in item.by_channel" :key="ch" size="x-small" variant="tonal" :color="CHANNEL_META[ch]?.color" :prepend-icon="CHANNEL_META[ch]?.icon">
-                                        {{ n }}
-                                    </v-chip>
+                                <template v-if="item.status !== 'draft' && Object.keys(item.channel_stats || {}).length">
+                                    <!-- Hover: Aufschlüsselung als Tooltip; Klick: Karte mit Zahlen und Sprung in die gefilterte Empfängerliste -->
+                                    <v-menu v-for="(st, ch) in item.channel_stats" :key="ch" :close-on-content-click="false">
+                                        <template #activator="{ props: menuProps }">
+                                            <v-chip v-bind="menuProps" size="x-small" variant="tonal" :color="CHANNEL_META[ch]?.color" :prepend-icon="CHANNEL_META[ch]?.icon" :title="statsTitle(ch, st)" class="mailings__stat" @click.stop>
+                                                <template v-if="ch === 'none'">{{ st.skipped }}</template>
+                                                <template v-else>{{ st.sent }}<span v-if="st.failed" class="text-error ms-1">✗ {{ st.failed }}</span><span v-if="st.pending" class="text-medium-emphasis ms-1">⏳ {{ st.pending }}</span></template>
+                                            </v-chip>
+                                        </template>
+                                        <v-card min-width="260">
+                                            <v-card-title class="text-subtitle-2 d-flex align-center">
+                                                <v-icon size="small" class="me-2" :color="CHANNEL_META[ch]?.color">{{ CHANNEL_META[ch]?.icon }}</v-icon>{{ t('MailingRecipients.channel.' + ch) }}
+                                            </v-card-title>
+                                            <v-list density="compact" class="py-0">
+                                                <v-list-item v-for="k in ['sent', 'failed', 'pending', 'skipped']" v-show="st[k]" :key="k" :prepend-icon="recipientStatusMeta(k).icon" :base-color="recipientStatusMeta(k).color" :title="t('MailingRecipients.status.' + k)">
+                                                    <template #append><span class="font-weight-medium">{{ st[k] }}</span></template>
+                                                </v-list-item>
+                                            </v-list>
+                                            <v-card-actions>
+                                                <v-spacer />
+                                                <v-btn size="small" variant="text" color="primary" prepend-icon="mdi-account-multiple-outline" @click="openFiltered(item, ch)">{{ t('MailingsView.showRecipients') }}</v-btn>
+                                            </v-card-actions>
+                                        </v-card>
+                                    </v-menu>
                                 </template>
                                 <template v-else>
                                     <v-icon v-for="ch in item.channels" :key="ch" size="small" :color="CHANNEL_META[ch]?.color" class="me-1" :title="t('MailingRecipients.channel.' + ch)">{{ CHANNEL_META[ch]?.icon }}</v-icon>
@@ -127,8 +149,12 @@
                         @click:row="(_, { item }) => editList(item)"
                     >
                         <template #item.name="{ item }">
-                            <div class="font-weight-medium">{{ item.name }}</div>
-                            <div v-if="item.description" class="text-caption text-medium-emphasis">{{ item.description }}</div>
+                            <div class="font-weight-medium d-flex align-center ga-2">
+                                {{ item.name }}
+                                <v-chip v-if="item.criteria" size="x-small" variant="tonal" color="primary" prepend-icon="mdi-autorenew" :title="t('MailingsView.dynamicHint')">{{ t('MailingsView.dynamic') }}</v-chip>
+                            </div>
+                            <div v-if="item.criteria" class="text-caption text-medium-emphasis">{{ criteriaSummary(item.criteria, t, businesses) }}</div>
+                            <div v-else-if="item.description" class="text-caption text-medium-emphasis">{{ item.description }}</div>
                         </template>
                         <template #item.members="{ item }">
                             <v-chip size="small" variant="tonal">{{ t('MailingRecipients.members', { n: item.members }) }}</v-chip>
@@ -172,10 +198,14 @@
                             <v-text-field v-model="listEdit.description" :label="t('MailingRecipients.listDescription')" variant="outlined" density="compact" hide-details />
                         </v-col>
                     </v-row>
+                    <v-alert v-if="listEdit.criteria" type="info" variant="tonal" density="compact" icon="mdi-autorenew" class="mb-3">
+                        {{ t('MailingsView.dynamicHint') }} <strong>{{ criteriaSummary(listEdit.criteria, t, businesses) }}</strong>
+                    </v-alert>
                     <mailing-recipients
                         v-model="listEdit.members"
+                        :readonly="!!listEdit.criteria"
                         :config="config || {}"
-                        :settings="{ channels: ['telegram', 'whatsapp', 'email'], whatsapp_template_id: null }"
+                        :settings="{ channels: ['whatsapp', 'telegram'], whatsapp_template_id: null, email_mode: 'always' }"
                         :lists="lists.filter(l => l.id !== listEdit.id)"
                         :businesses="businesses"
                         :max="config?.max_recipients || 300"
@@ -206,6 +236,7 @@ import MailingRecipients from './components/mailing-recipients.vue'
 import * as toast from '@/core/utils/toasts.js'
 import * as alerts from '@/core/utils/alerts.js'
 import { CHANNEL_META } from './composables/mailingPlan.js'
+import { criteriaSummary } from './composables/listCriteria.js'
 
 const { t, locale } = useI18n()
 const router = useRouter()
@@ -231,8 +262,11 @@ const listHeaders = computed(() => [
     { title: t('MailingsView.colChanged'), key: 'mtime', sortable: true, width: '140px' },
     { title: '', key: 'actions', sortable: false, align: 'end', width: '120px' },
 ])
-const channelChips = computed(() => ['telegram', 'whatsapp', 'email'].map(k => ({ key: k, ok: !!config.value?.[k], ...CHANNEL_META[k] })))
+const channelChips = computed(() => ['whatsapp', 'telegram', 'sms', 'email', ...(config.value?.letter ? ['letter'] : [])].map(k => ({ key: k, ok: !!config.value?.[k], ...CHANNEL_META[k] })))
 
+// Nicht eingerichteter Kanal: direkt zum Feld in der Firmenkonfiguration
+const CHANNEL_CONFIG_FIELD = { whatsapp: 'whatsapp_access_token', telegram: 'telegram_bot_token', sms: 'sms_api_key', email: 'email_smtp_host', letter: 'eletter_provider' }
+function openChannelConfig(ch) { router.push({ name: 'client-defaults', query: { tab: 'crm', focus: CHANNEL_CONFIG_FIELD[ch] || '' } }) }
 function statusMeta(s) {
     return {
         draft:     { icon: 'mdi-pencil-outline', color: 'grey' },
@@ -291,6 +325,15 @@ function startTimer() { stopTimer(); timer = setInterval(tick, 20000) }
 function stopTimer() { if (timer) { clearInterval(timer); timer = null } }
 
 function open(item) { router.push({ name: 'mailing-edit', params: { id: item.id } }) }
+function recipientStatusMeta(k) {
+    return { pending: { icon: 'mdi-clock-outline', color: 'grey' }, sent: { icon: 'mdi-check-circle-outline', color: 'success' },
+             failed: { icon: 'mdi-alert-circle-outline', color: 'error' }, skipped: { icon: 'mdi-debug-step-over', color: 'warning' } }[k]
+}
+function statsTitle(ch, st) {
+    const parts = ['sent', 'failed', 'pending', 'skipped'].filter(k => st[k]).map(k => `${st[k]} ${t('MailingRecipients.status.' + k)}`)
+    return t('MailingRecipients.channel.' + ch) + ': ' + parts.join(' · ')
+}
+function openFiltered(item, ch) { router.push({ name: 'mailing-edit', params: { id: item.id }, query: { filter: ch } }) }
 function copy(item) { router.push({ name: 'mailing-new', query: { copy_of: String(item.id) } }) }
 function mailingToList(list) { router.push({ name: 'mailing-new', query: { list: String(list.id) } }) }
 async function remove(item) {
@@ -309,18 +352,18 @@ async function remove(item) {
 // ── Verteiler ──
 const listDialog = ref(false)
 const listSaving = ref(false)
-const listEdit = ref({ id: 0, name: '', description: '', members: [] })
+const listEdit = ref({ id: 0, name: '', description: '', criteria: null, members: [] })
 async function editList(item) {
     loadBusinesses()
     if (!item) {
-        listEdit.value = { id: 0, name: '', description: '', members: [] }
+        listEdit.value = { id: 0, name: '', description: '', criteria: null, members: [] }
         listDialog.value = true
         return
     }
     try {
         const { data } = await axios.post('/api/mailings/', { action: 'getMailingList', id: item.id })
         if (!data.success) throw new Error(apiError(data, t))
-        listEdit.value = { id: item.id, name: data.payload.list?.name || item.name, description: data.payload.list?.description || '', members: data.payload.members || [] }
+        listEdit.value = { id: item.id, name: data.payload.list?.name || item.name, description: data.payload.list?.description || '', criteria: data.payload.list?.criteria || null, members: data.payload.members || [] }
         listDialog.value = true
     } catch (e) {
         toast.error(e.message)
@@ -334,7 +377,8 @@ async function saveList() {
             id: listEdit.value.id,
             name: listEdit.value.name.trim(),
             description: listEdit.value.description.trim(),
-            members: listEdit.value.members.map(r => ({ cv_src: r.cv_src, cv_id: r.cv_id })),
+            criteria: listEdit.value.criteria || undefined,
+            members: listEdit.value.criteria ? [] : listEdit.value.members.map(r => ({ cv_src: r.cv_src, cv_id: r.cv_id })),
         })
         if (!data.success) throw new Error(apiError(data, t))
         listDialog.value = false

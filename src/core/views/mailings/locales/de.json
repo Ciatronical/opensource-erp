@@ -1,7 +1,7 @@
 {
     "MailingsView": {
         "title": "Rundschreiben",
-        "subtitle": "Eine Nachricht an viele Kunden und Lieferanten – per Telegram, WhatsApp oder E-Mail",
+        "subtitle": "Eine Nachricht an viele Kunden und Lieferanten – per WhatsApp, Telegram, E-Mail oder Brief",
         "newMailing": "Neues Rundschreiben",
         "tabMailings": "Rundschreiben",
         "tabLists": "Verteiler",
@@ -42,7 +42,12 @@
         "deleteListConfirm": "Verteiler „{name}“ löschen? Bereits erstellte Rundschreiben bleiben erhalten.",
         "mailingToList": "Rundschreiben an diesen Verteiler",
         "loadError": "Rundschreiben konnten nicht geladen werden: {error}",
-        "recipientsCount": "{n} Empfänger"
+        "recipientsCount": "{n} Empfänger",
+        "showRecipients": "Empfänger anzeigen",
+        "dynamic": "dynamisch",
+        "dynamicHint": "Mitglieder ergeben sich aus den Kriterien und werden beim Anschalten im Rundschreiben und beim Versandstart neu ermittelt.",
+        "configureNow": "Jetzt einrichten",
+        "configureChannel": "Kanal in der Firmenkonfiguration einrichten"
     },
     "MailingEditView": {
         "titleNew": "Neues Rundschreiben",
@@ -91,11 +96,12 @@
         "previewEmpty": "Sobald ein Text steht, erscheint hier die Nachricht so, wie ein Empfänger sie sieht.",
         "previewSample": "Beispielwerte (noch keine Empfänger)",
         "dispatch": "Versand",
-        "channelOrderHint": "Nachrichtenkanal: Jeder Empfänger bekommt die Nachricht über den ersten Messenger in dieser Reihenfolge, der bei ihm verfügbar ist. E-Mail kommt nach der Einstellung darunter zusätzlich dazu oder springt ein.",
+        "channelOrderHint": "Nachrichtenkanal: Jeder Empfänger bekommt die Nachricht über den ersten Messenger in dieser Reihenfolge, der bei ihm verfügbar ist. OSERP merkt sich je Kunde, worüber er zuletzt erreicht wurde, und nimmt diesen Weg zuerst; eine noch nie bestätigte WhatsApp-Nummer kommt zuletzt. Scheitert ein Messenger beim Versand, springt der nächste ein. E-Mail kommt nach der Einstellung darunter zusätzlich dazu oder springt ein.",
         "free": "kostenlos",
         "channelHints": {
             "telegram": "Kunden, die dem Firmen-Bot ihre Nummer geteilt haben",
-            "whatsapp": "Kostenlos nur im 24-Stunden-Fenster nach einer Kundennachricht"
+            "whatsapp": "Kostenlos nur im 24-Stunden-Fenster nach einer Kundennachricht",
+            "sms": "Mobilnummer – kostenpflichtig je SMS; greift, wenn WhatsApp und Telegram nicht gehen"
         },
         "whatsappOutsideWindow": "WhatsApp ohne offenes Fenster",
         "whatsappNoTemplate": "Nicht per WhatsApp senden (keine Kosten)",
@@ -196,7 +202,6 @@
         "suggestAlreadyIn": "({n} bereits in der Liste)",
         "suggestCapped": "– es passen noch {n} in die Liste",
         "suggestApply": "{n} übernehmen",
-        "loadList": "Verteiler laden",
         "members": "{n} Mitglieder",
         "saveAsList": "Als Verteiler speichern",
         "saveListTitle": "Als Verteiler speichern",
@@ -227,7 +232,8 @@
             "none": "kein Kanal",
             "email_extra": "E-Mail zusätzlich",
             "letter": "Brief",
-            "letter_extra": "Brief zusätzlich"
+            "letter_extra": "Brief zusätzlich",
+            "sms": "SMS"
         },
         "duplicate": "Dublette",
         "duplicateHint": "Gleiches Ziel wie ein anderer Empfänger – wird nur einmal gesendet",
@@ -261,7 +267,21 @@
         "cancel": "Abbrechen",
         "moreHits": "Weitere Treffer vorhanden – Suche verfeinern (Nummer, Ort, E-Mail).",
         "emailExtraShort": "+ E-Mail",
-        "letterExtraShort": "+ Brief"
+        "letterExtraShort": "+ Brief",
+        "listsRow": "Verteiler:",
+        "sourcesSummary": "{lists} Verteiler · {fromLists} daraus, {manual} einzeln",
+        "listAdded": "Verteiler „{name}“: {n} Empfänger hinzugefügt",
+        "listRemoved": "Verteiler „{name}“ abgewählt",
+        "dynamicList": "Dynamischer Verteiler",
+        "dynamicSaveHint": "Kriterien als dynamischen Verteiler speichern – er aktualisiert sich beim Anschalten und beim Versandstart von selbst.",
+        "dynamicName": "Name des dynamischen Verteilers",
+        "dynamicSave": "Dynamisch speichern",
+        "criteriaMonths": "Umsatz in den letzten {n} Monaten",
+        "criteriaCity": "Ort {city}…",
+        "frozenRunning": "Der Versand läuft – Empfänger und Verteiler sind eingefroren.",
+        "pauseToEdit": "Pausieren und bearbeiten",
+        "frozenDone": "Dieses Rundschreiben ist beendet. Für einen neuen Versand als Vorlage verwenden.",
+        "copyToEdit": "Als Vorlage verwenden"
     },
     "MailingErrors": {
         "MAILING_TEST_FAILED": "Testversand fehlgeschlagen",
@@ -282,6 +302,7 @@
         "MAILING_NOT_DELETABLE": "Ein laufendes Rundschreiben kann nicht gelöscht werden. Zuerst pausieren oder abbrechen.",
         "MAILING_LIST_NAME_REQUIRED": "Bitte einen Namen für den Verteiler eingeben.",
         "MAILING_LIST_NOT_FOUND": "Der Verteiler wurde nicht gefunden.",
-        "UNKNOWN": "Unbekannter Fehler"
+        "UNKNOWN": "Unbekannter Fehler",
+        "SMS_NOT_CONFIGURED": "SMS ist nicht eingerichtet (API-Schlüssel fehlt)."
     }
 }

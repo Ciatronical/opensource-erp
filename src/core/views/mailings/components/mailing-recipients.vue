@@ -3,9 +3,14 @@
     Empfängerliste eines Rundschreibens (oder eines Verteilers).
 
     Oben die Wege, Empfänger hereinzuholen: Suche (Kunde/Lieferant), Vorschlag
-    nach Kundentyp/Umsatz/Ort/Kanal, Verteiler laden, die Liste als Verteiler
-    sichern. Darunter die Tabelle mit den erreichbaren Kanälen je Empfänger und
-    dem geplanten Kanal (vor dem Start) bzw. dem Versandstatus (danach).
+    nach Kundentyp/Umsatz/Ort/Kanal, die Liste als Verteiler sichern. Darunter
+    die gespeicherten Verteiler als An/Aus-Chips: angeschaltet = seine Mitglieder
+    sind in der Liste (Herkunft list:<id>), ausgeschaltet = wieder draußen.
+    Dynamische Verteiler (gespeicherte Vorschlagskriterien) frischen sich beim
+    Anschalten und beim Versandstart selbst auf. Darunter die Tabelle mit den
+    erreichbaren Kanälen je Empfänger und dem geplanten Kanal (vor dem Start)
+    bzw. dem Versandstatus (danach). Läuft der Versand, ist die Liste eingefroren
+    und sagt das auch – mit dem Knopf zum Pausieren.
     Die Zahl der Empfänger ist auf `max` begrenzt.
 -->
 <template>
@@ -67,22 +72,6 @@
             <v-btn variant="tonal" color="primary" prepend-icon="mdi-auto-fix" :disabled="recipients.length >= max" @click="openSuggest">
                 {{ t('MailingRecipients.suggest') }}
             </v-btn>
-            <v-select
-                v-if="lists.length"
-                :model-value="null"
-                :items="lists"
-                item-title="name"
-                item-value="id"
-                :label="t('MailingRecipients.loadList')"
-                prepend-inner-icon="mdi-playlist-plus"
-                class="recipients__lists"
-                :disabled="recipients.length >= max"
-                @update:model-value="loadList"
-            >
-                <template #item="{ props: itemProps, item }">
-                    <v-list-item v-bind="itemProps" :title="item.name" :subtitle="t('MailingRecipients.members', { n: item.members })" />
-                </template>
-            </v-select>
             <v-btn variant="text" prepend-icon="mdi-content-save-outline" :disabled="!recipients.length" @click="openSaveList">
                 {{ t('MailingRecipients.saveAsList') }}
             </v-btn>
@@ -97,6 +86,27 @@
             </v-menu>
         </div>
 
+        <!-- Läuft oder abgeschlossen: Liste eingefroren, aber nicht wortlos -->
+        <v-alert v-if="readonly && ['running', 'done', 'cancelled'].includes(status)" :type="status === 'running' ? 'info' : 'success'" variant="tonal" density="compact" class="recipients__frozen" :icon="status === 'running' ? 'mdi-lock-clock' : 'mdi-lock-check-outline'">
+            <div class="d-flex align-center flex-wrap ga-2">
+                <span>{{ status === 'running' ? t('MailingRecipients.frozenRunning') : t('MailingRecipients.frozenDone') }}</span>
+                <v-spacer />
+                <v-btn v-if="status === 'running'" size="small" variant="tonal" color="warning" prepend-icon="mdi-pause" @click="emit('pause')">{{ t('MailingRecipients.pauseToEdit') }}</v-btn>
+                <v-btn v-else size="small" variant="tonal" color="primary" prepend-icon="mdi-content-copy" @click="emit('copy')">{{ t('MailingRecipients.copyToEdit') }}</v-btn>
+            </div>
+        </v-alert>
+
+        <!-- Verteiler als Quellen: anschalten = Mitglieder drin, ausschalten = wieder draußen -->
+        <div v-if="lists.length && !readonly" class="recipients__sources">
+            <span class="text-caption text-medium-emphasis me-1"><v-icon size="14" class="me-1">mdi-playlist-check</v-icon>{{ t('MailingRecipients.listsRow') }}</span>
+            <v-chip v-for="l in lists" :key="l.id" size="small" :variant="isSelected(l.id) ? 'flat' : 'tonal'" :color="isSelected(l.id) ? 'primary' : undefined"
+                    :prepend-icon="isSelected(l.id) ? 'mdi-check-circle' : (l.criteria ? 'mdi-autorenew' : 'mdi-playlist-plus')"
+                    :title="listTitle(l)" :disabled="listBusy === l.id || (!isSelected(l.id) && recipients.length >= max)" @click="toggleList(l)">
+                {{ l.name }}<span class="ms-1" :class="isSelected(l.id) ? '' : 'text-medium-emphasis'">{{ l.members }}</span>
+            </v-chip>
+            <span v-if="selectedIds.length" class="text-caption text-medium-emphasis ms-1">{{ t('MailingRecipients.sourcesSummary', { lists: selectedIds.length, fromLists: fromListsCount, manual: recipients.length - fromListsCount }) }}</span>
+        </div>
+
         <!-- Filter nach geplantem Kanal / Status -->
         <div v-if="recipients.length" class="recipients__filters">
             <v-chip-group v-model="filter" selected-class="text-primary" mandatory>
@@ -104,6 +114,9 @@
                 <template v-if="showStatus">
                     <v-chip v-for="s in statusFilters" :key="s.value" :value="s.value" size="small" variant="tonal" filter :prepend-icon="s.icon" :color="s.color">
                         {{ t('MailingRecipients.status.' + s.value) }} {{ s.count }}
+                    </v-chip>
+                    <v-chip v-for="c in sentChannelFilters" :key="c.value" :value="c.value" size="small" variant="tonal" filter :prepend-icon="c.icon" :color="c.color">
+                        {{ t('MailingRecipients.channel.' + c.value) }} {{ c.count }}
                     </v-chip>
                 </template>
                 <template v-else>
@@ -242,6 +255,14 @@
                             {{ suggestNew.slice(0, 8).map(r => r.name).join(', ') }}<span v-if="suggestNew.length > 8"> …</span>
                         </div>
                     </v-alert>
+                    <!-- Kriterien als dynamischen Verteiler sichern: aktualisiert sich beim Laden und beim Versandstart von selbst -->
+                    <div v-if="suggestResult && suggestResult.total" class="recipients__dynamic mt-3">
+                        <div class="text-caption text-medium-emphasis mb-1"><v-icon size="14" class="me-1">mdi-autorenew</v-icon>{{ t('MailingRecipients.dynamicSaveHint') }}</div>
+                        <div class="d-flex align-center ga-2 flex-wrap">
+                            <v-text-field v-model="dynamicName" :label="t('MailingRecipients.dynamicName')" variant="outlined" density="compact" hide-details class="recipients__dynamic-name" @keyup.enter="saveDynamicList" />
+                            <v-btn variant="tonal" color="primary" prepend-icon="mdi-autorenew" :loading="dynamicSaving" :disabled="!dynamicName.trim()" @click="saveDynamicList">{{ t('MailingRecipients.dynamicSave') }}</v-btn>
+                        </div>
+                    </div>
                 </v-card-text>
                 <v-divider />
                 <v-card-actions class="px-4 py-3">
@@ -288,20 +309,24 @@ import ChannelIcons from './channel-icons.vue'
 import * as toast from '@/core/utils/toasts.js'
 import * as alerts from '@/core/utils/alerts.js'
 import { CHANNEL_META, planAll, recipientKey } from '../composables/mailingPlan.js'
+import { criteriaSummary } from '../composables/listCriteria.js'
 
 const props = defineProps({
     modelValue: { type: Array, default: () => [] },
     readonly: { type: Boolean, default: false },
     showStatus: { type: Boolean, default: false },
+    initialFilter: { type: String, default: '' },   // Vorbelegung aus der Übersicht (Kanal oder Status)
     settings: { type: Object, default: () => ({ channels: [], whatsapp_template_id: null }) },
     config: { type: Object, default: () => ({}) },
     lists: { type: Array, default: () => [] },
     businesses: { type: Array, default: () => [] },
     max: { type: Number, default: 300 },
-    /** Verteiler, aus dem die Liste stammt (für „Verteiler aktualisieren“) */
-    listId: { type: [Number, String], default: null },
+    /** Gewählte Verteiler (ids) – v-model:list-ids */
+    listIds: { type: Array, default: () => [] },
+    /** Status des Rundschreibens (für den Eingefroren-Hinweis) */
+    status: { type: String, default: 'draft' },
 })
-const emit = defineEmits(['update:modelValue', 'lists-changed', 'list-loaded'])
+const emit = defineEmits(['update:modelValue', 'update:listIds', 'lists-changed', 'pause', 'copy'])
 
 const { t, locale } = useI18n()
 const router = useRouter()
@@ -310,7 +335,13 @@ const recipients = computed(() => props.modelValue.map(r => ({ ...r, key: recipi
 const capacity = computed(() => Math.max(0, props.max - recipients.value.length))
 const plan = computed(() => planAll(recipients.value, props.settings, props.config))
 function planFor(r) { return plan.value.byKey.get(recipientKey(r)) || { channel: null } }
-const currentList = computed(() => props.lists.find(l => Number(l.id) === Number(props.listId)) || null)
+// Genau ein fester Verteiler gewählt → „Verteiler aktualisieren“ anbieten
+const selectedIds = computed(() => (props.listIds || []).map(Number))
+const currentList = computed(() => {
+    const chosen = props.lists.filter(l => selectedIds.value.includes(Number(l.id)) && !l.criteria)
+    return selectedIds.value.length === 1 && chosen.length === 1 ? chosen[0] : null
+})
+const fromListsCount = computed(() => recipients.value.filter(r => String(r.origin || '').startsWith('list:')).length)
 
 const headers = computed(() => [
     { title: t('MailingRecipients.name'), key: 'name', sortable: true },
@@ -328,9 +359,22 @@ const channelFilters = computed(() => ['whatsapp', 'whatsapp_template', 'telegra
 const statusFilters = computed(() => ['pending', 'sent', 'failed', 'skipped'].map(v => ({
     value: v, ...statusMeta(v), count: recipients.value.filter(r => (r.status || 'pending') === v).length,
 })).filter(f => f.count > 0))
+// Im Statusmodus zusätzlich nach dem tatsächlich genutzten Weg filtern (Sprung aus der Übersicht)
+function usedChannel(r, ch) {
+    if (ch === 'email_extra') return !!r.email_status
+    if (ch === 'letter_extra') return !!r.letter_status
+    if (ch === 'none') return !r.channel
+    return r.channel === ch
+}
+const sentChannelFilters = computed(() => ['whatsapp', 'whatsapp_template', 'telegram', 'email', 'email_extra', 'letter', 'letter_extra', 'none'].map(v => ({
+    value: v, icon: CHANNEL_META[v].icon, color: CHANNEL_META[v].color, count: recipients.value.filter(r => usedChannel(r, v)).length,
+})).filter(f => f.count > 0))
 const filteredRecipients = computed(() => {
     if (filter.value === 'all') return recipients.value
-    if (props.showStatus) return recipients.value.filter(r => (r.status || 'pending') === filter.value)
+    if (props.showStatus) {
+        if (['pending', 'sent', 'failed', 'skipped'].includes(filter.value)) return recipients.value.filter(r => (r.status || 'pending') === filter.value)
+        return recipients.value.filter(r => usedChannel(r, filter.value))
+    }
     return recipients.value.filter(r => {
         const p = planFor(r)
         if (filter.value === 'none') return !p.channel || p.duplicate
@@ -339,7 +383,8 @@ const filteredRecipients = computed(() => {
         return p.channel === filter.value && !p.duplicate
     })
 })
-watch(() => props.showStatus, () => { filter.value = 'all' })
+watch(() => props.showStatus, () => { filter.value = props.initialFilter || 'all' })
+watch(() => props.initialFilter, v => { if (v) filter.value = v }, { immediate: true })
 
 function statusMeta(s) {
     return {
@@ -362,9 +407,9 @@ function formatWhen(v) {
 function setRecipients(list) {
     emit('update:modelValue', list.map(({ key, ...r }) => r))
 }
-function addMany(items) {
+function addMany(items, origin = 'manual') {
     const have = new Set(recipients.value.map(r => r.key))
-    const fresh = items.filter(r => !have.has(recipientKey(r)))
+    const fresh = items.filter(r => !have.has(recipientKey(r))).map(r => ({ ...r, origin: r.origin || origin }))
     const room = capacity.value
     const take = fresh.slice(0, room)
     if (take.length) setRecipients([...recipients.value, ...take])
@@ -448,22 +493,68 @@ async function runSuggest() {
     }
 }
 function applySuggest() {
-    const n = addMany(suggestNew.value)
+    const n = addMany(suggestNew.value, 'suggest')
     suggestDialog.value = false
     if (n) toast.success(t('MailingRecipients.added', { n }))
 }
 
-// ── Verteiler ──
-async function loadList(id) {
-    if (!id) return
+// ── Verteiler als Quellen ──
+const listBusy = ref(null)
+function isSelected(id) { return selectedIds.value.includes(Number(id)) }
+function listTitle(l) {
+    return l.criteria ? t('MailingRecipients.dynamicList') + ': ' + criteriaSummary(l.criteria, t, props.businesses) : t('MailingRecipients.members', { n: l.members })
+}
+async function fetchMembers(id) {
+    const { data } = await axios.post('/api/mailings/', { action: 'getMailingList', id })
+    if (!data.success) throw new Error(data.text)
+    return data.payload.members || []
+}
+async function toggleList(l) {
+    const id = Number(l.id)
+    listBusy.value = id
     try {
-        const { data } = await axios.post('/api/mailings/', { action: 'getMailingList', id })
-        if (!data.success) throw new Error(data.text)
-        const n = addMany(data.payload.members || [])
-        emit('list-loaded', id)
-        toast.success(t('MailingRecipients.added', { n }))
+        if (isSelected(id)) {
+            // Abwählen: nur Empfänger, die aus diesem Verteiler kamen; Mitglieder anderer gewählter Verteiler bleiben bzw. kommen zurück
+            const rest = selectedIds.value.filter(x => x !== id)
+            setRecipients(recipients.value.filter(r => r.origin !== 'list:' + id))
+            emit('update:listIds', rest)
+            for (const other of rest) addMany(await fetchMembers(other), 'list:' + other)
+            toast.info(t('MailingRecipients.listRemoved', { name: l.name }))
+        } else {
+            const n = addMany(await fetchMembers(id), 'list:' + id)
+            emit('update:listIds', [...selectedIds.value, id])
+            toast.success(t('MailingRecipients.listAdded', { name: l.name, n }))
+        }
+        if (l.criteria) emit('lists-changed', id)   // Zähler nach dem Auffrischen aktualisieren
     } catch (e) {
         toast.error(e.message)
+    } finally {
+        listBusy.value = null
+    }
+}
+// Dynamischer Verteiler aus den Vorschlagskriterien: speichern und gleich anschalten
+const dynamicName = ref('')
+const dynamicSaving = ref(false)
+async function saveDynamicList() {
+    if (!dynamicName.value.trim()) return
+    dynamicSaving.value = true
+    try {
+        const { data } = await axios.post('/api/mailings/', {
+            action: 'saveMailingList', id: 0, name: dynamicName.value.trim(),
+            description: criteriaSummary(suggest.value, t, props.businesses), criteria: suggest.value, members: [],
+        })
+        if (!data.success) throw new Error(data.text)
+        const id = Number(data.payload.id)
+        const n = addMany(suggestResult.value?.results || [], 'list:' + id)
+        emit('update:listIds', [...selectedIds.value, id])
+        emit('lists-changed', id)
+        suggestDialog.value = false
+        dynamicName.value = ''
+        toast.success(t('MailingRecipients.listAdded', { name: data.payload.name || dynamicName.value, n }))
+    } catch (e) {
+        toast.error(e.message)
+    } finally {
+        dynamicSaving.value = false
     }
 }
 const saveListDialog = ref(false)
@@ -513,9 +604,19 @@ async function saveList() {
     flex: 1 1 280px;
     min-width: 240px;
 }
-.recipients__lists {
-    flex: 0 1 240px;
-    min-width: 200px;
+.recipients__sources {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--oserp-gap-xs);
+    padding: var(--oserp-gap-xs) var(--oserp-gap-lg);
+    border-bottom: 1px solid var(--oserp-border-soft);
+}
+.recipients__frozen {
+    margin: var(--oserp-gap) var(--oserp-gap-lg) 0;
+}
+.recipients__dynamic-name {
+    flex: 1 1 240px;
 }
 .recipients__filters {
     padding: var(--oserp-gap-xs) var(--oserp-gap-lg);

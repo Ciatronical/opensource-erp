@@ -159,7 +159,8 @@
                             </template>
                             <v-list-item-title>
                                 {{ idx + 1 }}. {{ t('MailingRecipients.channel.' + ch) }}
-                                <v-chip v-if="!config[ch]" size="x-small" variant="tonal" color="grey" class="ms-1">{{ t('MailingsView.channelNotConfigured') }}</v-chip>
+                                <!-- Nicht eingerichtet: Klick führt direkt zum passenden Feld der Firmenkonfiguration -->
+                                <v-chip v-if="!config[ch]" size="x-small" variant="tonal" color="warning" prepend-icon="mdi-cog-outline" class="ms-1" :title="t('MailingsView.configureChannel')" @click="openChannelConfig(ch)">{{ t('MailingsView.channelNotConfigured') }} · {{ t('MailingsView.configureNow') }}</v-chip>
                                 <v-chip v-else-if="ch === 'telegram'" size="x-small" variant="tonal" color="success" class="ms-1">{{ t('MailingEditView.free') }}</v-chip>
                             </v-list-item-title>
                             <v-list-item-subtitle class="text-caption">{{ t('MailingEditView.channelHints.' + ch) }}</v-list-item-subtitle>
@@ -269,7 +270,7 @@
                     <v-alert :type="plan.planned ? 'success' : 'warning'" variant="tonal" density="compact" class="mt-2" :icon="plan.planned ? 'mdi-account-check-outline' : 'mdi-account-alert-outline'">
                         <div class="font-weight-medium">{{ t('MailingEditView.planSummary', { n: plan.planned, total: recipients.length }) }}</div>
                         <div class="d-flex flex-wrap ga-1 mt-1">
-                            <v-chip v-for="ch in ['whatsapp', 'whatsapp_template', 'telegram', 'email', 'email_extra', 'letter', 'letter_extra']" v-show="plan.counts[ch]" :key="ch" size="x-small" variant="tonal" :color="CHANNEL_META[ch].color" :prepend-icon="CHANNEL_META[ch].icon">
+                            <v-chip v-for="ch in ['whatsapp', 'whatsapp_template', 'telegram', 'sms', 'email', 'email_extra', 'letter', 'letter_extra']" v-show="plan.counts[ch]" :key="ch" size="x-small" variant="tonal" :color="CHANNEL_META[ch].color" :prepend-icon="CHANNEL_META[ch].icon">
                                 {{ t('MailingRecipients.channel.' + ch) }} {{ plan.counts[ch] }}
                             </v-chip>
                             <v-chip v-if="plan.none" size="x-small" variant="tonal" color="grey" prepend-icon="mdi-account-off-outline">{{ t('MailingRecipients.channel.none') }} {{ plan.none }}</v-chip>
@@ -294,9 +295,12 @@
                     :lists="lists"
                     :businesses="businesses"
                     :max="config.max_recipients || 300"
-                    :list-id="mailing.mailing_list_id"
+                    v-model:list-ids="mailing.list_ids"
+                    :status="mailing.status"
+                    :initial-filter="String(route.query.filter || '')"
                     @lists-changed="onListsChanged"
-                    @list-loaded="id => mailing.mailing_list_id = id"
+                    @pause="setStatus('paused')"
+                    @copy="copy"
                 />
             </v-col>
         </v-row>
@@ -311,12 +315,13 @@
                 <v-card-text>
                     <p class="mb-3">{{ t(mailing.status === 'paused' ? 'MailingEditView.resumeText' : 'MailingEditView.startText', { n: plan.planned }) }}</p>
                     <v-list density="compact" class="pa-0 mb-2">
-                        <v-list-item v-for="ch in ['whatsapp', 'whatsapp_template', 'telegram', 'email', 'email_extra', 'letter', 'letter_extra']" v-show="plan.counts[ch]" :key="ch" :prepend-icon="CHANNEL_META[ch].icon" :title="t('MailingRecipients.channel.' + ch)">
+                        <v-list-item v-for="ch in ['whatsapp', 'whatsapp_template', 'telegram', 'sms', 'email', 'email_extra', 'letter', 'letter_extra']" v-show="plan.counts[ch]" :key="ch" :prepend-icon="CHANNEL_META[ch].icon" :title="t('MailingRecipients.channel.' + ch)">
                             <template #append>
                                 <span class="font-weight-medium">{{ plan.counts[ch] }}</span>
                                 <span v-if="ch === 'whatsapp_template' && templateCost > 0" class="text-caption text-orange-darken-3 ms-2">≈ {{ formatMoney(plan.counts[ch] * templateCost) }}</span>
                                 <span v-else-if="(ch === 'letter' || ch === 'letter_extra') && letterCost > 0" class="text-caption text-orange-darken-3 ms-2">≈ {{ formatMoney(plan.counts[ch] * letterCost) }}</span>
-                                <v-chip v-else-if="!['whatsapp_template', 'letter', 'letter_extra'].includes(ch)" size="x-small" variant="tonal" color="success" class="ms-2">{{ t('MailingEditView.free') }}</v-chip>
+                                <span v-else-if="ch === 'sms' && smsCost > 0" class="text-caption text-orange-darken-3 ms-2">≈ {{ formatMoney(plan.counts[ch] * smsCost) }}</span>
+                                <v-chip v-else-if="!['whatsapp_template', 'sms', 'letter', 'letter_extra'].includes(ch)" size="x-small" variant="tonal" color="success" class="ms-2">{{ t('MailingEditView.free') }}</v-chip>
                             </template>
                         </v-list-item>
                     </v-list>
@@ -343,6 +348,7 @@
                     <v-btn-toggle v-model="test.channel" mandatory density="compact" variant="outlined" color="primary" divided class="mb-3">
                         <v-btn value="email" size="small" :disabled="!config.email"><v-icon start size="small">mdi-email-outline</v-icon>{{ t('MailingRecipients.channel.email') }}</v-btn>
                         <v-btn value="whatsapp" size="small" :disabled="!config.whatsapp"><v-icon start size="small">mdi-whatsapp</v-icon>{{ t('MailingRecipients.channel.whatsapp') }}</v-btn>
+                        <v-btn value="sms" size="small" :disabled="!config.sms"><v-icon start size="small">mdi-message-text-outline</v-icon>{{ t('MailingRecipients.channel.sms') }}</v-btn>
                     </v-btn-toggle>
                     <v-text-field v-model="test.target" :label="test.channel === 'email' ? t('MailingEditView.testEmail') : t('MailingEditView.testPhone')" variant="outlined" density="compact" hide-details autofocus @keyup.enter="sendTest" />
                     <div v-if="test.channel === 'whatsapp'" class="text-caption text-medium-emphasis mt-2">{{ t('MailingEditView.testWhatsappHint') }}</div>
@@ -398,7 +404,7 @@ let pollTimer = null
 function emptyMailing() {
     return {
         id: 0, title: '', subject: '', body_text: '', body_html: '',
-        channels: ['whatsapp', 'telegram'], email_mode: 'always', letter_mode: 'off', whatsapp_template_id: null,
+        channels: ['whatsapp', 'telegram', 'sms'], email_mode: 'always', letter_mode: 'off', list_ids: [], whatsapp_template_id: null,
         batch_size: 20, batch_pause_minutes: 10, send_from: '09:00', send_until: '20:00',
         status: 'draft', mailing_list_id: null, next_batch_at: null, started_at: null, finished_at: null, last_error: null,
     }
@@ -438,7 +444,7 @@ const nextBatchText = computed(() => {
 
 // ── Kanäle ──
 const channelOrder = ref([...CHANNELS])
-const channelEnabled = ref({ whatsapp: true, telegram: true })
+const channelEnabled = ref({ whatsapp: true, telegram: true, sms: true })
 function applyChannels(list) {
     const enabled = Array.isArray(list) ? list : CHANNELS
     channelOrder.value = [...enabled.filter(c => CHANNELS.includes(c)), ...CHANNELS.filter(c => !enabled.includes(c))]
@@ -448,6 +454,9 @@ function syncChannels() {
     mailing.value.channels = channelOrder.value.filter(c => channelEnabled.value[c])
 }
 function toggleChannel(ch, v) { channelEnabled.value[ch] = !!v; syncChannels() }
+// Sprung in die Firmenkonfiguration, direkt zum ersten Feld des Kanals
+const CHANNEL_CONFIG_FIELD = { whatsapp: 'whatsapp_access_token', telegram: 'telegram_bot_token', sms: 'sms_api_key' }
+function openChannelConfig(ch) { router.push({ name: 'client-defaults', query: { tab: 'crm', focus: CHANNEL_CONFIG_FIELD[ch] || 'mailings' } }) }
 function moveChannel(idx, dir) {
     const arr = [...channelOrder.value]
     const [item] = arr.splice(idx, 1)
@@ -460,8 +469,9 @@ const emailModeItems = computed(() => EMAIL_MODES.map(v => ({ value: v, title: t
 const letterModeItems = computed(() => LETTER_MODES.map(v => ({ value: v, title: t('MailingEditView.letterModes.' + v), subtitle: t('MailingEditView.letterModeHints.' + v) })))
 const letterCost = computed(() => Number(config.value.letter_cost) || 0)
 const letterCount = computed(() => plan.value.counts.letter + plan.value.counts.letter_extra)
-// Voraussichtliche Kosten: WhatsApp-Vorlagen und Briefe
-const estimatedCost = computed(() => plan.value.counts.whatsapp_template * templateCost.value + letterCount.value * letterCost.value)
+const smsCost = computed(() => Number(config.value.sms_cost) || 0)
+// Voraussichtliche Kosten: WhatsApp-Vorlagen, SMS und Briefe
+const estimatedCost = computed(() => plan.value.counts.whatsapp_template * templateCost.value + plan.value.counts.sms * smsCost.value + letterCount.value * letterCost.value)
 const planSettings = computed(() => ({ channels: mailing.value.channels, whatsapp_template_id: mailing.value.whatsapp_template_id, email_mode: mailing.value.email_mode, letter_mode: mailing.value.letter_mode }))
 // Bei einem pausierten Versand zählt nur, was noch aussteht
 const plan = computed(() => planAll(mailing.value.status === 'paused' ? recipients.value.filter(r => r.status !== 'sent') : recipients.value, planSettings.value, config.value))
@@ -541,6 +551,7 @@ async function load() {
         lists.value = p.lists || []
         businesses.value = p.businesses || []
         const m = { ...emptyMailing(), ...p.mailing }
+        if (!Array.isArray(m.list_ids)) m.list_ids = []
         m.send_from = String(m.send_from || '09:00').slice(0, 5)
         m.send_until = String(m.send_until || '20:00').slice(0, 5)
         let recs = p.recipients || []
@@ -568,8 +579,8 @@ async function load() {
 async function loadListIntoNew(listId) {
     const { data } = await axios.post('/api/mailings/', { action: 'getMailingList', id: listId })
     if (data.success && data.payload.found) {
-        recipients.value = data.payload.members || []
-        mailing.value.mailing_list_id = listId
+        recipients.value = (data.payload.members || []).map(r => ({ ...r, origin: 'list:' + listId }))
+        mailing.value.list_ids = [Number(listId)]
         if (!mailing.value.title) mailing.value.title = data.payload.list?.name || ''
     }
 }
@@ -584,7 +595,7 @@ async function onListsChanged() {
 // ── Automatisches Speichern ──
 function snapshot() {
     const m = mailing.value
-    return JSON.stringify([m.title, m.subject, m.body_text, m.body_html, m.channels, m.whatsapp_template_id, m.batch_size, m.batch_pause_minutes, m.send_from, m.send_until, m.mailing_list_id,
+    return JSON.stringify([m.title, m.subject, m.body_text, m.body_html, m.channels, m.whatsapp_template_id, m.batch_size, m.batch_pause_minutes, m.send_from, m.send_until, m.list_ids,
         recipients.value.map(r => recipientKey(r)).sort()])
 }
 const dirty = computed(() => snapshot() !== savedSnapshot.value)
@@ -607,7 +618,7 @@ async function save() {
         const { data } = await axios.post('/api/mailings/', {
             action: 'saveMailing',
             mailing: { ...mailing.value, channels: mailing.value.channels },
-            recipients: recipients.value.map(r => ({ cv_src: r.cv_src, cv_id: r.cv_id })),
+            recipients: recipients.value.map(r => ({ cv_src: r.cv_src, cv_id: r.cv_id, origin: r.origin || 'manual' })),
         })
         if (!data.success) throw new Error(apiError(data, t))
         const wasNew = !mailing.value.id

@@ -5,6 +5,7 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 import { weroniStore } from '@/features/weroni/stores/weroni.store.js'
 import { onServerEvent, sseConnected } from '@/core/composables/sseClient.js'
 import * as toast from '@/core/utils/toasts.js'
+import { useI18n } from 'vue-i18n'
 
 // SSE-Verbindungsstatus: kommt jetzt aus dem geteilten sseClient (eine
 // Verbindung für Chat + Info-Leiste + alle Tabs). Re-Export, damit bestehende
@@ -19,6 +20,7 @@ export { sseConnected }
  */
 export function useInfoBar() {
     const oserp = oserpStore()
+    const { t } = useI18n()
 
     const newCalls = ref([])
     const newEmails = ref([])
@@ -27,7 +29,9 @@ export function useInfoBar() {
     const anprDetections = ref([])
     const completedOrders = ref([])
     const missingOrders = ref([])
-    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null })
+    const finishedMailings = ref([])
+    let knownMailingIds = null   // null = noch nie geladen (kein Toast für Altbestand)
+    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], parts_ts: null })
 
     let unsubMessage = null
     let unsubBuild = null
@@ -63,13 +67,13 @@ export function useInfoBar() {
 
             // Beide Quellen mergen (Vereinigungsmenge der dismissed IDs)
             if (!fromBackend && !fromLocal) {
-                dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null }
+                dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], parts_ts: null }
                 saveDismissed()
                 return
             }
 
-            const a = fromBackend || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null }
-            const b = fromLocal || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null }
+            const a = fromBackend || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], parts_ts: null }
+            const b = fromLocal || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], parts_ts: null }
             const mergeUnique = (arr1, arr2) => [...new Set([...(arr1 || []), ...(arr2 || [])])]
 
             // Parts-Dismiss: nur 24h gueltig (neuester Timestamp zaehlt)
@@ -86,6 +90,7 @@ export function useInfoBar() {
                 parts: partsStillValid,
                 anpr: mergeUnique(a.anpr, b.anpr),
                 completed: mergeUnique(a.completed, b.completed),
+                mailings: mergeUnique(a.mailings, b.mailings),
                 parts_ts: partsStillValid.length ? partsTs : null
             }
 
@@ -103,6 +108,7 @@ export function useInfoBar() {
             parts: dismissed.value.parts,
             anpr: dismissed.value.anpr,
             completed: dismissed.value.completed,
+            mailings: dismissed.value.mailings,
             parts_ts: dismissed.value.parts_ts
         }
         const json = JSON.stringify(data)
@@ -188,6 +194,26 @@ export function useInfoBar() {
         } catch { /* LxCars nicht verfügbar */ }
     }
 
+    // Abgeschlossene oder wegen Fehlern pausierte Rundschreiben (letzte 7 Tage).
+    // Neu hinzugekommene werden zusätzlich als Toast gemeldet.
+    async function fetchFinishedMailings() {
+        try {
+            const response = await axios.post('/api/mailings/', { action: 'getMailingNotices' })
+            if (!response.data.success) return
+            const list = response.data.payload?.results || []
+            if (knownMailingIds) {
+                for (const m of list) {
+                    const key = m.id + ':' + m.status
+                    if (knownMailingIds.has(key)) continue
+                    if (m.status === 'done') toast.success(t('InfoBar.mailingDone', { title: m.title, sent: m.sent }))
+                    else toast.warning(t('InfoBar.mailingPaused', { title: m.title, error: m.last_error || '' }))
+                }
+            }
+            knownMailingIds = new Set(list.map(m => m.id + ':' + m.status))
+            finishedMailings.value = list
+        } catch { /* Modul evtl. nicht verfügbar */ }
+    }
+
     async function fetchMissingOrders() {
         if (!oserp.isLxCars()) return
         try {
@@ -240,6 +266,20 @@ export function useInfoBar() {
                     timestamp: co.completed_at ? new Date(co.completed_at).getTime() : 0,
                     name: co.customer_name || co.ordnumber || ('#' + co.oe_id),
                     data: co
+                })
+            })
+
+        // Rundschreiben: abgeschlossen oder pausiert
+        finishedMailings.value
+            .filter(m => !dismissed.value.mailings.includes(m.id + ':' + m.status))
+            .forEach(m => {
+                items.push({
+                    type: 'mailing',
+                    id: 'mailing-' + m.id + '-' + m.status,
+                    dismissId: m.id + ':' + m.status,
+                    timestamp: m.finished_at ? new Date(m.finished_at).getTime() : 0,
+                    name: m.title,
+                    data: m
                 })
             })
 
@@ -388,6 +428,8 @@ export function useInfoBar() {
             dismissed.value.parts_ts = Date.now()
         } else if (type === 'completed') {
             ids.forEach(i => { if (!dismissed.value.completed.includes(i)) dismissed.value.completed.push(i) })
+        } else if (type === 'mailing') {
+            ids.forEach(i => { if (!dismissed.value.mailings.includes(i)) dismissed.value.mailings.push(i) })
         } else if (type === 'anpr') {
             ids.forEach(i => {
                 if (!dismissed.value.anpr.includes(i)) dismissed.value.anpr.push(i)
@@ -416,6 +458,7 @@ export function useInfoBar() {
             parts:     { list: pendingPartsRequests.value, idField: 'oe_id' },
             anpr:      { list: anprDetections.value,       idField: 'id' },
             completed: { list: completedOrders.value,      idField: 'oe_id' },
+            mailing:   { list: finishedMailings.value.map(m => ({ ...m, key: m.id + ':' + m.status })), idField: 'key' },
             missing_order: { list: missingOrders.value,    idField: 'id' }
         }
         const src = sourceMap[type]
@@ -474,6 +517,8 @@ export function useInfoBar() {
                     fetchMissingOrders()
                 } else if (data.table === 'oe_instructions_lxcars') {
                     fetchCompletedOrders()
+                } else if (data.table === 'mailings') {
+                    fetchFinishedMailings()
                 } else if (data.table === 'oe_parts_requests_lxcars') {
                     fetchPendingPartsRequests()
                 } else if (data.urgency !== undefined) {
@@ -513,6 +558,7 @@ export function useInfoBar() {
         fetchCompletedOrders()
         fetchAnprDetections()
         fetchMissingOrders()
+        fetchFinishedMailings()
     }
 
     // --- Firmenwechsel: Daten zuruecksetzen und neu laden ---
@@ -524,7 +570,9 @@ export function useInfoBar() {
         completedOrders.value = []
         anprDetections.value = []
         missingOrders.value = []
-        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], parts_ts: null }
+        finishedMailings.value = []
+        knownMailingIds = null
+        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], parts_ts: null }
 
         stopListeners()
         loadAndFetchAll()

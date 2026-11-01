@@ -1564,7 +1564,13 @@
         "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "Die Freigabe für Produktseiten ({dir}) liegt in keinem Mount auf content. Hugo sieht die Produktseiten nicht.",
         "shopSiteCheck_SHOP_DATA_UNMOUNTED": "Die Freigabe für die Kategorieübersicht ({file}) liegt in keinem Mount auf data. Die Vorlagen finden sie nicht.",
         "mailingLetterCost": "Kosten je E-Brief (EUR)",
-        "mailingLetterCost_help": "Was der Postdienst (PIN AG, LetterXpress) je Brief berechnet, z. B. 0,95. Rundschreiben zeigen damit vor dem Start die voraussichtlichen Kosten; leer = keine Schätzung."
+        "mailingLetterCost_help": "Was der Postdienst (PIN AG, LetterXpress) je Brief berechnet, z. B. 0,95. Rundschreiben zeigen damit vor dem Start die voraussichtlichen Kosten; leer = keine Schätzung.",
+        "smsApiKey": "SMS: API-Schlüssel (seven.io)",
+        "smsApiKey_help": "Zugang bei seven.io (ehemals sms77). Leer = kein SMS-Versand. SMS dienen im Rundschreiben als Ausweichweg, wenn WhatsApp und Telegram nicht greifen.",
+        "smsSender": "SMS: Absender",
+        "smsSender_help": "Absenderkennung, bis zu 11 Buchstaben/Ziffern oder eine Rufnummer, z. B. Autoprofis.",
+        "smsCost": "Kosten je SMS (EUR)",
+        "smsCost_help": "Was der SMS-Dienst je Nachricht berechnet, z. B. 0,08. Rundschreiben zeigen damit vor dem Start die voraussichtlichen Kosten."
     },
     "add": "Hinzufügen",
     "add_fields": {

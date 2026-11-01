@@ -15,12 +15,13 @@
 //     an alle mit vollständiger Postanschrift
 //   * Gleiches Ziel bei zwei Empfängern → nur einmal (auch bei der Zusatz-E-Mail)
 
-export const CHANNELS = ['whatsapp', 'telegram']
+export const CHANNELS = ['whatsapp', 'telegram', 'sms']
 export const EMAIL_MODES = ['always', 'fallback', 'off']
 export const LETTER_MODES = ['off', 'fallback', 'always']
 
 export const CHANNEL_META = {
     telegram:          { icon: 'mdi-send-circle',      color: 'light-blue-darken-1', key: 'telegram' },
+    sms:               { icon: 'mdi-message-text-outline', color: 'indigo-darken-1',  key: 'sms' },
     whatsapp:          { icon: 'mdi-whatsapp',         color: 'green-darken-1',      key: 'whatsapp' },
     whatsapp_template: { icon: 'mdi-whatsapp',         color: 'orange-darken-2',     key: 'whatsapp_template' },
     email:             { icon: 'mdi-email-outline',    color: 'blue-grey-darken-1',  key: 'email' },
@@ -43,6 +44,7 @@ export function availability(r, settings, config) {
         telegram: !!r.telegram_chat_id && !!config?.telegram,
         whatsapp: whatsappPhone && !!r.whatsapp_window,
         whatsapp_template: whatsappPhone && !r.whatsapp_window && !!settings?.whatsapp_template_id,
+        sms: !!r.whatsapp_phone && !!config?.sms,
         email: !!r.email && !!config?.email,
         letter: !!r.address_ok && !!config?.letter,
     }
@@ -60,12 +62,22 @@ export function planChannel(r, settings, config) {
     const letterMode = settings?.letter_mode || 'off'
     const emailOk = a.email && mode !== 'off' ? r.email : null
     const letterOk = a.letter && letterMode !== 'off' ? r.address : null
-    let messenger = null
-    for (const ch of settings?.channels || []) {
-        if (ch === 'telegram' && a.telegram) { messenger = { channel: 'telegram', target: r.telegram_chat_id }; break }
-        if (ch === 'whatsapp' && a.whatsapp) { messenger = { channel: 'whatsapp', target: r.whatsapp_phone }; break }
-        if (ch === 'whatsapp' && a.whatsapp_template) { messenger = { channel: 'whatsapp_template', target: r.whatsapp_phone }; break }
-    }
+    // Kandidaten in der gewählten Reihenfolge; dann wie im Backend umsortiert: gelernter
+    // Kanal zuerst, zuletzt gescheiterter nachrangig, unbestätigte WhatsApp-Vorlage zuletzt
+    const candidates = []
+    ;(settings?.channels || []).forEach((ch, n) => {
+        if (ch === 'telegram' && a.telegram) candidates.push({ channel: 'telegram', target: r.telegram_chat_id, n })
+        else if (ch === 'whatsapp' && a.whatsapp) candidates.push({ channel: 'whatsapp', target: r.whatsapp_phone, n })
+        else if (ch === 'whatsapp' && a.whatsapp_template) candidates.push({ channel: 'whatsapp_template', target: r.whatsapp_phone, n })
+        else if (ch === 'sms' && a.sms) candidates.push({ channel: 'sms', target: r.whatsapp_phone, n })
+    })
+    const base = c => c.channel.replace('_template', '')
+    candidates.sort((x, y) =>
+        ((base(x) === r.reach_channel ? 0 : 1) - (base(y) === r.reach_channel ? 0 : 1)) ||
+        ((base(x) === r.reach_failed ? 1 : 0) - (base(y) === r.reach_failed ? 1 : 0)) ||
+        ((x.channel === 'whatsapp_template' && !r.whatsapp_known ? 1 : 0) - (y.channel === 'whatsapp_template' && !r.whatsapp_known ? 1 : 0)) ||
+        (x.n - y.n))
+    const messenger = candidates.length ? { channel: candidates[0].channel, target: candidates[0].target } : null
     const letterExtra = letterMode === 'always' ? letterOk : null
     if (messenger) return { ...messenger, email: mode === 'always' ? emailOk : null, letter: letterExtra }
     if (emailOk) return { channel: 'email', target: emailOk, email: null, letter: letterExtra }
@@ -81,7 +93,7 @@ export function planChannel(r, settings, config) {
 export function planAll(recipients, settings, config) {
     const byKey = new Map()
     const seen = new Set()
-    const counts = { telegram: 0, whatsapp: 0, whatsapp_template: 0, email: 0, email_extra: 0, letter: 0, letter_extra: 0 }
+    const counts = { telegram: 0, whatsapp: 0, whatsapp_template: 0, sms: 0, email: 0, email_extra: 0, letter: 0, letter_extra: 0 }
     let none = 0
     let duplicates = 0
     const plans = []
@@ -117,7 +129,7 @@ export function planAll(recipients, settings, config) {
         }
         byKey.set(recipientKey(r), p)
     }
-    const planned = counts.telegram + counts.whatsapp + counts.whatsapp_template + counts.email + counts.letter
+    const planned = counts.telegram + counts.whatsapp + counts.whatsapp_template + counts.sms + counts.email + counts.letter
     return { byKey, counts, planned, none, duplicates }
 }
 

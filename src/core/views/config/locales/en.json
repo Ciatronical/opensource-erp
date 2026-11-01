@@ -1562,7 +1562,13 @@
         "shopSiteCheck_SHOP_CONTENT_UNMOUNTED": "The product pages grant ({dir}) lies in no mount on content. Hugo does not see the product pages.",
         "shopSiteCheck_SHOP_DATA_UNMOUNTED": "The category overview grant ({file}) lies in no mount on data. The templates cannot find it.",
         "mailingLetterCost": "Cost per hybrid letter (EUR)",
-        "mailingLetterCost_help": "What the postal provider (PIN AG, LetterXpress) charges per letter, e.g. 0.95. Mailings use it to estimate costs before sending; empty = no estimate."
+        "mailingLetterCost_help": "What the postal provider (PIN AG, LetterXpress) charges per letter, e.g. 0.95. Mailings use it to estimate costs before sending; empty = no estimate.",
+        "smsApiKey": "SMS: API key (seven.io)",
+        "smsApiKey_help": "Account at seven.io (formerly sms77). Empty = no SMS. In mailings SMS is the fallback when WhatsApp and Telegram do not work.",
+        "smsSender": "SMS: sender",
+        "smsSender_help": "Sender ID, up to 11 letters/digits or a phone number, e.g. Autoprofis.",
+        "smsCost": "Cost per SMS (EUR)",
+        "smsCost_help": "What the SMS service charges per message, e.g. 0.08. Mailings use it to estimate costs before sending."
     },
     "add": "Add",
     "add_fields": {

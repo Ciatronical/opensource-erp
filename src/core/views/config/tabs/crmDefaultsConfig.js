@@ -85,6 +85,9 @@ const crmDefaultsConfig = [
     { name: "mailings", type: "headline", label: "crm_fields.mailings" },
     { name: "whatsapp_template_cost", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.whatsappTemplateCost", tooltip: "crm_fields.whatsappTemplateCost_help" },
     { name: "mailing_letter_cost", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.mailingLetterCost", tooltip: "crm_fields.mailingLetterCost_help" },
+    { name: "sms_api_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.smsApiKey", tooltip: "crm_fields.smsApiKey_help" },
+    { name: "sms_sender", type: "input", size: 16, fieldstyle: "max-width: 24ch", label: "crm_fields.smsSender", tooltip: "crm_fields.smsSender_help" },
+    { name: "sms_cost", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.smsCost", tooltip: "crm_fields.smsCost_help" },
 
     { name: "telegram", type: "headline", label: "crm_fields.telegram" },
 

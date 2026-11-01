@@ -59,7 +59,7 @@ function mailingInfoCtes(): string {
                    COALESCE(c.greeting, '') AS greeting, COALESCE(c.natural_person, false) AS natural_person,
                    COALESCE(lg.template_code, 'DE') AS lang, c.email AS cv_email, c.phone AS cv_phone,
                    COALESCE(c.obsolete, false) AS obsolete, c.city, c.street, c.zipcode, c.country,
-                   x.telegram_chat_id, x.phone_numbers, x.emails
+                   x.telegram_chat_id, x.phone_numbers, x.emails, x.reach_channel, x.reach_failed
             FROM src s
             JOIN customer c ON s.cv_src = 'C' AND c.id = s.cv_id
             LEFT JOIN customer_ext x ON x.customer_id = c.id
@@ -69,14 +69,14 @@ function mailingInfoCtes(): string {
                    COALESCE(v.greeting, ''), COALESCE(v.natural_person, false),
                    COALESCE(lg.template_code, 'DE'), v.email, v.phone,
                    COALESCE(v.obsolete, false), v.city, v.street, v.zipcode, v.country,
-                   x.telegram_chat_id, x.phone_numbers, x.emails
+                   x.telegram_chat_id, x.phone_numbers, x.emails, x.reach_channel, x.reach_failed
             FROM src s
             JOIN vendor v ON s.cv_src = 'V' AND v.id = s.cv_id
             LEFT JOIN vendor_ext x ON x.vendor_id = v.id
             LEFT JOIN language lg ON lg.id = v.language_id
         ),
         info AS (
-            SELECT b.cv_src, b.cv_id, b.name, b.number, b.obsolete, b.city, b.street, b.zipcode,
+            SELECT b.cv_src, b.cv_id, b.name, b.number, b.obsolete, b.city, b.street, b.zipcode, b.reach_channel, b.reach_failed,
                    -- Postanschrift für den E-Brief: Straße, PLZ und Ort müssen da sein
                    (btrim(COALESCE(b.street, '')) <> '' AND btrim(COALESCE(b.zipcode, '')) <> '' AND btrim(COALESCE(b.city, '')) <> '') AS address_ok,
                    concat_ws(', ', b.name, NULLIF(btrim(COALESCE(b.street, '')), ''), NULLIF(btrim(concat_ws(' ', b.zipcode, b.city)), ''), NULLIF(btrim(COALESCE(b.country, '')), '')) AS address,
@@ -173,6 +173,8 @@ function mailingConfigJson(): string {
             'telegram', COALESCE((SELECT value = '1' FROM defaults_oserp WHERE key = 'telegram_enabled'), false)
                         AND COALESCE((SELECT btrim(value) <> '' FROM defaults_oserp WHERE key = 'telegram_bot_token'), false),
             'telegram_bot', COALESCE((SELECT btrim(value) FROM defaults_oserp WHERE key = 'telegram_bot_username'), ''),
+            'sms', COALESCE((SELECT btrim(value) <> '' FROM defaults_oserp WHERE key = 'sms_api_key'), false),
+            'sms_cost', COALESCE((SELECT NULLIF(btrim(value), '')::numeric FROM defaults_oserp WHERE key = 'sms_cost'), 0),
             'email', COALESCE((SELECT btrim(value) <> '' FROM defaults_oserp WHERE key = 'email_smtp_host'), false)
                      AND COALESCE((SELECT btrim(value) <> '' FROM defaults_oserp WHERE key = 'email_username'), false),
             'whatsapp_template_cost', COALESCE((SELECT NULLIF(btrim(value), '')::numeric FROM defaults_oserp WHERE key = 'whatsapp_template_cost'), 0),
@@ -215,6 +217,55 @@ function mailingEnsureTelegramBotName($db): void {
 }
 
 /**
+ * Statuswechsel (abgeschlossen / automatisch pausiert) an die offenen Browser melden:
+ * über den vorhandenen SSE-Kanal, die Info-Leiste holt sich dann die Hinweise.
+ */
+function mailingNotify($db, int $id, string $status): void {
+    try {
+        $db->execute("SELECT pg_notify('faktura_change', :payload)",
+            [':payload' => json_encode(['table' => 'mailings', 'id' => $id, 'status' => $status])]);
+    } catch (\Throwable $e) {
+        error_log('[MAILING] pg_notify fehlgeschlagen: '.$e->getMessage());
+    }
+}
+
+/**
+ * Hinweise für die Info-Leiste: Rundschreiben, die in den letzten sieben Tagen
+ * abgeschlossen wurden oder wegen Fehlern pausiert sind — mit Zählern je Weg.
+ * Ohne Rundschreiben-Recht kommt eine leere Liste, kein Fehler.
+ *
+ * @testdata {}
+ */
+function getMailingNotices($data) {
+    if (!checkPermissions(['sales_letter_edit', 'purchase_letter_edit'], false)) {
+        resultInfo(true, '', ['results' => []]);
+        return;
+    }
+    $db = DbhCompany::begin();
+    $row = $db->getOne(<<<SQL
+        SELECT COALESCE(json_agg(json_build_object(
+            'id', m.id, 'title', m.title, 'status', m.status, 'finished_at', COALESCE(m.finished_at, m.mtime),
+            'last_error', m.last_error, 'employee_name', e.name,
+            'total', c.total, 'sent', c.sent, 'failed', c.failed, 'skipped', c.skipped, 'emails', c.emails, 'letters', c.letters
+        ) ORDER BY COALESCE(m.finished_at, m.mtime) DESC), '[]'::json) AS result
+        FROM mailings m
+        LEFT JOIN employee e ON e.id = m.employee_id
+        LEFT JOIN LATERAL (
+            SELECT count(*) AS total,
+                   count(*) FILTER (WHERE r.status = 'sent') AS sent,
+                   count(*) FILTER (WHERE r.status = 'failed') AS failed,
+                   count(*) FILTER (WHERE r.status = 'skipped') AS skipped,
+                   count(*) FILTER (WHERE r.email_status = 'sent') AS emails,
+                   count(*) FILTER (WHERE r.letter_status = 'sent') AS letters
+            FROM mailing_recipients r WHERE r.mailing_id = m.id
+        ) c ON true
+        WHERE (m.status = 'done' AND m.finished_at > now() - interval '7 days')
+           OR (m.status = 'paused' AND m.last_error IS NOT NULL AND m.mtime > now() - interval '7 days')
+    SQL);
+    resultInfo(true, '', ['results' => json_decode($row['result'], true)]);
+}
+
+/**
  * Übersicht: alle Rundschreiben mit Zählern je Status, alle Verteiler mit
  * Mitgliederzahl und die Kanal-Verfügbarkeit.
  *
@@ -236,7 +287,7 @@ function getMailings($data) {
                     'batch_size', m.batch_size, 'batch_pause_minutes', m.batch_pause_minutes,
                     'employee_name', e.name,
                     'total', cnt.total, 'sent', cnt.sent, 'failed', cnt.failed, 'pending', cnt.pending, 'skipped', cnt.skipped,
-                    'by_channel', cnt.by_channel
+                    'channel_stats', cnt.channel_stats
                 ) ORDER BY m.itime DESC)
                 FROM mailings m
                 LEFT JOIN employee e ON e.id = m.employee_id
@@ -246,22 +297,23 @@ function getMailings($data) {
                            count(*) FILTER (WHERE r.status = 'failed') AS failed,
                            count(*) FILTER (WHERE r.status = 'pending') AS pending,
                            count(*) FILTER (WHERE r.status = 'skipped') AS skipped,
-                           COALESCE((SELECT json_object_agg(ch, n) FROM (
-                                SELECT COALESCE(r2.channel, 'none') AS ch, count(*) AS n
-                                FROM mailing_recipients r2 WHERE r2.mailing_id = m.id AND r2.status = 'sent' GROUP BY 1
-                                UNION ALL
-                                SELECT 'email_extra', count(*) FROM mailing_recipients r3
-                                WHERE r3.mailing_id = m.id AND r3.email_status = 'sent' HAVING count(*) > 0
-                                UNION ALL
-                                SELECT 'letter_extra', count(*) FROM mailing_recipients r4
-                                WHERE r4.mailing_id = m.id AND r4.letter_status = 'sent' HAVING count(*) > 0
-                           ) x), '{}'::json) AS by_channel
+                           -- je Kanal (Hauptkanal, Zusatz-E-Mail, Zusatz-Brief): gesendet / fehlgeschlagen / wartend / übersprungen
+                           COALESCE((SELECT json_object_agg(ch, st) FROM (
+                                SELECT ch, json_build_object(
+                                    'sent', count(*) FILTER (WHERE st = 'sent'), 'failed', count(*) FILTER (WHERE st = 'failed'),
+                                    'pending', count(*) FILTER (WHERE st = 'pending'), 'skipped', count(*) FILTER (WHERE st = 'skipped')) AS st
+                                FROM (
+                                    SELECT COALESCE(r2.channel, 'none') AS ch, r2.status AS st FROM mailing_recipients r2 WHERE r2.mailing_id = m.id
+                                    UNION ALL SELECT 'email_extra', r3.email_status FROM mailing_recipients r3 WHERE r3.mailing_id = m.id AND r3.email_status IS NOT NULL
+                                    UNION ALL SELECT 'letter_extra', r4.letter_status FROM mailing_recipients r4 WHERE r4.mailing_id = m.id AND r4.letter_status IS NOT NULL
+                                ) u GROUP BY ch
+                           ) x), '{}'::json) AS channel_stats
                     FROM mailing_recipients r WHERE r.mailing_id = m.id
                 ) cnt ON true
             ), '[]'::json),
             'lists', COALESCE((
                 SELECT json_agg(json_build_object(
-                    'id', l.id, 'name', l.name, 'description', l.description, 'itime', l.itime, 'mtime', l.mtime,
+                    'id', l.id, 'name', l.name, 'description', l.description, 'criteria', l.criteria, 'itime', l.itime, 'mtime', l.mtime,
                     'members', (SELECT count(*) FROM mailing_list_members mm WHERE mm.mailing_list_id = l.id)
                 ) ORDER BY l.name)
                 FROM mailing_lists l
@@ -306,7 +358,7 @@ function getMailing($data) {
                 (SELECT row_to_json(m) FROM m),
                 (SELECT row_to_json(d) FROM (
                     SELECT 0 AS id, '' AS title, '' AS subject, '' AS body_text, '' AS body_html,
-                           '["whatsapp","telegram"]'::jsonb AS channels,
+                           '["whatsapp","telegram","sms"]'::jsonb AS channels,
                            -- Vorgabe: WhatsApp auch außerhalb des Fensters, per Vorlage (Chat-Vorlage der Firma, sonst die erste passende)
                            COALESCE(
                                (SELECT t.id FROM whatsapp_templates t
@@ -316,7 +368,7 @@ function getMailing($data) {
                                 WHERE t.status = 'approved' AND t.body_text LIKE '%{{2}}%' AND t.body_text NOT LIKE '%{{3}}%'
                                 ORDER BY t.display_name LIMIT 1)
                            ) AS whatsapp_template_id,
-                           'always' AS email_mode, 'off' AS letter_mode,
+                           'always' AS email_mode, 'off' AS letter_mode, '[]'::jsonb AS list_ids,
                            20 AS batch_size, 10 AS batch_pause_minutes, '09:00'::time AS send_from, '20:00'::time AS send_until,
                            'draft' AS status, NULL::int AS mailing_list_id, NULL::timestamptz AS next_batch_at,
                            NULL::timestamptz AS started_at, NULL::timestamptz AS finished_at, NULL::text AS last_error
@@ -329,7 +381,8 @@ function getMailing($data) {
                     'telegram_chat_id', i.telegram_chat_id,
                     'whatsapp_phone', i.whatsapp_phone, 'whatsapp_window', i.whatsapp_window, 'whatsapp_known', i.whatsapp_known,
                     'email', i.email, 'street', i.street, 'zipcode', i.zipcode, 'address_ok', COALESCE(i.address_ok, false), 'address', i.address,
-                    'channel', r.channel, 'target', r.target, 'status', r.status, 'error', r.error,
+                    'reach_channel', i.reach_channel, 'reach_failed', i.reach_failed,
+                    'origin', r.origin, 'channel', r.channel, 'target', r.target, 'status', r.status, 'error', r.error,
                     'sent_at', r.sent_at, 'batch_no', r.batch_no,
                     'email_target', r.email_target, 'email_status', r.email_status, 'email_error', r.email_error, 'email_sent_at', r.email_sent_at,
                     'letter_target', r.letter_target, 'letter_status', r.letter_status, 'letter_error', r.letter_error, 'letter_sent_at', r.letter_sent_at
@@ -347,7 +400,7 @@ function getMailing($data) {
                   AND t.body_text LIKE '%{{2}}%' AND t.body_text NOT LIKE '%{{3}}%'
             ), '[]'::json),
             'lists', COALESCE((
-                SELECT json_agg(json_build_object('id', l.id, 'name', l.name,
+                SELECT json_agg(json_build_object('id', l.id, 'name', l.name, 'description', l.description, 'criteria', l.criteria,
                         'members', (SELECT count(*) FROM mailing_list_members mm WHERE mm.mailing_list_id = l.id)) ORDER BY l.name)
                 FROM mailing_lists l
             ), '[]'::json),
@@ -365,8 +418,8 @@ function getMailing($data) {
  * abgleichen. Empfänger und Einstellungen sind nur änderbar, solange das
  * Rundschreiben nicht läuft; der Text bleibt auch pausiert änderbar.
  *
- * @param array $data['mailing']    id, title, subject, body_text, body_html, channels[] (Messenger-Reihenfolge), email_mode (always|fallback|off), letter_mode (off|fallback|always), whatsapp_template_id, batch_size, batch_pause_minutes, send_from, send_until, mailing_list_id
- * @param array $data['recipients'] [{cv_src, cv_id}] — vollständige Liste (höchstens 300)
+ * @param array $data['mailing']    id, title, subject, body_text, body_html, channels[] (Messenger-Reihenfolge), email_mode (always|fallback|off), letter_mode (off|fallback|always), list_ids[] (gewählte Verteiler), whatsapp_template_id, batch_size, batch_pause_minutes, send_from, send_until, mailing_list_id
+ * @param array $data['recipients'] [{cv_src, cv_id, origin}] — vollständige Liste (höchstens 300); origin = manual | suggest | list:<id>
  * @testdata {"mailing": {"id": 0, "title": "Neujahrsgrüße", "subject": "Frohes neues Jahr", "body_text": "{{anrede}}, wir wünschen ein gutes neues Jahr!", "channels": ["whatsapp","telegram"], "email_mode": "always", "batch_size": 20, "batch_pause_minutes": 10, "send_from": "09:00", "send_until": "20:00"}, "recipients": [{"cv_src": "C", "cv_id": 1}]}
  */
 function saveMailing($data) {
@@ -383,7 +436,7 @@ function saveMailing($data) {
     }
     // channels = Messenger in Reihenfolge; E-Mail wird über email_mode geregelt
     $channels = array_values(array_unique(array_filter(array_map('strval', is_array($m['channels'] ?? null) ? $m['channels'] : []),
-                                          fn($c) => in_array($c, ['whatsapp', 'telegram'], true))));
+                                          fn($c) => in_array($c, ['whatsapp', 'telegram', 'sms'], true))));
     $emailMode = in_array($m['email_mode'] ?? '', ['always', 'fallback', 'off'], true) ? $m['email_mode'] : 'always';
     $letterMode = in_array($m['letter_mode'] ?? '', ['always', 'fallback', 'off'], true) ? $m['letter_mode'] : 'off';
     if (!$channels && $emailMode === 'off' && $letterMode === 'off') {
@@ -394,12 +447,15 @@ function saveMailing($data) {
     foreach ($recipients as $r) {
         $src = strtoupper(substr((string)($r['cv_src'] ?? ''), 0, 1));
         $cid = intval($r['cv_id'] ?? 0);
-        if (($src === 'C' || $src === 'V') && $cid > 0) $clean[$src.$cid] = ['cv_src' => $src, 'cv_id' => $cid];
+        if (($src === 'C' || $src === 'V') && $cid > 0) {
+            $clean[$src.$cid] = ['cv_src' => $src, 'cv_id' => $cid, 'origin' => mb_substr((string)($r['origin'] ?? 'manual'), 0, 40) ?: 'manual'];
+        }
     }
     if (count($clean) > MAILING_MAX_RECIPIENTS) {
         resultInfo(false, 'MAILING_TOO_MANY_RECIPIENTS', 'Höchstens '.MAILING_MAX_RECIPIENTS.' Empfänger je Rundschreiben');
         return;
     }
+    $listIds = array_values(array_unique(array_filter(array_map('intval', is_array($m['list_ids'] ?? null) ? $m['list_ids'] : []))));
 
     $params = [
         ':title' => $title,
@@ -414,7 +470,8 @@ function saveMailing($data) {
         ':batch_pause_minutes' => max(0, min(1440, intval($m['batch_pause_minutes'] ?? 10))),
         ':send_from' => preg_match('/^\d{2}:\d{2}/', (string)($m['send_from'] ?? '')) ? substr($m['send_from'], 0, 5) : '09:00',
         ':send_until' => preg_match('/^\d{2}:\d{2}/', (string)($m['send_until'] ?? '')) ? substr($m['send_until'], 0, 5) : '20:00',
-        ':mailing_list_id' => intval($m['mailing_list_id'] ?? 0) ?: null,
+        ':mailing_list_id' => $listIds[0] ?? null,
+        ':list_ids' => json_encode($listIds),
         ':employee_id' => mitarbeiterId($data),
     ];
 
@@ -427,6 +484,7 @@ function saveMailing($data) {
                 channels = CASE WHEN status = 'running' THEN channels ELSE :channels::jsonb END,
                 email_mode = CASE WHEN status = 'running' THEN email_mode ELSE :email_mode END,
                 letter_mode = CASE WHEN status = 'running' THEN letter_mode ELSE :letter_mode END,
+                list_ids = CASE WHEN status = 'running' THEN list_ids ELSE :list_ids::jsonb END,
                 whatsapp_template_id = CASE WHEN status = 'running' THEN whatsapp_template_id ELSE :whatsapp_template_id END,
                 batch_size = :batch_size, batch_pause_minutes = :batch_pause_minutes,
                 send_from = :send_from::time, send_until = :send_until::time,
@@ -440,9 +498,9 @@ function saveMailing($data) {
         }
     } else {
         $row = $db->getOne(<<<SQL
-            INSERT INTO mailings (title, subject, body_text, body_html, channels, email_mode, letter_mode, whatsapp_template_id, batch_size,
+            INSERT INTO mailings (title, subject, body_text, body_html, channels, email_mode, letter_mode, list_ids, whatsapp_template_id, batch_size,
                                   batch_pause_minutes, send_from, send_until, mailing_list_id, employee_id)
-            VALUES (:title, :subject, :body_text, :body_html, :channels::jsonb, :email_mode, :letter_mode, :whatsapp_template_id, :batch_size,
+            VALUES (:title, :subject, :body_text, :body_html, :channels::jsonb, :email_mode, :letter_mode, :list_ids::jsonb, :whatsapp_template_id, :batch_size,
                     :batch_pause_minutes, :send_from::time, :send_until::time, :mailing_list_id, :employee_id)
             RETURNING id, status
         SQL, $params);
@@ -452,7 +510,7 @@ function saveMailing($data) {
     // Empfänger abgleichen: Entfernte löschen (nicht die schon versendeten), neue anlegen
     $sync = $db->getOne(<<<SQL
         WITH want AS (
-            SELECT DISTINCT (e->>'cv_src')::char(1) AS cv_src, (e->>'cv_id')::int AS cv_id
+            SELECT (e->>'cv_src')::char(1) AS cv_src, (e->>'cv_id')::int AS cv_id, e->>'origin' AS origin
             FROM jsonb_array_elements(:recipients::jsonb) e
         ),
         del AS (
@@ -462,8 +520,8 @@ function saveMailing($data) {
             RETURNING 1
         ),
         ins AS (
-            INSERT INTO mailing_recipients (mailing_id, cv_src, cv_id)
-            SELECT :id, w.cv_src, w.cv_id FROM want w
+            INSERT INTO mailing_recipients (mailing_id, cv_src, cv_id, origin)
+            SELECT :id, w.cv_src, w.cv_id, w.origin FROM want w
             ON CONFLICT (mailing_id, cv_src, cv_id) DO NOTHING
             RETURNING 1
         )
@@ -547,7 +605,7 @@ function searchMailingRecipients($data) {
             'cv_src', i.cv_src, 'cv_id', i.cv_id, 'name', i.name, 'number', i.number, 'city', i.city,
             'salutation', i.salutation, 'telegram_chat_id', i.telegram_chat_id,
             'whatsapp_phone', i.whatsapp_phone, 'whatsapp_window', i.whatsapp_window, 'whatsapp_known', i.whatsapp_known,
-            'email', i.email, 'address_ok', i.address_ok, 'address', i.address
+            'email', i.email, 'address_ok', i.address_ok, 'address', i.address, 'reach_channel', i.reach_channel, 'reach_failed', i.reach_failed
         ) ORDER BY s.rank, i.name), '[]'::json) AS result
         FROM info i JOIN src s ON s.cv_src = i.cv_src AND s.cv_id = i.cv_id
     SQL, [':search' => $search, ':src' => strtoupper(substr((string)($data['src'] ?? ''), 0, 1))]);
@@ -569,9 +627,32 @@ function searchMailingRecipients($data) {
  */
 function suggestMailingRecipients($data) {
     mailingPermit();
-    $db = DbhCompany::begin();
+    resultInfo(true, '', mailingSuggestQuery(DbhCompany::begin(), $data, max(1, intval($data['limit'] ?? MAILING_MAX_RECIPIENTS))));
+}
+
+/**
+ * Kriterien eines Vorschlags bzw. dynamischen Verteilers auf das gespeicherte Format bringen.
+ */
+function mailingCriteriaClean(array $c): array {
+    $channel = (string)($c['channel'] ?? 'any');
+    if (!in_array($channel, ['any', 'telegram', 'whatsapp_window', 'whatsapp', 'email', 'none'], true)) $channel = 'any';
+    return [
+        'src'         => strtoupper(substr((string)($c['src'] ?? ''), 0, 1)),
+        'business_id' => intval($c['business_id'] ?? 0),
+        'months'      => intval($c['months'] ?? 0),
+        'city'        => trim((string)($c['city'] ?? '')),
+        'channel'     => $channel,
+    ];
+}
+
+/**
+ * Kern des Vorschlags (auch für dynamische Verteiler): Gesamtzahl der Treffer
+ * und höchstens $limit Empfänger mit Kanal-Verfügbarkeit, erreichbare zuerst.
+ */
+function mailingSuggestQuery($db, array $c, int $limit = MAILING_MAX_RECIPIENTS): array {
     $info = mailingInfoCtes();
-    $channel = (string)($data['channel'] ?? 'any');
+    $c = mailingCriteriaClean($c);
+    $channel = $c['channel'];
     if (!in_array($channel, ['any', 'telegram', 'whatsapp_window', 'whatsapp', 'email', 'none'], true)) $channel = 'any';
     $row = $db->getOne(<<<SQL
         WITH p AS (
@@ -615,7 +696,7 @@ function suggestMailingRecipients($data) {
                     'cv_src', h.cv_src, 'cv_id', h.cv_id, 'name', h.name, 'number', h.number, 'city', h.city,
                     'salutation', h.salutation, 'telegram_chat_id', h.telegram_chat_id,
                     'whatsapp_phone', h.whatsapp_phone, 'whatsapp_window', h.whatsapp_window, 'whatsapp_known', h.whatsapp_known,
-                    'email', h.email, 'address_ok', h.address_ok, 'address', h.address
+                    'email', h.email, 'address_ok', h.address_ok, 'address', h.address, 'reach_channel', h.reach_channel, 'reach_failed', h.reach_failed
                 ) ORDER BY h.name, h.cv_id)
                 -- Erreichbare zuerst (Telegram/WhatsApp-Fenster vor E-Mail vor Mobilnummer vor „kein Kanal“),
                 -- damit die Obergrenze nicht mit unerreichbaren Kunden gefüllt wird
@@ -628,15 +709,76 @@ function suggestMailingRecipients($data) {
             ), '[]'::json)
         ) AS result
     SQL, [
-        ':src' => strtoupper(substr((string)($data['src'] ?? ''), 0, 1)),
-        ':business_id' => intval($data['business_id'] ?? 0),
-        ':months' => intval($data['months'] ?? 0),
-        ':city' => (string)($data['city'] ?? ''),
-        ':channel' => $channel,
-        ':limit' => max(1, intval($data['limit'] ?? MAILING_MAX_RECIPIENTS)),
-        ':max_recipients' => MAILING_MAX_RECIPIENTS,
+        ':src' => $c['src'], ':business_id' => $c['business_id'], ':months' => $c['months'], ':city' => $c['city'],
+        ':channel' => $channel, ':limit' => max(1, $limit), ':max_recipients' => MAILING_MAX_RECIPIENTS,
     ]);
-    resultInfo(true, '', json_decode($row['result'], true));
+    return json_decode($row['result'], true);
+}
+
+/**
+ * Dynamischen Verteiler auffrischen: Mitglieder aus den Kriterien neu ermitteln
+ * und die gespeicherte Mitgliederliste angleichen (Zähler, Snapshot).
+ *
+ * @return array|null Mitglieder [{cv_src, cv_id, ...}] oder null bei festem Verteiler
+ */
+function mailingListRefresh($db, int $listId): ?array {
+    $l = $db->getOne("SELECT criteria FROM mailing_lists WHERE id = :id", [':id' => $listId]);
+    if (!$l || $l['criteria'] === null) return null;
+    $res = mailingSuggestQuery($db, json_decode((string)$l['criteria'], true) ?: [], MAILING_MAX_RECIPIENTS);
+    $members = array_map(fn($r) => ['cv_src' => $r['cv_src'], 'cv_id' => intval($r['cv_id'])], $res['results'] ?? []);
+    $db->execute(<<<SQL
+        WITH want AS (
+            SELECT (e->>'cv_src')::char(1) AS cv_src, (e->>'cv_id')::int AS cv_id FROM jsonb_array_elements(:members::jsonb) e
+        ),
+        del AS (
+            DELETE FROM mailing_list_members mm WHERE mm.mailing_list_id = :id
+              AND NOT EXISTS (SELECT 1 FROM want w WHERE w.cv_src = mm.cv_src AND w.cv_id = mm.cv_id)
+        )
+        INSERT INTO mailing_list_members (mailing_list_id, cv_src, cv_id)
+        SELECT :id, w.cv_src, w.cv_id FROM want w
+        ON CONFLICT (mailing_list_id, cv_src, cv_id) DO NOTHING
+    SQL, [':id' => $listId, ':members' => json_encode($members)]);
+    return $res['results'] ?? [];
+}
+
+/**
+ * Vor dem Start: dynamische Verteiler des Rundschreibens auffrischen —
+ * weggefallene Mitglieder (noch nicht gesendet) entfernen, neue aufnehmen.
+ *
+ * @return string|null Fehlertext, wenn die Obergrenze überschritten würde
+ */
+function mailingRefreshDynamicLists($db, int $mailingId): ?string {
+    $m = $db->getOne("SELECT list_ids FROM mailings WHERE id = :id AND status IN ('draft', 'paused')", [':id' => $mailingId]);
+    if (!$m) return null;
+    foreach (array_map('intval', json_decode((string)$m['list_ids'], true) ?: []) as $listId) {
+        $members = mailingListRefresh($db, $listId);
+        if ($members === null) continue;
+        $row = $db->getOne(<<<SQL
+            WITH want AS (
+                SELECT (e->>'cv_src')::char(1) AS cv_src, (e->>'cv_id')::int AS cv_id FROM jsonb_array_elements(:members::jsonb) e
+            ),
+            del AS (
+                DELETE FROM mailing_recipients r WHERE r.mailing_id = :id AND r.origin = :origin AND r.status <> 'sent'
+                  AND NOT EXISTS (SELECT 1 FROM want w WHERE w.cv_src = r.cv_src AND w.cv_id = r.cv_id)
+                RETURNING 1
+            ),
+            missing AS (
+                SELECT w.* FROM want w WHERE NOT EXISTS (SELECT 1 FROM mailing_recipients r WHERE r.mailing_id = :id AND r.cv_src = w.cv_src AND r.cv_id = w.cv_id)
+            )
+            SELECT (SELECT count(*) FROM del) AS deleted, (SELECT count(*) FROM missing) AS missing,
+                   (SELECT count(*) FROM mailing_recipients WHERE mailing_id = :id) AS total
+        SQL, [':id' => $mailingId, ':origin' => 'list:'.$listId, ':members' => json_encode(array_map(fn($r) => ['cv_src' => $r['cv_src'], 'cv_id' => intval($r['cv_id'])], $members))]);
+        $after = intval($row['total']) - intval($row['deleted']) + intval($row['missing']);
+        if ($after > MAILING_MAX_RECIPIENTS) {
+            return 'Verteiler '.$listId.' würde die Liste auf '.$after.' Empfänger bringen (höchstens '.MAILING_MAX_RECIPIENTS.')';
+        }
+        $db->execute(<<<SQL
+            INSERT INTO mailing_recipients (mailing_id, cv_src, cv_id, origin)
+            SELECT :id, (e->>'cv_src')::char(1), (e->>'cv_id')::int, :origin FROM jsonb_array_elements(:members::jsonb) e
+            ON CONFLICT (mailing_id, cv_src, cv_id) DO NOTHING
+        SQL, [':id' => $mailingId, ':origin' => 'list:'.$listId, ':members' => json_encode(array_map(fn($r) => ['cv_src' => $r['cv_src'], 'cv_id' => intval($r['cv_id'])], $members))]);
+    }
+    return null;
 }
 
 /**
@@ -649,6 +791,7 @@ function getMailingList($data) {
     mailingPermit();
     $db = DbhCompany::begin();
     $info = mailingInfoCtes();
+    mailingListRefresh($db, intval($data['id'] ?? 0));   // dynamische Verteiler: Mitglieder frisch aus den Kriterien
     $row = $db->getOne(<<<SQL
         WITH p AS (SELECT :id::int AS id),
         l AS (SELECT ml.* FROM mailing_lists ml, p WHERE ml.id = p.id),
@@ -656,13 +799,13 @@ function getMailingList($data) {
         {$info}
         SELECT json_build_object(
             'found', EXISTS (SELECT 1 FROM l),
-            'list', (SELECT json_build_object('id', l.id, 'name', l.name, 'description', l.description) FROM l),
+            'list', (SELECT json_build_object('id', l.id, 'name', l.name, 'description', l.description, 'criteria', l.criteria) FROM l),
             'members', COALESCE((
                 SELECT json_agg(json_build_object(
                     'cv_src', i.cv_src, 'cv_id', i.cv_id, 'name', i.name, 'number', i.number, 'city', i.city,
                     'obsolete', i.obsolete, 'salutation', i.salutation, 'telegram_chat_id', i.telegram_chat_id,
                     'whatsapp_phone', i.whatsapp_phone, 'whatsapp_window', i.whatsapp_window, 'whatsapp_known', i.whatsapp_known,
-                    'email', i.email, 'address_ok', i.address_ok, 'address', i.address
+                    'email', i.email, 'address_ok', i.address_ok, 'address', i.address, 'reach_channel', i.reach_channel, 'reach_failed', i.reach_failed
                 ) ORDER BY i.name, i.cv_id)
                 FROM info i
             ), '[]'::json)
@@ -677,7 +820,8 @@ function getMailingList($data) {
  * @param int    $data['id']          0 = neu
  * @param string $data['name']
  * @param string $data['description']
- * @param array  $data['members']     [{cv_src, cv_id}] (höchstens 300)
+ * @param array  $data['members']     [{cv_src, cv_id}] (höchstens 300) – bei festen Verteilern
+ * @param array  $data['criteria']    {src, business_id, months, city, channel} – dynamischer Verteiler, Mitglieder ergeben sich daraus
  * @testdata {"id": 0, "name": "Weihnachtsfeier", "description": "", "members": [{"cv_src": "C", "cv_id": 1}]}
  */
 function saveMailingList($data) {
@@ -688,8 +832,11 @@ function saveMailingList($data) {
         resultInfo(false, 'MAILING_LIST_NAME_REQUIRED', 'Bitte einen Namen für den Verteiler angeben');
         return;
     }
+    $criteria = is_array($data['criteria'] ?? null) ? mailingCriteriaClean($data['criteria']) : null;
+    $members = is_array($data['members'] ?? null) ? $data['members'] : [];
+    if ($criteria !== null) $members = mailingSuggestQuery($db, $criteria, MAILING_MAX_RECIPIENTS)['results'] ?? [];
     $clean = [];
-    foreach ((is_array($data['members'] ?? null) ? $data['members'] : []) as $r) {
+    foreach ($members as $r) {
         $src = strtoupper(substr((string)($r['cv_src'] ?? ''), 0, 1));
         $cid = intval($r['cv_id'] ?? 0);
         if (($src === 'C' || $src === 'V') && $cid > 0) $clean[$src.$cid] = ['cv_src' => $src, 'cv_id' => $cid];
@@ -700,12 +847,12 @@ function saveMailingList($data) {
     }
     $row = $db->getOne(<<<SQL
         WITH up AS (
-            UPDATE mailing_lists SET name = :name, description = :description, mtime = now()
+            UPDATE mailing_lists SET name = :name, description = :description, criteria = :criteria::jsonb, mtime = now()
             WHERE id = NULLIF(:id::int, 0) RETURNING id
         ),
         ins AS (
-            INSERT INTO mailing_lists (name, description, employee_id)
-            SELECT :name, :description, :employee_id WHERE NOT EXISTS (SELECT 1 FROM up)
+            INSERT INTO mailing_lists (name, description, criteria, employee_id)
+            SELECT :name, :description, :criteria::jsonb, :employee_id WHERE NOT EXISTS (SELECT 1 FROM up)
             RETURNING id
         ),
         lid AS (SELECT id FROM up UNION ALL SELECT id FROM ins),
@@ -729,6 +876,7 @@ function saveMailingList($data) {
     SQL, [
         ':id' => intval($data['id'] ?? 0), ':name' => $name,
         ':description' => trim((string)($data['description'] ?? '')),
+        ':criteria' => $criteria !== null ? json_encode($criteria) : null,
         ':employee_id' => mitarbeiterId($data),
         ':members' => json_encode(array_values($clean)),
     ]);
@@ -753,7 +901,13 @@ function deleteMailingList($data) {
         resultInfo(false, 'MAILING_LIST_NOT_FOUND', 'Verteiler nicht gefunden');
         return;
     }
-    $db->execute("UPDATE mailings SET mailing_list_id = NULL WHERE mailing_list_id = :id", [':id' => intval($row['id'])]);
+    $db->execute(<<<SQL
+        UPDATE mailings SET mailing_list_id = NULL WHERE mailing_list_id = :id
+    SQL, [':id' => intval($row['id'])]);
+    $db->execute(<<<SQL
+        UPDATE mailings SET list_ids = (SELECT COALESCE(jsonb_agg(e), '[]'::jsonb) FROM jsonb_array_elements(list_ids) e WHERE e <> to_jsonb(:id::int))
+        WHERE list_ids @> to_jsonb(ARRAY[:id::int])
+    SQL, [':id' => intval($row['id'])]);
     resultInfo(true, '', ['id' => intval($row['id'])]);
 }
 
@@ -795,12 +949,18 @@ function mailingResolveChannels($db, int $mailingId): array {
                                 WHEN (f.c->>'whatsapp')::boolean AND i.whatsapp_phone IS NOT NULL AND i.whatsapp_window THEN 'whatsapp'
                                 WHEN (f.c->>'whatsapp')::boolean AND i.whatsapp_phone IS NOT NULL AND m.whatsapp_template_id IS NOT NULL THEN 'whatsapp_template'
                             END
+                            WHEN 'sms' THEN CASE WHEN (f.c->>'sms')::boolean AND i.whatsapp_phone IS NOT NULL THEN 'sms' END
                         END AS channel,
                         CASE ord.ch WHEN 'telegram' THEN i.telegram_chat_id ELSE i.whatsapp_phone END AS target
                     FROM jsonb_array_elements_text(m.channels) WITH ORDINALITY AS ord(ch, n)
                 ) c
                 WHERE c.channel IS NOT NULL
-                ORDER BY c.n
+                -- Gelernt: zuletzt erfolgreicher Messenger zuerst, zuletzt gescheiterter nachrangig,
+                -- eine WhatsApp-Vorlage an eine noch nie bestätigte Nummer ganz zuletzt
+                ORDER BY CASE WHEN replace(c.channel, '_template', '') = i.reach_channel THEN 0 ELSE 1 END,
+                         CASE WHEN replace(c.channel, '_template', '') = i.reach_failed THEN 1 ELSE 0 END,
+                         CASE WHEN c.channel = 'whatsapp_template' AND NOT i.whatsapp_known THEN 1 ELSE 0 END,
+                         c.n
                 LIMIT 1
             ) ch ON true
         ),
@@ -877,6 +1037,12 @@ function startMailing($data) {
     $m = $db->getOne("SELECT id, status, body_text FROM mailings WHERE id = :id", [':id' => $id]);
     if (!$m) {
         resultInfo(false, 'MAILING_NOT_FOUND', 'Rundschreiben nicht gefunden');
+        return;
+    }
+    // Dynamische Verteiler kurz vor dem Start auffrischen (neue Kunden kommen dazu, weggefallene raus)
+    $refreshError = mailingRefreshDynamicLists($db, $id);
+    if ($refreshError !== null) {
+        resultInfo(false, 'MAILING_TOO_MANY_RECIPIENTS', $refreshError);
         return;
     }
     if (!in_array($m['status'], ['draft', 'paused'], true)) {
@@ -991,11 +1157,13 @@ function mailingProcessDue($db, ?int $onlyId = null): array {
     }
 
     // Fertig, wenn nichts mehr wartet (auch ohne beanspruchte Etappe, z. B. nach dem Abbruch der letzten)
-    $db->execute(<<<SQL
+    $done = $db->getAll(<<<SQL
         UPDATE mailings m SET status = 'done', finished_at = now(), next_batch_at = NULL, mtime = now()
         WHERE m.status = 'running' AND (:only::int IS NULL OR m.id = :only::int)
           AND NOT EXISTS (SELECT 1 FROM mailing_recipients r WHERE r.mailing_id = m.id AND r.status = 'pending' AND r.channel IS NOT NULL)
+        RETURNING m.id
     SQL, [':only' => $onlyId]);
+    foreach ($done as $d) mailingNotify($db, intval($d['id']), 'done');
     return $summary;
 }
 
@@ -1015,7 +1183,8 @@ function mailingSendBatch($db, array $m): array {
         ),
         {$info}
         SELECT r.id AS recipient_id, r.channel, r.target, r.email_target, r.email_status, r.letter_target, r.letter_status,
-               i.cv_src, i.cv_id, i.name, i.number, i.salutation
+               i.cv_src, i.cv_id, i.name, i.number, i.salutation,
+               i.telegram_chat_id, i.whatsapp_phone, i.whatsapp_window, i.whatsapp_known
         FROM mailing_recipients r
         JOIN info i ON i.cv_src = r.cv_src AND i.cv_id = r.cv_id
         WHERE r.mailing_id = :id AND r.status = 'pending' AND r.channel IS NOT NULL
@@ -1026,45 +1195,36 @@ function mailingSendBatch($db, array $m): array {
     $sent = 0; $failed = 0; $emails = 0; $letters = 0; $streak = 0;
     $templateCache = null;
     $subjectOf = fn(string $subject) => $subject !== '' ? $subject : (string)$m['title'];
+    $cfgSql = mailingConfigJson();
+    $cfg = json_decode((string)($db->getOne("SELECT {$cfgSql} AS c", [':max_recipients' => MAILING_MAX_RECIPIENTS])['c'] ?? '{}'), true) ?: [];
 
     foreach ($rows as $k => $r) {
         $text = mailingFill((string)$m['body_text'], $r, $ctx);
         $subject = mailingFill((string)($m['subject'] ?? ''), $r, $ctx);
         $html = trim((string)($m['body_html'] ?? '')) !== '' ? mailingFill((string)$m['body_html'], $r, $ctx) : '';
 
-        try {
-            switch ($r['channel']) {
-                case 'telegram':
-                    $res = mailingSendTelegram($db, (string)$r['target'], $text);
-                    break;
-                case 'whatsapp':
-                    $res = mailingSendWhatsAppText((string)$r['target'], $text, $r['cv_src'] === 'C' ? intval($r['cv_id']) : 0);
-                    break;
-                case 'whatsapp_template':
-                    if ($templateCache === null) {
-                        $templateCache = $db->getOne("SELECT id, name, body_text FROM whatsapp_templates WHERE id = :id AND status = 'approved'",
-                                                     [':id' => intval($m['whatsapp_template_id'])]) ?: [];
-                    }
-                    $res = mailingSendWhatsAppTemplate($templateCache, (string)$r['target'], (string)$r['name'], $text, $r['cv_src'] === 'C' ? intval($r['cv_id']) : 0, (string)($r['salutation'] ?? ''));
-                    break;
-                case 'email':
-                    $res = mailingSendEmail((string)$r['target'], (string)$r['name'], $subjectOf($subject), $text, $html, intval($m['employee_id'] ?? 0) ?: null);
-                    break;
-                case 'letter':
-                    $res = mailingSendLetter($db, $m, $r, $subjectOf($subject), $text, $html);
-                    break;
-                default:
-                    $res = ['success' => false, 'error' => 'unknown_channel'];
-            }
-        } catch (\Throwable $e) {
-            $res = ['success' => false, 'error' => $e->getMessage()];
+        // Hauptkanal senden; scheitert ein Messenger, springt der nächste verfügbare ein (Ausweichkette)
+        $channel = (string)$r['channel']; $target = (string)$r['target'];
+        $res = mailingSendVia($db, $m, $r, $channel, $target, $text, $subjectOf($subject), $html, $templateCache);
+        $messengers = ['whatsapp', 'whatsapp_template', 'telegram', 'sms'];
+        $tried = [];
+        while (empty($res['success']) && empty($res['retry_after']) && in_array($channel, $messengers, true)) {
+            $tried[] = $channel;
+            mailingLearnReach($db, $r, $channel, false);
+            $next = mailingNextMessenger($m, $r, $cfg, $tried);
+            if (!$next) break;
+            [$channel, $target] = $next;
+            $res = mailingSendVia($db, $m, $r, $channel, $target, $text, $subjectOf($subject), $html, $templateCache);
         }
+        if (!empty($res['success']) && in_array($channel, $messengers, true)) mailingLearnReach($db, $r, $channel, true);
 
         $db->execute(<<<SQL
             UPDATE mailing_recipients SET status = :status, error = :error, reference = :reference, batch_no = :batch_no,
+                   channel = :channel, target = :target,
                    sent_at = CASE WHEN :status = 'sent' THEN now() ELSE NULL END
             WHERE id = :rid
         SQL, [
+            ':channel' => $channel, ':target' => $target,
             ':status' => $res['success'] ? 'sent' : 'failed',
             ':error' => $res['success'] ? null : mb_substr((string)($res['error'] ?? 'Fehler'), 0, 500),
             ':reference' => $res['reference'] ?? null,
@@ -1124,6 +1284,7 @@ function mailingSendBatch($db, array $m): array {
         if ($streak >= 5) {
             $db->execute("UPDATE mailings SET status = 'paused', next_batch_at = NULL, last_error = :err, mtime = now() WHERE id = :id",
                          [':err' => mb_substr((string)($res['error'] ?? ''), 0, 500), ':id' => intval($m['id'])]);
+            mailingNotify($db, intval($m['id']), 'paused');
             break;
         }
         // Menschlicher Rhythmus zwischen zwei Nachrichten
@@ -1235,6 +1396,111 @@ function mailingSendWhatsAppTemplate(array $template, string $phone, string $nam
 }
 
 /**
+ * Eine Nachricht über einen bestimmten Kanal senden (Hauptkanal oder Ausweichkanal).
+ */
+function mailingSendVia($db, array $m, array $r, string $channel, string $target, string $text, string $subject, string $html, &$templateCache): array {
+    try {
+        switch ($channel) {
+            case 'telegram':
+                return mailingSendTelegram($db, $target, $text);
+            case 'whatsapp':
+                return mailingSendWhatsAppText($target, $text, $r['cv_src'] === 'C' ? intval($r['cv_id']) : 0);
+            case 'whatsapp_template':
+                if ($templateCache === null) {
+                    $templateCache = $db->getOne("SELECT id, name, body_text FROM whatsapp_templates WHERE id = :id AND status = 'approved'",
+                                                 [':id' => intval($m['whatsapp_template_id'])]) ?: [];
+                }
+                return mailingSendWhatsAppTemplate($templateCache, $target, (string)$r['name'], $text, $r['cv_src'] === 'C' ? intval($r['cv_id']) : 0, (string)($r['salutation'] ?? ''));
+            case 'sms':
+                return mailingSendSms($db, $target, $text);
+            case 'email':
+                return mailingSendEmail($target, (string)$r['name'], $subject, $text, $html, intval($m['employee_id'] ?? 0) ?: null);
+            case 'letter':
+                return mailingSendLetter($db, $m, $r, $subject, $text, $html);
+            default:
+                return ['success' => false, 'error' => 'unknown_channel'];
+        }
+    } catch (\Throwable $e) {
+        return ['success' => false, 'error' => $e->getMessage()];
+    }
+}
+
+/**
+ * Nächster verfügbarer Messenger in der Reihenfolge des Rundschreibens, der
+ * noch nicht versucht wurde (WhatsApp zählt als ein Versuch, egal ob Freitext
+ * oder Vorlage).
+ *
+ * @return array{0:string,1:string}|null [Kanal, Ziel]
+ */
+function mailingNextMessenger(array $m, array $r, array $cfg, array $tried): ?array {
+    $triedWa = in_array('whatsapp', $tried, true) || in_array('whatsapp_template', $tried, true);
+    foreach (json_decode((string)($m['channels'] ?? '[]'), true) ?: [] as $ch) {
+        if ($ch === 'telegram' && !in_array('telegram', $tried, true) && !empty($cfg['telegram']) && !empty($r['telegram_chat_id'])) {
+            return ['telegram', (string)$r['telegram_chat_id']];
+        }
+        if ($ch === 'whatsapp' && !$triedWa && !empty($cfg['whatsapp']) && !empty($r['whatsapp_phone'])) {
+            if (!empty($r['whatsapp_window'])) return ['whatsapp', (string)$r['whatsapp_phone']];
+            if (!empty($m['whatsapp_template_id'])) return ['whatsapp_template', (string)$r['whatsapp_phone']];
+        }
+        if ($ch === 'sms' && !in_array('sms', $tried, true) && !empty($cfg['sms']) && !empty($r['whatsapp_phone'])) {
+            return ['sms', (string)$r['whatsapp_phone']];
+        }
+    }
+    return null;
+}
+
+/**
+ * Lernen, worüber ein Kunde erreichbar ist: der zuletzt erfolgreiche Messenger
+ * wird beim nächsten Rundschreiben bevorzugt, ein gescheiterter nachrangig gewählt.
+ */
+function mailingLearnReach($db, array $r, string $channel, bool $ok): void {
+    $table = $r['cv_src'] === 'V' ? 'vendor_ext' : 'customer_ext';
+    $col   = $r['cv_src'] === 'V' ? 'vendor_id' : 'customer_id';
+    $ch = str_replace('_template', '', $channel);
+    try {
+        if ($ok) {
+            $db->execute("INSERT INTO {$table} ({$col}, reach_channel, reach_failed, reach_at, itime) VALUES (:id, :ch, NULL, now(), now())
+                          ON CONFLICT ({$col}) DO UPDATE SET reach_channel = EXCLUDED.reach_channel,
+                              reach_failed = CASE WHEN {$table}.reach_failed = EXCLUDED.reach_channel THEN NULL ELSE {$table}.reach_failed END,
+                              reach_at = now(), mtime = now()", [':id' => intval($r['cv_id']), ':ch' => $ch]);
+        } else {
+            $db->execute("INSERT INTO {$table} ({$col}, reach_failed, itime) VALUES (:id, :ch, now())
+                          ON CONFLICT ({$col}) DO UPDATE SET reach_failed = EXCLUDED.reach_failed, mtime = now()", [':id' => intval($r['cv_id']), ':ch' => $ch]);
+        }
+    } catch (\Throwable $e) {
+        error_log('[MAILING] Lernen des Kanals fehlgeschlagen: '.$e->getMessage());
+    }
+}
+
+/**
+ * SMS über seven.io (ehemals sms77): Zugang und Absender in der Firmenkonfiguration
+ * (sms_api_key, sms_sender). Kostenpflichtig je SMS-Teil (160 Zeichen).
+ */
+function mailingSendSms($db, string $phone, string $text): array {
+    $cfg = $db->getOne("SELECT (SELECT btrim(value) FROM defaults_oserp WHERE key = 'sms_api_key') AS api_key,
+                               (SELECT btrim(value) FROM defaults_oserp WHERE key = 'sms_sender') AS sender");
+    if (empty($cfg['api_key'])) return ['success' => false, 'error' => 'SMS_NOT_CONFIGURED'];
+    $ch = curl_init('https://gateway.seven.io/api/sms');
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 20,
+        CURLOPT_HTTPHEADER => ['X-Api-Key: '.$cfg['api_key'], 'Accept: application/json'],
+        CURLOPT_POSTFIELDS => http_build_query(array_filter(['to' => $phone, 'text' => $text, 'from' => (string)($cfg['sender'] ?? ''), 'json' => 1])),
+    ]);
+    $body = curl_exec($ch);
+    $err = curl_error($ch);
+    curl_close($ch);
+    if ($body === false) return ['success' => false, 'error' => 'SMS: '.$err];
+    $res = json_decode((string)$body, true);
+    // seven.io: success "100" = angenommen; alles andere ist ein Fehlercode
+    if (!is_array($res) || (string)($res['success'] ?? '') !== '100') {
+        return ['success' => false, 'error' => 'SMS: '.(is_array($res) ? ('Code '.($res['success'] ?? '?')) : mb_substr((string)$body, 0, 120))];
+    }
+    return ['success' => true, 'reference' => (string)($res['messages'][0]['id'] ?? '')];
+}
+
+/**
  * E-Brief über den Postdienst (PIN AG / LetterXpress): legt einen kivitendo-
  * Brief für den Kunden an (erscheint in dessen Briefliste) und liefert ihn über
  * das Postmodul ein. Die Anrede wandert ins Anrede-Feld des Briefs, damit sie
@@ -1292,7 +1558,7 @@ function mailingSendEmail(string $to, string $name, string $subject, string $tex
  * Testnachricht an eine eigene Adresse oder Nummer — mit Beispielwerten für
  * die Platzhalter. WhatsApp nur im offenen Fenster oder mit Vorlage.
  *
- * @param string $data['channel']   email | whatsapp
+ * @param string $data['channel']   email | whatsapp | sms
  * @param string $data['target']    E-Mail-Adresse oder Rufnummer
  * @param string $data['subject']
  * @param string $data['body_text']
@@ -1331,8 +1597,12 @@ function sendMailingTest($data) {
         } else {
             $res = ['success' => false, 'error' => 'WHATSAPP_WINDOW_CLOSED'];
         }
+    } elseif ($channel === 'sms') {
+        require_once __DIR__.'/../whatsapp/whatsapp.php';
+        $config = _getWhatsAppConfig();
+        $res = mailingSendSms($db, _normalizePhone($target, $config['whatsapp_country_code'] ?? '49'), $text);
     } else {
-        resultInfo(false, 'MAILING_TEST_CHANNEL', 'Testversand nur per E-Mail oder WhatsApp');
+        resultInfo(false, 'MAILING_TEST_CHANNEL', 'Testversand nur per E-Mail, WhatsApp oder SMS');
         return;
     }
     if (empty($res['success'])) {

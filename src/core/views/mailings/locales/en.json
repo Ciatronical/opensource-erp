@@ -1,7 +1,7 @@
 {
     "MailingsView": {
         "title": "Mailings",
-        "subtitle": "One message to many customers and vendors – via Telegram, WhatsApp or email",
+        "subtitle": "One message to many customers and vendors – via WhatsApp, Telegram, email or letter",
         "newMailing": "New mailing",
         "tabMailings": "Mailings",
         "tabLists": "Lists",
@@ -42,7 +42,12 @@
         "deleteListConfirm": "Delete list “{name}”? Mailings created from it are kept.",
         "mailingToList": "New mailing to this list",
         "loadError": "Mailings could not be loaded: {error}",
-        "recipientsCount": "{n} recipients"
+        "recipientsCount": "{n} recipients",
+        "showRecipients": "Show recipients",
+        "dynamic": "dynamic",
+        "dynamicHint": "Members are derived from the criteria and refreshed when switched on in a mailing and when sending starts.",
+        "configureNow": "Set up now",
+        "configureChannel": "Set up this channel in the company configuration"
     },
     "MailingEditView": {
         "titleNew": "New mailing",
@@ -91,11 +96,12 @@
         "previewEmpty": "Once there is a text, the message appears here as a recipient will see it.",
         "previewSample": "Sample values (no recipients yet)",
         "dispatch": "Sending",
-        "channelOrderHint": "Messaging channel: each recipient gets the message via the first messenger in this order that is available for them. Email is added or steps in according to the setting below.",
+        "channelOrderHint": "Messaging channel: each recipient gets the message via the first messenger in this order that is available for them. OSERP remembers per customer which channel reached them last and tries it first; a never-confirmed WhatsApp number comes last. If a messenger fails while sending, the next one steps in. Email is added or steps in according to the setting below.",
         "free": "free",
         "channelHints": {
             "telegram": "Customers who shared their number with the company bot",
-            "whatsapp": "Free only within 24 hours after a customer message"
+            "whatsapp": "Free only within 24 hours after a customer message",
+            "sms": "Mobile number – charged per SMS; used when WhatsApp and Telegram do not work"
         },
         "whatsappOutsideWindow": "WhatsApp without an open window",
         "whatsappNoTemplate": "Do not send via WhatsApp (no cost)",
@@ -196,7 +202,6 @@
         "suggestAlreadyIn": "({n} already in the list)",
         "suggestCapped": "– only {n} more fit into the list",
         "suggestApply": "Add {n}",
-        "loadList": "Load list",
         "members": "{n} members",
         "saveAsList": "Save as list",
         "saveListTitle": "Save as list",
@@ -227,7 +232,8 @@
             "none": "no channel",
             "email_extra": "Email in addition",
             "letter": "Letter",
-            "letter_extra": "Letter in addition"
+            "letter_extra": "Letter in addition",
+            "sms": "SMS"
         },
         "duplicate": "Duplicate",
         "duplicateHint": "Same target as another recipient – sent only once",
@@ -261,7 +267,21 @@
         "cancel": "Cancel",
         "moreHits": "More hits available – refine the search (number, city, email).",
         "emailExtraShort": "+ Email",
-        "letterExtraShort": "+ Letter"
+        "letterExtraShort": "+ Letter",
+        "listsRow": "Lists:",
+        "sourcesSummary": "{lists} lists · {fromLists} from lists, {manual} individually",
+        "listAdded": "List “{name}”: {n} recipients added",
+        "listRemoved": "List “{name}” deselected",
+        "dynamicList": "Dynamic list",
+        "dynamicSaveHint": "Save the criteria as a dynamic list – it refreshes itself when switched on and when a mailing starts.",
+        "dynamicName": "Name of the dynamic list",
+        "dynamicSave": "Save as dynamic",
+        "criteriaMonths": "revenue in the last {n} months",
+        "criteriaCity": "city {city}…",
+        "frozenRunning": "Sending is in progress – recipients and lists are frozen.",
+        "pauseToEdit": "Pause and edit",
+        "frozenDone": "This mailing is finished. Use it as a template for a new one.",
+        "copyToEdit": "Use as template"
     },
     "MailingErrors": {
         "MAILING_TEST_FAILED": "Test message failed",
@@ -282,6 +302,7 @@
         "MAILING_NOT_DELETABLE": "A running mailing cannot be deleted. Pause or cancel it first.",
         "MAILING_LIST_NAME_REQUIRED": "Please enter a name for the list.",
         "MAILING_LIST_NOT_FOUND": "The list was not found.",
-        "UNKNOWN": "Unknown error"
+        "UNKNOWN": "Unknown error",
+        "SMS_NOT_CONFIGURED": "SMS is not configured (API key missing)."
     }
 }
