@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Vietnes slēdzis"
+        },
+        "setup": {
+            "title": "Klientu portāla iestatīšana",
+            "start": "Iestatīt soli pa solim",
+            "reconfigure": "Pārbaudīt un mainīt iestatījumus",
+            "finishButton": "Pabeigt",
+            "webseite": {
+                "intro": "Klientu portāls darbojas vietnē, ko uztur ar HugoCMS. Tur klienti pierakstās, redz rēķinus un dokumentus un maina savus datus. Izvēlieties vietni, ko iestatīt, vai izveidojiet jaunu.",
+                "hint": "Šis dialogs izved cauri visiem datiem, pārbauda katru savienojumu un beigās ieslēdz vietni. To var jebkurā brīdī aizvērt un turpināt vēlāk; viss ievadītais paliek saglabāts.",
+                "noAddress": "vēl nav tīmekļa adreses",
+                "inactive": "izslēgta",
+                "new": "Izveidot jaunu vietni",
+                "nameHint": "Nosaukums pārskatam, piem., domēns. Klienti to neredz."
+            },
+            "adresse": {
+                "intro": "Kādā adresē klienti atver vietni?",
+                "invalid": "Ievadiet pilnu adresi ar https://, piem., https://www.example.lv/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP nosūta portāla lapas un komponentes uz HugoCMS – programmu, ar ko uztur vietni. Tam nepieciešama HugoCMS adrese un atslēga.",
+                "testHint": "Pārbaude ir obligāta: tālāk var tikai tad, kad HugoCMS ir sasniedzams un pieņem atslēgu."
+            },
+            "zugang": {
+                "intro": "Vietne sazinās ar OpensourceERP caur pārsūtītāju. Šeit nosakāt, ar ko tā identificējas un kurp iet pieprasījumi.",
+                "keyGenerated": "Vietnei izveidota jauna atslēga. To pārsūta kopā ar pakotni; nekur tā nav jāievada.",
+                "advanced": "Papildu: piekļuve bez pārsūtītāja (CORS)"
+            },
+            "seiten": {
+                "intro": "Šajās adresēs vietnē tiek izveidotas portāla lapas. Noklusējumi der vairumam vietņu.",
+                "invalid": "Pārbaudiet: {fields}. Atļauti mazie burti, cipari un defises, beigās slīpsvītra; direktorijs sākas ar slīpsvītru.",
+                "preview": "Adreses būs:"
+            },
+            "funktionen": {
+                "intro": "Nosakiet, kā portāls izskatās un ko klienti tur redz. Visu vēlāk var mainīt vietnes kartītē."
+            },
+            "paket": {
+                "intro": "Tagad portāls nonāk vietnē. Trīs soļi: instalēt pakotni, nodrošināt pārsūtītāju, pārbaudīt savienojumu.",
+                "step1": "1. Instalēt pakotni",
+                "step2": "2. Nodrošināt pārsūtītāju",
+                "proxyText": "HugoCMS nepieņem PHP failus. Tāpēc pārsūtītāja fails vienreiz manuāli jānokopē uz tīmekļa serveri. Turklāt Hugo projekta config.json vajadzīgi pakotnes ieraksti, skat. zemāk. Abi nepieciešami tikai pirmo reizi.",
+                "proxyFile": "Nokopējiet šo failu no OpensourceERP uz šo vietnes vietu:",
+                "step3": "3. Pārbaudīt savienojumu",
+                "allGood": "Visi trīs soļi izturēti. Vietne sasniedz OpensourceERP."
+            },
+            "fertig": {
+                "intro": "„{name}“ iestatīšana pabeigta. Svarīgākie dati:",
+                "notVerified": "Savienojums caur vietni netika veiksmīgi pārbaudīts. Vietni tomēr var ieslēgt, bet klienti varēs pierakstīties tikai tad, kad pārsūtītājs un config.json būs pareizi.",
+                "activate": "Ieslēgt vietni tagad",
+                "done": "Klientu portāls ir iestatīts."
+            },
+            "steps": {
+                "webseite": "Vietne",
+                "adresse": "Tīmekļa adrese",
+                "hugocms": "HugoCMS",
+                "zugang": "Piekļuve",
+                "seiten": "Lapas",
+                "funktionen": "Funkcijas",
+                "paket": "Pakotne",
+                "fertig": "Gatavs"
+            }
         }
     }
 }

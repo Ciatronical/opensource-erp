@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Tööriistad",
     "featureSqlTool": "SQL-tööriist (Developer-Tools)",
     "featureSqlToolDesc": "Käivita suvalisi SQL-käske otse andmebaasis. Vaikimisi väljas; seda näevad ja kasutavad ainult süsteemiadministraatorid ning iga käivitus logitakse kasutaja, IP ja käsuga.",
-    "featureSqlToolOnHint": "SQL-tööriist on lubatud. Muudatused jõustuvad kohe ja kontrollimata andmebaasis – lülitage see pärast tööd uuesti välja."
+    "featureSqlToolOnHint": "SQL-tööriist on lubatud. Muudatused jõustuvad kohe ja kontrollimata andmebaasis – lülitage see pärast tööd uuesti välja.",
+    "setupWizard": {
+        "back": "Tagasi",
+        "next": "Edasi",
+        "finish": "Valmis",
+        "close": "Sulge",
+        "stepOf": "Samm {step}/{total}"
+    }
 }

@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Veidot eBay produkta lapu"
+        },
+        "setup": {
+            "title": "Veikala iestatīšana",
+            "start": "Iestatīt veikalu soli pa solim",
+            "finishButton": "Pabeigt",
+            "webseite": {
+                "intro": "Veikals darbojas klientu portāla vietnē: tur klienti pierakstās, tur ir grozs, kase un produktu lapas. Izvēlieties vietni, kurā veikalam jādarbojas.",
+                "none": "Vēl nav ieslēgta neviena klientu portāla vietne. Vispirms iestatiet klientu portālu, pēc tam šeit turpināsiet ar veikalu.",
+                "setupPortal": "Iestatīt klientu portālu tagad",
+                "portalAgain": "Pārbaudīt vai no jauna iestatīt vietnes portālu"
+            },
+            "kanal": {
+                "intro": "Pārdošanas kanāls apvieno visu, kas pieder vienam veikalam: cenas un uzcenojumus, piegādes noteikumus, PayPal piekļuvi un veikala lapu adreses. Izvēlieties esošu HugoShop vai izveidojiet jaunu.",
+                "explain": "Parasti katrai vietnei ir viens veikals. Vairāki kanāli vajadzīgi tikai tad, ja vienas un tās pašas preces pārdod dažādās vietnēs ar dažādiem nosacījumiem.",
+                "parts": "Piedāvātas preces: {count}",
+                "inactive": "izslēgts",
+                "new": "Izveidot jaunu veikalu"
+            },
+            "rechnung": {
+                "intro": "Katrs pasūtījums uzreiz kļūst par rēķinu. Tam OpensourceERP vajadzīgi daži grāmatvedības iestatījumi, kas attiecas uz visiem veikaliem.",
+                "explain": "Debitoru konts, nodokļu zona un valūta ir obligāti, citādi rēķinu nevar iegrāmatot. Kontaktpersona ir darbinieks, kas veikala rēķinos norādīts kā apstrādātājs. Noliktavas vieta nosaka, no kurienes noraksta pārdotās preces; tukšs nozīmē bez noliktavas ieraksta."
+            },
+            "zahlung": {
+                "intro": "Klienti maksā pēc rēķina ar pārskaitījumu vai uzreiz caur PayPal.",
+                "bank": "Bankas rekvizīti ir redzami rēķina lapā, kamēr klients nav samaksājis. Konta īpašnieks ir persona vai uzņēmums, kam pieder konts.",
+                "paypal": "PayPal vajadzīga REST API lietotne no PayPal izstrādātāja konta (developer.paypal.com) ar Client ID un Secret. Sāciet ar testa vidi: tur īsta nauda nekustas. „Nosaukums PayPal“ ir tas, ko klienti redz kā saņēmēju PayPal lapā.",
+                "paypalOptional": "Bez PayPal piekļuves datiem veikals piedāvā tikai pirkumu pēc rēķina. PayPal var iestatīt vēlāk pārdošanas kanāla kartītē."
+            },
+            "versand": {
+                "intro": "Piegādes izmaksas OpensourceERP aprēķina no piegādes veidiem, ko uzturat skatā „Piegādes veidi“, pēc svara, izmēriem un piegādes valsts.",
+                "explain": "Bez piegādes veida pasūtījumi notiek kā „Standarta“ bez piegādes izmaksām. Bezmaksas piegādes slieksnis un piegādes valstis attiecas uz šo veikalu. Tukšas piegādes valstis nozīmē: visas valstis ar piegādes zonu.",
+                "methodsMissing": "Vēl nav iestatīts neviens piegādes veids ar cenu. Izveidojiet vismaz vienu, piem., „DHL paka“ ar cenu, un pārbaudiet šeit vēlreiz.",
+                "methodsOk": "Piegādes veidi ir iestatīti.",
+                "recheck": "Pārbaudīt vēlreiz"
+            },
+            "seiten": {
+                "intro": "Šajās adresēs vietnē tiek izveidotas produktu un kategoriju lapas. Noklusējumi atbilst veidņu komplektam; mainiet tos tikai tad, ja jūsu vietne izmanto citus ceļus.",
+                "explain": "Adrešu paraugiem jāatbilst vietnes Hugo konfigurācijai (taksonomija, permalinks, mounts). Pārbaude zemāk salīdzina abus un piedāvā piemērotus config.json ierakstus, ja kaut kas nesakrīt.",
+                "publish": "Ar automātisko publicēšanu katra cenas vai teksta izmaiņa uzreiz nonāk vietnē. Bez tās krājas uzdevumi, ko izpildāt manuāli pārskatā.",
+                "testHint": "Pārbaude ir obligāta: tālāk var tikai tad, kad HugoCMS ir sasniedzams un Hugo konfigurācija atbilst adresēm."
+            },
+            "paket": {
+                "intro": "Visbeidzot veikala komponentes nonāk vietnē, un OpensourceERP pārbauda visu iestatījumu.",
+                "step1": "1. Instalēt pakotni",
+                "installHint": "Pārsūta veikala veidnes un logrīkus uz HugoCMS un liek vietni uzbūvēt. Tas notiek fonā un var aizņemt minūti.",
+                "installStarted": "Pārsūtīšana notiek. Stāvokli redzēsiet veikala pārskatā sadaļā „Publicēšana“.",
+                "installRunning": "Pašlaik notiek cita pārsūtīšana; uzdevums tiks izpildīts pēc tās.",
+                "installQueued": "Uzdevums ir ieplānots un tiks izpildīts nākamajā palaišanā.",
+                "step2": "2. Pārbaudīt iestatījumu",
+                "checkHint": "Tā pati pārbaude kā veikala pārskatā: ja kaut kā trūkst, veikals pasūtījumus vēl nepieņem.",
+                "check": "Pārbaudīt iestatījumu",
+                "ready": "Viss ir pilnīgs. Veikals var pieņemt pasūtījumus."
+            },
+            "fertig": {
+                "intro": "„{name}“ iestatīšana ir pabeigta. Svarīgākie dati:",
+                "notReady": "Iestatījuma pārbaude joprojām ziņo par trūkstošiem datiem. Veikalu tomēr var ieslēgt; pasūtījumi būs iespējami tikai tad, kad viss būs pilnīgs.",
+                "activate": "Ieslēgt veikalu tagad",
+                "activateHint": "Ieslēgts veikals pieņem pasūtījumus un publicē preces.",
+                "done": "Veikals ir iestatīts.",
+                "nextSteps": "Tālāk: sortimentā atbrīvojiet preces veikalam un publicējiet produktu lapas. Abus atradīsiet veikala izvēlnē „Sortiments“ un pārskatā."
+            },
+            "steps": {
+                "webseite": "Vietne",
+                "kanal": "Pārdošanas kanāls",
+                "rechnung": "Rēķini",
+                "zahlung": "Maksājums",
+                "versand": "Piegāde",
+                "seiten": "Veikala lapas",
+                "paket": "Pakotne",
+                "fertig": "Gatavs"
+            }
         }
     }
 }

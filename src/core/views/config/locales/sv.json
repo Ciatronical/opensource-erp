@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Verktyg",
     "featureSqlTool": "SQL-verktyg (Developer-Tools)",
     "featureSqlToolDesc": "Kör godtyckliga SQL-kommandon direkt i databasen. Avstängt som standard; endast systemadministratörer ser och använder det, och varje körning loggas med användare, IP och kommando.",
-    "featureSqlToolOnHint": "SQL-verktyget är aktiverat. Ändringar får effekt direkt och utan kontroll i databasen – stäng av det igen efter arbetet."
+    "featureSqlToolOnHint": "SQL-verktyget är aktiverat. Ändringar får effekt direkt och utan kontroll i databasen – stäng av det igen efter arbetet.",
+    "setupWizard": {
+        "back": "Tillbaka",
+        "next": "Nästa",
+        "finish": "Slutför",
+        "close": "Stäng",
+        "stepOf": "Steg {step} av {total}"
+    }
 }

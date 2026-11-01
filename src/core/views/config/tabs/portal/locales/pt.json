@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Interruptor do site"
+        },
+        "setup": {
+            "title": "Configurar portal do cliente",
+            "start": "Configurar passo a passo",
+            "reconfigure": "Rever e alterar a configuração",
+            "finishButton": "Concluir",
+            "webseite": {
+                "intro": "O portal do cliente funciona num site mantido com o HugoCMS. Aí os clientes iniciam sessão, veem as faturas e documentos e alteram os seus dados. Escolha o site a configurar ou crie um novo.",
+                "hint": "Este assistente guia-o por todos os dados, verifica cada ligação e ativa o site no final. Pode fechá-lo a qualquer momento e continuar mais tarde; tudo o que introduziu fica guardado.",
+                "noAddress": "ainda sem endereço web",
+                "inactive": "desativado",
+                "new": "Criar um novo site",
+                "nameHint": "Um nome para a vista geral, p. ex. o domínio. Os clientes não o veem."
+            },
+            "adresse": {
+                "intro": "Em que endereço os seus clientes abrem o site?",
+                "invalid": "Introduza um endereço completo com https://, p. ex. https://www.example.pt/."
+            },
+            "hugocms": {
+                "intro": "O OpensourceERP envia as páginas e componentes do portal para o HugoCMS, o programa com que o site é mantido. Para isso precisa do endereço e da chave do HugoCMS.",
+                "testHint": "A verificação é obrigatória: só se avança quando o HugoCMS está acessível e aceita a chave."
+            },
+            "zugang": {
+                "intro": "O site comunica com o OpensourceERP através de um reencaminhador. Aqui define como se identifica e para onde vão os pedidos.",
+                "keyGenerated": "Foi gerada uma nova chave para o site. É transferida com o pacote; não precisa de a introduzir em lado nenhum.",
+                "advanced": "Avançado: acesso sem reencaminhador (CORS)"
+            },
+            "seiten": {
+                "intro": "Nestes endereços são criadas as páginas do portal no site. Os valores predefinidos servem para a maioria dos sites.",
+                "invalid": "Verifique: {fields}. São permitidas minúsculas, algarismos e hífens, com barra no fim; o diretório começa com barra.",
+                "preview": "Os endereços serão:"
+            },
+            "funktionen": {
+                "intro": "Defina o aspeto do portal e o que os clientes veem. Tudo pode ser alterado depois no cartão do site."
+            },
+            "paket": {
+                "intro": "Agora o portal chega ao site. Três passos: instalar o pacote, disponibilizar o reencaminhador, verificar a ligação.",
+                "step1": "1. Instalar pacote",
+                "step2": "2. Disponibilizar reencaminhador",
+                "proxyText": "O HugoCMS não aceita ficheiros PHP. Por isso o ficheiro do reencaminhador tem de ser copiado uma vez manualmente para o servidor web. Além disso, o config.json do projeto Hugo precisa das entradas do pacote, ver abaixo. Ambos só são necessários na primeira vez.",
+                "proxyFile": "Copie este ficheiro do OpensourceERP para este local do site:",
+                "step3": "3. Verificar ligação",
+                "allGood": "Os três passos foram superados. O site alcança o OpensourceERP."
+            },
+            "fertig": {
+                "intro": "A configuração de «{name}» está concluída. Os dados mais importantes:",
+                "notVerified": "A ligação através do site não foi verificada com êxito. Pode ativar o site na mesma, mas os clientes só poderão iniciar sessão quando o reencaminhador e o config.json estiverem corretos.",
+                "activate": "Ativar o site agora",
+                "done": "O portal do cliente está configurado."
+            },
+            "steps": {
+                "webseite": "Site",
+                "adresse": "Endereço web",
+                "hugocms": "HugoCMS",
+                "zugang": "Acesso",
+                "seiten": "Páginas",
+                "funktionen": "Funções",
+                "paket": "Pacote",
+                "fertig": "Concluído"
+            }
         }
     }
 }

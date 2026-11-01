@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Herramientas",
     "featureSqlTool": "Herramienta SQL (Developer-Tools)",
     "featureSqlToolDesc": "Ejecute comandos SQL arbitrarios directamente en la base de datos. Desactivada por defecto; solo los administradores del sistema pueden verla y usarla, y cada ejecución se registra con usuario, IP y comando.",
-    "featureSqlToolOnHint": "La herramienta SQL está habilitada. Los cambios se aplican de inmediato y sin comprobación en la base de datos; desactívela de nuevo después de usarla."
+    "featureSqlToolOnHint": "La herramienta SQL está habilitada. Los cambios se aplican de inmediato y sin comprobación en la base de datos; desactívela de nuevo después de usarla.",
+    "setupWizard": {
+        "back": "Atrás",
+        "next": "Siguiente",
+        "finish": "Finalizar",
+        "close": "Cerrar",
+        "stepOf": "Paso {step} de {total}"
+    }
 }

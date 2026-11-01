@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Interruttore del sito web"
+        },
+        "setup": {
+            "title": "Configurare il portale clienti",
+            "start": "Configura passo dopo passo",
+            "reconfigure": "Verifica e modifica la configurazione",
+            "finishButton": "Concludi",
+            "webseite": {
+                "intro": "Il portale clienti gira su un sito web gestito con HugoCMS. Lì i clienti accedono, vedono fatture e documenti e modificano i propri dati. Scegli il sito da configurare o creane uno nuovo.",
+                "hint": "Questa procedura ti guida attraverso tutti i dati, verifica ogni connessione e alla fine attiva il sito. Puoi chiuderla in qualsiasi momento e riprendere più tardi; tutto ciò che hai inserito resta salvato.",
+                "noAddress": "ancora nessun indirizzo web",
+                "inactive": "disattivato",
+                "new": "Crea un nuovo sito web",
+                "nameHint": "Un nome per la panoramica, ad es. il dominio. I clienti non lo vedono."
+            },
+            "adresse": {
+                "intro": "A quale indirizzo i tuoi clienti aprono il sito web?",
+                "invalid": "Inserisci un indirizzo completo con https://, ad es. https://www.example.it/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP invia le pagine e i componenti del portale a HugoCMS, il programma con cui si gestisce il sito. Servono indirizzo e chiave di HugoCMS.",
+                "testHint": "La verifica è obbligatoria: si prosegue solo quando HugoCMS è raggiungibile e accetta la chiave."
+            },
+            "zugang": {
+                "intro": "Il sito comunica con OpensourceERP tramite un inoltratore. Qui stabilisci come si identifica e dove vanno le richieste.",
+                "keyGenerated": "È stata generata una nuova chiave per il sito. Viene trasferita con il pacchetto; non devi inserirla da nessuna parte.",
+                "advanced": "Avanzate: accesso senza inoltratore (CORS)"
+            },
+            "seiten": {
+                "intro": "A questi indirizzi nascono le pagine del portale sul sito. I valori predefiniti vanno bene per la maggior parte dei siti.",
+                "invalid": "Controlla: {fields}. Sono ammessi minuscole, cifre e trattini, con barra finale; la directory inizia con una barra.",
+                "preview": "Gli indirizzi saranno:"
+            },
+            "funktionen": {
+                "intro": "Definisci l’aspetto del portale e cosa vedono i clienti. Tutto si può cambiare in seguito nella scheda del sito."
+            },
+            "paket": {
+                "intro": "Ora il portale arriva sul sito. Tre passi: installare il pacchetto, predisporre l’inoltratore, verificare la connessione.",
+                "step1": "1. Installa pacchetto",
+                "step2": "2. Predisponi inoltratore",
+                "proxyText": "HugoCMS non accetta file PHP. Il file dell’inoltratore va quindi copiato una volta a mano sul server web. Inoltre il config.json del progetto Hugo richiede le voci del pacchetto, vedi sotto. Entrambe le cose servono solo la prima volta.",
+                "proxyFile": "Copia questo file da OpensourceERP in questo punto del sito:",
+                "step3": "3. Verifica connessione",
+                "allGood": "Tutti e tre i passi superati. Il sito raggiunge OpensourceERP."
+            },
+            "fertig": {
+                "intro": "La configurazione di «{name}» è completata. I dati principali:",
+                "notVerified": "La connessione tramite il sito non è stata verificata con successo. Puoi comunque attivare il sito, ma i clienti potranno accedere solo quando inoltratore e config.json saranno corretti.",
+                "activate": "Attiva il sito adesso",
+                "done": "Il portale clienti è configurato."
+            },
+            "steps": {
+                "webseite": "Sito web",
+                "adresse": "Indirizzo web",
+                "hugocms": "HugoCMS",
+                "zugang": "Accesso",
+                "seiten": "Pagine",
+                "funktionen": "Funzioni",
+                "paket": "Pacchetto",
+                "fertig": "Fine"
+            }
         }
     }
 }

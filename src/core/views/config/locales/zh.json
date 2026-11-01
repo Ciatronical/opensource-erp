@@ -1392,5 +1392,12 @@
     "toolsFeatures": "工具",
     "featureSqlTool": "SQL 工具（Developer-Tools）",
     "featureSqlToolDesc": "直接在数据库上执行任意 SQL 命令。默认关闭；仅系统管理员可见并可使用，每次执行都会记录用户、IP 和命令。",
-    "featureSqlToolOnHint": "SQL 工具已启用。更改会立即生效，且不经检查直接作用于数据库——使用完毕后请再次关闭。"
+    "featureSqlToolOnHint": "SQL 工具已启用。更改会立即生效，且不经检查直接作用于数据库——使用完毕后请再次关闭。",
+    "setupWizard": {
+        "back": "上一步",
+        "next": "下一步",
+        "finish": "完成",
+        "close": "关闭",
+        "stepOf": "第 {step} 步，共 {total} 步"
+    }
 }

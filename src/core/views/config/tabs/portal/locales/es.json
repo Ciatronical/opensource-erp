@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Interruptor del sitio web"
+        },
+        "setup": {
+            "title": "Configurar portal de clientes",
+            "start": "Configurar paso a paso",
+            "reconfigure": "Revisar y cambiar la configuración",
+            "finishButton": "Finalizar",
+            "webseite": {
+                "intro": "El portal de clientes funciona en un sitio web mantenido con HugoCMS. Allí sus clientes inician sesión, ven sus facturas y documentos y modifican sus datos. Elija el sitio web que desea configurar o cree uno nuevo.",
+                "hint": "Este diálogo le guía por todos los datos, comprueba cada conexión y activa el sitio al final. Puede cerrarlo en cualquier momento y continuar después; todo lo introducido queda guardado.",
+                "noAddress": "todavía sin dirección web",
+                "inactive": "desactivado",
+                "new": "Crear un sitio web nuevo",
+                "nameHint": "Un nombre para la vista general, p. ej. el dominio. Los clientes no lo ven."
+            },
+            "adresse": {
+                "intro": "¿En qué dirección abren sus clientes el sitio web?",
+                "invalid": "Introduzca una dirección completa con https://, p. ej. https://www.example.es/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP envía las páginas y componentes del portal a HugoCMS, el programa con el que se mantiene el sitio. Para ello necesita la dirección y la clave de HugoCMS.",
+                "testHint": "La comprobación es obligatoria: solo se puede continuar cuando HugoCMS es accesible y acepta la clave."
+            },
+            "zugang": {
+                "intro": "El sitio web se comunica con OpensourceERP a través de un reenviador. Aquí define cómo se identifica y adónde van las solicitudes.",
+                "keyGenerated": "Se ha generado una nueva clave para el sitio web. Se transfiere con el paquete; no tiene que introducirla en ningún sitio.",
+                "advanced": "Avanzado: acceso sin reenviador (CORS)"
+            },
+            "seiten": {
+                "intro": "En estas direcciones se crean las páginas del portal en el sitio web. Los valores predeterminados sirven para la mayoría de los sitios.",
+                "invalid": "Compruebe: {fields}. Se permiten minúsculas, cifras y guiones, con barra al final; el directorio empieza con barra.",
+                "preview": "Las direcciones serán:"
+            },
+            "funktionen": {
+                "intro": "Defina el aspecto del portal y lo que ven los clientes. Todo puede cambiarse después en la tarjeta del sitio web."
+            },
+            "paket": {
+                "intro": "Ahora el portal llega al sitio web. Tres pasos: instalar el paquete, disponer el reenviador, comprobar la conexión.",
+                "step1": "1. Instalar paquete",
+                "step2": "2. Disponer el reenviador",
+                "proxyText": "HugoCMS no acepta archivos PHP. Por eso el archivo del reenviador debe copiarse una vez a mano al servidor web. Además, el config.json del proyecto Hugo necesita las entradas del paquete, véase abajo. Ambas cosas solo la primera vez.",
+                "proxyFile": "Copie este archivo de OpensourceERP a este lugar del sitio web:",
+                "step3": "3. Comprobar conexión",
+                "allGood": "Los tres pasos se han superado. El sitio web alcanza OpensourceERP."
+            },
+            "fertig": {
+                "intro": "La configuración de «{name}» ha finalizado. Estos son los datos más importantes:",
+                "notVerified": "La conexión a través del sitio web no se comprobó con éxito. Puede activar el sitio igualmente, pero los clientes solo podrán iniciar sesión cuando el reenviador y config.json sean correctos.",
+                "activate": "Activar el sitio web ahora",
+                "done": "El portal de clientes está configurado."
+            },
+            "steps": {
+                "webseite": "Sitio web",
+                "adresse": "Dirección web",
+                "hugocms": "HugoCMS",
+                "zugang": "Acceso",
+                "seiten": "Páginas",
+                "funktionen": "Funciones",
+                "paket": "Paquete",
+                "fertig": "Listo"
+            }
         }
     }
 }

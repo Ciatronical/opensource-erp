@@ -1643,5 +1643,12 @@
     "toolsFeatures": "Narzędzia",
     "featureSqlTool": "Narzędzie SQL (Developer-Tools)",
     "featureSqlToolDesc": "Wykonywanie dowolnych poleceń SQL bezpośrednio w bazie danych. Domyślnie wyłączone; widzą je i mogą z niego korzystać tylko administratorzy systemu, a każde wykonanie jest rejestrowane z użytkownikiem, IP i poleceniem.",
-    "featureSqlToolOnHint": "Narzędzie SQL jest udostępnione. Zmiany działają natychmiast i bez kontroli na bazie danych – po zakończeniu pracy proszę je ponownie wyłączyć."
+    "featureSqlToolOnHint": "Narzędzie SQL jest udostępnione. Zmiany działają natychmiast i bez kontroli na bazie danych – po zakończeniu pracy proszę je ponownie wyłączyć.",
+    "setupWizard": {
+        "back": "Wstecz",
+        "next": "Dalej",
+        "finish": "Zakończ",
+        "close": "Zamknij",
+        "stepOf": "Krok {step} z {total}"
+    }
 }

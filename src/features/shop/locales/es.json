@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Diseñar página de producto de eBay"
+        },
+        "setup": {
+            "title": "Configurar tienda",
+            "start": "Configurar la tienda paso a paso",
+            "finishButton": "Finalizar",
+            "webseite": {
+                "intro": "La tienda funciona en un sitio web del portal de clientes: allí inician sesión los clientes y allí están el carrito, la caja y las páginas de producto. Elija el sitio web en el que debe funcionar la tienda.",
+                "none": "Todavía no hay ningún sitio web del portal de clientes activado. Configure primero el portal de clientes; después continúa aquí con la tienda.",
+                "setupPortal": "Configurar el portal de clientes ahora",
+                "portalAgain": "Revisar o volver a configurar el portal de un sitio web"
+            },
+            "kanal": {
+                "intro": "Un canal de venta reúne todo lo que pertenece a una tienda: precios y recargos, reglas de envío, acceso a PayPal y las direcciones de las páginas de la tienda. Elija un HugoShop existente o cree uno nuevo.",
+                "explain": "Normalmente hay una tienda por sitio web. Solo necesita varios canales si los mismos artículos se venden en distintos sitios con condiciones distintas.",
+                "parts": "{count} artículos ofrecidos",
+                "inactive": "desactivado",
+                "new": "Crear una tienda nueva"
+            },
+            "rechnung": {
+                "intro": "Cada pedido se convierte de inmediato en factura. Para ello OpensourceERP necesita algunos valores contables válidos para todas las tiendas.",
+                "explain": "La cuenta de deudores, la zona fiscal y la moneda son obligatorias; de lo contrario no se puede contabilizar ninguna factura. El contacto es el empleado que figura como responsable en las facturas de la tienda. El lugar de almacén define de dónde se da salida a la mercancía vendida; vacío significa sin movimiento de almacén."
+            },
+            "zahlung": {
+                "intro": "Los clientes pagan a cuenta por transferencia o de inmediato con PayPal.",
+                "bank": "Los datos bancarios aparecen en la página de la factura mientras el cliente no haya pagado. El titular es la persona o empresa propietaria de la cuenta.",
+                "paypal": "Para PayPal necesita una aplicación REST API de la cuenta de desarrollador de PayPal (developer.paypal.com) con Client ID y Secret. Empiece con el entorno de pruebas: allí no se mueve dinero real. El «nombre en PayPal» es lo que los clientes ven como destinatario en la página de PayPal.",
+                "paypalOptional": "Sin credenciales de PayPal la tienda solo ofrece la compra a cuenta. Puede configurar PayPal más tarde en la tarjeta del canal de venta."
+            },
+            "versand": {
+                "intro": "OpensourceERP calcula los gastos de envío a partir de los métodos de envío que mantiene en la vista «Métodos de envío», según peso, medidas y país de entrega.",
+                "explain": "Sin método de envío los pedidos se tramitan como «Estándar» sin gastos de envío. El umbral de envío gratuito y los países de entrega se aplican a esta tienda. Países de entrega vacío significa: todos los países con una zona de envío.",
+                "methodsMissing": "Aún no hay ningún método de envío con tarifa. Cree al menos uno, p. ej. «Paquete DHL» con un precio, y compruebe aquí de nuevo.",
+                "methodsOk": "Los métodos de envío están configurados.",
+                "recheck": "Comprobar de nuevo"
+            },
+            "seiten": {
+                "intro": "En estas direcciones se crean las páginas de producto y de categoría en el sitio web. Los valores predeterminados corresponden al conjunto de plantillas; cámbielos solo si su sitio usa otras rutas.",
+                "explain": "Los patrones de dirección deben coincidir con la configuración Hugo del sitio (taxonomía, permalinks, mounts). La comprobación de abajo compara ambos y propone las entradas adecuadas para config.json si algo no encaja.",
+                "publish": "Con la publicación automática cada cambio de precio o texto llega de inmediato al sitio. Sin ella se acumulan tareas que ejecuta a mano en la vista general.",
+                "testHint": "La comprobación es obligatoria: solo se puede continuar cuando HugoCMS es accesible y la configuración Hugo coincide con las direcciones."
+            },
+            "paket": {
+                "intro": "Por último, los componentes de la tienda llegan al sitio web y OpensourceERP comprueba toda la configuración.",
+                "step1": "1. Instalar paquete",
+                "installHint": "Transfiere las plantillas y widgets de la tienda a HugoCMS y hace construir el sitio. Se ejecuta en segundo plano y puede tardar un minuto.",
+                "installStarted": "La transferencia está en marcha. El estado se ve en la vista general de la tienda en «Publicación».",
+                "installRunning": "Hay otra transferencia en curso; la tarea se ejecutará después.",
+                "installQueued": "La tarea está programada y se ejecutará en la próxima ejecución.",
+                "step2": "2. Comprobar configuración",
+                "checkHint": "La misma comprobación que en la vista general: si falta algo, la tienda aún no acepta pedidos.",
+                "check": "Comprobar configuración",
+                "ready": "Todo completo. La tienda puede aceptar pedidos."
+            },
+            "fertig": {
+                "intro": "La configuración de «{name}» ha finalizado. Estos son los datos más importantes:",
+                "notReady": "La comprobación aún señala datos que faltan. Puede activar la tienda igualmente; los pedidos solo serán posibles cuando todo esté completo.",
+                "activate": "Activar la tienda ahora",
+                "activateHint": "Activada, la tienda acepta pedidos y publica artículos.",
+                "done": "La tienda está configurada.",
+                "nextSteps": "Siguiente paso: liberar artículos del surtido para la tienda y publicar las páginas de producto. Ambos en el menú de la tienda, en «Surtido» y en la vista general."
+            },
+            "steps": {
+                "webseite": "Sitio web",
+                "kanal": "Canal de venta",
+                "rechnung": "Facturación",
+                "zahlung": "Pago",
+                "versand": "Envío",
+                "seiten": "Páginas de la tienda",
+                "paket": "Paquete",
+                "fertig": "Listo"
+            }
         }
     }
 }

@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Verkkosivuston kytkin"
+        },
+        "setup": {
+            "title": "Asiakasportaalin käyttöönotto",
+            "start": "Ota käyttöön vaihe vaiheelta",
+            "reconfigure": "Tarkista ja muuta asetuksia",
+            "finishButton": "Valmis",
+            "webseite": {
+                "intro": "Asiakasportaali toimii verkkosivustolla, jota ylläpidetään HugoCMS:llä. Siellä asiakkaat kirjautuvat, näkevät laskunsa ja tositteensa ja muuttavat tietojaan. Valitse sivusto, jonka haluat ottaa käyttöön, tai luo uusi.",
+                "hint": "Tämä ohjattu toiminto käy läpi kaikki tiedot, tarkistaa jokaisen yhteyden ja kytkee sivuston lopuksi päälle. Voit sulkea sen milloin tahansa ja jatkaa myöhemmin; syötetyt tiedot säilyvät.",
+                "noAddress": "ei vielä verkko-osoitetta",
+                "inactive": "pois käytöstä",
+                "new": "Luo uusi sivusto",
+                "nameHint": "Nimi yleisnäkymää varten, esim. verkkotunnus. Asiakkaat eivät näe sitä."
+            },
+            "adresse": {
+                "intro": "Missä osoitteessa asiakkaasi avaavat sivuston?",
+                "invalid": "Anna täydellinen osoite https://-alulla, esim. https://www.example.fi/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP lähettää asiakasportaalin sivut ja komponentit HugoCMS:ään, ohjelmaan jolla sivustoa ylläpidetään. Siihen tarvitaan HugoCMS:n osoite ja avain.",
+                "testHint": "Tarkistus on pakollinen: eteenpäin pääsee vasta, kun HugoCMS vastaa ja hyväksyy avaimen."
+            },
+            "zugang": {
+                "intro": "Sivusto keskustelee OpensourceERP:n kanssa välittäjän kautta. Tässä määrität, miten se tunnistautuu ja minne pyynnöt menevät.",
+                "keyGenerated": "Sivustolle luotiin uusi avain. Se siirtyy paketin mukana; sinun ei tarvitse syöttää sitä mihinkään.",
+                "advanced": "Lisäasetukset: pääsy ilman välittäjää (CORS)"
+            },
+            "seiten": {
+                "intro": "Näihin osoitteisiin luodaan asiakasportaalin sivut. Oletukset sopivat useimmille sivustoille.",
+                "invalid": "Tarkista: {fields}. Sallittuja ovat pienet kirjaimet, numerot ja yhdysmerkit, lopussa kauttaviiva; hakemisto alkaa kauttaviivalla.",
+                "preview": "Osoitteet ovat:"
+            },
+            "funktionen": {
+                "intro": "Määritä, miltä portaali näyttää ja mitä asiakkaat näkevät. Kaiken voi muuttaa myöhemmin sivuston kortissa."
+            },
+            "paket": {
+                "intro": "Nyt portaali siirtyy sivustolle. Kolme vaihetta: asenna paketti, toimita välittäjä, tarkista yhteys.",
+                "step1": "1. Asenna paketti",
+                "step2": "2. Toimita välittäjä",
+                "proxyText": "HugoCMS ei hyväksy PHP-tiedostoja. Välittäjän tiedosto on siksi kopioitava kerran käsin palvelimelle. Lisäksi Hugo-projektin config.json tarvitsee paketin merkinnät, katso alla. Molemmat tarvitaan vain ensimmäisellä kerralla.",
+                "proxyFile": "Kopioi tämä tiedosto OpensourceERP:stä tähän kohtaan sivustoa:",
+                "step3": "3. Tarkista yhteys",
+                "allGood": "Kaikki kolme vaihetta läpäisty. Sivusto tavoittaa OpensourceERP:n."
+            },
+            "fertig": {
+                "intro": "Sivuston ”{name}” käyttöönotto on valmis. Tärkeimmät tiedot:",
+                "notVerified": "Yhteyttä sivuston kautta ei tarkistettu onnistuneesti. Voit silti kytkeä sivuston päälle, mutta asiakkaat voivat kirjautua vasta, kun välittäjä ja config.json ovat kunnossa.",
+                "activate": "Kytke sivusto päälle nyt",
+                "done": "Asiakasportaali on otettu käyttöön."
+            },
+            "steps": {
+                "webseite": "Verkkosivusto",
+                "adresse": "Verkko-osoite",
+                "hugocms": "HugoCMS",
+                "zugang": "Pääsy",
+                "seiten": "Sivut",
+                "funktionen": "Toiminnot",
+                "paket": "Paketti",
+                "fertig": "Valmis"
+            }
         }
     }
 }

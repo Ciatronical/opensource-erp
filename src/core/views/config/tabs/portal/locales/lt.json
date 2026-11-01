@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Svetainės jungiklis"
+        },
+        "setup": {
+            "title": "Klientų portalo nustatymas",
+            "start": "Nustatyti žingsnis po žingsnio",
+            "reconfigure": "Patikrinti ir keisti nustatymą",
+            "finishButton": "Užbaigti",
+            "webseite": {
+                "intro": "Klientų portalas veikia svetainėje, tvarkomoje su HugoCMS. Ten klientai prisijungia, mato sąskaitas bei dokumentus ir keičia savo duomenis. Pasirinkite svetainę, kurią norite nustatyti, arba sukurkite naują.",
+                "hint": "Šis dialogas veda per visus duomenis, patikrina kiekvieną ryšį ir pabaigoje įjungia svetainę. Galite jį bet kada uždaryti ir tęsti vėliau; visa, kas įvesta, lieka išsaugota.",
+                "noAddress": "adreso dar nėra",
+                "inactive": "išjungta",
+                "new": "Sukurti naują svetainę",
+                "nameHint": "Pavadinimas apžvalgai, pvz., domenas. Klientai jo nemato."
+            },
+            "adresse": {
+                "intro": "Kokiu adresu klientai atidaro svetainę?",
+                "invalid": "Įveskite pilną adresą su https://, pvz., https://www.example.lt/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP siunčia portalo puslapius ir komponentus į HugoCMS – programą, kuria tvarkoma svetainė. Tam reikia HugoCMS adreso ir rakto.",
+                "testHint": "Patikra privaloma: toliau galima tik tada, kai HugoCMS pasiekiamas ir priima raktą."
+            },
+            "zugang": {
+                "intro": "Svetainė bendrauja su OpensourceERP per peradresuotoją. Čia nustatote, kuo ji prisistato ir kur eina užklausos.",
+                "keyGenerated": "Sukurtas naujas svetainės raktas. Jis perduodamas su paketu; jo niekur įvesti nereikia.",
+                "advanced": "Išplėstinė: prieiga be peradresuotojo (CORS)"
+            },
+            "seiten": {
+                "intro": "Šiais adresais svetainėje sukuriami portalo puslapiai. Numatytosios reikšmės tinka daugumai svetainių.",
+                "invalid": "Patikrinkite: {fields}. Leidžiamos mažosios raidės, skaitmenys ir brūkšneliai, gale pasvirasis brūkšnys; katalogas prasideda pasviruoju brūkšniu.",
+                "preview": "Adresai bus:"
+            },
+            "funktionen": {
+                "intro": "Nustatykite, kaip atrodo portalas ir ką mato klientai. Viską vėliau galima keisti svetainės kortelėje."
+            },
+            "paket": {
+                "intro": "Dabar portalas patenka į svetainę. Trys žingsniai: įdiegti paketą, pateikti peradresuotoją, patikrinti ryšį.",
+                "step1": "1. Įdiegti paketą",
+                "step2": "2. Pateikti peradresuotoją",
+                "proxyText": "HugoCMS nepriima PHP failų. Todėl peradresuotojo failą reikia vieną kartą rankiniu būdu nukopijuoti į serverį. Be to, Hugo projekto config.json reikia paketo įrašų, žr. žemiau. Abu veiksmai reikalingi tik pirmą kartą.",
+                "proxyFile": "Nukopijuokite šį failą iš OpensourceERP į šią svetainės vietą:",
+                "step3": "3. Patikrinti ryšį",
+                "allGood": "Visi trys žingsniai pavyko. Svetainė pasiekia OpensourceERP."
+            },
+            "fertig": {
+                "intro": "„{name}“ nustatymas baigtas. Svarbiausi duomenys:",
+                "notVerified": "Ryšys per svetainę nebuvo sėkmingai patikrintas. Svetainę vis tiek galite įjungti, tačiau klientai prisijungs tik tada, kai peradresuotojas ir config.json bus tvarkingi.",
+                "activate": "Įjungti svetainę dabar",
+                "done": "Klientų portalas nustatytas."
+            },
+            "steps": {
+                "webseite": "Svetainė",
+                "adresse": "Interneto adresas",
+                "hugocms": "HugoCMS",
+                "zugang": "Prieiga",
+                "seiten": "Puslapiai",
+                "funktionen": "Funkcijos",
+                "paket": "Paketas",
+                "fertig": "Baigta"
+            }
         }
     }
 }

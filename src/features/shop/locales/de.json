@@ -1168,6 +1168,77 @@
                 }
             },
             "designPage": "eBay-Produktseite gestalten"
+        },
+        "setup": {
+            "title": "Shop einrichten",
+            "start": "Shop Schritt für Schritt einrichten",
+            "finishButton": "Abschließen",
+            "webseite": {
+                "intro": "Der Shop läuft auf einer Webseite des Kundenportals: Dort melden sich Kunden an, dort stehen Warenkorb, Kasse und Produktseiten. Wählen Sie die Webseite, auf der der Shop laufen soll.",
+                "none": "Es ist noch keine Webseite des Kundenportals eingeschaltet. Richten Sie zuerst das Kundenportal ein, danach geht es hier mit dem Shop weiter.",
+                "setupPortal": "Kundenportal jetzt einrichten",
+                "portalAgain": "Kundenportal einer Webseite prüfen oder neu einrichten"
+            },
+            "kanal": {
+                "intro": "Ein Verkaufskanal bündelt alles, was zu einem Shop gehört: Preise und Aufschläge, Versandregeln, PayPal-Zugang und die Adressen der Shopseiten. Wählen Sie einen vorhandenen HugoShop oder legen Sie einen neuen an.",
+                "explain": "In der Regel gibt es einen Shop je Webseite. Mehrere Kanäle brauchen Sie nur, wenn dieselben Artikel auf verschiedenen Webseiten zu unterschiedlichen Bedingungen verkauft werden.",
+                "parts": "{count} Artikel angeboten",
+                "inactive": "ausgeschaltet",
+                "new": "Neuen Shop anlegen"
+            },
+            "rechnung": {
+                "intro": "Jede Bestellung wird sofort zur Rechnung. Dafür braucht OpensourceERP ein paar buchhalterische Vorgaben, die für alle Shops gelten.",
+                "explain": "Forderungskonto, Steuerzone und Währung sind Pflicht, sonst lässt sich keine Rechnung buchen. Der Kontakt ist der Mitarbeiter, der als Bearbeiter auf den Shop-Rechnungen steht. Der Lagerplatz legt fest, von wo verkaufte Ware ausgebucht wird; leer heißt keine Lagerbuchung."
+            },
+            "zahlung": {
+                "intro": "Kunden zahlen auf Rechnung per Überweisung oder sofort über PayPal.",
+                "bank": "Die Bankverbindung steht auf der Rechnungsseite, solange der Kunde noch nicht bezahlt hat. Kontoinhaber ist die Person oder Firma, der das Konto gehört.",
+                "paypal": "Für PayPal brauchen Sie eine REST-API-App aus dem PayPal-Entwicklerkonto (developer.paypal.com) mit Client-ID und Secret. Beginnen Sie mit der Testumgebung: Dort wird kein echtes Geld bewegt. Der „Name bei PayPal“ ist das, was Kunden auf der PayPal-Seite als Empfänger sehen.",
+                "paypalOptional": "Ohne PayPal-Zugangsdaten gibt es im Shop nur den Kauf auf Rechnung. Sie können PayPal auch später in der Karte des Verkaufskanals einrichten."
+            },
+            "versand": {
+                "intro": "Versandkosten rechnet OpensourceERP aus den Versandarten, die Sie in der Ansicht „Versandarten“ pflegen, nach Gewicht, Maßen und Lieferland.",
+                "explain": "Ohne Versandart laufen Bestellungen als „Standard“ ohne Versandkosten. Die Freigrenze und die Lieferländer gelten für diesen Shop. Leer bei den Lieferländern heißt: alle Länder, für die eine Versandzone eingerichtet ist.",
+                "methodsMissing": "Es ist noch keine Versandart mit Preisstufe eingerichtet. Legen Sie mindestens eine an, zum Beispiel „DHL Paket“ mit einem Preis, und prüfen Sie hier erneut.",
+                "methodsOk": "Versandarten sind eingerichtet.",
+                "recheck": "Erneut prüfen"
+            },
+            "seiten": {
+                "intro": "Unter diesen Adressen entstehen die Produkt- und Kategorieseiten auf der Webseite. Die Vorgaben passen zum Vorlagensatz; ändern Sie sie nur, wenn Ihre Webseite andere Pfade verwendet.",
+                "explain": "Die Adressmuster müssen zur Hugo-Konfiguration der Webseite passen (Taxonomie, permalinks, Mounts). Die Prüfung unten vergleicht beides und schlägt die passenden Einträge für die config.json vor, wenn etwas nicht zusammenpasst.",
+                "publish": "Mit automatischer Veröffentlichung geht jede Preis- oder Textänderung sofort auf die Webseite. Ohne sie sammeln sich Aufträge, die Sie in der Übersicht von Hand ausführen.",
+                "testHint": "Die Prüfung ist Pflicht: Weiter geht es erst, wenn HugoCMS erreichbar ist und die Hugo-Konfiguration zu den Adressen passt."
+            },
+            "paket": {
+                "intro": "Zum Schluss kommen die Shop-Bausteine auf die Webseite, und OpensourceERP prüft die ganze Einrichtung.",
+                "step1": "1. Paket installieren",
+                "installHint": "Überträgt die Vorlagen und Widgets des Shops an HugoCMS und lässt die Webseite bauen. Das läuft im Hintergrund und kann eine Minute dauern.",
+                "installStarted": "Die Übertragung läuft. Den Stand sehen Sie in der Shop-Übersicht unter „Veröffentlichung“.",
+                "installRunning": "Es läuft gerade eine andere Übertragung; der Auftrag wird danach ausgeführt.",
+                "installQueued": "Der Auftrag ist eingeplant und wird beim nächsten Lauf ausgeführt.",
+                "step2": "2. Einrichtung prüfen",
+                "checkHint": "Dieselbe Prüfung wie in der Shop-Übersicht: Fehlt etwas, nimmt der Shop noch keine Bestellungen an.",
+                "check": "Einrichtung prüfen",
+                "ready": "Alles vollständig. Der Shop kann Bestellungen annehmen."
+            },
+            "fertig": {
+                "intro": "Die Einrichtung von „{name}“ ist abgeschlossen. Das sind die wichtigsten Angaben:",
+                "notReady": "Die Einrichtungsprüfung meldet noch fehlende Angaben. Sie können den Shop trotzdem einschalten; Bestellungen sind erst möglich, wenn alles vollständig ist.",
+                "activate": "Shop jetzt einschalten",
+                "activateHint": "Eingeschaltet nimmt der Shop Bestellungen an und veröffentlicht Artikel.",
+                "done": "Der Shop ist eingerichtet.",
+                "nextSteps": "Als Nächstes: Artikel im Sortiment für den Shop freigeben und die Produktseiten veröffentlichen. Beides finden Sie im Shop-Menü unter „Sortiment“ und in der Übersicht."
+            },
+            "steps": {
+                "webseite": "Webseite",
+                "kanal": "Verkaufskanal",
+                "rechnung": "Rechnungsstellung",
+                "zahlung": "Zahlung",
+                "versand": "Versand",
+                "seiten": "Shopseiten",
+                "paket": "Paket",
+                "fertig": "Fertig"
+            }
         }
     }
 }

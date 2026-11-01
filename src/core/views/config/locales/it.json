@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Strumenti",
     "featureSqlTool": "Strumento SQL (Developer-Tools)",
     "featureSqlToolDesc": "Esegue comandi SQL arbitrari direttamente sul database. Disattivato per impostazione predefinita; solo gli amministratori di sistema lo vedono e lo usano, e ogni esecuzione viene registrata con utente, IP e comando.",
-    "featureSqlToolOnHint": "Lo strumento SQL è abilitato. Le modifiche hanno effetto immediato e senza controllo sul database – lo disattivi di nuovo dopo l’uso."
+    "featureSqlToolOnHint": "Lo strumento SQL è abilitato. Le modifiche hanno effetto immediato e senza controllo sul database – lo disattivi di nuovo dopo l’uso.",
+    "setupWizard": {
+        "back": "Indietro",
+        "next": "Avanti",
+        "finish": "Fine",
+        "close": "Chiudi",
+        "stepOf": "Passo {step} di {total}"
+    }
 }

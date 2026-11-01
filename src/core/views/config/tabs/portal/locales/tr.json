@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Web sitesi anahtarı"
+        },
+        "setup": {
+            "title": "Müşteri portalını kur",
+            "start": "Adım adım kur",
+            "reconfigure": "Kurulumu kontrol et ve değiştir",
+            "finishButton": "Tamamla",
+            "webseite": {
+                "intro": "Müşteri portalı, HugoCMS ile yönetilen bir web sitesinde çalışır. Müşterileriniz orada oturum açar, faturalarını ve belgelerini görür ve verilerini değiştirir. Kurmak istediğiniz web sitesini seçin veya yeni bir tane oluşturun.",
+                "hint": "Bu sihirbaz sizi tüm bilgilerden geçirir, her bağlantıyı kontrol eder ve sonunda web sitesini açar. İstediğiniz zaman kapatıp daha sonra devam edebilirsiniz; o ana kadar girilen her şey kayıtlı kalır.",
+                "noAddress": "henüz web adresi yok",
+                "inactive": "kapalı",
+                "new": "Yeni web sitesi oluştur",
+                "nameHint": "Genel bakış için bir ad, örn. alan adı. Müşteriler bunu görmez."
+            },
+            "adresse": {
+                "intro": "Müşterileriniz web sitesini hangi adresten açıyor?",
+                "invalid": "https:// ile tam bir adres girin, örn. https://www.example.com.tr/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP, portalın sayfalarını ve bileşenlerini web sitesinin yönetildiği program olan HugoCMS’e gönderir. Bunun için HugoCMS’teki adres ve anahtar gerekir.",
+                "testHint": "Kontrol zorunludur: yalnızca HugoCMS erişilebilir olduğunda ve anahtarı kabul ettiğinde devam edilebilir."
+            },
+            "zugang": {
+                "intro": "Web sitesi OpensourceERP ile bir yönlendirici üzerinden konuşur. Burada kendini neyle tanıttığını ve isteklerin nereye gideceğini belirlersiniz.",
+                "keyGenerated": "Web sitesi için yeni bir anahtar oluşturuldu. Paketle birlikte aktarılır; hiçbir yere girmeniz gerekmez.",
+                "advanced": "Gelişmiş: yönlendirici olmadan erişim (CORS)"
+            },
+            "seiten": {
+                "intro": "Portal sayfaları web sitesinde bu adreslerde oluşturulur. Varsayılanlar çoğu web sitesine uyar.",
+                "invalid": "Lütfen kontrol edin: {fields}. Küçük harf, rakam ve tire kullanılabilir, sonunda eğik çizgi olmalı; dizin eğik çizgiyle başlar.",
+                "preview": "Adresler şöyle olacak:"
+            },
+            "funktionen": {
+                "intro": "Portalın nasıl görüneceğini ve müşterilerin ne göreceğini belirleyin. Her şey daha sonra web sitesi kartında değiştirilebilir."
+            },
+            "paket": {
+                "intro": "Şimdi portal web sitesine gelir. Üç adım: paketi kur, yönlendiriciyi yerleştir, bağlantıyı kontrol et.",
+                "step1": "1. Paketi kur",
+                "step2": "2. Yönlendiriciyi yerleştir",
+                "proxyText": "HugoCMS PHP dosyalarını kabul etmez. Bu nedenle yönlendirici dosyası bir kez elle web sunucusuna kopyalanmalıdır. Ayrıca Hugo projesinin config.json dosyasında paket girdileri gerekir, aşağıya bakın. Her ikisi de yalnızca ilk seferde gereklidir.",
+                "proxyFile": "Bu dosyayı OpensourceERP’den web sitesinin şu konumuna kopyalayın:",
+                "step3": "3. Bağlantıyı kontrol et",
+                "allGood": "Üç adımın tümü geçti. Web sitesi OpensourceERP’ye ulaşıyor."
+            },
+            "fertig": {
+                "intro": "“{name}” kurulumu tamamlandı. En önemli bilgiler:",
+                "notVerified": "Web sitesi üzerinden bağlantı başarıyla doğrulanmadı. Web sitesini yine de açabilirsiniz; ancak müşteriler yalnızca yönlendirici ve config.json doğru olduğunda oturum açabilir.",
+                "activate": "Web sitesini şimdi aç",
+                "done": "Müşteri portalı kuruldu."
+            },
+            "steps": {
+                "webseite": "Web sitesi",
+                "adresse": "Web adresi",
+                "hugocms": "HugoCMS",
+                "zugang": "Erişim",
+                "seiten": "Sayfalar",
+                "funktionen": "İşlevler",
+                "paket": "Paket",
+                "fertig": "Bitti"
+            }
         }
     }
 }

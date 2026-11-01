@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Progetta pagina prodotto eBay"
+        },
+        "setup": {
+            "title": "Configurare il negozio",
+            "start": "Configura il negozio passo dopo passo",
+            "finishButton": "Concludi",
+            "webseite": {
+                "intro": "Il negozio gira su un sito web del portale clienti: lì i clienti accedono e lì si trovano carrello, cassa e pagine prodotto. Scegli il sito su cui deve girare il negozio.",
+                "none": "Nessun sito del portale clienti è ancora attivo. Configura prima il portale clienti; poi si prosegue qui con il negozio.",
+                "setupPortal": "Configura ora il portale clienti",
+                "portalAgain": "Verifica o riconfigura il portale clienti di un sito"
+            },
+            "kanal": {
+                "intro": "Un canale di vendita raccoglie tutto ciò che appartiene a un negozio: prezzi e ricarichi, regole di spedizione, accesso PayPal e indirizzi delle pagine del negozio. Scegli un HugoShop esistente o creane uno nuovo.",
+                "explain": "Di norma c’è un negozio per sito. Più canali servono solo se gli stessi articoli sono venduti su siti diversi a condizioni diverse.",
+                "parts": "{count} articoli offerti",
+                "inactive": "disattivato",
+                "new": "Crea un nuovo negozio"
+            },
+            "rechnung": {
+                "intro": "Ogni ordine diventa subito una fattura. Per questo OpensourceERP ha bisogno di alcune impostazioni contabili valide per tutti i negozi.",
+                "explain": "Conto crediti, zona fiscale e valuta sono obbligatori, altrimenti non si può registrare alcuna fattura. Il contatto è il dipendente indicato come operatore sulle fatture del negozio. L’ubicazione di magazzino stabilisce da dove viene scaricata la merce venduta; vuoto significa nessun movimento di magazzino."
+            },
+            "zahlung": {
+                "intro": "I clienti pagano con fattura tramite bonifico o subito con PayPal.",
+                "bank": "Le coordinate bancarie compaiono sulla pagina della fattura finché il cliente non ha pagato. L’intestatario è la persona o l’azienda a cui appartiene il conto.",
+                "paypal": "Per PayPal serve un’app REST API dall’account sviluppatore PayPal (developer.paypal.com) con Client ID e Secret. Inizia con l’ambiente di test: lì non si muove denaro reale. Il «nome su PayPal» è ciò che i clienti vedono come destinatario sulla pagina PayPal.",
+                "paypalOptional": "Senza credenziali PayPal il negozio offre solo l’acquisto con fattura. Puoi configurare PayPal più tardi nella scheda del canale di vendita."
+            },
+            "versand": {
+                "intro": "OpensourceERP calcola le spese di spedizione dai metodi di spedizione che gestisci nella vista «Metodi di spedizione», in base a peso, misure e paese di consegna.",
+                "explain": "Senza metodo di spedizione gli ordini passano come «Standard» senza spese. La soglia di spedizione gratuita e i paesi di consegna valgono per questo negozio. Paesi di consegna vuoti significa: tutti i paesi con una zona di spedizione.",
+                "methodsMissing": "Non è ancora configurato alcun metodo di spedizione con tariffa. Creane almeno uno, ad es. «Pacco DHL» con un prezzo, e ricontrolla qui.",
+                "methodsOk": "I metodi di spedizione sono configurati.",
+                "recheck": "Ricontrolla"
+            },
+            "seiten": {
+                "intro": "A questi indirizzi nascono le pagine prodotto e categoria sul sito. I valori predefiniti corrispondono al set di modelli; cambiali solo se il tuo sito usa altri percorsi.",
+                "explain": "Gli schemi di indirizzo devono corrispondere alla configurazione Hugo del sito (tassonomia, permalinks, mount). La verifica qui sotto confronta entrambi e propone le voci adatte per config.json se qualcosa non combacia.",
+                "publish": "Con la pubblicazione automatica ogni modifica di prezzo o testo va subito sul sito. Senza, si accumulano lavori che esegui a mano nella panoramica.",
+                "testHint": "La verifica è obbligatoria: si prosegue solo quando HugoCMS è raggiungibile e la configurazione Hugo corrisponde agli indirizzi."
+            },
+            "paket": {
+                "intro": "Infine i componenti del negozio arrivano sul sito e OpensourceERP verifica l’intera configurazione.",
+                "step1": "1. Installa pacchetto",
+                "installHint": "Trasferisce modelli e widget del negozio a HugoCMS e fa costruire il sito. Gira in background e può richiedere un minuto.",
+                "installStarted": "Il trasferimento è in corso. Lo stato è nella panoramica del negozio sotto «Pubblicazione».",
+                "installRunning": "È in corso un altro trasferimento; il lavoro sarà eseguito dopo.",
+                "installQueued": "Il lavoro è pianificato e sarà eseguito alla prossima esecuzione.",
+                "step2": "2. Verifica configurazione",
+                "checkHint": "La stessa verifica della panoramica: se manca qualcosa, il negozio non accetta ancora ordini.",
+                "check": "Verifica configurazione",
+                "ready": "Tutto completo. Il negozio può accettare ordini."
+            },
+            "fertig": {
+                "intro": "La configurazione di «{name}» è completata. I dati principali:",
+                "notReady": "La verifica segnala ancora dati mancanti. Puoi comunque attivare il negozio; gli ordini saranno possibili solo quando tutto sarà completo.",
+                "activate": "Attiva il negozio adesso",
+                "activateHint": "Attivo, il negozio accetta ordini e pubblica articoli.",
+                "done": "Il negozio è configurato.",
+                "nextSteps": "Prossimo passo: rilasciare gli articoli dell’assortimento per il negozio e pubblicare le pagine prodotto. Entrambi nel menu del negozio sotto «Assortimento» e nella panoramica."
+            },
+            "steps": {
+                "webseite": "Sito web",
+                "kanal": "Canale di vendita",
+                "rechnung": "Fatturazione",
+                "zahlung": "Pagamento",
+                "versand": "Spedizione",
+                "seiten": "Pagine del negozio",
+                "paket": "Pacchetto",
+                "fertig": "Fine"
+            }
         }
     }
 }

@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Website switch"
+        },
+        "setup": {
+            "title": "Set up customer portal",
+            "start": "Set up step by step",
+            "reconfigure": "Review and change setup",
+            "finishButton": "Finish",
+            "webseite": {
+                "intro": "The customer portal runs on a website maintained with HugoCMS. There your customers sign in, see their invoices and documents and change their data. Choose the website you want to set up, or create a new one.",
+                "hint": "This dialog walks you through all settings, checks every connection and switches the website on at the end. You can close it at any time and continue later; everything entered so far stays saved.",
+                "noAddress": "no web address yet",
+                "inactive": "switched off",
+                "new": "Create a new website",
+                "nameHint": "A name for the overview, e.g. the domain name. Customers never see it."
+            },
+            "adresse": {
+                "intro": "At which address do your customers open the website?",
+                "invalid": "Please enter a complete address with https://, e.g. https://www.example.com/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP sends the pages and widgets of the customer portal to HugoCMS, the program the website is maintained with. For this it needs the address and the key from HugoCMS.",
+                "testHint": "The check is mandatory: you can only continue once HugoCMS is reachable and accepts the key."
+            },
+            "zugang": {
+                "intro": "The website talks to OpensourceERP through a relay. Here you define how it identifies itself and where requests go.",
+                "keyGenerated": "A new key for the website was generated. It is transferred to the website with the package; you do not need to enter it anywhere.",
+                "advanced": "Advanced: access without relay (CORS)"
+            },
+            "seiten": {
+                "intro": "The pages of the customer portal are created at these addresses on the website. The defaults suit most websites.",
+                "invalid": "Please check: {fields}. Allowed are lowercase letters, digits and hyphens, ending with a slash; the directory starts with a slash.",
+                "preview": "These are the addresses:"
+            },
+            "funktionen": {
+                "intro": "Define how the customer portal looks and what customers see there. Everything can be changed later in the website card."
+            },
+            "paket": {
+                "intro": "Now the customer portal goes onto the website. Three steps: install the package, provide the relay, check the connection.",
+                "step1": "1. Install package",
+                "step2": "2. Provide relay",
+                "proxyText": "HugoCMS does not accept PHP files. The relay file therefore has to be copied to the web server by hand once. The config.json of the Hugo project also needs the entries for the package, see below. Both are needed only the first time.",
+                "proxyFile": "Copy this file from OpensourceERP to this place on the website:",
+                "step3": "3. Check connection",
+                "allGood": "All three steps passed. The website reaches OpensourceERP."
+            },
+            "fertig": {
+                "intro": "The setup of “{name}” is complete. These are the key settings:",
+                "notVerified": "The connection via the website was not verified successfully. You can switch the website on anyway, but customers can only sign in once relay and config.json are correct.",
+                "activate": "Switch website on now",
+                "done": "The customer portal is set up."
+            },
+            "steps": {
+                "webseite": "Website",
+                "adresse": "Web address",
+                "hugocms": "HugoCMS",
+                "zugang": "Access",
+                "seiten": "Pages",
+                "funktionen": "Features",
+                "paket": "Package",
+                "fertig": "Done"
+            }
         }
     }
 }

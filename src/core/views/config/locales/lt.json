@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Įrankiai",
     "featureSqlTool": "SQL įrankis (Developer-Tools)",
     "featureSqlToolDesc": "Vykdykite bet kokias SQL komandas tiesiogiai duomenų bazėje. Pagal numatytuosius nustatymus išjungta; matyti ir naudoti gali tik sistemos administratoriai, o kiekvienas vykdymas registruojamas nurodant naudotoją, IP ir komandą.",
-    "featureSqlToolOnHint": "SQL įrankis įjungtas. Pakeitimai įsigalioja iš karto ir be patikros duomenų bazėje – baigę darbą vėl jį išjunkite."
+    "featureSqlToolOnHint": "SQL įrankis įjungtas. Pakeitimai įsigalioja iš karto ir be patikros duomenų bazėje – baigę darbą vėl jį išjunkite.",
+    "setupWizard": {
+        "back": "Atgal",
+        "next": "Toliau",
+        "finish": "Baigti",
+        "close": "Uždaryti",
+        "stepOf": "{step} žingsnis iš {total}"
+    }
 }

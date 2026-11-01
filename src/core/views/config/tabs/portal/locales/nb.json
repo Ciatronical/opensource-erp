@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Nettstedets bryter"
+        },
+        "setup": {
+            "title": "Sett opp kundeportal",
+            "start": "Sett opp trinn for trinn",
+            "reconfigure": "Gå gjennom og endre oppsettet",
+            "finishButton": "Fullfør",
+            "webseite": {
+                "intro": "Kundeportalen kjører på et nettsted som vedlikeholdes med HugoCMS. Der logger kundene inn, ser fakturaer og bilag og endrer dataene sine. Velg nettstedet du vil sette opp, eller opprett et nytt.",
+                "hint": "Dialogen leder deg gjennom alle opplysninger, tester hver tilkobling og slår nettstedet på til slutt. Du kan lukke den når som helst og fortsette senere; alt du har skrevet inn, forblir lagret.",
+                "noAddress": "ingen nettadresse ennå",
+                "inactive": "slått av",
+                "new": "Opprett nytt nettsted",
+                "nameHint": "Et navn til oversikten, f.eks. domenenavnet. Kundene ser det ikke."
+            },
+            "adresse": {
+                "intro": "På hvilken adresse åpner kundene nettstedet?",
+                "invalid": "Oppgi en fullstendig adresse med https://, f.eks. https://www.example.no/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP sender kundeportalens sider og komponenter til HugoCMS, programmet nettstedet vedlikeholdes med. Det trenger adressen og nøkkelen fra HugoCMS.",
+                "testHint": "Testen er obligatorisk: du kan først gå videre når HugoCMS kan nås og godtar nøkkelen."
+            },
+            "zugang": {
+                "intro": "Nettstedet snakker med OpensourceERP via en videresender. Her bestemmer du hvordan det identifiserer seg, og hvor forespørslene går.",
+                "keyGenerated": "En ny nøkkel for nettstedet ble opprettet. Den overføres med pakken; du trenger ikke skrive den inn noe sted.",
+                "advanced": "Avansert: tilgang uten videresender (CORS)"
+            },
+            "seiten": {
+                "intro": "På disse adressene opprettes kundeportalens sider på nettstedet. Standardverdiene passer for de fleste nettsteder.",
+                "invalid": "Kontroller: {fields}. Tillatt er små bokstaver, sifre og bindestreker, med skråstrek til slutt; katalogen begynner med skråstrek.",
+                "preview": "Adressene blir:"
+            },
+            "funktionen": {
+                "intro": "Bestem hvordan kundeportalen ser ut, og hva kundene ser. Alt kan endres senere i nettstedets kort."
+            },
+            "paket": {
+                "intro": "Nå kommer kundeportalen på nettstedet. Tre trinn: installer pakken, legg ut videresenderen, test tilkoblingen.",
+                "step1": "1. Installer pakke",
+                "step2": "2. Legg ut videresender",
+                "proxyText": "HugoCMS godtar ikke PHP-filer. Videresenderens fil må derfor kopieres manuelt til webserveren én gang. I tillegg trenger Hugo-prosjektets config.json oppføringene for pakken, se nedenfor. Begge deler er bare nødvendig første gang.",
+                "proxyFile": "Kopier denne filen fra OpensourceERP til dette stedet på nettstedet:",
+                "step3": "3. Test tilkobling",
+                "allGood": "Alle tre trinn er bestått. Nettstedet når OpensourceERP."
+            },
+            "fertig": {
+                "intro": "Oppsettet av «{name}» er fullført. De viktigste opplysningene:",
+                "notVerified": "Tilkoblingen via nettstedet ble ikke testet vellykket. Du kan likevel slå på nettstedet, men kundene kan først logge inn når videresender og config.json er riktige.",
+                "activate": "Slå på nettstedet nå",
+                "done": "Kundeportalen er satt opp."
+            },
+            "steps": {
+                "webseite": "Nettsted",
+                "adresse": "Nettadresse",
+                "hugocms": "HugoCMS",
+                "zugang": "Tilgang",
+                "seiten": "Sider",
+                "funktionen": "Funksjoner",
+                "paket": "Pakke",
+                "fertig": "Ferdig"
+            }
         }
     }
 }

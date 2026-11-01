@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Udform eBay-produktside"
+        },
+        "setup": {
+            "title": "Opsæt shop",
+            "start": "Opsæt shop trin for trin",
+            "finishButton": "Afslut",
+            "webseite": {
+                "intro": "Shoppen kører på et kundeportal-websted: der logger kunderne ind, og der ligger kurv, kasse og produktsider. Vælg det websted, shoppen skal køre på.",
+                "none": "Der er endnu intet kundeportal-websted slået til. Opsæt først kundeportalen; derefter fortsætter du her med shoppen.",
+                "setupPortal": "Opsæt kundeportal nu",
+                "portalAgain": "Gennemgå eller opsæt et websteds kundeportal igen"
+            },
+            "kanal": {
+                "intro": "En salgskanal samler alt, der hører til én shop: priser og tillæg, forsendelsesregler, PayPal-adgang og shopsidernes adresser. Vælg en eksisterende HugoShop eller opret en ny.",
+                "explain": "Normalt er der én shop pr. websted. Flere kanaler er kun nødvendige, hvis de samme varer sælges på forskellige websteder til forskellige betingelser.",
+                "parts": "{count} varer udbudt",
+                "inactive": "slået fra",
+                "new": "Opret ny shop"
+            },
+            "rechnung": {
+                "intro": "Hver ordre bliver straks til en faktura. Dertil behøver OpensourceERP et par regnskabsmæssige standarder, der gælder for alle shops.",
+                "explain": "Debitorkonto, skattezone og valuta er obligatoriske, ellers kan ingen faktura bogføres. Kontakten er den medarbejder, der står som sagsbehandler på shopfakturaer. Lagerpladsen bestemmer, hvorfra solgte varer udbogføres; tom betyder ingen lagerbogføring."
+            },
+            "zahlung": {
+                "intro": "Kunder betaler på faktura via overførsel eller straks via PayPal.",
+                "bank": "Bankoplysningerne vises på fakturasiden, så længe kunden ikke har betalt. Kontohaver er den person eller virksomhed, kontoen tilhører.",
+                "paypal": "Til PayPal skal du bruge en REST-API-app fra PayPal-udviklerkontoen (developer.paypal.com) med Client-ID og Secret. Begynd med testmiljøet: der flyttes ingen rigtige penge. „Navn hos PayPal“ er det, kunderne ser som modtager på PayPal-siden.",
+                "paypalOptional": "Uden PayPal-adgangsdata tilbyder shoppen kun køb på faktura. Du kan opsætte PayPal senere på salgskanalens kort."
+            },
+            "versand": {
+                "intro": "OpensourceERP beregner forsendelsesomkostninger ud fra de forsendelsesmåder, du vedligeholder under „Forsendelsesmåder“, efter vægt, mål og leveringsland.",
+                "explain": "Uden forsendelsesmåde kører ordrer som „Standard“ uden forsendelsesomkostninger. Fragtfri grænse og leveringslande gælder for denne shop. Tomme leveringslande betyder: alle lande med en forsendelseszone.",
+                "methodsMissing": "Der er endnu ingen forsendelsesmåde med pris. Opret mindst én, f.eks. „DHL pakke“ med en pris, og kontrollér her igen.",
+                "methodsOk": "Forsendelsesmåder er opsat.",
+                "recheck": "Kontrollér igen"
+            },
+            "seiten": {
+                "intro": "På disse adresser oprettes produkt- og kategorisider på webstedet. Standardværdierne passer til skabelonsættet; ændr dem kun, hvis dit websted bruger andre stier.",
+                "explain": "Adressemønstrene skal passe til webstedets Hugo-konfiguration (taksonomi, permalinks, mounts). Kontrollen nedenfor sammenligner begge og foreslår de passende poster til config.json, hvis noget ikke passer.",
+                "publish": "Med automatisk offentliggørelse går enhver pris- eller tekstændring straks på webstedet. Uden ophobes opgaver, som du udfører manuelt i oversigten.",
+                "testHint": "Kontrollen er obligatorisk: du kan først fortsætte, når HugoCMS kan nås og Hugo-konfigurationen passer til adresserne."
+            },
+            "paket": {
+                "intro": "Til sidst kommer shoppens komponenter på webstedet, og OpensourceERP kontrollerer hele opsætningen.",
+                "step1": "1. Installér pakke",
+                "installHint": "Overfører shoppens skabeloner og widgets til HugoCMS og bygger webstedet. Det kører i baggrunden og kan tage et minut.",
+                "installStarted": "Overførslen kører. Status ses i shopoversigten under „Offentliggørelse“.",
+                "installRunning": "En anden overførsel kører; opgaven udføres bagefter.",
+                "installQueued": "Opgaven er planlagt og udføres ved næste kørsel.",
+                "step2": "2. Kontrollér opsætning",
+                "checkHint": "Samme kontrol som i shopoversigten: mangler noget, modtager shoppen endnu ikke ordrer.",
+                "check": "Kontrollér opsætning",
+                "ready": "Alt er komplet. Shoppen kan modtage ordrer."
+            },
+            "fertig": {
+                "intro": "Opsætningen af „{name}“ er afsluttet. De vigtigste oplysninger:",
+                "notReady": "Opsætningskontrollen melder stadig manglende oplysninger. Du kan alligevel slå shoppen til; ordrer er først mulige, når alt er komplet.",
+                "activate": "Slå shoppen til nu",
+                "activateHint": "Slået til modtager shoppen ordrer og offentliggør varer.",
+                "done": "Shoppen er opsat.",
+                "nextSteps": "Næste skridt: frigiv varer i sortimentet til shoppen og offentliggør produktsiderne. Begge dele findes i shopmenuen under „Sortiment“ og i oversigten."
+            },
+            "steps": {
+                "webseite": "Websted",
+                "kanal": "Salgskanal",
+                "rechnung": "Fakturering",
+                "zahlung": "Betaling",
+                "versand": "Forsendelse",
+                "seiten": "Shopsider",
+                "paket": "Pakke",
+                "fertig": "Færdig"
+            }
         }
     }
 }

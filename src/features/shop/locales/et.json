@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Kujunda eBay tooteleht"
+        },
+        "setup": {
+            "title": "Poe seadistamine",
+            "start": "Seadista pood samm-sammult",
+            "finishButton": "Lõpeta",
+            "webseite": {
+                "intro": "Pood töötab kliendiportaali veebisaidil: seal logivad kliendid sisse ning seal on ostukorv, kassa ja tootelehed. Vali veebisait, millel pood töötama peab.",
+                "none": "Ühtegi kliendiportaali veebisaiti pole veel sisse lülitatud. Seadista kõigepealt kliendiportaal, seejärel jätkub siin pood.",
+                "setupPortal": "Seadista kliendiportaal kohe",
+                "portalAgain": "Kontrolli või seadista veebisaidi portaal uuesti"
+            },
+            "kanal": {
+                "intro": "Müügikanal koondab kõik, mis ühe poe juurde kuulub: hinnad ja juurdehindlused, tarnereeglid, PayPali juurdepääs ja poelehtede aadressid. Vali olemasolev HugoShop või loo uus.",
+                "explain": "Tavaliselt on veebisaidi kohta üks pood. Mitut kanalit on vaja ainult siis, kui samu tooteid müüakse eri veebisaitidel eri tingimustel.",
+                "parts": "{count} toodet pakkumisel",
+                "inactive": "välja lülitatud",
+                "new": "Loo uus pood"
+            },
+            "rechnung": {
+                "intro": "Iga tellimus muutub kohe arveks. Selleks vajab OpensourceERP mõnda raamatupidamise vaikeväärtust, mis kehtivad kõigile poodidele.",
+                "explain": "Nõuete konto, maksutsoon ja valuuta on kohustuslikud, muidu ei saa arvet kirjendada. Kontakt on töötaja, kes on poearvetel menetlejana. Laokoht määrab, kust müüdud kaup maha kantakse; tühi tähendab, et laokannet ei tehta."
+            },
+            "zahlung": {
+                "intro": "Kliendid maksavad arve alusel ülekandega või kohe PayPali kaudu.",
+                "bank": "Pangarekvisiidid on arvelehel, kuni klient pole maksnud. Konto omanik on isik või ettevõte, kellele konto kuulub.",
+                "paypal": "PayPali jaoks on vaja REST API rakendust PayPali arenduskontolt (developer.paypal.com) koos kliendi ID ja saladusega. Alusta testkeskkonnast: seal päris raha ei liigu. „Nimi PayPalis“ on see, mida kliendid näevad PayPali lehel saajana.",
+                "paypalOptional": "Ilma PayPali andmeteta pakub pood ainult ostu arvega. PayPali saab hiljem seadistada müügikanali kaardil."
+            },
+            "versand": {
+                "intro": "Tarnekulud arvutab OpensourceERP tarneviisidest, mida haldad vaates „Tarneviisid“, kaalu, mõõtmete ja tarneriigi järgi.",
+                "explain": "Ilma tarneviisita käivad tellimused kui „Standard“ ilma tarnekuludeta. Tasuta tarne piir ja tarneriigid kehtivad sellele poele. Tühjad tarneriigid tähendavad: kõik riigid, millel on tarnetsoon.",
+                "methodsMissing": "Ühtegi hinnaga tarneviisi pole veel seadistatud. Loo vähemalt üks, nt „DHL pakk“ hinnaga, ja kontrolli siin uuesti.",
+                "methodsOk": "Tarneviisid on seadistatud.",
+                "recheck": "Kontrolli uuesti"
+            },
+            "seiten": {
+                "intro": "Nendel aadressidel luuakse veebisaidile toote- ja kategoorialehed. Vaikeväärtused sobivad mallikomplektiga; muuda neid ainult siis, kui su sait kasutab teisi teid.",
+                "explain": "Aadressimustrid peavad sobima veebisaidi Hugo konfiguratsiooniga (taksonoomia, permalinks, mountid). Allolev kontroll võrdleb mõlemat ja pakub config.json jaoks sobivaid kirjeid, kui midagi ei klapi.",
+                "publish": "Automaatse avaldamisega jõuab iga hinna- või tekstimuudatus kohe saidile. Ilma selleta kogunevad tööd, mille käivitad ülevaates käsitsi.",
+                "testHint": "Kontroll on kohustuslik: edasi saab alles siis, kui HugoCMS on kättesaadav ja Hugo konfiguratsioon sobib aadressidega."
+            },
+            "paket": {
+                "intro": "Lõpuks jõuavad poe komponendid veebisaidile ja OpensourceERP kontrollib kogu seadistust.",
+                "step1": "1. Paigalda pakett",
+                "installHint": "Kannab poe mallid ja vidinad HugoCMS-i ning laseb saidi ehitada. See töötab taustal ja võib võtta minuti.",
+                "installStarted": "Ülekanne käib. Seisu näed poe ülevaates jaotises „Avaldamine“.",
+                "installRunning": "Parasjagu käib teine ülekanne; töö tehakse pärast seda.",
+                "installQueued": "Töö on plaanitud ja tehakse järgmisel käivitusel.",
+                "step2": "2. Kontrolli seadistust",
+                "checkHint": "Sama kontroll nagu poe ülevaates: kui midagi puudub, ei võta pood veel tellimusi vastu.",
+                "check": "Kontrolli seadistust",
+                "ready": "Kõik on täielik. Pood saab tellimusi vastu võtta."
+            },
+            "fertig": {
+                "intro": "„{name}“ seadistamine on lõpetatud. Olulisimad andmed:",
+                "notReady": "Seadistuse kontroll teatab veel puuduvatest andmetest. Poe võid siiski sisse lülitada; tellimused on võimalikud alles siis, kui kõik on täielik.",
+                "activate": "Lülita pood kohe sisse",
+                "activateHint": "Sisselülitatud pood võtab tellimusi vastu ja avaldab tooteid.",
+                "done": "Pood on seadistatud.",
+                "nextSteps": "Järgmisena: vabasta sortimendis tooted poe jaoks ja avalda tootelehed. Mõlemad leiad poe menüüst „Sortiment“ ja ülevaatest."
+            },
+            "steps": {
+                "webseite": "Veebisait",
+                "kanal": "Müügikanal",
+                "rechnung": "Arveldus",
+                "zahlung": "Makse",
+                "versand": "Tarne",
+                "seiten": "Poe lehed",
+                "paket": "Pakett",
+                "fertig": "Valmis"
+            }
         }
     }
 }

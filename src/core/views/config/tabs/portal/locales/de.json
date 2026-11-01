@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Schalter der Webseite"
+        },
+        "setup": {
+            "title": "Kundenportal einrichten",
+            "start": "Schritt für Schritt einrichten",
+            "reconfigure": "Einrichtung prüfen und ändern",
+            "finishButton": "Abschließen",
+            "webseite": {
+                "intro": "Das Kundenportal läuft auf einer Webseite, die mit HugoCMS gepflegt wird. Dort melden sich Ihre Kunden an, sehen ihre Rechnungen und Belege und ändern ihre Daten. Wählen Sie die Webseite, die Sie einrichten möchten, oder legen Sie eine neue an.",
+                "hint": "Dieser Dialog führt Sie durch alle Angaben, prüft jede Verbindung und schaltet die Webseite am Ende ein. Sie können ihn jederzeit schließen und später fortsetzen, alles bis dahin Eingegebene bleibt gespeichert.",
+                "noAddress": "noch keine Webadresse",
+                "inactive": "ausgeschaltet",
+                "new": "Neue Webseite anlegen",
+                "nameHint": "Ein Name für die Übersicht, zum Beispiel der Domainname. Kunden sehen ihn nicht."
+            },
+            "adresse": {
+                "intro": "Unter welcher Adresse rufen Ihre Kunden die Webseite auf?",
+                "invalid": "Bitte eine vollständige Adresse mit https:// eingeben, zum Beispiel https://www.example.de/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP schickt die Seiten und Bausteine des Kundenportals an HugoCMS, das Programm, mit dem die Webseite gepflegt wird. Dafür braucht es die Adresse und den Schlüssel aus HugoCMS.",
+                "testHint": "Die Prüfung ist Pflicht: Weiter geht es erst, wenn HugoCMS erreichbar ist und den Schlüssel annimmt."
+            },
+            "zugang": {
+                "intro": "Die Webseite spricht mit OpensourceERP über einen Weiterleiter. Hier legen Sie fest, womit sie sich ausweist und wohin die Anfragen gehen.",
+                "keyGenerated": "Es wurde ein neuer Schlüssel für die Webseite erzeugt. Er wird mit dem Paket an die Webseite übertragen, Sie müssen ihn nirgends eintragen.",
+                "advanced": "Erweitert: Zugriff ohne Weiterleiter (CORS)"
+            },
+            "seiten": {
+                "intro": "Unter diesen Adressen entstehen die Seiten des Kundenportals auf der Webseite. Die Vorgaben passen für die meisten Webseiten.",
+                "invalid": "Bitte prüfen: {fields}. Erlaubt sind Kleinbuchstaben, Ziffern und Bindestriche, mit Schrägstrich am Ende; das Verzeichnis beginnt mit einem Schrägstrich.",
+                "preview": "So lauten die Adressen:"
+            },
+            "funktionen": {
+                "intro": "Legen Sie fest, wie das Kundenportal aussieht und was Kunden dort sehen. Alles lässt sich später in der Karte der Webseite ändern."
+            },
+            "paket": {
+                "intro": "Jetzt kommt das Kundenportal auf die Webseite. Drei Schritte: Paket installieren, Weiterleiter bereitstellen, Verbindung prüfen.",
+                "step1": "1. Paket installieren",
+                "step2": "2. Weiterleiter bereitstellen",
+                "proxyText": "HugoCMS nimmt keine PHP-Dateien an. Deshalb muss die Datei des Weiterleiters einmal von Hand auf den Webserver kopiert werden. Außerdem braucht die config.json des Hugo-Projekts die Einträge für das Paket, siehe unten. Beides ist nur beim ersten Mal nötig.",
+                "proxyFile": "Diese Datei aus OpensourceERP an diese Stelle der Webseite kopieren:",
+                "step3": "3. Verbindung prüfen",
+                "allGood": "Alle drei Schritte sind bestanden. Die Webseite erreicht OpensourceERP."
+            },
+            "fertig": {
+                "intro": "Die Einrichtung von „{name}“ ist abgeschlossen. Das sind die wichtigsten Angaben:",
+                "notVerified": "Die Verbindung über die Webseite wurde nicht erfolgreich geprüft. Sie können die Webseite trotzdem einschalten; Kunden können sich aber erst anmelden, wenn Weiterleiter und config.json stimmen.",
+                "activate": "Webseite jetzt einschalten",
+                "done": "Das Kundenportal ist eingerichtet."
+            },
+            "steps": {
+                "webseite": "Webseite",
+                "adresse": "Webadresse",
+                "hugocms": "HugoCMS",
+                "zugang": "Zugang",
+                "seiten": "Seiten",
+                "funktionen": "Funktionen",
+                "paket": "Paket",
+                "fertig": "Fertig"
+            }
         }
     }
 }

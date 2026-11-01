@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "eBay ürün sayfası tasarla"
+        },
+        "setup": {
+            "title": "Mağazayı kur",
+            "start": "Mağazayı adım adım kur",
+            "finishButton": "Tamamla",
+            "webseite": {
+                "intro": "Mağaza bir müşteri portalı web sitesinde çalışır: müşteriler orada oturum açar, sepet, kasa ve ürün sayfaları oradadır. Mağazanın çalışacağı web sitesini seçin.",
+                "none": "Henüz hiçbir müşteri portalı web sitesi açık değil. Önce müşteri portalını kurun; ardından burada mağazayla devam edersiniz.",
+                "setupPortal": "Müşteri portalını şimdi kur",
+                "portalAgain": "Bir web sitesinin portalını kontrol et veya yeniden kur"
+            },
+            "kanal": {
+                "intro": "Bir satış kanalı bir mağazaya ait her şeyi bir araya getirir: fiyatlar ve ek ücretler, kargo kuralları, PayPal erişimi ve mağaza sayfalarının adresleri. Mevcut bir HugoShop seçin veya yeni bir tane oluşturun.",
+                "explain": "Genellikle web sitesi başına bir mağaza vardır. Aynı ürünler farklı web sitelerinde farklı koşullarla satılıyorsa yalnızca o zaman birden fazla kanala ihtiyaç duyulur.",
+                "parts": "{count} ürün sunuluyor",
+                "inactive": "kapalı",
+                "new": "Yeni mağaza oluştur"
+            },
+            "rechnung": {
+                "intro": "Her sipariş hemen faturaya dönüşür. Bunun için OpensourceERP, tüm mağazalar için geçerli birkaç muhasebe ayarına ihtiyaç duyar.",
+                "explain": "Alacak hesabı, vergi bölgesi ve para birimi zorunludur, aksi halde fatura kaydedilemez. İrtibat, mağaza faturalarında işlem yapan olarak görünen çalışandır. Depo yeri, satılan malın nereden düşüleceğini belirler; boş = stok kaydı yok."
+            },
+            "zahlung": {
+                "intro": "Müşteriler fatura karşılığı havaleyle veya hemen PayPal ile öder.",
+                "bank": "Banka bilgileri, müşteri ödeme yapana kadar fatura sayfasında görünür. Hesap sahibi, hesabın ait olduğu kişi veya şirkettir.",
+                "paypal": "PayPal için PayPal geliştirici hesabından (developer.paypal.com) Client ID ve Secret içeren bir REST API uygulaması gerekir. Test ortamıyla başlayın: orada gerçek para hareket etmez. “PayPal’daki ad”, müşterilerin PayPal sayfasında alıcı olarak gördüğü addır.",
+                "paypalOptional": "PayPal erişim bilgileri olmadan mağaza yalnızca fatura karşılığı satın almayı sunar. PayPal’ı daha sonra satış kanalı kartında kurabilirsiniz."
+            },
+            "versand": {
+                "intro": "OpensourceERP kargo maliyetlerini “Kargo yöntemleri” görünümünde yönettiğiniz kargo yöntemlerinden ağırlık, boyut ve teslimat ülkesine göre hesaplar.",
+                "explain": "Kargo yöntemi olmadan siparişler kargo ücreti olmaksızın “Standart” olarak işlenir. Ücretsiz kargo eşiği ve teslimat ülkeleri bu mağaza için geçerlidir. Boş teslimat ülkeleri: kargo bölgesi olan tüm ülkeler anlamına gelir.",
+                "methodsMissing": "Henüz fiyatlı bir kargo yöntemi kurulmadı. En az bir tane oluşturun, örn. fiyatlı “DHL Paket”, ve burada yeniden kontrol edin.",
+                "methodsOk": "Kargo yöntemleri kuruldu.",
+                "recheck": "Yeniden kontrol et"
+            },
+            "seiten": {
+                "intro": "Ürün ve kategori sayfaları web sitesinde bu adreslerde oluşturulur. Varsayılanlar şablon setine uyar; yalnızca web siteniz farklı yollar kullanıyorsa değiştirin.",
+                "explain": "Adres kalıpları web sitesinin Hugo yapılandırmasına (taksonomi, permalinks, mount’lar) uymalıdır. Aşağıdaki kontrol ikisini karşılaştırır ve bir şey uyuşmuyorsa config.json için uygun girdileri önerir.",
+                "publish": "Otomatik yayınlama ile her fiyat veya metin değişikliği hemen web sitesine gider. Onsuz, genel bakışta elle çalıştırdığınız işler birikir.",
+                "testHint": "Kontrol zorunludur: yalnızca HugoCMS erişilebilir olduğunda ve Hugo yapılandırması adreslere uyduğunda devam edilebilir."
+            },
+            "paket": {
+                "intro": "Son olarak mağaza bileşenleri web sitesine gelir ve OpensourceERP tüm kurulumu kontrol eder.",
+                "step1": "1. Paketi kur",
+                "installHint": "Mağazanın şablonlarını ve bileşenlerini HugoCMS’e aktarır ve web sitesini oluşturur. Arka planda çalışır ve bir dakika sürebilir.",
+                "installStarted": "Aktarım sürüyor. Durumu mağaza genel bakışında “Yayınlama” altında görürsünüz.",
+                "installRunning": "Şu anda başka bir aktarım sürüyor; iş ondan sonra çalıştırılacak.",
+                "installQueued": "İş planlandı ve bir sonraki çalıştırmada yürütülecek.",
+                "step2": "2. Kurulumu kontrol et",
+                "checkHint": "Mağaza genel bakışındaki ile aynı kontrol: bir şey eksikse mağaza henüz sipariş kabul etmez.",
+                "check": "Kurulumu kontrol et",
+                "ready": "Her şey tamam. Mağaza sipariş kabul edebilir."
+            },
+            "fertig": {
+                "intro": "“{name}” kurulumu tamamlandı. En önemli bilgiler:",
+                "notReady": "Kurulum kontrolü hâlâ eksik bilgi bildiriyor. Mağazayı yine de açabilirsiniz; siparişler ancak her şey tamamlandığında mümkündür.",
+                "activate": "Mağazayı şimdi aç",
+                "activateHint": "Açık mağaza sipariş kabul eder ve ürünleri yayınlar.",
+                "done": "Mağaza kuruldu.",
+                "nextSteps": "Sıradaki: ürün yelpazesindeki ürünleri mağaza için serbest bırakın ve ürün sayfalarını yayınlayın. Her ikisi de mağaza menüsünde “Ürün yelpazesi” altında ve genel bakışta."
+            },
+            "steps": {
+                "webseite": "Web sitesi",
+                "kanal": "Satış kanalı",
+                "rechnung": "Faturalama",
+                "zahlung": "Ödeme",
+                "versand": "Kargo",
+                "seiten": "Mağaza sayfaları",
+                "paket": "Paket",
+                "fertig": "Bitti"
+            }
         }
     }
 }

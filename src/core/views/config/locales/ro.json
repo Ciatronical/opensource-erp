@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Instrumente",
     "featureSqlTool": "Instrument SQL (Developer-Tools)",
     "featureSqlToolDesc": "Executați comenzi SQL arbitrare direct în baza de date. Dezactivat implicit; doar administratorii de sistem îl văd și îl pot folosi, iar fiecare execuție este înregistrată cu utilizator, IP și comandă.",
-    "featureSqlToolOnHint": "Instrumentul SQL este activat. Modificările au efect imediat și fără verificare asupra bazei de date – dezactivați-l din nou după lucru."
+    "featureSqlToolOnHint": "Instrumentul SQL este activat. Modificările au efect imediat și fără verificare asupra bazei de date – dezactivați-l din nou după lucru.",
+    "setupWizard": {
+        "back": "Înapoi",
+        "next": "Înainte",
+        "finish": "Finalizare",
+        "close": "Închide",
+        "stepOf": "Pasul {step} din {total}"
+    }
 }

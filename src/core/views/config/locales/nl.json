@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Hulpmiddelen",
     "featureSqlTool": "SQL-hulpmiddel (Developer-Tools)",
     "featureSqlToolDesc": "Voer willekeurige SQL-opdrachten rechtstreeks uit op de database. Standaard uit; alleen systeembeheerders zien en gebruiken het, en elke uitvoering wordt gelogd met gebruiker, IP en opdracht.",
-    "featureSqlToolOnHint": "Het SQL-hulpmiddel is vrijgegeven. Wijzigingen werken direct en zonder controle door op de database – schakel het na gebruik weer uit."
+    "featureSqlToolOnHint": "Het SQL-hulpmiddel is vrijgegeven. Wijzigingen werken direct en zonder controle door op de database – schakel het na gebruik weer uit.",
+    "setupWizard": {
+        "back": "Terug",
+        "next": "Volgende",
+        "finish": "Voltooien",
+        "close": "Sluiten",
+        "stepOf": "Stap {step} van {total}"
+    }
 }

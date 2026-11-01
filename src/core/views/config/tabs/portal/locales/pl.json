@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Przełącznik witryny"
+        },
+        "setup": {
+            "title": "Konfiguracja portalu klienta",
+            "start": "Skonfiguruj krok po kroku",
+            "reconfigure": "Sprawdź i zmień konfigurację",
+            "finishButton": "Zakończ",
+            "webseite": {
+                "intro": "Portal klienta działa na stronie zarządzanej w HugoCMS. Tam klienci logują się, widzą faktury i dokumenty oraz zmieniają swoje dane. Wybierz stronę do skonfigurowania lub utwórz nową.",
+                "hint": "Ten kreator prowadzi przez wszystkie dane, sprawdza każde połączenie i na końcu włącza stronę. Możesz go w każdej chwili zamknąć i kontynuować później; wszystko, co wpisano, pozostaje zapisane.",
+                "noAddress": "brak adresu www",
+                "inactive": "wyłączona",
+                "new": "Utwórz nową stronę",
+                "nameHint": "Nazwa na potrzeby przeglądu, np. domena. Klienci jej nie widzą."
+            },
+            "adresse": {
+                "intro": "Pod jakim adresem klienci otwierają stronę?",
+                "invalid": "Podaj pełny adres z https://, np. https://www.example.pl/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP wysyła strony i elementy portalu do HugoCMS, programu, którym zarządza się stroną. Potrzebuje do tego adresu i klucza z HugoCMS.",
+                "testHint": "Sprawdzenie jest obowiązkowe: dalej można przejść dopiero, gdy HugoCMS jest osiągalny i akceptuje klucz."
+            },
+            "zugang": {
+                "intro": "Strona komunikuje się z OpensourceERP przez przekaźnik. Tu określasz, czym się uwierzytelnia i dokąd trafiają żądania.",
+                "keyGenerated": "Wygenerowano nowy klucz strony. Zostanie przekazany z pakietem; nie trzeba go nigdzie wpisywać.",
+                "advanced": "Zaawansowane: dostęp bez przekaźnika (CORS)"
+            },
+            "seiten": {
+                "intro": "Pod tymi adresami powstają strony portalu klienta. Wartości domyślne pasują do większości stron.",
+                "invalid": "Sprawdź: {fields}. Dozwolone są małe litery, cyfry i myślniki, z ukośnikiem na końcu; katalog zaczyna się ukośnikiem.",
+                "preview": "Adresy będą następujące:"
+            },
+            "funktionen": {
+                "intro": "Określ, jak wygląda portal i co widzą klienci. Wszystko można później zmienić na karcie strony."
+            },
+            "paket": {
+                "intro": "Teraz portal trafia na stronę. Trzy kroki: zainstaluj pakiet, udostępnij przekaźnik, sprawdź połączenie.",
+                "step1": "1. Zainstaluj pakiet",
+                "step2": "2. Udostępnij przekaźnik",
+                "proxyText": "HugoCMS nie przyjmuje plików PHP. Dlatego plik przekaźnika trzeba raz ręcznie skopiować na serwer www. Ponadto config.json projektu Hugo potrzebuje wpisów pakietu, patrz niżej. Oba kroki są konieczne tylko za pierwszym razem.",
+                "proxyFile": "Skopiuj ten plik z OpensourceERP w to miejsce strony:",
+                "step3": "3. Sprawdź połączenie",
+                "allGood": "Wszystkie trzy kroki zaliczone. Strona dociera do OpensourceERP."
+            },
+            "fertig": {
+                "intro": "Konfiguracja „{name}” jest zakończona. Najważniejsze dane:",
+                "notVerified": "Połączenie przez stronę nie zostało pomyślnie sprawdzone. Możesz mimo to włączyć stronę, ale klienci zalogują się dopiero, gdy przekaźnik i config.json będą poprawne.",
+                "activate": "Włącz stronę teraz",
+                "done": "Portal klienta jest skonfigurowany."
+            },
+            "steps": {
+                "webseite": "Strona",
+                "adresse": "Adres www",
+                "hugocms": "HugoCMS",
+                "zugang": "Dostęp",
+                "seiten": "Strony",
+                "funktionen": "Funkcje",
+                "paket": "Pakiet",
+                "fertig": "Gotowe"
+            }
         }
     }
 }

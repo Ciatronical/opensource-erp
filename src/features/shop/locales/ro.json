@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "Creează pagina de produs eBay"
+        },
+        "setup": {
+            "title": "Configurarea magazinului",
+            "start": "Configurează magazinul pas cu pas",
+            "finishButton": "Finalizează",
+            "webseite": {
+                "intro": "Magazinul rulează pe un site al portalului pentru clienți: acolo clienții se autentifică, acolo sunt coșul, casa și paginile de produs. Alegeți site-ul pe care trebuie să ruleze magazinul.",
+                "none": "Niciun site al portalului pentru clienți nu este încă activat. Configurați mai întâi portalul pentru clienți; apoi continuați aici cu magazinul.",
+                "setupPortal": "Configurează portalul pentru clienți acum",
+                "portalAgain": "Verifică sau reconfigurează portalul unui site"
+            },
+            "kanal": {
+                "intro": "Un canal de vânzare reunește tot ce ține de un magazin: prețuri și adaosuri, reguli de livrare, acces PayPal și adresele paginilor magazinului. Alegeți un HugoShop existent sau creați unul nou.",
+                "explain": "De regulă există un magazin pe site. Mai multe canale sunt necesare doar dacă aceleași articole se vând pe site-uri diferite în condiții diferite.",
+                "parts": "{count} articole oferite",
+                "inactive": "dezactivat",
+                "new": "Creează un magazin nou"
+            },
+            "rechnung": {
+                "intro": "Fiecare comandă devine imediat factură. Pentru asta OpensourceERP are nevoie de câteva setări contabile valabile pentru toate magazinele.",
+                "explain": "Contul de creanțe, zona fiscală și moneda sunt obligatorii, altfel nu se poate înregistra nicio factură. Contactul este angajatul care apare ca operator pe facturile magazinului. Locul de depozit stabilește de unde se descarcă marfa vândută; gol înseamnă fără mișcare de stoc."
+            },
+            "zahlung": {
+                "intro": "Clienții plătesc pe factură prin transfer sau imediat prin PayPal.",
+                "bank": "Datele bancare apar pe pagina facturii cât timp clientul nu a plătit. Titularul este persoana sau firma căreia îi aparține contul.",
+                "paypal": "Pentru PayPal aveți nevoie de o aplicație REST API din contul de dezvoltator PayPal (developer.paypal.com) cu Client ID și Secret. Începeți cu mediul de test: acolo nu circulă bani reali. „Numele la PayPal” este ceea ce văd clienții ca destinatar pe pagina PayPal.",
+                "paypalOptional": "Fără date de acces PayPal magazinul oferă doar cumpărarea pe factură. Puteți configura PayPal mai târziu în cardul canalului de vânzare."
+            },
+            "versand": {
+                "intro": "OpensourceERP calculează costurile de livrare din metodele de livrare pe care le întrețineți în vizualizarea „Metode de livrare”, după greutate, dimensiuni și țara de livrare.",
+                "explain": "Fără metodă de livrare comenzile rulează ca „Standard” fără costuri de livrare. Pragul de livrare gratuită și țările de livrare se aplică acestui magazin. Țări de livrare goale înseamnă: toate țările cu o zonă de livrare.",
+                "methodsMissing": "Nu există încă nicio metodă de livrare cu tarif. Creați cel puțin una, de ex. „Colet DHL” cu un preț, și verificați din nou aici.",
+                "methodsOk": "Metodele de livrare sunt configurate.",
+                "recheck": "Verifică din nou"
+            },
+            "seiten": {
+                "intro": "La aceste adrese sunt create paginile de produs și de categorie pe site. Valorile implicite corespund setului de șabloane; schimbați-le doar dacă site-ul folosește alte căi.",
+                "explain": "Tiparele de adresă trebuie să corespundă configurației Hugo a site-ului (taxonomie, permalinks, mounts). Verificarea de mai jos le compară și propune intrările potrivite pentru config.json dacă ceva nu se potrivește.",
+                "publish": "Cu publicarea automată, orice schimbare de preț sau text ajunge imediat pe site. Fără ea se adună sarcini pe care le rulați manual în prezentarea generală.",
+                "testHint": "Verificarea este obligatorie: se poate continua doar când HugoCMS este accesibil și configurația Hugo corespunde adreselor."
+            },
+            "paket": {
+                "intro": "La final, componentele magazinului ajung pe site, iar OpensourceERP verifică întreaga configurare.",
+                "step1": "1. Instalează pachetul",
+                "installHint": "Transferă șabloanele și widgeturile magazinului către HugoCMS și construiește site-ul. Rulează în fundal și poate dura un minut.",
+                "installStarted": "Transferul rulează. Starea o vedeți în prezentarea generală a magazinului la „Publicare”.",
+                "installRunning": "Rulează alt transfer; sarcina va fi executată după aceea.",
+                "installQueued": "Sarcina este planificată și va fi executată la următoarea rulare.",
+                "step2": "2. Verifică configurarea",
+                "checkHint": "Aceeași verificare ca în prezentarea generală: dacă lipsește ceva, magazinul nu acceptă încă comenzi.",
+                "check": "Verifică configurarea",
+                "ready": "Totul este complet. Magazinul poate accepta comenzi."
+            },
+            "fertig": {
+                "intro": "Configurarea „{name}” este încheiată. Cele mai importante date:",
+                "notReady": "Verificarea semnalează încă date lipsă. Puteți activa magazinul oricum; comenzile sunt posibile doar când totul este complet.",
+                "activate": "Activează magazinul acum",
+                "activateHint": "Activat, magazinul acceptă comenzi și publică articole.",
+                "done": "Magazinul este configurat.",
+                "nextSteps": "Urmează: eliberați articole din sortiment pentru magazin și publicați paginile de produs. Ambele în meniul magazinului la „Sortiment” și în prezentarea generală."
+            },
+            "steps": {
+                "webseite": "Site",
+                "kanal": "Canal de vânzare",
+                "rechnung": "Facturare",
+                "zahlung": "Plată",
+                "versand": "Livrare",
+                "seiten": "Paginile magazinului",
+                "paket": "Pachet",
+                "fertig": "Gata"
+            }
         }
     }
 }

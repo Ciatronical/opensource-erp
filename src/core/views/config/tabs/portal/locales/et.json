@@ -141,6 +141,66 @@
         },
         "backendTestStep": {
             "schalter": "Veebisaidi lüliti"
+        },
+        "setup": {
+            "title": "Kliendiportaali seadistamine",
+            "start": "Seadista samm-sammult",
+            "reconfigure": "Kontrolli ja muuda seadistust",
+            "finishButton": "Lõpeta",
+            "webseite": {
+                "intro": "Kliendiportaal töötab veebisaidil, mida hallatakse HugoCMS-iga. Seal logivad kliendid sisse, näevad arveid ja dokumente ning muudavad oma andmeid. Vali veebisait, mille soovid seadistada, või loo uus.",
+                "hint": "See dialoog juhib sind läbi kõigi andmete, kontrollib iga ühendust ja lülitab veebisaidi lõpus sisse. Võid selle igal ajal sulgeda ja hiljem jätkata; seni sisestatu jääb salvestatuks.",
+                "noAddress": "veebiaadress puudub",
+                "inactive": "välja lülitatud",
+                "new": "Loo uus veebisait",
+                "nameHint": "Nimi ülevaate jaoks, nt domeeninimi. Kliendid seda ei näe."
+            },
+            "adresse": {
+                "intro": "Millisel aadressil avavad kliendid veebisaidi?",
+                "invalid": "Sisesta täielik aadress koos https://, nt https://www.example.ee/."
+            },
+            "hugocms": {
+                "intro": "OpensourceERP saadab kliendiportaali lehed ja komponendid HugoCMS-i, programmi, millega veebisaiti hallatakse. Selleks on vaja HugoCMS-i aadressi ja võtit.",
+                "testHint": "Kontroll on kohustuslik: edasi saab alles siis, kui HugoCMS on kättesaadav ja võtab võtme vastu."
+            },
+            "zugang": {
+                "intro": "Veebisait suhtleb OpensourceERP-ga edastaja kaudu. Siin määrad, millega ta end tuvastab ja kuhu päringud lähevad.",
+                "keyGenerated": "Veebisaidile loodi uus võti. See kantakse koos paketiga üle; sa ei pea seda kuhugi sisestama.",
+                "advanced": "Täpsemalt: juurdepääs ilma edastajata (CORS)"
+            },
+            "seiten": {
+                "intro": "Nendel aadressidel luuakse kliendiportaali lehed veebisaidile. Vaikeväärtused sobivad enamikule saitidele.",
+                "invalid": "Kontrolli: {fields}. Lubatud on väiketähed, numbrid ja sidekriipsud, lõpus kaldkriips; kataloog algab kaldkriipsuga.",
+                "preview": "Aadressid on:"
+            },
+            "funktionen": {
+                "intro": "Määra, kuidas portaal välja näeb ja mida kliendid seal näevad. Kõike saab hiljem veebisaidi kaardil muuta."
+            },
+            "paket": {
+                "intro": "Nüüd jõuab portaal veebisaidile. Kolm sammu: paigalda pakett, paiguta edastaja, kontrolli ühendust.",
+                "step1": "1. Paigalda pakett",
+                "step2": "2. Paiguta edastaja",
+                "proxyText": "HugoCMS ei võta PHP-faile vastu. Seepärast tuleb edastaja fail üks kord käsitsi veebiserverisse kopeerida. Lisaks vajab Hugo projekti config.json paketi kirjeid, vt allpool. Mõlemat on vaja vaid esimesel korral.",
+                "proxyFile": "Kopeeri see fail OpensourceERP-st veebisaidi sellesse kohta:",
+                "step3": "3. Kontrolli ühendust",
+                "allGood": "Kõik kolm sammu läbitud. Veebisait jõuab OpensourceERP-ni."
+            },
+            "fertig": {
+                "intro": "„{name}“ seadistamine on lõpetatud. Olulisimad andmed:",
+                "notVerified": "Ühendust veebisaidi kaudu ei kontrollitud edukalt. Võid veebisaidi siiski sisse lülitada; kliendid saavad sisse logida alles siis, kui edastaja ja config.json on korras.",
+                "activate": "Lülita veebisait kohe sisse",
+                "done": "Kliendiportaal on seadistatud."
+            },
+            "steps": {
+                "webseite": "Veebisait",
+                "adresse": "Veebiaadress",
+                "hugocms": "HugoCMS",
+                "zugang": "Juurdepääs",
+                "seiten": "Lehed",
+                "funktionen": "Funktsioonid",
+                "paket": "Pakett",
+                "fertig": "Valmis"
+            }
         }
     }
 }

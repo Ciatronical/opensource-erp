@@ -1392,5 +1392,12 @@
     "toolsFeatures": "Verktøy",
     "featureSqlTool": "SQL-verktøy (Developer-Tools)",
     "featureSqlToolDesc": "Kjør vilkårlige SQL-kommandoer direkte på databasen. Som standard av; bare systemadministratorer ser og bruker det, og hver kjøring logges med bruker, IP og kommando.",
-    "featureSqlToolOnHint": "SQL-verktøyet er aktivert. Endringer trer i kraft umiddelbart og uten kontroll i databasen – slå det av igjen etter bruk."
+    "featureSqlToolOnHint": "SQL-verktøyet er aktivert. Endringer trer i kraft umiddelbart og uten kontroll i databasen – slå det av igjen etter bruk.",
+    "setupWizard": {
+        "back": "Tilbake",
+        "next": "Neste",
+        "finish": "Fullfør",
+        "close": "Lukk",
+        "stepOf": "Trinn {step} av {total}"
+    }
 }

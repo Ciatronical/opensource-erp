@@ -890,6 +890,77 @@
                 }
             },
             "designPage": "eBay-productpagina ontwerpen"
+        },
+        "setup": {
+            "title": "Shop instellen",
+            "start": "Shop stap voor stap instellen",
+            "finishButton": "Afronden",
+            "webseite": {
+                "intro": "De shop draait op een website van het klantenportaal: daar melden klanten zich aan en daar staan winkelwagen, kassa en productpagina’s. Kies de website waarop de shop moet draaien.",
+                "none": "Er is nog geen website van het klantenportaal ingeschakeld. Stel eerst het klantenportaal in; daarna gaat u hier verder met de shop.",
+                "setupPortal": "Klantenportaal nu instellen",
+                "portalAgain": "Klantenportaal van een website controleren of opnieuw instellen"
+            },
+            "kanal": {
+                "intro": "Een verkoopkanaal bundelt alles wat bij één shop hoort: prijzen en toeslagen, verzendregels, PayPal-toegang en de adressen van de shoppagina’s. Kies een bestaande HugoShop of maak een nieuwe aan.",
+                "explain": "Meestal is er één shop per website. Meerdere kanalen hebt u alleen nodig als dezelfde artikelen op verschillende websites tegen verschillende voorwaarden worden verkocht.",
+                "parts": "{count} artikelen aangeboden",
+                "inactive": "uitgeschakeld",
+                "new": "Nieuwe shop aanmaken"
+            },
+            "rechnung": {
+                "intro": "Elke bestelling wordt direct een factuur. Daarvoor heeft OpensourceERP enkele boekhoudkundige instellingen nodig die voor alle shops gelden.",
+                "explain": "Debiteurenrekening, belastingzone en valuta zijn verplicht, anders kan er geen factuur worden geboekt. De contactpersoon is de medewerker die als behandelaar op shopfacturen staat. De magazijnplaats bepaalt van waaruit verkochte goederen worden afgeboekt; leeg betekent geen voorraadboeking."
+            },
+            "zahlung": {
+                "intro": "Klanten betalen op factuur per overschrijving of direct via PayPal.",
+                "bank": "De bankgegevens staan op de factuurpagina zolang de klant nog niet heeft betaald. Rekeninghouder is de persoon of het bedrijf van wie de rekening is.",
+                "paypal": "Voor PayPal hebt u een REST-API-app uit het PayPal-ontwikkelaarsaccount (developer.paypal.com) nodig met Client-ID en Secret. Begin met de testomgeving: daar wordt geen echt geld verplaatst. De „naam bij PayPal“ is wat klanten op de PayPal-pagina als ontvanger zien.",
+                "paypalOptional": "Zonder PayPal-gegevens biedt de shop alleen kopen op factuur. U kunt PayPal later instellen in de kaart van het verkoopkanaal."
+            },
+            "versand": {
+                "intro": "OpensourceERP berekent verzendkosten uit de verzendmethoden die u in de weergave „Verzendmethoden“ beheert, naar gewicht, afmetingen en bezorgland.",
+                "explain": "Zonder verzendmethode lopen bestellingen als „Standaard“ zonder verzendkosten. De gratis-verzenddrempel en de bezorglanden gelden voor deze shop. Lege bezorglanden betekent: alle landen met een verzendzone.",
+                "methodsMissing": "Er is nog geen verzendmethode met tarief ingesteld. Maak er minstens één aan, bijv. „DHL pakket“ met een prijs, en controleer hier opnieuw.",
+                "methodsOk": "Verzendmethoden zijn ingesteld.",
+                "recheck": "Opnieuw controleren"
+            },
+            "seiten": {
+                "intro": "Op deze adressen ontstaan de product- en categoriepagina’s op de website. De standaardwaarden passen bij de sjabloonset; wijzig ze alleen als uw website andere paden gebruikt.",
+                "explain": "De adrespatronen moeten passen bij de Hugo-configuratie van de website (taxonomie, permalinks, mounts). De controle hieronder vergelijkt beide en stelt de passende vermeldingen voor config.json voor als iets niet klopt.",
+                "publish": "Met automatisch publiceren gaat elke prijs- of tekstwijziging direct naar de website. Zonder stapelen zich taken op die u handmatig in het overzicht uitvoert.",
+                "testHint": "De controle is verplicht: u kunt pas verder als HugoCMS bereikbaar is en de Hugo-configuratie bij de adressen past."
+            },
+            "paket": {
+                "intro": "Tot slot komen de shop-bouwstenen op de website en controleert OpensourceERP de hele instelling.",
+                "step1": "1. Pakket installeren",
+                "installHint": "Draagt de sjablonen en widgets van de shop over aan HugoCMS en laat de website bouwen. Dit loopt op de achtergrond en kan een minuut duren.",
+                "installStarted": "De overdracht loopt. De status ziet u in het shopoverzicht onder „Publicatie“.",
+                "installRunning": "Er loopt een andere overdracht; de taak wordt daarna uitgevoerd.",
+                "installQueued": "De taak is ingepland en wordt bij de volgende run uitgevoerd.",
+                "step2": "2. Instelling controleren",
+                "checkHint": "Dezelfde controle als in het shopoverzicht: ontbreekt er iets, dan neemt de shop nog geen bestellingen aan.",
+                "check": "Instelling controleren",
+                "ready": "Alles compleet. De shop kan bestellingen aannemen."
+            },
+            "fertig": {
+                "intro": "De instelling van „{name}“ is voltooid. Dit zijn de belangrijkste gegevens:",
+                "notReady": "De controle meldt nog ontbrekende gegevens. U kunt de shop toch inschakelen; bestellingen zijn pas mogelijk als alles compleet is.",
+                "activate": "Shop nu inschakelen",
+                "activateHint": "Ingeschakeld neemt de shop bestellingen aan en publiceert artikelen.",
+                "done": "De shop is ingesteld.",
+                "nextSteps": "Volgende stap: artikelen in het assortiment vrijgeven voor de shop en de productpagina’s publiceren. Beide vindt u in het shopmenu onder „Assortiment“ en in het overzicht."
+            },
+            "steps": {
+                "webseite": "Website",
+                "kanal": "Verkoopkanaal",
+                "rechnung": "Facturering",
+                "zahlung": "Betaling",
+                "versand": "Verzending",
+                "seiten": "Shoppagina's",
+                "paket": "Pakket",
+                "fertig": "Klaar"
+            }
         }
     }
 }
