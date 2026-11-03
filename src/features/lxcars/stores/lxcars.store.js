@@ -1148,7 +1148,9 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
             printerId
         })
         if (!response.data.success) {
-            throw new ApiError('ApiError', response.data.text, 'Error printing yellow label: ' + response.data.text)
+            const err = new ApiError('ApiError', response.data.text, 'Error printing yellow label: ' + response.data.text)
+            err.payload = response.data.payload
+            throw err
         }
         return response.data
     }
@@ -1167,7 +1169,9 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
             printerId
         })
         if (!response.data.success) {
-            throw new ApiError('ApiError', response.data.text, 'Error printing tyre labels: ' + response.data.text)
+            const err = new ApiError('ApiError', response.data.text, 'Error printing tyre labels: ' + response.data.text)
+            err.payload = response.data.payload
+            throw err
         }
         return response.data
     }

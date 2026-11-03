@@ -5,6 +5,10 @@
         <v-card-title class="faktura-card__header">
             <v-icon class="mr-2" size="small">mdi-wrench</v-icon>
             {{ t('MaintenanceSectionCard.title') }}
+            <v-chip v-if="dueState.level" :color="dueState.level === 'due' ? 'error' : 'warning'" variant="tonal" size="x-small" class="ml-2 font-weight-medium">
+                <v-icon start size="x-small">{{ dueState.level === 'due' ? 'mdi-alert-circle' : 'mdi-clock-alert-outline' }}</v-icon>
+                {{ dueState.level === 'due' ? t('MaintenanceDue.count.due', dueState.due.length) : t('MaintenanceDue.count.soon', dueState.soon.length) }}
+            </v-chip>
             <v-spacer />
             <v-tooltip location="top" :text="voiceRecording ? t('MaintenanceSectionCard.voice.stop') : t('MaintenanceSectionCard.voice.hint')">
                 <template #activator="{ props: tp }">
@@ -34,11 +38,13 @@
                 <v-icon start size="x-small">{{ oeExtData.c_sk ? 'mdi-link-variant' : 'mdi-link-variant-off' }}</v-icon>
                 {{ t('MaintenanceSectionCard.fields.c_sk') }}
             </v-chip>
+            <!-- Steuerkette: kein Termin/km — nur von Hand fällig (z. B. klappert) -->
+            <maintenance-due-button v-if="oeExtData.c_sk" class="ml-2" :state="dueState.fields.c_zrd" :disabled="!hasCar" @toggle="v => emitChange('c_zrd_due', v)" />
         </v-card-title>
         <v-divider />
         <v-card-text class="faktura-card__body">
             <v-row dense>
-                <v-col cols="12" sm="6" md="3" class="py-1">
+                <v-col v-if="!oeExtData.c_sk" cols="12" sm="6" md="3" class="py-1">
                     <v-text-field
                         v-model="displayZrd"
                         :label="t('MaintenanceSectionCard.fields.c_zrd')"
@@ -46,11 +52,15 @@
                         density="compact"
                         hide-details="auto"
                         placeholder="MM/JJ"
-                        :disabled="!hasCar || oeExtData.c_sk"
+                        :disabled="!hasCar"
                         @blur="onBlurMonthYear('c_zrd')"
-                    />
+                    >
+                        <template #append-inner>
+                            <maintenance-due-button :state="dueState.fields.c_zrd" :disabled="!hasCar" @toggle="v => emitChange('c_zrd_due', v)" />
+                        </template>
+                    </v-text-field>
                 </v-col>
-                <v-col cols="12" sm="6" md="3" class="py-1">
+                <v-col v-if="!oeExtData.c_sk" cols="12" sm="6" md="3" class="py-1">
                     <v-text-field
                         v-model="displayZrk"
                         :label="t('MaintenanceSectionCard.fields.c_zrk')"
@@ -59,9 +69,13 @@
                         hide-details="auto"
                         suffix="km"
                         placeholder="z.B. 180"
-                        :disabled="!hasCar || oeExtData.c_sk"
+                        :disabled="!hasCar"
                         @blur="onBlurKm"
-                    />
+                    >
+                        <template #append-inner>
+                            <maintenance-due-button :state="dueState.fields.c_zrk" :disabled="!hasCar" @toggle="v => emitChange('c_zrk_due', v)" />
+                        </template>
+                    </v-text-field>
                 </v-col>
                 <v-col cols="12" sm="6" md="3" class="py-1">
                     <v-text-field
@@ -73,7 +87,11 @@
                         placeholder="MM/JJ"
                         :disabled="!hasCar"
                         @blur="onBlurMonthYear('c_bf')"
-                    />
+                    >
+                        <template #append-inner>
+                            <maintenance-due-button :state="dueState.fields.c_bf" :disabled="!hasCar" @toggle="v => emitChange('c_bf_due', v)" />
+                        </template>
+                    </v-text-field>
                 </v-col>
                 <v-col cols="12" sm="6" md="3" class="py-1">
                     <v-text-field
@@ -85,7 +103,11 @@
                         placeholder="MM/JJ"
                         :disabled="!hasCar"
                         @blur="onBlurMonthYear('c_wd')"
-                    />
+                    >
+                        <template #append-inner>
+                            <maintenance-due-button :state="dueState.fields.c_wd" :disabled="!hasCar" @toggle="v => emitChange('c_wd_due', v)" />
+                        </template>
+                    </v-text-field>
                 </v-col>
             </v-row>
         </v-card-text>
@@ -93,15 +115,18 @@
 </template>
 
 <script>
-import { defineComponent, ref, watch } from 'vue'
+import { computed, defineComponent, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import { parseMonthYear, formatMonthYear } from '@/features/lxcars/utils/validation.js'
 import { useVoiceInput } from '@/core/composables/useVoiceInput.js'
 import * as toasts from '@/core/utils/toasts.js'
+import { maintenanceDueState } from '@/features/lxcars/utils/maintenanceDue.js'
+import MaintenanceDueButton from '@/features/lxcars/components/maintenance-due-button.vue'
 
 export default defineComponent({
     name: 'MaintenanceSectionCard',
+    components: { MaintenanceDueButton },
     props: {
         oeExtData: { type: Object, required: true },
         hasCar: { type: Boolean, default: false },
@@ -162,14 +187,24 @@ export default defineComponent({
         function onToggleSk() {
             if (!props.hasCar) return
             emit('oe-ext-field-change', 'c_sk', !props.oeExtData.c_sk)
+            // Umschalten Riemen ⇄ Kette: Hand-Markierungen gelten für das andere Bauteil nicht
+            emit('oe-ext-field-change', 'c_zrd_due', false)
+            emit('oe-ext-field-change', 'c_zrk_due', false)
+        }
+
+        // Fälligkeit (Termin/km erreicht, Hand-Markierung c_*_due) — Markierung liegt im
+        // Fahrzeug und geht wie die Wartungsfelder über updateOeExt dorthin.
+        const dueState = computed(() => maintenanceDueState(props.oeExtData))
+
+        function emitChange(field, value) {
+            emit('oe-ext-field-change', field, value)
         }
 
         // ── Intelligente Spracheingabe ────────────────────────────────────────
         // Frei gesprochen ("Kilometerstand 120369, Zahnriemen fällig bei 20000,
         // Bremsflüssigkeit 02/2029"): Whisper transkribiert, der lokale LLM
         // strukturiert, wir setzen die Felder wie von Hand (Auto-Save greift über
-        // die oe-ext-field-change-Events). Gekoppelte Zahnriemen-Felder (c_sk)
-        // werden übersprungen — genau wie beim Tippen (dort sind sie deaktiviert).
+        // die oe-ext-field-change-Events). Bei Steuerkette gibt es keine Zahnriemen-Felder.
         const voiceExtracting = ref(false)
 
         async function applyMaintenanceSpeech(text) {
@@ -223,7 +258,7 @@ export default defineComponent({
         } = useVoiceInput({ onText: applyMaintenanceSpeech })
 
         return {
-            t, displayZrd, displayBf, displayWd, displayZrk, onBlurMonthYear, onBlurKm, onToggleSk,
+            t, displayZrd, displayBf, displayWd, displayZrk, onBlurMonthYear, onBlurKm, onToggleSk, dueState, emitChange,
             voiceRecording, voiceBusy, voiceExtracting, voiceSupported, voiceToggle
         }
     }

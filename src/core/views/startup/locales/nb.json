@@ -32,6 +32,7 @@
         "department1": "Avdeling 1",
         "department2": "Avdeling 2",
         "fax": "Fax",
+        "keywords": "Søkeord",
         "gln": "GLN",
         "noBillingAddresses": "Ingen ytterligere faktureringsadresser tilgjengelig",
         "salutation": "Tiltale",

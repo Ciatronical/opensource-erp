@@ -37,19 +37,15 @@
                 </v-btn>
             </template>
             <!-- Online-Portale auch im Mechanikermodus (Nur-Lese-Ansicht) verfügbar -->
-            <v-btn v-if="aagAvailable" variant="tonal" size="small" color="indigo" :loading="aagLoading || ktypeLoading" :title="t('CarEditView.aag.tsnTooltip')" @click="openAag">
-                <v-icon start size="small">mdi-car-search</v-icon>
-                {{ t('CarEditView.aag.button') }}
-            </v-btn>
-            <v-btn v-if="hgsAvailable" variant="tonal" size="small" color="blue-grey-darken-1" :loading="hgsLoading" :title="t('CarEditView.hgs.tooltip')" @click="openHgs">
-                <v-icon start size="small">mdi-database-search-outline</v-icon>
-                {{ t('CarEditView.hgs.button') }}
-            </v-btn>
-            <!-- mega macs als Seite in LxCars; das Fahrzeug kommt über den offenen Auftrag (asanetwork) ins Gerät -->
-            <v-btn v-if="gutmannAvailable" variant="tonal" size="small" color="blue-grey-darken-1" :title="t('CarEditView.gutmann.tooltip')" :to="{ name: 'gutmann' }">
-                <v-icon start size="small">mdi-car-wrench</v-icon>
-                {{ t('CarEditView.gutmann.button') }}
-            </v-btn>
+            <diag-portal-buttons
+                :aag-available="aagAvailable"
+                :aag-loading="aagLoading || ktypeLoading"
+                :hgs-available="hgsAvailable"
+                :hgs-loading="hgsLoading"
+                :gutmann-available="gutmannAvailable"
+                @open-aag="openAag"
+                @open-hgs="openHgs"
+            />
             <template v-if="!readonly">
                 <v-btn v-if="isEditMode" variant="tonal" size="small" color="success" @click="openCarRegistration">
                     <v-icon start size="small">mdi-card-account-details</v-icon>
@@ -89,7 +85,7 @@
                 </v-btn>
             </template>
             <v-spacer />
-            <v-btn v-if="isMechanicMode" icon variant="text" color="primary" :title="t('MechanicView.exitMechanic')" @click="router.push({ name: 'menu' })">
+            <v-btn v-if="isMechanicMode" icon variant="text" color="primary" :title="t('MechanicView.exitMechanic')" @click="router.push({ name: 'customer-vendor' })">
                 <v-icon>mdi-exit-to-app</v-icon>
             </v-btn>
             <template v-if="!readonly">
@@ -126,6 +122,30 @@
         </v-alert>
         <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mb-3">
             {{ error }}
+        </v-alert>
+        <!-- Wartung fällig / bald fällig (Termin erreicht, km-Stand erreicht, von Hand markiert) -->
+        <v-alert
+            v-if="!loading && maintenanceDue.level"
+            :type="maintenanceDue.level === 'due' ? 'error' : 'warning'"
+            :icon="maintenanceDue.level === 'due' ? 'mdi-car-wrench' : 'mdi-clock-alert-outline'"
+            variant="tonal"
+            density="compact"
+            class="mb-3"
+        >
+            <div class="font-weight-medium">{{ t(maintenanceDue.level === 'due' ? 'MaintenanceDue.alert.title' : 'MaintenanceDue.alert.titleSoon') }}</div>
+            <ul class="maintenance-due-list">
+                <li v-for="item in maintenanceDue.due.concat(maintenanceDue.soon)" :key="item.field">
+                    <v-icon size="x-small" :color="item.state === 'due' ? 'error' : 'warning'" class="mr-1">{{ item.state === 'due' ? 'mdi-alert-circle' : 'mdi-clock-alert-outline' }}</v-icon>
+                    <strong class="mr-1">{{ t('MaintenanceDue.items.' + item.labelKey) }}:</strong>
+                    <span class="text-medium-emphasis">{{ maintenanceDueReasons(item, t, locale).join(' · ') }}</span>
+                </li>
+            </ul>
+            <template #append>
+                <v-btn size="small" variant="tonal" :color="maintenanceDue.level === 'due' ? 'error' : 'warning'" @click="scrollToMaintenance">
+                    <v-icon start size="small">mdi-wrench</v-icon>
+                    {{ t('MaintenanceDue.alert.jump') }}
+                </v-btn>
+            </template>
         </v-alert>
 
         <v-form
@@ -459,10 +479,14 @@
                     </v-card>
 
                     <!-- Wartung & Service -->
-                    <v-card class="mt-3" variant="outlined" elevation="1">
+                    <v-card ref="maintenanceCardRef" class="mt-3" variant="outlined" elevation="1">
                         <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center">
                             <v-icon class="mr-2" size="small">mdi-wrench</v-icon>
                             <span class="text-subtitle-1 font-weight-medium">{{ t('CarEditView.sections.maintenance') }}</span>
+                            <v-chip v-if="maintenanceDue.level" :color="maintenanceDue.level === 'due' ? 'error' : 'warning'" variant="tonal" size="x-small" class="ml-2 font-weight-medium">
+                                <v-icon start size="x-small">{{ maintenanceDue.level === 'due' ? 'mdi-alert-circle' : 'mdi-clock-alert-outline' }}</v-icon>
+                                {{ maintenanceDue.level === 'due' ? t('MaintenanceDue.count.due', maintenanceDue.due.length) : t('MaintenanceDue.count.soon', maintenanceDue.soon.length) }}
+                            </v-chip>
                             <v-spacer />
                             <v-tooltip location="top" :text="voiceRecording ? t('CarEditView.voice.stop') : t('CarEditView.voice.hint')">
                                 <template #activator="{ props: tp }">
@@ -487,28 +511,46 @@
                                 size="small"
                                 :class="readonly ? '' : 'cursor-pointer'"
                                 tabindex="-1"
-                                @click="readonly ? null : (car.c_sk = !car.c_sk)"
+                                @click="readonly ? null : toggleChain()"
                             >
                                 <v-icon start size="x-small">{{ car.c_sk ? 'mdi-link-variant' : 'mdi-link-variant-off' }}</v-icon>
                                 {{ t('CarEditView.fields.c_sk') }}
                             </v-chip>
+                            <!-- Steuerkette: kein Termin/km — nur von Hand fällig (z. B. klappert) -->
+                            <maintenance-due-button v-if="car.c_sk" class="ml-2" :state="maintenanceDue.fields.c_zrd" :disabled="readonly" @toggle="v => setDueFlag('c_zrd', v)" />
                         </v-card-title>
                         <v-divider />
                         <v-card-text class="py-2 px-2 px-sm-3">
                             <v-row dense>
-                                <v-col cols="12" sm="6" class="py-1">
-                                    <v-text-field v-model="displayZrd" :label="t('CarEditView.fields.c_zrd')" variant="outlined" density="compact" hide-details="auto" placeholder="MM/JJ" tabindex="19" :rules="car.c_sk ? [] : rulesMonthYear" :disabled="car.c_sk" @blur="onBlurMonthYear('c_zrd')" />
+                                <v-col v-if="!car.c_sk" cols="12" sm="6" class="py-1">
+                                    <v-text-field v-model="displayZrd" :label="t('CarEditView.fields.c_zrd')" variant="outlined" density="compact" hide-details="auto" placeholder="MM/JJ" tabindex="19" :rules="rulesMonthYear.c_zrd" @blur="onBlurMonthYear('c_zrd')" >
+                                        <template #append-inner>
+                                            <maintenance-due-button :state="maintenanceDue.fields.c_zrd" :disabled="readonly" @toggle="v => setDueFlag('c_zrd', v)" />
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
-                                <v-col cols="12" sm="6" class="py-1">
-                                    <v-text-field v-model="displayZrk" :label="t('CarEditView.fields.c_zrk')" variant="outlined" density="compact" hide-details="auto" suffix="km" placeholder="z.B. 180" tabindex="20" :disabled="car.c_sk" @blur="onBlurKm" />
+                                <v-col v-if="!car.c_sk" cols="12" sm="6" class="py-1">
+                                    <v-text-field v-model="displayZrk" :label="t('CarEditView.fields.c_zrk')" variant="outlined" density="compact" hide-details="auto" suffix="km" placeholder="z.B. 180" tabindex="20" @blur="onBlurKm" >
+                                        <template #append-inner>
+                                            <maintenance-due-button :state="maintenanceDue.fields.c_zrk" :disabled="readonly" @toggle="v => setDueFlag('c_zrk', v)" />
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
                             </v-row>
                             <v-row dense>
                                 <v-col cols="12" sm="6" class="py-1">
-                                    <v-text-field v-model="displayBf" :label="t('CarEditView.fields.c_bf')" variant="outlined" density="compact" hide-details="auto" placeholder="MM/JJ" tabindex="21" :rules="rulesMonthYear" @blur="onBlurMonthYear('c_bf')" />
+                                    <v-text-field v-model="displayBf" :label="t('CarEditView.fields.c_bf')" variant="outlined" density="compact" hide-details="auto" placeholder="MM/JJ" tabindex="21" :rules="rulesMonthYear.c_bf" @blur="onBlurMonthYear('c_bf')" >
+                                        <template #append-inner>
+                                            <maintenance-due-button :state="maintenanceDue.fields.c_bf" :disabled="readonly" @toggle="v => setDueFlag('c_bf', v)" />
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="6" class="py-1">
-                                    <v-text-field v-model="displayWd" :label="t('CarEditView.fields.c_wd')" variant="outlined" density="compact" hide-details="auto" placeholder="MM/JJ" tabindex="22" :rules="rulesMonthYear" @blur="onBlurMonthYear('c_wd')" />
+                                    <v-text-field v-model="displayWd" :label="t('CarEditView.fields.c_wd')" variant="outlined" density="compact" hide-details="auto" placeholder="MM/JJ" tabindex="22" :rules="rulesMonthYear.c_wd" @blur="onBlurMonthYear('c_wd')" >
+                                        <template #append-inner>
+                                            <maintenance-due-button :state="maintenanceDue.fields.c_wd" :disabled="readonly" @toggle="v => setDueFlag('c_wd', v)" />
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
                             </v-row>
                             <v-row dense>
@@ -1292,12 +1334,15 @@ import SendEmailDialog from './components/send-email.dialog.vue'
 import CarFilesDialog from './components/car-files.dialog.vue'
 import CarSellDialog from './components/car-sell.dialog.vue'
 import SpecialToolsSectionCard from '@/features/lxcars/components/special-tools.section.card.vue'
+import MaintenanceDueButton from '@/features/lxcars/components/maintenance-due-button.vue'
+import DiagPortalButtons from '@/features/lxcars/components/diag-portal-buttons.vue'
+import { maintenanceDueState, maintenanceDueReasons, MAINTENANCE_DUE_FLAGS } from '@/features/lxcars/utils/maintenanceDue.js'
 
 // const SpecialDialog = defineAsyncComponent(() => import('@special/special.dialog.vue'))
 
 export default {
     name: 'CarEditView',
-    components: { NavbarView, RotesHeftDialog, CarChatCard, SendEmailDialog, CarFilesDialog, CarSellDialog, SpecialToolsSectionCard /*, SpecialDialog */ },
+    components: { NavbarView, RotesHeftDialog, CarChatCard, SendEmailDialog, CarFilesDialog, CarSellDialog, SpecialToolsSectionCard, MaintenanceDueButton, DiagPortalButtons /*, SpecialDialog */ },
 
     props: {
         id: {
@@ -1354,6 +1399,7 @@ export default {
             chk_c_ln: true, chk_c_2: true, chk_c_3: true, chk_c_em: true,
             chk_c_d: true, chk_fin: true, chk_c_hu: true,
             c_sk: false, c_zrk: null, c_zrd: '', c_bf: '', c_wd: '', c_km: null,
+            c_zrd_due: false, c_zrk_due: false, c_bf_due: false, c_wd_due: false,
             c_pb: false, c_hu_notify: true,
             c_finchk: '', kba_id: null,
             installed_engines: '',
@@ -1383,6 +1429,31 @@ export default {
             displayKm, onBlurKmStand
         } = useCarDates(car)
 
+        // ── Wartung fällig ────────────────────────────────────────────────────
+        // Termin/km erreicht oder Hand-Markierung (c_*_due, liegt im Fahrzeug und läuft
+        // über den Auto-Save mit). Ein neuer Termin/km-Stand löscht die Markierung
+        // (useCarDates + Backend), Steuerkette löscht die Zahnriemen-Markierungen.
+        const maintenanceDue = computed(() => maintenanceDueState(car.value))
+        const maintenanceCardRef = ref(null)
+
+        function setDueFlag(field, value) {
+            if (readonly.value) return
+            car.value[MAINTENANCE_DUE_FLAGS[field]] = !!value
+        }
+
+        // Riemen ⇄ Kette: Zahnriemen-Werte bleiben in der DB (Irrtum ohne Datenverlust),
+        // Hand-Markierungen gelten für das andere Bauteil nicht.
+        function toggleChain() {
+            car.value.c_sk = !car.value.c_sk
+            car.value.c_zrd_due = false
+            car.value.c_zrk_due = false
+        }
+
+        function scrollToMaintenance() {
+            const el = maintenanceCardRef.value?.$el
+            if (el?.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+
         // ── Intelligente Spracheingabe (Wartung) ──────────────────────────────
         // Der Kollege spricht frei ("Kilometerstand 120369, Zahnriemen fällig bei
         // Kilometer 20000, Bremsflüssigkeit fällig 02/2029"). Whisper transkribiert,
@@ -1405,8 +1476,8 @@ export default {
                 const done = []
 
                 if (f.c_km != null)  { displayKm.value  = String(f.c_km);  onBlurKmStand(); done.push(`${t('CarEditView.fields.c_km')}: ${kmFmt(car.value.c_km)} km`) }
-                if (f.c_zrk != null) { displayZrk.value = String(f.c_zrk); onBlurKm();      done.push(`${t('CarEditView.fields.c_zrk')}: ${kmFmt(car.value.c_zrk)} km`) }
-                if (f.c_zrd)         { displayZrd.value = String(f.c_zrd); onBlurMonthYear('c_zrd'); done.push(`${t('CarEditView.fields.c_zrd')}: ${displayZrd.value}`) }
+                if (f.c_zrk != null && !car.value.c_sk) { displayZrk.value = String(f.c_zrk); onBlurKm();      done.push(`${t('CarEditView.fields.c_zrk')}: ${kmFmt(car.value.c_zrk)} km`) }
+                if (f.c_zrd && !car.value.c_sk) { displayZrd.value = String(f.c_zrd); onBlurMonthYear('c_zrd'); done.push(`${t('CarEditView.fields.c_zrd')}: ${displayZrd.value}`) }
                 if (f.c_bf)          { displayBf.value  = String(f.c_bf);  onBlurMonthYear('c_bf');  done.push(`${t('CarEditView.fields.c_bf')}: ${displayBf.value}`) }
                 if (f.c_wd)          { displayWd.value  = String(f.c_wd);  onBlurMonthYear('c_wd');  done.push(`${t('CarEditView.fields.c_wd')}: ${displayWd.value}`) }
                 if (f.c_hu)          { displayHu.value  = '01.' + String(f.c_hu).replace('/', '.'); onBlurDate('c_hu'); done.push(`${t('CarEditView.fields.c_hu')}: ${displayHu.value}`) }
@@ -2233,7 +2304,11 @@ export default {
                 await carsStore.printYellowLabel(car.value.c_ln, printerId)
             } catch (err) {
                 console.error('Yellow label print error:', err)
-                toasts.error(t('CarEditView.yellowLabel.error'), { timer: 3000 })
+                const offline = err?.code === 'PRINTER_OFFLINE'
+                toasts.error(
+                    offline ? t('CarEditView.labelPrinterOffline', { host: err.payload?.host || '' }) : t('CarEditView.yellowLabel.error'),
+                    { timer: offline ? 6000 : 3000 }
+                )
             } finally {
                 yellowLabelPrinting.value = false
             }
@@ -2277,7 +2352,11 @@ export default {
                 }, printerId)
             } catch (err) {
                 console.error('Tyre label print error:', err)
-                toasts.error(t('CarEditView.tyreLabel.error'), { timer: 3000 })
+                const offline = err?.code === 'PRINTER_OFFLINE'
+                toasts.error(
+                    offline ? t('CarEditView.labelPrinterOffline', { host: err.payload?.host || '' }) : t('CarEditView.tyreLabel.error'),
+                    { timer: offline ? 6000 : 3000 }
+                )
             } finally {
                 tyreLabelPrinting.value = null
             }
@@ -2598,7 +2677,8 @@ export default {
         function buildCarExport() {
             // Technische / interne Felder, die nicht im Export erscheinen sollen
             const skipFields = new Set([
-                'c_id', 'c_ow', 'kba_id', 'scan_id', 'scan_detail_id', 'filename'
+                'c_id', 'c_ow', 'kba_id', 'scan_id', 'scan_detail_id', 'filename',
+                'c_zrd_due', 'c_zrk_due', 'c_bf_due', 'c_wd_due'
             ])
             const displayMap = {
                 c_d: displayD.value,
@@ -2782,6 +2862,7 @@ export default {
             displayZrd, displayBf, displayWd, onBlurMonthYear,
             displayZrk, onBlurKm,
             displayKm, onBlurKmStand,
+            locale, maintenanceDue, maintenanceDueReasons, maintenanceCardRef, setDueFlag, toggleChain, scrollToMaintenance,
             voiceRecording, voiceBusy, voiceExtracting, voiceSupported, voiceToggle,
             toggleShield, orderFilter, filteredOrders, orderHeaders,
             formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
@@ -2812,6 +2893,8 @@ export default {
 </script>
 
 <style scoped>
+.maintenance-due-list { list-style: none; padding-left: 0; margin: 4px 0 0; font-size: 13px; }
+.maintenance-due-list li { display: flex; align-items: center; flex-wrap: wrap; line-height: 1.5; }
 .bg-grey-lighten-4 {
     background-color: #f5f5f5;
 }

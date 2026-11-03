@@ -44,5 +44,39 @@
         "incompleteText": "Innan ordern kan avslutas måste följande fält fyllas i:",
         "incompleteTitle": "Servicedata ofullständiga",
         "title": "Underhåll och service"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Kamrem",
+            "c_zrd_sk": "Kamkedja",
+            "c_zrk": "Kamrem (km)",
+            "c_bf": "Bromsvätska",
+            "c_wd": "Service"
+        },
+        "chip": {
+            "due": "förfallen",
+            "soon": "snart förfallen"
+        },
+        "reasons": {
+            "dateReached": "Datum {date} nått",
+            "dateSoon": "Datum {date} närmar sig",
+            "kmReached": "Mätarställning {km} nådd (förfaller från {due} km)",
+            "kmSoon": "{rest} km kvar till {due} km",
+            "manual": "markerad som förfallen manuellt"
+        },
+        "tooltip": {
+            "mark": "Markera som förfallen",
+            "unmark": "Ta bort markeringen ”förfallen”",
+            "autoHint": "Försvinner vid nytt datum eller ny mätarställning"
+        },
+        "count": {
+            "due": "{n} förfallen",
+            "soon": "{n} snart förfallen"
+        },
+        "alert": {
+            "title": "Underhåll förfallet",
+            "titleSoon": "Underhåll snart förfallet",
+            "jump": "Underhåll och service"
+        }
     }
 }

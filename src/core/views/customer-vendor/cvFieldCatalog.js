@@ -47,6 +47,7 @@ export const CV_FIELD_GROUPS = [
             { key: 'email', label: 'CustomerVendorEditView.fields.email' },
             { key: 'cc', label: 'CustomerVendorEditView.fields.cc' },
             { key: 'bcc', label: 'CustomerVendorEditView.fields.bcc' },
+            { key: 'fax', label: 'CustomerVendorEditView.fields.fax' },
             { key: 'emails', label: 'CustomerVendorEditView.fields.emails' },
             { key: 'homepage', label: 'CustomerVendorEditView.fields.homepage' },
             { key: 'urls', label: 'CustomerVendorEditView.fields.urls' },
@@ -138,7 +139,7 @@ export const CV_TABS = [
 /** Empfohlene Auswahl, solange die Firma nichts anderes gespeichert hat */
 export const CV_EASYMODE_DEFAULT_FIELDS = [
     'name', 'greeting', 'zipcode', 'city', 'street', 'country',
-    'phone', 'email',
+    'phone', 'fax', 'email',
     'business_type', 'notes',
     'customernumber', 'ustid',
     'payment_terms',

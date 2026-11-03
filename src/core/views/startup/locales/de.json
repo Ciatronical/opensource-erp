@@ -47,6 +47,7 @@
         "department1": "Abteilung 1",
         "department2": "Abteilung 2",
         "fax": "Fax",
+        "keywords": "Suchworte",
         "gln": "GLN",
         "noBillingAddresses": "Keine zusätzlichen Rechnungsadressen vorhanden",
         "salutation": "Anrede",

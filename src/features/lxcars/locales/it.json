@@ -44,5 +44,39 @@
         "incompleteText": "Prima di completare l'ordine è necessario compilare i seguenti campi:",
         "incompleteTitle": "Dati manutenzione incompleti",
         "title": "Manutenzione e assistenza"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Cinghia di distribuzione",
+            "c_zrd_sk": "Catena di distribuzione",
+            "c_zrk": "Cinghia di distribuzione (km)",
+            "c_bf": "Liquido freni",
+            "c_wd": "Tagliando"
+        },
+        "chip": {
+            "due": "in scadenza",
+            "soon": "a breve"
+        },
+        "reasons": {
+            "dateReached": "Scadenza {date} raggiunta",
+            "dateSoon": "Scadenza {date} in arrivo",
+            "kmReached": "Chilometraggio {km} raggiunto (in scadenza da {due} km)",
+            "kmSoon": "ancora {rest} km fino a {due} km",
+            "manual": "segnato manualmente come in scadenza"
+        },
+        "tooltip": {
+            "mark": "Segna come in scadenza",
+            "unmark": "Rimuovi il contrassegno «in scadenza»",
+            "autoHint": "Si cancella con una nuova scadenza o un nuovo chilometraggio"
+        },
+        "count": {
+            "due": "{n} in scadenza",
+            "soon": "{n} a breve"
+        },
+        "alert": {
+            "title": "Manutenzione in scadenza",
+            "titleSoon": "Manutenzione a breve",
+            "jump": "Manutenzione e assistenza"
+        }
     }
 }

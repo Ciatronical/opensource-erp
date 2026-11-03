@@ -44,5 +44,39 @@
         "incompleteText": "在完成订单之前，必须填写以下字段：",
         "incompleteTitle": "维护数据不完整",
         "title": "维护与服务"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "正时皮带",
+            "c_zrd_sk": "正时链",
+            "c_zrk": "正时皮带（公里）",
+            "c_bf": "制动液",
+            "c_wd": "保养"
+        },
+        "chip": {
+            "due": "到期",
+            "soon": "即将到期"
+        },
+        "reasons": {
+            "dateReached": "已到期限 {date}",
+            "dateSoon": "期限 {date} 临近",
+            "kmReached": "里程已达 {km}（自 {due} 公里起到期）",
+            "kmSoon": "距 {due} 公里还有 {rest} 公里",
+            "manual": "已手动标记为到期"
+        },
+        "tooltip": {
+            "mark": "标记为到期",
+            "unmark": "取消“到期”标记",
+            "autoHint": "输入新期限或里程后自动清除"
+        },
+        "count": {
+            "due": "{n} 项到期",
+            "soon": "{n} 项即将到期"
+        },
+        "alert": {
+            "title": "保养到期",
+            "titleSoon": "保养即将到期",
+            "jump": "维护与服务"
+        }
     }
 }

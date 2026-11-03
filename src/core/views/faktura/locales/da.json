@@ -186,8 +186,6 @@
             "dateMustBeFuture": "Dato muss in der Zukunft liegen",
             "openVehicle": "Koeretoej",
             "importSilverDAT": "SilverDAT Import",
-            "openAag": "AAG-Online – transfer vehicle and open",
-            "openHgs": "Åbn køretøjsdata i HGS Data",
             "hgsError": "HGS Data kunne ikke åbnes",
             "aagError": "Could not open AAG-Online",
             "silverdat": {

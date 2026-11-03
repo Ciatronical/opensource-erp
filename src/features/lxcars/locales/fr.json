@@ -44,5 +44,39 @@
         "incompleteText": "Avant de clôturer la commande, les champs suivants doivent être remplis :",
         "incompleteTitle": "Données d'entretien incomplètes",
         "title": "Maintenance et entretien"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Courroie de distribution",
+            "c_zrd_sk": "Chaîne de distribution",
+            "c_zrk": "Courroie de distribution (km)",
+            "c_bf": "Liquide de frein",
+            "c_wd": "Entretien"
+        },
+        "chip": {
+            "due": "dû",
+            "soon": "bientôt dû"
+        },
+        "reasons": {
+            "dateReached": "Échéance {date} atteinte",
+            "dateSoon": "Échéance {date} proche",
+            "kmReached": "Kilométrage {km} atteint (dû à partir de {due} km)",
+            "kmSoon": "encore {rest} km avant {due} km",
+            "manual": "marqué comme dû manuellement"
+        },
+        "tooltip": {
+            "mark": "Marquer comme dû",
+            "unmark": "Retirer la marque « dû »",
+            "autoHint": "Disparaît avec une nouvelle échéance ou un nouveau kilométrage"
+        },
+        "count": {
+            "due": "{n} dû",
+            "soon": "{n} bientôt dû"
+        },
+        "alert": {
+            "title": "Entretien dû",
+            "titleSoon": "Entretien bientôt dû",
+            "jump": "Maintenance et entretien"
+        }
     }
 }

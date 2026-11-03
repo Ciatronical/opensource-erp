@@ -347,38 +347,6 @@
                     </template>
                 </v-tooltip>
 
-                <!-- AAG-Online (nur bei Aufträgen mit LxCars) -->
-                <v-tooltip v-if="canOpenAag" location="bottom" :text="t('FakturaView.faktura.openAag')">
-                    <template #activator="{ props: tip }">
-                        <v-btn
-                            v-bind="tip"
-                            variant="tonal"
-                            color="indigo"
-                            icon="mdi-car-search"
-                            size="small"
-                            :disabled="!hasCustomer"
-                            :loading="aagLoading"
-                            @click="$emit('open-aag')"
-                        />
-                    </template>
-                </v-tooltip>
-
-                <!-- HGS-Data (nur bei Aufträgen mit identifizierbarem Fahrzeug) -->
-                <v-tooltip v-if="hgsAvailable" location="bottom" :text="t('FakturaView.faktura.openHgs')">
-                    <template #activator="{ props: tip }">
-                        <v-btn
-                            v-bind="tip"
-                            variant="tonal"
-                            color="blue-grey-darken-1"
-                            icon="mdi-database-search-outline"
-                            size="small"
-                            :disabled="!hasCustomer"
-                            :loading="hgsLoading"
-                            @click="$emit('open-hgs')"
-                        />
-                    </template>
-                </v-tooltip>
-
                 <v-tooltip v-if="showSpecialButton" location="bottom" :text="t('SpecialDialog.buttonTooltip')">
                     <template #activator="{ props: tip }">
                         <v-btn
@@ -576,22 +544,6 @@ export default defineComponent({
             type: Boolean,
             default: true
         },
-        aagLoading: {
-            type: Boolean,
-            default: false
-        },
-        aagConfigured: {
-            type: Boolean,
-            default: false
-        },
-        hgsAvailable: {
-            type: Boolean,
-            default: false
-        },
-        hgsLoading: {
-            type: Boolean,
-            default: false
-        },
         /** Offene Wiedervorlagen dieses Belegs (getFakturaData → follow_ups) */
         followUps: {
             type: Array,
@@ -647,8 +599,6 @@ export default defineComponent({
         'import-silverdat',
         'import-gutachten',
         'weroni-review',
-        'open-aag',
-        'open-hgs',
         'open-special',
         'create-dhl-label',
         'show-on-display'
@@ -698,9 +648,6 @@ export default defineComponent({
         // Gutachten-Import - bei Aufträgen mit LxCars, auch ohne verknüpftes Fahrzeug
         // (das Fahrzeug entsteht aus dem Gutachten)
         const canImportGutachten = computed(() => props.fakturaType === 'order' && props.showGutachtenButton)
-
-        // AAG-Online - bei Aufträgen mit verknüpftem Fahrzeug, nur wenn konfiguriert
-        const canOpenAag = computed(() => props.fakturaType === 'order' && props.showVehicleButton && props.aagConfigured)
 
         // Wiedervorlagen: Fälligkeit gegen das lokale Datum (YYYY-MM-DD lässt sich als Text vergleichen)
         const todayIso = () => {

@@ -102,6 +102,42 @@ Prüfen: `~HS` liefert in Feld 4 die erkannte Länge. Vorher 1236 → nach `~JC`
 Bei erneutem Stromausfall genügt wieder `~JC` (oder FEED-Taste ~3 s halten). Die
 Breite/­der Rand sitzen dauerhaft im ZPL.
 
+## Nachtrag 2026-11-03: Drucker unter neuer IP, Queue lief ins Leere
+
+Der BP730 bezieht seine Adresse per **DHCP von der Fritz!Box** (Name `BP730.fritz.box`,
+MAC `00:1d:9a:0d:45:a0`). Nach einem Stromausfall bekam er **192.168.178.248** statt
+.252; die CUPS-Queue zeigte weiter auf .252 → „The printer may not exist or is
+unavailable", alle Aufträge blieben in der Queue hängen. Zusätzlich stand die
+gespeicherte `LABEL LENGTH` wieder auf 4 (Folge der abgebrochenen Fernkalibrierung
+vom 16.10.).
+
+Behoben: `~JC` (LABEL LENGTH 1794, erkannt 1822) und
+`lpadmin -p BP730-Raw -v socket://192.168.178.248:9100`.
+
+**Folgeschaden:** Durch die hängenden Aufträge (vier Druckversuche desselben
+Fahrzeugs) kamen nach der Umstellung 16 Etiketten auf einmal heraus. Dagegen seitdem:
+
+- `labelQueueCheck()` in `labels.php`: vor jedem Druck werden wartende Aufträge der
+  Queue verworfen (`cancel -a`) und der Drucker per TCP (3 s) geprüft. Nicht
+  erreichbar → Fehler `PRINTER_OFFLINE` mit Host, es wird **nichts** eingereiht.
+  Frontend zeigt `CarEditView.labelPrinterOffline` (21 Sprachen).
+- CUPS-Queue: `socket://…:9100/?contimeout=30` + `printer-error-policy=abort-job`,
+  damit ein Auftrag bei totem Drucker nach 30 s abgebrochen statt tagelang gehalten
+  wird. (Für `gruenePlakettenDrucker` noch nicht gesetzt.)
+
+Damit gehen je Klick höchstens 4 Etiketten (VR, VL, HR, HL) an den Drucker.
+
+Dauerhaft: in der Fritz!Box unter Heimnetz → Netzwerk → BP730 „Diesem Netzwerkgerät
+immer die gleiche IPv4-Adresse zuweisen" aktivieren (oder dem Drucker eine feste IP
+geben). Der Name `BP730.fritz.box` löst auf mmelissa nicht auf, daher bleibt die
+Queue auf der IP.
+
+Drucker im Netz wiederfinden, wenn die Queue wieder ins Leere läuft:
+```
+for i in $(seq 1 254); do (timeout 1 bash -c "cat </dev/null >/dev/tcp/192.168.178.$i/9100" 2>/dev/null \
+  && echo "$i: $(printf '~HI' | timeout 3 nc 192.168.178.$i 9100 | tr -d '\002\003')") & done; wait
+```
+
 Status/Config ohne Druck: `~HI` (Modell/FW), `~HS` (Status/Länge),
 `^XA^HH^XZ` (volle Config) – jeweils per `nc 192.168.178.252 9100`.
 ZPL vorab testen: https://labelary.com/viewer.html (300 dpi = 12dpmm, 100×150 mm).

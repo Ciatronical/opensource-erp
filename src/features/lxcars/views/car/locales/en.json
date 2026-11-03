@@ -321,7 +321,7 @@
             "finDuplicate": "VIN already in use (owner: {owner})",
             "monthYearFormat": "Format: MM/YY (e.g. 12/28 or 1228)",
             "maintenanceTooOld": "Date is too far in the past",
-            "maintenanceTooFar": "Max. 3 years in the future"
+            "maintenanceTooFar": "Max. {years} years in the future"
         },
         "wiki": {
             "title": "Knowledge Articles",
@@ -386,7 +386,8 @@
             "manufacturer": "Manufacturer / Make",
             "model": "Model",
             "vehicleType": "Vehicle type"
-        }
+        },
+        "labelPrinterOffline": "Label printer {host} is unreachable (switched off or new IP address) – nothing was printed"
     },
     "CarScanView": {
         "title": "Create vehicle from scan",

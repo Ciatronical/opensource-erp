@@ -277,7 +277,7 @@
             "finDuplicate": "VIN 已被使用（车主：{owner}）",
             "monthYearFormat": "格式：MM/YY（如 12/28 或 1228）",
             "maintenanceTooOld": "日期过于久远",
-            "maintenanceTooFar": "最多3年后"
+            "maintenanceTooFar": "最多{years}年后"
         },
         "wiki": {
             "title": "知识文章",
@@ -349,11 +349,16 @@
             "tooltip": "在 HGS Data 中打开车辆数据",
             "error": "无法打开 HGS Data"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "使用 Hella Gutmann mega macs 打开诊断"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",
             "refresh": "Refresh Ktype"
-        }
+        },
+        "labelPrinterOffline": "标签打印机 {host} 无法访问（已关机或 IP 地址已更改）– 未打印任何内容"
     },
     "CarScanView": {
         "title": "从扫描创建车辆",

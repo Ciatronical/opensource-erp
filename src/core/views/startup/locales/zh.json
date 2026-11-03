@@ -32,6 +32,7 @@
         "department1": "部门 1",
         "department2": "部门 2",
         "fax": "传真",
+        "keywords": "关键词",
         "gln": "GLN",
         "noBillingAddresses": "暂无其他账单地址",
         "salutation": "称呼",

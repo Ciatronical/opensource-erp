@@ -67,6 +67,18 @@ Jede Anweisung hat:
 
 Die Vorschlagsliste beim Eintippen ist klug sortiert wie die Artikelsuche in der Faktura: Anweisungsnummer exakt, Beschreibung beginnt mit dem Begriff, Nummer beginnt mit, Wortanfang, enthalten — darin nach Verwendungshäufigkeit (Gewicht aus **Firmenkonfiguration → Grunddaten → Artikelsuche in Belegen**). Diktierte Sätze finden den Eintrag weiterhin über Einzelwörter.
 
+### Wartung & Service — fällig
+
+Im Auftrag (Wartung & Service), im Werkstatt-Modus und in der Fahrzeugmaske trägt jedes der vier Wartungsfelder — Zahnriemen Datum, Zahnriemen km-Stand, Bremsflüssigkeit, Nächster Wartungsdienst — rechts einen kleinen Chip **„fällig“**:
+
+- **Rot „fällig“ mit Warnsymbol**: der Monat des Termins ist erreicht oder überschritten (der alte LxCars-Platzhalter „01/99“ zählt damit immer als fällig) oder der km-Stand des Fahrzeugs hat den Zahnriemen-km-Stand erreicht. Nicht klickbar.
+- **Gelb „bald fällig“**: Termin in den nächsten zwei Monaten bzw. weniger als 5.000 km Rest.
+- **Umrandet „fällig“ mit leerem Kästchen**: nichts anliegend. Ein Klick markiert das Feld von Hand als fällig (z. B. Zahnriemen sichtbar verschlissen, obwohl der Termin noch nicht erreicht ist) — der Chip wird rot mit Haken; ein zweiter Klick nimmt die Markierung zurück.
+
+Ein automatisch erreichter Termin lässt sich nicht wegklicken — er erlischt, sobald das Feld einen **neuen Termin bzw. km-Stand** bekommt (Wartung erledigt). Dasselbe gilt für die Hand-Markierung: neuer Wert im Feld ⇒ Markierung weg. **Steuerkette**: Eine Kette hat weder Wechseltermin noch km-Stand — mit dem Schalter verschwinden die beiden Zahnriemen-Felder, stattdessen steht neben dem Schalter ein eigener Chip „fällig“ für die Kette (von Hand, etwa wenn sie klappert; im Hinweis der Fahrzeugmaske als „Steuerkette“). Die Zahnriemen-Werte bleiben dabei in der Datenbank liegen: Stellt sich der Schalter als Irrtum heraus, bringt ein Klick die Felder samt alten Werten zurück. Beim Umschalten in beide Richtungen erlöschen die Hand-Markierungen, weil sie für das andere Bauteil nicht gelten. Beim Abschluss der letzten Arbeitsanweisung verlangt der Auftrag bei Steuerkette keine Zahnriemen-Angaben. Die Fahrzeugmaske meldet Termine, die mehr als zwei Jahre zurückliegen, als Eingabefehler (Tippfehler wie 03/1934 fallen so auf); einzige Ausnahme ist der bewusst eingetragene Platzhalter „01/99“. Nach vorn gilt je Feld eine eigene Grenze: Zahnriemen bis 12 Jahre (Herstellerintervalle 5–10 Jahre, einzelne länger), Bremsflüssigkeit und Wartungsdienst bis 3 Jahre.
+
+Die Markierungen liegen am Fahrzeug (`cars_lxcars.c_zrd_due`, `c_zrk_due`, `c_bf_due`, `c_wd_due`), genau wie die Wartungsfelder selbst — Auftrag und Fahrzeugmaske zeigen also immer denselben Stand. Im Kopf der Karte steht die Anzahl („2 fällig“). Die **Fahrzeugmaske** blendet oben einen Hinweis ein (rot: fällig, gelb: bald fällig) mit allen betroffenen Wartungen und dem Grund (Termin 05/2026 erreicht, km-Stand erreicht, von Hand markiert) sowie einem Sprung zur Karte Wartung & Service.
+
 ### Reparaturzeit
 
 Jeder Werkstattauftrag misst seine Reparaturzeit von selbst — und druckt sie auf Wunsch auf Auftrag und Rechnung (etwa für den Nutzungsausfall gegenüber der Versicherung).

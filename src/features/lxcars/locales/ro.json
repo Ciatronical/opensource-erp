@@ -44,5 +44,39 @@
         "incompleteText": "Înainte de finalizarea comenzii, trebuie completate următoarele câmpuri:",
         "incompleteTitle": "Date de întreținere incomplete",
         "title": "Întreținere și service"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Curea de distribuție",
+            "c_zrd_sk": "Lanț de distribuție",
+            "c_zrk": "Curea de distribuție (km)",
+            "c_bf": "Lichid de frână",
+            "c_wd": "Revizie"
+        },
+        "chip": {
+            "due": "scadent",
+            "soon": "în curând"
+        },
+        "reasons": {
+            "dateReached": "Termenul {date} a fost atins",
+            "dateSoon": "Termenul {date} se apropie",
+            "kmReached": "Kilometrajul {km} a fost atins (scadent de la {due} km)",
+            "kmSoon": "mai sunt {rest} km până la {due} km",
+            "manual": "marcat manual ca scadent"
+        },
+        "tooltip": {
+            "mark": "Marchează ca scadent",
+            "unmark": "Elimină marcajul „scadent”",
+            "autoHint": "Dispare la un nou termen sau kilometraj"
+        },
+        "count": {
+            "due": "{n} scadent",
+            "soon": "{n} în curând"
+        },
+        "alert": {
+            "title": "Întreținere scadentă",
+            "titleSoon": "Întreținere în curând",
+            "jump": "Întreținere și service"
+        }
     }
 }

@@ -32,6 +32,7 @@
         "department1": "Osasto 1",
         "department2": "Osasto 2",
         "fax": "Faksi",
+        "keywords": "Hakusanat",
         "gln": "GLN",
         "noBillingAddresses": "Ei lisälaskutusosoitteita",
         "salutation": "Puhuttelu",

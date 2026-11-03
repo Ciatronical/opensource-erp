@@ -13,8 +13,12 @@
       </v-col>
     </v-row>
     <v-row v-else align="stretch">
-      <!-- Kontaktdaten (mit vertikalen Tabs) -->
-      <v-col cols="12" md="6">
+      <!-- Kontaktdaten (mit vertikalen Tabs)
+           Ab lg 5/7 statt 6/6: die Vorgänge tragen acht Spalten (Nummer, Datum,
+           Beschreibung, Kennzeichen, Rechnung, Bestätigt, Betrag), die Kontaktdaten
+           nur eine Beschriftungsliste — auf Laptops (1280–1366 px) kam die Vorgänge-
+           Karte sonst nicht ohne horizontales Scrollen aus. -->
+      <v-col cols="12" md="6" lg="5">
         <section-card :title="$t('CrmView.contactData')" icon="mdi-account-box" plain class="h-100">
           <template #actions>
             <v-btn
@@ -34,7 +38,7 @@
       </v-col>
 
       <!-- Vorgaenge -->
-      <v-col cols="12" md="6">
+      <v-col cols="12" md="6" lg="7">
         <section-card :title="$t('CrmView.occurrences')" icon="mdi-file-document-multiple" plain class="h-100">
           <template #actions>
             <v-text-field
@@ -55,7 +59,7 @@
       </v-col>
 
       <!-- Fahrzeuge (nur für Kunden) -->
-      <v-col v-if="oserp.isLxCars() && isCustomer" cols="12" md="6">
+      <v-col v-if="oserp.isLxCars() && isCustomer" cols="12" md="6" lg="5">
         <section-card :title="$t('CrmView.vehicles')" icon="mdi-car" class="h-100">
           <template #actions>
             <v-btn
@@ -73,7 +77,7 @@
       </v-col>
 
       <!-- Kontakthistorie: Anrufe, WhatsApp, Briefe und E-Mails chronologisch -->
-      <v-col cols="12" md="6">
+      <v-col cols="12" md="6" lg="7">
         <section-card :title="$t('CrmView.contactHistory')" icon="mdi-history" plain class="h-100">
           <template #actions>
             <!-- Filter nach Kontaktart, mit Anzahl je Art -->

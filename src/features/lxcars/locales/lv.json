@@ -44,5 +44,39 @@
         "incompleteText": "Pirms pasūtījuma pabeigšanas jābūt aizpildītiem šādiem laukiem:",
         "incompleteTitle": "Apkopes dati nav pilnīgi",
         "title": "Apkope un serviss"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Zobsiksna",
+            "c_zrd_sk": "Sadales ķēde",
+            "c_zrk": "Zobsiksna (km)",
+            "c_bf": "Bremžu šķidrums",
+            "c_wd": "Apkope"
+        },
+        "chip": {
+            "due": "nokavēts",
+            "soon": "drīz"
+        },
+        "reasons": {
+            "dateReached": "Termiņš {date} sasniegts",
+            "dateSoon": "Termiņš {date} tuvojas",
+            "kmReached": "Nobraukums {km} sasniegts (no {due} km)",
+            "kmSoon": "atlikuši {rest} km līdz {due} km",
+            "manual": "manuāli atzīmēts kā nokavēts"
+        },
+        "tooltip": {
+            "mark": "Atzīmēt kā nokavētu",
+            "unmark": "Noņemt atzīmi „nokavēts“",
+            "autoHint": "Izzūd ar jaunu termiņu vai nobraukumu"
+        },
+        "count": {
+            "due": "{n} nokavēts",
+            "soon": "{n} drīz"
+        },
+        "alert": {
+            "title": "Apkope nokavēta",
+            "titleSoon": "Apkope drīz",
+            "jump": "Apkope un serviss"
+        }
     }
 }

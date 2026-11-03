@@ -36,7 +36,7 @@
         "close": "Luk",
         "fields": {
             "c_bf": "Bremseväske",
-            "c_sk": "Kædeudveksling",
+            "c_sk": "Styrekæde",
             "c_wd": "Næste servicebesøg",
             "c_zrd": "Dato for tandrem",
             "c_zrk": "Km for tandrem"
@@ -44,5 +44,39 @@
         "incompleteText": "Inden ordren kan afsluttes, skal følgende felter udfyldes:",
         "incompleteTitle": "Servicedata ufuldstændige",
         "title": "Vedligeholdelse og service"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Tandrem",
+            "c_zrd_sk": "Styrekæde",
+            "c_zrk": "Tandrem (km)",
+            "c_bf": "Bremsevæske",
+            "c_wd": "Service"
+        },
+        "chip": {
+            "due": "forfalden",
+            "soon": "snart forfalden"
+        },
+        "reasons": {
+            "dateReached": "Termin {date} nået",
+            "dateSoon": "Termin {date} nærmer sig",
+            "kmReached": "Kilometerstand {km} nået (forfalder fra {due} km)",
+            "kmSoon": "{rest} km tilbage til {due} km",
+            "manual": "markeret som forfalden manuelt"
+        },
+        "tooltip": {
+            "mark": "Markér som forfalden",
+            "unmark": "Fjern markeringen „forfalden“",
+            "autoHint": "Forsvinder ved ny termin eller kilometerstand"
+        },
+        "count": {
+            "due": "{n} forfalden",
+            "soon": "{n} snart forfalden"
+        },
+        "alert": {
+            "title": "Vedligeholdelse forfalden",
+            "titleSoon": "Vedligeholdelse snart forfalden",
+            "jump": "Vedligeholdelse og service"
+        }
     }
 }

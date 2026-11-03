@@ -180,6 +180,23 @@ function updateCar($data) {
             }
         }
 
+        // „Fällig“-Markierungen: neuer Termin/km-Stand ⇒ Markierung des Feldes erlischt;
+        // Steuerkette ⇒ Zahnriemen-Markierungen erlöschen (siehe updateOeExt)
+        if ($currentCar) {
+            foreach (['c_zrd' => 'c_zrd_due', 'c_zrk' => 'c_zrk_due', 'c_bf' => 'c_bf_due', 'c_wd' => 'c_wd_due'] as $mf => $flag) {
+                if (!array_key_exists($mf, $car)) continue;
+                $newVal = $car[$mf];
+                $newVal = ($newVal === '' || $newVal === null) ? null : ($mf === 'c_zrk' ? (string)intval($newVal) : substr((string)$newVal, 0, 10));
+                $oldVal = $currentCar[$mf] === null ? null : ($mf === 'c_zrk' ? (string)intval($currentCar[$mf]) : substr((string)$currentCar[$mf], 0, 10));
+                if ($newVal !== $oldVal) $car[$flag] = false;
+            }
+            // Riemen ⇄ Kette umgeschaltet ⇒ Hand-Markierungen gelten für das andere Bauteil nicht
+            if (array_key_exists('c_sk', $car) && (bool)$car['c_sk'] !== (bool)$currentCar['c_sk']) {
+                $car['c_zrd_due'] = false;
+                $car['c_zrk_due'] = false;
+            }
+        }
+
         // Felder die nicht aktualisiert werden sollen
         $db->updateRow(
             'cars_lxcars',
@@ -801,6 +818,7 @@ function getLxCarsFakturaInit($data) {
                         e.bringetermin, e.fertigstellung, e.no_whatsapp,
                         c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
                         to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
+                        c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km,
                         COALESCE(k.fhzart, '') AS fhzart,
                         e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle,
                         CASE WHEN EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id)
@@ -877,6 +895,7 @@ function getCarForOrder($data) {
                 e.bringetermin, e.fertigstellung, e.no_whatsapp,
                 c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
                 to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
+                c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km,
                 COALESCE(k.fhzart, '') AS fhzart,
                 e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle,
                 CASE WHEN EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id)
@@ -903,7 +922,7 @@ function getCarForOrder($data) {
         }
     }
 
-    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'kfz_ort' => null, 'status' => null, 'gedruckt' => false, 'intern' => false, 'bringetermin' => null, 'fertigstellung' => null, 'no_whatsapp' => false, 'c_sk' => false, 'c_zrd' => null, 'c_zrk' => null, 'c_bf' => null, 'c_wd' => null, 'fhzart' => '', 'reparaturzeit_minuten' => null, 'reparaturzeit_drucken' => false, 'reparaturzeit_quelle' => null, 'reparaturzeit_start' => null]);
+    resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'kfz_ort' => null, 'status' => null, 'gedruckt' => false, 'intern' => false, 'bringetermin' => null, 'fertigstellung' => null, 'no_whatsapp' => false, 'c_sk' => false, 'c_zrd' => null, 'c_zrk' => null, 'c_bf' => null, 'c_wd' => null, 'c_zrd_due' => false, 'c_zrk_due' => false, 'c_bf_due' => false, 'c_wd_due' => false, 'c_km' => null, 'fhzart' => '', 'reparaturzeit_minuten' => null, 'reparaturzeit_drucken' => false, 'reparaturzeit_quelle' => null, 'reparaturzeit_start' => null]);
 }
 
 /**
@@ -1014,8 +1033,13 @@ function updateOeExt($data) {
         );
     }
 
-    // Wartungsfelder direkt ins Fahrzeug schreiben (immer, unabhängig vom Auftragsdatum)
-    $maintenanceMap = ['c_sk' => 'boolean', 'c_zrd' => 'date', 'c_zrk' => 'int', 'c_bf' => 'date', 'c_wd' => 'date'];
+    // Wartungsfelder direkt ins Fahrzeug schreiben (immer, unabhängig vom Auftragsdatum).
+    // Die „Fällig“-Markierungen (c_*_due) liegen ebenfalls im Fahrzeug: sie werden von
+    // Hand gesetzt und erlöschen von selbst, sobald das zugehörige Feld einen neuen Wert
+    // bekommt (Wartung erledigt ⇒ neuer Termin/km-Stand). Steuerkette ⇒ Zahnriemen-Flags weg.
+    $maintenanceMap = ['c_sk' => 'boolean', 'c_zrd' => 'date', 'c_zrk' => 'int', 'c_bf' => 'date', 'c_wd' => 'date',
+                       'c_zrd_due' => 'boolean', 'c_zrk_due' => 'boolean', 'c_bf_due' => 'boolean', 'c_wd_due' => 'boolean'];
+    $dueResetMap = ['c_zrd' => 'c_zrd_due', 'c_zrk' => 'c_zrk_due', 'c_bf' => 'c_bf_due', 'c_wd' => 'c_wd_due'];
     $carSetClauses = [];
     $carParams = [':oe_id' => $oeId];
 
@@ -1031,6 +1055,22 @@ function updateOeExt($data) {
         }
         $carSetClauses[] = "$mf = :$mf";
         $carParams[":$mf"] = $value;
+
+        // Neuer Wert ⇒ Markierung des Feldes löschen (außer sie wird im selben Aufruf gesetzt)
+        if (isset($dueResetMap[$mf]) && !array_key_exists($dueResetMap[$mf], $fields)) {
+            $flag = $dueResetMap[$mf];
+            // (oe_ext trägt noch gleichnamige LxCars-Altspalten ⇒ Tabelle ausschreiben)
+            $carSetClauses[] = "$flag = CASE WHEN :{$mf}_chk IS DISTINCT FROM cars_lxcars.$mf THEN false ELSE cars_lxcars.$flag END";
+            $carParams[":{$mf}_chk"] = $value;
+        }
+    }
+    // Riemen ⇄ Kette umgeschaltet ⇒ Hand-Markierungen gelten für das andere Bauteil nicht
+    if (array_key_exists('c_sk', $fields)) {
+        foreach (['c_zrd_due', 'c_zrk_due'] as $flag) {
+            if (array_key_exists($flag, $fields)) continue;
+            $carSetClauses[] = "$flag = CASE WHEN :c_sk_chk IS DISTINCT FROM cars_lxcars.c_sk THEN false ELSE cars_lxcars.$flag END";
+        }
+        $carParams[':c_sk_chk'] = $fields['c_sk'] ? 't' : 'f';
     }
 
     if (!empty($carSetClauses)) {

@@ -32,6 +32,7 @@
         "department1": "Avdelning 1",
         "department2": "Avdelning 2",
         "fax": "Fax",
+        "keywords": "Sökord",
         "gln": "GLN",
         "noBillingAddresses": "Inga ytterligare faktureringsadresser tillgangliga",
         "salutation": "Titel",

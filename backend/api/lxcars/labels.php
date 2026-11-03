@@ -9,6 +9,43 @@
  */
 
 /**
+ * Prüft die CUPS-Queue eines Labeldruckers, bevor Etiketten eingereiht werden
+ *
+ * Verwirft wartende Aufträge der Queue (Reste früherer Druckversuche, die der
+ * Drucker nie abgeholt hat) und prüft per TCP, ob der Drucker erreichbar ist.
+ * Verhindert, dass sich Aufträge in CUPS stapeln und bei Rückkehr des Druckers
+ * dutzende Etiketten desselben Fahrzeugs ausgegeben werden.
+ *
+ * @param string $printerCommand z.B. "lpr -P BP730-Raw"
+ * @return array|null ['host' => ..., 'cancelled' => n] wenn der Drucker nicht erreichbar ist, sonst null
+ */
+function labelQueueCheck($printerCommand) {
+    if (!preg_match('/-[Pd]\s*([A-Za-z0-9_.-]+)/', $printerCommand, $m)) {
+        return null; // keine CUPS-Queue erkennbar, nichts zu prüfen
+    }
+    $queue = $m[1];
+
+    exec('lpstat -o ' . escapeshellarg($queue) . ' 2>/dev/null', $pending);
+    $pending = array_filter($pending);
+    if (count($pending) > 0) {
+        exec('cancel -a ' . escapeshellarg($queue) . ' 2>&1');
+    }
+
+    exec('lpstat -v ' . escapeshellarg($queue) . ' 2>/dev/null', $uriLines);
+    $uri = implode(' ', $uriLines);
+    if (preg_match('#socket://([^:/\s?]+)(?::(\d+))?#', $uri, $u)) {
+        $host = $u[1];
+        $port = intval($u[2] ?? 9100);
+        $sock = @fsockopen($host, $port, $errno, $errstr, 3);
+        if (!$sock) {
+            return ['host' => $host, 'cancelled' => count($pending)];
+        }
+        fclose($sock);
+    }
+    return null;
+}
+
+/**
  * Druckt eine grüne Plakette (gelbes Etikett) mit Kennzeichen
  *
  * @param array $data['c_ln'] Kennzeichen
@@ -35,6 +72,10 @@ function printYellowLabel($data) {
     );
     if (!$printer || empty($printer['printer_command'])) {
         echo resultInfo(false, 'PRINTER_ERROR', 'Drucker nicht gefunden oder nicht konfiguriert');
+        return;
+    }
+    if ($err = labelQueueCheck($printer['printer_command'])) {
+        echo resultInfo(false, 'PRINTER_OFFLINE', $err);
         return;
     }
 
@@ -108,6 +149,10 @@ function printTyreLabel($data) {
     );
     if (!$printer || empty($printer['printer_command'])) {
         echo resultInfo(false, 'PRINTER_ERROR', 'Drucker nicht gefunden oder nicht konfiguriert');
+        return;
+    }
+    if ($err = labelQueueCheck($printer['printer_command'])) {
+        echo resultInfo(false, 'PRINTER_OFFLINE', $err);
         return;
     }
 

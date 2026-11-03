@@ -4,7 +4,7 @@ import { ref, computed, watch, nextTick } from 'vue'
 import {
     validateLicensePlate, validateHsn, validateTsn, validateEmission,
     validateFirstRegistration, validateHuDate, validateFin,
-    validateMonthYear, parseShortDate
+    validateMonthYear, parseShortDate, MAINTENANCE_MAX_YEARS_AHEAD
 } from '@/features/lxcars/utils/validation.js'
 
 export function useCarValidation(car, t, { displayD, displayHu, carsStore, isEditMode, carId, initialLoaded }) {
@@ -65,12 +65,15 @@ export function useCarValidation(car, t, { displayD, displayHu, carsStore, isEdi
         return rules
     })
 
-    const rulesMonthYear = [(v) => {
+    // Wartungstermine: Grenze in die Zukunft je Feld (Zahnriemen hält bis zu 12 Jahre,
+    // Bremsflüssigkeit/Wartungsdienst 3) — siehe MAINTENANCE_MAX_YEARS_AHEAD
+    const monthYearRule = (field) => [(v) => {
         if (!v) return true
-        const result = validateMonthYear(v)
+        const result = validateMonthYear(v, field)
         if (result === true) return true
-        return t('CarEditView.' + result)
+        return t('CarEditView.' + result, { years: MAINTENANCE_MAX_YEARS_AHEAD[field] })
     }]
+    const rulesMonthYear = { c_zrd: monthYearRule('c_zrd'), c_bf: monthYearRule('c_bf'), c_wd: monthYearRule('c_wd') }
 
     // ── hasValidationErrors (blockiert Auto-Save) ──
     const hasValidationErrors = computed(() => {

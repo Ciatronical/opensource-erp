@@ -63,12 +63,6 @@
                     :show-gutachten-button="!!gutachtenImport"
                     @import-gutachten="onImportGutachten"
                     @weroni-review="onWeroniReview"
-                    @open-aag="onOpenAag"
-                    :aag-loading="aagLoading"
-                    :aag-configured="aagConfigured"
-                    :hgs-available="hgsAvailable"
-                    :hgs-loading="hgsLoading"
-                    @open-hgs="onOpenHgs"
                     @open-special="openSpecialDialog"
                     :sent-email-count="sentCounts.email"
                     :sent-whatsapp-count="sentCounts.whatsapp"
@@ -261,6 +255,12 @@
                     :show-picker-bringetermin="vehicle.showPickerBringetermin.value"
                     :show-picker-fertigstellung="vehicle.showPickerFertigstellung.value"
                     :is-trailer="vehicle.isTrailer.value"
+                    :aag-available="portals.aagAvailable.value"
+                    :aag-loading="portals.aagLoading.value"
+                    :hgs-available="portals.hgsAvailable.value"
+                    :hgs-loading="portals.hgsLoading.value"
+                    @open-aag="portals.openAag"
+                    @open-hgs="portals.openHgs"
                     @toggle-intern="vehicle.toggleIntern"
                     @update:display-km-stand="v => vehicle.displayKmStand.value = v"
                     @blur-km-stand="vehicle.onBlurKmStand"
@@ -1269,8 +1269,7 @@ import { useRouter, useRoute } from 'vue-router'
 import * as alerts from '@/core/utils/alerts.js'
 import { DOCUMENT_LIST_ROUTE_NAMES, entityRoute } from '@/core/constants/routes.js'
 import * as toasts from '@/core/utils/toasts.js'
-import { openAppWindow, aagWindowOpen, setAagWindowCarId } from '@/core/utils/aagWindow.js'
-import { isKbaValid } from '@/core/utils/diagLinks.js'
+import { useDiagPortals } from '@/features/lxcars/composables/useDiagPortals.js'
 import { parseMonthYear, formatMonthYear } from '@/features/lxcars/utils/validation.js'
 
 // Shop-Erweiterung: Bestell- und Lieferstatus der Rechnung, nur bei aktiver Erweiterung geladen
@@ -1517,12 +1516,6 @@ export default defineComponent({
             const val = oserp.getClientDefaultValue('dhl_enabled', false)
             return val === true || val === 'true' || val === 't' || val === '1'
         })
-
-        // AAG-Online nur anbieten, wenn Zugangsdaten hinterlegt sind
-        const aagConfigured = computed(() =>
-            !!String(oserp.getClientDefaultValue('aag_online_user', '') || '').trim() &&
-            !!String(oserp.getClientDefaultValue('aag_online_passwd', '') || '').trim()
-        )
 
         const mechanicModeEnabled = computed(() => {
             if (!oserp.isLxCars()) return false
@@ -2560,119 +2553,17 @@ export default defineComponent({
             }
         }
 
-        // ===== AAG-Online =====
-
-        const aagLoading = ref(false)
-
-        // Token im Hintergrund vorladen, sobald ein Auftrag mit Fahrzeug geladen
-        // ist (Bedingung wie der AAG-Button). Nicht-blockierend, einmalig pro
-        // Auftrag – der Auftrag selbst wird dadurch nicht langsamer.
-        let aagTokenWarmed = false
-        watch(
-            () => aagConfigured.value && fakturaType.value === 'order' && !!vehicle && !!vehicle.selectedCarId?.value,
-            (ready) => {
-                if (ready && !aagTokenWarmed) {
-                    aagTokenWarmed = true
-                    faktura.warmAagToken()
-                }
-            },
-            { immediate: true }
-        )
-
-        async function onOpenAag() {
-            if (!fakturaId.value) return
-
-            // Als eigenes App-Fenster (Popup ohne Tab-Leiste) öffnen, nicht als Tab.
-            // Sofort öffnen (vermeidet Popup-Blocker); URL wird gesetzt, sobald sie vorliegt.
-            // Wie der Fahrzeug-Button: nur das Fahrzeug an AAG-Online übergeben, kein
-            // Auftrags-/WorkTask-Beleg. So zeigt AAG die Fahrzeug-Ansicht (Kennzeichen
-            // + Modell) statt "Auftrag ##### Name". Titel daher: "Kennzeichen · Modell".
-            const cId = vehicle?.selectedCarId?.value || 0
-            const carObj = vehicle?.customerCars?.value?.find(c => c.c_id === cId)
-            const plate = (carObj?.c_ln || '').trim()
-            const model = (carObj?.c_mt || '').trim()
-            const aagTitle = [plate, model].filter(Boolean).join(' · ') || 'AAG-Online'
-            const aagName = 'aag-' + (plate.replace(/\s+/g, '') || String(cId) || 'online')
-            // Vorhandenes AAG-Fenster wiederverwenden (genau ein Fenster) oder neu öffnen.
-            const reusing = aagWindowOpen()
-            const aagWindow = openAppWindow(aagName, aagTitle)
-
-            aagLoading.value = true
-            try {
-                const { data } = await axios.post('/api/lxcars/', {
-                    action: 'getAagVehicleUrl',
-                    c_id: cId,
-                    vin: (carObj?.c_fin || '').trim(),
-                    oe_id: fakturaId.value
-                })
-                const portalUrl = data?.success ? data.payload?.portalUrl : null
-                if (!portalUrl) {
-                    if (aagWindow && !reusing) aagWindow.close() // nur frisch geöffnetes schließen
-                    toasts.error(t('FakturaView.faktura.aagError'))
-                    return
-                }
-                if (aagWindow) {
-                    aagWindow.location.href = portalUrl
-                    aagWindow.focus()
-                    setAagWindowCarId(cId)
-                } else {
-                    // Fenster wurde blockiert – im selben Tab als Fallback öffnen
-                    window.open(portalUrl, '_blank')
-                }
-            } catch (e) {
-                if (aagWindow && !reusing) aagWindow.close()
-                console.error('AAG-Online error:', e)
-                toasts.error(t('FakturaView.faktura.aagError') + (e?.message ? '\n' + e.message : ''))
-            } finally {
-                aagLoading.value = false
-            }
-        }
-
-        // ===== Verknüpftes Fahrzeug des Auftrags (HGS-Data) =====
-
-        // Das aktuell verknüpfte Fahrzeug aus der Kundenfahrzeug-Liste (enthält
-        // seit der Backend-Erweiterung c_2/c_3/c_fin).
+        // ===== Werkstatt-Portale (AAG-Online, HGS-Data) =====
+        //
+        // Knöpfe sitzen in der Fahrzeugkarte (wie in der Fahrzeugmaske); die
+        // Logik liefert useDiagPortals.js. Nur bei Aufträgen mit verknüpftem
+        // Fahrzeug – die Kundenfahrzeug-Liste enthält c_2/c_3/c_fin.
         const selectedCarObj = computed(() =>
-            vehicle?.customerCars?.value?.find(c => c.c_id === vehicle?.selectedCarId?.value) || null
+            fakturaType.value === 'order'
+                ? (vehicle?.customerCars?.value?.find(c => c.c_id === vehicle?.selectedCarId?.value) || null)
+                : null
         )
-
-        // HGS-Data-Suche braucht gültige HSN/TSN; Auflösung der vehicleId im Backend.
-        const hgsLoading = ref(false)
-        const hgsAvailable = computed(() =>
-            fakturaType.value === 'order' && !!selectedCarObj.value &&
-            isKbaValid(selectedCarObj.value.c_2, selectedCarObj.value.c_3)
-        )
-
-        async function onOpenHgs() {
-            const car = selectedCarObj.value
-            if (!car) return
-            const win = openAppWindow('hgs-data')
-            hgsLoading.value = true
-            try {
-                const { data } = await axios.post('/api/lxcars/', {
-                    action: 'getHgsVehicleUrl',
-                    c_id: car.c_id
-                })
-                const portalUrl = data?.success ? data.payload?.portalUrl : null
-                if (!portalUrl) {
-                    if (win) win.close()
-                    toasts.error(t('FakturaView.faktura.hgsError') + (data?.payload?.message ? '\n' + data.payload.message : ''))
-                    return
-                }
-                if (win) {
-                    win.location.href = portalUrl
-                    win.focus()
-                } else {
-                    window.open(portalUrl, '_blank')
-                }
-            } catch (e) {
-                if (win) win.close()
-                console.error('HGS-Data error:', e)
-                toasts.error(t('FakturaView.faktura.hgsError') + (e?.message ? '\n' + e.message : ''))
-            } finally {
-                hgsLoading.value = false
-            }
-        }
+        const portals = useDiagPortals({ carObj: selectedCarObj, oserp, t, warmToken: faktura.warmAagToken })
 
         function showOnDisplay() {
             if (!fakturaId.value) return
@@ -3189,7 +3080,7 @@ export default defineComponent({
         // 120369, Zahnriemen fällig bei 20000, Bremsflüssigkeit 02/2029"). Whisper
         // transkribiert, der lokale LLM strukturiert, wir tragen die Felder in die
         // Auftrags-Fahrzeugdaten (oe_ext) ein — Auto-Save läuft über
-        // onOeExtFieldChange. Gekoppelte Zahnriemen-Felder (c_sk) werden übersprungen.
+        // onOeExtFieldChange. Bei Steuerkette gibt es keine Zahnriemen-Felder.
         async function onVoiceVehicle(text) {
             const spoken = (text || '').trim()
             if (!spoken || !vehicle || !vehicle.selectedCarId.value) return
@@ -3201,7 +3092,7 @@ export default defineComponent({
                 }
                 const f = data.payload?.fields || {}
                 const ext = vehicle.onOeExtFieldChange
-                const coupled = !!vehicle.oeExtData.value?.c_sk
+                const chain = !!vehicle.oeExtData.value?.c_sk
                 const kmFmt = (v) => Number(v) ? Number(v).toLocaleString('de-DE') : ''
                 const done = []
 
@@ -3209,11 +3100,11 @@ export default defineComponent({
                     const v = parseInt(f.c_km, 10)
                     if (v > 0) { ext('km_stand', v); done.push(`${t('MaintenanceSectionCard.voice.kmStand')}: ${kmFmt(v)} km`) }
                 }
-                if (f.c_zrk != null && !coupled) {
+                if (f.c_zrk != null && !chain) {
                     let n = parseInt(f.c_zrk, 10)
                     if (n > 0) { n = n < 1000 ? n * 1000 : n; ext('c_zrk', n); done.push(`${t('MaintenanceSectionCard.fields.c_zrk')}: ${kmFmt(n)} km`) }
                 }
-                if (f.c_zrd && !coupled) {
+                if (f.c_zrd && !chain) {
                     const d = parseMonthYear(f.c_zrd)
                     if (d) { ext('c_zrd', d); done.push(`${t('MaintenanceSectionCard.fields.c_zrd')}: ${formatMonthYear(d)}`) }
                 }
@@ -4314,10 +4205,7 @@ export default defineComponent({
             // DHL
             dhlEnabled,
             shopEnabled,
-            aagConfigured,
-            hgsAvailable,
-            hgsLoading,
-            onOpenHgs,
+            portals,
             dhlDialogVisible,
             dhlWeight,
             dhlProduct,
@@ -4365,8 +4253,6 @@ export default defineComponent({
             onWeroniSendEmail,
             onWeroniSendWhatsApp,
             markWeroniCommunicated,
-            aagLoading,
-            onOpenAag,
             // KI-Positionsvorschläge
             showAiSuggest,
             aiLoading,

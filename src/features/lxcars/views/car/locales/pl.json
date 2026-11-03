@@ -283,7 +283,7 @@
             "finDuplicate": "VIN już zajęty (właściciel: {owner})",
             "monthYearFormat": "Format: MM/RR (np. 12/28 lub 1228)",
             "maintenanceTooOld": "Termin zbyt daleko w przeszłości",
-            "maintenanceTooFar": "Maks. 3 lata w przyszłości"
+            "maintenanceTooFar": "Do {years} lat w przyszłości"
         },
         "wiki": {
             "title": "Artykuły wiedzy",
@@ -355,6 +355,10 @@
             "tooltip": "Otwórz dane pojazdu w HGS Data",
             "error": "Nie można otworzyć HGS Data"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Otwórz diagnostykę z Hella Gutmann mega macs"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",
@@ -381,7 +385,8 @@
             "manufacturer": "Producent / Marka",
             "model": "Model",
             "vehicleType": "Rodzaj pojazdu"
-        }
+        },
+        "labelPrinterOffline": "Drukarka etykiet {host} jest niedostępna (wyłączona lub nowy adres IP) – nic nie wydrukowano"
     },
     "CarScanView": {
         "title": "Utwórz pojazd ze skanu",

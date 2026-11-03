@@ -334,7 +334,7 @@
             "finDuplicate": "FIN bereits vergeben (Eigentümer: {owner})",
             "monthYearFormat": "Format: MM/JJ (z.B. 12/28 oder 1228)",
             "maintenanceTooOld": "Termin liegt zu weit in der Vergangenheit",
-            "maintenanceTooFar": "Max. 3 Jahre in der Zukunft"
+            "maintenanceTooFar": "Max. {years} Jahre in der Zukunft"
         },
         "wiki": {
             "title": "Wissensartikel",
@@ -388,7 +388,8 @@
             "label": "Ktype",
             "resolving": "Ktype wird ermittelt …",
             "refresh": "Ktype neu ermitteln"
-        }
+        },
+        "labelPrinterOffline": "Labeldrucker {host} nicht erreichbar (ausgeschaltet oder neue IP-Adresse) – es wurde nichts gedruckt"
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",

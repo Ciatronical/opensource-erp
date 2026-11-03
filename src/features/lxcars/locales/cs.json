@@ -44,5 +44,39 @@
         "incompleteText": "Před dokončením zakázky musí být vyplněna následující pole:",
         "incompleteTitle": "Servisní data neúplná",
         "title": "Údržba a servis"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Rozvodový řemen",
+            "c_zrd_sk": "Rozvodový řetěz",
+            "c_zrk": "Rozvodový řemen (km)",
+            "c_bf": "Brzdová kapalina",
+            "c_wd": "Servisní prohlídka"
+        },
+        "chip": {
+            "due": "splatné",
+            "soon": "brzy splatné"
+        },
+        "reasons": {
+            "dateReached": "Termín {date} dosažen",
+            "dateSoon": "Termín {date} se blíží",
+            "kmReached": "Stav km {km} dosažen (od {due} km)",
+            "kmSoon": "zbývá {rest} km do {due} km",
+            "manual": "ručně označeno jako splatné"
+        },
+        "tooltip": {
+            "mark": "Označit jako splatné",
+            "unmark": "Odebrat označení „splatné“",
+            "autoHint": "Zmizí s novým termínem nebo stavem km"
+        },
+        "count": {
+            "due": "{n} splatné",
+            "soon": "{n} brzy splatné"
+        },
+        "alert": {
+            "title": "Údržba splatná",
+            "titleSoon": "Údržba brzy splatná",
+            "jump": "Údržba a servis"
+        }
     }
 }

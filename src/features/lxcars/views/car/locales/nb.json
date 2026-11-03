@@ -46,9 +46,9 @@
             "chk_c_em": "Emission geprüft",
             "chk_fin": "FIN geprüft",
             "chk_c_hu": "HU geprüft",
-            "c_sk": "Skattkette",
-            "c_zrk": "Zahnriemenwechsel km",
-            "c_zrd": "Zahnriemenwechsel",
+            "c_sk": "Registerkjede",
+            "c_zrk": "Registerreimskift km",
+            "c_zrd": "Registerreimskift",
             "c_bf": "Nächster Bremsfl.-Wechsel",
             "c_wd": "Nächster Wartungsdienst",
             "c_finchk": "FIN-Check",
@@ -276,8 +276,8 @@
             "licensePlateDuplicate": "Kennzeichen bereits vergeben (Eigentümer: {owner})",
             "finDuplicate": "FIN bereits vergeben (Eigentümer: {owner})",
             "monthYearFormat": "Format: MM/JJ (z.B. 12/28 oder 1228)",
-            "maintenanceTooOld": "Termin liegt zu weit in der Vergangenheit",
-            "maintenanceTooFar": "Max. 3 Aare in der Zukunft"
+            "maintenanceTooOld": "Datoen ligger for langt tilbake",
+            "maintenanceTooFar": "Maks. {years} år frem i tid"
         },
         "wiki": {
             "title": "Wissensartikel",
@@ -349,11 +349,16 @@
             "tooltip": "Åpne kjøretøydata i HGS Data",
             "error": "Kunne ikke åpne HGS Data"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Åpne diagnose med Hella Gutmann mega macs"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",
             "refresh": "Refresh Ktype"
-        }
+        },
+        "labelPrinterOffline": "Etikettskriver {host} er ikke tilgjengelig (slått av eller ny IP-adresse) – ingenting ble skrevet ut"
     },
     "CarScanView": {
         "title": "Kjoeretoeyer vom Scan anlegen",

@@ -46,9 +46,9 @@
             "chk_c_em": "Emission geprüft",
             "chk_fin": "FIN geprüft",
             "chk_c_hu": "HU geprüft",
-            "c_sk": "Steuerkette",
-            "c_zrk": "Zahnriemenwechsel km",
-            "c_zrd": "Zahnriemenwechsel",
+            "c_sk": "Lanț de distribuție",
+            "c_zrk": "Schimb curea de distribuție km",
+            "c_zrd": "Schimb curea de distribuție",
             "c_bf": "Nächster Bremsfl.-Wechsel",
             "c_wd": "Nächster Wartungsdienst",
             "c_finchk": "FIN-Check",
@@ -276,8 +276,8 @@
             "licensePlateDuplicate": "Kennzeichen bereits vergeben (Eigentümer: {owner})",
             "finDuplicate": "FIN bereits vergeben (Eigentümer: {owner})",
             "monthYearFormat": "Format: MM/JJ (z.B. 12/28 oder 1228)",
-            "maintenanceTooOld": "Termin liegt zu weit in der Vergangenheit",
-            "maintenanceTooFar": "Max. 3 Jahre in der Zukunft"
+            "maintenanceTooOld": "Data este prea departe în trecut",
+            "maintenanceTooFar": "Max. {years} ani în viitor"
         },
         "wiki": {
             "title": "Wissensartikel",
@@ -349,11 +349,16 @@
             "tooltip": "Deschide datele vehiculului în HGS Data",
             "error": "Nu s-a putut deschide HGS Data"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Deschide diagnosticarea cu Hella Gutmann mega macs"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",
             "refresh": "Refresh Ktype"
-        }
+        },
+        "labelPrinterOffline": "Imprimanta de etichete {host} nu este accesibilă (oprită sau adresă IP nouă) – nu s-a imprimat nimic"
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",

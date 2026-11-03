@@ -33,37 +33,12 @@
                         {{ vehiclePlate }}
                     </v-btn>
                     <v-chip v-if="vehicleInfo" size="x-small" variant="text">{{ vehicleInfo }}</v-chip>
-                    <!-- Fahrzeug an Online-Portale übergeben (wie in der Auftrags-Aktionsleiste) -->
-                    <v-btn
-                        v-if="portals.aagAvailable.value"
-                        size="small"
-                        variant="tonal"
-                        color="indigo"
-                        prepend-icon="mdi-car-search"
-                        :loading="portals.aagLoading.value"
-                        :title="t('FakturaView.faktura.openAag')"
-                        @click="portals.openAag"
-                    >
-                        {{ t('CarEditView.aag.button') }}
-                    </v-btn>
-                    <v-btn
-                        v-if="portals.hgsAvailable.value"
-                        size="small"
-                        variant="tonal"
-                        color="blue-grey-darken-1"
-                        prepend-icon="mdi-database-search-outline"
-                        :loading="portals.hgsLoading.value"
-                        :title="t('FakturaView.faktura.openHgs')"
-                        @click="portals.openHgs"
-                    >
-                        {{ t('CarEditView.hgs.button') }}
-                    </v-btn>
                 </div>
             </div>
             <v-btn icon variant="text" color="primary" @click="reloadAll" :title="t('MechanicView.refresh')">
                 <v-icon>mdi-refresh</v-icon>
             </v-btn>
-            <v-btn icon variant="text" color="primary" @click="$router.push({ name: 'menu' })" :title="t('MechanicView.exitMechanic')">
+            <v-btn icon variant="text" color="primary" @click="$router.push({ name: 'customer-vendor' })" :title="t('MechanicView.exitMechanic')">
                 <v-icon>mdi-exit-to-app</v-icon>
             </v-btn>
         </div>
@@ -96,6 +71,12 @@
                         :show-picker-bringetermin="vehicle.showPickerBringetermin.value"
                         :show-picker-fertigstellung="vehicle.showPickerFertigstellung.value"
                         :is-trailer="vehicle.isTrailer.value"
+                        :aag-available="portals.aagAvailable.value"
+                        :aag-loading="portals.aagLoading.value"
+                        :hgs-available="portals.hgsAvailable.value"
+                        :hgs-loading="portals.hgsLoading.value"
+                        @open-aag="portals.openAag"
+                        @open-hgs="portals.openHgs"
                         @toggle-intern="vehicle.toggleIntern"
                         @update:display-km-stand="v => vehicle.displayKmStand.value = v"
                         @blur-km-stand="vehicle.onBlurKmStand"
@@ -512,7 +493,7 @@ const vehicle = useVehicleSection({
     carsStore, fakturaId, fakturaType, t
 })
 
-// Verknüpftes Fahrzeug des Auftrags (enthält c_2/c_3/c_fin für die Portal-Buttons)
+// Verknüpftes Fahrzeug des Auftrags (enthält c_2/c_3/c_fin für die Portal-Knöpfe in der Fahrzeugkarte)
 const selectedCarObj = computed(() =>
     vehicle?.customerCars?.value?.find(c => c.c_id === vehicle?.selectedCarId?.value) || null
 )

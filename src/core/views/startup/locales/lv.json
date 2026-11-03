@@ -32,6 +32,7 @@
         "department1": "Nodaļa 1",
         "department2": "Nodaļa 2",
         "fax": "Fakss",
+        "keywords": "Atslēgvārdi",
         "gln": "GLN",
         "noBillingAddresses": "Nav papildu rēķinu adrešu",
         "salutation": "Uzruna",

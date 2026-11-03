@@ -52,5 +52,39 @@
             "failed": "Speech recognition failed",
             "kmStand": "Mileage"
         }
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Timing belt",
+            "c_zrd_sk": "Timing chain",
+            "c_zrk": "Timing belt (km)",
+            "c_bf": "Brake fluid",
+            "c_wd": "Service"
+        },
+        "chip": {
+            "due": "due",
+            "soon": "due soon"
+        },
+        "reasons": {
+            "dateReached": "Due date {date} reached",
+            "dateSoon": "Due date {date} is coming up",
+            "kmReached": "Mileage {km} reached (due from {due} km)",
+            "kmSoon": "{rest} km left until {due} km",
+            "manual": "marked as due by hand"
+        },
+        "tooltip": {
+            "mark": "Mark as due",
+            "unmark": "Remove “due” mark",
+            "autoHint": "Clears with a new date or mileage"
+        },
+        "count": {
+            "due": "{n} due",
+            "soon": "{n} due soon"
+        },
+        "alert": {
+            "title": "Maintenance due",
+            "titleSoon": "Maintenance due soon",
+            "jump": "Maintenance & Service"
+        }
     }
 }

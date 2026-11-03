@@ -40,17 +40,28 @@ export function useCarDates(car) {
 
     const monthYearRefs = { c_zrd: displayZrd, c_bf: displayBf, c_wd: displayWd }
 
+    // Neuer Termin ⇒ „fällig“-Markierung des Feldes erlischt (Wartung erledigt);
+    // das Backend macht dasselbe, hier nur für die sofortige Anzeige.
+    function clearDueFlag(field) {
+        const flag = field + '_due'
+        if (flag in car.value) car.value[flag] = false
+    }
+
     function onBlurMonthYear(field) {
         const displayRef = monthYearRefs[field]
         const raw = displayRef.value.trim()
-        if (!raw) { car.value[field] = null; return }
-        const parsed = parseMonthYear(raw)
-        if (parsed) {
-            car.value[field] = parsed
-            displayRef.value = formatMonthYear(parsed)
-        } else {
-            car.value[field] = null
+        const before = car.value[field] || null
+        if (!raw) { car.value[field] = null }
+        else {
+            const parsed = parseMonthYear(raw)
+            if (parsed) {
+                car.value[field] = parsed
+                displayRef.value = formatMonthYear(parsed)
+            } else {
+                car.value[field] = null
+            }
         }
+        if ((car.value[field] || null) !== before) clearDueFlag(field)
     }
 
     // ── km-Feld: Kurzeingabe (180 → 180.000) ──
@@ -68,12 +79,18 @@ export function useCarDates(car) {
 
     function onBlurKm() {
         const raw = String(displayZrk.value).replace(/[.\s]/g, '').trim()
-        if (!raw) { car.value.c_zrk = null; return }
-        const num = parseInt(raw, 10)
-        if (isNaN(num) || num <= 0) { car.value.c_zrk = null; displayZrk.value = ''; return }
-        const km = num < 1000 ? num * 1000 : num
-        car.value.c_zrk = km
-        displayZrk.value = formatKm(km)
+        const before = car.value.c_zrk || null
+        if (!raw) { car.value.c_zrk = null }
+        else {
+            const num = parseInt(raw, 10)
+            if (isNaN(num) || num <= 0) { car.value.c_zrk = null; displayZrk.value = '' }
+            else {
+                const km = num < 1000 ? num * 1000 : num
+                car.value.c_zrk = km
+                displayZrk.value = formatKm(km)
+            }
+        }
+        if ((car.value.c_zrk || null) !== before) clearDueFlag('c_zrk')
     }
 
     function onBlurKmStand() {

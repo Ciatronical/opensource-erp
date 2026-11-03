@@ -44,5 +44,39 @@
         "incompleteText": "Enne tellimuse lõpetamist peavad olema täidetud järgmised väljad:",
         "incompleteTitle": "Hooldusandmed on puudulikud",
         "title": "Hooldus ja teenindus"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Hammasrihm",
+            "c_zrd_sk": "Ajastuskett",
+            "c_zrk": "Hammasrihm (km)",
+            "c_bf": "Pidurivedelik",
+            "c_wd": "Hooldus"
+        },
+        "chip": {
+            "due": "tähtaeg",
+            "soon": "varsti"
+        },
+        "reasons": {
+            "dateReached": "Tähtaeg {date} on käes",
+            "dateSoon": "Tähtaeg {date} läheneb",
+            "kmReached": "Läbisõit {km} saavutatud (alates {due} km)",
+            "kmSoon": "{rest} km jäänud kuni {due} km",
+            "manual": "käsitsi tähtajaliseks märgitud"
+        },
+        "tooltip": {
+            "mark": "Märgi tähtajaliseks",
+            "unmark": "Eemalda märge „tähtajaline“",
+            "autoHint": "Kustub uue tähtaja või läbisõiduga"
+        },
+        "count": {
+            "due": "{n} tähtajaline",
+            "soon": "{n} varsti"
+        },
+        "alert": {
+            "title": "Hooldus on tähtajaline",
+            "titleSoon": "Hooldus läheneb",
+            "jump": "Hooldus ja teenindus"
+        }
     }
 }

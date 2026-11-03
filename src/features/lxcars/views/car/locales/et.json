@@ -46,9 +46,9 @@
             "chk_c_em": "Emission geprüft",
             "chk_fin": "FIN geprüft",
             "chk_c_hu": "HU geprüft",
-            "c_sk": "Steuerkette",
-            "c_zrk": "Zahnriemenwechsel km",
-            "c_zrd": "Zahnriemenwechsel",
+            "c_sk": "Ajastuskett",
+            "c_zrk": "Hammasrihma vahetus km",
+            "c_zrd": "Hammasrihma vahetus",
             "c_bf": "Nächster Bremsfl.-Wechsel",
             "c_wd": "Nächster Wartungsdienst",
             "c_finchk": "FIN-Check",
@@ -276,8 +276,8 @@
             "licensePlateDuplicate": "Kennzeichen bereits vergeben (Eigentümer: {owner})",
             "finDuplicate": "FIN bereits vergeben (Eigentümer: {owner})",
             "monthYearFormat": "Format: MM/JJ (z.B. 12/28 oder 1228)",
-            "maintenanceTooOld": "Termin liegt zu weit in der Vergangenheit",
-            "maintenanceTooFar": "Max. 3 Jahre in der Zukunft"
+            "maintenanceTooOld": "Kuupäev on liiga kaugel minevikus",
+            "maintenanceTooFar": "Max {years} aastat tulevikus"
         },
         "wiki": {
             "title": "Wissensartikel",
@@ -349,11 +349,16 @@
             "tooltip": "Ava sõidukiandmed HGS Datas",
             "error": "HGS Data avamine ebaõnnestus"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Ava diagnostika Hella Gutmann mega macsiga"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",
             "refresh": "Refresh Ktype"
-        }
+        },
+        "labelPrinterOffline": "Sildiprinter {host} pole kättesaadav (välja lülitatud või uus IP-aadress) – midagi ei prinditud"
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",

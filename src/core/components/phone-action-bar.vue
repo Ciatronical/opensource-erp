@@ -1,37 +1,44 @@
 <template>
     <span class="phone-action-bar d-inline-flex align-center">
         <span v-if="showNumber" class="phone-number me-1" :title="t('PhoneActions.copyNumber')" @click.stop="onCopy">{{ formatPhone(phone) }}</span>
-        <v-btn
-            icon
-            size="small"
-            variant="text"
-            color="primary"
-            :title="t('PhoneActions.clickToCall')"
-            @click.stop="onClickToCall"
-        >
-            <v-icon size="default">mdi-phone-outgoing</v-icon>
-        </v-btn>
-        <v-btn
-            v-if="showWhatsapp"
-            icon
-            size="small"
-            variant="text"
-            color="green"
-            :title="t('PhoneActions.openWhatsApp')"
-            @click.stop="onWhatsApp"
-        >
-            <v-icon size="default">mdi-whatsapp</v-icon>
-        </v-btn>
-        <v-btn
-            icon
-            size="small"
-            variant="text"
-            color="grey-darken-1"
-            :title="t('PhoneActions.phoneSettings')"
-            @click.stop="showConfig = true"
-        >
-            <v-icon size="default">mdi-cog</v-icon>
-        </v-btn>
+        <!-- Die Knöpfe bleiben eine Gruppe: fehlt der Platz neben der Nummer, rutschen
+             sie gemeinsam in die nächste Zeile statt einzeln abgeschnitten zu werden -->
+        <span class="phone-actions d-inline-flex align-center flex-nowrap">
+            <v-btn
+                icon
+                size="small"
+                density="comfortable"
+                variant="text"
+                color="primary"
+                :title="t('PhoneActions.clickToCall')"
+                @click.stop="onClickToCall"
+            >
+                <v-icon size="default">mdi-phone-outgoing</v-icon>
+            </v-btn>
+            <v-btn
+                v-if="showWhatsapp"
+                icon
+                size="small"
+                density="comfortable"
+                variant="text"
+                color="green"
+                :title="t('PhoneActions.openWhatsApp')"
+                @click.stop="onWhatsApp"
+            >
+                <v-icon size="default">mdi-whatsapp</v-icon>
+            </v-btn>
+            <v-btn
+                icon
+                size="small"
+                density="comfortable"
+                variant="text"
+                color="grey-darken-1"
+                :title="t('PhoneActions.phoneSettings')"
+                @click.stop="showConfig = true"
+            >
+                <v-icon size="default">mdi-cog</v-icon>
+            </v-btn>
+        </span>
         <PhoneConfigDialog
             v-model="showConfig"
             :phone="phone"
@@ -87,6 +94,9 @@ function onCopy() {
 <style scoped>
 .phone-action-bar {
     gap: 0;
+    /* In schmalen Karten (Kontaktdaten auf Laptops) rutscht die Knopfgruppe unter
+       die Nummer, statt rechts abgeschnitten zu werden */
+    flex-wrap: wrap;
 }
 .phone-number {
     white-space: nowrap;

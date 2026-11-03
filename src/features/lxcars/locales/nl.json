@@ -44,5 +44,39 @@
         "incompleteText": "Voordat de order kan worden afgesloten, moeten de volgende velden worden ingevuld:",
         "incompleteTitle": "Onderhoudsgegevens onvolledig",
         "title": "Onderhoud en service"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Distributieriem",
+            "c_zrd_sk": "Distributieketting",
+            "c_zrk": "Distributieriem (km)",
+            "c_bf": "Remvloeistof",
+            "c_wd": "Onderhoudsbeurt"
+        },
+        "chip": {
+            "due": "vervallen",
+            "soon": "binnenkort"
+        },
+        "reasons": {
+            "dateReached": "Datum {date} bereikt",
+            "dateSoon": "Datum {date} nadert",
+            "kmReached": "Kilometerstand {km} bereikt (vanaf {due} km)",
+            "kmSoon": "nog {rest} km tot {due} km",
+            "manual": "handmatig als vervallen gemarkeerd"
+        },
+        "tooltip": {
+            "mark": "Als vervallen markeren",
+            "unmark": "Markering „vervallen“ verwijderen",
+            "autoHint": "Verdwijnt bij een nieuwe datum of kilometerstand"
+        },
+        "count": {
+            "due": "{n} vervallen",
+            "soon": "{n} binnenkort"
+        },
+        "alert": {
+            "title": "Onderhoud vervallen",
+            "titleSoon": "Onderhoud binnenkort",
+            "jump": "Onderhoud en service"
+        }
     }
 }

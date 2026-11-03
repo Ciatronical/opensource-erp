@@ -277,7 +277,7 @@
             "finDuplicate": "VIN al toegewezen (eigenaar: {owner})",
             "monthYearFormat": "Formaat: MM/JJ (bijv. 12/28 of 1228)",
             "maintenanceTooOld": "Datum ligt te ver in het verleden",
-            "maintenanceTooFar": "Max. 3 jaar in de toekomst"
+            "maintenanceTooFar": "Max. {years} jaar in de toekomst"
         },
         "wiki": {
             "title": "Kennisartikelen",
@@ -349,11 +349,16 @@
             "tooltip": "Voertuiggegevens openen in HGS Data",
             "error": "Kan HGS Data niet openen"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Diagnose openen met de Hella Gutmann mega macs"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Ktype bepalen …",
             "refresh": "Ktype vernieuwen"
-        }
+        },
+        "labelPrinterOffline": "Labelprinter {host} is niet bereikbaar (uitgeschakeld of nieuw IP-adres) – er is niets afgedrukt"
     },
     "CarScanView": {
         "title": "Voertuig aanmaken van scan",

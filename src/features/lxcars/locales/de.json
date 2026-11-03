@@ -52,5 +52,39 @@
         "ordered": "Bestellt",
         "revertToPending": "Zurück auf Angefordert",
         "delete": "Löschen"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Zahnriemen",
+            "c_zrd_sk": "Steuerkette",
+            "c_zrk": "Zahnriemen (km)",
+            "c_bf": "Bremsflüssigkeit",
+            "c_wd": "Wartungsdienst"
+        },
+        "chip": {
+            "due": "fällig",
+            "soon": "bald fällig"
+        },
+        "reasons": {
+            "dateReached": "Termin {date} erreicht",
+            "dateSoon": "Termin {date} steht bevor",
+            "kmReached": "km-Stand {km} erreicht (fällig ab {due} km)",
+            "kmSoon": "noch {rest} km bis {due} km",
+            "manual": "von Hand als fällig markiert"
+        },
+        "tooltip": {
+            "mark": "Als fällig markieren",
+            "unmark": "Markierung „fällig“ entfernen",
+            "autoHint": "Erlischt mit neuem Termin bzw. km-Stand"
+        },
+        "count": {
+            "due": "{n} fällig",
+            "soon": "{n} bald fällig"
+        },
+        "alert": {
+            "title": "Wartung fällig",
+            "titleSoon": "Wartung bald fällig",
+            "jump": "Wartung & Service"
+        }
     }
 }

@@ -186,8 +186,6 @@
             "dateMustBeFuture": "Datum muss in der Zukunft liegen",
             "openVehicle": "Transporto priemonė",
             "importSilverDAT": "SilverDAT Import",
-            "openAag": "AAG-Online – transfer vehicle and open",
-            "openHgs": "Atidaryti transporto priemonės duomenis HGS Data",
             "hgsError": "Nepavyko atidaryti HGS Data",
             "aagError": "Could not open AAG-Online",
             "silverdat": {

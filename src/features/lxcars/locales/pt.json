@@ -44,5 +44,39 @@
         "incompleteText": "Antes de concluir a encomenda, os seguintes campos devem ser preenchidos:",
         "incompleteTitle": "Dados de manutenção incompletos",
         "title": "Manutenção e serviço"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Correia de distribuição",
+            "c_zrd_sk": "Corrente de distribuição",
+            "c_zrk": "Correia de distribuição (km)",
+            "c_bf": "Líquido de travões",
+            "c_wd": "Revisão"
+        },
+        "chip": {
+            "due": "pendente",
+            "soon": "em breve"
+        },
+        "reasons": {
+            "dateReached": "Prazo {date} atingido",
+            "dateSoon": "Prazo {date} aproxima-se",
+            "kmReached": "Quilometragem {km} atingida (a partir de {due} km)",
+            "kmSoon": "faltam {rest} km até {due} km",
+            "manual": "marcado manualmente como pendente"
+        },
+        "tooltip": {
+            "mark": "Marcar como pendente",
+            "unmark": "Remover a marca «pendente»",
+            "autoHint": "Desaparece com um novo prazo ou quilometragem"
+        },
+        "count": {
+            "due": "{n} pendente",
+            "soon": "{n} em breve"
+        },
+        "alert": {
+            "title": "Manutenção pendente",
+            "titleSoon": "Manutenção em breve",
+            "jump": "Manutenção e serviço"
+        }
     }
 }

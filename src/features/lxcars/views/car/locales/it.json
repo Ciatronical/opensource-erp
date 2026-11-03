@@ -47,8 +47,8 @@
             "chk_fin": "FIN geprüft",
             "chk_c_hu": "HU geprüft",
             "c_sk": "Catena di distribuzione",
-            "c_zrk": "Zahnriemenwechsel km",
-            "c_zrd": "Zahnriemenwechsel",
+            "c_zrk": "Sostituzione cinghia km",
+            "c_zrd": "Sostituzione cinghia di distribuzione",
             "c_bf": "Nächster Bremsfl.-Wechsel",
             "c_wd": "Nächster Wartungsdienst",
             "c_finchk": "FIN-Check",
@@ -276,8 +276,8 @@
             "licensePlateDuplicate": "Kennzeichen bereits vergeben (Eigentümer: {owner})",
             "finDuplicate": "FIN bereits vergeben (Eigentümer: {owner})",
             "monthYearFormat": "Format: MM/JJ (z.B. 12/28 oder 1228)",
-            "maintenanceTooOld": "Termin liegt zu weit in der Vergangenheit",
-            "maintenanceTooFar": "Max. 3 Jahre in der Zukunft"
+            "maintenanceTooOld": "La data è troppo indietro nel passato",
+            "maintenanceTooFar": "Max. {years} anni nel futuro"
         },
         "wiki": {
             "title": "Articoli di conoscenza",
@@ -349,11 +349,16 @@
             "tooltip": "Apri i dati del veicolo in HGS Data",
             "error": "Impossibile aprire HGS Data"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Apri la diagnosi con l'Hella Gutmann mega macs"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Determinazione Ktype …",
             "refresh": "Aggiorna Ktype"
-        }
+        },
+        "labelPrinterOffline": "Stampante di etichette {host} non raggiungibile (spenta o nuovo indirizzo IP) – non è stato stampato nulla"
     },
     "CarScanView": {
         "title": "Crea veicolo da scansione",

@@ -255,18 +255,26 @@ export function formatMonthYear(isoDate) {
 /**
  * Validierung für Wartungstermine (Monat/Jahr)
  * - Format prüfen
- * - Nicht älter als 2 Jahre in der Vergangenheit
- * - Nicht weiter als 3 Jahre in der Zukunft
+ * - Nicht älter als 2 Jahre in der Vergangenheit (fängt Tippfehler wie 03/1934 ab)
+ * - Nicht weiter als MAINTENANCE_MAX_YEARS_AHEAD[feld] Jahre in der Zukunft:
+ *   Zahnriemen halten je nach Hersteller 5–10 Jahre (einzelne 12), Bremsflüssigkeit
+ *   wird alle 2–3 Jahre, der Wartungsdienst spätestens alle 2 Jahre fällig.
+ * Ausnahme: der LxCars-Platzhalter 01/99 — bewusst eingetragen für „fällig, Termin unbekannt“
  */
-export function validateMonthYear(value) {
+export const MAINTENANCE_DUE_PLACEHOLDER = '1999-01-01'
+export const MAINTENANCE_MAX_YEARS_AHEAD = { c_zrd: 12, c_bf: 3, c_wd: 3 }
+
+export function validateMonthYear(value, field = 'c_bf') {
     if (!value) return true
     const parsed = parseMonthYear(value)
     if (!parsed) return 'validation.monthYearFormat'
     const d = new Date(parsed)
+    if (parsed === MAINTENANCE_DUE_PLACEHOLDER) return true
     const now = new Date()
     const minDate = new Date(now.getFullYear() - 2, now.getMonth(), 1)
     if (d < minDate) return 'validation.maintenanceTooOld'
-    const maxDate = new Date(now.getFullYear() + 3, now.getMonth(), 1)
+    const yearsAhead = MAINTENANCE_MAX_YEARS_AHEAD[field] ?? 3
+    const maxDate = new Date(now.getFullYear() + yearsAhead, now.getMonth(), 1)
     if (d > maxDate) return 'validation.maintenanceTooFar'
     return true
 }

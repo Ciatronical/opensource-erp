@@ -46,7 +46,7 @@
             "chk_c_em": "Emission verifiee",
             "chk_fin": "VIN verifie",
             "chk_c_hu": "CT verifie",
-            "c_sk": "Chaine de distribution",
+            "c_sk": "Chaîne de distribution",
             "c_zrk": "Changement courroie km",
             "c_zrd": "Changement courroie",
             "c_bf": "Prochain changement liquide de frein",
@@ -283,7 +283,7 @@
             "finDuplicate": "VIN deja attribue (proprietaire : {owner})",
             "monthYearFormat": "Format : MM/AA (ex. 12/28 ou 1228)",
             "maintenanceTooOld": "La date est trop ancienne",
-            "maintenanceTooFar": "Max. 3 ans dans le futur"
+            "maintenanceTooFar": "Max. {years} ans dans le futur"
         },
         "wiki": {
             "title": "Articles de connaissances",
@@ -355,6 +355,10 @@
             "tooltip": "Ouvrir les données du véhicule dans HGS Data",
             "error": "Impossible d'ouvrir HGS Data"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Ouvrir le diagnostic avec le Hella Gutmann mega macs"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Détermination du Ktype …",
@@ -381,7 +385,8 @@
             "manufacturer": "Constructeur / Marque",
             "model": "Modèle",
             "vehicleType": "Type de véhicule"
-        }
+        },
+        "labelPrinterOffline": "Imprimante d'étiquettes {host} injoignable (éteinte ou nouvelle adresse IP) – rien n'a été imprimé"
     },
     "CarScanView": {
         "title": "Creer un vehicule a partir du scan",

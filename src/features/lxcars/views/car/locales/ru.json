@@ -277,7 +277,7 @@
             "finDuplicate": "VIN уже занят (Владелец: {owner})",
             "monthYearFormat": "Формат: ММ/ГГ (напр. 12/28 или 1228)",
             "maintenanceTooOld": "Дата слишком далеко в прошлом",
-            "maintenanceTooFar": "Макс. 3 года в будущем"
+            "maintenanceTooFar": "Не более {years} лет в будущем"
         },
         "wiki": {
             "title": "Статьи базы знаний",
@@ -349,11 +349,16 @@
             "tooltip": "Открыть данные автомобиля в HGS Data",
             "error": "Не удалось открыть HGS Data"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Открыть диагностику с Hella Gutmann mega macs"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",
             "refresh": "Refresh Ktype"
-        }
+        },
+        "labelPrinterOffline": "Принтер этикеток {host} недоступен (выключен или новый IP-адрес) – ничего не напечатано"
     },
     "CarScanView": {
         "title": "Создать ТС из скана",

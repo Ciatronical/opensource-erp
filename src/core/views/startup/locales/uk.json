@@ -32,6 +32,7 @@
         "department1": "Відділ 1",
         "department2": "Відділ 2",
         "fax": "Факс",
+        "keywords": "Ключові слова",
         "gln": "GLN",
         "noBillingAddresses": "Додаткові адреси для рахунків відсутні",
         "salutation": "Звертання",

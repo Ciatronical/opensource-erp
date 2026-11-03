@@ -9,6 +9,13 @@
             </template>
             <v-list-item-title class="font-weight-medium">{{ [cvProfile.greeting, cvProfile.name].filter(Boolean).join(' ') }}</v-list-item-title>
         </v-list-item>
+        <v-list-item v-if="cvProfile?.keywords">
+            <template #prepend>
+                <v-icon size="small" color="grey-darken-1">mdi-tag-text-outline</v-icon>
+            </template>
+            <v-list-item-title>{{ cvProfile.keywords }}</v-list-item-title>
+            <v-list-item-subtitle>{{ t('CrmView.keywords') }}</v-list-item-subtitle>
+        </v-list-item>
         <v-list-item v-if="oserpData.customer_vendor?.profile?.street">
             <template #prepend>
                 <v-icon size="small" color="grey-darken-1">mdi-road-variant</v-icon>
@@ -183,6 +190,7 @@
                 <v-btn
                     icon
                     size="small"
+                    density="comfortable"
                     variant="text"
                     color="primary"
                     :title="t('CrmView.sendEmail')"
@@ -414,5 +422,24 @@ async function sendAddressWhatsApp() {
 <style scoped>
 .text-inherit {
     color: inherit;
+}
+
+/* Vuetify kürzt Listentitel einzeilig mit Ellipse — hier stehen aber Knöpfe
+   (Anrufen, WhatsApp, E-Mail) darin, die in der schmalen Karte sonst rechts
+   verschwinden. Umbruch erlauben; lange E-Mail-Adressen brechen notfalls im Wort. */
+.v-list-item-title {
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+}
+
+/* Etwas weniger Luft links (Zeilenabstand 16 → 8 px, Symbolabstand 32 → 16 px):
+   so bleiben Nummer und Knöpfe auch bei 1366 px in einer Zeile */
+.v-list-item {
+    padding-inline: 8px;
+}
+
+.v-list-item :deep(.v-list-item__spacer) {
+    width: 16px;
 }
 </style>

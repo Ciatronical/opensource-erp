@@ -32,6 +32,7 @@
         "department1": "Osakond 1",
         "department2": "Osakond 2",
         "fax": "Faks",
+        "keywords": "Märksõnad",
         "gln": "GLN",
         "noBillingAddresses": "Täiendavad arveldusaadressid puuduvad",
         "salutation": "Pöördumine",

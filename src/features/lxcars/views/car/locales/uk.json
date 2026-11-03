@@ -283,7 +283,7 @@
             "finDuplicate": "VIN вже зайнятий (Власник: {owner})",
             "monthYearFormat": "Формат: ММ/РР (напр. 12/28 або 1228)",
             "maintenanceTooOld": "Дата занадто далеко в минулому",
-            "maintenanceTooFar": "Макс. 3 роки в майбутньому"
+            "maintenanceTooFar": "Не більше {years} років у майбутньому"
         },
         "wiki": {
             "title": "Статті бази знань",
@@ -355,6 +355,10 @@
             "tooltip": "Відкрити дані автомобіля в HGS Data",
             "error": "Не вдалося відкрити HGS Data"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Відкрити діагностику з Hella Gutmann mega macs"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",
@@ -381,7 +385,8 @@
             "manufacturer": "Виробник / Марка",
             "model": "Модель",
             "vehicleType": "Тип транспортного засобу"
-        }
+        },
+        "labelPrinterOffline": "Принтер етикеток {host} недоступний (вимкнений або нова IP-адреса) – нічого не надруковано"
     },
     "CarScanView": {
         "title": "Створити ТЗ зі скану",

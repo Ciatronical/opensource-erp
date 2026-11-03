@@ -39,6 +39,12 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         c_zrk: null,
         c_bf: null,
         c_wd: null,
+        // „Fällig“-Markierungen + letzter km-Stand des Fahrzeugs (maintenanceDue.js)
+        c_zrd_due: false,
+        c_zrk_due: false,
+        c_bf_due: false,
+        c_wd_due: false,
+        c_km: null,
         // Reparaturzeit (docs/features/lxcars.md → Reparaturzeit)
         reparaturzeit_minuten: null,
         reparaturzeit_drucken: false,
@@ -249,21 +255,28 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
     // ── oe_ext Auto-Save (debounced) ──
 
     let oeExtSaveTimeout = null
+    let oeExtPending = {}
     let waNotifyTimeout = null
 
     function onOeExtFieldChange(field, value) {
         oeExtData.value[field] = value
         if (!fakturaId.value) return
 
+        // Änderungen bündeln: mehrere Felder kurz nacheinander (Spracheingabe, Tab durch
+        // die Maske, Termin + „fällig“) gehen als EIN Aufruf raus. Vorher verwarf jeder
+        // neue Wert den noch nicht gespeicherten Wert des vorigen Feldes.
+        oeExtPending[field] = value
         if (oeExtSaveTimeout) {
             clearTimeout(oeExtSaveTimeout)
         }
         oeExtSaveTimeout = setTimeout(async () => {
+            const payload = oeExtPending
+            oeExtPending = {}
             try {
                 if (isInvoice.value) {
-                    await carsStore.updateArExt(fakturaId.value, { [field]: value })
+                    await carsStore.updateArExt(fakturaId.value, payload)
                 } else {
-                    await carsStore.updateOeExt(fakturaId.value, { [field]: value })
+                    await carsStore.updateOeExt(fakturaId.value, payload)
                 }
             } catch (e) {
                 console.error('Error updating ext:', e)
@@ -440,6 +453,11 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         oeExtData.value.c_zrk = car?.c_zrk ?? null
         oeExtData.value.c_bf = car?.c_bf || null
         oeExtData.value.c_wd = car?.c_wd || null
+        oeExtData.value.c_zrd_due = car?.c_zrd_due === true || car?.c_zrd_due === 't'
+        oeExtData.value.c_zrk_due = car?.c_zrk_due === true || car?.c_zrk_due === 't'
+        oeExtData.value.c_bf_due = car?.c_bf_due === true || car?.c_bf_due === 't'
+        oeExtData.value.c_wd_due = car?.c_wd_due === true || car?.c_wd_due === 't'
+        oeExtData.value.c_km = car?.c_km ?? null
         oeExtData.value.reparaturzeit_minuten = car?.reparaturzeit_minuten ? Number(car.reparaturzeit_minuten) : null
         oeExtData.value.reparaturzeit_drucken = car?.reparaturzeit_drucken === true || car?.reparaturzeit_drucken === 't'
         oeExtData.value.reparaturzeit_quelle = car?.reparaturzeit_quelle || null

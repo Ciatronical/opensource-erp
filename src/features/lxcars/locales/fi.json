@@ -36,7 +36,7 @@
         "close": "Sulje",
         "fields": {
             "c_bf": "Jarruneste",
-            "c_sk": "Ajoitusketju",
+            "c_sk": "Jakoketju",
             "c_wd": "Seuraava huolto",
             "c_zrd": "Ajoitushihnan päivämäärä",
             "c_zrk": "Ajoitushihnan kilometrit"
@@ -44,5 +44,39 @@
         "incompleteText": "Ennen kuin tilaus voidaan päättää, seuraavat kentät täytyy täyttää:",
         "incompleteTitle": "Huoltotiedot puutteelliset",
         "title": "Huolto ja ylläpito"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Jakohihna",
+            "c_zrd_sk": "Jakoketju",
+            "c_zrk": "Jakohihna (km)",
+            "c_bf": "Jarruneste",
+            "c_wd": "Huolto"
+        },
+        "chip": {
+            "due": "erääntynyt",
+            "soon": "pian"
+        },
+        "reasons": {
+            "dateReached": "Määräaika {date} saavutettu",
+            "dateSoon": "Määräaika {date} lähestyy",
+            "kmReached": "Kilometrilukema {km} saavutettu (erääntyy {due} km:stä)",
+            "kmSoon": "{rest} km jäljellä {due} km:iin",
+            "manual": "merkitty erääntyneeksi käsin"
+        },
+        "tooltip": {
+            "mark": "Merkitse erääntyneeksi",
+            "unmark": "Poista merkintä ”erääntynyt”",
+            "autoHint": "Poistuu uuden määräajan tai kilometrilukeman myötä"
+        },
+        "count": {
+            "due": "{n} erääntynyt",
+            "soon": "{n} erääntyy pian"
+        },
+        "alert": {
+            "title": "Huolto erääntynyt",
+            "titleSoon": "Huolto erääntyy pian",
+            "jump": "Huolto ja ylläpito"
+        }
     }
 }

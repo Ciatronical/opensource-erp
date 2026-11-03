@@ -7,19 +7,17 @@
             <v-icon class="mr-2" size="small">mdi-car</v-icon>
             {{ t('FakturaView.faktura.vehicleSection') }}
             <v-spacer />
-            <!-- Gutmann-Diagnose (docs/features/gutmann.md): nur mit Schalter feature_gutmann und gewähltem Fahrzeug -->
-            <v-btn
-                v-if="gutmannEnabled && selectedCarId"
-                variant="tonal"
-                size="small"
-                color="blue-grey-darken-1"
+            <!-- Werkstatt-Portale (AAG-Online, HGS-Data, Gutmann): dieselben Knöpfe wie in der Fahrzeugmaske -->
+            <diag-portal-buttons
                 class="mr-2"
-                :title="t('FakturaView.faktura.gutmannTooltip')"
-                :to="{ name: 'gutmann' }"
-            >
-                <v-icon start size="small">mdi-car-wrench</v-icon>
-                {{ t('FakturaView.faktura.gutmannButton') }}
-            </v-btn>
+                :aag-available="aagAvailable"
+                :aag-loading="aagLoading"
+                :hgs-available="hgsAvailable"
+                :hgs-loading="hgsLoading"
+                :gutmann-available="gutmannAvailable"
+                @open-aag="$emit('open-aag')"
+                @open-hgs="$emit('open-hgs')"
+            />
             <v-chip
                 v-if="!isInvoice"
                 :color="oeExtData.intern ? 'warning' : 'default'"
@@ -288,9 +286,11 @@ import { useI18n } from 'vue-i18n'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toast from '@/core/utils/toasts.js'
 import { formatRepairTime, parseRepairTime } from '@/features/lxcars/utils/repairTime.js'
+import DiagPortalButtons from '@/features/lxcars/components/diag-portal-buttons.vue'
 
 export default defineComponent({
     name: 'VehicleSectionCard',
+    components: { DiagPortalButtons },
     props: {
         oeExtData: { type: Object, required: true },
         selectedCarId: { type: [Number, null], default: null },
@@ -308,17 +308,23 @@ export default defineComponent({
         showPickerBringetermin: { type: Boolean, default: false },
         showPickerFertigstellung: { type: Boolean, default: false },
         isInvoice: { type: Boolean, default: false },
-        isTrailer: { type: Boolean, default: false }
+        isTrailer: { type: Boolean, default: false },
+        /** Werkstatt-Portale (useDiagPortals.js): AAG-Online und HGS-Data */
+        aagAvailable: { type: Boolean, default: false },
+        aagLoading: { type: Boolean, default: false },
+        hgsAvailable: { type: Boolean, default: false },
+        hgsLoading: { type: Boolean, default: false }
     },
     emits: [
         'toggle-intern', 'blur-km-stand', 'car-change', 'car-create',
         'oe-ext-field-change', 'picker-date-select', 'picker-time-select', 'clear-datetime',
-        'update:display-km-stand', 'repair-time-change'
+        'update:display-km-stand', 'repair-time-change', 'open-aag', 'open-hgs'
     ],
     setup(props, { expose, emit }) {
         const { t } = useI18n()
         const oserp = oserpStore()
-        const gutmannEnabled = computed(() => oserp.isGutmannEnabled())
+        // Gutmann-Diagnose (docs/features/gutmann.md): Schalter feature_gutmann und gewähltes Fahrzeug
+        const gutmannAvailable = computed(() => oserp.isGutmannEnabled() && !!props.selectedCarId)
 
         // Kennzeichen-Schnellanlage: Enter auf einen unbekannten Suchtext legt das Fahrzeug an
         const carSearch = ref('')
@@ -401,7 +407,7 @@ export default defineComponent({
             if (props.oeExtData.reparaturzeit_minuten) emit('repair-time-change', null)
         }
 
-        return { t, localShowBringetermin, localShowFertigstellung, carAutocomplete, carSearch, carNoDataText, onCarEnter, gutmannEnabled,
+        return { t, localShowBringetermin, localShowFertigstellung, carAutocomplete, carSearch, carNoDataText, onCarEnter, gutmannAvailable,
                  repairTimeInput, repairTimeRunning, repairTimePlaceholder, repairTimeIcon, repairTimeHint, commitRepairTime, clearRepairTime }
     }
 })

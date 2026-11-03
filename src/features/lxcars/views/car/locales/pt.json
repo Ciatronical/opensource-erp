@@ -46,9 +46,9 @@
             "chk_c_em": "Emission geprüft",
             "chk_fin": "FIN geprüft",
             "chk_c_hu": "HU geprüft",
-            "c_sk": "Correia de distribuição",
-            "c_zrk": "Zahnriemenwechsel km",
-            "c_zrd": "Zahnriemenwechsel",
+            "c_sk": "Corrente de distribuição",
+            "c_zrk": "Mudança da correia de distribuição km",
+            "c_zrd": "Mudança da correia de distribuição",
             "c_bf": "Nächster Bremsfl.-Wechsel",
             "c_wd": "Nächster Wartungsdienst",
             "c_finchk": "FIN-Check",
@@ -276,8 +276,8 @@
             "licensePlateDuplicate": "Kennzeichen bereits vergeben (Eigentümer: {owner})",
             "finDuplicate": "FIN bereits vergeben (Eigentümer: {owner})",
             "monthYearFormat": "Format: MM/JJ (z.B. 12/28 oder 1228)",
-            "maintenanceTooOld": "Termin liegt zu weit in der Vergangenheit",
-            "maintenanceTooFar": "Max. 3 Jahre in der Zukunft"
+            "maintenanceTooOld": "A data está demasiado longe no passado",
+            "maintenanceTooFar": "Máx. {years} anos no futuro"
         },
         "wiki": {
             "title": "Artigos de conhecimento",
@@ -349,11 +349,16 @@
             "tooltip": "Abrir dados do veículo no HGS Data",
             "error": "Não foi possível abrir o HGS Data"
         },
+        "gutmann": {
+            "button": "Gutmann",
+            "tooltip": "Abrir o diagnóstico com o Hella Gutmann mega macs"
+        },
         "ktype": {
             "label": "Ktype",
             "resolving": "A determinar Ktype …",
             "refresh": "Atualizar Ktype"
-        }
+        },
+        "labelPrinterOffline": "Impressora de etiquetas {host} inacessível (desligada ou novo endereço IP) – nada foi impresso"
     },
     "CarScanView": {
         "title": "Criar veículo a partir de digitalização",

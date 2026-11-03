@@ -36,6 +36,11 @@ CREATE TABLE cars_lxcars (
     c_zrd     date,
     c_bf      date,
     c_wd      date,
+    -- „Fällig“-Markierung je Wartungsfeld (von Hand gesetzt; erlischt, sobald das Feld einen neuen Wert bekommt)
+    c_zrd_due boolean DEFAULT false,
+    c_zrk_due boolean DEFAULT false,
+    c_bf_due  boolean DEFAULT false,
+    c_wd_due  boolean DEFAULT false,
     c_finchk  char(1),
     c_pb      boolean DEFAULT false,
     c_hu_notify boolean DEFAULT true,

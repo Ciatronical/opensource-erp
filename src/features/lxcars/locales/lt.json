@@ -44,5 +44,39 @@
         "incompleteText": "Prieš uždarant užsakymą turi būti užpildyti šie laukai:",
         "incompleteTitle": "Techninės priežiūros duomenys neišsamūs",
         "title": "Techninė priežiūra ir aptarnavimas"
+    },
+    "MaintenanceDue": {
+        "items": {
+            "c_zrd": "Paskirstymo diržas",
+            "c_zrd_sk": "Paskirstymo grandinė",
+            "c_zrk": "Paskirstymo diržas (km)",
+            "c_bf": "Stabdžių skystis",
+            "c_wd": "Techninė apžiūra"
+        },
+        "chip": {
+            "due": "vėluoja",
+            "soon": "netrukus"
+        },
+        "reasons": {
+            "dateReached": "Terminas {date} pasiektas",
+            "dateSoon": "Terminas {date} artėja",
+            "kmReached": "Rida {km} pasiekta (nuo {due} km)",
+            "kmSoon": "liko {rest} km iki {due} km",
+            "manual": "rankiniu būdu pažymėta kaip vėluojanti"
+        },
+        "tooltip": {
+            "mark": "Pažymėti kaip vėluojančią",
+            "unmark": "Pašalinti žymą „vėluoja“",
+            "autoHint": "Išnyksta įvedus naują terminą arba ridą"
+        },
+        "count": {
+            "due": "{n} vėluoja",
+            "soon": "{n} netrukus"
+        },
+        "alert": {
+            "title": "Priežiūra vėluoja",
+            "titleSoon": "Priežiūra netrukus",
+            "jump": "Techninė priežiūra ir aptarnavimas"
+        }
     }
 }

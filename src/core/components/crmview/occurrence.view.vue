@@ -85,6 +85,10 @@
                     @click:row="(event, { item }) => navigateTo('faktura-quotation-view', item.id)"
                     class="cursor-pointer zebra-table"
                 >
+                    <!-- Beschreibung nimmt den Restplatz, höchstens zwei Zeilen, voller Text als Tooltip -->
+                    <template #item.description="{ value }">
+                        <div class="desc-clamp" :title="value">{{ value }}</div>
+                    </template>
                     <template #item.amount="{ item }">
                         {{ formatNumber(item.amount, locale, 2) }} {{ item.currency }}
                     </template>
@@ -116,8 +120,16 @@
                     :no-data-text="noOrdersText"
                     hover
                     @click:row="(event, { item }) => navigateTo('faktura-order-view', item.id)"
-                    class="cursor-pointer zebra-table orders-table"
+                    class="cursor-pointer zebra-table"
                 >
+                    <!-- Beschreibung nimmt den Restplatz, höchstens zwei Zeilen, voller Text als Tooltip -->
+                    <template #item.description="{ value }">
+                        <div class="desc-clamp" :title="value">{{ value }}</div>
+                    </template>
+                    <!-- Kopf nur als Symbol: spart in der halben Kartenbreite die Spaltenbreite -->
+                    <template #header.record_type>
+                        <v-icon size="small" :title="t('CrmView.confirmed')">mdi-check-decagram-outline</v-icon>
+                    </template>
                     <template #item.record_type="{ item }">
                         <v-icon v-if="item.record_type === 'sales_order'" color="success" size="small" :title="t('CrmView.confirmed')">
                             mdi-check-circle
@@ -169,6 +181,10 @@
                     @click:row="(event, { item }) => navigateTo('faktura-delivery-order-view', item.id)"
                     class="cursor-pointer zebra-table"
                 >
+                    <!-- Beschreibung nimmt den Restplatz, höchstens zwei Zeilen, voller Text als Tooltip -->
+                    <template #item.description="{ value }">
+                        <div class="desc-clamp" :title="value">{{ value }}</div>
+                    </template>
                     <template #item.status="{ item }">
                         <v-chip v-if="item.closed" color="grey" size="x-small" variant="flat">{{ t('CrmView.statusClosed') }}</v-chip>
                         <v-chip v-else-if="item.delivered" color="success" size="x-small" variant="flat">{{ t('CrmView.statusDelivered') }}</v-chip>
@@ -192,6 +208,10 @@
                     @click:row="(event, { item }) => navigateToInvoice(item)"
                     class="cursor-pointer zebra-table"
                 >
+                    <!-- Beschreibung nimmt den Restplatz, höchstens zwei Zeilen, voller Text als Tooltip -->
+                    <template #item.description="{ value }">
+                        <div class="desc-clamp" :title="value">{{ value }}</div>
+                    </template>
                     <template #item.kind="{ item }">
                         <v-chip v-if="isStorno(item)" color="error" size="x-small" variant="flat">{{ t('CrmView.storno') }}</v-chip>
                         <v-chip v-else-if="isCreditNote(item)" color="warning" size="x-small" variant="flat">{{ t('CrmView.creditNote') }}</v-chip>
@@ -216,6 +236,10 @@
                     :row-props="statusRowProps"
                     class="zebra-table"
                 >
+                    <!-- Beschreibung nimmt den Restplatz, höchstens zwei Zeilen, voller Text als Tooltip -->
+                    <template #item.description="{ value }">
+                        <div class="desc-clamp" :title="value">{{ value }}</div>
+                    </template>
                     <template #item.status="{ item }">
                         <v-chip v-if="item.closed" color="grey" size="x-small" variant="flat">{{ t('CrmView.statusClosed') }}</v-chip>
                         <v-chip v-else color="warning" size="x-small" variant="flat">{{ t('CrmView.statusOpen') }}</v-chip>
@@ -353,11 +377,14 @@ watch(occurrenceTab, (val) => {
     oserpData.setConfigValue('crm_occurrence_tab', val);
 });
 
+// Beschreibung: einzige Spalte, die wachsen und umbrechen darf (CSS .col-description)
+const descriptionHeader = { title: t('CrmView.description'), key: 'description', sortable: false, cellProps: { class: 'col-description' } };
+
 // Basis-Headers für Angebote
 const baseHeaders = [
     { title: t('CrmView.number'), key: 'number', sortable: true },
     { title: t('CrmView.date'), key: 'date', sortable: true },
-    { title: t('CrmView.description'), key: 'description', sortable: false },
+    descriptionHeader,
     { title: t('CrmView.amount'), key: 'amount', sortable: true, align: 'end' }
 ];
 
@@ -365,7 +392,7 @@ const baseHeaders = [
 const invoicesHeaders = [
     { title: t('CrmView.number'), key: 'number', sortable: true },
     { title: t('CrmView.date'), key: 'date', sortable: true },
-    { title: t('CrmView.description'), key: 'description', sortable: false },
+    descriptionHeader,
     { title: '', key: 'kind', sortable: false, align: 'center', width: '90px' },
     { title: t('CrmView.amount'), key: 'amount', sortable: true, align: 'end' }
 ];
@@ -375,7 +402,7 @@ const ordersHeaders = computed(() => {
     const cols = [
         { title: t('CrmView.number'), key: 'number', sortable: true },
         { title: t('CrmView.date'), key: 'date', sortable: true },
-        { title: t('CrmView.description'), key: 'description', sortable: false },
+        descriptionHeader,
     ];
     if (lxCarsEnabled.value) {
         cols.push({ title: t('CrmView.licensePlate'), key: 'license_plate', sortable: true });
@@ -394,7 +421,7 @@ const deliveryOrdersHeaders = computed(() => {
     const cols = [
         { title: t('CrmView.number'), key: 'number', sortable: true },
         { title: t('CrmView.date'), key: 'date', sortable: true },
-        { title: t('CrmView.description'), key: 'description', sortable: false },
+        descriptionHeader,
     ];
     if (lxCarsEnabled.value) {
         cols.push({ title: t('CrmView.licensePlate'), key: 'license_plate', sortable: true });
@@ -408,7 +435,7 @@ const reclamationsHeaders = computed(() => {
     const cols = [
         { title: t('CrmView.number'), key: 'number', sortable: true },
         { title: t('CrmView.date'), key: 'date', sortable: true },
-        { title: t('CrmView.description'), key: 'description', sortable: false },
+        descriptionHeader,
     ];
     if (lxCarsEnabled.value) {
         cols.push({ title: t('CrmView.licensePlate'), key: 'license_plate', sortable: true });
@@ -627,11 +654,32 @@ async function exportSelected() {
     color: rgba(0, 0, 0, 0.55);
 }
 
-/* Aufträge haben die meisten Spalten (Kennzeichen, Rechnung, Bestätigt, Betrag) —
-   etwas engere Zellen, damit die Karte in der halben Breite ohne Scrollen auskommt */
-.orders-table :deep(th),
-.orders-table :deep(td) {
-    padding: 0 10px !important;
+/* Die Karte hat nur gut die halbe Seitenbreite (7/12, auf Laptops ~700 px).
+   Damit kein horizontaler Scrollbalken entsteht: engere Zellen, feste Spalten (Nummer, Datum,
+   Kennzeichen, Betrag …) brechen nicht um, und allein die Beschreibung nimmt den
+   Restplatz — max-width: 0 verhindert, dass ihr Inhalt die Tabelle aufweitet. */
+.zebra-table :deep(th),
+.zebra-table :deep(td) {
+    padding: 0 8px !important;
+    white-space: nowrap;
+}
+
+.zebra-table :deep(td.col-description) {
+    max-width: 0;
+    width: 100%;
+    /* Unter ~9 em wird nicht weiter gequetscht (Tablet-Breiten): dann lieber
+       innerhalb der Tabelle scrollen als „Fehlerdiagno|se“ zu zeigen */
+    min-width: 9em;
+    white-space: normal;
+}
+
+.desc-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    line-height: 1.3;
 }
 
 .selection-bar {

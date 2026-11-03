@@ -47,6 +47,7 @@
         "department1": "Department 1",
         "department2": "Department 2",
         "fax": "Fax",
+        "keywords": "Keywords",
         "gln": "GLN",
         "noBillingAddresses": "No additional billing addresses available",
         "salutation": "Salutation",

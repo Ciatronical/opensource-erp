@@ -17,13 +17,13 @@
         <template v-if="show('phone_numbers')">
         <v-col v-for="(entry, idx) in phoneNumbers" :key="'phone-' + idx" cols="12" class="py-0">
           <v-row density="compact">
-            <v-col cols="12" sm="4" class="py-1">
+            <v-col cols="12" sm="6" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.phoneLabel')"
                 v-model="entry.label"
               />
             </v-col>
-            <v-col cols="10" sm="7" class="py-1">
+            <v-col cols="10" sm="5" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.phoneNumber')"
                 v-model="entry.number"
@@ -81,18 +81,25 @@
             :error-messages="bccErrors"
           />
         </v-col>
+        <v-col v-if="show('fax')" cols="12" sm="6" class="py-1">
+          <v-text-field
+            :label="t('CustomerVendorEditView.fields.fax')"
+            v-model="localData.fax"
+            data-field="fax"
+          />
+        </v-col>
 
         <!-- Weitere E-Mail-Adressen (customer_ext/vendor_ext.emails) -->
         <template v-if="show('emails')">
         <v-col v-for="(entry, idx) in emails" :key="'email-' + idx" cols="12" class="py-0">
           <v-row density="compact">
-            <v-col cols="12" sm="4" class="py-1">
+            <v-col cols="12" sm="6" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.emailLabel')"
                 v-model="entry.label"
               />
             </v-col>
-            <v-col cols="10" sm="7" class="py-1">
+            <v-col cols="10" sm="5" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.emailAddress')"
                 v-model="entry.email"
@@ -156,13 +163,13 @@
         <template v-if="show('urls')">
         <v-col v-for="(entry, idx) in urls" :key="'url-' + idx" cols="12" class="py-0">
           <v-row density="compact">
-            <v-col cols="12" sm="4" class="py-1">
+            <v-col cols="12" sm="6" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.urlLabel')"
                 v-model="entry.label"
               />
             </v-col>
-            <v-col cols="10" sm="7" class="py-1">
+            <v-col cols="10" sm="5" class="py-1">
               <v-text-field
                 :label="t('CustomerVendorEditView.fields.urlAddress')"
                 v-model="entry.url"

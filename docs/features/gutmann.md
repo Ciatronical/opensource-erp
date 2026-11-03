@@ -15,7 +15,7 @@ Das Diagnosegerät **Hella Gutmann mega macs X** hat keine eigene Anzeige, sonde
 
 ## Kern
 
-- **Menüpunkt Fahrzeuge → Gutmann**, Knopf **Gutmann** in der Fahrzeugmaske und in der Fahrzeugkarte des Auftrags (sobald ein Fahrzeug gewählt ist); ohne Schalter erscheint nichts davon
+- **Menüpunkt Fahrzeuge → Gutmann**, Knopf **Gutmann** in der Fahrzeugmaske und in der Fahrzeugkarte des Auftrags – auch im Mechanikermodus (sobald ein Fahrzeug gewählt ist); AAG-Online, HGS-Data und Gutmann sind überall derselbe Knopfsatz (`diag-portal-buttons.vue`), damit man sie sofort wiedererkennt; ohne Schalter erscheint der Gutmann-Knopf nirgends
 - Oberfläche des Geräts in OSERP-Farben (Primärfarbe, Flächen, Ränder, Radien, Schrift), Hell/Dunkel folgt dem OSERP-Modus live
 - Läuft in jedem Browser — die Chrome-Sperre des Geräts greift nicht mehr
 - Klare Hinweise statt leerem Rahmen: Gerät aus, Server verweigert, Weiterleitung fehlt — dazu ein **Notfallknopf**, der das Gerät direkt (`http://<adresse>:8889/`) in einem neuen Tab öffnet; die Adresse liefert Apache als Header `X-Gutmann-Device`
