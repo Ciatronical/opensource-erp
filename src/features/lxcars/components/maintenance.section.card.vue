@@ -38,12 +38,16 @@
                 <v-icon start size="x-small">{{ oeExtData.c_sk ? 'mdi-link-variant' : 'mdi-link-variant-off' }}</v-icon>
                 {{ t('MaintenanceSectionCard.fields.c_sk') }}
             </v-chip>
-            <!-- Steuerkette: kein Termin/km — nur von Hand fällig (z. B. klappert) -->
-            <maintenance-due-button v-if="oeExtData.c_sk" class="ml-2" :state="dueState.fields.c_zrd" :disabled="!hasCar" @toggle="v => emitChange('c_zrd_due', v)" />
         </v-card-title>
         <v-divider />
         <v-card-text class="faktura-card__body">
             <v-row dense>
+                <!-- Steuerkette: kein Termin/km — an Stelle der Zahnriemen-Felder nur „fällig“ von Hand (z. B. klappert) -->
+                <v-col v-if="oeExtData.c_sk" cols="12" md="6" class="py-1 d-flex align-center maintenance-chain">
+                    <v-icon size="small" class="mr-2 text-medium-emphasis">mdi-link-variant</v-icon>
+                    <span class="text-medium-emphasis mr-3">{{ t('MaintenanceSectionCard.fields.c_sk') }}</span>
+                    <maintenance-due-button :state="dueState.fields.c_zrd" :disabled="!hasCar" @toggle="v => emitChange('c_zrd_due', v)" />
+                </v-col>
                 <v-col v-if="!oeExtData.c_sk" cols="12" sm="6" md="3" class="py-1">
                     <v-text-field
                         v-model="displayZrd"
@@ -284,5 +288,6 @@ export default defineComponent({
     --v-field-padding-end: 12px;
 }
 .is-disabled { opacity: 0.75; }
+.maintenance-chain { min-height: 48px; }
 .cursor-pointer { cursor: pointer; }
 </style>

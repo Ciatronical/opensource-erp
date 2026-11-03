@@ -259,6 +259,7 @@
                     :aag-loading="portals.aagLoading.value"
                     :hgs-available="portals.hgsAvailable.value"
                     :hgs-loading="portals.hgsLoading.value"
+                    @open-vehicle="openVehicleEdit"
                     @open-aag="portals.openAag"
                     @open-hgs="portals.openHgs"
                     @toggle-intern="vehicle.toggleIntern"

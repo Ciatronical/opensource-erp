@@ -516,12 +516,16 @@
                                 <v-icon start size="x-small">{{ car.c_sk ? 'mdi-link-variant' : 'mdi-link-variant-off' }}</v-icon>
                                 {{ t('CarEditView.fields.c_sk') }}
                             </v-chip>
-                            <!-- Steuerkette: kein Termin/km — nur von Hand fällig (z. B. klappert) -->
-                            <maintenance-due-button v-if="car.c_sk" class="ml-2" :state="maintenanceDue.fields.c_zrd" :disabled="readonly" @toggle="v => setDueFlag('c_zrd', v)" />
                         </v-card-title>
                         <v-divider />
                         <v-card-text class="py-2 px-2 px-sm-3">
                             <v-row dense>
+                                <!-- Steuerkette: kein Termin/km — an Stelle der Zahnriemen-Felder nur „fällig“ von Hand (z. B. klappert) -->
+                                <v-col v-if="car.c_sk" cols="12" class="py-1 d-flex align-center maintenance-chain">
+                                    <v-icon size="small" class="mr-2 text-medium-emphasis">mdi-link-variant</v-icon>
+                                    <span class="text-medium-emphasis mr-3">{{ t('CarEditView.fields.c_sk') }}</span>
+                                    <maintenance-due-button :state="maintenanceDue.fields.c_zrd" :disabled="readonly" @toggle="v => setDueFlag('c_zrd', v)" />
+                                </v-col>
                                 <v-col v-if="!car.c_sk" cols="12" sm="6" class="py-1">
                                     <v-text-field v-model="displayZrd" :label="t('CarEditView.fields.c_zrd')" variant="outlined" density="compact" hide-details="auto" placeholder="MM/JJ" tabindex="19" :rules="rulesMonthYear.c_zrd" @blur="onBlurMonthYear('c_zrd')" >
                                         <template #append-inner>
@@ -2894,6 +2898,7 @@ export default {
 
 <style scoped>
 .maintenance-due-list { list-style: none; padding-left: 0; margin: 4px 0 0; font-size: 13px; }
+.maintenance-chain { min-height: 48px; }
 .maintenance-due-list li { display: flex; align-items: center; flex-wrap: wrap; line-height: 1.5; }
 .bg-grey-lighten-4 {
     background-color: #f5f5f5;

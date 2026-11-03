@@ -7,6 +7,18 @@
             <v-icon class="mr-2" size="small">mdi-car</v-icon>
             {{ t('FakturaView.faktura.vehicleSection') }}
             <v-spacer />
+            <!-- Sprung in die Fahrzeugmaske (zusätzlich zum Auto-Symbol in der Aktionsleiste) -->
+            <v-btn
+                v-if="selectedCarId"
+                variant="tonal"
+                color="teal"
+                size="small"
+                prepend-icon="mdi-car"
+                class="mr-2"
+                @click="$emit('open-vehicle')"
+            >
+                {{ t('FakturaView.faktura.openVehicle') }}
+            </v-btn>
             <!-- Werkstatt-Portale (AAG-Online, HGS-Data, Gutmann): dieselben Knöpfe wie in der Fahrzeugmaske -->
             <diag-portal-buttons
                 class="mr-2"
@@ -318,7 +330,7 @@ export default defineComponent({
     emits: [
         'toggle-intern', 'blur-km-stand', 'car-change', 'car-create',
         'oe-ext-field-change', 'picker-date-select', 'picker-time-select', 'clear-datetime',
-        'update:display-km-stand', 'repair-time-change', 'open-aag', 'open-hgs'
+        'update:display-km-stand', 'repair-time-change', 'open-aag', 'open-hgs', 'open-vehicle'
     ],
     setup(props, { expose, emit }) {
         const { t } = useI18n()
