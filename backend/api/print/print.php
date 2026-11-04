@@ -1376,7 +1376,8 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
                 WHERE ext.oe_id = :id
             ";
         }
-        $carData = $db->getOne($extQuery, [':id' => $fakturaID]);
+        // Rechnung ohne Auftrag hat noch keine ar_ext-Zeile: getOne() liefert dann false
+        $carData = $db->getOne($extQuery, [':id' => $fakturaID]) ?: null;
 
         $hasVehicle = $carData && !empty($carData['c_id']);
         $isKfz = $hasVehicle || $lxCarsEnabled;
