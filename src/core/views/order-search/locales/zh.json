@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "加载搜索结果时出错。"
+        },
+        "recent_invoices": {
+            "title": "最近创建的发票 – 尚未付款",
+            "open": "打开发票 {invnumber}（付款后自动消失）"
         }
     }
 }

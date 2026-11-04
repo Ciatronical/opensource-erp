@@ -197,6 +197,18 @@ function updateCar($data) {
             }
         }
 
+        // aag_checked_at verwaltet der Server (resolveKtype): nie aus dem Frontend
+        // übernehmen; ändern sich HSN/TSN/FIN, soll AAG beim nächsten Öffnen erneut ermitteln.
+        unset($car['aag_checked_at']);
+        if ($currentCar) {
+            foreach (['c_2', 'c_3', 'c_fin'] as $idf) {
+                if (array_key_exists($idf, $car) && trim((string)$car[$idf]) !== trim((string)($currentCar[$idf] ?? ''))) {
+                    $car['aag_checked_at'] = null;
+                    break;
+                }
+            }
+        }
+
         // Felder die nicht aktualisiert werden sollen
         $db->updateRow(
             'cars_lxcars',
@@ -804,6 +816,9 @@ function getLxCarsFakturaInit($data) {
             $carData = $db->getOne(
                 "SELECT c.c_id, c.c_ln, COALESCE(c.c_text, '') AS c_text,
                         e.km_stand, e.fertigstellung, COALESCE(k.fhzart, '') AS fhzart,
+                        c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
+                        to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
+                        c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km,
                         e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle
                  FROM ar_ext e
                  LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
@@ -966,6 +981,67 @@ function linkCarToFaktura($data) {
 }
 
 /**
+ * Schreibt die Wartungsfelder eines Belegs (c_sk, c_zrd, c_zrk, c_bf, c_wd) und die
+ * „fällig“-Markierungen (c_*_due) direkt ins verknüpfte Fahrzeug — für Aufträge (oe_ext)
+ * wie Rechnungen (ar_ext), immer unabhängig vom Belegdatum. Die Markierungen erlöschen
+ * von selbst, sobald das zugehörige Feld einen neuen Wert bekommt (Wartung erledigt ⇒
+ * neuer Termin/km-Stand); Steuerkette ⇄ Zahnriemen löscht die Zahnriemen-Markierungen.
+ *
+ * @param array  $fields    Belegfelder (nur Wartungsschlüssel werden beachtet)
+ * @param string $extTable  oe_ext | ar_ext
+ * @param string $idColumn  oe_id | ar_id
+ * @return array gesetzte SET-Klauseln (leer = kein Wartungsfeld dabei)
+ */
+function applyMaintenanceFieldsToCar($db, array $fields, string $extTable, string $idColumn, int $id): array {
+    $maintenanceMap = ['c_sk' => 'boolean', 'c_zrd' => 'date', 'c_zrk' => 'int', 'c_bf' => 'date', 'c_wd' => 'date',
+                       'c_zrd_due' => 'boolean', 'c_zrk_due' => 'boolean', 'c_bf_due' => 'boolean', 'c_wd_due' => 'boolean'];
+    $dueResetMap = ['c_zrd' => 'c_zrd_due', 'c_zrk' => 'c_zrk_due', 'c_bf' => 'c_bf_due', 'c_wd' => 'c_wd_due'];
+    $carSetClauses = [];
+    $carParams = [':ext_id' => $id];
+
+    foreach ($maintenanceMap as $mf => $type) {
+        if (!array_key_exists($mf, $fields)) continue;
+        $value = $fields[$mf];
+        if ($type === 'int') {
+            $value = $value !== null && $value !== '' ? intval($value) : null;
+        } elseif ($type === 'boolean') {
+            $value = $value ? 't' : 'f';
+        } else {
+            $value = !empty($value) ? $value : null;
+        }
+        $carSetClauses[] = "$mf = :$mf";
+        $carParams[":$mf"] = $value;
+
+        // Neuer Wert ⇒ Markierung des Feldes löschen (außer sie wird im selben Aufruf gesetzt)
+        if (isset($dueResetMap[$mf]) && !array_key_exists($dueResetMap[$mf], $fields)) {
+            $flag = $dueResetMap[$mf];
+            // (oe_ext trägt noch gleichnamige LxCars-Altspalten ⇒ Tabelle ausschreiben)
+            $carSetClauses[] = "$flag = CASE WHEN :{$mf}_chk IS DISTINCT FROM cars_lxcars.$mf THEN false ELSE cars_lxcars.$flag END";
+            $carParams[":{$mf}_chk"] = $value;
+        }
+    }
+    // Riemen ⇄ Kette umgeschaltet ⇒ Hand-Markierungen gelten für das andere Bauteil nicht
+    if (array_key_exists('c_sk', $fields)) {
+        foreach (['c_zrd_due', 'c_zrk_due'] as $flag) {
+            if (array_key_exists($flag, $fields)) continue;
+            $carSetClauses[] = "$flag = CASE WHEN :c_sk_chk IS DISTINCT FROM cars_lxcars.c_sk THEN false ELSE cars_lxcars.$flag END";
+        }
+        $carParams[':c_sk_chk'] = $fields['c_sk'] ? 't' : 'f';
+    }
+
+    if (!empty($carSetClauses)) {
+        $carSetString = implode(', ', $carSetClauses);
+        $db->execute(
+            "UPDATE cars_lxcars SET $carSetString
+             FROM $extTable e
+             WHERE cars_lxcars.c_id = e.c_id AND e.$idColumn = :ext_id AND e.c_id IS NOT NULL",
+            $carParams
+        );
+    }
+    return $carSetClauses;
+}
+
+/**
  * Aktualisiert oe_ext-Felder (km_stand, kfz_ort, gedruckt, intern, bringetermin, fertigstellung,
  * reparaturzeit_minuten, reparaturzeit_drucken, reparaturzeit_quelle)
  * c_id wird hier NICHT angefasst — dafür ist linkCarToFaktura zuständig.
@@ -1033,55 +1109,8 @@ function updateOeExt($data) {
         );
     }
 
-    // Wartungsfelder direkt ins Fahrzeug schreiben (immer, unabhängig vom Auftragsdatum).
-    // Die „Fällig“-Markierungen (c_*_due) liegen ebenfalls im Fahrzeug: sie werden von
-    // Hand gesetzt und erlöschen von selbst, sobald das zugehörige Feld einen neuen Wert
-    // bekommt (Wartung erledigt ⇒ neuer Termin/km-Stand). Steuerkette ⇒ Zahnriemen-Flags weg.
-    $maintenanceMap = ['c_sk' => 'boolean', 'c_zrd' => 'date', 'c_zrk' => 'int', 'c_bf' => 'date', 'c_wd' => 'date',
-                       'c_zrd_due' => 'boolean', 'c_zrk_due' => 'boolean', 'c_bf_due' => 'boolean', 'c_wd_due' => 'boolean'];
-    $dueResetMap = ['c_zrd' => 'c_zrd_due', 'c_zrk' => 'c_zrk_due', 'c_bf' => 'c_bf_due', 'c_wd' => 'c_wd_due'];
-    $carSetClauses = [];
-    $carParams = [':oe_id' => $oeId];
-
-    foreach ($maintenanceMap as $mf => $type) {
-        if (!array_key_exists($mf, $fields)) continue;
-        $value = $fields[$mf];
-        if ($type === 'int') {
-            $value = $value !== null && $value !== '' ? intval($value) : null;
-        } elseif ($type === 'boolean') {
-            $value = $value ? 't' : 'f';
-        } else {
-            $value = !empty($value) ? $value : null;
-        }
-        $carSetClauses[] = "$mf = :$mf";
-        $carParams[":$mf"] = $value;
-
-        // Neuer Wert ⇒ Markierung des Feldes löschen (außer sie wird im selben Aufruf gesetzt)
-        if (isset($dueResetMap[$mf]) && !array_key_exists($dueResetMap[$mf], $fields)) {
-            $flag = $dueResetMap[$mf];
-            // (oe_ext trägt noch gleichnamige LxCars-Altspalten ⇒ Tabelle ausschreiben)
-            $carSetClauses[] = "$flag = CASE WHEN :{$mf}_chk IS DISTINCT FROM cars_lxcars.$mf THEN false ELSE cars_lxcars.$flag END";
-            $carParams[":{$mf}_chk"] = $value;
-        }
-    }
-    // Riemen ⇄ Kette umgeschaltet ⇒ Hand-Markierungen gelten für das andere Bauteil nicht
-    if (array_key_exists('c_sk', $fields)) {
-        foreach (['c_zrd_due', 'c_zrk_due'] as $flag) {
-            if (array_key_exists($flag, $fields)) continue;
-            $carSetClauses[] = "$flag = CASE WHEN :c_sk_chk IS DISTINCT FROM cars_lxcars.c_sk THEN false ELSE cars_lxcars.$flag END";
-        }
-        $carParams[':c_sk_chk'] = $fields['c_sk'] ? 't' : 'f';
-    }
-
-    if (!empty($carSetClauses)) {
-        $carSetString = implode(', ', $carSetClauses);
-        $db->execute(
-            "UPDATE cars_lxcars SET $carSetString
-             FROM oe_ext e
-             WHERE cars_lxcars.c_id = e.c_id AND e.oe_id = :oe_id AND e.c_id IS NOT NULL",
-            $carParams
-        );
-    }
+    // Wartungsfelder + „fällig“-Markierungen gehen direkt ins Fahrzeug (applyMaintenanceFieldsToCar)
+    $carSetClauses = applyMaintenanceFieldsToCar($db, $fields, 'oe_ext', 'oe_id', $oeId);
 
     // km_stand in c_km spiegeln — nur wenn dies der neueste Auftrag zum Fahrzeug ist
     if (array_key_exists('km_stand', $fields)) {
@@ -1332,6 +1361,9 @@ function getCarForInvoice($data) {
         "SELECT c.c_id, c.c_ln, COALESCE(c.c_text, '') AS c_text,
                 e.km_stand, e.fertigstellung,
                 COALESCE(k.fhzart, '') AS fhzart,
+                c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
+                to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
+                c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km,
                 e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle
          FROM ar_ext e
          LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
@@ -1374,7 +1406,8 @@ function linkCarToInvoice($data) {
 }
 
 /**
- * Aktualisiert ar_ext-Felder (km_stand, fertigstellung, reparaturzeit_minuten, reparaturzeit_drucken, reparaturzeit_quelle)
+ * Aktualisiert ar_ext-Felder (km_stand, fertigstellung, reparaturzeit_minuten, reparaturzeit_drucken, reparaturzeit_quelle);
+ * Wartungsfelder und „fällig“-Markierungen (c_sk, c_zrd, c_zrk, c_bf, c_wd, c_*_due) gehen ins verknüpfte Fahrzeug
  * c_id wird hier NICHT angefasst — dafür ist linkCarToInvoice zuständig.
  *
  * @param int $data['ar_id'] Rechnungs-ID
@@ -1415,23 +1448,28 @@ function updateArExt($data) {
         $params[$paramName] = $value;
     }
 
-    if (empty($setClauses)) {
+    // Wartungsfelder + „fällig“-Markierungen gehen direkt ins Fahrzeug (wie beim Auftrag)
+    $carSetClauses = applyMaintenanceFieldsToCar($db, $fields, 'ar_ext', 'ar_id', $arId);
+
+    if (empty($setClauses) && empty($carSetClauses)) {
         resultInfo(true, 'NO_CHANGES');
         return;
     }
 
-    $setString = implode(', ', $setClauses);
+    if (!empty($setClauses)) {
+        $setString = implode(', ', $setClauses);
 
-    $db->execute(
-        "INSERT INTO ar_ext (ar_id) VALUES (:ar_id)
-         ON CONFLICT (ar_id) DO NOTHING",
-        [':ar_id' => $arId]
-    );
+        $db->execute(
+            "INSERT INTO ar_ext (ar_id) VALUES (:ar_id)
+             ON CONFLICT (ar_id) DO NOTHING",
+            [':ar_id' => $arId]
+        );
 
-    $db->execute(
-        "UPDATE ar_ext SET $setString WHERE ar_id = :ar_id",
-        $params
-    );
+        $db->execute(
+            "UPDATE ar_ext SET $setString WHERE ar_id = :ar_id",
+            $params
+        );
+    }
 
     resultInfo(true, 'UPDATED');
 }

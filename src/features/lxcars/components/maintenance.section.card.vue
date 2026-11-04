@@ -55,7 +55,7 @@
                         variant="outlined"
                         density="compact"
                         hide-details="auto"
-                        placeholder="MM/JJ"
+                        :placeholder="t('MaintenanceDue.placeholder.monthYear')"
                         :disabled="!hasCar"
                         @blur="onBlurMonthYear('c_zrd')"
                     >
@@ -71,8 +71,8 @@
                         variant="outlined"
                         density="compact"
                         hide-details="auto"
-                        suffix="km"
-                        placeholder="z.B. 180"
+                        :suffix="displayZrk ? 'km' : undefined"
+                        :placeholder="t('MaintenanceDue.placeholder.km')"
                         :disabled="!hasCar"
                         @blur="onBlurKm"
                     >
@@ -88,7 +88,7 @@
                         variant="outlined"
                         density="compact"
                         hide-details="auto"
-                        placeholder="MM/JJ"
+                        :placeholder="t('MaintenanceDue.placeholder.monthYear')"
                         :disabled="!hasCar"
                         @blur="onBlurMonthYear('c_bf')"
                     >
@@ -104,7 +104,7 @@
                         variant="outlined"
                         density="compact"
                         hide-details="auto"
-                        placeholder="MM/JJ"
+                        :placeholder="t('MaintenanceDue.placeholder.monthYear')"
                         :disabled="!hasCar"
                         @blur="onBlurMonthYear('c_wd')"
                     >

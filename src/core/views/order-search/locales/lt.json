@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Klaida kraunant paieškos rezultatus."
+        },
+        "recent_invoices": {
+            "title": "Paskutinės sukurtos sąskaitos – dar neapmokėtos",
+            "open": "Atidaryti sąskaitą {invnumber} (išnyksta po apmokėjimo)"
         }
     }
 }

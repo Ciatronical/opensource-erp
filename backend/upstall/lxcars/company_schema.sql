@@ -51,6 +51,7 @@ CREATE TABLE cars_lxcars (
     c_ktype         integer,
     c_ktype_desc    text,
     installed_engines text,
+    aag_checked_at  timestamptz,   -- letzte automatische AAG-Ermittlung (Ktype/Motorcode); NULL = beim Öffnen einmal versuchen
     CONSTRAINT cars_lxcars_c_ln_unique UNIQUE (c_ln),
     CONSTRAINT cars_lxcars_c_fin_unique UNIQUE (c_fin),
     CONSTRAINT cars_lxcars_scan_detail_unique UNIQUE (scan_detail_id),
@@ -58,6 +59,11 @@ CREATE TABLE cars_lxcars (
 );
 
 CREATE INDEX IF NOT EXISTS idx_cars_lxcars_c_ln ON public.cars_lxcars (c_ln);
+
+-- Migration: Fahrzeuge mit bereits ermitteltem Ktype UND Motorcodes gelten als geprüft,
+-- sonst würde jedes davon nach dem Update beim ersten Öffnen noch einmal AAG abfragen
+UPDATE cars_lxcars SET aag_checked_at = now()
+ WHERE aag_checked_at IS NULL AND c_ktype IS NOT NULL AND TRIM(COALESCE(installed_engines, '')) <> '';
 CREATE INDEX IF NOT EXISTS idx_cars_lxcars_c_m  ON public.cars_lxcars (c_m);
 CREATE INDEX IF NOT EXISTS idx_cars_lxcars_c_ow ON public.cars_lxcars (c_ow);
 CREATE INDEX IF NOT EXISTS idx_cars_lxcars_c_t  ON public.cars_lxcars (c_t);

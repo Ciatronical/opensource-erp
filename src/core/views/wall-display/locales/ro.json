@@ -16,6 +16,7 @@
         "total": "Total",
         "grossTotal": "Suma totala",
         "allDay": "Toata ziua",
+        "page": "Pagina {page} / {count}",
         "exit": "Ieșire"
     }
 }

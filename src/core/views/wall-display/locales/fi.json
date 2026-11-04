@@ -16,6 +16,7 @@
         "total": "Yhteensa",
         "grossTotal": "Kokonaissumma",
         "allDay": "Koko paiva",
+        "page": "Sivu {page} / {count}",
         "exit": "Poistu"
     }
 }

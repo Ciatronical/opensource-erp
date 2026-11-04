@@ -16,6 +16,7 @@
         "total": "Kokku",
         "grossTotal": "Kogusumma",
         "allDay": "Kogu päev",
+        "page": "Leht {page} / {count}",
         "exit": "Välju"
     }
 }

@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Virhe hakutulosten lataamisessa."
+        },
+        "recent_invoices": {
+            "title": "Viimeksi luodut laskut – vielä avoinna",
+            "open": "Avaa lasku {invnumber} (katoaa maksun jälkeen)"
         }
     }
 }

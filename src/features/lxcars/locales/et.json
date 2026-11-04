@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Hammasrihm",
             "c_zrd_sk": "Ajastuskett",
-            "c_zrk": "Hammasrihm (km)",
             "c_bf": "Pidurivedelik",
             "c_wd": "Hooldus"
         },
@@ -57,12 +56,16 @@
             "due": "tähtaeg",
             "soon": "varsti"
         },
+        "placeholder": {
+            "monthYear": "KK/AA TAB",
+            "km": "180 TAB = 180 000"
+        },
         "reasons": {
-            "dateReached": "Tähtaeg {date} on käes",
-            "dateSoon": "Tähtaeg {date} läheneb",
-            "kmReached": "Läbisõit {km} saavutatud (alates {due} km)",
-            "kmSoon": "{rest} km jäänud kuni {due} km",
-            "manual": "käsitsi tähtajaliseks märgitud"
+            "dateReached": "Tähtaeg {date}",
+            "dateSoon": "Tähtaeg {date}",
+            "kmReached": "Läbisõit {km} (alates {due} km)",
+            "kmSoon": "veel {rest} km",
+            "manual": "käsitsi märgitud"
         },
         "tooltip": {
             "mark": "Märgi tähtajaliseks",

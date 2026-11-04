@@ -39,7 +39,7 @@
             <!-- Online-Portale auch im Mechanikermodus (Nur-Lese-Ansicht) verfügbar -->
             <diag-portal-buttons
                 :aag-available="aagAvailable"
-                :aag-loading="aagLoading || ktypeLoading"
+                :aag-loading="aagLoading"
                 :hgs-available="hgsAvailable"
                 :hgs-loading="hgsLoading"
                 :gutmann-available="gutmannAvailable"
@@ -132,20 +132,19 @@
             density="compact"
             class="mb-3"
         >
-            <div class="font-weight-medium">{{ t(maintenanceDue.level === 'due' ? 'MaintenanceDue.alert.title' : 'MaintenanceDue.alert.titleSoon') }}</div>
-            <ul class="maintenance-due-list">
-                <li v-for="item in maintenanceDue.due.concat(maintenanceDue.soon)" :key="item.field">
+            <!-- Titel und Einträge in einer Zeile, Einträge brechen als Ganzes um -->
+            <div class="maintenance-due-list">
+                <span class="font-weight-medium mr-1">{{ t(maintenanceDue.level === 'due' ? 'MaintenanceDue.alert.title' : 'MaintenanceDue.alert.titleSoon') }}</span>
+                <span v-for="item in maintenanceAlertItems" :key="item.labelKey" class="maintenance-due-item">
                     <v-icon size="x-small" :color="item.state === 'due' ? 'error' : 'warning'" class="mr-1">{{ item.state === 'due' ? 'mdi-alert-circle' : 'mdi-clock-alert-outline' }}</v-icon>
                     <strong class="mr-1">{{ t('MaintenanceDue.items.' + item.labelKey) }}:</strong>
                     <span class="text-medium-emphasis">{{ maintenanceDueReasons(item, t, locale).join(' · ') }}</span>
-                </li>
-            </ul>
-            <template #append>
-                <v-btn size="small" variant="tonal" :color="maintenanceDue.level === 'due' ? 'error' : 'warning'" @click="scrollToMaintenance">
+                </span>
+                <v-btn size="small" variant="tonal" :color="maintenanceDue.level === 'due' ? 'error' : 'warning'" class="ml-auto" @click="scrollToMaintenance">
                     <v-icon start size="small">mdi-wrench</v-icon>
                     {{ t('MaintenanceDue.alert.jump') }}
                 </v-btn>
-            </template>
+            </div>
         </v-alert>
 
         <v-form
@@ -269,7 +268,7 @@
                                 </v-col>
                                 <!-- AAG-Online per FIN suchen, wenn TSN ein Platzhalter ist (000…) -->
                                 <v-col v-if="showAagTsnButton" cols="auto" class="py-1">
-                                    <v-tooltip location="bottom" :text="ktypeLoading ? t('CarEditView.ktype.resolving') : t('CarEditView.aag.tsnTooltip')">
+                                    <v-tooltip location="bottom" :text="t('CarEditView.aag.tsnTooltip')">
                                         <template #activator="{ props: tipProps }">
                                             <v-btn
                                                 v-bind="tipProps"
@@ -278,7 +277,7 @@
                                                 color="indigo"
                                                 size="small"
                                                 tabindex="-1"
-                                                :loading="aagLoading || ktypeLoading"
+                                                :loading="aagLoading"
                                                 @click="openAag"
                                             />
                                         </template>
@@ -399,6 +398,12 @@
                                         <v-progress-circular indeterminate size="14" width="2" class="mr-2" />
                                         {{ t('CarEditView.ktype.resolving') }}
                                     </span>
+                                    <!-- Hintergrundsuche nach Motorcodes bei bereits bekanntem Ktype: dezent am Chip, nicht am AAG-Knopf -->
+                                    <v-tooltip v-if="ktypeNo && ktypeLoading" location="bottom" :text="t('CarEditView.ktype.enginesResolving')">
+                                        <template #activator="{ props: tipProps }">
+                                            <v-progress-circular v-bind="tipProps" indeterminate size="14" width="2" class="ml-2" />
+                                        </template>
+                                    </v-tooltip>
                                     <v-tooltip v-if="!readonly && !ktypeLoading && aagConfigured" location="bottom" :text="t('CarEditView.ktype.refresh')">
                                         <template #activator="{ props: tipProps }">
                                             <v-btn v-bind="tipProps" icon="mdi-refresh" variant="text" size="x-small" tabindex="-1" class="ml-1" @click="resolveKtypeBg" />
@@ -478,8 +483,8 @@
                         </v-card-text>
                     </v-card>
 
-                    <!-- Wartung & Service -->
-                    <v-card ref="maintenanceCardRef" class="mt-3" variant="outlined" elevation="1">
+                    <!-- Wartung & Service (nicht bei Anhängern) -->
+                    <v-card v-if="!isTrailer" ref="maintenanceCardRef" class="mt-3" variant="outlined" elevation="1">
                         <v-card-title class="py-2 px-3 bg-grey-lighten-4 d-flex align-center">
                             <v-icon class="mr-2" size="small">mdi-wrench</v-icon>
                             <span class="text-subtitle-1 font-weight-medium">{{ t('CarEditView.sections.maintenance') }}</span>
@@ -527,14 +532,14 @@
                                     <maintenance-due-button :state="maintenanceDue.fields.c_zrd" :disabled="readonly" @toggle="v => setDueFlag('c_zrd', v)" />
                                 </v-col>
                                 <v-col v-if="!car.c_sk" cols="12" sm="6" class="py-1">
-                                    <v-text-field v-model="displayZrd" :label="t('CarEditView.fields.c_zrd')" variant="outlined" density="compact" hide-details="auto" placeholder="MM/JJ" tabindex="19" :rules="rulesMonthYear.c_zrd" @blur="onBlurMonthYear('c_zrd')" >
+                                    <v-text-field v-model="displayZrd" :label="t('CarEditView.fields.c_zrd')" variant="outlined" density="compact" hide-details="auto" :placeholder="t('MaintenanceDue.placeholder.monthYear')" tabindex="19" :rules="rulesMonthYear.c_zrd" @blur="onBlurMonthYear('c_zrd')" >
                                         <template #append-inner>
                                             <maintenance-due-button :state="maintenanceDue.fields.c_zrd" :disabled="readonly" @toggle="v => setDueFlag('c_zrd', v)" />
                                         </template>
                                     </v-text-field>
                                 </v-col>
                                 <v-col v-if="!car.c_sk" cols="12" sm="6" class="py-1">
-                                    <v-text-field v-model="displayZrk" :label="t('CarEditView.fields.c_zrk')" variant="outlined" density="compact" hide-details="auto" suffix="km" placeholder="z.B. 180" tabindex="20" @blur="onBlurKm" >
+                                    <v-text-field v-model="displayZrk" :label="t('CarEditView.fields.c_zrk')" variant="outlined" density="compact" hide-details="auto" :suffix="displayZrk ? 'km' : undefined" :placeholder="t('MaintenanceDue.placeholder.km')" tabindex="20" @blur="onBlurKm" >
                                         <template #append-inner>
                                             <maintenance-due-button :state="maintenanceDue.fields.c_zrk" :disabled="readonly" @toggle="v => setDueFlag('c_zrk', v)" />
                                         </template>
@@ -543,14 +548,14 @@
                             </v-row>
                             <v-row dense>
                                 <v-col cols="12" sm="6" class="py-1">
-                                    <v-text-field v-model="displayBf" :label="t('CarEditView.fields.c_bf')" variant="outlined" density="compact" hide-details="auto" placeholder="MM/JJ" tabindex="21" :rules="rulesMonthYear.c_bf" @blur="onBlurMonthYear('c_bf')" >
+                                    <v-text-field v-model="displayBf" :label="t('CarEditView.fields.c_bf')" variant="outlined" density="compact" hide-details="auto" :placeholder="t('MaintenanceDue.placeholder.monthYear')" tabindex="21" :rules="rulesMonthYear.c_bf" @blur="onBlurMonthYear('c_bf')" >
                                         <template #append-inner>
                                             <maintenance-due-button :state="maintenanceDue.fields.c_bf" :disabled="readonly" @toggle="v => setDueFlag('c_bf', v)" />
                                         </template>
                                     </v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="6" class="py-1">
-                                    <v-text-field v-model="displayWd" :label="t('CarEditView.fields.c_wd')" variant="outlined" density="compact" hide-details="auto" placeholder="MM/JJ" tabindex="22" :rules="rulesMonthYear.c_wd" @blur="onBlurMonthYear('c_wd')" >
+                                    <v-text-field v-model="displayWd" :label="t('CarEditView.fields.c_wd')" variant="outlined" density="compact" hide-details="auto" :placeholder="t('MaintenanceDue.placeholder.monthYear')" tabindex="22" :rules="rulesMonthYear.c_wd" @blur="onBlurMonthYear('c_wd')" >
                                         <template #append-inner>
                                             <maintenance-due-button :state="maintenanceDue.fields.c_wd" :disabled="readonly" @toggle="v => setDueFlag('c_wd', v)" />
                                         </template>
@@ -1340,7 +1345,7 @@ import CarSellDialog from './components/car-sell.dialog.vue'
 import SpecialToolsSectionCard from '@/features/lxcars/components/special-tools.section.card.vue'
 import MaintenanceDueButton from '@/features/lxcars/components/maintenance-due-button.vue'
 import DiagPortalButtons from '@/features/lxcars/components/diag-portal-buttons.vue'
-import { maintenanceDueState, maintenanceDueReasons, MAINTENANCE_DUE_FLAGS } from '@/features/lxcars/utils/maintenanceDue.js'
+import { maintenanceDueState, maintenanceDueReasons, maintenanceDueAlertItems, MAINTENANCE_DUE_FLAGS } from '@/features/lxcars/utils/maintenanceDue.js'
 
 // const SpecialDialog = defineAsyncComponent(() => import('@special/special.dialog.vue'))
 
@@ -1437,7 +1442,11 @@ export default {
         // Termin/km erreicht oder Hand-Markierung (c_*_due, liegt im Fahrzeug und läuft
         // über den Auto-Save mit). Ein neuer Termin/km-Stand löscht die Markierung
         // (useCarDates + Backend), Steuerkette löscht die Zahnriemen-Markierungen.
-        const maintenanceDue = computed(() => maintenanceDueState(car.value))
+        const kbaData = ref(null)
+        // Anhänger haben keine Wartungsfelder (wie im Auftrag: vehicle.isTrailer)
+        const isTrailer = computed(() => kbaData.value?.fhzart === 'trailer')
+        const maintenanceDue = computed(() => isTrailer.value ? maintenanceDueState({}) : maintenanceDueState(car.value))
+        const maintenanceAlertItems = computed(() => maintenanceDueAlertItems(maintenanceDue.value))
         const maintenanceCardRef = ref(null)
 
         function setDueFlag(field, value) {
@@ -1528,7 +1537,6 @@ export default {
         // KBA-Daten die beim ersten INSERT mitgeschickt werden (aus Scan)
         const pendingKbaData = ref(null)
         // KBA-Stammdaten (geladen vom Backend oder aus Scan)
-        const kbaData = ref(null)
         const showDebug = ref(false)
 
         // KBA-Auswahldialog (bei mehreren Treffern oder TSN-Platzhalter)
@@ -2190,6 +2198,7 @@ export default {
                     ktypeNo.value = res.c_ktype
                     ktypeDesc.value = res.c_ktype_desc || ''
                 }
+                if (res?.aag_checked_at) car.value.aag_checked_at = res.aag_checked_at
                 // Verbaute Motorkennbuchstaben übernehmen (für das c_mkb-Dropdown)
                 if (res && res.installed_engines !== undefined && res.installed_engines !== null) {
                     car.value.installed_engines = res.installed_engines
@@ -2209,16 +2218,12 @@ export default {
             ktypeDesc.value = car.value.c_ktype_desc || ''
             // Bereits gespeicherten Motorcode sofort sichtbar machen
             applyEnginesToMkb()
-            // Motorcode nachladen, wenn FIN vorhanden, aber noch keiner gespeichert ist.
-            // Pro Browser-Session nur einmal je Fahrzeug versuchen — sonst würden
-            // Fahrzeuge, für die AAG keinen Motorcode kennt, bei jedem Öffnen erneut
-            // mehrere AAG-Abfragen auslösen.
-            const triedKey = `aag_eng_tried_${carId.value}`
-            const needEngines = !!(car.value.c_fin || '').trim()
-                && !installedEnginesList.value.length
-                && !sessionStorage.getItem(triedKey)
-            if (needEngines) sessionStorage.setItem(triedKey, '1')
-            if (!ktypeNo.value || needEngines) resolveKtypeBg()
+            // Automatische Ermittlung (Ktype + Motorcodes) genau einmal je Fahrzeug:
+            // aag_checked_at setzt der Server, sobald AAG geantwortet hat — auch ohne
+            // Treffer. Sonst löst jedes Öffnen bis zu vier AAG-Aufrufe aus, obwohl das
+            // Ergebnis bekannt ist. Neue HSN/TSN/FIN setzen die Spalte zurück (updateCar),
+            // der Pfeil am Ktype-Chip erzwingt einen manuellen Neuversuch.
+            if (!car.value.aag_checked_at) resolveKtypeBg()
         })
 
         // Leichtgewichtiger Motor-Sync: liest den im AAG-Beleg hinterlegten Motor und
@@ -2866,7 +2871,7 @@ export default {
             displayZrd, displayBf, displayWd, onBlurMonthYear,
             displayZrk, onBlurKm,
             displayKm, onBlurKmStand,
-            locale, maintenanceDue, maintenanceDueReasons, maintenanceCardRef, setDueFlag, toggleChain, scrollToMaintenance,
+            locale, isTrailer, maintenanceDue, maintenanceAlertItems, maintenanceDueReasons, maintenanceCardRef, setDueFlag, toggleChain, scrollToMaintenance,
             voiceRecording, voiceBusy, voiceExtracting, voiceSupported, voiceToggle,
             toggleShield, orderFilter, filteredOrders, orderHeaders,
             formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,
@@ -2897,9 +2902,9 @@ export default {
 </script>
 
 <style scoped>
-.maintenance-due-list { list-style: none; padding-left: 0; margin: 4px 0 0; font-size: 13px; }
+.maintenance-due-list { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; line-height: 1.5; }
+.maintenance-due-item { display: inline-flex; align-items: center; white-space: nowrap; font-size: 13px; }
 .maintenance-chain { min-height: 48px; }
-.maintenance-due-list li { display: flex; align-items: center; flex-wrap: wrap; line-height: 1.5; }
 .bg-grey-lighten-4 {
     background-color: #f5f5f5;
 }

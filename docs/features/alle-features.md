@@ -647,6 +647,7 @@ Aus einem Beleg heraus erzeugen:
 - **Import** aus **iCal**, **CSV** und **TXT** mit automatischer Trennzeichen-, Header- und Datumsformat-Erkennung
 - Echtzeit-Aktualisierung über SSE
 - Steuerbefehle an die Wandanzeige senden
+- **Beleg auf der Wandanzeige**: „Auf Display zeigen“ in der Faktura schaltet die Wandanzeige vom Kalender auf den Beleg (Positionen seitenweise, Blättern und Beenden vom PC; Schließen → Kalender)
 
 ### 9.2 Wiedervorlage
 

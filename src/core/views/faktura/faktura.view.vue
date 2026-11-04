@@ -24,6 +24,8 @@
                     @create-order="createOrderFromFaktura"
                     @create-delivery-order="createDeliveryOrderFromFaktura"
                     @create-invoice="createInvoiceFromFaktura"
+                    :invoice-status="invoiceStatus"
+                    @open-invoice="openLinkedInvoice"
                     @create-credit-note="createCreditNoteFromFaktura"
                     @cancel="cancelFaktura"
                     @create-supplier-inquiry="createSupplierInquiryFromFaktura"
@@ -55,6 +57,7 @@
                     :show-vehicle-button="!!vehicle && !!vehicle.selectedCarId.value"
                     :show-special-button="showSpecialButton"
                     :show-display-button="wallDisplayEnabled"
+                    :display-active="wallDisplayActive"
                     :has-customer="hasCustomer"
                     :compact-view="compactView"
                     @toggle-compact="compactView = !compactView"
@@ -275,8 +278,8 @@
                 />
             </section>
 
-            <!-- Wartung & Service (lxcars Feature, nur bei Auftrag, nicht bei Anhängern) -->
-            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data && !vehicle.isTrailer.value && wartungEnabled" :class="{ 'section-disabled': !hasCustomer }">
+            <!-- Wartung & Service (lxcars Feature, Auftrag und Rechnung, nicht bei Anhängern) -->
+            <section class="faktura-section" v-if="vehicle && (fakturaType === 'order' || fakturaType === 'invoice') && faktura.data && !vehicle.isTrailer.value && wartungEnabled" :class="{ 'section-disabled': !hasCustomer }">
                 <maintenance-section-card
                     :oe-ext-data="vehicle.oeExtData.value"
                     :has-car="!!vehicle.selectedCarId.value"
@@ -438,6 +441,31 @@
                 </v-card>
             </section>
         </v-container>
+
+        <!-- Wandanzeige: Steuerleiste, solange der Beleg dort gezeigt wird.
+             Nicht modal, damit der Beleg währenddessen weiter bearbeitet werden kann
+             (die Anzeige lädt Änderungen live nach). Schließen = zurück zum Kalender. -->
+        <v-snackbar v-model="wallDisplayActive" :timeout="-1" location="bottom" color="deep-orange" variant="elevated">
+            <div class="d-flex align-center ga-2">
+                <v-icon>mdi-monitor</v-icon>
+                <span>{{ t('FakturaView.faktura.wallDisplayActive') }}</span>
+            </div>
+            <template #actions>
+                <v-tooltip location="top" :text="t('FakturaView.faktura.wallDisplayPrev')">
+                    <template #activator="{ props: tip }">
+                        <v-btn v-bind="tip" icon="mdi-chevron-left" variant="text" @click="turnWallDisplayPage('prev')" />
+                    </template>
+                </v-tooltip>
+                <v-tooltip location="top" :text="t('FakturaView.faktura.wallDisplayNext')">
+                    <template #activator="{ props: tip }">
+                        <v-btn v-bind="tip" icon="mdi-chevron-right" variant="text" @click="turnWallDisplayPage('next')" />
+                    </template>
+                </v-tooltip>
+                <v-btn variant="text" prepend-icon="mdi-close" @click="wallDisplayActive = false">
+                    {{ t('FakturaView.faktura.wallDisplayStop') }}
+                </v-btn>
+            </template>
+        </v-snackbar>
 
         <!-- km-Stand Plausibilitäts-Dialog (beim Verlassen des km-Feldes) -->
         <v-dialog v-if="kmPlausibilityDialog" v-model="kmPlausibilityDialog.show" max-width="520" @keydown.esc="kmPlausibilityDialog.show = false">
@@ -2566,14 +2594,63 @@ export default defineComponent({
         )
         const portals = useDiagPortals({ carObj: selectedCarObj, oserp, t, warmToken: faktura.warmAagToken })
 
-        function showOnDisplay() {
-            if (!fakturaId.value) return
-            const displayRoute = router.resolve({
-                name: 'wall-display',
-                query: { faktura: `${fakturaType.value}:${fakturaId.value}` }
-            })
-            window.open(displayRoute.href, 'wall-display')
+        // ===== Wandanzeige =====
+        //
+        // "Auf Display zeigen" schickt per pg_notify ein Kommando an die
+        // Wandanzeige (wall-display.view.vue), die daraufhin den Beleg statt des
+        // Kalenders zeigt. Solange wallDisplayActive ist, steht unten eine
+        // Steuerleiste zum Blättern und Beenden. Beenden, Verlassen der Seite
+        // oder Wechsel des Belegs schalten die Anzeige zurück auf den Kalender.
+        const wallDisplayActive = ref(false)
+
+        function postWallDisplay(payload) {
+            return axios.post('/api/calendar/', { action: 'setWallDisplayFaktura', ...payload })
         }
+
+        async function showOnDisplay() {
+            if (wallDisplayActive.value) {
+                wallDisplayActive.value = false
+                return
+            }
+            if (!fakturaId.value) return
+            try {
+                const { data } = await postWallDisplay({ fakturaType: fakturaType.value, fakturaId: fakturaId.value })
+                if (!data.success) throw new Error(data.message || 'setWallDisplayFaktura')
+                wallDisplayActive.value = true
+            } catch (e) {
+                console.error('Wandanzeige:', e)
+                alerts.error(t('FakturaView.faktura.wallDisplayError'))
+            }
+        }
+
+        function turnWallDisplayPage(direction) {
+            if (!wallDisplayActive.value) return
+            postWallDisplay({ fakturaType: fakturaType.value, fakturaId: fakturaId.value, page: direction }).catch(() => {})
+        }
+
+        // Jede Art des Schließens (Snackbar-X, Knopf erneut, Belegwechsel) läuft
+        // über diesen einen Watcher — so geht das Kalender-Kommando sicher raus.
+        watch(wallDisplayActive, (on) => {
+            if (!on) postWallDisplay({ fakturaId: null }).catch(() => {})
+        })
+        watch(fakturaId, () => { wallDisplayActive.value = false })
+
+        // Seite verlassen (Tab zu, Reload, Navigation): Watcher laufen dann nicht
+        // mehr zuverlässig, deshalb sendBeacon — der kommt auch beim Entladen an.
+        function wallDisplayOnPageHide() {
+            if (!wallDisplayActive.value) return
+            wallDisplayActive.value = false
+            const body = new Blob([JSON.stringify({ action: 'setWallDisplayFaktura', fakturaId: null })], { type: 'application/json' })
+            navigator.sendBeacon('/api/calendar/', body)
+        }
+        window.addEventListener('pagehide', wallDisplayOnPageHide)
+        onBeforeUnmount(() => {
+            window.removeEventListener('pagehide', wallDisplayOnPageHide)
+            if (wallDisplayActive.value) {
+                wallDisplayActive.value = false
+                postWallDisplay({ fakturaId: null }).catch(() => {})
+            }
+        })
 
         // ===== SilverDAT Import =====
 
@@ -4231,6 +4308,8 @@ export default defineComponent({
             onWhatsAppSend,
             openVehicleEdit,
             showOnDisplay,
+            wallDisplayActive,
+            turnWallDisplayPage,
             silverdatImport,
             silverdatFileInput,
             onSilverdatFileSelect,

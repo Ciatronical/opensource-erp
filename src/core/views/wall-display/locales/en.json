@@ -16,6 +16,7 @@
         "total": "Total",
         "grossTotal": "Grand total",
         "allDay": "All day",
+        "page": "Page {page} / {count}",
         "exit": "Exit"
     }
 }

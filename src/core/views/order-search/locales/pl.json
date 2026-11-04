@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Błąd podczas ładowania wyników wyszukiwania."
+        },
+        "recent_invoices": {
+            "title": "Ostatnio utworzone faktury – jeszcze nieopłacone",
+            "open": "Otwórz fakturę {invnumber} (znika po opłaceniu)"
         }
     }
 }

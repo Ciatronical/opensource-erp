@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Kļūda ielādējot meklēšanas rezultātus."
+        },
+        "recent_invoices": {
+            "title": "Pēdējie izveidotie rēķini – vēl neapmaksāti",
+            "open": "Atvērt rēķinu {invnumber} (pazūd pēc apmaksas)"
         }
     }
 }

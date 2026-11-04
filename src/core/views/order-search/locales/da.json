@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Fejl ved indlaesning af soegeresultater."
+        },
+        "recent_invoices": {
+            "title": "Senest oprettede fakturaer – stadig åbne",
+            "open": "Åbn faktura {invnumber} (forsvinder efter betaling)"
         }
     }
 }

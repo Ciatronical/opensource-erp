@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Tandrem",
             "c_zrd_sk": "Styrekæde",
-            "c_zrk": "Tandrem (km)",
             "c_bf": "Bremsevæske",
             "c_wd": "Service"
         },
@@ -57,12 +56,16 @@
             "due": "forfalden",
             "soon": "snart forfalden"
         },
+        "placeholder": {
+            "monthYear": "MM/ÅÅ TAB",
+            "km": "180 TAB for 180.000"
+        },
         "reasons": {
-            "dateReached": "Termin {date} nået",
-            "dateSoon": "Termin {date} nærmer sig",
-            "kmReached": "Kilometerstand {km} nået (forfalder fra {due} km)",
-            "kmSoon": "{rest} km tilbage til {due} km",
-            "manual": "markeret som forfalden manuelt"
+            "dateReached": "Termin {date}",
+            "dateSoon": "Termin {date}",
+            "kmReached": "Kilometerstand {km} (forfalder fra {due} km)",
+            "kmSoon": "{rest} km tilbage",
+            "manual": "markeret manuelt"
         },
         "tooltip": {
             "mark": "Markér som forfalden",

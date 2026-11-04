@@ -3,37 +3,63 @@
     <NavbarView :message="message" :messages="messages" />
 
     <v-container class="pt-2 px-2 px-sm-4" fluid>
-        <v-row class="mb-2 align-center">
-            <v-col>
-                <h1 class="text-h5 text-sm-h4 d-flex align-center">
-                    <v-icon class="me-2" color="primary">mdi-clipboard-text-search-outline</v-icon>
-                    {{ t('OrderSearchView.title') }}
-                    <v-chip
-                        v-if="hasSearched"
-                        class="ms-3"
-                        size="small"
-                        variant="tonal"
-                        color="primary"
-                    >
-                        {{ searchResults.length }} {{ t('OrderSearchView.table.results_count') }}
-                    </v-chip>
-                </h1>
-            </v-col>
-            <v-col cols="auto">
+        <!-- Schnellzugriff: zuletzt erstellte, noch offene Rechnungen. Jeder
+             Knopf öffnet die Rechnung; bezahlte (bar, Bank oder Karte) fallen
+             beim nächsten Laden automatisch heraus. -->
+        <section
+            v-if="recentInvoices.length"
+            class="recent-invoices"
+            :aria-label="t('OrderSearchView.recent_invoices.title')"
+        >
+            <div class="recent-invoices__label">
+                <v-icon size="small" class="me-1">mdi-receipt-text-clock-outline</v-icon>
+                {{ t('OrderSearchView.recent_invoices.title') }}
+            </div>
+            <div class="recent-invoices__grid">
+                <v-btn
+                    v-for="inv in recentInvoices"
+                    :key="inv.id"
+                    class="recent-invoice"
+                    variant="tonal"
+                    color="primary"
+                    height="auto"
+                    :title="t('OrderSearchView.recent_invoices.open', { invnumber: inv.invnumber })"
+                    @click="openInvoice(inv)"
+                >
+                    <span class="recent-invoice__line">
+                        <span class="recent-invoice__name">{{ inv.customer_name || inv.invnumber }}</span>
+                        <span class="recent-invoice__amount">{{ formatAmount(inv.amount) }}</span>
+                    </span>
+                    <span class="recent-invoice__meta">
+                        {{ inv.invnumber }}<template v-if="inv.kennzeichen"> · {{ inv.kennzeichen }}</template>
+                    </span>
+                </v-btn>
+            </div>
+        </section>
+
+        <page-header>
+            <template #title>
+                <v-icon class="me-2" color="primary">mdi-clipboard-text-search-outline</v-icon>
+                {{ t('OrderSearchView.title') }}
+            </template>
+            <v-chip v-if="hasSearched" size="small" variant="tonal" color="primary">
+                {{ searchResults.length }} {{ t('OrderSearchView.table.results_count') }}
+            </v-chip>
+            <template #actions>
                 <v-btn
                     v-if="hasSearchCriteria"
                     variant="text"
                     prepend-icon="mdi-filter-remove"
-                    @click="reset"
                     size="small"
+                    @click="reset"
                 >
                     {{ t('OrderSearchView.buttons.reset') }}
                 </v-btn>
-            </v-col>
-        </v-row>
+            </template>
+        </page-header>
 
-        <!-- Filter -->
-        <v-row dense @keydown.enter.capture="handleEnterKey">
+        <!-- Filter: ein Raster, das umbricht; Zeilenabstand kommt aus row-gap -->
+        <v-row dense class="filter-row" @keydown.enter.capture="handleEnterKey">
             <v-col cols="12" md="8">
                 <v-text-field
                     v-model="searchCriteria.q"
@@ -70,9 +96,6 @@
                     clearable
                 />
             </v-col>
-        </v-row>
-
-        <v-row dense class="mt-1">
             <v-col cols="6" sm="3">
                 <v-text-field
                     v-model="searchCriteria.transdate_from"
@@ -120,7 +143,7 @@
         </v-row>
 
         <!-- Ergebnistabelle -->
-        <v-card class="mt-4" :loading="loading">
+        <v-card class="results-card" :loading="loading">
             <v-data-table-server
                 :headers="headers"
                 :items="displayResults"
@@ -219,7 +242,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import * as toasts from '@/core/utils/toasts.js';
@@ -228,6 +251,8 @@ import { getValues, getColorMap } from '@/core/utils/configColors.js';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 import { useViewHistory } from '@/core/composables/useViewHistory.js';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';
+import PageHeader from '@/core/components/layout/page-header.vue';
+import { entityRoute } from '@/core/constants/routes.js';
 import router from '@/core/router/index.js';
 
 const { t } = useI18n();
@@ -253,10 +278,25 @@ const ALL_STATUS = '__all__';         // alle Status anzeigen
 const loading = ref(false);
 const searchCriteria = ref({ status: NOT_HIDDEN });
 const searchResults = ref([]);
+const recentInvoices = ref([]);
 const hasSearched = ref(false);
+
+// Kommt der Anwender von der Kasse oder aus einem anderen Fenster zurück,
+// soll eine inzwischen bezahlte Rechnung sofort aus dem Schnellzugriff
+// verschwinden — deshalb beim Sichtbarwerden neu laden.
+const reloadWhenVisible = () => {
+    if (document.visibilityState === 'visible' && !loading.value) loadData();
+};
 
 onMounted(() => {
     loadData();
+    document.addEventListener('visibilitychange', reloadWhenVisible);
+    window.addEventListener('focus', reloadWhenVisible);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('visibilitychange', reloadWhenVisible);
+    window.removeEventListener('focus', reloadWhenVisible);
 });
 
 watch(searchCriteria, () => {
@@ -365,6 +405,7 @@ const loadData = async () => {
             searchResults.value = [];
         } else if (response.data.success) {
             searchResults.value = response.data.payload.results ?? [];
+            recentInvoices.value = response.data.payload.recent_invoices ?? [];
         } else {
             toasts.error(t('OrderSearchView.toasts.error_loading_search_results'));
             searchResults.value = [];
@@ -437,6 +478,17 @@ const getRowProps = ({ item }) => {
     return {}
 };
 
+const openInvoice = (inv) => {
+    saveToHistory({
+        type: 'invoice',
+        id: inv.id,
+        title: inv.invnumber,
+        subtitle: inv.customer_name || '',
+        route: entityRoute('invoice', inv.id)
+    });
+    router.push(entityRoute('invoice', inv.id));
+};
+
 const onRowClick = (event, row) => {
     const item = row.item;
     saveToHistory({
@@ -454,6 +506,70 @@ const onRowClick = (event, row) => {
 </script>
 
 <style scoped>
+.recent-invoices {
+    margin-bottom: var(--oserp-gap);
+}
+.recent-invoices__label {
+    display: flex;
+    align-items: center;
+    font-size: 0.8125rem;
+    color: var(--oserp-text-muted);
+    margin-bottom: var(--oserp-gap-xs);
+}
+/* Gleich breite Knöpfe, so viele je Zeile wie Platz ist */
+.recent-invoices__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--oserp-gap-sm);
+}
+.recent-invoice {
+    padding: var(--oserp-gap-sm) var(--oserp-gap);
+    min-width: 0;
+}
+.recent-invoice :deep(.v-btn__content) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    min-width: 0;
+    text-align: left;
+}
+/* Name links (gekürzt), Betrag rechts – der Betrag bleibt immer lesbar */
+.recent-invoice__line {
+    display: flex;
+    align-items: baseline;
+    gap: var(--oserp-gap-sm);
+    width: 100%;
+    min-width: 0;
+}
+.recent-invoice__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.recent-invoice__amount {
+    flex: 0 0 auto;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.recent-invoice__meta {
+    width: 100%;
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.filter-row {
+    row-gap: var(--oserp-gap-sm);
+}
+.results-card {
+    margin-top: var(--oserp-gap-lg);
+}
 .zebra-table :deep(tbody tr:nth-child(odd)) {
     background-color: rgba(0, 0, 0, 0.03);
 }

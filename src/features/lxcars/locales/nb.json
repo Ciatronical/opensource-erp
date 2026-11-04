@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Registerreim",
             "c_zrd_sk": "Registerkjede",
-            "c_zrk": "Registerreim (km)",
             "c_bf": "Bremsevæske",
             "c_wd": "Service"
         },
@@ -57,12 +56,16 @@
             "due": "forfalt",
             "soon": "snart forfalt"
         },
+        "placeholder": {
+            "monthYear": "MM/ÅÅ TAB",
+            "km": "180 TAB for 180 000"
+        },
         "reasons": {
-            "dateReached": "Frist {date} nådd",
-            "dateSoon": "Frist {date} nærmer seg",
-            "kmReached": "Kilometerstand {km} nådd (forfaller fra {due} km)",
-            "kmSoon": "{rest} km igjen til {due} km",
-            "manual": "markert som forfalt manuelt"
+            "dateReached": "Frist {date}",
+            "dateSoon": "Frist {date}",
+            "kmReached": "Kilometerstand {km} (forfaller fra {due} km)",
+            "kmSoon": "{rest} km igjen",
+            "manual": "markert manuelt"
         },
         "tooltip": {
             "mark": "Marker som forfalt",

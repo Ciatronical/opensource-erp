@@ -16,6 +16,7 @@
         "total": "Totalt",
         "grossTotal": "Totalbelopp",
         "allDay": "Heldag",
+        "page": "Sida {page} / {count}",
         "exit": "Avsluta"
     }
 }

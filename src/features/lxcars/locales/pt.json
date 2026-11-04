@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Correia de distribuição",
             "c_zrd_sk": "Corrente de distribuição",
-            "c_zrk": "Correia de distribuição (km)",
             "c_bf": "Líquido de travões",
             "c_wd": "Revisão"
         },
@@ -57,12 +56,16 @@
             "due": "pendente",
             "soon": "em breve"
         },
+        "placeholder": {
+            "monthYear": "MM/AA TAB",
+            "km": "180 TAB para 180.000"
+        },
         "reasons": {
-            "dateReached": "Prazo {date} atingido",
-            "dateSoon": "Prazo {date} aproxima-se",
-            "kmReached": "Quilometragem {km} atingida (a partir de {due} km)",
-            "kmSoon": "faltam {rest} km até {due} km",
-            "manual": "marcado manualmente como pendente"
+            "dateReached": "Prazo {date}",
+            "dateSoon": "Prazo {date}",
+            "kmReached": "Quilometragem {km} (a partir de {due} km)",
+            "kmSoon": "faltam {rest} km",
+            "manual": "marcado manualmente"
         },
         "tooltip": {
             "mark": "Marcar como pendente",

@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Kamrem",
             "c_zrd_sk": "Kamkedja",
-            "c_zrk": "Kamrem (km)",
             "c_bf": "Bromsvätska",
             "c_wd": "Service"
         },
@@ -57,12 +56,16 @@
             "due": "förfallen",
             "soon": "snart förfallen"
         },
+        "placeholder": {
+            "monthYear": "MM/ÅÅ TAB",
+            "km": "180 TAB för 180 000"
+        },
         "reasons": {
-            "dateReached": "Datum {date} nått",
-            "dateSoon": "Datum {date} närmar sig",
-            "kmReached": "Mätarställning {km} nådd (förfaller från {due} km)",
-            "kmSoon": "{rest} km kvar till {due} km",
-            "manual": "markerad som förfallen manuellt"
+            "dateReached": "Datum {date}",
+            "dateSoon": "Datum {date}",
+            "kmReached": "Mätarställning {km} (förfaller från {due} km)",
+            "kmSoon": "{rest} km kvar",
+            "manual": "markerad manuellt"
         },
         "tooltip": {
             "mark": "Markera som förfallen",

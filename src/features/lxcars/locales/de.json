@@ -57,7 +57,6 @@
         "items": {
             "c_zrd": "Zahnriemen",
             "c_zrd_sk": "Steuerkette",
-            "c_zrk": "Zahnriemen (km)",
             "c_bf": "Bremsflüssigkeit",
             "c_wd": "Wartungsdienst"
         },
@@ -65,12 +64,16 @@
             "due": "fällig",
             "soon": "bald fällig"
         },
+        "placeholder": {
+            "monthYear": "MM/JJ TAB",
+            "km": "180 TAB für 180.000"
+        },
         "reasons": {
-            "dateReached": "Termin {date} erreicht",
-            "dateSoon": "Termin {date} steht bevor",
-            "kmReached": "km-Stand {km} erreicht (fällig ab {due} km)",
-            "kmSoon": "noch {rest} km bis {due} km",
-            "manual": "von Hand als fällig markiert"
+            "dateReached": "Termin {date}",
+            "dateSoon": "Termin {date}",
+            "kmReached": "km-Stand {km} (fällig ab {due} km)",
+            "kmSoon": "noch {rest} km",
+            "manual": "von Hand markiert"
         },
         "tooltip": {
             "mark": "Als fällig markieren",

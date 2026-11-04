@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Paskirstymo diržas",
             "c_zrd_sk": "Paskirstymo grandinė",
-            "c_zrk": "Paskirstymo diržas (km)",
             "c_bf": "Stabdžių skystis",
             "c_wd": "Techninė apžiūra"
         },
@@ -57,12 +56,16 @@
             "due": "vėluoja",
             "soon": "netrukus"
         },
+        "placeholder": {
+            "monthYear": "MM/MM TAB",
+            "km": "180 TAB = 180 000"
+        },
         "reasons": {
-            "dateReached": "Terminas {date} pasiektas",
-            "dateSoon": "Terminas {date} artėja",
-            "kmReached": "Rida {km} pasiekta (nuo {due} km)",
-            "kmSoon": "liko {rest} km iki {due} km",
-            "manual": "rankiniu būdu pažymėta kaip vėluojanti"
+            "dateReached": "Terminas {date}",
+            "dateSoon": "Terminas {date}",
+            "kmReached": "Rida {km} (nuo {due} km)",
+            "kmSoon": "liko {rest} km",
+            "manual": "pažymėta rankiniu būdu"
         },
         "tooltip": {
             "mark": "Pažymėti kaip vėluojančią",

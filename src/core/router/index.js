@@ -688,7 +688,10 @@ function buildRoutes() {
             name: 'order-search',
             component: OrderSearchView,
             meta: {
-                permission: 'sales_order_edit'
+                permission: 'sales_order_edit',
+                // Kundenzeile der Navbar stört hier nur: aus der Suche öffnet man
+                // fast immer einen Auftrag eines anderen Kunden
+                hideCustomerBar: true
             }
         },
         {

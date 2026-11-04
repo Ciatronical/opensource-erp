@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Jakohihna",
             "c_zrd_sk": "Jakoketju",
-            "c_zrk": "Jakohihna (km)",
             "c_bf": "Jarruneste",
             "c_wd": "Huolto"
         },
@@ -57,12 +56,16 @@
             "due": "erääntynyt",
             "soon": "pian"
         },
+        "placeholder": {
+            "monthYear": "KK/VV TAB",
+            "km": "180 TAB = 180 000"
+        },
         "reasons": {
-            "dateReached": "Määräaika {date} saavutettu",
-            "dateSoon": "Määräaika {date} lähestyy",
-            "kmReached": "Kilometrilukema {km} saavutettu (erääntyy {due} km:stä)",
-            "kmSoon": "{rest} km jäljellä {due} km:iin",
-            "manual": "merkitty erääntyneeksi käsin"
+            "dateReached": "Määräaika {date}",
+            "dateSoon": "Määräaika {date}",
+            "kmReached": "Kilometrilukema {km} (erääntyy {due} km:stä)",
+            "kmSoon": "vielä {rest} km",
+            "manual": "merkitty käsin"
         },
         "tooltip": {
             "mark": "Merkitse erääntyneeksi",

@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Rozvodový řemen",
             "c_zrd_sk": "Rozvodový řetěz",
-            "c_zrk": "Rozvodový řemen (km)",
             "c_bf": "Brzdová kapalina",
             "c_wd": "Servisní prohlídka"
         },
@@ -57,12 +56,16 @@
             "due": "splatné",
             "soon": "brzy splatné"
         },
+        "placeholder": {
+            "monthYear": "MM/RR TAB",
+            "km": "180 TAB pro 180 000"
+        },
         "reasons": {
-            "dateReached": "Termín {date} dosažen",
-            "dateSoon": "Termín {date} se blíží",
-            "kmReached": "Stav km {km} dosažen (od {due} km)",
-            "kmSoon": "zbývá {rest} km do {due} km",
-            "manual": "ručně označeno jako splatné"
+            "dateReached": "Termín {date}",
+            "dateSoon": "Termín {date}",
+            "kmReached": "Stav km {km} (od {due} km)",
+            "kmSoon": "zbývá {rest} km",
+            "manual": "ručně označeno"
         },
         "tooltip": {
             "mark": "Označit jako splatné",

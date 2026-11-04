@@ -6,7 +6,9 @@
 //   - der Monat des Termins erreicht oder überschritten ist (Monatsgenauigkeit, MM/JJJJ;
 //     der LxCars-Platzhalter „01/99“ ist damit immer fällig),
 //   - der km-Stand des Fahrzeugs den Zahnriemen-km-Stand erreicht hat oder
-//   - es von Hand markiert wurde (c_*_due).
+//   - es von Hand markiert wurde (c_*_due). Ist der Termin/km-Stand ohnehin erreicht,
+//     zählt nur das (Hand-Markierung wird weder angezeigt noch angeboten; eine
+//     eventuell noch gesetzte Markierung erlischt mit dem nächsten Termin).
 // „Bald fällig“: Termin innerhalb der nächsten SOON_MONTHS Monate bzw. weniger als
 // SOON_KM km Rest. Steuerkette (c_sk): eine Kette hat weder Termin noch km-Stand —
 // beide Zahnriemen-Felder sind ausgeblendet (hidden), ihre Werte bleiben in der DB
@@ -55,8 +57,9 @@ function dateFieldState(field, iso, manual, nowIndex) {
         if (diff <= 0) { state = 'due'; reasons.push({ type: 'date', date: monthLabel(iso), months: -diff }) }
         else if (diff <= SOON_MONTHS) { state = 'soon'; reasons.push({ type: 'dateSoon', date: monthLabel(iso), months: diff }) }
     }
-    if (manual) { state = 'due'; reasons.push({ type: 'manual' }) }
-    return { field, labelKey: field, state, manual, auto: reasons.some(r => r.type === 'date'), reasons, hidden: false }
+    const auto = reasons.some(r => r.type === 'date')
+    if (manual) { state = 'due'; if (!auto) reasons.push({ type: 'manual' }) }
+    return { field, labelKey: field, state, manual, auto, reasons, hidden: false }
 }
 
 function kmFieldState(field, dueKm, currentKm, manual) {
@@ -69,8 +72,9 @@ function kmFieldState(field, dueKm, currentKm, manual) {
         if (rest <= 0) { state = 'due'; reasons.push({ type: 'km', km, due, over: -rest }) }
         else if (rest <= SOON_KM) { state = 'soon'; reasons.push({ type: 'kmSoon', km, due, rest }) }
     }
-    if (manual) { state = 'due'; reasons.push({ type: 'manual' }) }
-    return { field, labelKey: field, state, manual, auto: reasons.some(r => r.type === 'km'), reasons, hidden: false }
+    const auto = reasons.some(r => r.type === 'km')
+    if (manual) { state = 'due'; if (!auto) reasons.push({ type: 'manual' }) }
+    return { field, labelKey: field, state, manual, auto, reasons, hidden: false }
 }
 
 /**
@@ -102,6 +106,25 @@ export function maintenanceDueState(v = {}, today = new Date()) {
     const due = items.filter(i => i.state === 'due')
     const soon = items.filter(i => i.state === 'soon')
     return { fields, items, due, soon, level: due.length ? 'due' : (soon.length ? 'soon' : null) }
+}
+
+/**
+ * Einträge für den Hinweis in der Fahrzeugmaske: Zahnriemen Datum und km-Stand bilden
+ * einen Eintrag „Zahnriemen“ (Gründe zusammengeführt, „von Hand“ nur einmal), damit
+ * der Hinweis in eine Zeile passt. Reihenfolge: fällig vor bald fällig.
+ * @returns {{ labelKey: string, state: 'due'|'soon', reasons: object[] }[]}
+ */
+export function maintenanceDueAlertItems(dueState) {
+    const { c_zrd, c_zrk, c_bf, c_wd } = dueState.fields
+    const belt = {
+        labelKey: c_zrd.labelKey,
+        state: [c_zrd.state, c_zrk.state].includes('due') ? 'due' : ([c_zrd.state, c_zrk.state].includes('soon') ? 'soon' : 'none'),
+        reasons: c_zrd.reasons.concat(c_zrk.reasons).filter((r, i, all) => r.type !== 'manual' || all.findIndex(x => x.type === 'manual') === i)
+    }
+    // „von Hand“ ans Ende, Termin/km zuerst
+    belt.reasons.sort((a, b) => (a.type === 'manual') - (b.type === 'manual'))
+    const items = [belt, c_bf, c_wd].filter(i => i.state === 'due' || i.state === 'soon')
+    return items.filter(i => i.state === 'due').concat(items.filter(i => i.state === 'soon'))
 }
 
 /**

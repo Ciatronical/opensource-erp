@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Arama sonuclari yuklenirken hata."
+        },
+        "recent_invoices": {
+            "title": "Son oluşturulan faturalar – hâlâ açık",
+            "open": "{invnumber} numaralı faturayı aç (ödendikten sonra kaybolur)"
         }
     }
 }

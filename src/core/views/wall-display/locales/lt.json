@@ -16,6 +16,7 @@
         "total": "Iš viso",
         "grossTotal": "Bendra suma",
         "allDay": "Visa diena",
+        "page": "Puslapis {page} / {count}",
         "exit": "Išeiti"
     }
 }

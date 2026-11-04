@@ -16,6 +16,7 @@
         "total": "Total",
         "grossTotal": "Montante total",
         "allDay": "Dia inteiro",
+        "page": "Página {page} / {count}",
         "exit": "Sair"
     }
 }

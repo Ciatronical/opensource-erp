@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Distributieriem",
             "c_zrd_sk": "Distributieketting",
-            "c_zrk": "Distributieriem (km)",
             "c_bf": "Remvloeistof",
             "c_wd": "Onderhoudsbeurt"
         },
@@ -57,12 +56,16 @@
             "due": "vervallen",
             "soon": "binnenkort"
         },
+        "placeholder": {
+            "monthYear": "MM/JJ TAB",
+            "km": "180 TAB voor 180.000"
+        },
         "reasons": {
-            "dateReached": "Datum {date} bereikt",
-            "dateSoon": "Datum {date} nadert",
-            "kmReached": "Kilometerstand {km} bereikt (vanaf {due} km)",
-            "kmSoon": "nog {rest} km tot {due} km",
-            "manual": "handmatig als vervallen gemarkeerd"
+            "dateReached": "Datum {date}",
+            "dateSoon": "Datum {date}",
+            "kmReached": "Kilometerstand {km} (vanaf {due} km)",
+            "kmSoon": "nog {rest} km",
+            "manual": "handmatig gemarkeerd"
         },
         "tooltip": {
             "mark": "Als vervallen markeren",

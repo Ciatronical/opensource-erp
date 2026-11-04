@@ -57,7 +57,6 @@
         "items": {
             "c_zrd": "Pasek rozrządu",
             "c_zrd_sk": "Łańcuch rozrządu",
-            "c_zrk": "Pasek rozrządu (km)",
             "c_bf": "Płyn hamulcowy",
             "c_wd": "Przegląd"
         },
@@ -65,12 +64,16 @@
             "due": "do wykonania",
             "soon": "wkrótce"
         },
+        "placeholder": {
+            "monthYear": "MM/RR TAB",
+            "km": "180 TAB dla 180 000"
+        },
         "reasons": {
-            "dateReached": "Termin {date} osiągnięty",
-            "dateSoon": "Termin {date} zbliża się",
-            "kmReached": "Przebieg {km} osiągnięty (od {due} km)",
-            "kmSoon": "pozostało {rest} km do {due} km",
-            "manual": "ręcznie oznaczono jako do wykonania"
+            "dateReached": "Termin {date}",
+            "dateSoon": "Termin {date}",
+            "kmReached": "Przebieg {km} (od {due} km)",
+            "kmSoon": "jeszcze {rest} km",
+            "manual": "oznaczono ręcznie"
         },
         "tooltip": {
             "mark": "Oznacz jako do wykonania",

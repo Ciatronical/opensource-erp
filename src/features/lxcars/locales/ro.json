@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Curea de distribuție",
             "c_zrd_sk": "Lanț de distribuție",
-            "c_zrk": "Curea de distribuție (km)",
             "c_bf": "Lichid de frână",
             "c_wd": "Revizie"
         },
@@ -57,12 +56,16 @@
             "due": "scadent",
             "soon": "în curând"
         },
+        "placeholder": {
+            "monthYear": "LL/AA TAB",
+            "km": "180 TAB pentru 180.000"
+        },
         "reasons": {
-            "dateReached": "Termenul {date} a fost atins",
-            "dateSoon": "Termenul {date} se apropie",
-            "kmReached": "Kilometrajul {km} a fost atins (scadent de la {due} km)",
-            "kmSoon": "mai sunt {rest} km până la {due} km",
-            "manual": "marcat manual ca scadent"
+            "dateReached": "Termen {date}",
+            "dateSoon": "Termen {date}",
+            "kmReached": "Kilometraj {km} (scadent de la {due} km)",
+            "kmSoon": "încă {rest} km",
+            "manual": "marcat manual"
         },
         "tooltip": {
             "mark": "Marchează ca scadent",

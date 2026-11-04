@@ -16,6 +16,7 @@
         "total": "Total",
         "grossTotal": "Importe total",
         "allDay": "Todo el día",
+        "page": "Página {page} / {count}",
         "exit": "Salir"
     }
 }

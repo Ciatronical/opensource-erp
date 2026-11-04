@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Error loading search results."
+        },
+        "recent_invoices": {
+            "title": "Recently created invoices – still open",
+            "open": "Open invoice {invnumber} (disappears once paid)"
         }
     }
 }

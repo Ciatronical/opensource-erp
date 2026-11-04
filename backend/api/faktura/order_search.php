@@ -15,6 +15,12 @@
  *   - bringetermin_from / bringetermin_to: Bringetermin-Bereich (oe_ext)
  *   - amount_from / amount_to: Betragsbereich
  *   - employee_id: Mitarbeiter-Filter
+ *
+ * Liefert in derselben Abfrage zusätzlich `recent_invoices`: die zuletzt
+ * erstellten, noch offenen Rechnungen (Schnellzugriff über der Suche). Offen
+ * heißt: weder bar/Bank bezahlt (ar.paid) noch am Kartenterminal kassiert
+ * (sumup_checkouts.successful, wird erst mit der Auszahlung gebucht). Bezahlte,
+ * stornierte und Gutschriften fallen automatisch heraus.
  * @testdata {"where": {"q": "0603 469"}}
  */
 function searchOrders($data) {
@@ -146,7 +152,7 @@ function searchOrders($data) {
 
     $search = implode(' AND ', $conditions);
 
-    $query = <<<SQL
+    $searchSql = <<<SQL
         SELECT
             oe.id,
             oe.ordnumber,
@@ -192,9 +198,47 @@ function searchOrders($data) {
         LIMIT 200
     SQL;
 
+    // Schnellzugriff: zuletzt erstellte, noch offene Rechnungen der letzten
+    // 14 Tage. Kartenzahlungen am Terminal zählen als bezahlt, obwohl sie erst
+    // mit der SumUp-Auszahlung im Banking gebucht werden (siehe getFakturaData).
+    $recentInvoicesSql = <<<SQL
+        SELECT
+            ar.id,
+            ar.invnumber,
+            ar.transdate,
+            ar.amount,
+            customer.name AS customer_name,
+            NULLIF(car.c_ln, '') AS kennzeichen
+        FROM ar
+        LEFT JOIN customer ON customer.id = ar.customer_id
+        LEFT JOIN ar_ext ON ar_ext.ar_id = ar.id
+        LEFT JOIN cars_lxcars car ON car.c_id = ar_ext.c_id
+        WHERE ar.invoice
+          AND COALESCE(ar.type, '') <> 'credit_note'
+          AND NOT COALESCE(ar.storno, FALSE)
+          AND ar.amount > 0
+          AND ar.transdate >= CURRENT_DATE - 14
+          AND ar.paid + (
+                SELECT COALESCE(SUM(sc.amount), 0) FROM sumup_checkouts sc
+                WHERE sc.trans_id = ar.id AND sc.status = 'successful'
+              ) < ar.amount
+        ORDER BY ar.itime DESC NULLS LAST, ar.id DESC
+        LIMIT 10
+    SQL;
+
+    // Eine Abfrage für beides: Suchergebnis und Schnellzugriff
+    $query = <<<SQL
+        SELECT
+            (SELECT COALESCE(json_agg(r), '[]'::json) FROM ($searchSql) r) AS results,
+            (SELECT COALESCE(json_agg(i), '[]'::json) FROM ($recentInvoicesSql) i) AS recent_invoices
+    SQL;
+
     try {
-        $results = $mandant->getAll($query, $params);
-        resultInfo(true, '', ['results' => $results]);
+        $row = $mandant->getOne($query, $params);
+        resultInfo(true, '', [
+            'results'         => json_decode($row['results'] ?? '[]', true),
+            'recent_invoices' => json_decode($row['recent_invoices'] ?? '[]', true),
+        ]);
     } catch (Exception $e) {
         $errorMessage = $e->getMessage();
         preg_match('/SQLSTATE\[(\w+)\]:\s*(.+)/', $errorMessage, $matches);

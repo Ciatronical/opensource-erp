@@ -16,6 +16,7 @@
         "total": "Gesamt",
         "grossTotal": "Gesamtbetrag",
         "allDay": "Ganztägig",
+        "page": "Seite {page} / {count}",
         "exit": "Beenden"
     }
 }

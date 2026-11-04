@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Viga otsingutulemuste laadimisel."
+        },
+        "recent_invoices": {
+            "title": "Viimati loodud arved – veel avatud",
+            "open": "Ava arve {invnumber} (kaob pärast tasumist)"
         }
     }
 }

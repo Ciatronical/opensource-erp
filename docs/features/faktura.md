@@ -73,7 +73,7 @@ Zu jedem Auftrag ist sichtbar, ob daraus schon eine Rechnung gemacht wurde — a
 
 - **Auftragsliste** (`/auftrag`): Spalte „Rechnung“ mit der Rechnungsnummer (Klick öffnet die Rechnung), Filter „Ohne Rechnung / Mit Rechnung“ und in der Summenleiste die Anzahl und Bruttosumme der Aufträge ohne Rechnung — ein Klick darauf filtert. Export (PDF, Excel, CSV) führt die Spalte mit.
 - **CRM-Belegkarte** (Reiter „Aufträge“ beim Kunden): Spalte „Rechnung“, sortierbar; der Chip „n ohne Rechnung“ blendet alle anderen Aufträge aus.
-- **Auftragsmaske**: rechts neben dem Versandstatus — Rechnungsnummer, Datum, bezahlt/offen (Klick öffnet die Rechnung) oder „Noch keine Rechnung“ mit dem Knopf „Rechnung erstellen“.
+- **Auftragsmaske**: rechts neben dem Versandstatus — Rechnungsnummer, Datum, bezahlt/offen (Klick öffnet die Rechnung) oder „Noch keine Rechnung“ mit dem Knopf „Rechnung erstellen“. Im Workflow-Menü heißt der Eintrag bei vorhandener Rechnung „Rechnung anzeigen“ (mit Rechnungsnummer) und öffnet sie, statt eine zweite anzulegen.
 
 Die Zuordnung ermittelt die SQL-Funktion `oe_invoice_status` (Upstall `crm`): über `record_links` (Auftrag → Rechnung, auch über einen Lieferschein) und für Altbelege über die Auftragsnummer im Rechnungskopf. Stornierte Rechnungen zählen nicht; gibt es nur solche, steht am Auftrag „Rechnung storniert“.
 
@@ -154,9 +154,13 @@ Ist unter *Firmenkonfiguration → CRM → SumUp* ein SumUp Solo über die Cloud
 - **Keine Sofortbuchung**: Die Kartenzahlung wird bewusst **nicht** über ein Verrechnungskonto gebucht. Sie erscheint in der Zahlungskarte als grüne Infozeile („Kartenzahlung am Terminal – wird mit der SumUp-Auszahlung im Banking gebucht“) und mindert den angezeigten offenen Betrag, damit der Rest nicht erneut ans Terminal geht. Gebucht wird erst, wenn die SumUp-Sammelauszahlung auf dem Bankkonto eintrifft: Der Abgleich im Banking findet die Rechnung dann über den Transaktionscode des Checkouts exakt (vor Rechnungsnummer- und Betragsvergleich) und bucht direkt gegen die Bank.
 - **Vermerk auf der Rechnung**: Die Druckvorlagen zeigen unter der Summe „109,00 € mit Karte bezahlt (14.10.2026)“, bei Teilzahlung zusätzlich den Restbetrag (Vorlagenvariablen `card_paid`, `card_paid_date`, `card_open`).
 - **Automatischer Druck**: Nach erfolgreicher Zahlung wird die Rechnung auf dem gewählten Drucker in der konfigurierten Anzahl Exemplare gedruckt (Standard 2, 0 schaltet ab). Der konfigurierte Auto-Versand per E-Mail/WhatsApp läuft dabei wie beim manuellen Druck.
-- **Kundenbeleg als Belegseite**: Der Solo hat keinen Bondrucker. Der Kundenbeleg der Kartenzahlung (Händler, Terminal-ID, Datum, Beleg-Nr., Transaktionscode, Genehmigungs-Nr., Karte mit letzten vier Ziffern, AID, Eingabeart, Betrag) kommt aus der SumUp-Receipts-API, wird mit dem Checkout gespeichert und als eigene Seite hinter die Rechnung gedruckt. Die Belegseite kommt ohne Briefkopf, Logo und Fußzeile und wird auf eine gerade Seitenzahl geschoben, damit sie bei Duplexdruck (Druckbefehl z. B. `lpr -o sides=two-sided-long-edge`) auf der Rückseite liegt. Mehrere Kartenzahlungen einer Rechnung ergeben mehrere Belege auf der Seite (Vorlagenschleife `card_receipt_amount`).
+- **Kundenbeleg als Belegseite**: Der Solo hat keinen Bondrucker. Der Kundenbeleg der Kartenzahlung (Händler, Terminal-ID, Datum, Beleg-Nr., Transaktionscode, Genehmigungs-Nr., Karte mit letzten vier Ziffern, AID, Eingabeart, Betrag) kommt aus der SumUp-Receipts-API, wird mit dem Checkout gespeichert und hinter die Rechnung gedruckt. Passt der Beleg noch ganz auf die letzte Rechnungsseite, bleibt er dort (Papier sparen; die Vorlage misst ihn als Box gegen den Restplatz der Seite). Erst wenn er nicht mehr passt, kommt er als eigene Belegseite ohne Briefkopf, Logo und Fußzeile, auf eine gerade Seitenzahl geschoben, damit sie bei Duplexdruck (Druckbefehl z. B. `lpr -o sides=two-sided-long-edge`) auf der Rückseite liegt. Mehrere Kartenzahlungen einer Rechnung ergeben mehrere Belege auf der Seite (Vorlagenschleife `card_receipt_amount`).
 
 Jeder gesendete Betrag wird mit Ergebnis, Transaktionscode und Kundenbeleg in `sumup_checkouts` protokolliert; der Code führt beim Abgleich der SumUp-Sammelauszahlung direkt zur Rechnung.
+
+## Auf Display zeigen *(Schalter: Wandanzeige)*
+
+Der Knopf **Auf Display zeigen** in der Aktionsleiste schaltet die [Wandanzeige](kalender.md#beleg-auf-der-wandanzeige-zeigen) vom Kalender auf den aktuellen Beleg um — Kundenname, Belegnummer, Fahrzeug und Positionen mit Gesamtbetrag, Änderungen erscheinen sofort. Lange Belege werden dort in Seiten umgebrochen; eine Leiste unten in der Faktura blättert und beendet die Anzeige. Beim Beenden, Verlassen der Seite oder Belegwechsel zeigt die Wandanzeige wieder den Kalender.
 
 ## E-Mail-Versand
 
@@ -211,6 +215,12 @@ Die Auftragssuche ermöglicht das Finden von Belegen nach:
 - Datum / Zeitraum
 - Status (offen/geschlossen, bei Rechnungen und Gutschriften auch storniert)
 - Betrag (bei Gutschriften ohne Vorzeichen)
+
+### Schnellzugriff auf offene Rechnungen *(LxCars-Auftragssuche)*
+
+Über der Auftragssuche stehen gleich breite Knöpfe mit den zuletzt erstellten Rechnungen (Kundenname, Rechnungsnummer, Kennzeichen, Betrag). Ein Klick öffnet die Rechnung, etwa zum Kassieren bei der Fahrzeugabholung. Sobald eine Rechnung bezahlt ist, verschwindet ihr Knopf – egal ob bar, per Überweisung oder am Kartenterminal. Stornierte Rechnungen und Gutschriften erscheinen nicht. Gezeigt werden höchstens zehn offene Rechnungen der letzten 14 Tage; die Zeile fehlt ganz, wenn es keine gibt.
+
+Technik: dieselbe Abfrage wie die Suche (`searchOrders`) liefert `recent_invoices` mit. Bar/Bank gilt über `ar.paid`, Kartenzahlung über erfolgreiche `sumup_checkouts` (die erst mit der Auszahlung gebucht werden). Die Seite lädt beim Zurückkehren ins Fenster neu, damit eine gerade kassierte Rechnung sofort verschwindet. Die Kundenzeile der Navigationsleiste ist in der Auftragssuche ausgeblendet (`hideCustomerBar`).
 
 ### Gutschriften und Stornos finden
 

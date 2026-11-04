@@ -57,7 +57,7 @@
             "chk_c_hu": "Inspection verified",
             "c_sk": "Timing chain",
             "c_zrk": "Timing belt change km",
-            "c_zrd": "Timing belt change",
+            "c_zrd": "Timing belt change date",
             "c_bf": "Next brake fluid change",
             "c_wd": "Next maintenance service",
             "c_finchk": "VIN check",
@@ -370,7 +370,8 @@
         "ktype": {
             "label": "Ktype",
             "resolving": "Resolving Ktype …",
-            "refresh": "Refresh Ktype"
+            "refresh": "Refresh Ktype",
+            "enginesResolving": "Looking up engine codes …"
         },
         "sell": {
             "button": "Sell",

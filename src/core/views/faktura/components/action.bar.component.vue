@@ -68,8 +68,17 @@
                         >
                             <v-list-item-title>{{ t('FakturaView.faktura.createDeliveryOrder') }}</v-list-item-title>
                         </v-list-item>
+                        <!-- Gibt es zum Auftrag schon eine Rechnung, führt der Eintrag dorthin statt eine zweite anzulegen -->
                         <v-list-item
-                            v-if="canCreateInvoice"
+                            v-if="linkedInvoice"
+                            prepend-icon="mdi-file-document-check"
+                            @click="$emit('open-invoice', linkedInvoice)"
+                        >
+                            <v-list-item-title>{{ t('FakturaView.faktura.showInvoice') }}</v-list-item-title>
+                            <v-list-item-subtitle>{{ linkedInvoice.number }}</v-list-item-subtitle>
+                        </v-list-item>
+                        <v-list-item
+                            v-else-if="canCreateInvoice"
                             prepend-icon="mdi-file-document-edit"
                             @click="$emit('create-invoice')"
                         >
@@ -272,13 +281,13 @@
                 </v-tooltip>
 
                 <!-- Auf Display zeigen -->
-                <v-tooltip v-if="showDisplayButton" location="bottom" :text="t('FakturaView.faktura.showOnDisplay')">
+                <v-tooltip v-if="showDisplayButton" location="bottom" :text="t(displayActive ? 'FakturaView.faktura.wallDisplayStop' : 'FakturaView.faktura.showOnDisplay')">
                     <template #activator="{ props: tip }">
                         <v-btn
                             v-bind="tip"
-                            variant="tonal"
+                            :variant="displayActive ? 'flat' : 'tonal'"
                             color="deep-orange"
-                            icon="mdi-monitor"
+                            :icon="displayActive ? 'mdi-monitor-off' : 'mdi-monitor'"
                             size="small"
                             :disabled="!hasCustomer"
                             @click="$emit('show-on-display')"
@@ -532,6 +541,11 @@ export default defineComponent({
             type: Boolean,
             default: false
         },
+        // Beleg wird gerade auf der Wandanzeige gezeigt — Knopf wirkt dann als "Beenden"
+        displayActive: {
+            type: Boolean,
+            default: false
+        },
         showDhlButton: {
             type: Boolean,
             default: false
@@ -548,6 +562,11 @@ export default defineComponent({
         followUps: {
             type: Array,
             default: () => []
+        },
+        /** invoice_status aus getFakturaData (nur Aufträge): {state, count, invoices: [{id, number, storno, …}]} */
+        invoiceStatus: {
+            type: Object,
+            default: null
         },
         /** Wiedervorlage erst, wenn der Beleg gespeichert ist (braucht die ID) */
         followUpEnabled: {
@@ -575,6 +594,7 @@ export default defineComponent({
         'create-order',
         'create-delivery-order',
         'create-invoice',
+        'open-invoice',
         'create-credit-note',
         'cancel',
         'create-supplier-inquiry',
@@ -620,6 +640,13 @@ export default defineComponent({
 
         // Rechnung erstellen - bei Angebot, Auftrag, Lieferschein
         const canCreateInvoice = computed(() => ['quotation', 'order', 'delivery_order'].includes(props.fakturaType))
+
+        // Rechnung anzeigen statt erstellen: die neueste nicht stornierte Rechnung zum Auftrag
+        // (invoices kommen nicht storniert zuerst, neueste zuerst)
+        const linkedInvoice = computed(() => {
+            if (props.invoiceStatus?.state !== 'invoiced') return null
+            return (props.invoiceStatus.invoices || []).find(inv => !inv.storno) || null
+        })
 
         // Gutschrift erstellen - bei Rechnung
         const canCreateCreditNote = computed(() => props.fakturaType === 'invoice')
@@ -691,6 +718,7 @@ export default defineComponent({
             canCreateOrder,
             canCreateDeliveryOrder,
             canCreateInvoice,
+            linkedInvoice,
             canCreateCreditNote,
             canCancel,
             canCreateSupplierInquiry,
@@ -700,7 +728,6 @@ export default defineComponent({
             canExportXInvoice,
             canImportSilverDAT,
             canImportGutachten,
-            canOpenAag,
             mergeProps,
             followUpDue,
             followUpColor,

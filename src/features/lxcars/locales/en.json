@@ -57,7 +57,6 @@
         "items": {
             "c_zrd": "Timing belt",
             "c_zrd_sk": "Timing chain",
-            "c_zrk": "Timing belt (km)",
             "c_bf": "Brake fluid",
             "c_wd": "Service"
         },
@@ -65,12 +64,16 @@
             "due": "due",
             "soon": "due soon"
         },
+        "placeholder": {
+            "monthYear": "MM/YY TAB",
+            "km": "180 TAB for 180,000"
+        },
         "reasons": {
-            "dateReached": "Due date {date} reached",
-            "dateSoon": "Due date {date} is coming up",
-            "kmReached": "Mileage {km} reached (due from {due} km)",
-            "kmSoon": "{rest} km left until {due} km",
-            "manual": "marked as due by hand"
+            "dateReached": "Due date {date}",
+            "dateSoon": "Due date {date}",
+            "kmReached": "Mileage {km} (due from {due} km)",
+            "kmSoon": "{rest} km left",
+            "manual": "marked by hand"
         },
         "tooltip": {
             "mark": "Mark as due",

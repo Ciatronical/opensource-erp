@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Zobsiksna",
             "c_zrd_sk": "Sadales ķēde",
-            "c_zrk": "Zobsiksna (km)",
             "c_bf": "Bremžu šķidrums",
             "c_wd": "Apkope"
         },
@@ -57,12 +56,16 @@
             "due": "nokavēts",
             "soon": "drīz"
         },
+        "placeholder": {
+            "monthYear": "MM/GG TAB",
+            "km": "180 TAB = 180 000"
+        },
         "reasons": {
-            "dateReached": "Termiņš {date} sasniegts",
-            "dateSoon": "Termiņš {date} tuvojas",
-            "kmReached": "Nobraukums {km} sasniegts (no {due} km)",
-            "kmSoon": "atlikuši {rest} km līdz {due} km",
-            "manual": "manuāli atzīmēts kā nokavēts"
+            "dateReached": "Termiņš {date}",
+            "dateSoon": "Termiņš {date}",
+            "kmReached": "Nobraukums {km} (no {due} km)",
+            "kmSoon": "vēl {rest} km",
+            "manual": "atzīmēts manuāli"
         },
         "tooltip": {
             "mark": "Atzīmēt kā nokavētu",

@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Erro ao carregar os resultados da pesquisa."
+        },
+        "recent_invoices": {
+            "title": "Faturas criadas recentemente – ainda em aberto",
+            "open": "Abrir fatura {invnumber} (desaparece após o pagamento)"
         }
     }
 }

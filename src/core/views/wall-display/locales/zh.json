@@ -16,6 +16,7 @@
         "total": "合计",
         "grossTotal": "总金额",
         "allDay": "全天",
+        "page": "第 {page} / {count} 页",
         "exit": "退出"
     }
 }

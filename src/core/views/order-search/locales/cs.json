@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Chyba pri nacitani vysledku hledani."
+        },
+        "recent_invoices": {
+            "title": "Naposledy vytvořené faktury – dosud neuhrazené",
+            "open": "Otevřít fakturu {invnumber} (po zaplacení zmizí)"
         }
     }
 }

@@ -438,7 +438,7 @@ function aagPersistKtype($company, $cId, $vehicle, $source, $vin = '') {
     if ($ktype <= 0) return false;
     $desc = trim($vehicleType['description'] ?? '');
     $company->execute(
-        "UPDATE cars_lxcars SET c_ktype = :k, c_ktype_desc = :d WHERE c_id = :c_id",
+        "UPDATE cars_lxcars SET c_ktype = :k, c_ktype_desc = :d, aag_checked_at = now() WHERE c_id = :c_id",
         ['k' => $ktype, 'd' => $desc, 'c_id' => $cId]
     );
 
@@ -462,6 +462,7 @@ function aagPersistKtype($company, $cId, $vehicle, $source, $vin = '') {
         'c_ktype_desc'      => $desc,
         'source'            => $source,
         'installed_engines' => $engines,
+        'aag_checked_at'    => date('c'),
         // Der im Export hinterlegte Motor = im Portal gewähltes/identifiziertes
         // Fahrzeug. Das Frontend übernimmt ihn bei Rückkehr aus dem Portal als c_mkb.
         'engine_code'       => $exportCode,
@@ -538,6 +539,9 @@ function aagEngineCodeByVin($company, $cId, $vin) {
  *     Auswahl übernommen.
  *  2. Sonst headless versuchen: KBA (HSN+TSN) falls gültig, sonst FIN.
  * Gespeichert wird nur bei eindeutigem Treffer (vehicleType.id > 0).
+ * aag_checked_at wird gesetzt, sobald AAG geantwortet hat (Treffer oder nicht) — das
+ * Frontend startet die automatische Ermittlung beim Öffnen nur, solange die Spalte NULL ist.
+ * Bei Verbindungs-/HTTP-Fehlern bleibt sie NULL (nächstes Öffnen versucht es erneut).
  *
  * @param mixed $data['c_id'] Fahrzeug-ID (cars_lxcars.c_id)
  * @testdata {"c_id": 6471}
@@ -613,7 +617,10 @@ function resolveKtype($data) {
         return;
     }
 
-    // Kein eindeutiger Treffer (mehrere Fahrzeuge / nicht gefunden) → nichts speichern.
-    // Wählt der Benutzer das Fahrzeug im Portal, wird es beim nächsten Aufruf (Schritt 1) übernommen.
+    // Kein eindeutiger Treffer (mehrere Fahrzeuge / nicht gefunden) → keinen Ktype speichern,
+    // aber den Versuch merken: AAG hat geantwortet, ein erneuter automatischer Versuch beim
+    // nächsten Öffnen brächte dasselbe Ergebnis. Wählt der Benutzer das Fahrzeug im Portal
+    // oder klickt „Ktype neu ermitteln“, wird es über Schritt 1 übernommen.
+    $company->execute("UPDATE cars_lxcars SET aag_checked_at = now() WHERE c_id = :c_id", ['c_id' => $cId]);
     resultInfo(false, 'NO_UNIQUE_MATCH', ['message' => 'Kein eindeutiges Fahrzeug ermittelt']);
 }

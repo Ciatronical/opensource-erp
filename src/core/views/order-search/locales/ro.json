@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Eroare la incarcarea rezultatelor cautarii."
+        },
+        "recent_invoices": {
+            "title": "Facturi create recent – încă neachitate",
+            "open": "Deschide factura {invnumber} (dispare după plată)"
         }
     }
 }

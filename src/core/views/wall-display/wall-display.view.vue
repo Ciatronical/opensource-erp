@@ -14,6 +14,9 @@
                 <v-icon start size="small">mdi-exit-to-app</v-icon>
                 {{ t('WallDisplay.exit') }}
             </v-btn>
+            <v-chip v-if="fakturaPageCount > 1" class="wall-display__page" size="large" variant="tonal" color="primary">
+                {{ t('WallDisplay.page', { page: fakturaPage + 1, count: fakturaPageCount }) }}
+            </v-chip>
             <div class="wall-display__clock-area">
                 <span class="wall-display__clock">{{ currentTime }}</span>
                 <span class="wall-display__progress" v-html="dayProgressSVG"></span>
@@ -39,7 +42,7 @@
         </div>
 
         <!-- Faktura-Modus: Auftrag/Rechnung als Kunden-Präsentation -->
-        <div v-else-if="mode === 'faktura'" class="wall-display__faktura">
+        <div v-else-if="mode === 'faktura'" ref="fakturaContainerRef" class="wall-display__faktura">
             <div v-if="!fakturaData" class="d-flex align-center justify-center fill-height">
                 <div class="text-center text-medium-emphasis">
                     <v-icon size="80" color="grey-lighten-1" class="mb-4">mdi-file-document-outline</v-icon>
@@ -91,8 +94,8 @@
                                 <th class="text-right">{{ t('WallDisplay.total') }}</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr v-for="item in fakturaPositions" :key="item.id">
+                        <tbody ref="fakturaTbodyRef">
+                            <tr v-for="(item, idx) in fakturaPositions" v-show="isOnCurrentPage(idx)" :key="item.id">
                                 <td>{{ item.position }}</td>
                                 <td>{{ item.description }}</td>
                                 <td class="text-right">{{ formatQty(item.qty) }} {{ item.unit }}</td>
@@ -100,7 +103,7 @@
                                 <td class="text-right font-weight-bold">{{ formatCurrency(item.qty * item.sellprice * (1 - (item.discount || 0))) }}</td>
                             </tr>
                         </tbody>
-                        <tfoot>
+                        <tfoot ref="fakturaTfootRef">
                             <tr class="wall-faktura__total">
                                 <td colspan="4" class="text-right font-weight-bold text-h6">{{ t('WallDisplay.grossTotal') }}</td>
                                 <td class="text-right font-weight-bold text-h6">{{ formatCurrency(fakturaData.common?.amount || 0) }}</td>
@@ -143,7 +146,7 @@
 <script>
 import { defineComponent, ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import CalendarMain from '@/core/views/calendar/components/calendar-main.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
@@ -155,12 +158,13 @@ export default defineComponent({
     components: { CalendarMain },
     setup() {
         const { t } = useI18n()
-        const route = useRoute()
         const router = useRouter()
         const oserp = oserpStore()
         const faktura = fakturaStore()
 
-        const mode = ref(route.query.mode || 'calendar')
+        // Anzeige-Modus: 'calendar' (Normalzustand) oder 'faktura' — den Wechsel
+        // steuert der PC per SSE-Kommando (setWallDisplayFaktura), nicht die URL.
+        const mode = ref('calendar')
         const events = ref([])
         const currentDateRange = ref({ start: '', end: '' })
         const savedCalendarView = oserp.getConfigValue('wall_display_calendar_view', 'timeGridDay')
@@ -175,6 +179,62 @@ export default defineComponent({
         // Faktura
         const fakturaData = ref(null)
         const fakturaVehicle = ref(null)
+        const fakturaContainerRef = ref(null)
+        const fakturaTbodyRef = ref(null)
+        const fakturaTfootRef = ref(null)
+
+        // Seitenumbruch bei langen Belegen: fakturaPageStarts hält den Index der
+        // ersten Position je Seite, ermittelt durch Messen der gerenderten Zeilen.
+        // Während der Messung (fakturaMeasuring) sind alle Zeilen sichtbar.
+        const fakturaPage = ref(0)
+        const fakturaPageStarts = ref([0])
+        const fakturaMeasuring = ref(false)
+        const fakturaPageCount = computed(() => mode.value === 'faktura' && fakturaData.value ? fakturaPageStarts.value.length : 0)
+
+        function isOnCurrentPage(idx) {
+            if (fakturaMeasuring.value) return true
+            const starts = fakturaPageStarts.value
+            const start = starts[fakturaPage.value] ?? 0
+            const end = starts[fakturaPage.value + 1] ?? Infinity
+            return idx >= start && idx < end
+        }
+
+        async function paginateFaktura() {
+            if (mode.value !== 'faktura' || !fakturaData.value) return
+            fakturaMeasuring.value = true
+            await nextTick()
+            const container = fakturaContainerRef.value
+            const tbody = fakturaTbodyRef.value
+            if (!container || !tbody) { fakturaMeasuring.value = false; return }
+            container.scrollTop = 0
+            const containerTop = container.getBoundingClientRect().top
+            const tbodyTop = tbody.getBoundingClientRect().top - containerTop
+            const footHeight = fakturaTfootRef.value?.offsetHeight || 0
+            const paddingBottom = parseFloat(getComputedStyle(container).paddingBottom) || 0
+            const available = container.clientHeight - tbodyTop - footHeight - paddingBottom
+
+            const starts = [0]
+            let used = 0
+            Array.from(tbody.children).forEach((row, i) => {
+                const h = row.offsetHeight
+                // Eine Zeile, die allein schon nicht passt, bleibt auf ihrer Seite
+                if (used + h > available && i > starts[starts.length - 1]) {
+                    starts.push(i)
+                    used = 0
+                }
+                used += h
+            })
+            fakturaPageStarts.value = starts
+            fakturaPage.value = Math.min(fakturaPage.value, starts.length - 1)
+            fakturaMeasuring.value = false
+        }
+
+        function turnFakturaPage(direction) {
+            const count = fakturaPageStarts.value.length
+            if (count < 2) return
+            const step = direction === 'prev' ? -1 : 1
+            fakturaPage.value = (fakturaPage.value + step + count) % count
+        }
 
         // Uhr & Tagesfortschritt
         const currentTime = ref('')
@@ -193,6 +253,7 @@ export default defineComponent({
         function onViewportResize() {
             viewportWidth.value = window.innerWidth
             viewportHeight.value = window.innerHeight
+            paginateFaktura()
         }
 
         const configuredSize = computed(() => {
@@ -404,6 +465,9 @@ export default defineComponent({
 
         // ── Faktura ──
 
+        // Aktuell gezeigter Beleg (Typ + ID), damit Reload und Blättern wissen, worum es geht
+        const shownFaktura = ref(null)
+
         async function loadFaktura(id, type) {
             try {
                 await faktura.fetchFakturaData(id, type)
@@ -412,24 +476,66 @@ export default defineComponent({
 
                     // Fahrzeug-Info aus oe_ext extrahieren (wenn vorhanden)
                     const vehicle = faktura.data.vehicle || faktura.data.oe_ext
-                    if (vehicle?.c_ln) {
-                        fakturaVehicle.value = vehicle
-                    }
+                    fakturaVehicle.value = vehicle?.c_ln ? vehicle : null
                 }
             } catch (e) {
                 console.error('Wall display: faktura load error', e)
             }
         }
 
-        // Faktura aus Query-Parameter laden (?faktura=order:12345)
-        watch(() => route.query.faktura, (val) => {
-            if (!val) { fakturaData.value = null; return }
-            const [type, id] = val.split(':')
-            if (type && id) {
-                mode.value = 'faktura'
-                loadFaktura(Number(id), type)
+        // Beleg anzeigen (Kommando vom PC): gleicher Beleg + page = nur blättern,
+        // sonst laden und auf Seite 1 springen.
+        function showFaktura(cmd) {
+            const id = Number(cmd.fakturaId)
+            const type = cmd.fakturaType
+            if (!id || !type) return
+            const same = shownFaktura.value?.id === id && shownFaktura.value?.type === type && mode.value === 'faktura'
+            if (same && cmd.page) {
+                turnFakturaPage(cmd.page)
+                return
             }
-        }, { immediate: true })
+            shownFaktura.value = { id, type }
+            fakturaPage.value = 0
+            mode.value = 'faktura'
+            loadFaktura(id, type)
+        }
+
+        // Zurück zum Kalender: Beleg verwerfen, Kalender baut sich neu auf.
+        // Eine zwischenzeitlich vom PC-Kalender geschickte Ansicht (pendingCalendarCommand)
+        // wird dabei nachgeholt.
+        let pendingCalendarCommand = null
+        function showCalendar() {
+            mode.value = 'calendar'
+            fakturaData.value = null
+            fakturaVehicle.value = null
+            shownFaktura.value = null
+            fakturaPageStarts.value = [0]
+            fakturaPage.value = 0
+            if (pendingCalendarCommand) {
+                calendarInitialView.value = pendingCalendarCommand.view
+                wallCalendarView.value = pendingCalendarCommand.view
+                const { view, startDate } = pendingCalendarCommand
+                pendingCalendarCommand = null
+                nextTick(() => calendarMainRef.value?.setView(view, startDate))
+            }
+            // Kalender misst nach dem Neuaufbau gelegentlich falsch — Resize anstoßen
+            nextTick(() => setTimeout(() => window.dispatchEvent(new Event('resize')), 150))
+        }
+
+        function applyCalendarCommand(cmd) {
+            const { view, startDate } = cmd
+            if (!view) return
+            if (mode.value !== 'calendar') {
+                pendingCalendarCommand = { view, startDate }
+                return
+            }
+            wallCalendarView.value = view
+            nextTick(() => calendarMainRef.value?.setView(view, startDate))
+            loadEvents()
+        }
+
+        // Neu geladener oder geänderter Beleg → Seiten neu umbrechen
+        watch(fakturaData, () => paginateFaktura())
 
         // ── SSE mit Polling-Fallback ──
 
@@ -475,12 +581,11 @@ export default defineComponent({
                     if (data.action !== undefined && data.uid !== undefined) {
                         loadEvents()
                     }
-                    // Faktura-Events
-                    if (mode.value === 'faktura' && fakturaData.value) {
+                    // Faktura-Events: gezeigten Beleg live nachladen
+                    if (mode.value === 'faktura' && shownFaktura.value) {
                         const fakturaTables = ['oe', 'ar', 'orderitems', 'invoice']
-                        if (fakturaTables.includes(data.table) && Number(data.id) === Number(fakturaData.value.common?.id)) {
-                            const qParts = (route.query.faktura || '').split(':')
-                            if (qParts[1]) loadFaktura(Number(qParts[1]), qParts[0])
+                        if (fakturaTables.includes(data.table) && Number(data.id) === shownFaktura.value.id) {
+                            loadFaktura(shownFaktura.value.id, shownFaktura.value.type)
                         }
                     }
                 } catch { /* ignorieren */ }
@@ -488,12 +593,14 @@ export default defineComponent({
             sseSource.addEventListener('build_changed', () => {
                 window.location.reload()
             })
+            // Kommandos vom PC: Beleg zeigen / blättern, zurück zum Kalender,
+            // oder (ohne mode) Kalenderansicht wechseln (Kalender am PC blättert mit)
             sseSource.addEventListener('wall_display_command', (e) => {
                 try {
-                    const { view, startDate } = JSON.parse(e.data)
-                    wallCalendarView.value = view
-                    nextTick(() => calendarMainRef.value?.setView(view, startDate))
-                    loadEvents()
+                    const cmd = JSON.parse(e.data)
+                    if (cmd.mode === 'faktura') showFaktura(cmd)
+                    else if (cmd.mode === 'calendar') showCalendar()
+                    else applyCalendarCommand(cmd)
                 } catch { /* ignorieren */ }
             })
             sseSource.onerror = () => {
@@ -576,7 +683,9 @@ export default defineComponent({
             t, mode, events, calendarInitialView, calendarMainRef,
             eventDetailOpen, selectedEvent,
             fakturaData, fakturaVehicle, fakturaDocNumber, fakturaDocLabel, fakturaPositions,
-            currentTime, calendarCustomButtons, calendarHeaderToolbar, effectiveSize, calendarSlotMinHeight,
+            fakturaContainerRef, fakturaTbodyRef, fakturaTfootRef,
+            fakturaPage, fakturaPageCount, isOnCurrentPage,
+            currentTime, dayProgressSVG, calendarCustomButtons, calendarHeaderToolbar, effectiveSize, calendarSlotMinHeight,
             sseConnected,
             onDatesSet, onEventClick, exitWallDisplay,
             formatDate, formatCurrency, formatQty, formatEventTime
@@ -694,11 +803,18 @@ export default defineComponent({
     pointer-events: none;
 }
 
-/* Faktura-Modus */
+/* Faktura-Modus: kein Scrollbalken — lange Belege werden in Seiten umgebrochen */
 .wall-display__faktura {
     flex: 1;
-    overflow: auto;
+    min-height: 0;
+    overflow: hidden;
     padding: 24px;
+}
+
+.wall-display__page {
+    font-size: 1.2rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 .wall-faktura__header {

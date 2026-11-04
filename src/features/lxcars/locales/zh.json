@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "正时皮带",
             "c_zrd_sk": "正时链",
-            "c_zrk": "正时皮带（公里）",
             "c_bf": "制动液",
             "c_wd": "保养"
         },
@@ -57,12 +56,16 @@
             "due": "到期",
             "soon": "即将到期"
         },
+        "placeholder": {
+            "monthYear": "月月/年年 TAB",
+            "km": "180 TAB = 180,000"
+        },
         "reasons": {
-            "dateReached": "已到期限 {date}",
-            "dateSoon": "期限 {date} 临近",
-            "kmReached": "里程已达 {km}（自 {due} 公里起到期）",
-            "kmSoon": "距 {due} 公里还有 {rest} 公里",
-            "manual": "已手动标记为到期"
+            "dateReached": "期限 {date}",
+            "dateSoon": "期限 {date}",
+            "kmReached": "里程 {km}（自 {due} 公里起到期）",
+            "kmSoon": "还剩 {rest} 公里",
+            "manual": "已手动标记"
         },
         "tooltip": {
             "mark": "标记为到期",

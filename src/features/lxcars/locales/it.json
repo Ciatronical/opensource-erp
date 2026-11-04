@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Cinghia di distribuzione",
             "c_zrd_sk": "Catena di distribuzione",
-            "c_zrk": "Cinghia di distribuzione (km)",
             "c_bf": "Liquido freni",
             "c_wd": "Tagliando"
         },
@@ -57,12 +56,16 @@
             "due": "in scadenza",
             "soon": "a breve"
         },
+        "placeholder": {
+            "monthYear": "MM/AA TAB",
+            "km": "180 TAB per 180.000"
+        },
         "reasons": {
-            "dateReached": "Scadenza {date} raggiunta",
-            "dateSoon": "Scadenza {date} in arrivo",
-            "kmReached": "Chilometraggio {km} raggiunto (in scadenza da {due} km)",
-            "kmSoon": "ancora {rest} km fino a {due} km",
-            "manual": "segnato manualmente come in scadenza"
+            "dateReached": "Scadenza {date}",
+            "dateSoon": "Scadenza {date}",
+            "kmReached": "Chilometraggio {km} (in scadenza da {due} km)",
+            "kmSoon": "ancora {rest} km",
+            "manual": "segnato manualmente"
         },
         "tooltip": {
             "mark": "Segna come in scadenza",

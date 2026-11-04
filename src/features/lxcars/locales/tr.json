@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Triger kayışı",
             "c_zrd_sk": "Zamanlama zinciri",
-            "c_zrk": "Triger kayışı (km)",
             "c_bf": "Fren hidroliği",
             "c_wd": "Bakım"
         },
@@ -57,12 +56,16 @@
             "due": "vadesi geldi",
             "soon": "yakında"
         },
+        "placeholder": {
+            "monthYear": "AA/YY TAB",
+            "km": "180 TAB = 180.000"
+        },
         "reasons": {
-            "dateReached": "{date} tarihine ulaşıldı",
-            "dateSoon": "{date} tarihi yaklaşıyor",
-            "kmReached": "{km} km'ye ulaşıldı ({due} km'den itibaren)",
-            "kmSoon": "{due} km'ye {rest} km kaldı",
-            "manual": "elle vadesi gelmiş olarak işaretlendi"
+            "dateReached": "Tarih {date}",
+            "dateSoon": "Tarih {date}",
+            "kmReached": "{km} km ({due} km'den itibaren)",
+            "kmSoon": "{rest} km kaldı",
+            "manual": "elle işaretlendi"
         },
         "tooltip": {
             "mark": "Vadesi gelmiş olarak işaretle",

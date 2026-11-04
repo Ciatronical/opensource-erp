@@ -44,6 +44,10 @@
         },
         "toasts": {
             "error_loading_search_results": "Fout bij het laden van de zoekresultaten."
+        },
+        "recent_invoices": {
+            "title": "Laatst aangemaakte facturen – nog open",
+            "open": "Factuur {invnumber} openen (verdwijnt na betaling)"
         }
     }
 }

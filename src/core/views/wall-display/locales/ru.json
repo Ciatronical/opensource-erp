@@ -16,6 +16,7 @@
         "total": "Итого",
         "grossTotal": "Общая сумма",
         "allDay": "Весь день",
+        "page": "Страница {page} / {count}",
         "exit": "Выход"
     }
 }

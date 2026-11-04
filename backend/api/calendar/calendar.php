@@ -819,6 +819,41 @@ function setWallDisplayView($data) {
     resultInfo(true, '', []);
 }
 
+/**
+ * Zeigt einen Beleg auf der Wandanzeige oder schaltet sie zurück auf den Kalender.
+ *
+ * Bewusst ohne die Beschränkung auf "wall_display_controllers": Das ist eine
+ * ausdrückliche Handlung des Benutzers in der Faktura, keine Nebenwirkung
+ * des Kalender-Blätterns. Ohne fakturaId geht die Anzeige zurück zum Kalender.
+ * Mit page ('next'/'prev') blättert die Anzeige bei langen Belegen weiter.
+ *
+ * @param string|null $data['fakturaType'] order | invoice | quotation …
+ * @param int|null    $data['fakturaId']   ID des Belegs, leer = Kalender anzeigen
+ * @param string|null $data['page']        'next' | 'prev' zum Blättern
+ * @testdata {"action": "setWallDisplayFaktura", "fakturaType": "order", "fakturaId": 1}
+ */
+function setWallDisplayFaktura($data) {
+    $mandant = DbhCompany::begin();
+
+    $fakturaId = (int)($data['fakturaId'] ?? 0);
+    if ($fakturaId > 0) {
+        $command = [
+            'mode'        => 'faktura',
+            'fakturaType' => (string)($data['fakturaType'] ?? 'invoice'),
+            'fakturaId'   => $fakturaId
+        ];
+        $page = $data['page'] ?? null;
+        if (in_array($page, ['next', 'prev'], true)) $command['page'] = $page;
+    } else {
+        $command = ['mode' => 'calendar'];
+    }
+
+    $payload = $mandant->getPDO()->quote(json_encode($command));
+    $mandant->execute("SELECT pg_notify('wall_display_command', $payload)", []);
+
+    resultInfo(true, '', []);
+}
+
 // ============================================================================
 // IMPORT
 // ============================================================================

@@ -16,6 +16,7 @@
         "total": "Suma",
         "grossTotal": "Kwota brutto",
         "allDay": "Cały dzień",
+        "page": "Strona {page} / {count}",
         "exit": "Wyjdź"
     }
 }

@@ -49,7 +49,6 @@
         "items": {
             "c_zrd": "Correa de distribución",
             "c_zrd_sk": "Cadena de distribución",
-            "c_zrk": "Correa de distribución (km)",
             "c_bf": "Líquido de frenos",
             "c_wd": "Revisión"
         },
@@ -57,12 +56,16 @@
             "due": "pendiente",
             "soon": "pronto"
         },
+        "placeholder": {
+            "monthYear": "MM/AA TAB",
+            "km": "180 TAB para 180.000"
+        },
         "reasons": {
-            "dateReached": "Fecha {date} alcanzada",
-            "dateSoon": "La fecha {date} se acerca",
-            "kmReached": "Kilometraje {km} alcanzado (vence a partir de {due} km)",
-            "kmSoon": "quedan {rest} km hasta {due} km",
-            "manual": "marcado como pendiente manualmente"
+            "dateReached": "Fecha {date}",
+            "dateSoon": "Fecha {date}",
+            "kmReached": "Kilometraje {km} (vence a partir de {due} km)",
+            "kmSoon": "faltan {rest} km",
+            "manual": "marcado manualmente"
         },
         "tooltip": {
             "mark": "Marcar como pendiente",
