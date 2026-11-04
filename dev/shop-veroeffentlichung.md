@@ -192,6 +192,15 @@ die Bootstrap-Klassen unter `.produkt-seite` nach (`theme.css`, Reiter und
 Karussell in `ui.js`), damit die Seite dort genauso aussieht wie im Theme
 `hugoshop`.
 
+**Nachtrag (04.11.2026):** Die Produktbilder zeigt der Satz `standard` nicht
+mehr als Bootstrap-Karussell, sondern über das Widget `shop-product-images`
+(`portal-ui/src/components/shop-product-images.js`, Shortcode
+`shop-product-images.html` im Kit): erstes Bild groß, die übrigen als
+Vorschau, Klick öffnet die Vergrößerung in einem nativen `<dialog>`. Die
+Bilder stehen als Links im Inneren des Shortcodes, damit sie ohne Bündel
+sichtbar bleiben. Der Satz `sonic24` (Repository der Kundensätze) trägt noch
+das Karussell. Vorhandene Seiten brauchen „Alle veröffentlichen“.
+
 **Nachtrag (16.10.2026):** Das Feld „Navigationspfad“ der Artikelkarte heißt
 jetzt „Einordnung im Sortiment“ — es erzeugt keine Navigation, sondern die
 Kurzbeschreibung und Suchbegriffe (Spalte und Schlüssel bleiben

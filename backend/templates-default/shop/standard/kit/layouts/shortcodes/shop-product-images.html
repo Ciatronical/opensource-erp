@@ -1,0 +1,16 @@
+{{- /*
+  {{< shop-product-images >}}
+  <a href="/images/shop/artikel/a.png"><img src="/images/shop/artikel/a.png" alt="Artikel - Ansicht 1"></a>
+  <a href="/images/shop/artikel/b.png"><img src="/images/shop/artikel/b.png" alt="Artikel - Ansicht 2" loading="lazy"></a>
+  {{< /shop-product-images >}}
+
+  Produktbilder mit Vergrößerung (Lightbox). Die Bilder stehen als Links im
+  Inneren: ohne Bündel bleiben sie als gewöhnliche Links sichtbar, Suchmaschinen
+  lesen die alt-Texte. Das Widget liest sie aus, zeigt das erste groß, die
+  übrigen als Vorschau, und öffnet den Klick auf das Bild in einem <dialog>.
+
+  Erzeugt von product.md.php des Vorlagensatzes; ersetzt das frühere
+  Bootstrap-Karussell, dessen Klassen jedes Theme nachbauen musste.
+*/ -}}
+{{- partial "portal-ui-assets.html" . -}}
+<shop-product-images{{ with .Get `class` }} class="{{ . }}"{{ end }}>{{ .Inner | safeHTML }}</shop-product-images>

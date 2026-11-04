@@ -147,6 +147,7 @@ src/
 │   ├── portal-register.js      mode="account" | "guest"
 │   ├── shop-cart.js
 │   ├── shop-add-to-cart.js
+│   ├── shop-product-images.js  Produktbilder mit Vergrößerung (Lightbox)
 │   ├── portal-account-nav.js         Seitenleiste der Konto-Seiten
 │   ├── portal-account-overview.js
 │   ├── portal-account-profile.js
@@ -162,6 +163,45 @@ src/
 └── legacy/
     └── header-cart.js        Uebergangsloesung: Zaehler im Theme-Header
 ```
+
+## Produktbilder
+
+`<shop-product-images>` zeigt die Bilder einer Produktseite: das erste groß,
+die übrigen als Vorschau, der Klick auf das Bild öffnet die Vergrößerung.
+Die Bilder stehen als Links im Light DOM — `product.md.php` des
+Vorlagensatzes schreibt sie so:
+
+```html
+{{< shop-product-images >}}
+<a href="/images/shop/artikel/a.png"><img src="/images/shop/artikel/a.png" alt="Artikel - Ansicht 1"></a>
+<a href="/images/shop/artikel/b.png"><img src="/images/shop/artikel/b.png" alt="Artikel - Ansicht 2" loading="lazy"></a>
+{{< /shop-product-images >}}
+```
+
+Drei Gründe für das Light DOM statt eines JSON-Attributs: Ohne Bündel (oder
+bevor es geladen ist) bleiben die Links sichtbar und öffnen das Bild wie
+früher in einem neuen Tab; Suchmaschinen lesen die `alt`-Texte; und das
+Hauptbild — das größte Bild der Seite — erscheint nicht erst mit dem Theme.
+Dafür hängt die Komponente in `createRenderRoot()` einen `<slot>` in den
+ShadowRoot, der das Light DOM bis zum ersten Rendern zeigt, und entfernt ihn
+in `firstUpdated()`.
+
+Die Vergrößerung ist ein natives `<dialog>` mit `showModal()`. Es liegt in
+der obersten Ebene des Browsers — `z-index` und `overflow` der Seite und die
+Shadow-Grenze spielen keine Rolle, und es braucht keine Bibliothek. Escape
+schließt (Browser), dazu jeder Klick auf das Bild oder daneben — nur die
+Knöpfe nicht; eine Fußzeile („Esc oder Klicken zum Schließen“, dazu der
+Zähler) sagt das. Pfeiltasten und Wischen blättern (Pointer-Ereignisse; `touch-action: none` auf der Bühne, damit der
+Browser die Seite dahinter nicht scrollt).
+
+Maße von außen: `--shop-product-image-height` (Hauptbild, Vorgabe `30rem`),
+`--shop-product-thumb-size` (Vorschau, `4rem`), `--shop-lightbox-bg`.
+
+Vorher stand auf den Produktseiten ein Bootstrap-Karussell, dessen Klassen
+das Theme `inter-data` unter `.produkt-seite` nachbauen musste. Nach der
+Umstellung müssen die Produktseiten einmal neu veröffentlicht werden
+(„Alle veröffentlichen“ in der Shop-Übersicht), weil das Markup in den
+Markdown-Dateien der Webseite liegt.
 
 ## Der Seitenkopf
 

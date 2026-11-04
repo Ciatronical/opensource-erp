@@ -166,6 +166,16 @@ const de = {
   'addToCart.added': 'Das Produkt wurde in den Warenkorb gelegt.',
   'addToCart.viewCart': 'Warenkorb anzeigen',
 
+  // Produktbilder mit Vergrößerung (shop-product-images)
+  'productImages.hint': 'Zum Vergrößern auf das Bild klicken.',
+  'productImages.enlarge': 'Bild vergrößern',
+  'productImages.previous': 'Vorheriges Bild',
+  'productImages.next': 'Nächstes Bild',
+  'productImages.close': 'Schließen',
+  'productImages.closeHint': 'Esc oder Klicken zum Schließen',
+  'productImages.show': 'Bild {n} anzeigen',
+  'productImages.counter': 'Bild {current} von {total}',
+
   'account.loading': 'Daten werden geladen …',
   'account.anonymous': 'Für diesen Bereich müssen Sie angemeldet sein.',
   'account.login': 'Zur Anmeldung',
@@ -576,6 +586,16 @@ const en = {
   'addToCart.pending': 'Adding …',
   'addToCart.added': 'The product was added to your cart.',
   'addToCart.viewCart': 'View cart',
+
+  // Product images with lightbox (shop-product-images)
+  'productImages.hint': 'Click the image to enlarge it.',
+  'productImages.enlarge': 'Enlarge image',
+  'productImages.previous': 'Previous image',
+  'productImages.next': 'Next image',
+  'productImages.close': 'Close',
+  'productImages.closeHint': 'Esc or click to close',
+  'productImages.show': 'Show image {n}',
+  'productImages.counter': 'Image {current} of {total}',
 
   'account.loading': 'Loading …',
   'account.anonymous': 'You need to be signed in to view this section.',

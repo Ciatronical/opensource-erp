@@ -3,11 +3,13 @@
  * Produktseite des mitgelieferten Satzes „standard“
  *
  * Dasselbe Aussehen wie der Satz sonic24 (Nachbau von
- * sonic24.de/publish/template.php): Bootstrap-Markup mit Bildkarussell,
- * Preisblock netto und brutto, Verfügbarkeitsabzeichen, Warenkorb
- * (shop-add-to-cart), Anfrage-Knopf und den Reitern Beschreibung, Technische
- * Daten, Eigenschaften und Downloads. Das Theme hugoshop lädt Bootstrap; das
- * Theme inter-data bildet diese Klassen unter .produkt-seite nach (theme.css,
+ * sonic24.de/publish/template.php): Bootstrap-Markup mit Preisblock netto
+ * und brutto, Verfügbarkeitsabzeichen, Warenkorb (shop-add-to-cart),
+ * Anfrage-Knopf und den Reitern Beschreibung, Technische Daten, Eigenschaften
+ * und Downloads. Die Produktbilder zeigt seit 11/2026 das Widget
+ * shop-product-images mit Vergrößerung (Lightbox) statt des
+ * Bootstrap-Karussells. Das Theme hugoshop lädt Bootstrap; das Theme
+ * inter-data bildet die übrigen Klassen unter .produkt-seite nach (theme.css,
  * ui.js) — die Seiten sehen in beiden gleich aus.
  *
  * Was hier gegenüber sonic24 fehlt, gehört zu diesem einen Shop: Marke,
@@ -129,25 +131,16 @@ card-image-alt: <?= shopYaml($titel) ?>
 ---
 <div class="row mb-5">
 <div class="col-md-4 pe-4">
-<?php if (count($bilder) > 1): ?>
-<div id="product-image-carousel" class="carousel carousel-dark slide">
-<div class="carousel-inner border rounded">
+<?php // Produktbilder mit Vergrößerung: das Widget shop-product-images liest die
+      // Links aus und zeigt sie mit Lightbox. Ohne Bündel bleiben die Links,
+      // wie sie hier stehen — das Bild öffnet dann in einem neuen Tab. Keine
+      // Leerzeile dazwischen: sie beendete den HTML-Block für Goldmark. ?>
+<?php if ($bilder): ?>
+{{< shop-product-images >}}
 <?php foreach ($bilder as $nummer => $bild): ?>
-<div class="carousel-item<?= 0 === $nummer ? ' active' : '' ?>"><a href="<?= $schutz($bild) ?>" target="_blank"><img src="<?= $schutz($bild) ?>" class="img-fluid d-block w-100" style="max-height: 30rem; object-fit: contain;" alt="<?= $schutz($titel.' - Ansicht '.($nummer + 1)) ?>"<?= $nummer > 0 ? ' loading="lazy"' : '' ?>></a></div>
+<a href="<?= $schutz($bild) ?>" target="_blank"><img src="<?= $schutz($bild) ?>" style="max-width: 100%; height: auto;" alt="<?= $schutz(count($bilder) > 1 ? $titel.' - Ansicht '.($nummer + 1) : $titel) ?>"<?= $nummer > 0 ? ' loading="lazy"' : '' ?>></a>
 <?php endforeach; ?>
-</div>
-<div class="py-2">Zum Vergrößern auf das Bild klicken.</div>
-<button class="btn btn-outline-secondary me-1" type="button" data-bs-target="#product-image-carousel" data-bs-slide="prev">
-<span class="carousel-control-prev-icon mt-1" aria-hidden="true"></span>
-<span class="visually-hidden">Zurück</span>
-</button>
-<button class="btn btn-outline-secondary" type="button" data-bs-target="#product-image-carousel" data-bs-slide="next">
-<span class="carousel-control-next-icon mt-1" aria-hidden="true"></span>
-<span class="visually-hidden">Weiter</span>
-</button>
-</div>
-<?php elseif (count($bilder) === 1): ?>
-<a href="<?= $schutz($bilder[0]) ?>" target="_blank"><img src="<?= $schutz($bilder[0]) ?>" class="img-fluid" style="max-height: 30rem; object-fit: contain;" alt="<?= $schutz($titel) ?>"></a>
+{{< /shop-product-images >}}
 <?php endif; ?>
 </div>
 <div class="col-md-6">

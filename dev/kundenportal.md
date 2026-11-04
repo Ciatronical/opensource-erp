@@ -45,7 +45,7 @@ wechselt.
 | Warenkorb, Kasse, Versand, PayPal, Widerruf | `lib/cart.php`, `lib/payment.php`, `lib/withdrawal.php`, Tabellen `carts_hugoshop`, `cart_parts_hugoshop`, `withdrawals_hugoshop`, PayPal-Spalten in `ar_link_hugoshop` |
 | Produktseiten, Kategorien, Suche, Werkzeugsuche, Veröffentlichung | `lib/publish.php`, `lib/categories.php`, `lib/search.php`, `lib/special_tools.php`, `batchjob_*_hugoshop`, `redirect_pages_hugoshop` |
 | Verkaufskanäle (HugoShop, eBay), Aufschläge, Verfügbarkeit | `sales_channel_shop`, `parts_channel_shop` |
-| Widgets | `shop-cart`, `shop-checkout`, `shop-add-to-cart`, `shop-search`, `shop-search-results`, `shop-tool-finder` — rund 2 340 Zeilen; Zahlteil von `shop-invoice` |
+| Widgets | `shop-cart`, `shop-checkout`, `shop-add-to-cart`, `shop-product-images`, `shop-search`, `shop-search-results`, `shop-tool-finder` — rund 2 340 Zeilen; Zahlteil von `shop-invoice` |
 
 ### Die drei Klammern
 
