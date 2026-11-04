@@ -227,7 +227,11 @@ card-image-alt: <?= shopYaml($titel) ?>
 <?php if ($beschreibung !== ''): ?>
 <?php // Die Beschreibung aus dem Kanal bzw. die Langbeschreibung des Artikels
       // kann HTML aus dem Editor enthalten — sie bleibt, wie sie ist ?>
-<p><?= $beschreibung ?></p>
+<p>
+
+<?= $beschreibung ?>
+
+</p>
 <?php else: ?>
 <p>Keine weitere Beschreibung vorhanden.</p>
 <?php endif; ?>
