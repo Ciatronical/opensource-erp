@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Ostatnio utworzone faktury – jeszcze nieopłacone",
-            "open": "Otwórz fakturę {invnumber} (znika po opłaceniu)"
+            "open": "Otwórz fakturę {invnumber} (znika po opłaceniu)",
+            "hide": "Ukryj dla mnie",
+            "hidden_toast": "Faktura {invnumber} ukryta – kliknij, aby cofnąć"
         }
     }
 }

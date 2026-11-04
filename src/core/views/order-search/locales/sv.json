@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Senast skapade fakturor – fortfarande öppna",
-            "open": "Öppna faktura {invnumber} (försvinner efter betalning)"
+            "open": "Öppna faktura {invnumber} (försvinner efter betalning)",
+            "hide": "Dölj för mig",
+            "hidden_toast": "Faktura {invnumber} dold – klicka för att ångra"
         }
     }
 }

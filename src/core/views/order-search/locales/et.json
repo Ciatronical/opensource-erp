@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Viimati loodud arved – veel avatud",
-            "open": "Ava arve {invnumber} (kaob pärast tasumist)"
+            "open": "Ava arve {invnumber} (kaob pärast tasumist)",
+            "hide": "Peida minu jaoks",
+            "hidden_toast": "Arve {invnumber} peidetud – klõpsa tagasivõtmiseks"
         }
     }
 }

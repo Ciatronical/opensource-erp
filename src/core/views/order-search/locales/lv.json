@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Pēdējie izveidotie rēķini – vēl neapmaksāti",
-            "open": "Atvērt rēķinu {invnumber} (pazūd pēc apmaksas)"
+            "open": "Atvērt rēķinu {invnumber} (pazūd pēc apmaksas)",
+            "hide": "Paslēpt man",
+            "hidden_toast": "Rēķins {invnumber} paslēpts – noklikšķiniet, lai atsauktu"
         }
     }
 }

@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Sist opprettede fakturaer – fortsatt åpne",
-            "open": "Åpne faktura {invnumber} (forsvinner etter betaling)"
+            "open": "Åpne faktura {invnumber} (forsvinner etter betaling)",
+            "hide": "Skjul for meg",
+            "hidden_toast": "Faktura {invnumber} skjult – klikk for å angre"
         }
     }
 }

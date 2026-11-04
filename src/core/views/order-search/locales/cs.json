@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Naposledy vytvořené faktury – dosud neuhrazené",
-            "open": "Otevřít fakturu {invnumber} (po zaplacení zmizí)"
+            "open": "Otevřít fakturu {invnumber} (po zaplacení zmizí)",
+            "hide": "Skrýt pro mě",
+            "hidden_toast": "Faktura {invnumber} skryta – klepnutím vrátíte zpět"
         }
     }
 }

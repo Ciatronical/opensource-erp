@@ -20,8 +20,12 @@
  * erstellten, noch offenen Rechnungen (Schnellzugriff über der Suche). Offen
  * heißt: weder bar/Bank bezahlt (ar.paid) noch am Kartenterminal kassiert
  * (sumup_checkouts.successful, wird erst mit der Auszahlung gebucht). Bezahlte,
- * stornierte und Gutschriften fallen automatisch heraus.
- * @testdata {"where": {"q": "0603 469"}}
+ * stornierte und Gutschriften fallen automatisch heraus. Rechnungen, die der
+ * Mitarbeiter für sich ausgeblendet hat (employee_config_oserp, Schlüssel
+ * order_search_hidden_invoices, kommt aus dem Store), bleiben ebenfalls weg.
+ *
+ * @param int[] $data['hidden_invoice_ids'] ar.id der vom Mitarbeiter ausgeblendeten Rechnungen
+ * @testdata {"where": {"q": "0603 469"}, "hidden_invoice_ids": [8065]}
  */
 function searchOrders($data) {
     permit('sales_order_edit');
@@ -152,6 +156,10 @@ function searchOrders($data) {
 
     $search = implode(' AND ', $conditions);
 
+    // Vom Mitarbeiter ausgeblendete Rechnungen (Liste aus dem Store) als int[]
+    $hiddenIds = array_values(array_filter(array_map('intval', (array)($data['hidden_invoice_ids'] ?? [])), fn($id) => $id > 0));
+    $params[':hidden'] = '{' . implode(',', $hiddenIds) . '}';
+
     $searchSql = <<<SQL
         SELECT
             oe.id,
@@ -208,7 +216,16 @@ function searchOrders($data) {
             ar.transdate,
             ar.amount,
             customer.name AS customer_name,
-            NULLIF(car.c_ln, '') AS kennzeichen
+            NULLIF(car.c_ln, '') AS kennzeichen,
+            -- Terminal-Checkouts ohne geklärtes Ergebnis (Seite verlassen, bevor
+            -- das Terminal antwortete): das Frontend gleicht sie per
+            -- sumupSyncCheckouts mit SumUp ab und lädt bei Erfolg neu — sonst
+            -- bliebe eine am Terminal kassierte Rechnung hier stehen, bis
+            -- jemand sie öffnet.
+            (SELECT count(*) FROM sumup_checkouts sc
+              WHERE sc.trans_id = ar.id
+                AND (sc.status = 'pending' OR (sc.status = 'cancelled' AND sc.transaction_code IS NULL))
+            ) AS card_unresolved
         FROM ar
         LEFT JOIN customer ON customer.id = ar.customer_id
         LEFT JOIN ar_ext ON ar_ext.ar_id = ar.id
@@ -218,6 +235,7 @@ function searchOrders($data) {
           AND NOT COALESCE(ar.storno, FALSE)
           AND ar.amount > 0
           AND ar.transdate >= CURRENT_DATE - 14
+          AND NOT (ar.id = ANY(:hidden::int[]))
           AND ar.paid + (
                 SELECT COALESCE(SUM(sc.amount), 0) FROM sumup_checkouts sc
                 WHERE sc.trans_id = ar.id AND sc.status = 'successful'

@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Factures récemment créées – encore ouvertes",
-            "open": "Ouvrir la facture {invnumber} (disparaît une fois payée)"
+            "open": "Ouvrir la facture {invnumber} (disparaît une fois payée)",
+            "hide": "Masquer pour moi",
+            "hidden_toast": "Facture {invnumber} masquée – cliquer pour annuler"
         }
     }
 }

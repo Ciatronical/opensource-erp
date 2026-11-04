@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Paskutinės sukurtos sąskaitos – dar neapmokėtos",
-            "open": "Atidaryti sąskaitą {invnumber} (išnyksta po apmokėjimo)"
+            "open": "Atidaryti sąskaitą {invnumber} (išnyksta po apmokėjimo)",
+            "hide": "Slėpti man",
+            "hidden_toast": "Sąskaita {invnumber} paslėpta – spustelėkite, kad atšauktumėte"
         }
     }
 }

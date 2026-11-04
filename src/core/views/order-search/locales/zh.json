@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "最近创建的发票 – 尚未付款",
-            "open": "打开发票 {invnumber}（付款后自动消失）"
+            "open": "打开发票 {invnumber}（付款后自动消失）",
+            "hide": "对我隐藏",
+            "hidden_toast": "发票 {invnumber} 已隐藏 – 点击撤销"
         }
     }
 }

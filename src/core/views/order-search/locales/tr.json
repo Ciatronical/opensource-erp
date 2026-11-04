@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Son oluşturulan faturalar – hâlâ açık",
-            "open": "{invnumber} numaralı faturayı aç (ödendikten sonra kaybolur)"
+            "open": "{invnumber} numaralı faturayı aç (ödendikten sonra kaybolur)",
+            "hide": "Benim için gizle",
+            "hidden_toast": "{invnumber} numaralı fatura gizlendi – geri almak için tıklayın"
         }
     }
 }

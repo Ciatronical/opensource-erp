@@ -3,6 +3,9 @@
 # Script zum Bereinigen von Whitespace-Fehlern in Dateien
 # Symlink: sudo ln -sf "$(pwd)/tools/fix-ws.sh" /usr/local/sbin/fix-ws.sh
 
+# Kein Pager (less) für git-Ausgaben — alles direkt ins Terminal
+export GIT_PAGER=cat PAGER=cat
+
 # --- Farben ---
 C_RESET='\033[0m'
 C_BOLD='\033[1m'
@@ -165,31 +168,22 @@ show_info
 
 # --- Optionen parsen ---
 ADD_UNTRACKED=0
-ADD_ALL=0
-INFO_ONLY=0
 while [ $# -gt 0 ] && [ "${1:0:1}" = "-" ]; do
     case "$1" in
         -u|--untracked)
             ADD_UNTRACKED=1; shift;;
-        -a|--all)
-            ADD_ALL=1; shift;;
-        -i|--info)
-            INFO_ONLY=1; shift;;
         -h|--help)
-            echo "Usage: fix-ws.sh [-u] [-a] [-i] [datei ...]"
-            echo "  -u  Unversionierte Dateien/Verzeichnisse einzeln anzeigen und per [Y/n] adden"
-            echo "  -a  Alle Änderungen automatisch stagen, Statistik anzeigen und committen"
-            echo "  -i  Nur Infos anzeigen (nichts ändern)"
+            echo "Usage: fix-ws.sh [-u] [datei ...]"
+            echo "  Whitespace fixen, alle Änderungen stagen (git add -A), Statistik anzeigen, committen und pushen"
+            echo "  -u  Unversionierte Dateien/Verzeichnisse vorher einzeln per [Y/n] bestätigen (n = nicht committen)"
             exit 0
             ;;
         *) echo "Unbekannte Option: $1" >&2; exit 1;;
     esac
 done
 
-# -i: nur Info, kein weiterer Schritt
-[ $INFO_ONLY -eq 1 ] && exit 0
-
 # --- Unversionierte Dateien einzeln bestätigen (-u) ---
+SKIPPED=()
 if [ $ADD_UNTRACKED -eq 1 ]; then
     untracked=$(git ls-files --others --exclude-standard --directory)
     if [ -z "$untracked" ]; then
@@ -200,8 +194,8 @@ if [ $ADD_UNTRACKED -eq 1 ]; then
             [ -z "$entry" ] && continue
             read -r -p "  $entry  — hinzufügen? [Y/n] " yn < /dev/tty
             case "$yn" in
-                n|N) echo "    übersprungen";;
-                *)   git add -- "$entry" && echo "    hinzugefügt";;
+                n|N) SKIPPED+=("$entry"); echo "    übersprungen";;
+                *)   echo "    wird hinzugefügt";;
             esac
         done <<< "$untracked"
     fi
@@ -235,19 +229,16 @@ do
 done
 
 # --- Stagen und committen ---
-if [ $ADD_ALL -eq 1 ]; then
-    git add -A
-    echo ""
-    git diff --cached --stat
-    echo ""
-    read -r -p "Alles committen? [Y/Enter/n] " confirm < /dev/tty
-    case "$confirm" in
-        n|N) echo "Abgebrochen."; exit 0;;
-    esac
-    git commit
-else
-    git add -p "$@"
-    git commit
-fi
+git add -A
+# Bei -u abgelehnte unversionierte Einträge wieder aus dem Index nehmen
+[ ${#SKIPPED[@]} -gt 0 ] && git reset -q -- "${SKIPPED[@]}"
+echo ""
+git diff --cached --stat
+echo ""
+read -r -p "Alles committen? [Y/Enter/n] " confirm < /dev/tty
+case "$confirm" in
+    n|N) echo "Abgebrochen."; exit 0;;
+esac
+git commit
 
 git push

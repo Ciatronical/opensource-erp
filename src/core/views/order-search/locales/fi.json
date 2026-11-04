@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Viimeksi luodut laskut – vielä avoinna",
-            "open": "Avaa lasku {invnumber} (katoaa maksun jälkeen)"
+            "open": "Avaa lasku {invnumber} (katoaa maksun jälkeen)",
+            "hide": "Piilota minulta",
+            "hidden_toast": "Lasku {invnumber} piilotettu – napsauta kumotaksesi"
         }
     }
 }

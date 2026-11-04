@@ -5,7 +5,9 @@
     <v-container class="pt-2 px-2 px-sm-4" fluid>
         <!-- Schnellzugriff: zuletzt erstellte, noch offene Rechnungen. Jeder
              Knopf öffnet die Rechnung; bezahlte (bar, Bank oder Karte) fallen
-             beim nächsten Laden automatisch heraus. -->
+             beim nächsten Laden automatisch heraus. Das Kreuz blendet eine
+             Rechnung nur für den angemeldeten Mitarbeiter aus (Liste in seiner
+             Mitarbeiter-Konfiguration), andere sehen sie weiterhin. -->
         <section
             v-if="recentInvoices.length"
             class="recent-invoices"
@@ -16,24 +18,33 @@
                 {{ t('OrderSearchView.recent_invoices.title') }}
             </div>
             <div class="recent-invoices__grid">
-                <v-btn
-                    v-for="inv in recentInvoices"
-                    :key="inv.id"
-                    class="recent-invoice"
-                    variant="tonal"
-                    color="primary"
-                    height="auto"
-                    :title="t('OrderSearchView.recent_invoices.open', { invnumber: inv.invnumber })"
-                    @click="openInvoice(inv)"
-                >
-                    <span class="recent-invoice__line">
-                        <span class="recent-invoice__name">{{ inv.customer_name || inv.invnumber }}</span>
-                        <span class="recent-invoice__amount">{{ formatAmount(inv.amount) }}</span>
-                    </span>
-                    <span class="recent-invoice__meta">
-                        {{ inv.invnumber }}<template v-if="inv.kennzeichen"> · {{ inv.kennzeichen }}</template>
-                    </span>
-                </v-btn>
+                <div v-for="inv in recentInvoices" :key="inv.id" class="recent-invoice-wrap">
+                    <v-btn
+                        class="recent-invoice"
+                        variant="tonal"
+                        color="primary"
+                        height="auto"
+                        :title="t('OrderSearchView.recent_invoices.open', { invnumber: inv.invnumber })"
+                        @click="openInvoice(inv)"
+                    >
+                        <span class="recent-invoice__line">
+                            <span class="recent-invoice__name">{{ inv.customer_name || inv.invnumber }}</span>
+                            <span class="recent-invoice__amount">{{ formatAmount(inv.amount) }}</span>
+                        </span>
+                        <span class="recent-invoice__meta">
+                            {{ inv.invnumber }}<template v-if="inv.kennzeichen"> · {{ inv.kennzeichen }}</template>
+                        </span>
+                    </v-btn>
+                    <button
+                        type="button"
+                        class="recent-invoice__hide"
+                        :title="t('OrderSearchView.recent_invoices.hide')"
+                        :aria-label="t('OrderSearchView.recent_invoices.hide')"
+                        @click.stop="hideInvoice(inv)"
+                    >
+                        <v-icon size="16">mdi-close</v-icon>
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -281,6 +292,46 @@ const searchResults = ref([]);
 const recentInvoices = ref([]);
 const hasSearched = ref(false);
 
+// Je Mitarbeiter ausgeblendete Rechnungen: [{ id, t }] als JSON-Text in der
+// Mitarbeiter-Konfiguration (employee_config_oserp über den Store). Einträge
+// älter als 30 Tage fallen beim nächsten Schreiben weg — die Rechnung ist dann
+// ohnehin aus dem 14-Tage-Fenster des Schnellzugriffs heraus.
+const HIDDEN_KEY = 'order_search_hidden_invoices';
+const HIDDEN_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+const readHiddenInvoices = () => {
+    try {
+        const list = JSON.parse(store.getConfigValue(HIDDEN_KEY, '[]') || '[]');
+        return Array.isArray(list) ? list.filter(e => e && Number(e.id) > 0) : [];
+    } catch {
+        return [];
+    }
+};
+
+const writeHiddenInvoices = (list) => {
+    const cutoff = Date.now() - HIDDEN_MAX_AGE_MS;
+    const kept = list.filter(e => !e.t || new Date(e.t).getTime() >= cutoff);
+    store.setConfigValue(HIDDEN_KEY, JSON.stringify(kept));
+};
+
+const hiddenInvoiceIds = () => readHiddenInvoices().map(e => Number(e.id));
+
+// Terminal-Checkouts ohne geklärtes Ergebnis (Rechnung verlassen, bevor das
+// Terminal antwortete) mit SumUp abgleichen — sonst bliebe eine am Terminal
+// kassierte Rechnung im Schnellzugriff stehen, bis jemand sie öffnet. Je
+// Rechnung nur einmal pro Seitenaufruf, im Hintergrund, Fehler still.
+const syncedCardInvoices = new Set();
+const syncUnresolvedCardPayments = async (invoices) => {
+    const todo = invoices.filter(i => Number(i.card_unresolved) > 0 && !syncedCardInvoices.has(i.id));
+    if (!todo.length) return;
+    todo.forEach(i => syncedCardInvoices.add(i.id));
+    const results = await Promise.allSettled(todo.map(i =>
+        axios.post('/api/payment/', { action: 'sumupSyncCheckouts', fakturaID: i.id })
+    ));
+    const paidNow = results.some(r => r.status === 'fulfilled' && r.value?.data?.payload?.new_payments?.length);
+    if (paidNow) loadData();
+};
+
 // Kommt der Anwender von der Kasse oder aus einem anderen Fenster zurück,
 // soll eine inzwischen bezahlte Rechnung sofort aus dem Schnellzugriff
 // verschwinden — deshalb beim Sichtbarwerden neu laden.
@@ -397,7 +448,8 @@ const loadData = async () => {
     try {
         const response = await axios.post('/api/faktura/', {
             action: 'searchOrders',
-            where: where
+            where: where,
+            hidden_invoice_ids: hiddenInvoiceIds()
         });
 
         if (response.data.sql_error) {
@@ -406,6 +458,7 @@ const loadData = async () => {
         } else if (response.data.success) {
             searchResults.value = response.data.payload.results ?? [];
             recentInvoices.value = response.data.payload.recent_invoices ?? [];
+            syncUnresolvedCardPayments(recentInvoices.value);
         } else {
             toasts.error(t('OrderSearchView.toasts.error_loading_search_results'));
             searchResults.value = [];
@@ -489,6 +542,20 @@ const openInvoice = (inv) => {
     router.push(entityRoute('invoice', inv.id));
 };
 
+// Nur für den angemeldeten Mitarbeiter ausblenden; Rückgängig per Klick auf
+// die Einblendung
+const hideInvoice = (inv) => {
+    const list = readHiddenInvoices().filter(e => Number(e.id) !== Number(inv.id));
+    writeHiddenInvoices([...list, { id: Number(inv.id), t: new Date().toISOString() }]);
+    recentInvoices.value = recentInvoices.value.filter(i => i.id !== inv.id);
+    toasts.info(t('OrderSearchView.recent_invoices.hidden_toast', { invnumber: inv.invnumber }), {
+        onClick: () => {
+            writeHiddenInvoices(readHiddenInvoices().filter(e => Number(e.id) !== Number(inv.id)));
+            loadData();
+        }
+    });
+};
+
 const onRowClick = (event, row) => {
     const item = row.item;
     saveToHistory({
@@ -522,9 +589,36 @@ const onRowClick = (event, row) => {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: var(--oserp-gap-sm);
 }
-.recent-invoice {
-    padding: var(--oserp-gap-sm) var(--oserp-gap);
+.recent-invoice-wrap {
+    position: relative;
     min-width: 0;
+}
+.recent-invoice {
+    width: 100%;
+    /* rechts Platz für das Kreuz, mit Luft zum Betrag */
+    padding: var(--oserp-gap-sm) calc(var(--oserp-gap-xl) + var(--oserp-gap-lg)) var(--oserp-gap-sm) var(--oserp-gap);
+    min-width: 0;
+}
+/* Kreuz zum Ausblenden: schlichtes Element über der Ecke — keine runde
+   Fläche, kein Rahmen, kein Knopf im Knopf */
+.recent-invoice__hide {
+    position: absolute;
+    top: var(--oserp-gap-sm);
+    right: var(--oserp-gap-sm);
+    display: inline-flex;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: rgb(var(--v-theme-primary));
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.55;
+}
+.recent-invoice-wrap:hover .recent-invoice__hide,
+.recent-invoice__hide:hover,
+.recent-invoice__hide:focus-visible {
+    opacity: 1;
+    outline: none;
 }
 .recent-invoice :deep(.v-btn__content) {
     display: flex;

@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Facturi create recent – încă neachitate",
-            "open": "Deschide factura {invnumber} (dispare după plată)"
+            "open": "Deschide factura {invnumber} (dispare după plată)",
+            "hide": "Ascunde pentru mine",
+            "hidden_toast": "Factura {invnumber} ascunsă – clic pentru a anula"
         }
     }
 }

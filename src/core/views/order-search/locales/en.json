@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Recently created invoices – still open",
-            "open": "Open invoice {invnumber} (disappears once paid)"
+            "open": "Open invoice {invnumber} (disappears once paid)",
+            "hide": "Hide for me",
+            "hidden_toast": "Invoice {invnumber} hidden – click to undo"
         }
     }
 }

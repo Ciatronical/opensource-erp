@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Laatst aangemaakte facturen – nog open",
-            "open": "Factuur {invnumber} openen (verdwijnt na betaling)"
+            "open": "Factuur {invnumber} openen (verdwijnt na betaling)",
+            "hide": "Voor mij verbergen",
+            "hidden_toast": "Factuur {invnumber} verborgen – klik om ongedaan te maken"
         }
     }
 }

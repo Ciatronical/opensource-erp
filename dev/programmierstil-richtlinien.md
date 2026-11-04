@@ -353,8 +353,8 @@ sudo ln -sf "$(pwd)/tools/fix-ws.sh" /usr/local/sbin/fix-ws.sh
 ```
 Danach ist `fix-ws.sh` systemweit aufrufbar.
 
--!- Achtung: fix-ws.sh fügt standardmäßig keine neuen Dateien hinzu (erst mit `git add` einzeln hinzufügen, dann fix-ws.sh aufrufen).
-Mit `fix-ws.sh -a` wird für jede unversionierte Datei/jedes Verzeichnis einzeln per `[Y/n]` nachgefragt (Default: `y` → wird geaddet).
+-!- Achtung: fix-ws.sh stagt **alle** Änderungen inklusive neuer Dateien (`git add -A`), zeigt die Statistik, fragt `Alles committen? [Y/n]`, committet und pusht.
+Mit `fix-ws.sh -u` wird vorher für jede unversionierte Datei/jedes Verzeichnis einzeln per `[Y/n]` nachgefragt (Default: `y` → wird geaddet, `n` → bleibt draußen).
 
 ### 6.2 Viele kleine Commits
 Kleine, saubere, nachvollziehbare Schritte.

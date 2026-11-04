@@ -47,7 +47,9 @@
         },
         "recent_invoices": {
             "title": "Zuletzt erstellte Rechnungen – noch offen",
-            "open": "Rechnung {invnumber} öffnen (verschwindet nach Bezahlung)"
+            "open": "Rechnung {invnumber} öffnen (verschwindet nach Bezahlung)",
+            "hide": "Für mich ausblenden",
+            "hidden_toast": "Rechnung {invnumber} ausgeblendet – Klick macht es rückgängig"
         }
     }
 }
