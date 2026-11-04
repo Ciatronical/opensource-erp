@@ -1021,12 +1021,16 @@ function applyMaintenanceFieldsToCar($db, array $fields, string $extTable, strin
         }
     }
     // Riemen ⇄ Kette umgeschaltet ⇒ Hand-Markierungen gelten für das andere Bauteil nicht
+    // (Der Parameter :c_sk_chk darf nur gebunden werden, wenn er auch vorkommt — das
+    // Frontend schickt beim Umschalten beide Flags mit, dann gibt es keine CASE-Klausel.)
     if (array_key_exists('c_sk', $fields)) {
+        $skClauses = 0;
         foreach (['c_zrd_due', 'c_zrk_due'] as $flag) {
             if (array_key_exists($flag, $fields)) continue;
             $carSetClauses[] = "$flag = CASE WHEN :c_sk_chk IS DISTINCT FROM cars_lxcars.c_sk THEN false ELSE cars_lxcars.$flag END";
+            $skClauses++;
         }
-        $carParams[':c_sk_chk'] = $fields['c_sk'] ? 't' : 'f';
+        if ($skClauses > 0) $carParams[':c_sk_chk'] = $fields['c_sk'] ? 't' : 'f';
     }
 
     if (!empty($carSetClauses)) {

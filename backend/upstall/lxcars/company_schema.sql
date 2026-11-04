@@ -60,6 +60,37 @@ CREATE TABLE cars_lxcars (
 
 CREATE INDEX IF NOT EXISTS idx_cars_lxcars_c_ln ON public.cars_lxcars (c_ln);
 
+-- Migration: Wartungsfelder aus dem alten LxCars sind dort text, OSERP rechnet mit date
+-- (to_char/date_trunc im Druck und in der Fahrzeugmaske). Der Upstall ergänzt nur
+-- fehlende Spalten, Typen zieht er nicht nach. Umgestellt wird nur, wenn jeder
+-- vorhandene Wert als Datum lesbar ist — sonst bleibt die Spalte unangetastet.
+DO $$ DECLARE col TEXT; expr TEXT; unlesbar BOOLEAN; BEGIN
+    FOREACH col IN ARRAY ARRAY['c_zrd', 'c_bf', 'c_wd'] LOOP
+        IF EXISTS (SELECT 1 FROM information_schema.columns
+                    WHERE table_schema = 'public' AND table_name = 'cars_lxcars'
+                      AND column_name = col AND data_type IN ('text', 'character varying')) THEN
+            expr := format($f$CASE
+                WHEN NULLIF(trim(%1$I), '') IS NULL THEN NULL
+                WHEN trim(%1$I) ~ '^\d{4}-\d{1,2}-\d{1,2}$' THEN trim(%1$I)::date
+                WHEN trim(%1$I) ~ '^\d{1,2}\.\d{1,2}\.\d{4}$' THEN to_date(trim(%1$I), 'DD.MM.YYYY')
+                WHEN trim(%1$I) ~ '^\d{1,2}[./]\d{4}$' THEN to_date(replace(trim(%1$I), '.', '/'), 'MM/YYYY')
+                WHEN trim(%1$I) ~ '^\d{1,2}[./]\d{2}$' THEN to_date(replace(trim(%1$I), '.', '/'), 'MM/YY')
+            END$f$, col);
+            BEGIN
+                EXECUTE format('SELECT EXISTS (SELECT 1 FROM cars_lxcars WHERE NULLIF(trim(%I), %L) IS NOT NULL AND (%s) IS NULL)', col, '', expr)
+                   INTO unlesbar;
+                IF unlesbar THEN
+                    RAISE NOTICE 'cars_lxcars.% enthält nicht lesbare Datumswerte, bleibt text', col;
+                ELSE
+                    EXECUTE format('ALTER TABLE cars_lxcars ALTER COLUMN %I TYPE date USING (%s)', col, expr);
+                END IF;
+            EXCEPTION WHEN others THEN
+                RAISE NOTICE 'cars_lxcars.% nicht auf date umgestellt: %', col, SQLERRM;
+            END;
+        END IF;
+    END LOOP;
+END $$;
+
 -- Migration: Fahrzeuge mit bereits ermitteltem Ktype UND Motorcodes gelten als geprüft,
 -- sonst würde jedes davon nach dem Update beim ersten Öffnen noch einmal AAG abfragen
 UPDATE cars_lxcars SET aag_checked_at = now()

@@ -101,3 +101,13 @@ In der Kontaktansicht:
 - Hat der Kontakt **nur WhatsApp**: grünes WhatsApp-Icon
 - Hat der Kontakt **nur Telegram**: blaues Telegram-Icon
 - Hat der Kontakt **beides**: beide Icons nebeneinander
+
+## Anschlagtafel und Tafel-Verwaltung
+
+Sprachnotizen an den Bot werden per Whisper transkribiert und erscheinen live auf der **Anschlagtafel** (TV). In der **Tafel-Verwaltung** (PC-Variante) lassen sich die Einträge pflegen:
+
+- **Hinzufügen** — Notiz eintippen, Absender wählen, Enter
+- **Bearbeiten** — auf den Text klicken (oder den Stift), korrigieren, Enter speichert, Esc bricht ab. Gedacht vor allem für falsch verstandene Sprachnotizen; eine fehlgeschlagene Transkription gilt nach der Korrektur als erledigt
+- **Löschen** und **Umsortieren** per Drag & Drop
+
+Alle Änderungen erscheinen sofort auf der Anschlagtafel und in anderen geöffneten Tafel-Verwaltungen.

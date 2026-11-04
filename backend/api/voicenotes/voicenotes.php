@@ -133,6 +133,53 @@ function addVoiceNote($data) {
 }
 
 /**
+ * Notiztext korrigieren (Tafel-Verwaltung) — z.B. falsch verstandene Sprachnotizen.
+ *
+ * Ein Ajax-Call, eine DB-Abfrage: UPDATE und pg_notify('voicenote_change', 'updated')
+ * in einem Statement, die Anschlagtafel (TV) uebernimmt den Text live an Ort und Stelle.
+ * Eine fehlgeschlagene Transkription gilt nach der Korrektur als erledigt.
+ *
+ * @param int    $data['id']         Notiz-ID
+ * @param string $data['transcript'] Neuer Notiztext (Pflicht)
+ * @testdata {"action": "updateVoiceNote", "id": 1, "transcript": "Kaffeemaschine ist repariert"}
+ */
+function updateVoiceNote($data) {
+    $db = DbhCompany::begin();
+    $id         = (int)($data['id'] ?? 0);
+    $transcript = trim((string)($data['transcript'] ?? ''));
+
+    if ($id <= 0 || $transcript === '') {
+        resultInfo(false, 'INVALID_INPUT', 'Notiz-ID und Notiztext sind erforderlich');
+        return;
+    }
+
+    $note = $db->getOne(
+        "WITH u AS (
+             UPDATE voice_notes
+             SET transcript = :transcript, status = 'transcribed', mtime = NOW()
+             WHERE id = :id AND hidden = FALSE
+             RETURNING id, transcript, status
+         )
+         SELECT u.id, u.transcript, u.status
+         FROM u
+         CROSS JOIN LATERAL (
+             SELECT pg_notify('voicenote_change', json_build_object(
+                 'action', 'updated', 'id', u.id,
+                 'transcript', u.transcript, 'status', u.status
+             )::TEXT)
+         ) AS n",
+        [':id' => $id, ':transcript' => $transcript]
+    );
+
+    if (!$note) {
+        resultInfo(false, 'NOT_FOUND', 'Notiz nicht gefunden');
+        return;
+    }
+
+    resultInfo(true, '', ['note' => $note]);
+}
+
+/**
  * Sprachnotiz ausblenden (Soft-Delete) — verschwindet von der Anschlagtafel.
  *
  * Meldet die Loeschung zusaetzlich per pg_notify('voicenote_change') live, damit

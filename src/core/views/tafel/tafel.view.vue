@@ -159,8 +159,55 @@
                                         {{ t('Tafel.failed') }}
                                     </v-chip>
                                 </div>
-                                <div class="tafel-text mt-1">{{ note.transcript }}</div>
+                                <div v-if="editId === note.id" class="mt-2">
+                                    <v-textarea
+                                        v-model="editText"
+                                        variant="outlined"
+                                        density="compact"
+                                        rows="1"
+                                        auto-grow
+                                        autofocus
+                                        hide-details
+                                        :disabled="saving"
+                                        @keydown.enter.exact.prevent="saveEdit(note)"
+                                        @keydown.esc.prevent="cancelEdit"
+                                    />
+                                    <div class="d-flex align-center mt-2">
+                                        <span class="text-caption text-medium-emphasis">{{ t('Tafel.editHint') }}</span>
+                                        <v-spacer />
+                                        <v-btn variant="text" size="small" @click="cancelEdit">
+                                            {{ t('Tafel.cancel') }}
+                                        </v-btn>
+                                        <v-btn
+                                            color="primary"
+                                            variant="flat"
+                                            size="small"
+                                            class="ms-2"
+                                            :loading="saving"
+                                            :disabled="!editText.trim()"
+                                            @click="saveEdit(note)"
+                                        >
+                                            {{ t('Tafel.save') }}
+                                        </v-btn>
+                                    </div>
+                                </div>
+                                <div
+                                    v-else
+                                    class="tafel-text tafel-text--editable mt-1"
+                                    :title="t('Tafel.editTitle')"
+                                    @click="startEdit(note)"
+                                >{{ note.transcript }}</div>
                             </div>
+                            <v-btn
+                                v-if="editId !== note.id"
+                                icon="mdi-pencil-outline"
+                                variant="text"
+                                color="medium-emphasis"
+                                size="small"
+                                class="ms-2 tafel-delete flex-shrink-0"
+                                :title="t('Tafel.edit')"
+                                @click="startEdit(note)"
+                            />
                             <v-btn
                                 icon="mdi-delete-outline"
                                 variant="text"
@@ -200,6 +247,9 @@ export default defineComponent({
         const adding = ref(false)
         const sseConnected = ref(false)
         const newText = ref('')
+        const editId = ref(null)
+        const editText = ref('')
+        const saving = ref(false)
 
         let sseSource = null
         let pollInterval = null
@@ -285,6 +335,46 @@ export default defineComponent({
             }
         }
 
+        // ── Bearbeiten (z.B. falsch verstandene Sprachnotizen korrigieren) ──
+
+        function startEdit(note) {
+            editId.value = note.id
+            editText.value = note.transcript || ''
+        }
+
+        function cancelEdit() {
+            editId.value = null
+            editText.value = ''
+        }
+
+        async function saveEdit(note) {
+            const text = editText.value.trim()
+            if (!text || saving.value) return
+            if (text === note.transcript) {
+                cancelEdit()
+                return
+            }
+            saving.value = true
+            try {
+                const res = await axios.post('/api/voicenotes/', {
+                    action: 'updateVoiceNote',
+                    id: note.id,
+                    transcript: text,
+                })
+                if (res.data.success) {
+                    note.transcript = res.data.payload.note.transcript
+                    note.status = res.data.payload.note.status
+                    cancelEdit()
+                } else {
+                    alerts.error(t('Tafel.updateError'))
+                }
+            } catch {
+                alerts.error(t('Tafel.updateError'))
+            } finally {
+                saving.value = false
+            }
+        }
+
         // ── Umsortieren (Drag & Drop) ──
 
         async function onDragChange() {
@@ -327,6 +417,7 @@ export default defineComponent({
                     const d = JSON.parse(e.data)
                     if (d.action === 'removed') {
                         notes.value = notes.value.filter(n => n.id !== d.id)
+                        if (editId.value === d.id) cancelEdit()
                     } else if (d.action === 'updated') {
                         const n = notes.value.find(x => x.id === d.id)
                         if (n) {
@@ -405,7 +496,9 @@ export default defineComponent({
 
         return {
             t, notes, employees, selectedEmployeeId, loading, adding, sseConnected, newText,
-            addNote, removeNote, onDragChange, formatTime, initials, avatarColor,
+            editId, editText, saving,
+            addNote, removeNote, startEdit, cancelEdit, saveEdit, onDragChange,
+            formatTime, initials, avatarColor,
         }
     },
 })
@@ -446,6 +539,18 @@ export default defineComponent({
     word-break: break-word;
 }
 
+/* Text per Klick bearbeiten */
+.tafel-text--editable {
+    cursor: text;
+    border-radius: 4px;
+    margin-left: -4px;
+    padding: 0 4px;
+    transition: background-color 0.15s ease;
+}
+.tafel-text--editable:hover {
+    background: rgba(var(--v-theme-primary), 0.06);
+}
+
 /* Karten: dezent, beim Hover leicht anheben */
 .tafel-card {
     transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.06s ease;
@@ -461,7 +566,7 @@ export default defineComponent({
     cursor: grabbing;
 }
 
-/* Loeschen erst beim Hover deutlich zeigen (aufgeraeumter Look) */
+/* Bearbeiten/Loeschen erst beim Hover deutlich zeigen (aufgeraeumter Look) */
 .tafel-delete {
     opacity: 0.35;
     transition: opacity 0.2s ease;

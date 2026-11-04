@@ -279,7 +279,10 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
                     await carsStore.updateOeExt(fakturaId.value, payload)
                 }
             } catch (e) {
+                // Sichtbar machen — sonst sieht die Maske den Wert, die Datenbank nicht (Umschalten
+                // Steuerkette schlug so lange unbemerkt fehl)
                 console.error('Error updating ext:', e)
+                toast.error(t('FakturaView.faktura.saveError'))
             }
         }, 500)
 

@@ -109,6 +109,27 @@ export function maintenanceDueState(v = {}, today = new Date()) {
 }
 
 /**
+ * Pflichtfelder beim Abschluss der letzten Arbeitsanweisung (Auftrag, Werkstatt-Modus).
+ * Ein Wartungsfeld gilt als ausgefüllt, wenn ein Wert drin steht ODER es von Hand als
+ * „fällig“ markiert ist — die Markierung ist eine vollwertige Angabe („Zahnriemen muss
+ * gemacht werden“). Bei Steuerkette sind die Zahnriemen-Angaben nicht nötig.
+ * @param {object} e oe_ext-Daten (km_stand, c_sk, c_zrd, c_zrk, c_bf, c_wd, c_*_due)
+ * @returns {string[]} fehlende Felder in Anzeige-Reihenfolge
+ */
+export function maintenanceMissingFields(e = {}) {
+    const filled = f => !!e[f] || isTrue(e[MAINTENANCE_DUE_FLAGS[f]])
+    const missing = []
+    if (!e.km_stand) missing.push('km_stand')
+    if (!filled('c_bf')) missing.push('c_bf')
+    if (!filled('c_wd')) missing.push('c_wd')
+    if (!isTrue(e.c_sk)) {
+        if (!filled('c_zrd')) missing.push('c_zrd')
+        if (!filled('c_zrk')) missing.push('c_zrk')
+    }
+    return missing
+}
+
+/**
  * Einträge für den Hinweis in der Fahrzeugmaske: Zahnriemen Datum und km-Stand bilden
  * einen Eintrag „Zahnriemen“ (Gründe zusammengeführt, „von Hand“ nur einmal), damit
  * der Hinweis in eine Zeile passt. Reihenfolge: fällig vor bald fällig.

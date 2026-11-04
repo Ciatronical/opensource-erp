@@ -424,6 +424,7 @@ import CreatePartDialog from '@/core/views/faktura/dialogs/create.part.dialog.vu
 import InstructionsSectionCard from '@/features/lxcars/components/instructions.section.card.vue'
 import MaengelSectionCard from '@/features/lxcars/components/maengel.section.card.vue'
 import MaintenanceSectionCard from '@/features/lxcars/components/maintenance.section.card.vue'
+import { maintenanceMissingFields } from '@/features/lxcars/utils/maintenanceDue.js'
 import SpecialToolsSectionCard from '@/features/lxcars/components/special-tools.section.card.vue'
 import { useDiagPortals } from '@/features/lxcars/composables/useDiagPortals.js'
 import * as alerts from '@/core/utils/alerts.js'
@@ -512,15 +513,8 @@ function validateMaintenanceBeforeComplete() {
     if (!vehicle || !vehicle.selectedCarId.value) return true
     if (vehicle.isTrailer.value) return true
     if (!wartungEnabled.value) return true
-    const e = vehicle.oeExtData.value || {}
-    const missing = []
-    if (!e.km_stand) missing.push('km_stand')
-    if (!e.c_bf) missing.push('c_bf')
-    if (!e.c_wd) missing.push('c_wd')
-    if (!e.c_sk) {
-        if (!e.c_zrd) missing.push('c_zrd')
-        if (!e.c_zrk) missing.push('c_zrk')
-    }
+    // Wert oder Hand-Markierung „fällig“ zählt als Angabe (maintenanceMissingFields)
+    const missing = maintenanceMissingFields(vehicle.oeExtData.value || {})
     if (missing.length === 0) return true
     maintenanceIncompleteDialog.value = { show: true, fields: missing }
     return false
