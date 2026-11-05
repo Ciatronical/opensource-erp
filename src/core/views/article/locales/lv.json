@@ -26,7 +26,8 @@
             "ropHint": "Tukšs = bez uzraudzības",
             "defaultWarehouse": "Noklusētā noliktava",
             "defaultBin": "Noklusētā noliktavas vieta",
-            "defaultLocationHint": "Iepriekš iestatīta vērtība pavadzīmēm un noliktavas kustībām"
+            "defaultLocationHint": "Iepriekš iestatīta vērtība pavadzīmēm un noliktavas kustībām",
+            "notesPlaceholder": "Apraksts dokumentiem un veikalam …"
         },
         "messages": {
             "loading": "Artikuls tiek ielādēts",

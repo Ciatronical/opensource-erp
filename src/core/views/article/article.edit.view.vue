@@ -235,17 +235,20 @@
                                     />
                                 </v-col>
 
-                                <!-- Langbeschreibung -->
-                                <v-col cols="12" class="py-1">
-                                    <v-textarea
+                                <!-- Langbeschreibung (parts.notes, HTML): visueller Editor wie
+                                     im Wiki und in den Belegbemerkungen. Der Text landet
+                                     unverändert auf der Shop-Produktseite und als Langtext
+                                     der Belegpositionen. -->
+                                <v-col cols="12" class="py-1 mt-2">
+                                    <HtmlEditorComponent
                                         v-model="article.notes"
                                         :label="t('ArticleEditView.fields.notes')"
-                                        variant="outlined"
-                                        density="compact"
-                                        hide-details="auto"
-                                        autocomplete="off"
-                                        rows="3"
-                                        auto-grow
+                                        :placeholder="t('ArticleEditView.fields.notesPlaceholder')"
+                                        toolbar="full"
+                                        :min-height="180"
+                                        :max-height="0"
+                                        @focus="onEditorFocus"
+                                        @blur="onEditorBlur"
                                     />
                                 </v-col>
 
@@ -344,7 +347,7 @@
                         :sellprice="article.sellprice"
                         :buchungsgruppen-id="article.buchungsgruppen_id"
                         :description="article.description"
-                        :notes="article.notes"
+                        :notes="notesPlain"
                         :part-type="article.part_type"
                         :obsolete="!!article.obsolete"
                     />
@@ -397,6 +400,7 @@ import * as toasts from '@/core/utils/toasts.js'
 import axios from 'axios'
 import { shopSlug } from '@/features/shop/utils/slug.js'
 import SectionCard from '@/core/components/layout/section-card.vue'
+import HtmlEditorComponent from '@/core/components/html.editor.component.vue'
 import { useWarehouse } from '@/features/warehouse/composables/useWarehouse.js'
 
 // Die Shop-Karte gehört zur Shop-Erweiterung: erst laden, wenn sie gebraucht wird
@@ -406,7 +410,7 @@ const PartStockPanel = defineAsyncComponent(() => import('@/features/warehouse/c
 
 export default defineComponent({
     name: 'ArticleEditView',
-    components: { NavbarView, PartShopCard, PartStockPanel, SectionCard },
+    components: { NavbarView, PartShopCard, PartStockPanel, SectionCard, HtmlEditorComponent },
     props: {
         // Ohne id: Neuanlage (Route article-new)
         id: { type: [String, Number], default: null }
@@ -486,6 +490,47 @@ export default defineComponent({
             }
         }
 
+        // Der visuelle Editor ist kein <input>/<textarea>: er meldet Fokus und
+        // Verlassen selbst, damit auch dort erst beim Verlassen gespeichert wird
+        // statt nach jedem Tastendruck.
+        function onEditorFocus() {
+            textInputFocused = true
+        }
+
+        function onEditorBlur() {
+            textInputFocused = false
+            if (hasPendingChanges) {
+                hasPendingChanges = false
+                triggerSave()
+            }
+        }
+
+        // ── Langbeschreibung (HTML) ──
+
+        /**
+         * Altbestand ohne HTML (kivitendo-Textfeld, Importe) in Absätze heben,
+         * sonst zöge der Editor alle Zeilen zu einem Absatz zusammen.
+         */
+        function notesToHtml(text) {
+            const wert = String(text || '')
+            if (wert.trim() === '' || /<[a-z][\s\S]*>/i.test(wert)) return wert
+            const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            return wert.trim().split(/\n{2,}/).map(p => '<p>' + esc(p).replace(/\n/g, '<br>') + '</p>').join('')
+        }
+
+        /** Ein geleerter Editor liefert <p></p> — gespeichert wird dann leer */
+        function notesValue() {
+            const wert = String(article.value.notes || '')
+            return /^(\s*<p>\s*<\/p>\s*)*$/.test(wert) ? '' : wert
+        }
+
+        /** Nur der Text, als Platzhalter für die Kanalbeschreibung der Shop-Karte */
+        const notesPlain = computed(() => {
+            const div = document.createElement('div')
+            div.innerHTML = notesValue().replace(/<\/(p|div|li|h[1-6]|tr)>/gi, '\n')
+            return (div.textContent || '').replace(/\n{3,}/g, '\n\n').trim()
+        })
+
         // ── Save-Logik ──
 
         function onDataChange() {
@@ -531,7 +576,7 @@ export default defineComponent({
                     unit: article.value.unit,
                     sellprice: article.value.sellprice,
                     buchungsgruppen_id: article.value.buchungsgruppen_id,
-                    notes: article.value.notes,
+                    notes: notesValue(),
                     obsolete: article.value.obsolete,
                     weight: weightValue(),
                     ...lagerPayload()
@@ -570,7 +615,7 @@ export default defineComponent({
                         unit: data.unit || 'Stck',
                         sellprice: parseFloat(data.sellprice) || 0,
                         buchungsgruppen_id: data.buchungsgruppen_id ? parseInt(data.buchungsgruppen_id) : null,
-                        notes: data.notes || '',
+                        notes: notesToHtml(data.notes),
                         obsolete: data.obsolete === true || data.obsolete === 't',
                         weight: data.weight === null || data.weight === undefined ? '' : String(Number(data.weight)),
                         stockable: data.stockable === true || data.stockable === 't',
@@ -608,7 +653,7 @@ export default defineComponent({
                 unit: article.value.unit,
                 sellprice: article.value.sellprice,
                 buchungsgruppen_id: article.value.buchungsgruppen_id,
-                notes: article.value.notes,
+                notes: notesValue(),
                 obsolete: article.value.obsolete,
                 weight: weightValue(),
                 ...lagerPayload()
@@ -881,7 +926,7 @@ export default defineComponent({
                     unit: article.value.unit,
                     sellprice: article.value.sellprice,
                     buchungsgruppen_id: article.value.buchungsgruppen_id,
-                    notes: article.value.notes,
+                    notes: notesValue(),
                     weight: weightValue(),
                     ...(vorlage.value ? { template_parts_id: vorlage.value.id } : {})
                 })
@@ -958,6 +1003,9 @@ export default defineComponent({
             buchungsgruppen,
             onFocusIn,
             onFocusOut,
+            onEditorFocus,
+            onEditorBlur,
+            notesPlain,
             // Neuanlage
             isNewMode,
             nextPartnumber,

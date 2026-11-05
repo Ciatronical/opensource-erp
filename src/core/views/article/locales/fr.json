@@ -26,7 +26,8 @@
             "ropHint": "Vide = pas de surveillance",
             "defaultWarehouse": "Entrepôt par défaut",
             "defaultBin": "Emplacement par défaut",
-            "defaultLocationHint": "Valeur proposée pour les bons de livraison et les mouvements de stock"
+            "defaultLocationHint": "Valeur proposée pour les bons de livraison et les mouvements de stock",
+            "notesPlaceholder": "Description pour les documents et la boutique …"
         },
         "messages": {
             "loading": "Chargement de l'article",

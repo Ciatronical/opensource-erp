@@ -26,7 +26,8 @@
             "ropHint": "Leeg = geen bewaking",
             "defaultWarehouse": "Standaardmagazijn",
             "defaultBin": "Standaardlocatie",
-            "defaultLocationHint": "Voorkeuze voor pakbonnen en voorraadmutaties"
+            "defaultLocationHint": "Voorkeuze voor pakbonnen en voorraadmutaties",
+            "notesPlaceholder": "Omschrijving voor documenten en webshop …"
         },
         "messages": {
             "loading": "Artikel wordt geladen",

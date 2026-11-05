@@ -108,3 +108,9 @@ backend/fahrzeugschein-scanner/reference/zb1_bootstrap.jpg
 backend/fahrzeugschein-scanner/reference/layout_v*.json
 backend/fahrzeugschein-scanner/tessdata/
 tools/.tts/
+
+# Screenshot-Werkzeug: Zugangsdaten und Rohbilder
+promotion/screenshots/login.txt
+promotion/screenshots/out/
+promotion/screenshots/web/
+promotion/screenshots/

@@ -26,7 +26,8 @@
             "ropHint": "Gol = fără monitorizare",
             "defaultWarehouse": "Depozit implicit",
             "defaultBin": "Locație implicită",
-            "defaultLocationHint": "Valoare propusă pentru avize și mișcări de stoc"
+            "defaultLocationHint": "Valoare propusă pentru avize și mișcări de stoc",
+            "notesPlaceholder": "Descriere pentru documente și magazin …"
         },
         "messages": {
             "loading": "Articolul se incarca",

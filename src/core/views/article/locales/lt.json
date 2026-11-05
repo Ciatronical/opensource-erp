@@ -26,7 +26,8 @@
             "ropHint": "Tuščia = nestebima",
             "defaultWarehouse": "Numatytasis sandėlis",
             "defaultBin": "Numatytoji sandėlio vieta",
-            "defaultLocationHint": "Numatytoji reikšmė važtaraščiams ir sandėlio operacijoms"
+            "defaultLocationHint": "Numatytoji reikšmė važtaraščiams ir sandėlio operacijoms",
+            "notesPlaceholder": "Aprašymas dokumentams ir el. parduotuvei …"
         },
         "messages": {
             "loading": "Prekė kraunama",

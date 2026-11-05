@@ -26,7 +26,8 @@
       "ropHint": "Leer = keine Überwachung",
       "defaultWarehouse": "Standardlager",
       "defaultBin": "Standardlagerplatz",
-      "defaultLocationHint": "Vorbelegung für Lieferscheine und Buchungen"
+      "defaultLocationHint": "Vorbelegung für Lieferscheine und Buchungen",
+      "notesPlaceholder": "Beschreibung für Belege und Shop …"
     },
     "messages": {
       "loading": "Artikel wird geladen",

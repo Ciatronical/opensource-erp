@@ -26,7 +26,8 @@
             "ropHint": "Tom = ingen bevakning",
             "defaultWarehouse": "Standardlager",
             "defaultBin": "Standardlagerplats",
-            "defaultLocationHint": "Förval för följesedlar och lagerrörelser"
+            "defaultLocationHint": "Förval för följesedlar och lagerrörelser",
+            "notesPlaceholder": "Beskrivning för dokument och webbutik …"
         },
         "messages": {
             "loading": "Artikel laddas",

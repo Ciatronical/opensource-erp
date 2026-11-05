@@ -26,7 +26,8 @@
             "ropHint": "Tom = ingen overvågning",
             "defaultWarehouse": "Standardlager",
             "defaultBin": "Standardlagerplads",
-            "defaultLocationHint": "Forvalg til følgesedler og lagerbevægelser"
+            "defaultLocationHint": "Forvalg til følgesedler og lagerbevægelser",
+            "notesPlaceholder": "Beskrivelse til bilag og webshop …"
         },
         "messages": {
             "loading": "Artikel indlaeses",

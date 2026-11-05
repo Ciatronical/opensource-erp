@@ -26,7 +26,8 @@
       "ropHint": "Empty = no monitoring",
       "defaultWarehouse": "Default warehouse",
       "defaultBin": "Default bin",
-      "defaultLocationHint": "Preset for delivery orders and stock movements"
+      "defaultLocationHint": "Preset for delivery orders and stock movements",
+      "notesPlaceholder": "Description for documents and shop …"
     },
     "messages": {
       "loading": "Loading article",

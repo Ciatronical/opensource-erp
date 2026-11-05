@@ -26,7 +26,8 @@
             "ropHint": "Puste = bez kontroli",
             "defaultWarehouse": "Magazyn domyślny",
             "defaultBin": "Domyślne miejsce składowania",
-            "defaultLocationHint": "Wartość domyślna dla dokumentów dostawy i ruchów magazynowych"
+            "defaultLocationHint": "Wartość domyślna dla dokumentów dostawy i ruchów magazynowych",
+            "notesPlaceholder": "Opis do dokumentów i sklepu …"
         },
         "messages": {
             "loading": "Ładowanie artykułu",

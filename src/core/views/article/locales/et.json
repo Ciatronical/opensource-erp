@@ -26,7 +26,8 @@
             "ropHint": "Tühi = ei jälgita",
             "defaultWarehouse": "Vaikeladu",
             "defaultBin": "Vaikelaokoht",
-            "defaultLocationHint": "Eelvalik saatelehtedele ja laoliikumistele"
+            "defaultLocationHint": "Eelvalik saatelehtedele ja laoliikumistele",
+            "notesPlaceholder": "Kirjeldus dokumentidele ja e-poele …"
         },
         "messages": {
             "loading": "Artiklit laaditakse",

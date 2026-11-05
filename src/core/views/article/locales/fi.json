@@ -26,7 +26,8 @@
             "ropHint": "Tyhjä = ei seurantaa",
             "defaultWarehouse": "Oletusvarasto",
             "defaultBin": "Oletusvarastopaikka",
-            "defaultLocationHint": "Esivalinta lähetteille ja varastotapahtumille"
+            "defaultLocationHint": "Esivalinta lähetteille ja varastotapahtumille",
+            "notesPlaceholder": "Kuvaus asiakirjoihin ja verkkokauppaan …"
         },
         "messages": {
             "loading": "Tuotetta ladataan",

@@ -26,7 +26,8 @@
             "ropHint": "Vacío = sin control",
             "defaultWarehouse": "Almacén predeterminado",
             "defaultBin": "Ubicación predeterminada",
-            "defaultLocationHint": "Valor previo para albaranes y movimientos de stock"
+            "defaultLocationHint": "Valor previo para albaranes y movimientos de stock",
+            "notesPlaceholder": "Descripción para documentos y tienda …"
         },
         "messages": {
             "loading": "Cargando artículo",

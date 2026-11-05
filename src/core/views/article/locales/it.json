@@ -26,7 +26,8 @@
             "ropHint": "Vuoto = nessun controllo",
             "defaultWarehouse": "Magazzino predefinito",
             "defaultBin": "Ubicazione predefinita",
-            "defaultLocationHint": "Valore proposto per bolle e movimenti di magazzino"
+            "defaultLocationHint": "Valore proposto per bolle e movimenti di magazzino",
+            "notesPlaceholder": "Descrizione per documenti e negozio …"
         },
         "messages": {
             "loading": "Caricamento articolo",

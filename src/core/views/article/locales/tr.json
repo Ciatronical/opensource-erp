@@ -26,7 +26,8 @@
             "ropHint": "Boş = takip yok",
             "defaultWarehouse": "Varsayılan depo",
             "defaultBin": "Varsayılan raf",
-            "defaultLocationHint": "İrsaliyeler ve stok hareketleri için ön ayar"
+            "defaultLocationHint": "İrsaliyeler ve stok hareketleri için ön ayar",
+            "notesPlaceholder": "Belgeler ve mağaza için açıklama …"
         },
         "messages": {
             "loading": "Urun yukleniyor",

@@ -26,7 +26,8 @@
             "ropHint": "留空 = 不监控",
             "defaultWarehouse": "默认仓库",
             "defaultBin": "默认库位",
-            "defaultLocationHint": "送货单和库存变动的预设值"
+            "defaultLocationHint": "送货单和库存变动的预设值",
+            "notesPlaceholder": "用于单据和商店的描述 …"
         },
         "messages": {
             "loading": "正在加载商品",

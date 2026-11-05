@@ -26,7 +26,8 @@
             "ropHint": "Vazio = sem controlo",
             "defaultWarehouse": "Armazém predefinido",
             "defaultBin": "Localização predefinida",
-            "defaultLocationHint": "Valor predefinido para guias de remessa e movimentos de stock"
+            "defaultLocationHint": "Valor predefinido para guias de remessa e movimentos de stock",
+            "notesPlaceholder": "Descrição para documentos e loja …"
         },
         "messages": {
             "loading": "A carregar artigo",

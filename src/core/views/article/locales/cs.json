@@ -26,7 +26,8 @@
             "ropHint": "Prázdné = bez sledování",
             "defaultWarehouse": "Výchozí sklad",
             "defaultBin": "Výchozí skladové místo",
-            "defaultLocationHint": "Předvolba pro dodací listy a skladové pohyby"
+            "defaultLocationHint": "Předvolba pro dodací listy a skladové pohyby",
+            "notesPlaceholder": "Popis pro doklady a e-shop …"
         },
         "messages": {
             "loading": "Artikl se nacita",
