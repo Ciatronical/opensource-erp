@@ -68,6 +68,22 @@ function shopMediaPick($data) {
 }
 
 /**
+ * Bildformate zum Hochladen und Umwandeln, dazu das voreingestellte
+ *
+ * available sagt, ob dieser Server das Format schreiben kann (AVIF braucht
+ * GD mit AVIF oder ffmpeg mit libaom-av1). default ist shop_image_format aus
+ * der Firmenkonfiguration — original = Format der Datei beibehalten.
+ *
+ * @return void formats (value, title, available), default
+ * @testdata {}
+ */
+function shopMediaFormatList($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+    resultInfo(true, '', ['formats' => shopMediaFormats(), 'default' => shopConfigValue($db, 'shop_image_format', 'original')]);
+}
+
+/**
  * Nimmt eine Datei in die Bibliothek auf (multipart/form-data, Feld file)
  *
  * Jeden Namen gibt es nur einmal: Nennt ein Artikel die vorhandene Datei,
@@ -78,7 +94,7 @@ function shopMediaPick($data) {
  *
  * @param string $data['path'] Bereich, etwa images:// oder downloads://
  * @param string $data['name'] gewünschter Name; leer = Name der hochgeladenen Datei
- * @param string $data['format'] Zielformat für Bilder (webp, jpg, png); leer = Format beibehalten
+ * @param string $data['format'] Zielformat für Bilder (avif, webp, jpg, png); leer oder original = Format beibehalten
  * @return void filename, replaced, thumbnail_error (Grund, wenn kein Vorschaubild entstand, sonst leer),
  *              media (Zeile aus media_shop), storages, dirname, files
  * @testdata {"path": "images://", "name": "", "format": ""}
@@ -194,12 +210,12 @@ function shopMediaRename($data) {
 }
 
 /**
- * Dateimanager: Produktbild in ein anderes Format umwandeln (WebP, JPEG, PNG)
+ * Dateimanager: Produktbild in ein anderes Format umwandeln (AVIF, WebP, JPEG, PNG)
  *
  * Die neue Datei ersetzt die alte, die Verweise der Artikel folgen.
  *
  * @param string $data['path'] Pfad des Bilds (images://foto.jpg)
- * @param string $data['format'] webp, jpg oder png
+ * @param string $data['format'] avif, webp, jpg oder png
  * @return void name (neuer Name), parts (geänderte Artikel), size_before, size_after, storages, dirname, files
  * @testdata {"path": "images://foto.jpg", "format": "webp"}
  */

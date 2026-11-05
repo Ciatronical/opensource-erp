@@ -81,6 +81,10 @@ const shopDefaultsConfig = [
     // nicht mehr — gebaut wird in HugoCMS (Einstellungen je HugoShop).
     { name: "shop_job_retention_days", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopJobRetentionDays", tooltip: "crm_fields.shopJobRetentionDays_help" },
     { name: "shop_thumbnail_size", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopThumbnailSize", tooltip: "crm_fields.shopThumbnailSize_help" },
+    // Bildformat, das der Dialog beim Hochladen von Produktbildern vorbelegt
+    // (original = beibehalten). Welche Formate dieser Server schreiben kann,
+    // lädt der Tab (quellen.shopImageFormats) — AVIF braucht GD mit AVIF oder ffmpeg.
+    { name: "shop_image_format", type: "dynamic-select", source: "shopImageFormats", clearable: false, fieldstyle: "max-width: 40ch", label: "crm_fields.shopImageFormat", tooltip: "crm_fields.shopImageFormat_help" },
     // Adresse von OpensourceERP, unter der eBay die Artikelbilder abholt —
     // für alle eBay-Kanäle dieselbe; Zugang und Richtlinien stehen je
     // eBay-Kanal in seiner Karte

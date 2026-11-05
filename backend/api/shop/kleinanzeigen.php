@@ -860,6 +860,7 @@ function getKleinanzeigenImagesZip($data) {
     $db = DbhCompany::begin();
     $kanal = shopKleinanzeigenChannel($db, $data);
     $partsId = (int)($data['parts_id'] ?? 0);
+    shopChannelImagesFit($db, $partsId, $kanal);
 
     $zeile = $db->getOne(
         "SELECT p.partnumber,

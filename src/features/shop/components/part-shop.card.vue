@@ -926,7 +926,7 @@ function bilderSetzen(kanal, antwort) {
 function bildWaehlen(kanal) {
     const eingabe = document.createElement('input')
     eingabe.type = 'file'
-    eingabe.accept = 'image/jpeg,image/png,image/gif,image/webp'
+    eingabe.accept = 'image/jpeg,image/png,image/gif,image/webp,image/avif'
     eingabe.multiple = true
     eingabe.onchange = () => bilderHochladen(kanal, Array.from(eingabe.files || []))
     eingabe.click()

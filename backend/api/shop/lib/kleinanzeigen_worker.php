@@ -220,6 +220,8 @@ function shopKleinanzeigenWorkerHealth($db): array {
  * @throws ApiError PART_NOT_FOUND, KLEINANZEIGEN_AD_INCOMPLETE
  */
 function shopKleinanzeigenAdPayload($db, int $kanal, int $partsId): array {
+    // Formate, die Kleinanzeigen nicht nimmt, vorher als JPEG nachziehen
+    shopChannelImagesFit($db, $partsId, $kanal);
     $zeile = $db->getOne(
         "SELECT kleinanzeigen_ad(CAST(:parts_id AS integer), CAST(:kanal AS integer)) AS ad,
                 (SELECT COALESCE(json_agg(i.filename ORDER BY i.sort, i.id), '[]'::json)

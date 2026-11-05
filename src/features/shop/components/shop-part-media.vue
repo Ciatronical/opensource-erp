@@ -466,7 +466,7 @@ const BEREICHE = [
     { wert: 'images', label: 'ShopView.media.areaImages', icon: 'mdi-image-multiple-outline' },
     { wert: 'downloads', label: 'ShopView.media.areaDownloads', icon: 'mdi-download-outline' },
 ]
-const BILD_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp'])
+const BILD_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'])
 const RAHMEN_EXTS = new Set(['pdf', 'txt'])
 const basename = (name) => String(name || '').trim().split('/').pop()
 
@@ -678,15 +678,33 @@ function anzeigenameSetzen() {
 
 const dateiEingabe = ref(null)
 const akzeptiert = computed(() => bereich.value === 'downloads'
-    ? '.pdf,.zip,.txt,.jpg,.jpeg,.png,.gif,.webp'
-    : 'image/jpeg,image/png,image/gif,image/webp')
+    ? '.pdf,.zip,.txt,.jpg,.jpeg,.png,.gif,.webp,.avif'
+    : 'image/jpeg,image/png,image/gif,image/webp,image/avif')
 const hochladung = ref({ offen: false, laeuft: false, zeilen: [] })
-const formatWahl = computed(() => [
-    { title: t('ShopView.media.keepFormat'), value: '' },
+
+/**
+ * Zielformate, die dieser Server schreiben kann (AVIF nur mit GD-AVIF oder
+ * ffmpeg), und das voreingestellte aus der Firmenkonfiguration
+ * (shop_image_format) — vom Server, bei jedem Öffnen des Dialogs neu
+ */
+const ZIELFORMATE_VORGABE = [
     { title: 'WebP', value: 'webp' },
     { title: 'JPEG', value: 'jpg' },
     { title: 'PNG', value: 'png' },
-])
+]
+const zielformate = ref(ZIELFORMATE_VORGABE)
+const formatVorgabe = ref('')
+async function formateLaden() {
+    try {
+        const antwort = await shopMediaApi.formats()
+        const formate = (antwort.formats || []).filter(f => f.available).map(f => ({ title: f.title, value: f.value }))
+        if (formate.length) zielformate.value = formate
+        formatVorgabe.value = formate.some(f => f.value === antwort.default) ? antwort.default : ''
+    } catch {
+        // Ohne Liste die Formate, die GD immer kann, und keine Vorbelegung
+    }
+}
+const formatWahl = computed(() => [{ title: t('ShopView.media.keepFormat'), value: '' }, ...zielformate.value])
 const zieht = ref(false)
 let ziehtTiefe = 0
 
@@ -706,8 +724,9 @@ function zielEndung(zeile) {
 function symbolFuerEndung(ext) {
     return symbol({ extension: ext })
 }
-function hochladungVorbereiten(liste) {
+async function hochladungVorbereiten(liste) {
     if (!liste.length || props.readonly) return
+    if (bereich.value === 'images') await formateLaden()
     hochladung.value = {
         offen: true,
         laeuft: false,
@@ -716,7 +735,7 @@ function hochladungVorbereiten(liste) {
             datei,
             basis: datei.name.replace(/\.[^.]+$/, ''),
             endung: (datei.name.split('.').pop() || '').toLowerCase(),
-            format: '',
+            format: formatVorgabe.value,
             status: 'offen',
             percent: 0,
             fehler: '',
@@ -838,18 +857,15 @@ async function loeschen() {
     l.offen = false
 }
 
-const ZIELFORMATE = [
-    { title: 'WebP', value: 'webp' },
-    { title: 'JPEG', value: 'jpg' },
-    { title: 'PNG', value: 'png' },
-]
 const umwandlung = ref({ offen: false, laeuft: false, datei: null, name: '', format: '', formate: [] })
-function umwandlungOeffnen(datei) {
+async function umwandlungOeffnen(datei) {
     if (!datei) return
+    await formateLaden()
     const ext = (datei.extension || '').toLowerCase()
     const jetzt = ext === 'jpeg' ? 'jpg' : ext
-    const formate = ZIELFORMATE.filter(f => f.value !== jetzt)
-    umwandlung.value = { offen: true, laeuft: false, datei, name: datei.basename, format: formate[0]?.value || '', formate }
+    const formate = zielformate.value.filter(f => f.value !== jetzt)
+    const vorschlag = formate.find(f => f.value === formatVorgabe.value) || formate[0]
+    umwandlung.value = { offen: true, laeuft: false, datei, name: datei.basename, format: vorschlag?.value || '', formate }
 }
 async function umwandeln() {
     const u = umwandlung.value

@@ -1062,6 +1062,13 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
     $sperren = [];
     $abgeschaltet = [];
 
+    // Kanalbilder in Formaten, die ihr Marktplatz nicht nimmt (Bestände von
+    // früher), als JPEG nachziehen — der Feed für Kleinanzeigen liest sie direkt
+    $angepasst = shopChannelImagesFit($db);
+    if ($angepasst) {
+        $sagen(sprintf('%d Kanalbilder für ihren Marktplatz in JPEG umgewandelt', $angepasst));
+    }
+
     foreach (shopOpenJobs($db, $limit, $nurIds) as $auftrag) {
         $id = (int)$auftrag['id'];
         if (null !== $gruppe) {
@@ -1884,3 +1891,10 @@ function shopSaveRun($db, string $beginn, array $zeilen, array $ids): void {
 // Die Verkaufskanäle: Modulrahmen und Module, darunter der HugoShop mit der
 // Abarbeitung der Aufträge dieser Datei (dev/shop-verkaufskanaele.md, Schritt 4)
 require_once __DIR__.'/../channels/channels.php';
+
+// Kanalbilder und Medienbibliothek: eBay-Angebote und der Läufer ziehen
+// Bildformate nach, die ein Marktplatz nicht nimmt — auch aus den
+// Kommandozeilen-Einstiegen, die lib/shop.php nicht laden
+require_once __DIR__.'/../../customer_vendor/filemanager.php';
+require_once __DIR__.'/channel_images.php';
+require_once __DIR__.'/media.php';

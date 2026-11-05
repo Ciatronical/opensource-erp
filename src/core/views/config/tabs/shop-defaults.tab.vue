@@ -160,6 +160,7 @@ import { ref, computed, watch, nextTick, onMounted, inject, defineAsyncComponent
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import ShopConfigField from './shop-config-field.component.vue'
+import { shopMediaApi } from '@/features/shop/composables/shopMediaApi.js'
 
 const ShopCountriesConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-countries.config.vue'))
 
@@ -203,10 +204,34 @@ const configLoaded = ref(false)
 
 /**
  * Auswahllisten, die nicht in der Firmenkonfiguration stehen — die Lagerplätze
- * kommen aus der Lagerverwaltung. Die Vorlagensätze lädt seit
- * dev/shop-mehrere-kanaele.md die Kanalkarte selbst.
+ * kommen aus der Lagerverwaltung, die Bildformate vom Server (was er schreiben
+ * kann). Die Vorlagensätze lädt seit dev/shop-mehrere-kanaele.md die
+ * Kanalkarte selbst.
  */
-const quellen = ref({ shopStockBins: [] })
+const quellen = ref({ shopStockBins: [], shopImageFormats: [] })
+
+/**
+ * Bildformate für shop_image_format: „Beibehalten“ und die Zielformate;
+ * was der Server nicht schreiben kann, steht ausgegraut mit Grund da
+ */
+async function ladeBildformate() {
+    try {
+        const { formats = [] } = await shopMediaApi.formats()
+        quellen.value = {
+            ...quellen.value,
+            shopImageFormats: [
+                { value: 'original', title: t('crm_fields.shopImageFormatOriginal') },
+                ...formats.map(f => ({
+                    value: f.value,
+                    title: f.title,
+                    props: f.available ? {} : { disabled: true, subtitle: t('crm_fields.shopImageFormatUnavailable') },
+                })),
+            ],
+        }
+    } catch (e) {
+        console.warn('Bildformate konnten nicht geladen werden:', e)
+    }
+}
 
 /**
  * Lagerplätze für die Einstellung shop_stock_bin_id
@@ -298,7 +323,7 @@ const ohneSpeichern = inject('ohneSpeichern', fn => fn())
 
 onMounted(async () => {
     await loadConfigFile()
-    await ladeLagerplaetze()
+    await Promise.all([ladeLagerplaetze(), ladeBildformate()])
     if (!configError.value) {
         ohneSpeichern(normalizeShopDefaults)
     }

@@ -65,7 +65,7 @@ async function post(action, body = {}) {
  * @param {string} storage images oder downloads
  * @param {File} file
  * @param {(percent: number) => void} [onProgress] Fortschritt 0–100
- * @param {{name?: string, format?: string}} [options] gewünschter Name; Zielformat für Bilder (webp, jpg, png)
+ * @param {{name?: string, format?: string}} [options] gewünschter Name; Zielformat für Bilder (avif, webp, jpg, png)
  * @returns {Promise<{filename: string, replaced: boolean}>} Name, unter dem die Datei liegt
  */
 export function uploadMedia(storage, file, onProgress, options = {}) {
@@ -149,5 +149,14 @@ export const shopMediaApi = {
     /** Produktbild in ein anderes Format umwandeln: name, parts, size_before, size_after */
     convert(path, format) {
         return post('shopMediaConvert', { path, format })
+    },
+
+    /**
+     * Bildformate für Hochladen und Umwandeln
+     * formats: value, title, available (kann dieser Server es schreiben);
+     * default: shop_image_format der Firmenkonfiguration (original = beibehalten)
+     */
+    formats() {
+        return post('shopMediaFormatList')
     },
 }

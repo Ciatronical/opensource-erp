@@ -145,7 +145,7 @@ function fmGetMimeType($filename) {
     $mimeTypes = [
         'pdf' => 'application/pdf',
         'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
-        'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp',
+        'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp', 'avif' => 'image/avif',
         'svg' => 'image/svg+xml', 'bmp' => 'image/bmp',
         'doc' => 'application/msword',
         'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

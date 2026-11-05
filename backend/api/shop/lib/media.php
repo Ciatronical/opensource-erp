@@ -5,7 +5,7 @@
 // Produktbilder und Downloads liegen in OpensourceERP, zentral für alle
 // Verkaufskanäle, je Mandant unter backend/data/<db>/shop/media/
 //
-//   images/      Produktbilder (jpg, png, gif, webp)
+//   images/      Produktbilder (jpg, png, gif, webp, avif)
 //   thumbnails/  Vorschaubilder, von OpensourceERP erzeugt — nicht von Hand
 //   downloads/   Datenblätter, Anleitungen (pdf, zip, txt, auch Bilder)
 //
@@ -21,10 +21,23 @@
 const SHOP_MEDIA_STORAGES = ['images' => 'image', 'downloads' => 'download', 'thumbnails' => 'thumbnail'];
 
 /** Endungen je Art; bei Bildern entscheidet der Inhalt, nicht der Name */
-const SHOP_MEDIA_IMAGE_TYPES = ['jpg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp'];
+const SHOP_MEDIA_IMAGE_TYPES = ['jpg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp',
+                                 'avif' => 'image/avif'];
 const SHOP_MEDIA_DOWNLOAD_TYPES = ['pdf' => 'application/pdf', 'zip' => 'application/zip', 'txt' => 'text/plain',
                                    'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png',
-                                   'gif' => 'image/gif', 'webp' => 'image/webp'];
+                                   'gif' => 'image/gif', 'webp' => 'image/webp', 'avif' => 'image/avif'];
+
+/** Anzeigenamen der Bildformate */
+const SHOP_MEDIA_FORMAT_NAMES = ['avif' => 'AVIF', 'webp' => 'WebP', 'jpg' => 'JPEG', 'png' => 'PNG', 'gif' => 'GIF'];
+
+/** Zielformate beim Hochladen und Umwandeln, in der Reihenfolge der Auswahl */
+const SHOP_MEDIA_CONVERT_FORMATS = ['avif', 'webp', 'jpg', 'png'];
+
+/** GD-Funktionen je Format: lesen, schreiben */
+const SHOP_MEDIA_GD_READ = ['jpg' => 'imagecreatefromjpeg', 'png' => 'imagecreatefrompng', 'gif' => 'imagecreatefromgif',
+                            'webp' => 'imagecreatefromwebp', 'avif' => 'imagecreatefromavif'];
+const SHOP_MEDIA_GD_WRITE = ['jpg' => 'imagejpeg', 'png' => 'imagepng', 'gif' => 'imagegif',
+                             'webp' => 'imagewebp', 'avif' => 'imageavif'];
 
 /** Höchstgrößen (B5) — die PHP-Grenzen (upload_max_filesize) gelten zusätzlich */
 const SHOP_MEDIA_MAX_IMAGE_BYTES = 20 * 1024 * 1024;
@@ -131,7 +144,7 @@ function shopMediaInspect(string $datei, string $art, string $name): array {
         $info = @getimagesize($datei);
         $endung = array_search($info['mime'] ?? '', SHOP_MEDIA_IMAGE_TYPES, true);
         if (false === $endung) {
-            throw new ApiError('MEDIA_TYPE', 'Nur JPG, PNG, GIF oder WEBP: '.$name);
+            throw new ApiError('MEDIA_TYPE', 'Nur JPG, PNG, GIF, WEBP oder AVIF: '.$name);
         }
         return ['mime' => $info['mime'], 'width' => (int)$info[0], 'height' => (int)$info[1],
                 'size' => $groesse, 'extension' => $endung];
@@ -236,6 +249,176 @@ function shopMediaStore($db, string $art, string $quelle, string $name, bool $ho
 }
 
 /**
+ * ffmpeg mit AV1-Encoder (libaom) — schreibt und liest AVIF, wenn GD es nicht kann
+ *
+ * Das GD der Ubuntu-Pakete ist ohne AVIF gebaut, ffmpeg bringt libaom und
+ * dav1d mit. Einmal je Aufruf geprüft.
+ *
+ * @return string|null Pfad zu ffmpeg, null wenn keins mit libaom-av1 da ist
+ */
+function shopMediaFfmpeg(): ?string {
+    static $pfad = false;
+    if (false !== $pfad) {
+        return $pfad;
+    }
+    $pfad = null;
+    if (!function_exists('exec')) {
+        return null;
+    }
+    $kandidaten = ['/usr/bin/ffmpeg', '/usr/local/bin/ffmpeg', trim((string)@shell_exec('command -v ffmpeg 2>/dev/null'))];
+    foreach (array_unique(array_filter($kandidaten)) as $kandidat) {
+        if (!is_executable($kandidat)) {
+            continue;
+        }
+        $zeilen = [];
+        @exec(escapeshellarg($kandidat).' -hide_banner -encoders 2>/dev/null', $zeilen, $rc);
+        if (0 === $rc && preg_grep('/\slibaom-av1\s/', $zeilen)) {
+            $pfad = $kandidat;
+            break;
+        }
+    }
+    return $pfad;
+}
+
+/**
+ * Führt ffmpeg mit einer Eingabedatei aus
+ *
+ * Die Eingabe steht als eigener Text-Parameter vorn: Der API-Dispatcher kann
+ * jede Funktion als action aufrufen, mit dem Request als einzigem Argument —
+ * das scheitert hier am Typ, statt ffmpeg mit fremden Argumenten zu starten.
+ *
+ * @param string $eingabe Eingabedatei
+ * @param array $argumente weitere Argumente samt Ausgabe, werden einzeln maskiert
+ * @param string|null $fehler Ausgabe von ffmpeg, wenn es scheitert
+ * @return bool fertig ohne Fehler
+ */
+function shopMediaFfmpegRun(string $eingabe, array $argumente, ?string &$fehler = null): bool {
+    $fehler = null;
+    $ffmpeg = shopMediaFfmpeg();
+    if (null === $ffmpeg) {
+        $fehler = 'ffmpeg mit libaom-av1 fehlt';
+        return false;
+    }
+    $befehl = escapeshellarg($ffmpeg).' -nostdin -hide_banner -loglevel error -y -i '.escapeshellarg($eingabe).' '
+        .implode(' ', array_map('escapeshellarg', $argumente)).' 2>&1';
+    $ausgabe = [];
+    exec($befehl, $ausgabe, $rc);
+    if (0 !== $rc) {
+        $fehler = trim(implode(' ', array_slice($ausgabe, -3))) ?: 'ffmpeg endete mit '.$rc;
+        return false;
+    }
+    return true;
+}
+
+/** Kann dieser Server ein Bild dieses Formats lesen? (jpg, png, gif, webp, avif) */
+function shopMediaCanRead(string $format): bool {
+    return function_exists(SHOP_MEDIA_GD_READ[$format] ?? '') || ('avif' === $format && null !== shopMediaFfmpeg());
+}
+
+/** Kann dieser Server ein Bild in diesem Format schreiben? */
+function shopMediaCanWrite(string $format): bool {
+    return function_exists(SHOP_MEDIA_GD_WRITE[$format] ?? '') || ('avif' === $format && null !== shopMediaFfmpeg());
+}
+
+/**
+ * Zielformate für Hochladen und Umwandeln, mit dem, was dieser Server kann
+ *
+ * @return array value, title, available — in der Reihenfolge der Auswahl
+ */
+function shopMediaFormats(): array {
+    return array_map(fn($format) => ['value' => $format, 'title' => SHOP_MEDIA_FORMAT_NAMES[$format],
+                                     'available' => shopMediaCanWrite($format)], SHOP_MEDIA_CONVERT_FORMATS);
+}
+
+/**
+ * Lädt ein Bild als GD-Bild — AVIF ohne GD-Unterstützung über ffmpeg
+ *
+ * ffmpeg 6 liest die Transparenz einer AVIF-Datei nicht mit; voll
+ * durchsichtige Flächen kommen weiß zurück, weil shopMediaSave() sie beim
+ * Schreiben weiß unterlegt.
+ *
+ * @param string $pfad Bilddatei
+ * @param string $format Format des Inhalts (Schlüssel aus SHOP_MEDIA_IMAGE_TYPES)
+ * @return GdImage|false
+ */
+function shopMediaLoad(string $pfad, string $format): GdImage|false {
+    $gd = SHOP_MEDIA_GD_READ[$format] ?? '';
+    if (function_exists($gd)) {
+        return @$gd($pfad);
+    }
+    if ('avif' !== $format || null === shopMediaFfmpeg()) {
+        return false;
+    }
+    $tmp = tempnam(sys_get_temp_dir(), 'oserp-media');
+    try {
+        if (!shopMediaFfmpegRun($pfad, ['-frames:v', '1', '-update', '1', '-c:v', 'png', '-f', 'image2', $tmp])) {
+            return false;
+        }
+        return @imagecreatefrompng($tmp);
+    } finally {
+        @unlink($tmp);
+    }
+}
+
+/**
+ * Schreibt ein GD-Bild in einem Format
+ *
+ * Qualität 85 für WebP und JPEG. AVIF mit GD (Qualität 60), sonst über
+ * ffmpeg/libaom: als Standbild (allintra, schnell genug zum Hochladen), die
+ * Transparenz als eigene Alpha-Ebene. Voll durchsichtige Pixel bekommen dabei
+ * Weiß als Farbe — Leser ohne Alpha-Ebene zeigen dann weißen Grund statt
+ * Schwarz.
+ *
+ * @param GdImage $bild Bild
+ * @param string $ziel Pfad der Datei
+ * @param string $format jpg, png, gif, webp oder avif
+ * @param bool $transparenz Bild kann durchsichtige Pixel haben (nicht bei JPEG-Quellen)
+ * @param string|null $fehler Ursache, wenn es scheitert
+ * @return bool geschrieben
+ */
+function shopMediaSave(GdImage $bild, string $ziel, string $format, bool $transparenz = true, ?string &$fehler = null): bool {
+    $fehler = null;
+    if ('avif' === $format && !function_exists('imageavif')) {
+        $png = tempnam(sys_get_temp_dir(), 'oserp-media');
+        try {
+            imagesavealpha($bild, true);
+            if (!@imagepng($bild, $png, 1)) {
+                $fehler = 'Zwischenbild nicht schreibbar';
+                return false;
+            }
+            $kanal = static fn($c) => "if(alpha(X,Y),$c(X,Y),255)";
+            $eingang = $transparenz
+                ? ['-filter_complex',
+                   '[0:v]format=rgba,split[c][a];[a]alphaextract[al];[c]geq=r=\''.$kanal('r').'\':g=\''.$kanal('g')
+                   .'\':b=\''.$kanal('b').'\',format=yuv420p[cc]', '-map', '[cc]', '-map', '[al]']
+                : ['-pix_fmt', 'yuv420p'];
+            // allintra gibt es erst ab libaom 3.2 — sonst die langsamere Standbild-Einstellung
+            foreach ([['-usage', 'allintra', '-cpu-used', '8'], ['-cpu-used', '6']] as $tempo) {
+                if (shopMediaFfmpegRun($png, array_merge($eingang, ['-c:v', 'libaom-av1'], $tempo,
+                        ['-row-mt', '1', '-crf', '30', '-still-picture', '1', '-f', 'avif', $ziel]), $fehler)) {
+                    return true;
+                }
+            }
+            return false;
+        } finally {
+            @unlink($png);
+        }
+    }
+    $ok = match ($format) {
+        'jpg'  => @imagejpeg($bild, $ziel, 85),
+        'png'  => @imagepng($bild, $ziel),
+        'gif'  => @imagegif($bild, $ziel),
+        'webp' => function_exists('imagewebp') && @imagewebp($bild, $ziel, 85),
+        'avif' => @imageavif($bild, $ziel, 60, 6),
+        default => false,
+    };
+    if (!$ok) {
+        $fehler = 'GD konnte '.(SHOP_MEDIA_FORMAT_NAMES[$format] ?? $format).' nicht schreiben';
+    }
+    return $ok;
+}
+
+/**
  * Erzeugt das Vorschaubild eines Produktbilds
  *
  * Wie früher in OpensourceERP und zuletzt in HugoCMS (ShopThumbnails): in die
@@ -271,23 +454,22 @@ function shopMediaThumbnail($db, string $name, int $groesse = 0, ?string &$grund
         $grund = 'Bild nicht lesbar';
         return null;
     }
-    [$breite, $hoehe, $typ] = $info;
+    [$breite, $hoehe] = $info;
+    $format = array_search($info['mime'] ?? '', SHOP_MEDIA_IMAGE_TYPES, true);
     $faktor = min(1, $groesse / max($breite, $hoehe, 1));
     $neuBreite = max(1, (int)round($breite * $faktor));
     $neuHoehe = max(1, (int)round($hoehe * $faktor));
 
-    $laden = [IMAGETYPE_JPEG => 'imagecreatefromjpeg', IMAGETYPE_PNG => 'imagecreatefrompng',
-              IMAGETYPE_GIF => 'imagecreatefromgif', IMAGETYPE_WEBP => 'imagecreatefromwebp'];
-    if (!isset($laden[$typ])) {
+    if (false === $format) {
         $grund = 'Bildart wird nicht unterstützt';
         return null;
     }
-    if (!function_exists($laden[$typ]) || (IMAGETYPE_WEBP === $typ && !function_exists('imagewebp'))) {
-        $grund = 'GD dieses Servers kann kein '.(IMAGETYPE_WEBP === $typ ? 'WebP' : image_type_to_extension($typ, false))
-            .' (PHP mit entsprechender GD-Unterstützung nötig)';
+    if (!shopMediaCanRead($format) || !shopMediaCanWrite($format)) {
+        $grund = 'Dieser Server kann kein '.SHOP_MEDIA_FORMAT_NAMES[$format]
+            .('avif' === $format ? ' (GD mit AVIF oder ffmpeg mit libaom-av1 nötig)' : ' (PHP mit entsprechender GD-Unterstützung nötig)');
         return null;
     }
-    $bild = @$laden[$typ]($quelle);
+    $bild = shopMediaLoad($quelle, $format);
     if (false === $bild) {
         $grund = 'Bild nicht lesbar (beschädigt oder zu groß für den Speicher)';
         return null;
@@ -306,16 +488,11 @@ function shopMediaThumbnail($db, string $name, int $groesse = 0, ?string &$grund
         $grund = 'Verzeichnis der Vorschaubilder nicht schreibbar: '.$verzeichnis;
         return null;
     }
-    $ok = match ($typ) {
-        IMAGETYPE_JPEG => @imagejpeg($klein, $ziel, 85),
-        IMAGETYPE_PNG  => @imagepng($klein, $ziel),
-        IMAGETYPE_GIF  => @imagegif($klein, $ziel),
-        default        => @imagewebp($klein, $ziel, 85),
-    };
+    $ok = shopMediaSave($klein, $ziel, $format, 'jpg' !== $format, $fehler);
     imagedestroy($klein);
     imagedestroy($bild);
     if (!$ok) {
-        $grund = 'Vorschaubild konnte nicht geschrieben werden: '.$ziel;
+        $grund = 'Vorschaubild konnte nicht geschrieben werden: '.$ziel.' — '.$fehler;
         return null;
     }
     @chmod($ziel, 0664);
@@ -381,30 +558,26 @@ function shopMediaFileRename($db, string $art, string $alt, string $neu): array 
     return ['name' => $neu, 'parts' => (int)($zeile['parts'] ?? 0)];
 }
 
-/** Zielformate beim Umwandeln eines Produktbilds: Endung => GD-Funktion */
-const SHOP_MEDIA_CONVERT_FORMATS = ['webp' => 'imagewebp', 'jpg' => 'imagejpeg', 'png' => 'imagepng'];
-
 /**
- * Wandelt ein Bild mit GD in ein anderes Format um — in eine Zwischendatei
+ * Wandelt ein Bild in ein anderes Format um — in eine Zwischendatei
  *
- * Qualität 85 für WebP und JPEG; JPEG kennt keine Transparenz, sie wird auf
- * Weiß gelegt. Der Aufrufer legt die Zwischendatei ab und löscht sie.
+ * Mit GD, AVIF notfalls über ffmpeg (shopMediaSave). JPEG kennt keine
+ * Transparenz, sie wird auf Weiß gelegt. Der Aufrufer legt die Zwischendatei
+ * ab und löscht sie.
  *
  * @param string $quelle Pfad des Bilds
  * @param array $info aus shopMediaInspect (mime, width, height)
- * @param string $format webp, jpg oder png
+ * @param string $format avif, webp, jpg oder png
  * @param string $name Dateiname für Meldungen
  * @return string Pfad der Zwischendatei
  * @throws ApiError MEDIA_FORMAT, MEDIA_CONVERT
  */
 function shopMediaConvertImage(string $quelle, array $info, string $format, string $name): string {
     $format = strtolower(trim($format));
-    if (!isset(SHOP_MEDIA_CONVERT_FORMATS[$format]) || !function_exists(SHOP_MEDIA_CONVERT_FORMATS[$format])) {
+    if (!in_array($format, SHOP_MEDIA_CONVERT_FORMATS, true) || !shopMediaCanWrite($format)) {
         throw new ApiError('MEDIA_FORMAT', 'Umwandeln nach '.strtoupper($format).' ist auf diesem Server nicht möglich');
     }
-    $laden = ['image/jpeg' => 'imagecreatefromjpeg', 'image/png' => 'imagecreatefrompng',
-              'image/gif' => 'imagecreatefromgif', 'image/webp' => 'imagecreatefromwebp'];
-    $bild = isset($laden[$info['mime']]) && function_exists($laden[$info['mime']]) ? @$laden[$info['mime']]($quelle) : false;
+    $bild = shopMediaCanRead($info['extension']) ? shopMediaLoad($quelle, $info['extension']) : false;
     if (false === $bild) {
         throw new ApiError('MEDIA_CONVERT', 'Bild nicht lesbar: '.$name);
     }
@@ -421,14 +594,11 @@ function shopMediaConvertImage(string $quelle, array $info, string $format, stri
     }
 
     $tmp = tempnam(sys_get_temp_dir(), 'oserp-media');
-    $ok = match ($format) {
-        'webp'  => imagewebp($bild, $tmp, 85),
-        'jpg'   => imagejpeg($bild, $tmp, 85),
-        default => imagepng($bild, $tmp),
-    };
+    $ok = shopMediaSave($bild, $tmp, $format, 'jpg' !== $info['extension'], $fehler);
     imagedestroy($bild);
     if (!$ok) {
         @unlink($tmp);
+        writeLog('[SHOP] Umwandeln von '.$name.' nach '.$format.' gescheitert: '.$fehler, true, DLOG_WRN);
         throw new ApiError('MEDIA_CONVERT', 'Bild konnte nicht umgewandelt werden: '.$name);
     }
     return $tmp;
@@ -449,13 +619,16 @@ function shopMediaConvertImage(string $quelle, array $info, string $format, stri
  * @param string $quelle hochgeladene Datei
  * @param string $name gewünschter Name (ohne oder mit Endung)
  * @param string $originalname Name der hochgeladenen Datei (Endung der Downloads)
- * @param string $format Zielformat für Bilder (webp, jpg, png) oder leer
+ * @param string $format Zielformat für Bilder (avif, webp, jpg, png), leer oder original = beibehalten
  * @param bool $hochgeladen true = move_uploaded_file
  * @return array Zeile aus media_shop, dazu replaced (eine verwaiste Datei wurde ersetzt)
  * @throws ApiError MEDIA_EXISTS, MEDIA_FORMAT, MEDIA_CONVERT und die von shopMediaStore
  */
 function shopMediaImport($db, string $art, string $quelle, string $name, string $originalname, string $format = '', bool $hochgeladen = false): array {
     $format = strtolower(trim($format));
+    if ('original' === $format) {
+        $format = '';
+    }
     $endungOriginal = strtolower(pathinfo($originalname, PATHINFO_EXTENSION));
     // Ein Name ohne Endung bekommt die der hochgeladenen Datei — die Prüfung
     // verlangt eine; die endgültige Endung entscheidet sich unten
@@ -469,7 +642,7 @@ function shopMediaImport($db, string $art, string $quelle, string $name, string 
 
     if ('image' === $art) {
         $endung = '' !== $format ? $format : $info['extension'];
-        if ('' !== $format && !isset(SHOP_MEDIA_CONVERT_FORMATS[$format])) {
+        if ('' !== $format && !in_array($format, SHOP_MEDIA_CONVERT_FORMATS, true)) {
             throw new ApiError('MEDIA_FORMAT', 'Unbekanntes Zielformat: '.$format);
         }
     } else {
@@ -511,18 +684,18 @@ function shopMediaImport($db, string $art, string $quelle, string $name, string 
  * alte: Verweise der Artikel werden umgeschrieben (die Trigger legen die
  * Aufträge „Produktseite schreiben“ an), Vorschaubild und Eintrag entstehen
  * neu, die alte Datei geht. JPEG kennt keine Transparenz — sie wird auf Weiß
- * gelegt; ein animiertes GIF verliert die Animation. Qualität 85 für WebP
- * und JPEG, wie bei den Vorschaubildern.
+ * gelegt; ein animiertes GIF verliert die Animation. Qualität wie bei den
+ * Vorschaubildern (shopMediaSave).
  *
  * @param object $db Company-Datenbankverbindung
  * @param string $name Dateiname in images/
- * @param string $format webp, jpg oder png
+ * @param string $format avif, webp, jpg oder png
  * @return array name (neuer Name), parts (geänderte Artikel), size_before, size_after
  * @throws ApiError MEDIA_FORMAT, MEDIA_FORMAT_SAME, MEDIA_EXISTS, MEDIA_NOT_FOUND, MEDIA_CONVERT, MEDIA_WRITE
  */
 function shopMediaConvertFile($db, string $name, string $format): array {
     $format = strtolower(trim($format));
-    if (!isset(SHOP_MEDIA_CONVERT_FORMATS[$format]) || !function_exists(SHOP_MEDIA_CONVERT_FORMATS[$format])) {
+    if (!in_array($format, SHOP_MEDIA_CONVERT_FORMATS, true) || !shopMediaCanWrite($format)) {
         throw new ApiError('MEDIA_FORMAT', 'Umwandeln nach '.strtoupper($format).' ist auf diesem Server nicht möglich');
     }
     $quelle = shopMediaDir($db, 'images').'/'.$name;

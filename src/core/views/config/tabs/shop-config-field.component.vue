@@ -96,7 +96,7 @@
                 hide-details="auto"
                 density="compact"
                 variant="outlined"
-                clearable
+                :clearable="field.clearable !== false"
             >
                 <template v-if="field.tooltip" #append-inner>
                     <FeldHilfe :text="t(field.tooltip)" :langtext="langtext(field)" :titel="t(field.label)" />

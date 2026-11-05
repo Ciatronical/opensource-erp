@@ -2813,6 +2813,9 @@ DELETE FROM defaults_oserp WHERE key IN ('shop_sites_dir', 'shop_publish_command
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_job_retention_days', '30') ON CONFLICT (key) DO NOTHING;
 -- Groesse der Vorschaubilder (laengste Seite in Pixeln), fuer alle HugoShops
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnail_size', '200') ON CONFLICT (key) DO NOTHING;
+-- Bildformat beim Hochladen von Produktbildern (Vorbelegung im Dialog):
+-- avif, webp, jpg, png oder original = Format der Datei beibehalten
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_image_format', 'original') ON CONFLICT (key) DO NOTHING;
 -- Lieferstatus für den Kunden (dev/shop-bestellstatus.md): Anzeige auf der
 -- Rechnungsseite im Shop und Mail bei Änderung, beides per Vorgabe aus
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_delivery_status_show', '0') ON CONFLICT (key) DO NOTHING;

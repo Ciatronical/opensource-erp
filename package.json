@@ -36,8 +36,8 @@
         "pinia": "^4.1.0",
         "rrule": "^2.8.1",
         "sweetalert2": "^11.26.25",
-        "temporal-polyfill": "^1.0.7",
-        "vue": "^3.5.44",
+        "temporal-polyfill": "^1.0.8",
+        "vue": "^3.5.45",
         "vue-chartjs": "^5.3.4",
         "vue-draggable-plus": "^0.6.1",
         "vue-i18n": "^11.4.18",
@@ -49,7 +49,7 @@
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^6.0.10",
-        "vite": "^8.3.5",
+        "vite": "^8.3.6",
         "vite-plugin-vue-devtools": "^8.2.1",
         "vite-plugin-vuetify": "^2.1.3"
     },
