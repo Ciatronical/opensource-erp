@@ -36,6 +36,12 @@ export class ShopAddToCart extends PortalElement {
   static styles = [
     PortalElement.baseStyles,
     css`
+      /* Mindesthöhe wie in placeholder.css des Pakets (Mengenzeile und
+         Knopfzeile): das Element ist vor und nach dem Aufrüsten gleich hoch,
+         nichts darunter springt. Beide Stellen gehören zusammen geändert. */
+      :host {
+        min-height: var(--shop-add-to-cart-height, 6rem);
+      }
       .quantity {
         display: flex;
         align-items: center;
@@ -57,6 +63,12 @@ export class ShopAddToCart extends PortalElement {
         align-items: center;
         gap: 0.5rem;
         cursor: pointer;
+      }
+      /* Leerer Warenkorb: der Zweitknopf bleibt im Fluss, nur unsichtbar.
+         Käme er erst mit der Sitzungsantwort hinzu, bräche die Knopfzeile
+         auf schmalen Bildschirmen nachträglich um. */
+      a.secondary.leer {
+        visibility: hidden;
       }
       svg {
         flex: none;
@@ -170,15 +182,15 @@ export class ShopAddToCart extends PortalElement {
           ${this._busy ? t('addToCart.pending') : this.buttonText || t('addToCart.submit')}
         </button>
 
-        ${this._count > 0
-          ? html`
-              <a class="secondary ${this.cls('buttonSecondary')}" href=${this.cartUrl}>
-                ${this.#cartCheckIcon()}
-                <span>${t('addToCart.viewCart')}</span>
-                <span class="count">(${this._count})</span>
-              </a>
-            `
-          : nothing}
+        <a
+          class="secondary ${this.cls('buttonSecondary')}${this._count > 0 ? '' : ' leer'}"
+          href=${this.cartUrl}
+          aria-hidden=${this._count > 0 ? 'false' : 'true'}
+        >
+          ${this.#cartCheckIcon()}
+          <span>${t('addToCart.viewCart')}</span>
+          <span class="count">(${this._count})</span>
+        </a>
       </div>
     `;
   }

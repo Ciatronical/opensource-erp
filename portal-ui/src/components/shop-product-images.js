@@ -38,9 +38,15 @@ export class ShopProductImages extends PortalElement {
   static styles = [
     PortalElement.baseStyles,
     css`
+      /* Feste Höhen: das Hauptbild ist immer gleich hoch, egal welches
+         Seitenverhältnis das Bild hat, Hinweis und Blätterknöpfe ebenso.
+         So bleibt alles darunter stehen — beim ersten Rendern wie beim
+         Blättern. Dieselben Maße reserviert placeholder.css im Paket, bevor
+         das Bündel geladen ist; beide Stellen gehören zusammen geändert. */
       .main {
         display: block;
         width: 100%;
+        height: var(--shop-product-image-height, 30rem);
         padding: 0;
         border: var(--shop-border-width, 1px) solid var(--shop-border-color, #dee2e6);
         border-radius: var(--shop-radius, 0.375rem);
@@ -51,15 +57,20 @@ export class ShopProductImages extends PortalElement {
       .main img {
         display: block;
         width: 100%;
-        max-height: var(--shop-product-image-height, 30rem);
+        height: 100%;
         object-fit: contain;
       }
       .hint {
+        height: 1.5rem;
         margin: 0.5rem 0;
+        line-height: 1.5rem;
+        overflow: hidden;
       }
       .nav {
         display: flex;
+        align-items: center;
         gap: 0.25rem;
+        height: 2.5rem;
       }
       .nav button {
         display: inline-flex;

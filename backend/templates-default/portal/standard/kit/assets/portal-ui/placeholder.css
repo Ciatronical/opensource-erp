@@ -1,0 +1,74 @@
+/* Platz für die Widgets, bevor das Bündel sie aufrüstet.
+ *
+ * Ein Widget rendert erst, wenn das Bündel geladen und das Theme-Stylesheet
+ * nachgeholt ist. Bis dahin ist ein <shop-add-to-cart> leer und null Pixel
+ * hoch, ein <shop-product-images> zeigt seine Links roh untereinander. Beim
+ * Rendern springt dann alles darunter (Layoutverschiebung, CLS). Diese Regeln
+ * geben den Elementen vorab die Form, die das Widget danach hat — sie gelten
+ * nur für noch nicht aufgerüstete Elemente (:not(:defined)) und damit auch
+ * ohne JavaScript. Die Maße entsprechen den Komponenten-Stilen in
+ * portal-ui/src/components und sind dort zu ändern, wenn sie hier geändert
+ * werden. Eingebunden von partials/portal-ui-assets.html.
+ */
+
+/* Warenkorb-Knopf: Mengenzeile (Feld 2,5rem + Abstand 1rem) und Knopfzeile */
+shop-add-to-cart:not(:defined) {
+  display: block;
+  min-height: var(--shop-add-to-cart-height, 6rem);
+}
+
+/* Konto-Schaltflächen im Seitenkopf: eine Knopfzeile */
+portal-account-buttons:not(:defined) {
+  display: block;
+  min-height: var(--portal-account-buttons-height, 2.5rem);
+}
+
+/* Produktbilder: erstes Bild im Rahmen des Hauptbilds, darunter der Platz für
+   Hinweis (2,5rem) und bei mehreren Bildern für die Blätterknöpfe (2,5rem) und
+   den Abstand zur Vorschauleiste (0,75rem); die übrigen Bilder als Vorschau. */
+shop-product-images:not(:defined) {
+  display: block;
+}
+shop-product-images:not(:defined) > a:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--shop-product-image-height, 30rem);
+  margin-bottom: 2.5rem;
+  border: var(--shop-border-width, 1px) solid var(--shop-border-color, #dee2e6);
+  border-radius: var(--shop-radius, 0.375rem);
+  background: var(--shop-image-bg, #fff);
+  overflow: hidden;
+}
+shop-product-images:not(:defined) > a:first-child:not(:last-child) {
+  margin-bottom: 5.75rem;
+}
+shop-product-images:not(:defined) > a:first-child img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+shop-product-images:not(:defined) > a:not(:first-child) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--shop-product-thumb-size, 4rem);
+  height: var(--shop-product-thumb-size, 4rem);
+  margin: 0 0.5rem 0.5rem 0;
+  padding: 2px;
+  vertical-align: top;
+  border-radius: var(--shop-radius, 0.375rem);
+  background: var(--shop-image-bg, #fff);
+  overflow: hidden;
+}
+shop-product-images:not(:defined) > a:not(:first-child) img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
