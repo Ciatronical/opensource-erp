@@ -402,7 +402,7 @@ Gesucht wird wie beim Druck: erst `<templates_dir>/shop/<name>/`, dann
 Was ein Satz nicht mitbringt, kommt aus `standard`: Vorlagen (`product.md.php`)
 und jede Datei des Pakets (`kit/`). Die Regeln der Kategorieübersicht
 (`category_groups.php`) sind die Ausnahme: nur ein Satz, der sie selbst
-mitbringt (sonic24), gruppiert nach Wortteilen; alle anderen nehmen die Gruppen
+mitbringt, gruppiert nach Wortteilen; alle anderen nehmen die Gruppen
 aus der Ansicht „Sortiment“ (dev/shop-sortiment.md). Ein eigener Satz besteht deshalb nur aus dem, was er ändert;
 `theme.json` gehört immer dazu und nennt unter `data.category_groups` die
 Datendatei der Kategorieübersicht.

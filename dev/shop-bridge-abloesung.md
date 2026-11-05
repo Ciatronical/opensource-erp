@@ -358,7 +358,7 @@ alphabetische Liste.
 - Der Läufer erneuert die Datei, wenn Seiten geschrieben oder entfernt wurden,
   und schreibt nur bei geändertem Inhalt. Ohne Kategorien entfernt er sie.
   Scheitert die Übersicht, wird trotzdem gebaut.
-- Die Wortliste von sonic24 ist Inhalt des Shops und gehört in dessen
+- Die Wortliste einer Webseite ist Inhalt ihres Shops und gehört in ihren
   Vorlagensatz (Stufe D). `standard` bringt nur die Stoppwörter mit; ohne
   Wortteile gruppiert die Häufigkeit der Wörter.
 - Die Adressen bildet `shopHugoPath()` nach Hugos Regel. Die hängt an der
@@ -425,17 +425,14 @@ stimmt alles, vergleicht der Abgleich nur Prüfsummen. Ein Bau von Hand
 (`publish.sh`, `hugo.sh`) mit den neuen Mounts vor dem ersten Läuferlauf
 scheitert.
 
-### Vorlagensatz sonic24
+### Vorlagensatz der Webseite
 
-`backend/templates/shop/sonic24/` im Repository der Kundensätze: `theme.json`
-und `category_groups.php` mit den 68 Wortteilen und 4 Topsellern aus
-`publish/category_groups.php`, samt Kommentaren. Stoppwörter, Schwellen,
-Produktseite und Paket kommen aus `standard` (Nachtrag 2026-09-25: die
-Produktseite inzwischen nicht mehr — der Satz hat eine eigene im alten
-Bootstrap-Aussehen, siehe `dev/shop-veroeffentlichung.md`, „Produktseite
-sonic24“) — `shopRenderPage()` greift jetzt
-wie Paket und Regeln auf `standard` zurück, wenn der Satz eine Vorlage nicht
-mitbringt.
+Die Wortteile und Topseller aus `publish/category_groups.php` wandern in die
+`category_groups.php` eines eigenen Vorlagensatzes im Repository der
+Kundensätze (dort beschrieben). Was der Satz nicht mitbringt — Stoppwörter,
+Schwellen, Produktseite, Paket —, kommt aus `standard`: `shopRenderPage()`
+greift wie Paket und Regeln auf `standard` zurück, wenn der Satz eine Vorlage
+nicht mitbringt.
 
 ### Einstellungen übernehmen
 
@@ -454,7 +451,7 @@ OpensourceERP gar nicht.
    lesen, einspielen. Die Ausgabe enthält die PayPal-Zugangsdaten.
 3. In der Firmenkonfiguration unter Shop setzen: Shop-Schlüssel, Adresse von
    OpensourceERP (`shop_backend_url`, die Adresse von `backend/shop/`),
-   Wurzelverzeichnis und Verzeichnis der Webseite, Vorlagensatz `sonic24`. Die
+   Wurzelverzeichnis und Verzeichnis der Webseite, den Vorlagensatz der Webseite. Die
    Shop-Übersicht zeigt, was noch fehlt.
 4. Programm zum Bauen: Verzeichnis des Hugo-Programms
    (`shop_publish_command_path`, der Dateiname `hugo` steht fest) und
@@ -513,9 +510,9 @@ veröffentlicht wird. Gegeneinander gesperrt sind die beiden Bauten nicht.
   gewollt neu: `portal-api/index.php` und `not_found.php` aus dem Paket
 - ohne `oserp-portal/` bricht der Bau ab, siehe oben
 - Testseite `/portal-ui-demo/` mit dem Bundle aus `portal-ui/dist`
-- Satz sonic24: Produktseite aus `standard`, Paket gleich `standard` (24
-  Dateien), Kategorieübersicht mit seinen Regeln gleich der vorhandenen von
-  sonic24
+- ein Kundensatz nur mit Regeln: Produktseite und Paket aus `standard` (24
+  Dateien), Kategorieübersicht mit seinen Regeln gleich der vorhandenen der
+  Webseite
 - Übernahme mit einer erfundenen `bridge-config`: Sandbox- und Live-Paar
   getrennt, Anführungszeichen maskiert, `shop_site_dir` und `shop_content_dir`
   abgeleitet

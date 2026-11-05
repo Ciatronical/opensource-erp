@@ -45,7 +45,7 @@ Vorlagensatz des HugoShops:
 | Satz | Gruppen | Topseller |
 | --- | --- | --- |
 | ohne eigene `category_groups.php` (`standard`) | aus dem Sortiment, in der Reihenfolge `sortkey`, dann Name; Kategorien ohne Gruppe unter „Sonstiges“; keine Mindestgröße | `category_shop.topseller`, nach Namen |
-| mit eigener `category_groups.php` (`sonic24`) | aus den Wortteilen der Regeln wie bisher | aus den Regeln |
+| mit eigener `category_groups.php` (Kundensatz mit Regeln) | aus den Wortteilen der Regeln wie bisher | aus den Regeln |
 
 Die **Kategorien** kommen in beiden Fällen aus dem Sortiment; in der Übersicht
 stehen nur Kategorien mit mindestens einem angebotenen Artikel. Die Adressen
@@ -103,3 +103,16 @@ Abfragen der neuen API und der Werkzeugabgleich (Kategorie anlegen, beim
 zweiten Lauf wiederfinden). Die Gruppierung in PHP mit Beispieldaten für beide
 Wege. **Nicht geprüft:** Upstall auf einer echten Mandantendatenbank und die
 Ansicht im Browser.
+
+## Übersicht aus dem Vorlagensatz (05.11.2026)
+
+Die Übersicht kann ein Vorlagensatz neu gestalten, ohne das Theme der
+Webseite anzufassen: alles unter `kit/` des Satzes geht als `oserp-portal/`
+in die Webseite, und deren Mount `oserp-portal/layouts` liegt nach den eigenen
+Layouts, aber vor dem Theme — Paket-Layouts übersteuern das Theme, eigene
+Layouts der Webseite das Paket (mit Hugo 0.125 und 0.164 geprüft). Vorlagen
+unter `layouts/taxonomy/shopcategory.terms.html` und
+`layouts/taxonomy/shopcategory.html` greifen nur für die Taxonomie mit dem
+Einzahl-Schlüssel `shopcategory`; Tags und Themen behalten das Theme.
+Zu beachten: `data.category_groups` muss in der theme.json eines solchen
+Satzes stehen, es gibt keinen Rückfall auf `standard`.

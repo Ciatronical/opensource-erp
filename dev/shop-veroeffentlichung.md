@@ -73,14 +73,14 @@ Bringt ein Satz eine Datei nicht mit — eine Vorlage, eine Datei des
 Webseiten-Pakets —, gilt die des mitgelieferten Satzes `standard`. Ausnahme
 seit 16.10.2026: `category_groups.php` gibt es in `standard` nicht mehr; ohne
 eigene Datei kommen die Gruppen aus dem Sortiment (dev/shop-sortiment.md). Ein eigener Satz enthält so nur, was er
-ändert; `theme.json` gehört immer dazu. Beispiel: `sonic24` besteht aus
-`theme.json` und `category_groups.php`.
+ändert; `theme.json` gehört immer dazu. Die Kundensätze selbst sind im
+Repository der Kundensätze beschrieben, nicht hier.
 
 | Datei | Zweck |
 | --- | --- |
 | `theme.json` | Name, Beschreibung, passendes Hugo-Theme, Ausgaben mit Zielpfad-Muster |
 | `product.md.php` | Produktseite |
-| `category_groups.php` | Regeln der Kategorieübersicht (Bridge-Ablösung, Stufe C) — nur noch in Sätzen, die nach Wortteilen gruppieren (sonic24); ohne die Datei kommen die Gruppen aus dem Sortiment (dev/shop-sortiment.md) |
+| `category_groups.php` | Regeln der Kategorieübersicht (Bridge-Ablösung, Stufe C) — nur noch in Sätzen, die nach Wortteilen gruppieren; ohne die Datei kommen die Gruppen aus dem Sortiment (dev/shop-sortiment.md) |
 | `_helpers.php` | Maskierung für YAML, Preis- und Zahlenformat |
 
 **Schnittstelle zur Vorlage** ist ein einziges Array, kein Schwarm von
@@ -166,11 +166,10 @@ mitführt, zeigt kivitendos eigene Oberfläche denselben Stand.
 | 3 | Bilder, Vorschaubilder, Downloads, Kategorieseiten, Sprachen, Preise inkl. Steuer, Bildadressen aus den Einstellungen | **begonnen:** Preise, Adressen, Vorschaubilder, Downloads, Kategorieübersicht erledigt; Sprachen offen |
 | 4 | Voller Seiteninhalt aus `template.php` (Karussell, Reiter), Umstieg von sonic24, Doku | **erledigt 2026-09-25:** Umstieg von sonic24 (`dev/shop-bridge-abloesung.md`, Stufe D), Doku in `dev/shop-betrieb.md`; Karussell und Reiter in der Produktseite des Satzes `sonic24` — siehe „Produktseite sonic24“ unten. Seit 15.10.2026 hat auch der Satz `standard` diesen Aufbau |
 
-## Produktseite sonic24 (2026-09-25)
+## Produktseite des Satzes standard
 
-`backend/templates/shop/sonic24/product.md.php` (Repository der Kundensätze)
-ist ein Nachbau von `sonic24.de/publish/template.php` in der letzten Fassung
-vom 2026-09-02: dasselbe **Bootstrap**-Markup — Bildkarussell mit Vor- und
+Vorbild der Produktseite ist `sonic24.de/publish/template.php` in der letzten
+Fassung vom 2026-09-02: **Bootstrap**-Markup — Bildkarussell mit Vor- und
 Zurück-Knopf, Preisblock netto und brutto, Verfügbarkeitsabzeichen,
 Warenkorb (`shop-add-to-cart`), Anfrage-Knopf, Reiter Beschreibung,
 Technische Daten, Eigenschaften, Downloads als `nav-tabs` mit
@@ -181,8 +180,8 @@ die letzte Station, diese nur, wenn sie vom Titel abweicht).
 **Nachtrag (15.10.2026):** Der Satz `standard` ist an diesen Aufbau angeglichen
 (`backend/templates-default/shop/standard/product.md.php`): dasselbe
 Bootstrap-Markup mit Karussell, Preisblock, Abzeichen, Warenkorb, Anfrage-Knopf
-und Reitern. Unterschiede zu `sonic24`, weil sie zu diesem einen Shop gehören:
-keine Marke, kein Firmenlogo, keine Rückgabe- und Versandangaben im Front
+und Reitern. Nicht enthalten, weil sie zu einem einzelnen Shop gehören:
+Marke, Firmenlogo, Rückgabe- und Versandangaben im Front
 Matter. Dazu drei Dinge, die der Standard schon vorher hatte: ohne
 Steuerschlüssel steht nur ein Preis; `availability` und Abzeichen richten sich
 nach bestellbar **und** Bestand (bestellbar ohne Bestand: gelbes Abzeichen
@@ -198,8 +197,7 @@ mehr als Bootstrap-Karussell, sondern über das Widget `shop-product-images`
 `shop-product-images.html` im Kit): erstes Bild groß, die übrigen als
 Vorschau, Klick öffnet die Vergrößerung in einem nativen `<dialog>`. Die
 Bilder stehen als Links im Inneren des Shortcodes, damit sie ohne Bündel
-sichtbar bleiben. Der Satz `sonic24` (Repository der Kundensätze) trägt noch
-das Karussell. Vorhandene Seiten brauchen „Alle veröffentlichen“.
+sichtbar bleiben. Vorhandene Seiten brauchen „Alle veröffentlichen“.
 
 **Nachtrag (16.10.2026):** Das Feld „Navigationspfad“ der Artikelkarte heißt
 jetzt „Einordnung im Sortiment“ — es erzeugt keine Navigation, sondern die
@@ -207,8 +205,7 @@ Kurzbeschreibung und Suchbegriffe (Spalte und Schlüssel bleiben
 `hugoshop_breadcrumbs` bzw. `breadcrumbs`). Im Satz `standard` steht die
 Artikelnummer nicht mehr in `description`, der sichtbaren Kurzbeschreibung
 unter dem Titel und in den Kategorielisten; ohne Stufen entfällt
-`description`. `metaDescription` behält die Artikelnummer vorn. Der Satz
-`sonic24` ist unverändert.
+`description`. `metaDescription` behält die Artikelnummer vorn.
 
 ## Konfigurationsprüfung der Webseite (30.10.2026)
 

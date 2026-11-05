@@ -105,8 +105,8 @@ wie jeder andere, mehr nicht. Es fehlt:
   übernehmen, sobald das Werkzeug ein Bildfeld hat.
 - Eigene Vorlage für Werkzeugseiten (Vorlagensatz, `theme.json`): Fahrzeugliste
   hübscher als Tabelle, Hinweis „Passt es zu Ihrem Fahrzeug? → Werkzeugsuche".
-- Kategorieübersicht: „Spezialwerkzeug" und „Werkzeugverleih" in
-  `category_groups.php` einordnen.
+- Kategorieübersicht: „Spezialwerkzeug" und „Werkzeugverleih" in der Ansicht
+  Sortiment einer Gruppe zuordnen.
 
 ### 6. Kleineres
 
