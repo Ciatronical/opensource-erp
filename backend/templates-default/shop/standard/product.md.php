@@ -159,8 +159,14 @@ card-image-alt: <?= shopYaml($titel) ?>
 <div class="lead fw-bold fs-3"><?= shopMoney($artikel['price_net']) ?> <?= $schutz($waehrung) ?></div>
 <?php endif; ?>
 <h3 class="h5 pt-4 pb-1">Verfügbarkeit</h3>
+<?php // Abzeichen in Bootstraps abgeschwächten Farben (bg-*-subtle und
+      // text-*-emphasis, Kontrast über 7:1). Die Farben stehen als Variablen
+      // von Bootstrap 5.3 mit festem Rückfall im style-Attribut: Bootstrap 5.2
+      // (hugoshop) kennt die Klassen nicht, und das Theme inter-data hat kein
+      // Bootstrap. Die Utilities text-success/bg-success tragen !important
+      // und bleiben deshalb weg — sie überschrieben jede Farbe hier. ?>
 <?php if (!$bestellbar): ?>
-<div class="badge rounded-pill bg-danger bg-opacity-25 text-danger mb-2">
+<div class="badge rounded-pill mb-2" style="color: var(--bs-danger-text-emphasis, #58151c); background-color: var(--bs-danger-bg-subtle, #f8d7da);">
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="bi bi-x-circle-fill me-2">
   <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"></path>
 </svg>
@@ -168,14 +174,16 @@ card-image-alt: <?= shopYaml($titel) ?>
 </div>
 <p class="mb-0">Lieferzeit auf Anfrage</p>
 <?php elseif ($aufLager): ?>
-<div class="badge rounded-pill bg-success bg-opacity-25 text-success mb-2">
+<div class="badge rounded-pill mb-2" style="color: var(--bs-success-text-emphasis, #0a3622); background-color: var(--bs-success-bg-subtle, #d1e7dd);">
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill me-2" viewBox="0 0 16 16">
   <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
 </svg>
     <span style="vertical-align: middle;">Verfügbar / Auf Lager</span>
 </div>
 <?php else: ?>
-<div class="badge rounded-pill bg-warning bg-opacity-25 text-warning mb-2">
+<?php // Gelb: Bootstraps Textfarbe (#664d03, 7,2:1) wirkt auf dem hellen Gelb
+      // noch schwach — fester dunkler Braunton (11,9:1), wie bei Grün und Rot ?>
+<div class="badge rounded-pill mb-2" style="color: #3d2e02; background-color: var(--bs-warning-bg-subtle, #fff3cd);">
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-fill me-2" viewBox="0 0 16 16">
   <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
 </svg>
