@@ -103,7 +103,7 @@ Zwei Wege:
   Stücken (etwa 4 MB) mit Prüfsumme, damit `post_max_size` auf einem
   Hosting reicht. Die Freigaben „Produktbilder“, „Vorschaubilder“ und
   „Downloads“ werden damit Schreibziele der Anbindung, jede mit eigener
-  Endungsliste (Bilder: jpg, png, gif, webp; Downloads: pdf und was B5
+  Endungsliste (Bilder: jpg, png, gif, webp, seit 2026-11-05 avif; Downloads: pdf und was B5
   festlegt). Kein PHP, keine Unterverzeichnisse — die Regeln von
   `ShopSync::allowedPath()` gelten weiter.
 - Abgleich: Der Lauf meldet die Medien im Verzeichnis der Lieferung mit den

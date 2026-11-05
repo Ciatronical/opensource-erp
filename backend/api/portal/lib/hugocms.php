@@ -93,7 +93,7 @@ function portalHugoCmsErrorText(array $fehler, string $gesendet = ''): string {
         'UNKNOWN-COMMAND'      => 'Diese HugoCMS-Version kennt die OpensourceERP-Anbindung noch nicht',
         'SHOP-PATH-NOT-ALLOWED' => 'HugoCMS nimmt diese Datei nicht an, sie liegt außerhalb der Freigaben',
         'SHOP-GRANT-UNUSABLE'  => 'In HugoCMS ist eine Freigabe unbrauchbar eingetragen — in den Projekteinstellungen unter „OpensourceERP“ prüfen und speichern',
-        'SHOP-FILETYPE-NOT-ALLOWED' => 'HugoCMS nimmt diese Dateiart nicht an',
+        'SHOP-FILETYPE-NOT-ALLOWED' => 'HugoCMS nimmt diese Dateiart nicht an — eine HugoCMS-Version vor dem 05.11.2026 kennt kein avif',
         'SHOP-HASH-MISMATCH'   => 'Eine Datei kam anders an, als angekündigt',
         'SHOP-MEDIA-INVALID'   => 'HugoCMS lehnt das Stück einer Mediendatei ab',
         'SHOP-MEDIA-OFFSET'    => 'HugoCMS erwartet das Stück einer Mediendatei an anderer Stelle',
@@ -105,14 +105,16 @@ function portalHugoCmsErrorText(array $fehler, string $gesendet = ''): string {
         'SHOP-THUMBNAILS-TOO-MANY' => 'Zu viele Bilder für einen Aufruf von HugoCMS',
         'SHOP-THUMBNAILS-NO-GD'    => 'Auf dem Webserver fehlt die PHP-Erweiterung GD — HugoCMS kann keine Vorschaubilder erzeugen',
     ];
+    // Was HugoCMS mitschickt (meist den Pfad der Datei), kommt in Klammern
+    // dahinter — „nimmt diese Dateiart nicht an“ ohne die Datei hilft niemandem
+    $params = array_filter(array_map('strval', (array)($fehler['params'] ?? [])));
     if (isset($bekannt[$schluessel])) {
-        return $bekannt[$schluessel];
+        return $bekannt[$schluessel].($params ? ' ('.implode(', ', $params).')' : '');
     }
     if ('ESITE' === $code) {
         return 'HugoCMS kennt unter dieser Adresse keine Webseite — ist es der cms-api-Endpunkt der Webseite?';
     }
 
-    $params = array_filter(array_map('strval', (array)($fehler['params'] ?? [])));
     return 'HugoCMS meldet '.trim($code.' '.$schluessel).($params ? ' ('.implode(', ', $params).')' : '');
 }
 

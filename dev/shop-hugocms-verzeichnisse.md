@@ -58,7 +58,7 @@ fest — der Ort, dem die Webseite gehört —, nicht OpensourceERP:
   | --- | --- | --- | --- |
   | Produktseiten | `content/de/produkt/` | — | `.md` schreiben, löschen |
   | Kategorieübersicht | `data/category_groups.json` | — | diese eine Datei schreiben |
-  | Produktbilder | `static/images/products/` | — | seit 2026-10-15 aus der Medienbibliothek schreiben und löschen (`jpg, jpeg, png, gif, webp`, `dev/shop-medienbibliothek.md`); davor: HugoCMS liest sie für die Vorschaubilder |
+  | Produktbilder | `static/images/products/` | — | seit 2026-10-15 aus der Medienbibliothek schreiben und löschen (`jpg, jpeg, png, gif, webp`, seit 2026-11-05 auch `avif`, `dev/shop-medienbibliothek.md`); davor: HugoCMS liest sie für die Vorschaubilder |
   | Vorschaubilder | `static/images/thumbnails/` | — | seit 2026-10-15 fertig aus der Medienbibliothek schreiben und löschen; davor: HugoCMS schreibt sie |
   | Downloads (seit 2026-10-14) | `static/downloads/` | — | seit 2026-10-15 aus der Medienbibliothek schreiben und löschen (zusätzlich `pdf, zip, txt`); davor: HugoCMS prüft nur, ob die Dateien da sind (`shopdownloads`) |
   | Paket | `oserp-portal/` (fest, nicht wählbar) | — | `md, json, html, js, css`, PHP nur signiert |
