@@ -99,6 +99,15 @@
 {{- $features := dict "portal" true -}}
 {{- with resources.Get "portal-ui/features.json" -}}{{- $features = . | transform.Unmarshal -}}{{- end -}}
 {{- range resources.Match "portal-ui/chunk-*.js" -}}{{- $veroeffentlicht := .RelPermalink -}}{{- end -}}
+{{- /*
+  Platz für die Widgets, bevor das Bündel sie aufrüstet (placeholder.css):
+  ohne ihn ist ein Widget bis zum Rendern null Pixel hoch und alles darunter
+  springt (Layoutverschiebung). Ein <link> im Hauptteil ist zulässig; steht
+  er mehrfach auf der Seite, lädt der Browser die Datei trotzdem nur einmal.
+*/ -}}
+{{- with resources.Get "portal-ui/placeholder.css" -}}
+<link rel="stylesheet" href="{{ (. | minify | fingerprint).RelPermalink }}">
+{{- end -}}
 {{- $bundles := slice "portal-widgets" -}}
 {{- if $features.shop }}{{ $bundles = $bundles | append "shop-widgets" }}{{ end -}}
 {{- if $features.lxcars }}{{ $bundles = $bundles | append "lxcars-widgets" }}{{ end -}}

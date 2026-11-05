@@ -351,8 +351,9 @@ function shopStagingFollowGrants($db, int $kanal, array $freigaben): array {
  * @param int $kanal HugoShop — Preis, Texte, Angebot und Adressen des Kanals
  * @param int $partsId Artikel
  * @return array artikel, shop (darin taxonomy, categories_url, categories_title,
- *               category_url aus der Kanalkarte), betrieb, versand (shop_part_shipping_check:
- *               passt eine Versandart in diesem HugoShop)
+ *               category_url aus der Kanalkarte; images, image_urls, image_sizes
+ *               gleich lang und gleich geordnet), betrieb, versand
+ *               (shop_part_shipping_check: passt eine Versandart in diesem HugoShop)
  * @throws ApiError PART_NOT_FOUND
  */
 function shopPageData($db, int $kanal, int $partsId): array {
@@ -445,13 +446,19 @@ function shopPageData($db, int $kanal, int $partsId): array {
     // trägt keinen festen Pfad (shopChannelCategoryPaths)
     $kategoriePfade = shopChannelCategoryPaths($db, $kanal);
     $kategorie      = trim((string)($zeile['hugoshop_category'] ?? ''));
+    // Maße der Produktbilder aus der Medienbibliothek: die Produktseite
+    // schreibt sie als width/height, der Browser reserviert den Platz, bevor
+    // das Bild geladen ist (keine Layoutverschiebung). Unbekannte Bilder: null.
+    $masse          = shopMediaImageSizes($db, $bilder);
 
     return [
         'artikel' => [
             'id'          => (int)$zeile['id'],
             'partnumber'  => (string)$zeile['partnumber'],
             'description' => (string)$zeile['description'],
-            'notes'       => (string)($zeile['notes'] ?? ''),
+            // Bilder im Text des Editors bekommen ihre Maße nachgetragen,
+            // wenn sie unter der Adresse der Medienbibliothek stehen
+            'notes'       => shopHtmlImageSizes($db, (string)($zeile['notes'] ?? ''), $bildMuster),
             'unit'        => (string)($zeile['unit'] ?? ''),
             'ean'         => (string)($zeile['ean'] ?? ''),
             'sellprice'   => (float)$zeile['price_net'],
@@ -483,6 +490,8 @@ function shopPageData($db, int $kanal, int $partsId): array {
             'breadcrumbs'    => $liste($zeile['hugoshop_breadcrumbs']),
             'images'         => $bilder,
             'image_urls'     => array_map(fn($bild) => shopLink($bildMuster, (string)$bild), $bilder),
+            // je Bild ['width' => …, 'height' => …] oder null, gleiche Reihenfolge wie images
+            'image_sizes'    => array_map(fn($bild) => $masse[basename((string)$bild)] ?? null, $bilder),
             'thumbnail_url'  => $bilder ? shopLink($vorschauMuster, (string)$bilder[0]) : '',
             'technical_data' => $liste($zeile['hugoshop_technical_data']),
             'properties'     => $liste($zeile['hugoshop_properties']),
@@ -574,6 +583,108 @@ function shopLink(string $muster, string $wert): string {
         return $wert;
     }
     return str_replace('%s', rawurlencode($wert), $muster);
+}
+
+/**
+ * Maße von Bildern der Medienbibliothek (media_shop)
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param array $namen Dateinamen, auch mit Pfad — verglichen wird der Dateiname
+ * @return array Dateiname => ['width' => int, 'height' => int]; nur Bilder mit bekannten Maßen
+ */
+function shopMediaImageSizes($db, array $namen): array {
+    $namen = array_values(array_unique(array_filter(
+        array_map(fn($name) => basename((string)$name), $namen),
+        fn($name) => '' !== $name
+    )));
+    if (!$namen) {
+        return [];
+    }
+    $zeilen = $db->getAll(
+        "SELECT filename, width, height
+           FROM media_shop
+          WHERE kind = 'image' AND width > 0 AND height > 0
+            AND filename IN (SELECT jsonb_array_elements_text(CAST(:namen AS jsonb)))",
+        [':namen' => json_encode($namen)]
+    ) ?: [];
+
+    $masse = [];
+    foreach ($zeilen as $zeile) {
+        $masse[$zeile['filename']] = ['width' => (int)$zeile['width'], 'height' => (int)$zeile['height']];
+    }
+    return $masse;
+}
+
+/**
+ * Trägt width und height in <img>-Tags eines HTML-Textes nach
+ *
+ * Für Bilder der Medienbibliothek, die der Editor ohne Maße eingefügt hat:
+ * ihr Pfad muss dem Adressmuster der Bilder des Kanals (images_link, mit %s
+ * für den Namen) entsprechen; ein gleichnamiges Bild an anderer Stelle
+ * bekommt nichts. Tags mit width, height oder style bleiben unverändert —
+ * eine Angabe des Editors (etwa width: 50%) soll nicht mit nachgetragenen
+ * Maßen kollidieren.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $html Text aus dem Editor
+ * @param string $muster Adressmuster der Bilder mit %s; leer = nichts nachtragen
+ * @return string Text mit ergänzten Maßen
+ */
+function shopHtmlImageSizes($db, string $html, string $muster): string {
+    if ('' === $muster || false === strpos($muster, '%s') || false === stripos($html, '<img')) {
+        return $html;
+    }
+    if (!preg_match_all('/<img\b[^>]*>/i', $html, $treffer)) {
+        return $html;
+    }
+
+    // Pfad einer Adresse, entschlüsselt — Host und Abfrage zählen nicht
+    $pfad = fn(string $adresse): string => rawurldecode((string)parse_url($adresse, PHP_URL_PATH));
+    $bibliothek = $pfad($muster);
+
+    // Dateiname, wenn das Bild unter der Adresse der Bibliothek steht
+    $name = function (string $tag) use ($pfad, $bibliothek): string {
+        if (!preg_match('/\bsrc\s*=\s*(["\'])(.*?)\1/i', $tag, $src)) {
+            return '';
+        }
+        $datei = basename($pfad(html_entity_decode($src[2], ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+        if ('' === $datei || str_replace('%s', $datei, $bibliothek) !== $pfad(html_entity_decode($src[2], ENT_QUOTES | ENT_HTML5, 'UTF-8'))) {
+            return '';
+        }
+        return $datei;
+    };
+
+    $offen = [];
+    foreach ($treffer[0] as $tag) {
+        if (preg_match('/\s(width|height|style)\s*=/i', $tag)) {
+            continue;
+        }
+        $datei = $name($tag);
+        if ('' !== $datei) {
+            $offen[$tag] = $datei;
+        }
+    }
+    if (!$offen) {
+        return $html;
+    }
+    $masse = shopMediaImageSizes($db, array_values($offen));
+    if (!$masse) {
+        return $html;
+    }
+
+    $ersatz = [];
+    foreach ($offen as $tag => $datei) {
+        if (!isset($masse[$datei])) {
+            continue;
+        }
+        $ersatz[$tag] = preg_replace(
+            '/\s*\/?>$/',
+            sprintf(' width="%d" height="%d"$0', $masse[$datei]['width'], $masse[$datei]['height']),
+            $tag,
+            1
+        );
+    }
+    return $ersatz ? strtr($html, $ersatz) : $html;
 }
 
 /** Geldbetrag fuer die Anzeige: deutsches Zahlenformat */

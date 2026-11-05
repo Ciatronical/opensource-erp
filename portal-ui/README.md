@@ -197,6 +197,31 @@ Browser die Seite dahinter nicht scrollt).
 Maße von außen: `--shop-product-image-height` (Hauptbild, Vorgabe `30rem`),
 `--shop-product-thumb-size` (Vorschau, `4rem`), `--shop-lightbox-bg`.
 
+### Keine Layoutverschiebung
+
+Das Hauptbild hat eine feste Höhe (`--shop-product-image-height`), Hinweis
+und Blätterknöpfe ebenso: beim Blättern zwischen Bildern mit verschiedenem
+Seitenverhältnis bleibt alles darunter stehen. Die Bilder im Light DOM
+tragen `width` und `height` aus der Medienbibliothek (`media_shop`, über
+`shop.image_sizes` aus `shopPageData()`), damit der Browser den Platz schon
+vor dem Laden kennt.
+
+Bis das Bündel geladen und das Theme-Stylesheet nachgeholt ist, rendert kein
+Widget — ein `<shop-add-to-cart>` wäre so lange null Pixel hoch, und die
+Links der Produktbilder stünden roh untereinander. Dagegen steht
+`assets/portal-ui/placeholder.css` im Paket, eingebunden vom Partial
+`portal-ui-assets.html`: Regeln auf `:not(:defined)` geben den Elementen
+vorab die Form, die das Widget danach hat (Mindesthöhe des Warenkorb-Knopfs
+und der Konto-Schaltflächen, erstes Produktbild im Rahmen, die übrigen als
+Vorschau). Ohne JavaScript bleibt diese Form stehen. Die Maße dort und in
+den Komponenten-Stilen gehören zusammen geändert; die Custom Properties
+(`--shop-add-to-cart-height`, `--portal-account-buttons-height`,
+`--shop-product-image-height`) gelten an beiden Stellen.
+
+Der Zweitknopf „Warenkorb anzeigen“ in `<shop-add-to-cart>` wird immer
+gerendert und bei leerem Warenkorb nur unsichtbar (`visibility: hidden`),
+damit die Knopfzeile nicht erst mit der Sitzungsantwort umbricht.
+
 Vorher stand auf den Produktseiten ein Bootstrap-Karussell, dessen Klassen
 das Theme `inter-data` unter `.produkt-seite` nachbauen musste. Nach der
 Umstellung müssen die Produktseiten einmal neu veröffentlicht werden

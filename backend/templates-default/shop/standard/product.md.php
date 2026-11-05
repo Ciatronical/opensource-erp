@@ -134,11 +134,16 @@ card-image-alt: <?= shopYaml($titel) ?>
 <?php // Produktbilder mit Vergrößerung: das Widget shop-product-images liest die
       // Links aus und zeigt sie mit Lightbox. Ohne Bündel bleiben die Links,
       // wie sie hier stehen — das Bild öffnet dann in einem neuen Tab. Keine
-      // Leerzeile dazwischen: sie beendete den HTML-Block für Goldmark. ?>
+      // Leerzeile dazwischen: sie beendete den HTML-Block für Goldmark.
+      //
+      // width/height aus der Medienbibliothek (shop.image_sizes): der Browser
+      // reserviert den Platz, bevor das Bild geladen ist — ohne die Maße
+      // rutscht alles darunter nach, sobald es da ist. ?>
 <?php if ($bilder): ?>
 {{< shop-product-images >}}
 <?php foreach ($bilder as $nummer => $bild): ?>
-<a href="<?= $schutz($bild) ?>" target="_blank"><img src="<?= $schutz($bild) ?>" style="max-width: 100%; height: auto;" alt="<?= $schutz(count($bilder) > 1 ? $titel.' - Ansicht '.($nummer + 1) : $titel) ?>"<?= $nummer > 0 ? ' loading="lazy"' : '' ?>></a>
+<?php $mass = $shop['image_sizes'][$nummer] ?? null; ?>
+<a href="<?= $schutz($bild) ?>" target="_blank"><img src="<?= $schutz($bild) ?>"<?= $mass ? ' width="'.(int)$mass['width'].'" height="'.(int)$mass['height'].'"' : '' ?> style="max-width: 100%; height: auto;" alt="<?= $schutz(count($bilder) > 1 ? $titel.' - Ansicht '.($nummer + 1) : $titel) ?>"<?= $nummer > 0 ? ' loading="lazy"' : '' ?>></a>
 <?php endforeach; ?>
 {{< /shop-product-images >}}
 <?php endif; ?>
