@@ -37,7 +37,14 @@
         "image": "Afbeelding invoegen (ook Ctrl+V of slepen)",
         "imageWidth": "Breedte in tekst",
         "imageOriginal": "Origineel",
-        "imageError": "Afbeelding {name} kon niet worden gelezen"
+        "imageError": "Afbeelding {name} kon niet worden gelezen",
+        "imageFromCustomer": "Afbeelding uit de klantmap",
+        "imageFromVendor": "Afbeelding uit de leveranciersmap",
+        "folderCustomer": "Klantmap",
+        "folderVendor": "Leveranciersmap",
+        "folderEmpty": "Geen afbeeldingen in deze map",
+        "folderHint": "Klik selecteert, dubbelklik voegt direct in",
+        "folderInsert": "Invoegen ({n})"
     },
     "FakturaView": {
         "common": {

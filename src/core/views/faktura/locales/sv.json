@@ -37,7 +37,14 @@
         "image": "Infoga bild (även Ctrl+V eller dra och släpp)",
         "imageWidth": "Bredd i texten",
         "imageOriginal": "Original",
-        "imageError": "Bilden {name} kunde inte läsas"
+        "imageError": "Bilden {name} kunde inte läsas",
+        "imageFromCustomer": "Bild från kundmappen",
+        "imageFromVendor": "Bild från leverantörsmappen",
+        "folderCustomer": "Kundmapp",
+        "folderVendor": "Leverantörsmapp",
+        "folderEmpty": "Inga bilder i den här mappen",
+        "folderHint": "Klick markerar, dubbelklick infogar direkt",
+        "folderInsert": "Infoga ({n})"
     },
     "FakturaView": {
         "common": {

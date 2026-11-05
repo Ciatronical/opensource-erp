@@ -158,6 +158,7 @@ function getCompanyConfig($data) {
                         SELECT json_object_agg(key, value)
                         FROM employee_config_oserp
                         WHERE employee_id = (SELECT id FROM employee WHERE login = '$login')
+                          AND key <> 'signature'
                     ),
                     'part_classifications', (
                         SELECT json_agg(part_classifications)

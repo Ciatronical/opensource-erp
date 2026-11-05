@@ -216,7 +216,9 @@ class LaTeXTemplateEngine {
      * Eingebettetes Bild aus dem HTML-Editor (<img src="data:image/…;base64,…">)
      * als Datei in den Arbeitsordner legen und per \includegraphics setzen.
      * data-width="50" = Prozent der Zeilenbreite; ohne Angabe die natürliche
-     * Größe (96 dpi), höchstens Zeilenbreite. Höhe höchstens halbe Seite.
+     * Größe (96 dpi), höchstens Zeilenbreite. Die Höhe ist nur so weit
+     * begrenzt, dass das Bild auf eine Seite passt — eine engere Grenze würde
+     * Hochformat-Fotos trotz eingestellter Breite schmaler drucken.
      * Bilder mit externer Adresse werden nicht geladen und entfallen.
      */
     private function htmlImageToLatex(string $tag): string {
@@ -243,7 +245,7 @@ class LaTeXTemplateEngine {
             $pt = round($info[0] * 0.75, 1);
             $width = "\\ifdim {$pt}pt>\\linewidth\\linewidth\\else {$pt}pt\\fi";
         }
-        return "\\par\\smallskip\\noindent\\includegraphics[width={$width},height=0.5\\textheight,keepaspectratio]{{$name}}\\par\\smallskip\n";
+        return "\\par\\smallskip\\noindent\\includegraphics[width={$width},height=0.9\\textheight,keepaspectratio]{{$name}}\\par\\smallskip\n";
     }
 
     // ===== Variable Resolution =====

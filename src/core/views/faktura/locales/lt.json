@@ -37,7 +37,14 @@
         "image": "Įterpti vaizdą (taip pat Ctrl+V arba nuvilkimas)",
         "imageWidth": "Plotis tekste",
         "imageOriginal": "Originalas",
-        "imageError": "Vaizdo {name} nepavyko nuskaityti"
+        "imageError": "Vaizdo {name} nepavyko nuskaityti",
+        "imageFromCustomer": "Paveikslėlis iš kliento aplanko",
+        "imageFromVendor": "Paveikslėlis iš tiekėjo aplanko",
+        "folderCustomer": "Kliento aplankas",
+        "folderVendor": "Tiekėjo aplankas",
+        "folderEmpty": "Šiame aplanke nėra paveikslėlių",
+        "folderHint": "Spustelėjus pasirenkama, dukart spustelėjus iš karto įterpiama",
+        "folderInsert": "Įterpti ({n})"
     },
     "FakturaView": {
         "common": {

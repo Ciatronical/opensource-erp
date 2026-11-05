@@ -3,8 +3,10 @@
 //
 // Unterschrift des angemeldeten Mitarbeiters (Benutzermenü → Konfiguration).
 // Das Frontend bereitet das Bild auf (weißen Hintergrund entfernen, auf die
-// Schrift zuschneiden, verkleinern) und schickt ein PNG als Data-URL. Der
-// Brief druckt es über der Unterschriftslinie (letters.php).
+// Schrift zuschneiden, verkleinern) und schickt ein PNG als Data-URL. Es
+// steht in employee_config_oserp unter dem Schlüssel signature — die Lader
+// der Mitarbeiterkonfiguration für den Store lassen diesen Schlüssel aus.
+// Der Brief druckt es über der Unterschriftslinie (letters.php).
 
 require_once __DIR__.'/../lib/mitarbeiter.php';
 
@@ -16,8 +18,8 @@ require_once __DIR__.'/../lib/mitarbeiter.php';
  */
 function getEmployeeSignature($data) {
     $row = DbhCompany::begin()->getOne(
-        "SELECT 'data:' || mime || ';base64,' || translate(encode(image, 'base64'), E'\\n', '') AS image, mtime
-         FROM employee_signature_oserp WHERE employee_id = :id",
+        "SELECT value AS image, coalesce(mtime, itime) AS mtime
+         FROM employee_config_oserp WHERE employee_id = :id AND key = 'signature'",
         [':id' => intval(mitarbeiterId($data) ?? 0)]
     );
     resultInfo(true, '', ['results' => ['image' => $row['image'] ?? null, 'mtime' => $row['mtime'] ?? null]]);
@@ -42,10 +44,10 @@ function saveEmployeeSignature($data) {
         throw new ApiError('VALIDATION_ERROR', 'Bild ungültig oder größer als 1 MB');
     }
     DbhCompany::begin()->execute(
-        "INSERT INTO employee_signature_oserp (employee_id, image, mime)
-         VALUES (:id, decode(:image, 'base64'), :mime)
-         ON CONFLICT (employee_id) DO UPDATE SET image = EXCLUDED.image, mime = EXCLUDED.mime, mtime = now()",
-        [':id' => $employee_id, ':image' => base64_encode($bytes), ':mime' => 'image/png']
+        "INSERT INTO employee_config_oserp (employee_id, key, value, itime)
+         VALUES (:id, 'signature', :image, now())
+         ON CONFLICT (employee_id, key) DO UPDATE SET value = EXCLUDED.value, mtime = now()",
+        [':id' => $employee_id, ':image' => 'data:image/png;base64,' . base64_encode($bytes)]
     );
     resultInfo(true, 'SAVED');
 }
@@ -58,7 +60,7 @@ function saveEmployeeSignature($data) {
  */
 function deleteEmployeeSignature($data) {
     DbhCompany::begin()->execute(
-        "DELETE FROM employee_signature_oserp WHERE employee_id = :id",
+        "DELETE FROM employee_config_oserp WHERE employee_id = :id AND key = 'signature'",
         [':id' => intval(mitarbeiterId($data) ?? 0)]
     );
     resultInfo(true, 'DELETED');

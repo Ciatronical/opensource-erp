@@ -37,7 +37,14 @@
         "image": "Bild einfügen (auch Strg+V oder Hineinziehen)",
         "imageWidth": "Breite im Text",
         "imageOriginal": "Original",
-        "imageError": "Bild {name} konnte nicht gelesen werden"
+        "imageError": "Bild {name} konnte nicht gelesen werden",
+        "imageFromCustomer": "Bild aus dem Kundenordner",
+        "imageFromVendor": "Bild aus dem Lieferantenordner",
+        "folderCustomer": "Kundenordner",
+        "folderVendor": "Lieferantenordner",
+        "folderEmpty": "Keine Bilder in diesem Ordner",
+        "folderHint": "Klicken wählt aus, Doppelklick fügt sofort ein",
+        "folderInsert": "Einfügen ({n})"
     },
     "FakturaView": {
         "common": {

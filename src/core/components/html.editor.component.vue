@@ -180,6 +180,16 @@
                     @click="imageInput?.click()"
                 />
                 <input ref="imageInput" type="file" accept="image/*" multiple hidden @change="onImageFiles">
+                <v-btn
+                    v-if="imageFolder"
+                    icon="mdi-folder-image"
+                    size="small"
+                    variant="text"
+                    :disabled="imageBusy"
+                    :title="t(imageFolder.src === 'V' ? 'HtmlEditor.imageFromVendor' : 'HtmlEditor.imageFromCustomer')"
+                    @click="folderPicker = true"
+                />
+                <cv-image-picker-dialog v-if="imageFolder" v-model="folderPicker" :folder="imageFolder" @select="insertImages" />
                 <v-btn-toggle
                     v-if="editor.isActive('image')"
                     :model-value="editor.getAttributes('image').width || 0"
@@ -296,9 +306,10 @@ import { TaskList, TaskItem } from '@tiptap/extension-list'
 import { TableKit } from '@tiptap/extension-table'
 import { Placeholder } from '@tiptap/extensions'
 import { Extension, Node, mergeAttributes } from '@tiptap/core'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { Plugin, PluginKey, NodeSelection } from '@tiptap/pm/state'
 import { imageFileToDataUrl, imageWidth } from '@/core/utils/imageTools.js'
 import * as toast from '@/core/utils/toasts.js'
+import CvImagePickerDialog from '@/core/components/cv-image-picker.dialog.vue'
 
 /**
  * Extension für Ctrl+Click zum Öffnen von Links
@@ -402,7 +413,8 @@ const ImageNode = Node.create({
 export default defineComponent({
     name: 'HtmlEditorComponent',
     components: {
-        EditorContent
+        EditorContent,
+        CvImagePickerDialog
     },
     props: {
         /**
@@ -460,6 +472,15 @@ export default defineComponent({
         images: {
             type: Boolean,
             default: false
+        },
+        /**
+         * Dateiablage eines Kunden/Lieferanten ({ cv_id, src: 'C'|'V' }):
+         * zweiter Bildknopf, der die Bilder aus diesem Ordner zur Auswahl
+         * zeigt (nur mit images)
+         */
+        imageFolder: {
+            type: Object,
+            default: null
         }
     },
     emits: ['update:modelValue', 'blur', 'focus'],
@@ -470,6 +491,7 @@ export default defineComponent({
         const isFull = computed(() => props.toolbar === 'full')
         const imageInput = ref(null)
         const imageBusy = ref(false)
+        const folderPicker = ref(false)
         const imageWidths = [25, 50, 75, 100, 0]
 
         const contentStyle = computed(() => ({
@@ -647,7 +669,8 @@ export default defineComponent({
         /**
          * Bilder verkleinern und an der Cursorstelle (bzw. Ablagestelle)
          * einfügen. Nach jedem Bild steht der Cursor dahinter, mehrere Bilder
-         * landen also in der gewählten Reihenfolge untereinander.
+         * landen also in der gewählten Reihenfolge untereinander. Ist gerade
+         * ein Bild markiert, kommt das neue dahinter statt es zu ersetzen.
          */
         async function insertImages(files, pos = null) {
             if (!editor.value) return
@@ -664,17 +687,28 @@ export default defineComponent({
                     // Fotos starten mit halber Zeilenbreite — in voller Größe
                     // füllen sie im Brief die halbe Seite. Kleine Grafiken bleiben original.
                     const width = (await imageWidth(src)) >= 800 ? 50 : null
-                    const node = { type: 'image', attrs: { src, alt: file.name || '', width } }
-                    const chain = editor.value.chain().focus()
-                    if (pos !== null) {
-                        chain.insertContentAt(pos, node).run()
-                        pos = null
-                    } else {
-                        chain.insertContent(node).run()
-                    }
+                    placeImage({ type: 'image', attrs: { src, alt: file.name || '', width } }, pos)
+                    pos = null
                 }
             } finally {
                 imageBusy.value = false
+            }
+        }
+
+        function placeImage(node, pos) {
+            const e = editor.value
+            if (pos === null && e.state.selection instanceof NodeSelection) pos = e.state.selection.to
+            const chain = e.chain().focus()
+            ;(pos === null ? chain.insertContent(node) : chain.insertContentAt(pos, node)).run()
+            // Nach dem Einfügen ist das Bild markiert — das nächste Einfügen
+            // würde es ersetzen. Cursor in den Absatz dahinter (notfalls neu).
+            const { selection, doc } = e.state
+            if (!(selection instanceof NodeSelection)) return
+            const end = selection.to
+            if (doc.resolve(end).nodeAfter?.isTextblock) {
+                e.commands.setTextSelection(end + 1)
+            } else {
+                e.chain().insertContentAt(end, { type: 'paragraph' }).setTextSelection(end + 1).run()
             }
         }
 
@@ -752,7 +786,9 @@ export default defineComponent({
             confirmLink,
             imageInput,
             imageBusy,
+            folderPicker,
             imageWidths,
+            insertImages,
             onImageFiles,
             setImageWidth
         }

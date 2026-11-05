@@ -37,7 +37,14 @@
         "image": "Insertar imagen (también Ctrl+V o arrastrar)",
         "imageWidth": "Ancho en el texto",
         "imageOriginal": "Original",
-        "imageError": "No se pudo leer la imagen {name}"
+        "imageError": "No se pudo leer la imagen {name}",
+        "imageFromCustomer": "Imagen de la carpeta del cliente",
+        "imageFromVendor": "Imagen de la carpeta del proveedor",
+        "folderCustomer": "Carpeta del cliente",
+        "folderVendor": "Carpeta del proveedor",
+        "folderEmpty": "No hay imágenes en esta carpeta",
+        "folderHint": "Clic para seleccionar, doble clic inserta directamente",
+        "folderInsert": "Insertar ({n})"
     },
     "FakturaView": {
         "common": {

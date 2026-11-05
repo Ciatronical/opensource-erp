@@ -37,7 +37,14 @@
         "image": "Ievietot attēlu (arī Ctrl+V vai velkot)",
         "imageWidth": "Platums tekstā",
         "imageOriginal": "Oriģināls",
-        "imageError": "Attēlu {name} neizdevās nolasīt"
+        "imageError": "Attēlu {name} neizdevās nolasīt",
+        "imageFromCustomer": "Attēls no klienta mapes",
+        "imageFromVendor": "Attēls no piegādātāja mapes",
+        "folderCustomer": "Klienta mape",
+        "folderVendor": "Piegādātāja mape",
+        "folderEmpty": "Šajā mapē nav attēlu",
+        "folderHint": "Klikšķis atlasa, dubultklikšķis uzreiz ievieto",
+        "folderInsert": "Ievietot ({n})"
     },
     "FakturaView": {
         "common": {

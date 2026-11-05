@@ -37,7 +37,14 @@
         "image": "Görsel ekle (Ctrl+V veya sürükleyip bırakma ile de)",
         "imageWidth": "Metindeki genişlik",
         "imageOriginal": "Orijinal",
-        "imageError": "{name} görseli okunamadı"
+        "imageError": "{name} görseli okunamadı",
+        "imageFromCustomer": "Müşteri klasöründen resim",
+        "imageFromVendor": "Tedarikçi klasöründen resim",
+        "folderCustomer": "Müşteri klasörü",
+        "folderVendor": "Tedarikçi klasörü",
+        "folderEmpty": "Bu klasörde resim yok",
+        "folderHint": "Tıklayarak seçin, çift tıklama hemen ekler",
+        "folderInsert": "Ekle ({n})"
     },
     "FakturaView": {
         "common": {

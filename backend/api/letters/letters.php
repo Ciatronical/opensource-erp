@@ -237,7 +237,7 @@ function getLetter($data) {
             'employees', (
                 SELECT COALESCE(json_agg(json_build_object(
                     'id', e.id, 'name', e.name,
-                    'has_signature', EXISTS (SELECT 1 FROM employee_signature_oserp s WHERE s.employee_id = e.id)
+                    'has_signature', EXISTS (SELECT 1 FROM employee_config_oserp s WHERE s.employee_id = e.id AND s.key = 'signature')
                 ) ORDER BY e.name), '[]'::json)
                 FROM employee e WHERE COALESCE(e.deleted, false) = false
             ),
@@ -444,10 +444,10 @@ function letterPrintData($db, array $override): array {
                          FROM contacts c, ids WHERE c.cp_id = ids.cp_id),
             'employee', (SELECT json_build_object('id', e.id, 'name', COALESCE(e.name, ''),
                                                   'tel', COALESCE(e.deleted_tel, ''), 'email', COALESCE(e.deleted_email, ''),
-                                                  'signature', (SELECT encode(s.image, 'base64') FROM employee_signature_oserp s WHERE s.employee_id = e.id))
+                                                  'signature', (SELECT split_part(s.value, ',', 2) FROM employee_config_oserp s WHERE s.employee_id = e.id AND s.key = 'signature'))
                          FROM employee e, ids WHERE e.id = ids.employee_id),
             'salesman', (SELECT json_build_object('id', e.id, 'name', COALESCE(e.name, ''),
-                                                  'signature', (SELECT encode(s.image, 'base64') FROM employee_signature_oserp s WHERE s.employee_id = e.id))
+                                                  'signature', (SELECT split_part(s.value, ',', 2) FROM employee_config_oserp s WHERE s.employee_id = e.id AND s.key = 'signature'))
                          FROM employee e, ids WHERE e.id = ids.salesman_id),
             'company',      COALESCE((SELECT value FROM defaults_oserp WHERE key = 'company_name'), ''),
             'sender_name',  COALESCE((SELECT email_sender_letter FROM defaults LIMIT 1), ''),

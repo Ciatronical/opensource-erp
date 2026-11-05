@@ -37,7 +37,14 @@
         "image": "Sett inn bilde (også Ctrl+V eller dra og slipp)",
         "imageWidth": "Bredde i teksten",
         "imageOriginal": "Original",
-        "imageError": "Bildet {name} kunne ikke leses"
+        "imageError": "Bildet {name} kunne ikke leses",
+        "imageFromCustomer": "Bilde fra kundemappen",
+        "imageFromVendor": "Bilde fra leverandørmappen",
+        "folderCustomer": "Kundemappe",
+        "folderVendor": "Leverandørmappe",
+        "folderEmpty": "Ingen bilder i denne mappen",
+        "folderHint": "Klikk velger, dobbeltklikk setter inn med en gang",
+        "folderInsert": "Sett inn ({n})"
     },
     "FakturaView": {
         "common": {

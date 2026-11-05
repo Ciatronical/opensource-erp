@@ -37,7 +37,14 @@
         "image": "Sisesta pilt (ka Ctrl+V või lohistamine)",
         "imageWidth": "Laius tekstis",
         "imageOriginal": "Originaal",
-        "imageError": "Pilti {name} ei õnnestunud lugeda"
+        "imageError": "Pilti {name} ei õnnestunud lugeda",
+        "imageFromCustomer": "Pilt kliendi kaustast",
+        "imageFromVendor": "Pilt tarnija kaustast",
+        "folderCustomer": "Kliendi kaust",
+        "folderVendor": "Tarnija kaust",
+        "folderEmpty": "Selles kaustas pole pilte",
+        "folderHint": "Klõps valib, topeltklõps lisab kohe",
+        "folderInsert": "Lisa ({n})"
     },
     "FakturaView": {
         "common": {

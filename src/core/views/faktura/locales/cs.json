@@ -37,7 +37,14 @@
         "image": "Vložit obrázek (také Ctrl+V nebo přetažením)",
         "imageWidth": "Šířka v textu",
         "imageOriginal": "Originál",
-        "imageError": "Obrázek {name} nelze přečíst"
+        "imageError": "Obrázek {name} nelze přečíst",
+        "imageFromCustomer": "Obrázek ze složky zákazníka",
+        "imageFromVendor": "Obrázek ze složky dodavatele",
+        "folderCustomer": "Složka zákazníka",
+        "folderVendor": "Složka dodavatele",
+        "folderEmpty": "V této složce nejsou žádné obrázky",
+        "folderHint": "Kliknutím vyberete, dvojklikem hned vložíte",
+        "folderInsert": "Vložit ({n})"
     },
     "FakturaView": {
         "common": {

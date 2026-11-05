@@ -37,7 +37,14 @@
         "image": "Lisää kuva (myös Ctrl+V tai vetämällä)",
         "imageWidth": "Leveys tekstissä",
         "imageOriginal": "Alkuperäinen",
-        "imageError": "Kuvaa {name} ei voitu lukea"
+        "imageError": "Kuvaa {name} ei voitu lukea",
+        "imageFromCustomer": "Kuva asiakkaan kansiosta",
+        "imageFromVendor": "Kuva toimittajan kansiosta",
+        "folderCustomer": "Asiakkaan kansio",
+        "folderVendor": "Toimittajan kansio",
+        "folderEmpty": "Tässä kansiossa ei ole kuvia",
+        "folderHint": "Napsautus valitsee, kaksoisnapsautus lisää heti",
+        "folderInsert": "Lisää ({n})"
     },
     "FakturaView": {
         "common": {

@@ -109,6 +109,7 @@ function getCV($data, $withConfig = []) {
                                 SELECT json_object_agg(key, value)
                                 FROM employee_config_oserp
                                 WHERE employee_id = (SELECT id FROM employee WHERE login = '{$auth->getLogin()}')
+                                  AND key <> 'signature'
                             ),
                             'business_types', (
                                 SELECT json_agg(b) FROM (SELECT * FROM business) AS b
@@ -393,6 +394,7 @@ function getCV($data, $withConfig = []) {
                                 SELECT json_object_agg(key, value)
                                 FROM employee_config_oserp
                                 WHERE employee_id = (SELECT id FROM employee WHERE login = '{$auth->getLogin()}')
+                                  AND key <> 'signature'
                             ),
                             'part_classifications', (--Teileklassifikationen
                                 SELECT json_agg(part_classifications)

@@ -37,7 +37,14 @@
         "image": "Inserează imagine (și cu Ctrl+V sau prin tragere)",
         "imageWidth": "Lățime în text",
         "imageOriginal": "Original",
-        "imageError": "Imaginea {name} nu a putut fi citită"
+        "imageError": "Imaginea {name} nu a putut fi citită",
+        "imageFromCustomer": "Imagine din dosarul clientului",
+        "imageFromVendor": "Imagine din dosarul furnizorului",
+        "folderCustomer": "Dosarul clientului",
+        "folderVendor": "Dosarul furnizorului",
+        "folderEmpty": "Nu există imagini în acest dosar",
+        "folderHint": "Clic pentru selectare, dublu clic inserează imediat",
+        "folderInsert": "Inserează ({n})"
     },
     "FakturaView": {
         "common": {

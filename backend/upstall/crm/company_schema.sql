@@ -4137,21 +4137,20 @@ COMMENT ON COLUMN postal_dispatches.pdf IS 'Versandexemplar: genau das PDF, das 
 CREATE INDEX IF NOT EXISTS idx_postal_dispatches_record ON postal_dispatches (record_table, record_id);
 CREATE INDEX IF NOT EXISTS idx_postal_dispatches_status ON postal_dispatches (status);
 
--- Unterschrift je Mitarbeiter: lädt der Benutzer selbst hoch (Benutzermenü →
--- Konfiguration) oder zeichnet sie dort. Der Brief druckt sie über der
--- Unterschriftslinie des Unterzeichners. Eigene Tabelle statt
--- employee_config_oserp, weil die Mitarbeiterkonfiguration mit jeder Sitzung
--- in den Store geladen wird — ein Bild hat dort nichts zu suchen.
-CREATE TABLE IF NOT EXISTS employee_signature_oserp (
-    employee_id integer PRIMARY KEY,
-    image bytea NOT NULL,
-    mime text NOT NULL DEFAULT 'image/png',
-    itime timestamp without time zone DEFAULT now(),
-    mtime timestamp without time zone
-);
-
-COMMENT ON TABLE employee_signature_oserp IS 'Unterschrift (Bild) je Mitarbeiter für Briefe';
-COMMENT ON COLUMN employee_signature_oserp.image IS 'PNG mit transparentem Hintergrund, auf die Schrift zugeschnitten';
+-- Unterschrift je Mitarbeiter steht in employee_config_oserp (Schlüssel
+-- signature, PNG als Data-URL). Die kurzzeitig dafür angelegte eigene Tabelle
+-- wird übernommen und entfernt.
+DO $$
+BEGIN
+    IF to_regclass('employee_signature_oserp') IS NOT NULL THEN
+        INSERT INTO employee_config_oserp (employee_id, key, value, itime)
+        SELECT employee_id, 'signature',
+               'data:' || mime || ';base64,' || translate(encode(image, 'base64'), E'\n', ''), now()
+        FROM employee_signature_oserp
+        ON CONFLICT (employee_id, key) DO NOTHING;
+        DROP TABLE employee_signature_oserp;
+    END IF;
+END $$;
 
 -- ============================================================================
 -- BANK: BUCHUNGSVORLAGEN FÜR UMSÄTZE OHNE BELEG (Dialogbuchung aus dem Bankumsatz)

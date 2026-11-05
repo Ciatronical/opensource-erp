@@ -37,7 +37,14 @@
         "image": "Wstaw obraz (także Ctrl+V lub przeciągnięcie)",
         "imageWidth": "Szerokość w tekście",
         "imageOriginal": "Oryginał",
-        "imageError": "Nie można odczytać obrazu {name}"
+        "imageError": "Nie można odczytać obrazu {name}",
+        "imageFromCustomer": "Obraz z folderu klienta",
+        "imageFromVendor": "Obraz z folderu dostawcy",
+        "folderCustomer": "Folder klienta",
+        "folderVendor": "Folder dostawcy",
+        "folderEmpty": "Brak obrazów w tym folderze",
+        "folderHint": "Kliknięcie zaznacza, dwuklik od razu wstawia",
+        "folderInsert": "Wstaw ({n})"
     },
     "FakturaView": {
         "common": {

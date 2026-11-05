@@ -134,10 +134,12 @@ function _logToEmailJournal(string $from, array $to, array $cc, string $subject,
         if ($jid) {
             $pos = 0;
             foreach ($attachments as $att) {
-                $content = base64_decode($att['content_base64'] ?? '');
+                // Als Base64 übergeben und in der DB dekodieren: rohe Bytes
+                // (PDF) als Textparameter lehnt PostgreSQL ab (kein gültiges UTF-8)
+                $content = preg_replace('/\s+/', '', (string)($att['content_base64'] ?? ''));
                 $db->execute(
                     "INSERT INTO email_journal_attachments (\"position\", email_journal_id, name, mime_type, content)
-                     VALUES (:pos, :jid, :name, :mime_type, :content)",
+                     VALUES (:pos, :jid, :name, :mime_type, decode(:content, 'base64'))",
                     [
                         ':pos' => $pos++,
                         ':jid' => $jid,

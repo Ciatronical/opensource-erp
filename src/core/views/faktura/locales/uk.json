@@ -37,7 +37,14 @@
         "image": "Вставити зображення (також Ctrl+V або перетягування)",
         "imageWidth": "Ширина в тексті",
         "imageOriginal": "Оригінал",
-        "imageError": "Не вдалося прочитати зображення {name}"
+        "imageError": "Не вдалося прочитати зображення {name}",
+        "imageFromCustomer": "Зображення з папки клієнта",
+        "imageFromVendor": "Зображення з папки постачальника",
+        "folderCustomer": "Папка клієнта",
+        "folderVendor": "Папка постачальника",
+        "folderEmpty": "У цій папці немає зображень",
+        "folderHint": "Клацання вибирає, подвійне клацання одразу вставляє",
+        "folderInsert": "Вставити ({n})"
     },
     "FakturaView": {
         "common": {

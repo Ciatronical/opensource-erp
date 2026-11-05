@@ -215,7 +215,7 @@
                                 </v-tooltip>
                             </template>
                         </v-text-field>
-                        <HtmlEditorComponent ref="bodyEditor" v-model="letter.body" images :placeholder="t('LetterEditView.bodyPlaceholder')" :min-height="320" :max-height="0" @focus="insertTarget = 'body'" />
+                        <HtmlEditorComponent ref="bodyEditor" v-model="letter.body" images :image-folder="imageFolder" :placeholder="t('LetterEditView.bodyPlaceholder')" :min-height="320" :max-height="0" @focus="insertTarget = 'body'" />
                         <div class="text-caption text-medium-emphasis mt-2">
                             <v-icon size="14" class="me-1">mdi-draw-pen</v-icon>
                             {{ t('LetterEditView.closingHint') }}
@@ -404,6 +404,10 @@ const ownEmployeeId = computed(() => oserp.session?.logged_in_employee?.id || nu
 const signer = computed(() => employees.value.find(e => e.id === letter.value.employee_id) || null)
 
 const hasRecipient = computed(() => !!(letter.value.customer_id || letter.value.vendor_id))
+// Dateiablage des Empfängers für den zweiten Bildknopf im Brieftext
+const imageFolder = computed(() => letter.value.vendor_id
+    ? { cv_id: letter.value.vendor_id, src: 'V' }
+    : letter.value.customer_id ? { cv_id: letter.value.customer_id, src: 'C' } : null)
 // Ein Brief entsteht erst, wenn etwas drinsteht: Betreff oder Text
 const hasContent = computed(() => hasRecipient.value && !!(letter.value.subject?.trim() || stripHtml(letter.value.body)))
 const canSave = computed(() => hasContent.value && !saving.value)

@@ -37,7 +37,14 @@
         "image": "插入图片（也可使用 Ctrl+V 或拖放）",
         "imageWidth": "文中宽度",
         "imageOriginal": "原始大小",
-        "imageError": "无法读取图片 {name}"
+        "imageError": "无法读取图片 {name}",
+        "imageFromCustomer": "从客户文件夹插入图片",
+        "imageFromVendor": "从供应商文件夹插入图片",
+        "folderCustomer": "客户文件夹",
+        "folderVendor": "供应商文件夹",
+        "folderEmpty": "此文件夹中没有图片",
+        "folderHint": "单击选择，双击立即插入",
+        "folderInsert": "插入（{n}）"
     },
     "FakturaView": {
         "common": {

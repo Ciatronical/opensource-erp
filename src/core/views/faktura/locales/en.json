@@ -37,7 +37,14 @@
         "image": "Insert image (also Ctrl+V or drag and drop)",
         "imageWidth": "Width in text",
         "imageOriginal": "Original",
-        "imageError": "Image {name} could not be read"
+        "imageError": "Image {name} could not be read",
+        "imageFromCustomer": "Image from the customer folder",
+        "imageFromVendor": "Image from the vendor folder",
+        "folderCustomer": "Customer folder",
+        "folderVendor": "Vendor folder",
+        "folderEmpty": "No images in this folder",
+        "folderHint": "Click to select, double-click inserts right away",
+        "folderInsert": "Insert ({n})"
     },
     "FakturaView": {
         "common": {
