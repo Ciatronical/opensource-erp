@@ -33,7 +33,11 @@
         "deleteColumn": "Удалить столбец",
         "toggleHeaderRow": "Строка заголовка вкл./выкл.",
         "deleteTable": "Удалить таблицу",
-        "clearFormatting": "Очистить форматирование"
+        "clearFormatting": "Очистить форматирование",
+        "image": "Вставить изображение (также Ctrl+V или перетаскивание)",
+        "imageWidth": "Ширина в тексте",
+        "imageOriginal": "Оригинал",
+        "imageError": "Не удалось прочитать изображение {name}"
     },
     "FakturaView": {
         "common": {

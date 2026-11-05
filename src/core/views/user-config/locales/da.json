@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Printer der som standard bruges til udskrifter",
         "accounting": "Bogføring",
         "accountingEasymode": "Enkel tilstand",
-        "accountingEasymode_help": "Viser bogføringen i dagligdags sprog: uden debet og kredit, uden momskoder, kun det arbejde der venter. Slået fra vises den faglige visning. Kan også skiftes direkte i bogføringen."
+        "accountingEasymode_help": "Viser bogføringen i dagligdags sprog: uden debet og kredit, uden momskoder, kun det arbejde der venter. Slået fra vises den faglige visning. Kan også skiftes direkte i bogføringen.",
+        "letters": "Breve"
+    },
+    "UserSignature": {
+        "title": "Underskrift",
+        "upload": "Upload billede",
+        "replace": "Andet billede",
+        "draw": "Tegn",
+        "remove": "Fjern",
+        "empty": "Ingen underskrift gemt endnu",
+        "hint": "Fotografer eller scan din underskrift på hvidt papir og upload den – også med Ctrl+V eller træk og slip. Baggrunden fjernes, og billedet beskæres. Den vises over underskriftslinjen i breve, du underskriver.",
+        "drawTitle": "Tegn underskrift",
+        "drawHint": "Skriv under med mus, finger eller pen.",
+        "clear": "Start forfra",
+        "cancel": "Annuller",
+        "apply": "Anvend",
+        "inkBlue": "Blå",
+        "inkBlack": "Sort",
+        "saved": "Underskrift gemt",
+        "unreadable": "Der kunne ikke genkendes nogen underskrift på billedet.",
+        "confirmRemove": "Fjern underskrift? Breve får så igen en tom linje til underskrift i hånden."
     }
 }

@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Impressora utilizada por predefinição para as impressões",
         "accounting": "Contabilidade",
         "accountingEasymode": "Modo simples",
-        "accountingEasymode_help": "Mostra a contabilidade em linguagem do dia a dia: sem débito e crédito, sem códigos de IVA, apenas o trabalho pendente. Desligado surge a vista técnica. Também se alterna diretamente na contabilidade."
+        "accountingEasymode_help": "Mostra a contabilidade em linguagem do dia a dia: sem débito e crédito, sem códigos de IVA, apenas o trabalho pendente. Desligado surge a vista técnica. Também se alterna diretamente na contabilidade.",
+        "letters": "Cartas"
+    },
+    "UserSignature": {
+        "title": "Assinatura",
+        "upload": "Carregar imagem",
+        "replace": "Outra imagem",
+        "draw": "Desenhar",
+        "remove": "Remover",
+        "empty": "Ainda não há assinatura guardada",
+        "hint": "Fotografe ou digitalize a sua assinatura em papel branco e carregue-a – também com Ctrl+V ou arrastando. O fundo é removido e a imagem recortada. Aparece acima da linha de assinatura nas cartas que assinar.",
+        "drawTitle": "Desenhar assinatura",
+        "drawHint": "Assine com o rato, o dedo ou a caneta.",
+        "clear": "Recomeçar",
+        "cancel": "Cancelar",
+        "apply": "Aplicar",
+        "inkBlue": "Azul",
+        "inkBlack": "Preto",
+        "saved": "Assinatura guardada",
+        "unreadable": "Não foi possível reconhecer nenhuma assinatura na imagem.",
+        "confirmRemove": "Remover a assinatura? As cartas voltarão a ter uma linha vazia para assinar à mão."
     }
 }

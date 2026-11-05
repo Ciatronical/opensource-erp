@@ -32,6 +32,9 @@
     --oserp-section-head-bg: #f5f6f8;
     --oserp-border: rgba(0, 0, 0, 0.12);
     --oserp-border-soft: rgba(0, 0, 0, 0.08);
+    /* Papier: Vorschau von Gedrucktem (Unterschrift, Brief) — bleibt auch im Dunkelmodus weiß */
+    --oserp-paper: #ffffff;
+    --oserp-paper-ink: #1f2937;
 
     /* Text */
     --oserp-text-muted: rgba(0, 0, 0, 0.6);

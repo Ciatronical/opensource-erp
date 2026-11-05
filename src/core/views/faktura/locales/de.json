@@ -33,7 +33,11 @@
         "deleteColumn": "Spalte löschen",
         "toggleHeaderRow": "Kopfzeile ein/aus",
         "deleteTable": "Tabelle löschen",
-        "clearFormatting": "Formatierung entfernen"
+        "clearFormatting": "Formatierung entfernen",
+        "image": "Bild einfügen (auch Strg+V oder Hineinziehen)",
+        "imageWidth": "Breite im Text",
+        "imageOriginal": "Original",
+        "imageError": "Bild {name} konnte nicht gelesen werden"
     },
     "FakturaView": {
         "common": {

@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Imprimante utilisee par defaut pour les impressions",
         "accounting": "Comptabilité",
         "accountingEasymode": "Mode simple",
-        "accountingEasymode_help": "Affiche la comptabilité en langage courant : sans débit ni crédit, sans code TVA, uniquement le travail en cours. Désactivé, la vue technique apparaît. Se change aussi directement dans la comptabilité."
+        "accountingEasymode_help": "Affiche la comptabilité en langage courant : sans débit ni crédit, sans code TVA, uniquement le travail en cours. Désactivé, la vue technique apparaît. Se change aussi directement dans la comptabilité.",
+        "letters": "Courriers"
+    },
+    "UserSignature": {
+        "title": "Signature",
+        "upload": "Téléverser une image",
+        "replace": "Autre image",
+        "draw": "Dessiner",
+        "remove": "Supprimer",
+        "empty": "Aucune signature enregistrée",
+        "hint": "Photographiez ou scannez votre signature sur du papier blanc et téléversez-la – aussi par Ctrl+V ou glisser-déposer. L’arrière-plan est supprimé et l’image recadrée. Elle apparaît au-dessus de la ligne de signature dans les courriers que vous signez.",
+        "drawTitle": "Dessiner la signature",
+        "drawHint": "Signez à la souris, au doigt ou au stylet.",
+        "clear": "Recommencer",
+        "cancel": "Annuler",
+        "apply": "Appliquer",
+        "inkBlue": "Bleu",
+        "inkBlack": "Noir",
+        "saved": "Signature enregistrée",
+        "unreadable": "Aucune signature n’a été détectée dans l’image.",
+        "confirmRemove": "Supprimer la signature ? Les courriers auront de nouveau une ligne vide pour signer à la main."
     }
 }

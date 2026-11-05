@@ -33,7 +33,11 @@
         "deleteColumn": "Delete column",
         "toggleHeaderRow": "Toggle header row",
         "deleteTable": "Delete table",
-        "clearFormatting": "Clear formatting"
+        "clearFormatting": "Clear formatting",
+        "image": "Insert image (also Ctrl+V or drag and drop)",
+        "imageWidth": "Width in text",
+        "imageOriginal": "Original",
+        "imageError": "Image {name} could not be read"
     },
     "FakturaView": {
         "common": {

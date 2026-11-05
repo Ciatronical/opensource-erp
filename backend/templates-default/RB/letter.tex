@@ -16,7 +16,10 @@
 % Variablen: letternumber, letter_date, reference, subject, greeting, body,
 %            name, department_1, department_2, cp_givenname, cp_name, street,
 %            zipcode, city, country, customernumber, employee_name,
-%            employee_tel, employee_email, salesman_name, preview
+%            employee_tel, employee_email, salesman_name, preview,
+%            employee_signature, salesman_signature (1 = Unterschrift liegt als
+%            signature-employee.png bzw. signature-salesman.png im Arbeitsordner;
+%            hochgeladen im Benutzermenü → Konfiguration)
 
 % Variablen, die in settings verwendet werden
 \newcommand{\lxlangcode} {<%template_meta.language.template_code%>}
@@ -109,22 +112,19 @@
 
 \gruesse
 
-\vspace*{1.3cm}
+% Unterschrift: Bild des Unterzeichners über der Linie, sonst Platz zum
+% Unterschreiben von Hand. Das Bild ragt wie eine echte Unterschrift etwas
+% über die Linie.
+\newcommand{\briefunterschrift}[2]{%
+  \begin{minipage}[b]{6.5cm}
+    \ifthenelse{\equal{#1}{}}{\rule{0pt}{1.3cm}}{\includegraphics[height=1.5cm,width=5.5cm,keepaspectratio]{#1}}\\[-0.25cm]
+    \rule{5.5cm}{0.3pt}\\[0.1cm]
+    #2
+  \end{minipage}}
 
-<%if salesman_name%>
-\begin{minipage}[t]{6.5cm}
-  \rule{5.5cm}{0.3pt}\\[0.1cm]
-  <%employee_name%>
-\end{minipage}
-\begin{minipage}[t]{6.5cm}
-  \rule{5.5cm}{0.3pt}\\[0.1cm]
-  <%salesman_name%>
-\end{minipage}
-<%else%>
-\begin{minipage}[t]{6.5cm}
-  \rule{5.5cm}{0.3pt}\\[0.1cm]
-  <%employee_name%>
-\end{minipage}
-<%end if%>
+\vspace*{0.2cm}
+
+\briefunterschrift{<%if employee_signature%>signature-employee.png<%end if%>}{<%employee_name%>}<%if salesman_name%>
+\briefunterschrift{<%if salesman_signature%>signature-salesman.png<%end if%>}{<%salesman_name%>}<%end if%>
 
 \end{document}

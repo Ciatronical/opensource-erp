@@ -33,7 +33,11 @@
         "deleteColumn": "Slett kolonne",
         "toggleHeaderRow": "Overskriftsrad på/av",
         "deleteTable": "Slett tabell",
-        "clearFormatting": "Fjern formatering"
+        "clearFormatting": "Fjern formatering",
+        "image": "Sett inn bilde (også Ctrl+V eller dra og slipp)",
+        "imageWidth": "Bredde i teksten",
+        "imageOriginal": "Original",
+        "imageError": "Bildet {name} kunne ikke leses"
     },
     "FakturaView": {
         "common": {

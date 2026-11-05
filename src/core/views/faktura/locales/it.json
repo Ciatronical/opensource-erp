@@ -33,7 +33,11 @@
         "deleteColumn": "Elimina colonna",
         "toggleHeaderRow": "Riga di intestazione sì/no",
         "deleteTable": "Elimina tabella",
-        "clearFormatting": "Rimuovi formattazione"
+        "clearFormatting": "Rimuovi formattazione",
+        "image": "Inserisci immagine (anche Ctrl+V o trascinando)",
+        "imageWidth": "Larghezza nel testo",
+        "imageOriginal": "Originale",
+        "imageError": "Impossibile leggere l’immagine {name}"
     },
     "FakturaView": {
         "common": {

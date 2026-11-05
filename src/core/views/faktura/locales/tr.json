@@ -33,7 +33,11 @@
         "deleteColumn": "Sütunu sil",
         "toggleHeaderRow": "Başlık satırı aç/kapat",
         "deleteTable": "Tabloyu sil",
-        "clearFormatting": "Biçimlendirmeyi temizle"
+        "clearFormatting": "Biçimlendirmeyi temizle",
+        "image": "Görsel ekle (Ctrl+V veya sürükleyip bırakma ile de)",
+        "imageWidth": "Metindeki genişlik",
+        "imageOriginal": "Orijinal",
+        "imageError": "{name} görseli okunamadı"
     },
     "FakturaView": {
         "common": {

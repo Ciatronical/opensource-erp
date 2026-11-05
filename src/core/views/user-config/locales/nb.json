@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Skriver som brukes som standard for utskrifter",
         "accounting": "Regnskap",
         "accountingEasymode": "Enkel modus",
-        "accountingEasymode_help": "Viser regnskapet i dagligdags språk: uten debet og kredit, uten avgiftskoder, bare arbeidet som venter. Slått av vises den faglige visningen. Kan også byttes direkte i regnskapet."
+        "accountingEasymode_help": "Viser regnskapet i dagligdags språk: uten debet og kredit, uten avgiftskoder, bare arbeidet som venter. Slått av vises den faglige visningen. Kan også byttes direkte i regnskapet.",
+        "letters": "Brev"
+    },
+    "UserSignature": {
+        "title": "Signatur",
+        "upload": "Last opp bilde",
+        "replace": "Annet bilde",
+        "draw": "Tegn",
+        "remove": "Fjern",
+        "empty": "Ingen signatur lagret ennå",
+        "hint": "Fotografer eller skann signaturen din på hvitt papir og last den opp – også med Ctrl+V eller dra og slipp. Bakgrunnen fjernes og bildet beskjæres. Den vises over signaturlinjen i brev du signerer.",
+        "drawTitle": "Tegn signatur",
+        "drawHint": "Signer med mus, finger eller penn.",
+        "clear": "Start på nytt",
+        "cancel": "Avbryt",
+        "apply": "Bruk",
+        "inkBlue": "Blå",
+        "inkBlack": "Svart",
+        "saved": "Signatur lagret",
+        "unreadable": "Fant ingen signatur i bildet.",
+        "confirmRemove": "Fjerne signaturen? Brev får da igjen en tom linje for signering for hånd."
     }
 }

@@ -33,7 +33,11 @@
         "deleteColumn": "Kustuta veerg",
         "toggleHeaderRow": "Päiserida sisse/välja",
         "deleteTable": "Kustuta tabel",
-        "clearFormatting": "Eemalda vorming"
+        "clearFormatting": "Eemalda vorming",
+        "image": "Sisesta pilt (ka Ctrl+V või lohistamine)",
+        "imageWidth": "Laius tekstis",
+        "imageOriginal": "Originaal",
+        "imageError": "Pilti {name} ei õnnestunud lugeda"
     },
     "FakturaView": {
         "common": {

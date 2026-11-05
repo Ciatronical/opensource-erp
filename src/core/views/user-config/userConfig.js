@@ -1,7 +1,7 @@
 // src/core/views/user-config/userConfig.js
 
 const userConfig = [
-    { name: "darstellung", type: "headline", label: "user_fields.appearance" },
+    { name: "darstellung", type: "headline", icon: "mdi-palette-outline", label: "user_fields.appearance" },
 
     {
         name: "dark_mode",
@@ -41,7 +41,7 @@ const userConfig = [
         fieldstyle: "max-width: 30ch"
     },
 
-    { name: "allgemein", type: "headline", label: "user_fields.general" },
+    { name: "allgemein", type: "headline", icon: "mdi-tune-variant", label: "user_fields.general" },
 
     {
         name: "startup-view",
@@ -60,7 +60,7 @@ const userConfig = [
         fieldstyle: "max-width: 40ch"
     },
 
-    { name: "faktura", type: "headline", label: "user_fields.faktura" },
+    { name: "faktura", type: "headline", icon: "mdi-file-document-outline", label: "user_fields.faktura" },
 
     {
         name: "faktura_compact_view",
@@ -69,7 +69,7 @@ const userConfig = [
         tooltip: "user_fields.fakturaCompactView_help"
     },
 
-    { name: "buchhaltung", type: "headline", label: "user_fields.accounting" },
+    { name: "buchhaltung", type: "headline", icon: "mdi-calculator-variant-outline", label: "user_fields.accounting" },
 
     {
         name: "accounting_easymode",
@@ -79,7 +79,12 @@ const userConfig = [
         tooltip: "user_fields.accountingEasymode_help"
     },
 
-    { name: "drucker", type: "headline", label: "user_fields.printer" },
+    { name: "briefe", type: "headline", icon: "mdi-email-newsletter", label: "user_fields.letters" },
+
+    // Eigene Unterschrift (Bild): eigene Tabelle, nicht employee_config_oserp
+    { name: "signature", type: "signature" },
+
+    { name: "drucker", type: "headline", icon: "mdi-printer-outline", label: "user_fields.printer" },
 
     {
         name: "default_printer_id",

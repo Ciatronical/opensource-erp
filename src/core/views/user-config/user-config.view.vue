@@ -4,134 +4,113 @@
     <div>
         <navbar-view />
 
-        <v-container fluid style="max-width: 800px">
-            <v-card flat>
-                <v-card-title class="d-flex align-center pa-4">
-                    <v-icon class="me-2">mdi-cog</v-icon>
-                    <span>{{ t('title') }}</span>
-                </v-card-title>
+        <v-container fluid class="user-config">
+            <page-header :title="t('title')" />
 
-                <v-divider />
+            <!-- Fehler beim Laden der Config -->
+            <v-alert
+                v-if="configError"
+                type="error"
+                variant="tonal"
+                :title="t('configLoadError')"
+            >
+                <pre class="text-caption overflow-auto mt-2 user-config__error">{{ configError }}</pre>
+            </v-alert>
 
-                <v-card-text class="pa-4">
-                    <!-- Fehler beim Laden der Config -->
-                    <v-alert
-                        v-if="configError"
-                        type="error"
-                        variant="tonal"
-                        prominent
-                        border="start"
+            <!-- Loading -->
+            <div v-else-if="!configLoaded" class="d-flex justify-center align-center pa-8">
+                <v-progress-circular indeterminate color="primary" />
+                <span class="ml-3">{{ t('loading') }}</span>
+            </div>
+
+            <!-- Je Überschrift eine Abschnittskarte mit ihren Feldern -->
+            <section-card
+                v-else
+                v-for="section in sections"
+                :key="section.name"
+                :title="t(section.label)"
+                :icon="section.icon"
+                class="user-config__section"
+            >
+                <template v-for="field in section.fields" :key="field.name">
+                    <!-- Unterschrift für Briefe: eigener Baustein mit Upload/Zeichnen -->
+                    <signature-field v-if="field.type === 'signature'" />
+
+                    <!-- Checkbox: speichert sofort bei Klick -->
+                    <v-checkbox
+                        v-else-if="field.type === 'checkbox'"
+                        v-model="configValues[field.name]"
+                        :label="t(field.label)"
+                        @update:model-value="saveField(field.name, $event)"
                     >
-                        <v-alert-title class="text-h6">
-                            <v-icon start>mdi-alert-circle</v-icon>
-                            {{ t('configLoadError') }}
-                        </v-alert-title>
-                        <pre class="pa-3 bg-grey-lighten-4 rounded text-caption overflow-auto mt-2" style="max-height: 200px;">{{ configError }}</pre>
-                    </v-alert>
+                        <template v-if="field.tooltip" #append>
+                            <v-tooltip location="top">
+                                <template #activator="{ props }">
+                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                </template>
+                                {{ t(field.tooltip) }}
+                            </v-tooltip>
+                        </template>
+                    </v-checkbox>
 
-                    <!-- Loading -->
-                    <div v-else-if="!configLoaded" class="d-flex justify-center align-center pa-8">
-                        <v-progress-circular indeterminate color="primary" />
-                        <span class="ml-3">{{ t('loading') }}</span>
-                    </div>
+                    <!-- Input / Password: speichert bei blur -->
+                    <component
+                        :is="field.type === 'password' ? PasswordField : VTextField"
+                        v-else-if="field.type === 'input' || field.type === 'password'"
+                        v-model="configValues[field.name]"
+                        :label="t(field.label)"
+                        :type="field.inputType || 'text'"
+                        :style="field.fieldstyle"
+                        class="user-config__field"
+                        @blur="saveField(field.name, configValues[field.name])"
+                    >
+                        <template v-if="field.tooltip" #append-inner>
+                            <v-tooltip location="top">
+                                <template #activator="{ props }">
+                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                </template>
+                                {{ t(field.tooltip) }}
+                            </v-tooltip>
+                        </template>
+                    </component>
 
-                    <!-- Dynamische Felder -->
-                    <template v-else v-for="field in userConfigFields" :key="field.name">
-                        <!-- Ueberschrift -->
-                        <v-row v-if="field.type === 'headline'" class="mt-6 mb-2">
-                            <v-col cols="12">
-                                <h3 class="text-h6 text-primary">{{ t(field.label) }}</h3>
-                                <v-divider class="mt-2" />
-                            </v-col>
-                        </v-row>
-
-                        <!-- Checkbox: speichert sofort bei Klick -->
-                        <v-row v-else-if="field.type === 'checkbox'" class="my-1">
-                            <v-col cols="12" md="6">
-                                <v-checkbox
-                                    v-model="configValues[field.name]"
-                                    :label="t(field.label)"
-                                    hide-details="auto"
-                                    density="compact"
-                                    @update:model-value="saveField(field.name, $event)"
-                                >
-                                    <template v-if="field.tooltip" #append>
-                                        <v-tooltip location="top">
-                                            <template #activator="{ props }">
-                                                <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
-                                            </template>
-                                            {{ t(field.tooltip) }}
-                                        </v-tooltip>
-                                    </template>
-                                </v-checkbox>
-                            </v-col>
-                        </v-row>
-
-                        <!-- Input / Password: speichert bei blur -->
-                        <v-row v-else-if="field.type === 'input' || field.type === 'password'" class="my-1">
-                            <v-col cols="12" md="6">
-                                <component
-                                    :is="field.type === 'password' ? PasswordField : VTextField"
-                                    v-model="configValues[field.name]"
-                                    :label="t(field.label)"
-                                    :type="field.inputType || 'text'"
-                                    :style="field.fieldstyle"
-                                    hide-details="auto"
-                                    density="compact"
-                                    variant="outlined"
-                                    @blur="saveField(field.name, configValues[field.name])"
-                                >
-                                    <template v-if="field.tooltip" #append-inner>
-                                        <v-tooltip location="top">
-                                            <template #activator="{ props }">
-                                                <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
-                                            </template>
-                                            {{ t(field.tooltip) }}
-                                        </v-tooltip>
-                                    </template>
-                                </component>
-                            </v-col>
-                        </v-row>
-
-                        <!-- Select: speichert sofort bei Auswahl -->
-                        <v-row v-else-if="field.type === 'select'" class="my-1">
-                            <v-col cols="12" md="6">
-                                <v-select
-                                    v-model="configValues[field.name]"
-                                    :items="getFieldItems(field)"
-                                    :label="t(field.label)"
-                                    :style="field.fieldstyle"
-                                    hide-details="auto"
-                                    density="compact"
-                                    variant="outlined"
-                                    :clearable="!!field.clearable"
-                                    @update:model-value="saveField(field.name, $event)"
-                                >
-                                    <template v-if="field.tooltip" #append-inner>
-                                        <v-tooltip location="top">
-                                            <template #activator="{ props }">
-                                                <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
-                                            </template>
-                                            {{ t(field.tooltip) }}
-                                        </v-tooltip>
-                                    </template>
-                                </v-select>
-                            </v-col>
-                        </v-row>
-                    </template>
-                </v-card-text>
-            </v-card>
+                    <!-- Select: speichert sofort bei Auswahl -->
+                    <v-select
+                        v-else-if="field.type === 'select'"
+                        v-model="configValues[field.name]"
+                        :items="getFieldItems(field)"
+                        :label="t(field.label)"
+                        :style="field.fieldstyle"
+                        :clearable="!!field.clearable"
+                        class="user-config__field"
+                        @update:model-value="saveField(field.name, $event)"
+                    >
+                        <template v-if="field.tooltip" #append-inner>
+                            <v-tooltip location="top">
+                                <template #activator="{ props }">
+                                    <v-icon v-bind="props" size="small" color="grey">mdi-information-outline</v-icon>
+                                </template>
+                                {{ t(field.tooltip) }}
+                            </v-tooltip>
+                        </template>
+                    </v-select>
+                </template>
+            </section-card>
         </v-container>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { VTextField } from 'vuetify/components';
 import PasswordField from '@/core/components/password-field.vue';
 import { useI18n } from 'vue-i18n';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 import NavbarView from '@/core/components/navbar/navbar.view.vue';
+import PageHeader from '@/core/components/layout/page-header.vue';
+import SectionCard from '@/core/components/layout/section-card.vue';
+import SignatureField from './components/signature.field.vue';
+import { useRoute } from 'vue-router';
 
 const { t } = useI18n();
 const store = oserpStore();
@@ -140,6 +119,17 @@ const userConfigFields = ref([]);
 const configValues = ref({});
 const configError = ref(null);
 const configLoaded = ref(false);
+const route = useRoute();
+
+/** Felder nach Überschrift gruppiert: eine Abschnittskarte je Überschrift */
+const sections = computed(() => {
+    const list = [];
+    for (const field of userConfigFields.value) {
+        if (field.type === 'headline') list.push({ ...field, fields: [] });
+        else if (list.length) list[list.length - 1].fields.push(field);
+    }
+    return list;
+});
 
 /**
  * Laedt die Config-Felddefinitionen
@@ -164,7 +154,7 @@ function loadConfigValues() {
     const employeeConfig = store.session?.company_config?.company_employee_config || {};
 
     userConfigFields.value.forEach(field => {
-        if (field.type !== 'headline') {
+        if (field.type !== 'headline' && field.type !== 'signature') {
             // Ohne gespeicherten Wert gilt der Standard aus der Felddefinition.
             // Sonst zeigt die Maske "aus", waehrend die Anwendung den Standard
             // bereits als "an" behandelt.
@@ -211,5 +201,26 @@ onMounted(async () => {
     if (!configError.value) {
         loadConfigValues();
     }
+    // Sprung aus dem Briefeditor („Unterschrift jetzt hinterlegen“)
+    if (route.hash) {
+        await nextTick();
+        document.querySelector(route.hash)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 });
 </script>
+
+<style scoped>
+.user-config {
+    max-width: var(--oserp-content-max);
+}
+.user-config__section {
+    margin-bottom: var(--oserp-gap-lg);
+}
+.user-config__field {
+    max-width: 40ch;
+    margin-block: var(--oserp-gap-sm);
+}
+.user-config__error {
+    max-height: 200px;
+}
+</style>

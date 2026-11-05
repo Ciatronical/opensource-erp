@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Stampante utilizzata per impostazione predefinita per le stampe",
         "accounting": "Contabilità",
         "accountingEasymode": "Modalità semplice",
-        "accountingEasymode_help": "Mostra la contabilità in linguaggio quotidiano: senza dare e avere, senza codici IVA, solo il lavoro da svolgere. Disattivata compare la vista tecnica. Si può cambiare anche direttamente nella contabilità."
+        "accountingEasymode_help": "Mostra la contabilità in linguaggio quotidiano: senza dare e avere, senza codici IVA, solo il lavoro da svolgere. Disattivata compare la vista tecnica. Si può cambiare anche direttamente nella contabilità.",
+        "letters": "Lettere"
+    },
+    "UserSignature": {
+        "title": "Firma",
+        "upload": "Carica immagine",
+        "replace": "Altra immagine",
+        "draw": "Disegna",
+        "remove": "Rimuovi",
+        "empty": "Nessuna firma ancora salvata",
+        "hint": "Fotografa o scansiona la tua firma su carta bianca e caricala – anche con Ctrl+V o trascinando. Lo sfondo viene rimosso e l’immagine ritagliata. Appare sopra la riga della firma nelle lettere che firmi.",
+        "drawTitle": "Disegna firma",
+        "drawHint": "Firma con il mouse, il dito o la penna.",
+        "clear": "Ricomincia",
+        "cancel": "Annulla",
+        "apply": "Applica",
+        "inkBlue": "Blu",
+        "inkBlack": "Nero",
+        "saved": "Firma salvata",
+        "unreadable": "Nell’immagine non è stata riconosciuta alcuna firma.",
+        "confirmRemove": "Rimuovere la firma? Le lettere avranno di nuovo una riga vuota per la firma a mano."
     }
 }

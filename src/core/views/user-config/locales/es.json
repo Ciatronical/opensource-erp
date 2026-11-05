@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Impresora que se utiliza por defecto para las impresiones",
         "accounting": "Contabilidad",
         "accountingEasymode": "Modo sencillo",
-        "accountingEasymode_help": "Muestra la contabilidad en lenguaje cotidiano: sin debe y haber, sin claves fiscales, solo el trabajo pendiente. Desactivado aparece la vista técnica. También se puede cambiar directamente en la contabilidad."
+        "accountingEasymode_help": "Muestra la contabilidad en lenguaje cotidiano: sin debe y haber, sin claves fiscales, solo el trabajo pendiente. Desactivado aparece la vista técnica. También se puede cambiar directamente en la contabilidad.",
+        "letters": "Cartas"
+    },
+    "UserSignature": {
+        "title": "Firma",
+        "upload": "Subir imagen",
+        "replace": "Otra imagen",
+        "draw": "Dibujar",
+        "remove": "Quitar",
+        "empty": "Aún no hay ninguna firma guardada",
+        "hint": "Fotografíe o escanee su firma sobre papel blanco y súbala; también con Ctrl+V o arrastrando. Se elimina el fondo y se recorta la imagen. Aparece sobre la línea de firma en las cartas que firme.",
+        "drawTitle": "Dibujar firma",
+        "drawHint": "Firme con el ratón, el dedo o el lápiz.",
+        "clear": "Empezar de nuevo",
+        "cancel": "Cancelar",
+        "apply": "Aplicar",
+        "inkBlue": "Azul",
+        "inkBlack": "Negro",
+        "saved": "Firma guardada",
+        "unreadable": "No se pudo detectar ninguna firma en la imagen.",
+        "confirmRemove": "¿Quitar la firma? Las cartas volverán a tener una línea vacía para firmar a mano."
     }
 }

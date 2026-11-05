@@ -33,7 +33,11 @@
         "deleteColumn": "Kolom verwijderen",
         "toggleHeaderRow": "Koprij aan/uit",
         "deleteTable": "Tabel verwijderen",
-        "clearFormatting": "Opmaak wissen"
+        "clearFormatting": "Opmaak wissen",
+        "image": "Afbeelding invoegen (ook Ctrl+V of slepen)",
+        "imageWidth": "Breedte in tekst",
+        "imageOriginal": "Origineel",
+        "imageError": "Afbeelding {name} kon niet worden gelezen"
     },
     "FakturaView": {
         "common": {

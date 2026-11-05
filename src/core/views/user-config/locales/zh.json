@@ -19,6 +19,26 @@
         "defaultPrinter_help": "默认用于打印的打印机",
         "accounting": "会计",
         "accountingEasymode": "简易模式",
-        "accountingEasymode_help": "以日常用语显示会计：没有借贷、没有税码，只显示待办的工作。关闭后显示专业视图。也可以直接在会计页面切换。"
+        "accountingEasymode_help": "以日常用语显示会计：没有借贷、没有税码，只显示待办的工作。关闭后显示专业视图。也可以直接在会计页面切换。",
+        "letters": "信函"
+    },
+    "UserSignature": {
+        "title": "签名",
+        "upload": "上传图片",
+        "replace": "更换图片",
+        "draw": "手写",
+        "remove": "删除",
+        "empty": "尚未保存签名",
+        "hint": "请将签名写在白纸上拍照或扫描后上传，也可使用 Ctrl+V 或拖放。背景会被去除，图片会被裁剪。签名将显示在您签署的信函中签名线的上方。",
+        "drawTitle": "手写签名",
+        "drawHint": "请用鼠标、手指或触控笔签名。",
+        "clear": "重新开始",
+        "cancel": "取消",
+        "apply": "应用",
+        "inkBlue": "蓝色",
+        "inkBlack": "黑色",
+        "saved": "签名已保存",
+        "unreadable": "在图片中未识别到签名。",
+        "confirmRemove": "删除签名？信函将重新显示一条空白线，用于手写签名。"
     }
 }

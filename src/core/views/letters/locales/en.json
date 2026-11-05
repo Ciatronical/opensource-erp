@@ -76,7 +76,7 @@
         "subject": "Subject",
         "greeting": "Salutation",
         "greetingSuggest": "Apply suggestion: {greeting}",
-        "bodyPlaceholder": "Letter text …",
+        "bodyPlaceholder": "Letter text … insert images via button, Ctrl+V or drag and drop",
         "placeholders": "Insert building blocks:",
         "dispatchLog": "Dispatch log",
         "notSent": "This letter has not been sent yet.",
@@ -121,6 +121,11 @@
         "needContent": "The letter is created with the first text",
         "savedAt": "Saved {time}",
         "savedState": "Saved",
-        "created": "Letter no. {number} created"
+        "created": "Letter no. {number} created",
+        "signatureStored": "Signature on file",
+        "signaturePrinted": "The stored signature will be printed.",
+        "signatureMissingOwn": "No signature stored yet –",
+        "signatureUpload": "add it now",
+        "signatureMissing": "No signature stored – space left for a handwritten signature."
     }
 }

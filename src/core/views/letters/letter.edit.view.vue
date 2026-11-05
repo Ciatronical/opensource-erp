@@ -133,10 +133,39 @@
                                 <v-text-field v-model="letter.reference" :label="t('LetterEditView.reference')" variant="outlined" density="compact" hide-details />
                             </v-col>
                             <v-col cols="12">
-                                <v-select v-model="letter.employee_id" :items="employees" item-title="name" item-value="id" :label="t('LetterEditView.signature')" variant="outlined" density="compact" hide-details prepend-inner-icon="mdi-draw-pen" />
+                                <v-select v-model="letter.employee_id" :items="employees" item-title="name" item-value="id" :label="t('LetterEditView.signature')" variant="outlined" density="compact" hide-details prepend-inner-icon="mdi-draw-pen">
+                                    <template #item="{ props: itemProps, item }">
+                                        <v-list-item v-bind="itemProps">
+                                            <template #append>
+                                                <v-icon v-if="item.has_signature" size="small" color="success" :title="t('LetterEditView.signatureStored')">mdi-signature-freehand</v-icon>
+                                            </template>
+                                        </v-list-item>
+                                    </template>
+                                </v-select>
+                                <!-- Wird eine Unterschrift gedruckt? Eigene fehlt: direkt zum Hinterlegen -->
+                                <div class="text-caption text-medium-emphasis mt-1 d-flex align-center">
+                                    <template v-if="signer?.has_signature">
+                                        <v-icon size="14" color="success" class="me-1">mdi-signature-freehand</v-icon>{{ t('LetterEditView.signaturePrinted') }}
+                                    </template>
+                                    <template v-else-if="signer && signer.id === ownEmployeeId">
+                                        <v-icon size="14" class="me-1">mdi-information-outline</v-icon>{{ t('LetterEditView.signatureMissingOwn') }}
+                                        <router-link :to="{ name: 'user-config', hash: '#signature' }" class="ms-1 text-primary">{{ t('LetterEditView.signatureUpload') }}</router-link>
+                                    </template>
+                                    <template v-else-if="signer">
+                                        <v-icon size="14" class="me-1">mdi-information-outline</v-icon>{{ t('LetterEditView.signatureMissing') }}
+                                    </template>
+                                </div>
                             </v-col>
                             <v-col cols="12">
-                                <v-select v-model="letter.salesman_id" :items="employees" item-title="name" item-value="id" :label="t('LetterEditView.secondSignature')" variant="outlined" density="compact" hide-details clearable prepend-inner-icon="mdi-draw-pen" />
+                                <v-select v-model="letter.salesman_id" :items="employees" item-title="name" item-value="id" :label="t('LetterEditView.secondSignature')" variant="outlined" density="compact" hide-details clearable prepend-inner-icon="mdi-draw-pen">
+                                    <template #item="{ props: itemProps, item }">
+                                        <v-list-item v-bind="itemProps">
+                                            <template #append>
+                                                <v-icon v-if="item.has_signature" size="small" color="success" :title="t('LetterEditView.signatureStored')">mdi-signature-freehand</v-icon>
+                                            </template>
+                                        </v-list-item>
+                                    </template>
+                                </v-select>
                             </v-col>
                             <v-col cols="12">
                                 <v-textarea v-model="letter.intnotes" :label="t('LetterEditView.intnotes')" variant="outlined" density="compact" hide-details rows="2" auto-grow prepend-inner-icon="mdi-note-text-outline" />
@@ -186,7 +215,7 @@
                                 </v-tooltip>
                             </template>
                         </v-text-field>
-                        <HtmlEditorComponent ref="bodyEditor" v-model="letter.body" :placeholder="t('LetterEditView.bodyPlaceholder')" :min-height="320" :max-height="0" @focus="insertTarget = 'body'" />
+                        <HtmlEditorComponent ref="bodyEditor" v-model="letter.body" images :placeholder="t('LetterEditView.bodyPlaceholder')" :min-height="320" :max-height="0" @focus="insertTarget = 'body'" />
                         <div class="text-caption text-medium-emphasis mt-2">
                             <v-icon size="14" class="me-1">mdi-draw-pen</v-icon>
                             {{ t('LetterEditView.closingHint') }}
@@ -370,6 +399,9 @@ function emptyLetter() {
         employee_id: oserp.session?.logged_in_employee?.id || null, salesman_id: null,
     }
 }
+
+const ownEmployeeId = computed(() => oserp.session?.logged_in_employee?.id || null)
+const signer = computed(() => employees.value.find(e => e.id === letter.value.employee_id) || null)
 
 const hasRecipient = computed(() => !!(letter.value.customer_id || letter.value.vendor_id))
 // Ein Brief entsteht erst, wenn etwas drinsteht: Betreff oder Text

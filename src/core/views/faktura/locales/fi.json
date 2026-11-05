@@ -33,7 +33,11 @@
         "deleteColumn": "Poista sarake",
         "toggleHeaderRow": "Otsikkorivi päälle/pois",
         "deleteTable": "Poista taulukko",
-        "clearFormatting": "Poista muotoilu"
+        "clearFormatting": "Poista muotoilu",
+        "image": "Lisää kuva (myös Ctrl+V tai vetämällä)",
+        "imageWidth": "Leveys tekstissä",
+        "imageOriginal": "Alkuperäinen",
+        "imageError": "Kuvaa {name} ei voitu lukea"
     },
     "FakturaView": {
         "common": {

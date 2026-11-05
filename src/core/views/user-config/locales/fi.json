@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Tulostin, jota kaytetaan oletuksena tulostamiseen",
         "accounting": "Kirjanpito",
         "accountingEasymode": "Yksinkertainen tila",
-        "accountingEasymode_help": "Näyttää kirjanpidon arkikielellä: ilman debetiä ja kreditiä, ilman veroavaimia, vain edessä olevan työn. Pois päältä näkyy ammattinäkymä. Voidaan vaihtaa myös suoraan kirjanpidossa."
+        "accountingEasymode_help": "Näyttää kirjanpidon arkikielellä: ilman debetiä ja kreditiä, ilman veroavaimia, vain edessä olevan työn. Pois päältä näkyy ammattinäkymä. Voidaan vaihtaa myös suoraan kirjanpidossa.",
+        "letters": "Kirjeet"
+    },
+    "UserSignature": {
+        "title": "Allekirjoitus",
+        "upload": "Lataa kuva",
+        "replace": "Toinen kuva",
+        "draw": "Piirrä",
+        "remove": "Poista",
+        "empty": "Allekirjoitusta ei ole vielä tallennettu",
+        "hint": "Valokuvaa tai skannaa allekirjoituksesi valkoiselle paperille ja lataa se – myös Ctrl+V:llä tai vetämällä. Tausta poistetaan ja kuva rajataan. Se näkyy allekirjoittamissasi kirjeissä allekirjoitusviivan yläpuolella.",
+        "drawTitle": "Piirrä allekirjoitus",
+        "drawHint": "Allekirjoita hiirellä, sormella tai kynällä.",
+        "clear": "Aloita alusta",
+        "cancel": "Peruuta",
+        "apply": "Käytä",
+        "inkBlue": "Sininen",
+        "inkBlack": "Musta",
+        "saved": "Allekirjoitus tallennettu",
+        "unreadable": "Kuvasta ei tunnistettu allekirjoitusta.",
+        "confirmRemove": "Poistetaanko allekirjoitus? Kirjeisiin tulee taas tyhjä viiva käsin allekirjoittamista varten."
     }
 }

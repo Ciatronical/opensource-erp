@@ -167,6 +167,35 @@
                 </v-menu>
             </template>
 
+            <!-- Bild (nur mit images): einfügen per Knopf, Strg+V oder Ziehen -->
+            <template v-if="images">
+                <v-divider vertical class="mx-1" />
+
+                <v-btn
+                    icon="mdi-image-plus-outline"
+                    size="small"
+                    variant="text"
+                    :loading="imageBusy"
+                    :title="t('HtmlEditor.image')"
+                    @click="imageInput?.click()"
+                />
+                <input ref="imageInput" type="file" accept="image/*" multiple hidden @change="onImageFiles">
+                <v-btn-toggle
+                    v-if="editor.isActive('image')"
+                    :model-value="editor.getAttributes('image').width || 0"
+                    density="compact"
+                    variant="text"
+                    color="primary"
+                    mandatory
+                    class="html-editor__image-size"
+                    @update:model-value="setImageWidth"
+                >
+                    <v-btn v-for="w in imageWidths" :key="w" :value="w" size="small" :title="t('HtmlEditor.imageWidth')">
+                        {{ w ? w + ' %' : t('HtmlEditor.imageOriginal') }}
+                    </v-btn>
+                </v-btn-toggle>
+            </template>
+
             <v-divider vertical class="mx-1" />
 
             <!-- Link -->
@@ -268,6 +297,8 @@ import { TableKit } from '@tiptap/extension-table'
 import { Placeholder } from '@tiptap/extensions'
 import { Extension, Node, mergeAttributes } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { imageFileToDataUrl, imageWidth } from '@/core/utils/imageTools.js'
+import * as toast from '@/core/utils/toasts.js'
 
 /**
  * Extension für Ctrl+Click zum Öffnen von Links
@@ -333,6 +364,41 @@ const PlaceholderNode = Node.create({
     }
 })
 
+/**
+ * Eingebettetes Bild (nur mit Prop images, z. B. Briefe).
+ *
+ * Das Bild steht als Data-URL im HTML — kein Dateiablage-Umweg, Kopie eines
+ * Briefs oder Textbausteins nimmt die Bilder mit. Breite als Prozent der
+ * Zeilenbreite in data-width (leer = natürliche Größe, höchstens
+ * Zeilenbreite); so setzt es auch der PDF-Druck (template_engine.php).
+ * Bilder mit externer Adresse werden nicht übernommen, weil der Druck sie
+ * nicht laden würde.
+ */
+const ImageNode = Node.create({
+    name: 'image',
+    group: 'block',
+    atom: true,
+    draggable: true,
+    selectable: true,
+    addAttributes() {
+        return {
+            src: { default: null },
+            alt: { default: '' },
+            width: {
+                default: null,
+                parseHTML: el => Number(el.getAttribute('data-width')) || null,
+                renderHTML: attrs => attrs.width ? { 'data-width': attrs.width, style: `width: ${attrs.width}%` } : {}
+            }
+        }
+    },
+    parseHTML() {
+        return [{ tag: 'img[src^="data:image/"]' }]
+    },
+    renderHTML({ HTMLAttributes }) {
+        return ['img', mergeAttributes({ class: 'html-editor__image' }, HTMLAttributes)]
+    }
+})
+
 export default defineComponent({
     name: 'HtmlEditorComponent',
     components: {
@@ -385,6 +451,15 @@ export default defineComponent({
         maxHeight: {
             type: Number,
             default: 400
+        },
+        /**
+         * Bilder erlauben: Knopf in der Toolbar, Einfügen aus der
+         * Zwischenablage (Strg+V) und per Drag & Drop. Die Bilder werden
+         * verkleinert und als Data-URL eingebettet.
+         */
+        images: {
+            type: Boolean,
+            default: false
         }
     },
     emits: ['update:modelValue', 'blur', 'focus'],
@@ -393,6 +468,9 @@ export default defineComponent({
         const isFocused = ref(false)
         const linkInputRef = ref(null)
         const isFull = computed(() => props.toolbar === 'full')
+        const imageInput = ref(null)
+        const imageBusy = ref(false)
+        const imageWidths = [25, 50, 75, 100, 0]
 
         const contentStyle = computed(() => ({
             minHeight: props.minHeight + 'px',
@@ -456,6 +534,35 @@ export default defineComponent({
             LinkShortcut,
             PlaceholderNode
         ]
+
+        if (props.images) {
+            extensions.push(ImageNode, Extension.create({
+                name: 'imagePasteDrop',
+                addProseMirrorPlugins() {
+                    return [new Plugin({
+                        key: new PluginKey('imagePasteDrop'),
+                        props: {
+                            handlePaste(view, event) {
+                                const files = imageFiles(event.clipboardData?.files)
+                                if (!files.length) return false
+                                event.preventDefault()
+                                insertImages(files)
+                                return true
+                            },
+                            handleDrop(view, event, slice, moved) {
+                                if (moved) return false
+                                const files = imageFiles(event.dataTransfer?.files)
+                                if (!files.length) return false
+                                event.preventDefault()
+                                const at = view.posAtCoords({ left: event.clientX, top: event.clientY })
+                                insertImages(files, at?.pos ?? null)
+                                return true
+                            }
+                        }
+                    })]
+                }
+            }))
+        }
 
         if (isFull.value) {
             extensions.push(
@@ -533,6 +640,54 @@ export default defineComponent({
             ]).run()
         }
 
+        function imageFiles(list) {
+            return Array.from(list || []).filter(f => f.type.startsWith('image/'))
+        }
+
+        /**
+         * Bilder verkleinern und an der Cursorstelle (bzw. Ablagestelle)
+         * einfügen. Nach jedem Bild steht der Cursor dahinter, mehrere Bilder
+         * landen also in der gewählten Reihenfolge untereinander.
+         */
+        async function insertImages(files, pos = null) {
+            if (!editor.value) return
+            imageBusy.value = true
+            try {
+                for (const file of files) {
+                    let src
+                    try {
+                        src = await imageFileToDataUrl(file)
+                    } catch {
+                        toast.error(t('HtmlEditor.imageError', { name: file.name }))
+                        continue
+                    }
+                    // Fotos starten mit halber Zeilenbreite — in voller Größe
+                    // füllen sie im Brief die halbe Seite. Kleine Grafiken bleiben original.
+                    const width = (await imageWidth(src)) >= 800 ? 50 : null
+                    const node = { type: 'image', attrs: { src, alt: file.name || '', width } }
+                    const chain = editor.value.chain().focus()
+                    if (pos !== null) {
+                        chain.insertContentAt(pos, node).run()
+                        pos = null
+                    } else {
+                        chain.insertContent(node).run()
+                    }
+                }
+            } finally {
+                imageBusy.value = false
+            }
+        }
+
+        function onImageFiles(event) {
+            const files = imageFiles(event.target.files)
+            event.target.value = ''
+            if (files.length) insertImages(files)
+        }
+
+        function setImageWidth(width) {
+            editor.value?.chain().focus().updateAttributes('image', { width: width || null }).run()
+        }
+
         expose({ insertText, insertPlaceholder, focus: () => editor.value?.commands.focus() })
 
         // Inhalt aktualisieren wenn sich modelValue ändert
@@ -594,7 +749,12 @@ export default defineComponent({
             currentBlockLabel,
             withShortcut,
             openLinkDialog,
-            confirmLink
+            confirmLink,
+            imageInput,
+            imageBusy,
+            imageWidths,
+            onImageFiles,
+            setImageWidth
         }
     }
 })
@@ -804,6 +964,24 @@ export default defineComponent({
 .html-editor--focused .html-editor__label {
     color: rgb(var(--v-theme-primary));
 }
+/* Eingebettete Bilder (Prop images) */
+.html-editor__content :deep(.html-editor__image) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0.5em 0;
+    border-radius: 2px;
+    cursor: grab;
+}
+.html-editor__content :deep(.html-editor__image.ProseMirror-selectednode) {
+    outline: 2px solid rgb(var(--v-theme-primary));
+}
+.html-editor__image-size .v-btn {
+    min-width: 0;
+    padding: 0 6px;
+    font-size: 0.75rem;
+}
+
 /* Platzhalter-Baustein (z. B. Name, Datum in Briefen) */
 .html-editor__content :deep(.html-editor__placeholder) {
     display: inline-block;

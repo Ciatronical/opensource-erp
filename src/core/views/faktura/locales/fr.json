@@ -33,7 +33,11 @@
         "deleteColumn": "Supprimer la colonne",
         "toggleHeaderRow": "Ligne d’en-tête oui/non",
         "deleteTable": "Supprimer le tableau",
-        "clearFormatting": "Effacer la mise en forme"
+        "clearFormatting": "Effacer la mise en forme",
+        "image": "Insérer une image (aussi Ctrl+V ou glisser-déposer)",
+        "imageWidth": "Largeur dans le texte",
+        "imageOriginal": "Original",
+        "imageError": "L’image {name} n’a pas pu être lue"
     },
     "FakturaView": {
         "common": {

@@ -33,7 +33,11 @@
         "deleteColumn": "Ištrinti stulpelį",
         "toggleHeaderRow": "Antraštės eilutė įjungti/išjungti",
         "deleteTable": "Ištrinti lentelę",
-        "clearFormatting": "Pašalinti formatavimą"
+        "clearFormatting": "Pašalinti formatavimą",
+        "image": "Įterpti vaizdą (taip pat Ctrl+V arba nuvilkimas)",
+        "imageWidth": "Plotis tekste",
+        "imageOriginal": "Originalas",
+        "imageError": "Vaizdo {name} nepavyko nuskaityti"
     },
     "FakturaView": {
         "common": {

@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Spausdintuvas, naudojamas pagal numatytuosius spausdinimui",
         "accounting": "Buhalterija",
         "accountingEasymode": "Paprasta veiksena",
-        "accountingEasymode_help": "Rodo buhalteriją kasdiene kalba: be debeto ir kredito, be mokesčių raktų, tik laukiantį darbą. Išjungus rodomas profesionalus vaizdas. Galima perjungti ir tiesiai buhalterijoje."
+        "accountingEasymode_help": "Rodo buhalteriją kasdiene kalba: be debeto ir kredito, be mokesčių raktų, tik laukiantį darbą. Išjungus rodomas profesionalus vaizdas. Galima perjungti ir tiesiai buhalterijoje.",
+        "letters": "Laiškai"
+    },
+    "UserSignature": {
+        "title": "Parašas",
+        "upload": "Įkelti vaizdą",
+        "replace": "Kitas vaizdas",
+        "draw": "Piešti",
+        "remove": "Pašalinti",
+        "empty": "Parašas dar neišsaugotas",
+        "hint": "Nufotografuokite arba nuskenuokite savo parašą ant balto popieriaus ir įkelkite – taip pat per Ctrl+V arba nuvilkdami. Fonas pašalinamas, o vaizdas apkarpomas. Parašas rodomas jūsų pasirašomuose laiškuose virš parašo linijos.",
+        "drawTitle": "Nupiešti parašą",
+        "drawHint": "Pasirašykite pele, pirštu ar rašikliu.",
+        "clear": "Pradėti iš naujo",
+        "cancel": "Atšaukti",
+        "apply": "Taikyti",
+        "inkBlue": "Mėlyna",
+        "inkBlack": "Juoda",
+        "saved": "Parašas išsaugotas",
+        "unreadable": "Vaizde parašo nepavyko atpažinti.",
+        "confirmRemove": "Pašalinti parašą? Laiškuose vėl bus tuščia linija pasirašyti ranka."
     }
 }

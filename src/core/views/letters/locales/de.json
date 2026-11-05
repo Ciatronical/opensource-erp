@@ -76,7 +76,7 @@
         "subject": "Betreff",
         "greeting": "Anrede",
         "greetingSuggest": "Vorschlag übernehmen: {greeting}",
-        "bodyPlaceholder": "Brieftext …",
+        "bodyPlaceholder": "Brieftext … Bilder per Knopf, Strg+V oder Hineinziehen einfügen",
         "placeholders": "Bausteine einfügen:",
         "dispatchLog": "Versandprotokoll",
         "notSent": "Dieser Brief wurde noch nicht versendet.",
@@ -121,6 +121,11 @@
         "needContent": "Brief entsteht mit dem ersten Text",
         "savedAt": "Gespeichert {time}",
         "savedState": "Gespeichert",
-        "created": "Brief Nr. {number} angelegt"
+        "created": "Brief Nr. {number} angelegt",
+        "signatureStored": "Unterschrift hinterlegt",
+        "signaturePrinted": "Die hinterlegte Unterschrift wird gedruckt.",
+        "signatureMissingOwn": "Noch keine Unterschrift hinterlegt –",
+        "signatureUpload": "jetzt hinterlegen",
+        "signatureMissing": "Keine Unterschrift hinterlegt – Platz zum Unterschreiben von Hand."
     }
 }

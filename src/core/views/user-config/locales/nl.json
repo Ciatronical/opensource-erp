@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Printer die standaard wordt gebruikt voor afdrukken",
         "accounting": "Boekhouding",
         "accountingEasymode": "Eenvoudige modus",
-        "accountingEasymode_help": "Toont de boekhouding in gewone taal: zonder debet en credit, zonder btw-codes, alleen het werk dat klaarligt. Uitgeschakeld verschijnt de vakkundige weergave. Ook direct in de boekhouding om te schakelen."
+        "accountingEasymode_help": "Toont de boekhouding in gewone taal: zonder debet en credit, zonder btw-codes, alleen het werk dat klaarligt. Uitgeschakeld verschijnt de vakkundige weergave. Ook direct in de boekhouding om te schakelen.",
+        "letters": "Brieven"
+    },
+    "UserSignature": {
+        "title": "Handtekening",
+        "upload": "Afbeelding uploaden",
+        "replace": "Andere afbeelding",
+        "draw": "Tekenen",
+        "remove": "Verwijderen",
+        "empty": "Nog geen handtekening opgeslagen",
+        "hint": "Fotografeer of scan uw handtekening op wit papier en upload deze – ook via Ctrl+V of slepen. De achtergrond wordt verwijderd en de afbeelding bijgesneden. De handtekening verschijnt boven de handtekeningregel in brieven die u ondertekent.",
+        "drawTitle": "Handtekening tekenen",
+        "drawHint": "Onderteken met muis, vinger of pen.",
+        "clear": "Opnieuw beginnen",
+        "cancel": "Annuleren",
+        "apply": "Toepassen",
+        "inkBlue": "Blauw",
+        "inkBlack": "Zwart",
+        "saved": "Handtekening opgeslagen",
+        "unreadable": "Er is geen handtekening herkend in de afbeelding.",
+        "confirmRemove": "Handtekening verwijderen? Brieven krijgen dan weer een lege regel voor een handgeschreven handtekening."
     }
 }

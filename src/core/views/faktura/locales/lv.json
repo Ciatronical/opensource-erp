@@ -33,7 +33,11 @@
         "deleteColumn": "Dzēst kolonnu",
         "toggleHeaderRow": "Galvenes rinda ieslēgt/izslēgt",
         "deleteTable": "Dzēst tabulu",
-        "clearFormatting": "Notīrīt formatējumu"
+        "clearFormatting": "Notīrīt formatējumu",
+        "image": "Ievietot attēlu (arī Ctrl+V vai velkot)",
+        "imageWidth": "Platums tekstā",
+        "imageOriginal": "Oriģināls",
+        "imageError": "Attēlu {name} neizdevās nolasīt"
     },
     "FakturaView": {
         "common": {

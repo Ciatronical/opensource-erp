@@ -33,7 +33,11 @@
         "deleteColumn": "Usuń kolumnę",
         "toggleHeaderRow": "Wiersz nagłówka wł./wył.",
         "deleteTable": "Usuń tabelę",
-        "clearFormatting": "Wyczyść formatowanie"
+        "clearFormatting": "Wyczyść formatowanie",
+        "image": "Wstaw obraz (także Ctrl+V lub przeciągnięcie)",
+        "imageWidth": "Szerokość w tekście",
+        "imageOriginal": "Oryginał",
+        "imageError": "Nie można odczytać obrazu {name}"
     },
     "FakturaView": {
         "common": {

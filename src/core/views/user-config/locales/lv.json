@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Printeris, kas tiek izmantots pēc noklusējuma drukāšanai",
         "accounting": "Grāmatvedība",
         "accountingEasymode": "Vienkāršais režīms",
-        "accountingEasymode_help": "Rāda grāmatvedību ikdienas valodā: bez debeta un kredīta, bez nodokļu kodiem, tikai darāmo darbu. Izslēgtā stāvoklī parādās profesionālais skats. Pārslēdzams arī tieši grāmatvedībā."
+        "accountingEasymode_help": "Rāda grāmatvedību ikdienas valodā: bez debeta un kredīta, bez nodokļu kodiem, tikai darāmo darbu. Izslēgtā stāvoklī parādās profesionālais skats. Pārslēdzams arī tieši grāmatvedībā.",
+        "letters": "Vēstules"
+    },
+    "UserSignature": {
+        "title": "Paraksts",
+        "upload": "Augšupielādēt attēlu",
+        "replace": "Cits attēls",
+        "draw": "Zīmēt",
+        "remove": "Noņemt",
+        "empty": "Paraksts vēl nav saglabāts",
+        "hint": "Nofotografējiet vai noskenējiet savu parakstu uz balta papīra un augšupielādējiet – arī ar Ctrl+V vai velkot. Fons tiek noņemts, un attēls apgriezts. Paraksts parādās jūsu parakstītajās vēstulēs virs paraksta līnijas.",
+        "drawTitle": "Zīmēt parakstu",
+        "drawHint": "Parakstieties ar peli, pirkstu vai irbuli.",
+        "clear": "Sākt no jauna",
+        "cancel": "Atcelt",
+        "apply": "Lietot",
+        "inkBlue": "Zils",
+        "inkBlack": "Melns",
+        "saved": "Paraksts saglabāts",
+        "unreadable": "Attēlā paraksts netika atpazīts.",
+        "confirmRemove": "Noņemt parakstu? Vēstulēs atkal būs tukša līnija parakstīšanai ar roku."
     }
 }

@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Skrivare som anvands som standard for utskrifter",
         "accounting": "Bokföring",
         "accountingEasymode": "Enkelt läge",
-        "accountingEasymode_help": "Visar bokföringen i vardagligt språk: utan debet och kredit, utan momskoder, bara arbetet som väntar. Avstängt visas den fackliga vyn. Kan även växlas direkt i bokföringen."
+        "accountingEasymode_help": "Visar bokföringen i vardagligt språk: utan debet och kredit, utan momskoder, bara arbetet som väntar. Avstängt visas den fackliga vyn. Kan även växlas direkt i bokföringen.",
+        "letters": "Brev"
+    },
+    "UserSignature": {
+        "title": "Signatur",
+        "upload": "Ladda upp bild",
+        "replace": "Annan bild",
+        "draw": "Rita",
+        "remove": "Ta bort",
+        "empty": "Ingen signatur sparad ännu",
+        "hint": "Fotografera eller skanna din signatur på vitt papper och ladda upp den – även med Ctrl+V eller dra och släpp. Bakgrunden tas bort och bilden beskärs. Den visas ovanför signaturraden i brev som du undertecknar.",
+        "drawTitle": "Rita signatur",
+        "drawHint": "Signera med mus, finger eller penna.",
+        "clear": "Börja om",
+        "cancel": "Avbryt",
+        "apply": "Använd",
+        "inkBlue": "Blå",
+        "inkBlack": "Svart",
+        "saved": "Signatur sparad",
+        "unreadable": "Ingen signatur kunde hittas i bilden.",
+        "confirmRemove": "Ta bort signaturen? Brev får då återigen en tom rad för underskrift för hand."
     }
 }

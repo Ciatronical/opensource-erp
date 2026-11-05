@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Printer used by default for printouts",
         "accounting": "Accounting",
         "accountingEasymode": "Simple mode",
-        "accountingEasymode_help": "Shows accounting in everyday wording: no debit and credit, no tax keys, only the work at hand. Switched off, the professional view appears. Can also be toggled directly in accounting."
+        "accountingEasymode_help": "Shows accounting in everyday wording: no debit and credit, no tax keys, only the work at hand. Switched off, the professional view appears. Can also be toggled directly in accounting.",
+        "letters": "Letters"
+    },
+    "UserSignature": {
+        "title": "Signature",
+        "upload": "Upload image",
+        "replace": "Replace image",
+        "draw": "Draw",
+        "remove": "Remove",
+        "empty": "No signature stored yet",
+        "hint": "Photograph or scan your signature on white paper and upload it – also via Ctrl+V or drag and drop. The background is removed and the image cropped. It appears above the signature line in letters you sign.",
+        "drawTitle": "Draw signature",
+        "drawHint": "Sign with mouse, finger or pen.",
+        "clear": "Start over",
+        "cancel": "Cancel",
+        "apply": "Apply",
+        "inkBlue": "Blue",
+        "inkBlack": "Black",
+        "saved": "Signature saved",
+        "unreadable": "No signature could be detected in the image.",
+        "confirmRemove": "Remove signature? Letters will get an empty line for a handwritten signature again."
     }
 }

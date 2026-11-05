@@ -33,7 +33,11 @@
         "deleteColumn": "删除列",
         "toggleHeaderRow": "切换表头行",
         "deleteTable": "删除表格",
-        "clearFormatting": "清除格式"
+        "clearFormatting": "清除格式",
+        "image": "插入图片（也可使用 Ctrl+V 或拖放）",
+        "imageWidth": "文中宽度",
+        "imageOriginal": "原始大小",
+        "imageError": "无法读取图片 {name}"
     },
     "FakturaView": {
         "common": {

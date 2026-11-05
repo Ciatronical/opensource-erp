@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Printer, mida kasutatakse vaikimisi printimiseks",
         "accounting": "Raamatupidamine",
         "accountingEasymode": "Lihtne režiim",
-        "accountingEasymode_help": "Näitab raamatupidamist igapäevases keeles: ilma deebeti ja kreediti, ilma maksukoodideta, ainult ees ootava tööga. Väljalülitatuna kuvatakse erialane vaade. Saab ümber lülitada ka otse raamatupidamises."
+        "accountingEasymode_help": "Näitab raamatupidamist igapäevases keeles: ilma deebeti ja kreediti, ilma maksukoodideta, ainult ees ootava tööga. Väljalülitatuna kuvatakse erialane vaade. Saab ümber lülitada ka otse raamatupidamises.",
+        "letters": "Kirjad"
+    },
+    "UserSignature": {
+        "title": "Allkiri",
+        "upload": "Laadi pilt üles",
+        "replace": "Muu pilt",
+        "draw": "Joonista",
+        "remove": "Eemalda",
+        "empty": "Allkirja pole veel salvestatud",
+        "hint": "Pildista või skanni oma allkiri valgele paberile ja laadi üles – ka Ctrl+V või lohistamisega. Taust eemaldatakse ja pilt lõigatakse kärpimisega. Allkiri ilmub sinu allkirjastatud kirjades allkirjajoone kohale.",
+        "drawTitle": "Joonista allkiri",
+        "drawHint": "Kirjuta alla hiire, sõrme või pliiatsiga.",
+        "clear": "Alusta uuesti",
+        "cancel": "Tühista",
+        "apply": "Rakenda",
+        "inkBlue": "Sinine",
+        "inkBlack": "Must",
+        "saved": "Allkiri salvestatud",
+        "unreadable": "Pildilt ei tuvastatud allkirja.",
+        "confirmRemove": "Kas eemaldada allkiri? Kirjadele tuleb siis jälle tühi joon käsitsi allkirjastamiseks."
     }
 }

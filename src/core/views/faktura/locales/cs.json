@@ -33,7 +33,11 @@
         "deleteColumn": "Smazat sloupec",
         "toggleHeaderRow": "Záhlaví zap./vyp.",
         "deleteTable": "Smazat tabulku",
-        "clearFormatting": "Odstranit formátování"
+        "clearFormatting": "Odstranit formátování",
+        "image": "Vložit obrázek (také Ctrl+V nebo přetažením)",
+        "imageWidth": "Šířka v textu",
+        "imageOriginal": "Originál",
+        "imageError": "Obrázek {name} nelze přečíst"
     },
     "FakturaView": {
         "common": {

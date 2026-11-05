@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Drucker, der standardmäßig für Ausdrucke verwendet wird",
         "accounting": "Buchhaltung",
         "accountingEasymode": "Einfacher Modus",
-        "accountingEasymode_help": "Zeigt die Buchhaltung in Alltagssprache: ohne Soll und Haben, ohne Steuerschlüssel, nur mit der anstehenden Arbeit. Ausgeschaltet erscheint die fachliche Sicht. Lässt sich auch direkt in der Buchhaltung umschalten."
+        "accountingEasymode_help": "Zeigt die Buchhaltung in Alltagssprache: ohne Soll und Haben, ohne Steuerschlüssel, nur mit der anstehenden Arbeit. Ausgeschaltet erscheint die fachliche Sicht. Lässt sich auch direkt in der Buchhaltung umschalten.",
+        "letters": "Briefe"
+    },
+    "UserSignature": {
+        "title": "Unterschrift",
+        "upload": "Bild hochladen",
+        "replace": "Anderes Bild",
+        "draw": "Zeichnen",
+        "remove": "Entfernen",
+        "empty": "Noch keine Unterschrift hinterlegt",
+        "hint": "Unterschrift auf weißem Papier fotografieren oder scannen und hochladen – auch per Strg+V oder Hineinziehen. Der Hintergrund wird entfernt und das Bild zugeschnitten. Sie erscheint in Briefen, die Sie unterzeichnen, über der Unterschriftslinie.",
+        "drawTitle": "Unterschrift zeichnen",
+        "drawHint": "Mit Maus, Finger oder Stift unterschreiben.",
+        "clear": "Neu beginnen",
+        "cancel": "Abbrechen",
+        "apply": "Übernehmen",
+        "inkBlue": "Blau",
+        "inkBlack": "Schwarz",
+        "saved": "Unterschrift gespeichert",
+        "unreadable": "Auf dem Bild ist keine Unterschrift zu erkennen.",
+        "confirmRemove": "Unterschrift entfernen? Briefe bekommen dann wieder eine leere Linie zum Unterschreiben von Hand."
     }
 }

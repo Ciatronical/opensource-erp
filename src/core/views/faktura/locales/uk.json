@@ -33,7 +33,11 @@
         "deleteColumn": "Видалити стовпець",
         "toggleHeaderRow": "Рядок заголовка увімк./вимк.",
         "deleteTable": "Видалити таблицю",
-        "clearFormatting": "Очистити форматування"
+        "clearFormatting": "Очистити форматування",
+        "image": "Вставити зображення (також Ctrl+V або перетягування)",
+        "imageWidth": "Ширина в тексті",
+        "imageOriginal": "Оригінал",
+        "imageError": "Не вдалося прочитати зображення {name}"
     },
     "FakturaView": {
         "common": {

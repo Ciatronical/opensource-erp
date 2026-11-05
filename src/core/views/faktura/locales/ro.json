@@ -33,7 +33,11 @@
         "deleteColumn": "Ștergere coloană",
         "toggleHeaderRow": "Rând antet da/nu",
         "deleteTable": "Ștergere tabel",
-        "clearFormatting": "Eliminare formatare"
+        "clearFormatting": "Eliminare formatare",
+        "image": "Inserează imagine (și cu Ctrl+V sau prin tragere)",
+        "imageWidth": "Lățime în text",
+        "imageOriginal": "Original",
+        "imageError": "Imaginea {name} nu a putut fi citită"
     },
     "FakturaView": {
         "common": {

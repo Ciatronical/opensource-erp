@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Imprimanta utilizata implicit pentru imprimare",
         "accounting": "Contabilitate",
         "accountingEasymode": "Mod simplu",
-        "accountingEasymode_help": "Afișează contabilitatea în limbaj obișnuit: fără debit și credit, fără coduri de TVA, doar munca de făcut. Dezactivat apare vederea profesională. Se poate schimba și direct în contabilitate."
+        "accountingEasymode_help": "Afișează contabilitatea în limbaj obișnuit: fără debit și credit, fără coduri de TVA, doar munca de făcut. Dezactivat apare vederea profesională. Se poate schimba și direct în contabilitate.",
+        "letters": "Scrisori"
+    },
+    "UserSignature": {
+        "title": "Semnătură",
+        "upload": "Încarcă imagine",
+        "replace": "Altă imagine",
+        "draw": "Desenează",
+        "remove": "Elimină",
+        "empty": "Nicio semnătură salvată încă",
+        "hint": "Fotografiază sau scanează semnătura pe hârtie albă și încarc-o – și cu Ctrl+V sau prin tragere. Fundalul este eliminat, iar imaginea decupată. Apare deasupra liniei de semnătură în scrisorile pe care le semnezi.",
+        "drawTitle": "Desenează semnătura",
+        "drawHint": "Semnează cu mouse-ul, degetul sau stiloul.",
+        "clear": "Începe din nou",
+        "cancel": "Anulează",
+        "apply": "Aplică",
+        "inkBlue": "Albastru",
+        "inkBlack": "Negru",
+        "saved": "Semnătură salvată",
+        "unreadable": "Nu s-a putut recunoaște nicio semnătură în imagine.",
+        "confirmRemove": "Elimini semnătura? Scrisorile vor avea din nou o linie goală pentru semnarea de mână."
     }
 }

@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Yazdirimalar icin varsayilan olarak kullanilan yazici",
         "accounting": "Muhasebe",
         "accountingEasymode": "Basit kip",
-        "accountingEasymode_help": "Muhasebeyi günlük dille gösterir: borç ve alacak olmadan, vergi kodları olmadan, yalnızca bekleyen iş. Kapalıyken uzman görünümü belirir. Doğrudan muhasebe içinden de değiştirilebilir."
+        "accountingEasymode_help": "Muhasebeyi günlük dille gösterir: borç ve alacak olmadan, vergi kodları olmadan, yalnızca bekleyen iş. Kapalıyken uzman görünümü belirir. Doğrudan muhasebe içinden de değiştirilebilir.",
+        "letters": "Mektuplar"
+    },
+    "UserSignature": {
+        "title": "İmza",
+        "upload": "Görsel yükle",
+        "replace": "Başka görsel",
+        "draw": "Çiz",
+        "remove": "Kaldır",
+        "empty": "Henüz kayıtlı imza yok",
+        "hint": "İmzanızı beyaz kağıda fotoğraflayın veya tarayın ve yükleyin – Ctrl+V veya sürükleyip bırakma ile de olur. Arka plan kaldırılır ve görsel kırpılır. İmzaladığınız mektuplarda imza çizgisinin üzerinde görünür.",
+        "drawTitle": "İmza çiz",
+        "drawHint": "Fare, parmak veya kalemle imzalayın.",
+        "clear": "Baştan başla",
+        "cancel": "İptal",
+        "apply": "Uygula",
+        "inkBlue": "Mavi",
+        "inkBlack": "Siyah",
+        "saved": "İmza kaydedildi",
+        "unreadable": "Görselde imza algılanamadı.",
+        "confirmRemove": "İmza kaldırılsın mı? Mektuplarda yeniden elle imzalamak için boş bir çizgi olacak."
     }
 }

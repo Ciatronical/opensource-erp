@@ -19,6 +19,26 @@
         "defaultPrinter_help": "Drukarka domyślnie używana do drukowania",
         "accounting": "Księgowość",
         "accountingEasymode": "Tryb prosty",
-        "accountingEasymode_help": "Pokazuje księgowość zwykłym językiem: bez Winien i Ma, bez kluczy podatkowych, tylko bieżąca praca. Po wyłączeniu pojawia się widok fachowy. Można też przełączyć bezpośrednio w księgowości."
+        "accountingEasymode_help": "Pokazuje księgowość zwykłym językiem: bez Winien i Ma, bez kluczy podatkowych, tylko bieżąca praca. Po wyłączeniu pojawia się widok fachowy. Można też przełączyć bezpośrednio w księgowości.",
+        "letters": "Listy"
+    },
+    "UserSignature": {
+        "title": "Podpis",
+        "upload": "Prześlij obraz",
+        "replace": "Zmień obraz",
+        "draw": "Narysuj",
+        "remove": "Usuń",
+        "empty": "Nie zapisano jeszcze podpisu",
+        "hint": "Sfotografuj lub zeskanuj swój podpis na białej kartce i prześlij go – także przez Ctrl+V lub przeciągnięcie. Tło zostanie usunięte, a obraz przycięty. Podpis pojawia się w podpisywanych przez Ciebie listach nad linią podpisu.",
+        "drawTitle": "Narysuj podpis",
+        "drawHint": "Podpisz myszą, palcem lub rysikiem.",
+        "clear": "Zacznij od nowa",
+        "cancel": "Anuluj",
+        "apply": "Zastosuj",
+        "inkBlue": "Niebieski",
+        "inkBlack": "Czarny",
+        "saved": "Podpis zapisany",
+        "unreadable": "Na obrazie nie rozpoznano podpisu.",
+        "confirmRemove": "Usunąć podpis? Listy będą ponownie zawierać pustą linię na podpis odręczny."
     }
 }

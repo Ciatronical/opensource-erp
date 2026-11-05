@@ -84,7 +84,8 @@ function getLetters($data) {
                    OR (p.status = 'draft' AND json_array_length(b.sent_log) = 0))
               AND (p.search IS NULL OR (
                     SELECT bool_and(concat_ws(' ', b.letternumber, b.subject, b.reference, b.cv_name,
-                                              b.contact_name, b.employee_name, b.body) ILIKE '%' || w || '%')
+                                              b.contact_name, b.employee_name,
+                                              regexp_replace(b.body, '<img[^>]*>', '', 'g')) ILIKE '%' || w || '%')
                     FROM unnest(regexp_split_to_array(p.search, '\s+')) AS w
                     WHERE w <> ''))
         )
@@ -234,7 +235,10 @@ function getLetter($data) {
                 FROM cp
             ),
             'employees', (
-                SELECT COALESCE(json_agg(json_build_object('id', e.id, 'name', e.name) ORDER BY e.name), '[]'::json)
+                SELECT COALESCE(json_agg(json_build_object(
+                    'id', e.id, 'name', e.name,
+                    'has_signature', EXISTS (SELECT 1 FROM employee_signature_oserp s WHERE s.employee_id = e.id)
+                ) ORDER BY e.name), '[]'::json)
                 FROM employee e WHERE COALESCE(e.deleted, false) = false
             ),
             'templates', (
@@ -439,9 +443,11 @@ function letterPrintData($db, array $override): array {
                                                   'cp_email', COALESCE(cp_email, ''))
                          FROM contacts c, ids WHERE c.cp_id = ids.cp_id),
             'employee', (SELECT json_build_object('id', e.id, 'name', COALESCE(e.name, ''),
-                                                  'tel', COALESCE(e.deleted_tel, ''), 'email', COALESCE(e.deleted_email, ''))
+                                                  'tel', COALESCE(e.deleted_tel, ''), 'email', COALESCE(e.deleted_email, ''),
+                                                  'signature', (SELECT encode(s.image, 'base64') FROM employee_signature_oserp s WHERE s.employee_id = e.id))
                          FROM employee e, ids WHERE e.id = ids.employee_id),
-            'salesman', (SELECT json_build_object('id', e.id, 'name', COALESCE(e.name, ''))
+            'salesman', (SELECT json_build_object('id', e.id, 'name', COALESCE(e.name, ''),
+                                                  'signature', (SELECT encode(s.image, 'base64') FROM employee_signature_oserp s WHERE s.employee_id = e.id))
                          FROM employee e, ids WHERE e.id = ids.salesman_id),
             'company',      COALESCE((SELECT value FROM defaults_oserp WHERE key = 'company_name'), ''),
             'sender_name',  COALESCE((SELECT email_sender_letter FROM defaults LIMIT 1), ''),
@@ -539,6 +545,7 @@ function letterRenderPdf($db, array $print): array {
     $lang = strtoupper($cv['language_code'] ?? 'DE') ?: 'DE';
     $date = !empty($l['date']) ? date('d.m.Y', strtotime($l['date'])) : date('d.m.Y');
     $preview = empty($l['letternumber']);
+    $hasSalesman = !empty($sm['id']) && intval($sm['id']) !== intval($emp['id'] ?? 0);
 
     $variables = [
         'language_code'    => $lang,
@@ -571,7 +578,9 @@ function letterRenderPdf($db, array $print): array {
         'employee_name'    => $emp['name'] ?? '',
         'employee_tel'     => $emp['tel'] ?? '',
         'employee_email'   => $emp['email'] ?? '',
-        'salesman_name'    => (!empty($sm['id']) && intval($sm['id']) !== intval($emp['id'] ?? 0)) ? ($sm['name'] ?? '') : '',
+        'salesman_name'    => $hasSalesman ? ($sm['name'] ?? '') : '',
+        'employee_signature' => !empty($emp['signature']) ? '1' : '',
+        'salesman_signature' => $hasSalesman && !empty($sm['signature']) ? '1' : '',
         'preview'          => $preview ? '1' : '',
     ];
 
@@ -583,6 +592,9 @@ function letterRenderPdf($db, array $print): array {
 
     $engine = new LaTeXTemplateEngine($templateDir);
     $engine->setVariables($variables);
+    // Unterschriften als Bild in den Arbeitsordner (Vorlage: signature-employee.png …)
+    if ($variables['employee_signature']) $engine->addExtraFile('signature-employee.png', base64_decode($emp['signature']));
+    if ($variables['salesman_signature']) $engine->addExtraFile('signature-salesman.png', base64_decode($sm['signature']));
     $latex = $engine->parseString(letterTemplateContent($templateDir));
     if ($latex === false) return ['error' => $engine->getError()];
     $pdfPath = $engine->compile($latex);

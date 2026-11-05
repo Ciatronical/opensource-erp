@@ -7,7 +7,7 @@ order: 45
 status: stable
 since: 2026-10-11
 external: true
-keywords: [Brief, Briefe, Hybridbrief, Postversand, PIN AG, LetterXpress, Einschreiben, Textbausteine]
+keywords: [Brief, Briefe, Hybridbrief, Postversand, PIN AG, LetterXpress, Einschreiben, Textbausteine, Unterschrift, Bilder]
 ---
 
 # Briefe und Postversand
@@ -22,11 +22,12 @@ Die Briefe liegen in kivitendos Tabelle `letter` und bleiben dort kompatibel; Te
 - **Ansprechperson**: wählbar, erscheint im Adressfeld. Die **Anrede** wird daraus vorgeschlagen (Geschlecht der Ansprechperson, bei natürlichen Personen aus der Kundenanrede, in der Sprache des Kunden) und bleibt änderbar; ein Klick auf den Zauberstab holt den Vorschlag zurück.
 - **Datum, Ihr Zeichen, Unterschrift** (ein oder zwei Unterzeichner), interne Bemerkung (wird nicht gedruckt).
 - **Text** im Editor mit Absätzen, Fett, Kursiv, Listen. **Bausteine** (Name, Kundennummer, Vor-/Nachname der Ansprechperson, Datum, Briefnummer, Bearbeiter, Firma) werden per Klick an der Cursorstelle eingefügt und erscheinen als Pille; beim Drucken steht der Wert. Im Betreff und in Textbausteinen stehen sie als `<%name%>`, `<%customernumber%>`, `<%cp_name%>`, `<%date%>`, `<%letternumber%>`, `<%employee_name%>`, `<%company%>`.
+- **Bilder** im Text: per Bildknopf in der Werkzeugleiste, mit **Strg+V** aus der Zwischenablage (Screenshot, kopiertes Foto) oder durch Hineinziehen einer Datei. Fotos werden vor dem Speichern verkleinert und starten mit halber Zeilenbreite; ein Klick auf das Bild bietet 25 / 50 / 75 / 100 % oder die Originalgröße. Das Bild steckt eingebettet im Brieftext – Kopien und Textbausteine nehmen es mit – und erscheint im PDF in derselben Breite. Bilder von fremden Webadressen werden nicht übernommen.
 - **Automatisches Speichern**: Der Brief entsteht, sobald Betreff oder Text eingegeben sind, und wird danach 1,5 Sekunden nach jeder Änderung gesichert – die Kopfzeile zeigt den Stand (Empfänger wählen / entsteht mit dem ersten Text / gespeichert um …). Ein leerer Brief wird nie angelegt.
 - **Textbausteine**: Betreff und Text als Baustein speichern, auswählen, aktualisieren, löschen – direkt im Editor.
 - **Kopie**: jeder Brief dient als Vorlage für einen neuen Brief (auch aus der Liste).
 - Beim Verlassen und vor E-Mail- oder Postversand wird eine ausstehende Speicherung still ausgeführt.
-- **Unterschrift**: gedruckt wird der Name des gewählten Mitarbeiters (optional ein zweiter); ein Unterschriftsbild gibt es nicht. Die E-Mail-Signatur aus der Benutzerverwaltung wird nicht verwendet.
+- **Unterschrift**: Jeder Benutzer hinterlegt seine Unterschrift selbst unter **Benutzermenü (oben rechts) → Konfiguration → Briefe** – Foto oder Scan vom Blatt hochladen (auch Strg+V oder Hineinziehen) oder mit Maus, Finger bzw. Stift zeichnen. Der Papierhintergrund wird entfernt und das Bild auf die Schrift zugeschnitten. Der Brief druckt die Unterschrift des gewählten Unterzeichners über der Linie, darunter den Namen; ohne hinterlegte Unterschrift bleibt Platz zum Unterschreiben von Hand. Im Briefeditor zeigt die Unterzeichner-Auswahl, wer eine Unterschrift hinterlegt hat; fehlt die eigene, führt ein Link direkt zum Hinterlegen. Bei zwei Unterzeichnern gilt das für beide. Die E-Mail-Signatur aus der Benutzerverwaltung wird nicht verwendet.
 - **Rechte**: Der Menüpunkt und die Funktionen setzen das kivitendo-Recht `sales_letter_edit` (Verkaufsbriefe) oder `purchase_letter_edit` (Einkaufsbriefe) der Benutzergruppe voraus.
 
 ## Versand
@@ -61,7 +62,7 @@ Firmenkonfiguration → CRM → **Briefversand (Hybridbrief)**:
 | Farbdruck / beidseitig als Vorgabe | Vorbelegung des Versanddialogs |
 | Verbindung testen | Prüft Anmeldung und – je nach Anbieter – Guthaben oder Einlieferungsordner |
 
-Die **Briefnummer** zählt in der Firmenkonfiguration → Nummernkreise unter „Brief“ (kivitendos `defaults.letternumber`); der nächste Brief erhält Zähler + 1, der Wert ist frei setzbar. Die Briefvorlage ist `letter.tex` im Vorlagensatz der Firma; fehlt sie oder liegt sie noch in kivitendos Template-Toolkit-Syntax, greift die Master-Vorlage (`templates-default/RB/letter.tex`). Das Adressfeld steht an der DIN-5008-Fensterposition, damit der Dienstleister die Anschrift liest. Rechte: `sales_letter_edit` / `purchase_letter_edit` (kivitendo), Belege per Post mit dem jeweiligen Belegrecht.
+Die **Briefnummer** zählt in der Firmenkonfiguration → Nummernkreise unter „Brief“ (kivitendos `defaults.letternumber`); der nächste Brief erhält Zähler + 1, der Wert ist frei setzbar. Die Briefvorlage ist `letter.tex` im Vorlagensatz der Firma; fehlt sie oder liegt sie noch in kivitendos Template-Toolkit-Syntax, greift die Master-Vorlage (`templates-default/RB/letter.tex`). Das Adressfeld steht an der DIN-5008-Fensterposition, damit der Dienstleister die Anschrift liest. Eigene `letter.tex`-Vorlagen binden die Unterschrift über `<%if employee_signature%>` und die Datei `signature-employee.png` (zweiter Unterzeichner: `salesman_signature` / `signature-salesman.png`) ein; Bilder im Brieftext setzt die Vorlagen-Engine selbst. Rechte: `sales_letter_edit` / `purchase_letter_edit` (kivitendo), Belege per Post mit dem jeweiligen Belegrecht.
 
 ## Automatik
 

@@ -31,6 +31,8 @@ class LaTeXTemplateEngine {
     // Zusaetzliche Dateien (Name => Binaerinhalt), die vor dem Compile in den
     // Arbeitsordner geschrieben werden (z.B. der pro-Beleg erzeugte GiroCode-QR).
     private $extraFiles = [];
+    // Laufende Nummer für Bilder aus HTML-Feldern (htmlimg1.png, htmlimg2.jpg …)
+    private $htmlImageCount = 0;
 
     // HTML-Tags zu LaTeX Mappings (aus SL::Template::LaTeX)
     private static $htmlReplace = [
@@ -193,7 +195,9 @@ class LaTeXTemplateEngine {
         $parts = preg_split('/(<.*?>)/', $content, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
         $result = '';
         foreach ($parts as $part) {
-            if (substr($part, 0, 1) === '<') {
+            if (strncasecmp($part, '<img', 4) === 0) {
+                $result .= $this->htmlImageToLatex($part);
+            } elseif (substr($part, 0, 1) === '<') {
                 $tag = preg_replace('/ +/', '', $part);
                 $result .= self::$htmlReplace[$tag] ?? '';
             } else {
@@ -206,6 +210,40 @@ class LaTeXTemplateEngine {
         $result = preg_replace('/^\s+/', '', $result);
 
         return $result;
+    }
+
+    /**
+     * Eingebettetes Bild aus dem HTML-Editor (<img src="data:image/…;base64,…">)
+     * als Datei in den Arbeitsordner legen und per \includegraphics setzen.
+     * data-width="50" = Prozent der Zeilenbreite; ohne Angabe die natürliche
+     * Größe (96 dpi), höchstens Zeilenbreite. Höhe höchstens halbe Seite.
+     * Bilder mit externer Adresse werden nicht geladen und entfallen.
+     */
+    private function htmlImageToLatex(string $tag): string {
+        if (!preg_match('#\bsrc="data:image/(png|jpe?g|gif|webp);base64,([^"]+)"#i', $tag, $m)) return '';
+        $bytes = base64_decode(preg_replace('/\s+/', '', $m[2]), true);
+        $info  = $bytes !== false ? @getimagesizefromstring($bytes) : false;
+        if (!$info) return '';
+        $ext = strtolower($m[1]) === 'png' ? 'png' : (in_array(strtolower($m[1]), ['jpg', 'jpeg'], true) ? 'jpg' : null);
+        if ($ext === null) {
+            // pdflatex kennt nur PNG/JPEG/PDF: GIF und WebP als PNG ablegen
+            $img = function_exists('imagecreatefromstring') ? @imagecreatefromstring($bytes) : false;
+            if (!$img) return '';
+            ob_start();
+            imagepng($img);
+            $bytes = ob_get_clean();
+            $ext = 'png';
+        }
+        $name = 'htmlimg' . (++$this->htmlImageCount) . '.' . $ext;
+        $this->addExtraFile($name, $bytes);
+
+        if (preg_match('/\bdata-width="(\d+)"/', $tag, $w)) {
+            $width = sprintf('%.2f\\linewidth', max(5, min(100, intval($w[1]))) / 100);
+        } else {
+            $pt = round($info[0] * 0.75, 1);
+            $width = "\\ifdim {$pt}pt>\\linewidth\\linewidth\\else {$pt}pt\\fi";
+        }
+        return "\\par\\smallskip\\noindent\\includegraphics[width={$width},height=0.5\\textheight,keepaspectratio]{{$name}}\\par\\smallskip\n";
     }
 
     // ===== Variable Resolution =====
