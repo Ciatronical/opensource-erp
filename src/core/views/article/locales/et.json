@@ -4,7 +4,8 @@
         "saving": "Salvestamine...",
         "saved": "Salvestatud",
         "sections": {
-            "masterData": "Põhiandmed"
+            "masterData": "Põhiandmed",
+            "warehouse": "Ladu"
         },
         "fields": {
             "partnumber": "Artikli number",
@@ -18,7 +19,14 @@
             "sellprice": "Müügihind",
             "notes": "Pikk kirjeldus",
             "obsolete": "Aegunud / Ei kasutata enam",
-            "partnumberHint": "Jäta tühjaks, et määrata järgmine vaba number"
+            "partnumberHint": "Jäta tühjaks, et määrata järgmine vaba number",
+            "stockable": "Laotav",
+            "stockableHint": "Laoseisu peetakse ainult laotavatel toodetel",
+            "rop": "Tellimispunkt",
+            "ropHint": "Tühi = ei jälgita",
+            "defaultWarehouse": "Vaikeladu",
+            "defaultBin": "Vaikelaokoht",
+            "defaultLocationHint": "Eelvalik saatelehtedele ja laoliikumistele"
         },
         "messages": {
             "loading": "Artiklit laaditakse",
@@ -28,7 +36,8 @@
             "noPermission": "Teil puudub õigus artikleid luua.",
             "partnumberExists": "See artiklinumber on juba kasutusel.",
             "weightInvalid": "Tühi või arv alates 0",
-            "required": "Kohustuslik väli"
+            "required": "Kohustuslik väli",
+            "ropInvalid": "Tühi või arv alates 0"
         },
         "titleNew": "Artikli loomine",
         "create": "Loo",
@@ -39,6 +48,9 @@
             "info": "Eeltäidetud artiklist {partnumber} „{description}“. Artiklinumber antakse uuesti; laoseisu ja EAN-i üle ei võeta.",
             "back": "Malli juurde",
             "notFound": "Malli ei leitud, vorm on tühi."
+        },
+        "stock": {
+            "hint": "Laoseis tuleneb laoliikumistest. Kogus võetakse lattu, lattu väljastatakse või paigutatakse ümber nupuga „Kinnita laoliikumine“."
         }
     }
 }

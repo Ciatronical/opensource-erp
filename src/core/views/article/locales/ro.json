@@ -4,7 +4,8 @@
         "saving": "Se salveaza...",
         "saved": "Salvat",
         "sections": {
-            "masterData": "Date de baza"
+            "masterData": "Date de baza",
+            "warehouse": "Depozit"
         },
         "fields": {
             "partnumber": "Numar articol",
@@ -18,7 +19,14 @@
             "sellprice": "Pret de vanzare",
             "notes": "Descriere lunga",
             "obsolete": "Expirat / Nu mai utiliza",
-            "partnumberHint": "Lăsați gol pentru a atribui următorul număr liber"
+            "partnumberHint": "Lăsați gol pentru a atribui următorul număr liber",
+            "stockable": "Stocabil",
+            "stockableHint": "Stocul este urmărit doar pentru articolele stocabile",
+            "rop": "Stoc minim",
+            "ropHint": "Gol = fără monitorizare",
+            "defaultWarehouse": "Depozit implicit",
+            "defaultBin": "Locație implicită",
+            "defaultLocationHint": "Valoare propusă pentru avize și mișcări de stoc"
         },
         "messages": {
             "loading": "Articolul se incarca",
@@ -28,7 +36,8 @@
             "noPermission": "Nu aveți dreptul să creați articole.",
             "partnumberExists": "Acest număr de articol este deja folosit.",
             "weightInvalid": "Gol sau un număr de la 0",
-            "required": "Câmp obligatoriu"
+            "required": "Câmp obligatoriu",
+            "ropInvalid": "Gol sau un număr de la 0"
         },
         "titleNew": "Creare articol",
         "create": "Creare",
@@ -39,6 +48,9 @@
             "info": "Precompletat din articolul {partnumber} „{description}”. Se va atribui un număr de articol nou; stocul și EAN nu se preiau.",
             "back": "La șablon",
             "notFound": "Șablonul nu a fost găsit, formularul este gol."
+        },
+        "stock": {
+            "hint": "Stocul rezultă din mișcările de stoc. O cantitate este recepționată, scoasă sau transferată prin „Înregistrează stoc”."
         }
     }
 }

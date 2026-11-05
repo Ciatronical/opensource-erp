@@ -4,7 +4,8 @@
         "saving": "Lagrer...",
         "saved": "Lagret",
         "sections": {
-            "masterData": "Stamdata"
+            "masterData": "Stamdata",
+            "warehouse": "Lager"
         },
         "fields": {
             "partnumber": "Artikkelnummer",
@@ -18,7 +19,14 @@
             "sellprice": "Salgspris",
             "notes": "Langbeskrivelse",
             "obsolete": "Utdatert / Ikke bruk lenger",
-            "partnumberHint": "La stå tomt for å tildele neste ledige nummer"
+            "partnumberHint": "La stå tomt for å tildele neste ledige nummer",
+            "stockable": "Lagerført",
+            "stockableHint": "Beholdning føres bare for lagerførte varer",
+            "rop": "Bestillingspunkt",
+            "ropHint": "Tom = ingen overvåking",
+            "defaultWarehouse": "Standardlager",
+            "defaultBin": "Standardlagerplass",
+            "defaultLocationHint": "Forvalg for følgesedler og lagerbevegelser"
         },
         "messages": {
             "loading": "Artikkel lastes",
@@ -28,7 +36,8 @@
             "noPermission": "Du har ikke tillatelse til å opprette varer.",
             "partnumberExists": "Dette varenummeret er allerede i bruk.",
             "weightInvalid": "Tom eller et tall fra 0",
-            "required": "Obligatorisk felt"
+            "required": "Obligatorisk felt",
+            "ropInvalid": "Tom eller et tall fra 0"
         },
         "titleNew": "Opprett vare",
         "create": "Opprett",
@@ -39,6 +48,9 @@
             "info": "Forhåndsutfylt fra artikkel {partnumber} «{description}». Nytt artikkelnummer tildeles; beholdning og EAN overtas ikke.",
             "back": "Til malen",
             "notFound": "Malen ble ikke funnet, skjemaet er tomt."
+        },
+        "stock": {
+            "hint": "Beholdningen følger av lagerbevegelsene. En mengde legges inn, tas ut eller flyttes via «Bokfør beholdning»."
         }
     }
 }

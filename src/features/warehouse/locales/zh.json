@@ -4,6 +4,11 @@
             "warehouse": "/warehouse",
             "warehouseScanner": "/warehouse/scanner",
             "warehouseStocktaking": "/warehouse/stocktaking"
+        },
+        "partStock": {
+            "total": "库存合计",
+            "book": "登记库存",
+            "noWarehouse": "尚未设置仓库。"
         }
     }
 }

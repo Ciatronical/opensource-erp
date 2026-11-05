@@ -4,7 +4,8 @@
         "saving": "Opslaan...",
         "saved": "Opgeslagen",
         "sections": {
-            "masterData": "Stamgegevens"
+            "masterData": "Stamgegevens",
+            "warehouse": "Magazijn"
         },
         "fields": {
             "partnumber": "Artikelnummer",
@@ -18,7 +19,14 @@
             "sellprice": "Verkoopprijs",
             "notes": "Lange beschrijving",
             "obsolete": "Verouderd / Niet meer gebruiken",
-            "partnumberHint": "Leeg laten om het volgende vrije nummer toe te kennen"
+            "partnumberHint": "Leeg laten om het volgende vrije nummer toe te kennen",
+            "stockable": "Voorraadartikel",
+            "stockableHint": "Voorraad wordt alleen bijgehouden voor voorraadartikelen",
+            "rop": "Bestelniveau",
+            "ropHint": "Leeg = geen bewaking",
+            "defaultWarehouse": "Standaardmagazijn",
+            "defaultBin": "Standaardlocatie",
+            "defaultLocationHint": "Voorkeuze voor pakbonnen en voorraadmutaties"
         },
         "messages": {
             "loading": "Artikel wordt geladen",
@@ -28,7 +36,8 @@
             "noPermission": "U hebt geen rechten om artikelen aan te maken.",
             "partnumberExists": "Dit artikelnummer is al in gebruik.",
             "weightInvalid": "Leeg of een getal vanaf 0",
-            "required": "Verplicht veld"
+            "required": "Verplicht veld",
+            "ropInvalid": "Leeg of een getal vanaf 0"
         },
         "titleNew": "Artikel aanmaken",
         "create": "Aanmaken",
@@ -39,6 +48,9 @@
             "info": "Vooraf ingevuld vanuit artikel {partnumber} „{description}“. Er wordt een nieuw artikelnummer toegekend; voorraad en EAN worden niet overgenomen.",
             "back": "Naar het sjabloon",
             "notFound": "Het sjabloon is niet gevonden, het formulier is leeg."
+        },
+        "stock": {
+            "hint": "De voorraad volgt uit de voorraadmutaties. Een aantal wordt ingeboekt, uitgeboekt of verplaatst via „Voorraad boeken“."
         }
     }
 }

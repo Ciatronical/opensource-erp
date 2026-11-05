@@ -158,6 +158,11 @@
             "summary": "{parts} Artikel · {qty} Einheiten",
             "newBin": "Lagerplatz hinzufügen …",
             "newWarehouse": "Neues Lager"
+        },
+        "partStock": {
+            "total": "Bestand gesamt",
+            "book": "Bestand buchen",
+            "noWarehouse": "Es ist noch kein Lager eingerichtet."
         }
     }
 }

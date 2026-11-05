@@ -4,7 +4,8 @@
         "saving": "Ukladam...",
         "saved": "Ulozeno",
         "sections": {
-            "masterData": "Kmenova data"
+            "masterData": "Kmenova data",
+            "warehouse": "Sklad"
         },
         "fields": {
             "partnumber": "Cislo artiklu",
@@ -18,7 +19,14 @@
             "sellprice": "Prodejni cena",
             "notes": "Dlouhy popis",
             "obsolete": "Zastarale / Nepouzivat",
-            "partnumberHint": "Ponechte prázdné pro přidělení dalšího volného čísla"
+            "partnumberHint": "Ponechte prázdné pro přidělení dalšího volného čísla",
+            "stockable": "Skladovatelné",
+            "stockableHint": "Stav zásob se vede jen u skladovatelných položek",
+            "rop": "Minimální zásoba",
+            "ropHint": "Prázdné = bez sledování",
+            "defaultWarehouse": "Výchozí sklad",
+            "defaultBin": "Výchozí skladové místo",
+            "defaultLocationHint": "Předvolba pro dodací listy a skladové pohyby"
         },
         "messages": {
             "loading": "Artikl se nacita",
@@ -28,7 +36,8 @@
             "noPermission": "Nemáte oprávnění zakládat artikly.",
             "partnumberExists": "Toto číslo artiklu je již použito.",
             "weightInvalid": "Prázdné nebo číslo od 0",
-            "required": "Povinné pole"
+            "required": "Povinné pole",
+            "ropInvalid": "Prázdné nebo číslo od 0"
         },
         "titleNew": "Založení artiklu",
         "create": "Založit",
@@ -39,6 +48,9 @@
             "info": "Předvyplněno z artiklu {partnumber} „{description}“. Číslo artiklu bude přiděleno nově; zásoba a EAN se nepřebírají.",
             "back": "Zpět na předlohu",
             "notFound": "Předloha nebyla nalezena, formulář je prázdný."
+        },
+        "stock": {
+            "hint": "Stav zásob vyplývá ze skladových pohybů. Množství se naskladní, vyskladní nebo přesune přes „Zaúčtovat zásobu“."
         }
     }
 }

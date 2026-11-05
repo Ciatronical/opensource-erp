@@ -158,6 +158,11 @@
             "summary": "{parts} items · {qty} units",
             "newBin": "Add bin …",
             "newWarehouse": "New warehouse"
+        },
+        "partStock": {
+            "total": "Total stock",
+            "book": "Post stock",
+            "noWarehouse": "No warehouse has been set up yet."
         }
     }
 }

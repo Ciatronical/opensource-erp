@@ -4,6 +4,11 @@
             "warehouse": "/magazijn",
             "warehouseScanner": "/magazijn/scanner",
             "warehouseStocktaking": "/magazijn/inventarisatie"
+        },
+        "partStock": {
+            "total": "Totale voorraad",
+            "book": "Voorraad boeken",
+            "noWarehouse": "Er is nog geen magazijn ingericht."
         }
     }
 }

@@ -263,6 +263,75 @@
                         </v-card-text>
                     </v-card>
 
+                    <!-- Lager: nur für eine angelegte Ware. Lagerfähig, Meldebestand und
+                         Standardplatz sind Stammdaten (parts) und speichern wie die
+                         übrigen Felder. Der Bestand selbst ist die Summe der
+                         Lagerbewegungen — er wird gebucht, nicht getippt. -->
+                    <section-card
+                        v-if="lagerSichtbar"
+                        id="abschnitt-lager"
+                        :title="t('ArticleEditView.sections.warehouse')"
+                        icon="mdi-warehouse"
+                        class="sprungziel mt-4"
+                    >
+                        <v-row density="compact">
+                            <v-col cols="12" sm="6">
+                                <v-checkbox
+                                    v-model="article.stockable"
+                                    :label="t('ArticleEditView.fields.stockable')"
+                                    :hint="t('ArticleEditView.fields.stockableHint')"
+                                    persistent-hint
+                                />
+                            </v-col>
+                            <v-col cols="12" sm="6">
+                                <v-text-field
+                                    v-model="article.rop"
+                                    :label="t('ArticleEditView.fields.rop')"
+                                    :hint="t('ArticleEditView.fields.ropHint')"
+                                    persistent-hint
+                                    :suffix="article.unit"
+                                    :rules="[ropRule]"
+                                    type="number"
+                                    step="any"
+                                    min="0"
+                                    autocomplete="off"
+                                />
+                            </v-col>
+                            <v-col cols="12" sm="6">
+                                <v-select
+                                    v-model="article.warehouse_id"
+                                    :items="warehouses"
+                                    item-title="description"
+                                    item-value="id"
+                                    :label="t('ArticleEditView.fields.defaultWarehouse')"
+                                    :hint="t('ArticleEditView.fields.defaultLocationHint')"
+                                    persistent-hint
+                                    clearable
+                                />
+                            </v-col>
+                            <v-col cols="12" sm="6">
+                                <v-select
+                                    v-model="article.bin_id"
+                                    :items="binsOf(article.warehouse_id)"
+                                    item-title="description"
+                                    item-value="id"
+                                    :label="t('ArticleEditView.fields.defaultBin')"
+                                    :disabled="!article.warehouse_id"
+                                    clearable
+                                />
+                            </v-col>
+                            <v-col cols="12">
+                                <p class="text-body-2 hinweis mb-2">{{ t('ArticleEditView.stock.hint') }}</p>
+                                <PartStockPanel
+                                    :part="{ id: Number(id), partnumber: article.partnumber, description: article.description, unit: article.unit }"
+                                    :warehouses="warehouses"
+                                    :transfer-types="transferTypes"
+                                    :show-bestbefore="showBestbefore"
+                                />
+                            </v-col>
+                        </v-row>
+                    </section-card>
+
                     <!-- Shop-Angaben: Komponente der Shop-Erweiterung, nur geladen,
                          wenn sie aktiv ist -->
                     <PartShopCard
@@ -327,13 +396,17 @@ import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as toasts from '@/core/utils/toasts.js'
 import axios from 'axios'
 import { shopSlug } from '@/features/shop/utils/slug.js'
+import SectionCard from '@/core/components/layout/section-card.vue'
+import { useWarehouse } from '@/features/warehouse/composables/useWarehouse.js'
 
 // Die Shop-Karte gehört zur Shop-Erweiterung: erst laden, wenn sie gebraucht wird
 const PartShopCard = defineAsyncComponent(() => import('@/features/shop/components/part-shop.card.vue'))
+// Bestand samt Buchungsdialog: nur für Waren, deshalb ebenfalls erst bei Bedarf
+const PartStockPanel = defineAsyncComponent(() => import('@/features/warehouse/components/part-stock.panel.vue'))
 
 export default defineComponent({
     name: 'ArticleEditView',
-    components: { NavbarView, PartShopCard },
+    components: { NavbarView, PartShopCard, PartStockPanel, SectionCard },
     props: {
         // Ohne id: Neuanlage (Route article-new)
         id: { type: [String, Number], default: null }
@@ -353,10 +426,16 @@ export default defineComponent({
             buchungsgruppen_id: null,
             notes: '',
             obsolete: false,
-            weight: ''
+            weight: '',
+            ...leereLagerfelder()
         })
         /** Gewichtseinheit des Mandanten (defaults.weightunit), kommt mit getPart */
         const weightunit = ref('')
+
+        /** Lagerstammdaten in parts: lagerfähig, Meldebestand, Standardlager und -platz */
+        function leereLagerfelder() {
+            return { stockable: false, rop: '', warehouse_id: null, bin_id: null }
+        }
 
         const saving = ref(false)
         const loading = ref(false)
@@ -454,7 +533,8 @@ export default defineComponent({
                     buchungsgruppen_id: article.value.buchungsgruppen_id,
                     notes: article.value.notes,
                     obsolete: article.value.obsolete,
-                    weight: weightValue()
+                    weight: weightValue(),
+                    ...lagerPayload()
                 })
                 // Eine vergebene Artikelnummer meldet das Backend; die übrigen
                 // Felder sind dann ebenfalls nicht gespeichert, bis sie stimmt
@@ -492,7 +572,11 @@ export default defineComponent({
                         buchungsgruppen_id: data.buchungsgruppen_id ? parseInt(data.buchungsgruppen_id) : null,
                         notes: data.notes || '',
                         obsolete: data.obsolete === true || data.obsolete === 't',
-                        weight: data.weight === null || data.weight === undefined ? '' : String(Number(data.weight))
+                        weight: data.weight === null || data.weight === undefined ? '' : String(Number(data.weight)),
+                        stockable: data.stockable === true || data.stockable === 't',
+                        rop: Number(data.rop) > 0 ? String(Number(data.rop)) : '',
+                        warehouse_id: data.warehouse_id ? parseInt(data.warehouse_id) : null,
+                        bin_id: data.bin_id ? parseInt(data.bin_id) : null
                     }
                     weightunit.value = data.weightunit || ''
                 } else {
@@ -526,7 +610,8 @@ export default defineComponent({
                 buchungsgruppen_id: article.value.buchungsgruppen_id,
                 notes: article.value.notes,
                 obsolete: article.value.obsolete,
-                weight: weightValue()
+                weight: weightValue(),
+                ...lagerPayload()
             }
             navigator.sendBeacon('/api/parts/', new Blob([JSON.stringify(payload)], { type: 'application/json' }))
         }
@@ -580,6 +665,7 @@ export default defineComponent({
         /** Sprungmarken: Stammdaten, dazu die Abschnitte der Shop-Karte */
         const abschnitte = computed(() => [
             { id: 'abschnitt-stammdaten', titel: t('ArticleEditView.sections.masterData'), icon: 'mdi-card-text-outline' },
+            ...(lagerSichtbar.value ? [{ id: 'abschnitt-lager', titel: t('ArticleEditView.sections.warehouse'), icon: 'mdi-warehouse' }] : []),
             ...(shopCard.value?.abschnitte || []),
         ])
 
@@ -610,6 +696,68 @@ export default defineComponent({
             const zahl = Number(wert)
             // Ungültiges nicht senden — das Backend lehnte die ganze Speicherung ab
             return Number.isFinite(zahl) && zahl >= 0 ? zahl : undefined
+        }
+
+        // ── Lager ──
+        //
+        // Die Karte gibt es nur für eine angelegte Ware: Dienstleistungen haben
+        // keinen Bestand, und vor dem Anlegen gibt es nichts, woran er hängen
+        // könnte. Lager und Plätze kommen einmal aus getWarehouseOptions und
+        // versorgen die Auswahlfelder wie den Buchungsdialog.
+
+        const { fetchOptions: fetchWarehouseOptions } = useWarehouse()
+        const warehouseOptions = ref({ warehouses: [], transfer_types: [], defaults: {} })
+        const warehouses = computed(() => warehouseOptions.value.warehouses || [])
+        const transferTypes = computed(() => warehouseOptions.value.transfer_types || [])
+        const showBestbefore = computed(() => !!warehouseOptions.value.defaults?.show_bestbefore)
+        let lagerOptionenGeladen = false
+
+        const lagerSichtbar = computed(() => !isNewMode.value && !loading.value && !error.value && article.value.part_type === 'part')
+
+        function binsOf(warehouseId) {
+            return warehouses.value.find(w => w.id === warehouseId)?.bins || []
+        }
+
+        watch(lagerSichtbar, async sichtbar => {
+            if (!sichtbar || lagerOptionenGeladen) return
+            lagerOptionenGeladen = true
+            try {
+                warehouseOptions.value = await fetchWarehouseOptions()
+            } catch (e) {
+                console.error('Load warehouse options error:', e)
+                lagerOptionenGeladen = false
+            }
+        }, { immediate: true })
+
+        // Ein Platz gehört zu seinem Lager: beim Lagerwechsel den ersten Platz des
+        // neuen Lagers vorbelegen; ohne Lager keinen Platz. Solange die Lagerliste
+        // fehlt, bleibt der geladene Wert unangetastet.
+        watch(() => article.value.warehouse_id, lagerId => {
+            if (!initialLoaded.value) return
+            if (!lagerId) { article.value.bin_id = null; return }
+            const plaetze = binsOf(lagerId)
+            if (!warehouses.value.some(w => w.id === lagerId)) return
+            if (!plaetze.some(b => b.id === article.value.bin_id)) {
+                article.value.bin_id = plaetze[0]?.id ?? null
+            }
+        })
+
+        /** Meldebestand: leer = keine Überwachung, sonst eine Zahl ab 0 */
+        const ropRule = v =>
+            v === null || v === undefined || String(v).trim() === '' || Number(v) >= 0 || t('ArticleEditView.messages.ropInvalid')
+
+        /** Lagerfelder für updatePart; ungültiger Meldebestand wird nicht gesendet */
+        function lagerPayload() {
+            const rohwert = article.value.rop
+            const leer = rohwert === null || rohwert === undefined || String(rohwert).trim() === ''
+            const zahl = Number(rohwert)
+            const rop = leer ? 0 : (Number.isFinite(zahl) && zahl >= 0 ? zahl : undefined)
+            return {
+                stockable: !!article.value.stockable,
+                ...(rop === undefined ? {} : { rop }),
+                warehouse_id: article.value.warehouse_id || null,
+                bin_id: article.value.bin_id || null
+            }
         }
 
         const canCreate = computed(() =>
@@ -670,7 +818,8 @@ export default defineComponent({
                 buchungsgruppen_id: gruppe ? gruppe.id : null,
                 notes: '',
                 obsolete: false,
-                weight: ''
+                weight: '',
+                ...leereLagerfelder()
             }
             loading.value = false
             error.value = ''
@@ -819,6 +968,13 @@ export default defineComponent({
             requiredRule,
             weightRule,
             weightunit,
+            // Lager
+            lagerSichtbar,
+            warehouses,
+            transferTypes,
+            showBestbefore,
+            binsOf,
+            ropRule,
             // Als neu verwenden
             vorlage,
             useAsNew,
@@ -839,5 +995,9 @@ export default defineComponent({
 /* Sprungmarken: Abstand zur festen Kopfleiste */
 .sprungziel {
     scroll-margin-top: 72px;
+}
+
+.hinweis {
+    color: var(--oserp-text-muted);
 }
 </style>

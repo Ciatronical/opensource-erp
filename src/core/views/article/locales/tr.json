@@ -4,7 +4,8 @@
         "saving": "Kaydediliyor...",
         "saved": "Kaydedildi",
         "sections": {
-            "masterData": "Ana veriler"
+            "masterData": "Ana veriler",
+            "warehouse": "Depo"
         },
         "fields": {
             "partnumber": "Urun numarasi",
@@ -18,7 +19,14 @@
             "sellprice": "Satis fiyati",
             "notes": "Uzun aciklama",
             "obsolete": "Eski / Kullanilmasin",
-            "partnumberHint": "Sonraki boş numaranın atanması için boş bırakın"
+            "partnumberHint": "Sonraki boş numaranın atanması için boş bırakın",
+            "stockable": "Stoklanabilir",
+            "stockableHint": "Stok yalnızca stoklanabilir ürünler için takip edilir",
+            "rop": "Yeniden sipariş noktası",
+            "ropHint": "Boş = takip yok",
+            "defaultWarehouse": "Varsayılan depo",
+            "defaultBin": "Varsayılan raf",
+            "defaultLocationHint": "İrsaliyeler ve stok hareketleri için ön ayar"
         },
         "messages": {
             "loading": "Urun yukleniyor",
@@ -28,7 +36,8 @@
             "noPermission": "Ürün oluşturma yetkiniz yok.",
             "partnumberExists": "Bu ürün numarası zaten kullanılıyor.",
             "weightInvalid": "Boş veya 0'dan itibaren bir sayı",
-            "required": "Zorunlu alan"
+            "required": "Zorunlu alan",
+            "ropInvalid": "Boş veya 0’dan başlayan bir sayı"
         },
         "titleNew": "Ürün oluştur",
         "create": "Oluştur",
@@ -39,6 +48,9 @@
             "info": "{partnumber} „{description}“ ürününden önceden dolduruldu. Yeni bir ürün numarası verilir; stok ve EAN devralınmaz.",
             "back": "Şablona git",
             "notFound": "Şablon bulunamadı, form boş."
+        },
+        "stock": {
+            "hint": "Stok, stok hareketlerinden oluşur. Bir miktar „Stok kaydet“ ile depoya alınır, depodan çıkarılır veya taşınır."
         }
     }
 }

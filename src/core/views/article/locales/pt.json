@@ -4,7 +4,8 @@
         "saving": "A guardar...",
         "saved": "Guardado",
         "sections": {
-            "masterData": "Dados mestres"
+            "masterData": "Dados mestres",
+            "warehouse": "Armazém"
         },
         "fields": {
             "partnumber": "Número do artigo",
@@ -18,7 +19,14 @@
             "sellprice": "Preço de venda",
             "notes": "Descrição longa",
             "obsolete": "Obsoleto / Não utilizar",
-            "partnumberHint": "Deixar vazio para atribuir o próximo número livre"
+            "partnumberHint": "Deixar vazio para atribuir o próximo número livre",
+            "stockable": "Armazenável",
+            "stockableHint": "O stock só é controlado para artigos armazenáveis",
+            "rop": "Stock mínimo",
+            "ropHint": "Vazio = sem controlo",
+            "defaultWarehouse": "Armazém predefinido",
+            "defaultBin": "Localização predefinida",
+            "defaultLocationHint": "Valor predefinido para guias de remessa e movimentos de stock"
         },
         "messages": {
             "loading": "A carregar artigo",
@@ -28,7 +36,8 @@
             "noPermission": "Não tem permissão para criar artigos.",
             "partnumberExists": "Este número de artigo já está em uso.",
             "weightInvalid": "Vazio ou um número a partir de 0",
-            "required": "Campo obrigatório"
+            "required": "Campo obrigatório",
+            "ropInvalid": "Vazio ou um número a partir de 0"
         },
         "titleNew": "Criar artigo",
         "create": "Criar",
@@ -39,6 +48,9 @@
             "info": "Pré-preenchido a partir do artigo {partnumber} «{description}». Será atribuído um novo número de artigo; o stock e o EAN não são copiados.",
             "back": "Ir ao modelo",
             "notFound": "O modelo não foi encontrado, o formulário está vazio."
+        },
+        "stock": {
+            "hint": "O stock resulta dos movimentos de armazém. Uma quantidade é dada de entrada, de saída ou transferida através de «Registar stock»."
         }
     }
 }

@@ -4,7 +4,8 @@
         "saving": "Saglabā...",
         "saved": "Saglabāts",
         "sections": {
-            "masterData": "Pamatdati"
+            "masterData": "Pamatdati",
+            "warehouse": "Noliktava"
         },
         "fields": {
             "partnumber": "Artikula numurs",
@@ -18,7 +19,14 @@
             "sellprice": "Pārdošanas cena",
             "notes": "Garais apraksts",
             "obsolete": "Novecojis / Vairs neizmantot",
-            "partnumberHint": "Atstājiet tukšu, lai piešķirtu nākamo brīvo numuru"
+            "partnumberHint": "Atstājiet tukšu, lai piešķirtu nākamo brīvo numuru",
+            "stockable": "Uzskaitāms noliktavā",
+            "stockableHint": "Atlikums tiek uzskaitīts tikai noliktavā uzskaitāmām precēm",
+            "rop": "Minimālais atlikums",
+            "ropHint": "Tukšs = bez uzraudzības",
+            "defaultWarehouse": "Noklusētā noliktava",
+            "defaultBin": "Noklusētā noliktavas vieta",
+            "defaultLocationHint": "Iepriekš iestatīta vērtība pavadzīmēm un noliktavas kustībām"
         },
         "messages": {
             "loading": "Artikuls tiek ielādēts",
@@ -28,7 +36,8 @@
             "noPermission": "Jums nav tiesību veidot preces.",
             "partnumberExists": "Šis preces numurs jau tiek izmantots.",
             "weightInvalid": "Tukšs vai skaitlis no 0",
-            "required": "Obligāts lauks"
+            "required": "Obligāts lauks",
+            "ropInvalid": "Tukšs vai skaitlis no 0"
         },
         "titleNew": "Preces izveide",
         "create": "Izveidot",
@@ -39,6 +48,9 @@
             "info": "Aizpildīts no preces {partnumber} „{description}“. Preces numurs tiks piešķirts no jauna; atlikums un EAN netiek pārņemti.",
             "back": "Uz veidni",
             "notFound": "Veidne netika atrasta, veidlapa ir tukša."
+        },
+        "stock": {
+            "hint": "Atlikums veidojas no noliktavas kustībām. Daudzumu pieņem, izsniedz vai pārvieto ar „Reģistrēt atlikumu“."
         }
     }
 }

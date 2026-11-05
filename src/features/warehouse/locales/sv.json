@@ -4,6 +4,11 @@
             "warehouse": "/lager",
             "warehouseScanner": "/lager/skanner",
             "warehouseStocktaking": "/lager/inventering"
+        },
+        "partStock": {
+            "total": "Totalt saldo",
+            "book": "Bokför saldo",
+            "noWarehouse": "Inget lager har ännu lagts upp."
         }
     }
 }

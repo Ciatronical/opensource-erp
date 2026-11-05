@@ -4,6 +4,11 @@
             "warehouse": "/depozit",
             "warehouseScanner": "/depozit/scaner",
             "warehouseStocktaking": "/depozit/inventar"
+        },
+        "partStock": {
+            "total": "Stoc total",
+            "book": "Înregistrează stoc",
+            "noWarehouse": "Nu există încă niciun depozit configurat."
         }
     }
 }

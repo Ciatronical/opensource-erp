@@ -4,6 +4,11 @@
             "warehouse": "/noliktava",
             "warehouseScanner": "/noliktava/skeneris",
             "warehouseStocktaking": "/noliktava/inventarizacija"
+        },
+        "partStock": {
+            "total": "Kopējais atlikums",
+            "book": "Reģistrēt atlikumu",
+            "noWarehouse": "Noliktava vēl nav izveidota."
         }
     }
 }

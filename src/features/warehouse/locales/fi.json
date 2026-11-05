@@ -4,6 +4,11 @@
             "warehouse": "/varasto",
             "warehouseScanner": "/varasto/skanneri",
             "warehouseStocktaking": "/varasto/inventaario"
+        },
+        "partStock": {
+            "total": "Saldo yhteensä",
+            "book": "Kirjaa saldo",
+            "noWarehouse": "Varastoa ei ole vielä perustettu."
         }
     }
 }

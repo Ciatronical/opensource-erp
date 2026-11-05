@@ -4,6 +4,11 @@
             "warehouse": "/sklad",
             "warehouseScanner": "/sklad/skaner",
             "warehouseStocktaking": "/sklad/inventarizatsiya"
+        },
+        "partStock": {
+            "total": "Остаток всего",
+            "book": "Провести остаток",
+            "noWarehouse": "Склад ещё не настроен."
         }
     }
 }

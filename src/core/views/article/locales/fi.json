@@ -4,7 +4,8 @@
         "saving": "Tallennetaan...",
         "saved": "Tallennettu",
         "sections": {
-            "masterData": "Perustiedot"
+            "masterData": "Perustiedot",
+            "warehouse": "Varasto"
         },
         "fields": {
             "partnumber": "Tuotenumero",
@@ -18,7 +19,14 @@
             "sellprice": "Myyntihinta",
             "notes": "Pitka kuvaus",
             "obsolete": "Vanhentunut / Ei kaytossa",
-            "partnumberHint": "Jätä tyhjäksi, niin seuraava vapaa numero annetaan"
+            "partnumberHint": "Jätä tyhjäksi, niin seuraava vapaa numero annetaan",
+            "stockable": "Varastoitava",
+            "stockableHint": "Saldoa seurataan vain varastoitaville nimikkeille",
+            "rop": "Hälytysraja",
+            "ropHint": "Tyhjä = ei seurantaa",
+            "defaultWarehouse": "Oletusvarasto",
+            "defaultBin": "Oletusvarastopaikka",
+            "defaultLocationHint": "Esivalinta lähetteille ja varastotapahtumille"
         },
         "messages": {
             "loading": "Tuotetta ladataan",
@@ -28,7 +36,8 @@
             "noPermission": "Sinulla ei ole oikeutta luoda tuotteita.",
             "partnumberExists": "Tämä tuotenumero on jo käytössä.",
             "weightInvalid": "Tyhjä tai luku 0:sta",
-            "required": "Pakollinen kenttä"
+            "required": "Pakollinen kenttä",
+            "ropInvalid": "Tyhjä tai luku alkaen 0"
         },
         "titleNew": "Luo tuote",
         "create": "Luo",
@@ -39,6 +48,9 @@
             "info": "Esitäytetty tuotteesta {partnumber} ”{description}”. Tuotenumero annetaan uudelleen; varastosaldoa ja EAN-koodia ei kopioida.",
             "back": "Malliin",
             "notFound": "Mallia ei löytynyt, lomake on tyhjä."
+        },
+        "stock": {
+            "hint": "Saldo muodostuu varastotapahtumista. Määrä otetaan varastoon, otetaan varastosta tai siirretään toiminnolla ”Kirjaa saldo”."
         }
     }
 }

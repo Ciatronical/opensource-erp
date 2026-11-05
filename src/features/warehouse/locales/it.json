@@ -4,6 +4,11 @@
             "warehouse": "/magazzino",
             "warehouseScanner": "/magazzino/scanner",
             "warehouseStocktaking": "/magazzino/inventario"
+        },
+        "partStock": {
+            "total": "Giacenza totale",
+            "book": "Registra giacenza",
+            "noWarehouse": "Non è ancora stato configurato alcun magazzino."
         }
     }
 }

@@ -4,7 +4,8 @@
         "saving": "Guardando...",
         "saved": "Guardado",
         "sections": {
-            "masterData": "Datos maestros"
+            "masterData": "Datos maestros",
+            "warehouse": "Almacén"
         },
         "fields": {
             "partnumber": "Número de artículo",
@@ -18,7 +19,14 @@
             "sellprice": "Precio de venta",
             "notes": "Descripción larga",
             "obsolete": "Obsoleto / No utilizar",
-            "partnumberHint": "Dejar vacío para asignar el siguiente número libre"
+            "partnumberHint": "Dejar vacío para asignar el siguiente número libre",
+            "stockable": "Almacenable",
+            "stockableHint": "El stock solo se lleva para artículos almacenables",
+            "rop": "Stock mínimo",
+            "ropHint": "Vacío = sin control",
+            "defaultWarehouse": "Almacén predeterminado",
+            "defaultBin": "Ubicación predeterminada",
+            "defaultLocationHint": "Valor previo para albaranes y movimientos de stock"
         },
         "messages": {
             "loading": "Cargando artículo",
@@ -28,7 +36,8 @@
             "noPermission": "No tiene permiso para crear artículos.",
             "partnumberExists": "Este número de artículo ya está en uso.",
             "weightInvalid": "Vacío o un número desde 0",
-            "required": "Campo obligatorio"
+            "required": "Campo obligatorio",
+            "ropInvalid": "Vacío o un número desde 0"
         },
         "titleNew": "Crear artículo",
         "create": "Crear",
@@ -39,6 +48,9 @@
             "info": "Precargado desde el artículo {partnumber} «{description}». Se asignará un número de artículo nuevo; las existencias y el EAN no se copian.",
             "back": "Ir a la plantilla",
             "notFound": "No se encontró la plantilla, el formulario está vacío."
+        },
+        "stock": {
+            "hint": "El stock resulta de los movimientos de almacén. Una cantidad se da de entrada, de salida o se traslada mediante «Registrar stock»."
         }
     }
 }

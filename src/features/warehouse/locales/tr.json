@@ -4,6 +4,11 @@
             "warehouse": "/depo",
             "warehouseScanner": "/depo/tarayici",
             "warehouseStocktaking": "/depo/sayim"
+        },
+        "partStock": {
+            "total": "Toplam stok",
+            "book": "Stok kaydet",
+            "noWarehouse": "Henüz bir depo oluşturulmadı."
         }
     }
 }

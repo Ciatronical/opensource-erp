@@ -4,7 +4,8 @@
         "saving": "Saugoma...",
         "saved": "Išsaugota",
         "sections": {
-            "masterData": "Pagrindiniai duomenys"
+            "masterData": "Pagrindiniai duomenys",
+            "warehouse": "Sandėlis"
         },
         "fields": {
             "partnumber": "Prekės numeris",
@@ -18,7 +19,14 @@
             "sellprice": "Pardavimo kaina",
             "notes": "Ilgas aprašymas",
             "obsolete": "Pasenusi / Nebenaudojama",
-            "partnumberHint": "Palikite tuščią, kad būtų suteiktas kitas laisvas numeris"
+            "partnumberHint": "Palikite tuščią, kad būtų suteiktas kitas laisvas numeris",
+            "stockable": "Sandėliuojama",
+            "stockableHint": "Likutis vedamas tik sandėliuojamoms prekėms",
+            "rop": "Minimalus likutis",
+            "ropHint": "Tuščia = nestebima",
+            "defaultWarehouse": "Numatytasis sandėlis",
+            "defaultBin": "Numatytoji sandėlio vieta",
+            "defaultLocationHint": "Numatytoji reikšmė važtaraščiams ir sandėlio operacijoms"
         },
         "messages": {
             "loading": "Prekė kraunama",
@@ -28,7 +36,8 @@
             "noPermission": "Neturite teisės kurti prekių.",
             "partnumberExists": "Šis prekės numeris jau naudojamas.",
             "weightInvalid": "Tuščia arba skaičius nuo 0",
-            "required": "Privalomas laukas"
+            "required": "Privalomas laukas",
+            "ropInvalid": "Tuščia arba skaičius nuo 0"
         },
         "titleNew": "Prekės kūrimas",
         "create": "Sukurti",
@@ -39,6 +48,9 @@
             "info": "Užpildyta pagal prekę {partnumber} „{description}“. Prekės numeris bus suteiktas iš naujo; likutis ir EAN neperimami.",
             "back": "Į šabloną",
             "notFound": "Šablonas nerastas, forma tuščia."
+        },
+        "stock": {
+            "hint": "Likutis susidaro iš sandėlio operacijų. Kiekis pajamuojamas, nurašomas arba perkeliamas per „Registruoti likutį“."
         }
     }
 }

@@ -4,6 +4,11 @@
             "warehouse": "/magazyn",
             "warehouseScanner": "/magazyn/skaner",
             "warehouseStocktaking": "/magazyn/inwentaryzacja"
+        },
+        "partStock": {
+            "total": "Stan łącznie",
+            "book": "Zaksięguj stan",
+            "noWarehouse": "Nie skonfigurowano jeszcze żadnego magazynu."
         }
     }
 }

@@ -4,7 +4,8 @@
     "saving": "Speichert...",
     "saved": "Gespeichert",
     "sections": {
-      "masterData": "Stammdaten"
+      "masterData": "Stammdaten",
+      "warehouse": "Lager"
     },
     "fields": {
       "partnumber": "Artikelnummer",
@@ -18,7 +19,14 @@
       "sellprice": "Verkaufspreis",
       "notes": "Langbeschreibung",
       "obsolete": "Veraltet / Nicht mehr verwenden",
-      "partnumberHint": "Leer lassen, um die nächste freie Nummer zu vergeben"
+      "partnumberHint": "Leer lassen, um die nächste freie Nummer zu vergeben",
+      "stockable": "Lagerfähig",
+      "stockableHint": "Bestand wird nur für lagerfähige Artikel geführt",
+      "rop": "Meldebestand",
+      "ropHint": "Leer = keine Überwachung",
+      "defaultWarehouse": "Standardlager",
+      "defaultBin": "Standardlagerplatz",
+      "defaultLocationHint": "Vorbelegung für Lieferscheine und Buchungen"
     },
     "messages": {
       "loading": "Artikel wird geladen",
@@ -28,7 +36,8 @@
       "noPermission": "Keine Berechtigung zum Anlegen von Artikeln.",
       "partnumberExists": "Diese Artikelnummer ist bereits vergeben.",
       "weightInvalid": "Leer oder eine Zahl ab 0",
-      "required": "Pflichtfeld"
+      "required": "Pflichtfeld",
+      "ropInvalid": "Leer oder eine Zahl ab 0"
     },
     "titleNew": "Artikel anlegen",
     "create": "Anlegen",
@@ -39,6 +48,9 @@
       "info": "Vorbelegt aus Artikel {partnumber} „{description}“. Die Artikelnummer wird neu vergeben; Bestand und EAN werden nicht übernommen.",
       "back": "Zur Vorlage",
       "notFound": "Die Vorlage wurde nicht gefunden, die Maske ist leer."
+    },
+    "stock": {
+      "hint": "Der Bestand ergibt sich aus den Lagerbuchungen. Eine Menge wird über „Bestand buchen“ eingelagert, ausgelagert oder umgelagert."
     }
   }
 }

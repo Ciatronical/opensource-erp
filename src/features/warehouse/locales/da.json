@@ -4,6 +4,11 @@
             "warehouse": "/lager",
             "warehouseScanner": "/lager/scanner",
             "warehouseStocktaking": "/lager/optaelling"
+        },
+        "partStock": {
+            "total": "Beholdning i alt",
+            "book": "Bogfør beholdning",
+            "noWarehouse": "Der er endnu ikke oprettet et lager."
         }
     }
 }

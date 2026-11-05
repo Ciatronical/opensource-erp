@@ -4,6 +4,11 @@
             "warehouse": "/sandelis",
             "warehouseScanner": "/sandelis/skeneris",
             "warehouseStocktaking": "/sandelis/inventorizacija"
+        },
+        "partStock": {
+            "total": "Bendras likutis",
+            "book": "Registruoti likutį",
+            "noWarehouse": "Sandėlis dar nesukurtas."
         }
     }
 }

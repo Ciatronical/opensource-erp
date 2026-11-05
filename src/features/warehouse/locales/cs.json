@@ -4,6 +4,11 @@
             "warehouse": "/sklad",
             "warehouseScanner": "/sklad/skener",
             "warehouseStocktaking": "/sklad/inventura"
+        },
+        "partStock": {
+            "total": "Zásoba celkem",
+            "book": "Zaúčtovat zásobu",
+            "noWarehouse": "Zatím není zřízen žádný sklad."
         }
     }
 }

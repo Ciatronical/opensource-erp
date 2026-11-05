@@ -4,6 +4,11 @@
             "warehouse": "/ladu",
             "warehouseScanner": "/ladu/skanner",
             "warehouseStocktaking": "/ladu/inventuur"
+        },
+        "partStock": {
+            "total": "Laoseis kokku",
+            "book": "Kinnita laoliikumine",
+            "noWarehouse": "Ühtegi ladu pole veel seadistatud."
         }
     }
 }

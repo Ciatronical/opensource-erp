@@ -179,6 +179,9 @@ function getPart($data) {
     $row = $company->getOne(
         "SELECT p.id, p.partnumber, p.description, p.part_type, p.unit,
                 p.sellprice, p.notes, p.buchungsgruppen_id, p.obsolete, p.weight,
+                COALESCE(p.stockable, false) AS stockable,
+                COALESCE(p.rop, 0)::numeric  AS rop,
+                p.warehouse_id, p.bin_id,
                 bg.description AS buchungsgruppen_name,
                 (SELECT weightunit FROM defaults LIMIT 1) AS weightunit
          FROM parts p
@@ -211,6 +214,11 @@ function getPart($data) {
  * @param string $data['part_type'] Artikeltyp (part/service)
  * @param int $data['buchungsgruppen_id'] Buchungsgruppen-ID
  * @param bool $data['obsolete'] Veraltet-Flag
+ * @param float $data['weight'] Gewicht in defaults.weightunit, null = nicht gepflegt
+ * @param bool $data['stockable'] Lagerfähig (kivitendo führt Bestand nur für solche Artikel)
+ * @param float $data['rop'] Meldebestand (0 = keine Überwachung)
+ * @param int $data['warehouse_id'] Standardlager, null = keines
+ * @param int $data['bin_id'] Standardlagerplatz, null = keiner; muss zum Standardlager gehören
  * @return void
  * @testdata {"parts_id": 1, "description": "Test", "notes": "Langtext", "sellprice": 100.00, "unit": "Stk"}
  */
@@ -298,6 +306,56 @@ function updatePart($data) {
             resultInfo(false, 'VALIDATION_ERROR', ['message' => 'Das Gewicht muss leer oder eine Zahl ab 0 sein']);
             return;
         }
+    }
+
+    // Lagerstammdaten. Der Bestand selbst ist keine Artikeleigenschaft, sondern
+    // die Summe der Lagerbewegungen (inventory) — er wird über bookStock
+    // gebucht, nie hier geschrieben.
+    if (isset($data['stockable'])) {
+        $updateData['stockable'] = (bool) $data['stockable'];
+    }
+
+    if (isset($data['rop'])) {
+        if (!is_numeric($data['rop']) || (float)$data['rop'] < 0) {
+            resultInfo(false, 'VALIDATION_ERROR', ['message' => 'Der Meldebestand muss eine Zahl ab 0 sein']);
+            return;
+        }
+        $updateData['rop'] = (float)$data['rop'];
+    }
+
+    // Standardlager und Standardlagerplatz: null löscht die Vorgabe. Ein Platz
+    // muss zu seinem Lager gehören — die Fremdschlüssel prüfen das nicht.
+    // Fehlt eine der beiden Angaben, gilt der bisherige Wert; ohne Lager kein
+    // Platz. Auflösung und Prüfung in einer Abfrage.
+    if (array_key_exists('warehouse_id', $data) || array_key_exists('bin_id', $data)) {
+        $lager = $company->getOne(
+            "SELECT x.warehouse_id,
+                    CASE WHEN x.warehouse_id IS NULL THEN NULL ELSE x.bin_id END AS bin_id,
+                    (x.warehouse_id IS NULL OR x.bin_id IS NULL
+                     OR EXISTS (SELECT 1 FROM bin b WHERE b.id = x.bin_id AND b.warehouse_id = x.warehouse_id)) AS passt
+             FROM (
+                SELECT NULLIF(CASE WHEN :lager_gesetzt THEN :warehouse_id ELSE p.warehouse_id END, 0) AS warehouse_id,
+                       NULLIF(CASE WHEN :platz_gesetzt THEN :bin_id       ELSE p.bin_id       END, 0) AS bin_id
+                FROM parts p WHERE p.id = :id
+             ) x",
+            [
+                ':id'            => $partsId,
+                ':lager_gesetzt' => array_key_exists('warehouse_id', $data),
+                ':warehouse_id'  => intval($data['warehouse_id'] ?? 0),
+                ':platz_gesetzt' => array_key_exists('bin_id', $data),
+                ':bin_id'        => intval($data['bin_id'] ?? 0),
+            ]
+        );
+        if (!$lager) {
+            resultInfo(false, 'NOT_FOUND', ['message' => 'Artikel nicht gefunden']);
+            return;
+        }
+        if (!$lager['passt']) {
+            resultInfo(false, 'VALIDATION_ERROR', ['message' => 'Der Lagerplatz gehört nicht zum gewählten Lager']);
+            return;
+        }
+        $updateData['warehouse_id'] = $lager['warehouse_id'] === null ? null : intval($lager['warehouse_id']);
+        $updateData['bin_id'] = $lager['bin_id'] === null ? null : intval($lager['bin_id']);
     }
 
     if (empty($updateData)) {

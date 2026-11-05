@@ -4,7 +4,8 @@
         "saving": "Zapisywanie...",
         "saved": "Zapisano",
         "sections": {
-            "masterData": "Dane podstawowe"
+            "masterData": "Dane podstawowe",
+            "warehouse": "Magazyn"
         },
         "fields": {
             "partnumber": "Numer artykułu",
@@ -18,7 +19,14 @@
             "sellprice": "Cena sprzedaży",
             "notes": "Opis szczegółowy",
             "obsolete": "Nieaktualny / Nie używać",
-            "partnumberHint": "Pozostaw puste, aby nadać następny wolny numer"
+            "partnumberHint": "Pozostaw puste, aby nadać następny wolny numer",
+            "stockable": "Magazynowany",
+            "stockableHint": "Stan magazynowy prowadzony jest tylko dla artykułów magazynowanych",
+            "rop": "Stan minimalny",
+            "ropHint": "Puste = bez kontroli",
+            "defaultWarehouse": "Magazyn domyślny",
+            "defaultBin": "Domyślne miejsce składowania",
+            "defaultLocationHint": "Wartość domyślna dla dokumentów dostawy i ruchów magazynowych"
         },
         "messages": {
             "loading": "Ładowanie artykułu",
@@ -28,7 +36,8 @@
             "noPermission": "Nie masz uprawnień do dodawania artykułów.",
             "partnumberExists": "Ten numer artykułu jest już zajęty.",
             "weightInvalid": "Puste lub liczba od 0",
-            "required": "Pole wymagane"
+            "required": "Pole wymagane",
+            "ropInvalid": "Puste lub liczba od 0"
         },
         "titleNew": "Dodawanie artykułu",
         "create": "Dodaj",
@@ -39,6 +48,9 @@
             "info": "Wypełniono na podstawie artykułu {partnumber} „{description}”. Numer artykułu zostanie nadany na nowo; stan magazynowy i EAN nie są przenoszone.",
             "back": "Do wzorca",
             "notFound": "Nie znaleziono wzorca, formularz jest pusty."
+        },
+        "stock": {
+            "hint": "Stan magazynowy wynika z ruchów magazynowych. Ilość jest przyjmowana, wydawana lub przenoszona przez „Zaksięguj stan”."
         }
     }
 }

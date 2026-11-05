@@ -4,7 +4,8 @@
         "saving": "Enregistrement en cours...",
         "saved": "Enregistre",
         "sections": {
-            "masterData": "Donnees de base"
+            "masterData": "Donnees de base",
+            "warehouse": "Stock"
         },
         "fields": {
             "partnumber": "Numero d'article",
@@ -18,7 +19,14 @@
             "sellprice": "Prix de vente",
             "notes": "Description longue",
             "obsolete": "Obsolete / Ne plus utiliser",
-            "partnumberHint": "Laisser vide pour attribuer le prochain numéro libre"
+            "partnumberHint": "Laisser vide pour attribuer le prochain numéro libre",
+            "stockable": "Stockable",
+            "stockableHint": "Le stock n’est suivi que pour les articles stockables",
+            "rop": "Seuil de réapprovisionnement",
+            "ropHint": "Vide = pas de surveillance",
+            "defaultWarehouse": "Entrepôt par défaut",
+            "defaultBin": "Emplacement par défaut",
+            "defaultLocationHint": "Valeur proposée pour les bons de livraison et les mouvements de stock"
         },
         "messages": {
             "loading": "Chargement de l'article",
@@ -28,7 +36,8 @@
             "noPermission": "Vous n'êtes pas autorisé à créer des articles.",
             "partnumberExists": "Ce numéro d'article est déjà attribué.",
             "weightInvalid": "Vide ou un nombre à partir de 0",
-            "required": "Champ obligatoire"
+            "required": "Champ obligatoire",
+            "ropInvalid": "Vide ou un nombre à partir de 0"
         },
         "titleNew": "Créer un article",
         "create": "Créer",
@@ -39,6 +48,9 @@
             "info": "Prérempli à partir de l’article {partnumber} « {description} ». Un nouveau numéro d’article sera attribué ; le stock et l’EAN ne sont pas repris.",
             "back": "Vers le modèle",
             "notFound": "Le modèle est introuvable, le formulaire est vide."
+        },
+        "stock": {
+            "hint": "Le stock résulte des mouvements de stock. Une quantité est entrée, sortie ou transférée via « Mouvement de stock »."
         }
     }
 }

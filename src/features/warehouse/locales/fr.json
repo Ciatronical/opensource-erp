@@ -4,6 +4,11 @@
             "warehouse": "/entrepot",
             "warehouseScanner": "/entrepot/scanner",
             "warehouseStocktaking": "/entrepot/inventaire"
+        },
+        "partStock": {
+            "total": "Stock total",
+            "book": "Mouvement de stock",
+            "noWarehouse": "Aucun entrepôt n’est encore configuré."
         }
     }
 }

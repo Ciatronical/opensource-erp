@@ -4,7 +4,8 @@
         "saving": "Salvataggio...",
         "saved": "Salvato",
         "sections": {
-            "masterData": "Dati anagrafici"
+            "masterData": "Dati anagrafici",
+            "warehouse": "Magazzino"
         },
         "fields": {
             "partnumber": "Numero articolo",
@@ -18,7 +19,14 @@
             "sellprice": "Prezzo di vendita",
             "notes": "Descrizione lunga",
             "obsolete": "Obsoleto / Non utilizzare",
-            "partnumberHint": "Lasciare vuoto per assegnare il prossimo numero libero"
+            "partnumberHint": "Lasciare vuoto per assegnare il prossimo numero libero",
+            "stockable": "A magazzino",
+            "stockableHint": "La giacenza viene gestita solo per gli articoli a magazzino",
+            "rop": "Scorta minima",
+            "ropHint": "Vuoto = nessun controllo",
+            "defaultWarehouse": "Magazzino predefinito",
+            "defaultBin": "Ubicazione predefinita",
+            "defaultLocationHint": "Valore proposto per bolle e movimenti di magazzino"
         },
         "messages": {
             "loading": "Caricamento articolo",
@@ -28,7 +36,8 @@
             "noPermission": "Non si dispone dell'autorizzazione per creare articoli.",
             "partnumberExists": "Questo numero di articolo è già in uso.",
             "weightInvalid": "Vuoto o un numero da 0",
-            "required": "Campo obbligatorio"
+            "required": "Campo obbligatorio",
+            "ropInvalid": "Vuoto o un numero da 0"
         },
         "titleNew": "Crea articolo",
         "create": "Crea",
@@ -39,6 +48,9 @@
             "info": "Precompilato dall’articolo {partnumber} «{description}». Verrà assegnato un nuovo numero articolo; giacenza ed EAN non vengono copiati.",
             "back": "Al modello",
             "notFound": "Il modello non è stato trovato, la maschera è vuota."
+        },
+        "stock": {
+            "hint": "La giacenza risulta dai movimenti di magazzino. Una quantità viene caricata, scaricata o trasferita tramite «Registra giacenza»."
         }
     }
 }

@@ -4,7 +4,8 @@
         "saving": "正在保存...",
         "saved": "已保存",
         "sections": {
-            "masterData": "主数据"
+            "masterData": "主数据",
+            "warehouse": "仓库"
         },
         "fields": {
             "partnumber": "商品编号",
@@ -18,7 +19,14 @@
             "sellprice": "销售价格",
             "notes": "详细描述",
             "obsolete": "已淘汰 / 不再使用",
-            "partnumberHint": "留空则自动分配下一个空闲编号"
+            "partnumberHint": "留空则自动分配下一个空闲编号",
+            "stockable": "可入库",
+            "stockableHint": "仅对可入库的物料跟踪库存",
+            "rop": "补货点",
+            "ropHint": "留空 = 不监控",
+            "defaultWarehouse": "默认仓库",
+            "defaultBin": "默认库位",
+            "defaultLocationHint": "送货单和库存变动的预设值"
         },
         "messages": {
             "loading": "正在加载商品",
@@ -28,7 +36,8 @@
             "noPermission": "您没有创建商品的权限。",
             "partnumberExists": "此商品编号已被使用。",
             "weightInvalid": "为空或不小于 0 的数字",
-            "required": "必填项"
+            "required": "必填项",
+            "ropInvalid": "留空或大于等于 0 的数字"
         },
         "titleNew": "新建商品",
         "create": "新建",
@@ -39,6 +48,9 @@
             "info": "已从商品 {partnumber}“{description}”预填。将分配新的商品编号；库存和 EAN 不会复制。",
             "back": "返回模板",
             "notFound": "未找到模板，表单为空。"
+        },
+        "stock": {
+            "hint": "库存由库存变动产生。数量通过“登记库存”入库、出库或转移。"
         }
     }
 }

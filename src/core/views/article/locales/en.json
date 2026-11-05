@@ -4,7 +4,8 @@
     "saving": "Saving...",
     "saved": "Saved",
     "sections": {
-      "masterData": "Master Data"
+      "masterData": "Master Data",
+      "warehouse": "Warehouse"
     },
     "fields": {
       "partnumber": "Article Number",
@@ -18,7 +19,14 @@
       "sellprice": "Selling Price",
       "notes": "Long Description",
       "obsolete": "Obsolete / Do not use",
-      "partnumberHint": "Leave empty to assign the next free number"
+      "partnumberHint": "Leave empty to assign the next free number",
+      "stockable": "Stockable",
+      "stockableHint": "Stock is only tracked for stockable items",
+      "rop": "Reorder point",
+      "ropHint": "Empty = no monitoring",
+      "defaultWarehouse": "Default warehouse",
+      "defaultBin": "Default bin",
+      "defaultLocationHint": "Preset for delivery orders and stock movements"
     },
     "messages": {
       "loading": "Loading article",
@@ -28,7 +36,8 @@
       "noPermission": "You are not allowed to create articles.",
       "partnumberExists": "This article number is already in use.",
       "weightInvalid": "Empty or a number from 0",
-      "required": "Required"
+      "required": "Required",
+      "ropInvalid": "Empty or a number from 0"
     },
     "titleNew": "Create article",
     "create": "Create",
@@ -39,6 +48,9 @@
       "info": "Prefilled from article {partnumber} “{description}”. A new article number will be assigned; stock and EAN are not copied.",
       "back": "Back to template",
       "notFound": "The template was not found, the form is empty."
+    },
+    "stock": {
+      "hint": "Stock is the result of stock movements. Use “Post stock” to move a quantity in, out or between bins."
     }
   }
 }

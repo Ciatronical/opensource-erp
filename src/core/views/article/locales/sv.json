@@ -4,7 +4,8 @@
         "saving": "Sparar...",
         "saved": "Sparad",
         "sections": {
-            "masterData": "Stamdata"
+            "masterData": "Stamdata",
+            "warehouse": "Lager"
         },
         "fields": {
             "partnumber": "Artikelnummer",
@@ -18,7 +19,14 @@
             "sellprice": "Forsaljningspris",
             "notes": "Langbeskrivning",
             "obsolete": "Foraaldrad / Anvand inte langre",
-            "partnumberHint": "Lämna tomt för att tilldela nästa lediga nummer"
+            "partnumberHint": "Lämna tomt för att tilldela nästa lediga nummer",
+            "stockable": "Lagerförd",
+            "stockableHint": "Saldo förs endast för lagerförda artiklar",
+            "rop": "Beställningspunkt",
+            "ropHint": "Tom = ingen bevakning",
+            "defaultWarehouse": "Standardlager",
+            "defaultBin": "Standardlagerplats",
+            "defaultLocationHint": "Förval för följesedlar och lagerrörelser"
         },
         "messages": {
             "loading": "Artikel laddas",
@@ -28,7 +36,8 @@
             "noPermission": "Du har inte behörighet att skapa artiklar.",
             "partnumberExists": "Detta artikelnummer används redan.",
             "weightInvalid": "Tom eller ett tal från 0",
-            "required": "Obligatoriskt fält"
+            "required": "Obligatoriskt fält",
+            "ropInvalid": "Tom eller ett tal från 0"
         },
         "titleNew": "Skapa artikel",
         "create": "Skapa",
@@ -39,6 +48,9 @@
             "info": "Förifylld från artikel {partnumber} ”{description}”. Ett nytt artikelnummer tilldelas; lagersaldo och EAN tas inte över.",
             "back": "Till mallen",
             "notFound": "Mallen hittades inte, formuläret är tomt."
+        },
+        "stock": {
+            "hint": "Saldot följer av lagerrörelserna. En kvantitet läggs in, tas ut eller flyttas via ”Bokför saldo”."
         }
     }
 }

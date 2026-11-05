@@ -4,6 +4,11 @@
             "warehouse": "/almacen",
             "warehouseScanner": "/almacen/escaner",
             "warehouseStocktaking": "/almacen/inventario"
+        },
+        "partStock": {
+            "total": "Stock total",
+            "book": "Registrar stock",
+            "noWarehouse": "Todavía no hay ningún almacén configurado."
         }
     }
 }
