@@ -1291,6 +1291,7 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
                     car.c_mt,
                     car.c_fin,
                     car.c_t,
+                    car.c_hu,
                     car.c_sk,
                     to_char(car.c_zrd, 'MM/YYYY') AS wartung_zrd,
                     car.c_zrk AS wartung_zrk,
@@ -1299,20 +1300,25 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
                     -- Status wie im Frontend (maintenanceDue.js): Monat erreicht oder Hand-Markierung = fällig,
                     -- bis 2 Monate davor = bald fällig; km: Fahrzeug-km-Stand erreicht = fällig, < 5.000 km Rest = bald
                     CASE WHEN car.c_sk THEN CASE WHEN car.c_zrd_due THEN 'due' ELSE 'none' END
+                         WHEN car.c_zrd_due THEN 'due'
                          WHEN car.c_zrd IS NULL THEN 'none'
-                         WHEN car.c_zrd_due OR date_trunc('month', car.c_zrd) <= date_trunc('month', now()) THEN 'due'
+                         WHEN date_trunc('month', car.c_zrd) <= date_trunc('month', now()) THEN 'due'
                          WHEN date_trunc('month', car.c_zrd) <= date_trunc('month', now()) + interval '2 months' THEN 'soon'
                          ELSE 'ok' END AS wartung_zrd_status,
-                    CASE WHEN car.c_sk OR car.c_zrk IS NULL THEN 'none'
-                         WHEN car.c_zrk_due OR car.c_zrk <= COALESCE(ext.km_stand, car.c_km) THEN 'due'
+                    CASE WHEN car.c_sk THEN 'none'
+                         WHEN car.c_zrk_due THEN 'due'
+                         WHEN car.c_zrk IS NULL THEN 'none'
+                         WHEN car.c_zrk <= COALESCE(ext.km_stand, car.c_km) THEN 'due'
                          WHEN car.c_zrk - COALESCE(ext.km_stand, car.c_km) <= 5000 THEN 'soon'
                          ELSE 'ok' END AS wartung_zrk_status,
-                    CASE WHEN car.c_bf IS NULL THEN 'none'
-                         WHEN car.c_bf_due OR date_trunc('month', car.c_bf) <= date_trunc('month', now()) THEN 'due'
+                    CASE WHEN car.c_bf_due THEN 'due'
+                         WHEN car.c_bf IS NULL THEN 'none'
+                         WHEN date_trunc('month', car.c_bf) <= date_trunc('month', now()) THEN 'due'
                          WHEN date_trunc('month', car.c_bf) <= date_trunc('month', now()) + interval '2 months' THEN 'soon'
                          ELSE 'ok' END AS wartung_bf_status,
-                    CASE WHEN car.c_wd IS NULL THEN 'none'
-                         WHEN car.c_wd_due OR date_trunc('month', car.c_wd) <= date_trunc('month', now()) THEN 'due'
+                    CASE WHEN car.c_wd_due THEN 'due'
+                         WHEN car.c_wd IS NULL THEN 'none'
+                         WHEN date_trunc('month', car.c_wd) <= date_trunc('month', now()) THEN 'due'
                          WHEN date_trunc('month', car.c_wd) <= date_trunc('month', now()) + interval '2 months' THEN 'soon'
                          ELSE 'ok' END AS wartung_wd_status
                 FROM ar_ext ext
@@ -1355,20 +1361,25 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
                     -- Status wie im Frontend (maintenanceDue.js): Monat erreicht oder Hand-Markierung = fällig,
                     -- bis 2 Monate davor = bald fällig; km: Fahrzeug-km-Stand erreicht = fällig, < 5.000 km Rest = bald
                     CASE WHEN car.c_sk THEN CASE WHEN car.c_zrd_due THEN 'due' ELSE 'none' END
+                         WHEN car.c_zrd_due THEN 'due'
                          WHEN car.c_zrd IS NULL THEN 'none'
-                         WHEN car.c_zrd_due OR date_trunc('month', car.c_zrd) <= date_trunc('month', now()) THEN 'due'
+                         WHEN date_trunc('month', car.c_zrd) <= date_trunc('month', now()) THEN 'due'
                          WHEN date_trunc('month', car.c_zrd) <= date_trunc('month', now()) + interval '2 months' THEN 'soon'
                          ELSE 'ok' END AS wartung_zrd_status,
-                    CASE WHEN car.c_sk OR car.c_zrk IS NULL THEN 'none'
-                         WHEN car.c_zrk_due OR car.c_zrk <= COALESCE(ext.km_stand, car.c_km) THEN 'due'
+                    CASE WHEN car.c_sk THEN 'none'
+                         WHEN car.c_zrk_due THEN 'due'
+                         WHEN car.c_zrk IS NULL THEN 'none'
+                         WHEN car.c_zrk <= COALESCE(ext.km_stand, car.c_km) THEN 'due'
                          WHEN car.c_zrk - COALESCE(ext.km_stand, car.c_km) <= 5000 THEN 'soon'
                          ELSE 'ok' END AS wartung_zrk_status,
-                    CASE WHEN car.c_bf IS NULL THEN 'none'
-                         WHEN car.c_bf_due OR date_trunc('month', car.c_bf) <= date_trunc('month', now()) THEN 'due'
+                    CASE WHEN car.c_bf_due THEN 'due'
+                         WHEN car.c_bf IS NULL THEN 'none'
+                         WHEN date_trunc('month', car.c_bf) <= date_trunc('month', now()) THEN 'due'
                          WHEN date_trunc('month', car.c_bf) <= date_trunc('month', now()) + interval '2 months' THEN 'soon'
                          ELSE 'ok' END AS wartung_bf_status,
-                    CASE WHEN car.c_wd IS NULL THEN 'none'
-                         WHEN car.c_wd_due OR date_trunc('month', car.c_wd) <= date_trunc('month', now()) THEN 'due'
+                    CASE WHEN car.c_wd_due THEN 'due'
+                         WHEN car.c_wd IS NULL THEN 'none'
+                         WHEN date_trunc('month', car.c_wd) <= date_trunc('month', now()) THEN 'due'
                          WHEN date_trunc('month', car.c_wd) <= date_trunc('month', now()) + interval '2 months' THEN 'soon'
                          ELSE 'ok' END AS wartung_wd_status
                 FROM oe_ext ext
@@ -1583,7 +1594,15 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         $variables['kba']               = trim(($carData['c_2'] ?? '') . ' ' . ($carData['c_3'] ?? ''));
         $variables['baujahr']           = formatDate($carData['c_d'] ?? '');
         $variables['hu_au']             = formatDate($carData['c_hu'] ?? '');
-        $variables['hu_ueberfaellig']   = (!empty($carData['c_hu']) && $carData['c_hu'] < date('Y-m-d')) ? '1' : '';
+        // c_hu = nächster HU-Termin (Monat). LxCars-Daten enthalten Platzhalter (1900, 2050, 2100 …):
+        // nur ein Termin zwischen 2 Jahren zurück und 3 Jahren voraus (längste HU-Frist) wird gedruckt.
+        $huTs = !empty($carData['c_hu']) ? strtotime($carData['c_hu']) : false;
+        $huPlausibel = $huTs && $huTs >= strtotime(date('Y-m-01') . ' -2 years') && $huTs <= strtotime(date('Y-m-01') . ' +3 years');
+        $variables['hu_monat']          = $huPlausibel ? date('m/Y', $huTs) : '';
+        $variables['hu_mm']             = $huPlausibel ? date('m', $huTs) : '';
+        $variables['hu_jjjj']           = $huPlausibel ? date('Y', $huTs) : '';
+        $variables['hu_ueberfaellig']   = ($huPlausibel && $carData['c_hu'] < date('Y-m-01')) ? '1' : '';   // HU gilt bis Monatsende
+        $variables['hu_termin_kommend'] = ($huPlausibel && $variables['hu_ueberfaellig'] === '') ? '1' : '';
         $variables['mkb']               = $carData['c_mkb'] ?? '';
         $variables['sommerraeder_lager'] = $carData['c_st_l'] ?? '';
         $variables['winterraeder_lager'] = $carData['c_wt_l'] ?? '';
@@ -1654,6 +1673,7 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         $arrays['wartung_label']  = array_column($wartung, 'label');
         $arrays['wartung_wert']   = array_column($wartung, 'wert');
         $arrays['wartung_status'] = array_column($wartung, 'status');
+        $arrays['wartung_farbe']  = array_column($wartung, 'farbe');   // warnrot bei „fällig“
 
         // Items nach Ersatzteile (part) und Arbeiten (service) splitten
         $fmtQty = function($qty) {
@@ -1744,7 +1764,7 @@ function formatDate(?string $date): string {
  */
 /**
  * Zeilen „Wartungsstand“ für den Druck aus den Fahrzeugspalten des Belegs (wartung_* aus loadPrintData).
- * @return array [['label' => 'Bremsflüssigkeit', 'wert' => '01/2027', 'status' => 'fällig'|'bald fällig'|''], …]
+ * @return array [['label' => 'Bremsflüssigkeit', 'wert' => '01/2027', 'status' => 'fällig'|'bald fällig'|'', 'farbe' => 'warnrot'|'black'], …]
  */
 function maintenancePrintRows(?array $carData): array {
     if (!$carData) return [];
@@ -1752,17 +1772,21 @@ function maintenancePrintRows(?array $carData): array {
     $rows = [];
     $add = function (string $label, ?string $wert, ?string $status) use (&$rows, $statusText) {
         if ($wert === '01/1999') $wert = '';   // Platzhalter „fällig“ ohne Termin
-        $rows[] = ['label' => $label, 'wert' => $wert ?? '', 'status' => $statusText[$status] ?? ''];
+        $rows[] = ['label' => $label, 'wert' => $wert ?? '', 'status' => $statusText[$status] ?? '',
+                   'farbe' => $status === 'due' ? 'warnrot' : 'black'];
     };
+    $show = fn (?string $wert, string $key) => !empty($wert) || ($carData["wartung_{$key}_status"] ?? '') === 'due';
     $chain = ($carData['c_sk'] ?? false) === true || ($carData['c_sk'] ?? '') === 't';
     if ($chain) {
         if (($carData['wartung_zrd_status'] ?? '') === 'due') $add('Steuerkette', '', 'due');
     } else {
-        if (!empty($carData['wartung_zrd'])) $add('Zahnriemenwechsel', $carData['wartung_zrd'], $carData['wartung_zrd_status'] ?? '');
-        if (!empty($carData['wartung_zrk'])) $add('Zahnriemenwechsel bei', number_format(intval($carData['wartung_zrk']), 0, '', '.') . ' km', $carData['wartung_zrk_status'] ?? '');
+        // Zeile, wenn ein Wert da ist ODER von Hand „fällig“ markiert wurde (Flag ohne Termin)
+        $zrk = !empty($carData['wartung_zrk']) ? number_format(intval($carData['wartung_zrk']), 0, '', '.') . ' km' : '';
+        if ($show($carData['wartung_zrd'] ?? '', 'zrd')) $add('Zahnriemenwechsel', $carData['wartung_zrd'], $carData['wartung_zrd_status'] ?? '');
+        if ($show($zrk, 'zrk')) $add('Zahnriemenwechsel bei', $zrk, $carData['wartung_zrk_status'] ?? '');
     }
-    if (!empty($carData['wartung_bf'])) $add('Bremsflüssigkeit', $carData['wartung_bf'], $carData['wartung_bf_status'] ?? '');
-    if (!empty($carData['wartung_wd'])) $add('Wartungsdienst', $carData['wartung_wd'], $carData['wartung_wd_status'] ?? '');
+    if ($show($carData['wartung_bf'] ?? '', 'bf')) $add('Bremsflüssigkeit', $carData['wartung_bf'], $carData['wartung_bf_status'] ?? '');
+    if ($show($carData['wartung_wd'] ?? '', 'wd')) $add('Wartungsdienst', $carData['wartung_wd'], $carData['wartung_wd_status'] ?? '');
     return $rows;
 }
 
