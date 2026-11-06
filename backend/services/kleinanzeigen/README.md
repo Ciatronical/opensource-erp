@@ -108,6 +108,7 @@ und das Captcha im Fenster lösen; die Sitzung bleibt im Profil.
 | `KA_PROXY` | Proxy des Browsers, etwa `socks5://127.0.0.1:1080` |
 | `KA_ROOT_URL` | `https://www.kleinanzeigen.de` |
 | `KA_IDLE_MINUTES` | Browser nach Leerlauf schließen (Standard 30, 0 = nie) |
+| `KA_BLOCK_PAUSE_MINUTES` | Pause nach erkannter Sperrseite „IP-Bereich vorübergehend gesperrt“ (Standard 60): so lange beantwortet der Dienst jede Anfrage mit `IP_BLOCKED`, ohne Kleinanzeigen aufzurufen |
 
 ## API
 

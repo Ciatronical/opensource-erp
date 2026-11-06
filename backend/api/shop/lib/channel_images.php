@@ -468,8 +468,9 @@ function shopChannelImageSort($db, int $partsId, int $kanalId, array $ids): void
 /**
  * Lädt ein Bild der Webseite eines HugoShops
  *
- * Über die Adresse aus images_link (relative Muster gelten zur base_url des
- * Kanals) — die Bilder liegen auf dem Webserver der Webseite.
+ * Aus der Medienbibliothek, wenn die Datei dort liegt; sonst über die Adresse
+ * aus images_link (relative Muster gelten zur base_url des Kanals) vom
+ * Webserver der Webseite.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop, von dessen Webseite das Bild kommt
@@ -479,6 +480,13 @@ function shopChannelImageSort($db, int $partsId, int $kanalId, array $ids): void
  */
 function shopHugoshopImageContent($db, int $kanal, string $name): string {
     $name = basename($name);
+
+    // Liegt das Bild in der Medienbibliothek, von dort — das ist die Quelle,
+    // aus der HugoCMS es bekommt, und braucht keine erreichbare Webseite
+    $lokal = shopMediaDir($db, 'images').'/'.$name;
+    if ('' !== $name && is_file($lokal) && false !== ($inhalt = file_get_contents($lokal)) && '' !== $inhalt) {
+        return $inhalt;
+    }
 
     $adresse = shopLink(shopChannelValue($db, $kanal, 'images_link'), $name);
     if (!preg_match('#^https?://#i', $adresse)) {
@@ -505,6 +513,30 @@ function shopHugoshopImageContent($db, int $kanal, string $name): string {
         throw new ApiError('SHOP_IMAGE_SOURCE', 'Bild '.$name.' nicht abrufbar ('.$adresse.', HTTP '.$status.')');
     }
     return $inhalt;
+}
+
+/**
+ * Gibt einem Marktplatz-Kanal ohne eigene Bilder die Bilder des Artikels
+ *
+ * Quelle aus shop_channel_image_source(): ein anderer Kanal mit Kanalbildern,
+ * sonst der HugoShop (Bilder der Produktseite aus der Medienbibliothek). Für
+ * Artikel, deren Kanal in der Artikelkarte nur angehakt wurde — beim
+ * Aufnehmen aus den Vorschlägen geschieht dasselbe gleich. Hat der Kanal
+ * schon Bilder, nur die eine Abfrage.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $partsId Artikel
+ * @param int $kanalId Marktplatz-Kanal
+ * @return int Zahl der übernommenen Bilder
+ * @throws ApiError die Fehler von shopChannelImageCopy()
+ */
+function shopChannelImagesFill($db, int $partsId, int $kanalId): int {
+    $zeile = $db->getOne(
+        "SELECT shop_channel_image_source(CAST(:parts_id AS integer), CAST(:kanal AS integer)) AS quelle",
+        [':parts_id' => $partsId, ':kanal' => $kanalId]
+    );
+    $quelle = (int)($zeile['quelle'] ?? 0);
+    return $quelle > 0 ? shopChannelImageCopy($db, $partsId, $quelle, $kanalId) : 0;
 }
 
 /**

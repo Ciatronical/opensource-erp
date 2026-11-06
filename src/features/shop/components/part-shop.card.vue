@@ -1516,8 +1516,11 @@ async function veroeffentlichenUeberall() {
 
     const kanaele = Array.isArray(ergebnis?.channels) ? ergebnis.channels : []
     const angelegt = kanaele.filter(k => k.queued).map(kanalName)
+    // Grund: Versandprüfung des HugoShops oder fehlende Pflichtangaben der Kleinanzeige
+    const grund = k => [k.message, ...(k.missing || []).map(m => t(`ShopView.kleinanzeigen.missing.${m}`))]
+        .filter(Boolean).join(', ')
     const uebersprungen = kanaele.filter(k => k.skipped)
-        .map(k => k.message ? `${kanalName(k)} (${k.message})` : kanalName(k))
+        .map(k => grund(k) ? `${kanalName(k)} (${grund(k)})` : kanalName(k))
 
     if (uebersprungen.length) {
         toasts.warning(t('ShopView.partCard.publishAllSkipped', { channels: uebersprungen.join(', ') }))

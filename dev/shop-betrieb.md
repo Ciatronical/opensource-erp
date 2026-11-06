@@ -254,7 +254,9 @@ eingeschaltetem Kanal, in dem der Artikel angeboten wird, den Auftrag
 `publish_part` an (`publishShopPartAll`) und startet den Läufer nur für diese
 Aufträge — HugoShop, eBay und Kleinanzeigen in einem Zug. Ein schon offener
 Auftrag wird mitgenommen statt verdoppelt; ein HugoShop ohne passende
-Versandart wird übersprungen und mit dem Grund gemeldet. Arbeitet gerade ein
+Versandart wird übersprungen und mit dem Grund gemeldet, ebenso eine
+Kleinanzeige mit Dienst, der noch Pflichtangaben fehlen (`missing` aus
+`kleinanzeigen_ad()`, etwa noch kein Bild im Kanal). Arbeitet gerade ein
 Lauf, nimmt der die Aufträge mit; lässt sich der Läufer nicht starten, bleiben
 sie für den Cron stehen.
 

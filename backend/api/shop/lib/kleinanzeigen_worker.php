@@ -220,7 +220,9 @@ function shopKleinanzeigenWorkerHealth($db): array {
  * @throws ApiError PART_NOT_FOUND, KLEINANZEIGEN_AD_INCOMPLETE
  */
 function shopKleinanzeigenAdPayload($db, int $kanal, int $partsId): array {
-    // Formate, die Kleinanzeigen nicht nimmt, vorher als JPEG nachziehen
+    // Ohne eigene Bilder die des Artikels übernehmen (Online-Shop, anderer
+    // Kanal); dann alles ins Zielformat des Kanals
+    shopChannelImagesFill($db, $partsId, $kanal);
     shopChannelImagesFit($db, $partsId, $kanal);
     $zeile = $db->getOne(
         "SELECT kleinanzeigen_ad(CAST(:parts_id AS integer), CAST(:kanal AS integer)) AS ad,
@@ -238,7 +240,9 @@ function shopKleinanzeigenAdPayload($db, int $kanal, int $partsId): array {
     }
     $fehlt = array_diff($anzeige['missing'] ?? [], ['location']);
     if ($fehlt) {
-        throw new ApiError('KLEINANZEIGEN_AD_INCOMPLETE', 'Für die Anzeige fehlt noch: '.implode(', ', $fehlt));
+        $namen = ['title' => 'Titel', 'text' => 'Text', 'image' => 'Bild'];
+        throw new ApiError('KLEINANZEIGEN_AD_INCOMPLETE', 'Für die Anzeige fehlt noch: '
+            .implode(', ', array_map(fn($f) => $namen[$f] ?? $f, $fehlt)));
     }
     if ('' === trim((string)$zeile['plz'])) {
         throw new ApiError('KLEINANZEIGEN_AD_INCOMPLETE', 'Dem Kanal fehlt die PLZ des Standorts');

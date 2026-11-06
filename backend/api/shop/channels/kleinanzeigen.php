@@ -88,7 +88,10 @@ function shopChannelKleinanzeigenSwitched($db, int $kanal, bool $an): void {
  * Automatisch: publish_part stellt die Anzeige über den Dienst ein oder
  * aktualisiert sie; remove_part löscht sie. Scheitert der Dienst, steht der
  * Fehler an der Kanalzeile (sync_error) und der Auftrag gilt als
- * fehlgeschlagen (Wiederholung im Panel).
+ * fehlgeschlagen (Wiederholung im Panel). Fehlen der Anzeige noch
+ * Pflichtangaben (etwa noch kein Bild), wird sie übersprungen: Der Hinweis
+ * steht an der Kanalzeile, der Auftrag ist trotzdem erledigt — mit dem
+ * nächsten Auftrag (Bild hinzugefügt, „Jetzt einstellen“) geht sie raus.
  *
  * @param object $db Company-Datenbankverbindung
  * @param array $auftrag Zeile aus shopOpenJobs()
@@ -188,6 +191,7 @@ function shopChannelKleinanzeigenRunJob($db, array $auftrag, callable $sagen, ca
 
     $gut = 0;
     $gescheitert = 0;
+    $unvollstaendig = 0;
     $letzterFehler = '';
     foreach ($artikelListe as $artikel) {
         try {
@@ -200,23 +204,32 @@ function shopChannelKleinanzeigenRunJob($db, array $auftrag, callable $sagen, ca
             }
             $gut++;
         } catch (ApiError $e) {
-            $gescheitert++;
-            $letzterFehler = $e->getMessage();
             $db->execute(
                 "UPDATE parts_channel_shop SET sync_error = :meldung, sync_mtime = now()
                   WHERE parts_id = :parts_id AND channel_id = CAST(:kanal AS integer)",
                 [':meldung' => mb_substr($e->getMessage(), 0, 500), ':parts_id' => (int)$artikel['id'], ':kanal' => $kanal]
             );
+            // Noch nicht vollständig (Bild, Titel, Text, PLZ): kein Fehler des
+            // Laufs, die Anzeige wartet als Entwurf auf die fehlenden Angaben
+            if ('KLEINANZEIGEN_AD_INCOMPLETE' === $e->getId()) {
+                $unvollstaendig++;
+                $sagen('Kleinanzeigen '.$artikel['partnumber'].': übersprungen — '.$e->getMessage());
+                continue;
+            }
+            $gescheitert++;
+            $letzterFehler = $e->getMessage();
             if ($gescheitert <= SHOP_MELDUNGEN_JE_AUFTRAG) {
                 $fehler('Kleinanzeigen '.$artikel['partnumber'].': '.$e->getMessage());
             }
-            // Ohne Anmeldung oder ohne Dienst scheitert jeder weitere genauso
-            if (in_array($e->getId(), ['KLEINANZEIGEN_NOT_LOGGED_IN', 'KLEINANZEIGEN_WORKER_DOWN', 'KLEINANZEIGEN_WORKER_OFF'], true)) {
+            // Ohne Anmeldung, ohne Dienst oder bei gesperrtem Anschluss scheitert jeder weitere genauso
+            if (in_array($e->getId(), ['KLEINANZEIGEN_NOT_LOGGED_IN', 'KLEINANZEIGEN_WORKER_DOWN', 'KLEINANZEIGEN_WORKER_OFF',
+                                       'KLEINANZEIGEN_IP_BLOCKED'], true)) {
                 break;
             }
         }
     }
-    $stand = sprintf('Kleinanzeigen: %d %s, %d fehlgeschlagen', $gut, $einstellen ? 'eingestellt' : 'gelöscht', $gescheitert);
+    $stand = sprintf('Kleinanzeigen: %d %s, %d fehlgeschlagen', $gut, $einstellen ? 'eingestellt' : 'gelöscht', $gescheitert)
+           .($unvollstaendig ? sprintf(', %d unvollständig übersprungen', $unvollstaendig) : '');
     $sagen($stand);
     shopJobResult($db, $id, ($gescheitert > 0 ? 'Fehler: ' : 'ok: ').$stand.('' !== $letzterFehler ? ' — '.$letzterFehler : ''));
     if ($gescheitert > 0 && !$alle) {

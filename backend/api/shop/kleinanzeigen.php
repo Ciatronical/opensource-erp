@@ -271,22 +271,10 @@ function addKleinanzeigenParts($data) {
              RETURNING parts_id
          )
          SELECT a.parts_id,
-                -- Bilder: fehlen sie im Kanal, der erste andere Kanal mit Bildern
-                CASE WHEN NOT EXISTS (SELECT 1 FROM parts_channel_image_shop i
-                                       WHERE i.parts_id = a.parts_id AND i.channel_id = CAST(:kanal_bilder AS integer))
-                     THEN COALESCE(
-                         (SELECT i.channel_id FROM parts_channel_image_shop i
-                            JOIN sales_channel_shop c ON c.id = i.channel_id
-                           WHERE i.parts_id = a.parts_id AND i.channel_id <> CAST(:kanal_fremd AS integer)
-                           ORDER BY (c.type = 'ebay') DESC, i.channel_id LIMIT 1),
-                         (SELECT c.id FROM sales_channel_shop c
-                            JOIN parts_ext pe ON pe.parts_id = a.parts_id
-                           WHERE c.type = 'hugoshop' AND c.active
-                             AND jsonb_typeof(pe.hugoshop_images) = 'array' AND jsonb_array_length(pe.hugoshop_images) > 0
-                           ORDER BY c.sortkey NULLS LAST, c.id LIMIT 1))
-                END AS bildquelle
+                -- Bilder: fehlen sie im Kanal, der erste andere Kanal mit Bildern, sonst der HugoShop
+                shop_channel_image_source(a.parts_id, CAST(:kanal_bilder AS integer)) AS bildquelle
            FROM aufgenommen a",
-        [':kanal' => $kanal, ':ids' => '{'.implode(',', $ids).'}', ':kanal_bilder' => $kanal, ':kanal_fremd' => $kanal]
+        [':kanal' => $kanal, ':ids' => '{'.implode(',', $ids).'}', ':kanal_bilder' => $kanal]
     ) ?: [];
 
     $kopiert = 0;
@@ -860,6 +848,7 @@ function getKleinanzeigenImagesZip($data) {
     $db = DbhCompany::begin();
     $kanal = shopKleinanzeigenChannel($db, $data);
     $partsId = (int)($data['parts_id'] ?? 0);
+    shopChannelImagesFill($db, $partsId, $kanal);
     shopChannelImagesFit($db, $partsId, $kanal);
 
     $zeile = $db->getOne(

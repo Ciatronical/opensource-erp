@@ -516,7 +516,9 @@ function shopEbayImageUrls($db, int $kanal, int $partsId, array $cfg): array {
             'Öffentliche Adresse für die Bilder fehlt (Einstellungen → Shop → eBay: ebay_public_host)');
     }
 
-    // Formate, die eBay nicht nimmt, vorher als JPEG nachziehen
+    // Ohne eigene Bilder die des Artikels übernehmen (HugoShop, anderer
+    // Kanal); Formate, die eBay nicht nimmt, vorher als JPEG nachziehen
+    shopChannelImagesFill($db, $partsId, $kanal);
     shopChannelImagesFit($db, $partsId, $kanal);
     $zeilen = $db->getAll(
         "SELECT '/webhook/part-image.php?db=' || current_database() || '&id=' || i.parts_id

@@ -2482,6 +2482,9 @@ function publishShopPart($data) {
  * Kanals arbeitet ihn ab. Steht derselbe Auftrag schon offen, wird er
  * mitgenommen statt verdoppelt. Ein HugoShop ohne passende Versandart wird
  * übersprungen und mit dem Grund gemeldet, die übrigen Kanäle laufen trotzdem.
+ * Ebenso eine Kleinanzeigen-Anzeige, die der Dienst einstellen würde, der
+ * aber noch Pflichtangaben fehlen (kleinanzeigen_ad().missing: Titel, Text,
+ * Bild, Standort) — sie gäbe sonst nur einen fehlgeschlagenen Auftrag.
  *
  * Anschließend startet der Läufer im Hintergrund nur für diese Aufträge, wie
  * „Jetzt ausführen“ in der Shop-Übersicht (runShopPublishJobs). Arbeitet
@@ -2490,8 +2493,8 @@ function publishShopPart($data) {
  * stehen; start_error nennt den Grund.
  *
  * @param array $data['parts_id'] Artikel
- * @return void channels (channel_id, type, name, job_id, queued, skipped, message),
- *              job_ids, started, running, start_error
+ * @return void channels (channel_id, type, name, job_id, queued, skipped, message,
+ *              missing), job_ids, started, running, start_error
  * @testdata {"parts_id": 1}
  */
 function publishShopPartAll($data) {
@@ -2505,26 +2508,40 @@ function publishShopPartAll($data) {
     }
 
     // Eine Anweisung: Kanäle des Artikels in der Reihenfolge der Artikelkarte,
-    // Versandprüfung je HugoShop, Auftrag anlegen, wo sie besteht. Gibt
-    // shop_queue_job 0 zurück, steht der Auftrag schon offen — dann seine
-    // Nummer, damit der Lauf ihn mitnimmt. Der offene Auftrag ist in der
-    // Momentaufnahme sichtbar, weil er vor der Anweisung entstand.
+    // Versandprüfung je HugoShop, Pflichtangaben je Kleinanzeigen-Kanal mit
+    // Dienst, Auftrag anlegen, wo beides stimmt. Gibt shop_queue_job 0
+    // zurück, steht der Auftrag schon offen — dann seine Nummer, damit der
+    // Lauf ihn mitnimmt. Der offene Auftrag ist in der Momentaufnahme
+    // sichtbar, weil er vor der Anweisung entstand.
     $kanaele = $db->getAll(
-        "WITH kanal AS (
+        "WITH dienst AS (
+             -- Kleinanzeigen über den Dienst (shopKleinanzeigenAutomatic): Dienst
+             -- eingeschaltet und Konto im Kanal. Von Hand stellt der Auftrag nur
+             -- einen Entwurf bereit — dafür muss noch nichts vollständig sein
+             SELECT COALESCE(lower(btrim((SELECT value FROM defaults_oserp
+                                           WHERE key = 'kleinanzeigen_worker_enabled'))), '')
+                        IN ('1', 't', 'true', 'on', 'y', 'yes') AS an
+         ), kanal AS (
              SELECT c.id AS channel_id, c.type, c.name, c.sortkey, p.partnumber,
                     -- Versandprüfung nur im HugoShop; Marktplätze regeln den Versand selbst
                     CASE WHEN c.type = 'hugoshop'
-                         THEN (SELECT row_to_json(v) FROM shop_part_shipping_check(p.id, c.id) v) END AS versand
+                         THEN (SELECT row_to_json(v) FROM shop_part_shipping_check(p.id, c.id) v) END AS versand,
+                    CASE WHEN c.type = 'kleinanzeigen' AND d.an
+                              AND btrim(COALESCE(c.settings ->> 'login_email', '')) <> ''
+                         THEN kleinanzeigen_ad(p.id, c.id) -> 'missing' END AS fehlt
                FROM parts p
                JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.active
                JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active
+              CROSS JOIN dienst d
               WHERE p.id = :parts_id
          ), geprueft AS (
-             SELECT k.*, k.versand IS NULL OR COALESCE(k.versand ->> 'status', '') = 'ok' AS versand_ok
+             SELECT k.*,
+                    (k.versand IS NULL OR COALESCE(k.versand ->> 'status', '') = 'ok')
+                    AND COALESCE(jsonb_array_length(k.fehlt), 0) = 0 AS bereit
                FROM kanal k
          )
-         SELECT g.channel_id, g.type, g.name, g.versand, g.versand_ok,
-                CASE WHEN g.versand_ok
+         SELECT g.channel_id, g.type, g.name, g.versand, g.bereit, COALESCE(g.fehlt, '[]'::jsonb) AS fehlt,
+                CASE WHEN g.bereit
                      THEN COALESCE(NULLIF(shop_queue_job('publish_part', g.partnumber, NULL, g.channel_id), 0),
                                    (SELECT b.id FROM batchjob_hugoshop b
                                      WHERE b.result IS NULL AND b.function = 'publish_part'
@@ -2541,20 +2558,23 @@ function publishShopPartAll($data) {
     $ergebnis = [];
     $ids = [];
     foreach ($kanaele as $kanal) {
-        $versandOk = $wahr($kanal['versand_ok']);
+        $bereit = $wahr($kanal['bereit']);
         $jobId = (int)$kanal['job_id'];
-        if ($versandOk && $jobId > 0) {
+        if ($bereit && $jobId > 0) {
             $ids[] = $jobId;
         }
+        $versand = json_decode((string)$kanal['versand'], true) ?: [];
         $ergebnis[] = [
             'channel_id' => (int)$kanal['channel_id'],
             'type'       => (string)$kanal['type'],
             'name'       => (string)$kanal['name'],
             'job_id'     => $jobId,
-            'queued'     => $versandOk && $jobId > 0,
-            'skipped'    => !$versandOk,
+            'queued'     => $bereit && $jobId > 0,
+            'skipped'    => !$bereit,
             // Ohne passende Versandart wird nicht veröffentlicht (dev/shop-versand.md)
-            'message'    => $versandOk ? '' : shopShippingCheckText(json_decode((string)$kanal['versand'], true) ?: []),
+            'message'    => $versand && 'ok' !== ($versand['status'] ?? '') ? shopShippingCheckText($versand) : '',
+            // Fehlende Pflichtangaben der Kleinanzeige (title, text, image, location) — übersetzt die Oberfläche
+            'missing'    => json_decode((string)$kanal['fehlt'], true) ?: [],
         ];
     }
 

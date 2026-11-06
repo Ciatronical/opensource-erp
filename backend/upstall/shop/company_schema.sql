@@ -3387,21 +3387,76 @@ COMMENT ON COLUMN kleinanzeigen_category_shop.is_leaf     IS 'Nur Blätter lasse
 
 CREATE INDEX IF NOT EXISTS kleinanzeigen_category_shop_parent_idx ON kleinanzeigen_category_shop (parent, sort);
 
--- Reiner Text aus den Artikelnotizen: kivitendo speichert sie als HTML,
--- Kleinanzeigen nimmt nur Text. Absätze und Zeilenumbrüche bleiben erhalten.
+-- Reiner Text aus den Artikelnotizen für Kleinanzeigen, das nur Text nimmt.
+-- Die Notizen kommen als HTML (kivitendo) oder als Markdown (Langtext-Editor,
+-- HugoShop): Tags und Entities fallen weg, Markdown wird zu dem, was der Leser
+-- sehen soll — Fett/Kursiv/Code ohne Zeichen, Überschriften ohne #, Links
+-- als Linktext, Bilder und Code-Zäune weg, Aufzählungen mit „- “, Tabellen
+-- ohne Trennzeile und Randstriche. Absätze und Zeilenumbrüche bleiben.
+-- Alle Muster zeilenweise (Flag n: ^ und $ an jeder Zeile, . ohne Umbruch).
 CREATE OR REPLACE FUNCTION kleinanzeigen_plain_text(p_html text) RETURNS text
-    LANGUAGE sql IMMUTABLE AS $$
-    SELECT btrim(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(
-               replace(replace(replace(replace(replace(replace(
-                   regexp_replace(regexp_replace(COALESCE(p_html, ''),
-                       '<\s*(br|/p|/div|/li|/h[1-6]|/tr)\s*/?>', E'\n', 'gi'),
-                       '<\s*li[^>]*>', E'\n- ', 'gi'),
-                   '&nbsp;', ' '), '&amp;', '&'), '&lt;', '<'), '&gt;', '>'), '&quot;', '"'), '&#39;', ''''),
-               '<[^>]+>', '', 'g'),
-               E'\r', '', 'g'),
-               E'[ \t]+\n', E'\n', 'g'),
-               E'\n{3,}', E'\n\n', 'g'),
-               E'[ \t]{2,}', ' ', 'g'), E' \n')
+    LANGUAGE plpgsql IMMUTABLE AS $$
+DECLARE
+    t text := replace(COALESCE(p_html, ''), E'\r', '');
+BEGIN
+    -- HTML
+    t := regexp_replace(t, '<\s*(br|/p|/div|/li|/h[1-6]|/tr)\s*/?>', E'\n', 'gi');
+    t := regexp_replace(t, '<\s*li[^>]*>', E'\n- ', 'gi');
+    t := regexp_replace(t, '<[^>]+>', '', 'g');
+    t := replace(replace(replace(replace(replace(replace(t,
+             '&nbsp;', ' '), '&lt;', '<'), '&gt;', '>'), '&quot;', '"'), '&#39;', ''''), '&amp;', '&');
+
+    -- Markdown: Blöcke
+    -- Zeilen, die ganz wegfallen, samt Umbruch
+    t := regexp_replace(t, '^[ \t]*(```|~~~).*$\n?', '', 'gn');                      -- Code-Zaun
+    t := regexp_replace(t, '^[ \t]*([-*_][ \t]*){3,}$', '', 'gn');                   -- Trennlinie
+    t := regexp_replace(t, '^[ \t]*\|?([ \t]*:?-{3,}:?[ \t]*\|)+([ \t]*:?-{3,}:?[ \t]*)?$\n?', '', 'gn');  -- Tabellenkopf-Trenner
+    t := regexp_replace(t, '^[ \t]*\|[ \t]*(.*?)[ \t]*\|[ \t]*$', '\1', 'gn');       -- Tabellenzeile: Randstriche
+    t := regexp_replace(t, '^([ \t]{0,3}#{1,6}[ \t]+.*[^ \t#])[ \t]+#+[ \t]*$', '\1', 'gn');  -- Überschrift: schließende #
+    t := regexp_replace(t, '^[ \t]{0,3}#{1,6}[ \t]+', '', 'gn');                     -- Überschrift
+    t := regexp_replace(t, '^[ \t]*(>[ \t]?)+', '', 'gn');                           -- Zitat
+    t := regexp_replace(t, '^[ \t]*[-*+][ \t]+(\[[ xX]\][ \t]+)?', '- ', 'gn');      -- Aufzählung, Aufgabenliste
+    t := regexp_replace(t, '^[ \t]+', '', 'gn');                                     -- Einrückung
+
+    -- Markdown: im Text
+    t := regexp_replace(t, '!\[[^\]]*\]\([^)]*\)', '', 'gn');                        -- Bild
+    t := regexp_replace(t, '\[([^\]]+)\]\([^)]*\)', '\1', 'gn');                     -- Link → Linktext
+    t := regexp_replace(t, '`([^`]+)`', '\1', 'gn');                                 -- Code
+    t := regexp_replace(t, '(\*\*|__)([^*_]+?)\1', '\2', 'gn');                      -- fett
+    t := regexp_replace(t, '~~([^~]+)~~', '\1', 'gn');                               -- durchgestrichen
+    t := regexp_replace(t, '(^|[^\w*\\])\*([^*\s][^*]*?)\*', '\1\2', 'gn');          -- kursiv *x*
+    t := regexp_replace(t, '(^|[^\w\\])_([^_\s][^_]*?)_($|[^\w])', '\1\2\3', 'gn');  -- kursiv _x_, nicht in Wörtern
+    t := regexp_replace(t, '\\([\\`*_{}\[\]()#+.!|>~-])', '\1', 'g');                -- Escapes
+
+    -- Leerraum
+    t := regexp_replace(t, '[ \t]+$', '', 'gn');
+    t := regexp_replace(t, '[ \t]{2,}', ' ', 'g');
+    t := regexp_replace(t, E'\n{3,}', E'\n\n', 'g');
+    RETURN btrim(t, E' \n\t');
+END
+$$;
+
+-- Bildquelle eines Marktplatz-Kanals, der für den Artikel noch keine eigenen
+-- Bilder hat: der erste andere Kanal mit Kanalbildern (eBay zuerst), sonst ein
+-- eingeschalteter HugoShop mit Bildern des Artikels (parts_ext.hugoshop_images).
+-- NULL, wenn der Kanal schon Bilder hat oder es nirgends welche gibt. Vor dem
+-- Einstellen übernimmt shopChannelImagesFill() daraus die Bilder; die Anzeige
+-- gilt deshalb nicht als bildlos, solange es eine Quelle gibt.
+CREATE OR REPLACE FUNCTION shop_channel_image_source(p_parts_id integer, p_channel_id integer) RETURNS integer
+    LANGUAGE sql STABLE AS $$
+    SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM parts_channel_image_shop i
+                                  WHERE i.parts_id = p_parts_id AND i.channel_id = p_channel_id)
+                THEN COALESCE(
+                    (SELECT i.channel_id FROM parts_channel_image_shop i
+                       JOIN sales_channel_shop c ON c.id = i.channel_id
+                      WHERE i.parts_id = p_parts_id AND i.channel_id <> p_channel_id
+                      ORDER BY (c.type = 'ebay') DESC, i.channel_id LIMIT 1),
+                    (SELECT c.id FROM sales_channel_shop c
+                       JOIN parts_ext pe ON pe.parts_id = p_parts_id
+                      WHERE c.type = 'hugoshop' AND c.active
+                        AND jsonb_typeof(pe.hugoshop_images) = 'array' AND jsonb_array_length(pe.hugoshop_images) > 0
+                      ORDER BY c.sortkey NULLS LAST, c.id LIMIT 1))
+           END
 $$;
 
 -- Die Anzeige eines Artikels, so wie sie bei Kleinanzeigen einzugeben ist.
@@ -3476,12 +3531,14 @@ CREATE OR REPLACE FUNCTION kleinanzeigen_ad(p_parts_id integer, p_channel_id int
                'sync_data',   z.sync_data,
                'sync_mtime',  z.sync_mtime,
                'hash',        md5(concat_ws('|', z.titel, z.text, z.preis::text, z.preisart, z.versand, z.zustand)),
-               -- Pflichtangaben für eine Anzeige: Titel, Text, mindestens ein Bild
+               -- Pflichtangaben für eine Anzeige: Titel, Text, mindestens ein Bild (oder eine Bildquelle)
                'missing',     (SELECT COALESCE(jsonb_agg(f), '[]'::jsonb) FROM (
                                    SELECT 'title' AS f WHERE btrim(z.titel) = ''
                                    UNION ALL SELECT 'text' WHERE btrim(z.text) = ''
+                                   -- ohne eigene Bilder genügt eine Quelle, aus der sie vor dem Einstellen kommen
                                    UNION ALL SELECT 'image' WHERE NOT EXISTS (SELECT 1 FROM parts_channel_image_shop i
                                                                                 WHERE i.parts_id = z.id AND i.channel_id = p_channel_id)
+                                                              AND shop_channel_image_source(z.id, p_channel_id) IS NULL
                                    UNION ALL SELECT 'location' WHERE btrim(COALESCE(z.s ->> 'location_zip', '')) = ''
                                ) m)
            )

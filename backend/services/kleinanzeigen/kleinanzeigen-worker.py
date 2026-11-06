@@ -91,6 +91,12 @@ IPV4_ONLY = os.environ.get("KA_IPV4", "1") not in ("0", "false", "no")
 IPV4_HOSTS = ("www.kleinanzeigen.de", "login.kleinanzeigen.de", "kleinanzeigen.de", "api.kleinanzeigen.de",
               "img.kleinanzeigen.de", "static.kleinanzeigen.de", "mobile.kleinanzeigen.de", "gateway.kleinanzeigen.de")
 PROXY = os.environ.get("KA_PROXY", "")  # etwa socks5://127.0.0.1:1080 — Ausweg bei gesperrtem Anschluss
+# Erkennt der Dienst die Sperrseite, ruft er Kleinanzeigen so lange nicht mehr
+# auf (Minuten) — jeder weitere Versuch verlängert die Sperre eher. Gilt für
+# alle Konten: gesperrt ist der Anschluss, nicht das Konto.
+BLOCK_PAUSE_MINUTES = int(os.environ.get("KA_BLOCK_PAUSE_MINUTES", "60"))
+BLOCK_MARKERS = ("IP-Bereich vorübergehend gesperrt", "IP-Bereich gesperrt bei Kleinanzeigen")
+blocked_until = 0.0  # Zeitpunkt (time.time()), bis zu dem nichts aufgerufen wird
 
 LOG = logging.getLogger("kleinanzeigen")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -135,6 +141,14 @@ class WorkerError(Exception):
         super().__init__(message)
         self.code = code
         self.extra = extra
+
+
+def blocked_error() -> WorkerError:
+    """Fehler für die laufende Sperre des Anschlusses"""
+    bis = time.strftime("%H:%M", time.localtime(blocked_until))
+    return WorkerError("IP_BLOCKED", "Kleinanzeigen hat den IP-Bereich dieses Anschlusses vorübergehend gesperrt "
+                       "(zu viele automatische Zugriffe) — der Dienst pausiert bis " + bis + " Uhr",
+                       blocked_until=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(blocked_until)))
 
 
 # ── Browser-Sitzung je Konto ──
@@ -260,7 +274,22 @@ class Session:
             return self.page
         self.page = await self.browser.get(url)
         await self.wait_ready()
+        await self.check_blocked()
         return self.page
+
+    async def check_blocked(self) -> None:
+        """Sperrseite von Kleinanzeigen? Dann Pause für alle Aufrufe und Fehler IP_BLOCKED"""
+        global blocked_until
+        if self.page is None:
+            return
+        try:
+            text = await self.page.evaluate("(document.title || '') + ' ' + (document.body?.innerText || '').slice(0, 2000)")
+        except Exception:  # noqa: BLE001
+            return
+        if isinstance(text, str) and any(m in text for m in BLOCK_MARKERS):
+            blocked_until = time.time() + BLOCK_PAUSE_MINUTES * 60
+            LOG.warning("[%s] IP-Bereich gesperrt (%s) — Pause %d Minuten", self.account, self.page.url, BLOCK_PAUSE_MINUTES)
+            raise blocked_error()
 
     async def wait_ready(self, timeout: float = 15) -> None:
         """Wartet, bis das Dokument geladen ist — bei Weiterleitungen (Login
@@ -324,6 +353,8 @@ class Session:
     async def find(self, selector: str, timeout: float = 10, what: str = "") -> Any:
         elem = await self.probe(selector, timeout)
         if elem is None:
+            # Oft steht statt der erwarteten Seite die Sperrseite da
+            await self.check_blocked()
             raise WorkerError("ELEMENT_NOT_FOUND", f"Element nicht gefunden: {what or selector}")
         return elem
 
@@ -1374,6 +1405,10 @@ async def handle(request: web.Request) -> web.Response:
     except Exception:  # noqa: BLE001
         body = {}
     account = str(body.get("account") or "default")
+    # Während der Sperre nichts bei Kleinanzeigen aufrufen; nur ansehen und schließen
+    if time.time() < blocked_until and path not in ("/debug/screenshot", "/session/close"):
+        ex = blocked_error()
+        return json_error(ex.code, str(ex), 422, **ex.extra)
     email = str(body.get("email") or "")
     s = session_for(account)
     if not email and s.email:
