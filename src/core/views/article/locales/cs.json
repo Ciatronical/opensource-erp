@@ -45,6 +45,8 @@
         "titleNew": "Založení artiklu",
         "create": "Založit",
         "cancel": "Zrušit",
+        "publishAll": "Zveřejnit ve všech prodejních kanálech",
+        "publishAllHint": "Uloží čekající změny a okamžitě zveřejní položku ve všech prodejních kanálech, kde je nabízena.",
         "useAsNew": "Použít jako nový",
         "useAsNewHint": "Otevře nový artikl předvyplněný všemi údaji tohoto artiklu. Uloží se až po kliknutí na „Vytvořit“.",
         "template": {

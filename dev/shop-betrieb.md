@@ -247,6 +247,17 @@ Bau. „Alle
 sofort veröffentlichen" legt den Auftrag „Alle Produkte" an und führt ihn im
 selben Zug aus. Ein Cron-Eintrag ist damit nicht zwingend nötig.
 
+**Aus der Artikelmaske (06.11.2026):** Ganz unten in „Artikel bearbeiten“
+steht „In allen Verkaufskanälen veröffentlichen“. Der Knopf schreibt zuerst die
+ausstehenden Änderungen der Maske und der Shop-Karte, legt dann je
+eingeschaltetem Kanal, in dem der Artikel angeboten wird, den Auftrag
+`publish_part` an (`publishShopPartAll`) und startet den Läufer nur für diese
+Aufträge — HugoShop, eBay und Kleinanzeigen in einem Zug. Ein schon offener
+Auftrag wird mitgenommen statt verdoppelt; ein HugoShop ohne passende
+Versandart wird übersprungen und mit dem Grund gemeldet. Arbeitet gerade ein
+Lauf, nimmt der die Aufträge mit; lässt sich der Läufer nicht starten, bleiben
+sie für den Cron stehen.
+
 **Der Lauf arbeitet im Hintergrund.** Beide Knöpfe starten den Läufer
 `tools/shop-publish.php` als eigenen Prozess (`shopPublishStartBackground()`)
 und kehren sofort zurück. Die Karte fragt danach den Stand ab

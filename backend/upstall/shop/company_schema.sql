@@ -2816,6 +2816,10 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnail_size', '200') ON
 -- Bildformat beim Hochladen von Produktbildern (Vorbelegung im Dialog):
 -- avif, webp, jpg, png oder original = Format der Datei beibehalten
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_image_format', 'original') ON CONFLICT (key) DO NOTHING;
+-- Bildformat des Verkaufskanals Kleinanzeigen (jpg oder png): beim
+-- Veröffentlichen werden die Kanalbilder in dieses Format umgewandelt
+-- (shopChannelImagesFit); Kleinanzeigen nimmt kein WebP, GIF oder AVIF
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_kleinanzeigen_image_format', 'jpg') ON CONFLICT (key) DO NOTHING;
 -- Lieferstatus für den Kunden (dev/shop-bestellstatus.md): Anzeige auf der
 -- Rechnungsseite im Shop und Mail bei Änderung, beides per Vorgabe aus
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_delivery_status_show', '0') ON CONFLICT (key) DO NOTHING;

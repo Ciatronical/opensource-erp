@@ -45,6 +45,8 @@
         "titleNew": "Preces izveide",
         "create": "Izveidot",
         "cancel": "Atcelt",
+        "publishAll": "Publicēt visos pārdošanas kanālos",
+        "publishAllHint": "Saglabā neapstiprinātās izmaiņas un nekavējoties publicē preci visos pārdošanas kanālos, kuros tā tiek piedāvāta.",
         "useAsNew": "Izmantot kā jaunu",
         "useAsNewHint": "Atver jaunu preci, kas aizpildīta ar visiem šīs preces datiem. Saglabā tikai pēc „Izveidot“.",
         "template": {

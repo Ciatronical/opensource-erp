@@ -45,6 +45,8 @@
         "titleNew": "Crea articolo",
         "create": "Crea",
         "cancel": "Annulla",
+        "publishAll": "Pubblica in tutti i canali di vendita",
+        "publishAllHint": "Salva le modifiche in sospeso e pubblica subito l’articolo in ogni canale di vendita in cui è offerto.",
         "useAsNew": "Usa come nuovo",
         "useAsNewHint": "Apre un nuovo articolo precompilato con tutti i dati di questo. Nulla viene salvato prima di «Crea».",
         "template": {

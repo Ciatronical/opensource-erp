@@ -45,6 +45,8 @@
         "titleNew": "Ürün oluştur",
         "create": "Oluştur",
         "cancel": "İptal",
+        "publishAll": "Tüm satış kanallarında yayınla",
+        "publishAllHint": "Bekleyen değişiklikleri kaydeder ve ürünü sunulduğu her satış kanalında hemen yayınlar.",
         "useAsNew": "Yeni olarak kullan",
         "useAsNewHint": "Bu ürünün tüm bilgileriyle önceden doldurulmuş yeni bir ürün açar. „Oluştur“ tıklanana kadar hiçbir şey kaydedilmez.",
         "template": {

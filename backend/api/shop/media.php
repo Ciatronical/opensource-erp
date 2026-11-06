@@ -73,14 +73,22 @@ function shopMediaPick($data) {
  * available sagt, ob dieser Server das Format schreiben kann (AVIF braucht
  * GD mit AVIF oder ffmpeg mit libaom-av1). default ist shop_image_format aus
  * der Firmenkonfiguration — original = Format der Datei beibehalten.
+ * channels: je Marktplatz-Kanalart die Formate, die er annimmt
+ * (SHOP_CHANNEL_IMAGE_FORMATS), und das Zielformat, wo der Betreiber eines
+ * wählt (Kleinanzeigen: shop_kleinanzeigen_image_format).
  *
- * @return void formats (value, title, available), default
+ * @return void formats (value, title, available), default, channels (type => accepted, target)
  * @testdata {}
  */
 function shopMediaFormatList($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
-    resultInfo(true, '', ['formats' => shopMediaFormats(), 'default' => shopConfigValue($db, 'shop_image_format', 'original')]);
+    $kanaele = [];
+    foreach (SHOP_CHANNEL_IMAGE_FORMATS as $typ => $formate) {
+        $kanaele[$typ] = ['accepted' => $formate, 'target' => shopChannelImageTarget($db, $typ)];
+    }
+    resultInfo(true, '', ['formats' => shopMediaFormats(), 'default' => shopConfigValue($db, 'shop_image_format', 'original'),
+                          'channels' => $kanaele]);
 }
 
 /**

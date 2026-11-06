@@ -1253,6 +1253,8 @@
         "kleinanzeigenWorkerUrl_help": "Vorgabe http://127.0.0.1:3007 — der Dienst läuft nur lokal.",
         "kleinanzeigenWorkerToken": "Token des Dienstes",
         "kleinanzeigenWorkerToken_help": "Derselbe Wert wie KA_TOKEN im Dienst (install/oserp-kleinanzeigen.service).",
+        "kleinanzeigenImageFormat": "Bildformat der Anzeigen",
+        "kleinanzeigenImageFormat_help": "Kleinanzeigen nimmt nur JPEG und PNG. Beim Veröffentlichen werden die Bilder des Kanals in dieses Format umgewandelt — auch Bilder, die aus eBay oder dem HugoShop übernommen wurden (WebP, AVIF, GIF). Vorgabe JPEG.",
         "kleinanzeigenLoginEmail": "Kleinanzeigen-Konto: E-Mail",
         "kleinanzeigenLoginEmail_help": "Konto des Dienstes. Mit E-Mail läuft der Kanal automatisch, ohne sie von Hand. Kein Passwort: Sie melden sich in Ihrem Browser an und übernehmen unten die Anmelde-IDs.",
         "kleinanzeigenContactName": "Name im Anzeigenformular",

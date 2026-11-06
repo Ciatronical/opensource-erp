@@ -45,6 +45,8 @@
         "titleNew": "Dodawanie artykułu",
         "create": "Dodaj",
         "cancel": "Anuluj",
+        "publishAll": "Opublikuj we wszystkich kanałach sprzedaży",
+        "publishAllHint": "Zapisuje oczekujące zmiany i natychmiast publikuje artykuł w każdym kanale sprzedaży, w którym jest oferowany.",
         "useAsNew": "Użyj jako nowy",
         "useAsNewHint": "Otwiera nowy artykuł wypełniony wszystkimi danymi tego artykułu. Zapis następuje dopiero po kliknięciu „Utwórz”.",
         "template": {

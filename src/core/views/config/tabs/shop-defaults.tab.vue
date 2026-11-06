@@ -208,25 +208,34 @@ const configLoaded = ref(false)
  * kann). Die Vorlagensätze lädt seit dev/shop-mehrere-kanaele.md die
  * Kanalkarte selbst.
  */
-const quellen = ref({ shopStockBins: [], shopImageFormats: [] })
+const quellen = ref({ shopStockBins: [], shopImageFormats: [], kleinanzeigenImageFormats: [] })
+
+/** Zielformat des Kleinanzeigen-Kanals laut Server — Vorbelegung, solange nichts gespeichert ist */
+const kleinanzeigenZiel = ref('')
 
 /**
  * Bildformate für shop_image_format: „Beibehalten“ und die Zielformate;
- * was der Server nicht schreiben kann, steht ausgegraut mit Grund da
+ * was der Server nicht schreiben kann, steht ausgegraut mit Grund da.
+ * Für shop_kleinanzeigen_image_format nur die Formate, die Kleinanzeigen
+ * annimmt (channels.kleinanzeigen.accepted vom Server).
  */
 async function ladeBildformate() {
     try {
-        const { formats = [] } = await shopMediaApi.formats()
+        const { formats = [], channels = {} } = await shopMediaApi.formats()
+        const eintrag = f => ({
+            value: f.value,
+            title: f.title,
+            props: f.available ? {} : { disabled: true, subtitle: t('crm_fields.shopImageFormatUnavailable') },
+        })
+        const kleinanzeigen = channels.kleinanzeigen?.accepted || []
+        kleinanzeigenZiel.value = channels.kleinanzeigen?.target || ''
         quellen.value = {
             ...quellen.value,
             shopImageFormats: [
                 { value: 'original', title: t('crm_fields.shopImageFormatOriginal') },
-                ...formats.map(f => ({
-                    value: f.value,
-                    title: f.title,
-                    props: f.available ? {} : { disabled: true, subtitle: t('crm_fields.shopImageFormatUnavailable') },
-                })),
+                ...formats.map(eintrag),
             ],
+            kleinanzeigenImageFormats: formats.filter(f => kleinanzeigen.includes(f.value)).map(eintrag),
         }
     } catch (e) {
         console.warn('Bildformate konnten nicht geladen werden:', e)
@@ -311,6 +320,12 @@ function normalizeShopDefaults() {
             props.crmDefaults[field.name] = ''
         }
     })
+
+    // Bildformat für Kleinanzeigen: ohne gespeicherten Wert gilt das, was der
+    // Server nimmt (Vorgabe JPEG) — die Auswahl soll das auch zeigen
+    if (!props.crmDefaults.shop_kleinanzeigen_image_format && kleinanzeigenZiel.value) {
+        props.crmDefaults.shop_kleinanzeigen_image_format = kleinanzeigenZiel.value
+    }
 }
 
 /**

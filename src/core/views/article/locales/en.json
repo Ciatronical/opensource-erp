@@ -45,6 +45,8 @@
     "titleNew": "Create article",
     "create": "Create",
     "cancel": "Cancel",
+    "publishAll": "Publish in all sales channels",
+    "publishAllHint": "Saves pending changes and lists the article immediately in every sales channel where it is offered.",
     "useAsNew": "Use as new",
     "useAsNewHint": "Opens a new article prefilled with everything from this one. Nothing is saved until you click “Create”.",
     "template": {

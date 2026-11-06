@@ -45,6 +45,8 @@
         "titleNew": "Luo tuote",
         "create": "Luo",
         "cancel": "Peruuta",
+        "publishAll": "Julkaise kaikissa myyntikanavissa",
+        "publishAllHint": "Tallentaa odottavat muutokset ja julkaisee tuotteen heti jokaisessa myyntikanavassa, jossa sitä tarjotaan.",
         "useAsNew": "Käytä uutena",
         "useAsNewHint": "Avaa uuden tuotteen, johon on esitäytetty kaikki tämän tuotteen tiedot. Tallennus vasta painikkeella ”Luo”.",
         "template": {

@@ -2474,6 +2474,119 @@ function publishShopPart($data) {
 }
 
 /**
+ * Veröffentlicht einen Artikel sofort in allen Verkaufskanälen
+ *
+ * Für den Knopf am Ende der Artikelmaske. Je eingeschaltetem Kanal, in dem
+ * der Artikel angeboten wird (parts_channel_shop.active), entsteht der Auftrag
+ * publish_part — gleich, ob HugoShop, eBay oder Kleinanzeigen; das Modul des
+ * Kanals arbeitet ihn ab. Steht derselbe Auftrag schon offen, wird er
+ * mitgenommen statt verdoppelt. Ein HugoShop ohne passende Versandart wird
+ * übersprungen und mit dem Grund gemeldet, die übrigen Kanäle laufen trotzdem.
+ *
+ * Anschließend startet der Läufer im Hintergrund nur für diese Aufträge, wie
+ * „Jetzt ausführen“ in der Shop-Übersicht (runShopPublishJobs). Arbeitet
+ * gerade ein Lauf, nimmt der die Aufträge mit — started ist dann false.
+ * Lässt sich der Läufer nicht starten, bleiben die Aufträge für den Cron
+ * stehen; start_error nennt den Grund.
+ *
+ * @param array $data['parts_id'] Artikel
+ * @return void channels (channel_id, type, name, job_id, queued, skipped, message),
+ *              job_ids, started, running, start_error
+ * @testdata {"parts_id": 1}
+ */
+function publishShopPartAll($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $partsId = (int)($data['parts_id'] ?? 0);
+    if (0 === $partsId) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'parts_id fehlt');
+        return;
+    }
+
+    // Eine Anweisung: Kanäle des Artikels in der Reihenfolge der Artikelkarte,
+    // Versandprüfung je HugoShop, Auftrag anlegen, wo sie besteht. Gibt
+    // shop_queue_job 0 zurück, steht der Auftrag schon offen — dann seine
+    // Nummer, damit der Lauf ihn mitnimmt. Der offene Auftrag ist in der
+    // Momentaufnahme sichtbar, weil er vor der Anweisung entstand.
+    $kanaele = $db->getAll(
+        "WITH kanal AS (
+             SELECT c.id AS channel_id, c.type, c.name, c.sortkey, p.partnumber,
+                    -- Versandprüfung nur im HugoShop; Marktplätze regeln den Versand selbst
+                    CASE WHEN c.type = 'hugoshop'
+                         THEN (SELECT row_to_json(v) FROM shop_part_shipping_check(p.id, c.id) v) END AS versand
+               FROM parts p
+               JOIN parts_channel_shop pc ON pc.parts_id = p.id AND pc.active
+               JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active
+              WHERE p.id = :parts_id
+         ), geprueft AS (
+             SELECT k.*, k.versand IS NULL OR COALESCE(k.versand ->> 'status', '') = 'ok' AS versand_ok
+               FROM kanal k
+         )
+         SELECT g.channel_id, g.type, g.name, g.versand, g.versand_ok,
+                CASE WHEN g.versand_ok
+                     THEN COALESCE(NULLIF(shop_queue_job('publish_part', g.partnumber, NULL, g.channel_id), 0),
+                                   (SELECT b.id FROM batchjob_hugoshop b
+                                     WHERE b.result IS NULL AND b.function = 'publish_part'
+                                       AND b.partnumber = g.partnumber AND b.channel_id = g.channel_id
+                                     ORDER BY b.id LIMIT 1),
+                                   0)
+                     ELSE 0 END AS job_id
+           FROM geprueft g
+          ORDER BY g.sortkey DESC NULLS FIRST, g.channel_id DESC",
+        [':parts_id' => $partsId]
+    ) ?: [];
+
+    $wahr = fn($wert) => true === $wert || 't' === $wert || '1' === $wert;
+    $ergebnis = [];
+    $ids = [];
+    foreach ($kanaele as $kanal) {
+        $versandOk = $wahr($kanal['versand_ok']);
+        $jobId = (int)$kanal['job_id'];
+        if ($versandOk && $jobId > 0) {
+            $ids[] = $jobId;
+        }
+        $ergebnis[] = [
+            'channel_id' => (int)$kanal['channel_id'],
+            'type'       => (string)$kanal['type'],
+            'name'       => (string)$kanal['name'],
+            'job_id'     => $jobId,
+            'queued'     => $versandOk && $jobId > 0,
+            'skipped'    => !$versandOk,
+            // Ohne passende Versandart wird nicht veröffentlicht (dev/shop-versand.md)
+            'message'    => $versandOk ? '' : shopShippingCheckText(json_decode((string)$kanal['versand'], true) ?: []),
+        ];
+    }
+
+    if (!$ids) {
+        resultInfo(true, 'PUBLISH_QUEUED', [
+            'channels' => $ergebnis, 'job_ids' => [], 'started' => false, 'running' => false, 'start_error' => '',
+        ]);
+        return;
+    }
+
+    // Sofort ausführen: nur diese Aufträge, im Hintergrund. Läuft schon
+    // einer, nimmt er die Aufträge mit
+    $laeuft = shopPublishStatus($db)['running'];
+    $gestartet = false;
+    $startFehler = '';
+    if (!$laeuft) {
+        $start = shopPublishStartBackground($db, $ids);
+        $startFehler = (string)$start['fehler'];
+        $gestartet = '' === $startFehler;
+        $laeuft = $gestartet;
+    }
+
+    resultInfo(true, 'PUBLISH_QUEUED', [
+        'channels'    => $ergebnis,
+        'job_ids'     => $ids,
+        'started'     => $gestartet,
+        'running'     => $laeuft,
+        'start_error' => $startFehler,
+    ]);
+}
+
+/**
  * Nimmt alle Artikel in die Veröffentlichung auf — eines HugoShops oder aller
  *
  * job_ids nennt die neu angelegten Aufträge, job_id den ersten davon (für

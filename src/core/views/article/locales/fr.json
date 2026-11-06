@@ -45,6 +45,8 @@
         "titleNew": "Créer un article",
         "create": "Créer",
         "cancel": "Annuler",
+        "publishAll": "Publier dans tous les canaux de vente",
+        "publishAllHint": "Enregistre les modifications en attente et met l’article en ligne immédiatement dans chaque canal de vente où il est proposé.",
         "useAsNew": "Utiliser comme nouveau",
         "useAsNewHint": "Ouvre un nouvel article prérempli avec toutes les données de celui-ci. Rien n’est enregistré avant « Créer ».",
         "template": {

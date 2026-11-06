@@ -45,6 +45,8 @@
         "titleNew": "Opprett vare",
         "create": "Opprett",
         "cancel": "Avbryt",
+        "publishAll": "Publiser i alle salgskanaler",
+        "publishAllHint": "Lagrer ventende endringer og legger varen ut umiddelbart i alle salgskanaler der den tilbys.",
         "useAsNew": "Bruk som ny",
         "useAsNewHint": "Åpner en ny artikkel forhåndsutfylt med alle opplysningene fra denne. Ingenting lagres før du klikker «Opprett».",
         "template": {

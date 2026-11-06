@@ -194,6 +194,15 @@ export function useShop() {
     /** Nimmt einen Artikel in die Veröffentlichung auf */
     const publishPart = (parts_id) => call('publishShopPart', { parts_id })
 
+    /**
+     * Veröffentlicht einen Artikel sofort in allen Verkaufskanälen
+     *
+     * Je Kanal, in dem er angeboten wird, ein Auftrag; der Läufer startet
+     * gleich dafür. Antwort: channels (queued, skipped, message je Kanal),
+     * job_ids, started, running, start_error.
+     */
+    const publishPartAll = (parts_id) => call('publishShopPartAll', { parts_id })
+
     /** Nimmt alle Artikel des Shops in die Veröffentlichung auf */
     const publishAll = (channel_ids = []) => call('publishShopAll', { channel_ids })
 
@@ -259,6 +268,7 @@ export function useShop() {
         errorCode,
         errorPayload,
         publishPart,
+        publishPartAll,
         publishAll,
         fetchPublishJobs,
         runPublishJobs,

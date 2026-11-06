@@ -45,6 +45,8 @@
         "titleNew": "新建商品",
         "create": "新建",
         "cancel": "取消",
+        "publishAll": "在所有销售渠道发布",
+        "publishAllHint": "保存待处理的更改，并立即在该商品所在的每个销售渠道中上架。",
         "useAsNew": "用作新商品",
         "useAsNewHint": "打开一个新商品，并预填本商品的全部数据。点击“创建”后才会保存。",
         "template": {

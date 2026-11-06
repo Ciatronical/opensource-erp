@@ -45,6 +45,8 @@
         "titleNew": "Opret vare",
         "create": "Opret",
         "cancel": "Annuller",
+        "publishAll": "Udgiv i alle salgskanaler",
+        "publishAllHint": "Gemmer ventende ændringer og lægger varen straks op i alle salgskanaler, hvor den udbydes.",
         "useAsNew": "Brug som ny",
         "useAsNewHint": "Åbner en ny artikel udfyldt med alle oplysninger fra denne. Intet gemmes, før du klikker på „Opret“.",
         "template": {

@@ -416,6 +416,27 @@
                         </div>
                     </div>
 
+                    <!-- Ganz unten, nach allen Karten: den Artikel sofort in allen
+                         Verkaufskanälen veröffentlichen. Die Shop-Karte legt je Kanal
+                         den Auftrag an und startet den Läufer; vorher gehen die
+                         ausstehenden Änderungen der Maske raus. -->
+                    <div
+                        v-if="!isNewMode && shopEnabled && shopCard?.darfBearbeiten"
+                        class="mt-4 d-flex flex-wrap align-center justify-end ga-2"
+                    >
+                        <span class="text-caption text-medium-emphasis">{{ t('ArticleEditView.publishAllHint') }}</span>
+                        <v-btn
+                            color="primary"
+                            variant="elevated"
+                            prepend-icon="mdi-cloud-upload-outline"
+                            :disabled="!shopCard?.veroeffentlichbar"
+                            :loading="publishing"
+                            @click="publishEverywhere"
+                        >
+                            {{ t('ArticleEditView.publishAll') }}
+                        </v-btn>
+                    </div>
+
                 </v-col>
             </v-row>
         </div>
@@ -789,6 +810,25 @@ export default defineComponent({
         const shopLinkSuggestion = computed(() => shopSlug(article.value.description))
         const shopPartnumber = computed(() => String(article.value.partnumber || nextPartnumber.value || ''))
 
+        /** Knopf am Ende der Maske: sofort in allen Verkaufskanälen veröffentlichen */
+        const publishing = ref(false)
+        async function publishEverywhere() {
+            if (publishing.value || !shopCard.value?.veroeffentlichenUeberall) return
+            publishing.value = true
+            try {
+                // Ausstehende Änderungen der Maske zuerst — Preis und Texte
+                // gehen in die Kanäle
+                if (saveTimeout || hasPendingChanges) {
+                    if (saveTimeout) { clearTimeout(saveTimeout); saveTimeout = null }
+                    hasPendingChanges = false
+                    await saveArticle()
+                }
+                await shopCard.value.veroeffentlichenUeberall()
+            } finally {
+                publishing.value = false
+            }
+        }
+
         const requiredRule = v =>
             (v !== null && v !== undefined && String(v).trim() !== '') || t('ArticleEditView.messages.required')
 
@@ -1098,7 +1138,9 @@ export default defineComponent({
             zuAbschnitt,
             shopCard,
             shopLinkSuggestion,
-            shopPartnumber
+            shopPartnumber,
+            publishing,
+            publishEverywhere
         }
     }
 })

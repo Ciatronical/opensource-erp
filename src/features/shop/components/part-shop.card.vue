@@ -1479,6 +1479,66 @@ async function veroeffentlichen() {
 }
 
 /**
+ * Veröffentlichen in allen Kanälen ist möglich: bestehender Artikel, im Shop
+ * angeboten, mindestens ein Kanal gewählt — für den Knopf am Ende der Maske
+ */
+const veroeffentlichbar = computed(() =>
+    !!props.partsId && daten.value.listed && aktiveKanaele.value.length > 0 && darfBearbeiten.value && !laedt.value)
+
+/**
+ * Veröffentlicht den Artikel sofort in allen Verkaufskanälen
+ *
+ * Für den Knopf am Ende der Artikelmaske. Legt je Kanal den Auftrag an und
+ * startet den Läufer dafür (publishShopPartAll). Ausstehende Änderungen der
+ * Karte gehen vorher raus, sonst entstünde die Seite aus altem Stand. Die
+ * Meldung nennt die Kanäle, in denen es losgeht, und die übersprungenen mit
+ * dem Grund — etwa ein HugoShop ohne passende Versandart.
+ *
+ * @returns {Promise<boolean>} false, wenn in keinem Kanal ein Auftrag entstand
+ */
+async function veroeffentlichenUeberall() {
+    if (!veroeffentlichbar.value) return false
+    if (timer) {
+        clearTimeout(timer)
+        timer = null
+        await speichern(props.partsId)
+        if (fehler.value) return false
+    }
+
+    veroeffentlicht.value = true
+    const ergebnis = await shop.publishPartAll(Number(props.partsId))
+    veroeffentlicht.value = false
+
+    if (shop.error.value) {
+        toasts.error(fehlerText())
+        return false
+    }
+
+    const kanaele = Array.isArray(ergebnis?.channels) ? ergebnis.channels : []
+    const angelegt = kanaele.filter(k => k.queued).map(kanalName)
+    const uebersprungen = kanaele.filter(k => k.skipped)
+        .map(k => k.message ? `${kanalName(k)} (${k.message})` : kanalName(k))
+
+    if (uebersprungen.length) {
+        toasts.warning(t('ShopView.partCard.publishAllSkipped', { channels: uebersprungen.join(', ') }))
+    }
+    if (!angelegt.length) {
+        if (!uebersprungen.length) toasts.warning(t('ShopView.partCard.publishAllNone'))
+        return false
+    }
+
+    const werte = { channels: angelegt.join(', '), error: ergebnis.start_error || '' }
+    if (ergebnis.start_error) {
+        toasts.warning(t('ShopView.partCard.publishAllStartFailed', werte))
+    } else if (ergebnis.started) {
+        toasts.success(t('ShopView.partCard.publishAllStarted', werte))
+    } else {
+        toasts.success(t('ShopView.partCard.publishAllRunning', werte))
+    }
+    return true
+}
+
+/**
  * Neuanlage: speichert die gesammelten Angaben am eben angelegten Artikel
  *
  * @param {number|string} partsId der neue Artikel
@@ -1515,7 +1575,7 @@ const abschnitte = computed(() => [
     ] : []),
 ])
 
-defineExpose({ saveFor, kanalFehlt, abschnitte })
+defineExpose({ saveFor, kanalFehlt, abschnitte, darfBearbeiten, veroeffentlichbar, veroeffentlichenUeberall })
 </script>
 
 <style scoped>

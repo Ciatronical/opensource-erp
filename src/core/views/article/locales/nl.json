@@ -45,6 +45,8 @@
         "titleNew": "Artikel aanmaken",
         "create": "Aanmaken",
         "cancel": "Annuleren",
+        "publishAll": "Publiceren in alle verkoopkanalen",
+        "publishAllHint": "Slaat openstaande wijzigingen op en zet het artikel direct online in elk verkoopkanaal waarin het wordt aangeboden.",
         "useAsNew": "Als nieuw gebruiken",
         "useAsNewHint": "Opent een nieuw artikel, vooraf ingevuld met alle gegevens van dit artikel. Er wordt pas opgeslagen bij „Aanmaken“.",
         "template": {

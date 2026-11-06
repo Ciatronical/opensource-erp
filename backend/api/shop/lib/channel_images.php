@@ -23,8 +23,9 @@ const SHOP_CHANNEL_IMAGE_TYPES = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
 
 /**
  * Bildformate, die ein Marktplatz annimmt; alles andere legt OSERP für den
- * Kanal als JPEG ab (shopChannelImageStore, shopChannelImagesFit). Dieselbe
- * Datei kann so in einem Kanal als WebP und im anderen als JPEG liegen.
+ * Kanal in seinem Zielformat ab (shopChannelImageStore, shopChannelImagesFit,
+ * shopChannelImageTarget). Dieselbe Datei kann so in einem Kanal als WebP und
+ * im anderen als JPEG liegen.
  *
  * eBay holt die Bilder über part-image.php ab — Picture Services nimmt laut
  * Doku auch AVIF und HEIC, hier bewusst nur, was sicher durchgeht.
@@ -33,6 +34,51 @@ const SHOP_CHANNEL_IMAGE_TYPES = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
  */
 const SHOP_CHANNEL_IMAGE_FORMATS = ['ebay' => ['jpg', 'png', 'gif', 'webp'], 'kleinanzeigen' => ['jpg', 'png'],
                                     'amazon' => ['jpg', 'png', 'gif']];
+
+/**
+ * Zielformat je Kanalart, wenn der Betreiber eines wählen kann: Schlüssel in
+ * defaults_oserp und Vorgabe. Kleinanzeigen: shop_kleinanzeigen_image_format
+ * (Firmenkonfiguration → Shop), Vorgabe JPEG. Kanäle ohne Eintrag behalten
+ * das Format der Datei und wandeln nur, was der Marktplatz nicht nimmt.
+ */
+const SHOP_CHANNEL_IMAGE_TARGET_KEYS = ['kleinanzeigen' => ['key' => 'shop_kleinanzeigen_image_format', 'default' => 'jpg']];
+
+/**
+ * Zielformat eines Kanals: alle seine Bilder liegen in diesem Format
+ *
+ * Aus der Firmenkonfiguration (SHOP_CHANNEL_IMAGE_TARGET_KEYS). Ein Wert, den
+ * der Marktplatz nicht nimmt oder den dieser Server nicht schreiben kann,
+ * fällt auf die Vorgabe zurück. null = der Kanal hat kein Zielformat.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $typ Art des Kanals (ebay, kleinanzeigen, …)
+ * @return string|null jpg, png, … oder null
+ */
+function shopChannelImageTarget($db, string $typ): ?string {
+    if (!isset(SHOP_CHANNEL_IMAGE_TARGET_KEYS[$typ])) {
+        return null;
+    }
+    $vorgabe = SHOP_CHANNEL_IMAGE_TARGET_KEYS[$typ]['default'];
+    $format = strtolower(trim(shopConfigValue($db, SHOP_CHANNEL_IMAGE_TARGET_KEYS[$typ]['key'], $vorgabe)));
+    if (!shopChannelImageAccepted($typ, $format) || !shopMediaCanWrite($format)) {
+        return $vorgabe;
+    }
+    return $format;
+}
+
+/**
+ * Zielformate aller Kanalarten mit Wahlmöglichkeit, für eine Abfrage
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @return array Kanalart => Format
+ */
+function shopChannelImageTargets($db): array {
+    $ziele = [];
+    foreach (array_keys(SHOP_CHANNEL_IMAGE_TARGET_KEYS) as $typ) {
+        $ziele[$typ] = shopChannelImageTarget($db, $typ);
+    }
+    return $ziele;
+}
 
 /**
  * Übernimmt die Kanalbilder eines Artikels für einen anderen („Als neu verwenden“)
@@ -146,33 +192,75 @@ function shopChannelImageAccepted(string $typ, string $endung): bool {
 }
 
 /**
- * Wandelt Bilddaten in JPEG (Qualität 90, Transparenz auf Weiß)
+ * Wandelt Bilddaten in ein anderes Format (jpg, png, gif, webp, avif)
  *
- * Liest über shopMediaLoad — GD, AVIF notfalls über ffmpeg.
+ * Liest über shopMediaLoad — GD, AVIF notfalls über ffmpeg — und schreibt
+ * über shopMediaSave. JPEG kennt keine Transparenz (Qualität 90, Transparenz
+ * auf Weiß); die anderen Formate behalten sie.
  *
  * @param string $inhalt Bilddaten
- * @param string $format Format der Daten (png, gif, webp, avif)
+ * @param string $format Format der Daten (jpg, png, gif, webp, avif)
+ * @param string $ziel Zielformat (jpg, png, gif, webp, avif)
  * @param string $name Dateiname für die Meldung
- * @return string JPEG-Bilddaten
+ * @return string Bilddaten im Zielformat
  * @throws ApiError SHOP_IMAGE_TYPE
  */
-function shopChannelImageToJpeg(string $inhalt, string $format, string $name = ''): string {
+function shopChannelImageConvert(string $inhalt, string $format, string $ziel, string $name = ''): string {
+    $wer = '' !== $name ? ': '.$name : '';
+    if (!shopMediaCanWrite($ziel)) {
+        throw new ApiError('SHOP_IMAGE_TYPE', strtoupper($ziel).' kann dieser Server nicht schreiben'.$wer);
+    }
     $tmp = tempnam(sys_get_temp_dir(), 'oserp-channel');
+    $aus = tempnam(sys_get_temp_dir(), 'oserp-channel');
     try {
         file_put_contents($tmp, $inhalt);
         $bild = shopMediaCanRead($format) ? shopMediaLoad($tmp, $format) : false;
         if (false === $bild) {
-            throw new ApiError('SHOP_IMAGE_TYPE', strtoupper($format).' kann dieser Server nicht lesen'.('' !== $name ? ': '.$name : ''));
+            throw new ApiError('SHOP_IMAGE_TYPE', strtoupper($format).' kann dieser Server nicht lesen'.$wer);
         }
-        $flach = imagecreatetruecolor(imagesx($bild), imagesy($bild));
-        imagefill($flach, 0, 0, imagecolorallocate($flach, 255, 255, 255));
-        imagecopy($flach, $bild, 0, 0, 0, 0, imagesx($bild), imagesy($bild));
-        ob_start();
-        imagejpeg($flach, null, 90);
-        return (string)ob_get_clean();
+        if ('jpg' === $ziel) {
+            $flach = imagecreatetruecolor(imagesx($bild), imagesy($bild));
+            imagefill($flach, 0, 0, imagecolorallocate($flach, 255, 255, 255));
+            imagecopy($flach, $bild, 0, 0, 0, 0, imagesx($bild), imagesy($bild));
+            imagedestroy($bild);
+            $bild = $flach;
+            ob_start();
+            imagejpeg($bild, null, 90);
+            imagedestroy($bild);
+            return (string)ob_get_clean();
+        }
+        imagepalettetotruecolor($bild);
+        imagealphablending($bild, false);
+        imagesavealpha($bild, true);
+        $ok = shopMediaSave($bild, $aus, $ziel, 'jpg' !== $format, $fehler);
+        imagedestroy($bild);
+        if (!$ok) {
+            throw new ApiError('SHOP_IMAGE_TYPE', 'Bild konnte nicht nach '.strtoupper($ziel).' umgewandelt werden'.$wer.($fehler ? ' ('.$fehler.')' : ''));
+        }
+        return (string)file_get_contents($aus);
     } finally {
         @unlink($tmp);
+        @unlink($aus);
     }
+}
+
+/**
+ * Format, in dem ein Bild für einen Kanal liegen muss — oder null, wenn es
+ * bleiben kann, wie es ist
+ *
+ * Kanal mit Zielformat: alles dorthin. Sonst nur, was der Marktplatz nicht
+ * nimmt, nach JPEG.
+ *
+ * @param string $typ Art des Kanals
+ * @param string $endung Format des Bilds
+ * @param string|null $ziel Zielformat des Kanals (shopChannelImageTarget)
+ * @return string|null
+ */
+function shopChannelImageNeeds(string $typ, string $endung, ?string $ziel): ?string {
+    if (null !== $ziel) {
+        return $endung === $ziel ? null : $ziel;
+    }
+    return shopChannelImageAccepted($typ, $endung) ? null : 'jpg';
 }
 
 /**
@@ -207,12 +295,15 @@ function shopChannelImageStore($db, int $partsId, int $kanalId, string $inhalt, 
     }
     $endung = 'jpeg' === $endung ? 'jpg' : $endung;
 
-    // Nimmt der Marktplatz das Format nicht (AVIF aus dem HugoShop, WebP bei
-    // Kleinanzeigen), liegt das Bild für diesen Kanal als JPEG
+    // Hat der Kanal ein Zielformat (Kleinanzeigen), liegt das Bild für ihn
+    // darin; sonst als JPEG, wenn der Marktplatz das Format nicht nimmt (AVIF
+    // aus dem HugoShop bei eBay)
     $kanal = $db->getOne("SELECT type FROM sales_channel_shop WHERE id = :id", [':id' => $kanalId]);
-    if (!shopChannelImageAccepted((string)($kanal['type'] ?? ''), $endung)) {
-        $inhalt = shopChannelImageToJpeg($inhalt, $endung, $name);
-        $endung = 'jpg';
+    $typ = (string)($kanal['type'] ?? '');
+    $ziel = shopChannelImageNeeds($typ, $endung, shopChannelImageTarget($db, $typ));
+    if (null !== $ziel) {
+        $inhalt = shopChannelImageConvert($inhalt, $endung, $ziel, $name);
+        $endung = $ziel;
     }
 
     $datei = sha1($inhalt).'.'.$endung;
@@ -235,13 +326,15 @@ function shopChannelImageStore($db, int $partsId, int $kanalId, string $inhalt, 
 }
 
 /**
- * Zieht Kanalbilder in Formaten nach, die der Marktplatz nicht nimmt
+ * Zieht Kanalbilder ins Format nach, das ihr Marktplatz verlangt
  *
- * Für Bestände von früher und Dateien, die von einem anderen Marktplatz
- * übernommen wurden (dieselbe Datei, neue Zeile): Die Zeile bekommt eine
- * JPEG-Fassung, die alte Datei bleibt, solange ein anderer Kanal sie nennt.
- * Ohne Treffer nur die eine Abfrage — läuft deshalb vor dem Einstellen und
- * im Läufer.
+ * Kanäle mit Zielformat (Kleinanzeigen, Firmenkonfiguration): jedes Bild in
+ * einem anderen Format. Kanäle ohne: Bilder in Formaten, die der Marktplatz
+ * nicht nimmt, nach JPEG. Für Bestände von früher, Dateien, die von einem
+ * anderen Kanal übernommen wurden (dieselbe Datei, neue Zeile), und nach
+ * einer Änderung des Zielformats: Die Zeile bekommt die neue Fassung, die
+ * alte Datei bleibt, solange ein anderer Kanal sie nennt. Ohne Treffer nur
+ * die eine Abfrage — läuft deshalb vor dem Einstellen und im Läufer.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $partsId Artikel, 0 = alle
@@ -249,17 +342,22 @@ function shopChannelImageStore($db, int $partsId, int $kanalId, string $inhalt, 
  * @return int Zahl der umgewandelten Bilder
  */
 function shopChannelImagesFit($db, int $partsId = 0, int $kanalId = 0): int {
+    $ziele = shopChannelImageTargets($db);
     $zeilen = $db->getAll(
-        "SELECT i.id, i.parts_id, i.channel_id, i.filename
+        "SELECT i.id, i.parts_id, i.channel_id, i.filename, c.type
            FROM parts_channel_image_shop i
            JOIN sales_channel_shop c ON c.id = i.channel_id
           WHERE (CAST(:parts_id AS integer) = 0 OR i.parts_id = CAST(:parts_id_gleich AS integer))
             AND (CAST(:kanal AS integer) = 0 OR i.channel_id = CAST(:kanal_gleich AS integer))
-            AND jsonb_exists(CAST(:formate AS jsonb), c.type)
-            AND NOT jsonb_exists(CAST(:formate_typ AS jsonb) -> c.type,
-                                 lower(substring(i.filename FROM '\.([^.]+)$')))
+            AND CASE WHEN jsonb_exists(CAST(:ziele AS jsonb), c.type)
+                     THEN CAST(:ziele_typ AS jsonb) ->> c.type <> lower(substring(i.filename FROM '\.([^.]+)$'))
+                     ELSE jsonb_exists(CAST(:formate AS jsonb), c.type)
+                          AND NOT jsonb_exists(CAST(:formate_typ AS jsonb) -> c.type,
+                                               lower(substring(i.filename FROM '\.([^.]+)$')))
+                END
           ORDER BY i.parts_id, i.id",
         [':parts_id' => $partsId, ':parts_id_gleich' => $partsId, ':kanal' => $kanalId, ':kanal_gleich' => $kanalId,
+         ':ziele' => json_encode($ziele), ':ziele_typ' => json_encode($ziele),
          ':formate' => json_encode(SHOP_CHANNEL_IMAGE_FORMATS), ':formate_typ' => json_encode(SHOP_CHANNEL_IMAGE_FORMATS)]
     ) ?: [];
 
@@ -274,17 +372,18 @@ function shopChannelImagesFit($db, int $partsId = 0, int $kanalId = 0): int {
             if (false === $endung) {
                 throw new ApiError('SHOP_IMAGE_TYPE', 'Bild fehlt oder ist unlesbar');
             }
-            $jpeg = shopChannelImageToJpeg($inhalt, 'jpeg' === $endung ? 'jpg' : $endung, $alt);
+            $ziel = $ziele[$zeile['type']] ?? 'jpg';
+            $neuInhalt = shopChannelImageConvert($inhalt, 'jpeg' === $endung ? 'jpg' : $endung, $ziel, $alt);
         } catch (ApiError $e) {
             writeLog('[SHOP] Kanalbild '.$zeile['parts_id'].'/'.$alt.' nicht umgewandelt: '.$e->getMessage(), true, DLOG_WRN);
             continue;
         }
-        $neu = sha1($jpeg).'.jpg';
-        if (!is_file($verzeichnis.'/'.$neu) && false === file_put_contents($verzeichnis.'/'.$neu, $jpeg)) {
+        $neu = sha1($neuInhalt).'.'.$ziel;
+        if (!is_file($verzeichnis.'/'.$neu) && false === file_put_contents($verzeichnis.'/'.$neu, $neuInhalt)) {
             continue;
         }
         @chmod($verzeichnis.'/'.$neu, 0664);
-        // Die Zeile zeigt auf die JPEG-Fassung; hat der Kanal sie schon, fällt
+        // Die Zeile zeigt auf die neue Fassung; hat der Kanal sie schon, fällt
         // die Zeile weg. Die alte Datei geht, wenn kein Kanal sie mehr nennt.
         $rest = $db->getOne(
             "WITH umbenannt AS (

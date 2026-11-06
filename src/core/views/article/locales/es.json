@@ -45,6 +45,8 @@
         "titleNew": "Crear artículo",
         "create": "Crear",
         "cancel": "Cancelar",
+        "publishAll": "Publicar en todos los canales de venta",
+        "publishAllHint": "Guarda los cambios pendientes y publica el artículo de inmediato en todos los canales de venta en los que se ofrece.",
         "useAsNew": "Usar como nuevo",
         "useAsNewHint": "Abre un artículo nuevo con todos los datos de este. No se guarda nada hasta pulsar «Crear».",
         "template": {

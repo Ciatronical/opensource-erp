@@ -1251,6 +1251,8 @@
         "kleinanzeigenWorkerUrl_help": "Default http://127.0.0.1:3007 — the service only listens locally.",
         "kleinanzeigenWorkerToken": "Service token",
         "kleinanzeigenWorkerToken_help": "Same value as KA_TOKEN in the service (install/oserp-kleinanzeigen.service).",
+        "kleinanzeigenImageFormat": "Image format of the ads",
+        "kleinanzeigenImageFormat_help": "Kleinanzeigen accepts only JPEG and PNG. On publishing, the channel images are converted to this format — including images taken over from eBay or the HugoShop (WebP, AVIF, GIF). Default JPEG.",
         "kleinanzeigenLoginEmail": "Kleinanzeigen account: email",
         "kleinanzeigenLoginEmail_help": "Account of the service. With the email the channel runs automatically, without it by hand. No password: you log in in your browser and take the login IDs over below.",
         "kleinanzeigenContactName": "Name in the ad form",

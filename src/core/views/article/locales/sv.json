@@ -45,6 +45,8 @@
         "titleNew": "Skapa artikel",
         "create": "Skapa",
         "cancel": "Avbryt",
+        "publishAll": "Publicera i alla försäljningskanaler",
+        "publishAllHint": "Sparar väntande ändringar och lägger ut artikeln direkt i alla försäljningskanaler där den erbjuds.",
         "useAsNew": "Använd som ny",
         "useAsNewHint": "Öppnar en ny artikel förifylld med alla uppgifter från denna. Inget sparas förrän du klickar på ”Skapa”.",
         "template": {

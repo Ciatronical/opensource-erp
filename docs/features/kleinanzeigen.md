@@ -54,6 +54,7 @@ Hinweis: Automatisiertes Einstellen widerspricht den Nutzungsbedingungen von Kle
 4. **Verkauf**: Barverkaufskunde für Verkäufe ohne Käuferangabe, Mitarbeiter für die Rechnungen.
 5. **Anfragen**: Die E-Mail-Adresse des Kleinanzeigen-Kontos muss das Postfach des E-Mail-Moduls sein (Firmenkonfiguration → E-Mail); Ordner, in dem die Benachrichtigungen liegen (Vorgabe INBOX).
 6. **KI-Texte** brauchen den Anthropic-API-Schlüssel (Firmenkonfiguration → KI); das Modell ist je Firma einstellbar (Vorgabe Claude Haiku 4.5) und am Dialog umschaltbar.
+7. **Bildformat** (Firmenkonfiguration → Shop → Kleinanzeigen-Dienst): Kleinanzeigen nimmt nur JPEG und PNG. Beim Veröffentlichen — über den Dienst, als ZIP oder im Feed — wandelt OSERP die Bilder des Kanals in das gewählte Format um, auch Bilder, die aus eBay oder dem HugoShop übernommen wurden (WebP, AVIF, GIF). Vorgabe JPEG.
 
 Hinweis für gewerbliche Verkäufer: Impressum, Widerrufsbelehrung und AGB gehören ins Kleinanzeigen-Konto (PRO-Konto), nicht in den Anzeigentext. Der Fußtext des Kanals ergänzt nur den Text.
 
@@ -86,5 +87,6 @@ Der Shop-Läufer (`tools/shop-publish.php --reconcile-payments`, siehe `dev/shop
 - Verkäufe in `kleinanzeigen_sale_shop`, Anfragen in `kleinanzeigen_lead_shop`
 - SQL: `kleinanzeigen_ad()` (die fertige Anzeige), `kleinanzeigen_suggestions()` (Vorschläge), `kleinanzeigen_board()` (das Board), `kleinanzeigen_plain_text()`
 - Feed: `backend/webhook/kleinanzeigen-feed.php`
+- Bilder: `parts_channel_image_shop` wie bei eBay (`backend/api/shop/lib/channel_images.php`); Zielformat `shop_kleinanzeigen_image_format` (jpg, png), nachgezogen von `shopChannelImagesFit()` vor dem Einstellen, vor dem ZIP und im Läufer
 - Kleinanzeigen-Dienst: `backend/services/kleinanzeigen/kleinanzeigen-worker.py` (Python, nodriver, aiohttp), Anbindung `backend/api/shop/lib/kleinanzeigen_worker.php`, Unit `install/oserp-kleinanzeigen.service`
 - Entwurf und Entscheidungen: `dev/shop-kleinanzeigen.md`

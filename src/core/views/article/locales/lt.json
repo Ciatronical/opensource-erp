@@ -45,6 +45,8 @@
         "titleNew": "Prekės kūrimas",
         "create": "Sukurti",
         "cancel": "Atšaukti",
+        "publishAll": "Skelbti visuose pardavimo kanaluose",
+        "publishAllHint": "Išsaugo laukiančius pakeitimus ir iš karto paskelbia prekę visuose pardavimo kanaluose, kuriuose ji siūloma.",
         "useAsNew": "Naudoti kaip naują",
         "useAsNewHint": "Atidaro naują prekę, užpildytą visais šios prekės duomenimis. Išsaugoma tik paspaudus „Sukurti“.",
         "template": {

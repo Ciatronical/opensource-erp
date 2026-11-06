@@ -45,6 +45,8 @@
     "titleNew": "Artikel anlegen",
     "create": "Anlegen",
     "cancel": "Abbrechen",
+    "publishAll": "In allen Verkaufskanälen veröffentlichen",
+    "publishAllHint": "Speichert ausstehende Änderungen und stellt den Artikel sofort in jedem Verkaufskanal ein, in dem er angeboten wird.",
     "useAsNew": "Als neu verwenden",
     "useAsNewHint": "Öffnet die Neuanlage mit allen Angaben dieses Artikels. Angelegt wird erst mit „Anlegen“.",
     "template": {

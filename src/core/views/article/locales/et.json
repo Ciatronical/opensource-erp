@@ -45,6 +45,8 @@
         "titleNew": "Artikli loomine",
         "create": "Loo",
         "cancel": "Tühista",
+        "publishAll": "Avalda kõigis müügikanalites",
+        "publishAllHint": "Salvestab ootel muudatused ja avaldab toote kohe igas müügikanalis, kus seda pakutakse.",
         "useAsNew": "Kasuta uuena",
         "useAsNewHint": "Avab uue artikli, mis on eeltäidetud selle artikli kõigi andmetega. Salvestatakse alles nupuga „Loo“.",
         "template": {
