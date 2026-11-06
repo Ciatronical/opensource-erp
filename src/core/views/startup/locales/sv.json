@@ -157,7 +157,32 @@
             "suggested_decline": "Avböjande av order {number} identifierat ({channel})",
             "declined": "Avböjande av order {number} ({channel}) — kvitterat"
         },
-        "confirmationRevokedBy": "återkallad av {name}"
+        "confirmationRevokedBy": "återkallad av {name}",
+        "sms": "SMS",
+        "openSms": "Öppna SMS-historik",
+        "smsFailed": "ej levererat",
+        "telegram": "Telegram",
+        "openTelegram": "Öppna Telegram-chatt",
+        "telegramMailing": "Utskick",
+        "telegramFailed": "inte levererat",
+        "telegramType": {
+            "text": "Meddelande",
+            "photo": "Foto",
+            "document": "Dokument",
+            "voice": "Röstmeddelande",
+            "audio": "Ljud",
+            "video": "Video",
+            "location": "Plats",
+            "contact": "Telefonnummer delat",
+            "sticker": "Dekal"
+        },
+        "smsInsteadOfWhatsApp": "SMS i stället för WhatsApp",
+        "smsSource": {
+            "faktura": "Dokument",
+            "mailing": "Utskick",
+            "fallback": "i stället för WhatsApp",
+            "reminder": "Påminnelse"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Ring",
@@ -176,6 +201,7 @@
         "configSaved": "Inställningar sparade",
         "phoneSettings": "Telefoninstallningar",
         "configSaveError": "Installningar kunde inte sparas",
-        "whatsappGreeting": "Hej {name}"
+        "whatsappGreeting": "Hej {name}",
+        "sendSms": "Skicka SMS"
     }
 }

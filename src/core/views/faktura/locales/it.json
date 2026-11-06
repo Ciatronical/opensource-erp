@@ -269,7 +269,9 @@
                 "statusRead": "letto",
                 "statusFailed": "fallito",
                 "tooltipEmail": "Invia via e-mail — già inviato {n}×",
-                "tooltipWhatsapp": "Invia via WhatsApp — già inviato {n}×"
+                "tooltipWhatsapp": "Invia via WhatsApp — già inviato {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Già inviato {n}× per SMS"
             },
             "autoSend": {
                 "hint": "All'atto della stampa viene inviato automaticamente al cliente via {channels}.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Applicare e stampare la durata della riparazione ({days} giorni)",
                 "optRepairTimeNone": "Nessuna durata della riparazione nella perizia"
-            }
+            },
+            "sendSms": "Invia per SMS (documento come link)",
+            "smsSent": "SMS inviato",
+            "smsError": "Impossibile inviare l'SMS"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -652,6 +657,28 @@
                 "button": "Elimina {count} selezionate",
                 "cancel": "Annulla",
                 "confirm": "Elimina {count} posizioni"
+            },
+            "sendSms": {
+                "title": "Invia documento per SMS",
+                "phone": "Numero di cellulare",
+                "landlineHint": "Sembra un numero fisso – i numeri fissi non ricevono SMS.",
+                "text": "Testo dell'SMS",
+                "insertLink": "Inserisci link",
+                "linkHint": "viene inviato come link, consultabile per {days} giorni",
+                "cancel": "Annulla",
+                "send": "Invia SMS",
+                "defaultText": "Buongiorno{salutation}, ecco {docRef} di {amount}: {link} Cordiali saluti, {company}",
+                "defaultTextNoAmount": "Buongiorno{salutation}, ecco {docRef}: {link} Cordiali saluti, {company}",
+                "docRef": {
+                    "invoice": "la Sua fattura n. {number}",
+                    "quotation": "il Suo preventivo n. {number}",
+                    "order": "la Sua conferma d'ordine n. {number}",
+                    "delivery_order": "il Suo documento di trasporto n. {number}",
+                    "credit_note": "la Sua nota di credito n. {number}",
+                    "invoice_storno": "la Sua fattura di storno n. {number}",
+                    "purchase_order": "il nostro ordine n. {number}",
+                    "request_quotation": "la nostra richiesta di offerta n. {number}"
+                }
             }
         },
         "dhl": {

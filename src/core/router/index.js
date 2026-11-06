@@ -23,6 +23,8 @@ const CalendarView = () => import('@/core/views/calendar/calendar.view.vue')
 const TasksView = () => import('@/core/views/tasks/tasks.view.vue')
 const EmailView = () => import('@/core/views/email/email.view.vue')
 const WhatsAppView = () => import('@/core/views/whatsapp/whatsapp.view.vue')
+const SmsView = () => import('@/core/views/sms/sms.view.vue')
+const TelegramView = () => import('@/core/views/telegram/telegram.view.vue')
 const MailingsView = () => import('@/core/views/mailings/mailings.view.vue')
 const MailingEditView = () => import('@/core/views/mailings/mailing.edit.view.vue')
 const LettersView = () => import('@/core/views/letters/letters.view.vue')
@@ -481,6 +483,18 @@ function buildRoutes() {
             ...routePath('routes.whatsapp'),
             name: 'whatsapp',
             component: WhatsAppView,
+        },
+        {
+            // SMS: Gespräche, neue SMS, Ausweich-SMS statt WhatsApp
+            ...routePath('routes.sms'),
+            name: 'sms',
+            component: SmsView,
+        },
+        {
+            // Telegram: Kundenchat über den Firmen-Bot, Zuordnung unbekannter Chats
+            ...routePath('routes.telegram'),
+            name: 'telegram',
+            component: TelegramView,
         },
         {
             // Briefe: Liste, neuer Brief, Brief bearbeiten

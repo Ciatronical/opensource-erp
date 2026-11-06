@@ -78,6 +78,10 @@
         "mailingDone": "Mailing “{title}” finished: {sent} sent",
         "mailingFailed": "{n} failed",
         "mailingExtras": "plus {emails} emails, {letters} letters",
-        "mailingPaused": "Mailing “{title}” paused: {error}"
+        "mailingPaused": "Mailing “{title}” paused: {error}",
+        "smsFallbackToast": "WhatsApp to {name} was not delivered – sent as SMS instead",
+        "smsFallbackFailed": "WhatsApp to {name} was not delivered and the fallback SMS failed too: {error}",
+        "telegramFile": "File",
+        "telegramFailed": "Telegram to {name} not delivered: {error}"
     }
 }

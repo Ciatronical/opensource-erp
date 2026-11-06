@@ -176,6 +176,7 @@
             "cancelled": "Storniert durch",
             "stornoOpen": "Originalrechnung {number} öffnen",
             "cancelledOpen": "Stornobeleg {number} öffnen"
-        }
+        },
+        "sentSms": "Per SMS versendet"
     }
 }

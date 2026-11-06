@@ -74,6 +74,10 @@
         "selectVendor": "Meklēt piegādātāju...",
         "markOrdered": "Atzīmēt {count} kā pasūtītus",
         "yesterday": "Vakar",
-        "noOrder": "nav pasūtījuma"
+        "noOrder": "nav pasūtījuma",
+        "smsFallbackToast": "WhatsApp ziņa {name} nesasniedza adresātu – nosūtīta kā SMS",
+        "smsFallbackFailed": "WhatsApp ziņa {name} nesasniedza adresātu, un rezerves SMS arī neizdevās: {error}",
+        "telegramFile": "Fails",
+        "telegramFailed": "Telegram ziņa adresātam {name} nav piegādāta: {error}"
     }
 }

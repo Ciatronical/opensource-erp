@@ -78,6 +78,10 @@
         "mailingDone": "Rundschreiben „{title}“ abgeschlossen: {sent} gesendet",
         "mailingFailed": "{n} fehlgeschlagen",
         "mailingExtras": "zusätzlich {emails} E-Mails, {letters} Briefe",
-        "mailingPaused": "Rundschreiben „{title}“ pausiert: {error}"
+        "mailingPaused": "Rundschreiben „{title}“ pausiert: {error}",
+        "smsFallbackToast": "WhatsApp an {name} kam nicht an – als SMS gesendet",
+        "smsFallbackFailed": "WhatsApp an {name} kam nicht an, die Ausweich-SMS ist auch gescheitert: {error}",
+        "telegramFile": "Datei",
+        "telegramFailed": "Telegram an {name} nicht zugestellt: {error}"
     }
 }

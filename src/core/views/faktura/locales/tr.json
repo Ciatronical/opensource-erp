@@ -269,7 +269,9 @@
                 "statusRead": "okundu",
                 "statusFailed": "başarısız",
                 "tooltipEmail": "E-posta ile gönder — zaten {n}× gönderildi",
-                "tooltipWhatsapp": "WhatsApp ile gönder — zaten {n}× gönderildi"
+                "tooltipWhatsapp": "WhatsApp ile gönder — zaten {n}× gönderildi",
+                "channelSms": "SMS",
+                "tooltipSms": "Şimdiden {n}× SMS ile gönderildi"
             },
             "autoSend": {
                 "hint": "Yazdırıldığında müşteriye otomatik olarak {channels} ile gönderilir.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Onarım süresini al ve yazdır ({days} gün)",
                 "optRepairTimeNone": "Ekspertizde onarım süresi yok"
-            }
+            },
+            "sendSms": "SMS ile gönder (belge bağlantı olarak)",
+            "smsSent": "SMS gönderildi",
+            "smsError": "SMS gönderilemedi"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -652,6 +657,28 @@
                 "button": "{count} seçiliyi sil",
                 "cancel": "İptal",
                 "confirm": "{count} satırı sil"
+            },
+            "sendSms": {
+                "title": "Belgeyi SMS ile gönder",
+                "phone": "Cep numarası",
+                "landlineHint": "Bu bir sabit hat gibi görünüyor – sabit hatlar SMS alamaz.",
+                "text": "SMS metni",
+                "insertLink": "Bağlantı ekle",
+                "linkHint": "bağlantı olarak eklenir, {days} gün erişilebilir",
+                "cancel": "İptal",
+                "send": "SMS gönder",
+                "defaultText": "Merhaba{salutation}, {amount} tutarındaki {docRef} burada: {link} Saygılarımızla, {company}",
+                "defaultTextNoAmount": "Merhaba{salutation}, {docRef} burada: {link} Saygılarımızla, {company}",
+                "docRef": {
+                    "invoice": "{number} numaralı faturanız",
+                    "quotation": "{number} numaralı teklifiniz",
+                    "order": "{number} numaralı sipariş onayınız",
+                    "delivery_order": "{number} numaralı irsaliyeniz",
+                    "credit_note": "{number} numaralı alacak dekontunuz",
+                    "invoice_storno": "{number} numaralı iptal faturanız",
+                    "purchase_order": "{number} numaralı siparişimiz",
+                    "request_quotation": "{number} numaralı talebimiz"
+                }
             }
         },
         "dhl": {

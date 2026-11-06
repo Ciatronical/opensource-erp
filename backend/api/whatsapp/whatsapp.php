@@ -1,6 +1,8 @@
 <?php
 // backend/api/whatsapp/whatsapp.php
 
+require_once __DIR__.'/../sms/sms_lib.php';
+
 /**
  * WhatsApp-Config laden (aus defaults_oserp)
  */
@@ -467,7 +469,7 @@ function searchCvPhones($data) {
  *
  * @param array $data to, message, customer_id
  */
-function sendWhatsAppMessage($data) {
+function _sendWhatsAppMessageRaw($data) {
     $db = DbhCompany::begin();
     $config = _getWhatsAppConfig();
 
@@ -529,7 +531,7 @@ function sendWhatsAppMessage($data) {
                     $tplParams[] = ($i === 0 && $customerName) ? $customerName : $message;
                 }
                 // writeLog("Template '{$infoTpl['name']}': {$paramCount} Params => " . json_encode($tplParams, JSON_UNESCAPED_UNICODE));
-                $result = _sendTemplateMessageInternal($to, $infoTpl, $tplParams, $customerId);
+                $result = _sendTemplateMessageInternal($to, $infoTpl, $tplParams, $customerId, false);
                 // writeLog("Template-Ergebnis: " . json_encode($result, JSON_UNESCAPED_UNICODE));
                 if ($result['success']) {
                     resultInfo(true, '', ['wa_message_id' => $result['wa_message_id'], 'status' => 'sent']);
@@ -636,7 +638,7 @@ function sendWhatsAppMessage($data) {
  * @param int    $data['customer_id'] Kunden-ID (optional)
  * @testdata {"to": "+491234567890", "latitude": 52.5200, "longitude": 13.4050, "customer_id": 0}
  */
-function sendWhatsAppLocation($data) {
+function _sendWhatsAppLocationRaw($data) {
     $config = _getWhatsAppConfig();
     $accessToken = $config['whatsapp_access_token'] ?? '';
     $phoneNumberId = $config['whatsapp_phone_number_id'] ?? '';
@@ -716,7 +718,7 @@ function sendWhatsAppLocation($data) {
  * @param int    $data['record_id'] Beleg-ID (optional)
  * @testdata {"to": "+491234567890", "customer_id": 1, "document_base64": "...", "filename": "Rechnung_123.pdf", "template_id": 1, "parameters": ["Herr Mueller", "R-123", "137.00"], "record_table": "ar", "record_id": 1}
  */
-function sendWhatsAppDocument($data) {
+function _sendWhatsAppDocumentRaw($data) {
     $db = DbhCompany::begin();
     $config = _getWhatsAppConfig();
 
@@ -998,7 +1000,7 @@ function sendWhatsAppDocument($data) {
  * @param string $data['filename'] Dateiname
  * @testdata {"to": "+491234567890", "document_base64": "...", "filename": "Dokument.pdf"}
  */
-function sendWhatsAppChatDocument($data) {
+function _sendWhatsAppChatDocumentRaw($data) {
     $db = DbhCompany::begin();
     $config = _getWhatsAppConfig();
 
@@ -1574,7 +1576,7 @@ function loadDefaultTemplates($data) {
  * @param int    $data['customer_id'] Kunden-ID (optional)
  * @testdata {"to": "+491234567890", "template_id": 1, "parameters": ["Herr Müller", "MOL-LX10", "137"]}
  */
-function sendWhatsAppTemplateMessage($data) {
+function _sendWhatsAppTemplateMessageRaw($data) {
     $ergebnis = whatsappSendTemplate([
         'to'                => $data['to'] ?? '',
         'template_id'       => (int)($data['template_id'] ?? 0),
@@ -1808,7 +1810,7 @@ function whatsappSendTemplate(array $daten): array {
  * @param string $data['employee_name'] Name des Mitarbeiters
  * @testdata {"to": "+491234567890", "customer_id": 1, "customer_name": "Max Mustermann", "maps_url": "https://www.google.com/maps/search/?api=1&query=Musterstr+1,+12345+Musterstadt", "phone_list": "tel:+491234567890 (Herr Müller) | tel:+491719876543 (Werkstatt)", "employee_name": "Hans Meier"}
  */
-function sendWhatsAppAddressMessage($data) {
+function _sendWhatsAppAddressMessageRaw($data) {
     $db = DbhCompany::begin();
 
     error_log("sendWhatsAppAddressMessage: Start — to=" . ($data['to'] ?? 'LEER')
@@ -1870,7 +1872,7 @@ function sendWhatsAppAddressMessage($data) {
     $data['parameters'] = array_slice($allParams, 0, $paramCount);
 
     error_log("sendWhatsAppAddressMessage: Sende Template ID {$templateId} an " . ($data['to'] ?? ''));
-    sendWhatsAppTemplateMessage($data);
+    _sendWhatsAppTemplateMessageRaw($data);
 }
 
 /**
@@ -2328,7 +2330,31 @@ function processHuWhatsAppReminders($data) {
 /**
  * Template-Nachricht intern senden (Hilfsfunktion fuer Reminder)
  */
-function _sendTemplateMessageInternal(string $phone, array $template, array $parameters, int $customerId = 0): array {
+function _sendTemplateMessageInternal(string $phone, array $template, array $parameters, int $customerId = 0, bool $smsFallback = true): array {
+    $ergebnis = _sendTemplateMessageInternalWa($phone, $template, $parameters, $customerId);
+    // Erinnerungen und Benachrichtigungen: scheitert die WhatsApp, geht der Vorlagentext per SMS.
+    // Rundschreiben haben ihre eigene Ausweichkette und schalten das ab.
+    if ($ergebnis['success'] || !$smsFallback || ($ergebnis['error'] ?? '') === 'Nicht konfiguriert') return $ergebnis;
+    try {
+        $text = (string)($template['body_text'] ?? '');
+        foreach (array_values($parameters) as $i => $val) $text = str_replace('{{'.($i + 1).'}}', (string)$val, $text);
+        $sms = smsWhatsAppFallback(DbhCompany::begin(), [
+            'phone' => $phone, 'customer_id' => $customerId ?: null, 'reason' => (string)($ergebnis['error'] ?? ''),
+            'text' => trim(preg_replace('/\{\{\d+\}\}/', '', $text)),
+        ]);
+        if ($sms && $sms['success']) {
+            return ['success' => true, 'wa_message_id' => null, 'sms_fallback' => smsFallbackPayload($sms, (string)$ergebnis['error'])];
+        }
+    } catch (\Throwable $e) {
+        error_log('[WHATSAPP→SMS] '.$e->getMessage());
+    }
+    return $ergebnis;
+}
+
+/**
+ * Vorlage über die Meta Cloud API senden (ohne Ausweiche)
+ */
+function _sendTemplateMessageInternalWa(string $phone, array $template, array $parameters, int $customerId = 0): array {
     // writeLog("=== _sendTemplateMessageInternal ===");
     // writeLog("phone: {$phone}, template: {$template['name']}, params: " . json_encode($parameters, JSON_UNESCAPED_UNICODE));
 
@@ -3113,4 +3139,190 @@ function updateWhatsAppProfilePicture($data) {
     // writeLog("Profilbild erfolgreich aktualisiert");
 
     resultInfo(true, '', ['message' => 'Profilbild erfolgreich aktualisiert']);
+}
+
+// ============================================================================
+// SMS-Ausweiche
+// ============================================================================
+// Die API-Aktionen zum Senden laufen über eine Hülle: Scheitert der WhatsApp-
+// Versand (nicht eingerichtet, Nummer ohne WhatsApp, Vorlage fehlt, Meta-Fehler …),
+// geht dieselbe Nachricht per SMS (backend/api/sms/sms_lib.php) – Dateien als Link.
+// Die Antwort trägt dann sms_fallback; main.js meldet das dem Benutzer.
+// Scheitert die WhatsApp erst später (Status failed im Webhook), springt
+// backend/webhook/whatsapp.php ein. Abschalten: defaults_oserp.sms_whatsapp_fallback = 0.
+
+/**
+ * WhatsApp-Vorlage mit Parametern als Text (für die Ausweich-SMS)
+ */
+function _waRenderTemplateText($db, int $templateId, array $parameters, int $customerId): string {
+    $tpl = $templateId > 0 ? $db->getOne("SELECT body_text FROM whatsapp_templates WHERE id = :id", [':id' => $templateId]) : null;
+    $text = (string)($tpl['body_text'] ?? '');
+    foreach (array_values($parameters) as $i => $val) {
+        $text = str_replace('{{'.($i + 1).'}}', (string)$val, $text);
+    }
+    return trim(_replaceSystemPlaceholders(preg_replace('/\{\{\d+\}\}/', '', $text), $customerId));
+}
+
+/**
+ * Sendefunktion ausführen und bei Scheitern auf SMS ausweichen
+ *
+ * @param callable $raw        eigentliche WhatsApp-Funktion (antwortet per resultInfo)
+ * @param array    $data       Aufrufdaten (to, customer_id, employee_id, …)
+ * @param callable $smsContext fn($db): array text, media_url, media_name, record_table, record_id
+ */
+function _waWithSmsFallback(callable $raw, array $data, callable $smsContext): void {
+    ob_start();
+    try {
+        $raw($data);
+    } catch (\Throwable $e) {
+        ob_end_clean();
+        throw $e;
+    }
+    $out = (string)ob_get_clean();
+    $res = json_decode($out, true);
+    if (!is_array($res) || !empty($res['success']) || ($res['text'] ?? '') === 'INVALID_INPUT') {
+        echo $out;
+        return;
+    }
+    $reason = is_string($res['payload'] ?? null) ? $res['payload'] : (string)($res['text'] ?? 'WhatsApp');
+    $db = DbhCompany::begin();
+    $cfg = smsSettings($db);
+    if ($cfg['api_key'] === '' || !$cfg['fallback'] || trim((string)($data['to'] ?? '')) === '') {
+        echo $out;
+        return;
+    }
+    try {
+        $sms = smsWhatsAppFallback($db, $smsContext($db) + [
+            'phone' => (string)$data['to'],
+            'customer_id' => (int)($data['customer_id'] ?? 0) ?: null,
+            'employee_id' => $data['employee_id'] ?? null,
+            'reason' => $reason,
+        ]);
+    } catch (\Throwable $e) {
+        error_log('[WHATSAPP→SMS] '.$e->getMessage());
+        echo $out;
+        return;
+    }
+    if ($sms && $sms['success']) {
+        resultInfo(true, '', ['status' => 'sent', 'sms_fallback' => smsFallbackPayload($sms, $reason)]);
+        return;
+    }
+    resultInfo(false, (string)($res['text'] ?? 'WHATSAPP_ERROR'), $reason.($sms ? ' — SMS: '.$sms['error'] : ''));
+}
+
+/**
+ * Datei aus dem Aufruf für die Ausweich-SMS ablegen (Link statt Anhang)
+ */
+function _waFallbackFile($db, array $data): array {
+    $binary = base64_decode((string)($data['document_base64'] ?? ''), true);
+    if ($binary === false || $binary === '') return [];
+    $media = smsStoreFile($db, (int)($data['customer_id'] ?? 0), $binary, (string)($data['filename'] ?? 'Dokument.pdf'));
+    return ['media_url' => $media, 'media_name' => basename($media)];
+}
+
+/**
+ * WhatsApp-Nachricht senden (Meta Cloud API); außerhalb des 24-h-Fensters als
+ * Chat-Vorlage. Geht das nicht, wird die Nachricht als SMS gesendet.
+ *
+ * @param string $data['to'] Rufnummer
+ * @param string $data['message'] Text
+ * @param int    $data['customer_id'] Kunde (optional)
+ * @param string $data['customer_name'] Name für die Chat-Vorlage (optional)
+ * @testdata {"to": "+491234567890", "message": "Ihr Fahrzeug ist fertig.", "customer_id": 0}
+ */
+function sendWhatsAppMessage($data) {
+    _waWithSmsFallback('_sendWhatsAppMessageRaw', $data, fn($db) => [
+        'text' => _replaceSystemPlaceholders(trim((string)($data['message'] ?? '')), (int)($data['customer_id'] ?? 0)),
+    ]);
+}
+
+/**
+ * Standort per WhatsApp senden; Ausweiche: SMS mit Kartenlink
+ *
+ * @param string $data['to'] Ziel-Telefonnummer
+ * @param float  $data['latitude'] Breitengrad
+ * @param float  $data['longitude'] Längengrad
+ * @param int    $data['customer_id'] Kunden-ID (optional)
+ * @testdata {"to": "+491234567890", "latitude": 52.5200, "longitude": 13.4050, "customer_id": 0}
+ */
+function sendWhatsAppLocation($data) {
+    _waWithSmsFallback('_sendWhatsAppLocationRaw', $data, fn($db) => [
+        'text' => 'https://www.google.com/maps?q='.(float)($data['latitude'] ?? 0).','.(float)($data['longitude'] ?? 0),
+    ]);
+}
+
+/**
+ * Beleg per WhatsApp-Vorlage mit Dokument senden (Faktura); Ausweiche: SMS mit
+ * dem Vorlagentext und einem Link auf das PDF
+ *
+ * @param string $data['to'] Telefonnummer
+ * @param int    $data['customer_id'] Kunden-ID
+ * @param string $data['document_base64'] PDF als Base64
+ * @param string $data['filename'] Dateiname
+ * @param int    $data['template_id'] Template-ID (Dokument-Header)
+ * @param array  $data['parameters'] Template-Platzhalter-Werte
+ * @param string $data['record_table'] oe | ar | ap | delivery_orders (Versandanzeige)
+ * @param int    $data['record_id'] Beleg-ID
+ * @testdata {"to": "+491234567890", "customer_id": 1, "document_base64": "JVBERi0xLjQK", "filename": "Rechnung_123.pdf", "template_id": 1, "parameters": ["Herr Mueller", "R-123", "137.00"], "record_table": "ar", "record_id": 1}
+ */
+function sendWhatsAppDocument($data) {
+    _waWithSmsFallback('_sendWhatsAppDocumentRaw', $data, fn($db) => [
+        'text' => (_waRenderTemplateText($db, (int)($data['template_id'] ?? 0), (array)($data['parameters'] ?? []), (int)($data['customer_id'] ?? 0))
+                   ?: (string)($data['filename'] ?? '')).' {link}',
+        'record_table' => $data['record_table'] ?? null,
+        'record_id' => $data['record_id'] ?? null,
+    ] + _waFallbackFile($db, $data));
+}
+
+/**
+ * Datei im Chat senden (im 24-h-Fenster frei, sonst Vorlage); Ausweiche: SMS mit Link
+ *
+ * @param string $data['to'] Telefonnummer
+ * @param string $data['message'] Begleittext (optional)
+ * @param int    $data['customer_id'] Kunden-ID (optional)
+ * @param string $data['document_base64'] Datei als Base64
+ * @param string $data['filename'] Dateiname
+ * @testdata {"to": "+491234567890", "document_base64": "JVBERi0xLjQK", "filename": "Dokument.pdf"}
+ */
+function sendWhatsAppChatDocument($data) {
+    _waWithSmsFallback('_sendWhatsAppChatDocumentRaw', $data, fn($db) => [
+        'text' => (trim((string)($data['message'] ?? '')) ?: (string)($data['filename'] ?? '')).' {link}',
+    ] + _waFallbackFile($db, $data));
+}
+
+/**
+ * Genehmigte Vorlage senden; Ausweiche: Vorlagentext als SMS
+ *
+ * @param string $data['to'] Telefonnummer
+ * @param int    $data['template_id'] Template-ID
+ * @param array  $data['parameters'] Platzhalter-Werte
+ * @param int    $data['customer_id'] Kunden-ID (optional)
+ * @testdata {"to": "+491234567890", "template_id": 1, "parameters": ["Herr Müller", "MOL-LX10", "137"]}
+ */
+function sendWhatsAppTemplateMessage($data) {
+    _waWithSmsFallback('_sendWhatsAppTemplateMessageRaw', $data, fn($db) => [
+        'text' => _waRenderTemplateText($db, (int)($data['template_id'] ?? 0), (array)($data['parameters'] ?? []), (int)($data['customer_id'] ?? 0)),
+    ]);
+}
+
+/**
+ * Adresse (Kartenlink, Telefonnummern) per Vorlage senden; Ausweiche: SMS mit
+ * Kartenlink und Rufnummern
+ *
+ * @param string $data['to'] Telefonnummer
+ * @param int    $data['customer_id'] Kunden-ID
+ * @param string $data['customer_name'] Name des Kunden
+ * @param string $data['maps_url'] Google-Maps-URL der Adresse
+ * @param string $data['phone_list'] Telefonnummern mit tel:-Präfix
+ * @param string $data['employee_name'] Name des Mitarbeiters
+ * @testdata {"to": "+491234567890", "customer_id": 1, "customer_name": "Max Mustermann", "maps_url": "https://www.google.com/maps/search/?api=1&query=Musterstr+1", "phone_list": "tel:+491234567890 (Werkstatt)", "employee_name": "Hans Meier"}
+ */
+function sendWhatsAppAddressMessage($data) {
+    _waWithSmsFallback('_sendWhatsAppAddressMessageRaw', $data, fn($db) => [
+        'text' => trim(implode("\n", array_filter([
+            (string)($data['maps_url'] ?? ''),
+            str_replace(['tel:', ' | '], ['', "\n"], (string)($data['phone_list'] ?? '')),
+            (string)($data['employee_name'] ?? ''),
+        ]))),
+    ]);
 }

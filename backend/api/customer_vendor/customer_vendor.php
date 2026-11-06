@@ -738,6 +738,44 @@ function getCV($data, $withConfig = []) {
                                           AND (customer_id = $cv_id
                                                OR regexp_replace(phone_number, '[^0-9]', '', 'g') IN (SELECT digits FROM cv_phones))
                                         UNION ALL
+                                        -- SMS (sms_messages): extension = Quelle (chat, faktura, mailing,
+                                        -- fallback = statt einer nicht zustellbaren WhatsApp), name = Mitarbeiter
+                                        SELECT 'sms',
+                                               s.id,
+                                               EXTRACT(EPOCH FROM s.itime) * 1000,
+                                               s.direction,
+                                               s.phone_number,
+                                               COALESCE(se.name, s.contact_name),
+                                               s.source,
+                                               s.status,
+                                               LEFT(COALESCE(s.message_text, ''), 200),
+                                               NULL,
+                                               NULL
+                                        FROM sms_messages s
+                                        LEFT JOIN employee se ON se.id = s.employee_id
+                                        WHERE NOT s.hidden
+                                          AND (s.customer_id = $cv_id
+                                               OR regexp_replace(s.phone_number, '[^0-9]', '', 'g') IN (SELECT digits FROM cv_phones))
+                                        UNION ALL
+                                        -- Telegram-Kundenchat (telegram_messages): extension = Quelle (chat, mailing),
+                                        -- name = Mitarbeiter bzw. Telegram-Profilname, number = Art (text, photo, …)
+                                        SELECT 'telegram',
+                                               t.id,
+                                               EXTRACT(EPOCH FROM t.itime) * 1000,
+                                               t.direction,
+                                               t.message_type,
+                                               COALESCE(te.name, t.contact_name),
+                                               t.source,
+                                               t.status,
+                                               LEFT(COALESCE(t.message_text, t.media_name, ''), 200),
+                                               NULL,
+                                               NULL
+                                        FROM telegram_messages t
+                                        LEFT JOIN employee te ON te.id = t.employee_id
+                                        WHERE NOT t.hidden
+                                          AND (t.customer_id = $cv_id
+                                               OR t.chat_id = (SELECT telegram_chat_id FROM {$extTable} WHERE {$extFk} = $cv_id))
+                                        UNION ALL
                                         -- Briefe (kivitendo letter): number = Briefnummer, text = Betreff,
                                         -- name = Versandwege (email, post), status = draft | sent
                                         SELECT 'letter',

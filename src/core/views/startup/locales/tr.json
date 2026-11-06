@@ -157,7 +157,32 @@
             "suggested_decline": "Sipariş {number} için ret algılandı ({channel})",
             "declined": "Sipariş {number} için ret ({channel}) — not edildi"
         },
-        "confirmationRevokedBy": "geri alan: {name}"
+        "confirmationRevokedBy": "geri alan: {name}",
+        "sms": "SMS",
+        "openSms": "SMS geçmişini aç",
+        "smsFailed": "teslim edilmedi",
+        "telegram": "Telegram",
+        "openTelegram": "Telegram sohbetini aç",
+        "telegramMailing": "Toplu mesaj",
+        "telegramFailed": "iletilmedi",
+        "telegramType": {
+            "text": "Mesaj",
+            "photo": "Fotoğraf",
+            "document": "Belge",
+            "voice": "Sesli mesaj",
+            "audio": "Ses",
+            "video": "Video",
+            "location": "Konum",
+            "contact": "Telefon numarası paylaşıldı",
+            "sticker": "Çıkartma"
+        },
+        "smsInsteadOfWhatsApp": "WhatsApp yerine SMS",
+        "smsSource": {
+            "faktura": "Belge",
+            "mailing": "Toplu mesaj",
+            "fallback": "WhatsApp yerine",
+            "reminder": "Hatırlatma"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Ara",
@@ -176,6 +201,7 @@
         "configSaved": "Ayarlar kaydedildi",
         "phoneSettings": "Telefon ayarları",
         "configSaveError": "Ayarlar kaydedilemedi",
-        "whatsappGreeting": "Merhaba {name}"
+        "whatsappGreeting": "Merhaba {name}",
+        "sendSms": "SMS gönder"
     }
 }

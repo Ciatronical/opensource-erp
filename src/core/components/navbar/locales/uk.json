@@ -74,6 +74,10 @@
         "selectVendor": "Шукати постачальника...",
         "markOrdered": "Позначити {count} як замовлені",
         "yesterday": "Вчора",
-        "noOrder": "немає замовлення"
+        "noOrder": "немає замовлення",
+        "smsFallbackToast": "WhatsApp для {name} не дійшов – надіслано як SMS",
+        "smsFallbackFailed": "WhatsApp для {name} не дійшов, резервне SMS також не вдалося: {error}",
+        "telegramFile": "Файл",
+        "telegramFailed": "Telegram для {name} не доставлено: {error}"
     }
 }

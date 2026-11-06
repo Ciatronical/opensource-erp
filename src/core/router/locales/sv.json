@@ -51,6 +51,8 @@
         "login": "/inloggning",
         "emails": "/e-post",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "docs": "/dokumentation",
         "mechanic": "/mekaniker",
         "mechanicOrder": "/mekaniker/order",
@@ -83,7 +85,9 @@
         "title": "Kontakt",
         "callHistory": "Samtalslista",
         "emails": "E-post",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram"
     },
     "SalesMenu": {
         "title": "Forsaljning",

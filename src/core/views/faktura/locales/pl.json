@@ -269,7 +269,9 @@
                 "statusRead": "przeczytano",
                 "statusFailed": "niepowodzenie",
                 "tooltipEmail": "Wyślij e-mailem — już wysłano {n}×",
-                "tooltipWhatsapp": "Wyślij przez WhatsApp — już wysłano {n}×"
+                "tooltipWhatsapp": "Wyślij przez WhatsApp — już wysłano {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Już {n}× wysłano SMS-em"
             },
             "autoSend": {
                 "hint": "Przy drukowaniu zostanie automatycznie wysłany do klienta przez {channels}.",
@@ -535,7 +537,10 @@
             "gutachten": {
                 "optRepairTime": "Przejmij i drukuj czas trwania naprawy ({days} dni)",
                 "optRepairTimeNone": "Brak czasu trwania naprawy w opinii"
-            }
+            },
+            "sendSms": "Wyślij SMS-em (dokument jako link)",
+            "smsSent": "SMS wysłany",
+            "smsError": "Nie udało się wysłać SMS-a"
         },
         "workflow": {
             "created": "Dokument pomyślnie utworzony",
@@ -666,6 +671,28 @@
                 "button": "Usuń {count} zaznaczone",
                 "cancel": "Anuluj",
                 "confirm": "Usuń {count} pozycji"
+            },
+            "sendSms": {
+                "title": "Wyślij dokument SMS-em",
+                "phone": "Numer komórkowy",
+                "landlineHint": "To wygląda na numer stacjonarny – telefon stacjonarny nie odbiera SMS-ów.",
+                "text": "Treść SMS",
+                "insertLink": "Wstaw link",
+                "linkHint": "zostanie wysłany jako link, dostępny przez {days} dni",
+                "cancel": "Anuluj",
+                "send": "Wyślij SMS",
+                "defaultText": "Dzień dobry{salutation}, przesyłamy {docRef} na kwotę {amount}: {link} Z poważaniem, {company}",
+                "defaultTextNoAmount": "Dzień dobry{salutation}, przesyłamy {docRef}: {link} Z poważaniem, {company}",
+                "docRef": {
+                    "invoice": "Państwa faktura nr {number}",
+                    "quotation": "Państwa oferta nr {number}",
+                    "order": "Państwa potwierdzenie zamówienia nr {number}",
+                    "delivery_order": "Państwa dokument dostawy nr {number}",
+                    "credit_note": "Państwa notę kredytową nr {number}",
+                    "invoice_storno": "Państwa faktura korygująca (storno) nr {number}",
+                    "purchase_order": "nasze zamówienie nr {number}",
+                    "request_quotation": "nasze zapytanie ofertowe nr {number}"
+                }
             }
         },
         "dhl": {

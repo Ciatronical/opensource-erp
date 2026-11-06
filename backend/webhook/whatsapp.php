@@ -15,6 +15,10 @@ if (OSERP_SETUP_MODE) {
 }
 
 OserpConfig::init();
+require_once __DIR__.'/../api/error.php';
+require_once __DIR__.'/../api/logging.php';
+require_once __DIR__.'/../api/database.php';
+require_once __DIR__.'/../api/sms/sms_lib.php';
 
 // --- Webhook Verification (GET) ---
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -395,6 +399,54 @@ function _processStatusUpdate(PDO $pdo, array $status): void {
         ]);
     } catch (\Exception $e) {
         error_log('[WHATSAPP WEBHOOK] Status update error: ' . $e->getMessage());
+    }
+
+    if ($newStatus === 'failed') {
+        _whatsappFailedToSms($pdo, $waMessageId, trim(($errorCode ? $errorCode.' ' : '').($errorMessage ?? '')));
+    }
+}
+
+/**
+ * Nicht zugestellte WhatsApp als SMS nachsenden (sms_lib.php)
+ *
+ * Text bzw. Vorlagentext geht als SMS, ein Beleg als Link auf die lokale Kopie;
+ * der Beleg bekommt die SMS in seine Versandanzeige. Ein zweites „failed“ zur
+ * selben Nachricht löst keine zweite SMS aus (sms_messages.whatsapp_message_id).
+ * Die Info-Leiste meldet die Ausweich-SMS (Trigger notify_sms_message).
+ */
+function _whatsappFailedToSms(PDO $pdo, string $waMessageId, string $reason): void {
+    try {
+        $db = new ApiDatabase($pdo);
+        $wa = $db->getOne(
+            "SELECT m.id, m.phone_number, m.customer_id, m.message_type, m.message_text, m.media_caption, m.media_url,
+                    rl.from_table AS record_table, rl.from_id AS record_id
+               FROM whatsapp_messages m
+               LEFT JOIN LATERAL (SELECT from_table, from_id FROM record_links
+                                   WHERE to_table = 'whatsapp_messages' AND to_id = m.id LIMIT 1) rl ON TRUE
+              WHERE m.wa_message_id = :w AND m.direction = 'O' AND m.itime > now() - interval '3 days'",
+            [':w' => $waMessageId]
+        );
+        if (!$wa) return;
+        $typ = (string)$wa['message_type'];
+        if (in_array($typ, ['document', 'image', 'video', 'audio'], true)) {
+            $text = trim((string)($wa['media_caption'] ?: $wa['message_text'])).' {link}';
+        } elseif ($typ === 'location' && preg_match('/(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/', (string)$wa['message_text'], $mm)) {
+            $text = 'https://www.google.com/maps?q='.$mm[1].','.$mm[2];
+        } else {
+            $text = (string)$wa['message_text'];
+        }
+        smsWhatsAppFallback($db, [
+            'phone' => $wa['phone_number'],
+            'customer_id' => $wa['customer_id'],
+            'whatsapp_message_id' => (int)$wa['id'],
+            'reason' => $reason !== '' ? $reason : 'WhatsApp nicht zustellbar',
+            'text' => $text,
+            'media_url' => $wa['media_url'],
+            'record_table' => $wa['record_table'],
+            'record_id' => $wa['record_id'],
+        ]);
+    } catch (\Throwable $e) {
+        error_log('[WHATSAPP WEBHOOK] SMS-Ausweiche fehlgeschlagen: ' . $e->getMessage());
     }
 }
 

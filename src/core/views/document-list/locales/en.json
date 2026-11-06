@@ -176,6 +176,7 @@
             "cancelled": "Cancelled by",
             "stornoOpen": "Open original invoice {number}",
             "cancelledOpen": "Open cancellation document {number}"
-        }
+        },
+        "sentSms": "Sent by SMS"
     }
 }

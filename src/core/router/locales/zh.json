@@ -51,6 +51,8 @@
         "login": "/login",
         "emails": "/emails",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "docs": "/docs",
         "mechanic": "/mechanic",
         "mechanicOrder": "/mechanic/order",
@@ -83,7 +85,9 @@
         "title": "联系",
         "callHistory": "通话记录",
         "emails": "电子邮件",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram"
     },
     "SalesMenu": {
         "title": "销售",

@@ -157,7 +157,32 @@
             "suggested_decline": "Tuvastati keeldumine tellimusest {number} ({channel})",
             "declined": "Keeldumine tellimusest {number} ({channel}) — teadmiseks võetud"
         },
-        "confirmationRevokedBy": "tagasi võtnud {name}"
+        "confirmationRevokedBy": "tagasi võtnud {name}",
+        "sms": "SMS",
+        "openSms": "Ava SMS-ide ajalugu",
+        "smsFailed": "kohale toimetamata",
+        "telegram": "Telegram",
+        "openTelegram": "Ava Telegrami vestlus",
+        "telegramMailing": "Ringkiri",
+        "telegramFailed": "kohale toimetamata",
+        "telegramType": {
+            "text": "Sõnum",
+            "photo": "Foto",
+            "document": "Dokument",
+            "voice": "Häälsõnum",
+            "audio": "Heli",
+            "video": "Video",
+            "location": "Asukoht",
+            "contact": "Telefoninumber jagatud",
+            "sticker": "Kleebis"
+        },
+        "smsInsteadOfWhatsApp": "SMS WhatsAppi asemel",
+        "smsSource": {
+            "faktura": "Dokument",
+            "mailing": "Ringkiri",
+            "fallback": "WhatsAppi asemel",
+            "reminder": "Meeldetuletus"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Helista",
@@ -176,6 +201,7 @@
         "configSaved": "Seaded salvestatud",
         "phoneSettings": "Telefoni seaded",
         "configSaveError": "Seadeid ei saanud salvestada",
-        "whatsappGreeting": "Tere {name}"
+        "whatsappGreeting": "Tere {name}",
+        "sendSms": "Saada SMS"
     }
 }

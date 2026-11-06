@@ -269,7 +269,9 @@
                 "statusRead": "lido",
                 "statusFailed": "falhou",
                 "tooltipEmail": "Enviar por e-mail — já enviado {n}×",
-                "tooltipWhatsapp": "Enviar por WhatsApp — já enviado {n}×"
+                "tooltipWhatsapp": "Enviar por WhatsApp — já enviado {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Já enviado {n}× por SMS"
             },
             "autoSend": {
                 "hint": "Será enviado automaticamente ao cliente por {channels} ao imprimir.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Aplicar e imprimir a duração da reparação ({days} dias)",
                 "optRepairTimeNone": "A peritagem não indica duração da reparação"
-            }
+            },
+            "sendSms": "Enviar por SMS (documento como ligação)",
+            "smsSent": "SMS enviado",
+            "smsError": "Não foi possível enviar o SMS"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -652,6 +657,28 @@
                 "button": "Excluir {count} selecionadas",
                 "cancel": "Cancelar",
                 "confirm": "Excluir {count} posições"
+            },
+            "sendSms": {
+                "title": "Enviar documento por SMS",
+                "phone": "Número de telemóvel",
+                "landlineHint": "Parece uma linha fixa – uma linha fixa não recebe SMS.",
+                "text": "Texto do SMS",
+                "insertLink": "Inserir ligação",
+                "linkHint": "é enviado como ligação, disponível durante {days} dias",
+                "cancel": "Cancelar",
+                "send": "Enviar SMS",
+                "defaultText": "Bom dia{salutation}, segue {docRef} no valor de {amount}: {link} Com os melhores cumprimentos, {company}",
+                "defaultTextNoAmount": "Bom dia{salutation}, segue {docRef}: {link} Com os melhores cumprimentos, {company}",
+                "docRef": {
+                    "invoice": "A sua fatura n.º {number}",
+                    "quotation": "A sua proposta n.º {number}",
+                    "order": "A sua confirmação de encomenda n.º {number}",
+                    "delivery_order": "A sua guia de remessa n.º {number}",
+                    "credit_note": "A sua nota de crédito n.º {number}",
+                    "invoice_storno": "A sua fatura de estorno n.º {number}",
+                    "purchase_order": "a nossa encomenda n.º {number}",
+                    "request_quotation": "o nosso pedido de proposta n.º {number}"
+                }
             }
         },
         "dhl": {

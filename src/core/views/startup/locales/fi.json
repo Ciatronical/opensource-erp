@@ -157,7 +157,32 @@
             "suggested_decline": "Kieltäytyminen tilauksesta {number} tunnistettu ({channel})",
             "declined": "Kieltäytyminen tilauksesta {number} ({channel}) — kuitattu"
         },
-        "confirmationRevokedBy": "perunut {name}"
+        "confirmationRevokedBy": "perunut {name}",
+        "sms": "SMS",
+        "openSms": "Avaa tekstiviestihistoria",
+        "smsFailed": "ei toimitettu",
+        "telegram": "Telegram",
+        "openTelegram": "Avaa Telegram-keskustelu",
+        "telegramMailing": "Tiedote",
+        "telegramFailed": "ei toimitettu",
+        "telegramType": {
+            "text": "Viesti",
+            "photo": "Kuva",
+            "document": "Asiakirja",
+            "voice": "Puheviesti",
+            "audio": "Ääni",
+            "video": "Video",
+            "location": "Sijainti",
+            "contact": "Puhelinnumero jaettu",
+            "sticker": "Tarra"
+        },
+        "smsInsteadOfWhatsApp": "Tekstiviesti WhatsAppin sijaan",
+        "smsSource": {
+            "faktura": "Asiakirja",
+            "mailing": "Tiedote",
+            "fallback": "WhatsAppin sijaan",
+            "reminder": "Muistutus"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Soita",
@@ -176,6 +201,7 @@
         "configSaved": "Asetukset tallennettu",
         "phoneSettings": "Puhelinasetukset",
         "configSaveError": "Asetuksia ei voitu tallentaa",
-        "whatsappGreeting": "Hei {name}"
+        "whatsappGreeting": "Hei {name}",
+        "sendSms": "Lähetä tekstiviesti"
     }
 }

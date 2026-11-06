@@ -74,6 +74,10 @@
         "selectVendor": "Caută furnizor...",
         "markOrdered": "Marchează {count} ca comandate",
         "yesterday": "Ieri",
-        "noOrder": "fără comandă"
+        "noOrder": "fără comandă",
+        "smsFallbackToast": "WhatsApp către {name} nu a ajuns – trimis ca SMS",
+        "smsFallbackFailed": "WhatsApp către {name} nu a ajuns, iar SMS-ul alternativ a eșuat și el: {error}",
+        "telegramFile": "Fișier",
+        "telegramFailed": "Telegram către {name} nelivrat: {error}"
     }
 }

@@ -473,6 +473,12 @@
                         color="green-darken-1"
                         :title="t('DocumentList.sentWhatsapp')"
                     >mdi-whatsapp</v-icon>
+                    <v-icon
+                        v-if="hasSentChannel(item, 'sms_messages')"
+                        size="16"
+                        color="indigo"
+                        :title="t('DocumentList.sentSms')"
+                    >mdi-message-text-outline</v-icon>
                     <!-- Storno: Klick öffnet den Gegenbeleg (Original bzw. Stornobeleg) -->
                     <v-chip
                         v-if="item.storno_state"
@@ -819,7 +825,7 @@ export default {
             return cols
         })
 
-        // Versandkanäle je Beleg (sent_channels: "email_journal,whatsapp_messages")
+        // Versandkanäle je Beleg (sent_channels: "email_journal,whatsapp_messages,sms_messages")
         const hasSentChannel = (item, channel) => String(item.sent_channels || '').split(',').includes(channel)
 
         function formatCurrency(value) {

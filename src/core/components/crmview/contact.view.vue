@@ -149,6 +149,8 @@
                     :name="cvProfile.name || ''"
                     whatsapp-tab
                     @whatsapp="switchToWhatsAppTab"
+                    sms-tab
+                    @sms="switchToSmsTab"
                 />
             </v-list-item-title>
             <v-list-item-subtitle>{{ t('CrmView.phone') }}</v-list-item-subtitle>
@@ -163,6 +165,8 @@
                     :name="cvProfile?.name || ''"
                     whatsapp-tab
                     @whatsapp="switchToWhatsAppTab"
+                    sms-tab
+                    @sms="switchToSmsTab"
                 />
             </v-list-item-title>
             <v-list-item-subtitle>{{ entry.label || t('CrmView.phone') }}</v-list-item-subtitle>
@@ -242,6 +246,11 @@ const cvProfile = computed(() => oserpData.customer_vendor?.profile);
 
 function switchToWhatsAppTab(phone) {
     router.replace({ query: { ...route.query, tab: 'whatsapp', whatsappPhone: phone } })
+}
+
+// SMS-Knopf: Reiter SMS der Kontaktkarte mit dieser Nummer (cvdetails folgt route.query)
+function switchToSmsTab(phone) {
+    router.replace({ query: { ...route.query, tab: 'sms', smsPhone: phone } })
 }
 const phoneNumbers = computed(() => cvProfile.value?.phone_numbers ?? []);
 const { formatPhoneForWhatsApp } = usePhoneActions()

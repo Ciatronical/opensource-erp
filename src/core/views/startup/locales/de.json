@@ -189,7 +189,32 @@
             "suggested_decline": "Absage zu Auftrag {number} erkannt ({channel})",
             "declined": "Absage zu Auftrag {number} ({channel}) — zur Kenntnis genommen"
         },
-        "confirmationRevokedBy": "zurückgenommen von {name}"
+        "confirmationRevokedBy": "zurückgenommen von {name}",
+        "sms": "SMS",
+        "openSms": "SMS-Verlauf öffnen",
+        "smsFailed": "nicht zugestellt",
+        "telegram": "Telegram",
+        "openTelegram": "Telegram-Chat öffnen",
+        "telegramMailing": "Rundschreiben",
+        "telegramFailed": "nicht zugestellt",
+        "telegramType": {
+            "text": "Nachricht",
+            "photo": "Foto",
+            "document": "Dokument",
+            "voice": "Sprachnachricht",
+            "audio": "Audio",
+            "video": "Video",
+            "location": "Standort",
+            "contact": "Rufnummer geteilt",
+            "sticker": "Sticker"
+        },
+        "smsInsteadOfWhatsApp": "SMS statt WhatsApp",
+        "smsSource": {
+            "faktura": "Beleg",
+            "mailing": "Rundschreiben",
+            "fallback": "statt WhatsApp",
+            "reminder": "Erinnerung"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Anrufen",
@@ -208,6 +233,7 @@
         "configSaved": "Einstellungen gespeichert",
         "phoneSettings": "Telefoneinstellungen",
         "configSaveError": "Einstellungen konnten nicht gespeichert werden",
-        "whatsappGreeting": "Hallo {name}"
+        "whatsappGreeting": "Hallo {name}",
+        "sendSms": "SMS senden"
     }
 }

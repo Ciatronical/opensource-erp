@@ -30,8 +30,11 @@ export function useInfoBar() {
     const completedOrders = ref([])
     const missingOrders = ref([])
     const finishedMailings = ref([])
+    const smsNotices = ref([])
+    const telegramNotices = ref([])
+    let knownSmsIds = null       // null = noch nie geladen (kein Toast für Altbestand)
     let knownMailingIds = null   // null = noch nie geladen (kein Toast für Altbestand)
-    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], parts_ts: null })
+    const dismissed = ref({ calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], sms: [], telegram: [], parts_ts: null })
 
     let unsubMessage = null
     let unsubBuild = null
@@ -67,13 +70,13 @@ export function useInfoBar() {
 
             // Beide Quellen mergen (Vereinigungsmenge der dismissed IDs)
             if (!fromBackend && !fromLocal) {
-                dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], parts_ts: null }
+                dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], sms: [], telegram: [], parts_ts: null }
                 saveDismissed()
                 return
             }
 
-            const a = fromBackend || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], parts_ts: null }
-            const b = fromLocal || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], parts_ts: null }
+            const a = fromBackend || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], sms: [], telegram: [], parts_ts: null }
+            const b = fromLocal || { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], sms: [], telegram: [], parts_ts: null }
             const mergeUnique = (arr1, arr2) => [...new Set([...(arr1 || []), ...(arr2 || [])])]
 
             // Parts-Dismiss: nur 24h gueltig (neuester Timestamp zaehlt)
@@ -91,6 +94,8 @@ export function useInfoBar() {
                 anpr: mergeUnique(a.anpr, b.anpr),
                 completed: mergeUnique(a.completed, b.completed),
                 mailings: mergeUnique(a.mailings, b.mailings),
+                sms: mergeUnique(a.sms, b.sms),
+                telegram: mergeUnique(a.telegram, b.telegram),
                 parts_ts: partsStillValid.length ? partsTs : null
             }
 
@@ -109,6 +114,8 @@ export function useInfoBar() {
             anpr: dismissed.value.anpr,
             completed: dismissed.value.completed,
             mailings: dismissed.value.mailings,
+            sms: dismissed.value.sms,
+            telegram: dismissed.value.telegram,
             parts_ts: dismissed.value.parts_ts
         }
         const json = JSON.stringify(data)
@@ -212,6 +219,35 @@ export function useInfoBar() {
             knownMailingIds = new Set(list.map(m => m.id + ':' + m.status))
             finishedMailings.value = list
         } catch { /* Modul evtl. nicht verfügbar */ }
+    }
+
+    // Eingehende SMS (ungelesen) und Ausweich-SMS statt WhatsApp (letzte 7 Tage).
+    // Neue Ausweich-SMS werden zusätzlich als Hinweis gemeldet – der Benutzer soll
+    // wissen, dass seine WhatsApp nicht ankam und stattdessen eine SMS ging.
+    async function fetchSmsNotices() {
+        try {
+            const response = await axios.post('/api/sms/', { action: 'getSmsNotices' })
+            if (!response.data.success) return
+            const list = response.data.payload?.results || []
+            if (knownSmsIds) {
+                for (const n of list) {
+                    if (knownSmsIds.has(n.id) || n.source !== 'fallback') continue
+                    const name = n.customer_name || n.phone_number
+                    if (n.status === 'failed') toast.error(t('InfoBar.smsFallbackFailed', { name, error: n.error_message || '' }))
+                    else toast.warning(t('InfoBar.smsFallbackToast', { name }), { text: n.whatsapp_error || '' })
+                }
+            }
+            knownSmsIds = new Set(list.map(n => n.id))
+            smsNotices.value = list
+        } catch { /* SMS-Modul nicht verfügbar */ }
+    }
+
+    // Telegram: ungelesene Nachrichten von Kunden und gescheiterte Antworten (letzte 7 Tage)
+    async function fetchTelegramNotices() {
+        try {
+            const response = await axios.post('/api/telegram/', { action: 'getTelegramNotices' })
+            if (response.data.success) telegramNotices.value = response.data.payload?.results || []
+        } catch { /* Telegram-Modul nicht verfügbar */ }
     }
 
     async function fetchMissingOrders() {
@@ -356,6 +392,36 @@ export function useInfoBar() {
                 })
             })
 
+        // SMS: eingehende und Ausweich-SMS
+        smsNotices.value
+            .filter(n => !dismissed.value.sms.includes(n.id))
+            .slice(0, maxWhatsapps.value)
+            .forEach(n => {
+                items.push({
+                    type: n.source === 'fallback' ? 'sms_fallback' : 'sms',
+                    id: 'sms-' + n.id,
+                    dismissId: n.id,
+                    timestamp: n.itime ? new Date(n.itime).getTime() : 0,
+                    name: n.customer_name || n.phone_number || null,
+                    data: n
+                })
+            })
+
+        // Telegram: eingehende Nachrichten und gescheiterte Antworten
+        telegramNotices.value
+            .filter(n => !dismissed.value.telegram.includes(n.id))
+            .slice(0, maxWhatsapps.value)
+            .forEach(n => {
+                items.push({
+                    type: n.direction === 'O' ? 'telegram_failed' : 'telegram',
+                    id: 'tg-' + n.id,
+                    dismissId: n.id,
+                    timestamp: n.itime ? new Date(n.itime).getTime() : 0,
+                    name: n.customer_name || n.contact_name || null,
+                    data: n
+                })
+            })
+
         // WhatsApp
         newWhatsapps.value
             .filter(w => !dismissed.value.whatsapps.includes(w.id))
@@ -399,6 +465,8 @@ export function useInfoBar() {
         const d = item.data || {}
         switch (item.type) {
             case 'whatsapp': return d.customer_id || d.phone_number || null
+            case 'sms':      return d.customer_id || d.phone_number || null
+            case 'telegram': return d.customer_id || d.chat_id || null
             case 'anpr':     return d.c_ln || null
             case 'call':     return d.crmti_caller_id || d.crmti_src || null
             case 'missing_order': return d.c_id || d.label || null
@@ -430,6 +498,10 @@ export function useInfoBar() {
             ids.forEach(i => { if (!dismissed.value.completed.includes(i)) dismissed.value.completed.push(i) })
         } else if (type === 'mailing') {
             ids.forEach(i => { if (!dismissed.value.mailings.includes(i)) dismissed.value.mailings.push(i) })
+        } else if (type === 'sms' || type === 'sms_fallback') {
+            ids.forEach(i => { if (!dismissed.value.sms.includes(i)) dismissed.value.sms.push(i) })
+        } else if (type === 'telegram' || type === 'telegram_failed') {
+            ids.forEach(i => { if (!dismissed.value.telegram.includes(i)) dismissed.value.telegram.push(i) })
         } else if (type === 'anpr') {
             ids.forEach(i => {
                 if (!dismissed.value.anpr.includes(i)) dismissed.value.anpr.push(i)
@@ -459,6 +531,10 @@ export function useInfoBar() {
             anpr:      { list: anprDetections.value,       idField: 'id' },
             completed: { list: completedOrders.value,      idField: 'oe_id' },
             mailing:   { list: finishedMailings.value.map(m => ({ ...m, key: m.id + ':' + m.status })), idField: 'key' },
+            sms:       { list: smsNotices.value.filter(n => n.source !== 'fallback'), idField: 'id' },
+            sms_fallback: { list: smsNotices.value.filter(n => n.source === 'fallback'), idField: 'id' },
+            telegram:  { list: telegramNotices.value.filter(n => n.direction === 'I'), idField: 'id' },
+            telegram_failed: { list: telegramNotices.value.filter(n => n.direction === 'O'), idField: 'id' },
             missing_order: { list: missingOrders.value,    idField: 'id' }
         }
         const src = sourceMap[type]
@@ -519,6 +595,10 @@ export function useInfoBar() {
                     fetchCompletedOrders()
                 } else if (data.table === 'mailings') {
                     fetchFinishedMailings()
+                } else if (data.table === 'sms_messages') {
+                    fetchSmsNotices()
+                } else if (data.table === 'telegram_messages') {
+                    fetchTelegramNotices()
                 } else if (data.table === 'oe_parts_requests_lxcars') {
                     fetchPendingPartsRequests()
                 } else if (data.urgency !== undefined) {
@@ -539,7 +619,7 @@ export function useInfoBar() {
         })
 
         emailPollInterval = setInterval(fetchNewEmails, 60000)
-        whatsappPollInterval = setInterval(fetchNewWhatsapps, 120000)
+        whatsappPollInterval = setInterval(() => { fetchNewWhatsapps(); fetchSmsNotices(); fetchTelegramNotices() }, 120000)
     }
 
     function stopListeners() {
@@ -559,6 +639,8 @@ export function useInfoBar() {
         fetchAnprDetections()
         fetchMissingOrders()
         fetchFinishedMailings()
+        fetchSmsNotices()
+        fetchTelegramNotices()
     }
 
     // --- Firmenwechsel: Daten zuruecksetzen und neu laden ---
@@ -572,7 +654,10 @@ export function useInfoBar() {
         missingOrders.value = []
         finishedMailings.value = []
         knownMailingIds = null
-        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], parts_ts: null }
+        smsNotices.value = []
+        knownSmsIds = null
+        telegramNotices.value = []
+        dismissed.value = { calls: [], emails: [], whatsapps: [], parts: [], anpr: [], completed: [], mailings: [], sms: [], telegram: [], parts_ts: null }
 
         stopListeners()
         loadAndFetchAll()

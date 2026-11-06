@@ -269,7 +269,9 @@
                 "statusRead": "已读",
                 "statusFailed": "失败",
                 "tooltipEmail": "通过电子邮件发送 — 已发送 {n} 次",
-                "tooltipWhatsapp": "通过 WhatsApp 发送 — 已发送 {n} 次"
+                "tooltipWhatsapp": "通过 WhatsApp 发送 — 已发送 {n} 次",
+                "channelSms": "短信",
+                "tooltipSms": "已通过短信发送 {n} 次"
             },
             "autoSend": {
                 "hint": "打印时将通过 {channels} 自动发送给客户。",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "采用并打印维修工期（{days} 天）",
                 "optRepairTimeNone": "鉴定报告中没有维修工期"
-            }
+            },
+            "sendSms": "通过短信发送（单据以链接形式）",
+            "smsSent": "短信已发送",
+            "smsError": "短信发送失败"
         },
         "workflow": {
             "created": "单据创建成功",
@@ -652,6 +657,28 @@
                 "button": "删除 {count} 个已选",
                 "cancel": "取消",
                 "confirm": "删除 {count} 行"
+            },
+            "sendSms": {
+                "title": "通过短信发送单据",
+                "phone": "手机号码",
+                "landlineHint": "这看起来是固定电话 – 固定电话无法接收短信。",
+                "text": "短信内容",
+                "insertLink": "插入链接",
+                "linkHint": "将以链接形式附上，可访问 {days} 天",
+                "cancel": "取消",
+                "send": "发送短信",
+                "defaultText": "您好{salutation}，这是 {docRef}，金额 {amount}：{link} 此致，{company}",
+                "defaultTextNoAmount": "您好{salutation}，这是 {docRef}：{link} 此致，{company}",
+                "docRef": {
+                    "invoice": "您的发票，编号 {number}",
+                    "quotation": "您的报价单，编号 {number}",
+                    "order": "您的订单确认书，编号 {number}",
+                    "delivery_order": "您的送货单，编号 {number}",
+                    "credit_note": "您的贷项通知单，编号 {number}",
+                    "invoice_storno": "您的冲销发票，编号 {number}",
+                    "purchase_order": "我们的订单，编号 {number}",
+                    "request_quotation": "我们的询价单，编号 {number}"
+                }
             }
         },
         "dhl": {

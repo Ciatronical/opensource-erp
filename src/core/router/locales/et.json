@@ -51,6 +51,8 @@
         "login": "/sisselogimine",
         "emails": "/e-kirjad",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "docs": "/dokumentatsioon",
         "mechanic": "/mehaanik",
         "mechanicOrder": "/mehaanik/tellimus",
@@ -83,7 +85,9 @@
         "title": "Kontakt",
         "callHistory": "Kõnede ajalugu",
         "emails": "E-kirjad",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram"
     },
     "SalesMenu": {
         "title": "Müük",

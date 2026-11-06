@@ -17,6 +17,7 @@ import './style.css'
 import preserveCursor from '@/core/directives/preserveCursor'
 import axios from 'axios'
 import { isSchemaMismatch, offerSchemaUpdate } from '@/core/utils/schemaUpdate.js'
+import * as toasts from '@/core/utils/toasts.js'
 
 // App & Plugins
 const pinia = createPinia()
@@ -124,9 +125,23 @@ function schemaPruefen(antwort, config) {
     if (isSchemaMismatch(antwort)) offerSchemaUpdate()
 }
 
+/**
+ * WhatsApp nicht zustellbar → SMS: Das Backend weicht bei jeder Sendeaktion
+ * selbst auf SMS aus (backend/api/whatsapp, _waWithSmsFallback) und meldet das
+ * mit payload.sms_fallback. Hier, an einer Stelle, erfährt der Benutzer davon –
+ * egal aus welcher Maske die WhatsApp kam.
+ */
+function smsAusweicheMelden(antwort) {
+    const fb = antwort?.payload?.sms_fallback
+    if (!fb || !antwort.success) return
+    const t = i18n.global.t
+    toasts.warning(t('SmsFallback.sent', { phone: fb.phone || '' }), { text: fb.reason ? t('SmsFallback.reason', { reason: fb.reason }) : '', timer: 9000 })
+}
+
 axios.interceptors.response.use(
     response => {
         schemaPruefen(response.data, response.config)
+        smsAusweicheMelden(response.data)
         return response
     },
     error => {

@@ -51,6 +51,8 @@
         "login": "/pieteiksanas",
         "emails": "/e-pasti",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "docs": "/dokumentacija",
         "mechanic": "/mehanikis",
         "mechanicOrder": "/mehanikis/pasutijums",
@@ -83,7 +85,9 @@
         "title": "Kontakts",
         "callHistory": "Zvanu vesture",
         "emails": "E-pasti",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram"
     },
     "SalesMenu": {
         "title": "Pardosana",

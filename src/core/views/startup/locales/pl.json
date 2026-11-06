@@ -172,7 +172,32 @@
             "suggested_decline": "Rozpoznano odmowę dla zamówienia {number} ({channel})",
             "declined": "Odmowa dla zamówienia {number} ({channel}) — przyjęta do wiadomości"
         },
-        "confirmationRevokedBy": "wycofał {name}"
+        "confirmationRevokedBy": "wycofał {name}",
+        "sms": "SMS",
+        "openSms": "Otwórz historię SMS",
+        "smsFailed": "niedostarczono",
+        "telegram": "Telegram",
+        "openTelegram": "Otwórz czat Telegram",
+        "telegramMailing": "Wysyłka masowa",
+        "telegramFailed": "niedostarczono",
+        "telegramType": {
+            "text": "Wiadomość",
+            "photo": "Zdjęcie",
+            "document": "Dokument",
+            "voice": "Wiadomość głosowa",
+            "audio": "Audio",
+            "video": "Wideo",
+            "location": "Lokalizacja",
+            "contact": "Udostępniono numer telefonu",
+            "sticker": "Naklejka"
+        },
+        "smsInsteadOfWhatsApp": "SMS zamiast WhatsApp",
+        "smsSource": {
+            "faktura": "Dokument",
+            "mailing": "Wysyłka masowa",
+            "fallback": "zamiast WhatsApp",
+            "reminder": "Przypomnienie"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Zadzwoń",
@@ -191,6 +216,7 @@
         "configSaved": "Ustawienia zapisane",
         "phoneSettings": "Ustawienia telefonu",
         "configSaveError": "Nie udało się zapisać ustawień",
-        "whatsappGreeting": "Cześć {name}"
+        "whatsappGreeting": "Cześć {name}",
+        "sendSms": "Wyślij SMS"
     }
 }

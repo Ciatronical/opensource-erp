@@ -51,6 +51,8 @@
         "login": "/prisijungimas",
         "emails": "/el-laiskai",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "docs": "/dokumentacija",
         "mechanic": "/mechanikas",
         "mechanicOrder": "/mechanikas/uzsakymas",
@@ -83,7 +85,9 @@
         "title": "Kontaktas",
         "callHistory": "Skambuciu istorija",
         "emails": "El. lariskai",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram"
     },
     "SalesMenu": {
         "title": "Pardavimai",

@@ -248,6 +248,23 @@
                     </template>
                 </v-tooltip>
 
+                <!-- SMS: Beleg als Link (Badge: schon so oft per SMS versendet) -->
+                <v-tooltip v-if="showSmsButton" location="bottom" :text="sentSmsCount ? t('FakturaView.faktura.sent.tooltipSms', { n: sentSmsCount }) : t('FakturaView.faktura.sendSms')">
+                    <template #activator="{ props: tip }">
+                        <v-badge :model-value="sentSmsCount > 0" :content="sentSmsCount" color="success" offset-x="4" offset-y="4">
+                            <v-btn
+                                v-bind="tip"
+                                variant="tonal"
+                                color="indigo"
+                                icon="mdi-message-text-outline"
+                                size="small"
+                                :disabled="!hasCustomer"
+                                @click="$emit('send-sms')"
+                            />
+                        </v-badge>
+                    </template>
+                </v-tooltip>
+
                 <!-- Post (Hybridbrief; Badge: schon so oft eingeliefert) -->
                 <v-tooltip location="bottom" :text="sentPostCount ? t('FakturaView.faktura.sent.tooltipPost', { n: sentPostCount }) : t('FakturaView.faktura.sendPost')">
                     <template #activator="{ props: tip }">
@@ -493,6 +510,15 @@ export default defineComponent({
             type: Number,
             default: 0
         },
+        sentSmsCount: {
+            type: Number,
+            default: 0
+        },
+        /** SMS-Versand eingerichtet (getSmsConfig) */
+        showSmsButton: {
+            type: Boolean,
+            default: false
+        },
         printerList: {
             type: Array,
             default: () => []
@@ -606,6 +632,7 @@ export default defineComponent({
         'pdf-preview',
         'send-email',
         'send-whatsapp',
+        'send-sms',
         'send-post',
         'select-template',
         'show-history',

@@ -85,9 +85,18 @@ const crmDefaultsConfig = [
     { name: "mailings", type: "headline", label: "crm_fields.mailings" },
     { name: "whatsapp_template_cost", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.whatsappTemplateCost", tooltip: "crm_fields.whatsappTemplateCost_help" },
     { name: "mailing_letter_cost", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.mailingLetterCost", tooltip: "crm_fields.mailingLetterCost_help" },
+
+    // SMS über seven.io: Kontakt → SMS, Reiter SMS, Belege als Link, Rundschreiben und
+    // die automatische Ausweiche, wenn eine WhatsApp nicht zugestellt werden kann.
+    { name: "sms", type: "headline", label: "crm_fields.sms" },
     { name: "sms_api_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.smsApiKey", tooltip: "crm_fields.smsApiKey_help" },
     { name: "sms_sender", type: "input", size: 16, fieldstyle: "max-width: 24ch", label: "crm_fields.smsSender", tooltip: "crm_fields.smsSender_help" },
+    { name: "sms_reply_hint", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.smsReplyHint", tooltip: "crm_fields.smsReplyHint_help" },
     { name: "sms_cost", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.smsCost", tooltip: "crm_fields.smsCost_help" },
+    { name: "sms_whatsapp_fallback", type: "checkbox", label: "crm_fields.smsWhatsappFallback", tooltip: "crm_fields.smsWhatsappFallback_help" },
+    { name: "sms_link_days", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.smsLinkDays", tooltip: "crm_fields.smsLinkDays_help" },
+    { name: "sms_signing_key", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.smsSigningKey", tooltip: "crm_fields.smsSigningKey_help" },
+    { name: "sms_setup", type: "component", component: "sms-setup" },
 
     { name: "telegram", type: "headline", label: "crm_fields.telegram" },
 

@@ -419,7 +419,9 @@
                 "invoiceCreate": "Rechnung erstellen",
                 "invoiceOpen": "Rechnung {number} öffnen",
                 "invoicePaid": "bezahlt",
-                "invoiceOpenAmount": "offen {amount}"
+                "invoiceOpenAmount": "offen {amount}",
+                "channelSms": "SMS",
+                "tooltipSms": "Schon {n}× per SMS versendet"
             },
             "autoSend": {
                 "hint": "Wird beim Drucken automatisch per {channels} an den Kunden geschickt.",
@@ -649,7 +651,10 @@
                     "hours": "Std",
                     "min": "Min"
                 }
-            }
+            },
+            "sendSms": "Per SMS senden (Beleg als Link)",
+            "smsSent": "SMS gesendet",
+            "smsError": "SMS konnte nicht gesendet werden"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -789,6 +794,28 @@
                 "error": "Fehler beim Erstellen des DHL-Labels",
                 "deleted": "DHL-Sendung storniert",
                 "existingShipments": "Bestehende Sendungen"
+            },
+            "sendSms": {
+                "title": "Beleg per SMS senden",
+                "phone": "Mobilnummer",
+                "landlineHint": "Das sieht nach Festnetz aus – Festnetz empfängt keine SMS.",
+                "text": "Text der SMS",
+                "insertLink": "Link einfügen",
+                "linkHint": "wird als Link mitgeschickt, {days} Tage abrufbar",
+                "cancel": "Abbrechen",
+                "send": "SMS senden",
+                "defaultText": "Guten Tag{salutation}, hier {docRef} über {amount}: {link} Viele Grüße, {company}",
+                "defaultTextNoAmount": "Guten Tag{salutation}, hier {docRef}: {link} Viele Grüße, {company}",
+                "docRef": {
+                    "invoice": "Ihre Rechnung Nr. {number}",
+                    "quotation": "Ihr Angebot Nr. {number}",
+                    "order": "Ihre Auftragsbestätigung Nr. {number}",
+                    "delivery_order": "Ihr Lieferschein Nr. {number}",
+                    "credit_note": "Ihre Gutschrift Nr. {number}",
+                    "invoice_storno": "Ihre Stornorechnung Nr. {number}",
+                    "purchase_order": "unsere Bestellung Nr. {number}",
+                    "request_quotation": "unsere Anfrage Nr. {number}"
+                }
             }
         },
         "dhl": {

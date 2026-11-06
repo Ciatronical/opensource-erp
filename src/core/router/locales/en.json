@@ -52,6 +52,8 @@
         "login": "/login",
         "emails": "/emails",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "letters": "/letters",
         "newLetter": "/letter/new",
         "editLetter": "/letter/edit",
@@ -92,6 +94,8 @@
         "callHistory": "Call History",
         "emails": "Emails",
         "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram",
         "letters": "Letters",
         "mailings": "Mailings"
     },

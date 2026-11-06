@@ -74,6 +74,10 @@
         "selectVendor": "Leverancier zoeken...",
         "markOrdered": "{count} als besteld markeren",
         "yesterday": "Gisteren",
-        "noOrder": "geen order"
+        "noOrder": "geen order",
+        "smsFallbackToast": "WhatsApp aan {name} is niet aangekomen – als SMS verzonden",
+        "smsFallbackFailed": "WhatsApp aan {name} is niet aangekomen, ook de alternatieve SMS is mislukt: {error}",
+        "telegramFile": "Bestand",
+        "telegramFailed": "Telegram aan {name} niet bezorgd: {error}"
     }
 }

@@ -419,7 +419,9 @@
                 "invoiceCreate": "Create invoice",
                 "invoiceOpen": "Open invoice {number}",
                 "invoicePaid": "paid",
-                "invoiceOpenAmount": "{amount} open"
+                "invoiceOpenAmount": "{amount} open",
+                "channelSms": "SMS",
+                "tooltipSms": "Already sent {n}× by SMS"
             },
             "autoSend": {
                 "hint": "Will be sent to the customer automatically by {channels} when printing.",
@@ -649,7 +651,10 @@
                     "hours": "h",
                     "min": "min"
                 }
-            }
+            },
+            "sendSms": "Send by SMS (document as link)",
+            "smsSent": "SMS sent",
+            "smsError": "Could not send the SMS"
         },
         "workflow": {
             "created": "Document created successfully",
@@ -789,6 +794,28 @@
                 "send": "Send",
                 "defaultMessage": "Please find attached {type} No. {number}.",
                 "noPhone": "No phone number is stored for this customer."
+            },
+            "sendSms": {
+                "title": "Send document by SMS",
+                "phone": "Mobile number",
+                "landlineHint": "This looks like a landline – landlines cannot receive SMS.",
+                "text": "SMS text",
+                "insertLink": "Insert link",
+                "linkHint": "is sent as a link, available for {days} days",
+                "cancel": "Cancel",
+                "send": "Send SMS",
+                "defaultText": "Hello{salutation}, here is {docRef} for {amount}: {link} Kind regards, {company}",
+                "defaultTextNoAmount": "Hello{salutation}, here is {docRef}: {link} Kind regards, {company}",
+                "docRef": {
+                    "invoice": "your invoice no. {number}",
+                    "quotation": "your quotation no. {number}",
+                    "order": "your order confirmation no. {number}",
+                    "delivery_order": "your delivery note no. {number}",
+                    "credit_note": "your credit note no. {number}",
+                    "invoice_storno": "your cancellation invoice no. {number}",
+                    "purchase_order": "our purchase order no. {number}",
+                    "request_quotation": "our request for quotation no. {number}"
+                }
             }
         },
         "dhl": {

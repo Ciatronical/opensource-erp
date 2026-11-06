@@ -269,7 +269,9 @@
                 "statusRead": "lu",
                 "statusFailed": "échec",
                 "tooltipEmail": "Envoyer par e-mail — déjà envoyé {n}×",
-                "tooltipWhatsapp": "Envoyer par WhatsApp — déjà envoyé {n}×"
+                "tooltipWhatsapp": "Envoyer par WhatsApp — déjà envoyé {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Déjà envoyé {n}× par SMS"
             },
             "autoSend": {
                 "hint": "Sera envoyé automatiquement au client par {channels} lors de l'impression.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Reprendre et imprimer la durée de réparation ({days} jours)",
                 "optRepairTimeNone": "Aucune durée de réparation dans l'expertise"
-            }
+            },
+            "sendSms": "Envoyer par SMS (document sous forme de lien)",
+            "smsSent": "SMS envoyé",
+            "smsError": "Le SMS n'a pas pu être envoyé"
         },
         "workflow": {
             "created": "Document cree avec succes",
@@ -652,6 +657,28 @@
                 "button": "Supprimer {count} sélectionnées",
                 "cancel": "Annuler",
                 "confirm": "Supprimer {count} lignes"
+            },
+            "sendSms": {
+                "title": "Envoyer le document par SMS",
+                "phone": "Numéro de mobile",
+                "landlineHint": "Cela ressemble à un fixe – un fixe ne reçoit pas de SMS.",
+                "text": "Texte du SMS",
+                "insertLink": "Insérer un lien",
+                "linkHint": "est envoyé sous forme de lien, consultable pendant {days} jours",
+                "cancel": "Annuler",
+                "send": "Envoyer le SMS",
+                "defaultText": "Bonjour{salutation}, voici {docRef} d'un montant de {amount} : {link} Cordialement, {company}",
+                "defaultTextNoAmount": "Bonjour{salutation}, voici {docRef} : {link} Cordialement, {company}",
+                "docRef": {
+                    "invoice": "votre facture n° {number}",
+                    "quotation": "votre devis n° {number}",
+                    "order": "votre confirmation de commande n° {number}",
+                    "delivery_order": "votre bon de livraison n° {number}",
+                    "credit_note": "votre avoir n° {number}",
+                    "invoice_storno": "votre facture d'annulation n° {number}",
+                    "purchase_order": "notre commande n° {number}",
+                    "request_quotation": "notre demande de prix n° {number}"
+                }
             }
         },
         "dhl": {

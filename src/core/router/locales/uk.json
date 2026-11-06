@@ -51,6 +51,8 @@
         "login": "/vkhid",
         "emails": "/elektronna-poshta",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "docs": "/dokumentatsiia",
         "mechanic": "/mekhanik",
         "mechanicOrder": "/mekhanik/zamovlennia",
@@ -83,7 +85,9 @@
         "title": "Контакт",
         "callHistory": "Журнал дзвінків",
         "emails": "Електронна пошта",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram"
     },
     "SalesMenu": {
         "title": "Продаж",

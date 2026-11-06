@@ -225,7 +225,7 @@ function getFakturaData($data) {
                     FROM {$cvTable} cv
                     JOIN {$mainTable} mt ON mt.{$cvColumn} = cv.id AND mt.id = :fakturaID
                 ),
-            -- Versandprotokoll: E-Mails (email_journal) und WhatsApp-Nachrichten über
+            -- Versandprotokoll: E-Mails (email_journal), WhatsApp-Nachrichten und SMS über
             -- record_links (from = Beleg), DHL-Sendungen über dhl_shipments, Postversand
             -- über postal_dispatches. Neueste zuerst.
             'sent_log',
@@ -243,6 +243,13 @@ function getFakturaData($data) {
                         FROM record_links rl
                         JOIN whatsapp_messages wm ON wm.id = rl.to_id
                         WHERE rl.from_table = '{$mainTable}' AND rl.from_id = :fakturaID AND rl.to_table = 'whatsapp_messages'
+                        UNION ALL
+                        -- SMS mit Link auf den Beleg (auch Ausweich-SMS statt WhatsApp)
+                        SELECT 'sms', sm.itime, sm.phone_number, COALESCE(sm.media_name, LEFT(sm.message_text, 80)), sm.status, e.name
+                        FROM record_links rl
+                        JOIN sms_messages sm ON sm.id = rl.to_id
+                        LEFT JOIN employee e ON e.id = sm.employee_id
+                        WHERE rl.from_table = '{$mainTable}' AND rl.from_id = :fakturaID AND rl.to_table = 'sms_messages'
                         UNION ALL
                         SELECT 'dhl', ds.created_at, ds.shipment_no, ds.product, 'sent', e.name
                         FROM dhl_shipments ds

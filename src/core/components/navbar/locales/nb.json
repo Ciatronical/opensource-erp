@@ -74,6 +74,10 @@
         "selectVendor": "Søk leverandør...",
         "markOrdered": "Merk {count} som bestilt",
         "yesterday": "I går",
-        "noOrder": "ingen ordre"
+        "noOrder": "ingen ordre",
+        "smsFallbackToast": "WhatsApp til {name} kom ikke frem – sendt som SMS",
+        "smsFallbackFailed": "WhatsApp til {name} kom ikke frem, og reserve-SMS-en mislyktes også: {error}",
+        "telegramFile": "Fil",
+        "telegramFailed": "Telegram til {name} ikke levert: {error}"
     }
 }

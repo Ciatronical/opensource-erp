@@ -269,7 +269,9 @@
                 "statusRead": "loetud",
                 "statusFailed": "ebaõnnestus",
                 "tooltipEmail": "Saada e-postiga — juba saadetud {n}×",
-                "tooltipWhatsapp": "Saada WhatsAppiga — juba saadetud {n}×"
+                "tooltipWhatsapp": "Saada WhatsAppiga — juba saadetud {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Juba {n}× SMS-iga saadetud"
             },
             "autoSend": {
                 "hint": "Printimisel saadetakse kliendile automaatselt {channels} kaudu.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Võta remondi kestus üle ja prindi ({days} päeva)",
                 "optRepairTimeNone": "Ekspertiisis puudub remondi kestus"
-            }
+            },
+            "sendSms": "Saada SMS-iga (dokument lingina)",
+            "smsSent": "SMS saadetud",
+            "smsError": "SMS-i ei õnnestunud saata"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -652,6 +657,28 @@
                 "button": "Kustuta {count} märgitud",
                 "cancel": "Tühista",
                 "confirm": "Kustuta {count} rida"
+            },
+            "sendSms": {
+                "title": "Saada dokument SMS-iga",
+                "phone": "Mobiilinumber",
+                "landlineHint": "See näib olevat lauatelefon – lauatelefon ei võta SMS-e vastu.",
+                "text": "SMS-i tekst",
+                "insertLink": "Lisa link",
+                "linkHint": "saadetakse lingina, saadaval {days} päeva",
+                "cancel": "Tühista",
+                "send": "Saada SMS",
+                "defaultText": "Tere{salutation}, siin on {docRef} summas {amount}: {link} Lugupidamisega {company}",
+                "defaultTextNoAmount": "Tere{salutation}, siin on {docRef}: {link} Lugupidamisega {company}",
+                "docRef": {
+                    "invoice": "Teie arve nr {number}",
+                    "quotation": "Teie pakkumine nr {number}",
+                    "order": "Teie tellimuse kinnitus nr {number}",
+                    "delivery_order": "Teie saateleht nr {number}",
+                    "credit_note": "Teie kreeditarve nr {number}",
+                    "invoice_storno": "Teie tühistusarve nr {number}",
+                    "purchase_order": "meie ostutellimus nr {number}",
+                    "request_quotation": "meie hinnapäring nr {number}"
+                }
             }
         },
         "dhl": {

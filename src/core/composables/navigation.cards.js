@@ -96,6 +96,8 @@ export function useNavigationCards() {
             '-',
             { title: t('ContactMenu.emails'), to: { name: 'emails' } },
             { title: t('ContactMenu.whatsapp'), to: { name: 'whatsapp' } },
+            { title: t('ContactMenu.sms'), to: { name: 'sms' } },
+            { title: t('ContactMenu.telegram'), to: { name: 'telegram' } },
         ]
         // Briefe: kivitendo-Rechte für Verkaufs- bzw. Einkaufsbriefe
         if (oserp.checkPermission('sales_letter_edit') || oserp.checkPermission('purchase_letter_edit')) {

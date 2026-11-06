@@ -92,7 +92,7 @@
                                         <span class="font-weight-medium">{{ t(channelMeta[e.channel]?.label || 'FakturaView.faktura.sent.channelEmail') }}</span>
                                         <span class="text-medium-emphasis">{{ formatWhen(e.sent_at) }}</span>
                                         <v-chip
-                                            v-if="e.channel === 'whatsapp'"
+                                            v-if="e.channel === 'whatsapp' || e.channel === 'sms'"
                                             size="x-small"
                                             variant="tonal"
                                             :color="waStatusMeta(e.status).color"
@@ -256,6 +256,7 @@ function formatDay(value) {
 const channelMeta = {
     email:    { icon: 'mdi-email',          color: 'info',           label: 'FakturaView.faktura.sent.channelEmail' },
     whatsapp: { icon: 'mdi-whatsapp',       color: 'green-darken-1', label: 'FakturaView.faktura.sent.channelWhatsapp' },
+    sms:      { icon: 'mdi-message-text-outline', color: 'indigo', label: 'FakturaView.faktura.sent.channelSms' },
     dhl:      { icon: 'mdi-truck-delivery', color: 'amber-darken-2', label: 'FakturaView.faktura.sent.channelDhl' },
     post:     { icon: 'mdi-mailbox-up-outline', color: 'deep-purple', label: 'FakturaView.faktura.sent.channelPost' },
 }

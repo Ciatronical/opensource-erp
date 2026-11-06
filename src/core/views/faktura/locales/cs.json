@@ -269,7 +269,9 @@
                 "statusRead": "přečteno",
                 "statusFailed": "selhalo",
                 "tooltipEmail": "Odeslat e-mailem — již odesláno {n}×",
-                "tooltipWhatsapp": "Odeslat přes WhatsApp — již odesláno {n}×"
+                "tooltipWhatsapp": "Odeslat přes WhatsApp — již odesláno {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Již {n}× odesláno SMS"
             },
             "autoSend": {
                 "hint": "Při tisku se automaticky odešle zákazníkovi přes {channels}.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Převzít a tisknout dobu opravy ({days} dní)",
                 "optRepairTimeNone": "V posudku není uvedena doba opravy"
-            }
+            },
+            "sendSms": "Odeslat SMS (doklad jako odkaz)",
+            "smsSent": "SMS odeslána",
+            "smsError": "SMS se nepodařilo odeslat"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -652,6 +657,28 @@
                 "button": "Smazat {count} označené",
                 "cancel": "Zrušit",
                 "confirm": "Smazat {count} pozic"
+            },
+            "sendSms": {
+                "title": "Odeslat doklad SMS",
+                "phone": "Mobilní číslo",
+                "landlineHint": "Vypadá to na pevnou linku – pevná linka SMS nepřijímá.",
+                "text": "Text SMS",
+                "insertLink": "Vložit odkaz",
+                "linkHint": "odešle se jako odkaz, dostupný {days} dní",
+                "cancel": "Zrušit",
+                "send": "Odeslat SMS",
+                "defaultText": "Dobrý den{salutation}, zasíláme {docRef} na částku {amount}: {link} S pozdravem {company}",
+                "defaultTextNoAmount": "Dobrý den{salutation}, zasíláme {docRef}: {link} S pozdravem {company}",
+                "docRef": {
+                    "invoice": "Vaše faktura č. {number}",
+                    "quotation": "Vaše nabídka č. {number}",
+                    "order": "Vaše potvrzení objednávky č. {number}",
+                    "delivery_order": "Váš dodací list č. {number}",
+                    "credit_note": "Váš dobropis č. {number}",
+                    "invoice_storno": "Váš stornodoklad č. {number}",
+                    "purchase_order": "naše objednávka č. {number}",
+                    "request_quotation": "naše poptávka č. {number}"
+                }
             }
         },
         "dhl": {

@@ -5477,3 +5477,220 @@ CREATE INDEX IF NOT EXISTS idx_mailing_recipients_mailing ON mailing_recipients(
 CREATE INDEX IF NOT EXISTS idx_mailings_status ON mailings(status, next_batch_at);
 CREATE INDEX IF NOT EXISTS idx_customer_ext_telegram ON customer_ext(telegram_chat_id) WHERE telegram_chat_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_vendor_ext_telegram ON vendor_ext(telegram_chat_id) WHERE telegram_chat_id IS NOT NULL;
+
+-- ============================================================================
+-- SMS (seven.io)
+-- ============================================================================
+-- Alle SMS – ein- und ausgehend – wie whatsapp_messages: Kontakt → SMS, Reiter
+-- SMS in der Kundenmaske, Kontakthistorie, Rundschreiben und die automatische
+-- Ausweiche, wenn eine WhatsApp nicht zugestellt werden kann. Belege und Dateien
+-- gehen als Link mit: link_token öffnet die Datei unter media_url (relativ zum
+-- Datenverzeichnis des Mandanten) über backend/webhook/beleg.php.
+
+CREATE TABLE IF NOT EXISTS sms_messages (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    sms_id TEXT,
+    direction CHAR(1) NOT NULL DEFAULT 'O',
+    phone_number TEXT NOT NULL,
+    customer_id INTEGER,
+    contact_name TEXT,
+    message_text TEXT,
+    parts INTEGER,
+    price NUMERIC(10,4),
+    status TEXT NOT NULL DEFAULT 'sent',
+    status_timestamp TIMESTAMPTZ,
+    error_code TEXT,
+    error_message TEXT,
+    source TEXT NOT NULL DEFAULT 'chat',
+    employee_id INTEGER,
+    whatsapp_message_id INTEGER,
+    whatsapp_error TEXT,
+    media_url TEXT,
+    media_name TEXT,
+    link_token TEXT,
+    link_expires TIMESTAMPTZ,
+    link_opened_at TIMESTAMPTZ,
+    itime TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    mtime TIMESTAMPTZ,
+    hidden BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT sms_messages_link_token_unique UNIQUE (link_token),
+    CONSTRAINT sms_messages_whatsapp_unique UNIQUE (whatsapp_message_id)
+);
+
+COMMENT ON TABLE sms_messages IS 'SMS-Verlauf (seven.io): ein- und ausgehende SMS, auch Ausweich-SMS für nicht zustellbare WhatsApps';
+COMMENT ON COLUMN sms_messages.sms_id IS 'Nachrichten-ID von seven.io (Zustellberichte), bei eingehenden die ID der Eingangsnachricht';
+COMMENT ON COLUMN sms_messages.direction IS 'I=Eingehend, O=Ausgehend';
+COMMENT ON COLUMN sms_messages.phone_number IS 'Rufnummer im Format +49…';
+COMMENT ON COLUMN sms_messages.customer_id IS 'Kunde oder Lieferant (kivitendo teilt die id-Folge)';
+COMMENT ON COLUMN sms_messages.parts IS 'Anzahl berechneter SMS-Teile';
+COMMENT ON COLUMN sms_messages.price IS 'Preis laut seven.io in EUR';
+COMMENT ON COLUMN sms_messages.status IS 'received, read (eingehend); pending, sent, delivered, failed (ausgehend)';
+COMMENT ON COLUMN sms_messages.source IS 'chat | faktura | mailing | fallback (statt WhatsApp) | reminder';
+COMMENT ON COLUMN sms_messages.employee_id IS 'Absender (Mitarbeiter), NULL bei automatischem Versand';
+COMMENT ON COLUMN sms_messages.whatsapp_message_id IS 'Ausweich-SMS: whatsapp_messages.id der gescheiterten WhatsApp (verhindert doppelten Versand)';
+COMMENT ON COLUMN sms_messages.whatsapp_error IS 'Ausweich-SMS: warum die WhatsApp nicht ankam';
+COMMENT ON COLUMN sms_messages.media_url IS 'Mitgeschickte Datei, relativ zum Datenverzeichnis des Mandanten';
+COMMENT ON COLUMN sms_messages.link_token IS 'Geheimer Teil des Links auf die Datei';
+COMMENT ON COLUMN sms_messages.link_opened_at IS 'Erster Abruf des Links durch den Empfänger';
+
+CREATE INDEX IF NOT EXISTS idx_sms_messages_phone ON sms_messages(phone_number);
+CREATE INDEX IF NOT EXISTS idx_sms_messages_customer ON sms_messages(customer_id);
+CREATE INDEX IF NOT EXISTS idx_sms_messages_itime ON sms_messages(itime DESC);
+CREATE INDEX IF NOT EXISTS idx_sms_messages_sms_id ON sms_messages(sms_id);
+
+-- Live-Meldungen: Kontakthistorie (contact_history_change) und Info-Leiste
+-- (faktura_change mit table = sms_messages, wie die Rundschreiben). Gemeldet werden
+-- eingehende SMS, Ausweich-SMS und Statuswechsel; die Nutzlast trägt bewusst kein
+-- message_type, sonst hielten SSE-Abnehmer sie für eine WhatsApp.
+CREATE OR REPLACE FUNCTION notify_sms_message() RETURNS trigger AS $$
+BEGIN
+    PERFORM contact_history_notify('sms', ARRAY[NEW.customer_id]);
+    IF TG_OP = 'INSERT' AND (NEW.direction = 'I' OR NEW.source = 'fallback')
+       OR TG_OP = 'UPDATE' AND NEW.status IS DISTINCT FROM OLD.status AND NEW.status = 'failed' THEN
+        PERFORM pg_notify('faktura_change', json_build_object(
+            'table', 'sms_messages',
+            'id', NEW.id,
+            'direction', NEW.direction,
+            'source', NEW.source,
+            'status', NEW.status,
+            'customer_id', NEW.customer_id
+        )::TEXT);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'sms_messages_notify') THEN
+        CREATE TRIGGER sms_messages_notify
+            AFTER INSERT OR UPDATE OF status, link_opened_at ON sms_messages
+            FOR EACH ROW EXECUTE FUNCTION notify_sms_message();
+    END IF;
+END $$;
+
+-- Kunde/Lieferant zu einer Rufnummer (+49…): Hauptnummer, weitere Nummern aus
+-- customer_ext/vendor_ext.phone_numbers und Ansprechpersonen. Verglichen werden die
+-- letzten 9 Ziffern, damit 0171…, +49171… und 0049171… zusammenfinden.
+-- Liefert die id (Kunde vor Lieferant) und den Namen; NULL, wenn niemand passt.
+CREATE OR REPLACE FUNCTION cv_by_phone(p_phone TEXT)
+    RETURNS TABLE (cv_id INTEGER, cv_src CHAR(1), cv_name TEXT)
+    LANGUAGE sql
+    STABLE
+AS $function$
+    WITH n AS (SELECT right(regexp_replace(COALESCE(p_phone, ''), '[^0-9]', '', 'g'), 9) AS tail)
+    SELECT t.id, t.src, t.name FROM (
+        SELECT c.id, 'C'::char(1) AS src, c.name, 1 AS prio
+          FROM customer c, n
+         WHERE length(n.tail) = 9 AND NOT COALESCE(c.obsolete, FALSE)
+           AND (right(regexp_replace(COALESCE(c.phone, ''), '[^0-9]', '', 'g'), 9) = n.tail
+                OR EXISTS (SELECT 1 FROM customer_ext x CROSS JOIN LATERAL jsonb_array_elements(
+                               CASE WHEN jsonb_typeof(x.phone_numbers) = 'array' THEN x.phone_numbers ELSE '[]'::jsonb END) e
+                            WHERE x.customer_id = c.id
+                              AND right(regexp_replace(COALESCE(e->>'number', ''), '[^0-9]', '', 'g'), 9) = n.tail))
+        UNION ALL
+        SELECT v.id, 'V', v.name, 2
+          FROM vendor v, n
+         WHERE length(n.tail) = 9 AND NOT COALESCE(v.obsolete, FALSE)
+           AND (right(regexp_replace(COALESCE(v.phone, ''), '[^0-9]', '', 'g'), 9) = n.tail
+                OR EXISTS (SELECT 1 FROM vendor_ext x CROSS JOIN LATERAL jsonb_array_elements(
+                               CASE WHEN jsonb_typeof(x.phone_numbers) = 'array' THEN x.phone_numbers ELSE '[]'::jsonb END) e
+                            WHERE x.vendor_id = v.id
+                              AND right(regexp_replace(COALESCE(e->>'number', ''), '[^0-9]', '', 'g'), 9) = n.tail))
+        UNION ALL
+        SELECT k.cp_cv_id, CASE WHEN EXISTS (SELECT 1 FROM vendor v WHERE v.id = k.cp_cv_id) THEN 'V' ELSE 'C' END,
+               COALESCE((SELECT name FROM customer WHERE id = k.cp_cv_id), (SELECT name FROM vendor WHERE id = k.cp_cv_id)), 3
+          FROM contacts k, n
+         WHERE length(n.tail) = 9 AND k.cp_cv_id IS NOT NULL
+           AND n.tail IN (right(regexp_replace(COALESCE(k.cp_phone1, ''), '[^0-9]', '', 'g'), 9),
+                          right(regexp_replace(COALESCE(k.cp_phone2, ''), '[^0-9]', '', 'g'), 9),
+                          right(regexp_replace(COALESCE(k.cp_mobile1, ''), '[^0-9]', '', 'g'), 9),
+                          right(regexp_replace(COALESCE(k.cp_mobile2, ''), '[^0-9]', '', 'g'), 9))
+    ) t
+    ORDER BY t.prio, t.id DESC
+    LIMIT 1
+$function$;
+
+-- Ausweich-SMS für nicht zustellbare WhatsApps: Vorgabe an (greift nur mit sms_api_key)
+INSERT INTO defaults_oserp (key, value) VALUES ('sms_whatsapp_fallback', 'true') ON CONFLICT (key) DO NOTHING;
+
+-- Antwort-Hinweis unter jeder SMS: Absender mit Firmennamen lassen keine Antwort
+-- zu, deshalb steht der Weg zurück im Text. {telegram} wird zu t.me/<Bot>; ohne
+-- eingerichteten Bot entfällt ein Hinweis mit {telegram}. Leer = kein Hinweis.
+INSERT INTO defaults_oserp (key, value) VALUES ('sms_reply_hint', 'Antwort per Telegram: {telegram}') ON CONFLICT (key) DO NOTHING;
+
+-- ============================================================================
+-- TELEGRAM-KUNDENCHAT
+-- ============================================================================
+-- Nachrichten von Kunden und Lieferanten an den Firmen-Bot und die Antworten
+-- aus OSERP (Kontakt → Telegram, Reiter Telegram, Kontakthistorie). Sprach-
+-- nachrichten der Mitarbeiter bleiben Sprachnotizen der Anschlagtafel
+-- (voice_notes). Kunden verknüpfen sich über den Bot (t.me/<Bot> → Rufnummer
+-- teilen → customer_ext/vendor_ext.telegram_chat_id); Nachrichten vor der
+-- Verknüpfung bekommen den Kunden nachträglich. Dateien liegen unter
+-- data/<dbname>/telegram/ (media_url relativ zum Datenverzeichnis).
+
+CREATE TABLE IF NOT EXISTS telegram_messages (
+    id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    chat_id TEXT NOT NULL,
+    telegram_message_id BIGINT,
+    direction CHAR(1) NOT NULL DEFAULT 'O',
+    customer_id INTEGER,
+    contact_name TEXT,
+    message_type TEXT NOT NULL DEFAULT 'text',
+    message_text TEXT,
+    media_url TEXT,
+    media_name TEXT,
+    status TEXT NOT NULL DEFAULT 'sent',
+    error_message TEXT,
+    source TEXT NOT NULL DEFAULT 'chat',
+    employee_id INTEGER,
+    itime TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    mtime TIMESTAMPTZ,
+    hidden BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT telegram_messages_chat_msg_unique UNIQUE (chat_id, telegram_message_id)
+);
+
+COMMENT ON TABLE telegram_messages IS 'Telegram-Kundenchat: Nachrichten von Kunden/Lieferanten an den Firmen-Bot und Antworten aus OSERP';
+COMMENT ON COLUMN telegram_messages.chat_id IS 'Telegram-Chat-ID des Kunden (customer_ext/vendor_ext.telegram_chat_id)';
+COMMENT ON COLUMN telegram_messages.telegram_message_id IS 'message_id von Telegram, je Chat eindeutig (Doppelzustellung des Webhooks)';
+COMMENT ON COLUMN telegram_messages.direction IS 'I=Eingehend, O=Ausgehend';
+COMMENT ON COLUMN telegram_messages.customer_id IS 'Kunde oder Lieferant (kivitendo teilt die id-Folge); NULL bis zur Verknüpfung';
+COMMENT ON COLUMN telegram_messages.contact_name IS 'Name aus dem Telegram-Profil';
+COMMENT ON COLUMN telegram_messages.message_type IS 'text | photo | document | voice | audio | video | location | contact | sticker';
+COMMENT ON COLUMN telegram_messages.message_text IS 'Text, Bildunterschrift oder Transkript einer Sprachnachricht';
+COMMENT ON COLUMN telegram_messages.media_url IS 'Datei relativ zum Datenverzeichnis des Mandanten';
+COMMENT ON COLUMN telegram_messages.status IS 'received, read (eingehend); sent, failed (ausgehend)';
+COMMENT ON COLUMN telegram_messages.source IS 'chat | mailing (Rundschreiben)';
+COMMENT ON COLUMN telegram_messages.employee_id IS 'Absender (Mitarbeiter), NULL bei automatischem Versand';
+
+CREATE INDEX IF NOT EXISTS idx_telegram_messages_chat ON telegram_messages(chat_id, itime);
+CREATE INDEX IF NOT EXISTS idx_telegram_messages_customer ON telegram_messages(customer_id);
+CREATE INDEX IF NOT EXISTS idx_telegram_messages_itime ON telegram_messages(itime DESC);
+
+-- Live-Meldungen wie bei SMS: Kontakthistorie (contact_history_change) und
+-- Info-Leiste (faktura_change, table = telegram_messages) für eingehende
+-- Nachrichten und gescheiterte Antworten.
+CREATE OR REPLACE FUNCTION notify_telegram_message() RETURNS trigger AS $$
+BEGIN
+    PERFORM contact_history_notify('telegram', ARRAY[NEW.customer_id]);
+    IF TG_OP = 'INSERT' AND NEW.direction = 'I'
+       OR TG_OP = 'UPDATE' AND NEW.status IS DISTINCT FROM OLD.status AND NEW.status = 'failed' THEN
+        PERFORM pg_notify('faktura_change', json_build_object(
+            'table', 'telegram_messages',
+            'id', NEW.id,
+            'direction', NEW.direction,
+            'status', NEW.status,
+            'customer_id', NEW.customer_id
+        )::TEXT);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'telegram_messages_notify') THEN
+        CREATE TRIGGER telegram_messages_notify
+            AFTER INSERT OR UPDATE OF status, customer_id ON telegram_messages
+            FOR EACH ROW EXECUTE FUNCTION notify_telegram_message();
+    END IF;
+END $$;

@@ -157,7 +157,32 @@
             "suggested_decline": "Rifiuto dell’ordine {number} rilevato ({channel})",
             "declined": "Rifiuto dell’ordine {number} ({channel}) — preso atto"
         },
-        "confirmationRevokedBy": "ritirata da {name}"
+        "confirmationRevokedBy": "ritirata da {name}",
+        "sms": "SMS",
+        "openSms": "Apri cronologia SMS",
+        "smsFailed": "non recapitato",
+        "telegram": "Telegram",
+        "openTelegram": "Apri chat Telegram",
+        "telegramMailing": "Circolare",
+        "telegramFailed": "non recapitato",
+        "telegramType": {
+            "text": "Messaggio",
+            "photo": "Foto",
+            "document": "Documento",
+            "voice": "Messaggio vocale",
+            "audio": "Audio",
+            "video": "Video",
+            "location": "Posizione",
+            "contact": "Numero di telefono condiviso",
+            "sticker": "Sticker"
+        },
+        "smsInsteadOfWhatsApp": "SMS al posto di WhatsApp",
+        "smsSource": {
+            "faktura": "Documento",
+            "mailing": "Circolare",
+            "fallback": "al posto di WhatsApp",
+            "reminder": "Promemoria"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Chiama",
@@ -176,6 +201,7 @@
         "configSaved": "Impostazioni salvate",
         "phoneSettings": "Impostazioni telefono",
         "configSaveError": "Impossibile salvare le impostazioni",
-        "whatsappGreeting": "Ciao {name}"
+        "whatsappGreeting": "Ciao {name}",
+        "sendSms": "Invia SMS"
     }
 }

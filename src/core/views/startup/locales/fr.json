@@ -157,7 +157,32 @@
             "suggested_decline": "Refus de la commande {number} détecté ({channel})",
             "declined": "Refus de la commande {number} ({channel}) — pris en compte"
         },
-        "confirmationRevokedBy": "retirée par {name}"
+        "confirmationRevokedBy": "retirée par {name}",
+        "sms": "SMS",
+        "openSms": "Ouvrir l'historique des SMS",
+        "smsFailed": "non remis",
+        "telegram": "Telegram",
+        "openTelegram": "Ouvrir le chat Telegram",
+        "telegramMailing": "Circulaire",
+        "telegramFailed": "non remis",
+        "telegramType": {
+            "text": "Message",
+            "photo": "Photo",
+            "document": "Document",
+            "voice": "Message vocal",
+            "audio": "Audio",
+            "video": "Vidéo",
+            "location": "Position",
+            "contact": "Numéro de téléphone partagé",
+            "sticker": "Autocollant"
+        },
+        "smsInsteadOfWhatsApp": "SMS à la place de WhatsApp",
+        "smsSource": {
+            "faktura": "Document",
+            "mailing": "Circulaire",
+            "fallback": "à la place de WhatsApp",
+            "reminder": "Rappel"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Appeler",
@@ -176,6 +201,7 @@
         "configSaved": "Paramètres enregistrés",
         "phoneSettings": "Parametres telephoniques",
         "configSaveError": "Impossible de sauvegarder les parametres",
-        "whatsappGreeting": "Bonjour {name}"
+        "whatsappGreeting": "Bonjour {name}",
+        "sendSms": "Envoyer un SMS"
     }
 }

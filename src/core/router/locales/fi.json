@@ -51,6 +51,8 @@
         "login": "/kirjautuminen",
         "emails": "/sahkopostit",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "docs": "/dokumentaatio",
         "mechanic": "/mekaanikko",
         "mechanicOrder": "/mekaanikko/tilaus",
@@ -83,7 +85,9 @@
         "title": "Yhteystieto",
         "callHistory": "Puheluhistoria",
         "emails": "Sähköpostit",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram"
     },
     "SalesMenu": {
         "title": "Myynti",

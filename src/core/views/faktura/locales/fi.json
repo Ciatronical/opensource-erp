@@ -269,7 +269,9 @@
                 "statusRead": "luettu",
                 "statusFailed": "epäonnistui",
                 "tooltipEmail": "Lähetä sähköpostitse — lähetetty jo {n}×",
-                "tooltipWhatsapp": "Lähetä WhatsAppilla — lähetetty jo {n}×"
+                "tooltipWhatsapp": "Lähetä WhatsAppilla — lähetetty jo {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Jo {n}× lähetetty tekstiviestillä"
             },
             "autoSend": {
                 "hint": "Lähetetään asiakkaalle automaattisesti ({channels}) tulostettaessa.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Ota korjauksen kesto käyttöön ja tulosta ({days} päivää)",
                 "optRepairTimeNone": "Lausunnossa ei ole korjauksen kestoa"
-            }
+            },
+            "sendSms": "Lähetä tekstiviestillä (asiakirja linkkinä)",
+            "smsSent": "Tekstiviesti lähetetty",
+            "smsError": "Tekstiviestiä ei voitu lähettää"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -652,6 +657,28 @@
                 "button": "Poista {count} valittua",
                 "cancel": "Peruuta",
                 "confirm": "Poista {count} riviä"
+            },
+            "sendSms": {
+                "title": "Lähetä asiakirja tekstiviestillä",
+                "phone": "Matkapuhelinnumero",
+                "landlineHint": "Tämä näyttää lankaliittymältä – lankaliittymä ei vastaanota tekstiviestejä.",
+                "text": "Tekstiviestin teksti",
+                "insertLink": "Lisää linkki",
+                "linkHint": "lähetetään linkkinä, saatavilla {days} päivää",
+                "cancel": "Peruuta",
+                "send": "Lähetä tekstiviesti",
+                "defaultText": "Hei{salutation}, tässä {docRef} summalta {amount}: {link} Ystävällisin terveisin, {company}",
+                "defaultTextNoAmount": "Hei{salutation}, tässä {docRef}: {link} Ystävällisin terveisin, {company}",
+                "docRef": {
+                    "invoice": "laskunne nro {number}",
+                    "quotation": "tarjouksenne nro {number}",
+                    "order": "tilausvahvistuksenne nro {number}",
+                    "delivery_order": "lähetyslistanne nro {number}",
+                    "credit_note": "hyvityslaskunne nro {number}",
+                    "invoice_storno": "mitätöintilaskunne nro {number}",
+                    "purchase_order": "tilauksemme nro {number}",
+                    "request_quotation": "tarjouspyyntömme nro {number}"
+                }
             }
         },
         "dhl": {

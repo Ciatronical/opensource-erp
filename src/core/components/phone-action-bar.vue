@@ -27,6 +27,19 @@
             >
                 <v-icon size="default">mdi-whatsapp</v-icon>
             </v-btn>
+            <!-- SMS: nur wenn der SMS-Versand eingerichtet ist -->
+            <v-btn
+                v-if="showSms && smsConfig.configured"
+                icon
+                size="small"
+                density="comfortable"
+                variant="text"
+                color="indigo"
+                :title="t('PhoneActions.sendSms')"
+                @click.stop="onSms"
+            >
+                <v-icon size="default">mdi-message-text-outline</v-icon>
+            </v-btn>
             <v-btn
                 icon
                 size="small"
@@ -53,20 +66,28 @@ import { useI18n } from 'vue-i18n'
 import { usePhoneActions } from '@/core/composables/usePhoneActions.js'
 import PhoneConfigDialog from '@/core/components/phone-config-dialog.vue'
 import { formatPhone } from '@/core/utils/phoneFormat.js'
+import { useSmsConfig } from '@/core/composables/useSmsConfig.js'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
     phone: { type: String, required: true },
     name: { type: String, default: '' },
     showWhatsapp: { type: Boolean, default: true },
     showNumber: { type: Boolean, default: true },
-    whatsappTab: { type: Boolean, default: false }
+    whatsappTab: { type: Boolean, default: false },
+    showSms: { type: Boolean, default: true },
+    /** true: Elternansicht öffnet ihren SMS-Reiter (Ereignis sms), sonst Kontakt → SMS */
+    smsTab: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['whatsapp'])
+const emit = defineEmits(['whatsapp', 'sms'])
 
 const { t } = useI18n()
 const { clickToCall, openWhatsApp, copyToClipboard, loadPhoneConfig } = usePhoneActions()
 const showConfig = ref(false)
+const router = useRouter()
+const { smsConfig, loadSmsConfig } = useSmsConfig()
+loadSmsConfig()
 
 async function onClickToCall() {
     const config = await loadPhoneConfig()
@@ -85,6 +106,13 @@ function onWhatsApp() {
     }
 }
 
+function onSms() {
+    if (props.smsTab) {
+        emit('sms', props.phone)
+    } else {
+        router.push({ name: 'sms', query: { phone: props.phone, name: props.name || undefined } })
+    }
+}
 
 function onCopy() {
     copyToClipboard(props.phone)

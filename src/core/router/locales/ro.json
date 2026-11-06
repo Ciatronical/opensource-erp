@@ -51,6 +51,8 @@
         "login": "/autentificare",
         "emails": "/emailuri",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "docs": "/documentatie",
         "mechanic": "/mecanic",
         "mechanicOrder": "/mecanic/comanda",
@@ -83,7 +85,9 @@
         "title": "Contact",
         "callHistory": "Istoric apeluri",
         "emails": "E-mailuri",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram"
     },
     "SalesMenu": {
         "title": "Vânzări",

@@ -269,7 +269,9 @@
                 "statusRead": "прочитано",
                 "statusFailed": "ошибка",
                 "tooltipEmail": "Отправить по e-mail — уже отправлено {n}×",
-                "tooltipWhatsapp": "Отправить в WhatsApp — уже отправлено {n}×"
+                "tooltipWhatsapp": "Отправить в WhatsApp — уже отправлено {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Уже {n}× отправлено по SMS"
             },
             "autoSend": {
                 "hint": "При печати будет автоматически отправлено клиенту через {channels}.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Применить и печатать срок ремонта ({days} дн.)",
                 "optRepairTimeNone": "В заключении нет срока ремонта"
-            }
+            },
+            "sendSms": "Отправить по SMS (документ в виде ссылки)",
+            "smsSent": "SMS отправлено",
+            "smsError": "Не удалось отправить SMS"
         },
         "workflow": {
             "created": "Документ успешно создан",
@@ -652,6 +657,28 @@
                 "button": "Удалить {count} выбранных",
                 "cancel": "Отмена",
                 "confirm": "Удалить {count} позиций"
+            },
+            "sendSms": {
+                "title": "Отправить документ по SMS",
+                "phone": "Мобильный номер",
+                "landlineHint": "Похоже на стационарный номер – стационарный телефон не принимает SMS.",
+                "text": "Текст SMS",
+                "insertLink": "Вставить ссылку",
+                "linkHint": "отправляется как ссылка, доступна {days} дн.",
+                "cancel": "Отмена",
+                "send": "Отправить SMS",
+                "defaultText": "Здравствуйте{salutation}, направляем {docRef} на сумму {amount}: {link} С уважением, {company}",
+                "defaultTextNoAmount": "Здравствуйте{salutation}, направляем {docRef}: {link} С уважением, {company}",
+                "docRef": {
+                    "invoice": "Ваш счёт № {number}",
+                    "quotation": "Ваше предложение № {number}",
+                    "order": "Ваше подтверждение заказа № {number}",
+                    "delivery_order": "Ваша товарная накладная № {number}",
+                    "credit_note": "Ваше кредитовое авизо № {number}",
+                    "invoice_storno": "Ваш сторно-счёт № {number}",
+                    "purchase_order": "наш заказ № {number}",
+                    "request_quotation": "наш запрос предложения № {number}"
+                }
             }
         },
         "dhl": {

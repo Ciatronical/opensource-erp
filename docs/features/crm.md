@@ -121,7 +121,7 @@ Unter **Einstellungen > CRM**:
 
 ## Kontakthistorie
 
-Die Karte **Kontakthistorie** im Kunden zeigt alle Berührungspunkte chronologisch in einer Liste: Anrufe (ein- und ausgehend, verpasst, mit Mitschnitt und Transkript), WhatsApp-Nachrichten, [Briefe](briefe.md) (mit Versandwegen E-Mail/Post) und E-Mails — jeweils mit Datum, Richtung, Mitarbeiter und Kurztext. Der Knopf „Brief“ in der Karte beginnt einen neuen Brief an diesen Kunden. Ein Klick öffnet den Vorgang. So ist auf einen Blick klar, wann zuletzt Kontakt bestand und worum es ging.
+Die Karte **Kontakthistorie** im Kunden zeigt alle Berührungspunkte chronologisch in einer Liste: Anrufe (ein- und ausgehend, verpasst, mit Mitschnitt und Transkript), WhatsApp-Nachrichten, [SMS](sms.md) (auch Ausweich-SMS statt WhatsApp), [Briefe](briefe.md) (mit Versandwegen E-Mail/Post) und E-Mails — jeweils mit Datum, Richtung, Mitarbeiter und Kurztext. Der Knopf „Brief“ in der Karte beginnt einen neuen Brief an diesen Kunden. Ein Klick öffnet den Vorgang. So ist auf einen Blick klar, wann zuletzt Kontakt bestand und worum es ging.
 
 Im Kopf der Karte, links vom Brief-Knopf, steht der Knopf **„Kunde vor Ort“**: Kommt der Kunde persönlich vorbei, wird im Dialog festgehalten, was er gesagt hat (Wunsch, Beschwerde, Terminabsprache …). Der Zeitpunkt ist mit jetzt vorbelegt und lässt sich nachträglich ändern, Strg+Enter speichert. Der Eintrag erscheint sofort als „Vor Ort“ mit erfassendem Mitarbeiter in der Historie, hat einen eigenen Filter und kann über den Stift geändert oder gelöscht werden. Gespeichert wird kivitendo-kompatibel als Notiz am Kunden (`notes`, Modul CT) — dieselben Notizen sind damit auch in kivitendo sichtbar.
 

@@ -90,6 +90,10 @@ export default {
       }
       if (item.type === 'email') return 'deep-purple'
       if (item.type === 'whatsapp') return 'green'
+      if (item.type === 'sms') return 'indigo'
+      if (item.type === 'sms_fallback') return item.data.status === 'failed' ? 'red' : 'warning'
+      if (item.type === 'telegram') return 'light-blue-darken-2'
+      if (item.type === 'telegram_failed') return 'red'
       return 'grey'
     }
 
@@ -105,6 +109,10 @@ export default {
       }
       if (item.type === 'email') return 'mdi-email-outline'
       if (item.type === 'whatsapp') return 'mdi-whatsapp'
+      if (item.type === 'sms') return 'mdi-message-text-outline'
+      if (item.type === 'sms_fallback') return 'mdi-message-alert-outline'
+      if (item.type === 'telegram') return 'mdi-send-circle-outline'
+      if (item.type === 'telegram_failed') return 'mdi-send-lock-outline'
       return 'mdi-bell-outline'
     }
 
@@ -118,6 +126,22 @@ export default {
     }
 
     function chipTitle(item) {
+      if (item.type === 'sms') {
+        return (item.name || '') + ': ' + (item.data.message_text || '') + ' — ' + formatDateTime(item.timestamp)
+      }
+      if (item.type === 'sms_fallback') {
+        const d = item.data
+        return (d.status === 'failed'
+          ? t('InfoBar.smsFallbackFailed', { name: item.name, error: d.error_message || '' })
+          : t('InfoBar.smsFallbackToast', { name: item.name }) + (d.whatsapp_error ? ' (' + d.whatsapp_error + ')' : ''))
+          + ' — ' + formatDateTime(item.timestamp)
+      }
+      if (item.type === 'telegram') {
+        return (item.name || '') + ': ' + (item.data.message_text || t('InfoBar.telegramFile')) + ' — ' + formatDateTime(item.timestamp)
+      }
+      if (item.type === 'telegram_failed') {
+        return t('InfoBar.telegramFailed', { name: item.name || '', error: item.data.error_message || '' }) + ' — ' + formatDateTime(item.timestamp)
+      }
       if (item.type === 'completed') {
         return (item.data.customer_name || item.data.ordnumber) + ' — alle Arbeiten erledigt'
       }
@@ -153,6 +177,8 @@ export default {
       else if (item.type === 'missing_order') openMissingOrder(item.data)
       else if (item.type === 'email') openEmail(item.data)
       else if (item.type === 'whatsapp') openWhatsapp(item.data)
+      else if (item.type === 'sms' || item.type === 'sms_fallback') openSms(item.data)
+      else if (item.type === 'telegram' || item.type === 'telegram_failed') openTelegram(item.data)
     }
 
     function openCall(call) {
@@ -186,6 +212,22 @@ export default {
         router.push({ name: routeName, params: { id: wa.customer_id }, query: { tab: 'whatsapp' } })
       } else {
         router.push({ name: 'whatsapp' })
+      }
+    }
+
+    function openSms(sms) {
+      if (sms.customer_id && sms.src) {
+        router.push({ name: sms.src === 'V' ? 'change-vendor' : 'change-customer', params: { id: sms.customer_id }, query: { tab: 'sms' } })
+      } else {
+        router.push({ name: 'sms', query: { phone: sms.phone_number } })
+      }
+    }
+
+    function openTelegram(msg) {
+      if (msg.customer_id && msg.src) {
+        router.push({ name: msg.src === 'V' ? 'change-vendor' : 'change-customer', params: { id: msg.customer_id }, query: { tab: 'telegram' } })
+      } else {
+        router.push({ name: 'telegram', query: { chat: msg.chat_id } })
       }
     }
 

@@ -157,7 +157,32 @@
             "suggested_decline": "Afslag på ordre {number} registreret ({channel})",
             "declined": "Afslag på ordre {number} ({channel}) — taget til efterretning"
         },
-        "confirmationRevokedBy": "trukket tilbage af {name}"
+        "confirmationRevokedBy": "trukket tilbage af {name}",
+        "sms": "SMS",
+        "openSms": "Åbn SMS-historik",
+        "smsFailed": "ikke leveret",
+        "telegram": "Telegram",
+        "openTelegram": "Åbn Telegram-chat",
+        "telegramMailing": "Rundskrivelse",
+        "telegramFailed": "ikke leveret",
+        "telegramType": {
+            "text": "Besked",
+            "photo": "Foto",
+            "document": "Dokument",
+            "voice": "Talebesked",
+            "audio": "Lyd",
+            "video": "Video",
+            "location": "Placering",
+            "contact": "Telefonnummer delt",
+            "sticker": "Sticker"
+        },
+        "smsInsteadOfWhatsApp": "SMS i stedet for WhatsApp",
+        "smsSource": {
+            "faktura": "Bilag",
+            "mailing": "Rundskrivelse",
+            "fallback": "i stedet for WhatsApp",
+            "reminder": "Påmindelse"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Ring op",
@@ -176,6 +201,7 @@
         "configSaved": "Indstillinger gemt",
         "phoneSettings": "Telefonindstillinger",
         "configSaveError": "Indstillinger kunne ikke gemmes",
-        "whatsappGreeting": "Hej {name}"
+        "whatsappGreeting": "Hej {name}",
+        "sendSms": "Send SMS"
     }
 }

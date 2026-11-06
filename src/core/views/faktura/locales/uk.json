@@ -269,7 +269,9 @@
                 "statusRead": "прочитано",
                 "statusFailed": "помилка",
                 "tooltipEmail": "Надіслати e-mail — вже надіслано {n}×",
-                "tooltipWhatsapp": "Надіслати у WhatsApp — вже надіслано {n}×"
+                "tooltipWhatsapp": "Надіслати у WhatsApp — вже надіслано {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Уже надіслано по SMS: {n}×"
             },
             "autoSend": {
                 "hint": "Під час друку буде автоматично надіслано клієнту через {channels}.",
@@ -535,7 +537,10 @@
             "gutachten": {
                 "optRepairTime": "Застосувати і друкувати тривалість ремонту ({days} дн.)",
                 "optRepairTimeNone": "У висновку немає тривалості ремонту"
-            }
+            },
+            "sendSms": "Надіслати по SMS (документ як посилання)",
+            "smsSent": "SMS надіслано",
+            "smsError": "Не вдалося надіслати SMS"
         },
         "workflow": {
             "created": "Документ успішно створено",
@@ -666,6 +671,28 @@
                 "button": "Видалити {count} вибраних",
                 "cancel": "Скасувати",
                 "confirm": "Видалити {count} позицій"
+            },
+            "sendSms": {
+                "title": "Надіслати документ по SMS",
+                "phone": "Мобільний номер",
+                "landlineHint": "Схоже на стаціонарний номер – стаціонарні телефони не отримують SMS.",
+                "text": "Текст SMS",
+                "insertLink": "Вставити посилання",
+                "linkHint": "надсилається як посилання, доступне {days} дн.",
+                "cancel": "Скасувати",
+                "send": "Надіслати SMS",
+                "defaultText": "Добрий день{salutation}, ось {docRef} на суму {amount}: {link} З повагою, {company}",
+                "defaultTextNoAmount": "Добрий день{salutation}, ось {docRef}: {link} З повагою, {company}",
+                "docRef": {
+                    "invoice": "Ваш рахунок № {number}",
+                    "quotation": "Ваша пропозиція № {number}",
+                    "order": "Ваше підтвердження замовлення № {number}",
+                    "delivery_order": "Ваша накладна № {number}",
+                    "credit_note": "Вашу кредитну ноту № {number}",
+                    "invoice_storno": "Ваш сторно-рахунок № {number}",
+                    "purchase_order": "наше замовлення № {number}",
+                    "request_quotation": "наш запит № {number}"
+                }
             }
         },
         "dhl": {

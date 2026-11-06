@@ -20,7 +20,7 @@
 | [WhatsApp](whatsapp.md) | Business-Messaging über die WhatsApp Business API |
 | [Briefe und Postversand](briefe.md) | Briefe schreiben, Briefe und Belege elektronisch per Post versenden (Hybridbrief) |
 | [Rundschreiben](rundschreiben.md) | Eine Nachricht an bis zu 300 Kunden – Telegram, WhatsApp oder E-Mail, kostenbewusst in Etappen, mit Verteilern |
-| [Telegram](telegram.md) | Sprachnotizen, Anschlagtafel |
+| [Telegram](telegram.md) | Kundenchat über den Firmen-Bot (auch Antworten auf SMS), Sprachnotizen, Anschlagtafel |
 | [Telefonie (CRMTI)](telefonie-crmti.md) | CTI-Anbindung über Asterisk: Anruferkennung, Mitschnitt |
 | [DHL](dhl.md) | Versandintegration mit Label-Druck |
 | [Kalender](kalender.md) | Terminplanung mit Echtzeit-Updates und Wall-Display |

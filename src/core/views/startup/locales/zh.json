@@ -157,7 +157,32 @@
             "suggested_decline": "识别到客户拒绝订单 {number}（{channel}）",
             "declined": "客户拒绝订单 {number}（{channel}）— 已知悉"
         },
-        "confirmationRevokedBy": "由 {name} 撤销"
+        "confirmationRevokedBy": "由 {name} 撤销",
+        "sms": "短信",
+        "openSms": "打开短信记录",
+        "smsFailed": "未送达",
+        "telegram": "Telegram",
+        "openTelegram": "打开 Telegram 聊天",
+        "telegramMailing": "群发",
+        "telegramFailed": "未送达",
+        "telegramType": {
+            "text": "消息",
+            "photo": "照片",
+            "document": "文档",
+            "voice": "语音消息",
+            "audio": "音频",
+            "video": "视频",
+            "location": "位置",
+            "contact": "已共享电话号码",
+            "sticker": "贴纸"
+        },
+        "smsInsteadOfWhatsApp": "短信代替 WhatsApp",
+        "smsSource": {
+            "faktura": "单据",
+            "mailing": "群发",
+            "fallback": "替代 WhatsApp",
+            "reminder": "提醒"
+        }
     },
     "PhoneActions": {
         "clickToCall": "拨打电话",
@@ -176,6 +201,7 @@
         "configSaved": "设置已保存",
         "phoneSettings": "电话设置",
         "configSaveError": "设置保存失败",
-        "whatsappGreeting": "你好 {name}"
+        "whatsappGreeting": "你好 {name}",
+        "sendSms": "发送短信"
     }
 }

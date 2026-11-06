@@ -74,6 +74,10 @@
         "selectVendor": "Otsi tarnijat...",
         "markOrdered": "Märgi {count} telllituks",
         "yesterday": "Eile",
-        "noOrder": "tellimuseta"
+        "noOrder": "tellimuseta",
+        "smsFallbackToast": "WhatsApp kontaktile {name} ei jõudnud kohale – saadetud SMS-ina",
+        "smsFallbackFailed": "WhatsApp kontaktile {name} ei jõudnud kohale ja asendus-SMS ebaõnnestus samuti: {error}",
+        "telegramFile": "Fail",
+        "telegramFailed": "Telegram kliendile {name} toimetamata: {error}"
     }
 }

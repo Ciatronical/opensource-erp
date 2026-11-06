@@ -74,6 +74,10 @@
         "selectVendor": "Buscar proveedor...",
         "markOrdered": "Marcar {count} como pedidos",
         "yesterday": "Ayer",
-        "noOrder": "sin pedido"
+        "noOrder": "sin pedido",
+        "smsFallbackToast": "El WhatsApp a {name} no llegó: enviado como SMS",
+        "smsFallbackFailed": "El WhatsApp a {name} no llegó y el SMS de reserva también falló: {error}",
+        "telegramFile": "Archivo",
+        "telegramFailed": "Telegram a {name} no entregado: {error}"
     }
 }

@@ -213,7 +213,7 @@ function _documentListQuery($data, $withLimit) {
                    (SELECT string_agg(DISTINCT rl.to_table, ',')
                       FROM record_links rl
                      WHERE rl.from_table = '$table' AND rl.from_id = d.id
-                       AND rl.to_table IN ('email_journal', 'whatsapp_messages')) AS sent_channels,
+                       AND rl.to_table IN ('email_journal', 'whatsapp_messages', 'sms_messages')) AS sent_channels,
                    inv.js->>'state'                 AS invoice_state,
                    (inv.js->>'count')::int          AS invoice_count,
                    (inv.js->'invoices'->0->>'id')::int AS invoice_id,

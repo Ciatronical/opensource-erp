@@ -172,7 +172,32 @@
             "suggested_decline": "Виявлено відмову щодо замовлення {number} ({channel})",
             "declined": "Відмова щодо замовлення {number} ({channel}) — взято до відома"
         },
-        "confirmationRevokedBy": "відкликав {name}"
+        "confirmationRevokedBy": "відкликав {name}",
+        "sms": "SMS",
+        "openSms": "Відкрити історію SMS",
+        "smsFailed": "не доставлено",
+        "telegram": "Telegram",
+        "openTelegram": "Відкрити чат Telegram",
+        "telegramMailing": "Розсилка",
+        "telegramFailed": "не доставлено",
+        "telegramType": {
+            "text": "Повідомлення",
+            "photo": "Фото",
+            "document": "Документ",
+            "voice": "Голосове повідомлення",
+            "audio": "Аудіо",
+            "video": "Відео",
+            "location": "Розташування",
+            "contact": "Номер телефону передано",
+            "sticker": "Стікер"
+        },
+        "smsInsteadOfWhatsApp": "SMS замість WhatsApp",
+        "smsSource": {
+            "faktura": "Документ",
+            "mailing": "Розсилка",
+            "fallback": "замість WhatsApp",
+            "reminder": "Нагадування"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Зателефонувати",
@@ -191,6 +216,7 @@
         "configSaved": "Налаштування збережено",
         "phoneSettings": "Налаштування телефону",
         "configSaveError": "Не вдалося зберегти налаштування",
-        "whatsappGreeting": "Привіт {name}"
+        "whatsappGreeting": "Привіт {name}",
+        "sendSms": "Надіслати SMS"
     }
 }

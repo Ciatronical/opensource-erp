@@ -1,6 +1,7 @@
 <?php
 // backend/webhook/telegram.php
-// Telegram-Bot Webhook fuer Sprachnotizen -> Whisper -> Anschlagtafel
+// Telegram-Bot Webhook: Sprachnotizen der Mitarbeiter -> Whisper -> Anschlagtafel,
+// Nachrichten von Kunden/Lieferanten -> telegram_messages (Kontakt -> Telegram)
 // KEIN Session-Check — Telegram sendet keine Cookies!
 //
 // Ablauf:
@@ -69,10 +70,11 @@ if (!$dbInfo) {
 
 try {
     $pdo = _connectCompanyDb($dbInfo);
-    // Kunden, die dem Bot „Start" sagen oder ihre Rufnummer teilen, werden für
-    // Rundschreiben verknüpft (customer_ext.telegram_chat_id); alles andere
-    // sind Sprachnotizen der Mitarbeiter.
-    if (!_processContactRegistration($pdo, $input['message'])) {
+    // Kunden, die dem Bot „Start" sagen oder ihre Rufnummer teilen, werden
+    // verknüpft (customer_ext.telegram_chat_id); ihre Nachrichten landen im
+    // Telegram-Kundenchat. Sprachnachrichten der Mitarbeiter sind Sprachnotizen.
+    if (!_processContactRegistration($pdo, $dbInfo, $input['message'])
+        && !_processCustomerMessage($pdo, $dbInfo, $input['message'])) {
         _processVoiceMessage($pdo, $dbInfo, $input['message']);
     }
 } catch (\Throwable $e) {
@@ -184,7 +186,7 @@ function _resolveSenderName(PDO $pdo, string $chatId, array $from): string {
  *
  * @return bool true, wenn die Nachricht hier erledigt wurde
  */
-function _processContactRegistration(PDO $pdo, array $message): bool {
+function _processContactRegistration(PDO $pdo, array $dbInfo, array $message): bool {
     $chatId   = (string)($message['chat']['id'] ?? ($message['from']['id'] ?? ''));
     $botToken = _cfg($pdo, 'telegram_bot_token', '');
     if ($chatId === '' || $botToken === '') return false;
@@ -192,11 +194,14 @@ function _processContactRegistration(PDO $pdo, array $message): bool {
     $text = trim((string)($message['text'] ?? ''));
     if ($text !== '' && preg_match('~^/start~i', $text)) {
         $company = _companyName($pdo);
-        _sendTelegramMessage($botToken, $chatId,
-            "Willkommen bei {$company}!\nDamit wir Sie zuordnen können, teilen Sie bitte einmalig Ihre Telefonnummer über den Knopf unten. "
-            ."Danach erhalten Sie unsere Mitteilungen hier in Telegram.",
-            ['keyboard' => [[['text' => "\u{1F4F1} Telefonnummer teilen", 'request_contact' => true]]],
-             'one_time_keyboard' => true, 'resize_keyboard' => true]);
+        $linked = _linkedCv($pdo, $chatId);
+        if ($linked) {
+            _sendTelegramMessage($botToken, $chatId,
+                "Willkommen zurück bei {$company}, {$linked['name']}!\nSchreiben Sie uns einfach hier – wir antworten so schnell wie möglich.",
+                ['remove_keyboard' => true]);
+        } else {
+            _askForPhone($botToken, $chatId, "Willkommen bei {$company}!\n");
+        }
         return true;
     }
 
@@ -237,24 +242,200 @@ function _processContactRegistration(PDO $pdo, array $message): bool {
     }
 
     if (!$match) {
+        // Nummer als Nachricht ablegen – in Kontakt → Telegram lässt sich der
+        // Chat dann von Hand einem Kunden zuordnen
+        $digitsE164 = '+'.$digits;
+        _storeCustomerMessage($pdo, $message, null, 'contact', $digitsE164, null, null);
         _sendTelegramMessage($botToken, $chatId,
-            "Danke! Zu dieser Nummer haben wir noch keinen Kundeneintrag. Melden Sie sich gern bei uns, dann verknüpfen wir Sie.",
+            "Danke! Zu dieser Nummer haben wir noch keinen Kundeneintrag. Schreiben Sie uns gern hier, wir ordnen Sie zu und melden uns.",
             ['remove_keyboard' => true]);
         return true;
     }
 
     $table = $match['src'] === 'V' ? 'vendor_ext' : 'customer_ext';
     $col   = $match['src'] === 'V' ? 'vendor_id' : 'customer_id';
+    // Verknüpfen; Nachrichten, die vorher ohne Zuordnung kamen, bekommen den Kunden
     $stmt = $pdo->prepare(
-        "INSERT INTO {$table} ({$col}, telegram_chat_id, itime) VALUES (:id, :chat, NOW())
-         ON CONFLICT ({$col}) DO UPDATE SET telegram_chat_id = EXCLUDED.telegram_chat_id, mtime = NOW()"
+        "WITH ext AS (
+            INSERT INTO {$table} ({$col}, telegram_chat_id, itime) VALUES (:id, :chat, NOW())
+            ON CONFLICT ({$col}) DO UPDATE SET telegram_chat_id = EXCLUDED.telegram_chat_id, mtime = NOW()
+         )
+         UPDATE telegram_messages SET customer_id = :id, mtime = NOW() WHERE chat_id = :chat AND customer_id IS NULL"
     );
     $stmt->execute([':id' => (int)$match['id'], ':chat' => $chatId]);
 
     _sendTelegramMessage($botToken, $chatId,
-        "\u{2705} Vielen Dank, " . $match['name'] . "! Sie sind jetzt verknüpft und erhalten unsere Mitteilungen hier.",
+        "\u{2705} Vielen Dank, " . $match['name'] . "! Sie sind jetzt verknüpft. Schreiben Sie uns einfach hier – auch Fotos und Dokumente.",
         ['remove_keyboard' => true]);
     return true;
+}
+
+/**
+ * Bitte um die Rufnummer mit dem Knopf „Telefonnummer teilen“
+ */
+function _askForPhone(string $botToken, string $chatId, string $intro = ''): void {
+    _sendTelegramMessage($botToken, $chatId,
+        $intro."Damit wir Sie zuordnen können, teilen Sie bitte einmalig Ihre Telefonnummer über den Knopf unten. "
+        ."Danach können Sie uns hier schreiben und erhalten unsere Mitteilungen in Telegram.",
+        ['keyboard' => [[['text' => "\u{1F4F1} Telefonnummer teilen", 'request_contact' => true]]],
+         'one_time_keyboard' => true, 'resize_keyboard' => true]);
+}
+
+/**
+ * Mit dem Chat verknüpfter Kunde/Lieferant
+ *
+ * @return array|null id, name
+ */
+function _linkedCv(PDO $pdo, string $chatId): ?array {
+    $stmt = $pdo->prepare(
+        "SELECT x.customer_id AS id, c.name FROM customer_ext x JOIN customer c ON c.id = x.customer_id WHERE x.telegram_chat_id = :chat
+         UNION ALL
+         SELECT x.vendor_id, v.name FROM vendor_ext x JOIN vendor v ON v.id = x.vendor_id WHERE x.telegram_chat_id = :chat
+         LIMIT 1"
+    );
+    $stmt->execute([':chat' => $chatId]);
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+}
+
+/**
+ * Nachricht eines Kunden/Lieferanten in den Telegram-Kundenchat
+ *
+ * Sprachnachrichten aus Mitarbeiter-Chats (Zuordnung in telegram_chat_map oder
+ * schon Sprachnotizen auf der Tafel) und aus unbekannten Chats bleiben
+ * Sprachnotizen; Sprachnachrichten verknüpfter Kunden werden transkribiert.
+ * Texte, Fotos und Dateien aus unbekannten Chats werden ebenfalls abgelegt –
+ * der Absender wird (höchstens einmal am Tag) um seine Rufnummer gebeten.
+ *
+ * @return bool true, wenn die Nachricht hier erledigt wurde
+ */
+function _processCustomerMessage(PDO $pdo, array $dbInfo, array $message): bool {
+    $chatId = (string)($message['chat']['id'] ?? '');
+    $botToken = _cfg($pdo, 'telegram_bot_token', '');
+    if ($chatId === '' || $botToken === '' || ($message['chat']['type'] ?? 'private') !== 'private') return false;
+
+    $isVoice = isset($message['voice']) || isset($message['audio']);
+    $linked = _linkedCv($pdo, $chatId);
+    if ($isVoice && (!$linked || _isEmployeeChat($pdo, $chatId))) return false;
+    if (!$linked && _isEmployeeChat($pdo, $chatId)) return true; // Texte der Mitarbeiter an den Bot: wie bisher ignorieren
+
+    $text = trim((string)($message['text'] ?? $message['caption'] ?? ''));
+    if (str_starts_with($text, '/')) return true; // Bot-Befehle (außer /start) nicht ablegen
+
+    // Art und Datei bestimmen
+    $type = 'text';
+    $file = null;
+    if (!empty($message['photo'])) {
+        $type = 'photo';
+        $p = end($message['photo']); // größte Auflösung
+        $file = ['id' => $p['file_id'], 'name' => 'Foto_'.date('Y-m-d_H-i-s').'.jpg', 'size' => (int)($p['file_size'] ?? 0)];
+    } else {
+        foreach (['document', 'video', 'voice', 'audio', 'video_note'] as $k) {
+            if (empty($message[$k]['file_id'])) continue;
+            $type = $k === 'video_note' ? 'video' : $k;
+            $m = $message[$k];
+            $ext = ['video' => 'mp4', 'voice' => 'ogg', 'audio' => 'mp3', 'video_note' => 'mp4'][$k] ?? 'bin';
+            $file = ['id' => $m['file_id'], 'name' => (string)($m['file_name'] ?? ucfirst($type).'_'.date('Y-m-d_H-i-s').'.'.$ext),
+                     'size' => (int)($m['file_size'] ?? 0)];
+            break;
+        }
+    }
+    if (isset($message['location'])) {
+        $type = 'location';
+        $text = 'https://maps.google.com/?q='.$message['location']['latitude'].','.$message['location']['longitude'];
+    } elseif (isset($message['sticker'])) {
+        $type = 'sticker';
+        $text = (string)($message['sticker']['emoji'] ?? '');
+    }
+    if ($text === '' && !$file) return true;
+
+    // Datei holen (Bots dürfen bis 20 MB laden) und ablegen
+    $mediaUrl = null;
+    $mediaName = null;
+    $bytes = '';
+    if ($file && $file['size'] <= 20 * 1024 * 1024) {
+        $bytes = _downloadTelegramFile($botToken, $file['id']);
+        if ($bytes !== '') {
+            $mediaName = preg_replace('/[^\p{L}\p{N}._ -]/u', '_', basename($file['name'])) ?: 'Datei';
+            $mediaUrl = _saveTelegramFile($dbInfo['dbname'], $bytes, $mediaName);
+        }
+    }
+    if ($isVoice && $bytes !== '') {
+        $result = _transcribe($pdo, $bytes);
+        if ($result !== null && $result['text'] !== '') $text = $result['text'];
+    }
+
+    // Unbekannter Absender: einmal am Tag um die Rufnummer bitten
+    if (!$linked) {
+        $stmt = $pdo->prepare("SELECT 1 FROM telegram_messages WHERE chat_id = :chat AND direction = 'I' AND itime > NOW() - interval '1 day' LIMIT 1");
+        $stmt->execute([':chat' => $chatId]);
+        if (!$stmt->fetch()) _askForPhone($botToken, $chatId, "Danke für Ihre Nachricht – sie ist bei uns angekommen.\n");
+    }
+
+    _storeCustomerMessage($pdo, $message, $linked ? (int)$linked['id'] : null, $type, $text, $mediaUrl, $mediaName);
+    return true;
+}
+
+/**
+ * Eingehende Nachricht in telegram_messages (Doppelzustellung wird verworfen)
+ */
+function _storeCustomerMessage(PDO $pdo, array $message, ?int $cvId, string $type, ?string $text, ?string $mediaUrl, ?string $mediaName): void {
+    $from = $message['from'] ?? [];
+    $name = trim(($from['first_name'] ?? '').' '.($from['last_name'] ?? ''));
+    if ($name === '' && !empty($from['username'])) $name = '@'.$from['username'];
+    try {
+        $stmt = $pdo->prepare(
+            "INSERT INTO telegram_messages (chat_id, telegram_message_id, direction, customer_id, contact_name, message_type,
+                                            message_text, media_url, media_name, status, source)
+             VALUES (:chat, :mid, 'I', :cv, :name, :type, NULLIF(:text, ''), :media, :media_name, 'received', 'chat')
+             ON CONFLICT (chat_id, telegram_message_id) DO NOTHING"
+        );
+        $stmt->execute([
+            ':chat' => (string)$message['chat']['id'],
+            ':mid' => (int)($message['message_id'] ?? 0),
+            ':cv' => $cvId,
+            ':name' => $name !== '' ? $name : null,
+            ':type' => $type,
+            ':text' => (string)$text,
+            ':media' => $mediaUrl,
+            ':media_name' => $mediaName,
+        ]);
+    } catch (\Exception $e) {
+        error_log('[TELEGRAM WEBHOOK] Kundennachricht nicht gespeichert: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Mitarbeiter-Chat: in telegram_chat_map eingetragen oder schon Absender von Sprachnotizen
+ */
+function _isEmployeeChat(PDO $pdo, string $chatId): bool {
+    $map = json_decode(_cfg($pdo, 'telegram_chat_map', ''), true);
+    if (is_array($map) && !empty($map[$chatId])) return true;
+    $stmt = $pdo->prepare("SELECT 1 FROM voice_notes WHERE telegram_chat_id = :chat LIMIT 1");
+    $stmt->execute([':chat' => $chatId]);
+    return (bool)$stmt->fetch();
+}
+
+/**
+ * Datei eines Kunden unter data/<dbname>/telegram/<Jahr-Monat>/ ablegen
+ *
+ * @return string|null Pfad relativ zum Datenverzeichnis des Mandanten
+ */
+function _saveTelegramFile(string $dbname, string $bytes, string $name): ?string {
+    if (!preg_match('/^[a-zA-Z0-9_-]+$/', $dbname)) return null;
+    $baseDir = realpath(__DIR__ . '/../data') ?: (__DIR__ . '/../data');
+    $rel = 'telegram/' . date('Y-m');
+    $dir = $baseDir . '/' . $dbname . '/' . $rel;
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        error_log("[TELEGRAM WEBHOOK] Verzeichnis nicht anlegbar: {$dir}");
+        return null;
+    }
+    $pi = pathinfo($name);
+    $ziel = $name;
+    for ($n = 1; file_exists($dir . '/' . $ziel); $n++) {
+        $ziel = $pi['filename'] . '_' . $n . (isset($pi['extension']) ? '.' . $pi['extension'] : '');
+    }
+    if (file_put_contents($dir . '/' . $ziel, $bytes) === false) return null;
+    return $rel . '/' . $ziel;
 }
 
 /**

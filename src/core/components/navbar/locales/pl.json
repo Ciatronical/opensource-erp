@@ -74,6 +74,10 @@
         "selectVendor": "Szukaj dostawcy...",
         "markOrdered": "Oznacz {count} jako zamówione",
         "yesterday": "Wczoraj",
-        "noOrder": "brak zlecenia"
+        "noOrder": "brak zlecenia",
+        "smsFallbackToast": "WhatsApp do {name} nie dotarł – wysłano jako SMS",
+        "smsFallbackFailed": "WhatsApp do {name} nie dotarł, zapasowy SMS również się nie powiódł: {error}",
+        "telegramFile": "Plik",
+        "telegramFailed": "Telegram do {name} niedostarczony: {error}"
     }
 }

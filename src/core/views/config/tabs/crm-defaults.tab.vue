@@ -198,6 +198,13 @@
                 </v-col>
             </v-row>
 
+            <!-- SMS: Guthaben, Verbrauch, Eingang (Webhook) einrichten -->
+            <v-row v-else-if="field.type === 'component' && field.component === 'sms-setup'" class="my-4">
+                <v-col cols="12">
+                    <SmsSetupConfig />
+                </v-col>
+            </v-row>
+
             <!-- SumUp Reader koppeln -->
             <v-row v-else-if="field.type === 'component' && field.component === 'sumup-reader-pairing'" class="my-4">
                 <v-col cols="12">
@@ -292,6 +299,7 @@ import axios from 'axios';
 import WhatsAppTemplatesConfig from './whatsapp-templates.config.vue';
 import WhatsAppProfilePictureConfig from './whatsapp-profile-picture.config.vue';
 import SumupReaderPairingConfig from './sumup-reader-pairing.config.vue';
+import SmsSetupConfig from './sms-setup.config.vue';
 import EmailAutoconfigConfig from './email-autoconfig.config.vue';
 import EmailMaxsizeConfig from './email-maxsize.config.vue';
 import BelegQuellenConfig from './beleg-quellen.config.vue';

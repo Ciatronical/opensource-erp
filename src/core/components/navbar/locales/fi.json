@@ -74,6 +74,10 @@
         "selectVendor": "Hae toimittajaa...",
         "markOrdered": "Merkitse {count} tilatuksi",
         "yesterday": "Eilen",
-        "noOrder": "ei tilausta"
+        "noOrder": "ei tilausta",
+        "smsFallbackToast": "WhatsApp-viesti vastaanottajalle {name} ei mennyt perille – lähetetty tekstiviestinä",
+        "smsFallbackFailed": "WhatsApp-viesti vastaanottajalle {name} ei mennyt perille, eikä varatekstiviestikään onnistunut: {error}",
+        "telegramFile": "Tiedosto",
+        "telegramFailed": "Telegram-viestiä ei toimitettu vastaanottajalle {name}: {error}"
     }
 }

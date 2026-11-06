@@ -22,6 +22,7 @@
 // (backend/webhook/telegram.php), wenn der Kunde dem Bot seine Rufnummer teilt.
 
 require_once __DIR__.'/../lib/mitarbeiter.php';
+require_once __DIR__.'/../telegram/telegram_lib.php';
 require_once __DIR__.'/../email/mailer.php';
 
 /** Höchstzahl Empfänger je Rundschreiben und je Verteiler. */
@@ -200,20 +201,7 @@ function mailingConfigJson(): string {
  * (telegram_bot_username) ablegen, damit kein weiterer Aufruf nötig ist.
  */
 function mailingEnsureTelegramBotName($db): void {
-    $row = $db->getOne(<<<SQL
-        SELECT (SELECT btrim(value) FROM defaults_oserp WHERE key = 'telegram_bot_token') AS token,
-               (SELECT btrim(value) FROM defaults_oserp WHERE key = 'telegram_bot_username') AS username,
-               (SELECT value = '1' FROM defaults_oserp WHERE key = 'telegram_enabled') AS enabled
-    SQL);
-    if (empty($row['enabled']) || empty($row['token']) || !empty($row['username'])) return;
-    $ctx = stream_context_create(['http' => ['timeout' => 5, 'ignore_errors' => true]]);
-    $res = json_decode((string)@file_get_contents('https://api.telegram.org/bot'.$row['token'].'/getMe', false, $ctx), true);
-    $name = trim((string)($res['result']['username'] ?? ''));
-    if ($name === '') return;
-    $db->execute(<<<SQL
-        INSERT INTO defaults_oserp (key, value) VALUES ('telegram_bot_username', :name)
-        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
-    SQL, [':name' => $name]);
+    tgSettings($db);
 }
 
 /**
@@ -1307,31 +1295,14 @@ function mailingFill(string $text, array $r, array $ctx): string {
 }
 
 /**
- * Textnachricht über den Firmen-Bot an eine Telegram-Chat-ID.
- * Bei 429 liefert Telegram retry_after; ein gesperrter Bot („Forbidden: bot
- * was blocked by the user") ist ein dauerhafter Fehler für diesen Empfänger.
+ * Textnachricht über den Firmen-Bot an eine Telegram-Chat-ID – landet im
+ * Telegram-Verlauf des Kunden. Bei 429 liefert Telegram retry_after; ein
+ * gesperrter Bot („Forbidden: bot was blocked by the user") ist ein dauerhafter
+ * Fehler für diesen Empfänger.
  */
-function mailingSendTelegram($db, string $chatId, string $text): array {
-    $token = trim((string)($db->getOne("SELECT value FROM defaults_oserp WHERE key = 'telegram_bot_token'")['value'] ?? ''));
-    if ($token === '') return ['success' => false, 'error' => 'TELEGRAM_NOT_CONFIGURED'];
-    $ch = curl_init("https://api.telegram.org/bot{$token}/sendMessage");
-    curl_setopt_array($ch, [
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => http_build_query(['chat_id' => $chatId, 'text' => $text, 'disable_web_page_preview' => 'true']),
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 20,
-    ]);
-    $resp = curl_exec($ch);
-    $err = curl_error($ch);
-    curl_close($ch);
-    if ($err) return ['success' => false, 'error' => 'curl: '.$err];
-    $json = json_decode((string)$resp, true);
-    if (!empty($json['ok'])) {
-        return ['success' => true, 'reference' => (string)($json['result']['message_id'] ?? '')];
-    }
-    $out = ['success' => false, 'error' => (string)($json['description'] ?? 'Telegram-Fehler')];
-    if (intval($json['error_code'] ?? 0) === 429) $out['retry_after'] = intval($json['parameters']['retry_after'] ?? 30);
-    return $out;
+function mailingSendTelegram($db, string $chatId, string $text, int $cvId = 0): array {
+    $res = tgDeliver($db, $chatId, $text, ['customer_id' => $cvId ?: null, 'source' => 'mailing']);
+    return array_intersect_key($res, array_flip(['success', 'reference', 'error', 'retry_after']));
 }
 
 /**
@@ -1391,7 +1362,7 @@ function mailingSendWhatsAppTemplate(array $template, string $phone, string $nam
     $count = !empty($mm[1]) ? max(array_map('intval', $mm[1])) : 1;
     $params = [];
     for ($i = 0; $i < $count; $i++) $params[] = ($i === 0 && $count > 1) ? $name : $text;
-    $res = _sendTemplateMessageInternal($phone, $template, $params, $customerId);
+    $res = _sendTemplateMessageInternal($phone, $template, $params, $customerId, false);
     return ['success' => !empty($res['success']), 'error' => $res['error'] ?? null, 'reference' => $res['wa_message_id'] ?? null];
 }
 
@@ -1402,7 +1373,7 @@ function mailingSendVia($db, array $m, array $r, string $channel, string $target
     try {
         switch ($channel) {
             case 'telegram':
-                return mailingSendTelegram($db, $target, $text);
+                return mailingSendTelegram($db, $target, $text, intval($r['cv_id'] ?? 0));
             case 'whatsapp':
                 return mailingSendWhatsAppText($target, $text, $r['cv_src'] === 'C' ? intval($r['cv_id']) : 0);
             case 'whatsapp_template':
@@ -1412,7 +1383,7 @@ function mailingSendVia($db, array $m, array $r, string $channel, string $target
                 }
                 return mailingSendWhatsAppTemplate($templateCache, $target, (string)$r['name'], $text, $r['cv_src'] === 'C' ? intval($r['cv_id']) : 0, (string)($r['salutation'] ?? ''));
             case 'sms':
-                return mailingSendSms($db, $target, $text);
+                return mailingSendSms($db, $target, $text, intval($r['cv_id']));
             case 'email':
                 return mailingSendEmail($target, (string)$r['name'], $subject, $text, $html, intval($m['employee_id'] ?? 0) ?: null);
             case 'letter':
@@ -1473,31 +1444,15 @@ function mailingLearnReach($db, array $r, string $channel, bool $ok): void {
 }
 
 /**
- * SMS über seven.io (ehemals sms77): Zugang und Absender in der Firmenkonfiguration
- * (sms_api_key, sms_sender). Kostenpflichtig je SMS-Teil (160 Zeichen).
+ * SMS über seven.io – Kern in backend/api/sms/sms_lib.php; die SMS landet wie
+ * jede andere im SMS-Verlauf und in der Kontakthistorie (source = mailing).
+ * Kostenpflichtig je SMS-Teil (160 Zeichen).
  */
-function mailingSendSms($db, string $phone, string $text): array {
-    $cfg = $db->getOne("SELECT (SELECT btrim(value) FROM defaults_oserp WHERE key = 'sms_api_key') AS api_key,
-                               (SELECT btrim(value) FROM defaults_oserp WHERE key = 'sms_sender') AS sender");
-    if (empty($cfg['api_key'])) return ['success' => false, 'error' => 'SMS_NOT_CONFIGURED'];
-    $ch = curl_init('https://gateway.seven.io/api/sms');
-    curl_setopt_array($ch, [
-        CURLOPT_POST => true,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 20,
-        CURLOPT_HTTPHEADER => ['X-Api-Key: '.$cfg['api_key'], 'Accept: application/json'],
-        CURLOPT_POSTFIELDS => http_build_query(array_filter(['to' => $phone, 'text' => $text, 'from' => (string)($cfg['sender'] ?? ''), 'json' => 1])),
-    ]);
-    $body = curl_exec($ch);
-    $err = curl_error($ch);
-    curl_close($ch);
-    if ($body === false) return ['success' => false, 'error' => 'SMS: '.$err];
-    $res = json_decode((string)$body, true);
-    // seven.io: success "100" = angenommen; alles andere ist ein Fehlercode
-    if (!is_array($res) || (string)($res['success'] ?? '') !== '100') {
-        return ['success' => false, 'error' => 'SMS: '.(is_array($res) ? ('Code '.($res['success'] ?? '?')) : mb_substr((string)$body, 0, 120))];
-    }
-    return ['success' => true, 'reference' => (string)($res['messages'][0]['id'] ?? '')];
+function mailingSendSms($db, string $phone, string $text, int $cvId = 0): array {
+    require_once __DIR__.'/../sms/sms_lib.php';
+    $res = smsDeliver($db, $phone, $text, ['source' => 'mailing', 'customer_id' => $cvId ?: null]);
+    if (!$res['success']) return ['success' => false, 'error' => $res['code'] === 'SMS_NOT_CONFIGURED' ? 'SMS_NOT_CONFIGURED' : 'SMS: '.$res['error']];
+    return ['success' => true, 'reference' => (string)$res['id']];
 }
 
 /**

@@ -269,7 +269,9 @@
                 "statusRead": "gelezen",
                 "statusFailed": "mislukt",
                 "tooltipEmail": "Per e-mail verzenden — al {n}× verzonden",
-                "tooltipWhatsapp": "Per WhatsApp verzenden — al {n}× verzonden"
+                "tooltipWhatsapp": "Per WhatsApp verzenden — al {n}× verzonden",
+                "channelSms": "SMS",
+                "tooltipSms": "Al {n}× per SMS verzonden"
             },
             "autoSend": {
                 "hint": "Wordt bij het afdrukken automatisch via {channels} naar de klant verzonden.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Reparatieduur overnemen en afdrukken ({days} dagen)",
                 "optRepairTimeNone": "Geen reparatieduur in het expertiserapport"
-            }
+            },
+            "sendSms": "Per SMS verzenden (document als link)",
+            "smsSent": "SMS verzonden",
+            "smsError": "SMS kon niet worden verzonden"
         },
         "workflow": {
             "created": "Document succesvol aangemaakt",
@@ -652,6 +657,28 @@
                 "button": "{count} geselecteerde verwijderen",
                 "cancel": "Annuleren",
                 "confirm": "{count} regels verwijderen"
+            },
+            "sendSms": {
+                "title": "Document per SMS verzenden",
+                "phone": "Mobiel nummer",
+                "landlineHint": "Dit lijkt een vaste lijn – een vaste lijn ontvangt geen SMS.",
+                "text": "Tekst van de SMS",
+                "insertLink": "Link invoegen",
+                "linkHint": "wordt als link meegestuurd, {days} dagen beschikbaar",
+                "cancel": "Annuleren",
+                "send": "SMS verzenden",
+                "defaultText": "Goedendag{salutation}, hierbij {docRef} ter waarde van {amount}: {link} Met vriendelijke groet, {company}",
+                "defaultTextNoAmount": "Goedendag{salutation}, hierbij {docRef}: {link} Met vriendelijke groet, {company}",
+                "docRef": {
+                    "invoice": "Uw factuur nr. {number}",
+                    "quotation": "Uw offerte nr. {number}",
+                    "order": "Uw orderbevestiging nr. {number}",
+                    "delivery_order": "Uw pakbon nr. {number}",
+                    "credit_note": "Uw creditnota nr. {number}",
+                    "invoice_storno": "Uw stornofactuur nr. {number}",
+                    "purchase_order": "onze bestelling nr. {number}",
+                    "request_quotation": "onze offerteaanvraag nr. {number}"
+                }
             }
         },
         "dhl": {

@@ -189,7 +189,32 @@
             "suggested_decline": "Refusal of order {number} detected ({channel})",
             "declined": "Refusal of order {number} ({channel}) — acknowledged"
         },
-        "confirmationRevokedBy": "withdrawn by {name}"
+        "confirmationRevokedBy": "withdrawn by {name}",
+        "sms": "SMS",
+        "openSms": "Open SMS history",
+        "smsFailed": "not delivered",
+        "telegram": "Telegram",
+        "openTelegram": "Open Telegram chat",
+        "telegramMailing": "Mailing",
+        "telegramFailed": "not delivered",
+        "telegramType": {
+            "text": "Message",
+            "photo": "Photo",
+            "document": "Document",
+            "voice": "Voice message",
+            "audio": "Audio",
+            "video": "Video",
+            "location": "Location",
+            "contact": "Phone number shared",
+            "sticker": "Sticker"
+        },
+        "smsInsteadOfWhatsApp": "SMS instead of WhatsApp",
+        "smsSource": {
+            "faktura": "Document",
+            "mailing": "Circular",
+            "fallback": "instead of WhatsApp",
+            "reminder": "Reminder"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Call",
@@ -208,6 +233,7 @@
         "configSaved": "Settings saved",
         "phoneSettings": "Phone settings",
         "configSaveError": "Settings could not be saved",
-        "whatsappGreeting": "Hello {name}"
+        "whatsappGreeting": "Hello {name}",
+        "sendSms": "Send SMS"
     }
 }

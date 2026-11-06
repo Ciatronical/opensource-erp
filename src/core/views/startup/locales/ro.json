@@ -157,7 +157,32 @@
             "suggested_decline": "Refuz detectat pentru comanda {number} ({channel})",
             "declined": "Refuz pentru comanda {number} ({channel}) — luat la cunoștință"
         },
-        "confirmationRevokedBy": "retrasă de {name}"
+        "confirmationRevokedBy": "retrasă de {name}",
+        "sms": "SMS",
+        "openSms": "Deschide istoricul SMS",
+        "smsFailed": "nelivrat",
+        "telegram": "Telegram",
+        "openTelegram": "Deschide chatul Telegram",
+        "telegramMailing": "Circulară",
+        "telegramFailed": "nelivrat",
+        "telegramType": {
+            "text": "Mesaj",
+            "photo": "Fotografie",
+            "document": "Document",
+            "voice": "Mesaj vocal",
+            "audio": "Audio",
+            "video": "Video",
+            "location": "Locație",
+            "contact": "Număr de telefon partajat",
+            "sticker": "Abțibild"
+        },
+        "smsInsteadOfWhatsApp": "SMS în loc de WhatsApp",
+        "smsSource": {
+            "faktura": "Document",
+            "mailing": "Circulară",
+            "fallback": "în loc de WhatsApp",
+            "reminder": "Memento"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Apelare",
@@ -176,6 +201,7 @@
         "configSaved": "Setări salvate",
         "phoneSettings": "Setări telefon",
         "configSaveError": "Setările nu au putut fi salvate",
-        "whatsappGreeting": "Bună ziua {name}"
+        "whatsappGreeting": "Bună ziua {name}",
+        "sendSms": "Trimite SMS"
     }
 }

@@ -269,7 +269,9 @@
                 "statusRead": "citit",
                 "statusFailed": "eșuat",
                 "tooltipEmail": "Trimite prin e-mail — deja trimis de {n}×",
-                "tooltipWhatsapp": "Trimite prin WhatsApp — deja trimis de {n}×"
+                "tooltipWhatsapp": "Trimite prin WhatsApp — deja trimis de {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Deja trimis de {n}× prin SMS"
             },
             "autoSend": {
                 "hint": "La imprimare va fi trimis automat clientului prin {channels}.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Preia și tipărește durata reparației ({days} zile)",
                 "optRepairTimeNone": "Expertiza nu conține durata reparației"
-            }
+            },
+            "sendSms": "Trimite prin SMS (document ca link)",
+            "smsSent": "SMS trimis",
+            "smsError": "SMS-ul nu a putut fi trimis"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -652,6 +657,28 @@
                 "button": "Șterge {count} selectate",
                 "cancel": "Anulare",
                 "confirm": "Șterge {count} poziții"
+            },
+            "sendSms": {
+                "title": "Trimite documentul prin SMS",
+                "phone": "Număr de mobil",
+                "landlineHint": "Pare un număr fix – un telefon fix nu primește SMS-uri.",
+                "text": "Textul SMS-ului",
+                "insertLink": "Inserează link",
+                "linkHint": "se trimite ca link, disponibil {days} zile",
+                "cancel": "Anulare",
+                "send": "Trimite SMS",
+                "defaultText": "Bună ziua{salutation}, vă trimitem {docRef} în valoare de {amount}: {link} Cu stimă, {company}",
+                "defaultTextNoAmount": "Bună ziua{salutation}, vă trimitem {docRef}: {link} Cu stimă, {company}",
+                "docRef": {
+                    "invoice": "Factura dumneavoastră nr. {number}",
+                    "quotation": "Oferta dumneavoastră nr. {number}",
+                    "order": "Confirmarea dumneavoastră de comandă nr. {number}",
+                    "delivery_order": "Avizul dumneavoastră de livrare nr. {number}",
+                    "credit_note": "nota dumneavoastră de credit nr. {number}",
+                    "invoice_storno": "Factura dumneavoastră de stornare nr. {number}",
+                    "purchase_order": "comanda noastră nr. {number}",
+                    "request_quotation": "cererea noastră de ofertă nr. {number}"
+                }
             }
         },
         "dhl": {

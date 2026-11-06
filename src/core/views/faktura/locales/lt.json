@@ -269,7 +269,9 @@
                 "statusRead": "perskaityta",
                 "statusFailed": "nepavyko",
                 "tooltipEmail": "Siųsti el. paštu — jau išsiųsta {n}×",
-                "tooltipWhatsapp": "Siųsti per „WhatsApp“ — jau išsiųsta {n}×"
+                "tooltipWhatsapp": "Siųsti per „WhatsApp“ — jau išsiųsta {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Jau {n}× išsiųsta SMS"
             },
             "autoSend": {
                 "hint": "Spausdinant bus automatiškai išsiųsta klientui per {channels}.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Perimti ir spausdinti remonto trukmę ({days} d.)",
                 "optRepairTimeNone": "Ekspertizėje remonto trukmės nėra"
-            }
+            },
+            "sendSms": "Siųsti SMS (dokumentas kaip nuoroda)",
+            "smsSent": "SMS išsiųsta",
+            "smsError": "SMS nepavyko išsiųsti"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -652,6 +657,28 @@
                 "button": "Ištrinti {count} pažymėtas",
                 "cancel": "Atšaukti",
                 "confirm": "Ištrinti {count} eilutes"
+            },
+            "sendSms": {
+                "title": "Siųsti dokumentą SMS",
+                "phone": "Mobiliojo ryšio numeris",
+                "landlineHint": "Atrodo, kad tai stacionarus telefonas – stacionarus telefonas SMS negauna.",
+                "text": "SMS tekstas",
+                "insertLink": "Įterpti nuorodą",
+                "linkHint": "siunčiama kaip nuoroda, prieinama {days} d.",
+                "cancel": "Atšaukti",
+                "send": "Siųsti SMS",
+                "defaultText": "Laba diena{salutation}, čia {docRef} už {amount}: {link} Pagarbiai, {company}",
+                "defaultTextNoAmount": "Laba diena{salutation}, čia {docRef}: {link} Pagarbiai, {company}",
+                "docRef": {
+                    "invoice": "Jūsų sąskaita faktūra Nr. {number}",
+                    "quotation": "Jūsų pasiūlymas Nr. {number}",
+                    "order": "Jūsų užsakymo patvirtinimas Nr. {number}",
+                    "delivery_order": "Jūsų važtaraštis Nr. {number}",
+                    "credit_note": "Jūsų kreditinė sąskaita Nr. {number}",
+                    "invoice_storno": "Jūsų anuliavimo sąskaita faktūra Nr. {number}",
+                    "purchase_order": "mūsų užsakymas Nr. {number}",
+                    "request_quotation": "mūsų užklausa Nr. {number}"
+                }
             }
         },
         "dhl": {

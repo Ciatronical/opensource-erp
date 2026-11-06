@@ -38,6 +38,9 @@
                     @pdf-preview="showPdfPreview"
                     @send-email="sendEmail"
                     @send-whatsapp="sendWhatsApp"
+                    @send-sms="openSmsDialog"
+                    :show-sms-button="true"
+                    :sent-sms-count="sentCounts.sms"
                     @send-post="openPostalDialog"
                     @create-dhl-label="openDhlDialog"
                     :show-dhl-button="dhlEnabled"
@@ -708,6 +711,17 @@
             @cancel="emailDialogVisible = false"
         />
 
+        <!-- Beleg per SMS (PDF als Link) -->
+        <sms-send-dialog
+            v-model="smsDialogVisible"
+            :phone-options="waPhoneOptions"
+            :default-phone="smsDialogPhone"
+            :default-text="smsDialogText"
+            :attachment-name="smsDialogAttachmentName"
+            :loading="smsSending"
+            @send="onSmsSend"
+        />
+
         <!-- Send WhatsApp Dialog -->
         <v-dialog v-model="waDialogVisible" max-width="600" persistent>
             <v-card>
@@ -1269,6 +1283,8 @@ import FakturaItemsTableComponent from './components/faktura.items.table.compone
 import EditPartDialog from './dialogs/edit.part.dialog.vue'
 import CreatePartDialog from './dialogs/create.part.dialog.vue'
 import SendEmailDialog from './dialogs/send.email.dialog.vue'
+import SmsSendDialog from './dialogs/sms.send.dialog.vue'
+import { useSmsConfig } from '@/core/composables/useSmsConfig.js'
 import SilverdatImportDialog from './dialogs/silverdat.import.dialog.vue'
 import GutachtenImportDialog from './dialogs/gutachten.import.dialog.vue'
 import WeroniReviewDialog from './dialogs/weroni.review.dialog.vue'
@@ -1327,6 +1343,7 @@ export default defineComponent({
         EditPartDialog,
         CreatePartDialog,
         SendEmailDialog,
+        SmsSendDialog,
         SilverdatImportDialog,
         GutachtenImportDialog,
         WeroniReviewDialog,
@@ -3383,6 +3400,7 @@ export default defineComponent({
         const sentCounts = computed(() => ({
             email: sentLog.value.filter(e => e.channel === 'email').length,
             whatsapp: sentLog.value.filter(e => e.channel === 'whatsapp').length,
+            sms: sentLog.value.filter(e => e.channel === 'sms').length,
             post: sentLog.value.filter(e => e.channel === 'post').length,
         }))
 
@@ -3857,12 +3875,15 @@ export default defineComponent({
                 throw new Error(response.data.text || t('FakturaView.faktura.whatsappError'))
             }
 
+            // WhatsApp nicht zustellbar → das Backend hat eine SMS mit Link geschickt
+            // (Hinweis kommt global aus main.js)
+            const fallback = response.data.payload?.sms_fallback
             addSentLogEntry({
-                channel: 'whatsapp',
-                recipient: phone,
+                channel: fallback ? 'sms' : 'whatsapp',
+                recipient: fallback?.phone || phone,
                 subject: waDialogAttachmentName.value
             })
-            return true
+            return fallback ? 'sms' : true
         }
 
         /**
@@ -3871,14 +3892,86 @@ export default defineComponent({
         async function onWhatsAppSend(waData) {
             try {
                 pdfLoading.value = true
-                await performWhatsAppSend(waData.phone)
-                toasts.success(t('FakturaView.faktura.whatsappSent'))
+                const result = await performWhatsAppSend(waData.phone)
+                if (result !== 'sms') toasts.success(t('FakturaView.faktura.whatsappSent'))
             } catch (e) {
                 console.error('Fehler beim WhatsApp-Versand:', e)
                 alerts.error(e?.message || t('FakturaView.faktura.whatsappError'))
             } finally {
                 pdfLoading.value = false
                 waDialogVisible.value = false
+            }
+        }
+
+        // ===== Beleg per SMS =====
+        // Text frei änderbar, PDF als Link ({link}); Versand über sendSmsDocument,
+        // die SMS erscheint in der Versandanzeige und im SMS-Verlauf des Kunden.
+        const { smsConfig, loadSmsConfig } = useSmsConfig()
+        loadSmsConfig()
+        const smsDialogVisible = ref(false)
+        const smsDialogPhone = ref('')
+        const smsDialogText = ref('')
+        const smsDialogAttachmentName = ref('')
+        const smsSending = ref(false)
+
+        function openSmsDialog() {
+            const common = faktura.data?.common || {}
+            const customer = faktura.data?.customer || {}
+            const type = fakturaType.value
+            const docTypeLabel = t(`FakturaView.dokumentTypes.${type}`)
+            const docNumber = common.invnumber || common.ordnumber || common.quonumber || common.donumber || ''
+            const grossAmount = Number(accounting.calculatedGrossAmount.value || common.amount || 0)
+            const salutation = [customer.greeting, customerName.value].filter(Boolean).join(' ').trim()
+            const docRefKey = `FakturaView.dialogs.sendSms.docRef.${type}`
+            const docRef = t(docRefKey, { number: docNumber }) !== docRefKey
+                ? t(docRefKey, { number: docNumber })
+                : `${docTypeLabel} ${docNumber}`.trim()
+            const company = oserp.session.company_config?.defaults?.company || ''
+
+            smsDialogPhone.value = (waPhoneOptions.value.find(p => p.mobile) || waPhoneOptions.value[0])?.value || contactPhone1.value || ''
+            smsDialogText.value = t(grossAmount ? 'FakturaView.dialogs.sendSms.defaultText' : 'FakturaView.dialogs.sendSms.defaultTextNoAmount', {
+                salutation: salutation ? ' ' + salutation : '',
+                docRef,
+                amount: grossAmount.toLocaleString(locale.value, { style: 'currency', currency: 'EUR' }),
+                company,
+                link: '{link}',
+            }).trim()
+            smsDialogAttachmentName.value = `${company || 'Dokument'}-${docTypeLabel}-${docNumber}.pdf`.replace(/\s+/g, '_')
+            smsDialogVisible.value = true
+        }
+
+        async function onSmsSend({ phone, text }) {
+            smsSending.value = true
+            try {
+                const pdfBase64 = await faktura.generatePDFBase64(
+                    fakturaId.value,
+                    fakturaType.value,
+                    selectedTemplate.value,
+                    selectedPrinter.value?.id ?? null
+                )
+                const common = faktura.data?.common || {}
+                const response = await axios.post('/api/sms/', {
+                    action: 'sendSmsDocument',
+                    to: phone,
+                    message: text,
+                    customer_id: common.customer_id || common.vendor_id || 0,
+                    document_base64: pdfBase64,
+                    filename: smsDialogAttachmentName.value,
+                    record_table: recordTable.value,
+                    record_id: fakturaId.value ? Number(fakturaId.value) : null,
+                })
+                if (!response.data.success) {
+                    const code = response.data.payload?.seven_code || response.data.text
+                    const key = 'SmsChat.errors.' + code
+                    throw new Error(t(key) !== key ? t(key) : (response.data.payload?.error || t('FakturaView.faktura.smsError')))
+                }
+                addSentLogEntry({ channel: 'sms', recipient: response.data.payload?.phone || phone, subject: smsDialogAttachmentName.value })
+                toasts.success(t('FakturaView.faktura.smsSent'))
+                smsDialogVisible.value = false
+            } catch (e) {
+                alerts.error(e?.message || t('FakturaView.faktura.smsError'))
+            } finally {
+                smsSending.value = false
             }
         }
 
@@ -4274,6 +4367,15 @@ export default defineComponent({
             onEmailSend,
             // WhatsApp
             sendWhatsApp,
+            // SMS
+            smsConfig,
+            smsDialogVisible,
+            smsDialogPhone,
+            smsDialogText,
+            smsDialogAttachmentName,
+            smsSending,
+            openSmsDialog,
+            onSmsSend,
             // DHL
             dhlEnabled,
             shopEnabled,

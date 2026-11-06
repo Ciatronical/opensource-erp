@@ -498,7 +498,7 @@ Aus einem Beleg heraus erzeugen:
 - Kündigungsfristen mit nächstmöglichem Termin, Pausieren mit Enddatum, Perioden überspringen, Stopp bei überfälligen Kundenrechnungen
 - **Vorschau** vor dem Speichern; Übersicht mit Kennzahlen (fällig, aktiv, monatlicher Umsatz, Kündigungsfristen)
 - Erzeugung per Klick oder Cron, Versand per E-Mail aus Vorlage, Ablage der PDFs
-- **Versandstatus am Beleg** — auf einen Blick, ob und wann der Beleg per E-Mail, WhatsApp oder DHL beim Kunden war, inkl. WhatsApp-Zustellstatus und Verlauf; Zähler-Badges an den Versand-Buttons, Symbole in der Belegliste
+- **Versandstatus am Beleg** — auf einen Blick, ob und wann der Beleg per E-Mail, WhatsApp, SMS oder DHL beim Kunden war, inkl. WhatsApp-Zustellstatus und Verlauf; Zähler-Badges an den Versand-Buttons, Symbole in der Belegliste
 - **Automatischer Versand beim Drucken** — Beleg geht beim Druck zusätzlich per E-Mail/WhatsApp an den Kunden, je Kanal nur einmal *(Schalter)*
 
 ## 6. CRM — Kunden & Lieferanten
@@ -530,12 +530,12 @@ Aus einem Beleg heraus erzeugen:
 - **Umsatzstatistik** mit Diagrammen (Jahresvergleich, Trend)
 - **Vorgangsübersicht** je Kunde (Angebote, Aufträge, Rechnungen, Lieferscheine)
 - **CRM-Dashboard** je Kunde: Kontaktdaten, letzte Vorgänge, Umsatzhistorie, Dokumente auf einen Blick
-- **E-Mail-Tab** und **WhatsApp-Tab** je Kunde
+- **E-Mail-Tab**, **WhatsApp-Tab** und **SMS-Tab** je Kunde
 - **Anrufhistorie** je Kunde
 
 ### 6.3a Kontakthistorie
 
-- Karte im Kunden: **Anrufe, WhatsApp und E-Mails chronologisch** in einer Liste, mit Richtung, Mitarbeiter und Kurztext
+- Karte im Kunden: **Anrufe, WhatsApp, SMS und E-Mails chronologisch** in einer Liste, mit Richtung, Mitarbeiter und Kurztext
 - Klick öffnet den Vorgang
 - **Kunde vor Ort**: Knopf im Kopf der Historie hält fest, was der Kunde persönlich gesagt hat; Zeitpunkt vorbelegt, Einträge änderbar/löschbar, kivitendo-kompatibel als Kundennotiz gespeichert
 - **Auftragsbestätigungen, Rücknahmen und KI-Vorschläge** (Zusage/Absage erkannt, mit Zitat) als eigene Einträge mit Filter; Klick öffnet den Auftrag, bei Zusagen am Telefon Aufnahme abspielbar
@@ -614,13 +614,24 @@ Aus einem Beleg heraus erzeugen:
 - **Etappenversand** mit Pause, Zeitfenster am Tag, zufälligem Abstand, automatischer Pause nach Fehlern; läuft im Hintergrund (Cron) und solange die Seite offen ist
 - Fortschritt je Empfänger, Pausieren/Fortsetzen/Abbrechen, Fehlgeschlagene erneut, Rundschreiben als Vorlage kopieren
 
+### 8.2c SMS *(extern, seven.io)*
+
+- **Kontakt → SMS**: Gespräche je Rufnummer mit Ungelesen-Zähler und Suche, Verlauf mit Zustellstatus, **Neue SMS** an Kunden, Lieferanten oder freie Nummern; Guthaben im Seitenkopf
+- **Reiter SMS** in der Kundenmaske über alle Nummern des Kunden, Mobilnummern zuerst; **SMS-Knopf** an jeder Telefonnummer
+- Text frei änderbar mit Zeichen-, Teile- und Kostenanzeige, **Sonderzeichen ersetzen** (spart Teile), Dateien als **Link** (`{link}`), Anzeige „geöffnet“
+- **Belege per SMS** aus der Faktura: Text mit Anrede, Belegnummer und Betrag vorbelegt, PDF als Link (Gültigkeit einstellbar), Versandanzeige und Symbol in der Belegliste
+- **Ausweich-SMS**, wenn eine WhatsApp nicht zugestellt werden kann – sofort bei Versandfehlern und nachträglich bei „failed“ von Meta, Belege mit Link, Hinweis an den Benutzer und in der Info-Leiste *(Schalter `sms_whatsapp_fallback`)*
+- SMS in der **Kontakthistorie** (eigener Filter, live), eingehende SMS in der **Info-Leiste**, Rundschreiben-SMS im Verlauf
+- **Antwort-Hinweis** unter jeder SMS (Vorgabe: Link auf den Telegram-Bot), weil man auf einen Absender mit Firmennamen nicht antworten kann
+- **Eingang einrichten**: Webhook für eingehende SMS und Zustellberichte per Knopf, optional mit Signaturprüfung; Monatsverbrauch in der Firmenkonfiguration
+
 ### 8.3 Telegram
 
 - **Telegram-Bot-Anbindung** (kostenlos, kein Drittanbieter nötig)
-- Nachrichten erscheinen im selben Nachrichten-Tab wie WhatsApp, mit Kanal-Icon
-- Kein 24-Stunden-Fenster, keine Vorlagen-Genehmigung
-- Zuordnung über die **Telegram-Chat-ID**, automatisch beim Erstkontakt gespeichert
-- **Webhook** mit Secret
+- **Kundenchat** unter Kontakt → Telegram und als Reiter in der Kundenmaske: Text, Fotos, Dokumente, Sprachnachrichten (transkribiert), Antworten mit Datei
+- **Antwortweg für SMS**: der Antwort-Hinweis unter jeder SMS verlinkt den Bot
+- Zuordnung über die **Telegram-Chat-ID** nach Teilen der Rufnummer, unbekannte Chats per Klick einem Kunden zuordnen; Kontakthistorie und Info-Leiste
+- Kein 24-Stunden-Fenster, keine Vorlagen-Genehmigung; **Webhook** mit Secret
 
 ### 8.4 Telefonie / CTI *(extern)*
 

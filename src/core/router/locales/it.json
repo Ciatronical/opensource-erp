@@ -51,6 +51,8 @@
         "login": "/accesso",
         "emails": "/email",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "docs": "/documentazione",
         "mechanic": "/meccanico",
         "mechanicOrder": "/meccanico/ordine",
@@ -83,7 +85,9 @@
         "title": "Contatto",
         "callHistory": "Cronologia chiamate",
         "emails": "E-mail",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram"
     },
     "SalesMenu": {
         "title": "Vendite",

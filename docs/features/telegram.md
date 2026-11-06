@@ -1,6 +1,6 @@
 ---
 title: Telegram
-summary: Sprachnotizen und Nachrichten per Telegram-Bot, Anschlagtafel
+summary: Kundenchat über den Firmen-Bot (Antworten auf SMS, Fotos, Dokumente), Sprachnotizen und Anschlagtafel
 group: core
 category: Kommunikation
 order: 52
@@ -59,28 +59,27 @@ Unter **Einstellungen > CRM > Telegram**:
 | Bot-Benutzername | Benutzername ohne `@` (z.B. `MeineFirmaBot`) |
 | Webhook-Secret | Selbstgewähltes Geheimwort zur Absicherung des Webhooks |
 
-## Wie es funktioniert
+## Kundenchat (Kontakt → Telegram)
 
 ### Für den Kunden
 
-1. Kunde erhält einen Link: `t.me/MeineFirmaBot` (z.B. auf Rechnung, Website, E-Mail-Signatur)
-2. Kunde öffnet den Link in Telegram und klickt **"Start"**
-3. Ab jetzt können beide Seiten Nachrichten austauschen
+1. Der Kunde öffnet `t.me/EuerBot` – der Link steht unter jeder SMS (Antwort-Hinweis, siehe [SMS](sms.md)) und gehört auf Rechnung, Website usw.
+2. Er tippt **Start** und teilt mit einem Knopfdruck seine **Telefonnummer**. Der Bot findet ihn darüber im Kunden- bzw. Lieferantenstamm (auch Zusatznummern und Ansprechpersonen) und verknüpft ihn.
+3. Ab jetzt schreibt er einfach – Text, **Fotos**, **Dokumente**, **Sprachnachrichten** oder seinen **Standort**.
+
+Schreibt jemand, ohne seine Nummer geteilt zu haben, kommt die Nachricht trotzdem an; der Bot bittet ihn höchstens einmal am Tag um die Nummer. Passt die geteilte Nummer zu keinem Kunden, bleibt sie im Chat stehen.
 
 ### Für den Mitarbeiter
 
-Telegram-Nachrichten erscheinen im selben **Nachrichten-Tab** wie WhatsApp-Nachrichten. Jede Nachricht ist mit einem Kanal-Icon gekennzeichnet:
-- **WhatsApp**: grünes WhatsApp-Icon
-- **Telegram**: blaues Telegram-Icon
+- **Kontakt → Telegram**: alle Chats mit letzter Nachricht und Zähler für ungelesene; unbekannte Absender sind orange markiert und lassen sich mit **Zuordnen** einem Kunden oder Lieferanten zuweisen – samt allen bisherigen Nachrichten.
+- **Reiter Telegram** in der Kundenmaske: Verlauf und Antwort. Ist der Kunde noch nicht verknüpft, steht dort der Bot-Link zum Kopieren.
+- Fotos erscheinen als Vorschau, Dokumente und Sprachnachrichten lassen sich öffnen; Sprachnachrichten von Kunden werden per Whisper transkribiert.
+- **Antworten** mit Datei (Upload oder aus der Kundenablage): Bilder gehen als Foto, alles andere als Dokument – direkt in Telegram, ohne Link. Scheitert der Versand (z. B. Bot blockiert), steht der Grund an der Nachricht.
+- Eingehende Nachrichten und gescheiterte Antworten erscheinen in der **Info-Leiste** und in der **Kontakthistorie** (Filter Telegram). Rundschreiben per Telegram stehen ebenfalls im Verlauf.
 
-Der Mitarbeiter kann über ein Dropdown wählen, über welchen Kanal gesendet wird.
+### Mitarbeiter und Kunden am selben Bot
 
-### Eingehende Nachrichten
-
-- Werden per Webhook empfangen (wie bei WhatsApp)
-- Erscheinen in Echtzeit in der Oberfläche (SSE)
-- Werden als blauer Chip in der **Infoleiste** angezeigt
-- Werden automatisch dem Kunden/Lieferanten zugeordnet (über die Telegram-Chat-ID)
+Sprachnachrichten von Mitarbeitern bleiben **Sprachnotizen für die Anschlagtafel**. Als Mitarbeiter-Chat gilt, wer in `telegram_chat_map` steht oder schon Sprachnotizen geschickt hat – auch wenn derselbe Chat als Kunde verknüpft ist. Textnachrichten von Mitarbeitern ohne Kundenverknüpfung ignoriert der Bot wie bisher.
 
 ## Unterschiede zu WhatsApp
 
@@ -93,14 +92,11 @@ Der Mitarbeiter kann über ein Dropdown wählen, über welchen Kanal gesendet wi
 | Medien | Komplexes Token-basiertes Download-System | Direkter Datei-Download über Bot-API |
 | Telefonnummer nötig | Ja | Nein — Telegram nutzt Chat-IDs |
 
-## Kontakt-Zuordnung
+## Technik
 
-Kunden/Lieferanten werden über die **Telegram-Chat-ID** zugeordnet, nicht über die Telefonnummer. Beim ersten Kontakt wird die Chat-ID automatisch in den Kontaktdaten (`customer_ext` / `vendor_ext`) gespeichert.
-
-In der Kontaktansicht:
-- Hat der Kontakt **nur WhatsApp**: grünes WhatsApp-Icon
-- Hat der Kontakt **nur Telegram**: blaues Telegram-Icon
-- Hat der Kontakt **beides**: beide Icons nebeneinander
+- Tabelle `telegram_messages` (Upstall crm): Chat-ID, Richtung, Kunde/Lieferant, Art (text, photo, document, voice, …), Text bzw. Transkript, Datei (`data/<db>/telegram/<Jahr-Monat>/` bzw. Kundenablage `telegram/`), Status, Quelle (`chat`, `mailing`), Mitarbeiter. Trigger `notify_telegram_message` meldet per SSE an Kontakthistorie und Info-Leiste.
+- Eingang: `backend/webhook/telegram.php`; Kern `backend/api/telegram/telegram_lib.php` (Versand, Bot-Name), API `backend/api/telegram/telegram.php`.
+- Frontend: `src/core/views/telegram/`, `src/core/components/telegram/telegram-chat.vue`, Reiter `telegram.tab.vue`.
 
 ## Anschlagtafel und Tafel-Verwaltung
 

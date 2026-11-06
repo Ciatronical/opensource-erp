@@ -74,6 +74,10 @@
         "selectVendor": "Ieškoti tiekėjo...",
         "markOrdered": "Pažymėti {count} kaip užsakytus",
         "yesterday": "Vakar",
-        "noOrder": "nėra užsakymo"
+        "noOrder": "nėra užsakymo",
+        "smsFallbackToast": "WhatsApp žinutė {name} nepasiekė – išsiųsta SMS",
+        "smsFallbackFailed": "WhatsApp žinutė {name} nepasiekė, atsarginė SMS taip pat nepavyko: {error}",
+        "telegramFile": "Failas",
+        "telegramFailed": "Telegram žinutė gavėjui {name} nepristatyta: {error}"
     }
 }

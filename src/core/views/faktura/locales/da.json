@@ -269,7 +269,9 @@
                 "statusRead": "læst",
                 "statusFailed": "mislykkedes",
                 "tooltipEmail": "Send via e-mail — allerede sendt {n}×",
-                "tooltipWhatsapp": "Send via WhatsApp — allerede sendt {n}×"
+                "tooltipWhatsapp": "Send via WhatsApp — allerede sendt {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Allerede sendt {n}× pr. SMS"
             },
             "autoSend": {
                 "hint": "Sendes automatisk til kunden via {channels} ved udskrivning.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Overtag og udskriv reparationsvarighed ({days} dage)",
                 "optRepairTimeNone": "Ingen reparationsvarighed i vurderingen"
-            }
+            },
+            "sendSms": "Send pr. SMS (bilag som link)",
+            "smsSent": "SMS sendt",
+            "smsError": "SMS kunne ikke sendes"
         },
         "workflow": {
             "created": "Dokument gennemfoert erstellt",
@@ -652,6 +657,28 @@
                 "button": "Slet {count} markerede",
                 "cancel": "Annuller",
                 "confirm": "Slet {count} linjer"
+            },
+            "sendSms": {
+                "title": "Send bilag pr. SMS",
+                "phone": "Mobilnummer",
+                "landlineHint": "Det ligner et fastnetnummer – fastnet kan ikke modtage SMS.",
+                "text": "SMS-tekst",
+                "insertLink": "Indsæt link",
+                "linkHint": "sendes med som link, tilgængeligt i {days} dage",
+                "cancel": "Annuller",
+                "send": "Send SMS",
+                "defaultText": "Goddag{salutation}, her er {docRef} på {amount}: {link} Venlig hilsen {company}",
+                "defaultTextNoAmount": "Goddag{salutation}, her er {docRef}: {link} Venlig hilsen {company}",
+                "docRef": {
+                    "invoice": "din faktura nr. {number}",
+                    "quotation": "dit tilbud nr. {number}",
+                    "order": "din ordrebekræftelse nr. {number}",
+                    "delivery_order": "din følgeseddel nr. {number}",
+                    "credit_note": "din kreditnota nr. {number}",
+                    "invoice_storno": "din annulleringsfaktura nr. {number}",
+                    "purchase_order": "vores indkøbsordre nr. {number}",
+                    "request_quotation": "vores forespørgsel nr. {number}"
+                }
             }
         },
         "dhl": {

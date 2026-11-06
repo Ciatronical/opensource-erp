@@ -157,7 +157,32 @@
             "suggested_decline": "Распознан отказ по заказу {number} ({channel})",
             "declined": "Отказ по заказу {number} ({channel}) — принят к сведению"
         },
-        "confirmationRevokedBy": "отозвал {name}"
+        "confirmationRevokedBy": "отозвал {name}",
+        "sms": "SMS",
+        "openSms": "Открыть историю SMS",
+        "smsFailed": "не доставлено",
+        "telegram": "Telegram",
+        "openTelegram": "Открыть чат Telegram",
+        "telegramMailing": "Рассылка",
+        "telegramFailed": "не доставлено",
+        "telegramType": {
+            "text": "Сообщение",
+            "photo": "Фото",
+            "document": "Документ",
+            "voice": "Голосовое сообщение",
+            "audio": "Аудио",
+            "video": "Видео",
+            "location": "Местоположение",
+            "contact": "Номер телефона передан",
+            "sticker": "Стикер"
+        },
+        "smsInsteadOfWhatsApp": "SMS вместо WhatsApp",
+        "smsSource": {
+            "faktura": "Документ",
+            "mailing": "Рассылка",
+            "fallback": "вместо WhatsApp",
+            "reminder": "Напоминание"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Позвонить",
@@ -176,6 +201,7 @@
         "configSaved": "Настройки сохранены",
         "phoneSettings": "Настройки телефона",
         "configSaveError": "Не удалось сохранить настройки",
-        "whatsappGreeting": "Привет {name}"
+        "whatsappGreeting": "Привет {name}",
+        "sendSms": "Отправить SMS"
     }
 }

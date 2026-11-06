@@ -51,6 +51,8 @@
         "login": "/prihlaseni",
         "emails": "/e-maily",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "docs": "/dokumentace",
         "mechanic": "/mechanik",
         "mechanicOrder": "/mechanik/objednavka",
@@ -83,7 +85,9 @@
         "title": "Kontakt",
         "callHistory": "Historie hovorů",
         "emails": "E-maily",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram"
     },
     "SalesMenu": {
         "title": "Prodej",

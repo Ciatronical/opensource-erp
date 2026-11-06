@@ -269,7 +269,9 @@
                 "statusRead": "izlasīts",
                 "statusFailed": "neizdevās",
                 "tooltipEmail": "Sūtīt pa e-pastu — jau nosūtīts {n}×",
-                "tooltipWhatsapp": "Sūtīt ar WhatsApp — jau nosūtīts {n}×"
+                "tooltipWhatsapp": "Sūtīt ar WhatsApp — jau nosūtīts {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Jau {n}× nosūtīts ar SMS"
             },
             "autoSend": {
                 "hint": "Drukājot tiks automātiski nosūtīts klientam, izmantojot {channels}.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Pārņemt un drukāt remonta ilgumu ({days} dienas)",
                 "optRepairTimeNone": "Ekspertīzē nav remonta ilguma"
-            }
+            },
+            "sendSms": "Sūtīt ar SMS (dokuments kā saite)",
+            "smsSent": "SMS nosūtīta",
+            "smsError": "SMS neizdevās nosūtīt"
         },
         "workflow": {
             "created": "Dokument erfolgreich erstellt",
@@ -652,6 +657,28 @@
                 "button": "Dzēst {count} atzīmētas",
                 "cancel": "Atcelt",
                 "confirm": "Dzēst {count} rindas"
+            },
+            "sendSms": {
+                "title": "Sūtīt dokumentu ar SMS",
+                "phone": "Mobilā tālruņa numurs",
+                "landlineHint": "Šķiet, ka tas ir stacionārais tālrunis – stacionārais tālrunis SMS nesaņem.",
+                "text": "SMS teksts",
+                "insertLink": "Ievietot saiti",
+                "linkHint": "tiek nosūtīts kā saite, pieejams {days} dienas",
+                "cancel": "Atcelt",
+                "send": "Sūtīt SMS",
+                "defaultText": "Labdien{salutation}, šeit {docRef} par {amount}: {link} Ar cieņu, {company}",
+                "defaultTextNoAmount": "Labdien{salutation}, šeit {docRef}: {link} Ar cieņu, {company}",
+                "docRef": {
+                    "invoice": "Jūsu rēķins Nr. {number}",
+                    "quotation": "Jūsu piedāvājums Nr. {number}",
+                    "order": "Jūsu pasūtījuma apstiprinājums Nr. {number}",
+                    "delivery_order": "Jūsu pavadzīme Nr. {number}",
+                    "credit_note": "Jūsu kredītrēķins Nr. {number}",
+                    "invoice_storno": "Jūsu anulēšanas rēķins Nr. {number}",
+                    "purchase_order": "mūsu pasūtījums Nr. {number}",
+                    "request_quotation": "mūsu pieprasījums Nr. {number}"
+                }
             }
         },
         "dhl": {

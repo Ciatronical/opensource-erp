@@ -269,7 +269,9 @@
                 "statusRead": "läst",
                 "statusFailed": "misslyckades",
                 "tooltipEmail": "Skicka via e-post — redan skickat {n}×",
-                "tooltipWhatsapp": "Skicka via WhatsApp — redan skickat {n}×"
+                "tooltipWhatsapp": "Skicka via WhatsApp — redan skickat {n}×",
+                "channelSms": "SMS",
+                "tooltipSms": "Redan skickat {n}× via SMS"
             },
             "autoSend": {
                 "hint": "Skickas automatiskt till kunden via {channels} vid utskrift.",
@@ -521,7 +523,10 @@
             "gutachten": {
                 "optRepairTime": "Överta och skriv ut reparationstid ({days} dagar)",
                 "optRepairTimeNone": "Ingen reparationstid i värderingen"
-            }
+            },
+            "sendSms": "Skicka via SMS (dokument som länk)",
+            "smsSent": "SMS skickat",
+            "smsError": "SMS kunde inte skickas"
         },
         "workflow": {
             "created": "Dokument genomford erstellt",
@@ -652,6 +657,28 @@
                 "button": "Ta bort {count} markerade",
                 "cancel": "Avbryt",
                 "confirm": "Ta bort {count} rader"
+            },
+            "sendSms": {
+                "title": "Skicka dokument via SMS",
+                "phone": "Mobilnummer",
+                "landlineHint": "Det ser ut som ett fast nummer – fasta telefoner kan inte ta emot SMS.",
+                "text": "SMS-text",
+                "insertLink": "Infoga länk",
+                "linkHint": "skickas med som länk, tillgänglig i {days} dagar",
+                "cancel": "Avbryt",
+                "send": "Skicka SMS",
+                "defaultText": "Hej{salutation}, här är {docRef} på {amount}: {link} Vänliga hälsningar, {company}",
+                "defaultTextNoAmount": "Hej{salutation}, här är {docRef}: {link} Vänliga hälsningar, {company}",
+                "docRef": {
+                    "invoice": "Din faktura nr {number}",
+                    "quotation": "Din offert nr {number}",
+                    "order": "Din orderbekräftelse nr {number}",
+                    "delivery_order": "Din följesedel nr {number}",
+                    "credit_note": "Din kreditnota nr {number}",
+                    "invoice_storno": "Din makulerade faktura nr {number}",
+                    "purchase_order": "vår beställning nr {number}",
+                    "request_quotation": "vår förfrågan nr {number}"
+                }
             }
         },
         "dhl": {

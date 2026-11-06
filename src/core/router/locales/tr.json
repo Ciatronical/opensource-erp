@@ -51,6 +51,8 @@
         "login": "/giris",
         "emails": "/e-postalar",
         "whatsapp": "/whatsapp",
+        "sms": "/sms",
+        "telegram": "/telegram",
         "docs": "/dokumantasyon",
         "mechanic": "/tamirci",
         "mechanicOrder": "/tamirci/siparis",
@@ -83,7 +85,9 @@
         "title": "İletişim",
         "callHistory": "Arama geçmişi",
         "emails": "E-postalar",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "sms": "SMS",
+        "telegram": "Telegram"
     },
     "SalesMenu": {
         "title": "Satış",

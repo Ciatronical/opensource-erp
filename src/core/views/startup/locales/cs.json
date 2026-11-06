@@ -157,7 +157,32 @@
             "suggested_decline": "Rozpoznáno odmítnutí objednávky {number} ({channel})",
             "declined": "Odmítnutí objednávky {number} ({channel}) — vzato na vědomí"
         },
-        "confirmationRevokedBy": "odvolal {name}"
+        "confirmationRevokedBy": "odvolal {name}",
+        "sms": "SMS",
+        "openSms": "Otevřít historii SMS",
+        "smsFailed": "nedoručeno",
+        "telegram": "Telegram",
+        "openTelegram": "Otevřít chat Telegram",
+        "telegramMailing": "Oběžník",
+        "telegramFailed": "nedoručeno",
+        "telegramType": {
+            "text": "Zpráva",
+            "photo": "Foto",
+            "document": "Dokument",
+            "voice": "Hlasová zpráva",
+            "audio": "Audio",
+            "video": "Video",
+            "location": "Poloha",
+            "contact": "Sdíleno telefonní číslo",
+            "sticker": "Nálepka"
+        },
+        "smsInsteadOfWhatsApp": "SMS místo WhatsApp",
+        "smsSource": {
+            "faktura": "Doklad",
+            "mailing": "Oběžník",
+            "fallback": "místo WhatsApp",
+            "reminder": "Připomínka"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Zavolat",
@@ -176,6 +201,7 @@
         "configSaved": "Nastavení uloženo",
         "phoneSettings": "Nastavení telefonu",
         "configSaveError": "Nastavení se nepodařilo uložit",
-        "whatsappGreeting": "Dobrý den {name}"
+        "whatsappGreeting": "Dobrý den {name}",
+        "sendSms": "Odeslat SMS"
     }
 }

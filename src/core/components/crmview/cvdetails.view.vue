@@ -42,6 +42,14 @@
                 <v-icon start>mdi-whatsapp</v-icon>
                 {{ t('CrmView.whatsapp') }}
             </v-tab>
+            <v-tab v-if="cvProfile?.id" value="sms">
+                <v-icon start>mdi-message-text-outline</v-icon>
+                {{ t('CrmView.sms') }}
+            </v-tab>
+            <v-tab v-if="cvProfile?.id && telegramConfig.configured" value="telegram">
+                <v-icon start>mdi-send-circle-outline</v-icon>
+                {{ t('CrmView.telegram') }}
+            </v-tab>
             <!-- Kundenkonto: Zugang zum Kundenportal auf der Webseite — nur bei Kunden
                  und nur, wenn eine Webseite eingeschaltet ist (Firmenkonfiguration → Kundenportal) -->
             <v-tab v-if="cvProfile?.id && cvProfile?.src !== 'V' && oserpData.hasPortalWebsite()" value="portal">
@@ -196,6 +204,8 @@
                                             :phone="contact.cp_phone1"
                                             :name="(contact.cp_givenname || '') + ' ' + (contact.cp_name || '')"
                                             @whatsapp="switchToWhatsApp"
+                                            sms-tab
+                                            @sms="switchToSms"
                                         />
                                     </span>
                                 </div>
@@ -256,6 +266,8 @@
                                             :phone="contact.cp_phone2"
                                             :name="contactFullName(contact)"
                                             @whatsapp="switchToWhatsApp"
+                                            sms-tab
+                                            @sms="switchToSms"
                                         />
                                     </v-list-item-title>
                                     <v-list-item-subtitle>{{ t('CrmView.phone2') }}</v-list-item-subtitle>
@@ -269,6 +281,8 @@
                                             :phone="contact.cp_mobile1"
                                             :name="contactFullName(contact)"
                                             @whatsapp="switchToWhatsApp"
+                                            sms-tab
+                                            @sms="switchToSms"
                                         />
                                     </v-list-item-title>
                                     <v-list-item-subtitle>{{ t('CrmView.mobile1') }}</v-list-item-subtitle>
@@ -282,6 +296,8 @@
                                             :phone="contact.cp_mobile2"
                                             :name="contactFullName(contact)"
                                             @whatsapp="switchToWhatsApp"
+                                            sms-tab
+                                            @sms="switchToSms"
                                         />
                                     </v-list-item-title>
                                     <v-list-item-subtitle>{{ t('CrmView.mobile2') }}</v-list-item-subtitle>
@@ -331,6 +347,8 @@
                                             :phone="contact.cp_privatphone"
                                             :name="contactFullName(contact)"
                                             @whatsapp="switchToWhatsApp"
+                                            sms-tab
+                                            @sms="switchToSms"
                                         />
                                     </v-list-item-title>
                                     <v-list-item-subtitle>{{ t('CrmView.privatePhone') }}</v-list-item-subtitle>
@@ -391,6 +409,21 @@
                 />
             </v-window-item>
 
+            <!-- SMS -->
+            <v-window-item v-if="cvProfile?.id" value="sms">
+                <sms-tab
+                    :cv-id="cvProfile.id"
+                    :src="cvProfile.src || 'C'"
+                    :phone-numbers="cvPhoneNumbers"
+                    :preselect="smsPreselect"
+                />
+            </v-window-item>
+
+            <!-- Telegram -->
+            <v-window-item v-if="cvProfile?.id && telegramConfig.configured" value="telegram">
+                <telegram-tab :cv-id="cvProfile.id" :src="cvProfile.src || 'C'" />
+            </v-window-item>
+
             <!-- Kundenkonto (Kundenportal) -->
             <v-window-item v-if="cvProfile?.id && cvProfile?.src !== 'V' && oserpData.hasPortalWebsite()" value="portal">
                 <portal-tab :cv-id="cvProfile.id" :phone-numbers="cvPhoneNumbers" />
@@ -417,6 +450,9 @@ import PhoneActionBar from '@/core/components/phone-action-bar.vue'
 const FilesTab = defineAsyncComponent(() => import('@/core/views/customer-vendor/tabs/files.tab.vue'))
 import EmailsTab from '@/core/views/customer-vendor/tabs/emails.tab.vue'
 import WhatsappTab from '@/core/views/customer-vendor/tabs/whatsapp.tab.vue'
+import SmsTab from '@/core/views/customer-vendor/tabs/sms.tab.vue'
+import TelegramTab from '@/core/views/customer-vendor/tabs/telegram.tab.vue'
+import { useTelegramConfig } from '@/core/composables/useTelegramConfig.js'
 import PortalTab from '@/core/views/customer-vendor/tabs/portal.tab.vue'
 import BelegQuellenConfig from '@/core/views/config/tabs/beleg-quellen.config.vue'
 import { formatPhone } from '@/core/utils/phoneFormat.js'
@@ -437,11 +473,22 @@ const hasNotes = computed(() => cvNotes.value.length > 0);
 
 const route = useRoute()
 const cvContactTab = ref(route.query.tab || 'contact');
+const { telegramConfig, loadTelegramConfig } = useTelegramConfig()
+// Der Reiter Telegram erscheint erst mit geladener Einstellung – ?tab=telegram danach anwenden
+loadTelegramConfig().then(cfg => {
+    if (cfg.configured && route.query.tab === 'telegram') cvContactTab.value = 'telegram'
+})
+const smsPreselect = ref('');
 const expandedContactPanel = ref(undefined);
 
 watch(() => route.query.tab, (newTab) => {
     if (newTab) cvContactTab.value = newTab;
 });
+
+// SMS-Knopf in den Kontaktdaten (contact.view): ?tab=sms&smsPhone=<nummer>
+watch(() => route.query.smsPhone, (phone) => {
+    if (phone) smsPreselect.value = String(phone)
+}, { immediate: true });
 
 // Expansion-Panel der gesuchten Ansprechperson aufklappen
 watch([contacts, () => route.query.cpId], ([contactList, cpId]) => {
@@ -457,6 +504,7 @@ const cvPhoneNumbers = computed(() => {
         if (trimmed && !nums.includes(trimmed)) nums.push(trimmed)
     }
     addNum(cvProfile.value?.phone)
+    ;(cvProfile.value?.phone_numbers || []).forEach(p => addNum(p?.number))
     contacts.value.forEach(c => {
         addNum(c.cp_phone1)
         addNum(c.cp_phone2)
@@ -475,6 +523,12 @@ const customVarHeaders = [
 
 function switchToWhatsApp() {
     cvContactTab.value = 'whatsapp'
+}
+
+// SMS-Knopf an einer Nummer: Reiter SMS mit dieser Nummer als Ziel
+function switchToSms(phone) {
+    smsPreselect.value = phone || ''
+    cvContactTab.value = 'sms'
 }
 
 const contactFullName = (contact) => {

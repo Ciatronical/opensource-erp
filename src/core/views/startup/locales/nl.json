@@ -157,7 +157,32 @@
             "suggested_decline": "Afwijzing voor order {number} herkend ({channel})",
             "declined": "Afwijzing voor order {number} ({channel}) — ter kennisgeving aangenomen"
         },
-        "confirmationRevokedBy": "ingetrokken door {name}"
+        "confirmationRevokedBy": "ingetrokken door {name}",
+        "sms": "SMS",
+        "openSms": "SMS-geschiedenis openen",
+        "smsFailed": "niet bezorgd",
+        "telegram": "Telegram",
+        "openTelegram": "Telegram-chat openen",
+        "telegramMailing": "Rondschrijven",
+        "telegramFailed": "niet bezorgd",
+        "telegramType": {
+            "text": "Bericht",
+            "photo": "Foto",
+            "document": "Document",
+            "voice": "Spraakbericht",
+            "audio": "Audio",
+            "video": "Video",
+            "location": "Locatie",
+            "contact": "Telefoonnummer gedeeld",
+            "sticker": "Sticker"
+        },
+        "smsInsteadOfWhatsApp": "SMS in plaats van WhatsApp",
+        "smsSource": {
+            "faktura": "Document",
+            "mailing": "Rondschrijven",
+            "fallback": "in plaats van WhatsApp",
+            "reminder": "Herinnering"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Bellen",
@@ -176,6 +201,7 @@
         "configSaved": "Instellingen opgeslagen",
         "phoneSettings": "Telefooninstellingen",
         "configSaveError": "Instellingen konden niet worden opgeslagen",
-        "whatsappGreeting": "Hallo {name}"
+        "whatsappGreeting": "Hallo {name}",
+        "sendSms": "SMS verzenden"
     }
 }

@@ -74,6 +74,10 @@
         "selectVendor": "搜索供应商...",
         "markOrdered": "将 {count} 标记为已订购",
         "yesterday": "昨天",
-        "noOrder": "无工单"
+        "noOrder": "无工单",
+        "smsFallbackToast": "发给 {name} 的 WhatsApp 未送达 – 已改以短信发送",
+        "smsFallbackFailed": "发给 {name} 的 WhatsApp 未送达，备用短信也失败了：{error}",
+        "telegramFile": "文件",
+        "telegramFailed": "发给 {name} 的 Telegram 未送达：{error}"
     }
 }

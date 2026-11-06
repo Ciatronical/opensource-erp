@@ -157,7 +157,32 @@
             "suggested_decline": "Atpazīts atteikums pasūtījumam {number} ({channel})",
             "declined": "Atteikums pasūtījumam {number} ({channel}) — pieņemts zināšanai"
         },
-        "confirmationRevokedBy": "atsauca {name}"
+        "confirmationRevokedBy": "atsauca {name}",
+        "sms": "SMS",
+        "openSms": "Atvērt SMS vēsturi",
+        "smsFailed": "nav piegādāta",
+        "telegram": "Telegram",
+        "openTelegram": "Atvērt Telegram čatu",
+        "telegramMailing": "Aplinkraksts",
+        "telegramFailed": "nepiegādāts",
+        "telegramType": {
+            "text": "Ziņa",
+            "photo": "Foto",
+            "document": "Dokuments",
+            "voice": "Balss ziņa",
+            "audio": "Audio",
+            "video": "Video",
+            "location": "Atrašanās vieta",
+            "contact": "Tālruņa numurs kopīgots",
+            "sticker": "Uzlīme"
+        },
+        "smsInsteadOfWhatsApp": "SMS WhatsApp vietā",
+        "smsSource": {
+            "faktura": "Dokuments",
+            "mailing": "Aplinkraksts",
+            "fallback": "WhatsApp vietā",
+            "reminder": "Atgādinājums"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Zvanīt",
@@ -176,6 +201,7 @@
         "configSaved": "Iestatījumi saglabāti",
         "phoneSettings": "Tālruņa iestatījumi",
         "configSaveError": "Iestatījumus nevarēja saglabāt",
-        "whatsappGreeting": "Sveiki {name}"
+        "whatsappGreeting": "Sveiki {name}",
+        "sendSms": "Sūtīt SMS"
     }
 }

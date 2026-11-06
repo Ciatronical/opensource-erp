@@ -98,6 +98,12 @@
               <v-btn value="whatsapp" size="small" :title="$t('CrmView.whatsapp')">
                 <v-icon start size="small">mdi-whatsapp</v-icon>{{ historyCounts.whatsapp }}
               </v-btn>
+              <v-btn value="sms" size="small" :title="$t('CrmView.sms')">
+                <v-icon start size="small">mdi-message-text-outline</v-icon>{{ historyCounts.sms }}
+              </v-btn>
+              <v-btn v-if="historyCounts.telegram" value="telegram" size="small" :title="$t('CrmView.telegram')">
+                <v-icon start size="small">mdi-send-circle-outline</v-icon>{{ historyCounts.telegram }}
+              </v-btn>
               <v-btn value="letter" size="small" :title="$t('CrmView.letter')">
                 <v-icon start size="small">mdi-email-edit-outline</v-icon>{{ historyCounts.letter }}
               </v-btn>
@@ -218,6 +224,28 @@
                   <v-icon>{{ item.suggestion ? 'mdi-gesture-tap' : 'mdi-open-in-app' }}</v-icon>
                 </v-btn>
               </div>
+              <v-btn
+                v-else-if="item.kind === 'sms'"
+                icon
+                size="small"
+                variant="text"
+                color="primary"
+                :title="$t('CrmView.openSms')"
+                @click="openContactTab('sms')"
+              >
+                <v-icon>mdi-open-in-app</v-icon>
+              </v-btn>
+              <v-btn
+                v-else-if="item.kind === 'telegram'"
+                icon
+                size="small"
+                variant="text"
+                color="primary"
+                :title="$t('CrmView.openTelegram')"
+                @click="openContactTab('telegram')"
+              >
+                <v-icon>mdi-open-in-app</v-icon>
+              </v-btn>
               <v-btn
                 v-else-if="item.kind === 'letter'"
                 icon
@@ -408,7 +436,7 @@ export default {
     const ownAddresses = computed(() => emailAddresses.value.map(a => a.toLowerCase()))
 
     // Alle Einträge auf ein gemeinsames Format bringen:
-    // { key, kind: call|whatsapp|letter|visit|confirmation|email, ts (ms), direction I|O, missed, summary, detail, ... }
+    // { key, kind: call|whatsapp|sms|telegram|letter|visit|confirmation|email, ts (ms), direction I|O, missed, summary, detail, ... }
     const contactHistory = computed(() => {
       const fromDb = (oserp.customer_vendor?.contact_history ?? []).map(e => {
         const ts = Number(e.ts)
@@ -438,6 +466,35 @@ export default {
             draft: e.status === 'draft',
             summary: e.text || t('CrmView.noSubject'),
             detail: [t('CrmView.letterNumber', { number: e.number }), channels.length ? t('CrmView.letterSentVia', { channels: channels.join(', ') }) : t('CrmView.letterDraft')].join(' · '),
+          }
+        }
+        if (e.kind === 'sms') {
+          // extension = Quelle (chat | faktura | mailing | fallback = statt WhatsApp), name = Mitarbeiter bzw. Absendername
+          return {
+            key: 'sms-' + e.id,
+            kind: 'sms',
+            id: e.id,
+            ts,
+            direction: e.direction,
+            missed: e.status === 'failed',
+            fallback: e.extension === 'fallback',
+            summary: e.text || '',
+            detail: [e.extension && e.extension !== 'chat' ? t('CrmView.smsSource.' + e.extension) : '', e.name, formatPhone(e.number),
+              e.status === 'failed' ? t('CrmView.smsFailed') : ''].filter(Boolean).join(' · '),
+          }
+        }
+        if (e.kind === 'telegram') {
+          // extension = Quelle (chat | mailing), name = Mitarbeiter bzw. Telegram-Profilname, number = Art (text, photo, …)
+          return {
+            key: 'telegram-' + e.id,
+            kind: 'telegram',
+            id: e.id,
+            ts,
+            direction: e.direction,
+            missed: e.status === 'failed',
+            summary: e.text || t('CrmView.telegramType.' + (e.number || 'text')),
+            detail: [e.extension === 'mailing' ? t('CrmView.telegramMailing') : '', e.name,
+              e.status === 'failed' ? t('CrmView.telegramFailed') : ''].filter(Boolean).join(' · '),
           }
         }
         if (e.kind === 'visit') {
@@ -503,7 +560,7 @@ export default {
     })
 
     const historyCounts = computed(() => {
-      const c = { call: 0, whatsapp: 0, letter: 0, visit: 0, confirmation: 0, email: 0 }
+      const c = { call: 0, whatsapp: 0, sms: 0, telegram: 0, letter: 0, visit: 0, confirmation: 0, email: 0 }
       contactHistory.value.forEach(e => { c[e.kind]++ })
       return c
     })
@@ -535,6 +592,7 @@ export default {
 
     function entryColor(item) {
       if (item.missed) return 'error'
+      if (item.kind === 'sms' && item.fallback) return 'warning'
       if (item.kind === 'letter') return item.draft ? 'grey' : 'deep-purple'
       if (item.kind === 'visit') return 'teal'
       if (item.kind === 'confirmation') return CONFIRMATION_META[item.status]?.color || 'grey'
@@ -547,6 +605,8 @@ export default {
         return item.direction === 'I' ? 'mdi-phone-incoming' : 'mdi-phone-outgoing'
       }
       if (item.kind === 'whatsapp') return 'mdi-whatsapp'
+      if (item.kind === 'sms') return item.missed ? 'mdi-message-alert-outline' : 'mdi-message-text-outline'
+      if (item.kind === 'telegram') return item.missed ? 'mdi-send-lock-outline' : 'mdi-send-circle-outline'
       if (item.kind === 'letter') return item.draft ? 'mdi-email-edit-outline' : 'mdi-email-seal-outline'
       if (item.kind === 'visit') return 'mdi-account-voice'
       if (item.kind === 'confirmation') return CONFIRMATION_META[item.status]?.icon || 'mdi-handshake-outline'
@@ -558,6 +618,7 @@ export default {
       if (item.kind === 'visit') return t('CrmView.customerOnSite')
       if (item.kind === 'confirmation') return item.summary
       const dir = t(item.direction === 'I' ? 'CrmView.inbound' : 'CrmView.outbound')
+      if (item.kind === 'sms') return item.fallback ? `${dir} · ${t('CrmView.smsInsteadOfWhatsApp')}` : dir
       return item.missed ? `${dir} · ${t('CrmView.missedCall')}` : dir
     }
 

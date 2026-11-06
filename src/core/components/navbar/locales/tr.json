@@ -74,6 +74,10 @@
         "selectVendor": "Tedarikçi ara...",
         "markOrdered": "{count} adet sipariş edildi olarak işaretle",
         "yesterday": "Dün",
-        "noOrder": "sipariş yok"
+        "noOrder": "sipariş yok",
+        "smsFallbackToast": "{name} adlı kişiye WhatsApp ulaşmadı – SMS olarak gönderildi",
+        "smsFallbackFailed": "{name} adlı kişiye WhatsApp ulaşmadı, yedek SMS de başarısız oldu: {error}",
+        "telegramFile": "Dosya",
+        "telegramFailed": "{name} kişisine Telegram iletilmedi: {error}"
     }
 }

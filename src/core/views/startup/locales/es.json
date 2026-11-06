@@ -157,7 +157,32 @@
             "suggested_decline": "Rechazo del pedido {number} detectado ({channel})",
             "declined": "Rechazo del pedido {number} ({channel}) — se ha tomado nota"
         },
-        "confirmationRevokedBy": "retirada por {name}"
+        "confirmationRevokedBy": "retirada por {name}",
+        "sms": "SMS",
+        "openSms": "Abrir historial de SMS",
+        "smsFailed": "no entregado",
+        "telegram": "Telegram",
+        "openTelegram": "Abrir chat de Telegram",
+        "telegramMailing": "Circular",
+        "telegramFailed": "no entregado",
+        "telegramType": {
+            "text": "Mensaje",
+            "photo": "Foto",
+            "document": "Documento",
+            "voice": "Mensaje de voz",
+            "audio": "Audio",
+            "video": "Vídeo",
+            "location": "Ubicación",
+            "contact": "Número de teléfono compartido",
+            "sticker": "Sticker"
+        },
+        "smsInsteadOfWhatsApp": "SMS en lugar de WhatsApp",
+        "smsSource": {
+            "faktura": "Documento",
+            "mailing": "Circular",
+            "fallback": "en lugar de WhatsApp",
+            "reminder": "Recordatorio"
+        }
     },
     "PhoneActions": {
         "clickToCall": "Llamar",
@@ -176,6 +201,7 @@
         "configSaved": "Configuración guardada",
         "phoneSettings": "Configuración del teléfono",
         "configSaveError": "No se pudieron guardar los ajustes",
-        "whatsappGreeting": "Hola {name}"
+        "whatsappGreeting": "Hola {name}",
+        "sendSms": "Enviar SMS"
     }
 }
