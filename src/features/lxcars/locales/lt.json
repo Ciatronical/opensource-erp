@@ -80,6 +80,13 @@
             "title": "Priežiūra vėluoja",
             "titleSoon": "Priežiūra netrukus",
             "jump": "Techninė priežiūra ir aptarnavimas"
+        },
+        "hu": {
+            "overdue": "Techninė apžiūra (HU) pavėluota",
+            "due": "Techninė apžiūra (HU) šį mėnesį",
+            "soon": "Techninė apžiūra (HU) netrukus",
+            "date": "Terminas {date}",
+            "hint": "Informuokite klientą"
         }
     },
     "OrderImages": {

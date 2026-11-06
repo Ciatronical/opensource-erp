@@ -80,6 +80,13 @@
             "title": "Manutenzione in scadenza",
             "titleSoon": "Manutenzione a breve",
             "jump": "Manutenzione e assistenza"
+        },
+        "hu": {
+            "overdue": "Revisione (HU) scaduta",
+            "due": "Revisione (HU) in scadenza questo mese",
+            "soon": "Revisione (HU) a breve",
+            "date": "Scadenza {date}",
+            "hint": "Avvisare il cliente"
         }
     },
     "OrderImages": {

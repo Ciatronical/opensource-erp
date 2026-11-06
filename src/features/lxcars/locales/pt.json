@@ -80,6 +80,13 @@
             "title": "Manutenção pendente",
             "titleSoon": "Manutenção em breve",
             "jump": "Manutenção e serviço"
+        },
+        "hu": {
+            "overdue": "Inspeção (HU) vencida",
+            "due": "Inspeção (HU) vence este mês",
+            "soon": "Inspeção (HU) em breve",
+            "date": "Prazo {date}",
+            "hint": "Avisar o cliente"
         }
     },
     "OrderImages": {

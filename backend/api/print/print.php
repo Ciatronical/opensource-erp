@@ -1297,6 +1297,16 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
                     car.c_zrk AS wartung_zrk,
                     to_char(car.c_bf, 'MM/YYYY') AS wartung_bf,
                     to_char(car.c_wd, 'MM/YYYY') AS wartung_wd,
+                    to_char(car.c_hu, 'MM/YYYY') AS wartung_hu,
+                    -- HU (nächster Termin, gilt bis Monatsende) wie maintenanceDue.js huDueState: nur plausible Termine
+                    -- (2 Jahre zurück … 3 Jahre voraus, LxCars-Platzhalter 1900/2050/2100 fallen raus)
+                    CASE WHEN car.c_hu IS NULL
+                           OR date_trunc('month', car.c_hu) < date_trunc('month', now()) - interval '2 years'
+                           OR date_trunc('month', car.c_hu) > date_trunc('month', now()) + interval '3 years' THEN 'none'
+                         WHEN date_trunc('month', car.c_hu) < date_trunc('month', now()) THEN 'overdue'
+                         WHEN date_trunc('month', car.c_hu) = date_trunc('month', now()) THEN 'due'
+                         WHEN date_trunc('month', car.c_hu) <= date_trunc('month', now()) + interval '2 months' THEN 'soon'
+                         ELSE 'ok' END AS wartung_hu_status,
                     -- Status wie im Frontend (maintenanceDue.js): Monat erreicht oder Hand-Markierung = fällig,
                     -- bis 2 Monate davor = bald fällig; km: Fahrzeug-km-Stand erreicht = fällig, < 5.000 km Rest = bald
                     CASE WHEN car.c_sk THEN CASE WHEN car.c_zrd_due THEN 'due' ELSE 'none' END
@@ -1358,6 +1368,16 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
                     car.c_zrk AS wartung_zrk,
                     to_char(car.c_bf, 'MM/YYYY') AS wartung_bf,
                     to_char(car.c_wd, 'MM/YYYY') AS wartung_wd,
+                    to_char(car.c_hu, 'MM/YYYY') AS wartung_hu,
+                    -- HU (nächster Termin, gilt bis Monatsende) wie maintenanceDue.js huDueState: nur plausible Termine
+                    -- (2 Jahre zurück … 3 Jahre voraus, LxCars-Platzhalter 1900/2050/2100 fallen raus)
+                    CASE WHEN car.c_hu IS NULL
+                           OR date_trunc('month', car.c_hu) < date_trunc('month', now()) - interval '2 years'
+                           OR date_trunc('month', car.c_hu) > date_trunc('month', now()) + interval '3 years' THEN 'none'
+                         WHEN date_trunc('month', car.c_hu) < date_trunc('month', now()) THEN 'overdue'
+                         WHEN date_trunc('month', car.c_hu) = date_trunc('month', now()) THEN 'due'
+                         WHEN date_trunc('month', car.c_hu) <= date_trunc('month', now()) + interval '2 months' THEN 'soon'
+                         ELSE 'ok' END AS wartung_hu_status,
                     -- Status wie im Frontend (maintenanceDue.js): Monat erreicht oder Hand-Markierung = fällig,
                     -- bis 2 Monate davor = bald fällig; km: Fahrzeug-km-Stand erreicht = fällig, < 5.000 km Rest = bald
                     CASE WHEN car.c_sk THEN CASE WHEN car.c_zrd_due THEN 'due' ELSE 'none' END
@@ -1603,6 +1623,8 @@ function loadPrintData($db, int $fakturaID, string $fakturaType, bool $lxCarsEna
         $variables['hu_jjjj']           = $huPlausibel ? date('Y', $huTs) : '';
         $variables['hu_ueberfaellig']   = ($huPlausibel && $carData['c_hu'] < date('Y-m-01')) ? '1' : '';   // HU gilt bis Monatsende
         $variables['hu_termin_kommend'] = ($huPlausibel && $variables['hu_ueberfaellig'] === '') ? '1' : '';
+        // Kopfzeile „Nächster HU-Termin“ rot, sobald der HU-Monat erreicht ist (Status aus SQL wie im Wartungsstand)
+        $variables['hu_farbe']          = in_array($carData['wartung_hu_status'] ?? '', ['due', 'overdue'], true) ? 'warnrot' : 'black';
         $variables['mkb']               = $carData['c_mkb'] ?? '';
         $variables['sommerraeder_lager'] = $carData['c_st_l'] ?? '';
         $variables['winterraeder_lager'] = $carData['c_wt_l'] ?? '';
@@ -1768,13 +1790,15 @@ function formatDate(?string $date): string {
  */
 function maintenancePrintRows(?array $carData): array {
     if (!$carData) return [];
-    $statusText = ['due' => 'fällig', 'soon' => 'bald fällig'];
+    $statusText = ['overdue' => 'überfällig', 'due' => 'fällig', 'soon' => 'bald fällig'];
     $rows = [];
     $add = function (string $label, ?string $wert, ?string $status) use (&$rows, $statusText) {
         if ($wert === '01/1999') $wert = '';   // Platzhalter „fällig“ ohne Termin
         $rows[] = ['label' => $label, 'wert' => $wert ?? '', 'status' => $statusText[$status] ?? '',
-                   'farbe' => $status === 'due' ? 'warnrot' : 'black'];
+                   'farbe' => in_array($status, ['due', 'overdue'], true) ? 'warnrot' : 'black'];
     };
+    // HU zuerst: nur ein plausibler Termin (Status 'none' = leer oder LxCars-Platzhalter)
+    if (($carData['wartung_hu_status'] ?? 'none') !== 'none') $add('Hauptuntersuchung (HU)', $carData['wartung_hu'], $carData['wartung_hu_status']);
     $show = fn (?string $wert, string $key) => !empty($wert) || ($carData["wartung_{$key}_status"] ?? '') === 'due';
     $chain = ($carData['c_sk'] ?? false) === true || ($carData['c_sk'] ?? '') === 't';
     if ($chain) {

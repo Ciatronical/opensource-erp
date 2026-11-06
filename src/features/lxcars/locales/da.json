@@ -80,6 +80,13 @@
             "title": "Vedligeholdelse forfalden",
             "titleSoon": "Vedligeholdelse snart forfalden",
             "jump": "Vedligeholdelse og service"
+        },
+        "hu": {
+            "overdue": "Syn (HU) overskredet",
+            "due": "Syn (HU) skal ske denne måned",
+            "soon": "Syn (HU) snart",
+            "date": "Termin {date}",
+            "hint": "Gør kunden opmærksom på det"
         }
     },
     "OrderImages": {

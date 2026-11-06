@@ -80,6 +80,13 @@
             "title": "Hooldus on tähtajaline",
             "titleSoon": "Hooldus läheneb",
             "jump": "Hooldus ja teenindus"
+        },
+        "hu": {
+            "overdue": "Ülevaatus (HU) on hilinenud",
+            "due": "Ülevaatus (HU) sel kuul",
+            "soon": "Ülevaatus (HU) varsti",
+            "date": "Tähtaeg {date}",
+            "hint": "Teavita klienti"
         }
     },
     "OrderImages": {

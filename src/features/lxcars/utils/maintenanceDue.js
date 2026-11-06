@@ -108,6 +108,26 @@ export function maintenanceDueState(v = {}, today = new Date()) {
     return { fields, items, due, soon, level: due.length ? 'due' : (soon.length ? 'soon' : null) }
 }
 
+// HU-Termin: LxCars-Daten enthalten Platzhalter (1900, 2050, 2100 …) — nur ein Termin
+// zwischen 2 Jahren zurück und 3 Jahren voraus (längste HU-Frist) zählt (wie print.php)
+const HU_MONTHS_BACK = 24
+const HU_MONTHS_AHEAD = 36
+
+/**
+ * Fälligkeit der Hauptuntersuchung (c_hu = nächster HU-Termin, gilt bis Monatsende).
+ * Gleiche Stufen wie wartung_hu_status im Druck (print.php).
+ * @param {string} iso   c_hu (YYYY-MM-DD)
+ * @param {Date}   today
+ * @returns {{ state: 'overdue'|'due'|'soon'|'ok'|'none', date: string }}
+ */
+export function huDueState(iso, today = new Date()) {
+    const idx = monthIndex(iso)
+    const diff = idx === null ? null : idx - (today.getFullYear() * 12 + today.getMonth())
+    if (diff === null || diff < -HU_MONTHS_BACK || diff > HU_MONTHS_AHEAD) return { state: 'none', date: '' }
+    const state = diff < 0 ? 'overdue' : diff === 0 ? 'due' : diff <= SOON_MONTHS ? 'soon' : 'ok'
+    return { state, date: monthLabel(iso) }
+}
+
 /**
  * Pflichtfelder beim Abschluss der letzten Arbeitsanweisung (Auftrag, Werkstatt-Modus).
  * Ein Wartungsfeld gilt als ausgefüllt, wenn ein Wert drin steht ODER es von Hand als

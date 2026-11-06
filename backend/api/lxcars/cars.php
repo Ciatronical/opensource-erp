@@ -818,7 +818,7 @@ function getLxCarsFakturaInit($data) {
                         e.km_stand, e.fertigstellung, COALESCE(k.fhzart, '') AS fhzart,
                         c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
                         to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
-                        c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km,
+                        c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km, to_char(c.c_hu, 'YYYY-MM-DD') AS c_hu,
                         e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle
                  FROM ar_ext e
                  LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
@@ -833,7 +833,7 @@ function getLxCarsFakturaInit($data) {
                         e.bringetermin, e.fertigstellung, e.no_whatsapp,
                         c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
                         to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
-                        c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km,
+                        c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km, to_char(c.c_hu, 'YYYY-MM-DD') AS c_hu,
                         COALESCE(k.fhzart, '') AS fhzart,
                         e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle,
                         CASE WHEN EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id)
@@ -910,7 +910,7 @@ function getCarForOrder($data) {
                 e.bringetermin, e.fertigstellung, e.no_whatsapp,
                 c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
                 to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
-                c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km,
+                c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km, to_char(c.c_hu, 'YYYY-MM-DD') AS c_hu,
                 COALESCE(k.fhzart, '') AS fhzart,
                 e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle,
                 CASE WHEN EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id)
@@ -1367,7 +1367,7 @@ function getCarForInvoice($data) {
                 COALESCE(k.fhzart, '') AS fhzart,
                 c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
                 to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
-                c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km,
+                c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km, to_char(c.c_hu, 'YYYY-MM-DD') AS c_hu,
                 e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle
          FROM ar_ext e
          LEFT JOIN cars_lxcars c ON c.c_id = e.c_id

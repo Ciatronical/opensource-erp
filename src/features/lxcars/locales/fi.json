@@ -80,6 +80,13 @@
             "title": "Huolto erääntynyt",
             "titleSoon": "Huolto erääntyy pian",
             "jump": "Huolto ja ylläpito"
+        },
+        "hu": {
+            "overdue": "Katsastus (HU) myöhässä",
+            "due": "Katsastus (HU) tässä kuussa",
+            "soon": "Katsastus (HU) pian",
+            "date": "Määräaika {date}",
+            "hint": "Kerro asiakkaalle"
         }
     },
     "OrderImages": {

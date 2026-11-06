@@ -80,6 +80,13 @@
             "title": "Entretien dû",
             "titleSoon": "Entretien bientôt dû",
             "jump": "Maintenance et entretien"
+        },
+        "hu": {
+            "overdue": "Contrôle technique (HU) dépassé",
+            "due": "Contrôle technique (HU) ce mois-ci",
+            "soon": "Contrôle technique (HU) bientôt",
+            "date": "Échéance {date}",
+            "hint": "En informer le client"
         }
     },
     "OrderImages": {

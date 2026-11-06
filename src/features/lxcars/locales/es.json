@@ -80,6 +80,13 @@
             "title": "Mantenimiento pendiente",
             "titleSoon": "Mantenimiento próximo",
             "jump": "Mantenimiento y servicio"
+        },
+        "hu": {
+            "overdue": "ITV (HU) vencida",
+            "due": "ITV (HU) vence este mes",
+            "soon": "ITV (HU) vence pronto",
+            "date": "Fecha {date}",
+            "hint": "Avisar al cliente"
         }
     },
     "OrderImages": {

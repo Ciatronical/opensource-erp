@@ -88,6 +88,13 @@
             "title": "Wartung fällig",
             "titleSoon": "Wartung bald fällig",
             "jump": "Wartung & Service"
+        },
+        "hu": {
+            "overdue": "HU überfällig",
+            "due": "HU diesen Monat fällig",
+            "soon": "HU bald fällig",
+            "date": "Termin {date}",
+            "hint": "Kunden darauf ansprechen"
         }
     },
     "OrderImages": {

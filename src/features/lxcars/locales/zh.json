@@ -80,6 +80,13 @@
             "title": "保养到期",
             "titleSoon": "保养即将到期",
             "jump": "维护与服务"
+        },
+        "hu": {
+            "overdue": "年检 (HU) 已逾期",
+            "due": "年检 (HU) 本月到期",
+            "soon": "年检 (HU) 即将到期",
+            "date": "期限 {date}",
+            "hint": "请提醒客户"
         }
     },
     "OrderImages": {

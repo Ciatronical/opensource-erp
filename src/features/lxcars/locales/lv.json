@@ -80,6 +80,13 @@
             "title": "Apkope nokavēta",
             "titleSoon": "Apkope drīz",
             "jump": "Apkope un serviss"
+        },
+        "hu": {
+            "overdue": "Tehniskā apskate (HU) nokavēta",
+            "due": "Tehniskā apskate (HU) šomēnes",
+            "soon": "Tehniskā apskate (HU) drīz",
+            "date": "Termiņš {date}",
+            "hint": "Informējiet klientu"
         }
     },
     "OrderImages": {

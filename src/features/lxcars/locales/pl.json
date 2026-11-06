@@ -88,6 +88,13 @@
             "title": "Konserwacja do wykonania",
             "titleSoon": "Konserwacja wkrótce",
             "jump": "Konserwacja i serwis"
+        },
+        "hu": {
+            "overdue": "Przegląd (HU) po terminie",
+            "due": "Przegląd (HU) w tym miesiącu",
+            "soon": "Przegląd (HU) wkrótce",
+            "date": "Termin {date}",
+            "hint": "Poinformuj klienta"
         }
     },
     "OrderImages": {

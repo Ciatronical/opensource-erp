@@ -80,6 +80,13 @@
             "title": "Întreținere scadentă",
             "titleSoon": "Întreținere în curând",
             "jump": "Întreținere și service"
+        },
+        "hu": {
+            "overdue": "ITP (HU) depășit",
+            "due": "ITP (HU) luna aceasta",
+            "soon": "ITP (HU) în curând",
+            "date": "Termen {date}",
+            "hint": "Informați clientul"
         }
     },
     "OrderImages": {

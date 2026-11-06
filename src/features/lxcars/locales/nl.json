@@ -80,6 +80,13 @@
             "title": "Onderhoud vervallen",
             "titleSoon": "Onderhoud binnenkort",
             "jump": "Onderhoud en service"
+        },
+        "hu": {
+            "overdue": "APK (HU) verlopen",
+            "due": "APK (HU) deze maand",
+            "soon": "APK (HU) binnenkort",
+            "date": "Termijn {date}",
+            "hint": "Klant erop wijzen"
         }
     },
     "OrderImages": {

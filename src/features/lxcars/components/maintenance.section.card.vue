@@ -5,9 +5,9 @@
         <v-card-title class="faktura-card__header">
             <v-icon class="mr-2" size="small">mdi-wrench</v-icon>
             {{ t('MaintenanceSectionCard.title') }}
-            <v-chip v-if="dueState.level" :color="dueState.level === 'due' ? 'error' : 'warning'" variant="tonal" size="x-small" class="ml-2 font-weight-medium">
-                <v-icon start size="x-small">{{ dueState.level === 'due' ? 'mdi-alert-circle' : 'mdi-clock-alert-outline' }}</v-icon>
-                {{ dueState.level === 'due' ? t('MaintenanceDue.count.due', dueState.due.length) : t('MaintenanceDue.count.soon', dueState.soon.length) }}
+            <v-chip v-if="dueCount.level" :color="dueCount.level === 'due' ? 'error' : 'warning'" variant="tonal" size="x-small" class="ml-2 font-weight-medium">
+                <v-icon start size="x-small">{{ dueCount.level === 'due' ? 'mdi-alert-circle' : 'mdi-clock-alert-outline' }}</v-icon>
+                {{ dueCount.level === 'due' ? t('MaintenanceDue.count.due', dueCount.due) : t('MaintenanceDue.count.soon', dueCount.soon) }}
             </v-chip>
             <v-spacer />
             <v-tooltip location="top" :text="voiceRecording ? t('MaintenanceSectionCard.voice.stop') : t('MaintenanceSectionCard.voice.hint')">
@@ -41,6 +41,19 @@
         </v-card-title>
         <v-divider />
         <v-card-text class="faktura-card__body">
+            <!-- HU-Termin des Fahrzeugs (nur Anzeige): fällig/überfällig rot, bald fällig gelb — damit die Werkstatt
+                 den Kunden darauf anspricht (steht genauso im Wartungsstand der Rechnung) -->
+            <v-alert
+                v-if="hasCar && huAlert"
+                :type="huAlert.type"
+                variant="tonal"
+                density="compact"
+                icon="mdi-calendar-alert"
+                class="mb-3"
+            >
+                <strong class="mr-1">{{ t('MaintenanceDue.hu.' + huState.state) }}</strong>
+                <span>· {{ t('MaintenanceDue.hu.date', { date: huState.date }) }} · {{ t('MaintenanceDue.hu.hint') }}</span>
+            </v-alert>
             <v-row dense>
                 <!-- Steuerkette: kein Termin/km — an Stelle der Zahnriemen-Felder nur „fällig“ von Hand (z. B. klappert) -->
                 <v-col v-if="oeExtData.c_sk" cols="12" md="6" class="py-1 d-flex align-center maintenance-chain">
@@ -125,7 +138,7 @@ import axios from 'axios'
 import { parseMonthYear, formatMonthYear } from '@/features/lxcars/utils/validation.js'
 import { useVoiceInput } from '@/core/composables/useVoiceInput.js'
 import * as toasts from '@/core/utils/toasts.js'
-import { maintenanceDueState } from '@/features/lxcars/utils/maintenanceDue.js'
+import { maintenanceDueState, huDueState } from '@/features/lxcars/utils/maintenanceDue.js'
 import MaintenanceDueButton from '@/features/lxcars/components/maintenance-due-button.vue'
 
 export default defineComponent({
@@ -200,6 +213,16 @@ export default defineComponent({
         // Fahrzeug und geht wie die Wartungsfelder über updateOeExt dorthin.
         const dueState = computed(() => maintenanceDueState(props.oeExtData))
 
+        // HU zählt im Kartenkopf mit (fällig = Monat erreicht oder überschritten)
+        const huState = computed(() => huDueState(props.oeExtData.c_hu))
+        const huAlert = computed(() => ({ overdue: { type: 'error' }, due: { type: 'error' }, soon: { type: 'warning' } })[huState.value.state] || null)
+        const dueCount = computed(() => {
+            const huDue = ['due', 'overdue'].includes(huState.value.state) ? 1 : 0
+            const due = dueState.value.due.length + huDue
+            const soon = dueState.value.soon.length + (huState.value.state === 'soon' ? 1 : 0)
+            return { due, soon, level: due ? 'due' : (soon ? 'soon' : null) }
+        })
+
         function emitChange(field, value) {
             emit('oe-ext-field-change', field, value)
         }
@@ -262,7 +285,7 @@ export default defineComponent({
         } = useVoiceInput({ onText: applyMaintenanceSpeech })
 
         return {
-            t, displayZrd, displayBf, displayWd, displayZrk, onBlurMonthYear, onBlurKm, onToggleSk, dueState, emitChange,
+            t, displayZrd, displayBf, displayWd, displayZrk, onBlurMonthYear, onBlurKm, onToggleSk, dueState, huState, huAlert, dueCount, emitChange,
             voiceRecording, voiceBusy, voiceExtracting, voiceSupported, voiceToggle
         }
     }

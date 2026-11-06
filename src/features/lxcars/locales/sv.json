@@ -80,6 +80,13 @@
             "title": "Underhåll förfallet",
             "titleSoon": "Underhåll snart förfallet",
             "jump": "Underhåll och service"
+        },
+        "hu": {
+            "overdue": "Besiktning (HU) försenad",
+            "due": "Besiktning (HU) denna månad",
+            "soon": "Besiktning (HU) snart",
+            "date": "Senast {date}",
+            "hint": "Påminn kunden"
         }
     },
     "OrderImages": {

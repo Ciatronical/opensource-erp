@@ -88,6 +88,13 @@
             "title": "Maintenance due",
             "titleSoon": "Maintenance due soon",
             "jump": "Maintenance & Service"
+        },
+        "hu": {
+            "overdue": "Inspection (HU) overdue",
+            "due": "Inspection (HU) due this month",
+            "soon": "Inspection (HU) due soon",
+            "date": "Due {date}",
+            "hint": "Let the customer know"
         }
     },
     "OrderImages": {

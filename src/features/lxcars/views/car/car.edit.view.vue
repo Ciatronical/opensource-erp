@@ -123,24 +123,30 @@
         <v-alert v-if="error" type="error" variant="tonal" density="compact" class="mb-3">
             {{ error }}
         </v-alert>
-        <!-- Wartung fällig / bald fällig (Termin erreicht, km-Stand erreicht, von Hand markiert) -->
+        <!-- HU und Wartung fällig / bald fällig (Termin erreicht, km-Stand erreicht, von Hand markiert);
+             die HU gilt auch für Anhänger, die keine Wartungsfelder haben -->
         <v-alert
-            v-if="!loading && maintenanceDue.level"
-            :type="maintenanceDue.level === 'due' ? 'error' : 'warning'"
-            :icon="maintenanceDue.level === 'due' ? 'mdi-car-wrench' : 'mdi-clock-alert-outline'"
+            v-if="!loading && dueAlertLevel"
+            :type="dueAlertLevel === 'due' ? 'error' : 'warning'"
+            :icon="dueAlertLevel === 'due' ? 'mdi-car-wrench' : 'mdi-clock-alert-outline'"
             variant="tonal"
             density="compact"
             class="mb-3"
         >
             <!-- Titel und Einträge in einer Zeile, Einträge brechen als Ganzes um -->
             <div class="maintenance-due-list">
-                <span class="font-weight-medium mr-1">{{ t(maintenanceDue.level === 'due' ? 'MaintenanceDue.alert.title' : 'MaintenanceDue.alert.titleSoon') }}</span>
+                <span v-if="huAlertItem" class="maintenance-due-item">
+                    <v-icon size="x-small" :color="huAlertItem.state === 'soon' ? 'warning' : 'error'" class="mr-1">{{ huAlertItem.state === 'soon' ? 'mdi-clock-alert-outline' : 'mdi-calendar-alert' }}</v-icon>
+                    <strong class="mr-1">{{ t('MaintenanceDue.hu.' + huAlertItem.state) }}:</strong>
+                    <span class="text-medium-emphasis">{{ t('MaintenanceDue.hu.date', { date: huAlertItem.date }) }}</span>
+                </span>
+                <span v-if="maintenanceDue.level" class="font-weight-medium mr-1">{{ t(maintenanceDue.level === 'due' ? 'MaintenanceDue.alert.title' : 'MaintenanceDue.alert.titleSoon') }}</span>
                 <span v-for="item in maintenanceAlertItems" :key="item.labelKey" class="maintenance-due-item">
                     <v-icon size="x-small" :color="item.state === 'due' ? 'error' : 'warning'" class="mr-1">{{ item.state === 'due' ? 'mdi-alert-circle' : 'mdi-clock-alert-outline' }}</v-icon>
                     <strong class="mr-1">{{ t('MaintenanceDue.items.' + item.labelKey) }}:</strong>
                     <span class="text-medium-emphasis">{{ maintenanceDueReasons(item, t, locale).join(' · ') }}</span>
                 </span>
-                <v-btn size="small" variant="tonal" :color="maintenanceDue.level === 'due' ? 'error' : 'warning'" class="ml-auto" @click="scrollToMaintenance">
+                <v-btn v-if="maintenanceDue.level" size="small" variant="tonal" :color="dueAlertLevel === 'due' ? 'error' : 'warning'" class="ml-auto" @click="scrollToMaintenance">
                     <v-icon start size="small">mdi-wrench</v-icon>
                     {{ t('MaintenanceDue.alert.jump') }}
                 </v-btn>
@@ -1345,7 +1351,7 @@ import CarSellDialog from './components/car-sell.dialog.vue'
 import SpecialToolsSectionCard from '@/features/lxcars/components/special-tools.section.card.vue'
 import MaintenanceDueButton from '@/features/lxcars/components/maintenance-due-button.vue'
 import DiagPortalButtons from '@/features/lxcars/components/diag-portal-buttons.vue'
-import { maintenanceDueState, maintenanceDueReasons, maintenanceDueAlertItems, MAINTENANCE_DUE_FLAGS } from '@/features/lxcars/utils/maintenanceDue.js'
+import { maintenanceDueState, maintenanceDueReasons, maintenanceDueAlertItems, huDueState, MAINTENANCE_DUE_FLAGS } from '@/features/lxcars/utils/maintenanceDue.js'
 
 // const SpecialDialog = defineAsyncComponent(() => import('@special/special.dialog.vue'))
 
@@ -1447,6 +1453,15 @@ export default {
         const isTrailer = computed(() => kbaData.value?.fhzart === 'trailer')
         const maintenanceDue = computed(() => isTrailer.value ? maintenanceDueState({}) : maintenanceDueState(car.value))
         const maintenanceAlertItems = computed(() => maintenanceDueAlertItems(maintenanceDue.value))
+        // HU-Termin (c_hu = nächster Termin): überfällig/diesen Monat fällig rot, bald fällig gelb — wie im Auftrag
+        const huAlertItem = computed(() => {
+            const hu = huDueState(car.value.c_hu)
+            return ['overdue', 'due', 'soon'].includes(hu.state) ? hu : null
+        })
+        const dueAlertLevel = computed(() => {
+            if (maintenanceDue.value.level === 'due' || (huAlertItem.value && huAlertItem.value.state !== 'soon')) return 'due'
+            return maintenanceDue.value.level || (huAlertItem.value ? 'soon' : null)
+        })
         const maintenanceCardRef = ref(null)
 
         function setDueFlag(field, value) {
@@ -2871,7 +2886,7 @@ export default {
             displayZrd, displayBf, displayWd, onBlurMonthYear,
             displayZrk, onBlurKm,
             displayKm, onBlurKmStand,
-            locale, isTrailer, maintenanceDue, maintenanceAlertItems, maintenanceDueReasons, maintenanceCardRef, setDueFlag, toggleChain, scrollToMaintenance,
+            locale, isTrailer, maintenanceDue, maintenanceAlertItems, huAlertItem, dueAlertLevel, maintenanceDueReasons, maintenanceCardRef, setDueFlag, toggleChain, scrollToMaintenance,
             voiceRecording, voiceBusy, voiceExtracting, voiceSupported, voiceToggle,
             toggleShield, orderFilter, filteredOrders, orderHeaders,
             formatAmount, openOrder, createNewOrder, navigateToCustomer, openCarRegistration, focusSearch,

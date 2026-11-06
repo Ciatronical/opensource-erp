@@ -80,6 +80,13 @@
             "title": "Vedlikehold forfalt",
             "titleSoon": "Vedlikehold snart forfalt",
             "jump": "Vedlikehold og service"
+        },
+        "hu": {
+            "overdue": "EU-kontroll (HU) forfalt",
+            "due": "EU-kontroll (HU) denne måneden",
+            "soon": "EU-kontroll (HU) snart",
+            "date": "Frist {date}",
+            "hint": "Gi kunden beskjed"
         }
     },
     "OrderImages": {

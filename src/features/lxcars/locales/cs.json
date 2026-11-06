@@ -80,6 +80,13 @@
             "title": "Údržba splatná",
             "titleSoon": "Údržba brzy splatná",
             "jump": "Údržba a servis"
+        },
+        "hu": {
+            "overdue": "STK po termínu",
+            "due": "STK tento měsíc",
+            "soon": "STK brzy",
+            "date": "Termín {date}",
+            "hint": "Upozornit zákazníka"
         }
     },
     "OrderImages": {

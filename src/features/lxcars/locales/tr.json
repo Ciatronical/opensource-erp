@@ -80,6 +80,13 @@
             "title": "Bakım zamanı geldi",
             "titleSoon": "Bakım zamanı yaklaşıyor",
             "jump": "Bakım ve servis"
+        },
+        "hu": {
+            "overdue": "Muayene (HU) gecikti",
+            "due": "Muayene (HU) bu ay",
+            "soon": "Muayene (HU) yakında",
+            "date": "Tarih {date}",
+            "hint": "Müşteriyi bilgilendirin"
         }
     },
     "OrderImages": {

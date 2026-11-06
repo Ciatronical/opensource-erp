@@ -45,6 +45,8 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         c_bf_due: false,
         c_wd_due: false,
         c_km: null,
+        // nächster HU-Termin des Fahrzeugs (nur Anzeige/Warnung, huDueState in maintenanceDue.js)
+        c_hu: null,
         // Reparaturzeit (docs/features/lxcars.md → Reparaturzeit)
         reparaturzeit_minuten: null,
         reparaturzeit_drucken: false,
@@ -461,6 +463,7 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         oeExtData.value.c_bf_due = car?.c_bf_due === true || car?.c_bf_due === 't'
         oeExtData.value.c_wd_due = car?.c_wd_due === true || car?.c_wd_due === 't'
         oeExtData.value.c_km = car?.c_km ?? null
+        oeExtData.value.c_hu = car?.c_hu || null
         oeExtData.value.reparaturzeit_minuten = car?.reparaturzeit_minuten ? Number(car.reparaturzeit_minuten) : null
         oeExtData.value.reparaturzeit_drucken = car?.reparaturzeit_drucken === true || car?.reparaturzeit_drucken === 't'
         oeExtData.value.reparaturzeit_quelle = car?.reparaturzeit_quelle || null
