@@ -27,7 +27,9 @@
             "defaultWarehouse": "Varsayılan depo",
             "defaultBin": "Varsayılan raf",
             "defaultLocationHint": "İrsaliyeler ve stok hareketleri için ön ayar",
-            "notesPlaceholder": "Belgeler ve mağaza için açıklama …"
+            "notesPlaceholder": "Belgeler ve mağaza için açıklama …",
+            "importMarkdown": "Markdown aktar",
+            "editSource": "Kaynak kodu düzenle"
         },
         "messages": {
             "loading": "Urun yukleniyor",

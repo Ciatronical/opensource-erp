@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "Tuo Markdown",
+        "hint": "Liitä teksti, joka on jo muotoiltu Markdownilla (otsikot #-merkillä, luettelot --merkillä, **lihavointi**, taulukot). Esikatselu näyttää, miltä se näyttää editorissa.",
+        "input": "Markdown",
+        "preview": "Esikatselu",
+        "empty": "Ei vielä tekstiä",
+        "cancel": "Peruuta",
+        "insert": "Lisää kohdistimen kohtaan",
+        "replace": "Korvaa koko teksti"
+    },
+    "SourceDialog": {
+        "title": "Muokkaa lähdekoodia",
+        "position": "Rivi {line}, sarake {column}",
+        "cancel": "Peruuta",
+        "apply": "Käytä",
+        "undo": "Kumoa",
+        "redo": "Tee uudelleen",
+        "search": "Etsi ja korvaa",
+        "gotoLine": "Siirry riville",
+        "indentLess": "Pienennä sisennystä",
+        "indentMore": "Suurenna sisennystä",
+        "toggleComment": "Vaihda kommentti",
+        "foldAll": "Supista kaikki",
+        "unfoldAll": "Laajenna kaikki",
+        "format": "Sisennä lähdekoodi uudelleen"
+    }
+}

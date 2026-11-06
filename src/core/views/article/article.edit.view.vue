@@ -241,14 +241,48 @@
                                      der Belegpositionen. -->
                                 <v-col cols="12" class="py-1 mt-2">
                                     <HtmlEditorComponent
+                                        ref="notesEditor"
                                         v-model="article.notes"
                                         :label="t('ArticleEditView.fields.notes')"
                                         :placeholder="t('ArticleEditView.fields.notesPlaceholder')"
                                         toolbar="full"
+                                        format="markdown"
                                         :min-height="180"
                                         :max-height="0"
                                         @focus="onEditorFocus"
                                         @blur="onEditorBlur"
+                                    >
+                                        <!-- Fertig formatierten Markdown-Text (Herstellertext, KI-Antwort,
+                                             Hugo-Seite) in den Editor holen: letzter Eintrag der Werkzeugleiste -->
+                                        <template #toolbar-end>
+                                            <v-btn
+                                                icon="mdi-language-markdown-outline"
+                                                size="small"
+                                                variant="text"
+                                                :title="t('ArticleEditView.fields.importMarkdown')"
+                                                @click="markdownDialog = true"
+                                            />
+                                            <!-- HTML-Quelltext direkt bearbeiten (CodeMirror) -->
+                                            <v-btn
+                                                icon="mdi-code-tags"
+                                                size="small"
+                                                variant="text"
+                                                :title="t('ArticleEditView.fields.editSource')"
+                                                @click="sourceDialog = true"
+                                            />
+                                        </template>
+                                    </HtmlEditorComponent>
+                                    <MarkdownImportDialog
+                                        v-model="markdownDialog"
+                                        format="markdown"
+                                        @insert="markdownEinfuegen"
+                                        @replace="notesErsetzen"
+                                    />
+                                    <SourceDialog
+                                        v-model="sourceDialog"
+                                        :source="article.notes || ''"
+                                        language="markdown"
+                                        @apply="notesErsetzen"
                                     />
                                 </v-col>
 
@@ -403,6 +437,10 @@ import SectionCard from '@/core/components/layout/section-card.vue'
 import HtmlEditorComponent from '@/core/components/html.editor.component.vue'
 import { useWarehouse } from '@/features/warehouse/composables/useWarehouse.js'
 
+// Markdown-Übernahme samt marked: erst laden, wenn der Dialog geöffnet wird
+const MarkdownImportDialog = defineAsyncComponent(() => import('@/core/components/markdown-import.dialog.vue'))
+const SourceDialog = defineAsyncComponent(() => import('@/core/components/source.dialog.vue'))
+
 // Die Shop-Karte gehört zur Shop-Erweiterung: erst laden, wenn sie gebraucht wird
 const PartShopCard = defineAsyncComponent(() => import('@/features/shop/components/part-shop.card.vue'))
 // Bestand samt Buchungsdialog: nur für Waren, deshalb ebenfalls erst bei Bedarf
@@ -410,7 +448,7 @@ const PartStockPanel = defineAsyncComponent(() => import('@/features/warehouse/c
 
 export default defineComponent({
     name: 'ArticleEditView',
-    components: { NavbarView, PartShopCard, PartStockPanel, SectionCard, HtmlEditorComponent },
+    components: { NavbarView, PartShopCard, PartStockPanel, SectionCard, HtmlEditorComponent, MarkdownImportDialog, SourceDialog },
     props: {
         // Ohne id: Neuanlage (Route article-new)
         id: { type: [String, Number], default: null }
@@ -507,29 +545,51 @@ export default defineComponent({
 
         // ── Langbeschreibung (HTML) ──
 
-        /**
-         * Altbestand ohne HTML (kivitendo-Textfeld, Importe) in Absätze heben,
-         * sonst zöge der Editor alle Zeilen zu einem Absatz zusammen.
-         */
-        function notesToHtml(text) {
-            const wert = String(text || '')
-            if (wert.trim() === '' || /<[a-z][\s\S]*>/i.test(wert)) return wert
-            const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            return wert.trim().split(/\n{2,}/).map(p => '<p>' + esc(p).replace(/\n/g, '<br>') + '</p>').join('')
+        // Die Langbeschreibung ist Markdown: der Hugo-Shop setzt sie als
+        // Seitenrumpf, Belege übernehmen sie als Langtext. Der Editor arbeitet
+        // im Markdown-Modus; Reintext-Altbestand ist gültiges Markdown, ein
+        // HTML-Altbestand wird beim Laden erkannt und ab der ersten Änderung
+        // als Markdown gespeichert.
+
+        /** Langbeschreibung ohne Randleerraum — gespeichert wird sonst leer */
+        function notesValue() {
+            return String(article.value.notes || '').trim()
         }
 
-        /** Ein geleerter Editor liefert <p></p> — gespeichert wird dann leer */
-        function notesValue() {
-            const wert = String(article.value.notes || '')
-            return /^(\s*<p>\s*<\/p>\s*)*$/.test(wert) ? '' : wert
+        // Markdown übernehmen und Quelltext bearbeiten: beide Dialoge liefern
+        // Markdown. Einfügen geht über den Editor (Cursorposition, Rückgängig
+        // möglich), Ersetzen über das Modell; beides löst das gewohnte
+        // Speichern aus.
+        const notesEditor = ref(null)
+        const markdownDialog = ref(false)
+        const sourceDialog = ref(false)
+
+        function markdownEinfuegen(markdown) {
+            if (notesEditor.value?.insertText) {
+                notesEditor.value.insertText(markdown)
+            } else {
+                article.value.notes = [notesValue(), markdown].filter(Boolean).join('\n\n')
+            }
+        }
+
+        function notesErsetzen(markdown) {
+            article.value.notes = markdown
         }
 
         /** Nur der Text, als Platzhalter für die Kanalbeschreibung der Shop-Karte */
-        const notesPlain = computed(() => {
-            const div = document.createElement('div')
-            div.innerHTML = notesValue().replace(/<\/(p|div|li|h[1-6]|tr)>/gi, '\n')
-            return (div.textContent || '').replace(/\n{3,}/g, '\n\n').trim()
-        })
+        const notesPlain = computed(() => notesValue()
+            .replace(/```[\s\S]*?```/g, '')                    // Codeblöcke
+            .replace(/!\[[^\]]*\]\([^)]*\)/g, '')               // Bilder
+            .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')            // Links: nur der Text
+            .replace(/^\s{0,3}#{1,6}\s+/gm, '')                 // Überschriften
+            .replace(/^\s{0,3}>\s?/gm, '')                      // Zitate
+            .replace(/^\s*[-*+]\s+\[[ xX]\]\s+/gm, '- ')         // Aufgabenlisten
+            .replace(/^\s*(?:[-*_]\s*){3,}$/gm, '')             // Trennlinien
+            .replace(/^\|?[\s:|-]+\|[\s:|-]*$/gm, '')           // Tabellen: Trennzeile
+            .replace(/(\*\*|__|~~|`)(.*?)\1/g, '$2')             // fett, durchgestrichen, Code
+            .replace(/(^|[^*\w])[*_](.+?)[*_]/g, '$1$2')         // kursiv
+            .replace(/\n{3,}/g, '\n\n')
+            .trim())
 
         // ── Save-Logik ──
 
@@ -615,7 +675,7 @@ export default defineComponent({
                         unit: data.unit || 'Stck',
                         sellprice: parseFloat(data.sellprice) || 0,
                         buchungsgruppen_id: data.buchungsgruppen_id ? parseInt(data.buchungsgruppen_id) : null,
-                        notes: notesToHtml(data.notes),
+                        notes: data.notes || '',
                         obsolete: data.obsolete === true || data.obsolete === 't',
                         weight: data.weight === null || data.weight === undefined ? '' : String(Number(data.weight)),
                         stockable: data.stockable === true || data.stockable === 't',
@@ -1006,6 +1066,11 @@ export default defineComponent({
             onEditorFocus,
             onEditorBlur,
             notesPlain,
+            notesEditor,
+            markdownDialog,
+            sourceDialog,
+            markdownEinfuegen,
+            notesErsetzen,
             // Neuanlage
             isNewMode,
             nextPartnumber,

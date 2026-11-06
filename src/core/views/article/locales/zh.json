@@ -27,7 +27,9 @@
             "defaultWarehouse": "默认仓库",
             "defaultBin": "默认库位",
             "defaultLocationHint": "送货单和库存变动的预设值",
-            "notesPlaceholder": "用于单据和商店的描述 …"
+            "notesPlaceholder": "用于单据和商店的描述 …",
+            "importMarkdown": "导入 Markdown",
+            "editSource": "编辑源代码"
         },
         "messages": {
             "loading": "正在加载商品",

@@ -27,7 +27,9 @@
       "defaultWarehouse": "Default warehouse",
       "defaultBin": "Default bin",
       "defaultLocationHint": "Preset for delivery orders and stock movements",
-      "notesPlaceholder": "Description for documents and shop …"
+      "notesPlaceholder": "Description for documents and shop …",
+      "importMarkdown": "Import Markdown",
+      "editSource": "Edit source"
     },
     "messages": {
       "loading": "Loading article",

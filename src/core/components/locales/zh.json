@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "导入 Markdown",
+        "hint": "粘贴已用 Markdown 格式化的文本（# 标题、- 列表、**加粗**、表格）。预览显示其在编辑器中的效果。",
+        "input": "Markdown",
+        "preview": "预览",
+        "empty": "尚无文本",
+        "cancel": "取消",
+        "insert": "插入到光标处",
+        "replace": "替换全部文本"
+    },
+    "SourceDialog": {
+        "title": "编辑源代码",
+        "position": "第 {line} 行，第 {column} 列",
+        "cancel": "取消",
+        "apply": "应用",
+        "undo": "撤销",
+        "redo": "重做",
+        "search": "查找和替换",
+        "gotoLine": "跳转到行",
+        "indentLess": "减少缩进",
+        "indentMore": "增加缩进",
+        "toggleComment": "切换注释",
+        "foldAll": "全部折叠",
+        "unfoldAll": "全部展开",
+        "format": "重新缩进源代码"
+    }
+}

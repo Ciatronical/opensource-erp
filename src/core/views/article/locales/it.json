@@ -27,7 +27,9 @@
             "defaultWarehouse": "Magazzino predefinito",
             "defaultBin": "Ubicazione predefinita",
             "defaultLocationHint": "Valore proposto per bolle e movimenti di magazzino",
-            "notesPlaceholder": "Descrizione per documenti e negozio …"
+            "notesPlaceholder": "Descrizione per documenti e negozio …",
+            "importMarkdown": "Importa Markdown",
+            "editSource": "Modifica codice sorgente"
         },
         "messages": {
             "loading": "Caricamento articolo",

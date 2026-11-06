@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "Perimti Markdown",
+        "hint": "Įklijuokite tekstą, kuris jau suformatuotas Markdown (antraštės su #, sąrašai su -, **paryškintas**, lentelės). Peržiūra rodo, kaip jis atrodys redaktoriuje.",
+        "input": "Markdown",
+        "preview": "Peržiūra",
+        "empty": "Teksto dar nėra",
+        "cancel": "Atšaukti",
+        "insert": "Įterpti žymeklio vietoje",
+        "replace": "Pakeisti visą tekstą"
+    },
+    "SourceDialog": {
+        "title": "Redaguoti pirminį kodą",
+        "position": "Eilutė {line}, stulpelis {column}",
+        "cancel": "Atšaukti",
+        "apply": "Taikyti",
+        "undo": "Atšaukti veiksmą",
+        "redo": "Pakartoti",
+        "search": "Rasti ir pakeisti",
+        "gotoLine": "Eiti į eilutę",
+        "indentLess": "Sumažinti įtrauką",
+        "indentMore": "Padidinti įtrauką",
+        "toggleComment": "Perjungti komentarą",
+        "foldAll": "Suskleisti viską",
+        "unfoldAll": "Išskleisti viską",
+        "format": "Iš naujo įtraukti pirminį kodą"
+    }
+}

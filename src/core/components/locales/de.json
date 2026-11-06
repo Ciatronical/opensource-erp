@@ -6,5 +6,31 @@
         "permissionDenied": "Kein Mikrofonzugriff — im Browser erlauben",
         "error": "Spracherkennung fehlgeschlagen",
         "addAsNew": "Gesprochenen Text neu übernehmen"
+    },
+    "MarkdownImportDialog": {
+        "title": "Markdown übernehmen",
+        "hint": "Text einfügen, der schon in Markdown formatiert ist (Überschriften mit #, Listen mit -, **fett**, Tabellen). Die Vorschau zeigt, wie er im Editor erscheint.",
+        "input": "Markdown",
+        "preview": "Vorschau",
+        "empty": "Noch kein Text",
+        "cancel": "Abbrechen",
+        "insert": "An Cursorposition einfügen",
+        "replace": "Gesamten Text ersetzen"
+    },
+    "SourceDialog": {
+        "title": "Quelltext bearbeiten",
+        "position": "Zeile {line}, Spalte {column}",
+        "cancel": "Abbrechen",
+        "apply": "Übernehmen",
+        "undo": "Rückgängig",
+        "redo": "Wiederholen",
+        "search": "Suchen und ersetzen",
+        "gotoLine": "Gehe zu Zeile",
+        "indentLess": "Ausrücken",
+        "indentMore": "Einrücken",
+        "toggleComment": "Kommentar umschalten",
+        "foldAll": "Alles einklappen",
+        "unfoldAll": "Alles ausklappen",
+        "format": "Quelltext neu einrücken"
     }
 }

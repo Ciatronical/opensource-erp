@@ -27,7 +27,9 @@
             "defaultWarehouse": "Almacén predeterminado",
             "defaultBin": "Ubicación predeterminada",
             "defaultLocationHint": "Valor previo para albaranes y movimientos de stock",
-            "notesPlaceholder": "Descripción para documentos y tienda …"
+            "notesPlaceholder": "Descripción para documentos y tienda …",
+            "importMarkdown": "Importar Markdown",
+            "editSource": "Editar código fuente"
         },
         "messages": {
             "loading": "Cargando artículo",

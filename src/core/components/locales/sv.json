@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "Ta över Markdown",
+        "hint": "Klistra in text som redan är formaterad i Markdown (rubriker med #, listor med -, **fet**, tabeller). Förhandsvisningen visar hur den ser ut i redigeraren.",
+        "input": "Markdown",
+        "preview": "Förhandsvisning",
+        "empty": "Ingen text ännu",
+        "cancel": "Avbryt",
+        "insert": "Infoga vid markören",
+        "replace": "Ersätt hela texten"
+    },
+    "SourceDialog": {
+        "title": "Redigera källkod",
+        "position": "Rad {line}, kolumn {column}",
+        "cancel": "Avbryt",
+        "apply": "Använd",
+        "undo": "Ångra",
+        "redo": "Gör om",
+        "search": "Sök och ersätt",
+        "gotoLine": "Gå till rad",
+        "indentLess": "Minska indrag",
+        "indentMore": "Öka indrag",
+        "toggleComment": "Växla kommentar",
+        "foldAll": "Fäll ihop allt",
+        "unfoldAll": "Fäll ut allt",
+        "format": "Indentera källkoden på nytt"
+    }
+}

@@ -27,7 +27,9 @@
             "defaultWarehouse": "Výchozí sklad",
             "defaultBin": "Výchozí skladové místo",
             "defaultLocationHint": "Předvolba pro dodací listy a skladové pohyby",
-            "notesPlaceholder": "Popis pro doklady a e-shop …"
+            "notesPlaceholder": "Popis pro doklady a e-shop …",
+            "importMarkdown": "Převzít Markdown",
+            "editSource": "Upravit zdrojový kód"
         },
         "messages": {
             "loading": "Artikl se nacita",

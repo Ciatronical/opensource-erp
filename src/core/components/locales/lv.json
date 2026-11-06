@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "Pārņemt Markdown",
+        "hint": "Ielīmējiet tekstu, kas jau ir formatēts Markdown (virsraksti ar #, saraksti ar -, **treknraksts**, tabulas). Priekšskatījums rāda, kā tas izskatīsies redaktorā.",
+        "input": "Markdown",
+        "preview": "Priekšskatījums",
+        "empty": "Teksta vēl nav",
+        "cancel": "Atcelt",
+        "insert": "Ievietot kursora vietā",
+        "replace": "Aizstāt visu tekstu"
+    },
+    "SourceDialog": {
+        "title": "Rediģēt pirmkodu",
+        "position": "Rinda {line}, kolonna {column}",
+        "cancel": "Atcelt",
+        "apply": "Lietot",
+        "undo": "Atsaukt",
+        "redo": "Atkārtot",
+        "search": "Meklēt un aizstāt",
+        "gotoLine": "Pāriet uz rindu",
+        "indentLess": "Samazināt atkāpi",
+        "indentMore": "Palielināt atkāpi",
+        "toggleComment": "Pārslēgt komentāru",
+        "foldAll": "Sakļaut visu",
+        "unfoldAll": "Izvērst visu",
+        "format": "Pārkārtot pirmkoda atkāpes"
+    }
+}

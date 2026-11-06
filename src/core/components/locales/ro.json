@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "Preia Markdown",
+        "hint": "Lipiți text deja formatat în Markdown (titluri cu #, liste cu -, **aldin**, tabele). Previzualizarea arată cum va apărea în editor.",
+        "input": "Markdown",
+        "preview": "Previzualizare",
+        "empty": "Încă niciun text",
+        "cancel": "Anulează",
+        "insert": "Inserează la cursor",
+        "replace": "Înlocuiește tot textul"
+    },
+    "SourceDialog": {
+        "title": "Editează codul sursă",
+        "position": "Rândul {line}, coloana {column}",
+        "cancel": "Anulează",
+        "apply": "Aplică",
+        "undo": "Anulează modificarea",
+        "redo": "Refă",
+        "search": "Caută și înlocuiește",
+        "gotoLine": "Mergi la rând",
+        "indentLess": "Micșorează indentarea",
+        "indentMore": "Mărește indentarea",
+        "toggleComment": "Comută comentariul",
+        "foldAll": "Restrânge tot",
+        "unfoldAll": "Extinde tot",
+        "format": "Reindentează codul sursă"
+    }
+}

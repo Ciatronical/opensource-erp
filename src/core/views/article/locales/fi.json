@@ -27,7 +27,9 @@
             "defaultWarehouse": "Oletusvarasto",
             "defaultBin": "Oletusvarastopaikka",
             "defaultLocationHint": "Esivalinta lähetteille ja varastotapahtumille",
-            "notesPlaceholder": "Kuvaus asiakirjoihin ja verkkokauppaan …"
+            "notesPlaceholder": "Kuvaus asiakirjoihin ja verkkokauppaan …",
+            "importMarkdown": "Tuo Markdown",
+            "editSource": "Muokkaa lähdekoodia"
         },
         "messages": {
             "loading": "Tuotetta ladataan",

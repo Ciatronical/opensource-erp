@@ -6,5 +6,31 @@
         "permissionDenied": "No microphone access — allow it in the browser",
         "error": "Speech recognition failed",
         "addAsNew": "Add spoken text as new"
+    },
+    "MarkdownImportDialog": {
+        "title": "Import Markdown",
+        "hint": "Paste text that is already formatted in Markdown (headings with #, lists with -, **bold**, tables). The preview shows how it will appear in the editor.",
+        "input": "Markdown",
+        "preview": "Preview",
+        "empty": "No text yet",
+        "cancel": "Cancel",
+        "insert": "Insert at cursor",
+        "replace": "Replace whole text"
+    },
+    "SourceDialog": {
+        "title": "Edit source",
+        "position": "Line {line}, column {column}",
+        "cancel": "Cancel",
+        "apply": "Apply",
+        "undo": "Undo",
+        "redo": "Redo",
+        "search": "Find and replace",
+        "gotoLine": "Go to line",
+        "indentLess": "Decrease indent",
+        "indentMore": "Increase indent",
+        "toggleComment": "Toggle comment",
+        "foldAll": "Fold all",
+        "unfoldAll": "Unfold all",
+        "format": "Re-indent source"
     }
 }

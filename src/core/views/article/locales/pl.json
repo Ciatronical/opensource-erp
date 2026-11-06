@@ -27,7 +27,9 @@
             "defaultWarehouse": "Magazyn domyślny",
             "defaultBin": "Domyślne miejsce składowania",
             "defaultLocationHint": "Wartość domyślna dla dokumentów dostawy i ruchów magazynowych",
-            "notesPlaceholder": "Opis do dokumentów i sklepu …"
+            "notesPlaceholder": "Opis do dokumentów i sklepu …",
+            "importMarkdown": "Przejmij Markdown",
+            "editSource": "Edytuj kod źródłowy"
         },
         "messages": {
             "loading": "Ładowanie artykułu",

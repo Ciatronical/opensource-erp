@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "Markdown aktar",
+        "hint": "Zaten Markdown ile biçimlendirilmiş metni yapıştırın (# ile başlıklar, - ile listeler, **kalın**, tablolar). Önizleme, düzenleyicide nasıl görüneceğini gösterir.",
+        "input": "Markdown",
+        "preview": "Önizleme",
+        "empty": "Henüz metin yok",
+        "cancel": "İptal",
+        "insert": "İmleç konumuna ekle",
+        "replace": "Tüm metni değiştir"
+    },
+    "SourceDialog": {
+        "title": "Kaynak kodu düzenle",
+        "position": "Satır {line}, sütun {column}",
+        "cancel": "İptal",
+        "apply": "Uygula",
+        "undo": "Geri al",
+        "redo": "Yinele",
+        "search": "Bul ve değiştir",
+        "gotoLine": "Satıra git",
+        "indentLess": "Girintiyi azalt",
+        "indentMore": "Girintiyi artır",
+        "toggleComment": "Yorumu aç/kapat",
+        "foldAll": "Tümünü daralt",
+        "unfoldAll": "Tümünü genişlet",
+        "format": "Kaynak kodu yeniden girintile"
+    }
+}

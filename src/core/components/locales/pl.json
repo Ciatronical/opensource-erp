@@ -6,5 +6,31 @@
         "permissionDenied": "Brak dostępu do mikrofonu — zezwól w przeglądarce",
         "error": "Rozpoznawanie mowy nie powiodło się",
         "addAsNew": "Dodaj wypowiedziany tekst jako nowy"
+    },
+    "MarkdownImportDialog": {
+        "title": "Przejmij Markdown",
+        "hint": "Wklej tekst sformatowany już w Markdown (nagłówki z #, listy z -, **pogrubienie**, tabele). Podgląd pokazuje, jak będzie wyglądał w edytorze.",
+        "input": "Markdown",
+        "preview": "Podgląd",
+        "empty": "Brak tekstu",
+        "cancel": "Anuluj",
+        "insert": "Wstaw w miejscu kursora",
+        "replace": "Zastąp cały tekst"
+    },
+    "SourceDialog": {
+        "title": "Edytuj kod źródłowy",
+        "position": "Wiersz {line}, kolumna {column}",
+        "cancel": "Anuluj",
+        "apply": "Zastosuj",
+        "undo": "Cofnij",
+        "redo": "Ponów",
+        "search": "Znajdź i zamień",
+        "gotoLine": "Przejdź do wiersza",
+        "indentLess": "Zmniejsz wcięcie",
+        "indentMore": "Zwiększ wcięcie",
+        "toggleComment": "Przełącz komentarz",
+        "foldAll": "Zwiń wszystko",
+        "unfoldAll": "Rozwiń wszystko",
+        "format": "Sformatuj wcięcia kodu"
     }
 }

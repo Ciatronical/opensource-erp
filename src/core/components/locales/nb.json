@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "Overta Markdown",
+        "hint": "Lim inn tekst som allerede er formatert i Markdown (overskrifter med #, lister med -, **fet**, tabeller). Forhåndsvisningen viser hvordan den vises i editoren.",
+        "input": "Markdown",
+        "preview": "Forhåndsvisning",
+        "empty": "Ingen tekst ennå",
+        "cancel": "Avbryt",
+        "insert": "Sett inn ved markøren",
+        "replace": "Erstatt hele teksten"
+    },
+    "SourceDialog": {
+        "title": "Rediger kildekode",
+        "position": "Linje {line}, kolonne {column}",
+        "cancel": "Avbryt",
+        "apply": "Bruk",
+        "undo": "Angre",
+        "redo": "Gjør om",
+        "search": "Søk og erstatt",
+        "gotoLine": "Gå til linje",
+        "indentLess": "Reduser innrykk",
+        "indentMore": "Øk innrykk",
+        "toggleComment": "Slå kommentar av/på",
+        "foldAll": "Fold sammen alt",
+        "unfoldAll": "Fold ut alt",
+        "format": "Rykk inn kildekoden på nytt"
+    }
+}

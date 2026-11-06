@@ -27,7 +27,9 @@
             "defaultWarehouse": "Armazém predefinido",
             "defaultBin": "Localização predefinida",
             "defaultLocationHint": "Valor predefinido para guias de remessa e movimentos de stock",
-            "notesPlaceholder": "Descrição para documentos e loja …"
+            "notesPlaceholder": "Descrição para documentos e loja …",
+            "importMarkdown": "Importar Markdown",
+            "editSource": "Editar código-fonte"
         },
         "messages": {
             "loading": "A carregar artigo",

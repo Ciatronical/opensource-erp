@@ -27,7 +27,9 @@
             "defaultWarehouse": "Numatytasis sandėlis",
             "defaultBin": "Numatytoji sandėlio vieta",
             "defaultLocationHint": "Numatytoji reikšmė važtaraščiams ir sandėlio operacijoms",
-            "notesPlaceholder": "Aprašymas dokumentams ir el. parduotuvei …"
+            "notesPlaceholder": "Aprašymas dokumentams ir el. parduotuvei …",
+            "importMarkdown": "Perimti Markdown",
+            "editSource": "Redaguoti pirminį kodą"
         },
         "messages": {
             "loading": "Prekė kraunama",

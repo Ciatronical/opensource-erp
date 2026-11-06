@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "Markdown overnemen",
+        "hint": "Plak tekst die al in Markdown is opgemaakt (koppen met #, lijsten met -, **vet**, tabellen). Het voorbeeld toont hoe de tekst in de editor verschijnt.",
+        "input": "Markdown",
+        "preview": "Voorbeeld",
+        "empty": "Nog geen tekst",
+        "cancel": "Annuleren",
+        "insert": "Invoegen bij de cursor",
+        "replace": "Hele tekst vervangen"
+    },
+    "SourceDialog": {
+        "title": "Broncode bewerken",
+        "position": "Regel {line}, kolom {column}",
+        "cancel": "Annuleren",
+        "apply": "Toepassen",
+        "undo": "Ongedaan maken",
+        "redo": "Opnieuw",
+        "search": "Zoeken en vervangen",
+        "gotoLine": "Ga naar regel",
+        "indentLess": "Inspringing verkleinen",
+        "indentMore": "Inspringing vergroten",
+        "toggleComment": "Commentaar omschakelen",
+        "foldAll": "Alles invouwen",
+        "unfoldAll": "Alles uitvouwen",
+        "format": "Broncode opnieuw inspringen"
+    }
+}

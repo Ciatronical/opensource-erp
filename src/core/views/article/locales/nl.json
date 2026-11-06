@@ -27,7 +27,9 @@
             "defaultWarehouse": "Standaardmagazijn",
             "defaultBin": "Standaardlocatie",
             "defaultLocationHint": "Voorkeuze voor pakbonnen en voorraadmutaties",
-            "notesPlaceholder": "Omschrijving voor documenten en webshop …"
+            "notesPlaceholder": "Omschrijving voor documenten en webshop …",
+            "importMarkdown": "Markdown overnemen",
+            "editSource": "Broncode bewerken"
         },
         "messages": {
             "loading": "Artikel wordt geladen",

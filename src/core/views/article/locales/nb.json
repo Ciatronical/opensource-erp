@@ -27,7 +27,9 @@
             "defaultWarehouse": "Standardlager",
             "defaultBin": "Standardlagerplass",
             "defaultLocationHint": "Forvalg for følgesedler og lagerbevegelser",
-            "notesPlaceholder": "Beskrivelse for bilag og nettbutikk …"
+            "notesPlaceholder": "Beskrivelse for bilag og nettbutikk …",
+            "importMarkdown": "Overta Markdown",
+            "editSource": "Rediger kildekode"
         },
         "messages": {
             "loading": "Artikkel lastes",

@@ -27,7 +27,9 @@
       "defaultWarehouse": "Standardlager",
       "defaultBin": "Standardlagerplatz",
       "defaultLocationHint": "Vorbelegung für Lieferscheine und Buchungen",
-      "notesPlaceholder": "Beschreibung für Belege und Shop …"
+      "notesPlaceholder": "Beschreibung für Belege und Shop …",
+      "importMarkdown": "Markdown übernehmen",
+      "editSource": "Quelltext bearbeiten"
     },
     "messages": {
       "loading": "Artikel wird geladen",

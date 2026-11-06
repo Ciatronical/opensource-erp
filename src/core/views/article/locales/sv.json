@@ -27,7 +27,9 @@
             "defaultWarehouse": "Standardlager",
             "defaultBin": "Standardlagerplats",
             "defaultLocationHint": "Förval för följesedlar och lagerrörelser",
-            "notesPlaceholder": "Beskrivning för dokument och webbutik …"
+            "notesPlaceholder": "Beskrivning för dokument och webbutik …",
+            "importMarkdown": "Ta över Markdown",
+            "editSource": "Redigera källkod"
         },
         "messages": {
             "loading": "Artikel laddas",

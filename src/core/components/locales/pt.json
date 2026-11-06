@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "Importar Markdown",
+        "hint": "Cole texto já formatado em Markdown (títulos com #, listas com -, **negrito**, tabelas). A pré-visualização mostra como aparecerá no editor.",
+        "input": "Markdown",
+        "preview": "Pré-visualização",
+        "empty": "Ainda sem texto",
+        "cancel": "Cancelar",
+        "insert": "Inserir no cursor",
+        "replace": "Substituir todo o texto"
+    },
+    "SourceDialog": {
+        "title": "Editar código-fonte",
+        "position": "Linha {line}, coluna {column}",
+        "cancel": "Cancelar",
+        "apply": "Aplicar",
+        "undo": "Anular",
+        "redo": "Refazer",
+        "search": "Localizar e substituir",
+        "gotoLine": "Ir para a linha",
+        "indentLess": "Diminuir avanço",
+        "indentMore": "Aumentar avanço",
+        "toggleComment": "Alternar comentário",
+        "foldAll": "Recolher tudo",
+        "unfoldAll": "Expandir tudo",
+        "format": "Reindentar o código-fonte"
+    }
+}

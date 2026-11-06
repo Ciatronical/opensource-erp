@@ -27,7 +27,9 @@
             "defaultWarehouse": "Entrepôt par défaut",
             "defaultBin": "Emplacement par défaut",
             "defaultLocationHint": "Valeur proposée pour les bons de livraison et les mouvements de stock",
-            "notesPlaceholder": "Description pour les documents et la boutique …"
+            "notesPlaceholder": "Description pour les documents et la boutique …",
+            "importMarkdown": "Reprendre du Markdown",
+            "editSource": "Modifier le code source"
         },
         "messages": {
             "loading": "Chargement de l'article",

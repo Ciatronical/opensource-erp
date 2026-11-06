@@ -27,7 +27,9 @@
             "defaultWarehouse": "Noklusētā noliktava",
             "defaultBin": "Noklusētā noliktavas vieta",
             "defaultLocationHint": "Iepriekš iestatīta vērtība pavadzīmēm un noliktavas kustībām",
-            "notesPlaceholder": "Apraksts dokumentiem un veikalam …"
+            "notesPlaceholder": "Apraksts dokumentiem un veikalam …",
+            "importMarkdown": "Pārņemt Markdown",
+            "editSource": "Rediģēt pirmkodu"
         },
         "messages": {
             "loading": "Artikuls tiek ielādēts",

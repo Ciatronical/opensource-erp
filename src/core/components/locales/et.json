@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "Võta Markdown üle",
+        "hint": "Kleebi tekst, mis on juba Markdownis vormindatud (pealkirjad #-ga, loendid --ga, **rasvane**, tabelid). Eelvaade näitab, kuidas see redaktoris paistab.",
+        "input": "Markdown",
+        "preview": "Eelvaade",
+        "empty": "Teksti veel pole",
+        "cancel": "Loobu",
+        "insert": "Lisa kursori kohale",
+        "replace": "Asenda kogu tekst"
+    },
+    "SourceDialog": {
+        "title": "Muuda lähtekoodi",
+        "position": "Rida {line}, veerg {column}",
+        "cancel": "Loobu",
+        "apply": "Rakenda",
+        "undo": "Võta tagasi",
+        "redo": "Tee uuesti",
+        "search": "Otsi ja asenda",
+        "gotoLine": "Mine reale",
+        "indentLess": "Vähenda taanet",
+        "indentMore": "Suurenda taanet",
+        "toggleComment": "Lülita kommentaar",
+        "foldAll": "Voldi kõik kokku",
+        "unfoldAll": "Voldi kõik lahti",
+        "format": "Taanda lähtekood uuesti"
+    }
+}

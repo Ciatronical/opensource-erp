@@ -27,7 +27,9 @@
             "defaultWarehouse": "Vaikeladu",
             "defaultBin": "Vaikelaokoht",
             "defaultLocationHint": "Eelvalik saatelehtedele ja laoliikumistele",
-            "notesPlaceholder": "Kirjeldus dokumentidele ja e-poele …"
+            "notesPlaceholder": "Kirjeldus dokumentidele ja e-poele …",
+            "importMarkdown": "Võta Markdown üle",
+            "editSource": "Muuda lähtekoodi"
         },
         "messages": {
             "loading": "Artiklit laaditakse",

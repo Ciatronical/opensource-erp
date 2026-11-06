@@ -1,0 +1,28 @@
+{
+    "MarkdownImportDialog": {
+        "title": "Převzít Markdown",
+        "hint": "Vložte text, který je už naformátován v Markdownu (nadpisy s #, seznamy s -, **tučně**, tabulky). Náhled ukazuje, jak se zobrazí v editoru.",
+        "input": "Markdown",
+        "preview": "Náhled",
+        "empty": "Zatím žádný text",
+        "cancel": "Zrušit",
+        "insert": "Vložit na pozici kurzoru",
+        "replace": "Nahradit celý text"
+    },
+    "SourceDialog": {
+        "title": "Upravit zdrojový kód",
+        "position": "Řádek {line}, sloupec {column}",
+        "cancel": "Zrušit",
+        "apply": "Použít",
+        "undo": "Zpět",
+        "redo": "Znovu",
+        "search": "Najít a nahradit",
+        "gotoLine": "Přejít na řádek",
+        "indentLess": "Zmenšit odsazení",
+        "indentMore": "Zvětšit odsazení",
+        "toggleComment": "Přepnout komentář",
+        "foldAll": "Sbalit vše",
+        "unfoldAll": "Rozbalit vše",
+        "format": "Znovu odsadit zdrojový kód"
+    }
+}

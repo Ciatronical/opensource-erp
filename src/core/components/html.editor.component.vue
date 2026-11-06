@@ -252,6 +252,13 @@
                     :title="t('HtmlEditor.clearFormatting')"
                 />
             </v-btn-group>
+
+            <!-- Platz für Schaltflächen des Aufrufers am Ende der Leiste,
+                 etwa „Markdown übernehmen“ in der Artikelmaske -->
+            <template v-if="$slots['toolbar-end']">
+                <v-divider vertical class="mx-1" />
+                <slot name="toolbar-end" :editor="editor" />
+            </template>
         </div>
 
         <editor-content :editor="editor" class="html-editor__content" :style="contentStyle" />
@@ -305,6 +312,7 @@ import Link from '@tiptap/extension-link'
 import { TaskList, TaskItem } from '@tiptap/extension-list'
 import { TableKit } from '@tiptap/extension-table'
 import { Placeholder } from '@tiptap/extensions'
+import { Markdown } from '@tiptap/markdown'
 import { Extension, Node, mergeAttributes } from '@tiptap/core'
 import { Plugin, PluginKey, NodeSelection } from '@tiptap/pm/state'
 import { imageFileToDataUrl, imageWidth } from '@/core/utils/imageTools.js'
@@ -418,11 +426,23 @@ export default defineComponent({
     },
     props: {
         /**
-         * HTML-Inhalt (v-model)
+         * Inhalt (v-model): HTML oder Markdown, je nach format
          */
         modelValue: {
             type: String,
             default: ''
+        },
+        /**
+         * Speicherformat des Inhalts: 'html' für Texte, die als HTML
+         * weiterverarbeitet werden (E-Mails, Briefe, Wiki), 'markdown' für
+         * Texte, die ein Markdown-Werkzeug weiterverarbeitet (Hugo-Shop).
+         * Bei 'markdown' wird ein HTML-Altbestand beim Laden erkannt und
+         * ab der ersten Änderung als Markdown ausgegeben.
+         */
+        format: {
+            type: String,
+            default: 'html',
+            validator: (v) => ['html', 'markdown'].includes(v)
         },
         /**
          * Label für das Feld
@@ -489,6 +509,22 @@ export default defineComponent({
         const isFocused = ref(false)
         const linkInputRef = ref(null)
         const isFull = computed(() => props.toolbar === 'full')
+        const isMarkdown = props.format === 'markdown'
+
+        /**
+         * Inhaltstyp eines Wertes von außen als Option für setContent und
+         * insertContent. Nur der Markdown-Modus braucht sie (die Markdown-
+         * Erweiterung wertet sie aus); ein HTML-Altbestand bleibt dort HTML.
+         */
+        function typeOf(value) {
+            if (!isMarkdown) return {}
+            return { contentType: /^\s*<([a-z][\w-]*)[\s>]/i.test(String(value || '')) ? 'html' : 'markdown' }
+        }
+
+        /** Inhalt im Speicherformat */
+        function currentValue() {
+            return isMarkdown ? editor.value.getMarkdown() : editor.value.getHTML()
+        }
         const imageInput = ref(null)
         const imageBusy = ref(false)
         const folderPicker = ref(false)
@@ -586,6 +622,13 @@ export default defineComponent({
             }))
         }
 
+        if (isMarkdown) {
+            // breaks: ein einzelner Zeilenumbruch im Altbestand (kivitendo-
+            // Textfeld, Importe) bleibt ein Umbruch; ausgegeben wird er als
+            // Markdown-Zeilenumbruch (zwei Leerzeichen), den jedes Werkzeug kennt
+            extensions.push(Markdown.configure({ markedOptions: { breaks: true } }))
+        }
+
         if (isFull.value) {
             extensions.push(
                 TaskList,
@@ -598,9 +641,10 @@ export default defineComponent({
 
         const editor = useEditor({
             content: props.modelValue,
+            ...typeOf(props.modelValue),
             extensions,
-            onUpdate: ({ editor }) => {
-                emit('update:modelValue', editor.getHTML())
+            onUpdate: () => {
+                emit('update:modelValue', currentValue())
             },
             onFocus: () => {
                 isFocused.value = true
@@ -648,7 +692,7 @@ export default defineComponent({
          */
         function insertText(text) {
             if (!editor.value) return
-            editor.value.chain().focus().insertContent(text).run()
+            editor.value.chain().focus().insertContent(text, typeOf(text)).run()
         }
 
         /**
@@ -726,8 +770,8 @@ export default defineComponent({
 
         // Inhalt aktualisieren wenn sich modelValue ändert
         watch(() => props.modelValue, (newValue) => {
-            if (editor.value && newValue !== editor.value.getHTML()) {
-                editor.value.commands.setContent(newValue, { emitUpdate: false })
+            if (editor.value && newValue !== currentValue()) {
+                editor.value.commands.setContent(newValue, { emitUpdate: false, ...typeOf(newValue) })
             }
         })
 

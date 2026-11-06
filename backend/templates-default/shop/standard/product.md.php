@@ -239,12 +239,12 @@ card-image-alt: <?= shopYaml($titel) ?>
 <div class="tab-pane fade show active" id="tab-description">
 <?php if ($beschreibung !== ''): ?>
 <?php // Die Beschreibung aus dem Kanal bzw. die Langbeschreibung des Artikels
-      // kann HTML aus dem Editor enthalten — sie bleibt, wie sie ist ?>
-<p>
+      // ist Markdown aus dem Editor; Hugo setzt sie als Teil des Seitenrumpfs.
+      // Leerzeilen davor und danach: erst sie beenden den HTML-Block für
+      // Goldmark, sonst bliebe das Markdown als Rohtext stehen. ?>
 
 <?= $beschreibung ?>
 
-</p>
 <?php else: ?>
 <p>Keine weitere Beschreibung vorhanden.</p>
 <?php endif; ?>

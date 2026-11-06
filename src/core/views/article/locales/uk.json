@@ -27,7 +27,9 @@
             "defaultWarehouse": "Склад за замовчуванням",
             "defaultBin": "Місце зберігання за замовчуванням",
             "defaultLocationHint": "Попереднє значення для накладних і складських рухів",
-            "notesPlaceholder": "Опис для документів і магазину …"
+            "notesPlaceholder": "Опис для документів і магазину …",
+            "importMarkdown": "Імпорт Markdown",
+            "editSource": "Редагувати вихідний код"
         },
         "messages": {
             "loading": "Товар завантажується",
