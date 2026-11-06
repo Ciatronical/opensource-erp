@@ -81,5 +81,26 @@
             "titleSoon": "Vedligeholdelse snart forfalden",
             "jump": "Vedligeholdelse og service"
         }
+    },
+    "OrderImages": {
+        "title": "Billeder",
+        "takePhoto": "Tag foto",
+        "choosePhotos": "Vælg billeder",
+        "empty": "Endnu ingen billeder på ordren. „Tag foto“ åbner kameraet, „Vælg billeder“ galleriet.",
+        "saveFirst": "Ordren skal gemmes, før der kan uploades billeder",
+        "uploading": "{done} af {total} uploadet …",
+        "caption": "Billedtekst",
+        "captionHint": "Kunden ser den senere i kundeportalen",
+        "portalVisible": "Synlig for kunden",
+        "delete": "Slet billede",
+        "cancel": "Annuller",
+        "deleteConfirm": "Vil du virkelig slette dette billede? Filen fjernes også fra kundemappen.",
+        "deleteFailed": "Billedet kunne ikke slettes",
+        "uploadFailed": "{name} kunne ikke uploades",
+        "saveFailed": "Ændringen kunne ikke gemmes",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} er ikke et billede",
+        "tooLarge": "{name} er større end 20 MB"
     }
 }

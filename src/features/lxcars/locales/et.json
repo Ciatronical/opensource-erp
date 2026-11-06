@@ -81,5 +81,26 @@
             "titleSoon": "Hooldus läheneb",
             "jump": "Hooldus ja teenindus"
         }
+    },
+    "OrderImages": {
+        "title": "Pildid",
+        "takePhoto": "Tee foto",
+        "choosePhotos": "Vali pildid",
+        "empty": "Tellimusel pole veel pilte. „Tee foto“ avab kaamera, „Vali pildid“ galerii.",
+        "saveFirst": "Enne piltide üleslaadimist tuleb tellimus salvestada",
+        "uploading": "{done} / {total} üles laaditud …",
+        "caption": "Pildiallkiri",
+        "captionHint": "Klient näeb seda hiljem kliendiportaalis",
+        "portalVisible": "Kliendile nähtav",
+        "delete": "Kustuta pilt",
+        "cancel": "Loobu",
+        "deleteConfirm": "Kas kustutada see pilt? Fail eemaldatakse ka kliendi kaustast.",
+        "deleteFailed": "Pilti ei õnnestunud kustutada",
+        "uploadFailed": "{name} üleslaadimine ebaõnnestus",
+        "saveFailed": "Muudatust ei õnnestunud salvestada",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} ei ole pilt",
+        "tooLarge": "{name} on suurem kui 20 MB"
     }
 }

@@ -89,5 +89,26 @@
             "titleSoon": "Wartung bald fällig",
             "jump": "Wartung & Service"
         }
+    },
+    "OrderImages": {
+        "title": "Bilder",
+        "takePhoto": "Foto aufnehmen",
+        "choosePhotos": "Bilder wählen",
+        "empty": "Noch keine Bilder am Auftrag. „Foto aufnehmen“ öffnet die Kamera, „Bilder wählen“ die Galerie.",
+        "saveFirst": "Der Auftrag muss zuerst gespeichert werden, bevor Bilder hochgeladen werden können",
+        "uploading": "{done} von {total} hochgeladen …",
+        "caption": "Bildunterschrift",
+        "captionHint": "Sieht der Kunde später im Kundenportal",
+        "portalVisible": "Für den Kunden sichtbar",
+        "delete": "Bild löschen",
+        "cancel": "Abbrechen",
+        "deleteConfirm": "Dieses Bild wirklich löschen? Die Datei wird auch aus dem Kundenordner entfernt.",
+        "deleteFailed": "Bild konnte nicht gelöscht werden",
+        "uploadFailed": "{name} konnte nicht hochgeladen werden",
+        "saveFailed": "Änderung konnte nicht gespeichert werden",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} ist kein Bild",
+        "tooLarge": "{name} ist größer als 20 MB"
     }
 }

@@ -81,5 +81,26 @@
             "titleSoon": "Bakım zamanı yaklaşıyor",
             "jump": "Bakım ve servis"
         }
+    },
+    "OrderImages": {
+        "title": "Görseller",
+        "takePhoto": "Fotoğraf çek",
+        "choosePhotos": "Görsel seç",
+        "empty": "Siparişte henüz görsel yok. „Fotoğraf çek“ kamerayı, „Görsel seç“ galeriyi açar.",
+        "saveFirst": "Görsel yüklemeden önce sipariş kaydedilmelidir",
+        "uploading": "{total} görselden {done} tanesi yüklendi …",
+        "caption": "Açıklama",
+        "captionHint": "Müşteri bunu daha sonra müşteri portalında görür",
+        "portalVisible": "Müşteri görebilir",
+        "delete": "Görseli sil",
+        "cancel": "İptal",
+        "deleteConfirm": "Bu görsel gerçekten silinsin mi? Dosya müşteri klasöründen de kaldırılır.",
+        "deleteFailed": "Görsel silinemedi",
+        "uploadFailed": "{name} yüklenemedi",
+        "saveFailed": "Değişiklik kaydedilemedi",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} bir görsel değil",
+        "tooLarge": "{name} 20 MB’tan büyük"
     }
 }

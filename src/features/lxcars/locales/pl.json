@@ -89,5 +89,26 @@
             "titleSoon": "Konserwacja wkrótce",
             "jump": "Konserwacja i serwis"
         }
+    },
+    "OrderImages": {
+        "title": "Zdjęcia",
+        "takePhoto": "Zrób zdjęcie",
+        "choosePhotos": "Wybierz zdjęcia",
+        "empty": "Brak zdjęć w zleceniu. „Zrób zdjęcie” otwiera aparat, „Wybierz zdjęcia” galerię.",
+        "saveFirst": "Przed przesłaniem zdjęć należy najpierw zapisać zlecenie",
+        "uploading": "Przesłano {done} z {total} …",
+        "caption": "Podpis",
+        "captionHint": "Klient zobaczy go później w portalu klienta",
+        "portalVisible": "Widoczne dla klienta",
+        "delete": "Usuń zdjęcie",
+        "cancel": "Anuluj",
+        "deleteConfirm": "Czy na pewno usunąć to zdjęcie? Plik zostanie usunięty także z folderu klienta.",
+        "deleteFailed": "Nie udało się usunąć zdjęcia",
+        "uploadFailed": "Nie udało się przesłać {name}",
+        "saveFailed": "Nie udało się zapisać zmiany",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} nie jest obrazem",
+        "tooLarge": "{name} jest większy niż 20 MB"
     }
 }

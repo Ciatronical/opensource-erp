@@ -81,5 +81,26 @@
             "titleSoon": "Onderhoud binnenkort",
             "jump": "Onderhoud en service"
         }
+    },
+    "OrderImages": {
+        "title": "Afbeeldingen",
+        "takePhoto": "Foto maken",
+        "choosePhotos": "Afbeeldingen kiezen",
+        "empty": "Nog geen afbeeldingen bij de order. „Foto maken“ opent de camera, „Afbeeldingen kiezen“ de galerij.",
+        "saveFirst": "Sla de order eerst op voordat u afbeeldingen uploadt",
+        "uploading": "{done} van {total} geüpload …",
+        "caption": "Bijschrift",
+        "captionHint": "De klant ziet dit later in het klantenportaal",
+        "portalVisible": "Zichtbaar voor de klant",
+        "delete": "Afbeelding verwijderen",
+        "cancel": "Annuleren",
+        "deleteConfirm": "Deze afbeelding echt verwijderen? Het bestand wordt ook uit de klantmap verwijderd.",
+        "deleteFailed": "Afbeelding kon niet worden verwijderd",
+        "uploadFailed": "{name} kon niet worden geüpload",
+        "saveFailed": "Wijziging kon niet worden opgeslagen",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} is geen afbeelding",
+        "tooLarge": "{name} is groter dan 20 MB"
     }
 }

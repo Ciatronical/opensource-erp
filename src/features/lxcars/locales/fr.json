@@ -81,5 +81,26 @@
             "titleSoon": "Entretien bientôt dû",
             "jump": "Maintenance et entretien"
         }
+    },
+    "OrderImages": {
+        "title": "Images",
+        "takePhoto": "Prendre une photo",
+        "choosePhotos": "Choisir des images",
+        "empty": "Aucune image sur la commande pour l’instant. « Prendre une photo » ouvre l’appareil photo, « Choisir des images » la galerie.",
+        "saveFirst": "Enregistrez d’abord la commande avant d’envoyer des images",
+        "uploading": "{done} sur {total} envoyées …",
+        "caption": "Légende",
+        "captionHint": "Le client la verra plus tard dans le portail client",
+        "portalVisible": "Visible pour le client",
+        "delete": "Supprimer l’image",
+        "cancel": "Annuler",
+        "deleteConfirm": "Supprimer vraiment cette image ? Le fichier est aussi retiré du dossier du client.",
+        "deleteFailed": "L’image n’a pas pu être supprimée",
+        "uploadFailed": "{name} n’a pas pu être envoyé",
+        "saveFailed": "La modification n’a pas pu être enregistrée",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} n’est pas une image",
+        "tooLarge": "{name} dépasse 20 Mo"
     }
 }

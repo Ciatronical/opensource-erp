@@ -81,5 +81,26 @@
             "titleSoon": "Priežiūra netrukus",
             "jump": "Techninė priežiūra ir aptarnavimas"
         }
+    },
+    "OrderImages": {
+        "title": "Nuotraukos",
+        "takePhoto": "Fotografuoti",
+        "choosePhotos": "Pasirinkti nuotraukas",
+        "empty": "Užsakyme dar nėra nuotraukų. „Fotografuoti“ atidaro kamerą, „Pasirinkti nuotraukas“ – galeriją.",
+        "saveFirst": "Prieš įkeliant nuotraukas užsakymą reikia išsaugoti",
+        "uploading": "Įkelta {done} iš {total} …",
+        "caption": "Parašas",
+        "captionHint": "Klientas jį vėliau matys klientų portale",
+        "portalVisible": "Matoma klientui",
+        "delete": "Ištrinti nuotrauką",
+        "cancel": "Atšaukti",
+        "deleteConfirm": "Tikrai ištrinti šią nuotrauką? Failas bus pašalintas ir iš kliento aplanko.",
+        "deleteFailed": "Nepavyko ištrinti nuotraukos",
+        "uploadFailed": "Nepavyko įkelti {name}",
+        "saveFailed": "Nepavyko išsaugoti pakeitimo",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} nėra nuotrauka",
+        "tooLarge": "{name} didesnis nei 20 MB"
     }
 }

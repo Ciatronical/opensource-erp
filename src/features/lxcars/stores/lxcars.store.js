@@ -1362,6 +1362,60 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         return response.data.payload
     }
 
+    // ===== Bilder am Auftrag (docs/features/lxcars.md → Bilder am Auftrag) =====
+
+    async function loadOrderImages(oeId) {
+        const response = await axios.post('/api/lxcars/', { action: 'getOrderImages', oe_id: oeId });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error loading order images: ' + response.data.text);
+        }
+        return response.data.payload.results || [];
+    }
+
+    /**
+     * Lädt ein Bild hoch (multipart). Der Axios-Interceptor lässt FormData
+     * unangetastet, deshalb kommt employee_id hier von Hand mit.
+     *
+     * @param {number} oeId Auftrag
+     * @param {Blob} file Bild (vom Gerät verkleinert)
+     * @param {string} filename Dateiname für den Upload
+     * @return {Promise<Object>} die neue Bildzeile
+     */
+    async function uploadOrderImage(oeId, file, filename) {
+        const formData = new FormData();
+        formData.append('action', 'uploadOrderImage');
+        formData.append('oe_id', oeId);
+        const employeeId = oserpStore().session?.logged_in_employee?.id;
+        if (employeeId) formData.append('employee_id', employeeId);
+        formData.append('file', file, filename);
+        const response = await axios.post('/api/lxcars/', formData);
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error uploading order image: ' + response.data.text);
+        }
+        return response.data.payload.results;
+    }
+
+    async function updateOrderImage(id, data) {
+        const response = await axios.post('/api/lxcars/', { action: 'updateOrderImage', id, ...data });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error updating order image: ' + response.data.text);
+        }
+        return response.data.payload.results;
+    }
+
+    async function deleteOrderImage(id) {
+        const response = await axios.post('/api/lxcars/', { action: 'deleteOrderImage', id });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error deleting order image: ' + response.data.text);
+        }
+        return response.data.payload.results;
+    }
+
+    /** Bildquelle für <img>: Original oder Vorschaubild */
+    function orderImageUrl(id, thumb = false) {
+        return '/api/lxcars/?action=getOrderImage&id=' + encodeURIComponent(id) + (thumb ? '&thumb=1' : '');
+    }
+
     return {
         pendingScanData,
         getScans,
@@ -1461,6 +1515,12 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         getSalesText,
         saveSalesText,
         generateSalesText,
+        // Bilder am Auftrag
+        loadOrderImages,
+        uploadOrderImage,
+        updateOrderImage,
+        deleteOrderImage,
+        orderImageUrl,
         data
     };
 });

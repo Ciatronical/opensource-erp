@@ -81,5 +81,26 @@
             "titleSoon": "Manutenzione a breve",
             "jump": "Manutenzione e assistenza"
         }
+    },
+    "OrderImages": {
+        "title": "Immagini",
+        "takePhoto": "Scatta foto",
+        "choosePhotos": "Scegli immagini",
+        "empty": "Nessuna immagine sull’ordine. «Scatta foto» apre la fotocamera, «Scegli immagini» la galleria.",
+        "saveFirst": "Salvare prima l’ordine prima di caricare immagini",
+        "uploading": "{done} di {total} caricate …",
+        "caption": "Didascalia",
+        "captionHint": "Il cliente la vedrà in seguito nel portale clienti",
+        "portalVisible": "Visibile al cliente",
+        "delete": "Elimina immagine",
+        "cancel": "Annulla",
+        "deleteConfirm": "Eliminare davvero questa immagine? Il file viene rimosso anche dalla cartella del cliente.",
+        "deleteFailed": "Impossibile eliminare l’immagine",
+        "uploadFailed": "Impossibile caricare {name}",
+        "saveFailed": "Impossibile salvare la modifica",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} non è un’immagine",
+        "tooLarge": "{name} supera i 20 MB"
     }
 }

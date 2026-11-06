@@ -81,5 +81,26 @@
             "titleSoon": "Manutenção em breve",
             "jump": "Manutenção e serviço"
         }
+    },
+    "OrderImages": {
+        "title": "Imagens",
+        "takePhoto": "Tirar foto",
+        "choosePhotos": "Escolher imagens",
+        "empty": "Ainda não há imagens no pedido. «Tirar foto» abre a câmara, «Escolher imagens» a galeria.",
+        "saveFirst": "Guarde primeiro o pedido antes de carregar imagens",
+        "uploading": "{done} de {total} carregadas …",
+        "caption": "Legenda",
+        "captionHint": "O cliente vê-la-á mais tarde no portal do cliente",
+        "portalVisible": "Visível para o cliente",
+        "delete": "Eliminar imagem",
+        "cancel": "Cancelar",
+        "deleteConfirm": "Eliminar mesmo esta imagem? O ficheiro também é removido da pasta do cliente.",
+        "deleteFailed": "Não foi possível eliminar a imagem",
+        "uploadFailed": "Não foi possível carregar {name}",
+        "saveFailed": "Não foi possível guardar a alteração",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} não é uma imagem",
+        "tooLarge": "{name} excede 20 MB"
     }
 }

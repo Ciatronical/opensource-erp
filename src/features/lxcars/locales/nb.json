@@ -81,5 +81,26 @@
             "titleSoon": "Vedlikehold snart forfalt",
             "jump": "Vedlikehold og service"
         }
+    },
+    "OrderImages": {
+        "title": "Bilder",
+        "takePhoto": "Ta bilde",
+        "choosePhotos": "Velg bilder",
+        "empty": "Ingen bilder på ordren ennå. «Ta bilde» åpner kameraet, «Velg bilder» galleriet.",
+        "saveFirst": "Ordren må lagres før bilder kan lastes opp",
+        "uploading": "{done} av {total} lastet opp …",
+        "caption": "Bildetekst",
+        "captionHint": "Kunden ser den senere i kundeportalen",
+        "portalVisible": "Synlig for kunden",
+        "delete": "Slett bilde",
+        "cancel": "Avbryt",
+        "deleteConfirm": "Vil du virkelig slette dette bildet? Filen fjernes også fra kundemappen.",
+        "deleteFailed": "Bildet kunne ikke slettes",
+        "uploadFailed": "{name} kunne ikke lastes opp",
+        "saveFailed": "Endringen kunne ikke lagres",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} er ikke et bilde",
+        "tooLarge": "{name} er større enn 20 MB"
     }
 }

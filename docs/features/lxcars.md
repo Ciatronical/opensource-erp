@@ -133,6 +133,18 @@ Ein Mechaniker kann Teile anfordern:
 
 Offene Anforderungen erscheinen als rote Chips in der **Infoleiste** — so sieht das Büro sofort wenn ein Mechaniker Teile braucht.
 
+### Bilder am Auftrag
+
+Fotos zum Auftrag – Schadstellen, verschlissene Teile, der Zustand bei Annahme – direkt aus der Auftragsmaske, im Büro wie am Tablet in der Werkstatt. Nur bei aktivem LxCars und nur bei Aufträgen.
+
+- Karte **Bilder** unter den Arbeitsanweisungen (Auftragsmaske und Mechaniker-Ansicht)
+- **Foto aufnehmen** öffnet auf Android und iPhone direkt die Kamera-App, **Bilder wählen** die Galerie bzw. den Dateidialog (mehrere Bilder auf einmal)
+- Jedes Bild wird im Browser auf höchstens 2000 Pixel Kante verkleinert (JPEG, Drehung nach EXIF) und sofort hochgeladen – auch mit der üblichen 2-MB-Grenze von php-fpm
+- **Ablage** im Dokumentenordner des Kunden unter `auftraege/{Auftragsnummer}/` mit neutralem Dateinamen (Zeitstempel); die Bilder erscheinen damit auch im Reiter **Dateien** der Kundenakte. Ein Auftrag ohne Kunde kann keine Bilder aufnehmen
+- Klick auf ein Bild öffnet den Betrachter mit **Bildunterschrift** und, sobald ein Kundenportal eingeschaltet ist, dem Schalter **Für den Kunden sichtbar**; die Freigabe ist für den späteren Abruf im Kundenportal vorbereitet
+- Tabelle `oe_images_lxcars` hält je Bild Unterschrift, Freigabe und Uploader; Vorschaubilder liegen versteckt unter `.thumbs/` neben dem Original
+- Lädt der Mechaniker am Tablet ein Bild hoch, lädt die im Büro offene Auftragsmaske die Karte automatisch nach (SSE)
+
 ## KI-Funktionen
 
 ### KI-Chat pro Fahrzeug

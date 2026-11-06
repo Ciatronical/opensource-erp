@@ -81,5 +81,26 @@
             "titleSoon": "保养即将到期",
             "jump": "维护与服务"
         }
+    },
+    "OrderImages": {
+        "title": "图片",
+        "takePhoto": "拍照",
+        "choosePhotos": "选择图片",
+        "empty": "该订单还没有图片。“拍照”打开相机，“选择图片”打开相册。",
+        "saveFirst": "上传图片前请先保存订单",
+        "uploading": "已上传 {done} / {total} …",
+        "caption": "图片说明",
+        "captionHint": "客户稍后可在客户门户中看到",
+        "portalVisible": "对客户可见",
+        "delete": "删除图片",
+        "cancel": "取消",
+        "deleteConfirm": "确定删除这张图片？文件也会从客户文件夹中移除。",
+        "deleteFailed": "无法删除图片",
+        "uploadFailed": "无法上传 {name}",
+        "saveFailed": "无法保存更改",
+        "uploadedBy": "{name}，{date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} 不是图片",
+        "tooLarge": "{name} 超过 20 MB"
     }
 }

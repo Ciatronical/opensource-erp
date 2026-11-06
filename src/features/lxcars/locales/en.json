@@ -89,5 +89,26 @@
             "titleSoon": "Maintenance due soon",
             "jump": "Maintenance & Service"
         }
+    },
+    "OrderImages": {
+        "title": "Images",
+        "takePhoto": "Take photo",
+        "choosePhotos": "Choose images",
+        "empty": "No images on this order yet. “Take photo” opens the camera, “Choose images” the gallery.",
+        "saveFirst": "Save the order first before uploading images",
+        "uploading": "{done} of {total} uploaded …",
+        "caption": "Caption",
+        "captionHint": "The customer will see this later in the customer portal",
+        "portalVisible": "Visible to the customer",
+        "delete": "Delete image",
+        "cancel": "Cancel",
+        "deleteConfirm": "Really delete this image? The file is also removed from the customer folder.",
+        "deleteFailed": "Image could not be deleted",
+        "uploadFailed": "{name} could not be uploaded",
+        "saveFailed": "Change could not be saved",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} is not an image",
+        "tooLarge": "{name} is larger than 20 MB"
     }
 }

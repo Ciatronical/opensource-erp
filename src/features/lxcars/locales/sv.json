@@ -81,5 +81,26 @@
             "titleSoon": "Underhåll snart förfallet",
             "jump": "Underhåll och service"
         }
+    },
+    "OrderImages": {
+        "title": "Bilder",
+        "takePhoto": "Ta foto",
+        "choosePhotos": "Välj bilder",
+        "empty": "Inga bilder på ordern ännu. ”Ta foto” öppnar kameran, ”Välj bilder” galleriet.",
+        "saveFirst": "Ordern måste sparas innan bilder kan laddas upp",
+        "uploading": "{done} av {total} uppladdade …",
+        "caption": "Bildtext",
+        "captionHint": "Kunden ser den senare i kundportalen",
+        "portalVisible": "Synlig för kunden",
+        "delete": "Ta bort bild",
+        "cancel": "Avbryt",
+        "deleteConfirm": "Vill du verkligen ta bort bilden? Filen tas även bort från kundmappen.",
+        "deleteFailed": "Bilden kunde inte tas bort",
+        "uploadFailed": "{name} kunde inte laddas upp",
+        "saveFailed": "Ändringen kunde inte sparas",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} är ingen bild",
+        "tooLarge": "{name} är större än 20 MB"
     }
 }

@@ -81,5 +81,26 @@
             "titleSoon": "Údržba brzy splatná",
             "jump": "Údržba a servis"
         }
+    },
+    "OrderImages": {
+        "title": "Obrázky",
+        "takePhoto": "Vyfotit",
+        "choosePhotos": "Vybrat obrázky",
+        "empty": "K zakázce zatím nejsou žádné obrázky. „Vyfotit“ otevře fotoaparát, „Vybrat obrázky“ galerii.",
+        "saveFirst": "Před nahráním obrázků je nutné zakázku nejprve uložit",
+        "uploading": "Nahráno {done} z {total} …",
+        "caption": "Popisek",
+        "captionHint": "Zákazník ho později uvidí v zákaznickém portálu",
+        "portalVisible": "Viditelné pro zákazníka",
+        "delete": "Smazat obrázek",
+        "cancel": "Zrušit",
+        "deleteConfirm": "Opravdu smazat tento obrázek? Soubor bude odstraněn i ze složky zákazníka.",
+        "deleteFailed": "Obrázek se nepodařilo smazat",
+        "uploadFailed": "{name} se nepodařilo nahrát",
+        "saveFailed": "Změnu se nepodařilo uložit",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} není obrázek",
+        "tooLarge": "{name} je větší než 20 MB"
     }
 }

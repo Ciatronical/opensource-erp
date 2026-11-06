@@ -878,6 +878,54 @@ INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_pausen', '09:00-09:30, 1
 INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_mechanic_mode', '0') ON CONFLICT (key) DO NOTHING;
 
 -- ============================================================================
+-- BILDER AM AUFTRAG (docs/features/lxcars.md → Bilder am Auftrag)
+-- ============================================================================
+-- Fotos, die im Auftrag mit der Kamera aufgenommen oder vom Gerät gewählt
+-- werden. Die Datei liegt im Dokumentenordner des Kunden unter
+-- customers/{customer_id}/auftraege/{ordnumber}/, die Zeile hier trägt
+-- Bildunterschrift, Freigabe für das Kundenportal und wer es hochgeladen hat.
+
+CREATE TABLE IF NOT EXISTS oe_images_lxcars (
+    id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    oe_id           INTEGER NOT NULL REFERENCES oe(id) ON DELETE CASCADE,
+    filename        TEXT NOT NULL,
+    caption         TEXT,
+    portal_visible  BOOLEAN NOT NULL DEFAULT false,
+    employee_id     INTEGER REFERENCES employee(id) ON DELETE SET NULL,
+    created_at      TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT oe_images_lxcars_oe_filename_unique UNIQUE (oe_id, filename)
+);
+
+CREATE INDEX IF NOT EXISTS idx_oe_images_lxcars_oe_id ON oe_images_lxcars (oe_id);
+
+COMMENT ON TABLE oe_images_lxcars IS 'Bilder am Auftrag; Datei unter customers/{customer_id}/auftraege/{ordnumber}/';
+COMMENT ON COLUMN oe_images_lxcars.filename IS 'Dateiname im Auftragsordner, ohne Pfad';
+COMMENT ON COLUMN oe_images_lxcars.caption IS 'Bildunterschrift, sieht der Kunde später im Kundenportal';
+COMMENT ON COLUMN oe_images_lxcars.portal_visible IS 'true = für den Kunden im Kundenportal freigegeben';
+
+-- Trigger: SSE-Benachrichtigung, damit die offene Auftragsmaske im Büro
+-- nachlädt, wenn der Mechaniker am Tablet ein Bild hochlädt
+CREATE OR REPLACE FUNCTION notify_oe_image_change() RETURNS trigger AS $$
+BEGIN
+    PERFORM pg_notify('faktura_change', json_build_object(
+        'action', TG_OP,
+        'table', 'oe_images_lxcars',
+        'id', COALESCE(NEW.oe_id, OLD.oe_id)
+    )::TEXT);
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'oe_images_faktura_notify') THEN
+        CREATE TRIGGER oe_images_faktura_notify
+            AFTER INSERT OR UPDATE OR DELETE ON oe_images_lxcars
+            FOR EACH ROW
+            EXECUTE FUNCTION notify_oe_image_change();
+    END IF;
+END $$;
+
+-- ============================================================================
 -- ANPR: Automatische Kennzeichenerkennung
 -- ============================================================================
 -- Inhalt von anpr_schema.sql (inline, da \i ein psql-Meta-Kommando ist)

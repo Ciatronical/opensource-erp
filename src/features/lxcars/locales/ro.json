@@ -81,5 +81,26 @@
             "titleSoon": "Întreținere în curând",
             "jump": "Întreținere și service"
         }
+    },
+    "OrderImages": {
+        "title": "Imagini",
+        "takePhoto": "Fă o fotografie",
+        "choosePhotos": "Alege imagini",
+        "empty": "Încă nu există imagini la comandă. „Fă o fotografie” deschide camera, „Alege imagini” galeria.",
+        "saveFirst": "Salvați mai întâi comanda înainte de a încărca imagini",
+        "uploading": "{done} din {total} încărcate …",
+        "caption": "Legendă",
+        "captionHint": "Clientul o va vedea mai târziu în portalul clienților",
+        "portalVisible": "Vizibil pentru client",
+        "delete": "Șterge imaginea",
+        "cancel": "Anulează",
+        "deleteConfirm": "Chiar ștergeți această imagine? Fișierul este eliminat și din dosarul clientului.",
+        "deleteFailed": "Imaginea nu a putut fi ștearsă",
+        "uploadFailed": "{name} nu a putut fi încărcat",
+        "saveFailed": "Modificarea nu a putut fi salvată",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} nu este o imagine",
+        "tooLarge": "{name} depășește 20 MB"
     }
 }

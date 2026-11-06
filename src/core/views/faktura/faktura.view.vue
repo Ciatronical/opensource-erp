@@ -302,6 +302,15 @@
                 />
             </section>
 
+            <!-- Bilder am Auftrag (lxcars Feature, nur bei Auftrag) -->
+            <section class="faktura-section" v-if="vehicle && fakturaType === 'order' && faktura.data" :class="{ 'section-disabled': !hasCustomer }">
+                <order-images-section-card
+                    ref="orderImagesRef"
+                    :oe-id="fakturaId"
+                    :ensure-oe-id="ensureOrderAndGetId"
+                />
+            </section>
+
             <!-- Wiederkehrende Abrechnung (nur bei gespeicherten Verkaufsaufträgen).
                  Die Karte rendert ihren Abschnitt selbst: abgeschaltet und ohne
                  bestehende Abrechnung bleibt kein leerer Abschnitt zurück. -->
@@ -1293,6 +1302,7 @@ import RecurringSectionCard from './cards/recurring.section.card.vue'
 import HtmlEditorComponent from '@/core/components/html.editor.component.vue'
 import InstructionsSectionCard from '@/features/lxcars/components/instructions.section.card.vue'
 import MaengelSectionCard from '@/features/lxcars/components/maengel.section.card.vue'
+import OrderImagesSectionCard from '@/features/lxcars/components/order-images.section.card.vue'
 import MaintenanceSectionCard from '@/features/lxcars/components/maintenance.section.card.vue'
 import { maintenanceMissingFields } from '@/features/lxcars/utils/maintenanceDue.js'
 import SuggestPositionsDialog from '@/features/lxcars/components/suggest-positions-dialog.vue'
@@ -1353,6 +1363,7 @@ export default defineComponent({
         HtmlEditorComponent,
         InstructionsSectionCard,
         MaengelSectionCard,
+        OrderImagesSectionCard,
         MaintenanceSectionCard,
         SuggestPositionsDialog,
         SpecialDialog,
@@ -1407,6 +1418,7 @@ export default defineComponent({
         const itemsTableRef = ref(null)
         const instructionsRef = ref(null)
         const maengelRef = ref(null)
+        const orderImagesRef = ref(null)
         const fakturaItems = ref([])
         const paymentList = ref([])
         const customerList = ref([])
@@ -1943,7 +1955,7 @@ export default defineComponent({
                     // Nur Ereignisse der eigenen Haupttabelle: oe- und ar-IDs stammen aus
                     // verschiedenen Sequenzen und können gleich sein
                     const sseTables = {
-                        oe: ['oe', 'orderitems', 'oe_instructions_lxcars', 'oe_defects', 'oe_parts_requests_lxcars', 'oe_ext'],
+                        oe: ['oe', 'orderitems', 'oe_instructions_lxcars', 'oe_defects', 'oe_parts_requests_lxcars', 'oe_ext', 'oe_images_lxcars'],
                         ar: ['ar', 'invoice', 'ar_defects']
                     }[recordTable.value] || []
                     if (!sseTables.includes(data.table)) return
@@ -1957,6 +1969,8 @@ export default defineComponent({
                         maengelRef.value?.loadMaengel()
                     } else if (data.table === 'oe_parts_requests_lxcars') {
                         loadPartsRequests()
+                    } else if (data.table === 'oe_images_lxcars') {
+                        orderImagesRef.value?.loadImages()
                     } else {
                         reloadFakturaData()
                     }
@@ -4267,6 +4281,7 @@ export default defineComponent({
             itemsTableRef,
             instructionsRef,
             maengelRef,
+            orderImagesRef,
             vehicleSectionRef,
             customerList,
             articleList,

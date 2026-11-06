@@ -81,5 +81,26 @@
             "titleSoon": "Apkope drīz",
             "jump": "Apkope un serviss"
         }
+    },
+    "OrderImages": {
+        "title": "Attēli",
+        "takePhoto": "Uzņemt foto",
+        "choosePhotos": "Izvēlēties attēlus",
+        "empty": "Pasūtījumam vēl nav attēlu. „Uzņemt foto“ atver kameru, „Izvēlēties attēlus“ galeriju.",
+        "saveFirst": "Pirms attēlu augšupielādes pasūtījums jāsaglabā",
+        "uploading": "Augšupielādēti {done} no {total} …",
+        "caption": "Attēla paraksts",
+        "captionHint": "Klients to vēlāk redzēs klientu portālā",
+        "portalVisible": "Redzams klientam",
+        "delete": "Dzēst attēlu",
+        "cancel": "Atcelt",
+        "deleteConfirm": "Tiešām dzēst šo attēlu? Fails tiks noņemts arī no klienta mapes.",
+        "deleteFailed": "Attēlu neizdevās dzēst",
+        "uploadFailed": "{name} neizdevās augšupielādēt",
+        "saveFailed": "Izmaiņas neizdevās saglabāt",
+        "uploadedBy": "{name}, {date}",
+        "uploadedAt": "{date}",
+        "notAnImage": "{name} nav attēls",
+        "tooLarge": "{name} ir lielāks par 20 MB"
     }
 }

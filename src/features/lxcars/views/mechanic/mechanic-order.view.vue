@@ -114,6 +114,15 @@
                     />
                 </section>
 
+                <!-- Bilder am Auftrag: Kamera des Tablets oder Galerie -->
+                <section class="mb-4">
+                    <order-images-section-card
+                        ref="orderImagesRef"
+                        :oe-id="fakturaId"
+                        :ensure-oe-id="ensureOrderAndGetId"
+                    />
+                </section>
+
                 <!-- Positionen -->
                 <section class="mb-4">
                     <faktura-items-table-component
@@ -423,6 +432,7 @@ import EditPartDialog from '@/core/views/faktura/dialogs/edit.part.dialog.vue'
 import CreatePartDialog from '@/core/views/faktura/dialogs/create.part.dialog.vue'
 import InstructionsSectionCard from '@/features/lxcars/components/instructions.section.card.vue'
 import MaengelSectionCard from '@/features/lxcars/components/maengel.section.card.vue'
+import OrderImagesSectionCard from '@/features/lxcars/components/order-images.section.card.vue'
 import MaintenanceSectionCard from '@/features/lxcars/components/maintenance.section.card.vue'
 import { maintenanceMissingFields } from '@/features/lxcars/utils/maintenanceDue.js'
 import SpecialToolsSectionCard from '@/features/lxcars/components/special-tools.section.card.vue'
@@ -447,6 +457,7 @@ const fakturaType = ref('order')
 // Refs fuer Sub-Komponenten
 const vehicleSectionRef = ref(null)
 const instructionsRef = ref(null)
+const orderImagesRef = ref(null)
 const itemsTableRef = ref(null)
 const maengelRef = ref(null)
 
@@ -756,7 +767,7 @@ function connectSSE() {
     sseSource.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data)
-            const relevantTables = ['oe', 'orderitems', 'oe_instructions_lxcars', 'oe_defects', 'oe_parts_requests_lxcars', 'oe_ext']
+            const relevantTables = ['oe', 'orderitems', 'oe_instructions_lxcars', 'oe_defects', 'oe_parts_requests_lxcars', 'oe_ext', 'oe_images_lxcars']
             if (!relevantTables.includes(data.table)) return
             if (Number(data.id) !== Number(fakturaId.value)) return
 
@@ -769,6 +780,8 @@ function connectSSE() {
                 maengelRef.value?.loadMaengel()
             } else if (data.table === 'oe_parts_requests_lxcars') {
                 loadPartsRequests()
+            } else if (data.table === 'oe_images_lxcars') {
+                orderImagesRef.value?.loadImages()
             } else {
                 reloadFakturaData()
             }
