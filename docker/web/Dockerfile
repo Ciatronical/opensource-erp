@@ -46,6 +46,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends gnupg \
     unzip \
     postgresql-client-16 \
     ssl-cert \
+    # Druck: das Backend (backend/api/print) ruft /usr/bin/latexmk auf, ohne das
+    # Paket scheitert jede PDF-Vorschau mit "latexmk: not found" (exit code 127).
+    # Paketliste wie in install/install.sh, damit die Druckvorlagen alle .sty/.cls
+    # finden. lmodern und cm-super stehen hier ausdrücklich: wegen
+    # --no-install-recommends kämen sie sonst nicht mit, und ohne skalierbare
+    # Schriften müsste TeX Bitmap-Schriften in ein Verzeichnis erzeugen, das
+    # www-data nicht beschreiben darf.
+    texlive-latex-base \
+    texlive-latex-recommended \
+    texlive-latex-extra \
+    texlive-fonts-recommended \
+    texlive-pictures \
+    texlive-lang-german \
+    texlive-plain-generic \
+    lmodern \
+    cm-super \
+    latexmk \
+    # qrencode: GiroCode/EPC-QR auf Rechnungen (print.php)
+    qrencode \
+    # poppler-utils: pdfunite (Sammeldruck) und pdftoppm (Vorschaubilder im Vorlageneditor)
+    poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # PHP-Extensions. GD mit JPEG und WebP: die Medienbibliothek der
