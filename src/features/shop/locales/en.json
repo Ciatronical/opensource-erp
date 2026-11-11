@@ -49,6 +49,7 @@
         },
         "orders": {
             "title": "Orders",
+            "subtitle": "Orders from all sales channels with payment, order and delivery status",
             "invnumber": "Invoice",
             "date": "Date",
             "customer": "Customer",
@@ -95,6 +96,7 @@
         },
         "withdrawals": {
             "title": "Withdrawals",
+            "subtitle": "Review customer withdrawals and mark them as processed",
             "received": "Received",
             "name": "Name",
             "order": "Order",
@@ -235,6 +237,7 @@
         },
         "publish": {
             "title": "Publishing",
+            "hint": "Jobs that transfer product pages and listings to the sales channels",
             "runOpen": "Run pending",
             "runOpenHint": "Runs all jobs that have not been executed yet right away.",
             "output": "Run output",
@@ -323,6 +326,7 @@
         },
         "shippingConfig": {
             "title": "Shipping methods",
+            "subtitle": "Set up shipping methods with country zones, limits and price tiers",
             "movedHint": "The shipping methods with their zones and rates have their own view in the shop menu.",
             "open": "Open shipping methods",
             "intro": "Shipping methods with carrier, rank, limits and price tiers. If the items of an order have different shipping methods, the highest-ranked applies; items without an assignment get the cheapest suitable one. eBay calculates shipping itself via the shipping policy.",
@@ -408,6 +412,7 @@
             "freeShippingFromHint": "Gross order value from which shipping is free — for shipping methods with “free shipping threshold applies”. Empty = no threshold.",
             "freeShippingFromInvalid": "Amount from 0 or empty",
             "title": "Sales channels",
+            "subtitle": "Set up prices, delivery countries and credentials for each sales channel",
             "intro": "Defaults per channel for all articles without their own markup. The base price is the article's sales price.",
             "parts": "{anzahl} articles",
             "active": "Channel enabled",

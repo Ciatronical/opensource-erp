@@ -49,6 +49,7 @@
         },
         "orders": {
             "title": "Bestellungen",
+            "subtitle": "Bestellungen aller Verkaufskanäle mit Zahlung, Bestell- und Lieferstatus",
             "invnumber": "Rechnung",
             "date": "Datum",
             "customer": "Kunde",
@@ -95,6 +96,7 @@
         },
         "withdrawals": {
             "title": "Widerrufe",
+            "subtitle": "Widerrufe von Kunden prüfen und als bearbeitet vormerken",
             "received": "Eingegangen",
             "name": "Name",
             "order": "Bestellung",
@@ -235,6 +237,7 @@
         },
         "publish": {
             "title": "Veröffentlichung",
+            "hint": "Aufträge, die Produktseiten und Angebote in die Verkaufskanäle übertragen",
             "runOpen": "Offene ausführen",
             "runOpenHint": "Führt alle noch nicht ausgeführten Aufträge sofort aus.",
             "output": "Ausgabe des Laufs",
@@ -323,6 +326,7 @@
         },
         "shippingConfig": {
             "title": "Versandarten",
+            "subtitle": "Versandarten mit Länderzonen, Grenzen und Preisstufen einrichten",
             "movedHint": "Die Versandarten mit Zonen und Preisen stehen in einer eigenen Ansicht im Shop-Menü.",
             "open": "Versandarten öffnen",
             "intro": "Versandarten mit Anbieter, Rang, Grenzen und Preisstufen. Haben die Artikel einer Bestellung verschiedene Versandarten, gilt die ranghöchste; Artikel ohne Zuordnung bekommen die günstigste passende. eBay rechnet den Versand selbst über die Versandrichtlinie.",
@@ -408,6 +412,7 @@
             "freeShippingFromHint": "Bruttowarenwert, ab dem der Versand frei ist — für Versandarten mit „Freigrenze gilt“. Leer = keine Freigrenze.",
             "freeShippingFromInvalid": "Betrag ab 0 oder leer",
             "title": "Verkaufskanäle",
+            "subtitle": "Preise, Lieferländer und Zugangsdaten je Verkaufskanal einrichten",
             "intro": "Vorgaben je Kanal für alle Artikel ohne eigenen Aufschlag. Grundpreis ist der Verkaufspreis des Artikels.",
             "parts": "{anzahl} Artikel",
             "active": "Kanal eingeschaltet",
