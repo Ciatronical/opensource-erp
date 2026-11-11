@@ -559,7 +559,7 @@ export default {
 
 <style scoped>
 .bg-grey-lighten-4 {
-    background-color: #f5f5f5;
+    background-color: var(--oserp-section-head-bg);
 }
 
 .email-list-item {

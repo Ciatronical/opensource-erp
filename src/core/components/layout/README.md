@@ -12,6 +12,14 @@ rendern Vuetify-Komponenten und lesen ihre Werte aus den Design-Tokens.
 Lesebreite (`--oserp-content-max`). Dunkelmodus überschreibt nur Flächen und
 Ränder über `.v-theme--dark`.
 
+Akzentfarbe (`--oserp-primary`, `--oserp-primary-strong`, `--oserp-primary-soft`,
+`--oserp-primary-faint`) und die getönten Flächen (`--oserp-surface-soft`,
+`--oserp-section-head-bg`, `--oserp-appbar`) folgen dem Farbschema aus
+`src/core/theme/palettes.js`. Keine festen Blautöne wie `#1976d2` oder `#e3f2fd`
+in Views — sonst bleiben sie beim Wechsel auf Petrol oder Bordeaux blau.
+Signal- und Datenfarben (bezahlt, Fehler, Kalenderkategorien, Diagrammreihen)
+bleiben fest.
+
 In Views **keine** Vuetify-Farbklassen wie `bg-grey-lighten-4` und keine festen
 Pixelwerte für Abstände mehr verwenden — immer `var(--oserp-…)`.
 

@@ -159,5 +159,5 @@ function emitChange() {
 </script>
 
 <style scoped>
-.bg-grey-lighten-4 { background-color: #f5f5f5; }
+.bg-grey-lighten-4 { background-color: var(--oserp-section-head-bg); }
 </style>

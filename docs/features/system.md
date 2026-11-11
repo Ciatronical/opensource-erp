@@ -20,6 +20,17 @@ Alle Einstellungen einer Firma liegen in `defaults_oserp` (Schlüssel-Wert) und 
 - **Externe KI (Cloud) abschalten**: ein zentraler Schalter im Reiter „KI und Gesundheit“ mit Datenschutzhinweis — aus bedeutet, kein Assistent ruft die Anthropic-API auf (siehe Abschnitt „Externe KI und Datenschutz“)
 - Gesundheitsprüfung der KI-Dienste (API-Schlüssel, lokales LLM)
 
+## Farbschema
+
+Die Oberfläche gibt es in neun Farben: Blau (Standard), Indigo, Petrol, Grün, Violett, Rosa, Bordeaux, Orange und Graphit, jede in einer hellen und einer dunklen Variante.
+
+- **Firmenstandard**: Firmenkonfiguration → CRM → Darstellung. Gilt für alle Benutzer ohne eigene Auswahl (Schlüssel `theme_palette` in `defaults_oserp`)
+- **Eigene Farbe**: Benutzerkonfiguration → Darstellung. Farbfelder mit Namen, „Firmenstandard“ zeigt, welche Farbe die Firma gewählt hat. Wirkt sofort, ohne Neuladen (`theme_palette` in `employee_config_oserp`, leer = Firmenstandard)
+- **Modus**: Hell, Dunkel oder „Wie System“ (folgt der Hell-/Dunkel-Einstellung des Betriebssystems, `theme_mode`). Wer früher den Schalter „Dunkles Design“ an hatte, bleibt dunkel
+- Mit der Farbe wechseln Primärknöpfe, Menüleiste, Abschnittsköpfe, Auswahl- und Hervorhebungsfarben, Infoleiste und Kalender. Signal- und Datenfarben (bezahlt, Fehler, Kalenderkategorien, Diagrammreihen) bleiben bewusst fest
+- Jede helle Primärfarbe trägt weiße Schrift mit mindestens 4,5:1 (WCAG AA)
+- Technik: Paletten in `src/core/theme/palettes.js`, angewendet in `useUserPrefs`; Views verwenden die Tokens `--oserp-primary*`, `--oserp-surface-soft`, `--oserp-section-head-bg` aus `src/core/styles/tokens.css` statt fester Blau- und Grautöne
+
 ## Stammdaten-Listen
 
 Reiter **Werkzeuge → Stammdaten-Listen** in der Firmenkonfiguration: die einfachen Listen, die kivitendo unter „System“ pflegt, an einer Stelle.

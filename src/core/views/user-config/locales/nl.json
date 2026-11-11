@@ -4,8 +4,6 @@
     "configLoadError": "Configuratiefout",
     "user_fields": {
         "appearance": "Weergave",
-        "darkMode": "Donker thema (Dark Mode)",
-        "darkMode_help": "Activeert het donkere kleurenschema voor de gehele applicatie.",
         "locale": "Weergavetaal",
         "locale_help": "Taal van de gebruikersinterface. Wordt direct toegepast.",
         "general": "Algemeen",

@@ -52,6 +52,7 @@ CREATE TABLE cars_lxcars (
     c_ktype_desc    text,
     installed_engines text,
     aag_checked_at  timestamptz,   -- letzte automatische AAG-Ermittlung (Ktype/Motorcode); NULL = beim Öffnen einmal versuchen
+    phone_order     jsonb,         -- Reihenfolge der Kunden-Telefonnummern je Fahrzeug (Faktura, Drag & Drop); erste = primär
     CONSTRAINT cars_lxcars_c_ln_unique UNIQUE (c_ln),
     CONSTRAINT cars_lxcars_c_fin_unique UNIQUE (c_fin),
     CONSTRAINT cars_lxcars_scan_detail_unique UNIQUE (scan_detail_id),

@@ -2921,7 +2921,7 @@ export default {
 .maintenance-due-item { display: inline-flex; align-items: center; white-space: nowrap; font-size: 13px; }
 .maintenance-chain { min-height: 48px; }
 .bg-grey-lighten-4 {
-    background-color: #f5f5f5;
+    background-color: var(--oserp-section-head-bg);
 }
 
 
@@ -2944,7 +2944,7 @@ export default {
 
 /* ── KBA-Felder (read-only) ── */
 .bg-blue-lighten-5 {
-    background-color: #e3f2fd;
+    background-color: var(--oserp-primary-soft);
 }
 .kba-field :deep(.v-field__input) {
     font-weight: 500;

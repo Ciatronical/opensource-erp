@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Esquema de cores",
+        "mode": "Modo",
+        "modes": {
+            "light": "Claro",
+            "dark": "Escuro",
+            "system": "Como o sistema"
+        },
+        "companyDefault": "Padrão da empresa",
+        "userHint": "Aplicado de imediato e só para este utilizador.",
+        "modeHint": "«Como o sistema» segue a definição claro/escuro do sistema operativo.",
+        "companyHint": "Cor padrão para todos os utilizadores. Quem escolheu uma cor própria na configuração do utilizador mantém-na.",
+        "palettes": {
+            "blau": "Azul",
+            "indigo": "Índigo",
+            "petrol": "Petróleo",
+            "gruen": "Verde",
+            "violett": "Violeta",
+            "rosa": "Rosa",
+            "bordeaux": "Bordô",
+            "orange": "Laranja",
+            "graphit": "Grafite"
+        }
+    }
+}

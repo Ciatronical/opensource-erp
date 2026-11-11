@@ -377,7 +377,7 @@ watch(selectedStore, (newStore, oldStore) => {
 }
 
 .store-header-content strong {
-    color: #0d47a1;
+    color: var(--oserp-primary-strong);
     font-size: 15px;
 }
 
@@ -386,7 +386,7 @@ watch(selectedStore, (newStore, oldStore) => {
     font-size: 12px;
     font-family: 'Courier New', monospace;
     font-weight: 600;
-    background-color: #fafafa;
+    background-color: var(--oserp-surface-soft);
     padding: 3px 10px;
     border-radius: 4px;
     border: 1px solid #e0e0e0;

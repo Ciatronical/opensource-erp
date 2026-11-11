@@ -803,7 +803,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .mechanic-detail {
     min-height: 100vh;
-    background: #f0f2f5;
+    background: var(--oserp-surface-soft);
 }
 
 .mechanic-detail__header {

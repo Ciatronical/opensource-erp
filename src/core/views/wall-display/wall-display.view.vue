@@ -818,8 +818,8 @@ export default defineComponent({
 }
 
 .wall-faktura__header {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--oserp-primary) 0%, var(--oserp-primary-strong) 100%);
+    color: var(--oserp-on-primary);
     border-radius: 12px;
 }
 
@@ -848,7 +848,7 @@ export default defineComponent({
 }
 
 .wall-faktura__total td {
-    border-top: 2px solid #1976d2;
+    border-top: 2px solid var(--oserp-primary);
     padding-top: 20px !important;
 }
 </style>

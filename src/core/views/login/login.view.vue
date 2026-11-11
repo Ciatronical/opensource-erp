@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar color="grey-lighten-4" elevation="1" density="comfortable" aria-label="OpensourceERP Theme Navbar">
+  <v-app-bar color="appbar" elevation="1" density="comfortable" aria-label="OpensourceERP Theme Navbar">
     <v-toolbar-title class="text-h6">
       <router-link :to="{ name: 'startup' }" class="text-decoration-none text-primary">OpensourceERP</router-link>
     </v-toolbar-title>

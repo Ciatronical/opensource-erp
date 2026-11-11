@@ -276,7 +276,7 @@ defineExpose({
 <style>
 .follow-up-calendar-wrapper {
     padding: 20px;
-    background: linear-gradient(180deg, #fafafa 0%, #fff 100%);
+    background: var(--oserp-surface-soft);
 }
 
 /* Event Dialog Header */
@@ -292,7 +292,7 @@ defineExpose({
 }
 
 .create-dialog-header {
-    background: linear-gradient(180deg, #f5f5f5 0%, #fff 100%);
+    background: var(--oserp-section-head-bg);
     border-radius: 24px 24px 0 0;
 }
 

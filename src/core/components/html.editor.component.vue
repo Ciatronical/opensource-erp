@@ -1067,14 +1067,14 @@ export default defineComponent({
     display: inline-block;
     padding: 0 7px;
     border-radius: 10px;
-    background: rgba(25, 118, 210, 0.12);
-    color: #0d47a1;
+    background: rgba(var(--v-theme-primary), 0.12);
+    color: var(--oserp-primary-strong);
     font-size: 0.92em;
     line-height: 1.5;
     white-space: nowrap;
     user-select: none;
 }
 .html-editor__content :deep(.html-editor__placeholder.ProseMirror-selectednode) {
-    outline: 2px solid rgba(25, 118, 210, 0.6);
+    outline: 2px solid rgba(var(--v-theme-primary), 0.6);
 }
 </style>

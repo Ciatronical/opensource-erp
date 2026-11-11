@@ -447,7 +447,7 @@ onMounted(() => {
 
 <style scoped>
 .board-column {
-    background: #fafafa;
+    background: var(--oserp-surface-soft);
     border-radius: 8px;
     min-height: 400px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);

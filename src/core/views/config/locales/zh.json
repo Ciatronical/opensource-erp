@@ -408,6 +408,7 @@
     "checkForMissingComma": "常见错误：对象之间缺少逗号、引号错误",
     "reset": "重置",
     "crm_fields": {
+        "appearance": "外观",
         "externDatabase": "外部数据库",
         "geodb": "启用 GeoDB",
         "geodb_help": "用于邮编关联的地理数据库",

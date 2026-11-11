@@ -98,7 +98,17 @@
 */ -}}
 {{- $features := dict "portal" true -}}
 {{- with resources.Get "portal-ui/features.json" -}}{{- $features = . | transform.Unmarshal -}}{{- end -}}
-{{- range resources.Match "portal-ui/chunk-*.js" -}}{{- $veroeffentlicht := .RelPermalink -}}{{- end -}}
+{{- /*
+  Die Chunks als modulepreload: Ohne den Hinweis entdeckt der Browser sie
+  erst, wenn er den Einstieg geladen und geparst hat — jedes Stück eine
+  weitere Runde zum Server, bei drei Chunks zwei Stufen in der kritischen
+  Anfragekette (Lighthouse "Netzwerkabhängigkeitsbaum"). Mit dem Hinweis
+  laufen alle Downloads parallel zum Einstieg. RelPermalink veröffentlicht
+  die Datei zugleich.
+*/ -}}
+{{- range resources.Match "portal-ui/chunk-*.js" }}
+<link rel="modulepreload" href="{{ .RelPermalink }}">
+{{- end -}}
 {{- /*
   Platz für die Widgets, bevor das Bündel sie aufrüstet (placeholder.css):
   ohne ihn ist ein Widget bis zum Rendern null Pixel hoch und alles darunter

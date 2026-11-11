@@ -2634,7 +2634,7 @@ export default {
 
 <style scoped>
 .bg-grey-lighten-4 {
-    background-color: #f5f5f5;
+    background-color: var(--oserp-section-head-bg);
 }
 
 .scan-list-table thead th {
@@ -2666,7 +2666,7 @@ export default {
 
 /* Fahrzeug + Halter komplett vorhanden → gedämpft */
 .scan-list-table__row--complete {
-    background-color: #f5f5f5 !important;
+    background-color: var(--oserp-surface-soft) !important;
     color: rgba(0, 0, 0, 0.5);
 }
 
@@ -2679,8 +2679,8 @@ export default {
 }
 
 .scan-link:hover {
-    color: #1976D2;
-    border-color: #1976D2;
+    color: var(--oserp-primary);
+    border-color: var(--oserp-primary);
 }
 
 .scan-link--primary {

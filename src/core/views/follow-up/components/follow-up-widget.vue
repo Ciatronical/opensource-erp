@@ -346,7 +346,7 @@ defineExpose({ refresh: loadDashboard });
 }
 
 .widget-item:hover {
-    background-color: #f5f5f5;
+    background-color: var(--oserp-surface-soft);
 }
 
 .widget-item-overdue {

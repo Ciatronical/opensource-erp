@@ -579,6 +579,7 @@ const tabGroups = computed(() => [
                 keywords: ['crm', 'kunde', 'customer', 'kontakt', 'contact'],
                 // Abschnitte des CRM-Tabs (Überschriften in crmDefaultsConfig.js) — direkt anspringbar via Suche.
                 subsections: [
+                    { key: 'appearance',       title: t('crm_fields.appearance'),         panel: 'appearance',       keywords: ['darstellung', 'farbe', 'farben', 'farbschema', 'theme', 'design', 'aussehen', 'firmenfarbe', 'appearance', 'color', 'colour'] },
                     { key: 'easymode',         title: t('crm_fields.easymode'),           panel: 'easymode',         keywords: ['einfach', 'einfacher modus', 'easy', 'easymode', 'vereinfacht', 'felder', 'kundenmaske', 'kunde anlegen', 'kunde bearbeiten', 'reiter', 'tabs'] },
                     { key: 'brevo',            title: t('crm_fields.brevo'),              panel: 'brevo',            keywords: ['brevo', 'newsletter', 'marketing'] },
                     { key: 'phoneintegration', title: t('crm_fields.phoneIntegration'),   panel: 'phoneintegration', keywords: ['telefon', 'phone', 'anruf', 'tapi'] },

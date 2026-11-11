@@ -4,8 +4,6 @@
     "configLoadError": "Konfigurācijas kļūda",
     "user_fields": {
         "appearance": "Izskats",
-        "darkMode": "Tumšais dizains (Dark Mode)",
-        "darkMode_help": "Aktivizē tumšo krāsu shēmu visai lietotnei.",
         "locale": "Attēlošanas valoda",
         "locale_help": "Lietotāja saskarnes valoda. Tiek piemērota uzreiz.",
         "general": "Vispārīgi",

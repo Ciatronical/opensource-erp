@@ -3,12 +3,9 @@
 const userConfig = [
     { name: "darstellung", type: "headline", icon: "mdi-palette-outline", label: "user_fields.appearance" },
 
-    {
-        name: "dark_mode",
-        type: "checkbox",
-        label: "user_fields.darkMode",
-        tooltip: "user_fields.darkMode_help"
-    },
+    // Farbschema (Firmenstandard oder eigene Palette) und Hell/Dunkel/System:
+    // eigener Baustein, speichert theme_palette und theme_mode selbst
+    { name: "theme", type: "theme" },
 
     {
         name: "locale",

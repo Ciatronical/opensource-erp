@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Kleurenschema",
+        "mode": "Modus",
+        "modes": {
+            "light": "Licht",
+            "dark": "Donker",
+            "system": "Zoals systeem"
+        },
+        "companyDefault": "Bedrijfsstandaard",
+        "userHint": "Wordt direct toegepast en geldt alleen voor deze gebruiker.",
+        "modeHint": "„Zoals systeem” volgt de licht/donker-instelling van het besturingssysteem.",
+        "companyHint": "Standaardkleur voor alle gebruikers. Wie in de gebruikersconfiguratie een eigen kleur heeft gekozen, houdt die.",
+        "palettes": {
+            "blau": "Blauw",
+            "indigo": "Indigo",
+            "petrol": "Petrol",
+            "gruen": "Groen",
+            "violett": "Violet",
+            "rosa": "Roze",
+            "bordeaux": "Bordeaux",
+            "orange": "Oranje",
+            "graphit": "Grafiet"
+        }
+    }
+}

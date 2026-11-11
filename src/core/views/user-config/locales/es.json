@@ -4,8 +4,6 @@
     "configLoadError": "Error de configuración",
     "user_fields": {
         "appearance": "Apariencia",
-        "darkMode": "Modo oscuro (Dark Mode)",
-        "darkMode_help": "Activa el esquema de colores oscuro para toda la aplicación.",
         "locale": "Idioma de visualización",
         "locale_help": "Idioma de la interfaz de usuario. Se aplica inmediatamente.",
         "general": "General",

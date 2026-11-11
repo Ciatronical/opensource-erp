@@ -408,6 +408,7 @@
     "checkForMissingComma": "Częste błędy: brakujące przecinki między obiektami, nieprawidłowe cudzysłowy",
     "reset": "Resetuj",
     "crm_fields": {
+        "appearance": "Wygląd",
         "externDatabase": "Zewnętrzne bazy danych",
         "geodb": "Aktywuj GeoDB",
         "geodb_help": "Geograficzna baza danych dla przypisań kodów pocztowych",

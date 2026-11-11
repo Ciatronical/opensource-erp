@@ -707,7 +707,7 @@ export default {
 .cal-day-num { font-size: 11px; font-weight: 600; line-height: 1.2; }
 .cal-day-wd { font-size: 9px; opacity: 0.6; }
 .cal-weekend { background: rgba(0,0,0,0.035); }
-.cal-today .cal-day-num { color: #1976d2; font-weight: 800; }
+.cal-today .cal-day-num { color: var(--oserp-primary); font-weight: 800; }
 .legend-box {
     width: 14px;
     height: 14px;

@@ -1986,7 +1986,7 @@ export default defineComponent({
 
 .faktura-card__header {
     padding: 14px 16px !important;
-    background-color: #eeeeee;
+    background-color: var(--oserp-section-head-bg);
     font-size: 14px;
     font-weight: 600;
     color: #333;
@@ -2049,11 +2049,11 @@ export default defineComponent({
 
 /* Zebra-Streifen */
 .instructions-table :deep(tbody tr:nth-child(even):not(.new-item-row)) {
-    background-color: #fafafa;
+    background-color: var(--oserp-surface-soft);
 }
 
 .instructions-table :deep(tbody tr:hover:not(.new-item-row)) {
-    background-color: #f0f7ff;
+    background-color: var(--oserp-primary-faint);
 }
 
 /* Done-Zeile */

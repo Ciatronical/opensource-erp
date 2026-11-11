@@ -484,6 +484,24 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         return response.data;
     }
 
+    /**
+     * Reihenfolge der Kunden-Telefonnummern am Fahrzeug speichern (erste = primär)
+     *
+     * @param {number} cId - Fahrzeug-ID
+     * @param {string[]} order - Telefonnummern in gewünschter Reihenfolge
+     */
+    async function setCarPhoneOrder(cId, order) {
+        const response = await axios.post('/api/lxcars/', {
+            action: 'setCarPhoneOrder',
+            c_id: cId,
+            order: order
+        });
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, 'Error saving phone order: ' + response.data.text);
+        }
+        return response.data.payload;
+    }
+
     async function reorderInstructions(oeId, order) {
         const response = await axios.post('/api/lxcars/', {
             action: 'reorderInstructions',
@@ -1465,6 +1483,7 @@ export const lxcarsStore = defineStore('lxcarsStore', () => {
         deleteInstruction,
         deleteAllInstructions,
         reorderInstructions,
+        setCarPhoneOrder,
         searchInstructions,
         replaceInstruction,
         loadMasterInstructions,

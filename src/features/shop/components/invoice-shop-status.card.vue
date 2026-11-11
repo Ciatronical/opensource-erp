@@ -129,7 +129,7 @@ watch(() => props.arId, laden, { immediate: true })
 
 .faktura-card__header {
     padding: 14px 16px !important;
-    background-color: #f5f5f5;
+    background-color: var(--oserp-section-head-bg);
     font-size: 14px;
     font-weight: 600;
     color: #333;

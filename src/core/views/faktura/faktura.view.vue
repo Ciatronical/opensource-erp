@@ -179,16 +179,21 @@
                                 <span class="text-body-2">{{ compactEmployeeName || '–' }}</span>
                             </div>
                             <v-divider vertical class="mx-1" />
-                            <!-- Telefonnummern -->
-                            <template v-if="contactPhone1">
-                                <PhoneActionBar :phone="contactPhone1" :name="customerName" whatsapp-tab @whatsapp="switchToWhatsAppTabFromFaktura" :show-number="true" />
-                            </template>
-                            <template v-for="(entry, idx) in phoneNumbers" :key="'cpn-' + idx">
-                                <div class="d-flex align-center">
+                            <!-- Telefonnummern: primäre Nummer ganz links, Reihenfolge per Drag & Drop am Fahrzeug gespeichert -->
+                            <VueDraggable
+                                v-model="phoneEntries"
+                                tag="div"
+                                class="d-flex align-center flex-wrap ga-4"
+                                handle=".phone-drag"
+                                :disabled="!phoneDragEnabled"
+                            >
+                                <div v-for="(entry, idx) in phoneEntries" :key="'cpn-' + entry.number" class="d-flex align-center">
+                                    <v-icon v-if="phoneDragEnabled" class="phone-drag" size="small" color="grey" :title="t('FakturaView.faktura.phoneDragHint')">mdi-drag-vertical</v-icon>
+                                    <v-icon v-if="phoneDragEnabled && idx === 0" size="x-small" color="warning" class="mr-1" :title="t('FakturaView.faktura.primaryPhone')">mdi-star</v-icon>
                                     <PhoneActionBar :phone="entry.number" :name="customerName" whatsapp-tab @whatsapp="switchToWhatsAppTabFromFaktura" :show-number="true" />
                                     <span v-if="entry.label" class="text-caption text-grey ml-n1">{{ entry.label }}</span>
                                 </div>
-                            </template>
+                            </VueDraggable>
                         </div>
                     </v-card-text>
                 </v-card>
@@ -201,17 +206,17 @@
                             :customer-list="customerList"
                             :delivery-address-list="deliveryAddressList"
                             :billing-address-list="billingAddressList"
-                            :contact-phone1="contactPhone1"
                             :contact-phone2="contactPhone2"
                             :contact-email="contactEmail"
-                            :contact-label="contactLabel"
                             :customer-name="customerName"
-                            :phone-numbers="phoneNumbers"
+                            :phone-entries="phoneEntries"
+                            :phone-drag-enabled="phoneDragEnabled"
                             :credit-limit="creditLimit"
                             :is-vendor="isVendor"
                             :has-customer="hasCustomer"
                             @update:customer-id="onCustomerChange"
                             @field-change="onFakturaFieldChange"
+                            @reorder-phones="phoneEntries = $event"
                         />
                     </v-col>
 
@@ -1307,6 +1312,7 @@ import MaintenanceSectionCard from '@/features/lxcars/components/maintenance.sec
 import { maintenanceMissingFields } from '@/features/lxcars/utils/maintenanceDue.js'
 import SuggestPositionsDialog from '@/features/lxcars/components/suggest-positions-dialog.vue'
 import PhoneActionBar from '@/core/components/phone-action-bar.vue'
+import { VueDraggable } from 'vue-draggable-plus'
 import FollowUpDialog from '@/core/views/follow-up/components/follow-up-dialog.vue'
 import HistoryDrawerComponent from './components/history.drawer.component.vue'
 import axios from 'axios'
@@ -1340,6 +1346,7 @@ export default defineComponent({
     name: 'FakturaView',
     components: {
         NavbarView,
+        VueDraggable,
         CustomerInfoCard,
         FakturaDetailsCard,
         AdditionalInfoCard,
@@ -1556,6 +1563,43 @@ export default defineComponent({
                 }
             })
         }
+
+        /**
+         * Alle Telefonnummern des Kunden in einer Liste: Stammnummer (customer.phone,
+         * mit Ansprechpartner als Beschriftung) + Zusatznummern aus customer_ext.
+         * Bei aktivem LxCars und gewähltem Fahrzeug gilt die am Fahrzeug gespeicherte
+         * Reihenfolge (cars_lxcars.phone_order); die erste Nummer ist die primäre.
+         * Nummern, die dort nicht vorkommen, hängen sich in Stammreihenfolge hinten an.
+         * Setter = Drag & Drop: neue Reihenfolge am Fahrzeug speichern.
+         */
+        const phoneEntries = computed({
+            get() {
+                const list = []
+                const seen = new Set()
+                const add = (number, label, main) => {
+                    const num = String(number || '').trim()
+                    if (!num || seen.has(num)) return
+                    seen.add(num)
+                    list.push({ number: num, label: label || '', main })
+                }
+                add(contactPhone1.value, contactLabel.value, true)
+                for (const e of phoneNumbers.value) add(e?.number, e?.label, false)
+                const order = vehicle?.phoneOrder?.value || []
+                if (order.length) {
+                    const pos = n => { const i = order.indexOf(n); return i < 0 ? order.length : i }
+                    list.sort((a, b) => pos(a.number) - pos(b.number))
+                }
+                return list
+            },
+            set(entries) {
+                vehicle?.savePhoneOrder((entries || []).map(e => e.number))
+            }
+        })
+
+        // Verschieben nur sinnvoll, wenn die Reihenfolge an einem Fahrzeug gespeichert werden kann
+        const phoneDragEnabled = computed(() =>
+            !!vehicle && !!vehicle.selectedCarId.value && phoneEntries.value.length > 1
+        )
 
         // SilverDAT Import (nur bei aktivem LxCars)
         const silverdatImport = carsStore ? useSilverDATImport({ t }) : null
@@ -3708,17 +3752,11 @@ export default defineComponent({
                 const n = (num || '').replace(/[\s\-\(\)\.]/g, '')
                 return /^(\+4915|\+4916|\+4917|\+436|\+417|015|016|017|06[^4]|07[^2])/.test(n)
             }
-            const all = []
-            if (contactPhone1.value) {
-                all.push({ title: contactPhone1.value, value: contactPhone1.value, mobile: isMobile(contactPhone1.value) })
-            }
-            for (const entry of phoneNumbers.value) {
-                const num = entry.number || ''
-                if (num && !all.find(a => a.value === num)) {
-                    const label = entry.label ? `${num} (${entry.label})` : num
-                    all.push({ title: label, value: num, mobile: isMobile(num) })
-                }
-            }
+            const all = phoneEntries.value.map(entry => ({
+                title: entry.label ? `${entry.number} (${entry.label})` : entry.number,
+                value: entry.number,
+                mobile: isMobile(entry.number)
+            }))
             all.sort((a, b) => (b.mobile ? 1 : 0) - (a.mobile ? 1 : 0))
             return all
         })
@@ -4307,6 +4345,8 @@ export default defineComponent({
             contactLabel,
             customerName,
             phoneNumbers,
+            phoneEntries,
+            phoneDragEnabled,
             creditLimit,
             customerNotes,
             compactView,
@@ -4475,6 +4515,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.phone-drag {
+    cursor: move;
+}
 /* ============================================
    FAKTURA VIEW - PROFESSIONELLES LAYOUT
    ============================================ */
@@ -4516,7 +4559,7 @@ export default defineComponent({
 
 .faktura-card__header {
     padding: 14px 16px !important;
-    background-color: #f5f5f5;
+    background-color: var(--oserp-section-head-bg);
     font-size: 14px;
     font-weight: 600;
     color: #333;

@@ -64,8 +64,8 @@ const theme = EditorView.theme({
     '&': { height: '100%', fontSize: '12.5px', backgroundColor: '#fff' },
     '.cm-scroller': { fontFamily: 'ui-monospace, "Roboto Mono", Menlo, monospace', lineHeight: '1.45' },
     '.cm-gutters': { backgroundColor: '#f6f7f9', color: '#9aa0a6', borderRight: '1px solid #e3e6ea' },
-    '.cm-activeLine': { backgroundColor: 'rgba(25, 118, 210, 0.05)' },
-    '.cm-activeLineGutter': { backgroundColor: 'rgba(25, 118, 210, 0.1)' },
+    '.cm-activeLine': { backgroundColor: 'rgba(var(--v-theme-primary), 0.05)' },
+    '.cm-activeLineGutter': { backgroundColor: 'rgba(var(--v-theme-primary), 0.1)' },
     '&.cm-focused': { outline: 'none' },
 });
 

@@ -4,8 +4,6 @@
     "configLoadError": "Yapilandirma hatasi",
     "user_fields": {
         "appearance": "Gorunum",
-        "darkMode": "Karanlik mod (Dark Mode)",
-        "darkMode_help": "Tum uygulama icin karanlik renk semasini etkinlestirir.",
         "locale": "Gorunum dili",
         "locale_help": "Kullanici arayuzu dili. Hemen uygulanir.",
         "general": "Genel",

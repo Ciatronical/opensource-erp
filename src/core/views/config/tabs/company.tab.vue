@@ -943,6 +943,6 @@ async function deletePrinter() {
     width: 450px;
     max-width: 100%;
     min-width: 0;
-    background: #f5f5f5;
+    background: var(--oserp-surface-soft);
 }
 </style>

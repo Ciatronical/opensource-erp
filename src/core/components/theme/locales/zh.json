@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "配色方案",
+        "mode": "模式",
+        "modes": {
+            "light": "浅色",
+            "dark": "深色",
+            "system": "跟随系统"
+        },
+        "companyDefault": "公司默认",
+        "userHint": "立即生效，且仅对当前用户有效。",
+        "modeHint": "“跟随系统”采用操作系统的浅色/深色设置。",
+        "companyHint": "所有用户的默认颜色。已在用户设置中自选颜色的用户保持其选择。",
+        "palettes": {
+            "blau": "蓝色",
+            "indigo": "靛蓝",
+            "petrol": "青绿",
+            "gruen": "绿色",
+            "violett": "紫色",
+            "rosa": "粉色",
+            "bordeaux": "酒红",
+            "orange": "橙色",
+            "graphit": "石墨"
+        }
+    }
+}

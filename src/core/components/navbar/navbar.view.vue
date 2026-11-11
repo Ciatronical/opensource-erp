@@ -1,6 +1,6 @@
 <!-- src/core/components/navbar/navbar.view.vue -->
 <template>
-  <v-app-bar color="grey-lighten-4" elevation="1" density="comfortable">
+  <v-app-bar color="appbar" elevation="1" density="comfortable">
     <!-- Weroni — KI-Bürokauffrau (ganz links) -->
     <v-btn
       v-if="weroniEnabled"

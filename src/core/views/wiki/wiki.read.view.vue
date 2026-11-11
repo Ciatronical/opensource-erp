@@ -180,14 +180,14 @@ export default {
     color: rgba(var(--v-theme-on-surface), 0.7);
 }
 .wiki-content :deep(pre) {
-    background: #f5f5f5;
+    background: var(--oserp-surface-soft);
     padding: 1em;
     border-radius: 4px;
     overflow-x: auto;
     margin: 0.75em 0;
 }
 .wiki-content :deep(code) {
-    background: #f5f5f5;
+    background: var(--oserp-surface-soft);
     padding: 0.15em 0.4em;
     border-radius: 3px;
     font-size: 0.9em;
@@ -212,7 +212,7 @@ export default {
     text-align: left;
 }
 .wiki-content :deep(th) {
-    background: #f5f5f5;
+    background: var(--oserp-section-head-bg);
     font-weight: 600;
 }
 .wiki-content :deep(td p),

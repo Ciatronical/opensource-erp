@@ -259,7 +259,7 @@ defineExpose({
 }
 
 .query-history-table :deep(tbody tr:hover) {
-    background-color: #f5f5f5 !important;
+    background-color: var(--oserp-surface-soft) !important;
 }
 
 .query-text-cell {

@@ -894,6 +894,7 @@ Zwei sauber getrennte Typen:
 - **Stammdaten-Listen** *(Kern)*: Einheiten (mit Basiseinheit und Umrechnungsfaktor), Kundentypen (Rabatt, eigener Kundennummernkreis, Verkäufer), Warengruppen, Preisgruppen, Preisfaktoren, Abteilungen, Zahlungsbedingungen (Zahlungsziel, Skonto, Belegtexte), Lieferbedingungen, Belegsprachen, Projekttypen, Projektstatus und Anreden — anlegen, bearbeiten, per Drag&Drop sortieren, auf ungültig setzen; verwendete Einträge sind gegen Löschen geschützt. Entspricht dem kivitendo-Menü „System“.
 - **Drucker** verwalten (Bezeichnung + Druckbefehl)
 - **Startansicht** wählbar (Menü, CRM, Wall-Display, Anschlagtafel, Mechaniker-Modus)
+- **Farbschema** *(Kern)*: neun Paletten (Blau, Indigo, Petrol, Grün, Violett, Rosa, Bordeaux, Orange, Graphit), jeweils hell und dunkel. Die Firma legt den Standard fest, jeder Benutzer kann eine eigene Farbe wählen oder beim Firmenstandard bleiben; Modus Hell, Dunkel oder wie das Betriebssystem. Menüleiste, Abschnittsköpfe, Hervorhebungen und Kalender färben sich mit, Signal- und Datenfarben bleiben fest
 
 ### 14.5 Mehrsprachigkeit
 

@@ -408,6 +408,7 @@
     "checkForMissingComma": "Häufige Fehler: Fehlende Kommas zwischen Objekten, falsche Anführungszeichen",
     "reset": "Resetten",
     "crm_fields": {
+        "appearance": "Weergave",
         "externDatabase": "Externe databases",
         "geodb": "GeoDB activeren",
         "geodb_help": "Geographische Datenbank für PLZ-Zuordnungen",

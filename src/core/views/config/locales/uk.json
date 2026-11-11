@@ -408,6 +408,7 @@
     "checkForMissingComma": "Часті помилки: відсутні коми між об'єктами, неправильні лапки",
     "reset": "Скинути",
     "crm_fields": {
+        "appearance": "Вигляд",
         "externDatabase": "Externe Datenbanken",
         "geodb": "GeoDB aktivieren",
         "geodb_help": "Geographische Datenbank für PLZ-Zuordnungen",

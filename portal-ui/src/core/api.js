@@ -61,18 +61,70 @@ async function send(action, payload) {
 let contextPromise = null;
 
 /**
+ * MERKER "SITZUNG MIT INHALT"
+ *
+ * Das Kontext-Cookie ist HttpOnly, ein Widget kann also nicht nachsehen, ob
+ * der Besucher ueberhaupt eine Sitzung hat. Deshalb merkt sich getContext()
+ * im localStorage, ob die letzte Antwort etwas zu melden hatte (angemeldet
+ * oder Artikel im Warenkorb). Die Knoepfe im Seitenkopf fragen den Kontext
+ * nur noch, wenn dieser Merker steht — fuer den anonymen Erstbesucher, also
+ * den Normalfall auf Blog- und Infoseiten, entfaellt die Anfrage an
+ * /portal-api/ damit ganz. Sie war das Ende der kritischen Anfragekette
+ * (Lighthouse: rund 800 ms, weil der Weiterleiter die Anfrage an
+ * OpensourceERP ueber die Anbindung der Werkstatt durchreicht).
+ *
+ * Widgets, die den Kontext brauchen (Warenkorb, Kasse, Konto), rufen
+ * getContext() weiter direkt auf; das Cookie entsteht dann dort. Gibt es
+ * keinen Merker und doch eine gefuellte Sitzung (localStorage geloescht),
+ * zeigt der Kopf bis zur naechsten Kontextanfrage "Warenkorb (0)" — die
+ * kommt spaetestens auf der Warenkorbseite oder beim naechsten Einlegen.
+ */
+const CONTEXT_KNOWN_KEY = 'oserp-portal-context';
+
+function storage() {
+  try {
+    return window.localStorage;
+  } catch {
+    // Zugriff verweigert (Datenschutzeinstellung, eingebettete Seite): dann
+    // gibt es keinen Merker, und die Knoepfe fragen wie frueher immer.
+    return null;
+  }
+}
+
+/** true, wenn die letzte Kontextantwort angemeldet oder mit Warenkorb war. */
+export function hasKnownContext() {
+  const store = storage();
+  return store ? store.getItem(CONTEXT_KNOWN_KEY) === '1' : true;
+}
+
+function rememberContext(context) {
+  const store = storage();
+  if (!store) return;
+  if (context && (context.account || Number(context.cart_pos_count) > 0)) {
+    store.setItem(CONTEXT_KNOWN_KEY, '1');
+  } else {
+    store.removeItem(CONTEXT_KNOWN_KEY);
+  }
+}
+
+/**
  * Sitzungskontext (Warenkorbzaehler, Login-Status) — legt beim ersten Aufruf
  * das Cookie an. Das Ergebnis wird gehalten, damit nicht jedes Widget auf der
  * Seite eine eigene Anfrage stellt.
  */
 export function getContext() {
   if (!contextPromise) {
-    contextPromise = send('getContext', {}).catch((error) => {
-      // Einen Fehlschlag nicht dauerhaft festhalten, sonst scheitert jeder
-      // spaetere Aufruf sofort an der zwischengespeicherten Ablehnung.
-      contextPromise = null;
-      throw error;
-    });
+    contextPromise = send('getContext', {})
+      .then((context) => {
+        rememberContext(context);
+        return context;
+      })
+      .catch((error) => {
+        // Einen Fehlschlag nicht dauerhaft festhalten, sonst scheitert jeder
+        // spaetere Aufruf sofort an der zwischengespeicherten Ablehnung.
+        contextPromise = null;
+        throw error;
+      });
   }
   return contextPromise;
 }

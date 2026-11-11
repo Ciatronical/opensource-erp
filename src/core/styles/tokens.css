@@ -28,8 +28,6 @@
 
     /* Flächen und Ränder */
     --oserp-surface: #ffffff;
-    --oserp-surface-soft: #f5f6f8;
-    --oserp-section-head-bg: #f5f6f8;
     --oserp-border: rgba(0, 0, 0, 0.12);
     --oserp-border-soft: rgba(0, 0, 0, 0.08);
     /* Papier: Vorschau von Gedrucktem (Unterschrift, Brief) — bleibt auch im Dunkelmodus weiß */
@@ -44,10 +42,38 @@
     --oserp-section-title-weight: 600;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   Akzentfarbe und getönte Flächen
+
+   Folgen dem gewählten Farbschema (src/core/theme/palettes.js). Für eigene Stile in Views statt
+   fester Blautöne (#1976d2, #1565c0, #e3f2fd …): Hervorhebungen,
+   Auswahl, aktive Ränder. Signal- und Datenfarben (bezahlt, Fehler,
+   Kalenderkategorien, Diagrammreihen) bleiben bewusst fest.
+
+   Steht auch an den Theme-Klassen, damit die Werte innerhalb eines
+   v-theme-provider mit anderem Theme richtig aufgelöst werden.
+   ═══════════════════════════════════════════════════════════════ */
+:root,
+.v-theme--light,
+.v-theme--dark {
+    --oserp-surface-soft: rgb(var(--v-theme-surface-soft));
+    --oserp-section-head-bg: rgb(var(--v-theme-section-head));
+    --oserp-appbar: rgb(var(--v-theme-appbar));
+
+    --oserp-primary: rgb(var(--v-theme-primary));
+    /* Schrift auf --oserp-primary: weiß auf den hellen Schemata, dunkel auf den Pastelltönen im Dunkelmodus */
+    --oserp-on-primary: rgb(var(--v-theme-on-primary));
+    /* dunklere Stufe, z. B. Hover oder Verlaufsende */
+    --oserp-primary-strong: color-mix(in srgb, rgb(var(--v-theme-primary)) 82%, #000);
+    /* Hintergrund für ausgewählte oder hervorgehobene Zeilen. Deckend
+       (auf die Fläche gemischt), damit klebende Leisten nicht durchscheinen */
+    --oserp-primary-soft: color-mix(in srgb, rgb(var(--v-theme-primary)) 12%, rgb(var(--v-theme-surface)));
+    /* sehr zarte Tönung, z. B. Eingabebereich oder Infofläche */
+    --oserp-primary-faint: color-mix(in srgb, rgb(var(--v-theme-primary)) 6%, rgb(var(--v-theme-surface)));
+}
+
 .v-theme--dark {
     --oserp-surface: #1e1e1e;
-    --oserp-surface-soft: #262626;
-    --oserp-section-head-bg: rgba(255, 255, 255, 0.05);
     --oserp-border: rgba(255, 255, 255, 0.14);
     --oserp-border-soft: rgba(255, 255, 255, 0.08);
     --oserp-text-muted: rgba(255, 255, 255, 0.7);

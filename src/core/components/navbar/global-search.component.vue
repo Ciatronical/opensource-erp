@@ -296,7 +296,7 @@ export default defineComponent({
 
 <style scoped>
 :deep(.v-field) {
-    background: white;
+    background: rgb(var(--v-theme-surface));
     border-radius: 8px;
 }
 

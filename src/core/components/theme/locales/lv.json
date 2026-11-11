@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Krāsu shēma",
+        "mode": "Režīms",
+        "modes": {
+            "light": "Gaišs",
+            "dark": "Tumšs",
+            "system": "Kā sistēmā"
+        },
+        "companyDefault": "Uzņēmuma noklusējums",
+        "userHint": "Tiek piemērots uzreiz un tikai šim lietotājam.",
+        "modeHint": "“Kā sistēmā” seko operētājsistēmas gaišā/tumšā režīma iestatījumam.",
+        "companyHint": "Noklusējuma krāsa visiem lietotājiem. Kas lietotāja iestatījumos izvēlējies savu krāsu, to patur.",
+        "palettes": {
+            "blau": "Zils",
+            "indigo": "Indigo",
+            "petrol": "Petroleja",
+            "gruen": "Zaļš",
+            "violett": "Violets",
+            "rosa": "Rozā",
+            "bordeaux": "Bordo",
+            "orange": "Oranžs",
+            "graphit": "Grafīts"
+        }
+    }
+}

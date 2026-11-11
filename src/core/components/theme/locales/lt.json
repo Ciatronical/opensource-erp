@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Spalvų schema",
+        "mode": "Režimas",
+        "modes": {
+            "light": "Šviesus",
+            "dark": "Tamsus",
+            "system": "Kaip sistemoje"
+        },
+        "companyDefault": "Įmonės numatytoji",
+        "userHint": "Taikoma iš karto ir tik šiam naudotojui.",
+        "modeHint": "„Kaip sistemoje“ atitinka operacinės sistemos šviesaus/tamsaus režimo nustatymą.",
+        "companyHint": "Numatytoji spalva visiems naudotojams. Kas naudotojo nustatymuose pasirinko savo spalvą, ją pasilieka.",
+        "palettes": {
+            "blau": "Mėlyna",
+            "indigo": "Indigo",
+            "petrol": "Žydrai žalia",
+            "gruen": "Žalia",
+            "violett": "Violetinė",
+            "rosa": "Rožinė",
+            "bordeaux": "Bordo",
+            "orange": "Oranžinė",
+            "graphit": "Grafito"
+        }
+    }
+}

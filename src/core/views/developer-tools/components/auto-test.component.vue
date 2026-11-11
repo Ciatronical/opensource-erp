@@ -672,7 +672,7 @@ async function runWorkflowTests() {
 .error-pre {
     font-family: 'Courier New', Courier, monospace;
     font-size: 13px;
-    background-color: #f5f5f5;
+    background-color: var(--oserp-surface-soft);
     padding: 16px;
     border-radius: 4px;
     overflow-x: auto;

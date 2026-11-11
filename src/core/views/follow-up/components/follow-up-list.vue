@@ -394,7 +394,7 @@ function getRowClass(item) {
 
 <style scoped>
 .follow-up-table :deep(tr:hover) {
-    background-color: #f5f5f5 !important;
+    background-color: var(--oserp-surface-soft) !important;
 }
 
 .avatar-stack {

@@ -431,7 +431,7 @@ defineExpose({
 <style>
 .calendar-wrapper {
     padding: 20px;
-    background: linear-gradient(180deg, #fafafa 0%, #fff 100%);
+    background: var(--oserp-surface-soft);
 }
 
 /* Basis-Optik: src/core/components/calendar/oserp-fullcalendar.css */

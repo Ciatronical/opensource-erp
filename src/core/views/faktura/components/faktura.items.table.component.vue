@@ -1689,7 +1689,7 @@ export default defineComponent({
 
 .faktura-card__header {
     padding: 14px 16px !important;
-    background-color: #eeeeee;
+    background-color: var(--oserp-section-head-bg);
     font-size: 14px;
     font-weight: 600;
     color: #333;
@@ -1716,7 +1716,7 @@ export default defineComponent({
     text-transform: uppercase;
     letter-spacing: 0.03em;
     color: rgba(0, 0, 0, 0.7) !important;
-    background-color: #fafafa;
+    background-color: var(--oserp-section-head-bg);
     border-bottom: 2px solid rgba(0, 0, 0, 0.12);
 }
 
@@ -1729,11 +1729,11 @@ export default defineComponent({
 
 /* Zebra-Streifen für bessere Lesbarkeit */
 .invoice-items-table :deep(tbody tr:nth-child(even)) {
-    background-color: #fafafa;
+    background-color: var(--oserp-surface-soft);
 }
 
 .invoice-items-table :deep(tbody tr:hover) {
-    background-color: #f0f7ff;
+    background-color: var(--oserp-primary-faint);
 }
 
 /* Vuetify Input-Wrapper optimieren */
@@ -1778,7 +1778,7 @@ export default defineComponent({
 
 .dragging {
     opacity: 0.5;
-    background-color: #e3f2fd !important;
+    background-color: var(--oserp-primary-soft) !important;
 }
 
 /* Rechtsbündige Zahlenfelder */
@@ -1792,7 +1792,7 @@ export default defineComponent({
 }
 
 .field-disabled :deep(.v-field) {
-    background-color: #f5f5f5;
+    background-color: var(--oserp-surface-soft);
 }
 
 /* Ausgegrautes Drag-Handle für neue Zeilen */
@@ -1827,16 +1827,16 @@ export default defineComponent({
 /* Artikel-Suche in neuer Zeile hervorheben */
 .new-item-input :deep(.v-field) {
     background-color: #fff;
-    border-color: #1976d2;
+    border-color: var(--oserp-primary);
 }
 
 .new-item-input :deep(.v-field--focused) {
-    border-color: #1976d2;
-    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.15);
+    border-color: var(--oserp-primary);
+    box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.15);
 }
 
 .new-item-input :deep(input::placeholder) {
-    color: #1976d2;
+    color: var(--oserp-primary);
     opacity: 0.7;
 }
 

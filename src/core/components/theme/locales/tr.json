@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Renk şeması",
+        "mode": "Mod",
+        "modes": {
+            "light": "Açık",
+            "dark": "Koyu",
+            "system": "Sisteme göre"
+        },
+        "companyDefault": "Firma varsayılanı",
+        "userHint": "Hemen uygulanır ve yalnızca bu kullanıcı için geçerlidir.",
+        "modeHint": "“Sisteme göre”, işletim sisteminin açık/koyu ayarını izler.",
+        "companyHint": "Tüm kullanıcılar için varsayılan renk. Kullanıcı yapılandırmasında kendi rengini seçenler onu korur.",
+        "palettes": {
+            "blau": "Mavi",
+            "indigo": "Çivit",
+            "petrol": "Petrol",
+            "gruen": "Yeşil",
+            "violett": "Mor",
+            "rosa": "Pembe",
+            "bordeaux": "Bordo",
+            "orange": "Turuncu",
+            "graphit": "Grafit"
+        }
+    }
+}

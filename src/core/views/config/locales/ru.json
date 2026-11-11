@@ -408,6 +408,7 @@
     "checkForMissingComma": "Частые ошибки: отсутствующие запятые между объектами, неправильные кавычки",
     "reset": "Сбросить",
     "crm_fields": {
+        "appearance": "Внешний вид",
         "externDatabase": "Externe Datenbanken",
         "geodb": "GeoDB aktivieren",
         "geodb_help": "Geographische Datenbank für PLZ-Zuordnungen",

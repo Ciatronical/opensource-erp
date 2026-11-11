@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Schema colori",
+        "mode": "Modalità",
+        "modes": {
+            "light": "Chiaro",
+            "dark": "Scuro",
+            "system": "Come il sistema"
+        },
+        "companyDefault": "Predefinito aziendale",
+        "userHint": "Applicato subito e solo per questo utente.",
+        "modeHint": "«Come il sistema» segue l'impostazione chiaro/scuro del sistema operativo.",
+        "companyHint": "Colore predefinito per tutti gli utenti. Chi ha scelto un proprio colore nella configurazione utente lo mantiene.",
+        "palettes": {
+            "blau": "Blu",
+            "indigo": "Indaco",
+            "petrol": "Petrolio",
+            "gruen": "Verde",
+            "violett": "Viola",
+            "rosa": "Rosa",
+            "bordeaux": "Bordeaux",
+            "orange": "Arancione",
+            "graphit": "Grafite"
+        }
+    }
+}

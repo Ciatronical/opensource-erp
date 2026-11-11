@@ -18,10 +18,13 @@ import preserveCursor from '@/core/directives/preserveCursor'
 import axios from 'axios'
 import { isSchemaMismatch, offerSchemaUpdate } from '@/core/utils/schemaUpdate.js'
 import * as toasts from '@/core/utils/toasts.js'
+import { paletteColors, DEFAULT_PALETTE } from '@/core/theme/palettes.js'
 
 // App & Plugins
 const pinia = createPinia()
 const app = createApp(App)
+
+const startPalette = paletteColors(DEFAULT_PALETTE)
 
 const vuetify = createVuetify({
   locale: {
@@ -31,24 +34,22 @@ const vuetify = createVuetify({
   },
   theme: {
     defaultTheme: 'light',
+    // Die Primärfarbe und die getönten Flächen kommen aus der Palette
+    // (src/core/theme/palettes.js). useUserPrefs schreibt beim Login die
+    // Palette der Firma bzw. des Benutzers in diese beiden Themes.
     themes: {
       light: {
         dark: false,
         colors: {
           background: '#FFFFFF',
           surface: '#FFFFFF',
-          // Primaerfarbe traegt die Hauptaktion. Das fruehere Grau (#757575)
-          // gab ihr kein Signal: "Speichern" sah aus wie jeder andere Button,
-          // und tonale bzw. outlined Buttons verschwanden auf Weiss beinahe.
-          // #1976D2 erfuellt WCAG AA (4,6:1 gegen Weiss) und kollidiert mit
-          // keiner der semantischen Farben (success/warning/error).
-          primary: '#1976D2',
           secondary: '#616161',
           accent: '#E0E0E0',
           error: '#FF5252',
           info: '#2196F3',
           success: '#4CAF50',
           warning: '#FB8C00',
+          ...startPalette.light,
         }
       },
       dark: {
@@ -56,13 +57,13 @@ const vuetify = createVuetify({
         colors: {
           background: '#121212',
           surface: '#1E1E1E',
-          primary: '#90CAF9',
           secondary: '#B0BEC5',
           accent: '#424242',
           error: '#FF5252',
           info: '#2196F3',
           success: '#4CAF50',
           warning: '#FB8C00',
+          ...startPalette.dark,
         }
       }
     }

@@ -36,6 +36,9 @@
                     <!-- Unterschrift für Briefe: eigener Baustein mit Upload/Zeichnen -->
                     <signature-field v-if="field.type === 'signature'" />
 
+                    <!-- Farbschema und Modus: eigener Baustein, speichert selbst -->
+                    <theme-field v-else-if="field.type === 'theme'" />
+
                     <!-- Checkbox: speichert sofort bei Klick -->
                     <v-checkbox
                         v-else-if="field.type === 'checkbox'"
@@ -110,6 +113,7 @@ import NavbarView from '@/core/components/navbar/navbar.view.vue';
 import PageHeader from '@/core/components/layout/page-header.vue';
 import SectionCard from '@/core/components/layout/section-card.vue';
 import SignatureField from './components/signature.field.vue';
+import ThemeField from './components/theme.field.vue';
 import { useRoute } from 'vue-router';
 
 const { t } = useI18n();
@@ -154,7 +158,7 @@ function loadConfigValues() {
     const employeeConfig = store.session?.company_config?.company_employee_config || {};
 
     userConfigFields.value.forEach(field => {
-        if (field.type !== 'headline' && field.type !== 'signature') {
+        if (!['headline', 'signature', 'theme'].includes(field.type)) {
             // Ohne gespeicherten Wert gilt der Standard aus der Felddefinition.
             // Sonst zeigt die Maske "aus", waehrend die Anwendung den Standard
             // bereits als "an" behandelt.

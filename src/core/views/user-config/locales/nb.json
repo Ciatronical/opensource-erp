@@ -4,8 +4,6 @@
     "configLoadError": "Konfigurasjonsfeil",
     "user_fields": {
         "appearance": "Utseende",
-        "darkMode": "Moerkt design (Dark Mode)",
-        "darkMode_help": "Aktiverer det moerke fargetemaet for hele applikasjonen.",
         "locale": "Visningssprak",
         "locale_help": "Sprak for brukergrensesnittet. Tas i bruk umiddelbart.",
         "general": "Generelt",

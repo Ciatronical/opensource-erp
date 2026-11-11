@@ -515,7 +515,7 @@ function onDrop(e) {
     z-index: 2;
 }
 .tpl-body-area--selected {
-    border-color: #1e88e5;
+    border-color: var(--oserp-primary);
     border-style: solid;
 }
 .tpl-body-inner {
@@ -532,7 +532,7 @@ function onDrop(e) {
     line-height: 12px;
     padding: 0 4px;
     background: rgba(30, 136, 229, 0.12);
-    color: #1565c0;
+    color: var(--oserp-primary-strong);
     border-radius: 2px 2px 0 0;
     font-family: Roboto, sans-serif;
     white-space: nowrap;
@@ -559,7 +559,7 @@ function onDrop(e) {
     outline-color: rgba(30, 136, 229, 0.5);
 }
 .tpl-block--selected {
-    outline: 1.5px solid #1e88e5;
+    outline: 1.5px solid var(--oserp-primary);
 }
 .tpl-block--dimmed {
     opacity: 0.35;
@@ -574,8 +574,8 @@ function onDrop(e) {
     font-size: 9px;
     line-height: 13px;
     padding: 0 5px;
-    background: #1e88e5;
-    color: #fff;
+    background: var(--oserp-primary);
+    color: var(--oserp-on-primary);
     border-radius: 2px 2px 0 0;
     white-space: nowrap;
     opacity: 0;
@@ -592,7 +592,7 @@ function onDrop(e) {
     width: 8px;
     height: 8px;
     background: #fff;
-    border: 1.5px solid #1e88e5;
+    border: 1.5px solid var(--oserp-primary);
     border-radius: 2px;
     z-index: 4;
 }

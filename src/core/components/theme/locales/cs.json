@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Barevné schéma",
+        "mode": "Režim",
+        "modes": {
+            "light": "Světlý",
+            "dark": "Tmavý",
+            "system": "Podle systému"
+        },
+        "companyDefault": "Výchozí firmy",
+        "userHint": "Použije se ihned a jen pro tohoto uživatele.",
+        "modeHint": "„Podle systému“ se řídí světlým/tmavým nastavením operačního systému.",
+        "companyHint": "Výchozí barva pro všechny uživatele. Kdo si v konfiguraci uživatele zvolil vlastní barvu, ponechá si ji.",
+        "palettes": {
+            "blau": "Modrá",
+            "indigo": "Indigo",
+            "petrol": "Petrolejová",
+            "gruen": "Zelená",
+            "violett": "Fialová",
+            "rosa": "Růžová",
+            "bordeaux": "Bordó",
+            "orange": "Oranžová",
+            "graphit": "Grafitová"
+        }
+    }
+}

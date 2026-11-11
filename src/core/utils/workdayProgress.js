@@ -33,7 +33,7 @@ export function buildWorkdayProgressSVG(config, svgWidth = 160, svgHeight = 36) 
     if (nowMin > dayStart) {
         const end = hasBreak ? Math.min(nowMin, breakStart) : Math.min(nowMin, dayEnd)
         const w = px(end)
-        if (w > 0) parts.push(`<rect x="0" y="0" width="${w}" height="${svgHeight}" fill="#1976d2"/>`)
+        if (w > 0) parts.push(`<rect x="0" y="0" width="${w}" height="${svgHeight}" style="fill: rgb(var(--v-theme-primary))"/>`)
     }
 
     // Vergangene Pausenzeit
@@ -47,7 +47,7 @@ export function buildWorkdayProgressSVG(config, svgWidth = 160, svgHeight = 36) 
     if (hasBreak && nowMin > breakEnd) {
         const ax = px(breakEnd)
         const aw = px(Math.min(nowMin, dayEnd)) - ax
-        if (aw > 0) parts.push(`<rect x="${ax}" y="0" width="${aw}" height="${svgHeight}" fill="#1976d2"/>`)
+        if (aw > 0) parts.push(`<rect x="${ax}" y="0" width="${aw}" height="${svgHeight}" style="fill: rgb(var(--v-theme-primary))"/>`)
     }
 
     parts.push(`</g></svg>`)

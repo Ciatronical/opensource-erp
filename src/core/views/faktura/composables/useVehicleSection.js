@@ -19,6 +19,18 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
     const customerCars = ref([])
     const fhzart = ref('')
 
+    // Reihenfolge der Kunden-Telefonnummern am gewählten Fahrzeug (cars_lxcars.phone_order);
+    // erste Nummer = primär. Wird per Drag & Drop in der Faktura gesetzt.
+    const phoneOrder = ref([])
+
+    function _parsePhoneOrder(raw) {
+        let v = raw
+        if (typeof v === 'string') {
+            try { v = JSON.parse(v) } catch { v = [] }
+        }
+        return Array.isArray(v) ? v.filter(n => typeof n === 'string' && n.trim()) : []
+    }
+
     const isTrailer = computed(() => fhzart.value === 'trailer')
 
     // Notizen
@@ -351,6 +363,7 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
     function onCarChange(carId) {
         selectedCarId.value = carId || null
         const car = customerCars.value.find(c => c.c_id === carId)
+        phoneOrder.value = _parsePhoneOrder(car?.phone_order)
         // Neu-Modus: noch kein Beleg – Auswahl merken, verknüpft wird in ensureFakturaExists
         if (!fakturaId.value) {
             vehicleNotes.value = car?.c_text || ''
@@ -366,6 +379,23 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
                 fhzart.value = car?.fhzart || ''
             })
             .catch(e => { console.error('Error linking car:', e) })
+    }
+
+    // ── Telefon-Reihenfolge am Fahrzeug speichern (Drag & Drop in der Faktura) ──
+
+    async function savePhoneOrder(numbers) {
+        const order = (numbers || []).map(n => String(n || '').trim()).filter(Boolean)
+        phoneOrder.value = order
+        const carId = selectedCarId.value
+        if (!carId) return
+        const car = customerCars.value.find(c => c.c_id === carId)
+        if (car) car.phone_order = order
+        try {
+            await carsStore.setCarPhoneOrder(carId, order)
+        } catch (e) {
+            console.error('Error saving phone order:', e)
+            toast.error(t('FakturaView.faktura.phoneOrderError'))
+        }
     }
 
     // ── Fahrzeug nur per Kennzeichen anlegen (ohne Fahrzeugschein) ──
@@ -425,6 +455,7 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
             selectedCarId.value = result.car.c_id
             vehicleNotes.value = result.car.c_text || ''
             fhzart.value = result.car.fhzart || ''
+            phoneOrder.value = _parsePhoneOrder(result.car.phone_order)
 
             if (result.created) {
                 toast.success(t('FakturaView.faktura.quickCar.created', { plate }))
@@ -445,6 +476,7 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         selectedCarId.value = car?.c_id || null
         vehicleNotes.value = car?.c_text || ''
         fhzart.value = car?.fhzart || ''
+        phoneOrder.value = _parsePhoneOrder(car?.phone_order)
         oeExtData.value.km_stand = car?.km_stand || null
         oeExtData.value.kfz_ort = car?.kfz_ort || null
         oeExtData.value.status = car?.status || null
@@ -519,6 +551,7 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
     function onCustomerChangeVehicle(customerId) {
         selectedCarId.value = null
         vehicleNotes.value = ''
+        phoneOrder.value = []
         shouldFocusCar.value = false
         if (customerId) {
             carsStore.loadCustomerCars(customerId)
@@ -568,6 +601,8 @@ export function useVehicleSection({ carsStore, fakturaId, fakturaType, t }) {
         applyAppraisalRepairTime,
         onCarChange,
         createCarFromPlate,
+        phoneOrder,
+        savePhoneOrder,
         loadVehicleData,
         preselectCar,
         onCustomerChangeVehicle,

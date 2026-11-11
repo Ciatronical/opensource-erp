@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Schemat kolorów",
+        "mode": "Tryb",
+        "modes": {
+            "light": "Jasny",
+            "dark": "Ciemny",
+            "system": "Jak system"
+        },
+        "companyDefault": "Domyślny firmy",
+        "userHint": "Stosowany od razu i tylko dla tego użytkownika.",
+        "modeHint": "„Jak system” stosuje ustawienie jasny/ciemny systemu operacyjnego.",
+        "companyHint": "Domyślny kolor dla wszystkich użytkowników. Kto wybrał własny kolor w konfiguracji użytkownika, zachowuje go.",
+        "palettes": {
+            "blau": "Niebieski",
+            "indigo": "Indygo",
+            "petrol": "Morski",
+            "gruen": "Zielony",
+            "violett": "Fioletowy",
+            "rosa": "Różowy",
+            "bordeaux": "Bordowy",
+            "orange": "Pomarańczowy",
+            "graphit": "Grafitowy"
+        }
+    }
+}

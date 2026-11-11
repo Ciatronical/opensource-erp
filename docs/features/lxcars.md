@@ -53,6 +53,7 @@ Werkstattaufträge sind normale Aufträge (Faktura) mit LxCars-Erweiterungen:
 - **Kilometerstand**: Wird bei Auftragsanlage erfasst
 - **Auftragsstatus**: Konfigurierbare Status (Standard: Angenommen, In Arbeit, Warte auf Teile, Fertig, Abgeholt)
 - **Arbeitsanweisungen**: Einzelne Arbeitsschritte die dem Auftrag zugeordnet werden
+- **Primäre Telefonnummer je Fahrzeug**: Hat der Kunde mehrere Telefonnummern, lassen sie sich im Auftrag per Drag & Drop (Griff am Eintrag) umsortieren. Die Reihenfolge wird am Fahrzeug gespeichert (`cars_lxcars.phone_order`); die erste Nummer ist die primäre und steht in der Detailansicht ganz oben bzw. in der Kompaktansicht ganz links (Stern). Neue Nummern aus dem Kundenstamm hängen sich hinten an. Ohne verknüpftes Fahrzeug gilt die Reihenfolge des Kundenstamms.
 
 ### Arbeitsanweisungen
 

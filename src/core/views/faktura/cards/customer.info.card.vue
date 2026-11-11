@@ -123,38 +123,45 @@
                     </div>
                 </v-col>
 
-                <!-- Telefon (Hauptnummer) -->
-                <v-col cols="12" class="py-1" v-if="contactPhone1">
-                    <div class="phone-entry rounded pa-2">
-                        <div class="d-flex align-center gap-1">
-                            <v-icon size="small" color="grey-darken-1" class="mr-1">mdi-phone</v-icon>
-                            <PhoneActionBar :phone="contactPhone1" :name="customerName" :show-whatsapp="true" whatsapp-tab @whatsapp="switchToWhatsAppTab" />
-                            <v-spacer />
-                            <v-btn
-                                icon
-                                size="x-small"
-                                variant="text"
-                                color="primary"
-                                :disabled="!customerId"
-                                :title="t('FakturaView.faktura.editCustomer')"
-                                @click="openCustomerEdit('billing', 'phone')"
-                            >
-                                <v-icon size="small">mdi-pencil</v-icon>
-                            </v-btn>
+                <!-- Telefonnummern (Stammnummer + Zusatznummern aus customer_ext/vendor_ext):
+                     primäre Nummer ganz oben, Reihenfolge per Drag & Drop am Fahrzeug gespeichert -->
+                <v-col cols="12" class="py-1" v-if="phoneEntries.length">
+                    <VueDraggable
+                        :model-value="phoneEntries"
+                        tag="div"
+                        class="d-flex flex-column ga-2"
+                        handle=".phone-drag"
+                        :disabled="!phoneDragEnabled"
+                        @update:model-value="$emit('reorder-phones', $event)"
+                    >
+                        <div
+                            v-for="(entry, idx) in phoneEntries"
+                            :key="'pn-' + entry.number"
+                            class="phone-entry rounded pa-2"
+                            :class="{ 'phone-entry--primary': phoneDragEnabled && idx === 0 }"
+                        >
+                            <div class="d-flex align-center gap-1">
+                                <v-icon v-if="phoneDragEnabled" class="phone-drag mr-1" size="small" color="grey" :title="t('FakturaView.faktura.phoneDragHint')">mdi-drag-vertical</v-icon>
+                                <v-icon v-if="phoneDragEnabled && idx === 0" size="small" color="warning" class="mr-1" :title="t('FakturaView.faktura.primaryPhone')">mdi-star</v-icon>
+                                <v-icon v-else size="small" color="grey-darken-1" class="mr-1">mdi-phone</v-icon>
+                                <PhoneActionBar :phone="entry.number" :name="customerName" :show-whatsapp="true" whatsapp-tab @whatsapp="switchToWhatsAppTab" />
+                                <v-spacer />
+                                <v-btn
+                                    v-if="entry.main"
+                                    icon
+                                    size="x-small"
+                                    variant="text"
+                                    color="primary"
+                                    :disabled="!customerId"
+                                    :title="t('FakturaView.faktura.editCustomer')"
+                                    @click="openCustomerEdit('billing', 'phone')"
+                                >
+                                    <v-icon size="small">mdi-pencil</v-icon>
+                                </v-btn>
+                            </div>
+                            <div v-if="entry.label" class="text-caption text-grey mt-1 ml-6">{{ entry.label }}</div>
                         </div>
-                        <div v-if="contactLabel" class="text-caption text-grey mt-1 ml-6">{{ contactLabel }}</div>
-                    </div>
-                </v-col>
-
-                <!-- Zusätzliche Telefonnummern aus customer_ext/vendor_ext -->
-                <v-col cols="12" class="py-1" v-for="(entry, idx) in phoneNumbers" :key="'pn-' + idx">
-                    <div class="phone-entry rounded pa-2">
-                        <div class="d-flex align-center gap-1">
-                            <v-icon size="small" color="grey-darken-1" class="mr-1">mdi-phone</v-icon>
-                            <PhoneActionBar :phone="entry.number" :name="customerName" :show-whatsapp="true" whatsapp-tab @whatsapp="switchToWhatsAppTab" />
-                        </div>
-                        <div v-if="entry.label" class="text-caption text-grey mt-1 ml-6">{{ entry.label }}</div>
-                    </div>
+                    </VueDraggable>
                 </v-col>
 
                 <!-- Fax (nur wenn vorhanden) -->
@@ -227,11 +234,12 @@ import { useRouter } from 'vue-router'
 import { formatNumber } from '@/core/utils/numberFormat.js'
 import { formatPhone } from '@/core/utils/phoneFormat.js'
 import PhoneActionBar from '@/core/components/phone-action-bar.vue'
+import { VueDraggable } from 'vue-draggable-plus'
 import axios from 'axios'
 
 export default defineComponent({
     name: 'CustomerInfoCard',
-    components: { PhoneActionBar },
+    components: { PhoneActionBar, VueDraggable },
     props: {
         modelValue: {
             type: Object,
@@ -249,10 +257,6 @@ export default defineComponent({
             type: Array,
             default: () => []
         },
-        contactPhone1: {
-            type: String,
-            default: ''
-        },
         contactPhone2: {
             type: String,
             default: ''
@@ -261,17 +265,19 @@ export default defineComponent({
             type: String,
             default: ''
         },
-        contactLabel: {
-            type: String,
-            default: ''
-        },
         customerName: {
             type: String,
             default: ''
         },
-        phoneNumbers: {
+        // [{ number, label, main }] in Anzeigereihenfolge (erste = primär)
+        phoneEntries: {
             type: Array,
             default: () => []
+        },
+        // Drag & Drop nur bei LxCars mit gewähltem Fahrzeug (Reihenfolge wird dort gespeichert)
+        phoneDragEnabled: {
+            type: Boolean,
+            default: false
         },
         creditLimit: {
             type: Number,
@@ -286,7 +292,7 @@ export default defineComponent({
             default: true
         }
     },
-    emits: ['update:modelValue', 'update:customer-id', 'field-change'],
+    emits: ['update:modelValue', 'update:customer-id', 'field-change', 'reorder-phones'],
     setup(props, { emit }) {
         const { t } = useI18n()
         const router = useRouter()
@@ -472,7 +478,7 @@ export default defineComponent({
 
 .faktura-card__header {
     padding: 14px 16px !important;
-    background-color: #f5f5f5;
+    background-color: var(--oserp-section-head-bg);
     font-size: 14px;
     font-weight: 600;
     color: #333;
@@ -503,7 +509,7 @@ export default defineComponent({
 /* Readonly Felder dezent stylen */
 .faktura-card__body :deep(.v-field--disabled),
 .faktura-card__body :deep(.v-input--readonly .v-field) {
-    background-color: #fafafa;
+    background-color: var(--oserp-surface-soft);
 }
 
 /* Rechtsbündige Zahlenfelder */
@@ -514,7 +520,15 @@ export default defineComponent({
 /* Telefon-Einträge mit Rahmen */
 .phone-entry {
     border: 1px solid rgba(0, 0, 0, 0.12);
-    background-color: #fafafa;
+    background-color: var(--oserp-surface-soft);
+}
+
+.phone-entry--primary {
+    border-color: rgb(var(--v-theme-warning));
+}
+
+.phone-drag {
+    cursor: move;
 }
 
 .section-disabled {

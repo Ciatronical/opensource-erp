@@ -258,7 +258,7 @@ function copyValue(path, value) {
 }
 
 .tree-line:hover {
-    background: linear-gradient(to right, #e3f2fd 0%, #f5f5f5 100%);
+    background: var(--oserp-primary-soft);
     border-bottom: 1px solid #2196f3;
     box-shadow: 0 1px 3px rgba(33, 150, 243, 0.1);
 }
@@ -270,10 +270,10 @@ function copyValue(path, value) {
 
 .tree-key {
     font-weight: 700;
-    color: #0d47a1;
+    color: var(--oserp-primary-strong);
     min-width: 140px;
     flex-shrink: 0;
-    background: linear-gradient(to right, #e3f2fd, transparent);
+    background: linear-gradient(to right, var(--oserp-primary-soft), transparent);
     padding: 2px 8px;
     border-radius: 3px;
     border-left: 3px solid #2196f3;
@@ -284,7 +284,7 @@ function copyValue(path, value) {
     font-weight: 600;
     min-width: 110px;
     flex-shrink: 0;
-    background-color: #fafafa;
+    background-color: var(--oserp-surface-soft);
     padding: 2px 8px;
     border-radius: 3px;
     border: 1px solid #e0e0e0;
@@ -303,7 +303,7 @@ function copyValue(path, value) {
 
 .tree-children {
     padding-left: 40px;
-    border-left: 2px solid #bbdefb;
+    border-left: 2px solid var(--oserp-primary-soft);
     margin-left: 14px;
     position: relative;
 }

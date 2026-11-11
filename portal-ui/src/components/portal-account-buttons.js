@@ -1,6 +1,6 @@
 import { html, css, nothing } from 'lit';
 import { PortalElement } from '../core/base.js';
-import { apiRequest, getContext, refreshContext, logout, ApiError } from '../core/api.js';
+import { getContext, refreshContext, hasKnownContext, logout, ApiError } from '../core/api.js';
 import { on, emit, PORTAL_AUTH_CHANGED, SHOP_CART_CHANGED } from '../core/bus.js';
 import { t } from '../core/i18n.js';
 import { shopPath } from '../core/paths.js';
@@ -135,7 +135,12 @@ export class PortalAccountButtons extends PortalElement {
         if (typeof detail.count === 'number') this._count = detail.count;
       }),
     );
-    this.#read(getContext());
+    // Nur fragen, wenn es etwas zu erfahren gibt (siehe hasKnownContext in
+    // core/api.js). Der anonyme Erstbesucher sieht sofort den abgemeldeten
+    // Zustand, ohne dass eine Anfrage an /portal-api/ den Seitenaufbau
+    // verlaengert. Loest ein Widget auf der Seite den Kontext selbst aus,
+    // kommen Anmeldung und Zaehler ueber die Ereignisse oben trotzdem an.
+    if (hasKnownContext()) this.#read(getContext());
   }
 
   disconnectedCallback() {

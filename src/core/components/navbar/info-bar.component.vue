@@ -271,8 +271,8 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-  border-left: 3px solid #1976d2;
+  background: var(--oserp-primary-soft);
+  border-left: 3px solid var(--oserp-primary);
   min-height: 40px;
   position: sticky;
   top: 48px;

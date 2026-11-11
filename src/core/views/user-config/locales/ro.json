@@ -4,8 +4,6 @@
     "configLoadError": "Eroare de configurare",
     "user_fields": {
         "appearance": "Aspect",
-        "darkMode": "Mod intunecat (Dark Mode)",
-        "darkMode_help": "Activeaza schema de culori intunecate pentru intreaga aplicatie.",
         "locale": "Limba de afisare",
         "locale_help": "Limba interfetei utilizator. Se aplica imediat.",
         "general": "General",

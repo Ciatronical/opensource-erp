@@ -170,6 +170,14 @@
                 </v-col>
             </v-row>
 
+            <!-- Farbschema: Firmenstandard, Benutzer können es überschreiben -->
+            <v-row v-else-if="field.type === 'component' && field.component === 'theme-palette'" class="my-4">
+                <v-col cols="12">
+                    <ThemePalettePicker v-model="crmDefaults.theme_palette" />
+                    <div class="text-caption text-medium-emphasis mt-2">{{ t('ThemePicker.companyHint') }}</div>
+                </v-col>
+            </v-row>
+
             <!-- Custom Component (z.B. WhatsApp Templates) -->
             <v-row v-else-if="field.type === 'component' && field.component === 'whatsapp-templates'" class="my-4">
                 <v-col cols="12">
@@ -306,6 +314,7 @@ import BelegQuellenConfig from './beleg-quellen.config.vue';
 import EletterStatusConfig from './eletter-status.config.vue';
 import CvEasymodeConfig from './cv-easymode.config.vue';
 import PartsSearchConfig from './parts-search.config.vue';
+import ThemePalettePicker from '@/core/components/theme/theme-palette-picker.vue';
 import { oserpStore } from '@/core/stores/oserp.store.js';
 
 const { t } = useI18n();

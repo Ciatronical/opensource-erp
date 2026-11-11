@@ -1755,7 +1755,7 @@ onMounted(() => {
 }
 
 .sql-highlight :deep(.sql-kw) {
-    color: #1976d2;
+    color: var(--oserp-primary);
 }
 
 .sql-highlight :deep(.sql-str) {
@@ -1787,14 +1787,14 @@ onMounted(() => {
 
 .sql-textarea:focus {
     outline: none;
-    border-color: #1976d2;
-    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+    border-color: var(--oserp-primary);
+    box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.1);
 }
 
 .autocomplete-dropdown {
     position: absolute;
     background: white;
-    border: 1px solid #1976d2;
+    border: 1px solid var(--oserp-primary);
     border-radius: 4px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     max-height: 340px;
@@ -1820,8 +1820,8 @@ onMounted(() => {
 
 .autocomplete-item:hover,
 .autocomplete-item.active {
-    background-color: #1976d2;
-    color: white;
+    background-color: var(--oserp-primary);
+    color: var(--oserp-on-primary);
 }
 
 .autocomplete-item:hover .suggestion-desc,
@@ -1864,9 +1864,9 @@ onMounted(() => {
 
 .sql-result-table :deep(th) {
     font-weight: 600 !important;
-    background-color: #e3f2fd !important;
+    background-color: var(--oserp-primary-soft) !important;
     white-space: nowrap;
-    border-bottom: 2px solid #1976d2 !important;
+    border-bottom: 2px solid var(--oserp-primary) !important;
 }
 
 .sql-result-table :deep(td) {
@@ -1878,11 +1878,11 @@ onMounted(() => {
 }
 
 .sql-result-table :deep(.v-data-table__th) {
-    background-color: #e3f2fd !important;
+    background-color: var(--oserp-primary-soft) !important;
 }
 
 .sql-result-table :deep(tbody tr:nth-child(odd)) {
-    background-color: #fafafa;
+    background-color: var(--oserp-surface-soft);
 }
 
 .sql-result-table :deep(tbody tr:nth-child(even)) {
@@ -1890,12 +1890,12 @@ onMounted(() => {
 }
 
 .sql-result-table :deep(tbody tr:hover) {
-    background-color: #f5f5f5 !important;
+    background-color: var(--oserp-surface-soft) !important;
 }
 
 /* Spaltenanzeige */
 .column-display-card {
-    border: 2px solid #e3f2fd !important;
+    border: 2px solid var(--oserp-primary-soft) !important;
 }
 
 .columns-grid {
@@ -1912,8 +1912,8 @@ onMounted(() => {
 }
 
 .column-chip:hover {
-    background-color: #1976d2 !important;
-    color: white !important;
+    background-color: var(--oserp-primary) !important;
+    color: var(--oserp-on-primary) !important;
     transform: translateY(-2px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -1943,14 +1943,14 @@ onMounted(() => {
     padding: 4px 8px;
     font-family: 'Courier New', Courier, monospace;
     font-size: 12px;
-    border: 1px solid #1976d2;
+    border: 1px solid var(--oserp-primary);
     border-radius: 3px;
     background-color: #fff;
 }
 
 .cell-input:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.3);
+    box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.3);
 }
 
 .cell-input.cell-changed {
@@ -1965,7 +1965,7 @@ onMounted(() => {
 }
 
 .cell-value:hover {
-    background-color: rgba(25, 118, 210, 0.1);
+    background-color: rgba(var(--v-theme-primary), 0.1);
     border-radius: 3px;
 }
 </style>

@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Väriteema",
+        "mode": "Tila",
+        "modes": {
+            "light": "Vaalea",
+            "dark": "Tumma",
+            "system": "Kuten järjestelmä"
+        },
+        "companyDefault": "Yrityksen oletus",
+        "userHint": "Otetaan käyttöön heti ja vain tälle käyttäjälle.",
+        "modeHint": "”Kuten järjestelmä” noudattaa käyttöjärjestelmän vaalea/tumma-asetusta.",
+        "companyHint": "Oletusväri kaikille käyttäjille. Käyttäjäasetuksissa oman värin valinnut säilyttää sen.",
+        "palettes": {
+            "blau": "Sininen",
+            "indigo": "Indigo",
+            "petrol": "Petrooli",
+            "gruen": "Vihreä",
+            "violett": "Violetti",
+            "rosa": "Vaaleanpunainen",
+            "bordeaux": "Viininpunainen",
+            "orange": "Oranssi",
+            "graphit": "Grafiitti"
+        }
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Värviskeem",
+        "mode": "Režiim",
+        "modes": {
+            "light": "Hele",
+            "dark": "Tume",
+            "system": "Nagu süsteem"
+        },
+        "companyDefault": "Ettevõtte vaikimisi",
+        "userHint": "Rakendub kohe ja ainult sellele kasutajale.",
+        "modeHint": "„Nagu süsteem“ järgib operatsioonisüsteemi heleda/tumeda seadet.",
+        "companyHint": "Vaikevärv kõigile kasutajatele. Kes on kasutaja seadetes valinud oma värvi, jääb selle juurde.",
+        "palettes": {
+            "blau": "Sinine",
+            "indigo": "Indigo",
+            "petrol": "Petrool",
+            "gruen": "Roheline",
+            "violett": "Violetne",
+            "rosa": "Roosa",
+            "bordeaux": "Bordoo",
+            "orange": "Oranž",
+            "graphit": "Grafiit"
+        }
+    }
+}

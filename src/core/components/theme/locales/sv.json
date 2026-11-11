@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Färgschema",
+        "mode": "Läge",
+        "modes": {
+            "light": "Ljust",
+            "dark": "Mörkt",
+            "system": "Som systemet"
+        },
+        "companyDefault": "Företagsstandard",
+        "userHint": "Används direkt och bara för den här användaren.",
+        "modeHint": "”Som systemet” följer operativsystemets ljust/mörkt-inställning.",
+        "companyHint": "Standardfärg för alla användare. Den som valt en egen färg i användarkonfigurationen behåller den.",
+        "palettes": {
+            "blau": "Blå",
+            "indigo": "Indigo",
+            "petrol": "Petrol",
+            "gruen": "Grön",
+            "violett": "Violett",
+            "rosa": "Rosa",
+            "bordeaux": "Vinröd",
+            "orange": "Orange",
+            "graphit": "Grafit"
+        }
+    }
+}

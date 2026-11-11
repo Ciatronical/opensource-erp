@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Fargeskjema",
+        "mode": "Modus",
+        "modes": {
+            "light": "Lys",
+            "dark": "Mørk",
+            "system": "Som systemet"
+        },
+        "companyDefault": "Firmastandard",
+        "userHint": "Brukes umiddelbart og bare for denne brukeren.",
+        "modeHint": "«Som systemet» følger operativsystemets lys/mørk-innstilling.",
+        "companyHint": "Standardfarge for alle brukere. Brukere som har valgt egen farge i brukerkonfigurasjonen, beholder den.",
+        "palettes": {
+            "blau": "Blå",
+            "indigo": "Indigo",
+            "petrol": "Petrol",
+            "gruen": "Grønn",
+            "violett": "Fiolett",
+            "rosa": "Rosa",
+            "bordeaux": "Burgunder",
+            "orange": "Oransje",
+            "graphit": "Grafitt"
+        }
+    }
+}

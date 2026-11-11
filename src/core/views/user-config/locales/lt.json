@@ -4,8 +4,6 @@
     "configLoadError": "Konfigūracijos klaida",
     "user_fields": {
         "appearance": "Išvaizda",
-        "darkMode": "Tamsi tema (Dark Mode)",
-        "darkMode_help": "Aktyvuoja tamsią spalvų schemą visai programai.",
         "locale": "Rodymo kalba",
         "locale_help": "Vartotojo sąsajos kalba. Taikoma iš karto.",
         "general": "Bendra",

@@ -4,8 +4,6 @@
     "configLoadError": "Seadistuse viga",
     "user_fields": {
         "appearance": "Välimus",
-        "darkMode": "Tume teema (Dark Mode)",
-        "darkMode_help": "Aktiveerib tumeda värviteema kogu rakendusele.",
         "locale": "Kuvamiskeel",
         "locale_help": "Kasutajaliidese keel. Rakendatakse koheselt.",
         "general": "Üldine",

@@ -4,8 +4,6 @@
     "configLoadError": "Konfigurationsfel",
     "user_fields": {
         "appearance": "Utseende",
-        "darkMode": "Morkt tema (Dark Mode)",
-        "darkMode_help": "Aktiverar det morka fargschemat for hela applikationen.",
         "locale": "Visningssprak",
         "locale_help": "Sprak for anvandargranssnittet. Tillampas direkt.",
         "general": "Allmant",

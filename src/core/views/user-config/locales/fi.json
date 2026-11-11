@@ -4,8 +4,6 @@
     "configLoadError": "Asetusvirhe",
     "user_fields": {
         "appearance": "Ulkoasu",
-        "darkMode": "Tumma tila (Dark Mode)",
-        "darkMode_help": "Ottaa kayttoon tumman variteeman koko sovelluksessa.",
         "locale": "Nayttokieli",
         "locale_help": "Kayttoliittyman kieli. Otetaan kayttoon valittomasti.",
         "general": "Yleinen",

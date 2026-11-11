@@ -408,6 +408,7 @@
     "checkForMissingComma": "Häufige Fehler: Fehlende Kommas zwischen Objekten, falsche Anführungszeichen",
     "reset": "Aterstall",
     "crm_fields": {
+        "appearance": "Utseende",
         "externDatabase": "Externe Databasen",
         "geodb": "GeoDB aktivieren",
         "geodb_help": "Geographische Databas für Postnr.-Zuordnungen",

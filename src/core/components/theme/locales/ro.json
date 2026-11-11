@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Schemă de culori",
+        "mode": "Mod",
+        "modes": {
+            "light": "Luminos",
+            "dark": "Întunecat",
+            "system": "Ca sistemul"
+        },
+        "companyDefault": "Implicit firmă",
+        "userHint": "Se aplică imediat și doar pentru acest utilizator.",
+        "modeHint": "„Ca sistemul” urmează setarea luminos/întunecat a sistemului de operare.",
+        "companyHint": "Culoare implicită pentru toți utilizatorii. Cine și-a ales o culoare proprie în configurația utilizatorului o păstrează.",
+        "palettes": {
+            "blau": "Albastru",
+            "indigo": "Indigo",
+            "petrol": "Petrol",
+            "gruen": "Verde",
+            "violett": "Violet",
+            "rosa": "Roz",
+            "bordeaux": "Bordo",
+            "orange": "Portocaliu",
+            "graphit": "Grafit"
+        }
+    }
+}

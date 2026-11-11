@@ -765,7 +765,7 @@ function getCustomerCars($data) {
 
     $cars = $db->getAll(
         "SELECT c.c_id, c.c_ln, c.c_m, c.c_mt, c.c_2, c.c_3, c.c_fin, c.c_ktype, COALESCE(c.c_text, '') AS c_text,
-                COALESCE(k.fhzart, '') AS fhzart
+                COALESCE(k.fhzart, '') AS fhzart, c.phone_order
          FROM cars_lxcars c
          LEFT JOIN kba_lxcars k ON k.id = c.kba_id
          WHERE c.c_ow = :customer_id
@@ -803,7 +803,7 @@ function getLxCarsFakturaInit($data) {
     $customerCars = $customerId
         ? $db->getAll(
             "SELECT c.c_id, c.c_ln, c.c_m, c.c_mt, c.c_2, c.c_3, c.c_fin, c.c_ktype, COALESCE(c.c_text, '') AS c_text,
-                    COALESCE(k.fhzart, '') AS fhzart
+                    COALESCE(k.fhzart, '') AS fhzart, c.phone_order
              FROM cars_lxcars c
              LEFT JOIN kba_lxcars k ON k.id = c.kba_id
              WHERE c.c_ow = :customer_id ORDER BY c.c_ln",
@@ -819,7 +819,7 @@ function getLxCarsFakturaInit($data) {
                         c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
                         to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
                         c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km, to_char(c.c_hu, 'YYYY-MM-DD') AS c_hu,
-                        e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle
+                        e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle, c.phone_order
                  FROM ar_ext e
                  LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
                  LEFT JOIN kba_lxcars k ON k.id = c.kba_id
@@ -839,6 +839,7 @@ function getLxCarsFakturaInit($data) {
                         CASE WHEN EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id)
                               AND NOT EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id AND NOT i.done)
                              THEN NULL ELSE COALESCE(e.bringetermin, o.itime) END AS reparaturzeit_start,
+                        c.phone_order,
                         COALESCE((SELECT value FROM defaults_oserp WHERE key = 'lxcars_default_abgabezeit'), '08:00') AS _def_bring,
                         COALESCE((SELECT value FROM defaults_oserp WHERE key = 'lxcars_default_fertigstellungszeit'), '17:00') AS _def_fertig
                  FROM oe_ext e
@@ -915,7 +916,8 @@ function getCarForOrder($data) {
                 e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle,
                 CASE WHEN EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id)
                       AND NOT EXISTS (SELECT 1 FROM oe_instructions_lxcars i WHERE i.oe_id = e.oe_id AND NOT i.done)
-                     THEN NULL ELSE COALESCE(e.bringetermin, o.itime) END AS reparaturzeit_start
+                     THEN NULL ELSE COALESCE(e.bringetermin, o.itime) END AS reparaturzeit_start,
+                c.phone_order
          FROM oe_ext e
          JOIN oe o ON o.id = e.oe_id
          LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
@@ -938,6 +940,35 @@ function getCarForOrder($data) {
     }
 
     resultInfo(true, 'OK', $row ?: ['c_id' => null, 'c_ln' => '', 'km_stand' => null, 'kfz_ort' => null, 'status' => null, 'gedruckt' => false, 'intern' => false, 'bringetermin' => null, 'fertigstellung' => null, 'no_whatsapp' => false, 'c_sk' => false, 'c_zrd' => null, 'c_zrk' => null, 'c_bf' => null, 'c_wd' => null, 'c_zrd_due' => false, 'c_zrk_due' => false, 'c_bf_due' => false, 'c_wd_due' => false, 'c_km' => null, 'fhzart' => '', 'reparaturzeit_minuten' => null, 'reparaturzeit_drucken' => false, 'reparaturzeit_quelle' => null, 'reparaturzeit_start' => null]);
+}
+
+/**
+ * Speichert die Reihenfolge der Kunden-Telefonnummern am Fahrzeug.
+ * Die erste Nummer ist die primäre – sie steht in der Faktura ganz oben
+ * (Detailansicht) bzw. ganz links (Kompaktansicht). Nummern, die später
+ * im Kundenstamm dazukommen, hängen sich hinten an.
+ *
+ * @param int $data['c_id'] Fahrzeug-ID
+ * @param array $data['order'] Telefonnummern in gewünschter Reihenfolge
+ * @testdata {"c_id": 1, "order": ["+49 30 123456", "+49 170 1234567"]}
+ */
+function setCarPhoneOrder($data) {
+    $db = DbhCompany::begin();
+    $cId = intval($data['c_id'] ?? 0);
+    if (!$cId) {
+        resultInfo(false, 'VALIDATION_ERROR: c_id ist erforderlich');
+        return;
+    }
+    $order = [];
+    foreach ((array)($data['order'] ?? []) as $num) {
+        $num = trim((string)$num);
+        if ($num !== '' && !in_array($num, $order, true)) $order[] = $num;
+    }
+    $db->execute(
+        "UPDATE cars_lxcars SET phone_order = :order::jsonb WHERE c_id = :c_id",
+        [':order' => json_encode($order, JSON_UNESCAPED_UNICODE), ':c_id' => $cId]
+    );
+    resultInfo(true, 'OK', ['c_id' => $cId, 'phone_order' => $order]);
 }
 
 /**
@@ -1368,7 +1399,7 @@ function getCarForInvoice($data) {
                 c.c_sk, to_char(c.c_zrd, 'YYYY-MM-DD') AS c_zrd, c.c_zrk,
                 to_char(c.c_bf, 'YYYY-MM-DD') AS c_bf, to_char(c.c_wd, 'YYYY-MM-DD') AS c_wd,
                 c.c_zrd_due, c.c_zrk_due, c.c_bf_due, c.c_wd_due, c.c_km, to_char(c.c_hu, 'YYYY-MM-DD') AS c_hu,
-                e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle
+                e.reparaturzeit_minuten, e.reparaturzeit_drucken, e.reparaturzeit_quelle, c.phone_order
          FROM ar_ext e
          LEFT JOIN cars_lxcars c ON c.c_id = e.c_id
          LEFT JOIN kba_lxcars k ON k.id = c.kba_id

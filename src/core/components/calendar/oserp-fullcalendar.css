@@ -9,11 +9,11 @@
     --fc-classic-border: #e0e0e0;
     --fc-classic-background: #fff;
     --fc-classic-faint: #fafafa;
-    --fc-classic-today: rgba(25, 118, 210, 0.06);
+    --fc-classic-today: rgba(var(--v-theme-primary), 0.06);
     --fc-classic-now: #E53935;
-    --fc-classic-primary: #1976d2;
-    --fc-classic-primary-foreground: #fff;
-    --fc-classic-event: #1976d2;
+    --fc-classic-primary: var(--oserp-primary);
+    --fc-classic-primary-foreground: var(--oserp-on-primary);
+    --fc-classic-event: var(--oserp-primary);
     --fc-classic-event-contrast: #fff;
 }
 
@@ -55,7 +55,7 @@
     text-transform: none;
     border: none;
     border-radius: 10px;
-    background: #f0f0f0;
+    background: var(--oserp-surface-soft);
     color: #424242;
     box-shadow: none;
     cursor: pointer;
@@ -69,19 +69,19 @@
 
 .oserp-cal .ofc-btn--active,
 .oserp-cal .ofc-btn:active {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-    color: #fff;
+    background: linear-gradient(135deg, var(--oserp-primary) 0%, var(--oserp-primary-strong) 100%);
+    color: var(--oserp-on-primary);
 }
 
 .oserp-cal .ofc-btn--primary {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+    background: linear-gradient(135deg, var(--oserp-primary) 0%, var(--oserp-primary-strong) 100%);
+    color: var(--oserp-on-primary);
+    box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3);
 }
 
 .oserp-cal .ofc-btn--primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(25, 118, 210, 0.4);
+    box-shadow: 0 6px 16px rgba(var(--v-theme-primary), 0.4);
 }
 
 .oserp-cal .ofc-btn--disabled,
@@ -110,7 +110,7 @@
 }
 
 .oserp-cal .ofc-table-header {
-    background: linear-gradient(180deg, #f8f9fa 0%, #f0f2f5 100%);
+    background: var(--oserp-section-head-bg);
 }
 
 .oserp-cal .ofc-day-header {
@@ -134,7 +134,7 @@
 }
 
 .oserp-cal .ofc-day-cell:hover {
-    background-color: rgba(25, 118, 210, 0.03);
+    background-color: rgba(var(--v-theme-primary), 0.03);
 }
 
 .oserp-cal .ofc-day-number {
@@ -152,9 +152,9 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+    background: linear-gradient(135deg, var(--oserp-primary) 0%, var(--oserp-primary-strong) 100%);
+    color: var(--oserp-on-primary);
+    box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3);
 }
 
 .oserp-cal .ofc-day-cell--other .ofc-day-number {
@@ -225,9 +225,9 @@
     margin: 2px 4px;
     font-size: 0.75rem;
     font-weight: 600;
-    color: #1976d2;
+    color: var(--oserp-primary);
     border-radius: 8px;
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    background: var(--oserp-primary-soft);
 }
 
 .ofc-popover {
@@ -244,7 +244,7 @@
     text-transform: none;
     letter-spacing: normal;
     border-bottom: none;
-    background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);
+    background: var(--oserp-section-head-bg);
 }
 
 /* ── Zeitraster (Slot-Höhe: Option slotMinHeight, nicht per CSS) ─────── */
@@ -278,7 +278,7 @@
 .oserp-cal .ofc-list-day-header {
     padding: 10px 16px;
     font-weight: 600;
-    background: linear-gradient(180deg, #f8f9fa 0%, #f0f2f5 100%);
+    background: var(--oserp-section-head-bg);
 }
 
 .oserp-cal .ofc-list-event {
@@ -286,7 +286,7 @@
 }
 
 .oserp-cal .ofc-list-event:hover {
-    background-color: rgba(25, 118, 210, 0.04);
+    background-color: rgba(var(--v-theme-primary), 0.04);
 }
 
 .oserp-cal .ofc-list-event .ofc-event-time {

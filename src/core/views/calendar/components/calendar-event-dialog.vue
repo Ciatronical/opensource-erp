@@ -613,7 +613,7 @@ function save() {
 }
 
 .ced-section {
-    background: #f8f9fa;
+    background: var(--oserp-surface-soft);
     padding: 12px 14px;
 }
 

@@ -433,7 +433,7 @@ export default defineComponent({
 
 .faktura-card__header {
     padding: 14px 16px !important;
-    background-color: #f5f5f5;
+    background-color: var(--oserp-section-head-bg);
     font-size: 14px;
     font-weight: 600;
     color: #333;
@@ -557,12 +557,12 @@ export default defineComponent({
 }
 
 .datetime-picker-times__slot--active {
-    background: #1976d2;
-    color: #fff;
+    background: var(--oserp-primary);
+    color: var(--oserp-on-primary);
     font-weight: 600;
 }
 
 .datetime-picker-times__slot--active:hover {
-    background: #1565c0;
+    background: var(--oserp-primary-strong);
 }
 </style>

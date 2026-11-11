@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Farbschema",
+        "mode": "Modus",
+        "modes": {
+            "light": "Hell",
+            "dark": "Dunkel",
+            "system": "Wie System"
+        },
+        "companyDefault": "Firmenstandard",
+        "userHint": "Wird sofort angewendet und gilt nur für diesen Benutzer.",
+        "modeHint": "„Wie System“ folgt der Hell-/Dunkel-Einstellung des Betriebssystems.",
+        "companyHint": "Standardfarbe für alle Benutzer. Wer in der Benutzerkonfiguration eine eigene Farbe gewählt hat, behält sie.",
+        "palettes": {
+            "blau": "Blau",
+            "indigo": "Indigo",
+            "petrol": "Petrol",
+            "gruen": "Grün",
+            "violett": "Violett",
+            "rosa": "Rosa",
+            "bordeaux": "Bordeaux",
+            "orange": "Orange",
+            "graphit": "Graphit"
+        }
+    }
+}

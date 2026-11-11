@@ -19,6 +19,12 @@ const crmDefaultsConfig = [
         fieldstyle: "max-width: 60ch"
     },
 
+    // Farbschema der Oberfläche: Firmenstandard für alle Benutzer ohne eigene
+    // Auswahl (Paletten: src/core/theme/palettes.js, Benutzer: theme_palette
+    // in employee_config_oserp).
+    { name: "appearance", type: "headline", label: "crm_fields.appearance" },
+    { name: "theme_palette", type: "component", component: "theme-palette" },
+
     // Einfacher Modus: welche Felder und Reiter die Kunden-/Lieferantenmaske im
     // einfachen Modus zeigt (Katalog: src/core/views/customer-vendor/cvFieldCatalog.js).
     // Der Benutzer schaltet in der Maske selbst um; hier steht nur der Firmenstandard.

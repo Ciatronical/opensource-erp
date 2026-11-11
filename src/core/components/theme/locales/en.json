@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Colour scheme",
+        "mode": "Mode",
+        "modes": {
+            "light": "Light",
+            "dark": "Dark",
+            "system": "Match system"
+        },
+        "companyDefault": "Company default",
+        "userHint": "Applied immediately and only for this user.",
+        "modeHint": "“Match system” follows the operating system's light/dark setting.",
+        "companyHint": "Default colour for all users. Users who picked their own colour in the user configuration keep it.",
+        "palettes": {
+            "blau": "Blue",
+            "indigo": "Indigo",
+            "petrol": "Teal",
+            "gruen": "Green",
+            "violett": "Violet",
+            "rosa": "Pink",
+            "bordeaux": "Burgundy",
+            "orange": "Orange",
+            "graphit": "Graphite"
+        }
+    }
+}

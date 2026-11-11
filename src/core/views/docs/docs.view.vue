@@ -362,11 +362,11 @@ export default {
   text-align: left;
 }
 .markdown-body :deep(th) {
-  background-color: #f5f5f5;
+  background-color: var(--oserp-section-head-bg);
   font-weight: 600;
 }
 .markdown-body :deep(code) {
-  background-color: #f5f5f5;
+  background-color: var(--oserp-surface-soft);
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 0.9em;
@@ -385,10 +385,10 @@ export default {
   color: inherit;
 }
 .markdown-body :deep(blockquote) {
-  border-left: 4px solid #1976d2;
+  border-left: 4px solid var(--oserp-primary);
   padding: 0.5rem 1rem;
   margin: 1rem 0;
-  background-color: #e3f2fd;
+  background-color: var(--oserp-primary-soft);
 }
 .markdown-body :deep(ul),
 .markdown-body :deep(ol) {

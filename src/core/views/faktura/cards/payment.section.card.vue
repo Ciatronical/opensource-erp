@@ -1122,7 +1122,7 @@ export default defineComponent({
 
 .faktura-card__header {
     padding: 14px 16px !important;
-    background-color: #f5f5f5;
+    background-color: var(--oserp-section-head-bg);
     font-size: 14px;
     font-weight: 600;
     color: #333;
@@ -1173,7 +1173,7 @@ export default defineComponent({
     font-weight: 600;
     font-size: 13px;
     color: #555;
-    background-color: #fafafa;
+    background-color: var(--oserp-section-head-bg);
     border-bottom: 1px solid #e0e0e0;
     white-space: nowrap;
 }
@@ -1185,16 +1185,16 @@ export default defineComponent({
 }
 
 .payment-table :deep(tbody tr:nth-child(even)) {
-    background-color: #fafafa;
+    background-color: var(--oserp-surface-soft);
 }
 
 .payment-table :deep(tbody tr:hover) {
-    background-color: #f0f7ff;
+    background-color: var(--oserp-primary-faint);
 }
 
 .payment-table__footer td {
     padding: 12px 8px !important;
-    background-color: #f5f5f5;
+    background-color: var(--oserp-section-head-bg);
     border-top: 2px solid #e0e0e0;
 }
 

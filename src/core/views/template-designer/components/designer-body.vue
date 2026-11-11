@@ -214,7 +214,7 @@ const taxRows = computed(() => props.sample?.arrays?.tax || []);
     outline-color: rgba(33, 150, 243, 0.45);
 }
 .tpl-section--selected {
-    outline: 1.5px solid #1e88e5;
+    outline: 1.5px solid var(--oserp-primary);
 }
 .tpl-section-tag {
     position: absolute;
@@ -224,8 +224,8 @@ const taxRows = computed(() => props.sample?.arrays?.tax || []);
     line-height: 12px;
     padding: 0 4px;
     border-radius: 2px;
-    background: #1e88e5;
-    color: #fff;
+    background: var(--oserp-primary);
+    color: var(--oserp-on-primary);
     opacity: 0;
     pointer-events: none;
     font-family: Roboto, sans-serif;

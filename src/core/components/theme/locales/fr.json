@@ -1,0 +1,26 @@
+{
+    "ThemePicker": {
+        "palette": "Palette de couleurs",
+        "mode": "Mode",
+        "modes": {
+            "light": "Clair",
+            "dark": "Sombre",
+            "system": "Comme le système"
+        },
+        "companyDefault": "Valeur de l'entreprise",
+        "userHint": "Appliqué immédiatement et uniquement pour cet utilisateur.",
+        "modeHint": "« Comme le système » suit le réglage clair/sombre du système d'exploitation.",
+        "companyHint": "Couleur par défaut pour tous les utilisateurs. Ceux qui ont choisi leur propre couleur dans la configuration utilisateur la conservent.",
+        "palettes": {
+            "blau": "Bleu",
+            "indigo": "Indigo",
+            "petrol": "Pétrole",
+            "gruen": "Vert",
+            "violett": "Violet",
+            "rosa": "Rose",
+            "bordeaux": "Bordeaux",
+            "orange": "Orange",
+            "graphit": "Graphite"
+        }
+    }
+}
