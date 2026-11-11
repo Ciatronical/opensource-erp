@@ -15,7 +15,7 @@ den Docker-Betrieb von OpensourceERP.
 | Skript | Zweck | Voraussetzungen |
 |--------|-------|-----------------|
 | `docker.sh` | Docker-Stack verwalten (Start, Stop, Backup, DB-Zugang, ...) | Docker Engine >= 20.10, `docker/.env` |
-| `run-dev.sh` | Lokale Entwicklungsumgebung starten (ohne Docker) | PHP >= 8.0, Node.js, lokale PostgreSQL auf Port 5432 |
+| `dev.sh` | Lokale Entwicklungsumgebung starten (ohne Docker) | PHP >= 8.0, Node.js, lokale PostgreSQL auf Port 5432 |
 | `built.sh` | Repository aktualisieren, Frontend bauen, Abhängigkeiten prüfen und für Apache-Deployment vorbereiten | Node.js |
 
 ---
@@ -136,7 +136,7 @@ verwenden. `upstall` ergänzt darauf nur die OpensourceERP-Tabellen.
 
 ---
 
-## run-dev.sh — Lokale Entwicklungsumgebung
+## dev.sh — Lokale Entwicklungsumgebung
 
 Startet die vollständige Entwicklungsumgebung **ohne Docker** in einem
 `gnome-terminal`-Fenster. Gedacht für die tägliche Frontend- und
@@ -164,7 +164,7 @@ Backend-Entwicklung mit Hot-Reload.
 ### Aufruf
 
 ```bash
-./scripts/run-dev.sh
+./scripts/dev.sh
 ```
 
 Beenden: `Ctrl+C` im geöffneten Terminal-Fenster.

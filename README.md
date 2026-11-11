@@ -248,6 +248,11 @@ Zwei Typen, sauber getrennt:
 
 ## Installation ohne Docker
 
+**Empfohlen für eine frische Maschine:** `./install/install.sh` richtet den kompletten
+Stack ein (Pakete, PHP-FPM, Build, Apache, Dienste); danach legt der Setup-Assistent im
+Browser Datenbank, Administrator und erste Firma an. Details: [install/README.md](install/README.md).
+Die folgenden Einzelschritte beschreiben den manuellen Weg.
+
 ### 1. Voraussetzungen installieren
 
 ```bash
@@ -260,7 +265,7 @@ sudo apt install -y \
   postgresql postgresql-contrib qrencode \
   gnome-terminal
 
-# Node.js 25 via nvm (Vite 7 braucht mindestens Node 20.19+)
+# Node.js 25 via nvm (Vite 8 braucht mindestens Node 20.19)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 source ~/.bashrc
 nvm install 25
@@ -294,7 +299,7 @@ sudo a2ensite apacheOpensourceErp
 sudo systemctl restart apache2
 
 # Build & Deploy
-./scripts/build.sh
+./scripts/built.sh
 ```
 
 Läuft auf **http://localhost**
@@ -338,17 +343,17 @@ Alle Abschnitte und Schlüssel dieser Datei: [docs/settings-ini.md](docs/setting
 
 ```bash
 git clone https://github.com/Ciatronical/opensource-erp.git
-cd opensource-erp/docker
+cd opensource-erp
 ```
 
 ### 3. Konfiguration
 
 ```bash
-cp .env.example .env
-nano .env
+cp docker/.env.example docker/.env
+nano docker/.env
 ```
 
-Wichtige Werte in `.env`:
+Wichtige Werte in `docker/.env`:
 
 | Variable | Beschreibung | Standard |
 |---|---|---|
@@ -373,7 +378,7 @@ Die Anwendung läuft auf **http://localhost:8080**
 
 ### SSL aktivieren
 
-Für Let's Encrypt SSL-Zertifikate `DOMAIN` und `CERTBOT_EMAIL` in `.env` setzen. Der Web-Container holt die Zertifikate automatisch.
+Für Let's Encrypt SSL-Zertifikate `DOMAIN` und `CERTBOT_EMAIL` in `docker/.env` setzen. Der Web-Container holt die Zertifikate automatisch.
 
 ---
 
@@ -386,13 +391,13 @@ sudo lsof -i :8000
 ```
 
 **Datenbank-Verbindung fehlgeschlagen?**
-- `backend/config/api.config.php` prüfen
+- Zugangsdaten in `backend/config/settings.ini` prüfen
 - PostgreSQL läuft? `sudo systemctl status postgresql`
 
 **Docker-Logs prüfen:**
 ```bash
-docker compose logs -f web
-docker compose logs -f db
+./scripts/docker.sh logs web
+./scripts/docker.sh logs db
 ```
 
 ---

@@ -275,8 +275,8 @@ WEB_HTTPS_PORT=443
 SESSION_COOKIE_NAME=opensource_erp
 SESSION_COOKIE_SAMESITE=Strict
 
-# ── Demo-Modus (optional) ──
-DEMO_MODE=true
+# ── Demo-Modus (nur für Demo-Instanzen, siehe Abschnitt 12) ──
+DEMO_MODE=false
 DEMO_INACTIVITY_MINUTES=20
 ```
 
@@ -298,10 +298,11 @@ Speichern: `Ctrl+O` → `Enter` → `Ctrl+X`
 > Buchstaben + Zahlen + Sonderzeichen). Dieses Passwort wird intern verwendet,
 > du musst es dir nicht merken.
 
-> **DEMO_MODE** — Wenn `true`, erstellt der Web-Container beim Start einen
-> Datenbank-Snapshot. Nach Inaktivitaet (konfigurierbar ueber
-> `DEMO_INACTIVITY_MINUTES`) wird die Datenbank automatisch auf diesen
-> Snapshot zurueckgesetzt. Ideal fuer oeffentliche Demo-Instanzen.
+> **DEMO_MODE** — Nur für öffentliche Demo-Instanzen. Die Anwendung zeigt dann
+> den Demo-Hinweis an. Das Zurücksetzen der Datenbank übernimmt nicht dieser
+> Schalter, sondern das Demo-Overlay (tmpfs und Seed-Dumps) zusammen mit einem
+> Cron-Job auf dem Host — siehe [Abschnitt 12](#12-demo-modus). Für eine normale
+> Instanz bleibt der Wert `false`.
 
 ---
 
@@ -516,32 +517,67 @@ Falls der Web-Container nicht schon laeuft (Schritt 9.1):
 
 1. **settings.ini** wird aus den Umgebungsvariablen generiert (DB-Verbindung,
    Session-Einstellungen, Timezone)
-2. **Demo-Modus** (wenn `DEMO_MODE=true`): Ein `pg_dump`-Snapshot der
-   Company-Datenbank wird erstellt
+2. **Demo-Modus** (wenn `DEMO_MODE=true`): Der Container wartet auf die
+   Company-Datenbank und legt einen `pg_dump`-Snapshot an. Erst danach
+   startet PHP-FPM — der Start dauert im Demo-Modus deshalb etwas länger
 3. **PHP-FPM** startet als Daemon
 4. **SSL-Zertifikat** wird automatisch geholt (wenn `DOMAIN` und
    `CERTBOT_EMAIL` konfiguriert sind)
 5. **Apache** startet im Vordergrund
 
-> **Wichtig bei Demo-Modus:** Die Datenbank muss **vollstaendig eingerichtet**
-> sein, bevor der Web-Container gestartet wird! Der Snapshot wird beim Start
-> erstellt und dient als Grundlage fuer den automatischen Reset.
+> **Demo-Instanzen** werden nicht mit `up-web`, sondern mit `demo-up`
+> gestartet — siehe [Abschnitt 12](#12-demo-modus).
 
 ---
 
 ## 12. Demo-Modus
 
-Der Demo-Modus ist ideal fuer oeffentliche Demo-Instanzen. Er stellt die
-Datenbank nach Inaktivitaet automatisch auf den Ausgangszustand zurueck.
+Der Demo-Modus ist für öffentliche Demo-Instanzen gedacht. Die Datenbank liegt
+dabei im Arbeitsspeicher (tmpfs) und wird bei jedem Start des DB-Containers aus
+zwei Dump-Dateien neu aufgebaut. Ein Cron-Job auf dem Host startet den
+DB-Container neu, sobald eine Zeit lang niemand die Demo benutzt hat.
+
+Die Abschnitte 8 bis 10 (Datenbank von Hand einrichten) entfallen für eine
+Demo-Instanz: Alles, was die Demo enthalten soll, steckt in den beiden Dumps.
 
 ### Wie funktioniert es?
 
-1. **Beim Start** des Web-Containers wird ein `pg_dump`-Snapshot der
-   Company-Datenbank erstellt und unter
-   `/var/www/html/backend/data/demo_snapshot.sql` gespeichert
-2. **Bei Inaktivitaet** (konfigurierbar, Standard: 20 Minuten) wird die
-   Company-Datenbank automatisch auf diesen Snapshot zurueckgesetzt
-3. Die Auth-Datenbank wird **nicht** zurueckgesetzt — Benutzer bleiben erhalten
+1. `docker/docker-compose.demo.yml` legt das PostgreSQL-Datenverzeichnis in
+   ein tmpfs und hängt die Dumps nach `/dumps/` in den DB-Container ein
+2. Beim Start des DB-Containers laufen die Skripte aus `docker/db/init/`:
+   Datenbanken anlegen, Auth-Dump laden, Company-Dump laden, `auth.clients`
+   auf die Docker-Umgebung umschreiben
+3. Ein Neustart des DB-Containers verwirft das tmpfs — die Demo steht danach
+   wieder auf dem Stand der Dumps. **Auth- und Company-Datenbank** werden
+   beide zurückgesetzt, angemeldete Benutzer verlieren ihre Sitzung
+4. `./scripts/docker.sh demo-idle-watch` prüft das Apache-Protokoll. Kam seit
+   `DEMO_INACTIVITY_MINUTES` keine Benutzeranfrage mehr, startet es den
+   DB-Container neu — genau einmal je Ruhephase
+
+### Die Dump-Dateien
+
+Benötigt werden zwei `pg_dump`-Dateien, `.sql` oder `.sql.gz`:
+
+| Dump | Inhalt |
+|------|--------|
+| Auth | Nur der Demo-Mandant und der Demo-Benutzer. Das Skript `99-patch-clients.sh` schreibt **alle** Einträge in `auth.clients` auf dieselbe Company-Datenbank um |
+| Company | Die Firmen-Datenbank mit den Beispieldaten |
+
+Beide Dumps müssen auf dem **Schema-Stand des Programms** sein. Ist ein Dump
+älter, zieht die Anwendung das Schema beim ersten Login nach — und zwar nach
+jedem Reset erneut, weil der Reset wieder den alten Dump einspielt. Ein
+veraltetes Auth-Schema kann die Anmeldung ganz verhindern.
+
+Dumps aktualisieren: lokal in eine Datenbank laden, mit dem aktuellen
+Programmstand anmelden (das Schema-Update läuft dabei), Beispieldaten
+anpassen und neu dumpen:
+
+```bash
+pg_dump <demo_auth_db>    > oserp_demo_auth.sql
+pg_dump <demo_company_db> > oserp_demo_firma.sql
+```
+
+Das tmpfs fasst 1 GB (`size` in `docker-compose.demo.yml`).
 
 ### Konfiguration
 
@@ -550,18 +586,78 @@ In `docker/.env`:
 ```ini
 DEMO_MODE=true
 DEMO_INACTIVITY_MINUTES=20
+
+# Absolute Pfade auf dem Docker-Host
+DEMO_AUTH_DUMP=/var/www/docker/datenbanken/oserp_demo_auth.sql
+DEMO_COMPANY_DUMP=/var/www/docker/datenbanken/oserp_demo_firma.sql
+
+# Nur mit der Erweiterung LxCars: Verzeichnis mit den Demo-Fahrzeugschein-Scans
+#DEMO_SCAN_DATA=/var/www/docker/lxcars-demo-data
 ```
 
-### Snapshot aktualisieren
+`DB_AUTH_NAME` und `DB_COMPANY_NAME` in der `.env` bestimmen die Namen der
+Datenbanken, in die die Dumps geladen werden.
 
-Wenn du Aenderungen an der Datenbank vorgenommen hast und den Snapshot
-aktualisieren willst:
+### Starten
 
 ```bash
-# Web-Container neu starten (erstellt neuen Snapshot)
-./scripts/docker.sh down-web
-./scripts/docker.sh up-web
+./scripts/docker.sh demo-up
 ```
+
+`demo-up` prüft die Init-Skripte, die Dump-Pfade und ob das Datenvolume ein
+tmpfs ist, baut das Web-Image und startet beide Container. Lief der Stack
+vorher ohne Demo-Overlay, liegt noch ein normales Volume vor — `demo-up`
+bietet dann an, es zu entfernen.
+
+> **Wichtig:** Eine Demo-Instanz immer mit `demo-up` starten, nie mit `up-web`
+> oder `up-all`. Diese starten ohne das Overlay — die Datenbank würde dann
+> nicht mehr zurückgesetzt.
+
+### Automatisches Zurücksetzen einrichten
+
+Cron-Job auf dem Host (root oder ein Benutzer der Gruppe `docker`):
+
+```bash
+*/3 * * * * /var/www/docker/demo.example.com/scripts/docker.sh demo-idle-watch >>/var/log/oserp-demo-watch.log 2>&1
+```
+
+Der Aufruf ist ein Einmal-Lauf: Er prüft und beendet sich. Zugriffe des
+Healthchecks zählen nicht als Benutzeraktivität.
+
+### Von Hand zurücksetzen
+
+```bash
+./scripts/docker.sh demo-restart-db
+```
+
+Startet den DB-Container neu, spielt die Dumps ein und lädt PHP-FPM neu, damit
+keine Verbindungen zur alten Datenbank bestehen bleiben. Unmittelbar nach
+`demo-up` meldet der Befehl „PHP-FPM konnte nicht neu geladen werden“, weil
+der Web-Container zu diesem Zeitpunkt PHP-FPM noch nicht gestartet hat. Das
+ist dann unkritisch.
+
+### Dumps austauschen
+
+```bash
+cp /pfad/zum/neuen/oserp_demo_firma.sql /var/www/docker/datenbanken/oserp_demo_firma.sql
+./scripts/docker.sh demo-restart-db
+docker logs --tail 30 <STACK_NAME>-db 2>&1 | grep -i -E "demo-seed|error"
+```
+
+> **Die Datei an Ort und Stelle überschreiben (`cp`), nicht ersetzen (`mv`).**
+> Die Dumps sind als einzelne Dateien eingehängt. Nach einem Umbenennen sieht
+> der Container weiter die alte Datei, bis er neu erstellt wird.
+
+Im Protokoll müssen die vier Zeilen mit `[demo-seed]` ohne Fehler stehen.
+`./scripts/docker.sh logs` liest die Protokolle fortlaufend mit und endet erst
+mit `Ctrl+C` — für eine kurze Prüfung deshalb `docker logs --tail` verwenden.
+
+### Der Snapshot im Web-Container
+
+Mit `DEMO_MODE=true` legt der Web-Container beim Start zusätzlich einen
+Snapshot der Company-Datenbank unter `backend/data/demo_snapshot.sql` an. Das
+Zurücksetzen der Demo läuft nicht über diesen Snapshot, sondern über den
+Neustart des DB-Containers.
 
 ---
 
@@ -635,10 +731,25 @@ git pull
 ```
 
 Das baut das Frontend neu, kopiert den aktuellen Backend-Code und startet
-den Container. **Die Datenbank und alle Daten bleiben erhalten.**
+den Container. **Die Datenbank und alle Daten bleiben erhalten.** Änderungen
+am Datenbankschema spielt die Anwendung beim nächsten Login selbst ein.
 
-> **Bei Demo-Modus:** Der Snapshot wird nach dem Neustart automatisch
-> aktualisiert.
+### Demo-Instanz aktualisieren
+
+```bash
+cd /var/www/docker/demo.example.com
+git pull
+./scripts/docker.sh demo-up
+```
+
+`demo-up` baut das Web-Image neu und startet den Web-Container damit. Der
+DB-Container läuft dabei weiter, solange sich seine Konfiguration nicht
+geändert hat.
+
+Bringt die neue Version Schemaänderungen mit, sind anschließend die
+Seed-Dumps zu erneuern (siehe [Abschnitt 12](#12-demo-modus), „Die
+Dump-Dateien“). Sonst läuft das Schema-Update nach jedem Reset erneut beim
+ersten Login.
 
 ---
 
@@ -873,6 +984,9 @@ sudo certbot --nginx -d demo2.example.com
 cd /var/www/docker/demo1.example.com && git pull && ./scripts/docker.sh destroy-web && ./scripts/docker.sh up-web
 cd /var/www/docker/demo2.example.com && git pull && ./scripts/docker.sh destroy-web && ./scripts/docker.sh up-web
 ```
+
+Für Demo-Instanzen stattdessen `git pull && ./scripts/docker.sh demo-up`
+(siehe [Abschnitt 15](#15-updates-einspielen)).
 
 ---
 

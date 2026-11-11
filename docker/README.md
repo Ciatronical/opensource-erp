@@ -74,6 +74,12 @@ Alle Einstellungen werden ueber die `.env` Datei gesteuert.
 | `SESSION_COOKIE_SAMESITE` | SameSite-Policy des Cookies | Strict |
 | `DEMO_MODE` | Demo-Modus aktivieren (true/false) | false |
 | `DEMO_INACTIVITY_MINUTES` | Minuten Inaktivitaet bis DB-Reset (nur Demo-Modus) | 20 |
+| `DEMO_AUTH_DUMP` | Absoluter Host-Pfad zum Auth-Dump (nur Demo-Overlay, `demo-up`) | — |
+| `DEMO_COMPANY_DUMP` | Absoluter Host-Pfad zum Company-Dump (nur Demo-Overlay, `demo-up`) | — |
+| `DEMO_SCAN_DATA` | Verzeichnis mit Demo-Fahrzeugschein-Scans (optional, nur LxCars) | — |
+
+Der Demo-Betrieb (tmpfs, Seed-Dumps, automatisches Zuruecksetzen) ist in
+`docker/SETUP_DEMO.md`, Abschnitt 12, beschrieben.
 
 **Wichtig:** `POSTGRES_USER` muss `postgres` bleiben, da das Datenbankschema `ALTER ... OWNER TO postgres` Statements enthaelt.
 

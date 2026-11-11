@@ -183,27 +183,24 @@ Hinweis: Schlägt der Aufruf mit `Class "Normalizer" not found` fehl, fehlt die 
 ## 2a. Development-Modus
 
 ```bash
-# Backend-Konfiguration erstellen
-nano backend/config/api.config.php  # Datenbank-Zugangsdaten eintragen
-
-cp backend/config/api.passwd.php.example backend/config/api.passwd.php
-nano backend/config/api.passwd.php
-
 # Development-Server starten
-./scripts/run-dev.sh
+./scripts/dev.sh
 ```
 
 **Fertig!** Die Anwendung läuft auf: **http://localhost:5173**
+
+Die Konfiguration `backend/config/settings.ini` legt der Setup-Assistent beim ersten
+Aufruf im Browser an (oder `php tools/oserp-setup.php`). Die früheren Dateien
+`api.config.php` und `api.passwd.php` gibt es nicht mehr.
 
 ---
 
 ## 2b. Production-Modus
 
-```bash
-# Backend-Konfiguration (wie oben)
-cp backend/config/api.config.php.example backend/config/api.config.php
-nano backend/config/api.config.php
-
+Die Konfiguration `backend/config/settings.ini` entsteht wie im Development-Modus über den
+Setup-Assistenten. Der vHost erwartet die Apache-Defines `OSERP_ROOT` und `OSERP_PHP_FPM`
+in `/etc/apache2/conf-available/oserp-defines.conf`; der Installer schreibt sie
+(`./install/install.sh --only php_fpm,apache`).
 
 **Apache konfigurieren:**
 
@@ -219,7 +216,7 @@ sudo systemctl restart apache2
 **Build und Deploy:**
 
 ```bash
-./scripts/run-build.sh
+./scripts/built.sh
 ```
 
 **Fertig!** Die Anwendung läuft auf: **http://localhost**
@@ -428,12 +425,12 @@ docu/programmierstil-richtlinien.md
 
 **Development:**
 ```bash
-./scripts/run-dev.sh  # Startet beide Server
+./scripts/dev.sh  # Startet beide Server
 ```
 
 **Production (nach Code-Änderungen):**
 ```bash
-./scripts/run-build.sh  # Build + Deploy
+./scripts/built.sh  # Build + Deploy
 ```
 
 ---
