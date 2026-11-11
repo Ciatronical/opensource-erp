@@ -765,6 +765,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toast from '@/core/utils/toasts.js'
 import { waMediaCache } from '@/core/utils/whatsappMediaCache.js'
+import { pickMobilePhone } from '@/core/utils/phoneFormat.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
@@ -1111,10 +1112,9 @@ export default {
                 return
             }
             composePhones.value = item.phones || []
-            if (composePhones.value.length === 1) {
-                composeData.value.to = composePhones.value[0]
-            } else if (composePhones.value.length > 1) {
-                composeData.value.to = composePhones.value[0]
+            // Bei mehreren Nummern die Handynummer vorauswählen
+            if (composePhones.value.length) {
+                composeData.value.to = pickMobilePhone(composePhones.value)
             }
         }
 

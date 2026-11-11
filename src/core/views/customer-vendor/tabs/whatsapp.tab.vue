@@ -426,6 +426,7 @@ import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toast from '@/core/utils/toasts.js'
 import { waMediaCache } from '@/core/utils/whatsappMediaCache.js'
+import { pickMobilePhone } from '@/core/utils/phoneFormat.js'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 
@@ -543,7 +544,7 @@ export default {
         if (queryPhone && props.phoneNumbers.includes(queryPhone)) {
           selectedPhone.value = queryPhone
         } else {
-          selectedPhone.value = props.phoneNumbers[0]
+          selectedPhone.value = pickMobilePhone(props.phoneNumbers)
         }
         // Query-Parameter aufräumen
         if (queryPhone) {
@@ -579,7 +580,7 @@ export default {
     // Bei Kunde/Lieferant-Wechsel neu laden
     watch(() => props.cvId, () => {
       if (props.phoneNumbers.length > 0) {
-        selectedPhone.value = props.phoneNumbers[0]
+        selectedPhone.value = pickMobilePhone(props.phoneNumbers)
       }
       messages.value = []
       if (hasConfig.value && props.phoneNumbers.length > 0) {
@@ -590,7 +591,7 @@ export default {
     // Bei Telefonnummern-Wechsel (z.B. anderer Kunde mit anderen Nummern)
     watch(() => props.phoneNumbers, (newPhones) => {
       if (newPhones.length > 0) {
-        selectedPhone.value = newPhones[0]
+        selectedPhone.value = pickMobilePhone(newPhones)
       }
       messages.value = []
       if (hasConfig.value && newPhones.length > 0) {
