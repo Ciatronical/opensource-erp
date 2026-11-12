@@ -21,7 +21,7 @@ export function useNavigationCards() {
                 { title: t('CarView.newCarFromScan'), to: { name: 'car-new-from-scan' } },
                 '-',
                 { title: t('CarView.newCar'), to: { name: 'fahrzeug-neu' } },
-                { title: t('CarView.manageCars'), to: { name: 'car-list' } }
+                { title: t('CarView.manageCars'), to: { name: 'search', query: { tab: 'vehicle' } } }
             ]
             const mechMode = oserp.getClientDefaultValue('lxcars_mechanic_mode', '0')
             if (mechMode === '1' || mechMode === 'true' || mechMode === true) {

@@ -693,6 +693,39 @@ onMounted(() => {
         obsolete: false
     };
     loadCVData();
+    // Tab aus der URL übernehmen — der Wechsel lädt die Daten des Tabs
+    activeTab.value = tabFromRoute();
+});
+
+// ──────────────────────────────────────────
+// Tab in der URL (?tab=vehicle)
+// ──────────────────────────────────────────
+// Menüpunkte und Lesezeichen öffnen die Suche so direkt im passenden Tab.
+const searchTabs = ['customer_vendor', 'vehicle', 'article', ...documentTypes];
+
+/**
+ * Liefert den Tab aus der URL; unbekannte Werte und der Fahrzeug-Tab ohne
+ * LxCars fallen auf den Standard zurück
+ */
+function tabFromRoute() {
+    const tab = router.currentRoute.value.query.tab;
+    if (!searchTabs.includes(tab)) return 'customer_vendor';
+    if (tab === 'vehicle' && !oserp.isLxCars()) return 'customer_vendor';
+    return tab;
+}
+
+// URL → Tab: erneuter Klick auf einen Menüpunkt, während die Suche offen ist
+watch(() => router.currentRoute.value.query.tab, () => {
+    if (router.currentRoute.value.name === 'search') {
+        activeTab.value = tabFromRoute();
+    }
+});
+
+// Tab → URL: der gewählte Tab bleibt beim Neuladen und in Lesezeichen erhalten
+watch(activeTab, (tab) => {
+    if (router.currentRoute.value.name === 'search' && tab !== tabFromRoute()) {
+        router.replace({ query: { ...router.currentRoute.value.query, tab } });
+    }
 });
 
 /**

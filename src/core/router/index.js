@@ -763,7 +763,8 @@ function buildRoutes() {
         {
             ...routePath('CarView.routes.manageCars'),
             name: 'car-list',
-            component: NotFoundView,
+            // Fahrzeuge verwalten = Suche im Tab „Fahrzeuge“
+            redirect: { name: 'search', query: { tab: 'vehicle' } },
         },
         {
             ...routePath('CarView.routes.orderSearch'),
