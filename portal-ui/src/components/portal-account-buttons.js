@@ -73,12 +73,16 @@ export class PortalAccountButtons extends PortalElement {
         gap: 0.4rem;
         white-space: nowrap;
       }
+      /* Symbolfarbe: Vorgabe wie die Beschriftung, ein Theme kann sie
+         ueber --shop-icon-color hervorheben. */
       svg {
         flex: none;
+        color: var(--shop-icon-color, currentColor);
       }
-      /* Das Theme setzt die Beschriftung kursiv (fst-italic). */
+      /* Das hugoshop-Theme setzt die Beschriftung kursiv (fst-italic);
+         ein Theme kann das ueber --shop-label-style abschalten. */
       .label {
-        font-style: italic;
+        font-style: var(--shop-label-style, italic);
       }
       /* Ersetzt das Bootstrap-Popover des alten Knopfes — der brauchte
          bootstrap.bundle.js, das ein fremdes Theme nicht geladen haben muss. */

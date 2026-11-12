@@ -42,7 +42,7 @@ const de = {
   'login.pending': 'Anmeldung läuft …',
   'login.register': 'Noch kein Kundenkonto? Jetzt registrieren',
   'login.missing': 'Bitte geben Sie E-Mail-Adresse und Passwort ein.',
-  'login.activate': 'Sie sind schon Kunde bei uns, haben aber noch keinen Zugang? Hier Zugang einrichten',
+  'login.activate': 'Schon Kunde bei uns, aber noch kein Online-Zugang? Jetzt mit Ihrer Telefonnummer freischalten',
 
   // Zugang für Bestandskunden (portal-activate)
   'activate.intro': 'Sie sind schon Kunde bei uns? Dann richten wir Ihnen in zwei Schritten einen Zugang zu Ihrem Kundenkonto ein. Sie brauchen dafür nur Ihre Telefonnummer, die wir von Ihnen kennen.',
@@ -463,7 +463,7 @@ const en = {
   'login.submit': 'Sign in',
   'login.pending': 'Signing in …',
   'login.register': 'No account yet? Register now',
-  'login.activate': 'Already a customer but no login yet? Set up your access here',
+  'login.activate': 'Already a customer but no online login yet? Activate it now with your phone number',
 
   // Access for existing customers (portal-activate)
   'activate.intro': 'Already a customer? Then we will set up access to your customer account in two steps. All you need is the phone number we have on file for you.',
