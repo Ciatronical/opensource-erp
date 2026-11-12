@@ -187,26 +187,27 @@
                                 <!-- Verkaufspreis netto (parts.sellprice) -->
                                 <v-col cols="12" sm="4" class="py-1">
                                     <v-text-field
-                                        v-model.number="article.sellprice"
+                                        :model-value="sellpriceNetText"
                                         :label="t('ArticleEditView.fields.sellpriceNet')"
                                         variant="outlined"
                                         density="compact"
                                         hide-details="auto"
                                         autocomplete="off"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
+                                        inputmode="decimal"
                                         prefix="€"
-                                        @focus="$event.target.select()"
+                                        @update:model-value="netEntered"
+                                        @focus="priceFocus('net', $event)"
+                                        @blur="priceBlur"
                                     />
                                 </v-col>
 
                                 <!-- Verkaufspreis brutto: nur in der Maske, gespeichert wird der
                                      Nettopreis. Beide Felder rechnen sich gegenseitig um, mit dem
-                                     Steuersatz der Buchungsgruppe im Inland -->
+                                     Steuersatz der Buchungsgruppe im Inland. Textfelder statt
+                                     type="number": nur so steht das Dezimalzeichen der Sprache -->
                                 <v-col cols="12" sm="4" class="py-1">
                                     <v-text-field
-                                        :model-value="sellpriceGross"
+                                        :model-value="sellpriceGrossText"
                                         :label="t('ArticleEditView.fields.sellpriceGross')"
                                         :hint="t('ArticleEditView.fields.sellpriceGrossHint', { rate: taxRatePercent })"
                                         persistent-hint
@@ -214,12 +215,11 @@
                                         density="compact"
                                         hide-details="auto"
                                         autocomplete="off"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
+                                        inputmode="decimal"
                                         prefix="€"
                                         @update:model-value="grossEntered"
-                                        @focus="$event.target.select()"
+                                        @focus="priceFocus('gross', $event)"
+                                        @blur="priceBlur"
                                     />
                                 </v-col>
 
@@ -476,6 +476,7 @@ import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import * as toasts from '@/core/utils/toasts.js'
 import axios from 'axios'
 import { shopSlug } from '@/features/shop/utils/slug.js'
+import { parseNumber } from '@/core/utils/numberFormat.js'
 import SectionCard from '@/core/components/layout/section-card.vue'
 import HtmlEditorComponent from '@/core/components/html.editor.component.vue'
 import { useWarehouse } from '@/features/warehouse/composables/useWarehouse.js'
@@ -497,7 +498,7 @@ export default defineComponent({
         id: { type: [String, Number], default: null }
     },
     setup(props) {
-        const { t, n } = useI18n()
+        const { t, n, locale } = useI18n()
         const oserp = oserpStore()
         const router = useRouter()
         const route = useRoute()
@@ -651,21 +652,48 @@ export default defineComponent({
         const nettoAus = brutto => runden((Number(brutto) || 0) / (1 + taxRate.value), 5)
         const bruttoAus = netto => runden((Number(netto) || 0) * (1 + taxRate.value), 2)
 
-        const sellpriceGross = ref(0)
+        // Die Felder zeigen Text im Zahlenformat der Sprache (deutsch: Komma);
+        // Eingaben liest parseNumber im selben Format
+        const sellpriceNetText = ref('')
+        const sellpriceGrossText = ref('')
+        let priceField = null   // Feld, in dem der Benutzer gerade tippt: 'net', 'gross' oder null
 
-        /** Eingabe im Bruttofeld: der Nettopreis folgt */
-        function grossEntered(wert) {
-            sellpriceGross.value = wert
-            article.value.sellprice = nettoAus(wert)
+        const preisText = (wert, stellen) => new Intl.NumberFormat(locale.value, {
+            minimumFractionDigits: 2, maximumFractionDigits: stellen,
+        }).format(Number(wert) || 0)
+
+        /** Schreibt die Felder aus dem Nettopreis neu — nicht das, in dem gerade getippt wird */
+        function priceTexts() {
+            const netto = Number(article.value.sellprice) || 0
+            if (priceField !== 'net') sellpriceNetText.value = preisText(netto, 5)
+            if (priceField !== 'gross') sellpriceGrossText.value = preisText(bruttoAus(netto), 2)
         }
 
-        // Netto oder Steuersatz geändert: der Bruttopreis folgt — außer er passt
-        // schon, dann stammt die Änderung aus dem Bruttofeld
-        watch([() => article.value.sellprice, taxRate], () => {
-            const netto = Number(article.value.sellprice) || 0
-            if (nettoAus(sellpriceGross.value) === runden(netto, 5)) return
-            sellpriceGross.value = bruttoAus(netto)
-        }, { immediate: true })
+        /** Eingabe im Nettofeld: der Bruttopreis folgt */
+        function netEntered(text) {
+            sellpriceNetText.value = text
+            article.value.sellprice = Math.max(0, runden(parseNumber(text, locale.value) || 0, 5))
+        }
+
+        /** Eingabe im Bruttofeld: der Nettopreis folgt */
+        function grossEntered(text) {
+            sellpriceGrossText.value = text
+            article.value.sellprice = nettoAus(Math.max(0, parseNumber(text, locale.value) || 0))
+        }
+
+        function priceFocus(feld, event) {
+            priceField = feld
+            event.target.select()
+        }
+
+        /** Feld verlassen: auch die eigene Eingabe steht danach im Zahlenformat */
+        function priceBlur() {
+            priceField = null
+            priceTexts()
+        }
+
+        // Nettopreis (Laden, Eingabe, Vorgabe), Steuersatz oder Sprache geändert
+        watch([() => article.value.sellprice, taxRate, locale], priceTexts, { immediate: true })
 
         // ── Save-Logik ──
 
@@ -1219,8 +1247,12 @@ export default defineComponent({
             zuAbschnitt,
             shopCard,
             shopLinkSuggestion,
-            sellpriceGross,
+            sellpriceNetText,
+            sellpriceGrossText,
+            netEntered,
             grossEntered,
+            priceFocus,
+            priceBlur,
             taxRatePercent,
             shopPartnumber,
             publishing,
