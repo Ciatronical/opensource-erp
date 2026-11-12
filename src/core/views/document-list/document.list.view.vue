@@ -19,7 +19,7 @@
                     <v-icon class="me-2" color="primary">{{ config.icon }}</v-icon>
                     {{ t(config.title) }}
                     <v-chip v-if="!loading" class="ms-3" size="small" variant="tonal" color="primary">
-                        {{ isParts ? rows.length + (atLimit ? '+' : '') : totals.count }}
+                        {{ isParts ? partsTotal : totals.count }}
                     </v-chip>
                 </h1>
             </v-col>
@@ -781,6 +781,7 @@ export default {
 
         const LIMIT = 500
         const atLimit = computed(() => rows.value.length >= LIMIT)
+        const partsTotal = ref(0)
         const hasFilter = computed(() =>
             !!search.value || !!from.value || !!to.value || status.value !== 'all' || invoiced.value !== 'all' || confirmed.value !== 'all' || partsScope.value !== 'active' || !!shopFilter.value
             || weightMissing.value || shippingUnfit.value
@@ -859,9 +860,12 @@ export default {
                 const res = await axios.post('/api/faktura/', payload)
                 if (res.data?.success) {
                     rows.value = (isParts.value ? res.data.payload.parts : res.data.payload.documents) || []
+                    // Artikel: Zahl aller Treffer, auch wenn nur die ersten LIMIT geliefert werden
+                    partsTotal.value = isParts.value ? Number(res.data.payload.total ?? rows.value.length) : 0
                     totals.value = res.data.payload.totals || { count: rows.value.length, amount: 0, netamount: 0, tax: 0, open: 0, uninvoiced: 0, uninvoiced_amount: 0, unconfirmed: 0, suggested: 0 }
                 } else {
                     rows.value = []
+                    partsTotal.value = 0
                     totals.value = { count: 0, amount: 0, netamount: 0, tax: 0, open: 0, uninvoiced: 0, uninvoiced_amount: 0, unconfirmed: 0, suggested: 0 }
                     error.value = res.data?.payload || t('DocumentList.loadError')
                 }
@@ -1269,7 +1273,7 @@ export default {
             hasSentChannel, LIMIT,
             t, te, locale, config, isParts, isOrder, hasAmounts, hasPayments, rows, totals, selected, headers, loading, error, busy,
             search, from, to, status, invoiced, confirmed, confirmationChannelIcon, openInvoice, openStornoRef, periodPreset, periodItems,
-            obsoleteOnly, showAll, shopOnly, notInShop, weightMissing, shippingUnfit, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit,
+            obsoleteOnly, showAll, shopOnly, notInShop, weightMissing, shippingUnfit, shopEnabled, channels, channelId, channelItems, hasFilter, atLimit, partsTotal,
             printerList, selectedPrinter, selectPrinter, printerSubtitle,
             formatDate, formatCurrency, formatQty, reset, openRow,
             printList, downloadList, docsScope, rowScope, downloadDocs, printDocs,

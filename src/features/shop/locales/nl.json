@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "Geen artikel aangeboden",
-                "shop_website": "Website van het klantenportaal gekoppeld"
+                "shop_website": "Website van het klantenportaal gekoppeld",
+                "shop_hugocms_url": "Adres van HugoCMS",
+                "shop_hugocms_key": "Sleutel voor HugoCMS"
             },
             "paypalSandbox": "Verkoopkanaal „{name}”: PayPal draait in de testomgeving — echte betalingen zijn nog niet mogelijk."
         },

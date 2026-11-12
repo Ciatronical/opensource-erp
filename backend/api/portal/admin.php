@@ -348,6 +348,37 @@ function deleteWebsite($data) {
 }
 
 /**
+ * Lässt HugoCMS die Hugo-Konfiguration der Webseite ergänzen
+ *
+ * Schreibt alle behebbaren Befunde der Konfigurationsprüfung (Mounts des
+ * Pakets, dazu die der Erweiterungen) über shopsiteconfigapply in die
+ * hugo.json oder config.json der Webseite. Die Korrekturen ermittelt der
+ * Server aus einer frischen Prüfung (portalSiteConfigApply); HugoCMS legt
+ * vorher eine Sicherungskopie an und prüft jede Korrektur selbst. Danach
+ * prüft die Oberfläche erneut (testWebsiteHugoCms).
+ *
+ * @param int $data['website_id'] Webseite
+ * @param string $data['url'] Adresse aus dem Formular (optional)
+ * @param string $data['key'] Schlüssel aus dem Formular (optional)
+ * @return void applied (Zahl der Korrekturen), changed, file, backup
+ * @testdata {"website_id": 1}
+ */
+function applyWebsiteSiteConfig($data) {
+    permit(['edit_shop_config'], false);
+    $db = portalAdminDb();
+
+    $ergebnis = portalSiteConfigApply($db, (int)($data['website_id'] ?? 0), [
+        'url' => (string)($data['url'] ?? ''),
+        'key' => (string)($data['key'] ?? ''),
+    ]);
+    if (!$ergebnis['ok']) {
+        resultInfo(false, 'PORTAL_HUGOCMS_FAILED', null, $ergebnis['fehler']);
+        return;
+    }
+    resultInfo(true, '', ['applied' => $ergebnis['applied']] + (array)$ergebnis['data']);
+}
+
+/**
  * Prüft die Verbindung einer Webseite zu HugoCMS
  *
  * Fragt dort den Baustand ab. Gelingt das, stimmen Adresse, Schlüssel und
@@ -391,6 +422,7 @@ function testWebsiteHugoCms($data) {
         'site_checks'          => $konfiguration['ok'] ? portalSiteChecks($db, $website, (array)$konfiguration['data'], $antwort) : null,
         'site_checks_error'    => $konfiguration['ok'] ? '' : $konfiguration['fehler'],
         'site_checks_outdated' => (bool)$konfiguration['veraltet'],
+        'site_apply'           => portalSiteApplyState($konfiguration['ok'] ? (array)$konfiguration['data'] : []),
     ]);
 }
 

@@ -109,7 +109,6 @@
                                 :label="t('ShopView.channelConfig.name')"
                                 autocomplete="off"
                                 class="mt-2"
-                                style="max-width: 40ch"
                                 @click.stop
                             />
                         </div>
@@ -124,7 +123,7 @@
             <Erklaerung :text="t('ShopView.setup.rechnung.explain')" />
             <v-row dense>
                 <v-col v-for="name in RECHNUNG" :key="name" cols="12" sm="6">
-                    <ShopConfigField :field="mandantFeld(name)" :werte="mandant" :quellen="quellen" :gesetzt="mandantGesetzt" />
+                    <ShopConfigField breit :field="mandantFeld(name)" :werte="mandant" :quellen="quellen" :gesetzt="mandantGesetzt" />
                 </v-col>
             </v-row>
         </template>
@@ -136,22 +135,22 @@
             <Erklaerung :text="t('ShopView.setup.zahlung.bank')" />
             <v-row dense>
                 <v-col v-for="name in BANK" :key="name" cols="12" sm="6">
-                    <ShopConfigField :field="mandantFeld(name)" :werte="mandant" :quellen="quellen" :gesetzt="mandantGesetzt" />
+                    <ShopConfigField breit :field="mandantFeld(name)" :werte="mandant" :quellen="quellen" :gesetzt="mandantGesetzt" />
                 </v-col>
             </v-row>
             <div class="text-subtitle-2 mt-4">{{ t('crm_fields.shopPaypal') }}</div>
             <Erklaerung :text="t('ShopView.setup.zahlung.paypal')" />
-            <ShopConfigField :field="mandantFeld('shop_paypal_brand_name')" :werte="mandant" :quellen="quellen" :gesetzt="mandantGesetzt" />
-            <ShopConfigField :field="kanalFeld('paypal_sandbox')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+            <ShopConfigField breit :field="mandantFeld('shop_paypal_brand_name')" :werte="mandant" :quellen="quellen" :gesetzt="mandantGesetzt" />
+            <ShopConfigField breit :field="kanalFeld('paypal_sandbox')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
             <template v-if="kanalWerte.paypal_sandbox">
-                <ShopConfigField :field="kanalFeld('paypal_sandbox_client_id')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
-                <ShopConfigField :field="kanalFeld('paypal_sandbox_secret')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+                <ShopConfigField breit :field="kanalFeld('paypal_sandbox_client_id')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+                <ShopConfigField breit :field="kanalFeld('paypal_sandbox_secret')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
             </template>
             <template v-else>
-                <ShopConfigField :field="kanalFeld('paypal_live_client_id')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
-                <ShopConfigField :field="kanalFeld('paypal_live_secret')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+                <ShopConfigField breit :field="kanalFeld('paypal_live_client_id')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+                <ShopConfigField breit :field="kanalFeld('paypal_live_secret')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
             </template>
-            <ShopConfigField :field="kanalFeld('paypal_payment_method_preference')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+            <ShopConfigField breit :field="kanalFeld('paypal_payment_method_preference')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
             <v-alert v-if="!paypalVollstaendig" type="info" variant="tonal" density="compact" class="mt-2">
                 {{ t('ShopView.setup.zahlung.paypalOptional') }}
             </v-alert>
@@ -219,16 +218,16 @@
             <Erklaerung :text="t('ShopView.setup.seiten.explain')" />
             <v-row dense>
                 <v-col v-for="name in ADRESSEN" :key="name" cols="12" :sm="['category_taxonomy', 'category_title'].includes(name) ? 6 : 12">
-                    <ShopConfigField :field="kanalFeld(name)" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+                    <ShopConfigField breit :field="kanalFeld(name)" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
                 </v-col>
             </v-row>
             <div class="text-subtitle-2 mt-4">{{ t('crm_fields.shopPublish') }}</div>
             <Erklaerung :text="t('ShopView.setup.seiten.publish')" />
-            <ShopConfigField :field="kanalFeld('auto_publish')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
-            <ShopConfigField :field="kanalFeld('channel_off_pages')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+            <ShopConfigField breit :field="kanalFeld('auto_publish')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+            <ShopConfigField breit :field="kanalFeld('channel_off_pages')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
             <div class="text-subtitle-2 mt-4">{{ t('crm_fields.shopMail') }}</div>
-            <ShopConfigField :field="kanalFeld('invoice_mail_subject')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
-            <ShopConfigField :field="kanalFeld('withdrawal_mail_to')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+            <ShopConfigField breit :field="kanalFeld('invoice_mail_subject')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+            <ShopConfigField breit :field="kanalFeld('withdrawal_mail_to')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
             <div class="d-flex flex-wrap align-center ga-3 mt-4">
                 <v-btn color="primary" variant="tonal" prepend-icon="mdi-lan-connect" :loading="hugocmsPrueft" @click="hugocmsPruefen">
                     {{ t('crm_fields.shopHugoCmsTest') }}
@@ -248,6 +247,16 @@
                         <pre class="text-body-2 mt-1" style="white-space: pre-wrap">{{ befund.fix }}</pre>
                     </template>
                 </v-alert>
+                <!-- Behebbare Befunde von HugoCMS in die Konfiguration schreiben lassen -->
+                <SiteConfigApply
+                    :befunde="siteBefunde"
+                    :stand="siteApply"
+                    api="/api/shop/"
+                    action="applyShopSiteConfig"
+                    :payload="{ channel_id: kanal.channel_id }"
+                    :disabled="hugocmsPrueft"
+                    @applied="hugocmsPruefen"
+                />
             </template>
         </template>
 
@@ -306,6 +315,7 @@
 import { ref, reactive, computed, watch, defineComponent, h } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
+import SiteConfigApply from '@/core/views/config/tabs/portal/site-config-apply.vue'
 import EinrichtungDialog from '@/core/components/setup/einrichtung-dialog.vue'
 import PortalSetupDialog from '@/core/views/config/tabs/portal/portal-setup.dialog.vue'
 import ShopConfigField from '@/core/views/config/tabs/shop-config-field.component.vue'
@@ -366,16 +376,22 @@ const kanal = reactive({ channel_id: 0, name: '', active: false, free_shipping_f
 const kanaeleDerWebseite = computed(() => kanaele.value.filter(k => k.type === 'hugoshop' && (!k.website_id || k.website_id === websiteId.value)))
 
 const alleMandantFelder = shopDefaultsConfig.filter(f => f.type !== 'headline' && f.type !== 'component')
+// Im Dialog füllen die Felder ihre Zeile bzw. Rasterspalte (ShopConfigField
+// mit breit): die Breitenbegrenzung aus den Karten der Firmenkonfiguration
+// (fieldstyle, max-width in ch) hielte sie sonst kurz
+const ohneBreite = felder => new Map(felder.map(f => [f.name, { ...f, fieldstyle: undefined }]))
+const mandantDialogFelder = ohneBreite(alleMandantFelder)
 function mandantFeld(name) {
-    return alleMandantFelder.find(f => f.name === name) || { name, type: 'input', label: name }
+    return mandantDialogFelder.get(name) || { name, type: 'input', label: name }
 }
 const mandant = reactive({})
 const mandantGesetzt = ref({})
 let mandantZuletzt = ''
 
 const alleKanalFelder = channelSettingFields('hugoshop')
+const kanalDialogFelder = ohneBreite(alleKanalFelder)
 function kanalFeld(name) {
-    return alleKanalFelder.find(f => f.name === name) || { name, type: 'input', label: name }
+    return kanalDialogFelder.get(name) || { name, type: 'input', label: name }
 }
 const kanalWerte = reactive({})
 const kanalGesetzt = ref({})
@@ -548,7 +564,12 @@ const kanalBlockiert = computed(() => (status.value?.blocking_channels || []).fi
 const kanalHinweise = computed(() => (status.value?.hint_channels || []).find(k => Number(k.channel_id) === kanal.channel_id)?.hints || [])
 function feldName(punkt) {
     const schluessel = `ShopView.status.points.${punkt}`
-    return te(schluessel) ? t(schluessel) : punkt
+    if (te(schluessel)) return t(schluessel)
+    // Einstellungsschlüssel (shop_paypal_sandbox_client_id): der Name des
+    // Feldes steht unter crm_fields (shopPaypalSandboxClientId) — wie in der
+    // Shop-Übersicht (shop.hub.vue)
+    const feld = 'crm_fields.' + String(punkt).replace(/_([a-z])/g, (_, z) => z.toUpperCase())
+    return te(feld) ? t(feld) : punkt
 }
 const weiterMoeglich = computed(() => {
     switch (schrittKey.value) {
@@ -628,6 +649,8 @@ const hugocmsPrueft = ref(false)
 const hugocmsErgebnis = ref(null)
 const hugocmsOk = ref(false)
 const siteBefunde = ref(null)
+/** Kann HugoCMS die behebbaren Befunde selbst schreiben? (site_apply der Prüfung) */
+const siteApply = ref(null)
 async function hugocmsPruefen() {
     hugocmsPrueft.value = true
     hugocmsErgebnis.value = null
@@ -650,6 +673,7 @@ async function hugocmsPruefen() {
         if (befunde && befunde.some(b => b.art === 'error')) art = 'error'
         hugocmsErgebnis.value = { art, zeilen }
         siteBefunde.value = befunde
+        siteApply.value = stand.site_apply || null
         hugocmsOk.value = art !== 'error'
     } catch (e) {
         hugocmsErgebnis.value = { art: 'error', zeilen: [e?.message || t('crm_fields.shopHugoCmsFailed')] }

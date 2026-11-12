@@ -112,9 +112,8 @@ function schliessen() {
 </script>
 
 <style scoped>
-.einrichtung-inhalt {
-    max-width: 90ch;
-}
+/* Der Inhalt nutzt die ganze Breite des Dialogs (max-width 1040): eine
+   schmalere Spalte schnitte Adressen und Schlüssel in den Feldern ab */
 .einrichtung-stepper :deep(.v-stepper-window) {
     margin: 0;
 }

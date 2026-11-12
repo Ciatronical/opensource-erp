@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "Sunulan ürün yok",
-                "shop_website": "Müşteri portalı web sitesi atanmış"
+                "shop_website": "Müşteri portalı web sitesi atanmış",
+                "shop_hugocms_url": "HugoCMS adresi",
+                "shop_hugocms_key": "HugoCMS anahtarı"
             },
             "paypalSandbox": "Satış kanalı „{name}“: PayPal test ortamında çalışıyor — gerçek ödemeler henüz mümkün değil."
         },

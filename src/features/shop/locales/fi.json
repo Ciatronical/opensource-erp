@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "Ei tarjottuja tuotteita",
-                "shop_website": "Asiakasportaalin sivusto liitetty"
+                "shop_website": "Asiakasportaalin sivusto liitetty",
+                "shop_hugocms_url": "HugoCMS-osoite",
+                "shop_hugocms_key": "HugoCMS-avain"
             },
             "paypalSandbox": "Myyntikanava ”{name}”: PayPal toimii testiympäristössä — oikeat maksut eivät ole vielä mahdollisia."
         },

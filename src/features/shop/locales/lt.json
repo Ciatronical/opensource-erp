@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "Nesiūloma jokia prekė",
-                "shop_website": "Priskirta klientų portalo svetainė"
+                "shop_website": "Priskirta klientų portalo svetainė",
+                "shop_hugocms_url": "HugoCMS adresas",
+                "shop_hugocms_key": "HugoCMS raktas"
             },
             "paypalSandbox": "Pardavimo kanalas „{name}“: PayPal veikia bandomojoje aplinkoje — tikri mokėjimai dar negalimi."
         },

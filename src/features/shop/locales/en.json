@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "No item offered",
-                "shop_website": "Customer portal website assigned"
+                "shop_website": "Customer portal website assigned",
+                "shop_hugocms_url": "HugoCMS address",
+                "shop_hugocms_key": "Key for HugoCMS"
             },
             "paypalSandbox": "Sales channel “{name}”: PayPal runs in the test environment — real payments are not possible yet."
         },

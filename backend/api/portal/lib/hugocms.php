@@ -101,6 +101,11 @@ function portalHugoCmsErrorText(array $fehler, string $gesendet = ''): string {
         'SHOP-CHUNK-TOO-LARGE' => 'HugoCMS nimmt das Stück einer Mediendatei nicht an (zu groß für seine php.ini)',
         'SHOP-SYNC-INCOMPLETE' => 'Die Übertragung war unvollständig',
         'SHOP-SYNC-UNKNOWN'    => 'HugoCMS kennt diese Übertragung nicht (mehr)',
+        'SHOP-SITECONFIG-APPLY-OFF'   => 'In HugoCMS ist das Ergänzen der Hugo-Konfiguration ausgeschaltet — in den Projekteinstellungen unter „OpensourceERP“ einschalten',
+        'SHOP-SITECONFIG-UNSUPPORTED' => 'HugoCMS kann die Hugo-Konfiguration dieser Webseite nicht automatisch ergänzen — möglich ist das nur bei einer einzelnen hugo.json oder config.json',
+        'SHOP-SITECONFIG-FIX-INVALID' => 'HugoCMS lehnt eine Korrektur der Hugo-Konfiguration als unzulässig ab',
+        'SHOP-SITECONFIG-REJECTED'    => 'Hugo lädt die ergänzte Konfiguration nicht — HugoCMS hat die bisherige Datei wiederhergestellt',
+        'SHOP-SITECONFIG-WRITE-FAILED' => 'HugoCMS konnte die Hugo-Konfiguration nicht schreiben',
         'SHOP-THUMBNAILS-INVALID'  => 'HugoCMS lehnt die Liste der Bildnamen ab',
         'SHOP-THUMBNAILS-TOO-MANY' => 'Zu viele Bilder für einen Aufruf von HugoCMS',
         'SHOP-THUMBNAILS-NO-GD'    => 'Auf dem Webserver fehlt die PHP-Erweiterung GD — HugoCMS kann keine Vorschaubilder erzeugen',
@@ -433,7 +438,8 @@ function portalHugoCmsBuild($db, int $website): array {
  * @param string $adresse vollständige Adresse
  * @param array|null $json Rumpf als JSON (dann POST), null = GET
  * @param array $kopfzeilen zusätzliche Kopfzeilen, etwa X-Portal-Key
- * @return array status (0 = nicht erreichbar), kopf (Name klein => Wert), rumpf, fehler
+ * @return array status (0 = nicht erreichbar), kopf (Name klein => Wert), rumpf, fehler,
+ *               grund (Code der Meldung, wenn nicht erreichbar — portalProbeFailure)
  */
 function portalWebsiteProbe(string $adresse, ?array $json = null, array $kopfzeilen = []): array {
     $kopf = [];
@@ -464,7 +470,36 @@ function portalWebsiteProbe(string $adresse, ?array $json = null, array $kopfzei
         'kopf'   => $kopf,
         'rumpf'  => false === $rumpf ? '' : (string)$rumpf,
         'fehler' => false === $rumpf ? curl_error($ch) : '',
+        'grund'  => false === $rumpf ? portalProbeFailure(curl_errno($ch), $adresse) : '',
     ];
+}
+
+/**
+ * Warum war eine Adresse nicht erreichbar? Code für eine Meldung in Alltagssprache
+ *
+ * Die Meldung von cURL („Failed to connect to … port 443 … Connection
+ * refused“) versteht nur, wer Netzwerke kennt. Die Oberfläche sagt
+ * stattdessen, was los ist und was zu tun ist (crm_fields.shopBackendTest_<Code>),
+ * und nennt die technische Meldung nur am Ende.
+ *
+ * @param int $errno Fehlernummer von cURL
+ * @param string $adresse aufgerufene Adresse
+ * @return string UNREACHABLE_HOST (Name unbekannt), UNREACHABLE_REFUSED_HTTPS
+ *                (niemand nimmt https an), UNREACHABLE_REFUSED (kein
+ *                Webserver an diesem Port), UNREACHABLE_TIMEOUT,
+ *                UNREACHABLE_TLS (Zertifikat), sonst UNREACHABLE
+ */
+function portalProbeFailure(int $errno, string $adresse): string {
+    return match (true) {
+        CURLE_COULDNT_RESOLVE_HOST === $errno => 'UNREACHABLE_HOST',
+        CURLE_COULDNT_CONNECT === $errno && str_starts_with(strtolower($adresse), 'https://') => 'UNREACHABLE_REFUSED_HTTPS',
+        CURLE_COULDNT_CONNECT === $errno => 'UNREACHABLE_REFUSED',
+        CURLE_OPERATION_TIMEDOUT === $errno => 'UNREACHABLE_TIMEOUT',
+        // 35 Verbindungsaufbau, 51/60 Zertifikat nicht prüfbar, 58 Zertifikatsproblem — nicht jede
+        // PHP-Version kennt alle Konstanten
+        in_array($errno, [35, 51, 58, 60], true) => 'UNREACHABLE_TLS',
+        default => 'UNREACHABLE',
+    };
 }
 
 /**
@@ -488,7 +523,8 @@ function portalApiClassify(array $antwort, int $website): array {
     $dienst = is_array($json) ? (string)($json['payload']['service'] ?? '') : '';
 
     if (0 === $antwort['status']) {
-        $ergebnis['code'] = 'UNREACHABLE';
+        // genauer, wenn die Probe den Grund kennt (portalProbeFailure)
+        $ergebnis['code'] = '' !== ($antwort['grund'] ?? '') ? $antwort['grund'] : 'UNREACHABLE';
     } elseif (str_starts_with(ltrim($antwort['rumpf']), '<?php')) {
         $ergebnis['code'] = 'NO_PHP';
     } elseif (is_array($json) && array_key_exists('ok', $json) && is_array($json['error'] ?? null)) {

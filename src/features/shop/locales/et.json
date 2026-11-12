@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "Ühtegi artiklit ei pakuta",
-                "shop_website": "Kliendiportaali veebileht määratud"
+                "shop_website": "Kliendiportaali veebileht määratud",
+                "shop_hugocms_url": "HugoCMS-i aadress",
+                "shop_hugocms_key": "HugoCMS-i võti"
             },
             "paypalSandbox": "Müügikanal „{name}“: PayPal töötab testkeskkonnas — päris makseid ei saa veel teha."
         },
