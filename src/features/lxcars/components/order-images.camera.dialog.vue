@@ -35,6 +35,9 @@
                 </div>
             </div>
             <div class="order-camera__bar">
+                <v-btn variant="tonal" size="large" @click="emit('update:modelValue', false)">
+                    {{ t('OrderImages.cameraDone') }}
+                </v-btn>
                 <span class="order-camera__count">
                     <template v-if="count">{{ t('OrderImages.cameraCount', { count }) }}</template>
                 </span>
@@ -47,11 +50,6 @@
                     :title="t('OrderImages.cameraShutter')"
                     @click="shoot"
                 />
-                <div class="order-camera__done">
-                    <v-btn variant="tonal" size="large" @click="emit('update:modelValue', false)">
-                        {{ t('OrderImages.cameraDone') }}
-                    </v-btn>
-                </div>
             </div>
         </v-card>
     </v-dialog>
@@ -193,10 +191,10 @@ async function shoot() {
     margin: 0;
 }
 
-/* Auslöser bleibt mittig, gleich wie breit Zähler und „Fertig“ sind */
+/* Auslöser rechts außen: am Tablet mit dem Daumen der rechten Hand erreichbar */
 .order-camera__bar {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: var(--oserp-gap);
     padding: var(--oserp-gap) var(--oserp-gap-lg);
@@ -206,10 +204,6 @@ async function shoot() {
 .order-camera__count {
     color: var(--oserp-text-muted);
     font-size: 0.875rem;
-}
-
-.order-camera__done {
-    display: flex;
-    justify-content: flex-end;
+    text-align: center;
 }
 </style>
