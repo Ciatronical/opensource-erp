@@ -184,11 +184,11 @@
                                     />
                                 </v-col>
 
-                                <!-- Verkaufspreis -->
+                                <!-- Verkaufspreis netto (parts.sellprice) -->
                                 <v-col cols="12" sm="4" class="py-1">
                                     <v-text-field
                                         v-model.number="article.sellprice"
-                                        :label="t('ArticleEditView.fields.sellprice')"
+                                        :label="t('ArticleEditView.fields.sellpriceNet')"
                                         variant="outlined"
                                         density="compact"
                                         hide-details="auto"
@@ -197,6 +197,28 @@
                                         step="0.01"
                                         min="0"
                                         prefix="€"
+                                        @focus="$event.target.select()"
+                                    />
+                                </v-col>
+
+                                <!-- Verkaufspreis brutto: nur in der Maske, gespeichert wird der
+                                     Nettopreis. Beide Felder rechnen sich gegenseitig um, mit dem
+                                     Steuersatz der Buchungsgruppe im Inland -->
+                                <v-col cols="12" sm="4" class="py-1">
+                                    <v-text-field
+                                        :model-value="sellpriceGross"
+                                        :label="t('ArticleEditView.fields.sellpriceGross')"
+                                        :hint="t('ArticleEditView.fields.sellpriceGrossHint', { rate: taxRatePercent })"
+                                        persistent-hint
+                                        variant="outlined"
+                                        density="compact"
+                                        hide-details="auto"
+                                        autocomplete="off"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        prefix="€"
+                                        @update:model-value="grossEntered"
                                         @focus="$event.target.select()"
                                     />
                                 </v-col>
@@ -475,7 +497,7 @@ export default defineComponent({
         id: { type: [String, Number], default: null }
     },
     setup(props) {
-        const { t } = useI18n()
+        const { t, n } = useI18n()
         const oserp = oserpStore()
         const router = useRouter()
         const route = useRoute()
@@ -611,6 +633,39 @@ export default defineComponent({
             .replace(/(^|[^*\w])[*_](.+?)[*_]/g, '$1$2')         // kursiv
             .replace(/\n{3,}/g, '\n\n')
             .trim())
+
+        // ── Verkaufspreis netto und brutto ──
+        //
+        // Gespeichert wird nur der Nettopreis (parts.sellprice). Der Bruttopreis
+        // ist ein Anzeigewert der Maske; der Steuersatz der Buchungsgruppe im
+        // Inland kommt mit den Buchungsgruppen aus dem Store (tax_rate).
+
+        const taxRate = computed(() => {
+            const gruppe = buchungsgruppen.value.find(bg => Number(bg.id) === Number(article.value.buchungsgruppen_id))
+            return Number(gruppe?.tax_rate) || 0
+        })
+        const taxRatePercent = computed(() => n(Math.round(taxRate.value * 10000) / 100))
+
+        const runden = (wert, stellen) => Number(Math.round(Number(wert + 'e' + stellen)) + 'e-' + stellen) || 0
+        /** Netto mit fünf Stellen, damit netto mal Steuersatz wieder genau den Bruttopreis ergibt */
+        const nettoAus = brutto => runden((Number(brutto) || 0) / (1 + taxRate.value), 5)
+        const bruttoAus = netto => runden((Number(netto) || 0) * (1 + taxRate.value), 2)
+
+        const sellpriceGross = ref(0)
+
+        /** Eingabe im Bruttofeld: der Nettopreis folgt */
+        function grossEntered(wert) {
+            sellpriceGross.value = wert
+            article.value.sellprice = nettoAus(wert)
+        }
+
+        // Netto oder Steuersatz geändert: der Bruttopreis folgt — außer er passt
+        // schon, dann stammt die Änderung aus dem Bruttofeld
+        watch([() => article.value.sellprice, taxRate], () => {
+            const netto = Number(article.value.sellprice) || 0
+            if (nettoAus(sellpriceGross.value) === runden(netto, 5)) return
+            sellpriceGross.value = bruttoAus(netto)
+        }, { immediate: true })
 
         // ── Save-Logik ──
 
@@ -1164,6 +1219,9 @@ export default defineComponent({
             zuAbschnitt,
             shopCard,
             shopLinkSuggestion,
+            sellpriceGross,
+            grossEntered,
+            taxRatePercent,
             shopPartnumber,
             publishing,
             publishEverywhere

@@ -346,7 +346,18 @@ function getCV($data, $withConfig = []) {
                                 FROM (
                                     SELECT
                                         bg.*,
-                                        COUNT(p.id) > 0 as used
+                                        COUNT(p.id) > 0 as used,
+                                        -- Steuersatz im Inland (erste Steuerzone), heute gültiger
+                                        -- Steuerschlüssel des Erlöskontos — für Netto/Brutto in der Artikelmaske
+                                        COALESCE((
+                                            SELECT tx.rate
+                                              FROM taxzone_charts tc
+                                              JOIN taxkeys tk ON tk.chart_id = tc.income_accno_id AND tk.startdate <= current_date
+                                              JOIN tax tx ON tx.id = tk.tax_id
+                                             WHERE tc.buchungsgruppen_id = bg.id
+                                               AND tc.taxzone_id = (SELECT id FROM tax_zones WHERE obsolete = false ORDER BY sortkey, id LIMIT 1)
+                                             ORDER BY tk.startdate DESC
+                                             LIMIT 1), 0) AS tax_rate
                                     FROM buchungsgruppen bg
                                     LEFT JOIN parts p ON p.buchungsgruppen_id = bg.id
                                     WHERE bg.obsolete = false
