@@ -1,9 +1,12 @@
 import { LitElement, css } from 'lit';
 import { themeReady, adoptLayers, classesFor, preset } from './theme.js';
 import { defaultStyles } from './defaults.js';
+import { i18nReady } from './i18n.js';
 
-// Ladevorgang sofort beim Import anstossen, nicht erst beim ersten Widget.
+// Ladevorgang sofort beim Import anstossen, nicht erst beim ersten Widget:
+// Theme-Stylesheet und die Texte der Seitensprache (beides parallel).
 const themeStyles = themeReady();
+const bereit = Promise.all([themeStyles, i18nReady()]).then(([theme]) => theme);
 
 // Die Default-Schicht als einmalig erzeugtes, geteiltes Stylesheet.
 const defaultsLayer = defaultStyles.styleSheet
@@ -60,14 +63,14 @@ export class PortalElement extends LitElement {
     super.connectedCallback();
     if (this.#themed) return;
     // Reihenfolge ist die Kaskade: defaults < Theme < Komponenten-CSS.
-    adoptLayers(this.renderRoot, [defaultsLayer, await themeStyles]);
+    adoptLayers(this.renderRoot, [defaultsLayer, await bereit]);
     this.#themed = true;
     this.requestUpdate();
   }
 
-  // Erst rendern, wenn das Theme-Stylesheet im ShadowRoot liegt — sonst
-  // blitzt ungestyltes Markup auf, und this.cls() lieferte noch die Klassen
-  // des Default-Presets.
+  // Erst rendern, wenn das Theme-Stylesheet im ShadowRoot liegt und die Texte
+  // da sind — sonst blitzt ungestyltes Markup mit rohen Schlüsseln auf, und
+  // this.cls() lieferte noch die Klassen des Default-Presets.
   shouldUpdate(changed) {
     return this.#themed && super.shouldUpdate(changed);
   }

@@ -6,6 +6,7 @@
   des PayPal-Einstiegs (/portal-api/?action=beginPayment).
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "shop-cart" -}}
 <shop-cart
   {{- with .Get `billing-page` }} billing-page="{{ . }}"{{ end }}
   {{- with .Get `canceled-page` }} canceled-page="{{ . }}"{{ end }}

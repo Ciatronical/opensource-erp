@@ -12,16 +12,19 @@
 {{- $login := .loginUrl -}}
 {{- $noRedirect := .noRedirect -}}
 {{- if eq .page "overview" -}}
+{{- partial "portal-ui-preload.html" "portal-account-overview" -}}
 <portal-account-overview
   {{- with $login }} login-url="{{ . }}"{{ end }}
   {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-account-overview>
 {{- else if eq .page "profile" -}}
+{{- partial "portal-ui-preload.html" "portal-account-profile" -}}
 <portal-account-profile
   {{- with $login }} login-url="{{ . }}"{{ end }}
   {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-account-profile>
 {{- else if eq .page "address" -}}
+{{- partial "portal-ui-preload.html" "portal-account-addresses" -}}
 <portal-account-addresses
   {{- with $login }} login-url="{{ . }}"{{ end }}
   {{- if $noRedirect }} no-redirect{{ end }}
@@ -30,11 +33,13 @@
 {{- /* Belege: Rechnungen, Auftraege, Angebote, Lieferscheine, Reklamationen
      nach den Schaltern der Webseite in OpensourceERP; "order" ist der alte
      Name der Seite */ -}}
+{{- partial "portal-ui-preload.html" "portal-account-documents" -}}
 <portal-account-documents
   {{- with $login }} login-url="{{ . }}"{{ end }}
   {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-account-documents>
 {{- else if eq .page "payment" -}}
+{{- partial "portal-ui-preload.html" "portal-account-payment" -}}
 <portal-account-payment
   {{- with $login }} login-url="{{ . }}"{{ end }}
   {{- if $noRedirect }} no-redirect{{ end }}
@@ -42,6 +47,7 @@
 {{- else if eq .page "vehicles" -}}
 {{- /* Fahrzeuge (LxCars): das Element kommt aus lxcars-widgets.js, das der
      Partial nur mit dem Merkmal lxcars laedt */ -}}
+{{- partial "portal-ui-preload.html" "portal-vehicles" -}}
 <portal-vehicles
   {{- with $login }} login-url="{{ . }}"{{ end }}
   {{- if $noRedirect }} no-redirect{{ end }}

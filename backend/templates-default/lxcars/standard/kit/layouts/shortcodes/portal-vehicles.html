@@ -8,6 +8,7 @@
   lxcars der Webseite lädt. Innerhalb des Kontos: {{< portal-account page="vehicles" >}}.
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "portal-vehicles" -}}
 <portal-vehicles
   {{- with .Get `login-url` }} login-url="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}

@@ -9,6 +9,7 @@
   Webseite unter „Seite Konto freischalten“ eingetragen (Vorgabe /freischalten/).
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "portal-activate" -}}
 <portal-activate
   {{- with .Get `redirect-url` }} redirect-url="{{ . }}"{{ end }}
   {{- with .Get `login-url` }} login-url="{{ . }}"{{ end }}

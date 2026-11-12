@@ -11,6 +11,7 @@
   Grid-Container von seinen Kindern.
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "shop-checkout" -}}
 <shop-checkout
   {{- with .Get `billing-page` }} billing-page="{{ . }}"{{ end }}
   {{- with .Get `canceled-page` }} canceled-page="{{ . }}"{{ end }}

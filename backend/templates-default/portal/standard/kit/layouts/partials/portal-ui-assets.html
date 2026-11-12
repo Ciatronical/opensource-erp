@@ -98,17 +98,27 @@
 */ -}}
 {{- $features := dict "portal" true -}}
 {{- with resources.Get "portal-ui/features.json" -}}{{- $features = . | transform.Unmarshal -}}{{- end -}}
+{{- $bundles := slice "portal-widgets" -}}
+{{- if $features.shop }}{{ $bundles = $bundles | append "shop-widgets" }}{{ end -}}
+{{- if $features.lxcars }}{{ $bundles = $bundles | append "lxcars-widgets" }}{{ end -}}
 {{- /*
-  Die Chunks als modulepreload: Ohne den Hinweis entdeckt der Browser sie
-  erst, wenn er den Einstieg geladen und geparst hat — jedes Stück eine
-  weitere Runde zum Server, bei drei Chunks zwei Stufen in der kritischen
-  Anfragekette (Lighthouse "Netzwerkabhängigkeitsbaum"). Mit dem Hinweis
-  laufen alle Downloads parallel zum Einstieg. RelPermalink veröffentlicht
-  die Datei zugleich.
+  Die Stücke (chunk-<hash>.js): Jedes Widget liegt in einem eigenen, der
+  Einstieg lädt es erst, wenn das Element auf der Seite steht (portal-ui,
+  core/lazy.js). Alle Stücke werden veröffentlicht (RelPermalink), weil ein
+  Widget auch nachträglich ins Dokument kommen kann; vorgeladen wird nur, was
+  diese Seite braucht (portal-ui-preload.html, manifest.json): die Stücke der
+  Einstiege, die Texte der Seitensprache (Deutsch ist der Rückfall und kommt
+  bei anderen Sprachen dazu), die Kopfknöpfe — und je Shortcode sein Widget.
 */ -}}
-{{- range resources.Match "portal-ui/chunk-*.js" }}
-<link rel="modulepreload" href="{{ .RelPermalink }}">
+{{- range resources.Match "portal-ui/chunk-*.js" }}{{ $_ := .RelPermalink }}{{ end -}}
+{{- range $bundles }}{{ partial "portal-ui-preload.html" . }}{{ end -}}
+{{- $lang := site.Language.Lang | default "de" -}}
+{{- with resources.Get "portal-ui/manifest.json" -}}
+{{- if not (isset (. | transform.Unmarshal) (printf "i18n-%s" $lang)) }}{{ $lang = "de" }}{{ end -}}
 {{- end -}}
+{{- partial "portal-ui-preload.html" (printf "i18n-%s" $lang) -}}
+{{- if ne $lang "de" }}{{ partial "portal-ui-preload.html" "i18n-de" }}{{ end -}}
+{{- if $cfg.accountbuttons }}{{ partial "portal-ui-preload.html" "portal-account-buttons" }}{{ end -}}
 {{- /*
   Platz für die Widgets, bevor das Bündel sie aufrüstet (placeholder.css):
   ohne ihn ist ein Widget bis zum Rendern null Pixel hoch und alles darunter
@@ -118,9 +128,6 @@
 {{- with resources.Get "portal-ui/placeholder.css" -}}
 <link rel="stylesheet" href="{{ (. | minify | fingerprint).RelPermalink }}">
 {{- end -}}
-{{- $bundles := slice "portal-widgets" -}}
-{{- if $features.shop }}{{ $bundles = $bundles | append "shop-widgets" }}{{ end -}}
-{{- if $features.lxcars }}{{ $bundles = $bundles | append "lxcars-widgets" }}{{ end -}}
 {{- range $i, $name := $bundles -}}
 {{- with resources.Get (printf "portal-ui/%s.js" $name) -}}
 {{- $js := . | fingerprint "sha256" -}}

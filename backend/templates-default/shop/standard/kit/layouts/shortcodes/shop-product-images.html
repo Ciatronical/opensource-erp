@@ -13,4 +13,5 @@
   Bootstrap-Karussell, dessen Klassen jedes Theme nachbauen musste.
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "shop-product-images" -}}
 <shop-product-images{{ with .Get `class` }} class="{{ . }}"{{ end }}>{{ .Inner | safeHTML }}</shop-product-images>

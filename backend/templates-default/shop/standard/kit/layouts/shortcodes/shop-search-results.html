@@ -5,6 +5,7 @@
   Adresszeile (?terms=…); mit terms="…" laesst er sich fest vorgeben.
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "shop-search-results" -}}
 <shop-search-results
   {{- with .Get `terms` }} terms="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}

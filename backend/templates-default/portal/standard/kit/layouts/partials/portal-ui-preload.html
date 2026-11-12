@@ -1,0 +1,30 @@
+{{- /*
+  Vorladen der Stücke eines Widgets, einer Sprache oder eines Einstiegs:
+
+      {{ partial "portal-ui-preload.html" "shop-cart" }}
+      {{ partial "portal-ui-preload.html" "i18n-de" }}
+
+  Die Widgets liegen je in einem eigenen Stück (chunk-<hash>.js), das der
+  Einstieg erst lädt, wenn das Element auf der Seite steht (portal-ui,
+  core/lazy.js). Ohne Hinweis entdeckt der Browser das Stück erst nach dem
+  Einstieg, dessen Importe wiederum erst nach ihm — jede Stufe eine Runde zum
+  Server (Lighthouse "Netzwerkabhängigkeitsbaum"). Welche Dateien zu einem
+  Schlüssel gehören, steht in manifest.json aus dem Paket (geschrieben von
+  portal-ui/scripts/build.mjs); mit dem Hinweis laufen alle Downloads parallel
+  zum Einstieg. Jede Datei nur einmal je Seite (page.Store), auch wenn ein
+  Widget mehrfach steht. RelPermalink veröffentlicht die Datei zugleich.
+  Unbekannter Schlüssel oder Paket ohne manifest.json: nichts.
+*/ -}}
+{{- $key := . -}}
+{{- with resources.Get "portal-ui/manifest.json" -}}
+{{- $vorgeladen := page.Store.Get "portal-ui-preload" | default slice -}}
+{{- range index (. | transform.Unmarshal) $key -}}
+{{- if not (in $vorgeladen .) -}}
+{{- $vorgeladen = $vorgeladen | append . -}}
+{{- with resources.Get (printf "portal-ui/%s" .) }}
+<link rel="modulepreload" href="{{ .RelPermalink }}">
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- page.Store.Set "portal-ui-preload" $vorgeladen -}}
+{{- end -}}

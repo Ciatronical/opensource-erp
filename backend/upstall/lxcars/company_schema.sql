@@ -814,6 +814,53 @@ COMMENT ON COLUMN oe_defects.defect_class IS 'Zugewiesene Mängelklasse (z.B. GM
 COMMENT ON COLUMN oe_defects.note IS 'Optionale Notiz zum Mangel';
 COMMENT ON COLUMN oe_defects.sort_order IS 'Sortierreihenfolge';
 
+-- Mängel wandern mit dem Fahrzeug von Auftrag zu Auftrag (docs/features/lxcars.md
+-- → Mängel übernehmen): Sobald ein Auftrag/Angebot ein Fahrzeug bekommt und noch
+-- keine Mängel hat, übernimmt er die Mängel des letzten anderen Auftrags dieses
+-- Fahrzeugs. Als Trigger auf oe_ext, damit jeder Weg der Auftragsanlage (Maske,
+-- Kalender, Anruf, Gutachten-Import …) erfasst ist.
+-- Ein Auftrag ohne Mängel zählt als "alles behoben" und beendet die Kette — außer
+-- er stammt aus der Zeit vor dieser Funktion (lxcars_defects_carry_since), denn
+-- damals wurde noch nichts übernommen und "leer" sagt dort nichts aus.
+INSERT INTO defaults_oserp (key, value) VALUES ('lxcars_defects_carry_since', now()::text) ON CONFLICT (key) DO NOTHING;
+
+CREATE OR REPLACE FUNCTION defects_carry_over() RETURNS trigger AS $$
+BEGIN
+    IF NEW.c_id IS NULL
+       OR (TG_OP = 'UPDATE' AND OLD.c_id IS NOT DISTINCT FROM NEW.c_id)
+       OR EXISTS (SELECT 1 FROM oe_defects WHERE oe_id = NEW.oe_id) THEN
+        RETURN NEW;
+    END IF;
+
+    INSERT INTO oe_defects (oe_id, defect_code, defect_description, defect_class, note, sort_order)
+    SELECT NEW.oe_id, d.defect_code, d.defect_description, d.defect_class, d.note, d.sort_order
+    FROM oe_defects d
+    WHERE d.oe_id = (
+        SELECT o.id
+        FROM oe_ext e
+        JOIN oe o ON o.id = e.oe_id
+        WHERE e.c_id = NEW.c_id
+          AND o.id <> NEW.oe_id
+          AND (o.itime >= (SELECT value::timestamp FROM defaults_oserp WHERE key = 'lxcars_defects_carry_since')
+               OR EXISTS (SELECT 1 FROM oe_defects x WHERE x.oe_id = o.id))
+        ORDER BY o.itime DESC, o.id DESC
+        LIMIT 1
+    )
+    ORDER BY d.sort_order, d.id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'oe_ext_defects_carry_over') THEN
+        CREATE TRIGGER oe_ext_defects_carry_over
+            AFTER INSERT OR UPDATE OF c_id ON oe_ext
+            FOR EACH ROW
+            EXECUTE FUNCTION defects_carry_over();
+    END IF;
+END $$;
+
 -- ============================================================================
 -- MECHANIKER-MODUS: Ersatzteil-Anfragen pro Auftrag
 -- ============================================================================

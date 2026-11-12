@@ -5,6 +5,7 @@
   ohne ihn zeigt die Komponente einen Hinweis statt einer leeren Seite.
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "shop-invoice" -}}
 <shop-invoice
   {{- with .Get `orders-url` }} orders-url="{{ . }}"{{ end }}
   {{- with .Get `continue-url` }} continue-url="{{ . }}"{{ end }}

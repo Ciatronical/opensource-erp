@@ -2,28 +2,18 @@
  * Einstiegspunkt des Kern-Bündels (portal-widgets.js): Kundenportal.
  *
  * Anmeldung, Registrierung, Konto, Kontakt und die Freischaltung eines
- * Bestandskunden. Jede Komponente registriert sich beim Import selbst per
- * customElements.define(). Die Elemente des Kundenportals heißen portal-*;
- * shop-* tragen nur die Elemente der Shop-Erweiterung (shop.js).
+ * Bestandskunden. Die Widgets liegen je in einem eigenen Stück und werden
+ * erst geladen, wenn ihr Element auf der Seite steht (core/lazy.js); der
+ * Einstieg selbst bleibt klein. Die Elemente des Kundenportals heißen
+ * portal-*; shop-* tragen nur die Elemente der Shop-Erweiterung (shop.js).
  *
  * Der Shop (shop.js) und die Fahrzeuge (lxcars.js) sind eigene Bündel; der
  * Partial der Webseite lädt sie nach features.json dazu.
  */
-import { PortalLogin } from './components/portal-login.js';
-import { PortalRegister } from './components/portal-register.js';
-import { PortalAccountNav } from './components/portal-account-nav.js';
-import { PortalAccountOverview } from './components/portal-account-overview.js';
-import { PortalAccountProfile } from './components/portal-account-profile.js';
-import { PortalAccountPayment } from './components/portal-account-payment.js';
-import { PortalAccountDocuments } from './components/portal-account-documents.js';
-import { PortalAccountAddresses } from './components/portal-account-addresses.js';
-import { PortalAccountButtons } from './components/portal-account-buttons.js';
-import { PortalContact } from './components/portal-contact.js';
-import './components/portal-activate.js';
-
 import { on, PORTAL_AUTH_CHANGED } from './core/bus.js';
 import { refreshContext } from './core/api.js';
 import { registerBundle } from './core/bundles.js';
+import { registerLazy } from './core/lazy.js';
 
 export {
   PORTAL_AUTH_CHANGED,
@@ -41,12 +31,22 @@ on(PORTAL_AUTH_CHANGED, () => {
   refreshContext().catch(() => {});
 });
 
+registerLazy({
+  'portal-login': () => import('./components/portal-login.js'),
+  'portal-register': () => import('./components/portal-register.js'),
+  'portal-account-nav': () => import('./components/portal-account-nav.js'),
+  'portal-account-overview': () => import('./components/portal-account-overview.js'),
+  'portal-account-profile': () => import('./components/portal-account-profile.js'),
+  'portal-account-payment': () => import('./components/portal-account-payment.js'),
+  'portal-account-documents': () => import('./components/portal-account-documents.js'),
+  'portal-account-addresses': () => import('./components/portal-account-addresses.js'),
+  'portal-account-buttons': () => import('./components/portal-account-buttons.js'),
+  'portal-contact': () => import('./components/portal-contact.js'),
+  'portal-activate': () => import('./components/portal-activate.js'),
+});
 
 registerBundle('portal', [
   'portal-login', 'portal-register', 'portal-account-nav', 'portal-account-overview', 'portal-account-profile',
   'portal-account-payment', 'portal-account-documents', 'portal-account-addresses', 'portal-account-buttons',
   'portal-contact', 'portal-activate',
-  'portal-login', 'portal-register', 'portal-account-nav', 'portal-account-overview', 'portal-account-profile',
-  'portal-account-payment', 'portal-account-documents', 'portal-account-addresses', 'portal-account-buttons',
-  'portal-contact',
 ]);

@@ -17,6 +17,7 @@
      negativ benannt — ein fehlender Schluessel ist in Go-Templates
      falsch, und der sichere Fall ist "Bundle einbinden". */ -}}
 {{- if not .noAssets }}{{ partial "portal-ui-assets.html" . }}{{ end -}}
+{{- partial "portal-ui-preload.html" "portal-account-nav" -}}
 <portal-account-nav
   current="{{ .current }}"
   {{- if eq (.showPayment | default "false") "true" }} show-payment{{ end }}

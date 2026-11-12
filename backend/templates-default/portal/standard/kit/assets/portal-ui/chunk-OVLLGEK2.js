@@ -1,0 +1,1 @@
+var o={de:"de-DE",en:"en-GB"},c=/^(\d{4})-(\d{2})-(\d{2})$/;function d(n){if(!n)return"";let t=String(n).trim(),e=c.exec(t),r=e?new Date(Number(e[1]),Number(e[2])-1,Number(e[3])):new Date(t);if(Number.isNaN(r.getTime()))return t;let a=(document.documentElement.lang||"de").slice(0,2).toLowerCase();return r.toLocaleDateString(o[a]||o.de)}export{d as a};

@@ -11,14 +11,44 @@ Kerns heißen aus dieser Zeit `portal-login`, `portal-register`, `portal-account
 
 Die Widgets haben einen eigenen Build mit esbuild, getrennt vom Vite-Build von
 OpensourceERP: Sie laufen auf den Webseiten, nicht in der OSERP-Oberfläche.
-Drei Einstiege, ein geteiltes Stück:
+Drei Einstiege, viele Stücke:
 
 | Bündel | Quelle | Inhalt |
 | --- | --- | --- |
 | `portal-widgets.js` | `src/portal.js` | Anmeldung, Registrierung, Konto, Kontakt, Freischaltung |
 | `shop-widgets.js` | `src/shop.js` | Warenkorb, Kasse, Rechnungsseite, Suche, Werkzeugsuche |
 | `lxcars-widgets.js` | `src/lxcars.js` | Fahrzeuge des Kunden |
-| `chunk-<hash>.js` | — | was sich die Einstiege teilen (Lit, Basisklassen, API) |
+| `chunk-<hash>.js` | — | je Widget eines, je Sprache eines, dazu das Geteilte (Lit, Basisklassen, API) |
+| `manifest.json` | — | welche Stücke ein Widget, ein Einstieg oder eine Sprache braucht (Vorladen) |
+
+### Laden je Element
+
+Die Einstiege sind nur noch Verzeichnisse (je gut 1 kB): Sie tragen ein,
+welches Stück zu welchem Element gehört (`src/core/lazy.js`), suchen das
+Dokument einmal ab und laden ein Widget erst, wenn sein Element auf der Seite
+steht — später eingefügte Elemente findet ein MutationObserver. Eine Seite
+ohne Widgets lädt so nur Einstiege und Grundstück; ein Blogbeitrag mit den
+Kopfknöpfen rund 20 kB statt vorher 220 kB (Lighthouse auf autoprofis24.de:
+„lange Hauptthread-Aufgaben" weg, Blockierzeit 110 → 40 ms). Widgets, die ein
+anderes Widget in seinem Template braucht (Kasse → Warenkorb, Registrierung;
+Werkzeugsuche → Warenkorb-Knopf), importiert dieses weiterhin statisch.
+
+Die Texte liegen je Sprache in einem eigenen Stück (`src/i18n/de.js`,
+`en.js`); `core/i18n.js` lädt nur die Sprache aus `<html lang>` und bei einer
+anderen als Deutsch zusätzlich Deutsch als Rückfall. `PortalElement` wartet
+vor dem ersten Rendern auf Theme **und** Texte (`i18nReady()`), `t()` bleibt
+synchron.
+
+Damit der Browser die Stücke nicht erst nacheinander entdeckt (Einstieg →
+Widget → Lit, jede Stufe eine Runde zum Server), schreibt `scripts/build.mjs`
+aus der esbuild-Metadatei `manifest.json`: je Schlüssel (`portal-login`,
+`i18n-de`, `shop-widgets`) die Dateien seines statischen Abschlusses. Der
+Partial `portal-ui-preload.html` setzt daraus `<link rel="modulepreload">`,
+jede Datei einmal je Seite (`page.Store`); `portal-ui-assets.html` ruft ihn
+für die Einstiege, die Seitensprache und — mit `params.portalui.accountButtons`
+— die Kopfknöpfe auf, jedes Shortcode für sein Widget. Alle Stücke werden
+veröffentlicht, auch nicht vorgeladene, weil ein Widget auch nachträglich ins
+Dokument kommen kann.
 
 Welche Bündel eine Webseite lädt, sagt `features.json` im Paket, das
 OpensourceERP mit dem Paket schreibt (`backend/api/portal/lib/kit.php`); der
@@ -126,9 +156,14 @@ darauf legen muss, kann das jederzeit wieder tun.
 
 ```
 src/
-├── index.js                  Einstiegspunkt, importiert alle Komponenten
+├── index.js                  alle Widgets in einem (nur für npm run size)
+├── portal.js, shop.js, lxcars.js   Einstiege: Element → Stück (core/lazy.js)
+├── i18n/
+│   ├── de.js                 Texte je Sprache, eigenes Stück
+│   └── en.js
 ├── core/
 │   ├── base.js               PortalElement — Basisklasse aller Widgets
+│   ├── lazy.js               Widget laden, wenn sein Element auf der Seite steht
 │   ├── theme.js              Preset auflösen, Stylesheet laden und adoptieren
 │   ├── presets.js            Rolle → Klassenname je CSS-Framework
 │   ├── defaults.js           frameworkfreies Grundaussehen der shop-*-Klassen
@@ -141,7 +176,7 @@ src/
 │   ├── checkout-data.js      billingAndShipping lesen, adresses-Nutzlast bauen
 │   ├── links.js              fremde Herkunft auf den eigenen Ursprung kuerzen
 │   ├── gtm.js                dataLayer-Ereignisse, Einwilligung wie bisher
-│   └── i18n.js               Texte, Sprache aus <html lang>
+│   └── i18n.js               t(), lädt den Katalog der Sprache aus <html lang>
 ├── components/
 │   ├── portal-login.js
 │   ├── portal-register.js      mode="account" | "guest"

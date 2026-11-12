@@ -5,6 +5,7 @@
   Kopf-Partial der Instanz, nicht im Inhalt. Nuetzlich zum Ausprobieren.
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "portal-account-buttons" -}}
 <portal-account-buttons
   {{- with .Get `login-url` }} login-url="{{ . }}"{{ end }}
   {{- with .Get `logout-url` }} logout-url="{{ . }}"{{ end }}

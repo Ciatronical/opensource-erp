@@ -14,6 +14,7 @@
     class       Layout-Klassen fuer den Host, optional
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "shop-add-to-cart" -}}
 <shop-add-to-cart
   product="{{ .product }}"
   {{- with .cartUrl }} cart-url="{{ . }}"{{ end }}

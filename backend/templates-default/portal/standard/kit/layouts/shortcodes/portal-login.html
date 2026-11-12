@@ -10,6 +10,7 @@
   auf von aussen gesetzte Klassen.
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "portal-login" -}}
 <portal-login
   {{- with .Get `redirect-url` }} redirect-url="{{ . }}"{{ end }}
   {{- with .Get `register-url` }} register-url="{{ . }}"{{ end }}

@@ -3012,8 +3012,15 @@ SQL;
             $srcDefectsIdCol = ($sourceDefectsTable === 'ar_defects') ? 'ar_id' : 'oe_id';
             $tgtDefectsIdCol = ($targetDefectsTable === 'ar_defects') ? 'ar_id' : 'oe_id';
 
+            // Der Zielbeleg soll genau die Mängel des Quellbelegs tragen. Der Trigger
+            // defects_carry_over hat einem neuen Auftrag beim Anlegen von oe_ext ggf.
+            // schon die Mängel des letzten Auftrags mitgegeben — die weichen hier
+            // (ein Statement, datenmodifizierende CTE).
             $company->execute(
-                "INSERT INTO {$targetDefectsTable} ({$tgtDefectsIdCol}, defect_code, defect_description, defect_class, note, sort_order)
+                "WITH cleared AS (
+                     DELETE FROM {$targetDefectsTable} WHERE {$tgtDefectsIdCol} = :newId
+                 )
+                 INSERT INTO {$targetDefectsTable} ({$tgtDefectsIdCol}, defect_code, defect_description, defect_class, note, sort_order)
                  SELECT :newId, defect_code, defect_description, defect_class, note, sort_order
                  FROM {$sourceDefectsTable}
                  WHERE {$srcDefectsIdCol} = :sourceId

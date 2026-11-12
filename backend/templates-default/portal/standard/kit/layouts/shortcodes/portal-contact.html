@@ -6,6 +6,7 @@
   data-redirect="/abgesendet/" stand — eine Seite, die es nicht gibt.
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "portal-contact" -}}
 <portal-contact
   {{- with .Get `redirect-url` }} redirect-url="{{ . }}"{{ end }}
   {{- with .Get `heading` }} heading="{{ . }}"{{ end }}

@@ -1,11 +1,18 @@
 /**
  * Baut die Bündel der Widgets in das Paket des Kundenportals.
  *
- * Drei Einstiege, ein geteiltes Stück (esbuild splitting):
+ * Drei Einstiege, viele Stücke (esbuild splitting):
  *   portal-widgets.js   Kern: Anmeldung, Registrierung, Konto, Kontakt, Freischaltung
  *   shop-widgets.js     Shop: Warenkorb, Kasse, Suche, Rechnung, Werkzeugsuche
  *   lxcars-widgets.js   LxCars: Fahrzeuge des Kunden
- *   chunk-<hash>.js     was sich die Einstiege teilen (Lit, Basisklassen, API)
+ *   chunk-<hash>.js     je Widget eines (dynamischer Import in den Einstiegen,
+ *                       core/lazy.js lädt es erst, wenn das Element auf der
+ *                       Seite steht), je Sprache eines (src/i18n/) und was
+ *                       sich alle teilen (Lit, Basisklassen, API)
+ *   manifest.json       welche Stücke ein Widget bzw. ein Einstieg braucht —
+ *                       der Partial portal-ui-preload.html setzt daraus
+ *                       <link rel="modulepreload"> für die Widgets der Seite,
+ *                       damit kein Stück erst nach dem vorigen entdeckt wird
  * Welche Bündel eine Webseite lädt, sagt ihr features.json (lib/kit.php in
  * OpensourceERP); der Partial portal-ui-assets.html liest es.
  *
@@ -32,7 +39,7 @@
 
 import { build, context } from 'esbuild';
 import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const dev = process.argv.includes('--dev');
@@ -60,9 +67,54 @@ const optionen = {
   chunkNames: 'chunk-[hash]',
   minify: !dev,
   sourcemap: dev,
+  metafile: true,
   supported: { 'template-literal': false },
   logLevel: 'warning',
 };
+
+/**
+ * manifest.json aus der Metadatei: Schlüssel → Dateinamen, die vorzuladen
+ * sind. Schlüssel sind die Einstiege (portal-widgets: ihre statischen
+ * Stücke), die Elemente (portal-login: das Stück des Widgets samt allem, was
+ * es statisch importiert) und die Sprachen (i18n-de). Ein Stück, das zwei
+ * Elemente enthält, steht unter beiden.
+ */
+function manifest(meta) {
+  const ausgaben = Object.entries(meta.outputs).filter(([pfad]) => pfad.endsWith('.js'));
+  const statisch = new Map(ausgaben.map(([pfad, ausgabe]) => [
+    pfad, ausgabe.imports.filter((i) => i.kind === 'import-statement').map((i) => i.path),
+  ]));
+  const abschluss = (start) => {
+    const gesehen = new Set();
+    const offen = [start];
+    while (offen.length) {
+      const pfad = offen.pop();
+      if (gesehen.has(pfad)) continue;
+      gesehen.add(pfad);
+      offen.push(...(statisch.get(pfad) || []));
+    }
+    return [...gesehen].map((pfad) => basename(pfad)).sort();
+  };
+  // entryPoint trägt esbuild auch an dynamisch importierten Stücken (die
+  // Quelldatei des Widgets bzw. der Sprache); inputs können dort leer sein,
+  // wenn der Code in einem geteilten Stück liegt, weil ein anderes Widget
+  // dasselbe statisch importiert.
+  const eintraege = {};
+  for (const [pfad, ausgabe] of ausgaben) {
+    const quelle = ausgabe.entryPoint || '';
+    const widget = quelle.match(/src\/components\/([a-z-]+)\.js$/);
+    const sprache = quelle.match(/src\/i18n\/([a-z]+)\.js$/);
+    const einstieg = quelle.match(/src\/[a-z]+\.js$/);
+    const key = widget ? widget[1] : sprache ? 'i18n-' + sprache[1] : einstieg ? basename(pfad, '.js') : null;
+    if (!key) continue;
+    // Der Einstieg selbst steht bereits als <script>; vorzuladen sind nur seine Stücke
+    eintraege[key] = abschluss(pfad).filter((d) => !einstieg || d !== basename(pfad));
+  }
+  return JSON.stringify({
+    _hinweis: 'Von portal-ui/scripts/build.mjs geschrieben — Stücke je Widget, Einstieg und Sprache für modulepreload (partials/portal-ui-preload.html).',
+    ...Object.fromEntries(Object.entries(eintraege).sort(([a], [b]) => a.localeCompare(b))),
+  }, null, 2) + '\n';
+}
 
 mkdirSync(OUTDIR, { recursive: true });
 
@@ -71,7 +123,8 @@ if (watch) {
   await ctx.watch();
   console.log(`portal-ui: baue nach ${OUTDIR} bei jeder Änderung neu …`);
 } else if (dev) {
-  await build(optionen);
+  const ergebnis = await build(optionen);
+  writeFileSync(join(OUTDIR, 'manifest.json'), manifest(ergebnis.metafile));
   console.log(`portal-ui: ${OUTDIR} (Entwicklung, mit Sourcemaps)`);
 } else {
   // Alte geteilte Stücke verschwinden: ihr Name trägt den Hash des Inhalts
@@ -84,4 +137,6 @@ if (watch) {
     writeFileSync(ausgabe.path, code);
     console.log(`portal-ui: ${ausgabe.path} (${(Buffer.byteLength(code) / 1024).toFixed(1)} kB)`);
   }
+  writeFileSync(join(OUTDIR, 'manifest.json'), manifest(ergebnis.metafile));
+  console.log(`portal-ui: ${join(OUTDIR, 'manifest.json')}`);
 }

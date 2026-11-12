@@ -101,11 +101,20 @@ export function themeReady() {
   pending = domReady()
     .then(() => {
       const config = readConfig();
-      const preset = withOverrides(getPreset(config.theme), config.classes);
-      current = preset;
+      let preset = withOverrides(getPreset(config.theme), config.classes);
 
       const href = resolveHref(preset, config.stylesheet);
-      if (!href) return { preset, text: '' };
+      if (!href) {
+        // Ein Framework-Preset ohne sein Stylesheet (die Seite bündelt ihr
+        // CSS inline oder hat das Framework längst abgelöst): Die Klassen
+        // des Frameworks hätten im ShadowRoot keine Wirkung und stünden nur
+        // als tote Namen im Markup — dann lieber gleich ohne (Preset none),
+        // die Grundschicht sieht ohnehin gleich aus.
+        if (preset.detect && !config.classes) preset = PRESETS.none;
+        current = preset;
+        return { preset, text: '' };
+      }
+      current = preset;
 
       return fetch(href, { credentials: 'same-origin' })
         .then((response) => (response.ok ? response.text() : ''))

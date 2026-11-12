@@ -6,6 +6,7 @@
   dort programmatisch gesetzt — als Shortcode normalerweise nicht noetig.
 */ -}}
 {{- partial "portal-ui-assets.html" . -}}
+{{- partial "portal-ui-preload.html" "portal-register" -}}
 <portal-register
   {{- with .Get `redirect-url` }} redirect-url="{{ . }}"{{ end }}
   {{- with .Get `login-url` }} login-url="{{ . }}"{{ end }}
