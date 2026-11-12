@@ -43,6 +43,9 @@ export function useNavigationCards() {
                 { title: t('ShopView.orders.title'), to: { name: 'shop-orders' } },
                 { title: t('ShopView.withdrawals.title'), to: { name: 'shop-withdrawals' } }
             ]
+            // Artikel im Shop: die Artikelliste des Kerns, vorgefiltert auf „Nur
+            // im Shop angebotene“ — dasselbe Ziel wie in der Shop-Übersicht
+            shopItems.push({ title: t('ShopView.parts.title'), to: { name: 'article-list', query: { shop: 'offered' } } })
             // Sortiment: lesen mit den Rechten der Artikelpflege, ändern nur
             // mit edit_shop_config (backend/api/shop/assortment.php)
             if (oserp.checkPermission('shop_part_edit') || oserp.checkPermission('edit_shop_config')) {

@@ -141,7 +141,8 @@ Offene Anforderungen erscheinen als rote Chips in der **Infoleiste** — so sieh
 Fotos zum Auftrag – Schadstellen, verschlissene Teile, der Zustand bei Annahme – direkt aus der Auftragsmaske, im Büro wie am Tablet in der Werkstatt. Nur bei aktivem LxCars und nur bei Aufträgen.
 
 - Karte **Bilder** unter den Arbeitsanweisungen (Auftragsmaske und Mechaniker-Ansicht)
-- **Foto aufnehmen** öffnet auf Android und iPhone direkt die Kamera-App, **Bilder wählen** die Galerie bzw. den Dateidialog (mehrere Bilder auf einmal)
+- **Foto aufnehmen** öffnet die Kamera in der Anwendung: Das Kamerabild bleibt nach dem Auslösen stehen, mehrere Fotos lassen sich hintereinander aufnehmen und laden im Hintergrund hoch; **Fertig** schließt die Kamera. Der Browser fragt beim ersten Mal nach dem Kamerazugriff. Voraussetzung ist HTTPS – ohne HTTPS oder bei verweigertem Zugriff öffnet sich wie früher die Kamera-App des Geräts (ein Foto je Aufruf)
+- **Bilder wählen** öffnet die Galerie bzw. den Dateidialog (mehrere Bilder auf einmal)
 - Jedes Bild wird im Browser auf höchstens 2000 Pixel Kante verkleinert (JPEG, Drehung nach EXIF) und sofort hochgeladen – auch mit der üblichen 2-MB-Grenze von php-fpm
 - **Ablage** im Dokumentenordner des Kunden unter `auftraege/{Auftragsnummer}/` mit neutralem Dateinamen (Zeitstempel); die Bilder erscheinen damit auch im Reiter **Dateien** der Kundenakte. Ein Auftrag ohne Kunde kann keine Bilder aufnehmen
 - Klick auf ein Bild öffnet den Betrachter mit **Bildunterschrift** und, sobald ein Kundenportal eingeschaltet ist, dem Schalter **Für den Kunden sichtbar**; die Freigabe ist für den späteren Abruf im Kundenportal vorbereitet

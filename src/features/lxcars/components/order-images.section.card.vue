@@ -2,9 +2,12 @@
 <!--
     Bilder am Auftrag (docs/features/lxcars.md → Bilder am Auftrag)
 
-    Zwei Wege: „Foto aufnehmen“ öffnet auf Android und iPhone direkt die
-    Kamera (capture="environment"), „Bilder wählen“ die Galerie bzw. den
-    Dateidialog. Jedes Bild wird im Browser verkleinert und sofort hochgeladen;
+    Zwei Wege: „Foto aufnehmen“ öffnet die Kamera in der Anwendung
+    (order-images.camera.dialog.vue) für mehrere Fotos hintereinander; ohne
+    Kamerazugriff des Browsers (kein HTTPS, Zugriff verweigert) bleibt die
+    Kamera-App des Geräts (capture="environment"). „Bilder wählen“ öffnet die
+    Galerie bzw. den Dateidialog. Jedes Bild wird im Browser verkleinert und
+    in einer Warteschlange hochgeladen;
     der Server legt es im Dokumentenordner des Kunden ab. Im Betrachter lassen
     sich Bildunterschrift und – bei eingeschaltetem Kundenportal – die
     Freigabe für den Kunden pflegen.
@@ -23,8 +26,7 @@
                 variant="tonal"
                 color="primary"
                 prepend-icon="mdi-camera"
-                :disabled="uploading"
-                @click="cameraInput?.click()"
+                @click="openCamera"
             >
                 {{ t('OrderImages.takePhoto') }}
             </v-btn>
@@ -32,7 +34,6 @@
                 size="small"
                 variant="tonal"
                 prepend-icon="mdi-image-multiple"
-                :disabled="uploading"
                 @click="fileInput?.click()"
             >
                 {{ t('OrderImages.choosePhotos') }}
@@ -77,6 +78,9 @@
             </div>
         </template>
     </section-card>
+
+    <!-- Kamera für mehrere Fotos hintereinander -->
+    <order-images-camera-dialog v-model="camera.show" @shot="onCameraShot" @fallback="useDeviceCamera" />
 
     <!-- Betrachter mit Unterschrift und Freigabe -->
     <v-dialog v-model="viewer.show" max-width="1100" :fullscreen="display.smAndDown.value">
@@ -147,6 +151,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 import SectionCard from '@/core/components/layout/section-card.vue'
+import OrderImagesCameraDialog from '@/features/lxcars/components/order-images.camera.dialog.vue'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { resizeImageForUpload } from '@/features/lxcars/utils/imageResize.js'
@@ -208,49 +213,99 @@ function isImageFile(file) {
     return /\.(jpe?g|png|webp|gif|heic|heif)$/i.test(file.name || '')
 }
 
-async function onFilesPicked(event) {
-    const files = Array.from(event.target.files || [])
-    event.target.value = ''
-    if (!files.length) return
-
+/**
+ * Auftrags-ID; speichert einen neuen Beleg bei Bedarf zuerst
+ *
+ * @return {Promise<number>} 0, wenn der Auftrag nicht gespeichert werden konnte (Hinweis ist dann gezeigt)
+ */
+async function resolveOeId() {
     let oeId = Number(props.oeId) || 0
     if (!oeId && props.ensureOeId) {
         try {
             oeId = Number(await props.ensureOeId()) || 0
         } catch { oeId = 0 }
     }
-    if (!oeId) {
-        toast.warning(t('OrderImages.saveFirst'))
-        return
-    }
+    if (!oeId) toast.warning(t('OrderImages.saveFirst'))
+    return oeId
+}
 
+async function onFilesPicked(event) {
+    const files = Array.from(event.target.files || [])
+    event.target.value = ''
+    if (!files.length) return
+
+    const oeId = await resolveOeId()
+    if (oeId) enqueueUploads(oeId, files)
+}
+
+// Warteschlange: Die Kamera liefert Fotos, während frühere noch hochladen.
+// Nacheinander statt gleichzeitig, damit die Reihenfolge der Aufnahme bleibt.
+const uploadQueue = []
+
+function enqueueUploads(oeId, files) {
+    for (const file of files) uploadQueue.push({ oeId, file })
+    uploadTotal.value += files.length
+    if (!uploading.value) runUploadQueue()
+}
+
+async function runUploadQueue() {
     uploading.value = true
-    uploadTotal.value = files.length
-    uploadDone.value = 0
-    for (const file of files) {
-        // accept="image/*" lässt sich im Dateidialog umgehen: Typ hier prüfen,
-        // HEIC vom iPhone meldet sich je nach Browser ohne MIME-Typ
-        if (!isImageFile(file)) {
-            toast.warning(t('OrderImages.notAnImage', { name: file.name }))
-            uploadDone.value++
-            continue
-        }
-        try {
-            const { blob, filename } = await resizeImageForUpload(file)
-            // Nur beim Rückfall auf das Original (Browser konnte es nicht verkleinern)
-            if (blob.size > MAX_UPLOAD_BYTES) {
-                toast.warning(t('OrderImages.tooLarge', { name: file.name }))
-                uploadDone.value++
-                continue
-            }
-            const row = await carsStore.uploadOrderImage(oeId, blob, filename)
-            images.value.push(row)
-        } catch (e) {
-            toast.error(t('OrderImages.uploadFailed', { name: file.name }), { text: e?.message || '' })
-        }
+    while (uploadQueue.length) {
+        const { oeId, file } = uploadQueue.shift()
+        await uploadOne(oeId, file)
         uploadDone.value++
     }
     uploading.value = false
+    uploadTotal.value = 0
+    uploadDone.value = 0
+}
+
+async function uploadOne(oeId, file) {
+    // accept="image/*" lässt sich im Dateidialog umgehen: Typ hier prüfen,
+    // HEIC vom iPhone meldet sich je nach Browser ohne MIME-Typ
+    if (!isImageFile(file)) {
+        toast.warning(t('OrderImages.notAnImage', { name: file.name }))
+        return
+    }
+    try {
+        const { blob, filename } = await resizeImageForUpload(file)
+        // Nur beim Rückfall auf das Original (Browser konnte es nicht verkleinern)
+        if (blob.size > MAX_UPLOAD_BYTES) {
+            toast.warning(t('OrderImages.tooLarge', { name: file.name }))
+            return
+        }
+        const row = await carsStore.uploadOrderImage(oeId, blob, filename)
+        images.value.push(row)
+    } catch (e) {
+        toast.error(t('OrderImages.uploadFailed', { name: file.name }), { text: e?.message || '' })
+    }
+}
+
+// ===== Kamera =====
+
+const camera = reactive({ show: false, oeId: 0 })
+
+/** Kamera-App des Geräts; muss unmittelbar aus einem Klick heraus aufgerufen werden */
+function useDeviceCamera() {
+    camera.show = false
+    cameraInput.value?.click()
+}
+
+async function openCamera() {
+    // Kamerazugriff gibt es nur über HTTPS (oder localhost) – sonst wie bisher
+    if (!navigator.mediaDevices?.getUserMedia) {
+        useDeviceCamera()
+        return
+    }
+    // Vorab speichern, damit das Auslösen später nicht auf den Beleg wartet
+    const oeId = await resolveOeId()
+    if (!oeId) return
+    camera.oeId = oeId
+    camera.show = true
+}
+
+function onCameraShot(file) {
+    enqueueUploads(camera.oeId, [file])
 }
 
 // ===== Betrachter =====
