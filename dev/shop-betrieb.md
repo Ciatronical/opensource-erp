@@ -196,6 +196,12 @@ Kanalschalter `auto_publish`. Bekommt die Seite dabei einen neuen Dateinamen
 (neue Produktseiten-Kennung oder Artikelnummer), trägt der Auftrag den alten
 in `param`, und der Lauf entfernt die Seite unter dem alten Namen.
 
+> **Überholt (2026-11-12):** Wird der Artikel im Shop angeboten, ist
+> „Produktseite“ Pflichtfeld, und die Artikelnummer wird für den Namen nicht
+> mehr verwendet — auch nicht als Anhang. Der Rückfall auf die Artikelnummer
+> gilt nur noch für unbearbeiteten Bestand. Regeln und Umsetzung:
+> `dev/shop-produktseiten-namen.md`.
+
 **Produktseite in der Artikelmaske** (2026-10-29). Der Vorschlag ist nur noch die
 Beschreibung ohne Artikelnummer (`shopSlug()`, `src/features/shop/utils/slug.js`)
 und wird bei der Neuanlage als Wert eingetragen; belegt ein anderer Artikel den

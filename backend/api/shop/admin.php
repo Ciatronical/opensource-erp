@@ -686,9 +686,29 @@ function savePartShopData($data) {
         return;
     }
 
+    // Die Produktseite ist Pflicht und heißt nie wie die Artikelnummer
+    // (dev/shop-produktseiten-namen.md). Die Maske prüft beides vorher; hier
+    // die Absicherung für alle anderen Aufrufer
+    $seite = trim((string)($data['hyperlink'] ?? ''));
+    if ('' === $seite) {
+        resultInfo(false, 'PAGE_NAME_MISSING', null, 'Die Produktseite braucht einen Namen');
+        return;
+    }
+    $nummer = $db->getOne(
+        "SELECT 1 AS gleich
+           FROM parts
+          WHERE id = :parts_id
+            AND shop_page_file_name(:name, '') = shop_page_file_name('', partnumber)",
+        [':parts_id' => $partsId, ':name' => $seite]
+    );
+    if ($nummer) {
+        resultInfo(false, 'PAGE_NAME_IS_PARTNUMBER', null, 'Die Artikelnummer ist als Name der Produktseite nicht erlaubt');
+        return;
+    }
+
     // Die Produktseite darf keinem anderen Artikel gehören: beide schrieben
     // sonst dieselbe Datei. Der Besitzer geht mit, die Maske zeigt ihn an
-    $besitzer = shopPageNameOwner($db, $partsId, (string)($data['hyperlink'] ?? ''));
+    $besitzer = shopPageNameOwner($db, $partsId, $seite);
     if ($besitzer) {
         resultInfo(false, 'PAGE_NAME_TAKEN', $besitzer, 'Die Produktseite gehört schon Artikel '.$besitzer['partnumber']);
         return;

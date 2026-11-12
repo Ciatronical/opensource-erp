@@ -99,19 +99,19 @@
                     </v-autocomplete>
                 </v-col>
 
-                <!-- Produktseite (parts_ext.hugoshop_hyperlink): leer = Seite nach der
-                     Artikelnummer. Bei der Neuanlage trägt die Karte den Vorschlag der
-                     Maske ein; nach der Eingabe prüft sie, ob ein anderer Artikel die
-                     Seite schon belegt (checkShopPageName). Bei bestehenden Artikeln
-                     übernimmt der Knopf im Feld den Vorschlag -->
+                <!-- Produktseite (parts_ext.hugoshop_hyperlink): Pflichtfeld, solange der
+                     Artikel im Shop angeboten wird, und nie die Artikelnummer
+                     (dev/shop-produktseiten-namen.md). Ist das Feld leer, trägt die Karte
+                     den Vorschlag der Maske ein; nach der Eingabe prüft sie, ob ein
+                     anderer Artikel die Seite schon belegt (checkShopPageName) -->
                 <v-col cols="12" sm="6" class="py-1">
                     <v-text-field
                         v-model="daten.hyperlink"
                         :label="t('ShopView.partCard.hyperlink')"
                         :hint="t('ShopView.partCard.hyperlinkHint')"
-                        :placeholder="partsId ? partnumber : suggestedLink"
+                        :placeholder="suggestedLink"
                         persistent-placeholder
-                        :error-messages="seiteBelegt ? [t('ShopView.partCard.hyperlinkTaken', seiteBelegt)] : []"
+                        :error-messages="seiteFehler ? [seiteFehler] : []"
                         :readonly="!darfBearbeiten"
                         variant="outlined"
                         density="compact"
@@ -667,7 +667,6 @@ import { useShop } from '@/features/shop/composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
 import ShopKeyValueEditor from './shop-key-value.editor.vue'
 import ShopPartMedia from './shop-part-media.vue'
-import { shopSlug } from '@/features/shop/utils/slug.js'
 
 const props = defineProps({
     /** Artikel; leer bei der Neuanlage */
@@ -676,7 +675,7 @@ const props = defineProps({
     templatePartsId: { type: [String, Number], default: null },
     /** Vorschlag für die Produktseite, solange keine eingetragen ist */
     suggestedLink: { type: String, default: '' },
-    /** Artikelnummer bzw. die nächste freie — Seite ohne Kennung, Anhang an einen vergebenen Vorschlag */
+    /** Artikelnummer bzw. die nächste freie — als Name der Produktseite nicht erlaubt */
     partnumber: { type: String, default: '' },
     /** Verkaufspreis aus der Maske — Grundpreis der Preisvorschau */
     sellprice: { type: [Number, String], default: 0 },
@@ -1057,7 +1056,12 @@ function mindestensEinKanal() {
     erster.active = true
 }
 
-watch(() => daten.value.listed, an => { if (an) mindestensEinKanal() })
+watch(() => daten.value.listed, an => {
+    if (!an) return
+    mindestensEinKanal()
+    // Erst jetzt ist die Produktseite Pflicht: ein leeres Feld bekommt den Vorschlag
+    if (props.partsId) vorschlagFallsLeer(false)
+})
 
 // ── Preisvorschau ──
 
@@ -1212,16 +1216,72 @@ const shopLink = computed(() => {
 })
 
 // ── Produktseite: Vorschlag und Prüfung auf Doppelte (checkShopPageName) ──
+// Regeln in dev/shop-produktseiten-namen.md: Wird der Artikel im Shop
+// angeboten, ist die Produktseite Pflicht, und sie heißt nie wie die
+// Artikelnummer — auch nicht als Anhang an einen vergebenen Vorschlag. Ist
+// der Name vergeben, zeigt das Feld den belegenden Artikel, und der Benutzer
+// wählt einen anderen.
 // Bei der Neuanlage wird der Vorschlag der Maske (Beschreibung ohne
 // Artikelnummer) als Wert eingetragen und folgt der Beschreibung, bis der
-// Benutzer das Feld anfasst. Belegt ein anderer Artikel den Namen, bekommt
-// er die Artikelnummer angehängt. Bestehende Artikel behalten ihren Stand:
-// leer heißt Seite nach Artikelnummer, der Knopf im Feld übernimmt den
-// Vorschlag bewusst — eine neue Kennung ist eine neue Adresse der Seite.
+// Benutzer das Feld anfasst. Bei bestehenden Artikeln mit leerem Feld
+// (Bestand: die Seite heißt noch nach der Artikelnummer) steht der Vorschlag
+// nach dem Laden im Feld, gespeichert wird er erst mit der nächsten Änderung
+// — das bloße Öffnen ändert die Adresse der Seite nicht.
 const hyperlinkBeruehrt = ref(false)
 const seiteBelegt = ref(null)   // { id, partnumber, description } des anderen Artikels
 let pruefTimer = null
 let pruefLauf = 0
+// Der eben eingetragene Vorschlag ist keine Eingabe: der Watcher auf daten
+// plant dafür kein Speichern
+let nurVorschlag = false
+
+/** Name, wie die Seite in der Webseite heißt: klein, ohne Verzeichnis und ohne .md */
+const seitenName = text => String(text || '').trim().toLowerCase().replace(/^.*\//, '').replace(/\.md$/, '')
+
+/** Meldung am Feld: leer, Artikelnummer oder von einem anderen Artikel belegt; sonst '' */
+const seiteFehler = computed(() => {
+    if (!daten.value.listed || !darfBearbeiten.value) return ''
+    const name = seitenName(daten.value.hyperlink)
+    if (!name) return t('ShopView.partCard.hyperlinkRequired')
+    if (name === seitenName(props.partnumber)) return t('ShopView.partCard.hyperlinkIsPartnumber')
+    return seiteBelegt.value ? t('ShopView.partCard.hyperlinkTaken', seiteBelegt.value) : ''
+})
+
+/** Leer oder Artikelnummer — ohne Rückfrage beim Backend erkennbar */
+const seiteUnzulaessig = computed(() => {
+    if (!daten.value.listed || !darfBearbeiten.value) return false
+    const name = seitenName(daten.value.hyperlink)
+    return !name || name === seitenName(props.partnumber)
+})
+
+/** Die Artikelmaske legt nicht an und speichert nicht, solange die Produktseite nicht stimmt */
+const seiteUngueltig = computed(() => !!seiteFehler.value)
+
+/**
+ * Prüfung vor dem Speichern des Artikels: Name vorhanden, nicht die
+ * Artikelnummer und von keinem anderen Artikel belegt
+ *
+ * @returns {Promise<boolean>}
+ */
+async function seiteGueltig() {
+    if (!daten.value.listed || !darfBearbeiten.value) return true
+    if (seiteUnzulaessig.value) return false
+    await seitePruefen()
+    return !seiteBelegt.value
+}
+
+/**
+ * Trägt den Vorschlag ein, wenn der Artikel angeboten wird und das Feld leer ist
+ *
+ * @param {boolean} still true: kein Speichern auslösen (Laden, Beschreibung
+ *        aus der Maske) — gespeichert wird mit der nächsten Änderung
+ */
+function vorschlagFallsLeer(still) {
+    if (!darfBearbeiten.value || !daten.value.listed || daten.value.hyperlink.trim() || !props.suggestedLink) return
+    nurVorschlag = still && bereit
+    daten.value.hyperlink = props.suggestedLink
+    seitePruefen()
+}
 
 const vorschlagMoeglich = computed(() =>
     darfBearbeiten.value && !!props.partsId && !daten.value.hyperlink.trim() && !!props.suggestedLink)
@@ -1254,19 +1314,10 @@ async function seitePruefen() {
     }
 }
 
-/** Vorschlag eintragen; ist er vergeben, mit angehängter Artikelnummer */
-async function vorschlagAnwenden() {
-    const vorschlag = props.suggestedLink
-    if (!vorschlag) return
-    const lauf = ++pruefLauf
-    let name = vorschlag
-    try {
-        if (await seiteBesitzer(name) && props.partnumber) name = `${vorschlag}-${shopSlug(props.partnumber)}`
-    } catch {
-        // ohne Prüfung bleibt der einfache Vorschlag
-    }
-    if (lauf !== pruefLauf) return
-    daten.value.hyperlink = name
+/** Vorschlag eintragen; ist er vergeben, zeigt das Feld den belegenden Artikel */
+function vorschlagAnwenden() {
+    if (!props.suggestedLink) return
+    daten.value.hyperlink = props.suggestedLink
     seitePruefen()
 }
 
@@ -1275,9 +1326,15 @@ function vorschlagUebernehmen() {
     vorschlagAnwenden()
 }
 
-// Neuanlage: der Vorschlag folgt der Beschreibung, solange das Feld unberührt ist
+// Neuanlage: der Vorschlag folgt der Beschreibung, solange das Feld unberührt
+// ist. Bestehender Artikel: nur ein leeres Feld bekommt den Vorschlag
 watch(() => props.suggestedLink, () => {
-    if (props.partsId || hyperlinkBeruehrt.value) return
+    if (props.partsId) {
+        clearTimeout(pruefTimer)
+        pruefTimer = setTimeout(() => vorschlagFallsLeer(true), 600)
+        return
+    }
+    if (hyperlinkBeruehrt.value) return
     clearTimeout(pruefTimer)
     if (!props.suggestedLink) { daten.value.hyperlink = ''; seiteBelegt.value = null; return }
     pruefTimer = setTimeout(() => vorschlagAnwenden(), 600)
@@ -1364,6 +1421,9 @@ async function laden() {
         return
     }
     zuletzt = stand(props.partsId)
+    // Bestand ohne Produktseite: der Vorschlag steht im Feld, zuletzt bleibt
+    // der gespeicherte Stand — die nächste Änderung speichert ihn mit
+    vorschlagFallsLeer(true)
 
     // Der Watcher auf daten läuft erst vor dem nächsten Rendern — sonst hielte
     // er das Laden für eine Eingabe.
@@ -1376,6 +1436,9 @@ async function speichern(partsId) {
     if (!partsId || !darfBearbeiten.value) return
     // Ungültige Versandangaben: nicht senden, das Feld zeigt den Fehler
     if (!versandGueltig()) return
+    // Produktseite leer oder gleich der Artikelnummer: ebenso. Einen vergebenen
+    // Namen lehnt das Backend ab (PAGE_NAME_TAKEN)
+    if (seiteUnzulaessig.value) return
 
     const neuerStand = stand(partsId)
     if (neuerStand === zuletzt) return
@@ -1419,6 +1482,7 @@ function versandMeldungen(meldungen) {
 }
 
 watch(daten, () => {
+    if (nurVorschlag) { nurVorschlag = false; return }
     if (!bereit || !props.partsId) return
     const partsId = props.partsId
     clearTimeout(timer)
@@ -1578,7 +1642,15 @@ const abschnitte = computed(() => [
     ] : []),
 ])
 
-defineExpose({ saveFor, kanalFehlt, abschnitte, darfBearbeiten, veroeffentlichbar, veroeffentlichenUeberall })
+/** Nach dem Speichern des Artikels: Ausstehendes der Karte (etwa der Vorschlag der Produktseite) mitspeichern */
+function sichern() {
+    if (!props.partsId || !bereit) return
+    clearTimeout(timer)
+    timer = null
+    return speichern(props.partsId)
+}
+
+defineExpose({ saveFor, kanalFehlt, seiteUngueltig, seiteGueltig, sichern, abschnitte, darfBearbeiten, veroeffentlichbar, veroeffentlichenUeberall })
 </script>
 
 <style scoped>

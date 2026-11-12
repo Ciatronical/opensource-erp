@@ -648,6 +648,17 @@ export default defineComponent({
             error.value = ''
 
             try {
+                // Im Shop angeboten: erst speichern, wenn die Produktseite einen
+                // gültigen, freien Namen hat (dev/shop-produktseiten-namen.md).
+                // Gilt für den Artikel in der Maske, nicht für den eben verlassenen
+                const karte = String(partsId) === String(props.id) ? shopCard.value : null
+                if (karte?.seiteGueltig && !(await karte.seiteGueltig())) {
+                    shopGesperrt = true
+                    error.value = t('ShopView.partCard.hyperlinkBlocksSave')
+                    return
+                }
+                shopGesperrt = false
+
                 const response = await axios.post('/api/parts/', {
                     action: 'updatePart',
                     parts_id: Number(partsId),
@@ -667,6 +678,8 @@ export default defineComponent({
                 const code = response.data?.success ? '' : (response.data?.text || '')
                 partnumberError.value = code === 'PARTNUMBER_EXISTS' ? t('ArticleEditView.messages.partnumberExists') : ''
                 if (code && code !== 'PARTNUMBER_EXISTS') error.value = t('ArticleEditView.messages.loadError')
+                // Ausstehendes der Shop-Karte geht mit, etwa der Vorschlag der Produktseite
+                if (!code) karte?.sichern?.()
             } catch (e) {
                 console.error('Save article error:', e)
                 error.value = t('ArticleEditView.messages.loadError')
@@ -801,13 +814,17 @@ export default defineComponent({
         }
         const shopCard = ref(null)
 
-        // Vorschlag für die Produktseite: Nummer und Beschreibung als Pfad aus
-        // Kleinbuchstaben, Ziffern und Bindestrichen — so wie die Produktseiten
-        // der bisherigen Shops heißen
-        // Vorschlag für die Produktseite: nur die Beschreibung, ohne Artikelnummer.
-        // Die Karte trägt ihn bei der Neuanlage ein und hängt die Nummer nur an,
-        // wenn ein anderer Artikel die Seite schon belegt
+        // Vorschlag für die Produktseite: nur die Beschreibung, nie die
+        // Artikelnummer. Die Karte trägt ihn ein, solange das Feld leer ist
         const shopLinkSuggestion = computed(() => shopSlug(article.value.description))
+        // Das Speichern wartet auf die Produktseite: sobald sie stimmt, läuft es nach
+        let shopGesperrt = false
+        watch(() => shopCard.value?.seiteUngueltig, ungueltig => {
+            if (ungueltig || !shopGesperrt) return
+            shopGesperrt = false
+            error.value = ''
+            triggerSave()
+        })
         const shopPartnumber = computed(() => String(article.value.partnumber || nextPartnumber.value || ''))
 
         /** Knopf am Ende der Maske: sofort in allen Verkaufskanälen veröffentlichen */
@@ -911,7 +928,9 @@ export default defineComponent({
             !!article.value.unit &&
             ['part', 'service'].includes(article.value.part_type) &&
             // Shop-Karte: bei mehreren Verkaufskanälen muss der Benutzer einen wählen
-            !shopCard.value?.kanalFehlt
+            !shopCard.value?.kanalFehlt &&
+            // und die Produktseite braucht einen gültigen, freien Namen
+            !shopCard.value?.seiteUngueltig
         )
 
         /** Standard-Stundensatz und seine Bezugseinheit aus der Mandantenkonfiguration */
@@ -1016,6 +1035,13 @@ export default defineComponent({
 
             creating.value = true
             createError.value = ''
+
+            // Im Shop angeboten: die Produktseite muss frei sein, bevor der Artikel entsteht
+            if (shopCard.value?.seiteGueltig && !(await shopCard.value.seiteGueltig())) {
+                createError.value = t('ShopView.partCard.hyperlinkBlocksSave')
+                creating.value = false
+                return
+            }
 
             try {
                 const response = await axios.post('/api/parts/', {
