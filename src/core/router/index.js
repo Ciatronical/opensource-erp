@@ -618,12 +618,15 @@ function buildRoutes() {
             ...routePath('routes.newArticle'),
             name: 'article-new',
             component: ArticleEditView,
+            // Artikel gehören keinem Kunden: ohne die Leiste des ausgewählten Kunden
+            meta: { hideCustomerBar: true },
         },
         {
             ...routePath('routes.manageArticles', '/:id(\\d+)'),
             name: 'article-edit',
             component: ArticleEditView,
             props: true,
+            meta: { hideCustomerBar: true },
         },
         // ── Platzhalter-Routen: Verkauf ──
         {
@@ -695,7 +698,7 @@ function buildRoutes() {
             ...routePath('routes.manageArticles'),
             name: 'article-list',
             component: DocumentListView,
-            meta: { listType: 'part' }
+            meta: { listType: 'part', hideCustomerBar: true }
         },
         {
             ...routePath('routes.orderSearch'),

@@ -14,9 +14,13 @@
 //
 // Ein Befund: code (Schlüssel für die Übersetzung in der Oberfläche,
 // crm_fields.shopSiteCheck_<code>), art (error, warning, info), params (für
-// die Meldung) und fix — der Eintrag für die config.json der Webseite, den
-// ein Administrator übernehmen kann. Geschrieben wird dort nichts: die
-// Konfiguration gehört der Webseite.
+// die Meldung), fix — der Eintrag für die config.json der Webseite, den
+// ein Administrator übernehmen kann — und apply: die benannte Korrektur, mit
+// der HugoCMS den Eintrag selbst schreibt (shopsiteconfigapply, seit
+// 2026-11-12). OpensourceERP schickt nie Konfiguration, nur diese Korrekturen;
+// Schlüssel und Werte legt HugoCMS fest und prüft sie. Befunde ohne apply
+// (Hugos Warnungen, fehlende Dateien, Freigaben außerhalb der Mounts) bleiben
+// Hinweise.
 
 /**
  * Holt die Hugo-Konfiguration der Webseite von HugoCMS (shopsiteconfig)
@@ -43,13 +47,66 @@ function portalSiteConfigFetch($db, int $website, array $zugang = []): array {
  * @param string $art error, warning oder info
  * @param array $params Werte für die Meldung
  * @param array|string|null $fix Eintrag für die config.json (Array wird als JSON ausgegeben) oder Text
- * @return array code, art, params, fix
+ * @param array|null $apply Korrektur für HugoCMS (op und ihre Felder), null = nicht automatisch behebbar
+ * @return array code, art, params, fix, apply
  */
-function portalSiteFinding(string $code, string $art, array $params = [], $fix = null): array {
+function portalSiteFinding(string $code, string $art, array $params = [], $fix = null, ?array $apply = null): array {
     if (is_array($fix)) {
         $fix = json_encode($fix, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
-    return ['code' => $code, 'art' => $art, 'params' => $params, 'fix' => (string)($fix ?? '')];
+    return ['code' => $code, 'art' => $art, 'params' => $params, 'fix' => (string)($fix ?? ''), 'apply' => $apply];
+}
+
+/**
+ * Darf und kann HugoCMS die Konfiguration dieser Webseite ergänzen?
+ *
+ * @param array $site Antwort von shopsiteconfig (data)
+ * @return array available (HugoCMS kennt den Befehl), allowed (in HugoCMS
+ *               freigegeben), supported (eine einzelne JSON-Datei), file, reason
+ */
+function portalSiteApplyState(array $site): array {
+    $stand = is_array($site['apply'] ?? null) ? $site['apply'] : null;
+    return [
+        'available' => null !== $stand,
+        'allowed'   => (bool)($stand['allowed'] ?? false),
+        'supported' => (bool)($stand['supported'] ?? false),
+        'file'      => (string)($stand['file'] ?? ''),
+        'reason'    => (string)($stand['reason'] ?? ''),
+    ];
+}
+
+/**
+ * Lässt HugoCMS alle behebbaren Befunde in die Hugo-Konfiguration schreiben
+ *
+ * Die Korrekturen stammen aus einer frischen Prüfung auf dem Server, nicht
+ * aus der Anfrage des Browsers.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $website Webseite
+ * @param array $zugang url und key aus dem Formular, leer = gespeichert
+ * @return array ok, fehler, applied (Zahl der Korrekturen), data (Antwort von HugoCMS)
+ */
+function portalSiteConfigApply($db, int $website, array $zugang = []): array {
+    $konfiguration = portalSiteConfigFetch($db, $website, $zugang);
+    if (!$konfiguration['ok']) {
+        return ['ok' => false, 'fehler' => $konfiguration['fehler'], 'applied' => 0, 'data' => null];
+    }
+    $site = (array)$konfiguration['data'];
+    $stand = portalSiteApplyState($site);
+    if (!$stand['available']) {
+        return ['ok' => false, 'fehler' => 'Diese HugoCMS-Version kann die Konfiguration noch nicht ergänzen (Befehl shopsiteconfigapply, seit 2026-11-12) — bitte HugoCMS aktualisieren', 'applied' => 0, 'data' => null];
+    }
+    $korrekturen = [];
+    foreach (portalSiteChecks($db, $website, $site) as $befund) {
+        if (is_array($befund['apply'] ?? null)) {
+            $korrekturen[] = $befund['apply'];
+        }
+    }
+    if (!$korrekturen) {
+        return ['ok' => true, 'fehler' => '', 'applied' => 0, 'data' => null];
+    }
+    $antwort = portalHugoCmsCall($db, $website, 'shopsiteconfigapply', 'POST', 60, $zugang, ['fixes' => $korrekturen]);
+    return ['ok' => $antwort['ok'], 'fehler' => $antwort['fehler'], 'applied' => $antwort['ok'] ? count($korrekturen) : 0, 'data' => $antwort['data']];
 }
 
 /**
@@ -136,8 +193,9 @@ function portalSiteChecks($db, int $website, array $site, array $stand = []): ar
             }
         }
         $fix = ['source' => $soll['source'], 'target' => $soll['target']];
+        $korrektur = ['op' => 'mount'] + $fix;
         if (null === $ist) {
-            $befunde[] = portalSiteFinding('MOUNT_MISSING', 'error', ['source' => $soll['source'], 'target' => $soll['target']], $fix);
+            $befunde[] = portalSiteFinding('MOUNT_MISSING', 'error', ['source' => $soll['source'], 'target' => $soll['target']], $fix, $korrektur);
             continue;
         }
         $passt = $soll['genau']
@@ -145,7 +203,7 @@ function portalSiteChecks($db, int $website, array $site, array $stand = []): ar
             : ('content' === $ist['target'] || str_starts_with($ist['target'], 'content/'));
         if (!$passt) {
             $befunde[] = portalSiteFinding('MOUNT_TARGET', 'error',
-                ['source' => $soll['source'], 'target' => $soll['target'], 'actual' => $ist['target']], $fix);
+                ['source' => $soll['source'], 'target' => $soll['target'], 'actual' => $ist['target']], $fix, $korrektur);
         }
     }
 

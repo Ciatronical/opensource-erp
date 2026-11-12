@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "Žádná nabízená položka",
-                "shop_website": "Přiřazen web zákaznického portálu"
+                "shop_website": "Přiřazen web zákaznického portálu",
+                "shop_hugocms_url": "Adresa HugoCMS",
+                "shop_hugocms_key": "Klíč pro HugoCMS"
             },
             "paypalSandbox": "Prodejní kanál „{name}“: PayPal běží v testovacím prostředí — skutečné platby zatím nejsou možné."
         },

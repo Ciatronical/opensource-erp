@@ -124,7 +124,7 @@ function shopSiteChecks(array $befunde, $db, int $website, array $site, array $s
     $aus = array_values(array_intersect(['taxonomy', 'term'], $arten));
     if ($aus) {
         $befunde[] = portalSiteFinding('SHOP_KINDS_DISABLED', 'error', ['kinds' => implode(', ', $aus)],
-            ['disableKinds' => array_values(array_diff($arten, ['taxonomy', 'term']))]);
+            ['disableKinds' => array_values(array_diff($arten, ['taxonomy', 'term']))], ['op' => 'enableKinds']);
     }
 
     // Taxonomie angemeldet? Ohne Eintrag kennt Hugo nur tags und categories;
@@ -134,8 +134,10 @@ function shopSiteChecks(array $befunde, $db, int $website, array $site, array $s
     if (!$angemeldet) {
         // Ein taxonomies-Block ersetzt Hugos Vorgaben: die vorhandenen bleiben im Vorschlag
         $vorschlag = $taxonomien ?: ['category' => 'categories', 'tag' => 'tags'];
-        $vorschlag[isset($vorschlag['shopcategory']) ? $taxonomie : 'shopcategory'] = $taxonomie;
-        $befunde[] = portalSiteFinding('SHOP_TAXONOMY_MISSING', 'error', ['taxonomy' => $taxonomie], ['taxonomies' => $vorschlag]);
+        $einzahl = isset($vorschlag['shopcategory']) ? $taxonomie : 'shopcategory';
+        $vorschlag[$einzahl] = $taxonomie;
+        $befunde[] = portalSiteFinding('SHOP_TAXONOMY_MISSING', 'error', ['taxonomy' => $taxonomie], ['taxonomies' => $vorschlag],
+            ['op' => 'taxonomy', 'singular' => $einzahl, 'plural' => $taxonomie]);
     }
 
     // Adressen: Kanalkarte (category_link) gegen Hugo (permalinks oder Vorgabe).
@@ -153,7 +155,7 @@ function shopSiteChecks(array $befunde, $db, int $website, array $site, array $s
         ], ['permalinks' => [
             'taxonomy' => [$taxonomie => $sollIndex],
             'term'     => [$taxonomie => $sollBegriff],
-        ]]);
+        ]], ['op' => 'permalinks', 'taxonomy' => $taxonomie, 'index' => $sollIndex, 'term' => $sollBegriff]);
     }
 
     // Das Theme erkennt die Shop-Taxonomie an params.portalui.taxonomy; Hugo
@@ -162,7 +164,7 @@ function shopSiteChecks(array $befunde, $db, int $website, array $site, array $s
     $ist = strtolower(trim((string)($portalui['taxonomy'] ?? '')));
     if ($ist !== $taxonomie) {
         $befunde[] = portalSiteFinding('SHOP_PORTALUI_TAXONOMY', 'warning', ['taxonomy' => $taxonomie, 'actual' => '' === $ist ? '—' : $ist],
-            ['params' => ['portalui' => ['taxonomy' => $taxonomie]]]);
+            ['params' => ['portalui' => ['taxonomy' => $taxonomie]]], ['op' => 'portaluiTaxonomy', 'taxonomy' => $taxonomie]);
     }
 
     // Übersichtsseite content/<taxonomie>/_index.md: trägt den Titel der Übersicht

@@ -2844,6 +2844,43 @@ function installPortalUi($data) {
 }
 
 /**
+ * Lässt HugoCMS die Hugo-Konfiguration der Shop-Webseite ergänzen
+ *
+ * Wie applyWebsiteSiteConfig des Kundenportals, für die Webseite eines
+ * HugoShops: alle behebbaren Befunde der Konfigurationsprüfung (Mounts des
+ * Pakets, Taxonomie und Adressen der Kategorien) gehen als benannte
+ * Korrekturen an HugoCMS (portalSiteConfigApply). Danach prüft die
+ * Oberfläche erneut (testShopHugoCms).
+ *
+ * @param string $data['url'] Adresse aus dem Formular (optional)
+ * @param string $data['key'] Schlüssel aus dem Formular (optional)
+ * @param array $data['channel_id'] HugoShop, leer = Standard-HugoShop
+ * @return void applied (Zahl der Korrekturen), changed, file, backup
+ * @testdata {}
+ */
+function applyShopSiteConfig($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+    $kanal = shopHugoshopOfRequest($db, $data);
+
+    portalExtensionsLoad($db);
+    $website = shopWebsiteOfChannel($db, $kanal);
+    if ($website <= 0) {
+        resultInfo(false, 'SHOP_HUGOCMS_FAILED', null, 'Dem Kanal ist keine Webseite zugeordnet');
+        return;
+    }
+    $ergebnis = portalSiteConfigApply($db, $website, [
+        'url' => (string)($data['url'] ?? ''),
+        'key' => (string)($data['key'] ?? ''),
+    ]);
+    if (!$ergebnis['ok']) {
+        resultInfo(false, 'SHOP_HUGOCMS_FAILED', null, $ergebnis['fehler']);
+        return;
+    }
+    resultInfo(true, '', ['applied' => $ergebnis['applied']] + (array)$ergebnis['data']);
+}
+
+/**
  * Prüft die Verbindung zu HugoCMS
  *
  * Fragt dort den Baustand der Webseite ab. Gelingt das, stimmen Adresse,
@@ -2913,6 +2950,7 @@ function testShopHugoCms($data) {
         'site_checks'              => $konfiguration['ok'] ? portalSiteChecks($db, $website, (array)$konfiguration['data'], $antwort) : null,
         'site_checks_error'        => $konfiguration['ok'] ? '' : $konfiguration['fehler'],
         'site_checks_outdated'     => (bool)$konfiguration['veraltet'],
+        'site_apply'               => portalSiteApplyState($konfiguration['ok'] ? (array)$konfiguration['data'] : []),
     ]);
 }
 
@@ -2960,14 +2998,15 @@ function testShopBackendUrl($data) {
         $schritte[] = ['schritt' => $schritt, 'art' => $art, 'code' => $code, 'params' => $params];
     };
     // Ergebnis von shopShopApiClassify als Meldung
-    $bewerten = function (string $schritt, array $ziel) use ($melden) {
+    // url: die aufgerufene Adresse — die Meldung nennt sie vollständig
+    $bewerten = function (string $schritt, array $ziel, string $url = '') use ($melden) {
         $art = match ($ziel['code']) {
             'OK' => 'success',
             'OK_OLD' => 'warning',
             default => 'error',
         };
         $melden($schritt, $art, $ziel['code'], [
-            'name' => $ziel['name'], 'status' => (string)$ziel['status'], 'error' => (string)$ziel['fehler'],
+            'name' => $ziel['name'], 'status' => (string)$ziel['status'], 'error' => (string)$ziel['fehler'], 'url' => $url,
         ]);
     };
 
@@ -2995,7 +3034,7 @@ function testShopBackendUrl($data) {
         $bewerten('direkt', shopShopApiClassify(
             shopWebsiteProbe(rtrim($adresse, '/').'/', ['action' => 'shopPing'], ['X-Portal-Key: '.$schluessel]),
             $kanal
-        ));
+        ), rtrim($adresse, '/').'/');
     }
 
     // 3. über die Webseite
@@ -3005,7 +3044,7 @@ function testShopBackendUrl($data) {
         $bewerten('webseite', shopShopApiClassify(
             shopWebsiteProbe($basis.'/portal-api/', ['action' => 'shopPing']),
             $kanal
-        ));
+        ), $basis.'/portal-api/');
     }
 
     resultInfo(true, '', ['schritte' => $schritte]);

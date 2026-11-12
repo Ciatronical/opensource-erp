@@ -106,6 +106,16 @@
                                     <pre class="text-body-2 mt-1" style="white-space: pre-wrap">{{ befund.fix }}</pre>
                                 </template>
                             </v-alert>
+                            <!-- Behebbare Befunde von HugoCMS in die Konfiguration schreiben lassen -->
+                            <SiteConfigApply
+                                :befunde="siteBefunde"
+                                :stand="siteApply"
+                                api="/api/portal/"
+                                action="applyWebsiteSiteConfig"
+                                :payload="{ website_id: websiteId, url: werte.hugocms_url || '', key: werte.hugocms_key || '' }"
+                                :disabled="hugocmsPrueft"
+                                @applied="hugocmsPruefen"
+                            />
                         </div>
 
                         <!-- Freigaben in HugoCMS, nur lesend -->
@@ -278,6 +288,7 @@
 import { reactive, ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
+import SiteConfigApply from '@/core/views/config/tabs/portal/site-config-apply.vue'
 import ShopConfigField from '@/core/views/config/tabs/shop-config-field.component.vue'
 import websiteSettingsConfig, { websiteSettingFields } from './websiteSettingsConfig.js'
 import * as toasts from '@/core/utils/toasts.js'
@@ -641,6 +652,8 @@ const hugocmsPrueft = ref(false)
 const hugocmsErgebnis = ref(null)
 /** Konfigurationsprüfung der Webseite (site_checks): Liste der Befunde, null = keine Prüfung */
 const siteBefunde = ref(null)
+/** Kann HugoCMS die behebbaren Befunde selbst schreiben? (site_apply der Prüfung) */
+const siteApply = ref(null)
 /** Grund, wenn HugoCMS die Konfiguration nicht liefert (altes HugoCMS, kein Hugo) */
 const siteFehler = ref('')
 const freigaben = ref(null)
@@ -685,6 +698,7 @@ async function hugocmsPruefen() {
         hugocmsErgebnis.value = hugocmsBericht(stand)
         freigaben.value = !stand.grants_error && stand.grants ? stand.grants : null
         siteBefunde.value = Array.isArray(stand.site_checks) ? stand.site_checks : null
+        siteApply.value = stand.site_apply || null
         siteFehler.value = stand.site_checks ? '' : (stand.site_checks_error || '')
     } catch (e) {
         hugocmsErgebnis.value = { art: 'error', zeilen: [e?.message || t('crm_fields.shopHugoCmsFailed')] }

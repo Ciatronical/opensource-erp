@@ -27,8 +27,13 @@
 --                   Unterstriche als Leerzeichen.
 --   technical_data  Eine leere Liste wird zum leeren Objekt.
 --
--- Angeboten (Kanalzeile aktiv) werden nur Artikel, die nicht als ungültig
--- markiert sind (parts.obsolete). Die Angaben der übrigen bleiben erhalten.
+-- Angeboten (Kanalzeile aktiv) werden alle Artikel der Bridge-Tabelle, wie im
+-- Bridge-Shop. Dort setzt die Veröffentlichung ausverkaufte Artikel auf
+-- ungültig (parts.obsolete) und lässt die Seite als „Momentan nicht verfügbar“
+-- stehen; die Erweiterung zeigt sie ebenso (shop_part_available).
+--
+-- Ungültig-Kennzeichen, die ein abgebrochener Bridge-Lauf hinterlassen hat,
+-- werden anhand der Quelltabellen der Lieferanten zurückgesetzt (Schritt 7).
 --
 -- Es entstehen keine Veröffentlichungsaufträge (shop.ohne_auftraege): die
 -- Seiten werden nach der Einrichtung der Webseite bewusst in einem Lauf
@@ -139,9 +144,8 @@ UPDATE parts_ext pe
 -- Artikelkarte ein- oder abgewählt wurde, bleibt bei einer Wiederholung.
 
 INSERT INTO parts_channel_shop (parts_id, channel_id, active)
-SELECT u.parts_id, shop_first_channel_id('hugoshop'), NOT COALESCE(p.obsolete, false)
+SELECT u.parts_id, shop_first_channel_id('hugoshop'), true
   FROM uebernommen u
-  JOIN parts p ON p.id = u.parts_id
     ON CONFLICT (parts_id, channel_id) DO UPDATE SET active = EXCLUDED.active;
 
 -- ----------------------------------------------------------------------------
@@ -182,6 +186,52 @@ DELETE FROM carts_hugoshop c
  WHERE NOT EXISTS (SELECT 1 FROM portal_context_oserp pc WHERE pc.cart_uuid = c.uuid);
 
 -- ----------------------------------------------------------------------------
+-- 7. Ungültig-Kennzeichen aus einem abgebrochenen Bridge-Lauf
+-- ----------------------------------------------------------------------------
+-- Der Vorlauf der Bridge setzt alle Artikel auf ungültig (parts.obsolete), die
+-- Veröffentlichung setzt die lagernden wieder auf gültig. Lief sie für einen
+-- Lieferanten danach nicht mehr, stehen dessen Artikel als ungültig in der
+-- Datenbank, obwohl der Shop sie als verfügbar zeigt. Hier wird nachgeholt, was
+-- die Veröffentlichung getan hätte — mit derselben Bedingung (publish/main.php).
+--
+-- Quelltabellen und Nummernpräfixe stehen in publish/config.php und
+-- publish/run.*.php der Webseite; je Shop anpassen. Fehlende Tabellen werden
+-- übergangen. Nur für die in diesem Lauf übernommenen Artikel.
+
+CREATE TEMPORARY TABLE bridge_quelle (tabelle text PRIMARY KEY, praefix text NOT NULL) ON COMMIT DROP;
+INSERT INTO bridge_quelle VALUES
+    ('parts_attack_source',            'AT/'),
+    ('parts_mainmetall_source',        'MM/'),
+    ('parts_schliessel_kaelte_source', 'SK/');
+
+CREATE TEMPORARY TABLE wieder_gueltig (parts_id integer PRIMARY KEY) ON COMMIT DROP;
+
+DO $$
+DECLARE
+    q record;
+BEGIN
+    FOR q IN SELECT tabelle, praefix FROM bridge_quelle WHERE to_regclass(tabelle) IS NOT NULL LOOP
+        EXECUTE format($sql$
+            WITH gesetzt AS (
+                UPDATE parts p
+                   SET obsolete = false
+                  FROM %I s, uebernommen u
+                 WHERE u.parts_id = p.id
+                   AND p.partnumber = %L || s.number
+                   AND p.obsolete
+                   AND s.in_stock > 0
+                   AND s.markdown_filename IS NOT NULL
+                   AND COALESCE(s.category, '') <> ''
+                   AND s.get_status = '200'
+                   AND s.discounted_price <> '0'
+                RETURNING p.id
+            )
+            INSERT INTO wieder_gueltig SELECT DISTINCT id FROM gesetzt ON CONFLICT DO NOTHING
+        $sql$, q.tabelle, q.praefix);
+    END LOOP;
+END $$;
+
+-- ----------------------------------------------------------------------------
 -- Bericht
 -- ----------------------------------------------------------------------------
 
@@ -190,7 +240,9 @@ SELECT (SELECT count(*) FROM uebernommen)                                       
        (SELECT count(*) FROM parts_channel_shop pc
          WHERE pc.channel_id = shop_first_channel_id('hugoshop') AND pc.active)   AS angeboten,
        (SELECT count(*) FROM parts_channel_shop pc
-         WHERE pc.channel_id = shop_first_channel_id('hugoshop') AND NOT pc.active) AS nicht_angeboten,
+         WHERE pc.channel_id = shop_first_channel_id('hugoshop') AND pc.active
+           AND NOT shop_part_available(pc.parts_id, pc.channel_id))               AS davon_nicht_verfuegbar,
+       (SELECT count(*) FROM wieder_gueltig)                                      AS wieder_gueltig,
        (SELECT count(*) FROM category_shop)                                       AS kategorien,
        (SELECT count(*) FROM parts_ext WHERE hugoshop_category_id IS NULL)        AS ohne_kategorie,
        (SELECT count(*) FROM parts_ext

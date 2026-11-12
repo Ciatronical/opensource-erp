@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "Niciun articol oferit",
-                "shop_website": "Site-ul portalului clienți atribuit"
+                "shop_website": "Site-ul portalului clienți atribuit",
+                "shop_hugocms_url": "Adresa HugoCMS",
+                "shop_hugocms_key": "Cheie pentru HugoCMS"
             },
             "paypalSandbox": "Canalul de vânzare „{name}”: PayPal rulează în mediul de test — plățile reale nu sunt încă posibile."
         },

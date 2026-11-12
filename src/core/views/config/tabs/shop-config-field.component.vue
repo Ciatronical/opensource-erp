@@ -8,8 +8,8 @@
 -->
 <template>
     <!-- Checkbox -->
-    <v-row v-if="field.type === 'checkbox'" class="mt-2 mb-4" :data-field-name="field.name">
-        <v-col cols="12" md="6">
+    <v-row v-if="field.type === 'checkbox'" :class="breit ? 'my-2' : 'mt-2 mb-4'" :data-field-name="field.name">
+        <v-col cols="12" :md="breit ? 12 : 6">
             <v-checkbox
                 v-model="werte[field.name]"
                 :label="t(field.label)"
@@ -24,8 +24,8 @@
     </v-row>
 
     <!-- Eingabefeld / Passwort -->
-    <v-row v-else-if="field.type === 'input' || field.type === 'password' || field.type === 'textarea'" class="mt-5 mb-4" :data-field-name="field.name">
-        <v-col cols="12" md="6">
+    <v-row v-else-if="field.type === 'input' || field.type === 'password' || field.type === 'textarea'" :class="breit ? 'my-2' : 'mt-5 mb-4'" :data-field-name="field.name">
+        <v-col cols="12" :md="breit ? 12 : 6">
             <component
                 :is="feldKomponente(field)"
                 v-model="werte[field.name]"
@@ -65,8 +65,8 @@
     </v-row>
 
     <!-- Auswahl mit festen Werten -->
-    <v-row v-else-if="field.type === 'select'" class="my-4" :data-field-name="field.name">
-        <v-col cols="12" md="6">
+    <v-row v-else-if="field.type === 'select'" :class="breit ? 'my-2' : 'my-4'" :data-field-name="field.name">
+        <v-col cols="12" :md="breit ? 12 : 6">
             <v-select
                 v-model="werte[field.name]"
                 :items="auswahlwerte(field.items)"
@@ -84,8 +84,8 @@
     </v-row>
 
     <!-- Auswahl aus company_config -->
-    <v-row v-else-if="field.type === 'dynamic-select'" class="pt-4 my-4" :data-field-name="field.name">
-        <v-col cols="12" md="6">
+    <v-row v-else-if="field.type === 'dynamic-select'" :class="breit ? 'my-2' : 'pt-4 my-4'" :data-field-name="field.name">
+        <v-col cols="12" :md="breit ? 12 : 6">
             <v-select
                 v-model="werte[field.name]"
                 :items="auswahl(field.source)"
@@ -106,8 +106,8 @@
     </v-row>
 
     <!-- Auswahl mit Suche aus einer langen Liste (etwa Kategoriebaum von Kleinanzeigen) -->
-    <v-row v-else-if="field.type === 'dynamic-autocomplete'" class="pt-4 my-4" :data-field-name="field.name">
-        <v-col cols="12" md="8">
+    <v-row v-else-if="field.type === 'dynamic-autocomplete'" :class="breit ? 'my-2' : 'pt-4 my-4'" :data-field-name="field.name">
+        <v-col cols="12" :md="breit ? 12 : 8">
             <v-autocomplete
                 v-model="werte[field.name]"
                 :items="auswahl(field.source)"
@@ -144,6 +144,14 @@ const store = oserpStore()
 const props = defineProps({
     /** Felddefinition aus shopDefaultsConfig.js */
     field: { type: Object, required: true },
+    /**
+     * Das Feld nimmt die ganze Zeile ein statt der halben — für die
+     * Einrichtungsdialoge, in denen jedes Feld allein unter seiner Erklärung
+     * steht. Dazu derselbe Abstand für jede Feldart: die Karten der
+     * Firmenkonfiguration setzen je Art eigene Abstände, nebeneinander im
+     * Raster stünden Eingabe-, Auswahl- und Ankreuzfelder dann versetzt
+     */
+    breit: { type: Boolean, default: false },
     /** Die Werte: Einstellungen des Mandanten (defaults_oserp) oder eines Kanals */
     werte: { type: Object, required: true },
     /**

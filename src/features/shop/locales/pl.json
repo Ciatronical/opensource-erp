@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "Brak oferowanych artykułów",
-                "shop_website": "Przypisana strona portalu klienta"
+                "shop_website": "Przypisana strona portalu klienta",
+                "shop_hugocms_url": "Adres HugoCMS",
+                "shop_hugocms_key": "Klucz dla HugoCMS"
             },
             "paypalSandbox": "Kanał sprzedaży „{name}”: PayPal działa w środowisku testowym — prawdziwe płatności nie są jeszcze możliwe."
         },

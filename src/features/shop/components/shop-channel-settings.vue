@@ -116,6 +116,16 @@
                                     <pre class="text-body-2 mt-1" style="white-space: pre-wrap">{{ befund.fix }}</pre>
                                 </template>
                             </v-alert>
+                            <!-- Behebbare Befunde von HugoCMS in die Konfiguration schreiben lassen -->
+                            <SiteConfigApply
+                                :befunde="siteBefunde"
+                                :stand="siteApply"
+                                api="/api/shop/"
+                                action="applyShopSiteConfig"
+                                :payload="{ channel_id: channelId, url: werte.hugocms_url || '', key: werte.hugocms_key || '' }"
+                                :disabled="hugocmsPrueft"
+                                @applied="hugocmsPruefen"
+                            />
                         </div>
 
                         <!-- Freigaben: legt HugoCMS fest (Projekteinstellungen →
@@ -217,7 +227,7 @@
                         variant="tonal"
                         density="compact"
                         class="mt-2"
-                        style="max-width: 90ch"
+                        style="max-width: 90ch; white-space: pre-line"
                     >
                         <strong>{{ t(`crm_fields.shopBackendTestStep_${schritt.schritt}`) }}:</strong>
                         {{ t(`crm_fields.shopBackendTest_${schritt.code}`, schritt.params || {}) }}
@@ -232,6 +242,7 @@
 import { reactive, ref, computed, watch, onBeforeUnmount, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
+import SiteConfigApply from '@/core/views/config/tabs/portal/site-config-apply.vue'
 import ShopConfigField from '@/core/views/config/tabs/shop-config-field.component.vue'
 import shopChannelSettingsConfig, { channelSettingFields } from './shopChannelSettingsConfig.js'
 import { shopFehler } from '../composables/useShop.js'
@@ -423,6 +434,8 @@ const hugocmsPrueft = ref(false)
 const hugocmsErgebnis = ref(null)
 /** Konfigurationsprüfung der Webseite (site_checks): Liste der Befunde, null = keine Prüfung */
 const siteBefunde = ref(null)
+/** Kann HugoCMS die behebbaren Befunde selbst schreiben? (site_apply der Prüfung) */
+const siteApply = ref(null)
 /** Grund, wenn HugoCMS die Konfiguration nicht liefert (altes HugoCMS, kein Hugo) */
 const siteFehler = ref('')
 /** Freigaben aus HugoCMS, nach „Verbindung prüfen"; null = (noch) keine */
@@ -543,6 +556,7 @@ async function hugocmsPruefen() {
         hugocmsErgebnis.value = hugocmsBericht(stand)
         freigaben.value = !stand.grants_error && stand.grants ? stand.grants : null
         siteBefunde.value = Array.isArray(stand.site_checks) ? stand.site_checks : null
+        siteApply.value = stand.site_apply || null
         siteFehler.value = stand.site_checks ? '' : (stand.site_checks_error || '')
     } catch (e) {
         hugocmsErgebnis.value = { art: 'error', zeilen: [e?.message || t('crm_fields.shopHugoCmsFailed')] }

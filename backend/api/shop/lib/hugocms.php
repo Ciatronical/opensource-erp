@@ -182,7 +182,8 @@ function shopShopApiClassify(array $antwort, int $kanal): array {
     $text = is_array($json) ? (string)($json['text'] ?? '') : '';
 
     if (0 === $antwort['status']) {
-        $ergebnis['code'] = 'UNREACHABLE';
+        // genauer, wenn die Probe den Grund kennt (portalProbeFailure)
+        $ergebnis['code'] = '' !== ($antwort['grund'] ?? '') ? $antwort['grund'] : 'UNREACHABLE';
     } elseif (str_starts_with(ltrim($antwort['rumpf']), '<?php')) {
         $ergebnis['code'] = 'NO_PHP';
     } elseif (is_array($json) && array_key_exists('ok', $json) && is_array($json['error'] ?? null)) {

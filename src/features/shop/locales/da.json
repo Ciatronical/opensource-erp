@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "Ingen varer udbudt",
-                "shop_website": "Kundeportal-websted tilknyttet"
+                "shop_website": "Kundeportal-websted tilknyttet",
+                "shop_hugocms_url": "HugoCMS-adresse",
+                "shop_hugocms_key": "Nøgle til HugoCMS"
             },
             "paypalSandbox": "Salgskanal „{name}“: PayPal kører i testmiljøet — rigtige betalinger er endnu ikke mulige."
         },

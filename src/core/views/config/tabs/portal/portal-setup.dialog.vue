@@ -76,7 +76,6 @@
                                 persistent-hint
                                 autocomplete="off"
                                 class="mt-2"
-                                style="max-width: 40ch"
                                 @click.stop
                             />
                         </div>
@@ -89,7 +88,7 @@
         <template #step-adresse>
             <p class="text-body-1 mb-2">{{ t('WebsitesView.setup.adresse.intro') }}</p>
             <Erklaerung :text="t('WebsitesView.help.baseUrl')" />
-            <ShopConfigField :field="feld('base_url')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
+            <ShopConfigField breit :field="feld('base_url')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
             <v-alert v-if="werte.base_url && !gueltigeAdresse(werte.base_url)" type="warning" variant="tonal" density="compact">
                 {{ t('WebsitesView.setup.adresse.invalid') }}
             </v-alert>
@@ -99,7 +98,7 @@
         <template #step-hugocms>
             <p class="text-body-1 mb-2">{{ t('WebsitesView.setup.hugocms.intro') }}</p>
             <Erklaerung :text="t('WebsitesView.help.hugocmsUrl')" />
-            <ShopConfigField :field="feld('hugocms_url')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt">
+            <ShopConfigField breit :field="feld('hugocms_url')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt">
                 <template #append>
                     <v-btn
                         variant="tonal"
@@ -114,7 +113,7 @@
                 </template>
             </ShopConfigField>
             <Erklaerung :text="t('WebsitesView.help.hugocmsKey')" />
-            <ShopConfigField :field="feld('hugocms_key')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
+            <ShopConfigField breit :field="feld('hugocms_key')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
             <div class="d-flex flex-wrap align-center ga-3 mt-2">
                 <v-btn
                     variant="tonal"
@@ -140,6 +139,16 @@
                         <pre class="text-body-2 mt-1" style="white-space: pre-wrap">{{ befund.fix }}</pre>
                     </template>
                 </v-alert>
+                <!-- Behebbare Befunde von HugoCMS in die Konfiguration schreiben lassen -->
+                <SiteConfigApply
+                    :befunde="siteBefunde"
+                    :stand="siteApply"
+                    api="/api/portal/"
+                    action="applyWebsiteSiteConfig"
+                    :payload="{ website_id: websiteId, url: werte.hugocms_url || '', key: werte.hugocms_key || '' }"
+                    :disabled="hugocmsPrueft"
+                    @applied="hugocmsPruefen"
+                />
             </template>
         </template>
 
@@ -150,9 +159,9 @@
             <v-alert v-if="schluesselNeu" type="success" variant="tonal" density="compact" class="mb-2">
                 {{ t('WebsitesView.setup.zugang.keyGenerated') }}
             </v-alert>
-            <ShopConfigField :field="feld('public_key')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
+            <ShopConfigField breit :field="feld('public_key')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
             <Erklaerung :text="t('WebsitesView.help.backendUrl')" />
-            <ShopConfigField :field="feld('backend_url')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
+            <ShopConfigField breit :field="feld('backend_url')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
             <v-alert v-if="werte.backend_url && !gueltigeAdresse(werte.backend_url)" type="warning" variant="tonal" density="compact">
                 {{ t('WebsitesView.setup.adresse.invalid') }}
             </v-alert>
@@ -160,7 +169,7 @@
                 <v-expansion-panel :title="t('WebsitesView.setup.zugang.advanced')">
                     <v-expansion-panel-text>
                         <Erklaerung :text="t('WebsitesView.help.allowedOrigins')" />
-                        <ShopConfigField :field="feld('allowed_origins')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
+                        <ShopConfigField breit :field="feld('allowed_origins')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
                     </v-expansion-panel-text>
                 </v-expansion-panel>
             </v-expansion-panels>
@@ -172,7 +181,7 @@
             <Erklaerung :text="t('WebsitesView.help.pages')" />
             <v-row dense>
                 <v-col v-for="name in ['portal_path', 'login_page', 'register_page', 'account_page', 'invoice_page', 'contact_page']" :key="name" cols="12" sm="6">
-                    <ShopConfigField :field="feld(name)" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
+                    <ShopConfigField breit :field="feld(name)" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
                 </v-col>
             </v-row>
             <v-alert v-if="seitenFehler.length" type="warning" variant="tonal" density="compact" class="mt-2">
@@ -190,18 +199,18 @@
         <template #step-funktionen>
             <p class="text-body-1 mb-2">{{ t('WebsitesView.setup.funktionen.intro') }}</p>
             <Erklaerung :text="t('WebsitesView.help.templateSet')" />
-            <ShopConfigField :field="feld('template_set')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
+            <ShopConfigField breit :field="feld('template_set')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
             <Erklaerung :text="t('WebsitesView.help.activationEnabled')" />
-            <ShopConfigField :field="feld('activation_enabled')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
-            <ShopConfigField v-if="werte.activation_enabled" :field="feld('activate_page')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
+            <ShopConfigField breit :field="feld('activation_enabled')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
+            <ShopConfigField breit v-if="werte.activation_enabled" :field="feld('activate_page')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
             <Erklaerung :text="t('WebsitesView.help.documents')" />
             <v-row dense>
                 <v-col v-for="name in belegFelder" :key="name" cols="12" sm="6">
-                    <ShopConfigField :field="feld(name)" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
+                    <ShopConfigField breit :field="feld(name)" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
                 </v-col>
             </v-row>
             <Erklaerung :text="t('WebsitesView.help.contactMailTo')" />
-            <ShopConfigField :field="feld('contact_mail_to')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
+            <ShopConfigField breit :field="feld('contact_mail_to')" :werte="werte" :quellen="quellen" :gesetzt="gesetzt" />
         </template>
 
         <!-- 7. Paket und Weiterleiter -->
@@ -282,6 +291,7 @@
 import { ref, reactive, computed, watch, defineComponent, h } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
+import SiteConfigApply from '@/core/views/config/tabs/portal/site-config-apply.vue'
 import EinrichtungDialog from '@/core/components/setup/einrichtung-dialog.vue'
 import ShopConfigField from '../shop-config-field.component.vue'
 import { websiteSettingFields } from './websiteSettingsConfig.js'
@@ -327,8 +337,12 @@ const quellen = computed(() => ({ templateSets: templateSets.value }))
 const WAHR = [true, 't', 'true', '1', 1, 'y', 'yes']
 const alleFelder = websiteSettingFields().filter(f => !f.extension || oserp.isExtensionEnabled(f.extension))
 const belegFelder = alleFelder.filter(f => f.name.startsWith('documents_')).map(f => f.name)
+// Im Dialog füllen die Felder die Inhaltsspalte (bzw. ihre Rasterspalte): die
+// Breitenbegrenzung aus der Karte der Firmenkonfiguration (fieldstyle,
+// max-width in ch) schnitte hier Adressen und Schlüssel ab
+const dialogFelder = new Map(alleFelder.map(f => [f.name, { ...f, fieldstyle: undefined }]))
 function feld(name) {
-    return alleFelder.find(f => f.name === name) || { name, type: 'input', label: name }
+    return dialogFelder.get(name) || { name, type: 'input', label: name }
 }
 const werte = reactive({})
 const gesetzt = ref({})
@@ -540,6 +554,8 @@ const hugocmsPrueft = ref(false)
 const hugocmsErgebnis = ref(null)
 const hugocmsOk = ref(false)
 const siteBefunde = ref(null)
+/** Kann HugoCMS die behebbaren Befunde selbst schreiben? (site_apply der Prüfung) */
+const siteApply = ref(null)
 async function hugocmsPruefen() {
     hugocmsPrueft.value = true
     hugocmsErgebnis.value = null
@@ -563,6 +579,7 @@ async function hugocmsPruefen() {
         hugocmsErgebnis.value = { art, zeilen }
         hugocmsOk.value = art !== 'error'
         siteBefunde.value = Array.isArray(stand.site_checks) ? stand.site_checks : null
+        siteApply.value = stand.site_apply || null
     } catch (e) {
         hugocmsErgebnis.value = { art: 'error', zeilen: [e?.message || t('crm_fields.shopHugoCmsFailed')] }
     } finally {

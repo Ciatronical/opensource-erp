@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "Немає запропонованих товарів",
-                "shop_website": "Прив'язано сайт порталу клієнтів"
+                "shop_website": "Прив'язано сайт порталу клієнтів",
+                "shop_hugocms_url": "Адреса HugoCMS",
+                "shop_hugocms_key": "Ключ для HugoCMS"
             },
             "paypalSandbox": "Канал продажу «{name}»: PayPal працює в тестовому середовищі — справжні платежі поки неможливі."
         },

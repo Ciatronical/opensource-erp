@@ -637,6 +637,7 @@ function exportDocumentList($data) {
  *                                   fuer die dort keine Versandart passt (shop_part_shipping_check) —
  *                                   sie werden nicht veroeffentlicht; mit channel_id nur in diesem Kanal
  * @param int    $data['limit']      Maximale Trefferzahl (Standard 200, max 1000)
+ * @return void parts (hoechstens limit Zeilen) und total (Zahl aller Treffer)
  * @testdata {"action": "searchParts", "q": "Bremse", "scope": "active", "shop": "", "channel_id": 0, "weight_missing": false, "shipping_unfit": false, "limit": 50}
  */
 function searchParts($data) {
@@ -724,7 +725,10 @@ function searchParts($data) {
                 p.unit,
                 p.sellprice,
                 p.onhand,
-                COALESCE(p.obsolete, FALSE) AS obsolete
+                COALESCE(p.obsolete, FALSE) AS obsolete,
+                -- alle Treffer, nicht nur die gelieferten: die Fensterfunktion
+                -- zählt vor dem LIMIT
+                count(*) OVER () AS total
            FROM parts p
           WHERE $whereSql
           ORDER BY {$rang}p.partnumber
@@ -732,7 +736,7 @@ function searchParts($data) {
         $params
     );
 
-    resultInfo(true, '', ['parts' => $parts]);
+    resultInfo(true, '', ['parts' => $parts, 'total' => (int)($parts[0]['total'] ?? 0)]);
 }
 
 /**

@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "Netiek piedāvāta neviena prece",
-                "shop_website": "Piesaistīta klientu portāla vietne"
+                "shop_website": "Piesaistīta klientu portāla vietne",
+                "shop_hugocms_url": "HugoCMS adrese",
+                "shop_hugocms_key": "HugoCMS atslēga"
             },
             "paypalSandbox": "Pārdošanas kanāls “{name}”: PayPal darbojas testa vidē — īsti maksājumi vēl nav iespējami."
         },

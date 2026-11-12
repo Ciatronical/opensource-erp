@@ -38,7 +38,9 @@
             },
             "points": {
                 "no_parts_offered": "没有上架任何物料",
-                "shop_website": "已分配客户门户网站"
+                "shop_website": "已分配客户门户网站",
+                "shop_hugocms_url": "HugoCMS 地址",
+                "shop_hugocms_key": "HugoCMS 密钥"
             },
             "paypalSandbox": "销售渠道“{name}”：PayPal 运行在测试环境中 — 尚无法接收真实付款。"
         },
