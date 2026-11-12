@@ -427,7 +427,7 @@ const LEGACY = {
     SAVED: 'saved', PRINTED: 'printed', POSTED: 'posted', 'PRINTED AND POSTED': 'printedPosted', SCREENED: 'screened',
     MAILED: 'mailed', DELETED: 'deleted', STORNO: 'storno', 'PAYMENT POSTED': 'paymentPosted', PREVIEWED: 'previewed', CANCELED: 'canceled',
 }
-const SENT_ICON = { email: 'mdi-email-outline', whatsapp: 'mdi-whatsapp', post: 'mdi-mailbox-up-outline', dhl: 'mdi-package-variant-closed' }
+const SENT_ICON = { email: 'mdi-email-outline', whatsapp: 'mdi-whatsapp', post: 'mdi-mailbox-up-outline', dhl: 'mdi-package-variant-closed', print: 'mdi-printer-check' }
 
 const otherEntries = computed(() => {
     const out = []

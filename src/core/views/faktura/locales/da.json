@@ -262,6 +262,7 @@
             "sent": {
                 "title": "Sendt",
                 "notSent": "Endnu ikke sendt",
+                "channelPrint": "Udskrevet",
                 "notSentHint": "Bilaget er endnu ikke sendt til kunden via e-mail eller WhatsApp.",
                 "history": "Historik",
                 "channelEmail": "E-mail",
@@ -779,6 +780,7 @@
                 "whatsapp": "Via WhatsApp til {to}",
                 "post": "Med post til {to}",
                 "dhl": "DHL-forsendelse {to}",
+                "print": "Udskrevet",
                 "other": "Sendt til {to}"
             },
             "fields": {

@@ -227,7 +227,7 @@ function getFakturaData($data) {
                 ),
             -- Versandprotokoll: E-Mails (email_journal), WhatsApp-Nachrichten und SMS über
             -- record_links (from = Beleg), DHL-Sendungen über dhl_shipments, Postversand
-            -- über postal_dispatches. Neueste zuerst.
+            -- über postal_dispatches, Ausdrucke über status. Neueste zuerst.
             'sent_log',
                 (
                     SELECT COALESCE(json_agg(s ORDER BY s.sent_at DESC), '[]'::json)
@@ -262,6 +262,11 @@ function getFakturaData($data) {
                         FROM postal_dispatches pd
                         LEFT JOIN employee e ON e.id = pd.employee_id
                         WHERE pd.record_table = '{$mainTable}' AND pd.record_id = :fakturaID AND pd.status <> 'error'
+                        UNION ALL
+                        -- Gedruckt (kivitendo-Tabelle status, eine Zeile je Druck aus printToPrinter)
+                        SELECT 'print', COALESCE(st.mtime, st.itime), NULL, NULL, 'sent', NULL
+                        FROM status st
+                        WHERE st.trans_id = :fakturaID AND st.printed
                     ) AS s
                 ),
             -- Rechnungsstatus des Auftrags (oe_invoice_status, Upstall crm): state

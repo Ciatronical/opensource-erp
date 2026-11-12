@@ -52,7 +52,7 @@
         "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
     },
     "devDependencies": {
-        "@vitejs/plugin-vue": "^6.0.10",
+        "@vitejs/plugin-vue": "^6.0.11",
         "vite": "^8.3.8",
         "vite-plugin-vue-devtools": "^8.2.1",
         "vite-plugin-vuetify": "^2.1.3"

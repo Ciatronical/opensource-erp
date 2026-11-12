@@ -1,9 +1,10 @@
 <!-- src/core/views/faktura/components/sent.status.component.vue -->
 <!--
     Versandstatus eines Belegs: auf einen Blick, ob und wie der Beleg den Kunden
-    erreicht hat (E-Mail, WhatsApp, Post, DHL). Die Einträge kommen aus getFakturaData
-    (sent_log: record_links → email_journal / whatsapp_messages, dhl_shipments,
-    postal_dispatches).
+    erreicht hat (E-Mail, WhatsApp, Post, DHL) oder gedruckt wurde. Die Einträge
+    kommen aus getFakturaData (sent_log: record_links → email_journal /
+    whatsapp_messages, dhl_shipments, postal_dispatches, status = Ausdrucke).
+    Ein nur gedruckter Beleg heißt „Gedruckt“ statt „Versendet“.
 
     Bei Aufträgen steht rechts daneben der Rechnungsstatus (invoice_status aus
     getFakturaData, SQL-Funktion oe_invoice_status): welche Rechnung ist aus dem
@@ -29,7 +30,7 @@
             >
                 <template #title>
                     <span class="d-flex align-center ga-2">
-                        {{ sent ? t('FakturaView.faktura.sent.title') : t('FakturaView.faktura.sent.notSent') }}
+                        {{ sent ? t(onlyPrinted ? 'FakturaView.faktura.sent.channelPrint' : 'FakturaView.faktura.sent.title') : t('FakturaView.faktura.sent.notSent') }}
                         <v-chip v-if="sent" size="x-small" variant="flat" color="success">{{ entries.length }}</v-chip>
                     </span>
                 </template>
@@ -226,6 +227,8 @@ const expanded = ref(false)
 const hasConfirmation = computed(() => props.withConfirmation)
 
 const sent = computed(() => props.entries.length > 0)
+// Nur gedruckt, über keinen Kanal verschickt: die Überschrift sagt dann „Gedruckt“
+const onlyPrinted = computed(() => sent.value && props.entries.every(e => e.channel === 'print'))
 
 // ── Rechnungsstatus (Aufträge) ───────────────────────────────────────────────
 const INVOICE_CHIPS = 3
@@ -259,6 +262,7 @@ const channelMeta = {
     sms:      { icon: 'mdi-message-text-outline', color: 'indigo', label: 'FakturaView.faktura.sent.channelSms' },
     dhl:      { icon: 'mdi-truck-delivery', color: 'amber-darken-2', label: 'FakturaView.faktura.sent.channelDhl' },
     post:     { icon: 'mdi-mailbox-up-outline', color: 'deep-purple', label: 'FakturaView.faktura.sent.channelPost' },
+    print:    { icon: 'mdi-printer-check',  color: 'blue-grey',      label: 'FakturaView.faktura.sent.channelPrint' },
 }
 
 /** Status einer Posteinlieferung (postal_dispatches.status) */

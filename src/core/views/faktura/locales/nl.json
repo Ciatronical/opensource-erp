@@ -262,6 +262,7 @@
             "sent": {
                 "title": "Verzonden",
                 "notSent": "Nog niet verzonden",
+                "channelPrint": "Afgedrukt",
                 "notSentHint": "Het document is nog niet per e-mail of WhatsApp naar de klant verzonden.",
                 "history": "Geschiedenis",
                 "channelEmail": "E-mail",
@@ -779,6 +780,7 @@
                 "whatsapp": "Via WhatsApp aan {to}",
                 "post": "Per post aan {to}",
                 "dhl": "DHL-zending {to}",
+                "print": "Afgedrukt",
                 "other": "Verzonden aan {to}"
             },
             "fields": {

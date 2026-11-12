@@ -262,6 +262,7 @@
             "sent": {
                 "title": "Надіслано",
                 "notSent": "Ще не надіслано",
+                "channelPrint": "Надруковано",
                 "notSentHint": "Документ ще не надіслано клієнту електронною поштою чи WhatsApp.",
                 "history": "Історія",
                 "channelEmail": "E-mail",
@@ -793,6 +794,7 @@
                 "whatsapp": "Через WhatsApp на {to}",
                 "post": "Поштою на {to}",
                 "dhl": "Відправлення DHL {to}",
+                "print": "Надруковано",
                 "other": "Надіслано на {to}"
             },
             "fields": {

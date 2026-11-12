@@ -262,6 +262,7 @@
             "sent": {
                 "title": "Nosūtīts",
                 "notSent": "Vēl nav nosūtīts",
+                "channelPrint": "Izdrukāts",
                 "notSentHint": "Dokuments klientam vēl nav nosūtīts pa e-pastu vai WhatsApp.",
                 "history": "Vēsture",
                 "channelEmail": "E-pasts",
@@ -779,6 +780,7 @@
                 "whatsapp": "Pa WhatsApp adresātam {to}",
                 "post": "Pa pastu adresātam {to}",
                 "dhl": "DHL sūtījums {to}",
+                "print": "Izdrukāts",
                 "other": "Nosūtīts adresātam {to}"
             },
             "fields": {

@@ -262,6 +262,7 @@
             "sent": {
                 "title": "Išsiųsta",
                 "notSent": "Dar neišsiųsta",
+                "channelPrint": "Atspausdinta",
                 "notSentHint": "Dokumentas klientui dar neišsiųstas el. paštu ar „WhatsApp“.",
                 "history": "Istorija",
                 "channelEmail": "El. paštas",
@@ -779,6 +780,7 @@
                 "whatsapp": "Per WhatsApp gavėjui {to}",
                 "post": "Paštu adresu {to}",
                 "dhl": "DHL siunta {to}",
+                "print": "Atspausdinta",
                 "other": "Išsiųsta gavėjui {to}"
             },
             "fields": {

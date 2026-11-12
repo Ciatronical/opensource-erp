@@ -397,6 +397,7 @@
             "sent": {
                 "title": "Versendet",
                 "notSent": "Noch nicht versendet",
+                "channelPrint": "Gedruckt",
                 "notSentHint": "Der Beleg wurde noch nicht per E-Mail, WhatsApp oder Post an den Kunden geschickt.",
                 "history": "Verlauf",
                 "channelEmail": "E-Mail",
@@ -916,6 +917,7 @@
                 "whatsapp": "Per WhatsApp an {to}",
                 "post": "Per Post an {to}",
                 "dhl": "DHL-Sendung {to}",
+                "print": "Gedruckt",
                 "other": "Versendet an {to}"
             },
             "fields": {

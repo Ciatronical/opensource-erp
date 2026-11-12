@@ -262,6 +262,7 @@
             "sent": {
                 "title": "已发送",
                 "notSent": "尚未发送",
+                "channelPrint": "已打印",
                 "notSentHint": "该单据尚未通过电子邮件或 WhatsApp 发送给客户。",
                 "history": "历史",
                 "channelEmail": "电子邮件",
@@ -779,6 +780,7 @@
                 "whatsapp": "通过 WhatsApp 发送至 {to}",
                 "post": "通过邮寄发送至 {to}",
                 "dhl": "DHL 货件 {to}",
+                "print": "已打印",
                 "other": "已发送至 {to}"
             },
             "fields": {

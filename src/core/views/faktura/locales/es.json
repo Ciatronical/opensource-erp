@@ -262,6 +262,7 @@
             "sent": {
                 "title": "Enviado",
                 "notSent": "Aún no enviado",
+                "channelPrint": "Impreso",
                 "notSentHint": "El documento aún no se ha enviado al cliente por correo o WhatsApp.",
                 "history": "Historial",
                 "channelEmail": "Correo",
@@ -779,6 +780,7 @@
                 "whatsapp": "Por WhatsApp a {to}",
                 "post": "Por correo postal a {to}",
                 "dhl": "Envío DHL {to}",
+                "print": "Impreso",
                 "other": "Enviado a {to}"
             },
             "fields": {

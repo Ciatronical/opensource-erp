@@ -262,6 +262,7 @@
             "sent": {
                 "title": "Trimis",
                 "notSent": "Încă netrimis",
+                "channelPrint": "Tipărit",
                 "notSentHint": "Documentul nu a fost încă trimis clientului prin e-mail sau WhatsApp.",
                 "history": "Istoric",
                 "channelEmail": "E-mail",
@@ -779,6 +780,7 @@
                 "whatsapp": "Prin WhatsApp către {to}",
                 "post": "Prin poștă către {to}",
                 "dhl": "Expediere DHL {to}",
+                "print": "Tipărit",
                 "other": "Trimis către {to}"
             },
             "fields": {

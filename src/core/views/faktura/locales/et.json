@@ -262,6 +262,7 @@
             "sent": {
                 "title": "Saadetud",
                 "notSent": "Veel saatmata",
+                "channelPrint": "Prinditud",
                 "notSentHint": "Dokumenti pole veel kliendile e-posti ega WhatsAppi kaudu saadetud.",
                 "history": "Ajalugu",
                 "channelEmail": "E-post",
@@ -779,6 +780,7 @@
                 "whatsapp": "WhatsAppi kaudu saajale {to}",
                 "post": "Postiga saajale {to}",
                 "dhl": "DHL-saadetis {to}",
+                "print": "Prinditud",
                 "other": "Saadetud saajale {to}"
             },
             "fields": {

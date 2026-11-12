@@ -262,6 +262,7 @@
             "sent": {
                 "title": "Lähetetty",
                 "notSent": "Ei vielä lähetetty",
+                "channelPrint": "Tulostettu",
                 "notSentHint": "Asiakirjaa ei ole vielä lähetetty asiakkaalle sähköpostitse tai WhatsAppilla.",
                 "history": "Historia",
                 "channelEmail": "Sähköposti",
@@ -779,6 +780,7 @@
                 "whatsapp": "WhatsApp-viestinä vastaanottajalle {to}",
                 "post": "Postitse vastaanottajalle {to}",
                 "dhl": "DHL-lähetys {to}",
+                "print": "Tulostettu",
                 "other": "Lähetetty vastaanottajalle {to}"
             },
             "fields": {

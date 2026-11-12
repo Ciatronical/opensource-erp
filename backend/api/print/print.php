@@ -756,6 +756,8 @@ function printBatchToPrinter($data) {
         }
     }
 
+    druckVermerken($db, $documents);
+
     resultInfo(true, 'PRINTED', [
         'printer' => $printer['printer_description'],
         'count' => $ergebnis['count'],
@@ -885,6 +887,8 @@ function printToPrinter($data) {
         );
     }
 
+    druckVermerken($db, [['id' => $fakturaID, 'fakturaType' => $fakturaType]]);
+
     resultInfo(true, 'PRINTED', ['printer' => $printer['printer_description'], 'copies' => $copies]);
 }
 
@@ -968,6 +972,33 @@ function detectTemplate(string $fakturaType, array $vars, bool $lxCarsEnabled = 
     // Dateinamen nennt.
     debugLog('Druck: Vorlage "' . $candidates[0] . '" fehlt in ' . $templateDir, DLOG_WRN);
     return $candidates[0];
+}
+
+/**
+ * Vermerkt den Druck von Belegen in kivitendos status-Tabelle (printed = true,
+ * eine Zeile je Druck, itime = Zeitpunkt). getFakturaData liest die Zeilen als
+ * Kanal 'print' ins Versandprotokoll (sent_log) — ein gedruckter Beleg gilt in
+ * der Maske nicht mehr als „Noch nicht versendet“.
+ *
+ * @param array $documents Liste von ['id', 'fakturaType']
+ */
+function druckVermerken($db, array $documents): void {
+    $ids = [];
+    $formnames = [];
+    foreach ($documents as $doc) {
+        $ids[] = intval($doc['id']);
+        $formnames[] = mapFormname((string)$doc['fakturaType']);
+    }
+    if (!$ids) return;
+
+    $db->execute(
+        "INSERT INTO status (trans_id, formname, printed)
+         SELECT d.id, d.formname, true
+           FROM json_to_recordset(CAST(:docs AS json)) AS d(id int, formname text)",
+        [':docs' => json_encode(array_map(
+            fn($id, $formname) => ['id' => $id, 'formname' => $formname], $ids, $formnames
+        ))]
+    );
 }
 
 /**

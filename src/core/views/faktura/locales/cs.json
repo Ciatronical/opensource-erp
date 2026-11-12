@@ -262,6 +262,7 @@
             "sent": {
                 "title": "Odesláno",
                 "notSent": "Zatím neodesláno",
+                "channelPrint": "Vytištěno",
                 "notSentHint": "Doklad zatím nebyl zákazníkovi odeslán e-mailem ani přes WhatsApp.",
                 "history": "Historie",
                 "channelEmail": "E-mail",
@@ -779,6 +780,7 @@
                 "whatsapp": "Přes WhatsApp na {to}",
                 "post": "Poštou na {to}",
                 "dhl": "Zásilka DHL {to}",
+                "print": "Vytištěno",
                 "other": "Odesláno na {to}"
             },
             "fields": {

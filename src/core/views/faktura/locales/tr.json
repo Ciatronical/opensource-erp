@@ -262,6 +262,7 @@
             "sent": {
                 "title": "Gönderildi",
                 "notSent": "Henüz gönderilmedi",
+                "channelPrint": "Yazdırıldı",
                 "notSentHint": "Belge henüz müşteriye e-posta veya WhatsApp ile gönderilmedi.",
                 "history": "Geçmiş",
                 "channelEmail": "E-posta",
@@ -779,6 +780,7 @@
                 "whatsapp": "WhatsApp ile gönderildi: {to}",
                 "post": "Posta ile gönderildi: {to}",
                 "dhl": "DHL gönderisi {to}",
+                "print": "Yazdırıldı",
                 "other": "Gönderildi: {to}"
             },
             "fields": {

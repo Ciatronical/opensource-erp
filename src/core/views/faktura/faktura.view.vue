@@ -3357,6 +3357,8 @@ export default defineComponent({
                     selectedPrinter.value.id,
                     n
                 )
+                // Der Server hat den Druck vermerkt (status) — hier sofort anzeigen
+                addSentLogEntry({ channel: 'print', employee_name: '' })
                 if (n > 1) {
                     alerts.success(t('FakturaView.faktura.terminal.printed', { copies: n }))
                 } else {
