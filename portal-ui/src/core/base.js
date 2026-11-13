@@ -59,6 +59,23 @@ export class PortalElement extends LitElement {
 
   #themed = false;
 
+  /**
+   * Bis zum ersten Rendern zeigt ein Slot das Light DOM — der Platz, den das
+   * Element ohne JavaScript einnimmt (bei <shop-product-images> die Links
+   * mit den Bildern). Ohne ihn wäre der ShadowRoot leer und das Element
+   * null Pixel hoch, sobald es definiert ist, aber noch auf Theme und Texte
+   * wartet: alles darunter spränge zweimal (Layoutverschiebung). Lit hängt
+   * seinen Marker hinter vorhandene Kinder; update() nimmt den Slot vor dem
+   * ersten Rendern heraus.
+   */
+  createRenderRoot() {
+    const root = super.createRenderRoot();
+    const slot = document.createElement('slot');
+    slot.dataset.portalPlatzhalter = '';
+    root.append(slot);
+    return root;
+  }
+
   async connectedCallback() {
     super.connectedCallback();
     if (this.#themed) return;
@@ -73,6 +90,23 @@ export class PortalElement extends LitElement {
   // this.cls() lieferte noch die Klassen des Default-Presets.
   shouldUpdate(changed) {
     return this.#themed && super.shouldUpdate(changed);
+  }
+
+  /**
+   * Erstes Rendern: Slot raus, danach trägt das Element das Attribut
+   * portal-ready. Daran hängt placeholder.css im Paket — seine Regeln
+   * (:not([portal-ready])) gelten, bis das Widget wirklich gerendert hat,
+   * nicht nur bis es definiert ist. Beides geschieht im selben Durchlauf
+   * vor dem nächsten Zeichnen, nichts flackert.
+   */
+  update(changed) {
+    const erstes = !this.hasUpdated;
+    if (erstes) {
+      const slot = this.renderRoot.querySelector('slot[data-portal-platzhalter]');
+      if (slot) slot.remove();
+    }
+    super.update(changed);
+    if (erstes) this.toggleAttribute('portal-ready', true);
   }
 
   /**

@@ -15,7 +15,7 @@ Teile entstanden sind, beschreiben `shop-migration.md` (Fachlogik),
 | Öffentlicher Zugang | `backend/portal/index.php` | Kunden des Betreibers; Ausweis über den Kopf `X-Portal-Key` der Webseite, Aktionen des Kerns plus `public/actions.php` jeder aktiven Erweiterung |
 | Fachschicht | `backend/api/shop/lib/` | Warenkorb, Kasse, Suche, Rechnung, Zahlung, Mail, Widerruf, Umleitungen, Veröffentlichung, Kategorien; hängt über `lib/portal_hooks.php` am Portal |
 | Webseiten-Paket | `backend/templates-default/portal/standard/kit/` (Kern: Konto-Shortcodes, Partials, Proxy, Bündel) + `backend/templates-default/shop/standard/kit/` (Shop: Warenkorb, Kasse, Suche, 404-Seite) | geht zusammen als `oserp-portal/` an HugoCMS |
-| Widgets | `portal-ui/` | Web Components (Lit): `portal-widgets.js`, `shop-widgets.js`, `lxcars-widgets.js`; eigener Build ins Paket |
+| Widgets | `portal-ui/` | Web Components (Lit): ein Einstieg `portal-widgets.js`, je Widget ein Stück; eigener Build ins Paket |
 | Läufer | `tools/shop-publish.php` | Aufträge abarbeiten, Paket abgleichen, Kategorien, an HugoCMS übertragen und dort bauen lassen |
 | Übernahme | `tools/shop-bridge-settings.php` | Einstellungen einer Bridge-Instanz als SQL ausgeben |
 | Medienbibliothek | `backend/api/shop/media.php`, `lib/media.php`, Medien in der Artikelkarte | Produktbilder und Downloads zentral für alle Verkaufskanäle (`dev/shop-medienbibliothek.md`); Übernahme vorhandener Medien mit `tools/shop-media-import.php` |

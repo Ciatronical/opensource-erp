@@ -45,8 +45,8 @@
   {{- if $noRedirect }} no-redirect{{ end }}
   {{- with $class }} class="{{ . }}"{{ end }}></portal-account-payment>
 {{- else if eq .page "vehicles" -}}
-{{- /* Fahrzeuge (LxCars): das Element kommt aus lxcars-widgets.js, das der
-     Partial nur mit dem Merkmal lxcars laedt */ -}}
+{{- /* Fahrzeuge (LxCars): das Stück des Elements lädt portal-widgets.js,
+     sobald es auf der Seite steht */ -}}
 {{- partial "portal-ui-preload.html" "portal-vehicles" -}}
 <portal-vehicles
   {{- with $login }} login-url="{{ . }}"{{ end }}

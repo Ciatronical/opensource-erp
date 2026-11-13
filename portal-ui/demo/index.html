@@ -206,10 +206,8 @@
 
 <script type="module">
   // Cache-Bust: nginx liefert .js mit "immutable" für ein Jahr aus.
-  // Drei Bündel wie auf einer Webseite mit Shop und Fahrzeugen
+  // Ein Bündel für Kundenportal, Shop und Fahrzeuge
   await import('./dist/portal-widgets.js?t=' + Date.now());
-  await import('./dist/shop-widgets.js?t=' + Date.now());
-  await import('./dist/lxcars-widgets.js?t=' + Date.now());
 
   const params = new URLSearchParams(location.search);
   const active = params.get('theme') || 'bootstrap5';

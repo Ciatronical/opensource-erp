@@ -1,20 +1,19 @@
 /**
  * Baut die Bündel der Widgets in das Paket des Kundenportals.
  *
- * Drei Einstiege, viele Stücke (esbuild splitting):
- *   portal-widgets.js   Kern: Anmeldung, Registrierung, Konto, Kontakt, Freischaltung
- *   shop-widgets.js     Shop: Warenkorb, Kasse, Suche, Rechnung, Werkzeugsuche
- *   lxcars-widgets.js   LxCars: Fahrzeuge des Kunden
- *   chunk-<hash>.js     je Widget eines (dynamischer Import in den Einstiegen,
+ * Ein Einstieg, viele Stücke (esbuild splitting):
+ *   portal-widgets.js   Verzeichnis: welches Stück zu welchem Element gehört
+ *                       (Kundenportal, Shop, LxCars — src/portal.js)
+ *   chunk-<hash>.js     je Widget eines (dynamischer Import im Einstieg,
  *                       core/lazy.js lädt es erst, wenn das Element auf der
  *                       Seite steht), je Sprache eines (src/i18n/) und was
  *                       sich alle teilen (Lit, Basisklassen, API)
- *   manifest.json       welche Stücke ein Widget bzw. ein Einstieg braucht —
+ *   manifest.json       welche Stücke ein Widget bzw. der Einstieg braucht —
  *                       der Partial portal-ui-preload.html setzt daraus
  *                       <link rel="modulepreload"> für die Widgets der Seite,
  *                       damit kein Stück erst nach dem vorigen entdeckt wird
- * Welche Bündel eine Webseite lädt, sagt ihr features.json (lib/kit.php in
- * OpensourceERP); der Partial portal-ui-assets.html liest es.
+ * Was auf einer Webseite läuft, sagt ihr features.json (lib/kit.php in
+ * OpensourceERP); der Partial portal-ui-assets.html legt es als Attribut ab.
  *
  *   node scripts/build.mjs            Paket (minifiziert, eingecheckt)
  *   node scripts/build.mjs --dev      dist/ für die Testseite, mit Sourcemaps
@@ -56,8 +55,6 @@ const quelle = (datei) => fileURLToPath(new URL(`../src/${datei}`, import.meta.u
 const optionen = {
   entryPoints: {
     'portal-widgets': quelle('portal.js'),
-    'shop-widgets': quelle('shop.js'),
-    'lxcars-widgets': quelle('lxcars.js'),
   },
   bundle: true,
   format: 'esm',
@@ -74,7 +71,7 @@ const optionen = {
 
 /**
  * manifest.json aus der Metadatei: Schlüssel → Dateinamen, die vorzuladen
- * sind. Schlüssel sind die Einstiege (portal-widgets: ihre statischen
+ * sind. Schlüssel sind der Einstieg (portal-widgets: seine statischen
  * Stücke), die Elemente (portal-login: das Stück des Widgets samt allem, was
  * es statisch importiert) und die Sprachen (i18n-de). Ein Stück, das zwei
  * Elemente enthält, steht unter beiden.
@@ -127,9 +124,13 @@ if (watch) {
   writeFileSync(join(OUTDIR, 'manifest.json'), manifest(ergebnis.metafile));
   console.log(`portal-ui: ${OUTDIR} (Entwicklung, mit Sourcemaps)`);
 } else {
-  // Alte geteilte Stücke verschwinden: ihr Name trägt den Hash des Inhalts
+  // Alte geteilte Stücke verschwinden: ihr Name trägt den Hash des Inhalts.
+  // Ebenso Einstiege, die es nicht mehr gibt (shop-widgets.js, lxcars-widgets.js).
   for (const datei of readdirSync(OUTDIR)) {
-    if (/^chunk-[A-Z0-9]+\.js$/i.test(datei)) rmSync(join(OUTDIR, datei));
+    const einstieg = datei.match(/^([a-z-]+)\.js$/);
+    if (/^chunk-[A-Z0-9]+\.js$/i.test(datei) || (einstieg && einstieg[1].endsWith('-widgets') && !(einstieg[1] in optionen.entryPoints))) {
+      rmSync(join(OUTDIR, datei));
+    }
   }
   const ergebnis = await build({ ...optionen, write: false });
   for (const ausgabe of ergebnis.outputFiles) {

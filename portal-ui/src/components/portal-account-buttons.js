@@ -55,11 +55,17 @@ export class PortalAccountButtons extends PortalElement {
   static styles = [
     PortalElement.baseStyles,
     css`
+      /* Mindesthöhe wie in placeholder.css des Pakets: das Element ist vor
+         und nach dem Rendern gleich hoch (die Knöpfe sind je nach Theme
+         37–39 px), nichts darunter springt. Beide Stellen gehören zusammen
+         geändert. */
       ul {
         list-style: none;
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
         gap: 0.5rem;
+        min-height: var(--portal-account-buttons-height, 2.5rem);
         margin: 0;
         padding: 0;
       }
@@ -74,9 +80,12 @@ export class PortalAccountButtons extends PortalElement {
         white-space: nowrap;
       }
       /* Symbolfarbe: Vorgabe wie die Beschriftung, ein Theme kann sie
-         ueber --shop-icon-color hervorheben. */
+         ueber --shop-icon-color hervorheben; die Groesse ueber
+         --shop-icon-size (z.B. passend zu Textlinks daneben). */
       svg {
         flex: none;
+        width: var(--shop-icon-size, 20px);
+        height: var(--shop-icon-size, 20px);
         color: var(--shop-icon-color, currentColor);
       }
       /* Das hugoshop-Theme setzt die Beschriftung kursiv (fst-italic);
@@ -241,7 +250,7 @@ export class PortalAccountButtons extends PortalElement {
     const label = this.cartLabel || t('header.cart');
     if (this._count > 0) {
       return html`
-        <a class=${this.cls('buttonPrimary')} part="button" href=${this.cartUrl}>
+        <a class=${this.cls('buttonPrimary')} part="button cart-filled" href=${this.cartUrl}>
           ${this.#cartCheckIcon()}<span class="label">${label} (${this._count})</span>
         </a>
       `;

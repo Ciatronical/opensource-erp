@@ -1,11 +1,15 @@
 {{- /*
-  Bindet das Widget-Bundle ein. Wird von jedem Widget-Shortcode aufgerufen —
-  das ist unschaedlich: ein ES-Modul wird pro URL genau einmal geladen und
-  ausgefuehrt, auch wenn das script-Tag mehrfach im Dokument steht.
+  Bindet das Widget-Bündel ein. Wird von jedem Widget-Shortcode aufgerufen;
+  Stylesheet und Script stehen trotzdem nur einmal auf der Seite (page.Store).
 
-  Der Fingerprint im Dateinamen ist Pflicht, weil nginx .js-Dateien mit
-  "expires 1y; immutable" ausliefert. Ohne ihn wuerde eine neue Bundle-Version
-  bei wiederkehrenden Besuchern ein Jahr lang nicht ankommen.
+  Der Einstieg (portal-widgets.js, gut 1 kB) steht als Inline-Modul in der
+  Seite, nicht als eigene Datei: Als Datei wäre er ein Request auf dem
+  kritischen Pfad (Lighthouse „Netzwerkabhängigkeitsbaum“), auf den die
+  Widgets warten, obwohl ihre Stücke längst vorgeladen sind. Seine Importe
+  zeigen relativ auf ./chunk-<hash>.js — inline gilt die Adresse der Seite,
+  deshalb werden sie auf den Pfad des Pakets umgeschrieben. Die Stücke
+  tragen den Hash ihres Inhalts im Namen; ein neues Bündel kommt so auch bei
+  nginx mit "expires 1y; immutable" an.
 
   Theming: das Preset bestimmt, welche CSS-Klassen die Widgets vergeben und
   welches Stylesheet sie in ihren ShadowRoot adoptieren. Konfiguration in der
@@ -89,29 +93,27 @@
 {{- $classes := $cfg.classes | default dict -}}
 {{- $allowUrl := $cfg.allowurltheme | default false -}}
 {{- /*
-  Bündel nach den Merkmalen der Webseite (Kundenportal, dev/kundenportal.md):
-  features.json schreibt OpensourceERP mit dem Paket — portal-widgets.js
-  immer, shop-widgets.js mit HugoShop, lxcars-widgets.js mit LxCars. Die
-  Einstiege teilen sich ein Stück (chunk-<hash>.js) und laden es relativ zu
-  sich; damit Hugo es ausliefert, wird es hier veröffentlicht. Ohne
-  features.json (Paket von vor dem Kundenportal) gilt nur der Kern.
+  Ein Bündel, portal-widgets.js: Es trägt nur ein, welches Stück zu welchem
+  Element gehört (portal-ui, core/lazy.js) — Kern, Shop und LxCars zusammen,
+  gut 1 kB. Ein Stück kommt erst, wenn sein Element auf der Seite steht; was
+  die Webseite nicht hat, kostet also nichts. Welche Merkmale sie hat
+  (Kundenportal, dev/kundenportal.md), schreibt OpensourceERP mit dem Paket
+  in features.json: die Widgets fragen danach (Warenkorb-Knopf nur mit Shop,
+  Fahrzeuge nur mit LxCars). Ohne features.json (Paket von vor dem
+  Kundenportal) gilt nur der Kern.
 */ -}}
 {{- $features := dict "portal" true -}}
 {{- with resources.Get "portal-ui/features.json" -}}{{- $features = . | transform.Unmarshal -}}{{- end -}}
-{{- $bundles := slice "portal-widgets" -}}
-{{- if $features.shop }}{{ $bundles = $bundles | append "shop-widgets" }}{{ end -}}
-{{- if $features.lxcars }}{{ $bundles = $bundles | append "lxcars-widgets" }}{{ end -}}
 {{- /*
-  Die Stücke (chunk-<hash>.js): Jedes Widget liegt in einem eigenen, der
-  Einstieg lädt es erst, wenn das Element auf der Seite steht (portal-ui,
-  core/lazy.js). Alle Stücke werden veröffentlicht (RelPermalink), weil ein
-  Widget auch nachträglich ins Dokument kommen kann; vorgeladen wird nur, was
-  diese Seite braucht (portal-ui-preload.html, manifest.json): die Stücke der
-  Einstiege, die Texte der Seitensprache (Deutsch ist der Rückfall und kommt
-  bei anderen Sprachen dazu), die Kopfknöpfe — und je Shortcode sein Widget.
+  Die Stücke (chunk-<hash>.js) werden alle veröffentlicht (RelPermalink), weil
+  ein Widget auch nachträglich ins Dokument kommen kann; vorgeladen wird nur,
+  was diese Seite braucht (portal-ui-preload.html, manifest.json): die Stücke
+  des Einstiegs, die Texte der Seitensprache (Deutsch ist der Rückfall und
+  kommt bei anderen Sprachen dazu), die Kopfknöpfe — und je Shortcode sein
+  Widget.
 */ -}}
 {{- range resources.Match "portal-ui/chunk-*.js" }}{{ $_ := .RelPermalink }}{{ end -}}
-{{- range $bundles }}{{ partial "portal-ui-preload.html" . }}{{ end -}}
+{{- partial "portal-ui-preload.html" "portal-widgets" -}}
 {{- $lang := site.Language.Lang | default "de" -}}
 {{- with resources.Get "portal-ui/manifest.json" -}}
 {{- if not (isset (. | transform.Unmarshal) (printf "i18n-%s" $lang)) }}{{ $lang = "de" }}{{ end -}}
@@ -120,19 +122,22 @@
 {{- if ne $lang "de" }}{{ partial "portal-ui-preload.html" "i18n-de" }}{{ end -}}
 {{- if $cfg.accountbuttons }}{{ partial "portal-ui-preload.html" "portal-account-buttons" }}{{ end -}}
 {{- /*
-  Platz für die Widgets, bevor das Bündel sie aufrüstet (placeholder.css):
-  ohne ihn ist ein Widget bis zum Rendern null Pixel hoch und alles darunter
-  springt (Layoutverschiebung). Ein <link> im Hauptteil ist zulässig; steht
-  er mehrfach auf der Seite, lädt der Browser die Datei trotzdem nur einmal.
+  Platz für die Widgets, bevor sie rendern (placeholder.css): ohne ihn ist
+  ein Widget bis dahin null Pixel hoch und alles darunter springt
+  (Layoutverschiebung). Als <style> in der Seite, nicht als <link>: ein
+  eigenes Stylesheet von 600 Byte wäre ein blockierender Request mehr auf dem
+  kritischen Pfad. Steht der Partial mehrfach auf der Seite (jeder Shortcode
+  ruft ihn), schreibt page.Store ihn nur einmal.
 */ -}}
-{{- with resources.Get "portal-ui/placeholder.css" -}}
-<link rel="stylesheet" href="{{ (. | minify | fingerprint).RelPermalink }}">
+{{- if not (page.Store.Get "portal-ui-assets") -}}
+{{- page.Store.Set "portal-ui-assets" true -}}
+{{- with resources.Get "portal-ui/placeholder.css" }}
+<style>{{ (. | minify).Content | safeCSS }}</style>
 {{- end -}}
-{{- range $i, $name := $bundles -}}
-{{- with resources.Get (printf "portal-ui/%s.js" $name) -}}
-{{- $js := . | fingerprint "sha256" -}}
-<script type="module"{{ if eq $i 0 }} data-portal-ui-theme="{{ $theme }}" data-portal-ui-paths="{{ $pathsJson }}" data-portal-ui-features="{{ jsonify $features }}"{{ with $sheet }} data-portal-ui-stylesheet="{{ . }}"{{ end }}{{ if $classes }} data-portal-ui-classes="{{ jsonify $classes }}"{{ end }}{{ if $allowUrl }} data-portal-ui-allow-url="true"{{ end }}{{ end }} src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}"></script>
+{{- with resources.Get "portal-ui/portal-widgets.js" -}}
+{{- $dir := path.Dir .RelPermalink }}
+<script type="module" data-portal-ui-theme="{{ $theme }}" data-portal-ui-paths="{{ $pathsJson }}" data-portal-ui-features="{{ jsonify $features }}"{{ with $sheet }} data-portal-ui-stylesheet="{{ . }}"{{ end }}{{ if $classes }} data-portal-ui-classes="{{ jsonify $classes }}"{{ end }}{{ if $allowUrl }} data-portal-ui-allow-url="true"{{ end }}>{{ replace .Content "\"./chunk-" (printf "\"%s/chunk-" $dir) | safeJS }}</script>
 {{- else -}}
-{{- warnf "portal-ui: assets/portal-ui/%s.js nicht gefunden — ist der Mount oserp-portal/assets/portal-ui → assets/portal-ui gesetzt und hat OpensourceERP das Paket übertragen (Webseiten → Paket installieren)?" $name -}}
+{{- warnf "portal-ui: assets/portal-ui/portal-widgets.js nicht gefunden — ist der Mount oserp-portal/assets/portal-ui → assets/portal-ui gesetzt und hat OpensourceERP das Paket übertragen (Webseiten → Paket installieren)?" -}}
 {{- end -}}
 {{- end -}}

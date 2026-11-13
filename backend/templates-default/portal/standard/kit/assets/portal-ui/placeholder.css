@@ -4,21 +4,33 @@
  * nachgeholt ist. Bis dahin ist ein <shop-add-to-cart> leer und null Pixel
  * hoch, ein <shop-product-images> zeigt seine Links roh untereinander. Beim
  * Rendern springt dann alles darunter (Layoutverschiebung, CLS). Diese Regeln
- * geben den Elementen vorab die Form, die das Widget danach hat — sie gelten
- * nur für noch nicht aufgerüstete Elemente (:not(:defined)) und damit auch
- * ohne JavaScript. Die Maße entsprechen den Komponenten-Stilen in
- * portal-ui/src/components und sind dort zu ändern, wenn sie hier geändert
- * werden. Eingebunden von partials/portal-ui-assets.html.
+ * geben den Elementen vorab die Form, die das Widget danach hat — sie gelten,
+ * bis das Widget zum ersten Mal gerendert hat (Attribut portal-ready, gesetzt
+ * von PortalElement in portal-ui/src/core/base.js) und damit auch ohne
+ * JavaScript. Bewusst nicht :not([portal-ready]): definiert ist ein Element, sobald
+ * sein Stück geladen ist, gerendert erst, wenn Theme und Texte da sind — in
+ * der Zeit dazwischen wäre es sonst null Pixel hoch. Die Maße entsprechen den
+ * Komponenten-Stilen in portal-ui/src/components und sind dort zu ändern,
+ * wenn sie hier geändert werden. partials/portal-ui-assets.html schreibt die
+ * Datei als <style> in die Seite — ein eigener Request für 600 Byte wäre ein
+ * blockierendes Stylesheet mehr auf dem kritischen Pfad.
  */
 
-/* Warenkorb-Knopf: Mengenzeile (Feld 2,5rem + Abstand 1rem) und Knopfzeile */
-shop-add-to-cart:not(:defined) {
+/* Warenkorb-Knopf: Mengenzeile (Feld 2,5rem + Abstand 1rem) und Knopfzeile;
+   auf Handys bricht die Knopfzeile um (drei Zeilen) */
+shop-add-to-cart:not([portal-ready]) {
   display: block;
   min-height: var(--shop-add-to-cart-height, 6rem);
 }
+@media (max-width: 479px) {
+  shop-add-to-cart:not([portal-ready]) {
+    min-height: var(--shop-add-to-cart-height, 9rem);
+  }
+}
 
-/* Konto-Schaltflächen im Seitenkopf: eine Knopfzeile */
-portal-account-buttons:not(:defined) {
+/* Konto-Schaltflächen im Seitenkopf: eine Knopfzeile (dieselbe Mindesthöhe
+   trägt die Knopfliste des Widgets, damit beide Zustände gleich hoch sind) */
+portal-account-buttons:not([portal-ready]) {
   display: block;
   min-height: var(--portal-account-buttons-height, 2.5rem);
 }
@@ -26,10 +38,10 @@ portal-account-buttons:not(:defined) {
 /* Produktbilder: erstes Bild im Rahmen des Hauptbilds, darunter der Platz für
    Hinweis (2,5rem) und bei mehreren Bildern für die Blätterknöpfe (2,5rem) und
    den Abstand zur Vorschauleiste (0,75rem); die übrigen Bilder als Vorschau. */
-shop-product-images:not(:defined) {
+shop-product-images:not([portal-ready]) {
   display: block;
 }
-shop-product-images:not(:defined) > a:first-child {
+shop-product-images:not([portal-ready]) > a:first-child {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,17 +53,17 @@ shop-product-images:not(:defined) > a:first-child {
   background: var(--shop-image-bg, #fff);
   overflow: hidden;
 }
-shop-product-images:not(:defined) > a:first-child:not(:last-child) {
+shop-product-images:not([portal-ready]) > a:first-child:not(:last-child) {
   margin-bottom: 5.75rem;
 }
-shop-product-images:not(:defined) > a:first-child img {
+shop-product-images:not([portal-ready]) > a:first-child img {
   display: block;
   width: auto;
   height: auto;
   max-width: 100%;
   max-height: 100%;
 }
-shop-product-images:not(:defined) > a:not(:first-child) {
+shop-product-images:not([portal-ready]) > a:not(:first-child) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -65,7 +77,7 @@ shop-product-images:not(:defined) > a:not(:first-child) {
   background: var(--shop-image-bg, #fff);
   overflow: hidden;
 }
-shop-product-images:not(:defined) > a:not(:first-child) img {
+shop-product-images:not([portal-ready]) > a:not(:first-child) img {
   display: block;
   width: auto;
   height: auto;

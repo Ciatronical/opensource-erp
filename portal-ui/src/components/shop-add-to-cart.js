@@ -37,10 +37,16 @@ export class ShopAddToCart extends PortalElement {
     PortalElement.baseStyles,
     css`
       /* Mindesthöhe wie in placeholder.css des Pakets (Mengenzeile und
-         Knopfzeile): das Element ist vor und nach dem Aufrüsten gleich hoch,
-         nichts darunter springt. Beide Stellen gehören zusammen geändert. */
+         Knopfzeile; auf Handys bricht die Knopfzeile um, dann drei Zeilen):
+         das Element ist vor und nach dem Aufrüsten gleich hoch, nichts
+         darunter springt. Beide Stellen gehören zusammen geändert. */
       :host {
         min-height: var(--shop-add-to-cart-height, 6rem);
+      }
+      @media (max-width: 479px) {
+        :host {
+          min-height: var(--shop-add-to-cart-height, 9rem);
+        }
       }
       .quantity {
         display: flex;

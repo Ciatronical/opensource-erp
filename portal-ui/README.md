@@ -11,27 +11,52 @@ Kerns heißen aus dieser Zeit `portal-login`, `portal-register`, `portal-account
 
 Die Widgets haben einen eigenen Build mit esbuild, getrennt vom Vite-Build von
 OpensourceERP: Sie laufen auf den Webseiten, nicht in der OSERP-Oberfläche.
-Drei Einstiege, viele Stücke:
+Ein Einstieg, viele Stücke:
 
 | Bündel | Quelle | Inhalt |
 | --- | --- | --- |
-| `portal-widgets.js` | `src/portal.js` | Anmeldung, Registrierung, Konto, Kontakt, Freischaltung |
-| `shop-widgets.js` | `src/shop.js` | Warenkorb, Kasse, Rechnungsseite, Suche, Werkzeugsuche |
-| `lxcars-widgets.js` | `src/lxcars.js` | Fahrzeuge des Kunden |
+| `portal-widgets.js` | `src/portal.js` | Verzeichnis: welches Stück zu welchem Element gehört — Kundenportal, Shop und LxCars |
 | `chunk-<hash>.js` | — | je Widget eines, je Sprache eines, dazu das Geteilte (Lit, Basisklassen, API) |
-| `manifest.json` | — | welche Stücke ein Widget, ein Einstieg oder eine Sprache braucht (Vorladen) |
+| `manifest.json` | — | welche Stücke ein Widget, der Einstieg oder eine Sprache braucht (Vorladen) |
 
 ### Laden je Element
 
-Die Einstiege sind nur noch Verzeichnisse (je gut 1 kB): Sie tragen ein,
-welches Stück zu welchem Element gehört (`src/core/lazy.js`), suchen das
-Dokument einmal ab und laden ein Widget erst, wenn sein Element auf der Seite
-steht — später eingefügte Elemente findet ein MutationObserver. Eine Seite
-ohne Widgets lädt so nur Einstiege und Grundstück; ein Blogbeitrag mit den
+Der Einstieg ist nur ein Verzeichnis (gut 1 kB): Er trägt ein, welches Stück
+zu welchem Element gehört (`src/core/lazy.js`), sucht das Dokument einmal ab
+und lädt ein Widget erst, wenn sein Element auf der Seite steht — später
+eingefügte Elemente findet ein MutationObserver. Deshalb gibt es nur noch
+einen Einstieg für alle Erweiterungen (vorher `shop-widgets.js` und
+`lxcars-widgets.js` je nach `features.json`): Was eine Webseite nicht hat,
+kostet sie nichts, und sie lädt eine Datei statt dreier. Eine Seite ohne
+Widgets lädt so nur Einstieg und Grundstück; ein Blogbeitrag mit den
 Kopfknöpfen rund 20 kB statt vorher 220 kB (Lighthouse auf autoprofis24.de:
 „lange Hauptthread-Aufgaben" weg, Blockierzeit 110 → 40 ms). Widgets, die ein
 anderes Widget in seinem Template braucht (Kasse → Warenkorb, Registrierung;
 Werkzeugsuche → Warenkorb-Knopf), importiert dieses weiterhin statisch.
+
+Den Einstieg schreibt `portal-ui-assets.html` als Inline-Modul in die Seite
+(seine `./chunk-`-Importe auf den Pfad des Pakets umgeschrieben): Als Datei
+wäre er ein Request auf dem kritischen Pfad, auf den die Widgets warten,
+obwohl ihre Stücke längst vorgeladen sind (Lighthouse
+„Netzwerkabhängigkeitsbaum“). Deshalb darf der Einstieg selbst keine
+dynamischen Importe außerhalb von `registerLazy` haben — ein `import()` dort
+wäre ein Stück, das der Browser erst nach dem Einstieg entdeckt
+(`legacy/header-cart.js` ist aus diesem Grund statisch).
+
+### Platz vor dem Rendern
+
+`placeholder.css` im Paket gibt den Widgets ihre Form, bevor sie rendern,
+damit nichts darunter springt (Layoutverschiebung). Die Regeln hängen am
+Attribut `portal-ready`, das `PortalElement` nach dem ersten Rendern setzt —
+nicht an `:defined`: definiert ist ein Element, sobald sein Stück geladen
+ist, gerendert erst, wenn Theme und Texte da sind, und dazwischen wäre es
+sonst null Pixel hoch. Bis dahin zeigt ein Slot im ShadowRoot das Light DOM
+(die Bildlinks von `<shop-product-images>`). Die Kopfknöpfe und der
+Warenkorb-Knopf tragen dieselben Mindesthöhen in ihren Komponenten-Stilen
+wie in `placeholder.css`; beide Stellen gehören zusammen geändert. Der
+Partial `portal-ui-assets.html` schreibt die Datei als `<style>` in die
+Seite, nicht als `<link>` — ein eigener Request wäre ein blockierendes
+Stylesheet mehr.
 
 Die Texte liegen je Sprache in einem eigenen Stück (`src/i18n/de.js`,
 `en.js`); `core/i18n.js` lädt nur die Sprache aus `<html lang>` und bei einer
@@ -42,18 +67,19 @@ synchron.
 Damit der Browser die Stücke nicht erst nacheinander entdeckt (Einstieg →
 Widget → Lit, jede Stufe eine Runde zum Server), schreibt `scripts/build.mjs`
 aus der esbuild-Metadatei `manifest.json`: je Schlüssel (`portal-login`,
-`i18n-de`, `shop-widgets`) die Dateien seines statischen Abschlusses. Der
+`i18n-de`, `portal-widgets`) die Dateien seines statischen Abschlusses. Der
 Partial `portal-ui-preload.html` setzt daraus `<link rel="modulepreload">`,
 jede Datei einmal je Seite (`page.Store`); `portal-ui-assets.html` ruft ihn
-für die Einstiege, die Seitensprache und — mit `params.portalui.accountButtons`
+für den Einstieg, die Seitensprache und — mit `params.portalui.accountButtons`
 — die Kopfknöpfe auf, jedes Shortcode für sein Widget. Alle Stücke werden
 veröffentlicht, auch nicht vorgeladene, weil ein Widget auch nachträglich ins
 Dokument kommen kann.
 
-Welche Bündel eine Webseite lädt, sagt `features.json` im Paket, das
-OpensourceERP mit dem Paket schreibt (`backend/api/portal/lib/kit.php`); der
-Partial `portal-ui-assets.html` liest es und legt die Merkmale als
-`data-portal-ui-features` ab (`src/core/features.js`).
+Was auf einer Webseite läuft (Shop, LxCars), sagt `features.json` im Paket,
+das OpensourceERP mit dem Paket schreibt (`backend/api/portal/lib/kit.php`);
+der Partial `portal-ui-assets.html` liest es und legt die Merkmale als
+`data-portal-ui-features` ab (`src/core/features.js`) — die Widgets zeigen
+danach Warenkorb oder Fahrzeuge.
 
 ```bash
 cd portal-ui

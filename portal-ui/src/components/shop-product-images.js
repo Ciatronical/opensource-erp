@@ -189,7 +189,6 @@ export class ShopProductImages extends PortalElement {
     `,
   ];
 
-  #slot = null;
   #pointerX = null;
   #swiped = false;
 
@@ -200,24 +199,9 @@ export class ShopProductImages extends PortalElement {
     this._open = false;
   }
 
-  // Der Slot zeigt das Light DOM, bis das erste Rendern es ersetzt. Lit hängt
-  // seinen Marker hinter vorhandene Kinder, der Slot bleibt also bis
-  // firstUpdated() stehen.
-  createRenderRoot() {
-    const root = super.createRenderRoot();
-    this.#slot = document.createElement('slot');
-    root.append(this.#slot);
-    return root;
-  }
-
   connectedCallback() {
     super.connectedCallback();
     this.#readImages();
-  }
-
-  firstUpdated() {
-    if (this.#slot) this.#slot.remove();
-    this.#slot = null;
   }
 
   /** Bilder aus den Links im Light DOM — Reihenfolge wie dort */
