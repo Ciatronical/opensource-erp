@@ -35,6 +35,9 @@
 -- Ungültig-Kennzeichen, die ein abgebrochener Bridge-Lauf hinterlassen hat,
 -- werden anhand der Quelltabellen der Lieferanten zurückgesetzt (Schritt 7).
 --
+-- Der Mandant wird auf „Nur Dropshipping“ gestellt, mit einer Lieferbedingung
+-- samt Lieferzeit in Tagen als Vorgabe (Schritt 8).
+--
 -- Es entstehen keine Veröffentlichungsaufträge (shop.ohne_auftraege): die
 -- Seiten werden nach der Einrichtung der Webseite bewusst in einem Lauf
 -- veröffentlicht.
@@ -232,6 +235,52 @@ BEGIN
 END $$;
 
 -- ----------------------------------------------------------------------------
+-- 8. Dropshipping und Lieferzeit
+-- ----------------------------------------------------------------------------
+-- Ein Bridge-Shop führt keinen eigenen Bestand: der Lieferant versendet. Mit
+-- der Vorgabe „Nur Dropshipping“ (shop_dropshipping_default) gilt jeder
+-- Artikel als Dropshipping-Artikel und ist ohne Bestand „Verfügbar“.
+--
+-- Die Reihenfolge ist zwingend: Ein Dropshipping-Artikel ohne Lieferzeit wird
+-- nicht veröffentlicht, eine vorhandene Seite wird zum Entwurf
+-- (shop_part_delivery, Spalte missing). Deshalb zuerst die Lieferbedingung mit
+-- ihren Tagen, dann ihre Vorgabe, zuletzt der Schalter.
+--
+-- Die Lieferzeit unten je Shop anpassen. Ist schon eine Lieferbedingung für
+-- Dropshipping-Artikel vorgegeben, bleibt sie. Eine Wiederholung ohne neue
+-- Artikel fasst den Schalter nicht an.
+
+\set lieferzeit_text 'Lieferzeit 1–6 Tage'
+\set lieferzeit_min 1
+\set lieferzeit_max 6
+
+WITH neu AS (
+    INSERT INTO delivery_terms (description, description_long, sortkey)
+    SELECT :'lieferzeit_text', :'lieferzeit_text', COALESCE((SELECT max(sortkey) FROM delivery_terms), 0) + 1
+     WHERE NOT EXISTS (SELECT 1 FROM defaults_oserp d
+                         JOIN delivery_terms t ON t.id::text = btrim(d.value)
+                        WHERE d.key = 'shop_dropshipping_delivery_term_id')
+    RETURNING id
+), tage AS (
+    INSERT INTO delivery_term_shop (delivery_term_id, days_min, days_max)
+    SELECT id, :lieferzeit_min, :lieferzeit_max FROM neu
+    RETURNING delivery_term_id
+)
+INSERT INTO defaults_oserp (key, value)
+SELECT 'shop_dropshipping_delivery_term_id', delivery_term_id::text FROM tage
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, mtime = now();
+
+-- Der Schalter: nur im Lauf der Übernahme (neue Artikel), und nur, wenn die
+-- Lieferbedingung steht. Das Schema-Update legt ihn mit 0 an.
+INSERT INTO defaults_oserp (key, value)
+SELECT 'shop_dropshipping_default', '1'
+ WHERE EXISTS (SELECT 1 FROM uebernommen)
+   AND EXISTS (SELECT 1 FROM defaults_oserp d
+                 JOIN delivery_terms t ON t.id::text = btrim(d.value)
+                WHERE d.key = 'shop_dropshipping_delivery_term_id')
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, mtime = now();
+
+-- ----------------------------------------------------------------------------
 -- Bericht
 -- ----------------------------------------------------------------------------
 
@@ -243,6 +292,13 @@ SELECT (SELECT count(*) FROM uebernommen)                                       
          WHERE pc.channel_id = shop_first_channel_id('hugoshop') AND pc.active
            AND NOT shop_part_available(pc.parts_id, pc.channel_id))               AS davon_nicht_verfuegbar,
        (SELECT count(*) FROM wieder_gueltig)                                      AS wieder_gueltig,
+       (SELECT count(*) FROM parts_channel_shop pc
+         WHERE pc.channel_id = shop_first_channel_id('hugoshop') AND pc.active
+           AND shop_part_dropshipping(pc.parts_id))                               AS dropshipping,
+       (SELECT count(*) FROM parts_channel_shop pc
+         CROSS JOIN LATERAL shop_part_delivery(pc.parts_id, pc.channel_id) lz
+         WHERE pc.channel_id = shop_first_channel_id('hugoshop') AND pc.active
+           AND lz.missing)                                                        AS ohne_lieferzeit,
        (SELECT count(*) FROM category_shop)                                       AS kategorien,
        (SELECT count(*) FROM parts_ext WHERE hugoshop_category_id IS NULL)        AS ohne_kategorie,
        (SELECT count(*) FROM parts_ext
