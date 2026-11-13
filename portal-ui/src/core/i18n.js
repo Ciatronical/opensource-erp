@@ -2,20 +2,23 @@
  * Texte der Widgets. Die Sprache kommt aus <html lang="..."> — die alten
  * versteckten Inputs (#hugoshop-lang) entfallen damit.
  *
- * Die Kataloge liegen je Sprache in einem eigenen Stück (src/i18n/<lang>.js,
- * esbuild macht daraus chunk-<hash>.js): geladen wird nur die Sprache der
- * Seite, bei einer anderen als Deutsch zusätzlich Deutsch als Rückfall für
- * fehlende Schlüssel. Vorher lagen alle Sprachen im geteilten Stück — 41 kB,
- * fast die Hälfte davon, auf jeder Seite.
+ * Deutsch liegt im Kern (statischer Import): es ist der Rückfall für fehlende
+ * Schlüssel und kommt deshalb auf jeder Seite ohnehin über die Leitung — als
+ * eigene Datei wäre es nur ein Request mehr. Jede andere Sprache ist eine
+ * eigene Datei (src/i18n/<lang>.js, scripts/build.mjs macht daraus
+ * chunk-<hash>.js), geladen nur auf Seiten dieser Sprache. Vorher lagen alle
+ * Sprachen im geteilten Stück — 41 kB, fast die Hälfte davon, auf jeder Seite.
  *
  * i18nReady() stößt das Laden an; PortalElement (core/base.js) wartet darauf,
  * bevor ein Widget zum ersten Mal rendert. t() ist danach synchron.
  */
 
+import deutsch from '../i18n/de.js';
+
 const RUECKFALL = 'de';
 
 const kataloge = {
-  de: () => import('../i18n/de.js'),
+  de: async () => ({ default: deutsch }),
   en: () => import('../i18n/en.js'),
 };
 

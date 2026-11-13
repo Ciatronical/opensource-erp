@@ -1,1 +1,0 @@
-var o="portal:auth-changed",n="shop:cart-changed",r="portal:error",c="portal:account-loaded";function u(t,e={}){document.dispatchEvent(new CustomEvent(t,{detail:e,bubbles:!0,composed:!0}))}function p(t,e){return document.addEventListener(t,e),()=>document.removeEventListener(t,e)}export{o as a,n as b,r as c,c as d,u as e,p as f};

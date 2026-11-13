@@ -1,1 +1,0 @@
-function t(e){let r=String(e||"");if(!r)return"";try{let n=new URL(r,window.location.origin);return n.origin===window.location.origin?n.href:n.pathname+n.search+n.hash}catch{return r}}function i(e){let r=new URLSearchParams(e||"").get("terms");return r?r.trim():""}export{t as a,i as b};

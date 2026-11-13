@@ -10,7 +10,7 @@
     "check": "node scripts/check-bundle.mjs",
     "build:dev": "node scripts/build.mjs --dev",
     "watch": "node scripts/build.mjs --dev --watch",
-    "size": "esbuild src/index.js --bundle --format=esm --minify --outfile=/dev/null --analyze",
+    "size": "esbuild src/core/index.js --bundle --format=esm --minify --outfile=/dev/null --analyze",
     "demo:css": "tailwindcss -c demo-src/tailwind.config.js -i demo-src/tailwind.input.css -o demo/vendor/tailwind.css --minify"
   },
   "devDependencies": {

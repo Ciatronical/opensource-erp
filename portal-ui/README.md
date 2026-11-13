@@ -11,13 +11,27 @@ Kerns heißen aus dieser Zeit `portal-login`, `portal-register`, `portal-account
 
 Die Widgets haben einen eigenen Build mit esbuild, getrennt vom Vite-Build von
 OpensourceERP: Sie laufen auf den Webseiten, nicht in der OSERP-Oberfläche.
-Ein Einstieg, viele Stücke:
+Eine Datei je Sache, keine automatische Aufteilung:
 
 | Bündel | Quelle | Inhalt |
 | --- | --- | --- |
 | `portal-widgets.js` | `src/portal.js` | Verzeichnis: welches Stück zu welchem Element gehört — Kundenportal, Shop und LxCars |
-| `chunk-<hash>.js` | — | je Widget eines, je Sprache eines, dazu das Geteilte (Lit, Basisklassen, API) |
-| `manifest.json` | — | welche Stücke ein Widget, der Einstieg oder eine Sprache braucht (Vorladen) |
+| `chunk-<hash>.js` | `src/core/index.js` | der Kern: Lit, Basisklassen, API, Bus, Texte-Lader, die deutschen Texte und die Kopfknöpfe — eine Datei, auf jeder Seite |
+| `chunk-<hash>.js` | `src/components/*.js` | je Widget eine Datei |
+| `chunk-<hash>.js` | `src/i18n/*.js` | je weiterer Sprache eine Datei (Deutsch liegt als Rückfall im Kern) |
+| `manifest.json` | — | welche Dateien ein Widget, der Einstieg oder eine Sprache braucht (Vorladen) |
+
+`scripts/build.mjs` baut in vier Läufen nacheinander (Sprachen → Kern →
+Widgets → Einstieg); was ein Lauf gebaut hat, bleibt im nächsten ein äußerer
+Import auf die fertige Datei. esbuilds eigene Aufteilung (`splitting`) ordnet
+jedes Modul danach, welche Einstiege es erreichen — der Kern zerfiel so in
+sieben Stücke (API, Bus, Features, ein Helfer von 111 Byte, Lit, …), auf
+jeder Seite sieben Requests für zusammen 40 kB. Jetzt ist es auf einem
+Blogbeitrag eine: der Kern, in dem auch die Kopfknöpfe liegen (5 kB, auf
+praktisch jeder Seite einer Webseite mit Kundenportal). Alles unter `src/core/` gehört in den
+Kern (`src/core/index.js` führt es auf), auch was nur manche Widgets brauchen:
+Module mit Zustand (`account-data`, `cart-data`, `checkout-data`) dürfen nur
+einmal auf der Seite sein.
 
 ### Laden je Element
 
@@ -28,7 +42,7 @@ eingefügte Elemente findet ein MutationObserver. Deshalb gibt es nur noch
 einen Einstieg für alle Erweiterungen (vorher `shop-widgets.js` und
 `lxcars-widgets.js` je nach `features.json`): Was eine Webseite nicht hat,
 kostet sie nichts, und sie lädt eine Datei statt dreier. Eine Seite ohne
-Widgets lädt so nur Einstieg und Grundstück; ein Blogbeitrag mit den
+Widgets lädt so nur den Kern; ein Blogbeitrag mit den
 Kopfknöpfen rund 20 kB statt vorher 220 kB (Lighthouse auf autoprofis24.de:
 „lange Hauptthread-Aufgaben" weg, Blockierzeit 110 → 40 ms). Widgets, die ein
 anderes Widget in seinem Template braucht (Kasse → Warenkorb, Registrierung;
@@ -66,10 +80,14 @@ synchron.
 
 Damit der Browser die Stücke nicht erst nacheinander entdeckt (Einstieg →
 Widget → Lit, jede Stufe eine Runde zum Server), schreibt `scripts/build.mjs`
-aus der esbuild-Metadatei `manifest.json`: je Schlüssel (`portal-login`,
+aus den esbuild-Metadateien `manifest.json`: je Schlüssel (`portal-login`,
 `i18n-de`, `portal-widgets`) die Dateien seines statischen Abschlusses. Der
-Partial `portal-ui-preload.html` setzt daraus `<link rel="modulepreload">`,
-jede Datei einmal je Seite (`page.Store`); `portal-ui-assets.html` ruft ihn
+Partial `portal-ui-preload.html` setzt daraus `<link rel="modulepreload"
+fetchpriority="low">`, jede Datei einmal je Seite (`page.Store`) — niedrige
+Priorität, weil die Seite ohne die Widgets steht (Platzhalter) und Bilder
+vorgehen dürfen; PageSpeed zählt die Datei so nicht zur kritischen Kette.
+`rel="preload" as="script"` geht nicht: eine CSP mit `'strict-dynamic'`
+blockiert es und danach auch den Modul-Import derselben Datei; `portal-ui-assets.html` ruft ihn
 für den Einstieg, die Seitensprache und — mit `params.portalui.accountButtons`
 — die Kopfknöpfe auf, jedes Shortcode für sein Widget. Alle Stücke werden
 veröffentlicht, auch nicht vorgeladene, weil ein Widget auch nachträglich ins
@@ -182,12 +200,12 @@ darauf legen muss, kann das jederzeit wieder tun.
 
 ```
 src/
-├── index.js                  alle Widgets in einem (nur für npm run size)
-├── portal.js, shop.js, lxcars.js   Einstiege: Element → Stück (core/lazy.js)
+├── portal.js                 Einstieg: Element → Datei (core/lazy.js)
 ├── i18n/
-│   ├── de.js                 Texte je Sprache, eigenes Stück
+│   ├── de.js                 Texte je Sprache; Deutsch im Kern, andere eigene Datei
 │   └── en.js
 ├── core/
+│   ├── index.js              der Kern: führt alles aus core/ samt Lit auf (eine Datei im Paket)
 │   ├── base.js               PortalElement — Basisklasse aller Widgets
 │   ├── lazy.js               Widget laden, wenn sein Element auf der Seite steht
 │   ├── theme.js              Preset auflösen, Stylesheet laden und adoptieren

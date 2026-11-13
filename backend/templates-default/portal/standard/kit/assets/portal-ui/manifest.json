@@ -1,204 +1,94 @@
 {
-  "_hinweis": "Von portal-ui/scripts/build.mjs geschrieben — Stücke je Widget, Einstieg und Sprache für modulepreload (partials/portal-ui-preload.html).",
+  "_hinweis": "Von portal-ui/scripts/build.mjs geschrieben — Dateien je Widget, Einstieg und Sprache für modulepreload (partials/portal-ui-preload.html).",
   "i18n-de": [
-    "chunk-VCFX22MW.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-ZO3BP2UK.js"
   ],
   "i18n-en": [
-    "chunk-HRDFYHG4.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-JJCN3JDR.js"
   ],
   "portal-account-addresses": [
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-MZYHXF4T.js",
-    "chunk-POBZMKKR.js",
-    "chunk-QPKBU756.js",
-    "chunk-SW7WWXO4.js",
-    "chunk-TBOLQJGS.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-QANH732A.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-account-buttons": [
-    "chunk-DGFMEHCY.js",
-    "chunk-E7ZHODYQ.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-QPKBU756.js",
-    "chunk-UH2NGOJY.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-account-documents": [
-    "chunk-C33TURUW.js",
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-HND7NCQI.js",
-    "chunk-MZYHXF4T.js",
-    "chunk-OVLLGEK2.js",
-    "chunk-POBZMKKR.js",
-    "chunk-QPKBU756.js",
-    "chunk-TBOLQJGS.js",
-    "chunk-V7WZHPS4.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-LTSTXRPK.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-account-nav": [
-    "chunk-CTBZ2Z3P.js",
-    "chunk-DGFMEHCY.js",
-    "chunk-E7ZHODYQ.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-POBZMKKR.js",
-    "chunk-QPKBU756.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-MPJVW3JF.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-account-overview": [
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-PFOXJNZW.js",
-    "chunk-POBZMKKR.js",
-    "chunk-QPKBU756.js",
-    "chunk-TBOLQJGS.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-I7XEZ6XN.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-account-payment": [
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-MZYHXF4T.js",
-    "chunk-QN66PR2I.js",
-    "chunk-QPKBU756.js",
-    "chunk-TBOLQJGS.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-Z4XYRY3J.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-account-profile": [
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-K6FHQOIR.js",
-    "chunk-LRW6IMV2.js",
-    "chunk-QPKBU756.js",
-    "chunk-TBOLQJGS.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-C4MTG7TF.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-activate": [
-    "chunk-DGFMEHCY.js",
-    "chunk-EZP5XVPQ.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-LRW6IMV2.js",
-    "chunk-QPKBU756.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-2UES2CYO.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-contact": [
-    "chunk-DGFMEHCY.js",
-    "chunk-LIXJAKIU.js",
-    "chunk-QPKBU756.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-Q4DWXIHY.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-login": [
-    "chunk-5L3EQNXC.js",
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-LRW6IMV2.js",
-    "chunk-QPKBU756.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-BS6F6C2E.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-register": [
-    "chunk-2SYTEXSS.js",
-    "chunk-CI3PKFHO.js",
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-LRW6IMV2.js",
-    "chunk-MZYHXF4T.js",
-    "chunk-QPKBU756.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-6REHG6PZ.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-vehicles": [
-    "chunk-ABKGOOFK.js",
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-MZYHXF4T.js",
-    "chunk-OVLLGEK2.js",
-    "chunk-QPKBU756.js",
-    "chunk-TBOLQJGS.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-4EHIJEWL.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "portal-widgets": [
-    "chunk-DGFMEHCY.js",
-    "chunk-E7ZHODYQ.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-ZO3BP2UK.js"
   ],
   "shop-add-to-cart": [
-    "chunk-4X22EGBP.js",
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-HQ6426IJ.js",
-    "chunk-QPKBU756.js",
-    "chunk-RBYIKIWP.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-7SH6YZHJ.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "shop-cart": [
-    "chunk-C33TURUW.js",
-    "chunk-C36IRUVR.js",
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-MZYHXF4T.js",
-    "chunk-PYPCV2BV.js",
-    "chunk-QPKBU756.js",
-    "chunk-V7WZHPS4.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-MBFX77HO.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "shop-checkout": [
-    "chunk-3UWSU4EP.js",
-    "chunk-C33TURUW.js",
-    "chunk-C36IRUVR.js",
-    "chunk-CI3PKFHO.js",
-    "chunk-CO6VYKTG.js",
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-HQ6426IJ.js",
-    "chunk-LRW6IMV2.js",
-    "chunk-MZYHXF4T.js",
-    "chunk-POBZMKKR.js",
-    "chunk-QPKBU756.js",
-    "chunk-V7WZHPS4.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-6REHG6PZ.js",
+    "chunk-MBFX77HO.js",
+    "chunk-ZO3BP2UK.js",
+    "chunk-ZUEGMEBJ.js"
   ],
   "shop-invoice": [
-    "chunk-C33TURUW.js",
-    "chunk-CO6VYKTG.js",
-    "chunk-DGFMEHCY.js",
-    "chunk-HPJC33OI.js",
-    "chunk-HQ6426IJ.js",
-    "chunk-POBZMKKR.js",
-    "chunk-QPKBU756.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-7D2Y3ZDZ.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "shop-product-images": [
-    "chunk-JWP5JGAI.js",
-    "chunk-QPKBU756.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-KJ2X5JW2.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "shop-search": [
-    "chunk-DGFMEHCY.js",
-    "chunk-MZYHXF4T.js",
-    "chunk-QPKBU756.js",
-    "chunk-V7WZHPS4.js",
-    "chunk-YBWLHNHN.js",
-    "chunk-YCVKWRAO.js"
+    "chunk-BI4KWIOO.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "shop-search-results": [
-    "chunk-DGFMEHCY.js",
-    "chunk-EMI3TFZ5.js",
-    "chunk-MZYHXF4T.js",
-    "chunk-QPKBU756.js",
-    "chunk-V7WZHPS4.js",
-    "chunk-YBWLHNHN.js"
+    "chunk-GLSEIONY.js",
+    "chunk-ZO3BP2UK.js"
   ],
   "shop-tool-finder": [
-    "chunk-4X22EGBP.js",
-    "chunk-C33TURUW.js",
-    "chunk-DGFMEHCY.js",
-    "chunk-GYJ5JEL2.js",
-    "chunk-HQ6426IJ.js",
-    "chunk-QPKBU756.js",
-    "chunk-V7WZHPS4.js",
-    "chunk-YBWLHNHN.js",
-    "chunk-YMLK3YPH.js"
+    "chunk-7SH6YZHJ.js",
+    "chunk-D6IFUDBK.js",
+    "chunk-ZO3BP2UK.js"
   ]
 }

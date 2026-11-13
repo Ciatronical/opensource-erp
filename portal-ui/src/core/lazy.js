@@ -2,17 +2,17 @@
  * Laden je Element: Ein Widget kommt erst dann über die Leitung, wenn sein
  * Element auf der Seite steht.
  *
- * Die Einstiege (portal.js, shop.js, lxcars.js) tragen hier nur noch ein,
- * welche Datei zu welchem Element gehört — als dynamischer Import, den
- * esbuild zu einem eigenen Stück (chunk-<hash>.js) macht. Beim Start wird das
+ * Der Einstieg (portal.js) trägt hier nur ein, welche Datei zu welchem
+ * Element gehört — als dynamischer Import, den scripts/build.mjs auf die
+ * Datei des Widgets (chunk-<hash>.js) umschreibt. Beim Start wird das
  * Dokument einmal abgesucht; danach beobachtet ein MutationObserver, was
  * später dazukommt (die Schnellsuche einer Webseite fügt etwa fertige
  * Trefferlisten mit <shop-add-to-cart> ein).
  *
  * Vorher luden die Einstiege alle Widgets auf jeder Seite — auf einem
  * Blogbeitrag 220 kB JavaScript für einen Kopf mit drei Knöpfen (Lighthouse:
- * „lange Hauptthread-Aufgaben“). Jetzt sind es dort der Einstieg, das
- * geteilte Stück und das eine Widget.
+ * „lange Hauptthread-Aufgaben“). Jetzt sind es dort der Kern und das eine
+ * Widget.
  *
  * Elemente, die ein Widget in seinem eigenen Template benutzt (die Kasse den
  * Warenkorb und die Registrierung, die Werkzeugsuche den Warenkorb-Knopf),

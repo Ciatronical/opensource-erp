@@ -54,7 +54,6 @@ const portal = {
   'portal-account-payment': () => import('./components/portal-account-payment.js'),
   'portal-account-documents': () => import('./components/portal-account-documents.js'),
   'portal-account-addresses': () => import('./components/portal-account-addresses.js'),
-  'portal-account-buttons': () => import('./components/portal-account-buttons.js'),
   'portal-contact': () => import('./components/portal-contact.js'),
   'portal-activate': () => import('./components/portal-activate.js'),
 };
@@ -74,6 +73,7 @@ const lxcars = {
 
 registerLazy({ ...portal, ...shop, ...lxcars });
 
-registerBundle('portal', Object.keys(portal));
+// Die Kopfknöpfe liegen im Kern (core/index.js), nicht als eigenes Stück
+registerBundle('portal', [...Object.keys(portal), 'portal-account-buttons']);
 if (hasFeature('shop')) registerBundle('shop', Object.keys(shop));
 if (hasFeature('lxcars')) registerBundle('lxcars', Object.keys(lxcars));
