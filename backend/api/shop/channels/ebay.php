@@ -670,6 +670,8 @@ function shopEbayPublishPartNow($db, int $kanal, int $partsId): string {
                    FROM parts_shipping_method_shop pm
                    JOIN shipping_method_shop m ON m.id = pm.shipping_method_id AND m.active
                   WHERE pm.parts_id = p.id
+                    -- nur im Verbund erlaubte zählen nicht: der Artikel allein versendet so nicht
+                    AND NOT pm.together_only
                     AND NULLIF(btrim(m.ebay_fulfillment_policy_id), '') IS NOT NULL
                   ORDER BY m.rank DESC, m.id
                   LIMIT 1) AS versandrichtlinie,

@@ -536,6 +536,28 @@ export class PortalRegister extends PortalElement {
    * das alte saveAccount() liess leere Felder weg, wodurch das Backend auf
    * undefinierte Indizes lief.
    */
+  /**
+   * Land der Adresse vorbelegen — <shop-checkout> uebernimmt so das im
+   * Warenkorb gewaehlte Lieferland. Gesetzt wird nur ein leeres Feld oder
+   * eines, das noch die letzte Vorbelegung traegt ($zuvor); mit $immer auch
+   * ein selbst ausgefuelltes (der Kunde hat das Land gerade neu gewaehlt).
+   * Gilt eine abweichende Lieferadresse, ist deren Land gemeint.
+   *
+   * @param {string} name   Landesname
+   * @param {string} zuvor  zuletzt vorbelegter Name
+   * @param {boolean} immer auch Eigenes ersetzen
+   * @return {boolean} true, wenn das Feld geaendert wurde
+   */
+  prefillCountry(name, zuvor = '', immer = false) {
+    const element = this.$(this._otherDelivery ? 'shipping-country' : 'country');
+    if (!element || !name) return false;
+    const steht = element.value.trim();
+    if (steht === name) return false;
+    if (!immer && steht !== '' && steht !== zuvor) return false;
+    element.value = name;
+    return true;
+  }
+
   values() {
     const value = (id) => {
       const element = this.$(id);

@@ -83,6 +83,12 @@ function getCart($db, string $uuid, array $daten) {
     $land = is_array($adressen) && isset($adressen['shipping'])
         ? shopShippingCountry($db, $customerId, shopDeliveryAddress($adressen['shipping']))
         : null;
+    // Nennt die Adresse (noch) kein Land — ein Gast hat das Formular erst
+    // begonnen —, gilt das im Warenkorb gewählte Lieferland, nicht stillschweigend
+    // das Land des Mandanten (cartShippingCountry, 2026-11-13)
+    if ('' === $land) {
+        $land = null;
+    }
 
     // customer: Kunde (Konto oder Gast) in der Sitzung — nur dann zeigt der
     // Warenkorb den PayPal-Knopf; ohne Kunden führt der Weg über die Kasse
@@ -171,6 +177,22 @@ function chooseShipping($db, string $uuid, array $daten) {
         throw new ApiError('CART_NOT_FOUND', 'Zu dieser Sitzung gibt es keinen Warenkorb');
     }
     cartChooseShipping($db, $context['cart_uuid'], portalVarInt($daten, 'shipping_method'));
+    getCart($db, $uuid, $daten);
+}
+
+/**
+ * Warenkorb und Kasse: Lieferland wählen (dev/shop-versand.md, 2026-11-13)
+ *
+ * country = ISO-Code des Lieferlands, leer = keine Wahl. Der Versand rechnet
+ * damit, solange keine Lieferadresse vorliegt; die Antwort ist wie bei
+ * checkout der neu gerechnete Warenkorb mit den Versandarten für dieses Land.
+ */
+function chooseShippingCountry($db, string $uuid, array $daten) {
+    $context = portalContextRequire($db, $uuid);
+    if (empty($context['cart_uuid'])) {
+        throw new ApiError('CART_NOT_FOUND', 'Zu dieser Sitzung gibt es keinen Warenkorb');
+    }
+    cartChooseCountry($db, $context['cart_uuid'], trim((string)portalVar($daten, 'country', '')));
     getCart($db, $uuid, $daten);
 }
 
@@ -323,7 +345,7 @@ function shopPublicActions(): array {
         // Suche
         'fastSearch', 'moreSearchResults', 'fullSearch', 'findSpecialTools',
         // Bestellung und Rechnung
-        'checkout', 'chooseShipping', 'invoicing', 'getInvoiceSummary',
+        'checkout', 'chooseShipping', 'chooseShippingCountry', 'invoicing', 'getInvoiceSummary',
         // Zahlung
         'beginPayment', 'endPayment', 'paymentCanceled',
         // Auswertung, Widerruf
@@ -371,7 +393,7 @@ function shopExternalActions(): array {
  * @return string[]
  */
 function shopClosedActions(): array {
-    return ['inCart', 'changeQuantity', 'checkout', 'chooseShipping', 'invoicing', 'beginPayment'];
+    return ['inCart', 'changeQuantity', 'checkout', 'chooseShipping', 'chooseShippingCountry', 'invoicing', 'beginPayment'];
 }
 
 /**

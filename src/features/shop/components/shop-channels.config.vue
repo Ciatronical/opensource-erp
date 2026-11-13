@@ -40,7 +40,7 @@
 
         <!-- Kanal anlegen: eine weitere Instanz einer Art, abgeschaltet — oben, vor
              den vorhandenen Kanälen -->
-        <v-card v-if="!laedt && !fehler && arten.length" variant="outlined" class="my-3">
+        <v-card v-if="!laedt && !fehler && arten.length" id="kanal-neu" variant="outlined" class="my-3 kanal-karte">
             <v-card-text class="d-flex flex-wrap align-center ga-2">
                 <span class="text-body-2 mr-2">{{ t('ShopView.channelConfig.newChannel') }}</span>
                 <v-select
@@ -643,6 +643,18 @@ async function laden() {
 }
 
 /**
+ * Gliederung für die Seitennavigation der Ansicht „Verkaufskanäle“: jeder
+ * Kanal in der gezeigten Reihenfolge mit der id seiner Karte
+ */
+const gliederung = computed(() => kanaele.value.map(k => ({
+    id: `kanal-${k.channel_id}`,
+    title: k.name || artName(k.type),
+    icon: kanalIcon(k.type),
+    active: !!k.active,
+})))
+defineExpose({ gliederung })
+
+/**
  * Öffnet die Einstellungen eines Kanals und springt zu seiner Karte
  *
  * Gesprungen wird erst, wenn das Aufklappen fertig ist: vorher ist die Seite
@@ -807,5 +819,12 @@ onBeforeUnmount(() => {
 /* Abstand zur festen Kopfleiste beim Anspringen eines Kanals (kanalOeffnen) */
 .kanal-karte {
     scroll-margin-top: 72px;
+}
+/* Ab mittlerer Breite blättert der Inhalt in einer eigenen Spalte unter der
+   Kopfleiste (shop-nav-layout.vue): dort genügt ein kleiner Abstand */
+@media (min-width: 960px) {
+    .kanal-karte {
+        scroll-margin-top: var(--oserp-gap-sm);
+    }
 }
 </style>

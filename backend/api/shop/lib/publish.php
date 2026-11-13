@@ -584,6 +584,9 @@ function shopShippingCheckText(array $pruefung): string {
             return '';
         case 'weight_missing':
             return 'Keine passende Versandart: Der Artikel hat kein Gewicht, die Versandarten brauchen eins';
+        case 'together_only':
+            return 'Der Artikel erlaubt nur Versandarten „nur zusammen mit anderen Artikeln“ ('.($pruefung['method'] ?? '')
+                .') und ist allein nicht bestellbar: am Artikel mindestens eine Versandart ohne dieses Kennzeichen erlauben';
         case 'assigned_unfit':
             return 'Die zugeordnete Versandart „'.($pruefung['method'] ?? '').'“ passt nicht'.$gemessen
                 .' oder hat für diesen HugoShop keine Preisstufe';

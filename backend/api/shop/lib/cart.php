@@ -82,7 +82,7 @@ function cartOfContext($db, string $uuid): string {
  *               netto_total_sum_inc_shipping: float, shipping_status: string,
  *               shipping_method_id: ?int, shipping_method: string, shipping_parts_id: ?int,
  *               shipping_free: bool, shipping_account: bool, shipping_options: array,
- *               shipping_country: string}
+ *               shipping_country: string, shipping_countries: string[]}
  */
 function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, string $land = ''): array {
     // Gerundet wird je Position, danach summiert. Sonst weicht die Summe von
@@ -172,6 +172,15 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, str
                 -- Land, mit dem gerechnet wurde (Code): Standard-Lieferadresse, Rechnungsadresse
                 -- oder Mandantenland — der Warenkorb nennt es dem Kunden
                 , shop_country_code(:land) AS shipping_country
+                -- Länder zur Wahl (Lieferland vor der Versandart, 2026-11-13):
+                -- die Lieferländer des Kanals, ohne Einschränkung alle
+                , (SELECT COALESCE(json_agg(l.iso_code ORDER BY l.iso_code), '[]'::json)
+                     FROM carts_hugoshop kb
+                     JOIN country_shop l ON true
+                    WHERE kb.uuid = :cart_uuid
+                      AND (NOT EXISTS (SELECT 1 FROM sales_channel_country_shop cc WHERE cc.channel_id = kb.channel_id)
+                           OR EXISTS (SELECT 1 FROM sales_channel_country_shop cc
+                                       WHERE cc.channel_id = kb.channel_id AND cc.iso_code = l.iso_code))) AS shipping_countries
            FROM summen s
            CROSS JOIN versand v
            CROSS JOIN betrag b",
@@ -200,6 +209,7 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, str
         'shipping_account'             => $wahr($zeile['shipping_account'] ?? 't'),
         'shipping_options'             => json_decode((string)($zeile['shipping_options'] ?? '[]'), true) ?: [],
         'shipping_country'             => (string)($zeile['shipping_country'] ?? ''),
+        'shipping_countries'           => json_decode((string)($zeile['shipping_countries'] ?? '[]'), true) ?: [],
     ];
 }
 
@@ -215,7 +225,8 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, str
  * @param int|null $customerId Kunde, oder null fuer die Mandanten-Vorgaben
  * @param bool $simple true => schlanke Auspraegung
  * @param string|null $land Land der Lieferadresse (Freitext oder Code); null =
- *                          Standard-Lieferadresse des Kunden (shopShippingCountry)
+ *                          das im Warenkorb gewählte Land, sonst die
+ *                          Standard-Lieferadresse des Kunden (cartShippingCountry)
  * @return array{positions: array, totalSum: float, ...}
  */
 function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, ?string $land = null): array {
@@ -301,7 +312,7 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, 
     }
 
     $summen = cartTotals($db, $cartUuid, $precision, $taxzoneId,
-                         $land ?? shopShippingCountry($db, $customerId, [], true));
+                         $land ?? cartShippingCountry($db, $cartUuid, $customerId));
 
     // Adressen auf der Webseite aus den Mustern des HugoShops, zu dem der
     // Warenkorb gehört — die Widgets kennen selbst keine Pfade
@@ -560,7 +571,7 @@ function cartSetQuantity($db, string $cartUuid, ?int $customerId, int $posId, in
 function cartSummary($db, string $cartUuid, ?int $customerId): array {
     $stammdaten = customerInvoicingData($db, $customerId);
     $summen = cartTotals($db, $cartUuid, (float)$stammdaten['precision'], (int)$stammdaten['taxzone_id'],
-                         shopShippingCountry($db, $customerId, [], true));
+                         cartShippingCountry($db, $cartUuid, $customerId));
 
     $anzahl = $db->getOne(
         "SELECT COUNT(*) AS anzahl
@@ -604,6 +615,8 @@ function cartShippingShape(array $summen): array {
         'shippingMethodId' => $summen['shipping_method_id'],
         // ISO-Code des Lieferlands, mit dem gerechnet wurde (leer = unbekannt)
         'shippingCountry'  => $summen['shipping_country'] ?? '',
+        // Länder, unter denen der Kunde das Lieferland wählt (ISO-Codes)
+        'shippingCountries' => $summen['shipping_countries'] ?? [],
         'shippingFree'     => $summen['shipping_free'],
         'shippingOptions'  => array_map(fn($o) => [
             'id'        => (int)$o['id'],
@@ -650,6 +663,59 @@ function cartChooseShipping($db, string $cartUuid, int $methodId): void {
     if (!$zeile && $methodId > 0) {
         throw new ApiError('SHIPPING_METHOD_NOT_FOUND', 'Diese Versandart gibt es nicht');
     }
+}
+
+/**
+ * Merkt das vom Kunden gewaehlte Lieferland am Warenkorb
+ *
+ * Lieferland vor der Versandart (dev/shop-versand.md, 2026-11-13): Solange
+ * keine Lieferadresse vorliegt, rechnet der Versand mit diesem Land. Leer hebt
+ * die Wahl auf. Angenommen wird nur ein Land, in das der Kanal liefert.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $cartUuid Warenkorb-Kennung
+ * @param string $land ISO-Code oder Freitext, leer = keine Wahl
+ * @return void
+ * @throws ApiError SHIPPING_COUNTRY_NOT_DELIVERED
+ */
+function cartChooseCountry($db, string $cartUuid, string $land): void {
+    $zeile = $db->getOne(
+        "UPDATE carts_hugoshop k
+            SET shipping_country = w.code, active = now()
+           FROM (SELECT CASE WHEN btrim(:land) = '' THEN NULL ELSE shop_country_code(:land_code) END AS code) w
+          WHERE k.uuid = :cart_uuid
+            AND (btrim(:land_leer) = ''
+                 OR (w.code IS NOT NULL
+                     AND (NOT EXISTS (SELECT 1 FROM sales_channel_country_shop cc WHERE cc.channel_id = k.channel_id)
+                          OR EXISTS (SELECT 1 FROM sales_channel_country_shop cc
+                                      WHERE cc.channel_id = k.channel_id AND cc.iso_code = w.code))))
+      RETURNING k.uuid",
+        [':land' => $land, ':land_code' => $land, ':land_leer' => $land, ':cart_uuid' => $cartUuid]
+    );
+    if (!$zeile) {
+        throw new ApiError('SHIPPING_COUNTRY_NOT_DELIVERED', 'In dieses Land wird nicht geliefert');
+    }
+}
+
+/**
+ * Lieferland, mit dem der Warenkorb rechnet, solange die Kasse keine Adresse nennt
+ *
+ * Das vom Kunden gewaehlte Land (cartChooseCountry) geht vor; sonst wie
+ * bisher die Standard-Lieferadresse des Kontos, die Rechnungsadresse oder —
+ * leer — das Land des Mandanten (shopShippingCountry).
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $cartUuid Warenkorb-Kennung
+ * @param int|null $customerId Kunde
+ * @return string ISO-Code oder Freitext, leer = Mandantenland
+ */
+function cartShippingCountry($db, string $cartUuid, ?int $customerId): string {
+    $zeile = $db->getOne(
+        "SELECT COALESCE(shipping_country, '') AS land FROM carts_hugoshop WHERE uuid = :cart_uuid",
+        [':cart_uuid' => $cartUuid]
+    );
+    $gewaehlt = trim((string)($zeile['land'] ?? ''));
+    return '' !== $gewaehlt ? $gewaehlt : shopShippingCountry($db, $customerId, [], true);
 }
 
 /**

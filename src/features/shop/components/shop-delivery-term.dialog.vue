@@ -9,13 +9,16 @@
     (createShopDeliveryTerm), und meldet ihn mit „created“ zurück — die
     aufrufende Stelle nimmt ihn in ihre Auswahl auf und wählt ihn.
 
-    Ändern und Löschen bleiben in der Firmenkonfiguration unter
-    „Stammdaten-Listen“.
+    Mit der Eigenschaft „eintrag“ ändert er Bezeichnung und Text einer
+    vorhandenen Lieferbedingung (updateShopDeliveryTerm, Abschnitt
+    „Lieferzeiten“) und meldet sie mit „updated“ zurück; die Tage pflegt dort
+    die Liste. Auf ungültig setzen und Löschen bleiben in der
+    Firmenkonfiguration unter „Stammdaten-Listen“.
 -->
 <template>
     <v-dialog :model-value="modelValue" max-width="520" @update:model-value="$emit('update:modelValue', $event)">
         <v-card>
-            <v-card-title>{{ t('ShopView.deliveryTerm.title') }}</v-card-title>
+            <v-card-title>{{ t(props.eintrag ? 'ShopView.deliveryTerm.editTitle' : 'ShopView.deliveryTerm.title') }}</v-card-title>
             <v-card-text>
                 <v-form ref="formular" @submit.prevent="anlegen">
                     <v-text-field
@@ -42,7 +45,7 @@
                         autocomplete="off"
                         class="lieferbedingung-feld"
                     />
-                    <v-row density="compact">
+                    <v-row v-if="!props.eintrag" density="compact">
                         <v-col v-for="feld in ['days_min', 'days_max']" :key="feld" cols="6">
                             <v-text-field
                                 v-model="eintrag[feld]"
@@ -58,7 +61,7 @@
                             />
                         </v-col>
                     </v-row>
-                    <div class="text-caption text-medium-emphasis lieferbedingung-hinweis">{{ t('ShopView.deliveryTerm.daysHint') }}</div>
+                    <div v-if="!props.eintrag" class="text-caption text-medium-emphasis lieferbedingung-hinweis">{{ t('ShopView.deliveryTerm.daysHint') }}</div>
                     <!-- Enter in einem Feld sendet das Formular -->
                     <button type="submit" hidden />
                 </v-form>
@@ -66,7 +69,7 @@
             <v-card-actions>
                 <v-spacer />
                 <v-btn variant="text" :disabled="speichert" @click="$emit('update:modelValue', false)">{{ t('ShopView.common.cancel') }}</v-btn>
-                <v-btn color="primary" variant="flat" :loading="speichert" @click="anlegen">{{ t('ShopView.deliveryTerm.create') }}</v-btn>
+                <v-btn color="primary" variant="flat" :loading="speichert" @click="anlegen">{{ t(props.eintrag ? 'ShopView.common.save' : 'ShopView.deliveryTerm.create') }}</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -81,8 +84,10 @@ import * as toasts from '@/core/utils/toasts.js'
 
 const props = defineProps({
     modelValue: { type: Boolean, default: false },
+    /** Vorhandene Lieferbedingung (id, description, description_long) = ändern; null = anlegen */
+    eintrag: { type: Object, default: null },
 })
-const emit = defineEmits(['update:modelValue', 'created'])
+const emit = defineEmits(['update:modelValue', 'created', 'updated'])
 
 const i18n = useI18n()
 const { t } = i18n
@@ -105,10 +110,12 @@ const tageGueltig = computed(() => {
     return ganz(von) && ganz(bis) && (von === null || bis === null || von <= bis)
 })
 
-// Jedes Öffnen beginnt leer
+// Jedes Öffnen beginnt leer — oder mit der Lieferbedingung, die geändert wird
 watch(() => props.modelValue, offen => {
     if (!offen) return
-    eintrag.value = leererEintrag()
+    eintrag.value = props.eintrag
+        ? { ...leererEintrag(), description: props.eintrag.description || '', description_long: props.eintrag.description_long || '' }
+        : leererEintrag()
     fehler.value = ''
 })
 
@@ -117,25 +124,27 @@ async function anlegen() {
     const pruefung = await formular.value?.validate()
     if (!pruefung?.valid) return
     speichert.value = true
+    const aendern = !!props.eintrag
+    const ersatz = aendern ? 'ShopView.deliveryTerm.updateError' : 'ShopView.deliveryTerm.createError'
     try {
-        const antwort = await axios.post('/api/shop/', {
-            action: 'createShopDeliveryTerm',
+        const texte = {
             description: eintrag.value.description.trim(),
             description_long: String(eintrag.value.description_long || '').trim(),
-            days_min: tage(eintrag.value.days_min),
-            days_max: tage(eintrag.value.days_max),
-        })
+        }
+        const antwort = await axios.post('/api/shop/', aendern
+            ? { action: 'updateShopDeliveryTerm', delivery_term_id: props.eintrag.id, ...texte }
+            : { action: 'createShopDeliveryTerm', ...texte, days_min: tage(eintrag.value.days_min), days_max: tage(eintrag.value.days_max) })
         if (!antwort.data?.success) {
-            const meldung = shopFehler(antwort.data, i18n, 'ShopView.deliveryTerm.createError')
+            const meldung = shopFehler(antwort.data, i18n, ersatz)
             if (meldung.code === 'DELIVERY_TERM_EXISTS') fehler.value = meldung.text
             else toasts.error(meldung.text)
             return
         }
-        toasts.success(t('ShopView.deliveryTerm.created'))
-        emit('created', antwort.data.payload?.delivery_term)
+        toasts.success(t(aendern ? 'ShopView.deliveryTerm.updated' : 'ShopView.deliveryTerm.created'))
+        emit(aendern ? 'updated' : 'created', antwort.data.payload?.delivery_term)
         emit('update:modelValue', false)
     } catch (e) {
-        toasts.error(shopFehler(e?.response?.data, i18n, 'ShopView.deliveryTerm.createError').text)
+        toasts.error(shopFehler(e?.response?.data, i18n, ersatz).text)
     } finally {
         speichert.value = false
     }

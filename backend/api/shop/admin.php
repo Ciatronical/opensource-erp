@@ -550,6 +550,10 @@ function getPartShopData($data) {
                  -- erlaubte Versandarten (Mehrfachzuordnung, 2026-10-30); leer = alle
                  'method_ids', (SELECT COALESCE(json_agg(pm.shipping_method_id ORDER BY pm.shipping_method_id), '[]')
                                   FROM parts_shipping_method_shop pm WHERE pm.parts_id = :parts_id_zuordnung),
+                 -- davon nur zusammen mit anderen Artikeln (together_only, 2026-11-13)
+                 'together_only_ids', (SELECT COALESCE(json_agg(pm.shipping_method_id ORDER BY pm.shipping_method_id), '[]')
+                                         FROM parts_shipping_method_shop pm
+                                        WHERE pm.parts_id = :parts_id_verbund AND pm.together_only),
                  'methods', (SELECT COALESCE(json_agg(json_build_object(
                                         'id', m.id, 'description', m.description, 'active', m.active)
                                         ORDER BY m.rank DESC, m.description), '[]')
@@ -616,6 +620,7 @@ function getPartShopData($data) {
             ':parts_id_bilder' => (int)($data['parts_id'] ?? 0),
             ':parts_id_versand' => (int)($data['parts_id'] ?? 0),
             ':parts_id_zuordnung' => (int)($data['parts_id'] ?? 0),
+            ':parts_id_verbund'   => (int)($data['parts_id'] ?? 0),
             ':parts_id_pruefung' => (int)($data['parts_id'] ?? 0),
             ':parts_id_lieferzeit' => (int)($data['parts_id'] ?? 0),
             ':parts_id_preise'   => (int)($data['parts_id'] ?? 0),
@@ -688,14 +693,15 @@ function checkShopPageName($data) {
  *              verfügbar), settings (kanaleigene Angaben, etwa
  *              category_id und condition bei eBay)
  * @param array $data['shipping'] Versandangaben (dev/shop-versand.md, Schritt 5):
- *              shipping_method_ids (erlaubte Versandarten, leer = alle), length,
+ *              shipping_method_ids (erlaubte Versandarten, leer = alle), together_only_ids
+ *              (davon nur zusammen mit anderen Artikeln wählbar), length,
  *              width, height (cm), min_qty (Mindestabnahme, bei eBay die
  *              Losgröße), delivery_term_id (Lieferbedingung), dropshipping
  *              (Dropshipping-Artikel: der Lieferant versendet). Fehlt das Feld,
  *              bleiben die Angaben unverändert
  * @param int $data['template_parts_id'] „Als neu verwenden“: Vorlage, deren Kanalbilder übernommen werden (optional)
  * @return void
- * @testdata {"parts_id": 1, "category_id": 1, "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}], "shipping": {"shipping_method_ids": [], "length": 40, "width": 30, "height": 20, "min_qty": null, "delivery_term_id": null, "dropshipping": false}}
+ * @testdata {"parts_id": 1, "category_id": 1, "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}], "shipping": {"shipping_method_ids": [], "together_only_ids": [], "length": 40, "width": 30, "height": 20, "min_qty": null, "delivery_term_id": null, "dropshipping": false}}
  */
 function savePartShopData($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
@@ -761,6 +767,7 @@ function savePartShopData($data) {
     // Versandangaben: Zahlen größer 0 oder leer. Fehlt das Feld, bleiben sie.
     // Erlaubte Versandarten als PostgreSQL-Array; unbekannte Ids scheitern am Fremdschlüssel
     $versandarten = '{'.implode(',', array_map('intval', (array)(($data['shipping'] ?? [])['shipping_method_ids'] ?? []))).'}';
+    $versandartenVerbund = '{'.implode(',', array_map('intval', (array)(($data['shipping'] ?? [])['together_only_ids'] ?? []))).'}';
     $versandSetzen = isset($data['shipping']) && is_array($data['shipping']);
     $versand = $versandSetzen ? $data['shipping'] : [];
     $mass = [];
@@ -870,11 +877,14 @@ function savePartShopData($data) {
                     AND NOT (pm.shipping_method_id = ANY (CAST(:versandarten_weg AS integer[])))
                  RETURNING 1
              ), zuordnung_neu AS (
-                 INSERT INTO parts_shipping_method_shop (parts_id, shipping_method_id)
-                 SELECT ext.parts_id, x
+                 -- together_only: nur zusammen mit anderen Artikeln (2026-11-13);
+                 -- eine vorhandene Zeile wird nur bei geändertem Kennzeichen angefasst
+                 INSERT INTO parts_shipping_method_shop AS pm (parts_id, shipping_method_id, together_only)
+                 SELECT ext.parts_id, x, x = ANY (CAST(:versandarten_verbund AS integer[]))
                    FROM ext, unnest(CAST(:versandarten_neu AS integer[])) AS x
                   WHERE :versand_setzen_neu = 1
-                 ON CONFLICT DO NOTHING
+                 ON CONFLICT (parts_id, shipping_method_id) DO UPDATE SET together_only = EXCLUDED.together_only
+                  WHERE pm.together_only IS DISTINCT FROM EXCLUDED.together_only
                  RETURNING 1
              )
              SELECT v.channel_id, p.partnumber, pe.hugoshop_hyperlink
@@ -899,6 +909,7 @@ function savePartShopData($data) {
                 ':versand_setzen_neu' => $versandSetzen ? 1 : 0,
                 ':versandarten_weg'   => $versandarten,
                 ':versandarten_neu'   => $versandarten,
+                ':versandarten_verbund' => $versandartenVerbund,
                 ':laenge'          => $mass['length'],
                 ':breite'          => $mass['width'],
                 ':hoehe'           => $mass['height'],
@@ -1731,9 +1742,10 @@ function deleteShopShippingMethod($data) {
 /**
  * Legt eine Versandzone an oder ändert sie, samt ihren Ländern
  *
- * Ein Land gehört höchstens zu einer Zone: steht es schon in einer anderen,
- * wechselt es hierher. Länder, die nicht mehr genannt sind, verlassen die
- * Zone.
+ * Ein Land kann in mehreren Zonen stehen (überlappende Zonen, 2026-11-13):
+ * andere Zonen bleiben unberührt, bei der Preisermittlung gilt die engere
+ * Zone (shop_country_zones). Länder, die nicht mehr genannt sind, verlassen
+ * die Zone.
  *
  * @param int $data['id'] Zone, 0 = neu
  * @param string $data['description'] Bezeichnung
@@ -1754,6 +1766,12 @@ function saveShopShippingZone($data) {
         array_map(fn($code) => strtoupper(trim((string)$code)), (array)($data['countries'] ?? [])),
         fn($code) => 1 === preg_match('/^[A-Z]{2}$/', $code)
     )));
+    // Eine Zone ohne Land gälte für kein Lieferland: ihre Preisstufen griffen nie
+    if (!$laender) {
+        // Text in der Oberfläche (ShopView.errors.SHIPPING_ZONE_COUNTRIES_MISSING)
+        resultInfo(false, 'SHIPPING_ZONE_COUNTRIES_MISSING', null, null);
+        return;
+    }
 
     $zeile = $db->getOne(
         "WITH zone AS (
@@ -1775,7 +1793,8 @@ function saveShopShippingZone($data) {
          ), gesetzt AS (
              INSERT INTO shipping_zone_country_shop (iso_code, zone_id)
              SELECT neu.code, zone.id FROM neu CROSS JOIN zone
-             ON CONFLICT (iso_code) DO UPDATE SET zone_id = EXCLUDED.zone_id
+             -- ein Land kann in mehreren Zonen stehen (2026-11-13): andere Zonen bleiben
+             ON CONFLICT (iso_code, zone_id) DO NOTHING
              RETURNING 1
          )
          SELECT (SELECT id FROM zone) AS id, (SELECT count(*) FROM gesetzt) AS laender",
@@ -2116,6 +2135,84 @@ function createShopDeliveryTerm($data) {
     }
 
     resultInfo(true, 'DELIVERY_TERM_CREATED', ['delivery_term' => $zeile]);
+}
+
+/**
+ * Ändert Bezeichnung und Text einer Lieferbedingung
+ *
+ * Für das Bearbeiten direkt im Abschnitt „Lieferzeiten“. Der Text steht auf
+ * Produktseite, Warenkorb und Rechnung: ändert er sich, entsteht für jeden
+ * eingeschalteten HugoShop mit automatischer Veröffentlichung der Auftrag,
+ * alle Produktseiten neu zu schreiben. Eine Bezeichnung, die eine andere
+ * Lieferbedingung schon trägt (ohne Groß-/Kleinschreibung), wird abgelehnt.
+ *
+ * @param int $data['delivery_term_id'] Lieferbedingung (delivery_terms)
+ * @param string $data['description'] Bezeichnung in der Auswahl
+ * @param string $data['description_long'] Text für Produktseite, Warenkorb und Rechnung; leer = Bezeichnung
+ * @return void
+ * @testdata {"delivery_term_id": 1, "description": "2–4 Werktage", "description_long": "Lieferzeit 2–4 Werktage"}
+ */
+function updateShopDeliveryTerm($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $bezeichnung = trim((string)($data['description'] ?? ''));
+    if ('' === $bezeichnung) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Bezeichnung fehlt');
+        return;
+    }
+
+    // Eine Anweisung: ändern und, wenn sich der gezeigte Text geändert hat,
+    // die Aufträge anlegen. Keine Zeile = unbekannte Lieferbedingung;
+    // Zeile ohne id = die Bezeichnung gibt es schon.
+    $zeile = $db->getOne(
+        "WITH vorher AS (
+             SELECT d.id, COALESCE(NULLIF(btrim(d.description_long), ''), d.description) AS text
+               FROM delivery_terms d
+              WHERE d.id = :delivery_term_id
+         ), geschrieben AS (
+             UPDATE delivery_terms d
+                SET description      = CAST(:description AS text),
+                    description_long = CAST(:description_long AS text),
+                    mtime            = now()
+               FROM vorher v
+              WHERE d.id = v.id
+                AND NOT EXISTS (SELECT 1 FROM delivery_terms x
+                                 WHERE lower(x.description) = lower(CAST(:description_pruefung AS text))
+                                   AND x.id <> v.id)
+             RETURNING d.id, d.description, d.description_long, d.obsolete,
+                       COALESCE(NULLIF(btrim(d.description_long), ''), d.description) AS text
+         )
+         SELECT g.id, g.description, g.description_long, g.obsolete,
+                (SELECT count(shop_queue_job('publish_all', '', NULL, c.id))
+                   FROM sales_channel_shop c
+                  WHERE c.active AND c.type = 'hugoshop' AND shop_auto_publish_enabled(c.id)
+                    AND g.id IS NOT NULL AND g.text IS DISTINCT FROM v.text) AS auftraege
+           FROM vorher v
+           LEFT JOIN geschrieben g ON g.id = v.id",
+        [
+            ':delivery_term_id'     => (int)($data['delivery_term_id'] ?? 0),
+            ':description'          => $bezeichnung,
+            ':description_long'     => trim((string)($data['description_long'] ?? '')),
+            ':description_pruefung' => $bezeichnung,
+        ]
+    );
+    if (!$zeile) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Diese Lieferbedingung gibt es nicht (mehr)');
+        return;
+    }
+    if (null === $zeile['id']) {
+        resultInfo(false, 'DELIVERY_TERM_EXISTS', null, null);
+        return;
+    }
+
+    resultInfo(true, 'DELIVERY_TERM_SAVED', [
+        'delivery_term' => [
+            'id' => $zeile['id'], 'description' => $zeile['description'],
+            'description_long' => $zeile['description_long'], 'obsolete' => $zeile['obsolete'],
+        ],
+        'republish' => (int)$zeile['auftraege'] > 0,
+    ]);
 }
 
 /**

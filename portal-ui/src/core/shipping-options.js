@@ -58,6 +58,14 @@ export const shippingOptionStyles = css`
     justify-content: space-between;
     gap: 0.75rem;
   }
+  .shipping-country {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0 0 0.75rem;
+  }
+  .shipping-country select {
+    max-width: 100%;
+  }
 `;
 
 /** Preis einer Versandart als Text; leer, wenn sie nicht passt */
@@ -77,6 +85,51 @@ export function countryName(code) {
   } catch {
     return code;
   }
+}
+
+/**
+ * Auswahl des Lieferlands ueber der Versandwahl (dev/shop-versand.md,
+ * „Lieferland vor der Versandart“): Der Kunde nennt erst das Land, dann
+ * stehen nur die Versandarten dorthin zur Wahl. Bei nur einem Lieferland
+ * steht es als Text; ohne Laenderliste (aelteres Backend) nichts.
+ *
+ * @param {object} args
+ * @param {string[]} args.countries ISO-Codes der Lieferlaender
+ * @param {string} args.value       Land, mit dem gerechnet wurde (ISO-Code)
+ * @param {Function} args.cls       this.cls des Elements (Preset-Klassen)
+ * @param {boolean} args.busy       Wahl laeuft gerade — Eingabe gesperrt
+ * @param {Function} args.onChoose  (code) => void
+ * @param {string} args.id          id= des Auswahlfelds (je Element eindeutig)
+ */
+export function renderShippingCountry({ countries, value, cls, busy, onChoose, id = 'shipping-country' }) {
+  if (!countries || !countries.length) return nothing;
+  if (countries.length === 1) {
+    return html`<p class="note ${cls('muted')}">${t('shipping.countryOnly').replace('{country}', countryName(countries[0]))}</p>`;
+  }
+  const lang = document.documentElement.lang || 'de';
+  const sorted = countries
+    .map((code) => ({ code, name: countryName(code) }))
+    .sort((a, b) => a.name.localeCompare(b.name, lang));
+  return html`
+    <div class="shipping-country">
+      <label class=${cls('label')} for=${id}>${t('shipping.country')}</label>
+      <select
+        class=${cls('input')}
+        id=${id}
+        ?disabled=${busy}
+        @change=${(event) => onChoose(event.target.value)}
+      >
+        ${value && countries.includes(value)
+          ? nothing
+          : html`<option value="" ?selected=${true} disabled>${t('shipping.countryChoose')}</option>`}
+        ${repeat(
+          sorted,
+          (c) => c.code,
+          (c) => html`<option value=${c.code} ?selected=${c.code === value}>${c.name}</option>`,
+        )}
+      </select>
+    </div>
+  `;
 }
 
 /**

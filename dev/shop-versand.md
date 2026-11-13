@@ -247,7 +247,7 @@ verhalten sich wie beschrieben.
 und `sales_channel_shop.free_shipping_from`. `parts_shipping_shop` und
 `sales_channel_country_shop` werden erst in Schritt 5 bzw. 7 benutzt.
 
-- Ein Land gehört höchstens zu einer Zone (Schlüssel `iso_code`).
+- ~~Ein Land gehört höchstens zu einer Zone (Schlüssel `iso_code`).~~ Seit 2026-11-13 kann ein Land in mehreren Zonen stehen, siehe „Überlappende Zonen“.
 - Preisstufe: Kanal und Zone leer = alle; es gilt die genaueste Stufe (eigener
   Kanal vor allen, eigene Zone vor „alle übrigen Länder", dann die höchste
   erreichte Gewichts- und Stückzahlstufe). Ohne passende Stufe liefert die
@@ -866,3 +866,87 @@ sagt ein Hinweis das.
 SQL-Funktionen und die PHP-Bibliothek sind gegen die lokale Testdatenbank
 geprüft (zurückgerollte Transaktion). Wirksam erst nach dem Upstall der
 Shop-Erweiterung.
+
+## Versandart nur im Verbund (2026-11-13)
+
+Ein Artikel kann eine Versandart erlauben, ohne dass der Kunde sie für ihn
+allein wählen kann: Kennzeichen „nur zusammen mit anderen Artikeln“ an der
+Zuordnung (`parts_shipping_method_shop.together_only`).
+
+- **Regel im Warenkorb:** Eine Versandart steht zur Wahl, wenn jeder
+  eingeschränkte Artikel sie erlaubt (Schnittmenge, wie bisher) **und**
+  mindestens ein Artikel sie trägt. Ein Artikel trägt eine Versandart, wenn er
+  sie ohne das Kennzeichen erlaubt — oder keine Zuordnung hat und die
+  Versandart für Kunden freigeschaltet ist (`selectable`).
+- **Nicht freigeschaltete Versandart:** Das Kennzeichen gilt unabhängig von
+  der Freischaltung. Eine nicht freigeschaltete Versandart, die ein Artikel nur
+  im Verbund erlaubt, gilt erst, wenn ein anderer Artikel sie ausdrücklich
+  (ohne Kennzeichen) vorgibt.
+- **Kasse:** Eine nicht getragene Versandart erscheint gar nicht
+  (`shop_cart_shipping_options` blendet den Grund `together_only` aus).
+- **Veröffentlichung:** Versandarten nur im Verbund zählen für den Artikel
+  allein nicht (`shop_part_shipping_check`). Hat er nur solche, lautet der
+  Status `together_only`, und die Seite wird nicht veröffentlicht.
+- **eBay:** Für die Versandrichtlinie zählen nur Versandarten ohne das
+  Kennzeichen.
+- **Umsetzung:** `shop_cart_shipping_metrics` liefert `nur_verbund` (nur im
+  Verbund erlaubt und von keinem Artikel getragen); `shop_shipping_candidates`
+  und `shop_shipping_select` nehmen es als letzten Parameter `p_nur_verbund`.
+  Die Signaturen haben sich damit geändert — die alten Fassungen entfernt das
+  Schema vor dem Anlegen.
+
+Beispiel: A erlaubt Paket und, nur im Verbund, Spedition; B erlaubt Spedition.
+Nur A → Paket. Nur B → Spedition. A und B → Spedition.
+
+## Lieferland vor der Versandart (2026-11-13)
+
+Ein Gast hat noch keine Adresse; bisher rechnete der Warenkorb für ihn
+stillschweigend mit dem Land des Mandanten und zeigte Versandarten anderer
+Länder ausgegraut mit „Nicht für dieses Lieferland“.
+
+- **Auswahl „Lieferland“** über der Versandwahl, im Warenkorb für alle, in der
+  Kasse für Gäste (`renderShippingCountry` in `portal-ui/src/core/shipping-options.js`).
+  Zur Wahl stehen die Lieferländer des Kanals, ohne Einschränkung alle Länder
+  (`shippingCountries`); bei nur einem Land steht es als Text.
+- **Gemerkt am Warenkorb:** `carts_hugoshop.shipping_country`, gesetzt über die
+  öffentliche Aktion `chooseShippingCountry` (`cartChooseCountry`).
+- **Reihenfolge des Lands** (`getCart`, `cartShippingCountry`): Adresse aus der
+  Kasse, sonst das gewählte Land, sonst Standard-Lieferadresse bzw.
+  Rechnungsadresse des Kontos, sonst Land des Mandanten. Die Rechnung nimmt
+  wie bisher allein die Lieferadresse — das Land steht in der Adresse, die
+  Versandart folgt daraus.
+- **Nur passende Versandarten:** `shop_cart_shipping_options` lässt
+  Versandarten ohne Preisstufe für das Lieferland (`no_rate`) weg. Ausgegraut
+  bleiben nur Gründe, die der Kunde versteht (zu schwer, zu groß, Artikel
+  lässt sie nicht zu).
+- **Kasse, Gast:** Das gewählte Land wird in das Adressformular übernommen
+  (`prefillCountry` in `portal-register.js`), solange dort nichts Eigenes steht.
+
+## Überlappende Zonen (2026-11-13)
+
+Ein Land kann in mehreren Zonen stehen, etwa „Inland“ (DE) und
+„Deutschsprachiger Raum“ (DE, AT, CH). Schlüssel von
+`shipping_zone_country_shop` ist das Paar aus Land und Zone.
+
+- **Regel „engere Zone gewinnt“:** Hat eine Versandart für mehrere Zonen des
+  Lieferlands eine Preisstufe, gilt die Zone mit den wenigsten Ländern, bei
+  Gleichstand die ältere. `shop_country_zones(iso)` liefert die Zonen eines
+  Lands in dieser Reihenfolge; `shop_shipping_candidates` und
+  `shop_shipping_select` nehmen sie als `p_zonen` (statt `p_zone`).
+- **Vorrang insgesamt:** eigener Kanal vor allen Kanälen, eigene Zone vor
+  „alle übrigen Länder“, engere Zone vor weiterer, dann die höchste erreichte
+  Gewichts- und Stückzahlstufe.
+- **Zonenpflege:** Ein Land wechselt beim Zuordnen nicht mehr die Zone; jede
+  Zone braucht mindestens ein Land.
+- **Preisanzeige in der Shop-Karte** (`shop_part_shipping_prices`): eine Zeile
+  je Gruppe von Ländern mit denselben Zonen, benannt nach der engsten Zone.
+  Deckt die Gruppe nicht alle Länder dieser Zone ab, nennt die Zeile ihre
+  Länder — „Deutschsprachiger Raum (AT, CH)“.
+- **Signaturen** von `shop_shipping_candidates` und `shop_shipping_select`
+  haben sich geändert; das Schema entfernt die alten Fassungen.
+
+| Versandart hat Preisstufe für | nach DE | nach AT |
+|---|---|---|
+| nur „Inland“ | Inland | nicht lieferbar |
+| nur „Deutschsprachiger Raum“ | Deutschsprachiger Raum | Deutschsprachiger Raum |
+| beide | Inland | Deutschsprachiger Raum |

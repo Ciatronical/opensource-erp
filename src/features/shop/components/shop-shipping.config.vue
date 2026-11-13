@@ -33,8 +33,9 @@
         </div>
 
         <template v-else>
-            <!-- ── Länderzonen ── -->
-            <div class="d-flex align-center mt-2 mb-1">
+            <!-- ── Länderzonen ── (die id-Anker nutzt die Seitennavigation der
+                 Ansicht „Versandarten“, siehe gliederung) -->
+            <div id="versand-zonen" class="versand-anker d-flex align-center mt-2 mb-1">
                 <div class="text-subtitle-1 font-weight-medium">{{ t('ShopView.shippingConfig.zones') }}</div>
                 <v-spacer />
                 <v-btn size="small" variant="text" prepend-icon="mdi-plus" @click="zoneNeu">
@@ -43,7 +44,7 @@
             </div>
             <div class="text-caption text-medium-emphasis mb-2">{{ t('ShopView.shippingConfig.zonesHint') }}</div>
 
-            <v-card v-for="zone in zonen" :key="zone.schluessel" variant="outlined" class="mb-2">
+            <v-card v-for="zone in zonen" :id="`versand-zone-${zone.schluessel}`" :key="zone.schluessel" variant="outlined" class="versand-anker mb-2">
                 <v-card-text class="py-2">
                     <v-row dense align="center">
                         <v-col cols="12" sm="4" class="py-1">
@@ -62,12 +63,13 @@
                                 v-model="zone.countries"
                                 :items="landAuswahl"
                                 :label="t('ShopView.shippingConfig.countries')"
+                                :error-messages="zone.countries.length ? [] : [t('ShopView.shippingConfig.countriesRequired')]"
                                 multiple
                                 chips
                                 closable-chips
                                 variant="outlined"
                                 density="compact"
-                                hide-details
+                                hide-details="auto"
                             />
                         </v-col>
                         <v-col cols="12" sm="1" class="py-1 d-flex justify-end align-center">
@@ -86,8 +88,12 @@
             </v-card>
             <div v-if="!zonen.length" class="text-caption text-medium-emphasis mb-2">{{ t('ShopView.shippingConfig.noZones') }}</div>
 
+            <!-- Platz zwischen Länderzonen und Versandarten, etwa für die
+                 Lieferzeiten der Ansicht „Versandarten“ -->
+            <slot name="nach-zonen" />
+
             <!-- ── Versandarten ── -->
-            <div class="d-flex align-center mt-6 mb-1">
+            <div id="versand-arten" class="versand-anker d-flex align-center mt-6 mb-1">
                 <div class="text-subtitle-1 font-weight-medium">{{ t('ShopView.shippingConfig.methods') }}</div>
                 <v-spacer />
                 <v-btn size="small" variant="text" prepend-icon="mdi-plus" @click="methodeNeu">
@@ -99,7 +105,7 @@
                 {{ t('ShopView.shippingConfig.noActiveMethod') }}
             </v-alert>
 
-            <v-card v-for="methode in methoden" :key="methode.schluessel" variant="outlined" class="mb-3">
+            <v-card v-for="methode in methoden" :id="`versand-art-${methode.schluessel}`" :key="methode.schluessel" variant="outlined" class="versand-anker mb-3">
                 <v-card-item>
                     <v-card-title class="text-subtitle-1 d-flex align-center">
                         <v-icon icon="mdi-truck-delivery-outline" class="mr-2" />
@@ -752,7 +758,9 @@ async function speichern(eintrag, art) {
     const daten = art === 'zone' ? zoneNutzdaten(eintrag) : methodeNutzdaten(eintrag)
     const stand = JSON.stringify(daten)
     if (stand === zuletzt[eintrag.schluessel]) return
-    if (art === 'zone' ? leer(eintrag.description) : !methodeGueltig(eintrag)) return
+    // Eine Zone ohne Land gälte für kein Lieferland — sie wird erst mit
+    // Bezeichnung und mindestens einem Land gespeichert
+    if (art === 'zone' ? (leer(eintrag.description) || !eintrag.countries.length) : !methodeGueltig(eintrag)) return
     if (inArbeit[eintrag.schluessel]) {
         // Läuft schon — danach noch einmal, mit dem dann aktuellen Stand
         inArbeit[eintrag.schluessel] = 'nochmal'
@@ -782,14 +790,6 @@ async function speichern(eintrag, art) {
             }
         }
         zuletzt[eintrag.schluessel] = JSON.stringify(art === 'zone' ? zoneNutzdaten(eintrag) : methodeNutzdaten(eintrag))
-        // Ein Land wechselt die Zone: die andere Zone zeigt es nicht mehr
-        if (art === 'zone') {
-            zonen.value.filter(z => z !== eintrag).forEach(z => {
-                const vorher = z.countries.length
-                z.countries = z.countries.filter(c => !eintrag.countries.includes(c))
-                if (z.countries.length !== vorher) zuletzt[z.schluessel] = JSON.stringify(zoneNutzdaten(z))
-            })
-        }
         toasts.success(t('ShopView.shippingConfig.saved'))
     } catch (e) {
         toasts.error(shopFehler(e?.response?.data, i18n, 'ShopView.shippingConfig.saveError').text)
@@ -819,16 +819,31 @@ watch(zonen, liste => planen(liste, 'zone'), { deep: true })
 
 // ── Neu und Löschen ──
 
+/**
+ * Gliederung für die Seitennavigation der Ansicht „Versandarten“: die
+ * Länderzonen und Versandarten in der gezeigten Reihenfolge, je mit der id
+ * ihres Ankers im Dokument
+ */
+const gliederung = computed(() => ({
+    zonen: zonen.value.map(z => ({ id: `versand-zone-${z.schluessel}`, title: String(z.description || '').trim() })),
+    methoden: methoden.value.map(m => ({
+        id: `versand-art-${m.schluessel}`, title: String(m.description || '').trim(), active: !!m.active,
+    })),
+}))
+defineExpose({ gliederung })
+
 function methodeNeu() {
     laufend += 1
-    // Versandartikel vorbelegt: nächste freie Nummer, „Versand“, erste Buchungsgruppe
-    methoden.value.push(alsMethode({
+    // Versandartikel vorbelegt: nächste freie Nummer, „Versand“, erste Buchungsgruppe.
+    // Die neue Versandart steht oben, direkt unter der Schaltfläche — am Ende
+    // der Liste fiele sie nicht auf. Nach dem nächsten Laden steht sie nach Rang.
+    methoden.value.unshift(alsMethode({
         id: 0, description: '', rank: 0, free_shipping_applies: true, active: true,
         partnumber: naechsteNummer.value,
         part_buchungsgruppen_id: buchungsgruppen.value[0]?.id ?? null,
         rates: [{ channel_id: null, zone_id: null, weight_from: 0, qty_from: 0, price: null, cost: null }],
     }))
-    methoden.value[methoden.value.length - 1].schluessel = `neu-m${laufend}`
+    methoden.value[0].schluessel = `neu-m${laufend}`
 }
 
 function zoneNeu() {
@@ -901,3 +916,10 @@ onBeforeUnmount(() => {
     })
 })
 </script>
+
+<style scoped>
+/* Sprungziele der Seitennavigation: nicht bündig am oberen Rand */
+.versand-anker {
+    scroll-margin-top: var(--oserp-gap-lg);
+}
+</style>

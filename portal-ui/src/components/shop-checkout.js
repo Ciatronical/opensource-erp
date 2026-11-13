@@ -12,7 +12,7 @@ import {
   emptyShipping,
 } from '../core/checkout-data.js';
 import { gtmBeginCheckout } from '../core/gtm.js';
-import { renderShippingOptions, shippingOptionStyles } from '../core/shipping-options.js';
+import { renderShippingOptions, renderShippingCountry, shippingOptionStyles, countryName } from '../core/shipping-options.js';
 import './shop-cart.js';
 import './portal-register.js';
 import { shopPath, apiUrl, sitePath } from '../core/paths.js';
@@ -166,6 +166,8 @@ export class ShopCheckout extends PortalElement {
   // Aenderung ein neues Objekt, sonst laede der Warenkorb bei jedem Rendern neu
   #cartAddresses = null;
   #cartAddressesKey = '';
+  // Gast: zuletzt aus der Laenderwahl ins Adressformular geschriebenes Land
+  #prefilledCountry = '';
 
   constructor() {
     super();
@@ -223,7 +225,10 @@ export class ShopCheckout extends PortalElement {
         method: detail.cart.totals.shippingMethod,
         methodId: detail.cart.totals.shippingMethodId,
         options: detail.cart.totals.shippingOptions,
+        country: detail.cart.totals.shippingCountry,
+        countries: detail.cart.totals.shippingCountries,
       };
+      this.#prefillGuestCountry();
     }
     if (detail.cart && !this.#checkoutReported) {
       this.#checkoutReported = true;
@@ -308,6 +313,57 @@ export class ShopCheckout extends PortalElement {
       street: quelle.street || '',
       country: quelle.country || '',
     };
+  }
+
+  /**
+   * Gast: das im Warenkorb gewaehlte Lieferland in das Adressformular
+   * uebernehmen, solange dort noch kein Land steht (oder noch das zuletzt
+   * vorbelegte) — die Lieferadresse nennt dann dasselbe Land wie die
+   * Versandwahl. Was der Kunde selbst eingetippt hat, bleibt.
+   */
+  #prefillGuestCountry() {
+    if (!this._account || this._account.registered) return;
+    const code = this._shipping && this._shipping.country;
+    if (!code || !(this._shipping.countries || []).length) return;
+    const register = this.$('guest');
+    if (!register || typeof register.prefillCountry !== 'function') return;
+    const name = countryName(code);
+    if (register.prefillCountry(name, this.#prefilledCountry)) {
+      this.#prefilledCountry = name;
+      this.#guestInput();
+    }
+  }
+
+  /**
+   * Lieferland in der Kasse waehlen (Gast ohne Adresse): die Wahl bleibt am
+   * Warenkorb (chooseShippingCountry) und steht danach im Adressformular.
+   */
+  async #chooseCountry(code) {
+    if (this._shippingBusy || !code) return;
+    this._shippingBusy = true;
+    this._error = '';
+    try {
+      // Das Land im Formular folgt der Wahl: ein zuvor vorbelegtes wird ersetzt
+      const register = this.$('guest');
+      if (register && typeof register.prefillCountry === 'function') {
+        const name = countryName(code);
+        if (register.prefillCountry(name, this.#prefilledCountry, true)) {
+          this.#prefilledCountry = name;
+          this.#guestInput();
+        }
+      }
+      const addresses = this.#addressesForCart();
+      const data = await apiRequest('chooseShippingCountry', {
+        country: code,
+        ...(addresses ? { adresses: addresses } : {}),
+      });
+      const cart = this.$('cart');
+      if (cart && typeof cart.apply === 'function') cart.apply(data);
+    } catch (error) {
+      this._error = t(error.code || 'PORTAL_API_ERROR');
+    } finally {
+      this._shippingBusy = false;
+    }
   }
 
   /**
@@ -692,12 +748,24 @@ export class ShopCheckout extends PortalElement {
 
   #renderShipping() {
     const shipping = this._shipping;
-    if (!shipping || !shipping.options || !shipping.options.length) return nothing;
-    const options = shipping.options;
+    if (!shipping) return nothing;
+    const options = shipping.options || [];
+    // Lieferland waehlt hier nur der Gast: beim angemeldeten Kunden nennt es
+    // die Lieferadresse darueber
+    const countries = this._account && !this._account.registered ? shipping.countries || [] : [];
+    if (!options.length && countries.length < 2) return nothing;
     const available = options.filter((o) => o.available).length;
     return html`
       <div class="block">
-        <p class="block-title">${t('checkout.shipping')}</p>
+        ${renderShippingCountry({
+          countries,
+          value: shipping.country,
+          cls: (role) => this.cls(role),
+          busy: this._shippingBusy,
+          onChoose: (code) => this.#chooseCountry(code),
+          id: 'shipping-country-checkout',
+        })}
+        ${options.length ? html`<p class="block-title">${t('checkout.shipping')}</p>` : nothing}
         ${renderShippingOptions({
           options,
           currency: this.#currency,

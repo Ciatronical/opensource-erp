@@ -12,37 +12,41 @@
 -->
 <template>
     <NavbarView />
-    <v-container fluid>
-
-        <v-row align="center" class="mb-3">
-            <v-col>
-                <h1 class="text-h5">
-                    <v-icon start>mdi-store-cog</v-icon>
-                    {{ t('ShopView.channelConfig.title') }}
-                </h1>
-            </v-col>
-            <v-col cols="auto">
-                <v-btn variant="text" size="small" @click="router.push({ name: 'shop-overview' })">
-                    <v-icon start>mdi-arrow-left</v-icon>
-                    {{ t('ShopView.menu.title') }}
-                </v-btn>
-            </v-col>
-        </v-row>
+    <!-- Seitennavigation wie in der Firmenkonfiguration (shop-nav-layout.vue):
+         „Neuer Verkaufskanal“ und jeder Kanal als Sprungziel -->
+    <ShopNavLayout :ziele="darf ? ziele : []">
+        <template #kopf>
+            <v-row align="center" class="mb-3">
+                <v-col>
+                    <h1 class="text-h5">
+                        <v-icon start>mdi-store-cog</v-icon>
+                        {{ t('ShopView.channelConfig.title') }}
+                    </h1>
+                </v-col>
+                <v-col cols="auto">
+                    <v-btn variant="text" size="small" @click="router.push({ name: 'shop-overview' })">
+                        <v-icon start>mdi-arrow-left</v-icon>
+                        {{ t('ShopView.menu.title') }}
+                    </v-btn>
+                </v-col>
+            </v-row>
+        </template>
 
         <v-alert v-if="!darf" type="warning" variant="tonal" density="compact">
             {{ t('ShopView.errors.NO_PERMISSION') }}
         </v-alert>
 
         <!-- ?channel=… (Kennzahlen der Übersicht): diesen Kanal öffnen -->
-        <ShopChannelsConfig v-else :mit-ueberschrift="false" :fokus="Number(route.query.channel) || 0" />
-    </v-container>
+        <ShopChannelsConfig v-else ref="kanaele" :mit-ueberschrift="false" :fokus="Number(route.query.channel) || 0" />
+    </ShopNavLayout>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import ShopNavLayout from '../components/shop-nav-layout.vue'
 import ShopChannelsConfig from '../components/shop-channels.config.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 
@@ -53,4 +57,20 @@ const oserp = oserpStore()
 
 /** Ohne das Recht lehnt die Kanal-API ab — die Seite sagt es gleich */
 const darf = computed(() => oserp.checkPermission('edit_shop_config'))
+
+// ── Seitennavigation ──
+
+/** Kanalkomponente: nennt ihre Kanäle mit Sprungziel (gliederung) */
+const kanaele = ref(null)
+
+/** Sprungziele: „Neuer Verkaufskanal“, dann jeder Kanal in der gezeigten Reihenfolge */
+const ziele = computed(() => {
+    // Nie leer: sonst wechselte der Aufbau der Seite, sobald die Kanäle geladen
+    // sind, und die Kanalkomponente würde dabei neu aufgebaut
+    const gliederung = kanaele.value?.gliederung || []
+    return [
+        { id: 'kanal-neu', title: t('ShopView.channelConfig.newChannel').replace(/:\s*$/, ''), icon: 'mdi-plus' },
+        ...gliederung.map(k => ({ id: k.id, title: k.title, icon: k.icon, inaktiv: !k.active })),
+    ]
+})
 </script>

@@ -34,6 +34,9 @@ export function cartTotals(data) {
     shippingFree: !!data.shippingFree,
     // ISO-Code des Lieferlands, mit dem das Backend gerechnet hat (leer = unbekannt)
     shippingCountry: data.shippingCountry || '',
+    // Laender, unter denen der Kunde das Lieferland waehlt (ISO-Codes); leer
+    // bei aelteren Backends — dann gibt es keine Auswahl
+    shippingCountries: Array.isArray(data.shippingCountries) ? data.shippingCountries.map(String) : [],
     // Versandwahl in der Kasse (dev/shop-versand.md, 2026-10-30): alle
     // Versandarten mit Preis, Verfuegbarkeit und Grund; selected ist die, mit
     // der das Backend rechnet. Leer bei aelteren Backends und ohne Versandarten.

@@ -1360,17 +1360,54 @@ CREATE TABLE IF NOT EXISTS shipping_zone_shop
 
 COMMENT ON TABLE shipping_zone_shop IS 'Shop: Länderzone für Versandpreise';
 
--- Ein Land gehört höchstens zu einer Zone (Schlüssel iso_code)
+-- Überlappende Zonen (2026-11-13): ein Land kann in mehreren Zonen stehen,
+-- etwa „Inland“ (DE) und „Deutschsprachiger Raum“ (DE, AT, CH). Hat eine
+-- Versandart für mehrere Zonen des Lieferlands eine Preisstufe, gilt die
+-- engere Zone — die mit den wenigsten Ländern (shop_country_zones). Bis dahin
+-- gehörte ein Land höchstens zu einer Zone (Schlüssel iso_code).
 CREATE TABLE IF NOT EXISTS shipping_zone_country_shop
 (
-    iso_code text NOT NULL PRIMARY KEY REFERENCES country_shop (iso_code) ON DELETE CASCADE,
-    zone_id  integer NOT NULL REFERENCES shipping_zone_shop (id) ON DELETE CASCADE
+    iso_code text NOT NULL REFERENCES country_shop (iso_code) ON DELETE CASCADE,
+    zone_id  integer NOT NULL REFERENCES shipping_zone_shop (id) ON DELETE CASCADE,
+    PRIMARY KEY (iso_code, zone_id)
 );
 
-COMMENT ON TABLE shipping_zone_country_shop IS 'Shop: Land einer Versandzone, jedes Land höchstens einmal';
+COMMENT ON TABLE shipping_zone_country_shop IS 'Shop: Land einer Versandzone; ein Land kann in mehreren Zonen stehen';
+
+-- Bestand: der Schlüssel war das Land allein — auf (Land, Zone) umstellen
+DO $$
+DECLARE
+    schluessel text;
+BEGIN
+    SELECT c.conname INTO schluessel
+      FROM pg_constraint c
+     WHERE c.conrelid = 'shipping_zone_country_shop'::regclass
+       AND c.contype = 'p'
+       AND cardinality(c.conkey) = 1;
+    IF schluessel IS NOT NULL THEN
+        EXECUTE format('ALTER TABLE shipping_zone_country_shop DROP CONSTRAINT %I', schluessel);
+        ALTER TABLE shipping_zone_country_shop ADD PRIMARY KEY (iso_code, zone_id);
+    END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS shipping_zone_country_shop_zone_idx
+    ON shipping_zone_country_shop (zone_id);
+
+-- Zonen eines Lands, die engste zuerst (wenigste Länder, bei Gleichstand die
+-- ältere Zone); leer = das Land steht in keiner Zone („alle übrigen Länder“).
+-- Die Reihenfolge ist der Vorrang der Preisstufen (shop_shipping_candidates).
+CREATE OR REPLACE FUNCTION shop_country_zones(p_iso_code text) RETURNS integer[]
+    LANGUAGE sql STABLE AS $$
+    SELECT COALESCE(array_agg(z.zone_id ORDER BY z.laender, z.zone_id), '{}'::integer[])
+      FROM (SELECT zc.zone_id,
+                   (SELECT count(*) FROM shipping_zone_country_shop x WHERE x.zone_id = zc.zone_id) AS laender
+              FROM shipping_zone_country_shop zc
+             WHERE zc.iso_code = p_iso_code) z
+$$;
 
 -- Preisstufen. Es gilt die Zeile mit dem genauesten Treffer: eigener Kanal vor
--- allen Kanälen, eigene Zone vor allen übrigen Ländern, dann die höchste
+-- allen Kanälen, eigene Zone vor allen übrigen Ländern, unter mehreren Zonen
+-- des Lieferlands die engste, dann die höchste
 -- erreichte Gewichts- und Stückzahlstufe. Ohne passende Zeile liefert die
 -- Versandart nicht dorthin.
 CREATE TABLE IF NOT EXISTS shipping_rate_shop
@@ -1619,6 +1656,23 @@ DO $$ BEGIN
     END IF;
 END $$;
 
+-- Nur im Verbund (2026-11-13): Der Artikel erlaubt die Versandart, der Kunde
+-- kann sie aber für ihn allein nicht wählen. Sie steht erst zur Wahl, wenn ein
+-- anderer Artikel im Warenkorb sie trägt — sie ohne dieses Kennzeichen erlaubt
+-- oder, ohne jede Zuordnung, weil sie für Kunden freigeschaltet ist
+-- (shop_cart_shipping_metrics, nur_verbund).
+ALTER TABLE parts_shipping_method_shop ADD COLUMN IF NOT EXISTS together_only boolean NOT NULL DEFAULT false;
+COMMENT ON COLUMN parts_shipping_method_shop.together_only IS 'Nur zusammen mit anderen Artikeln: erlaubt, aber für diesen Artikel allein nicht wählbar';
+
+-- Aktive Versandarten, die ein Artikel nur im Verbund erlaubt; leer = keine
+CREATE OR REPLACE FUNCTION shop_part_together_only_methods(p_parts_id integer) RETURNS integer[]
+    LANGUAGE sql STABLE AS $$
+    SELECT COALESCE(array_agg(pm.shipping_method_id ORDER BY pm.shipping_method_id), '{}'::integer[])
+      FROM parts_shipping_method_shop pm
+      JOIN shipping_method_shop m ON m.id = pm.shipping_method_id AND m.active
+     WHERE pm.parts_id = p_parts_id AND pm.together_only
+$$;
+
 -- Erlaubte aktive Versandarten eines Artikels; NULL = keine Einschränkung
 -- (keine Zuordnung, oder nur inaktive — wie bisher bei inaktiver Zuordnung).
 CREATE OR REPLACE FUNCTION shop_part_allowed_methods(p_parts_id integer) RETURNS integer[]
@@ -1649,7 +1703,7 @@ $$ LANGUAGE plpgsql;
 DO $$ BEGIN
     DROP TRIGGER IF EXISTS trigger_parts_shipping_method_shop_auto_publish ON parts_shipping_method_shop;
     CREATE TRIGGER trigger_parts_shipping_method_shop_auto_publish
-        AFTER INSERT OR DELETE
+        AFTER INSERT OR DELETE OR UPDATE OF together_only
         ON parts_shipping_method_shop
         FOR EACH ROW
         EXECUTE FUNCTION parts_shipping_method_shop_auto_publish();
@@ -1677,11 +1731,12 @@ $$;
 -- den Warenkorb (shop_cart_shipping), die Versandwahl in der Kasse
 -- (shop_cart_shipping_options) und die Preisanzeige je Artikel
 -- (shop_part_shipping_prices). Regeln siehe shop_cart_shipping; Lieferland
--- und Lieferländer prüft der Aufrufer, hier kommt nur die Zone an (NULL =
--- alle übrigen Länder).
+-- und Lieferländer prüft der Aufrufer, hier kommen nur die Zonen des
+-- Lieferlands an (leer = alle übrigen Länder).
 --
 --   p_kanal        HugoShop
---   p_zone         Zone des Lieferlands, NULL = alle übrigen Länder
+--   p_zonen        Zonen des Lieferlands, die engste zuerst
+--                  (shop_country_zones); leer oder NULL = alle übrigen Länder
 --   p_menge        Stückzahl der Ware
 --   p_gewicht      Gesamtgewicht
 --   p_ohne_gewicht mindestens eine Ware ohne Gewicht
@@ -1693,6 +1748,9 @@ $$;
 --                  Versandart erfüllt alle Zuordnungen
 --   p_warenwert    Bruttowarenwert für die Freigrenze
 --   p_gewaehlt     in der Kasse gewählte Versandart, NULL = keine Wahl
+--   p_nur_verbund  Versandarten, die ein Artikel nur im Verbund erlaubt und
+--                  die kein anderer Artikel der Sendung trägt (2026-11-13);
+--                  NULL oder leer = keine
 --
 -- shop_shipping_candidates (Versandwahl in der Kasse, 2026-10-30): jede
 -- aktive Versandart, die den Kanal bedient (eine Preisstufe für ihn oder für
@@ -1706,6 +1764,8 @@ $$;
 --               aber durch Zuordnung erzwingbar)
 --   available   kommt in Frage
 --   reason      assigned_other  ein Artikel lässt diese Versandart nicht zu
+--               together_only   ein Artikel erlaubt sie nur im Verbund, und
+--                               kein anderer Artikel der Sendung trägt sie
 --               not_selectable  nicht freigeschaltet und nicht vorgegeben
 --               weight_missing  Ware ohne Gewicht, die Versandart braucht eins (W8)
 --               no_rate         keine Preisstufe für Kanal und Zone
@@ -1718,11 +1778,16 @@ DROP FUNCTION IF EXISTS shop_shipping_candidates(integer, integer, numeric, nume
                                                  numeric, numeric, numeric, integer, numeric);
 DROP FUNCTION IF EXISTS shop_shipping_candidates(integer, integer, numeric, numeric, boolean, numeric, numeric,
                                                  numeric, numeric, numeric, integer[], numeric);
-CREATE OR REPLACE FUNCTION shop_shipping_candidates(p_kanal integer, p_zone integer, p_menge numeric,
+-- p_zone (eine Zone) wurde p_zonen (überlappende Zonen, 2026-11-13): die
+-- Fassung mit einer Zone weg
+DROP FUNCTION IF EXISTS shop_shipping_candidates(integer, integer, numeric, numeric, boolean, numeric, numeric,
+                                                 numeric, numeric, numeric, integer[], numeric, integer[]);
+CREATE OR REPLACE FUNCTION shop_shipping_candidates(p_kanal integer, p_zonen integer[], p_menge numeric,
                                                     p_gewicht numeric, p_ohne_gewicht boolean,
                                                     p_kante numeric, p_breite numeric, p_hoehe numeric,
                                                     p_groesse numeric, p_gurt numeric,
-                                                    p_erlaubt integer[], p_warenwert numeric)
+                                                    p_erlaubt integer[], p_warenwert numeric,
+                                                    p_nur_verbund integer[] DEFAULT NULL)
 RETURNS TABLE (shipping_method_id integer, description text, customer_note text, parts_id integer,
                rank integer, price numeric, free boolean, cost numeric, rate_price numeric,
                selectable boolean, forced boolean, available boolean, reason text)
@@ -1741,10 +1806,12 @@ LANGUAGE sql STABLE AS $$
              FROM shipping_rate_shop r
             WHERE r.shipping_method_id = m.id
               AND (r.channel_id IS NULL OR r.channel_id = p_kanal)
-              AND (r.zone_id IS NULL OR r.zone_id = p_zone)
+              AND (r.zone_id IS NULL OR r.zone_id = ANY (p_zonen))
               AND r.weight_from <= p_gewicht
               AND r.qty_from <= p_menge
             ORDER BY (r.channel_id IS NOT NULL) DESC, (r.zone_id IS NOT NULL) DESC,
+                     -- mehrere Zonen des Lieferlands: die engere gewinnt
+                     array_position(p_zonen, r.zone_id) NULLS LAST,
                      r.weight_from DESC, r.qty_from DESC
             LIMIT 1
       ) stufe ON true
@@ -1754,6 +1821,7 @@ LANGUAGE sql STABLE AS $$
       CROSS JOIN LATERAL (
            SELECT CASE
                     WHEN p_erlaubt IS NOT NULL AND NOT v.vorgegeben THEN 'assigned_other'
+                    WHEN m.id = ANY (COALESCE(p_nur_verbund, '{}'::integer[])) THEN 'together_only'
                     WHEN NOT m.selectable AND NOT v.vorgegeben THEN 'not_selectable'
                     WHEN p_ohne_gewicht AND (m.max_weight IS NOT NULL
                                              OR EXISTS (SELECT 1 FROM shipping_rate_shop r
@@ -1794,12 +1862,19 @@ DROP FUNCTION IF EXISTS shop_shipping_select(integer, integer, numeric, numeric,
                                              numeric, numeric, numeric, integer, numeric);
 DROP FUNCTION IF EXISTS shop_shipping_select(integer, integer, numeric, numeric, boolean, numeric, numeric,
                                              numeric, numeric, numeric, integer, numeric, integer);
-CREATE OR REPLACE FUNCTION shop_shipping_select(p_kanal integer, p_zone integer, p_menge numeric,
+-- p_nur_verbund kam hinzu (2026-11-13): die Fassung ohne ihn weg
+DROP FUNCTION IF EXISTS shop_shipping_select(integer, integer, numeric, numeric, boolean, numeric, numeric,
+                                             numeric, numeric, numeric, integer[], numeric, integer);
+-- p_zone wurde p_zonen (überlappende Zonen, 2026-11-13): die Fassung mit einer Zone weg
+DROP FUNCTION IF EXISTS shop_shipping_select(integer, integer, numeric, numeric, boolean, numeric, numeric,
+                                             numeric, numeric, numeric, integer[], numeric, integer, integer[]);
+CREATE OR REPLACE FUNCTION shop_shipping_select(p_kanal integer, p_zonen integer[], p_menge numeric,
                                                 p_gewicht numeric, p_ohne_gewicht boolean,
                                                 p_kante numeric, p_breite numeric, p_hoehe numeric,
                                                 p_groesse numeric, p_gurt numeric,
                                                 p_erlaubt integer[], p_warenwert numeric,
-                                                p_gewaehlt integer DEFAULT NULL)
+                                                p_gewaehlt integer DEFAULT NULL,
+                                                p_nur_verbund integer[] DEFAULT NULL)
 RETURNS TABLE (status text, shipping_method_id integer, description text, parts_id integer,
                price numeric, free boolean, cost numeric)
 LANGUAGE plpgsql STABLE AS $$
@@ -1813,8 +1888,9 @@ BEGIN
     END IF;
 
     SELECT k.* INTO gewaehlt
-      FROM shop_shipping_candidates(p_kanal, p_zone, p_menge, p_gewicht, p_ohne_gewicht,
-                                    p_kante, p_breite, p_hoehe, p_groesse, p_gurt, p_erlaubt, p_warenwert) k
+      FROM shop_shipping_candidates(p_kanal, p_zonen, p_menge, p_gewicht, p_ohne_gewicht,
+                                    p_kante, p_breite, p_hoehe, p_groesse, p_gurt, p_erlaubt, p_warenwert,
+                                    p_nur_verbund) k
      WHERE k.available
      ORDER BY (k.shipping_method_id = p_gewaehlt) DESC NULLS LAST,
               (COALESCE(k.rate_price, 0) > 0) DESC, k.price, k.rank DESC, k.shipping_method_id
@@ -1823,14 +1899,17 @@ BEGIN
     IF gewaehlt.shipping_method_id IS NULL THEN
         IF p_ohne_gewicht AND EXISTS (
                SELECT 1
-                 FROM shop_shipping_candidates(p_kanal, p_zone, p_menge, p_gewicht, p_ohne_gewicht,
-                                               p_kante, p_breite, p_hoehe, p_groesse, p_gurt, p_erlaubt, p_warenwert) k
+                 FROM shop_shipping_candidates(p_kanal, p_zonen, p_menge, p_gewicht, p_ohne_gewicht,
+                                               p_kante, p_breite, p_hoehe, p_groesse, p_gurt, p_erlaubt, p_warenwert,
+                                               p_nur_verbund) k
                 WHERE k.reason = 'weight_missing') THEN
             RETURN QUERY SELECT 'weight_missing'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false, NULL::numeric;
         ELSIF p_erlaubt IS NOT NULL THEN
             RETURN QUERY SELECT 'assigned_unfit'::text, NULL::integer,
                                 (SELECT string_agg(m.description, ', ' ORDER BY m.rank DESC, m.description)
-                                   FROM shipping_method_shop m WHERE m.id = ANY (p_erlaubt)),
+                                   FROM shipping_method_shop m
+                                  WHERE m.id = ANY (p_erlaubt)
+                                    AND NOT (m.id = ANY (COALESCE(p_nur_verbund, '{}'::integer[])))),
                                 NULL::integer, 0::numeric, false, NULL::numeric;
         ELSE
             RETURN QUERY SELECT 'no_method'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false, NULL::numeric;
@@ -1862,10 +1941,18 @@ $$;
 --                eingeschränkt; leer = die Zuordnungen schließen sich aus
 --   restricted_by Bezeichnungen der eingeschränkten Artikel, für die Kasse
 --   gewaehlt     in der Kasse gewählte Versandart (carts_hugoshop.shipping_method_id)
-CREATE OR REPLACE FUNCTION shop_cart_shipping_metrics(p_cart_uuid text)
+--   nur_verbund  Versandarten, die ein Artikel des Warenkorbs nur im Verbund
+--                erlaubt und die kein Artikel trägt (2026-11-13). Ein Artikel
+--                trägt eine Versandart, wenn er sie ohne das Kennzeichen
+--                erlaubt — oder keine Zuordnung hat und sie für Kunden
+--                freigeschaltet ist. Leer = keine
+-- Die Ergebnisspalte nur_verbund kam hinzu — das lässt CREATE OR REPLACE nicht
+-- zu, deshalb erst entfernen.
+DROP FUNCTION IF EXISTS shop_cart_shipping_metrics(text);
+CREATE FUNCTION shop_cart_shipping_metrics(p_cart_uuid text)
 RETURNS TABLE (kanal integer, menge numeric, gewicht numeric, ohne_gewicht boolean,
                kante numeric, breite numeric, hoehe numeric, groesse numeric, gurt numeric,
-               erlaubt integer[], restricted_by text, gewaehlt integer)
+               erlaubt integer[], restricted_by text, gewaehlt integer, nur_verbund integer[])
 -- plpgsql, nicht sql: carts_hugoshop entsteht weiter unten in dieser Datei, und
 -- eine SQL-Funktion prüfte ihre Spalten schon beim Anlegen
 LANGUAGE plpgsql STABLE AS $$
@@ -1904,7 +1991,25 @@ BEGIN
               FROM nur),
            (SELECT string_agg(pn.description, ', ' ORDER BY pn.description)
               FROM nur JOIN parts pn ON pn.id = nur.parts_id),
-           (SELECT k.shipping_method_id FROM carts_hugoshop k WHERE k.uuid = p_cart_uuid)
+           (SELECT k.shipping_method_id FROM carts_hugoshop k WHERE k.uuid = p_cart_uuid),
+           -- nur im Verbund erlaubt und von keinem Artikel getragen
+           COALESCE((SELECT array_agg(DISTINCT pm.shipping_method_id)
+                       FROM cart_parts_hugoshop cv
+                       JOIN parts_shipping_method_shop pm ON pm.parts_id = cv.parts_id AND pm.together_only
+                       JOIN shipping_method_shop m ON m.id = pm.shipping_method_id AND m.active
+                      WHERE cv.cart_uuid = p_cart_uuid
+                        AND NOT shop_is_shipping_part(cv.parts_id)
+                        AND NOT EXISTS (
+                            SELECT 1
+                              FROM cart_parts_hugoshop ct
+                             WHERE ct.cart_uuid = p_cart_uuid
+                               AND NOT shop_is_shipping_part(ct.parts_id)
+                               AND (EXISTS (SELECT 1 FROM parts_shipping_method_shop pt
+                                             WHERE pt.parts_id = ct.parts_id
+                                               AND pt.shipping_method_id = pm.shipping_method_id
+                                               AND NOT pt.together_only)
+                                    OR (m.selectable AND shop_part_allowed_methods(ct.parts_id) IS NULL)))),
+                    '{}'::integer[])
       FROM cart_parts_hugoshop c
       JOIN parts p ON p.id = c.parts_id
       LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
@@ -1934,6 +2039,9 @@ $$;
 --     ist keine Bestellung möglich (W1, W2 in der Fassung vom 2026-10-30).
 --   - Nicht freigeschaltete Versandarten (selectable = false) kommen nur in
 --     Frage, wenn eine Zuordnung sie vorgibt.
+--   - Erlaubt ein Artikel eine Versandart nur im Verbund (together_only),
+--     kommt sie nur in Frage, wenn ein anderer Artikel des Warenkorbs sie
+--     trägt (2026-11-13, shop_cart_shipping_metrics).
 --   - Aus den in Frage kommenden gilt die in der Kasse gewählte, sonst die
 --     günstigste kostenpflichtige, bei gleichem Preis die ranghöchste,
 --     kostenlose zuletzt (Entscheidung 2).
@@ -1960,7 +2068,7 @@ LANGUAGE plpgsql STABLE AS $$
 DECLARE
     k    record;
     land text := shop_country_code(p_country);
-    zone integer;
+    zonen integer[];
 BEGIN
     SELECT * INTO k FROM shop_cart_shipping_metrics(p_cart_uuid);
 
@@ -1978,14 +2086,14 @@ BEGIN
         RETURN QUERY SELECT 'country_not_delivered'::text, NULL::integer, NULL::text, NULL::integer, 0::numeric, false;
         RETURN;
     END IF;
-    SELECT zc.zone_id INTO zone FROM shipping_zone_country_shop zc WHERE zc.iso_code = land;
+    zonen := shop_country_zones(land);
 
     -- Versandart und Preis: dieselbe Regel wie für die Anzeige je Artikel
     RETURN QUERY
     SELECT v.status, v.shipping_method_id, v.description, v.parts_id, v.price, v.free
-      FROM shop_shipping_select(k.kanal, zone, k.menge, k.gewicht, k.ohne_gewicht,
+      FROM shop_shipping_select(k.kanal, zonen, k.menge, k.gewicht, k.ohne_gewicht,
                                 k.kante, k.breite, k.hoehe, k.groesse, k.gurt, k.erlaubt, p_goods_value,
-                                k.gewaehlt) v;
+                                k.gewaehlt, k.nur_verbund) v;
 END;
 $$;
 
@@ -1998,7 +2106,7 @@ $$;
 -- forced und required_by sagen, welche
 -- Artikel eine Versandart vorgeben. Ist das Land unbekannt oder kein
 -- Lieferland, ist keine verfügbar, der Grund steht an jeder, der Preis bleibt
--- leer. Ohne eingerichtete Versandart gibt es nichts zu wählen: leer.
+-- leer. Versandarten ohne Preisstufe für das Lieferland erscheinen nicht. Ohne eingerichtete Versandart gibt es nichts zu wählen: leer.
 -- Reihenfolge: verfügbare zuerst, kostenpflichtige vor kostenlosen, dann
 -- günstigste oben, bei gleichem Preis die ranghöchste.
 CREATE OR REPLACE FUNCTION shop_cart_shipping_options(p_cart_uuid text, p_country text, p_goods_value numeric)
@@ -2010,7 +2118,7 @@ LANGUAGE plpgsql STABLE AS $$
 DECLARE
     k        record;
     land     text := shop_country_code(p_country);
-    zone     integer;
+    zonen    integer[];
     sperre   text;
     gewaehlt integer;
 BEGIN
@@ -2029,13 +2137,13 @@ BEGIN
                            WHERE cc.channel_id = k.kanal AND cc.iso_code = land) THEN
         sperre := 'country_not_delivered';
     END IF;
-    SELECT zc.zone_id INTO zone FROM shipping_zone_country_shop zc WHERE zc.iso_code = land;
+    zonen := shop_country_zones(land);
 
     IF sperre IS NULL THEN
         SELECT v.shipping_method_id INTO gewaehlt
-          FROM shop_shipping_select(k.kanal, zone, k.menge, k.gewicht, k.ohne_gewicht,
+          FROM shop_shipping_select(k.kanal, zonen, k.menge, k.gewicht, k.ohne_gewicht,
                                     k.kante, k.breite, k.hoehe, k.groesse, k.gurt, k.erlaubt, p_goods_value,
-                                    k.gewaehlt) v;
+                                    k.gewaehlt, k.nur_verbund) v;
     END IF;
 
     RETURN QUERY
@@ -2047,9 +2155,18 @@ BEGIN
            COALESCE(c.shipping_method_id = gewaehlt, false),
            c.forced,
            CASE WHEN c.forced THEN k.restricted_by END
-      FROM shop_shipping_candidates(k.kanal, zone, k.menge, k.gewicht, k.ohne_gewicht,
-                                    k.kante, k.breite, k.hoehe, k.groesse, k.gurt, k.erlaubt, p_goods_value) c
-     WHERE c.selectable OR c.forced
+      FROM shop_shipping_candidates(k.kanal, zonen, k.menge, k.gewicht, k.ohne_gewicht,
+                                    k.kante, k.breite, k.hoehe, k.groesse, k.gurt, k.erlaubt, p_goods_value,
+                                    k.nur_verbund) c
+     WHERE (c.selectable OR c.forced)
+       -- nur im Verbund erlaubt und von keinem Artikel getragen: der Kunde
+       -- sieht sie gar nicht
+       AND c.reason IS DISTINCT FROM 'together_only'
+       -- keine Preisstufe für das Lieferland: ebenfalls nicht zeigen — der
+       -- Kunde wählt erst das Land, dann unter den Versandarten dorthin
+       -- (2026-11-13). Ist das Land selbst gesperrt oder unbekannt, bleiben
+       -- alle mit diesem Grund stehen.
+       AND (sperre IS NOT NULL OR c.reason IS DISTINCT FROM 'no_rate')
      ORDER BY (sperre IS NULL AND c.available) DESC,
               (COALESCE(c.rate_price, 0) > 0) DESC, c.price, c.rank DESC, c.shipping_method_id;
 END;
@@ -2098,7 +2215,11 @@ $$;
 -- Ein Warenkorb aus mehreren Artikeln kann trotzdem eine Grenze
 -- überschreiten — das meldet erst der Warenkorb.
 --
--- status: ok, weight_missing, assigned_unfit, no_method. Ohne eingerichtete
+-- Versandarten, die der Artikel nur im Verbund erlaubt (together_only), zählen
+-- hier nicht: allein kann der Kunde ihn damit nicht bestellen. Hat er nur
+-- solche, lautet der status together_only.
+--
+-- status: ok, weight_missing, together_only, assigned_unfit, no_method. Ohne eingerichtete
 -- Versandart ok (Versand „Standard" ohne Kosten). method nennt die
 -- zugeordnete Versandart; weight, length (längste Seite), width (mittlere),
 -- height (kürzeste), size (längste + kürzeste), girth und weightunit die
@@ -2122,6 +2243,7 @@ DECLARE
     groesse      numeric;
     gurt         numeric;
     erlaubt      integer[];
+    verbund      integer[] := shop_part_together_only_methods(p_parts_id);
     einheit      text := (SELECT d.weightunit FROM defaults d LIMIT 1);
 BEGIN
     SELECT GREATEST(COALESCE(ps.min_qty, 1), 1),
@@ -2156,6 +2278,7 @@ BEGIN
           FROM shipping_method_shop m
          WHERE m.active
            AND (erlaubt IS NULL OR m.id = ANY (erlaubt))
+           AND NOT (m.id = ANY (verbund))
            -- nicht freigeschaltete nur, wenn eine Zuordnung sie vorgibt
            AND (m.selectable OR erlaubt IS NOT NULL)
            AND (m.max_weight IS NULL OR gewicht <= m.max_weight)
@@ -2181,15 +2304,22 @@ BEGIN
     IF ohne_gewicht AND EXISTS (
            SELECT 1 FROM shipping_method_shop m
             WHERE m.active AND (erlaubt IS NULL OR m.id = ANY (erlaubt))
+              AND NOT (m.id = ANY (verbund))
               AND (m.selectable OR erlaubt IS NOT NULL)
               AND (m.max_weight IS NOT NULL
                    OR EXISTS (SELECT 1 FROM shipping_rate_shop r
                                WHERE r.shipping_method_id = m.id AND r.weight_from > 0))) THEN
         RETURN QUERY SELECT 'weight_missing'::text, NULL::text, gewicht, kante, breite, hoehe, groesse, gurt, einheit;
+    ELSIF erlaubt IS NOT NULL AND erlaubt <@ verbund THEN
+        RETURN QUERY SELECT 'together_only'::text,
+                            (SELECT string_agg(m.description, ', ' ORDER BY m.rank DESC, m.description)
+                               FROM shipping_method_shop m WHERE m.id = ANY (erlaubt)),
+                            gewicht, kante, breite, hoehe, groesse, gurt, einheit;
     ELSIF erlaubt IS NOT NULL THEN
         RETURN QUERY SELECT 'assigned_unfit'::text,
                             (SELECT string_agg(m.description, ', ' ORDER BY m.rank DESC, m.description)
-                               FROM shipping_method_shop m WHERE m.id = ANY (erlaubt)),
+                               FROM shipping_method_shop m
+                              WHERE m.id = ANY (erlaubt) AND NOT (m.id = ANY (verbund))),
                             gewicht, kante, breite, hoehe, groesse, gurt, einheit;
     ELSE
         RETURN QUERY SELECT 'no_method'::text, NULL::text, gewicht, kante, breite, hoehe, groesse, gurt, einheit;
@@ -2206,7 +2336,8 @@ $$;
 --
 -- zone_id NULL = alle übrigen Länder. status wie shop_cart_shipping, dazu
 -- country_not_delivered, wenn die Lieferländer des Kanals kein Land der Zone
--- enthalten. free_from ist die Freigrenze des Kanals (NULL = keine),
+-- enthalten. Bei überlappenden Zonen eine Zeile je Ländergruppe mit gleichem
+-- Preis — zone_id ist dann nicht eindeutig, zone nennt die Länder. free_from ist die Freigrenze des Kanals (NULL = keine),
 -- free_applies, ob sie für die gewählte Versandart gilt. cost sind die
 -- Kosten der gewählten Preisstufe (netto, NULL = nicht gepflegt), price_net
 -- der Preis netto — bei Bruttopreisen mit dem Steuersatz des Versandartikels
@@ -2270,28 +2401,35 @@ BEGIN
         RETURN;
     END IF;
 
-    FOR z IN SELECT x.id, x.description
-               FROM (SELECT zs.id, zs.description, zs.sortkey, 0 AS rest FROM shipping_zone_shop zs
-                     UNION ALL
-                     SELECT NULL, NULL, NULL, 1) x
-              ORDER BY x.rest, x.sortkey, x.description
+    -- Überlappende Zonen (2026-11-13): eine Zeile je Gruppe von Ländern mit
+    -- denselben Zonen — für sie gilt dieselbe Preisstufe. Benannt nach der
+    -- engsten Zone; deckt die Gruppe nicht alle Länder dieser Zone ab (die
+    -- übrigen stehen zusätzlich in einer noch engeren), nennt die Zeile ihre
+    -- Länder. Gezählt werden nur Länder, in die der Kanal liefert.
+    FOR z IN
+        WITH laender AS (
+            SELECT l.iso_code, shop_country_zones(l.iso_code) AS zonen
+              FROM country_shop l
+             WHERE NOT begrenzt
+                OR EXISTS (SELECT 1 FROM sales_channel_country_shop cc
+                            WHERE cc.channel_id = p_channel_id AND cc.iso_code = l.iso_code)
+        ), gruppen AS (
+            SELECT g.zonen, array_agg(g.iso_code ORDER BY g.iso_code) AS codes
+              FROM laender g
+             GROUP BY g.zonen
+        )
+        SELECT g.zonen, g.zonen[1] AS id,
+               CASE WHEN g.zonen[1] IS NULL THEN NULL
+                    WHEN cardinality(g.codes) < (SELECT count(*) FROM shipping_zone_country_shop x
+                                                  WHERE x.zone_id = g.zonen[1])
+                         THEN zs.description || ' (' || array_to_string(g.codes, ', ') || ')'
+                    ELSE zs.description END AS name
+          FROM gruppen g
+          LEFT JOIN shipping_zone_shop zs ON zs.id = g.zonen[1]
+         ORDER BY (g.zonen[1] IS NULL), zs.sortkey, zs.description, g.codes
     LOOP
-        -- Lieferländer des Kanals: liefert er in kein Land dieser Zone (bzw.
-        -- in kein Land ohne Zone), entfällt sie
-        IF begrenzt AND NOT EXISTS (
-               SELECT 1 FROM sales_channel_country_shop cc
-                WHERE cc.channel_id = p_channel_id
-                  AND CASE WHEN z.id IS NULL
-                           THEN NOT EXISTS (SELECT 1 FROM shipping_zone_country_shop zc WHERE zc.iso_code = cc.iso_code)
-                           ELSE EXISTS (SELECT 1 FROM shipping_zone_country_shop zc
-                                         WHERE zc.iso_code = cc.iso_code AND zc.zone_id = z.id) END) THEN
-            RETURN QUERY SELECT z.id, z.description::text, 'country_not_delivered'::text, NULL::text,
-                                NULL::numeric, false, grenze, false, NULL::numeric, NULL::numeric;
-            CONTINUE;
-        END IF;
-
         RETURN QUERY
-        SELECT z.id, z.description::text, v.status, v.description, v.price, v.free, grenze,
+        SELECT z.id, z.name::text, v.status, v.description, v.price, v.free, grenze,
                COALESCE((SELECT m.free_shipping_applies FROM shipping_method_shop m
                           WHERE m.id = v.shipping_method_id), false),
                CASE WHEN v.status <> 'ok' THEN NULL
@@ -2299,9 +2437,23 @@ BEGIN
                                                                      WHERE vp.id = v.parts_id), steuerzone))
                     ELSE v.price END,
                v.cost
-          FROM shop_shipping_select(p_channel_id, z.id, menge, gewicht, ohne_gewicht,
-                                    kante, breite, hoehe, groesse, gurt, erlaubt, warenwert, NULL) v;
+          FROM shop_shipping_select(p_channel_id, z.zonen, menge, gewicht, ohne_gewicht,
+                                    kante, breite, hoehe, groesse, gurt, erlaubt, warenwert, NULL,
+                                    shop_part_together_only_methods(p_parts_id)) v;
     END LOOP;
+
+    -- Lieferländer des Kanals: Zonen, in deren Länder er gar nicht liefert
+    IF begrenzt THEN
+        RETURN QUERY
+        SELECT zs.id, zs.description::text, 'country_not_delivered'::text, NULL::text,
+               NULL::numeric, false, grenze, false, NULL::numeric, NULL::numeric
+          FROM shipping_zone_shop zs
+         WHERE EXISTS (SELECT 1 FROM shipping_zone_country_shop zc WHERE zc.zone_id = zs.id)
+           AND NOT EXISTS (SELECT 1 FROM shipping_zone_country_shop zc
+                             JOIN sales_channel_country_shop cc ON cc.iso_code = zc.iso_code
+                            WHERE zc.zone_id = zs.id AND cc.channel_id = p_channel_id)
+         ORDER BY zs.sortkey, zs.description;
+    END IF;
 END;
 $$;
 
@@ -2334,6 +2486,15 @@ COMMENT ON COLUMN carts_hugoshop.active IS 'Letzte Benutzung — Grundlage fuer 
 ALTER TABLE carts_hugoshop ADD COLUMN IF NOT EXISTS shipping_method_id integer
     REFERENCES shipping_method_shop (id) ON DELETE SET NULL;
 COMMENT ON COLUMN carts_hugoshop.shipping_method_id IS 'In der Kasse gewählte Versandart, NULL = die Vorauswahl (günstigste kostenpflichtige)';
+
+-- Lieferland vor der Versandart (dev/shop-versand.md, 2026-11-13): das Land,
+-- das der Kunde in Warenkorb oder Kasse gewählt hat, solange noch keine
+-- Lieferadresse vorliegt. Mit ihm rechnet der Versand; die Adresse der
+-- Bestellung geht ihm vor. NULL = keine Wahl (Lieferadresse des Kontos,
+-- sonst Land des Mandanten).
+ALTER TABLE carts_hugoshop ADD COLUMN IF NOT EXISTS shipping_country text
+    REFERENCES country_shop (iso_code) ON DELETE SET NULL;
+COMMENT ON COLUMN carts_hugoshop.shipping_country IS 'Vom Kunden gewähltes Lieferland (ISO-Code), NULL = keine Wahl';
 
 CREATE TABLE IF NOT EXISTS cart_parts_hugoshop
 (

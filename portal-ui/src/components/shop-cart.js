@@ -8,7 +8,7 @@ import { normalizeCart, cartTotals } from '../core/cart-data.js';
 import { t } from '../core/i18n.js';
 import { sameOriginHref } from '../core/links.js';
 import { shopPath, apiUrl, sitePath } from '../core/paths.js';
-import { renderShippingOptions, shippingOptionStyles, countryName } from '../core/shipping-options.js';
+import { renderShippingOptions, renderShippingCountry, shippingOptionStyles, countryName } from '../core/shipping-options.js';
 
 /**
  * <shop-cart billing-page="/rechnung/" canceled-page="/bezahlung-abgebrochen/"></shop-cart>
@@ -254,11 +254,28 @@ export class ShopCart extends PortalElement {
   }
 
   /**
+   * Lieferland im Warenkorb waehlen (dev/shop-versand.md, „Lieferland vor der
+   * Versandart“): die Wahl bleibt am Warenkorb, der Versand rechnet damit,
+   * und die Liste zeigt nur noch die Versandarten in dieses Land.
+   */
+  async #chooseCountry(code) {
+    if (this._shippingBusy || !code) return;
+    this._shippingBusy = true;
+    try {
+      this.apply(await apiRequest('chooseShippingCountry', { country: code }));
+    } catch (error) {
+      this._error = t(error.code || 'PORTAL_API_ERROR');
+    } finally {
+      this._shippingBusy = false;
+    }
+  }
+
+  /**
    * Versandart im Warenkorb waehlen (dev/shop-versand.md, „Versandwahl in
    * der Kasse“): dieselbe Liste wie in der Kasse, die Wahl bleibt am
-   * Warenkorb und gilt dort weiter. Gerechnet wird hier mit der
-   * Standard-Lieferadresse des Kontos bzw. dem Land der Firmenadresse — der
-   * Laenderhinweis unter der Liste sagt das.
+   * Warenkorb und gilt dort weiter. Gerechnet wird mit dem oben gewaehlten
+   * Lieferland, sonst mit der Standard-Lieferadresse des Kontos bzw. dem Land
+   * der Firmenadresse.
    */
   async #chooseShipping(id) {
     if (this._shippingBusy) return;
@@ -524,10 +541,18 @@ export class ShopCart extends PortalElement {
     const currency = this._cart.currency;
     return html`
       <div class="totals">
-        ${!this.#isCheckout && this._cart.totals.shippingOptions.length
+        ${!this.#isCheckout && (this._cart.totals.shippingOptions.length || this._cart.totals.shippingCountries.length > 1)
           ? html`
               <div class="shipping-choice">
-                <p class="line-label">${t('checkout.shipping')}</p>
+                ${renderShippingCountry({
+                  countries: this._cart.totals.shippingCountries,
+                  value: this._cart.totals.shippingCountry,
+                  cls: (role) => this.cls(role),
+                  busy: this._shippingBusy,
+                  onChoose: (code) => this.#chooseCountry(code),
+                  id: 'shipping-country-cart',
+                })}
+                ${this._cart.totals.shippingOptions.length ? html`<p class="line-label">${t('checkout.shipping')}</p>` : nothing}
                 ${renderShippingOptions({
                   options: this._cart.totals.shippingOptions,
                   currency,
@@ -536,11 +561,13 @@ export class ShopCart extends PortalElement {
                   onChoose: (id) => this.#chooseShipping(id),
                   group: 'shipping-cart',
                 })}
-                ${this._cart.totals.shippingCountry
-                  ? html`<p class="note ${this.cls('muted')}">
-                      ${t('cart.shippingCountryHint').replace('{country}', countryName(this._cart.totals.shippingCountry))}
-                    </p>`
-                  : nothing}
+                ${this._cart.totals.shippingCountries.length
+                  ? html`<p class="note ${this.cls('muted')}">${t('cart.shippingCountryNote')}</p>`
+                  : this._cart.totals.shippingCountry
+                    ? html`<p class="note ${this.cls('muted')}">
+                        ${t('cart.shippingCountryHint').replace('{country}', countryName(this._cart.totals.shippingCountry))}
+                      </p>`
+                    : nothing}
         ${shippingStatus !== 'ok' && shippingStatus !== 'no_goods'
           ? html`<div class="shop-message ${this.cls('alertError')}" role="alert">
               ${t(`shipping.${shippingStatus}`)}

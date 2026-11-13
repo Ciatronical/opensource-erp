@@ -15,54 +15,77 @@
     shop-delivery-term.dialog.vue an. Recht: edit_shop_config.
 -->
 <template>
-    <section-card :title="t('ShopView.deliveryTimes.title')" icon="mdi-truck-fast-outline" class="lieferzeiten">
-        <template #actions>
-            <v-btn size="small" variant="text" prepend-icon="mdi-plus" @click="neuDialog = true">{{ t('ShopView.deliveryTerm.add') }}</v-btn>
-        </template>
-        <div class="text-body-2 text-medium-emphasis lieferzeiten-text">{{ t('ShopView.deliveryTimes.intro') }}</div>
+    <!-- Aufbau wie Länderzonen und Versandarten der Ansicht (shop-shipping.config.vue):
+         Überschrift mit Hinzufügen, Hinweis, je Eintrag eine umrandete Karte -->
+    <div>
+        <div class="d-flex align-center mt-6 mb-1">
+            <div class="text-subtitle-1 font-weight-medium">{{ t('ShopView.deliveryTimes.title') }}</div>
+            <v-spacer />
+            <v-btn size="small" variant="text" prepend-icon="mdi-plus" @click="anlegen">{{ t('ShopView.deliveryTerm.add') }}</v-btn>
+        </div>
+        <div class="text-caption text-medium-emphasis mb-2">{{ t('ShopView.deliveryTimes.intro') }}</div>
 
-        <v-alert v-if="fehler" type="error" variant="tonal" density="compact">{{ fehler }}</v-alert>
-        <div v-else-if="laedt" class="d-flex align-center">
+        <v-alert v-if="fehler" type="error" variant="tonal" density="compact" class="mb-2">{{ fehler }}</v-alert>
+        <div v-else-if="laedt" class="d-flex align-center pa-2">
             <v-progress-circular indeterminate size="20" width="2" />
         </div>
-        <v-alert v-else-if="!zeilen.length" type="info" variant="tonal" density="compact">
+        <div v-else-if="!zeilen.length" class="text-caption text-medium-emphasis mb-2">
             {{ t('ShopView.deliveryTimes.empty') }}
-        </v-alert>
+        </div>
 
-        <v-row v-for="zeile in zeilen" v-else :key="zeile.id" density="compact" align="center">
-            <v-col cols="12" sm="6">
-                <div class="text-body-2">
-                    {{ zeile.description }}
-                    <v-chip v-if="zeile.obsolete" size="x-small" class="lieferzeiten-marke">{{ t('ShopView.partCard.inactive') }}</v-chip>
-                </div>
-                <div v-if="zeile.description_long" class="text-caption text-medium-emphasis">{{ zeile.description_long }}</div>
-            </v-col>
-            <v-col v-for="feld in ['days_min', 'days_max']" :key="feld" cols="6" sm="3">
-                <v-text-field
-                    v-model="zeile[feld]"
-                    persistent-placeholder
-                    type="number"
-                    step="1"
-                    min="0"
-                    :label="t(feld === 'days_min' ? 'ShopView.deliveryTimes.daysMin' : 'ShopView.deliveryTimes.daysMax')"
-                    :rules="[() => gueltig(zeile) || t('ShopView.errors.DELIVERY_DAYS_INVALID')]"
-                    :loading="zeile.speichert"
-                    autocomplete="off"
-                    @blur="speichern(zeile)"
-                    @keyup.enter="speichern(zeile)"
-                />
-            </v-col>
-        </v-row>
+        <template v-else>
+            <v-card v-for="zeile in zeilen" :key="zeile.id" variant="outlined" class="mb-2">
+                <v-card-text class="py-2">
+                    <v-row dense align="center">
+                        <v-col cols="12" sm="6" class="py-1 d-flex align-center">
+                            <div class="flex-grow-1">
+                                <div class="text-body-2">
+                                    {{ zeile.description }}
+                                    <v-chip v-if="zeile.obsolete" size="x-small" class="lieferzeiten-marke">{{ t('ShopView.partCard.inactive') }}</v-chip>
+                                </div>
+                                <div v-if="zeile.description_long" class="text-caption text-medium-emphasis">{{ zeile.description_long }}</div>
+                            </div>
+                            <!-- Bezeichnung und Text für Kunden direkt ändern -->
+                            <v-btn
+                                icon="mdi-pencil-outline"
+                                size="small"
+                                variant="text"
+                                :title="t('ShopView.deliveryTerm.edit')"
+                                :aria-label="t('ShopView.deliveryTerm.edit')"
+                                @click="bearbeiten(zeile)"
+                            />
+                        </v-col>
+                        <v-col v-for="feld in ['days_min', 'days_max']" :key="feld" cols="6" sm="3" class="py-1">
+                            <v-text-field
+                                v-model="zeile[feld]"
+                                persistent-placeholder
+                                type="number"
+                                step="1"
+                                min="0"
+                                :label="t(feld === 'days_min' ? 'ShopView.deliveryTimes.daysMin' : 'ShopView.deliveryTimes.daysMax')"
+                                :rules="[() => gueltig(zeile) || t('ShopView.errors.DELIVERY_DAYS_INVALID')]"
+                                :loading="zeile.speichert"
+                                variant="outlined"
+                                density="compact"
+                                hide-details="auto"
+                                autocomplete="off"
+                                @blur="speichern(zeile)"
+                                @keyup.enter="speichern(zeile)"
+                            />
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+            </v-card>
+        </template>
 
-        <ShopDeliveryTermDialog v-model="neuDialog" @created="aufnehmen" />
-    </section-card>
+        <ShopDeliveryTermDialog v-model="neuDialog" :eintrag="inArbeit" @created="aufnehmen" @updated="uebernehmen" />
+    </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
-import SectionCard from '@/core/components/layout/section-card.vue'
 import ShopDeliveryTermDialog from './shop-delivery-term.dialog.vue'
 import { shopFehler } from '../composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
@@ -80,6 +103,23 @@ const zuletzt = {}
 const leer = wert => wert === null || wert === undefined || String(wert).trim() === ''
 const tage = wert => (leer(wert) ? null : Number(wert))
 const neuDialog = ref(false)
+/** Lieferbedingung, die der Dialog gerade ändert; null = er legt eine neue an */
+const inArbeit = ref(null)
+function anlegen() {
+    inArbeit.value = null
+    neuDialog.value = true
+}
+function bearbeiten(zeile) {
+    inArbeit.value = { id: zeile.id, description: zeile.description, description_long: zeile.description_long }
+    neuDialog.value = true
+}
+/** Geänderte Bezeichnung und Text in die Zeile übernehmen — die Tage bleiben */
+function uebernehmen(lieferbedingung) {
+    const zeile = zeilen.value.find(z => z.id === Number(lieferbedingung?.id))
+    if (!zeile) return
+    zeile.description = lieferbedingung.description || ''
+    zeile.description_long = lieferbedingung.description_long || ''
+}
 const stand = zeile => JSON.stringify([tage(zeile.days_min), tage(zeile.days_max)])
 
 /** Ganze Tage ab 0; „von“ nicht größer als „bis“ */
@@ -156,12 +196,6 @@ onMounted(laden)
 </script>
 
 <style scoped>
-.lieferzeiten {
-    margin-top: var(--oserp-gap);
-}
-.lieferzeiten-text {
-    margin-bottom: var(--oserp-gap);
-}
 .lieferzeiten-marke {
     margin-left: var(--oserp-gap-sm);
 }

@@ -46,7 +46,8 @@ Assistierter Kanal für Kleinanzeigen.de (keine Schnittstelle): Vorschläge aus 
 
 ## Versand
 
-- **Versandarten** mit Zonen, Ländern und Staffeln nach Gewicht oder Warenwert, versandkostenfrei ab Betrag
+- **Versandarten** mit Zonen, Ländern und Staffeln nach Gewicht oder Warenwert, versandkostenfrei ab Betrag; Zonen dürfen sich überlappen (ein Land in mehreren Zonen), es gilt die engere Zone
+- Je Artikel erlaubte Versandarten, auf Wunsch „nur zusammen mit anderen Artikeln“: Der Kunde kann eine solche Versandart für den Artikel allein nicht wählen, sie gilt erst, wenn ein anderer Artikel im Warenkorb sie erlaubt
 - Je Artikel: Maße, Mindestabnahme, Lieferbedingung; die Prüfung vor dem Veröffentlichen verhindert Seiten ohne passende Versandart
 - Länderzuordnung mit Aliasnamen für Eingaben der Kunden
 

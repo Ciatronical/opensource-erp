@@ -220,6 +220,25 @@
                         density="compact"
                         hide-details="auto"
                     />
+                    <!-- Nur im Verbund (2026-11-13): erlaubt, aber für diesen Artikel
+                         allein nicht wählbar — erst wenn ein anderer Artikel im
+                         Warenkorb die Versandart trägt -->
+                    <v-select
+                        v-if="(daten.shipping.shipping_method_ids || []).length"
+                        v-model="daten.shipping.together_only_ids"
+                        :items="verbundAuswahl"
+                        multiple
+                        chips
+                        closable-chips
+                        :label="t('ShopView.partCard.shippingTogetherOnly')"
+                        :hint="t('ShopView.partCard.shippingTogetherOnlyHint')"
+                        persistent-hint
+                        :readonly="!darfBearbeiten"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                        class="mt-3"
+                    />
                 </v-col>
                 <v-col cols="12" sm="6" class="py-1">
                     <v-select
@@ -446,7 +465,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="zeile in kanal.shipping_prices" :key="zeile.zone_id ?? 'rest'">
+                                            <tr v-for="(zeile, nr) in kanal.shipping_prices" :key="nr">
                                                 <td>{{ zeile.zone || t('ShopView.shippingConfig.otherCountries') }}</td>
                                                 <td>{{ zeile.status === 'ok' ? zeile.method : versandStatusText(zeile.status) }}</td>
                                                 <td class="text-right text-no-wrap">
@@ -806,7 +825,7 @@ const WAHR_WERTE = [true, 't', 'true', 1, '1']
 
 /** Versandangaben (parts_shipping_shop); leer = nicht gepflegt */
 function leererVersand() {
-    return { shipping_method_ids: [], length: '', width: '', height: '', min_qty: '', delivery_term_id: null, dropshipping: false }
+    return { shipping_method_ids: [], together_only_ids: [], length: '', width: '', height: '', min_qty: '', delivery_term_id: null, dropshipping: false }
 }
 const zahlText = wert => (wert === null || wert === undefined || wert === '' ? '' : String(Number(wert)))
 const zahlOderNull = wert => (wert === null || wert === undefined || String(wert).trim() === '' ? null : Number(wert))
@@ -837,6 +856,9 @@ const nurDropshipping = ref(false)
 const versandartAuswahl = computed(() => versandarten.value
     .filter(m => m.active || (daten.value.shipping.shipping_method_ids || []).includes(Number(m.id)))
     .map(m => ({ value: Number(m.id), title: m.active ? m.description : `${m.description} (${t('ShopView.partCard.inactive')})` })))
+/** „Nur im Verbund“ lässt sich nur für erlaubte Versandarten setzen */
+const verbundAuswahl = computed(() => versandartAuswahl.value
+    .filter(m => (daten.value.shipping.shipping_method_ids || []).includes(m.value)))
 /** Ungültige Lieferbedingungen nur, wenn sie gerade gewählt ist */
 const lieferbedingungAuswahl = computed(() => lieferbedingungen.value
     .filter(d => !d.obsolete || d.id === daten.value.shipping.delivery_term_id)
@@ -845,6 +867,12 @@ const lieferbedingungText = computed(() =>
     lieferbedingungen.value.find(d => d.id === daten.value.shipping.delivery_term_id)?.description_long || '')
 
 const daten = ref(leer())
+// Entfällt eine erlaubte Versandart, entfällt auch ihr Kennzeichen
+watch(() => daten.value.shipping?.shipping_method_ids, erlaubt => {
+    const gewaehlt = daten.value.shipping?.together_only_ids || []
+    const bleibt = gewaehlt.filter(id => (erlaubt || []).includes(id))
+    if (bleibt.length !== gewaehlt.length) daten.value.shipping.together_only_ids = bleibt
+})
 /** Vorgaben der Kanäle (Aufschlag, Rundung) je channel_id — nur zum Lesen */
 const vorgaben = ref({})
 /** Steuersatz der Standard-Steuerzone je Buchungsgruppe */
@@ -1205,6 +1233,8 @@ function nutzdaten(partsId) {
         downloads: zuObjekt(d.downloads),
         shipping: {
             shipping_method_ids: (d.shipping.shipping_method_ids || []).map(Number),
+            together_only_ids: (d.shipping.together_only_ids || []).map(Number)
+                .filter(id => (d.shipping.shipping_method_ids || []).map(Number).includes(id)),
             length: zahlOderNull(d.shipping.length),
             width: zahlOderNull(d.shipping.width),
             height: zahlOderNull(d.shipping.height),
@@ -1440,6 +1470,7 @@ async function laden() {
         channels: kanaele.map(alsKanal),
         shipping: versand.part ? {
             shipping_method_ids: (versand.method_ids || []).map(Number),
+            together_only_ids: (versand.together_only_ids || []).map(Number),
             length: zahlText(versand.part.length),
             width: zahlText(versand.part.width),
             height: zahlText(versand.part.height),
