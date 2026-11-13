@@ -411,6 +411,19 @@
             "cancel": "取消",
             "delete": "删除"
         },
+        "deliveryTerm": {
+            "add": "添加交货条件",
+            "title": "新建交货条件",
+            "description": "名称",
+            "descriptionHint": "供选择用的简短名称，例如“2–4 个工作日”。",
+            "descriptionRequired": "请输入名称。",
+            "text": "面向客户的文字",
+            "textHint": "显示在商品页面、购物车和发票上，例如“交货时间 2–4 个工作日”。留空 = 名称。",
+            "daysHint": "自下单起的交货天数，用于搜索引擎数据。可留空。",
+            "create": "创建",
+            "created": "交货条件已创建",
+            "createError": "无法创建交货条件"
+        },
         "deliveryTimes": {
             "title": "交货时间",
             "intro": "每个交货条件自下单起的交货天数。这些天数会写入商品页面的搜索引擎数据。交货条件本身在公司配置的基础列表中维护。",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "不允许将商品编号用作产品页面的名称，请选择有含义的名称。",
             "CHANNEL_IN_USE": "此渠道关联有发票、撤回或 eBay 订单，只能关闭。",
             "CHANNEL_NOT_DELETABLE": "只有已关闭且没有未完成任务的渠道才能删除。",
+            "DELIVERY_TERM_EXISTS": "该名称已存在。请选择现有的交货条件或使用其他名称。",
             "DELIVERY_DAYS_INVALID": "请输入不小于 0 的整数天数；最少天数不能大于最多天数。",
             "SHIPPING_UNFIT": "不会发布",
             "SHIPPING_PART_NOT_OFFERED": "运费物料不上架",

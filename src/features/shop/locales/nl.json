@@ -411,6 +411,19 @@
             "cancel": "Annuleren",
             "delete": "Verwijderen"
         },
+        "deliveryTerm": {
+            "add": "Leveringsvoorwaarde toevoegen",
+            "title": "Nieuwe leveringsvoorwaarde",
+            "description": "Omschrijving",
+            "descriptionHint": "Korte naam voor de keuzelijst, bijvoorbeeld „2–4 werkdagen”.",
+            "descriptionRequired": "Voer een omschrijving in.",
+            "text": "Tekst voor klanten",
+            "textHint": "Staat op productpagina, winkelwagen en factuur, bijvoorbeeld „Levertijd 2–4 werkdagen”. Leeg = omschrijving.",
+            "daysHint": "Levertijd in dagen vanaf de bestelling, voor de zoekmachinegegevens. Mag leeg blijven.",
+            "create": "Aanmaken",
+            "created": "Leveringsvoorwaarde aangemaakt",
+            "createError": "Leveringsvoorwaarde kon niet worden aangemaakt"
+        },
         "deliveryTimes": {
             "title": "Levertijden",
             "intro": "Levertijd per leveringsvoorwaarde in dagen vanaf de bestelling. De dagen staan in de zoekmachinegegevens van de productpagina's. De leveringsvoorwaarden zelf beheert u in de bedrijfsconfiguratie onder Stamlijsten.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Het artikelnummer is niet toegestaan als naam van de productpagina. Kies een sprekende naam.",
             "CHANNEL_IN_USE": "Aan dit kanaal zijn facturen, herroepingen of eBay-bestellingen gekoppeld. Het kan alleen worden uitgeschakeld.",
             "CHANNEL_NOT_DELETABLE": "Alleen een uitgeschakeld kanaal zonder openstaande opdrachten kan worden verwijderd.",
+            "DELIVERY_TERM_EXISTS": "Deze omschrijving bestaat al. Kies de bestaande leveringsvoorwaarde of een andere naam.",
             "DELIVERY_DAYS_INVALID": "Voer hele dagen vanaf 0 in; „van” mag niet groter zijn dan „tot”.",
             "SHIPPING_UNFIT": "Wordt niet gepubliceerd",
             "SHIPPING_PART_NOT_OFFERED": "Verzendartikelen worden niet aangeboden",

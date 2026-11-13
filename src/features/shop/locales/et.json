@@ -411,6 +411,19 @@
             "cancel": "Loobu",
             "delete": "Kustuta"
         },
+        "deliveryTerm": {
+            "add": "Lisa tarnetingimus",
+            "title": "Uus tarnetingimus",
+            "description": "Nimetus",
+            "descriptionHint": "Lühike nimi valiku jaoks, näiteks „2–4 tööpäeva“.",
+            "descriptionRequired": "Palun sisestage nimetus.",
+            "text": "Tekst klientidele",
+            "textHint": "Kuvatakse tootelehel, ostukorvis ja arvel, näiteks „Tarneaeg 2–4 tööpäeva“. Tühi = nimetus.",
+            "daysHint": "Tarneaeg päevades alates tellimusest otsingumootorite andmete jaoks. Võib jääda tühjaks.",
+            "create": "Loo",
+            "created": "Tarnetingimus loodud",
+            "createError": "Tarnetingimust ei õnnestunud luua"
+        },
         "deliveryTimes": {
             "title": "Tarneajad",
             "intro": "Tarneaeg iga tarnetingimuse kohta päevades alates tellimusest. Päevad on tootelehtede otsingumootorite andmetes. Tarnetingimusi endid hallatakse ettevõtte seadistuses põhiloendite all.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Tootenumber ei ole tootelehe nimena lubatud. Palun valige kirjeldav nimi.",
             "CHANNEL_IN_USE": "Selle kanaliga on seotud arved, taganemised või eBay tellimused. Selle saab ainult välja lülitada.",
             "CHANNEL_NOT_DELETABLE": "Kustutada saab ainult välja lülitatud kanalit, millel pole avatud ülesandeid.",
+            "DELIVERY_TERM_EXISTS": "See nimetus on juba olemas. Valige olemasolev tarnetingimus või mõni teine nimi.",
             "DELIVERY_DAYS_INVALID": "Sisestage täispäevad alates 0; „alates“ ei tohi olla suurem kui „kuni“.",
             "SHIPPING_UNFIT": "Ei avaldata",
             "SHIPPING_PART_NOT_OFFERED": "Saatmisartikleid ei pakuta",

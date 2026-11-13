@@ -411,6 +411,19 @@
             "cancel": "Cancelar",
             "delete": "Eliminar"
         },
+        "deliveryTerm": {
+            "add": "Añadir condición de entrega",
+            "title": "Nueva condición de entrega",
+            "description": "Denominación",
+            "descriptionHint": "Nombre corto para la selección, por ejemplo «2–4 días laborables».",
+            "descriptionRequired": "Introduzca una denominación.",
+            "text": "Texto para clientes",
+            "textHint": "Aparece en la página de producto, el carrito y la factura, por ejemplo «Plazo de entrega 2–4 días laborables». Vacío = denominación.",
+            "daysHint": "Plazo de entrega en días desde el pedido, para los datos de los buscadores. Puede quedar vacío.",
+            "create": "Crear",
+            "created": "Condición de entrega creada",
+            "createError": "No se pudo crear la condición de entrega"
+        },
         "deliveryTimes": {
             "title": "Plazos de entrega",
             "intro": "Plazo de entrega por condición de entrega, en días desde el pedido. Los días aparecen en los datos para buscadores de las páginas de producto. Las condiciones de entrega se gestionan en la configuración de la empresa, en Listas maestras.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "El número de artículo no está permitido como nombre de la página de producto. Elija un nombre descriptivo.",
             "CHANNEL_IN_USE": "Hay facturas, desistimientos o pedidos de eBay vinculados a este canal. Solo se puede desactivar.",
             "CHANNEL_NOT_DELETABLE": "Solo se puede eliminar un canal desactivado sin tareas pendientes.",
+            "DELIVERY_TERM_EXISTS": "Esta denominación ya existe. Elija la condición de entrega existente u otro nombre.",
             "DELIVERY_DAYS_INVALID": "Introduzca días enteros a partir de 0; «desde» no puede ser mayor que «hasta».",
             "SHIPPING_UNFIT": "No se publicará",
             "SHIPPING_PART_NOT_OFFERED": "Los artículos de envío no se ofrecen",

@@ -18,7 +18,8 @@
  *   columns  pflegbare Spalten mit Typ: text | int | numeric | bool
  *   sort     Sortierspalte (null = keine Reihenfolge, Liste alphabetisch)
  *   order    ORDER BY für die Ausgabe
- *   used     Verwendungsprüfung: [Tabelle, Fremdspalte, eigene Spalte]
+ *   used     Verwendungsprüfung: [Tabelle, Fremdspalte, eigene Spalte, optional];
+ *            optional = true: Tabelle gibt es nicht in jeder Datenbank
  *   locked   Spalten, die bei verwendeten Einträgen nicht mehr änderbar sind
  *   mtime    Tabelle hat eine mtime-Spalte (wird bei Änderung gesetzt)
  */
@@ -35,7 +36,8 @@ function masterListDefinitions(): array {
             'used'    => [
                 ['parts', 'unit', 'name'], ['orderitems', 'unit', 'name'], ['invoice', 'unit', 'name'],
                 ['delivery_order_items', 'unit', 'name'], ['assortment_items', 'unit', 'name'],
-                ['instructions', 'unit', 'name'], ['units', 'base_unit', 'name'],
+                // instructions: Tabelle des alten LxCars, nur in übernommenen Datenbanken vorhanden
+                ['instructions', 'unit', 'name', true], ['units', 'base_unit', 'name'],
             ],
             'locked'  => ['name'],
         ],
@@ -175,11 +177,27 @@ function masterListDefinition($name): ?array {
 
 /**
  * SQL-Ausdruck "wird verwendet" für einen Alias der Haupttabelle.
+ *
+ * Als optional gekennzeichnete Tabellen zählen nur, wenn es sie in dieser
+ * Datenbank gibt — sonst scheiterte die ganze Abfrage an der fehlenden
+ * Tabelle. Das Ergebnis der Prüfung gilt für den ganzen Aufruf.
  */
 function masterListUsedSql(array $def, string $alias): string {
+    static $vorhanden = [];
     if (empty($def['used'])) return 'false';
     $parts = [];
-    foreach ($def['used'] as [$table, $column, $own]) {
+    foreach ($def['used'] as $eintrag) {
+        [$table, $column, $own] = $eintrag;
+        if (!empty($eintrag[3])) {
+            if (!array_key_exists($table, $vorhanden)) {
+                $zeile = DbhCompany::begin()->getOne(
+                    "SELECT to_regclass('public.' || :tabelle) IS NOT NULL AS ok",
+                    [':tabelle' => $table]
+                );
+                $vorhanden[$table] = in_array($zeile['ok'] ?? false, [true, 't', 'true', 1, '1'], true);
+            }
+            if (!$vorhanden[$table]) continue;
+        }
         $parts[] = "EXISTS (SELECT 1 FROM {$table} WHERE {$column} = {$alias}.{$own})";
     }
     return '(' . implode(' OR ', $parts) . ')';

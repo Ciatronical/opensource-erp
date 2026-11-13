@@ -1112,7 +1112,8 @@ DO $$ BEGIN
     CREATE TRIGGER trigger_defaults_oserp_shop_auto_publish
         AFTER UPDATE ON defaults_oserp
         FOR EACH ROW
-        WHEN (NEW.key IN ('shop_tax_included', 'shop_dropshipping_default', 'shop_dropshipping_quantity')
+        WHEN (NEW.key IN ('shop_tax_included', 'shop_dropshipping_default', 'shop_dropshipping_quantity',
+                          'shop_dropshipping_delivery_term_id')
               AND OLD.value IS DISTINCT FROM NEW.value)
         EXECUTE FUNCTION defaults_oserp_shop_auto_publish();
 END $$;
@@ -1489,7 +1490,10 @@ $$;
 -- Warenkorb, Rechnung und Marktplätze. Die Lieferbedingung des Artikels geht
 -- den Vorgaben des Kanals vor (sales_channel_shop.settings:
 -- delivery_term_stock_id für Lagerware, delivery_term_dropshipping_id für
--- Dropshipping-Artikel):
+-- Dropshipping-Artikel). Gibt der Kanal für Dropshipping-Artikel nichts vor,
+-- gilt die Standard-Lieferbedingung des Mandanten
+-- (defaults_oserp.shop_dropshipping_delivery_term_id) — sie zählt unten als
+-- „Vorgabe Dropshipping“:
 --
 --   Dropshipping, eigener Bestand   Vorgabe Lagerware, sonst wie ohne Bestand
 --                                   (die Ware liegt da und geht sofort raus)
@@ -1515,8 +1519,12 @@ CREATE OR REPLACE FUNCTION shop_part_delivery(p_parts_id integer, p_channel_id i
                ps.delivery_term_id AS eigene,
                (SELECT d.id FROM delivery_terms d
                  WHERE d.id::text = btrim(c.settings ->> 'delivery_term_stock_id')) AS lagerware,
-               (SELECT d.id FROM delivery_terms d
-                 WHERE d.id::text = btrim(c.settings ->> 'delivery_term_dropshipping_id')) AS lieferant
+               COALESCE(
+                   (SELECT d.id FROM delivery_terms d
+                     WHERE d.id::text = btrim(c.settings ->> 'delivery_term_dropshipping_id')),
+                   (SELECT d.id FROM delivery_terms d
+                     WHERE d.id::text = (SELECT btrim(value) FROM defaults_oserp
+                                          WHERE key = 'shop_dropshipping_delivery_term_id'))) AS lieferant
           FROM parts p
           LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
           LEFT JOIN sales_channel_shop c ON c.id = p_channel_id
@@ -2068,7 +2076,9 @@ BEGIN
           LEFT JOIN sales_channel_shop c ON c.id = a.channel_id
           JOIN delivery_terms d ON d.id = ps.delivery_term_id
                                 OR d.id::text IN (btrim(c.settings ->> 'delivery_term_stock_id'),
-                                                  btrim(c.settings ->> 'delivery_term_dropshipping_id'))
+                                                  btrim(c.settings ->> 'delivery_term_dropshipping_id'),
+                                                  (SELECT btrim(value) FROM defaults_oserp
+                                                    WHERE key = 'shop_dropshipping_delivery_term_id'))
           CROSS JOIN LATERAL (SELECT COALESCE(NULLIF(btrim(d.description_long), ''), d.description) AS text) t
          WHERE i.id = p_invoice_id
            AND COALESCE(t.text, '') <> ''
@@ -2969,6 +2979,9 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_stock_bin_id', '') ON CONF
 -- einen Dropshipping-Artikel anbieten
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_dropshipping_default', '0') ON CONFLICT (key) DO NOTHING;
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_dropshipping_quantity', '10') ON CONFLICT (key) DO NOTHING;
+-- Standard-Lieferbedingung für Dropshipping-Artikel (delivery_terms.id, leer =
+-- keine): gilt, wenn weder der Artikel noch der Kanal eine vorgibt (shop_part_delivery)
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_dropshipping_delivery_term_id', '') ON CONFLICT (key) DO NOTHING;
 
 -- Suche: Gewichtung des Preises im Ranking
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_search_weighting', '0.5') ON CONFLICT (key) DO NOTHING;

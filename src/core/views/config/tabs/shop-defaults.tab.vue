@@ -97,6 +97,7 @@
                             :werte="crmDefaults"
                             :quellen="quellen"
                             :gesetzt="crmSecrets"
+                            @add="eintragAnlegen"
                         />
                     </v-card-text>
                 </v-card>
@@ -149,9 +150,11 @@
                 </v-alert>
 
                 <!-- Einzelfeld -->
-                <ShopConfigField v-else :field="field" :werte="crmDefaults" :quellen="quellen" :gesetzt="crmSecrets" />
+                <ShopConfigField v-else :field="field" :werte="crmDefaults" :quellen="quellen" :gesetzt="crmSecrets" @add="eintragAnlegen" />
             </template>
         </template>
+
+        <ShopDeliveryTermDialog v-model="lieferbedingungDialog" @created="lieferbedingungAngelegt" />
     </v-container>
 </template>
 
@@ -162,6 +165,7 @@ import axios from 'axios'
 import ShopConfigField from './shop-config-field.component.vue'
 import { shopMediaApi } from '@/features/shop/composables/shopMediaApi.js'
 
+const ShopDeliveryTermDialog = defineAsyncComponent(() => import('@/features/shop/components/shop-delivery-term.dialog.vue'))
 const ShopCountriesConfig = defineAsyncComponent(() => import('@/features/shop/components/shop-countries.config.vue'))
 
 const { t } = useI18n()
@@ -208,7 +212,7 @@ const configLoaded = ref(false)
  * kann). Die Vorlagensätze lädt seit dev/shop-mehrere-kanaele.md die
  * Kanalkarte selbst.
  */
-const quellen = ref({ shopStockBins: [], shopImageFormats: [], kleinanzeigenImageFormats: [] })
+const quellen = ref({ shopStockBins: [], shopDeliveryTerms: [], shopImageFormats: [], kleinanzeigenImageFormats: [] })
 
 /** Zielformat des Kleinanzeigen-Kanals laut Server — Vorbelegung, solange nichts gespeichert ist */
 const kleinanzeigenZiel = ref('')
@@ -264,6 +268,55 @@ async function ladeLagerplaetze() {
         // Ohne Liste bleibt das Feld leer — der gespeicherte Platz gilt weiter
         console.warn('Lagerplätze konnten nicht geladen werden:', e)
     }
+}
+
+/**
+ * Lieferbedingungen für die Einstellung shop_dropshipping_delivery_term_id
+ *
+ * Ungültige nur, wenn sie gerade gewählt ist. Die Werte sind Zeichenketten,
+ * weil defaults_oserp Text speichert.
+ */
+async function ladeLieferbedingungen() {
+    try {
+        const response = await axios.post('/api/shop/', { action: 'getShopDeliveryTimes' })
+        const liste = response.data?.success ? (response.data.payload?.delivery_terms || []) : []
+        const gewaehlt = String(props.crmDefaults?.shop_dropshipping_delivery_term_id ?? '')
+        quellen.value = {
+            ...quellen.value,
+            shopDeliveryTerms: liste
+                .filter(d => ![true, 't', 'true', '1', 1].includes(d.obsolete) || String(d.id) === gewaehlt)
+                .map(d => ({
+                    value: String(d.id),
+                    title: d.description_long ? `${d.description} – ${d.description_long}` : d.description,
+                })),
+        }
+    } catch (e) {
+        // Ohne Liste bleibt das Feld leer — die gespeicherte Lieferbedingung gilt weiter
+        console.warn('Lieferbedingungen konnten nicht geladen werden:', e)
+    }
+}
+
+/**
+ * Plus-Symbol an einem Auswahlfeld (field.add): Lieferbedingung direkt
+ * anlegen, in die Auswahl aufnehmen und im Feld wählen. Gespeichert wird die
+ * Wahl wie jede andere Einstellung mit der Firmenkonfiguration.
+ */
+const lieferbedingungDialog = ref(false)
+let lieferbedingungFeld = ''
+function eintragAnlegen(field) {
+    lieferbedingungFeld = field.name
+    lieferbedingungDialog.value = true
+}
+function lieferbedingungAngelegt(d) {
+    if (!d) return
+    quellen.value = {
+        ...quellen.value,
+        shopDeliveryTerms: [...quellen.value.shopDeliveryTerms, {
+            value: String(d.id),
+            title: d.description_long ? `${d.description} – ${d.description_long}` : d.description,
+        }],
+    }
+    if (lieferbedingungFeld) props.crmDefaults[lieferbedingungFeld] = String(d.id)
 }
 
 /**
@@ -338,7 +391,7 @@ const ohneSpeichern = inject('ohneSpeichern', fn => fn())
 
 onMounted(async () => {
     await loadConfigFile()
-    await Promise.all([ladeLagerplaetze(), ladeBildformate()])
+    await Promise.all([ladeLagerplaetze(), ladeLieferbedingungen(), ladeBildformate()])
     if (!configError.value) {
         ohneSpeichern(normalizeShopDefaults)
     }

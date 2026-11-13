@@ -411,6 +411,19 @@
             "cancel": "Annulla",
             "delete": "Elimina"
         },
+        "deliveryTerm": {
+            "add": "Aggiungi condizione di consegna",
+            "title": "Nuova condizione di consegna",
+            "description": "Denominazione",
+            "descriptionHint": "Nome breve per la selezione, ad esempio «2–4 giorni lavorativi».",
+            "descriptionRequired": "Inserire una denominazione.",
+            "text": "Testo per i clienti",
+            "textHint": "Compare nella pagina prodotto, nel carrello e in fattura, ad esempio «Tempo di consegna 2–4 giorni lavorativi». Vuoto = denominazione.",
+            "daysHint": "Tempo di consegna in giorni dall'ordine, per i dati dei motori di ricerca. Può restare vuoto.",
+            "create": "Crea",
+            "created": "Condizione di consegna creata",
+            "createError": "Impossibile creare la condizione di consegna"
+        },
         "deliveryTimes": {
             "title": "Tempi di consegna",
             "intro": "Tempo di consegna per condizione di consegna, in giorni dall'ordine. I giorni compaiono nei dati per i motori di ricerca delle pagine prodotto. Le condizioni di consegna si gestiscono nella configurazione aziendale, sotto Elenchi di base.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Il numero articolo non è ammesso come nome della pagina prodotto. Scegliere un nome descrittivo.",
             "CHANNEL_IN_USE": "A questo canale sono collegate fatture, recessi od ordini eBay. Può solo essere disattivato.",
             "CHANNEL_NOT_DELETABLE": "Si può eliminare solo un canale disattivato senza attività aperte.",
+            "DELIVERY_TERM_EXISTS": "Questa denominazione esiste già. Scegliere la condizione di consegna esistente o un altro nome.",
             "DELIVERY_DAYS_INVALID": "Inserire giorni interi a partire da 0; «da» non può essere maggiore di «a».",
             "SHIPPING_UNFIT": "Non verrà pubblicato",
             "SHIPPING_PART_NOT_OFFERED": "Gli articoli di spedizione non vengono offerti",

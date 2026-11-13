@@ -5,16 +5,20 @@
 
     Die Lieferbedingungen sind die kivitendo-Stammliste delivery_terms — ihr
     Text steht auf Produktseite, Warenkorb und Rechnung und wird in der
-    Firmenkonfiguration unter „Stammlisten“ gepflegt. Hier kommt je
+    Firmenkonfiguration unter „Stammdaten-Listen“ gepflegt. Hier kommt je
     Lieferbedingung die Lieferzeit in Tagen ab Bestellung dazu
     (delivery_term_shop): sie steht in den Suchmaschinendaten der
     Produktseiten.
 
     Gespeichert wird je Zeile beim Verlassen eines Feldes
-    (saveShopDeliveryTime). Recht: edit_shop_config.
+    (saveShopDeliveryTime). Neue Lieferbedingungen legt der Dialog
+    shop-delivery-term.dialog.vue an. Recht: edit_shop_config.
 -->
 <template>
     <section-card :title="t('ShopView.deliveryTimes.title')" icon="mdi-truck-fast-outline" class="lieferzeiten">
+        <template #actions>
+            <v-btn size="small" variant="text" prepend-icon="mdi-plus" @click="neuDialog = true">{{ t('ShopView.deliveryTerm.add') }}</v-btn>
+        </template>
         <div class="text-body-2 text-medium-emphasis lieferzeiten-text">{{ t('ShopView.deliveryTimes.intro') }}</div>
 
         <v-alert v-if="fehler" type="error" variant="tonal" density="compact">{{ fehler }}</v-alert>
@@ -49,6 +53,8 @@
                 />
             </v-col>
         </v-row>
+
+        <ShopDeliveryTermDialog v-model="neuDialog" @created="aufnehmen" />
     </section-card>
 </template>
 
@@ -57,6 +63,7 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import SectionCard from '@/core/components/layout/section-card.vue'
+import ShopDeliveryTermDialog from './shop-delivery-term.dialog.vue'
 import { shopFehler } from '../composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
 
@@ -72,6 +79,7 @@ const zuletzt = {}
 
 const leer = wert => wert === null || wert === undefined || String(wert).trim() === ''
 const tage = wert => (leer(wert) ? null : Number(wert))
+const neuDialog = ref(false)
 const stand = zeile => JSON.stringify([tage(zeile.days_min), tage(zeile.days_max)])
 
 /** Ganze Tage ab 0; „von“ nicht größer als „bis“ */
@@ -80,6 +88,24 @@ function gueltig(zeile) {
     const bis = tage(zeile.days_max)
     const ganz = wert => wert === null || (Number.isInteger(wert) && wert >= 0)
     return ganz(von) && ganz(bis) && (von === null || bis === null || von <= bis)
+}
+
+const alsZeile = d => ({
+    id: Number(d.id),
+    description: d.description || '',
+    description_long: d.description_long || '',
+    obsolete: WAHR.includes(d.obsolete),
+    days_min: leer(d.days_min) ? '' : String(Number(d.days_min)),
+    days_max: leer(d.days_max) ? '' : String(Number(d.days_max)),
+    speichert: false,
+})
+
+/** Im Dialog angelegte Lieferbedingung ans Ende der Liste */
+function aufnehmen(lieferbedingung) {
+    if (!lieferbedingung) return
+    const zeile = alsZeile(lieferbedingung)
+    zuletzt[zeile.id] = stand(zeile)
+    zeilen.value.push(zeile)
 }
 
 async function laden() {
@@ -91,15 +117,7 @@ async function laden() {
             fehler.value = shopFehler(antwort.data, i18n, 'ShopView.deliveryTimes.loadError').text
             return
         }
-        zeilen.value = (antwort.data.payload?.delivery_terms || []).map(d => ({
-            id: Number(d.id),
-            description: d.description || '',
-            description_long: d.description_long || '',
-            obsolete: WAHR.includes(d.obsolete),
-            days_min: leer(d.days_min) ? '' : String(Number(d.days_min)),
-            days_max: leer(d.days_max) ? '' : String(Number(d.days_max)),
-            speichert: false,
-        }))
+        zeilen.value = (antwort.data.payload?.delivery_terms || []).map(alsZeile)
         zeilen.value.forEach(zeile => { zuletzt[zeile.id] = stand(zeile) })
     } catch (e) {
         fehler.value = shopFehler(e?.response?.data, i18n, 'ShopView.deliveryTimes.loadError').text

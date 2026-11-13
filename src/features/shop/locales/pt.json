@@ -411,6 +411,19 @@
             "cancel": "Cancelar",
             "delete": "Eliminar"
         },
+        "deliveryTerm": {
+            "add": "Adicionar condição de entrega",
+            "title": "Nova condição de entrega",
+            "description": "Designação",
+            "descriptionHint": "Nome curto para a seleção, por exemplo «2–4 dias úteis».",
+            "descriptionRequired": "Introduza uma designação.",
+            "text": "Texto para clientes",
+            "textHint": "Aparece na página do produto, no carrinho e na fatura, por exemplo «Prazo de entrega 2–4 dias úteis». Vazio = designação.",
+            "daysHint": "Prazo de entrega em dias a partir da encomenda, para os dados dos motores de busca. Pode ficar vazio.",
+            "create": "Criar",
+            "created": "Condição de entrega criada",
+            "createError": "Não foi possível criar a condição de entrega"
+        },
         "deliveryTimes": {
             "title": "Prazos de entrega",
             "intro": "Prazo de entrega por condição de entrega, em dias a partir da encomenda. Os dias constam dos dados para motores de busca das páginas de produto. As condições de entrega são geridas na configuração da empresa, em Listas mestras.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "O número do artigo não é permitido como nome da página do produto. Escolha um nome descritivo.",
             "CHANNEL_IN_USE": "Faturas, desistências ou encomendas eBay estão associadas a este canal. Só pode ser desligado.",
             "CHANNEL_NOT_DELETABLE": "Só é possível eliminar um canal desligado sem tarefas pendentes.",
+            "DELIVERY_TERM_EXISTS": "Esta designação já existe. Escolha a condição de entrega existente ou outro nome.",
             "DELIVERY_DAYS_INVALID": "Introduza dias inteiros a partir de 0; «de» não pode ser superior a «até».",
             "SHIPPING_UNFIT": "Não será publicado",
             "SHIPPING_PART_NOT_OFFERED": "Os artigos de portes não são oferecidos",

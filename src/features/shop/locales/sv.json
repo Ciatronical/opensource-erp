@@ -411,6 +411,19 @@
             "cancel": "Avbryt",
             "delete": "Ta bort"
         },
+        "deliveryTerm": {
+            "add": "Lägg till leveransvillkor",
+            "title": "Nytt leveransvillkor",
+            "description": "Benämning",
+            "descriptionHint": "Kort namn för urvalet, till exempel ”2–4 arbetsdagar”.",
+            "descriptionRequired": "Ange en benämning.",
+            "text": "Text för kunder",
+            "textHint": "Visas på produktsida, i varukorg och på faktura, till exempel ”Leveranstid 2–4 arbetsdagar”. Tomt = benämning.",
+            "daysHint": "Leveranstid i dagar från beställningen, för sökmotordata. Kan lämnas tomt.",
+            "create": "Skapa",
+            "created": "Leveransvillkor skapat",
+            "createError": "Leveransvillkoret kunde inte skapas"
+        },
         "deliveryTimes": {
             "title": "Leveranstider",
             "intro": "Leveranstid per leveransvillkor i dagar från beställningen. Dagarna står i sökmotordata på produktsidorna. Själva leveransvillkoren underhålls i företagskonfigurationen under stamlistor.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Artikelnumret är inte tillåtet som namn på produktsidan. Välj ett beskrivande namn.",
             "CHANNEL_IN_USE": "Fakturor, ångerrätter eller eBay-beställningar hänvisar till den här kanalen. Den kan bara stängas av.",
             "CHANNEL_NOT_DELETABLE": "Endast en avstängd kanal utan öppna uppdrag kan tas bort.",
+            "DELIVERY_TERM_EXISTS": "Den här benämningen finns redan. Välj det befintliga leveransvillkoret eller ett annat namn.",
             "DELIVERY_DAYS_INVALID": "Ange hela dagar från 0; ”från” får inte vara större än ”till”.",
             "SHIPPING_UNFIT": "Publiceras inte",
             "SHIPPING_PART_NOT_OFFERED": "Fraktartiklar erbjuds inte",

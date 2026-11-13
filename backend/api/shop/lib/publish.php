@@ -541,7 +541,8 @@ function shopDeliveryCheckText($fehlt): string {
         return '';
     }
     return 'Dropshipping-Artikel ohne Lieferzeit: am Artikel eine Lieferbedingung wählen oder beim'
-        .' Verkaufskanal eine Lieferbedingung für Dropshipping-Artikel vorgeben';
+        .' Verkaufskanal oder in der Firmenkonfiguration (Shop) eine Lieferbedingung für'
+        .' Dropshipping-Artikel vorgeben';
 }
 
 /**

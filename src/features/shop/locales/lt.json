@@ -411,6 +411,19 @@
             "cancel": "Atšaukti",
             "delete": "Ištrinti"
         },
+        "deliveryTerm": {
+            "add": "Pridėti pristatymo sąlygą",
+            "title": "Nauja pristatymo sąlyga",
+            "description": "Pavadinimas",
+            "descriptionHint": "Trumpas pavadinimas pasirinkimui, pavyzdžiui, „2–4 darbo dienos“.",
+            "descriptionRequired": "Įveskite pavadinimą.",
+            "text": "Tekstas klientams",
+            "textHint": "Rodomas produkto puslapyje, krepšelyje ir sąskaitoje, pavyzdžiui, „Pristatymo laikas 2–4 darbo dienos“. Tuščia = pavadinimas.",
+            "daysHint": "Pristatymo laikas dienomis nuo užsakymo paieškos sistemų duomenims. Gali likti tuščias.",
+            "create": "Sukurti",
+            "created": "Pristatymo sąlyga sukurta",
+            "createError": "Pristatymo sąlygos sukurti nepavyko"
+        },
         "deliveryTimes": {
             "title": "Pristatymo laikai",
             "intro": "Kiekvienos pristatymo sąlygos pristatymo laikas dienomis nuo užsakymo. Dienos pateikiamos prekių puslapių paieškos sistemų duomenyse. Pačios pristatymo sąlygos tvarkomos įmonės konfigūracijoje, pagrindiniuose sąrašuose.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Prekės numeris negali būti produkto puslapio pavadinimas. Pasirinkite aprašomąjį pavadinimą.",
             "CHANNEL_IN_USE": "Su šiuo kanalu susietos sąskaitos, atsisakymai arba eBay užsakymai. Jį galima tik išjungti.",
             "CHANNEL_NOT_DELETABLE": "Ištrinti galima tik išjungtą kanalą be atvirų užduočių.",
+            "DELIVERY_TERM_EXISTS": "Toks pavadinimas jau yra. Pasirinkite esamą pristatymo sąlygą arba kitą pavadinimą.",
             "DELIVERY_DAYS_INVALID": "Įveskite sveikas dienas nuo 0; „nuo“ negali būti didesnis už „iki“.",
             "SHIPPING_UNFIT": "Nebus paskelbta",
             "SHIPPING_PART_NOT_OFFERED": "Siuntimo prekės nesiūlomos",

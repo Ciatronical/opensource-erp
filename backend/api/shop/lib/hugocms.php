@@ -677,6 +677,51 @@ function shopMediaMissingInLibrary($db, int $kanal): array {
 }
 
 /**
+ * Warnungen zu Medienfreigaben, deren Dateien die Webseite nicht ausliefert
+ *
+ * HugoCMS legt fest, wohin Produktbilder, Vorschaubilder und Downloads
+ * kommen; die Seiten verweisen über die Adressmuster des Kanals darauf. Hugo
+ * liefert nur aus, was unter static/ liegt — eine Freigabe daneben (etwa
+ * „products_images“) nimmt die Dateien an, die Seiten zeigen aber kein Bild.
+ * Liegt die Freigabe unter static/, muss das Adressmuster auf dasselbe
+ * Verzeichnis zeigen.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @param array $freigaben aus shopHugoCmsGrantsFrom (images, thumbnails, downloads)
+ * @return array Meldungen, leer wenn alles passt
+ */
+function shopHugoCmsMediaPathWarnings($db, int $kanal, array $freigaben): array {
+    $bereiche = [
+        'images'     => ['Produktbilder', 'images_link', 'Adresse der Produktbilder'],
+        'thumbnails' => ['Vorschaubilder', 'thumbnails_link', 'Adresse der Vorschaubilder'],
+        'downloads'  => ['Downloads', 'downloads_link', 'Adresse der Downloads'],
+    ];
+    $meldungen = [];
+    foreach ($bereiche as $feld => [$name, $schluessel, $musterName]) {
+        $verzeichnis = trim((string)($freigaben[$feld] ?? ''), '/');
+        if ('' === $verzeichnis) {
+            continue;
+        }
+        if (!str_starts_with($verzeichnis, 'static/')) {
+            $meldungen[] = sprintf('Freigabe „%s“ (%s/) liegt nicht unter static/ — Hugo liefert die Dateien dann nicht aus, '
+                .'sofern die Webseite das Verzeichnis nicht eigens einbindet. In HugoCMS unter Projekteinstellungen → '
+                .'Shop-Erweiterung ein Verzeichnis unter static/ eintragen.', $name, $verzeichnis);
+            continue;
+        }
+        $erwartet = '/'.substr($verzeichnis, strlen('static/')).'/%s';
+        $muster = trim(shopChannelValue($db, $kanal, $schluessel));
+        $pfad = preg_replace('#^https?://[^/]+#i', '', $muster);
+        if ('' !== $muster && $pfad !== $erwartet) {
+            $meldungen[] = sprintf('„%s“ (%s) passt nicht zur Freigabe „%s“ (%s/) — erwartet %s. In der Ansicht '
+                .'„Verkaufskanäle“ die Verbindung zu HugoCMS prüfen und den Vorschlag übernehmen.',
+                $musterName, $muster, $name, $verzeichnis, $erwartet);
+        }
+    }
+    return $meldungen;
+}
+
+/**
  * Meldungen zu den Medien nach einer Übertragung
  *
  * @param object $db Company-Datenbankverbindung
@@ -689,6 +734,9 @@ function shopHugoCmsMediaReport($db, int $kanal, array $abgleich, callable $sage
     $medien = $abgleich['medien'];
     $sagen(sprintf('Medien an HugoCMS: %d Produktbilder, %d Vorschaubilder, %d Downloads in der Lieferung, %d übertragen',
         $medien['anzahl']['images'], $medien['anzahl']['thumbnails'], $medien['anzahl']['downloads'], $medien['uebertragen']));
+    foreach (shopHugoCmsMediaPathWarnings($db, $kanal, (array)($abgleich['freigaben'] ?? [])) as $meldung) {
+        $sagen('Warnung: '.$meldung);
+    }
     if ($medien['vorschau_neu'] > 0) {
         $sagen(sprintf('%d Vorschaubilder neu erzeugt (Größe %d)', $medien['vorschau_neu'], shopConfigInt($db, 'shop_thumbnail_size', 200)));
     }

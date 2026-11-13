@@ -411,6 +411,19 @@
             "cancel": "Anuluj",
             "delete": "Usuń"
         },
+        "deliveryTerm": {
+            "add": "Dodaj warunek dostawy",
+            "title": "Nowy warunek dostawy",
+            "description": "Nazwa",
+            "descriptionHint": "Krótka nazwa do wyboru, na przykład „2–4 dni robocze”.",
+            "descriptionRequired": "Podaj nazwę.",
+            "text": "Tekst dla klientów",
+            "textHint": "Widoczny na stronie produktu, w koszyku i na fakturze, na przykład „Czas dostawy 2–4 dni robocze”. Puste = nazwa.",
+            "daysHint": "Czas dostawy w dniach od zamówienia, do danych dla wyszukiwarek. Może pozostać pusty.",
+            "create": "Utwórz",
+            "created": "Utworzono warunek dostawy",
+            "createError": "Nie udało się utworzyć warunku dostawy"
+        },
         "deliveryTimes": {
             "title": "Czasy dostawy",
             "intro": "Czas dostawy dla każdego warunku dostawy w dniach od zamówienia. Dni trafiają do danych dla wyszukiwarek na stronach produktów. Same warunki dostawy utrzymuje się w konfiguracji firmy, w listach podstawowych.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Numer artykułu nie może być nazwą strony produktu. Wybierz nazwę opisową.",
             "CHANNEL_IN_USE": "Do tego kanału odnoszą się faktury, odstąpienia lub zamówienia eBay. Można go tylko wyłączyć.",
             "CHANNEL_NOT_DELETABLE": "Usunąć można tylko wyłączony kanał bez otwartych zadań.",
+            "DELIVERY_TERM_EXISTS": "Taka nazwa już istnieje. Wybierz istniejący warunek dostawy lub inną nazwę.",
             "DELIVERY_DAYS_INVALID": "Podaj pełne dni od 0; „od” nie może być większe niż „do”.",
             "SHIPPING_UNFIT": "Nie zostanie opublikowane",
             "SHIPPING_PART_NOT_OFFERED": "Artykuły wysyłki nie są oferowane",

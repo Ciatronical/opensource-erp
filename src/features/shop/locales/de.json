@@ -411,12 +411,25 @@
             "cancel": "Abbrechen",
             "delete": "Löschen"
         },
+        "deliveryTerm": {
+            "add": "Lieferbedingung hinzufügen",
+            "title": "Neue Lieferbedingung",
+            "description": "Bezeichnung",
+            "descriptionHint": "Kurzer Name für die Auswahl, zum Beispiel „2–4 Werktage“.",
+            "descriptionRequired": "Bitte eine Bezeichnung eingeben.",
+            "text": "Text für Kunden",
+            "textHint": "Steht auf Produktseite, Warenkorb und Rechnung, zum Beispiel „Lieferzeit 2–4 Werktage“. Leer = Bezeichnung.",
+            "daysHint": "Lieferzeit in Tagen ab Bestellung für die Suchmaschinendaten. Kann leer bleiben.",
+            "create": "Anlegen",
+            "created": "Lieferbedingung angelegt",
+            "createError": "Lieferbedingung konnte nicht angelegt werden"
+        },
         "deliveryTimes": {
             "title": "Lieferzeiten",
-            "intro": "Lieferzeit je Lieferbedingung in Tagen ab Bestellung. Die Tage stehen in den Suchmaschinendaten der Produktseiten. Die Lieferbedingungen selbst pflegen Sie in der Firmenkonfiguration unter Stammlisten.",
+            "intro": "Lieferzeit je Lieferbedingung in Tagen ab Bestellung. Die Tage stehen in den Suchmaschinendaten der Produktseiten. Die Lieferbedingungen selbst pflegen Sie in der Firmenkonfiguration unter „Stammdaten-Listen“.",
             "daysMin": "Tage von",
             "daysMax": "Tage bis",
-            "empty": "Es gibt noch keine Lieferbedingungen. Legen Sie sie in der Firmenkonfiguration unter Stammlisten an.",
+            "empty": "Es gibt noch keine Lieferbedingungen. Legen Sie sie in der Firmenkonfiguration unter „Stammdaten-Listen“ an.",
             "saved": "Lieferzeit gespeichert",
             "loadError": "Lieferzeiten konnten nicht geladen werden",
             "saveError": "Lieferzeit konnte nicht gespeichert werden"
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Die Artikelnummer ist als Name der Produktseite nicht erlaubt. Bitte einen sprechenden Namen wählen.",
             "CHANNEL_IN_USE": "An diesem Kanal hängen Rechnungen, Widerrufe oder eBay-Bestellungen. Er lässt sich nur abschalten.",
             "CHANNEL_NOT_DELETABLE": "Nur ein abgeschalteter Kanal ohne offene Aufträge lässt sich löschen.",
+            "DELIVERY_TERM_EXISTS": "Diese Bezeichnung gibt es schon. Bitte wählen Sie die vorhandene Lieferbedingung oder einen anderen Namen.",
             "DELIVERY_DAYS_INVALID": "Bitte ganze Tage ab 0 eingeben; „von“ darf nicht größer sein als „bis“.",
             "SHIPPING_UNFIT": "Wird nicht veröffentlicht",
             "SHIPPING_PART_NOT_OFFERED": "Versandartikel werden nicht angeboten",

@@ -411,6 +411,19 @@
             "cancel": "İptal",
             "delete": "Sil"
         },
+        "deliveryTerm": {
+            "add": "Teslimat koşulu ekle",
+            "title": "Yeni teslimat koşulu",
+            "description": "Ad",
+            "descriptionHint": "Seçim için kısa ad, örneğin “2–4 iş günü”.",
+            "descriptionRequired": "Lütfen bir ad girin.",
+            "text": "Müşteriler için metin",
+            "textHint": "Ürün sayfasında, sepette ve faturada görünür, örneğin “Teslimat süresi 2–4 iş günü”. Boş = ad.",
+            "daysHint": "Arama motoru verileri için siparişten itibaren gün olarak teslimat süresi. Boş kalabilir.",
+            "create": "Oluştur",
+            "created": "Teslimat koşulu oluşturuldu",
+            "createError": "Teslimat koşulu oluşturulamadı"
+        },
         "deliveryTimes": {
             "title": "Teslimat süreleri",
             "intro": "Her teslimat koşulu için siparişten itibaren gün cinsinden teslimat süresi. Günler, ürün sayfalarının arama motoru verilerinde yer alır. Teslimat koşullarının kendisi şirket yapılandırmasında, ana listeler altında yönetilir.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Ürün numarası, ürün sayfasının adı olarak kullanılamaz. Lütfen açıklayıcı bir ad seçin.",
             "CHANNEL_IN_USE": "Bu kanala bağlı faturalar, cayma bildirimleri veya eBay siparişleri var. Yalnızca kapatılabilir.",
             "CHANNEL_NOT_DELETABLE": "Yalnızca açık görevi olmayan kapalı bir kanal silinebilir.",
+            "DELIVERY_TERM_EXISTS": "Bu ad zaten var. Lütfen mevcut teslimat koşulunu veya başka bir ad seçin.",
             "DELIVERY_DAYS_INVALID": "Lütfen 0 veya daha büyük tam gün girin; en az değer en çok değerden büyük olamaz.",
             "SHIPPING_UNFIT": "Yayımlanmayacak",
             "SHIPPING_PART_NOT_OFFERED": "Kargo ürünleri sunulmaz",

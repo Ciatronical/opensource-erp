@@ -34,6 +34,11 @@ const shopDefaultsConfig = [
     // nicht nötig. Einzelne Artikel kennzeichnet die Shop-Karte des Artikels.
     // Die Angebotsmenge gilt für Marktplätze (shop_part_offer_quantity).
     { name: "shop_dropshipping_default", type: "checkbox", label: "crm_fields.shopDropshippingDefault", tooltip: "crm_fields.shopDropshippingDefault_help" },
+    // Standard-Lieferbedingung: gilt für Dropshipping-Artikel, wenn weder der
+    // Artikel noch der Verkaufskanal eine vorgibt (shop_part_delivery). Die
+    // Auswahl lädt der Tab (quellen.shopDeliveryTerms); add: Plus-Symbol am
+    // Feld, der Tab öffnet den Dialog zum Anlegen einer Lieferbedingung.
+    { name: "shop_dropshipping_delivery_term_id", type: "dynamic-select", source: "shopDeliveryTerms", itemTitle: "title", itemValue: "value", fieldstyle: "max-width: 60ch", add: { label: "ShopView.deliveryTerm.add" }, label: "crm_fields.shopDropshippingDeliveryTerm", tooltip: "crm_fields.shopDropshippingDeliveryTerm_help" },
     { name: "shop_dropshipping_quantity", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopDropshippingQuantity", tooltip: "crm_fields.shopDropshippingQuantity_help" },
 
     // Verkaufskanäle (dev/shop-mehrere-kanaele.md): eigene Ansicht im

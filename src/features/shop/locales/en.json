@@ -411,6 +411,19 @@
             "cancel": "Cancel",
             "delete": "Delete"
         },
+        "deliveryTerm": {
+            "add": "Add delivery term",
+            "title": "New delivery term",
+            "description": "Name",
+            "descriptionHint": "Short name for the selection, for example “2–4 working days”.",
+            "descriptionRequired": "Please enter a name.",
+            "text": "Text for customers",
+            "textHint": "Shown on product page, cart and invoice, for example “Delivery time 2–4 working days”. Empty = name.",
+            "daysHint": "Delivery time in days from the order, for the search engine data. May be left empty.",
+            "create": "Create",
+            "created": "Delivery term created",
+            "createError": "Delivery term could not be created"
+        },
         "deliveryTimes": {
             "title": "Delivery times",
             "intro": "Delivery time per delivery term in days from the order. The days appear in the search engine data of the product pages. The delivery terms themselves are maintained in the company configuration under master lists.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "The part number is not allowed as the name of the product page. Please choose a descriptive name.",
             "CHANNEL_IN_USE": "Invoices, withdrawals or eBay orders refer to this channel. It can only be switched off.",
             "CHANNEL_NOT_DELETABLE": "Only a switched-off channel without open jobs can be deleted.",
+            "DELIVERY_TERM_EXISTS": "This name already exists. Please select the existing delivery term or choose another name.",
             "DELIVERY_DAYS_INVALID": "Please enter whole days from 0; “from” must not be greater than “to”.",
             "SHIPPING_UNFIT": "Will not be published",
             "SHIPPING_PART_NOT_OFFERED": "Shipping items are not offered",

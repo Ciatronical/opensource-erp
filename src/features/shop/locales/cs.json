@@ -411,6 +411,19 @@
             "cancel": "Zrušit",
             "delete": "Smazat"
         },
+        "deliveryTerm": {
+            "add": "Přidat dodací podmínku",
+            "title": "Nová dodací podmínka",
+            "description": "Označení",
+            "descriptionHint": "Krátký název pro výběr, například „2–4 pracovní dny“.",
+            "descriptionRequired": "Zadejte označení.",
+            "text": "Text pro zákazníky",
+            "textHint": "Zobrazuje se na stránce produktu, v košíku a na faktuře, například „Dodací lhůta 2–4 pracovní dny“. Prázdné = označení.",
+            "daysHint": "Dodací lhůta ve dnech od objednávky pro data vyhledávačů. Může zůstat prázdná.",
+            "create": "Vytvořit",
+            "created": "Dodací podmínka vytvořena",
+            "createError": "Dodací podmínku se nepodařilo vytvořit"
+        },
         "deliveryTimes": {
             "title": "Dodací lhůty",
             "intro": "Dodací lhůta pro každou dodací podmínku ve dnech od objednávky. Dny jsou uvedeny v datech pro vyhledávače na stránkách produktů. Samotné dodací podmínky spravujete v konfiguraci firmy v kmenových seznamech.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Číslo artiklu není jako název produktové stránky povoleno. Zvolte výstižný název.",
             "CHANNEL_IN_USE": "Na tento kanál odkazují faktury, odstoupení nebo objednávky z eBay. Lze ho pouze vypnout.",
             "CHANNEL_NOT_DELETABLE": "Smazat lze jen vypnutý kanál bez otevřených úloh.",
+            "DELIVERY_TERM_EXISTS": "Toto označení již existuje. Zvolte existující dodací podmínku nebo jiný název.",
             "DELIVERY_DAYS_INVALID": "Zadejte celé dny od 0; „od“ nesmí být větší než „do“.",
             "SHIPPING_UNFIT": "Nezveřejní se",
             "SHIPPING_PART_NOT_OFFERED": "Položky dopravy se nenabízejí",

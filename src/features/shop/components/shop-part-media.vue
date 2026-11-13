@@ -14,7 +14,9 @@
     Umbenennen, Umwandeln und Löschen aus der Bibliothek wirken auf die
     Bibliothek selbst (edit_shop_config); die Verweise aller Artikel folgen,
     die eigene Liste wird sofort nachgezogen. Das erste Bild ist das
-    Vorschaubild in Suche, Warenkorb und Rechnung.
+    Vorschaubild in Suche, Warenkorb und Rechnung. Die Reihenfolge des
+    Artikels — so stehen Bilder und Downloads auf der Produktseite — ändern die
+    Pfeile an den Kacheln und das Kontextmenü.
 -->
 <template>
     <div class="partmedien">
@@ -138,6 +140,30 @@
                                 <div :class="datei.missing ? 'text-warning' : 'text-medium-emphasis'">
                                     {{ datei.missing ? t('ShopView.media.missingFile') : groesse(datei.file_size) }}
                                 </div>
+                                <!-- Reihenfolge des Artikels: so stehen die Bilder auf
+                                     der Produktseite. Nicht bei gefilterter Liste -->
+                                <div v-if="!readonly && !filter && dateien.length > 1" class="d-flex justify-center">
+                                    <v-btn
+                                        icon="mdi-chevron-left"
+                                        size="x-small"
+                                        variant="text"
+                                        :disabled="datei.index === 0"
+                                        :title="t('ShopView.partCard.moveLeft')"
+                                        :aria-label="t('ShopView.partCard.moveLeft')"
+                                        @click.stop="verschieben(datei, -1)"
+                                        @dblclick.stop
+                                    />
+                                    <v-btn
+                                        icon="mdi-chevron-right"
+                                        size="x-small"
+                                        variant="text"
+                                        :disabled="datei.index === dateien.length - 1"
+                                        :title="t('ShopView.partCard.moveRight')"
+                                        :aria-label="t('ShopView.partCard.moveRight')"
+                                        @click.stop="verschieben(datei, 1)"
+                                        @dblclick.stop
+                                    />
+                                </div>
                             </v-card-text>
                         </v-card>
                     </div>
@@ -195,6 +221,18 @@
                         prepend-icon="mdi-image-frame"
                         :title="t('ShopView.media.setThumbnail')"
                         @click="alsVorschaubild(menue.datei)"
+                    />
+                    <v-list-item
+                        v-if="menue.datei?.index > 0"
+                        prepend-icon="mdi-chevron-left"
+                        :title="t('ShopView.partCard.moveLeft')"
+                        @click="verschieben(menue.datei, -1)"
+                    />
+                    <v-list-item
+                        v-if="menue.datei && menue.datei.index < dateien.length - 1"
+                        prepend-icon="mdi-chevron-right"
+                        :title="t('ShopView.partCard.moveRight')"
+                        @click="verschieben(menue.datei, 1)"
                     />
                     <v-list-item
                         v-if="bereich === 'downloads' && !menue.datei?.missing"
@@ -654,6 +692,22 @@ function vomArtikelEntfernen(liste) {
 function alsVorschaubild(datei) {
     if (!datei) return
     images.value = [datei.modelName, ...images.value.filter(n => String(n).trim() !== datei.modelName)]
+}
+/**
+ * Verschiebt eine Datei in der Reihenfolge des Artikels um einen Platz — so
+ * stehen Bilder und Downloads auf der Produktseite. Gespeichert wird mit der
+ * Karte.
+ */
+function verschieben(datei, richtung) {
+    if (!datei) return
+    const liste = bereich.value === 'images' ? [...images.value] : [...downloads.value]
+    const nameVon = eintrag => String(bereich.value === 'images' ? eintrag : eintrag?.value || '').trim()
+    const von = liste.findIndex(eintrag => nameVon(eintrag) === datei.modelName)
+    const nach = von + richtung
+    if (von < 0 || nach < 0 || nach >= liste.length) return
+    ;[liste[von], liste[nach]] = [liste[nach], liste[von]]
+    if (bereich.value === 'images') images.value = liste
+    else downloads.value = liste
 }
 /** Nach Umbenennen oder Umwandeln in der Bibliothek: den Namen im Artikel nachziehen */
 function nameErsetzen(alt, neu) {

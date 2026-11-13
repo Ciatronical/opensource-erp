@@ -22,7 +22,7 @@ Ein Artikel mit „Im Shop anbieten" wird über einen oder mehrere **Verkaufskan
 - Grundpreis ist der Verkaufspreis des Artikels; brutto oder netto je nach Einstellung
 - Ein gemeinsamer Lagerbestand für alle Kanäle; Verkäufe buchen vom Shop-Lagerplatz aus
 - **Dropshipping-Artikel** (Kennzeichen in der Shop-Karte des Artikels, oder „Nur Dropshipping" für alle Artikel in der Firmenkonfiguration → Shop): der Lieferant versendet, eigener Bestand ist nicht nötig. Die Produktseite zeigt „Verfügbar" mit der Lieferzeit, Marktplätze bieten eine feste Menge an, und ein Verkauf bucht nur aus, was am eigenen Lager liegt. Liegt eigener Bestand da, gilt „Auf Lager" mit der Lieferzeit für Lagerware. Ohne Lieferzeit wird ein Dropshipping-Artikel nicht veröffentlicht
-- **Lieferzeiten**: Lieferbedingung je Artikel, sonst die Vorgaben des Kanals für Lagerware und für Dropshipping-Artikel (Ansicht „Verkaufskanäle"); die Tage je Lieferbedingung für die Suchmaschinendaten stehen in der Ansicht „Versandarten"
+- **Lieferzeiten**: Lieferbedingung je Artikel, sonst die Vorgaben des Kanals für Lagerware und für Dropshipping-Artikel (Ansicht „Verkaufskanäle"), für Dropshipping-Artikel zuletzt die Standard-Lieferbedingung des Mandanten (Firmenkonfiguration → Shop); die Tage je Lieferbedingung für die Suchmaschinendaten stehen in der Ansicht „Versandarten"
 - Mindestens ein Kanal bleibt eingeschaltet; abgeschaltete Kanäle bieten nichts an, ihre Angaben bleiben erhalten
 
 ### HugoShop

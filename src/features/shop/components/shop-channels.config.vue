@@ -306,7 +306,18 @@
                             variant="outlined"
                             density="compact"
                             hide-details="auto"
-                        />
+                        >
+                            <template #append>
+                                <v-btn
+                                    icon="mdi-plus"
+                                    size="small"
+                                    variant="text"
+                                    :title="t('ShopView.deliveryTerm.add')"
+                                    :aria-label="t('ShopView.deliveryTerm.add')"
+                                    @click="lieferbedingungNeu(kanal, feld.name)"
+                                />
+                            </template>
+                        </v-autocomplete>
                     </v-col>
                 </v-row>
 
@@ -348,6 +359,8 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
+
+        <ShopDeliveryTermDialog v-model="lieferbedingungDialog" @created="lieferbedingungAngelegt" />
     </div>
 </template>
 
@@ -358,6 +371,7 @@ import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import { shopFehler } from '../composables/useShop.js'
 import ShopChannelSettings from './shop-channel-settings.vue'
+import ShopDeliveryTermDialog from './shop-delivery-term.dialog.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toasts from '@/core/utils/toasts.js'
 
@@ -452,6 +466,20 @@ const lieferzeitFelder = [
     { name: 'delivery_term_stock_id', label: 'ShopView.channelConfig.deliveryTermStock', hint: 'ShopView.channelConfig.deliveryTermStockHint' },
     { name: 'delivery_term_dropshipping_id', label: 'ShopView.channelConfig.deliveryTermDropshipping', hint: 'ShopView.channelConfig.deliveryTermDropshippingHint' },
 ]
+/** Lieferbedingung direkt anlegen: der Dialog merkt sich Kanal und Feld, für die sie gedacht ist */
+const lieferbedingungDialog = ref(false)
+let lieferbedingungZiel = null
+function lieferbedingungNeu(kanal, feld) {
+    lieferbedingungZiel = { kanal, feld }
+    lieferbedingungDialog.value = true
+}
+function lieferbedingungAngelegt(lieferbedingung) {
+    if (!lieferbedingung) return
+    lieferbedingungen.value.push(lieferbedingung)
+    if (lieferbedingungZiel) lieferbedingungZiel.kanal[lieferbedingungZiel.feld] = Number(lieferbedingung.id)
+    lieferbedingungZiel = null
+}
+
 /** Ungültige Lieferbedingungen nur, wenn sie gerade gewählt ist */
 const lieferzeitAuswahl = gewaehlt => lieferbedingungen.value
     .filter(d => !WAHR.includes(d.obsolete) || Number(d.id) === Number(gewaehlt))

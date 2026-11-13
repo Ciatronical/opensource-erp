@@ -411,6 +411,19 @@
             "cancel": "Peruuta",
             "delete": "Poista"
         },
+        "deliveryTerm": {
+            "add": "Lisää toimitusehto",
+            "title": "Uusi toimitusehto",
+            "description": "Nimitys",
+            "descriptionHint": "Lyhyt nimi valintaa varten, esimerkiksi ”2–4 arkipäivää”.",
+            "descriptionRequired": "Anna nimitys.",
+            "text": "Teksti asiakkaille",
+            "textHint": "Näkyy tuotesivulla, ostoskorissa ja laskulla, esimerkiksi ”Toimitusaika 2–4 arkipäivää”. Tyhjä = nimitys.",
+            "daysHint": "Toimitusaika päivinä tilauksesta hakukonetietoja varten. Voi jäädä tyhjäksi.",
+            "create": "Luo",
+            "created": "Toimitusehto luotu",
+            "createError": "Toimitusehtoa ei voitu luoda"
+        },
         "deliveryTimes": {
             "title": "Toimitusajat",
             "intro": "Toimitusaika toimitusehdoittain päivinä tilauksesta. Päivät näkyvät tuotesivujen hakukonetiedoissa. Itse toimitusehtoja ylläpidetään yrityksen määrityksissä perusluetteloissa.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Tuotenumero ei kelpaa tuotesivun nimeksi. Valitse kuvaava nimi.",
             "CHANNEL_IN_USE": "Tähän kanavaan liittyy laskuja, peruutuksia tai eBay-tilauksia. Sen voi vain kytkeä pois päältä.",
             "CHANNEL_NOT_DELETABLE": "Vain pois päältä kytketyn kanavan, jolla ei ole avoimia tehtäviä, voi poistaa.",
+            "DELIVERY_TERM_EXISTS": "Tämä nimitys on jo olemassa. Valitse olemassa oleva toimitusehto tai toinen nimi.",
             "DELIVERY_DAYS_INVALID": "Anna kokonaiset päivät nollasta alkaen; alaraja ei saa olla ylärajaa suurempi.",
             "SHIPPING_UNFIT": "Ei julkaista",
             "SHIPPING_PART_NOT_OFFERED": "Toimitustuotteita ei tarjota",

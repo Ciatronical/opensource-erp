@@ -411,6 +411,19 @@
             "cancel": "Atcelt",
             "delete": "Dzēst"
         },
+        "deliveryTerm": {
+            "add": "Pievienot piegādes nosacījumu",
+            "title": "Jauns piegādes nosacījums",
+            "description": "Nosaukums",
+            "descriptionHint": "Īss nosaukums izvēlei, piemēram, „2–4 darba dienas”.",
+            "descriptionRequired": "Lūdzu, ievadiet nosaukumu.",
+            "text": "Teksts klientiem",
+            "textHint": "Redzams produkta lapā, grozā un rēķinā, piemēram, „Piegādes laiks 2–4 darba dienas”. Tukšs = nosaukums.",
+            "daysHint": "Piegādes laiks dienās no pasūtījuma meklētājprogrammu datiem. Var palikt tukšs.",
+            "create": "Izveidot",
+            "created": "Piegādes nosacījums izveidots",
+            "createError": "Piegādes nosacījumu neizdevās izveidot"
+        },
         "deliveryTimes": {
             "title": "Piegādes laiki",
             "intro": "Piegādes laiks katram piegādes nosacījumam dienās no pasūtījuma. Dienas ir norādītas preču lapu meklētājprogrammu datos. Pašus piegādes nosacījumus uztur uzņēmuma konfigurācijā, pamatsarakstos.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Preces numurs nav atļauts kā produkta lapas nosaukums. Lūdzu, izvēlieties aprakstošu nosaukumu.",
             "CHANNEL_IN_USE": "Ar šo kanālu saistīti rēķini, atteikumi vai eBay pasūtījumi. To var tikai izslēgt.",
             "CHANNEL_NOT_DELETABLE": "Dzēst var tikai izslēgtu kanālu bez atvērtiem uzdevumiem.",
+            "DELIVERY_TERM_EXISTS": "Šāds nosaukums jau pastāv. Izvēlieties esošo piegādes nosacījumu vai citu nosaukumu.",
             "DELIVERY_DAYS_INVALID": "Ievadiet veselas dienas no 0; „no“ nedrīkst būt lielāks par „līdz“.",
             "SHIPPING_UNFIT": "Netiks publicēts",
             "SHIPPING_PART_NOT_OFFERED": "Piegādes preces netiek piedāvātas",

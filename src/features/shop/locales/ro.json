@@ -411,6 +411,19 @@
             "cancel": "Anulează",
             "delete": "Șterge"
         },
+        "deliveryTerm": {
+            "add": "Adaugă condiție de livrare",
+            "title": "Condiție de livrare nouă",
+            "description": "Denumire",
+            "descriptionHint": "Nume scurt pentru selecție, de exemplu „2–4 zile lucrătoare”.",
+            "descriptionRequired": "Introduceți o denumire.",
+            "text": "Text pentru clienți",
+            "textHint": "Apare pe pagina produsului, în coș și pe factură, de exemplu „Termen de livrare 2–4 zile lucrătoare”. Gol = denumirea.",
+            "daysHint": "Termenul de livrare în zile de la comandă, pentru datele motoarelor de căutare. Poate rămâne gol.",
+            "create": "Creează",
+            "created": "Condiție de livrare creată",
+            "createError": "Condiția de livrare nu a putut fi creată"
+        },
         "deliveryTimes": {
             "title": "Termene de livrare",
             "intro": "Termenul de livrare pentru fiecare condiție de livrare, în zile de la comandă. Zilele apar în datele pentru motoarele de căutare ale paginilor de produs. Condițiile de livrare se gestionează în configurarea firmei, la Liste de bază.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Numărul articolului nu este permis ca nume al paginii de produs. Alegeți un nume descriptiv.",
             "CHANNEL_IN_USE": "De acest canal depind facturi, retrageri sau comenzi eBay. Poate fi doar dezactivat.",
             "CHANNEL_NOT_DELETABLE": "Poate fi șters doar un canal dezactivat, fără sarcini deschise.",
+            "DELIVERY_TERM_EXISTS": "Această denumire există deja. Alegeți condiția de livrare existentă sau un alt nume.",
             "DELIVERY_DAYS_INVALID": "Introduceți zile întregi începând de la 0; „de la” nu poate fi mai mare decât „până la”.",
             "SHIPPING_UNFIT": "Nu va fi publicat",
             "SHIPPING_PART_NOT_OFFERED": "Articolele de livrare nu se oferă",

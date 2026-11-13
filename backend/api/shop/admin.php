@@ -1954,7 +1954,7 @@ function getShopChannels($data) {
  * Für den Abschnitt „Lieferzeiten“ der Ansicht „Versandarten“. Die Texte
  * gehören der kivitendo-Stammliste delivery_terms (Firmenkonfiguration →
  * Stammlisten); die Tage führt der Shop in delivery_term_shop. used: Artikel
- * mit dieser Lieferbedingung, dazu ob ein Kanal sie vorgibt.
+ * mit dieser Lieferbedingung, dazu ob ein Kanal oder der Mandant sie vorgibt.
  *
  * @return void
  * @testdata {}
@@ -1969,7 +1969,9 @@ function getShopDeliveryTimes($data) {
                     (SELECT count(*) FROM parts_shipping_shop ps WHERE ps.delivery_term_id = d.id) AS parts,
                     EXISTS (SELECT 1 FROM sales_channel_shop c
                              WHERE d.id::text IN (btrim(c.settings ->> 'delivery_term_stock_id'),
-                                                  btrim(c.settings ->> 'delivery_term_dropshipping_id'))) AS channel_default
+                                                  btrim(c.settings ->> 'delivery_term_dropshipping_id')))
+                    OR d.id::text = (SELECT btrim(value) FROM defaults_oserp
+                                      WHERE key = 'shop_dropshipping_delivery_term_id') AS channel_default
                FROM delivery_terms d
                LEFT JOIN delivery_term_shop t ON t.delivery_term_id = d.id
               ORDER BY d.sortkey, d.id"
@@ -2042,6 +2044,78 @@ function saveShopDeliveryTime($data) {
     resultInfo(true, 'DELIVERY_TIME_SAVED', [
         'republish' => (int)$zeile['auftraege'] > 0,
     ]);
+}
+
+/**
+ * Legt eine Lieferbedingung an, auf Wunsch gleich mit Lieferzeit in Tagen
+ *
+ * Für das Hinzufügen direkt an den Auswahlfeldern des Shops (Artikelkarte,
+ * Verkaufskanäle, Abschnitt „Lieferzeiten“). Die Lieferbedingung entsteht in
+ * der kivitendo-Stammliste delivery_terms am Ende der Reihenfolge — wie in
+ * der Firmenkonfiguration unter „Stammdaten-Listen“. Eine Bezeichnung, die es
+ * schon gibt (ohne Groß-/Kleinschreibung), ergibt keine Zeile.
+ *
+ * @param string $data['description'] Bezeichnung in der Auswahl
+ * @param string $data['description_long'] Text für Produktseite, Warenkorb und Rechnung; leer = Bezeichnung
+ * @param int|null $data['days_min'] Lieferzeit frühestens, in Tagen; leer = keine Angabe
+ * @param int|null $data['days_max'] Lieferzeit spätestens, in Tagen; leer = keine Angabe
+ * @return void
+ * @testdata {"description": "2–4 Werktage", "description_long": "Lieferzeit 2–4 Werktage", "days_min": 2, "days_max": 4}
+ */
+function createShopDeliveryTerm($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $bezeichnung = trim((string)($data['description'] ?? ''));
+    if ('' === $bezeichnung) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Bezeichnung fehlt');
+        return;
+    }
+    $tage = function ($wert) {
+        return (null === $wert || '' === trim((string)$wert)) ? null : (int)$wert;
+    };
+    $von = $tage($data['days_min'] ?? null);
+    $bis = $tage($data['days_max'] ?? null);
+    if ((null !== $von && $von < 0) || (null !== $bis && $bis < 0) || (null !== $von && null !== $bis && $von > $bis)) {
+        resultInfo(false, 'DELIVERY_DAYS_INVALID', null, null);
+        return;
+    }
+
+    $zeile = $db->getOne(
+        "WITH neu AS (
+             INSERT INTO delivery_terms (description, description_long, sortkey)
+             SELECT CAST(:description AS text), CAST(:description_long AS text),
+                    (SELECT COALESCE(MAX(sortkey), 0) + 1 FROM delivery_terms)
+              WHERE NOT EXISTS (SELECT 1 FROM delivery_terms d
+                                 WHERE lower(d.description) = lower(CAST(:description_pruefung AS text)))
+             RETURNING id, description, description_long, obsolete
+         ), tage AS (
+             INSERT INTO delivery_term_shop (delivery_term_id, days_min, days_max)
+             SELECT n.id, CAST(:days_min AS integer), CAST(:days_max AS integer)
+               FROM neu n
+              WHERE CAST(:days_min_gesetzt AS integer) IS NOT NULL OR CAST(:days_max_gesetzt AS integer) IS NOT NULL
+             RETURNING delivery_term_id, days_min, days_max
+         )
+         SELECT n.id, n.description, n.description_long, n.obsolete, t.days_min, t.days_max
+           FROM neu n
+           LEFT JOIN tage t ON t.delivery_term_id = n.id",
+        [
+            ':description'          => $bezeichnung,
+            ':description_long'     => trim((string)($data['description_long'] ?? '')),
+            ':description_pruefung' => $bezeichnung,
+            ':days_min'             => $von,
+            ':days_max'             => $bis,
+            ':days_min_gesetzt'     => $von,
+            ':days_max_gesetzt'     => $bis,
+        ]
+    );
+    if (!$zeile) {
+        // Text in der Oberfläche (ShopView.errors.DELIVERY_TERM_EXISTS)
+        resultInfo(false, 'DELIVERY_TERM_EXISTS', null, null);
+        return;
+    }
+
+    resultInfo(true, 'DELIVERY_TERM_CREATED', ['delivery_term' => $zeile]);
 }
 
 /**

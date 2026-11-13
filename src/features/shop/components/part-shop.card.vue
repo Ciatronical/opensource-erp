@@ -233,7 +233,18 @@
                         variant="outlined"
                         density="compact"
                         hide-details="auto"
-                    />
+                    >
+                        <template v-if="darfBearbeiten" #append>
+                            <v-btn
+                                icon="mdi-plus"
+                                size="small"
+                                variant="text"
+                                :title="t('ShopView.deliveryTerm.add')"
+                                :aria-label="t('ShopView.deliveryTerm.add')"
+                                @click="lieferbedingungDialog = true"
+                            />
+                        </template>
+                    </v-select>
                 </v-col>
                 <!-- Dropshipping-Artikel: der Lieferant versendet, verfügbar auch ohne
                      eigenen Bestand. Betreibt der Mandant nur Dropshipping
@@ -671,6 +682,8 @@
                 </v-expansion-panels>
             </template>
         </v-card-text>
+
+        <ShopDeliveryTermDialog v-model="lieferbedingungDialog" @created="lieferbedingungAngelegt" />
     </v-card>
 </template>
 
@@ -684,6 +697,7 @@ import { useShop } from '@/features/shop/composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
 import ShopKeyValueEditor from './shop-key-value.editor.vue'
 import ShopPartMedia from './shop-part-media.vue'
+import ShopDeliveryTermDialog from './shop-delivery-term.dialog.vue'
 
 const props = defineProps({
     /** Artikel; leer bei der Neuanlage */
@@ -806,6 +820,14 @@ const versandartikelVon = ref('')
 /** Auswahllisten und Gewicht, kommen mit getPartShopData */
 const versandarten = ref([])
 const lieferbedingungen = ref([])
+/** Lieferbedingung direkt anlegen: in die Auswahl aufnehmen und für den Artikel wählen */
+const lieferbedingungDialog = ref(false)
+function lieferbedingungAngelegt(lieferbedingung) {
+    if (!lieferbedingung) return
+    const id = Number(lieferbedingung.id)
+    lieferbedingungen.value.push({ ...lieferbedingung, id, obsolete: false })
+    daten.value.shipping.delivery_term_id = id
+}
 const gewichtseinheit = ref('')
 const gewicht = ref(null)
 /** Der Mandant betreibt nur Dropshipping: jeder Artikel ist Dropshipping-Artikel */

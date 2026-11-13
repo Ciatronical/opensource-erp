@@ -101,6 +101,17 @@
                 <template v-if="field.tooltip" #append-inner>
                     <FeldHilfe :text="t(field.tooltip)" :langtext="langtext(field)" :titel="t(field.label)" />
                 </template>
+                <!-- Eintrag direkt anlegen (field.add): den Dialog öffnet der Tab -->
+                <template v-if="field.add" #append>
+                    <v-btn
+                        icon="mdi-plus"
+                        size="small"
+                        variant="text"
+                        :title="t(field.add.label)"
+                        :aria-label="t(field.add.label)"
+                        @click="$emit('add', field)"
+                    />
+                </template>
             </v-select>
         </v-col>
     </v-row>
@@ -140,6 +151,8 @@ import { useHelpPanel } from '@/core/composables/useHelpPanel.js'
 
 const { t, te } = useI18n()
 const store = oserpStore()
+
+defineEmits(['add'])
 
 const props = defineProps({
     /** Felddefinition aus shopDefaultsConfig.js */

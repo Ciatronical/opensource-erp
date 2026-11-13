@@ -411,6 +411,19 @@
             "cancel": "Annuller",
             "delete": "Slet"
         },
+        "deliveryTerm": {
+            "add": "Tilføj leveringsbetingelse",
+            "title": "Ny leveringsbetingelse",
+            "description": "Betegnelse",
+            "descriptionHint": "Kort navn til valglisten, for eksempel „2–4 hverdage“.",
+            "descriptionRequired": "Angiv en betegnelse.",
+            "text": "Tekst til kunder",
+            "textHint": "Står på produktside, i indkøbskurv og på faktura, for eksempel „Leveringstid 2–4 hverdage“. Tom = betegnelse.",
+            "daysHint": "Leveringstid i dage fra bestillingen, til søgemaskinedata. Kan stå tom.",
+            "create": "Opret",
+            "created": "Leveringsbetingelse oprettet",
+            "createError": "Leveringsbetingelsen kunne ikke oprettes"
+        },
         "deliveryTimes": {
             "title": "Leveringstider",
             "intro": "Leveringstid pr. leveringsbetingelse i dage fra bestillingen. Dagene står i søgemaskinedataene på produktsiderne. Selve leveringsbetingelserne vedligeholdes i firmakonfigurationen under stamlister.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Varenummeret er ikke tilladt som navn på produktsiden. Vælg et sigende navn.",
             "CHANNEL_IN_USE": "Fakturaer, fortrydelser eller eBay-ordrer henviser til denne kanal. Den kan kun slås fra.",
             "CHANNEL_NOT_DELETABLE": "Kun en slået-fra kanal uden åbne opgaver kan slettes.",
+            "DELIVERY_TERM_EXISTS": "Denne betegnelse findes allerede. Vælg den eksisterende leveringsbetingelse eller et andet navn.",
             "DELIVERY_DAYS_INVALID": "Indtast hele dage fra 0; „fra“ må ikke være større end „til“.",
             "SHIPPING_UNFIT": "Bliver ikke offentliggjort",
             "SHIPPING_PART_NOT_OFFERED": "Fragtvarer udbydes ikke",

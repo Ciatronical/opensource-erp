@@ -146,6 +146,20 @@
                                 hide-details
                                 class="pt-2 mb-2"
                             />
+                            <!-- Medienfreigabe neben static/: Hugo liefert die Dateien
+                                 nicht aus, die Seiten zeigten kein Bild -->
+                            <v-alert
+                                v-if="freigabenAusserhalb.length"
+                                type="warning"
+                                variant="tonal"
+                                density="compact"
+                                class="mt-2"
+                            >
+                                <div>{{ t('crm_fields.shopHugoCmsGrantOutsideStatic') }}</div>
+                                <div v-for="freigabe in freigabenAusserhalb" :key="freigabe.feld">
+                                    {{ t(freigabe.label) }}: {{ freigaben[freigabe.feld] }}/
+                                </div>
+                            </v-alert>
                             <!-- Adressmuster passend zu den Freigaben (E5): nur ein
                                  Vorschlag, die Felder bleiben einstellbar -->
                             <v-alert
@@ -472,6 +486,17 @@ function statischesMuster(verzeichnis) {
     if (teile[0] !== 'static' || teile.length < 2) return ''
     return '/' + teile.slice(1).join('/') + '/%s'
 }
+
+/** Medienfreigaben, die nicht unter static/ liegen — Hugo liefert sie nicht aus */
+const freigabenAusserhalb = computed(() => {
+    if (!freigaben.value) return []
+    return FREIGABEN
+        .filter(f => ['images', 'thumbnails', 'downloads'].includes(f.feld))
+        .filter(f => {
+            const wert = String(freigaben.value[f.feld] || '').replace(/^\/+|\/+$/g, '')
+            return wert !== '' && !wert.startsWith('static/')
+        })
+})
 
 /** Pfad eines Musters, auch wenn es mit Schema und Rechner eingetragen ist */
 function musterPfad(muster) {

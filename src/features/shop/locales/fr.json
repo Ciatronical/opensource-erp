@@ -411,6 +411,19 @@
             "cancel": "Annuler",
             "delete": "Supprimer"
         },
+        "deliveryTerm": {
+            "add": "Ajouter une condition de livraison",
+            "title": "Nouvelle condition de livraison",
+            "description": "Désignation",
+            "descriptionHint": "Nom court pour la sélection, par exemple « 2 à 4 jours ouvrés ».",
+            "descriptionRequired": "Veuillez saisir une désignation.",
+            "text": "Texte pour les clients",
+            "textHint": "Figure sur la page produit, dans le panier et sur la facture, par exemple « Délai de livraison 2 à 4 jours ouvrés ». Vide = désignation.",
+            "daysHint": "Délai de livraison en jours à partir de la commande, pour les données des moteurs de recherche. Peut rester vide.",
+            "create": "Créer",
+            "created": "Condition de livraison créée",
+            "createError": "La condition de livraison n'a pas pu être créée"
+        },
         "deliveryTimes": {
             "title": "Délais de livraison",
             "intro": "Délai de livraison par condition de livraison, en jours à partir de la commande. Les jours figurent dans les données destinées aux moteurs de recherche des pages produit. Les conditions de livraison elles-mêmes se gèrent dans la configuration de l'entreprise, sous Listes de base.",
@@ -500,6 +513,7 @@
             "PAGE_NAME_IS_PARTNUMBER": "Le numéro d'article n'est pas autorisé comme nom de la page produit. Veuillez choisir un nom parlant.",
             "CHANNEL_IN_USE": "Des factures, rétractations ou commandes eBay sont liées à ce canal. Il ne peut qu’être désactivé.",
             "CHANNEL_NOT_DELETABLE": "Seul un canal désactivé sans tâches en attente peut être supprimé.",
+            "DELIVERY_TERM_EXISTS": "Cette désignation existe déjà. Veuillez choisir la condition de livraison existante ou un autre nom.",
             "DELIVERY_DAYS_INVALID": "Veuillez saisir des jours entiers à partir de 0 ; « de » ne doit pas être supérieur à « à ».",
             "SHIPPING_UNFIT": "Ne sera pas publié",
             "SHIPPING_PART_NOT_OFFERED": "Les articles de frais de port ne sont pas proposés",
