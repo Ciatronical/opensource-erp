@@ -29,6 +29,12 @@ const shopDefaultsConfig = [
     // HugoShop und eBay buchen die Waren von hier aus. Leer = keine Buchung.
     // Die Auswahl „Lager – Platz" lädt der Tab (quellen.shopStockBins).
     { name: "shop_stock_bin_id", type: "dynamic-select", source: "shopStockBins", itemTitle: "title", itemValue: "value", fieldstyle: "max-width: 60ch", label: "crm_fields.shopStockBinId", tooltip: "crm_fields.shopStockBinId_help" },
+    // Dropshipping (2026-11-13): „Nur Dropshipping" macht jeden Artikel zum
+    // Dropshipping-Artikel (shop_part_dropshipping) — ein Lagerplatz ist dann
+    // nicht nötig. Einzelne Artikel kennzeichnet die Shop-Karte des Artikels.
+    // Die Angebotsmenge gilt für Marktplätze (shop_part_offer_quantity).
+    { name: "shop_dropshipping_default", type: "checkbox", label: "crm_fields.shopDropshippingDefault", tooltip: "crm_fields.shopDropshippingDefault_help" },
+    { name: "shop_dropshipping_quantity", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopDropshippingQuantity", tooltip: "crm_fields.shopDropshippingQuantity_help" },
 
     // Verkaufskanäle (dev/shop-mehrere-kanaele.md): eigene Ansicht im
     // Shop-Menü (shop-channels); hier nur der Verweis dorthin.

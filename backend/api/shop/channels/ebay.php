@@ -8,6 +8,8 @@
 //   Preis          shop_channel_price(…, Kanal), brutto (eBay rechnet brutto)
 //   Titel, Text    Beschreibung und Langbeschreibung im Kanal, sonst Stammdaten
 //   Menge          Lagerbestand parts.onhand (V4, V19) statt fester Menge;
+//                  Dropshipping-Artikel mindestens shop_dropshipping_quantity
+//                  (shop_part_offer_quantity);
 //                  0, wenn nicht verfügbar (shop_part_available: veraltet
 //                  oder im Kanal als nicht verfügbar markiert)
 //   Bilder         Bilder des eBay-Kanals (parts_channel_image_shop, V12)
@@ -649,7 +651,7 @@ function shopEbayPublishPartNow($db, int $kanal, int $partsId): string {
     $artikel = $db->getOne(
         "SELECT p.partnumber, p.part_type,
                 CASE WHEN shop_part_available(p.id, c.id)
-                     THEN GREATEST(FLOOR(COALESCE(p.onhand, 0)), 0)::int ELSE 0 END AS menge,
+                     THEN shop_part_offer_quantity(p.id) ELSE 0 END AS menge,
                 COALESCE(NULLIF(pc.title, ''), p.description) AS titel,
                 COALESCE(NULLIF(pc.description, ''), p.notes, '') AS text,
                 COALESCE(pc.active, false) AND c.active AS angeboten,
@@ -671,8 +673,11 @@ function shopEbayPublishPartNow($db, int $kanal, int $partsId): string {
                     AND NULLIF(btrim(m.ebay_fulfillment_policy_id), '') IS NOT NULL
                   ORDER BY m.rank DESC, m.id
                   LIMIT 1) AS versandrichtlinie,
-                (ps.delivery_term_id IS NOT NULL
-                 AND COALESCE(c.settings -> 'excluded_delivery_terms', '[]'::jsonb) @> to_jsonb(ps.delivery_term_id))
+                -- die Lieferbedingung, die in diesem Kanal gilt: die des Artikels
+                -- oder die Vorgabe des Kanals (shop_part_delivery)
+                COALESCE((SELECT COALESCE(c.settings -> 'excluded_delivery_terms', '[]'::jsonb) @> to_jsonb(lz.delivery_term_id)
+                            FROM shop_part_delivery(p.id, c.id) lz
+                           WHERE lz.delivery_term_id IS NOT NULL), false)
                     AS lieferzeit_zu_lang
            FROM parts p
            JOIN sales_channel_shop c ON c.id = CAST(:kanal AS integer)
@@ -740,7 +745,8 @@ function shopEbayPublishPartNow($db, int $kanal, int $partsId): string {
             ." (Verkaufskanal '".($cfg['name'] ?? $kanal)."').");
     }
 
-    // V19: Menge = Bestand. Ein neues Angebot ohne Bestand nimmt eBay nicht
+    // V19: Menge = Bestand, bei Dropshipping-Artikeln mindestens die feste
+    // Angebotsmenge. Ein neues Angebot ohne Bestand nimmt eBay nicht
     // an; ein bestehendes bleibt bei 0 als „ausverkauft" stehen, wenn im
     // eBay-Konto die Einstellung „Out-of-Stock Control" gesetzt ist.
     //

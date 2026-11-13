@@ -235,7 +235,7 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, 
                     (pc.active AND shop_active_channel_id(kb.channel_id) IS NOT NULL
                          AND shop_part_available(ps.id, kb.channel_id)) IS TRUE AS offered,
                     pss.min_qty,
-                    COALESCE(NULLIF(btrim(dt.description_long), ''), dt.description) AS delivery_term
+                    lz.delivery_term
                FROM cart_parts_hugoshop cps
                JOIN carts_hugoshop kb ON kb.uuid = cps.cart_uuid
                JOIN parts ps ON ps.id = cps.parts_id
@@ -244,7 +244,8 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, 
                                               AND pc.channel_id = kb.channel_id
                LEFT JOIN parts_ext psh ON psh.parts_id = ps.id
                LEFT JOIN parts_shipping_shop pss ON pss.parts_id = ps.id
-               LEFT JOIN delivery_terms dt ON dt.id = pss.delivery_term_id
+               -- Lieferzeit, wie sie im Kanal gilt: Artikel oder Vorgabe (shop_part_delivery)
+               LEFT JOIN LATERAL shop_part_delivery(ps.id, kb.channel_id) lz ON true
               WHERE cps.cart_uuid = :cart_uuid
                 -- Der Versand ist kein Artikel des Kunden: er steht in den
                 -- Summen (shippingCosts), nicht in der Liste
@@ -274,7 +275,7 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, 
                     (pc.active AND shop_active_channel_id(kb.channel_id) IS NOT NULL
                          AND shop_part_available(ps.id, kb.channel_id)) IS TRUE AS offered,
                     pss.min_qty,
-                    COALESCE(NULLIF(btrim(dt.description_long), ''), dt.description) AS delivery_term
+                    lz.delivery_term
                FROM cart_parts_hugoshop cps
                JOIN carts_hugoshop kb ON kb.uuid = cps.cart_uuid
                JOIN parts ps ON ps.id = cps.parts_id
@@ -289,7 +290,8 @@ function cartRead($db, string $cartUuid, ?int $customerId, bool $simple = true, 
                LEFT JOIN chart ch_tax ON ch_tax.id = tax.chart_id
                LEFT JOIN parts_ext psh ON psh.parts_id = ps.id
                LEFT JOIN parts_shipping_shop pss ON pss.parts_id = ps.id
-               LEFT JOIN delivery_terms dt ON dt.id = pss.delivery_term_id
+               -- Lieferzeit, wie sie im Kanal gilt: Artikel oder Vorgabe (shop_part_delivery)
+               LEFT JOIN LATERAL shop_part_delivery(ps.id, kb.channel_id) lz ON true
               WHERE cps.cart_uuid = :cart_uuid
                 -- Die Versandposition entsteht in der Rechnung selbst
                 AND NOT shop_is_shipping_part(cps.parts_id)

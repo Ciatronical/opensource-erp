@@ -392,13 +392,18 @@ function shopPageData($db, int $kanal, int $partsId): array {
                 (SELECT free_shipping_from FROM sales_channel_shop WHERE id = CAST(:kanal_frei AS integer)) AS free_shipping_from,
                 -- Versandangaben (dev/shop-versand.md, Schritt 5): Lieferbedingung
                 -- als Text für Seite und Kunden, Mindestabnahme
-                COALESCE(NULLIF(btrim(dt.description_long), ''), dt.description) AS delivery_term,
+                -- Lieferzeit, wie sie in diesem HugoShop gilt (shop_part_delivery):
+                -- Lieferbedingung des Artikels oder Vorgabe des Kanals, je
+                -- nachdem, ob Dropshipping-Artikel und ob eigener Bestand
+                lz.delivery_term, lz.days_min, lz.days_max,
+                COALESCE(lz.dropshipping, false) AS dropshipping,
+                COALESCE(lz.missing, false) AS delivery_term_missing,
                 ps.min_qty,
                 -- Passt eine Versandart? Ohne passende wird nicht veröffentlicht
                 (SELECT row_to_json(v) FROM shop_part_shipping_check(p.id, CAST(:kanal_versand AS integer)) v) AS versand
            FROM parts p
            LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
-           LEFT JOIN delivery_terms dt ON dt.id = ps.delivery_term_id
+           LEFT JOIN LATERAL shop_part_delivery(p.id, CAST(:kanal_lieferzeit AS integer)) lz ON true
            CROSS JOIN LATERAL (SELECT shop_channel_price(p.id, CAST(:kanal_preis AS integer)) AS preis) k
            LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
                                           AND pc.channel_id = CAST(:kanal_zeile AS integer)
@@ -427,6 +432,7 @@ function shopPageData($db, int $kanal, int $partsId): array {
             ':kanal_preis'      => $kanal,
             ':kanal_zeile'      => $kanal,
             ':kanal_versand'    => $kanal,
+            ':kanal_lieferzeit' => $kanal,
         ]
     );
 
@@ -472,6 +478,14 @@ function shopPageData($db, int $kanal, int $partsId): array {
             'available'   => $wahr($zeile['available']),
             // Lieferbedingung („Versandfertig in 4–8 Wochen"), leer = keine
             'delivery_term' => trim((string)($zeile['delivery_term'] ?? '')),
+            // Lieferzeit in Tagen ab Bestellung (delivery_term_shop), null = nicht angegeben
+            'delivery_days_min' => null === ($zeile['days_min'] ?? null) ? null : (int)$zeile['days_min'],
+            'delivery_days_max' => null === ($zeile['days_max'] ?? null) ? null : (int)$zeile['days_max'],
+            // Dropshipping-Artikel: der Lieferant versendet, verfügbar auch
+            // ohne eigenen Bestand
+            'dropshipping' => $wahr($zeile['dropshipping']),
+            // Dropshipping-Artikel ohne Lieferzeit: wird nicht veröffentlicht
+            'delivery_term_missing' => $wahr($zeile['delivery_term_missing']),
             // Mindestabnahme, null = keine
             'min_qty'     => null === $zeile['min_qty'] ? null : (float)$zeile['min_qty'],
             // Für lastmod im Front Matter — Hugo übernimmt es in die Sitemap
@@ -509,6 +523,25 @@ function shopPageData($db, int $kanal, int $partsId): array {
         ],
         'versand' => json_decode((string)($zeile['versand'] ?? ''), true) ?: ['status' => 'ok'],
     ];
+}
+
+/**
+ * Meldung zur Lieferzeit eines Dropshipping-Artikels
+ *
+ * Ein Dropshipping-Artikel ohne ermittelbare Lieferzeit wird nicht
+ * veröffentlicht (shop_part_delivery, Spalte missing): ohne eigenen Bestand
+ * sagt sonst nichts, wann die Ware kommt. Die Meldung nennt den nächsten
+ * Schritt.
+ *
+ * @param mixed $fehlt Spalte missing aus shop_part_delivery()
+ * @return string leer, wenn nichts fehlt
+ */
+function shopDeliveryCheckText($fehlt): string {
+    if (!in_array($fehlt, [true, 't', 1, '1'], true)) {
+        return '';
+    }
+    return 'Dropshipping-Artikel ohne Lieferzeit: am Artikel eine Lieferbedingung wählen oder beim'
+        .' Verkaufskanal eine Lieferbedingung für Dropshipping-Artikel vorgeben';
 }
 
 /**
@@ -767,7 +800,8 @@ function shopRenderPage($db, int $kanal, array $seite, string $ausgabe = 'produc
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop, in dessen Webseite die Seite kommt
  * @param int $partsId Artikel
- * Ohne passende Versandart (shop_part_shipping_check) wird nicht
+ * Ohne passende Versandart (shop_part_shipping_check) und bei einem
+ * Dropshipping-Artikel ohne Lieferzeit (shop_part_delivery) wird nicht
  * veröffentlicht: Gibt es die Seite schon, wird sie als Entwurf neu
  * geschrieben — Hugo nimmt sie dann aus der Webseite, und kein Kunde legt den
  * Artikel mehr in einen Warenkorb, der an der Kasse scheitert. Danach scheitert
@@ -781,6 +815,10 @@ function shopRenderPage($db, int $kanal, array $seite, string $ausgabe = 'produc
 function shopWriteProductPage($db, int $kanal, int $partsId, bool $entwurf = false): array {
     $seite = shopPageData($db, $kanal, $partsId);
     $versandFehler = $entwurf ? '' : shopShippingCheckText($seite['versand']);
+    // Ebenso ein Dropshipping-Artikel ohne Lieferzeit (shopDeliveryCheckText)
+    if (!$entwurf && '' === $versandFehler) {
+        $versandFehler = shopDeliveryCheckText($seite['artikel']['delivery_term_missing']);
+    }
     $datei = shopContentDir($db, $kanal, true).'/'.shopPageFileName($seite);
 
     if ('' !== $versandFehler && !is_file($datei)) {

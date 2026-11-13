@@ -3,7 +3,8 @@
     Versandarten: eigene Ansicht im Shop-Menü (dev/shop-versand.md).
 
     Länderzonen, Versandarten mit Anbieter, Versandartikel, Rang und Grenzen
-    sowie die Preisstufen je Kanal, Zone, Gewicht und Stückzahl. Die Karte
+    sowie die Preisstufen je Kanal, Zone, Gewicht und Stückzahl; darunter die
+    Lieferzeiten in Tagen je Lieferbedingung (shop-delivery-times.config.vue). Die Karte
     selbst ist shop-shipping.config.vue; bis hierher stand sie in der
     Firmenkonfiguration (Reiter Shop). Ob die Preise brutto oder netto
     gelten, liest sie aus getShopShipping.
@@ -33,7 +34,11 @@
             {{ t('ShopView.errors.NO_PERMISSION') }}
         </v-alert>
 
-        <ShopShippingConfig v-else :mit-ueberschrift="false" />
+        <template v-else>
+            <ShopShippingConfig :mit-ueberschrift="false" />
+            <!-- Lieferzeit in Tagen je Lieferbedingung -->
+            <ShopDeliveryTimesConfig />
+        </template>
     </v-container>
 </template>
 
@@ -43,6 +48,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import ShopShippingConfig from '../components/shop-shipping.config.vue'
+import ShopDeliveryTimesConfig from '../components/shop-delivery-times.config.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const { t } = useI18n()

@@ -149,15 +149,16 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
                         -- Lieferbedingung je Artikel in den Langtext (Punkt 7, Weg a):
                         -- jede Druckvorlage zeigt ihn, und er bleibt, wie verschickt
                         concat_ws(E'\n\n', NULLIF(COALESCE(NULLIF(pc.description, ''), p.notes, ''), ''),
-                                  NULLIF(COALESCE(NULLIF(btrim(dt.description_long), ''), dt.description), ''))
+                                  lz.delivery_term)
                             AS longdescription
                    FROM cart_parts_hugoshop c
                    JOIN parts p ON p.id = c.parts_id
                    CROSS JOIN LATERAL (SELECT shop_channel_price(p.id, CAST(:kanal AS integer)) AS preis) k
                    LEFT JOIN parts_channel_shop pc ON pc.parts_id = p.id
                                                   AND pc.channel_id = CAST(:kanal_zeile AS integer)
-                   LEFT JOIN parts_shipping_shop pss ON pss.parts_id = p.id
-                   LEFT JOIN delivery_terms dt ON dt.id = pss.delivery_term_id
+                   -- wie sie beim Kauf galt: Artikel oder Vorgabe des Kanals,
+                   -- je nach Dropshipping und Bestand (shop_part_delivery)
+                   LEFT JOIN LATERAL shop_part_delivery(p.id, CAST(:kanal_lieferzeit AS integer)) lz ON true
                   WHERE c.cart_uuid = :cart_uuid
                     AND NOT shop_is_shipping_part(c.parts_id)
              )
@@ -185,6 +186,7 @@ function createShopInvoice($db, string $uuid, array $lieferadresse = [], ?array 
                 ':cart_uuid'   => $cartUuid,
                 ':kanal'       => $kanal,
                 ':kanal_zeile' => $kanal,
+                ':kanal_lieferzeit' => $kanal,
                 ':preisquelle' => shopConfigValue($db, 'shop_active_price_source', 'master_data/sellprice'),
             ]
         );

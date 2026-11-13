@@ -62,7 +62,10 @@ function getShopStatus($data) {
             EXISTS (SELECT 1 FROM sales_channel_shop WHERE type = 'ebay' AND active) AS ebay_an,
             EXISTS (SELECT 1 FROM bin
                      WHERE id::text = btrim((SELECT value FROM defaults_oserp
-                                              WHERE key = 'shop_stock_bin_id'))) AS lagerplatz",
+                                              WHERE key = 'shop_stock_bin_id'))) AS lagerplatz,
+            -- Nur Dropshipping: kein eigenes Lager, also auch kein Lagerplatz nötig
+            COALESCE((SELECT lower(btrim(value)) IN ('t', 'true', '1', 'y', 'yes')
+                        FROM defaults_oserp WHERE key = 'shop_dropshipping_default'), false) AS nur_dropshipping",
         [
             ':kontakt'         => shopConfigValue($db, 'shop_contact_login'),
             ':forderungskonto' => '%'.shopConfigValue($db, 'shop_target_account').'%',
@@ -213,8 +216,11 @@ function getShopStatus($data) {
     $veroeffentlichung = array_values(array_unique($veroeffentlichung));
 
     // O14: Ohne Lagerplatz buchen Verkäufe kein Lager aus — der gemeinsame
-    // Bestand stimmt dann nicht, und eBay meldet den alten
-    if (($wahr($stand['hugoshop_an']) || $wahr($stand['ebay_an'])) && !$wahr($stand['lagerplatz'])) {
+    // Bestand stimmt dann nicht, und eBay meldet den alten. Nicht, wenn der
+    // Mandant nur Dropshipping betreibt (shop_dropshipping_default): dann
+    // gibt es kein eigenes Lager
+    if (($wahr($stand['hugoshop_an']) || $wahr($stand['ebay_an'])) && !$wahr($stand['lagerplatz'])
+        && !$wahr($stand['nur_dropshipping'])) {
         $hinweise[] = 'shop_stock_bin_id';
     }
 
@@ -535,8 +541,12 @@ function getPartShopData($data) {
             (SELECT json_build_object(
                  'part', (SELECT row_to_json(v) FROM (
                              SELECT ps.length, ps.width, ps.height,
-                                    ps.min_qty, ps.delivery_term_id
+                                    ps.min_qty, ps.delivery_term_id, ps.dropshipping
                                FROM parts_shipping_shop ps WHERE ps.parts_id = :parts_id_versand) v),
+                 -- Der Mandant betreibt nur Dropshipping: jeder Artikel gilt als
+                 -- Dropshipping-Artikel, die Karte zeigt den Schalter gesetzt und fest
+                 'dropshipping_default', COALESCE((SELECT lower(btrim(value)) IN ('t', 'true', '1', 'y', 'yes')
+                                                     FROM defaults_oserp WHERE key = 'shop_dropshipping_default'), false),
                  -- erlaubte Versandarten (Mehrfachzuordnung, 2026-10-30); leer = alle
                  'method_ids', (SELECT COALESCE(json_agg(pm.shipping_method_id ORDER BY pm.shipping_method_id), '[]')
                                   FROM parts_shipping_method_shop pm WHERE pm.parts_id = :parts_id_zuordnung),
@@ -576,6 +586,14 @@ function getPartShopData($data) {
                        CASE WHEN c.type = 'hugoshop'
                             THEN (SELECT row_to_json(v)
                                     FROM shop_part_shipping_check(CAST(:parts_id_pruefung AS integer), c.id) v) END AS shipping_check,
+                       -- HugoShop: Dropshipping-Artikel ohne Lieferzeit — wird
+                       -- ebenfalls nicht veröffentlicht (shop_part_delivery)
+                       CASE WHEN c.type = 'hugoshop'
+                            THEN (SELECT lz.missing
+                                    FROM shop_part_delivery(CAST(:parts_id_lieferzeit AS integer), c.id) lz) END AS delivery_missing,
+                       -- Vorgaben des Kanals für die Lieferzeit (Lagerware, Dropshipping)
+                       NULLIF(btrim(c.settings ->> 'delivery_term_stock_id'), '') AS delivery_term_stock_id,
+                       NULLIF(btrim(c.settings ->> 'delivery_term_dropshipping_id'), '') AS delivery_term_dropshipping_id,
                        -- HugoShop: Versandart und Preis je Zone für diesen Artikel allein
                        CASE WHEN c.type = 'hugoshop'
                             THEN (SELECT COALESCE(json_agg(row_to_json(v)), '[]'::json)
@@ -599,6 +617,7 @@ function getPartShopData($data) {
             ':parts_id_versand' => (int)($data['parts_id'] ?? 0),
             ':parts_id_zuordnung' => (int)($data['parts_id'] ?? 0),
             ':parts_id_pruefung' => (int)($data['parts_id'] ?? 0),
+            ':parts_id_lieferzeit' => (int)($data['parts_id'] ?? 0),
             ':parts_id_preise'   => (int)($data['parts_id'] ?? 0),
             ':taxzone'         => shopConfigValue($db, 'shop_standard_taxzone', 'Inland'),
         ]
@@ -607,8 +626,9 @@ function getPartShopData($data) {
     // Die Meldung zur Versandart je HugoShop, leer = passt
     $kanaele = json_decode((string)($zeile['channels'] ?? '[]'), true) ?: [];
     foreach ($kanaele as &$kanal) {
-        $kanal['shipping_message'] = shopShippingCheckText((array)($kanal['shipping_check'] ?? []));
-        unset($kanal['shipping_check']);
+        $kanal['shipping_message'] = shopShippingCheckText((array)($kanal['shipping_check'] ?? []))
+            ?: shopDeliveryCheckText($kanal['delivery_missing'] ?? false);
+        unset($kanal['shipping_check'], $kanal['delivery_missing']);
     }
     unset($kanal);
 
@@ -670,11 +690,12 @@ function checkShopPageName($data) {
  * @param array $data['shipping'] Versandangaben (dev/shop-versand.md, Schritt 5):
  *              shipping_method_ids (erlaubte Versandarten, leer = alle), length,
  *              width, height (cm), min_qty (Mindestabnahme, bei eBay die
- *              Losgröße), delivery_term_id (Lieferbedingung). Fehlt das Feld,
+ *              Losgröße), delivery_term_id (Lieferbedingung), dropshipping
+ *              (Dropshipping-Artikel: der Lieferant versendet). Fehlt das Feld,
  *              bleiben die Angaben unverändert
  * @param int $data['template_parts_id'] „Als neu verwenden“: Vorlage, deren Kanalbilder übernommen werden (optional)
  * @return void
- * @testdata {"parts_id": 1, "category_id": 1, "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}], "shipping": {"shipping_method_ids": [], "length": 40, "width": 30, "height": 20, "min_qty": null, "delivery_term_id": null}}
+ * @testdata {"parts_id": 1, "category_id": 1, "hyperlink": "bremsscheibe", "channels": [{"channel_id": 1, "active": true, "markup_type": "percent", "markup_value": 10, "title": "", "description": "", "unavailable": false}], "shipping": {"shipping_method_ids": [], "length": 40, "width": 30, "height": 20, "min_qty": null, "delivery_term_id": null, "dropshipping": false}}
  */
 function savePartShopData($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
@@ -824,10 +845,11 @@ function savePartShopData($data) {
                  -- Versandangaben (Schritt 5); unbekannte Versandart oder
                  -- Lieferbedingung scheitern am Fremdschlüssel
                  INSERT INTO parts_shipping_shop (parts_id, length, width, height,
-                                                  min_qty, delivery_term_id)
+                                                  min_qty, delivery_term_id, dropshipping)
                  SELECT ext.parts_id,
                         CAST(:laenge AS numeric), CAST(:breite AS numeric), CAST(:hoehe AS numeric),
-                        CAST(:mindestmenge AS numeric), CAST(NULLIF(:lieferbedingung, 0) AS integer)
+                        CAST(:mindestmenge AS numeric), CAST(NULLIF(:lieferbedingung, 0) AS integer),
+                        CAST(:dropshipping AS integer) = 1
                    FROM ext
                   WHERE :versand_setzen = 1
                  ON CONFLICT (parts_id) DO UPDATE SET
@@ -835,7 +857,8 @@ function savePartShopData($data) {
                         width              = EXCLUDED.width,
                         height             = EXCLUDED.height,
                         min_qty            = EXCLUDED.min_qty,
-                        delivery_term_id   = EXCLUDED.delivery_term_id
+                        delivery_term_id   = EXCLUDED.delivery_term_id,
+                        dropshipping       = EXCLUDED.dropshipping
              ), zuordnung_weg AS (
                  -- Erlaubte Versandarten (Mehrfachzuordnung, 2026-10-30): nur
                  -- die entfallenen löschen und die neuen einfügen — Löschen und
@@ -881,6 +904,7 @@ function savePartShopData($data) {
                 ':hoehe'           => $mass['height'],
                 ':mindestmenge'    => $mass['min_qty'],
                 ':lieferbedingung' => (int)($versand['delivery_term_id'] ?? 0),
+                ':dropshipping'    => in_array($versand['dropshipping'] ?? false, [true, 't', 1, '1', 'true'], true) ? 1 : 0,
             ]
         );
     } catch (PDOException $e) {
@@ -914,17 +938,20 @@ function savePartShopData($data) {
     $pruefungen = $db->getAll(
         "SELECT c.id AS channel_id, row_to_json(v) AS pruefung,
                 (SELECT COALESCE(json_agg(row_to_json(x)), '[]'::json)
-                   FROM shop_part_shipping_prices(CAST(:parts_id_preise AS integer), c.id) x) AS preise
+                   FROM shop_part_shipping_prices(CAST(:parts_id_preise AS integer), c.id) x) AS preise,
+                -- Dropshipping-Artikel ohne Lieferzeit (shop_part_delivery)
+                (SELECT lz.missing FROM shop_part_delivery(CAST(:parts_id_lieferzeit AS integer), c.id) lz) AS lieferzeit_fehlt
            FROM sales_channel_shop c
            CROSS JOIN LATERAL shop_part_shipping_check(CAST(:parts_id AS integer), c.id) v
           WHERE c.active AND c.type = 'hugoshop'",
-        [':parts_id' => $partsId, ':parts_id_preise' => $partsId]
+        [':parts_id' => $partsId, ':parts_id_preise' => $partsId, ':parts_id_lieferzeit' => $partsId]
     ) ?: [];
 
     resultInfo(true, 'PART_SHOP_DATA_SAVED', [
         'shipping_messages' => array_map(fn($z) => [
             'channel_id' => (int)$z['channel_id'],
-            'message'    => shopShippingCheckText(json_decode((string)$z['pruefung'], true) ?: []),
+            'message'    => shopShippingCheckText(json_decode((string)$z['pruefung'], true) ?: [])
+                            ?: shopDeliveryCheckText($z['lieferzeit_fehlt'] ?? false),
             'prices'     => json_decode((string)$z['preise'], true) ?: [],
         ], $pruefungen),
     ]);
@@ -1922,6 +1949,102 @@ function getShopChannels($data) {
 }
 
 /**
+ * Lieferbedingungen mit ihrer Lieferzeit in Tagen
+ *
+ * Für den Abschnitt „Lieferzeiten“ der Ansicht „Versandarten“. Die Texte
+ * gehören der kivitendo-Stammliste delivery_terms (Firmenkonfiguration →
+ * Stammlisten); die Tage führt der Shop in delivery_term_shop. used: Artikel
+ * mit dieser Lieferbedingung, dazu ob ein Kanal sie vorgibt.
+ *
+ * @return void
+ * @testdata {}
+ */
+function getShopDeliveryTimes($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    resultInfo(true, '', [
+        'delivery_terms' => $db->getAll(
+            "SELECT d.id, d.description, d.description_long, d.obsolete, t.days_min, t.days_max,
+                    (SELECT count(*) FROM parts_shipping_shop ps WHERE ps.delivery_term_id = d.id) AS parts,
+                    EXISTS (SELECT 1 FROM sales_channel_shop c
+                             WHERE d.id::text IN (btrim(c.settings ->> 'delivery_term_stock_id'),
+                                                  btrim(c.settings ->> 'delivery_term_dropshipping_id'))) AS channel_default
+               FROM delivery_terms d
+               LEFT JOIN delivery_term_shop t ON t.delivery_term_id = d.id
+              ORDER BY d.sortkey, d.id"
+        ),
+    ]);
+}
+
+/**
+ * Speichert die Lieferzeit einer Lieferbedingung in Tagen
+ *
+ * Die Tage stehen in den Suchmaschinendaten der Produktseiten. Ändern sie
+ * sich, entsteht für jeden eingeschalteten HugoShop mit automatischer
+ * Veröffentlichung der Auftrag, alle Produktseiten neu zu schreiben.
+ *
+ * @param int $data['delivery_term_id'] Lieferbedingung (delivery_terms)
+ * @param int|null $data['days_min'] Lieferzeit frühestens, in Tagen; leer = keine Angabe
+ * @param int|null $data['days_max'] Lieferzeit spätestens, in Tagen; leer = keine Angabe
+ * @return void
+ * @testdata {"delivery_term_id": 1, "days_min": 2, "days_max": 4}
+ */
+function saveShopDeliveryTime($data) {
+    permit(['edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $tage = function ($wert) {
+        return (null === $wert || '' === trim((string)$wert)) ? null : (int)$wert;
+    };
+    $von = $tage($data['days_min'] ?? null);
+    $bis = $tage($data['days_max'] ?? null);
+    if ((null !== $von && $von < 0) || (null !== $bis && $bis < 0) || (null !== $von && null !== $bis && $von > $bis)) {
+        // Text in der Oberfläche (ShopView.errors.DELIVERY_DAYS_INVALID)
+        resultInfo(false, 'DELIVERY_DAYS_INVALID', null, null);
+        return;
+    }
+
+    // Eine Anweisung: schreiben und, wenn sich die Tage geändert haben, die
+    // Aufträge anlegen. Eine unbekannte Lieferbedingung ergibt keine Zeile.
+    $zeile = $db->getOne(
+        "WITH vorher AS (
+             SELECT d.id, t.days_min, t.days_max
+               FROM delivery_terms d
+               LEFT JOIN delivery_term_shop t ON t.delivery_term_id = d.id
+              WHERE d.id = :delivery_term_id
+         ), geschrieben AS (
+             INSERT INTO delivery_term_shop (delivery_term_id, days_min, days_max)
+             SELECT v.id, CAST(:days_min AS integer), CAST(:days_max AS integer) FROM vorher v WHERE true
+             ON CONFLICT (delivery_term_id) DO UPDATE SET
+                    days_min = EXCLUDED.days_min,
+                    days_max = EXCLUDED.days_max
+             RETURNING delivery_term_id, days_min, days_max
+         )
+         SELECT g.delivery_term_id,
+                (g.days_min IS DISTINCT FROM v.days_min OR g.days_max IS DISTINCT FROM v.days_max) AS geaendert,
+                (SELECT count(shop_queue_job('publish_all', '', NULL, c.id))
+                   FROM sales_channel_shop c
+                  WHERE c.active AND c.type = 'hugoshop' AND shop_auto_publish_enabled(c.id)
+                    AND (g.days_min IS DISTINCT FROM v.days_min OR g.days_max IS DISTINCT FROM v.days_max)) AS auftraege
+           FROM geschrieben g JOIN vorher v ON v.id = g.delivery_term_id",
+        [
+            ':delivery_term_id' => (int)($data['delivery_term_id'] ?? 0),
+            ':days_min'         => $von,
+            ':days_max'         => $bis,
+        ]
+    );
+    if (!$zeile) {
+        resultInfo(false, 'VALIDATION_ERROR', null, 'Diese Lieferbedingung gibt es nicht (mehr)');
+        return;
+    }
+
+    resultInfo(true, 'DELIVERY_TIME_SAVED', [
+        'republish' => (int)$zeile['auftraege'] > 0,
+    ]);
+}
+
+/**
  * Speichert die Vorgaben eines Verkaufskanals
  *
  * Aufschlag und Rundung gelten für alle Artikel des Kanals ohne eigenen
@@ -1943,6 +2066,11 @@ function getShopChannels($data) {
  * @param array $data['countries'] Lieferländer (ISO-Codes), leer = alle; fehlt = unverändert (Schritt 7)
  * @param array $data['excluded_delivery_terms'] eBay: Lieferbedingungen, bei denen nicht angeboten
  *              wird (W11); fehlt = unverändert
+ * @param int|null $data['delivery_term_stock_id'] Vorgabe der Lieferbedingung für Lagerware
+ *              (gilt bei eigenem Bestand), 0 oder leer = keine; fehlt = unverändert
+ * @param int|null $data['delivery_term_dropshipping_id'] Vorgabe der Lieferbedingung für
+ *              Dropshipping-Artikel, 0 oder leer = keine; fehlt = unverändert.
+ *              Beide gelten für Artikel ohne eigene Lieferbedingung (shop_part_delivery)
  * @param string $data['name'] Name des Kanals, eindeutig; fehlt = unverändert
  * @param bool $data['auto_add_parts'] neue Shop-Artikel automatisch aufnehmen (M3); fehlt = unverändert
  * @param int|null $data['website_id'] HugoShop: Webseite des Kundenportals, auf der er läuft
@@ -1986,6 +2114,9 @@ function saveShopChannel($data) {
         ? array_values(array_unique(array_filter(array_map('intval', $data['excluded_delivery_terms']), fn($id) => $id > 0)))
         : [];
     sort($ausschluss);
+    // Vorgaben für die Lieferzeit: beide zusammen, nur wenn mitgeschickt
+    $lieferzeitSetzen = array_key_exists('delivery_term_stock_id', $data)
+        || array_key_exists('delivery_term_dropshipping_id', $data);
 
     // Name und automatische Aufnahme: nur, wenn mitgeschickt
     $nameSetzen = array_key_exists('name', $data);
@@ -2005,7 +2136,9 @@ function saveShopChannel($data) {
         $zeile = $db->getOne(
             "WITH vorher AS (
                  SELECT id, active, markup_type, markup_value, round_99,
-                        COALESCE(settings -> 'excluded_delivery_terms', '[]'::jsonb) AS ausschluss
+                        COALESCE(settings -> 'excluded_delivery_terms', '[]'::jsonb) AS ausschluss,
+                        concat_ws('|', COALESCE(settings ->> 'delivery_term_stock_id', ''),
+                                       COALESCE(settings ->> 'delivery_term_dropshipping_id', '')) AS lieferzeit
                    FROM sales_channel_shop WHERE id = :channel_id
              ), laender_weg AS (
                  DELETE FROM sales_channel_country_shop
@@ -2029,26 +2162,43 @@ function saveShopChannel($data) {
                         free_shipping_from = CASE WHEN :freigrenze_setzen = 1
                                                   THEN CAST(:free_shipping_from AS numeric)
                                                   ELSE free_shipping_from END,
-                        settings     = CASE WHEN :ausschluss_setzen = 1
-                                            THEN COALESCE(settings, '{}'::jsonb)
-                                                 || jsonb_build_object('excluded_delivery_terms', CAST(:ausschluss AS jsonb))
-                                            ELSE settings END,
+                        -- Ausschluss (eBay) und Vorgaben der Lieferzeit, je nur wenn
+                        -- mitgeschickt. Eine Lieferbedingung, die es nicht gibt,
+                        -- ergibt keine Vorgabe; leer nimmt den Schlüssel heraus
+                        settings     = CASE WHEN :lieferzeit_setzen = 1
+                                            THEN (COALESCE(e.einstellungen, '{}'::jsonb)
+                                                  - 'delivery_term_stock_id' - 'delivery_term_dropshipping_id')
+                                                 || jsonb_strip_nulls(jsonb_build_object(
+                                                        'delivery_term_stock_id',
+                                                        (SELECT d.id FROM delivery_terms d WHERE d.id = CAST(:lieferzeit_lager AS integer)),
+                                                        'delivery_term_dropshipping_id',
+                                                        (SELECT d.id FROM delivery_terms d WHERE d.id = CAST(:lieferzeit_dropshipping AS integer))))
+                                            ELSE e.einstellungen END,
                         name         = CASE WHEN :name_setzen = 1 THEN CAST(:name AS text) ELSE name END,
                         auto_add_parts = CASE WHEN :aufnahme_setzen = 1 THEN CAST(:auto_add_parts AS boolean)
                                               ELSE auto_add_parts END,
                         website_id   = CASE WHEN :webseite_setzen = 1 THEN CAST(NULLIF(:website_id, 0) AS integer)
                                             ELSE website_id END,
                         mtime        = now()
-                  WHERE id = :channel_id
+                   FROM (SELECT x.id AS kanal_id,
+                                CASE WHEN :ausschluss_setzen = 1
+                                     THEN COALESCE(x.settings, '{}'::jsonb)
+                                          || jsonb_build_object('excluded_delivery_terms', CAST(:ausschluss AS jsonb))
+                                     ELSE x.settings END AS einstellungen
+                           FROM sales_channel_shop x) e
+                  WHERE id = :channel_id AND e.kanal_id = id
                  RETURNING id, type, active, markup_type, markup_value, round_99,
-                           COALESCE(settings -> 'excluded_delivery_terms', '[]'::jsonb) AS ausschluss
+                           COALESCE(settings -> 'excluded_delivery_terms', '[]'::jsonb) AS ausschluss,
+                           concat_ws('|', COALESCE(settings ->> 'delivery_term_stock_id', ''),
+                                          COALESCE(settings ->> 'delivery_term_dropshipping_id', '')) AS lieferzeit
              )
              SELECT g.type, g.active,
                     (g.active IS DISTINCT FROM v.active) AS geschaltet,
                     (g.markup_type IS DISTINCT FROM v.markup_type
                      OR g.markup_value IS DISTINCT FROM v.markup_value
                      OR g.round_99 IS DISTINCT FROM v.round_99) AS preis_geaendert,
-                    (g.ausschluss IS DISTINCT FROM v.ausschluss) AS ausschluss_geaendert
+                    (g.ausschluss IS DISTINCT FROM v.ausschluss) AS ausschluss_geaendert,
+                    (g.lieferzeit IS DISTINCT FROM v.lieferzeit) AS lieferzeit_geaendert
                FROM geaendert g JOIN vorher v ON v.id = g.id",
             [
                 ':channel_id'   => (int)($data['channel_id'] ?? 0),
@@ -2068,6 +2218,9 @@ function saveShopChannel($data) {
                 ':laender_neu'        => '{'.implode(',', $laender).'}',
                 ':ausschluss_setzen'  => $ausschlussSetzen ? 1 : 0,
                 ':ausschluss'         => json_encode($ausschluss),
+                ':lieferzeit_setzen'       => $lieferzeitSetzen ? 1 : 0,
+                ':lieferzeit_lager'        => (int)($data['delivery_term_stock_id'] ?? 0),
+                ':lieferzeit_dropshipping' => (int)($data['delivery_term_dropshipping_id'] ?? 0),
                 ':name_setzen'        => $nameSetzen ? 1 : 0,
                 ':name'               => $name,
                 ':aufnahme_setzen'    => $aufnahmeSetzen ? 1 : 0,
@@ -2113,13 +2266,17 @@ function saveShopChannel($data) {
         $neuVeroeffentlichen = 'hugoshop' === $zeile['type'] && $an;
         $auftrag = 0;
     } else {
-        $neuVeroeffentlichen = 'hugoshop' === $zeile['type'] && $an && $wahr($zeile['preis_geaendert'])
+        // Ebenso bei geänderter Vorgabe der Lieferzeit: sie steht auf jeder
+        // Produktseite ohne eigene Lieferbedingung
+        $neuVeroeffentlichen = 'hugoshop' === $zeile['type'] && $an
+            && ($wahr($zeile['preis_geaendert']) || $wahr($zeile['lieferzeit_geaendert']))
             && shopChannelBool($db, $kanal, 'auto_publish', true);
         $auftrag = $neuVeroeffentlichen ? shopQueueJob($db, 'publish_all', '', null, $kanal) : 0;
 
         // eBay: andere Lieferbedingungen ausgeschlossen (W11) — alle Angebote
         // neu abgleichen; betroffene werden beendet oder wieder eingestellt
-        if ('ebay' === $zeile['type'] && $an && $wahr($zeile['ausschluss_geaendert'])) {
+        if ('ebay' === $zeile['type'] && $an
+            && ($wahr($zeile['ausschluss_geaendert']) || $wahr($zeile['lieferzeit_geaendert']))) {
             shopQueueJob($db, 'publish_all', '', null, $kanal);
         }
     }
@@ -2457,7 +2614,8 @@ function writeShopPage($data) {
  * Nimmt einen Artikel in die Veröffentlichung auf
  *
  * Schreibt nur den Auftrag; die Seite entsteht beim nächsten Lauf von
- * tools/shop-publish.php. Passt keine Versandart, entsteht kein Auftrag:
+ * tools/shop-publish.php. Passt keine Versandart oder fehlt einem
+ * Dropshipping-Artikel die Lieferzeit, entsteht kein Auftrag:
  * SHIPPING_UNFIT mit dem Grund.
  *
  * @param array $data['parts_id'] Artikel
@@ -2472,9 +2630,10 @@ function publishShopPart($data) {
 
     $artikel = $db->getOne(
         "SELECT p.partnumber,
-                (SELECT row_to_json(v) FROM shop_part_shipping_check(p.id, CAST(:kanal AS integer)) v) AS versand
+                (SELECT row_to_json(v) FROM shop_part_shipping_check(p.id, CAST(:kanal AS integer)) v) AS versand,
+                (SELECT lz.missing FROM shop_part_delivery(p.id, CAST(:kanal_lieferzeit AS integer)) lz) AS lieferzeit_fehlt
            FROM parts p WHERE p.id = :parts_id",
-        [':parts_id' => (int)($data['parts_id'] ?? 0), ':kanal' => $kanal]
+        [':parts_id' => (int)($data['parts_id'] ?? 0), ':kanal' => $kanal, ':kanal_lieferzeit' => $kanal]
     );
     if (!$artikel) {
         resultInfo(false, 'PART_NOT_FOUND', null, 'Artikel nicht gefunden');
@@ -2482,7 +2641,9 @@ function publishShopPart($data) {
     }
 
     // Ohne passende Versandart wird nicht veröffentlicht (dev/shop-versand.md)
-    $versandFehler = shopShippingCheckText(json_decode((string)$artikel['versand'], true) ?: []);
+    // und ein Dropshipping-Artikel nicht ohne Lieferzeit
+    $versandFehler = shopShippingCheckText(json_decode((string)$artikel['versand'], true) ?: [])
+        ?: shopDeliveryCheckText($artikel['lieferzeit_fehlt'] ?? false);
     if ('' !== $versandFehler) {
         resultInfo(false, 'SHIPPING_UNFIT', null, $versandFehler);
         return;

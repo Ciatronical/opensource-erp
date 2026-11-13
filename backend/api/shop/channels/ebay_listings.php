@@ -470,7 +470,7 @@ function shopEbayReviseLegacy($db, int $kanal, int $partsId): string {
                 COALESCE(NULLIF(c.settings ->> 'legacy_sync', ''), 'off') AS modus,
                 COALESCE(l.lot_size, 1) AS los, l.listing_type, l.quantity AS menge_ebay, l.price AS preis_ebay, l.id AS listing_id,
                 CASE WHEN shop_part_available(p.id, c.id) AND NOT COALESCE(p.obsolete, false)
-                     THEN GREATEST(FLOOR(COALESCE(p.onhand, 0) / GREATEST(COALESCE(l.lot_size, 1), 1)), 0)::int ELSE 0 END AS menge,
+                     THEN FLOOR(shop_part_offer_quantity(p.id) / GREATEST(COALESCE(l.lot_size, 1), 1)::numeric)::int ELSE 0 END AS menge,
                 ebay_gross_price(p.id, c.id) * GREATEST(COALESCE(l.lot_size, 1), 1) AS preis
            FROM parts_channel_shop pc
            JOIN sales_channel_shop c ON c.id = pc.channel_id

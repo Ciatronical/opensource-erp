@@ -290,6 +290,26 @@
                     </v-col>
                 </v-row>
 
+                <!-- Vorgaben für die Lieferzeit (Dropshipping und Lieferzeiten,
+                     2026-11-13): gelten für Artikel ohne eigene Lieferbedingung —
+                     die für Lagerware bei eigenem Bestand, die für
+                     Dropshipping-Artikel ohne. Kleinanzeigen kennt keine -->
+                <v-row v-if="kanal.type !== 'kleinanzeigen'" dense class="mt-2">
+                    <v-col v-for="feld in lieferzeitFelder" :key="feld.name" cols="12" md="6" class="py-1">
+                        <v-autocomplete
+                            v-model="kanal[feld.name]"
+                            :items="lieferzeitAuswahl(kanal[feld.name])"
+                            :label="t(feld.label)"
+                            :hint="t(feld.hint)"
+                            persistent-hint
+                            clearable
+                            variant="outlined"
+                            density="compact"
+                            hide-details="auto"
+                        />
+                    </v-col>
+                </v-row>
+
                 <!-- Einstellungen der Instanz: erst beim Aufklappen geladen -->
                 <v-expansion-panels v-model="einstellungenOffen[kanal.channel_id]" variant="accordion" color="grey-lighten-3" class="mt-4">
                     <v-expansion-panel>
@@ -427,6 +447,19 @@ const lieferbedingungAuswahl = computed(() => lieferbedingungen.value.map(d => (
     title: d.description_long ? `${d.description} – ${d.description_long}` : d.description,
 })))
 
+/** Vorgaben für die Lieferzeit je Kanal (sales_channel_shop.settings) */
+const lieferzeitFelder = [
+    { name: 'delivery_term_stock_id', label: 'ShopView.channelConfig.deliveryTermStock', hint: 'ShopView.channelConfig.deliveryTermStockHint' },
+    { name: 'delivery_term_dropshipping_id', label: 'ShopView.channelConfig.deliveryTermDropshipping', hint: 'ShopView.channelConfig.deliveryTermDropshippingHint' },
+]
+/** Ungültige Lieferbedingungen nur, wenn sie gerade gewählt ist */
+const lieferzeitAuswahl = gewaehlt => lieferbedingungen.value
+    .filter(d => !WAHR.includes(d.obsolete) || Number(d.id) === Number(gewaehlt))
+    .map(d => ({
+        value: Number(d.id),
+        title: d.description_long ? `${d.description} – ${d.description_long}` : d.description,
+    }))
+
 /** Leer heißt „keine Freigrenze"; sonst ein Betrag ab 0 */
 const freigrenzeWert = wert => (wert === '' || wert === null || wert === undefined ? null : Number(wert))
 function freigrenzePruefen(wert) {
@@ -459,6 +492,8 @@ function alsKanal(zeile) {
             ? '' : String(Number(zeile.free_shipping_from)),
         countries: alsListe(zeile.countries).map(String),
         excluded_delivery_terms: alsListe(alsObjekt(zeile.settings).excluded_delivery_terms).map(Number),
+        delivery_term_stock_id: Number(alsObjekt(zeile.settings).delivery_term_stock_id) || null,
+        delivery_term_dropshipping_id: Number(alsObjekt(zeile.settings).delivery_term_dropshipping_id) || null,
         parts: Number(zeile.parts) || 0,
         name: String(zeile.name || ''),
         auto_add_parts: WAHR.includes(zeile.auto_add_parts),
@@ -509,6 +544,11 @@ function nutzdaten(kanal) {
         ...(kanal.type === 'hugoshop' ? { website_id: Number(kanal.website_id) || 0 } : {}),
         // nur eBay kennt den Ausschluss; andere Kanäle lassen ihn unberührt
         ...(kanal.type === 'ebay' ? { excluded_delivery_terms: [...kanal.excluded_delivery_terms].sort((a, b) => a - b) } : {}),
+        // Vorgaben für die Lieferzeit; 0 = keine
+        ...(kanal.type !== 'kleinanzeigen' ? {
+            delivery_term_stock_id: Number(kanal.delivery_term_stock_id) || 0,
+            delivery_term_dropshipping_id: Number(kanal.delivery_term_dropshipping_id) || 0,
+        } : {}),
     }
 }
 

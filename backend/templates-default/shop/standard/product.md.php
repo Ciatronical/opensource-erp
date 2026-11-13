@@ -54,8 +54,18 @@ $meta = implode(' | ', array_merge([$artikel['partnumber']], $stufen));
 // Bestellbar: nicht veraltet und im HugoShop nicht als nicht verfügbar
 // markiert (shop_part_available). Der Bestand entscheidet nur über das
 // Abzeichen: „Auf Lager“ oder „bestellbar, zurzeit nicht auf Lager“.
+//
+// Dropshipping-Artikel versendet der Lieferant: ohne eigenen Bestand sind sie
+// „Verfügbar“ mit ihrer Lieferzeit. Liegt eigener Bestand da, gilt „Auf
+// Lager“ mit der Lieferzeit für Lagerware — welche Lieferzeit gilt, hat
+// shopPageData() schon entschieden (shop_part_delivery).
 $bestellbar = $artikel['available'];
 $aufLager   = $bestellbar && $artikel['onhand'] > 0;
+$lieferbar  = $bestellbar && !$aufLager && $artikel['dropshipping'];
+// Lieferzeit in Tagen ab Bestellung für die Suchmaschinendaten; fehlt eine
+// Grenze, gilt die andere für beide
+$tageVon = $artikel['delivery_days_min'] ?? $artikel['delivery_days_max'];
+$tageBis = $artikel['delivery_days_max'] ?? $artikel['delivery_days_min'];
 $bilder     = $shop['image_urls'];
 $bildnamen  = array_map(fn($name) => basename((string)$name), $shop['images']);
 
@@ -87,7 +97,33 @@ price: <?= shopYaml(shopNumber($artikel['sellprice'])) ?>
 
 priceCurrency: <?= shopYaml($waehrung) ?>
 
-availability: "https://schema.org/<?= $aufLager ? 'InStock' : 'OutOfStock' ?>"
+availability: "https://schema.org/<?= ($aufLager || $lieferbar) ? 'InStock' : 'OutOfStock' ?>"
+<?php if ($bestellbar && $tageVon !== null): ?>
+deliveryDaysMin: <?= (int)$tageVon ?>
+
+deliveryDaysMax: <?= (int)$tageBis ?>
+
+<?php // schema.org OfferShippingDetails: die Themes geben shippingDetails
+      // unverändert in die Suchmaschinendaten. Geführt wird eine Lieferzeit
+      // ab Bestellung, keine Aufteilung in Bearbeitung und Versand — sie
+      // steht deshalb ganz in transitTime, handlingTime ist 0. ?>
+shippingDetails:
+  "@type": "OfferShippingDetails"
+  deliveryTime:
+    "@type": "ShippingDeliveryTime"
+    handlingTime:
+      "@type": "QuantitativeValue"
+      minValue: 0
+      maxValue: 0
+      unitCode: "DAY"
+    transitTime:
+      "@type": "QuantitativeValue"
+      minValue: <?= (int)$tageVon ?>
+
+      maxValue: <?= (int)$tageBis ?>
+
+      unitCode: "DAY"
+<?php endif; ?>
 <?php if ($artikel['delivery_term'] !== ''): ?>
 deliveryTerm: <?= shopYaml($artikel['delivery_term']) ?>
 
@@ -179,6 +215,15 @@ card-image-alt: <?= shopYaml($titel) ?>
   <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
 </svg>
     <span style="vertical-align: middle;">Verfügbar / Auf Lager</span>
+</div>
+<?php elseif ($lieferbar): ?>
+<?php // Dropshipping-Artikel ohne eigenen Bestand: grün wie „Auf Lager“, die
+      // Lieferzeit steht darunter ?>
+<div class="badge rounded-pill mb-2" style="color: var(--bs-success-text-emphasis, #0a3622); background-color: var(--bs-success-bg-subtle, #d1e7dd);">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill me-2" viewBox="0 0 16 16">
+  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+</svg>
+    <span style="vertical-align: middle;">Verfügbar</span>
 </div>
 <?php else: ?>
 <?php // Gelb: Bootstraps Textfarbe (#664d03, 7,2:1) wirkt auf dem hellen Gelb

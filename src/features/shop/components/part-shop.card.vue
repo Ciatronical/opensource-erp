@@ -235,6 +235,23 @@
                         hide-details="auto"
                     />
                 </v-col>
+                <!-- Dropshipping-Artikel: der Lieferant versendet, verfügbar auch ohne
+                     eigenen Bestand. Betreibt der Mandant nur Dropshipping
+                     (shop_dropshipping_default), gilt es für jeden Artikel -->
+                <v-col cols="12" class="py-1">
+                    <v-checkbox
+                        :model-value="nurDropshipping || daten.shipping.dropshipping"
+                        @update:model-value="daten.shipping.dropshipping = !!$event"
+                        :label="t('ShopView.partCard.dropshipping')"
+                        :hint="t(nurDropshipping ? 'ShopView.partCard.dropshippingAllHint' : 'ShopView.partCard.dropshippingHint')"
+                        persistent-hint
+                        :disabled="nurDropshipping"
+                        :readonly="!darfBearbeiten"
+                        color="primary"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </v-col>
                 <v-col v-for="feld in ['length', 'width', 'height']" :key="feld" cols="4" sm="2" class="py-1">
                     <v-text-field
                         persistent-placeholder
@@ -775,7 +792,7 @@ const WAHR_WERTE = [true, 't', 'true', 1, '1']
 
 /** Versandangaben (parts_shipping_shop); leer = nicht gepflegt */
 function leererVersand() {
-    return { shipping_method_ids: [], length: '', width: '', height: '', min_qty: '', delivery_term_id: null }
+    return { shipping_method_ids: [], length: '', width: '', height: '', min_qty: '', delivery_term_id: null, dropshipping: false }
 }
 const zahlText = wert => (wert === null || wert === undefined || wert === '' ? '' : String(Number(wert)))
 const zahlOderNull = wert => (wert === null || wert === undefined || String(wert).trim() === '' ? null : Number(wert))
@@ -791,6 +808,8 @@ const versandarten = ref([])
 const lieferbedingungen = ref([])
 const gewichtseinheit = ref('')
 const gewicht = ref(null)
+/** Der Mandant betreibt nur Dropshipping: jeder Artikel ist Dropshipping-Artikel */
+const nurDropshipping = ref(false)
 
 // Inaktive nur, wenn sie noch zugeordnet sind
 const versandartAuswahl = computed(() => versandarten.value
@@ -1169,6 +1188,7 @@ function nutzdaten(partsId) {
             height: zahlOderNull(d.shipping.height),
             min_qty: zahlOderNull(d.shipping.min_qty),
             delivery_term_id: d.shipping.delivery_term_id || null,
+            dropshipping: !!d.shipping.dropshipping,
         },
         channels: d.channels.map(k => ({
             channel_id: k.channel_id,
@@ -1371,6 +1391,7 @@ async function laden() {
     versandarten.value = (versand.methods || []).map(m => ({ ...m, id: Number(m.id), active: WAHR_WERTE.includes(m.active) }))
     lieferbedingungen.value = (versand.delivery_terms || []).map(d => ({ ...d, id: Number(d.id), obsolete: WAHR_WERTE.includes(d.obsolete) }))
     gewichtseinheit.value = versand.weightunit || ''
+    nurDropshipping.value = WAHR_WERTE.includes(versand.dropshipping_default)
     kategorien.value = antwort?.categories || []
     gewicht.value = antwort?.part?.weight === null || antwort?.part?.weight === undefined ? null : Number(antwort.part.weight)
     versandartikelVon.value = antwort?.part?.shipping_method_of || ''
@@ -1402,6 +1423,7 @@ async function laden() {
             height: zahlText(versand.part.height),
             min_qty: zahlText(versand.part.min_qty),
             delivery_term_id: versand.part.delivery_term_id ? Number(versand.part.delivery_term_id) : null,
+            dropshipping: WAHR_WERTE.includes(versand.part.dropshipping),
         } : leererVersand(),
     }
     alleKanaeleZu()

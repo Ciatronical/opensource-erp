@@ -766,7 +766,7 @@ DECLARE
                        OR OLD.unit IS DISTINCT FROM NEW.unit
                        OR OLD.ean IS DISTINCT FROM NEW.ean
                        OR OLD.partnumber IS DISTINCT FROM NEW.partnumber
-                       OR (COALESCE(OLD.onhand, 0) > 0) IS DISTINCT FROM (COALESCE(NEW.onhand, 0) > 0);
+                       OR (TRUNC(COALESCE(OLD.onhand, 0)) > 0) IS DISTINCT FROM (TRUNC(COALESCE(NEW.onhand, 0)) > 0);
     kennung text;
     alt     text;
     neu     text;
@@ -884,8 +884,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Brutto- oder Nettopreise in den Stammdaten: betrifft jeden Preis. HugoShop
--- nur bei shop_auto_publish, Marktplätze immer.
+-- Brutto- oder Nettopreise in den Stammdaten: betrifft jeden Preis; ebenso
+-- die Vorgaben zum Dropshipping (Verfügbarkeit und Angebotsmenge aller
+-- Artikel). HugoShop nur bei shop_auto_publish, Marktplätze immer.
 CREATE OR REPLACE FUNCTION defaults_oserp_shop_auto_publish() RETURNS trigger AS $$
 BEGIN
     IF NOT shop_extension_active() THEN
@@ -913,7 +914,9 @@ $$ LANGUAGE plpgsql;
 -- (shop_is_shipping_part: der jeder Versandart) und nicht der eBay-Sammelartikel
 -- (ebay_default_parts_id). shop_is_shipping_part steht weiter unten; PL/pgSQL
 -- löst den Namen erst beim Aufruf auf. Der Bestand darf negativ werden — verkauft ist
--- verkauft; die Differenz zeigt die Inventur.
+-- verkauft; die Differenz zeigt die Inventur. Anders bei Dropshipping-Artikeln
+-- (shop_part_dropshipping): gebucht wird höchstens der eigene Bestand, den
+-- Rest versendet der Lieferant.
 --
 -- Ohne Lagerplatz keine Buchung (0), wie vor O14; die Einrichtungsprüfung
 -- weist darauf hin. Eine Rechnung wird höchstens einmal gebucht.
@@ -951,14 +954,20 @@ BEGIN
     vorgang := nextval('id');
     INSERT INTO inventory (parts_id, warehouse_id, bin_id, qty, chargenumber, comment,
                            shippingdate, employee_id, trans_id, trans_type_id, invoice_id)
-    SELECT i.parts_id, lager, platz, -i.qty, '', 'Verkauf, Rechnung ' || a.invnumber,
+    SELECT i.parts_id, lager, platz, -m.menge, '', 'Verkauf, Rechnung ' || a.invnumber,
            COALESCE(a.transdate, current_date), mitarbeiter, vorgang, art, i.id
       FROM invoice i
       JOIN parts p ON p.id = i.parts_id
       JOIN ar a ON a.id = i.trans_id
+      -- Dropshipping-Artikel: nur, was am eigenen Lager liegt — den Rest
+      -- versendet der Lieferant, der Bestand wird nicht negativ
+      CROSS JOIN LATERAL (SELECT CASE WHEN shop_part_dropshipping(p.id)
+                                      THEN LEAST(i.qty, GREATEST(COALESCE(p.onhand, 0), 0))
+                                      ELSE i.qty END AS menge) m
      WHERE i.trans_id = p_ar_id
        AND p.part_type = 'part'
        AND i.qty > 0
+       AND m.menge > 0
        AND NOT shop_is_shipping_part(i.parts_id)
        -- Sammelartikel jedes eBay-Kanals; ebay_default_parts_id nur bis
        -- zum Umzug in settings (Schritt 4)
@@ -1103,7 +1112,8 @@ DO $$ BEGIN
     CREATE TRIGGER trigger_defaults_oserp_shop_auto_publish
         AFTER UPDATE ON defaults_oserp
         FOR EACH ROW
-        WHEN (NEW.key = 'shop_tax_included' AND OLD.value IS DISTINCT FROM NEW.value)
+        WHEN (NEW.key IN ('shop_tax_included', 'shop_dropshipping_default', 'shop_dropshipping_quantity')
+              AND OLD.value IS DISTINCT FROM NEW.value)
         EXECUTE FUNCTION defaults_oserp_shop_auto_publish();
 END $$;
 
@@ -1410,8 +1420,27 @@ CREATE TABLE IF NOT EXISTS parts_shipping_shop
     width              numeric(15,5),
     height             numeric(15,5),
     min_qty            numeric(15,5),
-    delivery_term_id   integer REFERENCES delivery_terms (id) ON DELETE SET NULL
+    delivery_term_id   integer REFERENCES delivery_terms (id) ON DELETE SET NULL,
+    dropshipping       boolean NOT NULL DEFAULT false
 );
+
+-- Tage je Lieferbedingung (Dropshipping und Lieferzeiten, 2026-11-13). Die
+-- kivitendo-Stammliste delivery_terms kennt nur Text; Suchmaschinendaten
+-- brauchen Zahlen. Eigene Tabelle, delivery_terms bleibt unverändert.
+CREATE TABLE IF NOT EXISTS delivery_term_shop
+(
+    delivery_term_id integer NOT NULL PRIMARY KEY REFERENCES delivery_terms (id) ON DELETE CASCADE,
+    days_min         integer,
+    days_max         integer,
+    CONSTRAINT delivery_term_shop_days_check CHECK (
+        (days_min IS NULL OR days_min >= 0)
+        AND (days_max IS NULL OR days_max >= 0)
+        AND (days_min IS NULL OR days_max IS NULL OR days_min <= days_max))
+);
+
+COMMENT ON TABLE  delivery_term_shop          IS 'Shop: Lieferzeit einer Lieferbedingung in Tagen';
+COMMENT ON COLUMN delivery_term_shop.days_min IS 'Lieferzeit ab Bestellung in Tagen, frühestens; NULL = nicht angegeben';
+COMMENT ON COLUMN delivery_term_shop.days_max IS 'Lieferzeit ab Bestellung in Tagen, spätestens; NULL = nicht angegeben';
 
 COMMENT ON TABLE  parts_shipping_shop                    IS 'Shop: Versandangaben eines Artikels';
 COMMENT ON COLUMN parts_shipping_shop.length             IS 'Länge in cm';
@@ -1420,8 +1449,97 @@ COMMENT ON COLUMN parts_shipping_shop.height             IS 'Höhe in cm';
 COMMENT ON COLUMN parts_shipping_shop.min_qty            IS 'Mindestabnahme; bei eBay die Losgröße (W5, W10)';
 COMMENT ON COLUMN parts_shipping_shop.delivery_term_id   IS 'Lieferbedingung (kivitendo delivery_terms), steht in Shop und Rechnung (Punkt 7)';
 
--- Lieferbedingung und Mindestabnahme stehen auf der Produktseite (HugoShop)
--- und bestimmen bei eBay Los und Angebot (W5, W11): ändern sie sich, wird
+-- Nachgetragen: in bestehenden Datenbanken gibt es die Tabelle schon.
+ALTER TABLE parts_shipping_shop ADD COLUMN IF NOT EXISTS dropshipping boolean NOT NULL DEFAULT false;
+COMMENT ON COLUMN parts_shipping_shop.dropshipping       IS 'Dropshipping-Artikel: der Lieferant versendet, kein eigener Bestand nötig. Die Vorgabe shop_dropshipping_default macht jeden Artikel dazu (shop_part_dropshipping)';
+
+-- ── Dropshipping und Lieferzeiten (2026-11-13) ──
+--
+-- Ein Dropshipping-Artikel wird vom Lieferanten versandt. Er braucht keinen
+-- eigenen Bestand: die Produktseite zeigt ihn als verfügbar, Marktplätze
+-- bieten eine feste Menge an (shop_dropshipping_quantity), und ein Verkauf
+-- bucht nur aus, was tatsächlich am eigenen Lager liegt.
+--
+-- Dropshipping-Artikel ist, wer so gekennzeichnet ist
+-- (parts_shipping_shop.dropshipping) — oder jeder Artikel, wenn der Mandant
+-- nur Dropshipping betreibt (shop_dropshipping_default).
+CREATE OR REPLACE FUNCTION shop_part_dropshipping(p_parts_id integer) RETURNS boolean
+    LANGUAGE sql STABLE AS $$
+    SELECT COALESCE((SELECT ps.dropshipping FROM parts_shipping_shop ps WHERE ps.parts_id = p_parts_id), false)
+        OR COALESCE((SELECT lower(btrim(value)) IN ('t', 'true', '1', 'y', 'yes')
+                       FROM defaults_oserp WHERE key = 'shop_dropshipping_default'), false)
+$$;
+
+-- Menge, die ein Marktplatz anbieten darf: der eigene Bestand (V19), bei
+-- Dropshipping-Artikeln mindestens die feste Angebotsmenge. In Stück; Lose
+-- rechnet der Aufrufer.
+CREATE OR REPLACE FUNCTION shop_part_offer_quantity(p_parts_id integer) RETURNS integer
+    LANGUAGE sql STABLE AS $$
+    SELECT GREATEST(FLOOR(COALESCE(p.onhand, 0))::integer,
+                    CASE WHEN shop_part_dropshipping(p.id)
+                         THEN COALESCE((SELECT CASE WHEN btrim(value) ~ '^[0-9]{1,6}$' THEN btrim(value)::integer END
+                                          FROM defaults_oserp WHERE key = 'shop_dropshipping_quantity'), 0)
+                         ELSE 0 END,
+                    0)
+      FROM parts p
+     WHERE p.id = p_parts_id
+$$;
+
+-- Lieferzeit eines Artikels in einem Kanal — eine Regel für Produktseite,
+-- Warenkorb, Rechnung und Marktplätze. Die Lieferbedingung des Artikels geht
+-- den Vorgaben des Kanals vor (sales_channel_shop.settings:
+-- delivery_term_stock_id für Lagerware, delivery_term_dropshipping_id für
+-- Dropshipping-Artikel):
+--
+--   Dropshipping, eigener Bestand   Vorgabe Lagerware, sonst wie ohne Bestand
+--                                   (die Ware liegt da und geht sofort raus)
+--   Dropshipping, kein Bestand      Artikel, sonst Vorgabe Dropshipping
+--   Lagerware, Bestand              Artikel, sonst Vorgabe Lagerware
+--   Lagerware, kein Bestand         Artikel, sonst keine — die Vorgabe für
+--                                   Lagerware verspräche, was nicht da ist
+--
+-- in_stock    eigener Bestand, ganze Stück (wie die Produktseite)
+-- days_min/max Tage der gewählten Lieferbedingung (delivery_term_shop)
+-- missing     Dropshipping-Artikel ohne ermittelbare Lieferzeit: wird nicht
+--             veröffentlicht — die Lieferzeit ist vor dem Kauf zu nennen, und
+--             ohne Bestand sagt sonst nichts, wann die Ware kommt. Gemessen
+--             ohne den Bestand, damit die Seite nicht mit dem letzten
+--             verkauften Stück scheitert.
+CREATE OR REPLACE FUNCTION shop_part_delivery(p_parts_id integer, p_channel_id integer)
+    RETURNS TABLE (dropshipping boolean, in_stock boolean, delivery_term_id integer, delivery_term text,
+                   days_min integer, days_max integer, missing boolean)
+    LANGUAGE sql STABLE AS $$
+    WITH lage AS (
+        SELECT shop_part_dropshipping(p.id) AS dropshipping,
+               TRUNC(COALESCE(p.onhand, 0)) > 0 AS in_stock,
+               ps.delivery_term_id AS eigene,
+               (SELECT d.id FROM delivery_terms d
+                 WHERE d.id::text = btrim(c.settings ->> 'delivery_term_stock_id')) AS lagerware,
+               (SELECT d.id FROM delivery_terms d
+                 WHERE d.id::text = btrim(c.settings ->> 'delivery_term_dropshipping_id')) AS lieferant
+          FROM parts p
+          LEFT JOIN parts_shipping_shop ps ON ps.parts_id = p.id
+          LEFT JOIN sales_channel_shop c ON c.id = p_channel_id
+         WHERE p.id = p_parts_id
+    ), wahl AS (
+        SELECT l.dropshipping, l.in_stock,
+               CASE WHEN l.dropshipping AND l.in_stock THEN COALESCE(l.lagerware, l.eigene, l.lieferant)
+                    WHEN l.dropshipping THEN COALESCE(l.eigene, l.lieferant)
+                    WHEN l.in_stock THEN COALESCE(l.eigene, l.lagerware)
+                    ELSE l.eigene END AS term_id,
+               l.dropshipping AND COALESCE(l.eigene, l.lieferant) IS NULL AS missing
+          FROM lage l
+    )
+    SELECT w.dropshipping, w.in_stock, w.term_id,
+           NULLIF(btrim(COALESCE(NULLIF(btrim(d.description_long), ''), d.description, '')), ''),
+           t.days_min, t.days_max, w.missing
+      FROM wahl w
+      LEFT JOIN delivery_terms d ON d.id = w.term_id
+      LEFT JOIN delivery_term_shop t ON t.delivery_term_id = w.term_id
+$$;
+
+-- Lieferbedingung, Dropshipping und Mindestabnahme stehen auf der Produktseite
+-- (HugoShop) und bestimmen bei eBay Los, Menge und Angebot (W5, W11): ändern sie sich, wird
 -- neu veröffentlicht — im HugoShop nur bei shop_auto_publish, wie bei Preis
 -- und Texten (V22). Versandart und Abmessungen stehen auf keiner Seite, sie
 -- entscheiden aber, ob eine Versandart passt (shop_part_shipping_check):
@@ -1434,6 +1552,7 @@ BEGIN
     END IF;
     IF TG_OP = 'UPDATE'
        AND OLD.delivery_term_id IS NOT DISTINCT FROM NEW.delivery_term_id
+       AND OLD.dropshipping IS NOT DISTINCT FROM NEW.dropshipping
        AND OLD.min_qty IS NOT DISTINCT FROM NEW.min_qty
        AND OLD.length IS NOT DISTINCT FROM NEW.length
        AND OLD.width IS NOT DISTINCT FROM NEW.width
@@ -1454,7 +1573,7 @@ $$ LANGUAGE plpgsql;
 DO $$ BEGIN
     DROP TRIGGER IF EXISTS trigger_parts_shipping_shop_auto_publish ON parts_shipping_shop;
     CREATE TRIGGER trigger_parts_shipping_shop_auto_publish
-        AFTER INSERT OR UPDATE OF delivery_term_id, min_qty, length, width, height
+        AFTER INSERT OR UPDATE OF delivery_term_id, dropshipping, min_qty, length, width, height
         ON parts_shipping_shop
         FOR EACH ROW
         EXECUTE FUNCTION parts_shipping_shop_auto_publish();
@@ -1934,15 +2053,29 @@ $$;
 -- wenn er dort steht — sonst sagte die Rechnungsseite nach einer spaeteren
 -- Aenderung etwas anderes als die Rechnung. NULL = keine.
 CREATE OR REPLACE FUNCTION shop_invoice_delivery_term(p_invoice_id integer) RETURNS text
-    LANGUAGE sql STABLE AS $$
-    SELECT t.text
-      FROM invoice i
-      JOIN parts_shipping_shop ps ON ps.parts_id = i.parts_id
-      JOIN delivery_terms d ON d.id = ps.delivery_term_id
-      CROSS JOIN LATERAL (SELECT COALESCE(NULLIF(btrim(d.description_long), ''), d.description) AS text) t
-     WHERE i.id = p_invoice_id
-       AND COALESCE(t.text, '') <> ''
-       AND strpos(COALESCE(i.longdescription, ''), t.text) > 0
+    LANGUAGE plpgsql STABLE AS $$
+BEGIN
+    -- In Frage kommen die Lieferbedingung des Artikels und die Vorgaben des
+    -- Kanals der Rechnung (shop_part_delivery); steht mehr als eine im
+    -- Langtext, gilt die längste — die kürzere kann in ihr enthalten sein.
+    -- PL/pgSQL, weil ar_link_hugoshop.channel_id erst weiter unten entsteht
+    -- (Abschnitt INSTANZEN): der Name wird so erst beim Aufruf aufgelöst.
+    RETURN (
+        SELECT t.text
+          FROM invoice i
+          LEFT JOIN parts_shipping_shop ps ON ps.parts_id = i.parts_id
+          LEFT JOIN ar_link_hugoshop a ON a.ar_id = i.trans_id
+          LEFT JOIN sales_channel_shop c ON c.id = a.channel_id
+          JOIN delivery_terms d ON d.id = ps.delivery_term_id
+                                OR d.id::text IN (btrim(c.settings ->> 'delivery_term_stock_id'),
+                                                  btrim(c.settings ->> 'delivery_term_dropshipping_id'))
+          CROSS JOIN LATERAL (SELECT COALESCE(NULLIF(btrim(d.description_long), ''), d.description) AS text) t
+         WHERE i.id = p_invoice_id
+           AND COALESCE(t.text, '') <> ''
+           AND strpos(COALESCE(i.longdescription, ''), t.text) > 0
+         ORDER BY length(t.text) DESC, d.id
+         LIMIT 1);
+END;
 $$;
 
 -- Passt eine Versandart zum Artikel? Für die Veröffentlichung im HugoShop
@@ -2831,6 +2964,11 @@ INSERT INTO defaults_oserp (key, value) VALUES ('ebay_public_host', '') ON CONFL
 -- Lagerplatz, von dem Verkäufe aus HugoShop und eBay ausgebucht werden
 -- (O14, V28). Leer = keine Lagerbuchung.
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_stock_bin_id', '') ON CONFLICT (key) DO NOTHING;
+-- Dropshipping (2026-11-13): 1 = der Mandant betreibt nur Dropshipping, jeder
+-- Artikel gilt als Dropshipping-Artikel; und die Menge, die Marktplätze für
+-- einen Dropshipping-Artikel anbieten
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_dropshipping_default', '0') ON CONFLICT (key) DO NOTHING;
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_dropshipping_quantity', '10') ON CONFLICT (key) DO NOTHING;
 
 -- Suche: Gewichtung des Preises im Ranking
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_search_weighting', '0.5') ON CONFLICT (key) DO NOTHING;
@@ -4331,14 +4469,15 @@ CREATE OR REPLACE FUNCTION ebay_listings(p_channel_id integer) RETURNS jsonb
                l.condition_name, l.category_name, l.end_time, l.link_source,
                l.parts_id, p.partnumber, p.description, p.onhand, p.unit,
                CASE WHEN p.id IS NOT NULL THEN ebay_gross_price(p.id, p_channel_id) END AS oserp_price,
-               CASE WHEN p.id IS NOT NULL THEN GREATEST(FLOOR(COALESCE(p.onhand, 0) / GREATEST(l.lot_size, 1)), 0)::int END AS oserp_quantity,
+               CASE WHEN p.id IS NOT NULL THEN FLOOR(shop_part_offer_quantity(p.id) / GREATEST(l.lot_size, 1)::numeric)::int END AS oserp_quantity,
                l.suggestion_parts_id, l.suggestion_score, l.suggestion_source,
                s.partnumber AS suggestion_partnumber, s.description AS suggestion_description, s.onhand AS suggestion_onhand,
                pc.sync_error, pc.sync_mtime,
-               -- mehr bei eBay als im Lager: Gefahr, zu verkaufen, was fehlt
-               p.id IS NOT NULL AND l.status = 'active' AND COALESCE(l.quantity, 0) * GREATEST(l.lot_size, 1) > COALESCE(p.onhand, 0) AS oversell,
+               -- mehr bei eBay als im Lager (bei Dropshipping-Artikeln: als die feste
+               -- Angebotsmenge, shop_part_offer_quantity): Gefahr, zu verkaufen, was fehlt
+               p.id IS NOT NULL AND l.status = 'active' AND COALESCE(l.quantity, 0) * GREATEST(l.lot_size, 1) > shop_part_offer_quantity(p.id) AS oversell,
                p.id IS NOT NULL AND l.status = 'active'
-                   AND COALESCE(l.quantity, 0) <> GREATEST(FLOOR(COALESCE(p.onhand, 0) / GREATEST(l.lot_size, 1)), 0) AS stock_diff,
+                   AND COALESCE(l.quantity, 0) <> FLOOR(shop_part_offer_quantity(p.id) / GREATEST(l.lot_size, 1)::numeric) AS stock_diff,
                p.id IS NOT NULL AND l.status = 'active' AND l.link_source <> 'inventory'
                    AND abs(COALESCE(l.price, 0) - COALESCE(ebay_gross_price(p.id, p_channel_id), 0)) >= 0.01 AS price_diff
           FROM ebay_listing_shop l
@@ -4405,7 +4544,7 @@ CREATE OR REPLACE FUNCTION ebay_board(p_channel_id integer) RETURNS jsonb
                                                                          AND parts_id IS NULL AND suggestion_parts_id IS NOT NULL),
             'oversell',        (SELECT count(*) FROM ebay_listing_shop l JOIN parts p ON p.id = l.parts_id
                                  WHERE l.channel_id = p_channel_id AND l.status = 'active'
-                                   AND COALESCE(l.quantity, 0) * GREATEST(l.lot_size, 1) > COALESCE(p.onhand, 0)),
+                                   AND COALESCE(l.quantity, 0) * GREATEST(l.lot_size, 1) > shop_part_offer_quantity(p.id)),
             'listing_value',   (SELECT COALESCE(sum(price * quantity), 0) FROM ebay_listing_shop WHERE channel_id = p_channel_id AND status = 'active'),
             'offered',         (SELECT count(*) FROM parts_channel_shop WHERE channel_id = p_channel_id AND active),
             'sync_errors',     (SELECT count(*) FROM parts_channel_shop WHERE channel_id = p_channel_id AND active AND sync_status = 'error')),
