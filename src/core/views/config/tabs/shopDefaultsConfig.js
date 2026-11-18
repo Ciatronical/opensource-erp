@@ -102,11 +102,15 @@ const shopDefaultsConfig = [
     // Medien außerhalb (dev/shop-medienbibliothek.md): eigene Verzeichnisse
     // der Medienbibliothek, auch außerhalb des Backend-Verzeichnisses — etwa
     // die einer Webseite auf demselben Rechner. Leer = Vorgabe
-    // backend/data/<db>/shop/media/<bereich>.
+    // backend/data/<db>/shop/media/<bereich>. Der Schalter
+    // shop_media_dir_internal („Ablage in OpensourceERP“) blendet die drei
+    // Pfade aus (hiddenWhen) und setzt sie außer Kraft; eingetragene Pfade
+    // bleiben gespeichert.
     { name: "shop_media_dirs", type: "headline", label: "crm_fields.shopMediaDirs" },
-    { name: "shop_media_dir_images", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirImages", tooltip: "crm_fields.shopMediaDir_help", help: "crm_fields.shopMediaDir_long" },
-    { name: "shop_media_dir_thumbnails", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirThumbnails", tooltip: "crm_fields.shopMediaDir_help", help: "crm_fields.shopMediaDir_long" },
-    { name: "shop_media_dir_downloads", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirDownloads", tooltip: "crm_fields.shopMediaDir_help", help: "crm_fields.shopMediaDir_long" },
+    { name: "shop_media_dir_internal", type: "checkbox", label: "crm_fields.shopMediaDirInternal", tooltip: "crm_fields.shopMediaDirInternal_help", help: "crm_fields.shopMediaDirInternal_long" },
+    { name: "shop_media_dir_images", type: "path", hiddenWhen: { field: "shop_media_dir_internal", value: true }, size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirImages", tooltip: "crm_fields.shopMediaDir_help", help: "crm_fields.shopMediaDir_long" },
+    { name: "shop_media_dir_thumbnails", type: "path", hiddenWhen: { field: "shop_media_dir_internal", value: true }, size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirThumbnails", tooltip: "crm_fields.shopMediaDir_help", help: "crm_fields.shopMediaDir_long" },
+    { name: "shop_media_dir_downloads", type: "path", hiddenWhen: { field: "shop_media_dir_internal", value: true }, size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirDownloads", tooltip: "crm_fields.shopMediaDir_help", help: "crm_fields.shopMediaDir_long" },
     // Vorgabe für neu angelegte HugoShops; je HugoShop in der Kanalkarte (media_transfer)
     { name: "shop_media_transfer_default", type: "checkbox", label: "crm_fields.shopMediaTransferDefault", tooltip: "crm_fields.shopMediaTransferDefault_help", help: "crm_fields.shopMediaTransferDefault_long" },
     // Adresse von OpensourceERP, unter der eBay die Artikelbilder abholt —

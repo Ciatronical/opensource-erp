@@ -48,12 +48,13 @@
         v-model="offen"
         :pick="pick"
         :start="startPfad"
+        :purpose="zweck"
         @select="uebernehmen"
     />
 </template>
 
 <script setup>
-import { ref, computed, useSlots } from 'vue';
+import { ref, computed, useAttrs, useSlots } from 'vue';
 import { useI18n } from 'vue-i18n';
 import DirectoryPickerDialog from './directory-picker.dialog.vue';
 
@@ -72,6 +73,10 @@ const wert = defineModel({ type: String, default: '' });
 
 const { t } = useI18n();
 const slots = useSlots();
+const attrs = useAttrs();
+
+/** Titel des Dialogs: die Beschriftung des Feldes, damit das Ziel der Auswahl sichtbar ist */
+const zweck = computed(() => ('string' === typeof attrs.label ? attrs.label : ''));
 const offen = ref(false);
 
 /** Slots, die unverändert durchgereicht werden — append-inner baut die Komponente selbst */

@@ -24,7 +24,7 @@
     </v-row>
 
     <!-- Eingabefeld / Passwort -->
-    <v-row v-else-if="field.type === 'input' || field.type === 'password' || field.type === 'textarea'" :class="breit ? 'my-2' : 'mt-5 mb-4'" :data-field-name="field.name">
+    <v-row v-else-if="field.type === 'input' || field.type === 'path' || field.type === 'password' || field.type === 'textarea'" :class="breit ? 'my-2' : 'mt-5 mb-4'" :data-field-name="field.name">
         <v-col cols="12" :md="breit ? 12 : 6">
             <component
                 :is="feldKomponente(field)"
@@ -146,6 +146,7 @@ import { computed, h, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VIcon, VTextField, VTextarea, VTooltip } from 'vuetify/components'
 import PasswordField from '@/core/components/password-field.vue'
+import PathField from '@/core/components/path-field.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useHelpPanel } from '@/core/composables/useHelpPanel.js'
 
@@ -206,6 +207,9 @@ const sichtbar = ref(false)
 function feldKomponente(field) {
     if ('password' === field.type) return PasswordField
     if ('textarea' === field.type) return VTextarea
+    // Pfad auf dem Server: Textfeld mit Verzeichnisauswahl (nur Systemadministratoren
+    // können blättern, das Feld bleibt für alle frei beschreibbar)
+    if ('path' === field.type) return PathField
     return VTextField
 }
 

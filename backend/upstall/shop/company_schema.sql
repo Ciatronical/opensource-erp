@@ -3148,6 +3148,17 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_image_format', 'original')
 -- der Bibliothek (shop_media_dir_images, _thumbnails, _downloads) sind leer
 -- vorgegeben: backend/data/<db>/shop/media/<bereich>.
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_media_transfer_default', '1') ON CONFLICT (key) DO NOTHING;
+-- Schalter „Ablage in OpensourceERP“: an = die Bibliothek liegt in
+-- backend/data/<db>/shop/media, die drei Pfade zählen nicht und sind in der
+-- Firmenkonfiguration ausgeblendet. Vorgabe an; steht beim ersten Lauf schon
+-- ein Pfad in der Konfiguration, bleibt er in Kraft (Schalter aus).
+INSERT INTO defaults_oserp (key, value)
+SELECT 'shop_media_dir_internal',
+       CASE WHEN EXISTS (SELECT 1 FROM defaults_oserp
+                          WHERE key IN ('shop_media_dir_images', 'shop_media_dir_thumbnails', 'shop_media_dir_downloads')
+                            AND btrim(coalesce(value, '')) <> '')
+            THEN '0' ELSE '1' END
+ON CONFLICT (key) DO NOTHING;
 -- Das Bildformat der Marktplätze steht seit 2026-11-18 je Kanal in
 -- sales_channel_shop.settings (image_format); shop_kleinanzeigen_image_format
 -- übernimmt der Abschnitt „Abschrift“ unten in die Kleinanzeigen-Kanäle.

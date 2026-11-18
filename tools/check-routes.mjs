@@ -113,9 +113,10 @@ for (const file of walk(path.join(ROOT, 'src'))) {
     for (const m of src.matchAll(/name:\s*'([a-z0-9-]+)'/g)) {
         // Nur Routen-Objekte zaehlen: { name, params?, query?, hash? }. Feld-
         // definitionen wie { name: 'condition', label: ..., items: ... } tragen
-        // andere Schluessel und sind keine Navigationsziele.
+        // andere Schluessel und sind keine Navigationsziele. Ebenso die
+        // Knoten des Editors (TipTap: Node.create({ name: 'image', group: … })).
         const rest = src.slice(m.index + m[0].length, src.indexOf('}', m.index + m[0].length))
-        if (/\b(label|items|type|hint|prefix|icon|title|value|key|component|tooltip)\s*:/.test(rest)) continue
+        if (/\b(label|items|type|hint|prefix|icon|title|value|key|component|tooltip|group|atom|inline)\s*:/.test(rest)) continue
         const line = src.slice(0, m.index).split('\n').length
         if (!used.has(m[1])) used.set(m[1], [])
         used.get(m[1]).push(`${rel}:${line}`)

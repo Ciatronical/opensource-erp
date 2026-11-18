@@ -386,7 +386,7 @@ Abgleich in HugoCMS.
 
 | Teil | Wo |
 | --- | --- |
-| Verzeichnisse je Bereich: `shop_media_dir_images`, `shop_media_dir_thumbnails`, `shop_media_dir_downloads` (Firmenkonfiguration → Shop, absoluter Pfad, leer = Vorgabe) | `shopMediaDir()`, `shopMediaDirConfigured()` in `backend/api/shop/lib/media.php`; `shopDefaultsConfig.js` |
+| Verzeichnisse je Bereich: `shop_media_dir_images`, `shop_media_dir_thumbnails`, `shop_media_dir_downloads` (Firmenkonfiguration → Shop, absoluter Pfad, leer = Vorgabe). Der Schalter `shop_media_dir_internal` („Ablage in OpensourceERP“, Vorgabe an) blendet die drei Felder aus und setzt die Pfade außer Kraft; sie bleiben gespeichert | `shopMediaDir()`, `shopMediaDirConfigured()` in `backend/api/shop/lib/media.php`; `shopDefaultsConfig.js` |
 | Schalter je HugoShop `media_transfer` (Kanalkarte, Vorgabe an); Vorgabe für neue HugoShops `shop_media_transfer_default` (Firmenkonfiguration) | `shopMediaTransfer()` in `lib/hugocms.php`, `createShopChannel`, `shopChannelSettingsConfig.js` |
 | Lieferung ohne Medien, wenn der Schalter aus ist | `shopHugoCmsSync`, Haken `publish_entries` in `lib/portal_hooks.php` |
 | HugoCMS: eine Lieferung ohne Medien lässt die Medien der vorigen stehen; meldet `media.keepWithoutMedia` | `ShopSync::commit()`, `Connector.php` in HugoCMS |

@@ -150,7 +150,7 @@
                 </v-alert>
 
                 <!-- Einzelfeld -->
-                <ShopConfigField v-else :field="field" :werte="crmDefaults" :quellen="quellen" :gesetzt="crmSecrets" @add="eintragAnlegen" />
+                <ShopConfigField v-else-if="!istVerborgen(field)" :field="field" :werte="crmDefaults" :quellen="quellen" :gesetzt="crmSecrets" @add="eintragAnlegen" />
             </template>
         </template>
 
@@ -325,6 +325,18 @@ function lieferbedingungAngelegt(d) {
 function istAktiv(gruppe) {
     if (!gruppe.activeWhen) return true
     return Boolean(props.crmDefaults[gruppe.activeWhen.field]) === Boolean(gruppe.activeWhen.value)
+}
+
+/**
+ * Ist ein Einzelfeld ausgeblendet?
+ *
+ * hiddenWhen nennt ein Feld und den Wert, bei dem das Feld nicht erscheint —
+ * etwa die Pfade der Medienbibliothek bei „Ablage in OpensourceERP“. Der
+ * gespeicherte Wert bleibt dabei erhalten.
+ */
+function istVerborgen(feld) {
+    if (!feld.hiddenWhen) return false
+    return Boolean(props.crmDefaults[feld.hiddenWhen.field]) === Boolean(feld.hiddenWhen.value)
 }
 
 /**

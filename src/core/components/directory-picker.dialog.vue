@@ -8,14 +8,14 @@
     was unterhalb einer freigegebenen Wurzel liegt.
 
     Wird über `path-field.vue` benutzt; direkt eingebunden geht auch:
-        <DirectoryPickerDialog v-model="offen" pick="dir" :start="wert" @select="…" />
+        <DirectoryPickerDialog v-model="offen" pick="dir" :start="wert" purpose="…" @select="…" />
 -->
 <template>
     <v-dialog v-model="offen" max-width="760" scrollable>
         <v-card>
             <v-card-title class="d-flex align-center bg-primary text-white py-2 px-3">
                 <v-icon start>{{ pick === 'file' ? 'mdi-file-search-outline' : 'mdi-folder-search-outline' }}</v-icon>
-                {{ pick === 'file' ? t('directoryPicker.titleFile') : t('directoryPicker.titleDir') }}
+                {{ purpose || (pick === 'file' ? t('directoryPicker.titleFile') : t('directoryPicker.titleDir')) }}
                 <v-spacer />
                 <v-btn icon="mdi-close" size="x-small" variant="text" color="white" @click="offen = false" />
             </v-card-title>
@@ -153,6 +153,11 @@ const props = defineProps({
     pick: {
         type: String,
         default: 'dir',
+    },
+    /** Wofür gewählt wird (Beschriftung des Feldes) — steht dann als Titel; leer = allgemeiner Titel */
+    purpose: {
+        type: String,
+        default: '',
     },
     /** Pfad, bei dem der Dialog öffnet */
     start: {

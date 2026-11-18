@@ -92,13 +92,18 @@ function shopMediaDir($db, string $bereich, bool $anlegen = false): string {
  * (dev/shop-medienbibliothek.md, „Medien außerhalb“): ein absoluter Pfad, auch
  * außerhalb des Backend-Verzeichnisses — etwa die Verzeichnisse einer
  * Webseite auf demselben Rechner, die der Webserver direkt ausliefert. Leer =
- * Vorgabe backend/data/<db>/shop/media/<bereich>.
+ * Vorgabe backend/data/<db>/shop/media/<bereich>. Mit dem Schalter
+ * shop_media_dir_internal („Ablage in OpensourceERP“) gilt die Vorgabe für
+ * alle Bereiche; eingetragene Pfade bleiben gespeichert, zählen aber nicht.
  *
  * @param object $db Company-Datenbankverbindung
  * @param string $bereich images, thumbnails oder downloads
  * @return string absoluter Pfad ohne Schrägstrich am Ende, leer = Vorgabe
  */
 function shopMediaDirConfigured($db, string $bereich): string {
+    if (shopConfigBool($db, 'shop_media_dir_internal', false)) {
+        return '';
+    }
     $pfad = trim(shopConfigValue($db, 'shop_media_dir_'.$bereich, ''));
     return '' === $pfad ? '' : (rtrim($pfad, '/') ?: '/');
 }

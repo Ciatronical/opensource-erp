@@ -115,7 +115,9 @@ function shopChannelParam($db, $angabe): array {
     $zeile = null;
     if (ctype_digit($angabe)) {
         $zeile = $db->getOne("SELECT id, type FROM sales_channel_shop WHERE id = CAST(:id AS integer)", [':id' => $angabe]);
-    } elseif (in_array($angabe, ['hugoshop', 'ebay', 'amazon', 'kleinanzeigen'], true)) {
+    } elseif ('' !== $angabe) {
+        // Welche Arten es gibt, steht allein in der Datenbank: zu einer
+        // unbekannten Art findet die Abfrage keinen Kanal
         $zeile = $db->getOne("SELECT id, type FROM sales_channel_shop WHERE id = shop_first_channel_id(:art)", [':art' => $angabe]);
     }
     if (!$zeile) {
