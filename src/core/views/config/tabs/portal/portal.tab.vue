@@ -182,12 +182,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import SectionCard from '@/core/components/layout/section-card.vue'
 import HelpPanel from '@/core/components/layout/help-panel.vue'
+import { useHelpPanel } from '@/core/composables/useHelpPanel.js'
 import WebsiteSettings from './website-settings.vue'
 import PortalSetupDialog from './portal-setup.dialog.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
@@ -400,6 +401,9 @@ async function loeschen() {
 }
 
 onMounted(() => { if (darf.value) laden() })
+// Beim Wechsel des Reiters schließen: der Zustand der Hilfsanzeige gilt für die
+// ganze Anwendung, der Text stünde sonst im nächsten Reiter mit Hilfsanzeige
+onBeforeUnmount(useHelpPanel().schliessen)
 </script>
 
 <style scoped>

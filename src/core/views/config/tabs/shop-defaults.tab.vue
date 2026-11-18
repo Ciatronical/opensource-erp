@@ -155,14 +155,18 @@
         </template>
 
         <ShopDeliveryTermDialog v-model="lieferbedingungDialog" @created="lieferbedingungAngelegt" />
+        <!-- Hilfsanzeige für Felder mit Langfassung der Hilfe (field.help) -->
+        <help-panel />
     </v-container>
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, inject, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, inject, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import ShopConfigField from './shop-config-field.component.vue'
+import HelpPanel from '@/core/components/layout/help-panel.vue'
+import { useHelpPanel } from '@/core/composables/useHelpPanel.js'
 import { shopMediaApi } from '@/features/shop/composables/shopMediaApi.js'
 
 const ShopDeliveryTermDialog = defineAsyncComponent(() => import('@/features/shop/components/shop-delivery-term.dialog.vue'))
@@ -376,6 +380,10 @@ function normalizeShopDefaults() {
  * eingebunden wird: dann läuft fn einfach ungeschuetzt.
  */
 const ohneSpeichern = inject('ohneSpeichern', fn => fn())
+
+// Der Zustand der Hilfsanzeige gilt für die ganze Anwendung — beim Wechsel des
+// Reiters schließen, sonst stünde der Text im nächsten Reiter mit Hilfsanzeige
+onBeforeUnmount(useHelpPanel().schliessen)
 
 onMounted(async () => {
     await loadConfigFile()

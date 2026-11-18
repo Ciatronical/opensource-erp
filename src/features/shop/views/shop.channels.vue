@@ -39,13 +39,18 @@
         <!-- ?channel=… (Kennzahlen der Übersicht): diesen Kanal öffnen -->
         <ShopChannelsConfig v-else ref="kanaele" :mit-ueberschrift="false" :fokus="Number(route.query.channel) || 0" />
     </ShopNavLayout>
+    <!-- Hilfsanzeige für Felder mit Langfassung der Hilfe (field.help), etwa
+         die Adressmuster der Shop-Webseite -->
+    <help-panel />
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import HelpPanel from '@/core/components/layout/help-panel.vue'
+import { useHelpPanel } from '@/core/composables/useHelpPanel.js'
 import ShopNavLayout from '../components/shop-nav-layout.vue'
 import ShopChannelsConfig from '../components/shop-channels.config.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
@@ -57,6 +62,11 @@ const oserp = oserpStore()
 
 /** Ohne das Recht lehnt die Kanal-API ab — die Seite sagt es gleich */
 const darf = computed(() => oserp.checkPermission('edit_shop_config'))
+
+// Der Zustand der Hilfsanzeige gilt für die ganze Anwendung — beim Verlassen
+// schließen, sonst stünde der Text in der nächsten Ansicht mit Hilfsanzeige
+const { schliessen: hilfeSchliessen } = useHelpPanel()
+onBeforeUnmount(hilfeSchliessen)
 
 // ── Seitennavigation ──
 

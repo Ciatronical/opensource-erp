@@ -760,9 +760,9 @@ function shopMediaMissingInLibrary($db, int $kanal): array {
  */
 function shopHugoCmsMediaPathWarnings($db, int $kanal, array $freigaben): array {
     $bereiche = [
-        'images'     => ['Produktbilder', 'images_link', 'Adresse der Produktbilder'],
-        'thumbnails' => ['Vorschaubilder', 'thumbnails_link', 'Adresse der Vorschaubilder'],
-        'downloads'  => ['Downloads', 'downloads_link', 'Adresse der Downloads'],
+        'images'     => ['Produktbilder', 'images_link', 'Adressmuster Produktbild'],
+        'thumbnails' => ['Vorschaubilder', 'thumbnails_link', 'Adressmuster Vorschaubild'],
+        'downloads'  => ['Downloads', 'downloads_link', 'Adressmuster Download'],
     ];
     $meldungen = [];
     foreach ($bereiche as $feld => [$name, $schluessel, $musterName]) {

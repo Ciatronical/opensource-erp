@@ -28,18 +28,22 @@ const hugoshop = [
 
     { name: "adressen", type: "headline", label: "crm_fields.shopLinks" },
 
-    { name: "products_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopProductsLink", tooltip: "crm_fields.shopProductsLink_help" },
-    { name: "category_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopCategoryLink", tooltip: "crm_fields.shopCategoryLink_help" },
+    // help: Langfassung in der Hilfsanzeige (help-panel.vue, Klick auf das
+    // Info-Symbol) wie im Kundenportal — crm_fields.*_long. Die drei
+    // Medienmuster teilen sich einen Text.
+
+    { name: "products_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopProductsLink", tooltip: "crm_fields.shopProductsLink_help", help: "crm_fields.shopProductsLink_long" },
+    { name: "category_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopCategoryLink", tooltip: "crm_fields.shopCategoryLink_help", help: "crm_fields.shopCategoryLink_long" },
     // Schlüssel im Front Matter, aus dem Hugo die Kategorieseiten bildet; mit
     // category_link liegt der Shop einer Webseite mit eigener Themen-Taxonomie
     // unter /shop/kategorien/ (shopChannelCategoryPaths)
-    { name: "category_taxonomy", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.shopCategoryTaxonomy", tooltip: "crm_fields.shopCategoryTaxonomy_help" },
+    { name: "category_taxonomy", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.shopCategoryTaxonomy", tooltip: "crm_fields.shopCategoryTaxonomy_help", help: "crm_fields.shopCategoryTaxonomy_long" },
     // Bezeichnung der Übersicht in den Brotkrumen der Produktseiten
     // (Vorgabe Kategorien), etwa „Sortiment“
-    { name: "category_title", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.shopCategoryTitle", tooltip: "crm_fields.shopCategoryTitle_help" },
-    { name: "thumbnails_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopThumbnailsLink", tooltip: "crm_fields.shopThumbnailsLink_help" },
-    { name: "images_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopImagesLink", tooltip: "crm_fields.shopImagesLink_help" },
-    { name: "downloads_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopDownloadsLink", tooltip: "crm_fields.shopDownloadsLink_help" },
+    { name: "category_title", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.shopCategoryTitle", tooltip: "crm_fields.shopCategoryTitle_help", help: "crm_fields.shopCategoryTitle_long" },
+    { name: "thumbnails_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopThumbnailsLink", tooltip: "crm_fields.shopThumbnailsLink_help", help: "crm_fields.shopMediaLinks_long" },
+    { name: "images_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopImagesLink", tooltip: "crm_fields.shopImagesLink_help", help: "crm_fields.shopMediaLinks_long" },
+    { name: "downloads_link", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopDownloadsLink", tooltip: "crm_fields.shopDownloadsLink_help", help: "crm_fields.shopMediaLinks_long" },
 
     { name: "veroeffentlichung", type: "headline", label: "crm_fields.shopPublish" },
 
@@ -49,38 +53,38 @@ const hugoshop = [
     // dev/shop-hugocms-verzeichnisse.md) — die Gruppe HugoCMS ganz oben zeigt sie an.
     // Seiten bei Preisänderungen automatisch neu schreiben (V22) und was beim
     // Abschalten des HugoShops mit den Seiten geschieht (V16)
-    { name: "auto_publish", type: "checkbox", label: "crm_fields.shopAutoPublish", tooltip: "crm_fields.shopAutoPublish_help" },
+    { name: "auto_publish", type: "checkbox", label: "crm_fields.shopAutoPublish", tooltip: "crm_fields.shopAutoPublish_help", help: "crm_fields.shopAutoPublish_long" },
     // Medien der Bibliothek mit dem Lauf an HugoCMS übertragen. Aus für
     // Webseiten, deren Medien im selben Dateisystem liegen wie die Bibliothek
     // (Firmenkonfiguration → Shop: Verzeichnisse der Medienbibliothek) und
     // die der Webserver direkt ausliefert
-    { name: "media_transfer", type: "checkbox", label: "crm_fields.shopMediaTransfer", tooltip: "crm_fields.shopMediaTransfer_help" },
+    { name: "media_transfer", type: "checkbox", label: "crm_fields.shopMediaTransfer", tooltip: "crm_fields.shopMediaTransfer_help", help: "crm_fields.shopMediaTransfer_long" },
     {
         name: "channel_off_pages", type: "select", fieldstyle: "max-width: 60ch",
         items: [
             { title: "crm_fields.shopChannelOffPagesDraft", value: "draft" },
             { title: "crm_fields.shopChannelOffPagesRemove", value: "remove" },
         ],
-        label: "crm_fields.shopChannelOffPages", tooltip: "crm_fields.shopChannelOffPages_help"
+        label: "crm_fields.shopChannelOffPages", tooltip: "crm_fields.shopChannelOffPages_help", help: "crm_fields.shopChannelOffPages_long"
     },
 
     { name: "mail", type: "headline", label: "crm_fields.shopMail" },
 
-    { name: "invoice_mail_subject", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopInvoiceMailSubject", tooltip: "crm_fields.shopInvoiceMailSubject_help" },
-    { name: "withdrawal_mail_to", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopWithdrawalMailTo", tooltip: "crm_fields.shopWithdrawalMailTo_help" },
+    { name: "invoice_mail_subject", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopInvoiceMailSubject", tooltip: "crm_fields.shopInvoiceMailSubject_help", help: "crm_fields.shopInvoiceMailSubject_long" },
+    { name: "withdrawal_mail_to", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopWithdrawalMailTo", tooltip: "crm_fields.shopWithdrawalMailTo_help", help: "crm_fields.shopWithdrawalMailTo_long" },
 
     { name: "paypal", type: "headline", label: "crm_fields.shopPaypal" },
 
     // Der Schalter entscheidet, welches Paar gilt; die Karte des aktiven ist
     // hervorgehoben (M2: PayPal je HugoShop)
-    { name: "paypal_sandbox", type: "checkbox", label: "crm_fields.shopPaypalSandbox", tooltip: "crm_fields.shopPaypalSandbox_help" },
+    { name: "paypal_sandbox", type: "checkbox", label: "crm_fields.shopPaypalSandbox", tooltip: "crm_fields.shopPaypalSandbox_help", help: "crm_fields.shopPaypalSandbox_long" },
     {
         name: "paypal_payment_method_preference", type: "select", fieldstyle: "max-width: 45ch",
         items: [
             { title: "IMMEDIATE_PAYMENT_REQUIRED", value: "IMMEDIATE_PAYMENT_REQUIRED" },
             { title: "UNRESTRICTED", value: "UNRESTRICTED" },
         ],
-        label: "crm_fields.shopPaypalPaymentMethodPreference", tooltip: "crm_fields.shopPaypalPaymentMethodPreference_help"
+        label: "crm_fields.shopPaypalPaymentMethodPreference", tooltip: "crm_fields.shopPaypalPaymentMethodPreference_help", help: "crm_fields.shopPaypalPaymentMethodPreference_long"
     },
     {
         type: "group",
@@ -90,10 +94,10 @@ const hugoshop = [
         tooltip: "crm_fields.shopPaypalSandboxGroup_help",
         activeWhen: { field: "paypal_sandbox", value: true },
         fields: [
-            { name: "paypal_sandbox_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalSandboxClientId", tooltip: "crm_fields.shopPaypalSandboxClientId_help" },
-            { name: "paypal_sandbox_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalSandboxSecret", tooltip: "crm_fields.shopPaypalSandboxSecret_help" },
+            { name: "paypal_sandbox_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalSandboxClientId", tooltip: "crm_fields.shopPaypalSandboxClientId_help", help: "crm_fields.shopPaypalCredentials_long" },
+            { name: "paypal_sandbox_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalSandboxSecret", tooltip: "crm_fields.shopPaypalSandboxSecret_help", help: "crm_fields.shopPaypalCredentials_long" },
             // Erzwingt Fehlerantworten von PayPal — wirkt nur in der Testumgebung
-            { name: "paypal_mock_response", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalMockResponse", tooltip: "crm_fields.shopPaypalMockResponse_help" },
+            { name: "paypal_mock_response", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalMockResponse", tooltip: "crm_fields.shopPaypalMockResponse_help", help: "crm_fields.shopPaypalMockResponse_long" },
         ],
     },
     {
@@ -104,8 +108,8 @@ const hugoshop = [
         tooltip: "crm_fields.shopPaypalLiveGroup_help",
         activeWhen: { field: "paypal_sandbox", value: false },
         fields: [
-            { name: "paypal_live_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalLiveClientId", tooltip: "crm_fields.shopPaypalLiveClientId_help" },
-            { name: "paypal_live_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalLiveSecret", tooltip: "crm_fields.shopPaypalLiveSecret_help" },
+            { name: "paypal_live_client_id", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalLiveClientId", tooltip: "crm_fields.shopPaypalLiveClientId_help", help: "crm_fields.shopPaypalCredentials_long" },
+            { name: "paypal_live_secret", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopPaypalLiveSecret", tooltip: "crm_fields.shopPaypalLiveSecret_help", help: "crm_fields.shopPaypalCredentials_long" },
         ],
     },
 ]

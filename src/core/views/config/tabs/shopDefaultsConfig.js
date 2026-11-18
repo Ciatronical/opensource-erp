@@ -10,36 +10,38 @@
 // dev/shop-mehrere-kanaele.md in der Karte des Verkaufskanals, in der eigenen
 // Ansicht „Verkaufskanäle" (src/features/shop/views/shop.channels.vue).
 
+// help: Langfassung in der Hilfsanzeige (help-panel.vue, Klick auf das
+// Info-Symbol) — crm_fields.*_long; zusammengehörige Felder teilen sich einen Text.
 const shopDefaultsConfig = [
     { name: "shop_access", type: "headline", label: "crm_fields.shopAccess" },
 
-    { name: "shop_cart_lifetime_hours", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopCartLifetimeHours", tooltip: "crm_fields.shopCartLifetimeHours_help" },
-    { name: "shop_context_lifetime_hours", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopContextLifetimeHours", tooltip: "crm_fields.shopContextLifetimeHours_help" },
+    { name: "shop_cart_lifetime_hours", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopCartLifetimeHours", tooltip: "crm_fields.shopCartLifetimeHours_help", help: "crm_fields.shopCartLifetimeHours_long" },
+    { name: "shop_context_lifetime_hours", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopContextLifetimeHours", tooltip: "crm_fields.shopContextLifetimeHours_help", help: "crm_fields.shopContextLifetimeHours_long" },
 
     { name: "shop_invoicing", type: "headline", label: "crm_fields.shopInvoicing" },
 
-    { name: "shop_contact_login", type: "dynamic-select", source: "employees", itemTitle: "name", itemValue: "login", fieldstyle: "max-width: 60ch", label: "crm_fields.shopContactLogin", tooltip: "crm_fields.shopContactLogin_help" },
-    { name: "shop_target_account", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopTargetAccount", tooltip: "crm_fields.shopTargetAccount_help" },
-    { name: "shop_incoming_account", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopIncomingAccount", tooltip: "crm_fields.shopIncomingAccount_help" },
-    { name: "shop_standard_taxzone", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.shopStandardTaxzone", tooltip: "crm_fields.shopStandardTaxzone_help" },
-    { name: "shop_standard_currency", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopStandardCurrency", tooltip: "crm_fields.shopStandardCurrency_help" },
-    { name: "shop_tax_included", type: "checkbox", label: "crm_fields.shopTaxIncluded", tooltip: "crm_fields.shopTaxIncluded_help" },
-    { name: "shop_active_price_source", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopActivePriceSource", tooltip: "crm_fields.shopActivePriceSource_help" },
+    { name: "shop_contact_login", type: "dynamic-select", source: "employees", itemTitle: "name", itemValue: "login", fieldstyle: "max-width: 60ch", label: "crm_fields.shopContactLogin", tooltip: "crm_fields.shopContactLogin_help", help: "crm_fields.shopContactLogin_long" },
+    { name: "shop_target_account", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopTargetAccount", tooltip: "crm_fields.shopTargetAccount_help", help: "crm_fields.shopAccounts_long" },
+    { name: "shop_incoming_account", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopIncomingAccount", tooltip: "crm_fields.shopIncomingAccount_help", help: "crm_fields.shopAccounts_long" },
+    { name: "shop_standard_taxzone", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.shopStandardTaxzone", tooltip: "crm_fields.shopStandardTaxzone_help", help: "crm_fields.shopCustomerDefaults_long" },
+    { name: "shop_standard_currency", type: "input", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopStandardCurrency", tooltip: "crm_fields.shopStandardCurrency_help", help: "crm_fields.shopCustomerDefaults_long" },
+    { name: "shop_tax_included", type: "checkbox", label: "crm_fields.shopTaxIncluded", tooltip: "crm_fields.shopTaxIncluded_help", help: "crm_fields.shopTaxIncluded_long" },
+    { name: "shop_active_price_source", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopActivePriceSource", tooltip: "crm_fields.shopActivePriceSource_help", help: "crm_fields.shopActivePriceSource_long" },
     // Lagerplatz für Verkäufe (dev/shop-verkaufskanaele.md, O14): Rechnungen aus
     // HugoShop und eBay buchen die Waren von hier aus. Leer = keine Buchung.
     // Die Auswahl „Lager – Platz" lädt der Tab (quellen.shopStockBins).
-    { name: "shop_stock_bin_id", type: "dynamic-select", source: "shopStockBins", itemTitle: "title", itemValue: "value", fieldstyle: "max-width: 60ch", label: "crm_fields.shopStockBinId", tooltip: "crm_fields.shopStockBinId_help" },
+    { name: "shop_stock_bin_id", type: "dynamic-select", source: "shopStockBins", itemTitle: "title", itemValue: "value", fieldstyle: "max-width: 60ch", label: "crm_fields.shopStockBinId", tooltip: "crm_fields.shopStockBinId_help", help: "crm_fields.shopStockBinId_long" },
     // Dropshipping (2026-11-13): „Nur Dropshipping" macht jeden Artikel zum
     // Dropshipping-Artikel (shop_part_dropshipping) — ein Lagerplatz ist dann
     // nicht nötig. Einzelne Artikel kennzeichnet die Shop-Karte des Artikels.
     // Die Angebotsmenge gilt für Marktplätze (shop_part_offer_quantity).
-    { name: "shop_dropshipping_default", type: "checkbox", label: "crm_fields.shopDropshippingDefault", tooltip: "crm_fields.shopDropshippingDefault_help" },
+    { name: "shop_dropshipping_default", type: "checkbox", label: "crm_fields.shopDropshippingDefault", tooltip: "crm_fields.shopDropshippingDefault_help", help: "crm_fields.shopDropshipping_long" },
     // Standard-Lieferbedingung: gilt für Dropshipping-Artikel, wenn weder der
     // Artikel noch der Verkaufskanal eine vorgibt (shop_part_delivery). Die
     // Auswahl lädt der Tab (quellen.shopDeliveryTerms); add: Plus-Symbol am
     // Feld, der Tab öffnet den Dialog zum Anlegen einer Lieferbedingung.
-    { name: "shop_dropshipping_delivery_term_id", type: "dynamic-select", source: "shopDeliveryTerms", itemTitle: "title", itemValue: "value", fieldstyle: "max-width: 60ch", add: { label: "ShopView.deliveryTerm.add" }, label: "crm_fields.shopDropshippingDeliveryTerm", tooltip: "crm_fields.shopDropshippingDeliveryTerm_help" },
-    { name: "shop_dropshipping_quantity", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopDropshippingQuantity", tooltip: "crm_fields.shopDropshippingQuantity_help" },
+    { name: "shop_dropshipping_delivery_term_id", type: "dynamic-select", source: "shopDeliveryTerms", itemTitle: "title", itemValue: "value", fieldstyle: "max-width: 60ch", add: { label: "ShopView.deliveryTerm.add" }, label: "crm_fields.shopDropshippingDeliveryTerm", tooltip: "crm_fields.shopDropshippingDeliveryTerm_help", help: "crm_fields.shopDropshipping_long" },
+    { name: "shop_dropshipping_quantity", type: "input", inputType: "number", size: 5, fieldstyle: "max-width: 15ch", label: "crm_fields.shopDropshippingQuantity", tooltip: "crm_fields.shopDropshippingQuantity_help", help: "crm_fields.shopDropshipping_long" },
 
     // Verkaufskanäle (dev/shop-mehrere-kanaele.md): eigene Ansicht im
     // Shop-Menü (shop-channels); hier nur der Verweis dorthin.
@@ -64,25 +66,25 @@ const shopDefaultsConfig = [
 
     { name: "shop_payment", type: "headline", label: "crm_fields.shopPayment" },
 
-    { name: "shop_payment_account_owner", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopPaymentAccountOwner", tooltip: "crm_fields.shopPaymentAccountOwner_help" },
-    { name: "shop_payment_bank", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopPaymentBank", tooltip: "crm_fields.shopPaymentBank_help" },
-    { name: "shop_payment_iban", type: "input", size: 34, fieldstyle: "max-width: 35ch", label: "crm_fields.shopPaymentIban", tooltip: "crm_fields.shopPaymentIban_help" },
-    { name: "shop_payment_bic", type: "input", size: 11, fieldstyle: "max-width: 20ch", label: "crm_fields.shopPaymentBic", tooltip: "crm_fields.shopPaymentBic_help" },
+    { name: "shop_payment_account_owner", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopPaymentAccountOwner", tooltip: "crm_fields.shopPaymentAccountOwner_help", help: "crm_fields.shopPaymentBankDetails_long" },
+    { name: "shop_payment_bank", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopPaymentBank", tooltip: "crm_fields.shopPaymentBank_help", help: "crm_fields.shopPaymentBankDetails_long" },
+    { name: "shop_payment_iban", type: "input", size: 34, fieldstyle: "max-width: 35ch", label: "crm_fields.shopPaymentIban", tooltip: "crm_fields.shopPaymentIban_help", help: "crm_fields.shopPaymentBankDetails_long" },
+    { name: "shop_payment_bic", type: "input", size: 11, fieldstyle: "max-width: 20ch", label: "crm_fields.shopPaymentBic", tooltip: "crm_fields.shopPaymentBic_help", help: "crm_fields.shopPaymentBankDetails_long" },
 
     // Name, den PayPal dem Kunden als Empfänger zeigt (brand_name des
     // Auftrags). Leer: der Firmenname aus den Firmendaten. Nicht der
     // Kontoinhaber — bei einer Person als Inhaber stünde sonst deren Name
     { name: "shop_paypal", type: "headline", label: "crm_fields.shopPaypal" },
 
-    { name: "shop_paypal_brand_name", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopPaypalBrandName", tooltip: "crm_fields.shopPaypalBrandName_help" },
+    { name: "shop_paypal_brand_name", type: "input", size: 40, fieldstyle: "max-width: 40ch", label: "crm_fields.shopPaypalBrandName", tooltip: "crm_fields.shopPaypalBrandName_help", help: "crm_fields.shopPaypalBrandName_long" },
 
     // Lieferstatus für den Kunden (dev/shop-bestellstatus.md): Anzeige auf der
     // Rechnungsseite im Shop und Mail bei Änderung — nur HugoShop, Vorgabe aus.
     // Bestell- und Lieferstatus selbst stehen in der Liste der Bestellungen.
     { name: "shop_orders", type: "headline", label: "crm_fields.shopOrders" },
 
-    { name: "shop_delivery_status_show", type: "checkbox", label: "crm_fields.shopDeliveryStatusShow", tooltip: "crm_fields.shopDeliveryStatusShow_help" },
-    { name: "shop_delivery_status_mail", type: "checkbox", label: "crm_fields.shopDeliveryStatusMail", tooltip: "crm_fields.shopDeliveryStatusMail_help" },
+    { name: "shop_delivery_status_show", type: "checkbox", label: "crm_fields.shopDeliveryStatusShow", tooltip: "crm_fields.shopDeliveryStatusShow_help", help: "crm_fields.shopDeliveryStatus_long" },
+    { name: "shop_delivery_status_mail", type: "checkbox", label: "crm_fields.shopDeliveryStatusMail", tooltip: "crm_fields.shopDeliveryStatusMail_help", help: "crm_fields.shopDeliveryStatus_long" },
 
     { name: "shop_publish", type: "headline", label: "crm_fields.shopPublish" },
 
@@ -90,42 +92,42 @@ const shopDefaultsConfig = [
     // Warteschlange löscht. 0 schaltet das ab; fehlgeschlagene Aufträge
     // bleiben immer stehen. Webseiten-Verzeichnisse und Bau-Programm gibt es
     // nicht mehr — gebaut wird in HugoCMS (Einstellungen je HugoShop).
-    { name: "shop_job_retention_days", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopJobRetentionDays", tooltip: "crm_fields.shopJobRetentionDays_help" },
-    { name: "shop_thumbnail_size", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopThumbnailSize", tooltip: "crm_fields.shopThumbnailSize_help" },
+    { name: "shop_job_retention_days", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopJobRetentionDays", tooltip: "crm_fields.shopJobRetentionDays_help", help: "crm_fields.shopJobRetentionDays_long" },
+    { name: "shop_thumbnail_size", type: "input", inputType: "number", size: 10, fieldstyle: "max-width: 15ch", label: "crm_fields.shopThumbnailSize", tooltip: "crm_fields.shopThumbnailSize_help", help: "crm_fields.shopThumbnailSize_long" },
     // Bildformat, das der Dialog beim Hochladen von Produktbildern vorbelegt
     // (original = beibehalten). Welche Formate dieser Server schreiben kann,
     // lädt der Tab (quellen.shopImageFormats) — AVIF braucht GD mit AVIF oder ffmpeg.
-    { name: "shop_image_format", type: "dynamic-select", source: "shopImageFormats", clearable: false, fieldstyle: "max-width: 40ch", label: "crm_fields.shopImageFormat", tooltip: "crm_fields.shopImageFormat_help" },
+    { name: "shop_image_format", type: "dynamic-select", source: "shopImageFormats", clearable: false, fieldstyle: "max-width: 40ch", label: "crm_fields.shopImageFormat", tooltip: "crm_fields.shopImageFormat_help", help: "crm_fields.shopImageFormat_long" },
 
     // Medien außerhalb (dev/shop-medienbibliothek.md): eigene Verzeichnisse
     // der Medienbibliothek, auch außerhalb des Backend-Verzeichnisses — etwa
     // die einer Webseite auf demselben Rechner. Leer = Vorgabe
     // backend/data/<db>/shop/media/<bereich>.
     { name: "shop_media_dirs", type: "headline", label: "crm_fields.shopMediaDirs" },
-    { name: "shop_media_dir_images", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirImages", tooltip: "crm_fields.shopMediaDir_help" },
-    { name: "shop_media_dir_thumbnails", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirThumbnails", tooltip: "crm_fields.shopMediaDir_help" },
-    { name: "shop_media_dir_downloads", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirDownloads", tooltip: "crm_fields.shopMediaDir_help" },
+    { name: "shop_media_dir_images", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirImages", tooltip: "crm_fields.shopMediaDir_help", help: "crm_fields.shopMediaDir_long" },
+    { name: "shop_media_dir_thumbnails", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirThumbnails", tooltip: "crm_fields.shopMediaDir_help", help: "crm_fields.shopMediaDir_long" },
+    { name: "shop_media_dir_downloads", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirDownloads", tooltip: "crm_fields.shopMediaDir_help", help: "crm_fields.shopMediaDir_long" },
     // Vorgabe für neu angelegte HugoShops; je HugoShop in der Kanalkarte (media_transfer)
-    { name: "shop_media_transfer_default", type: "checkbox", label: "crm_fields.shopMediaTransferDefault", tooltip: "crm_fields.shopMediaTransferDefault_help" },
+    { name: "shop_media_transfer_default", type: "checkbox", label: "crm_fields.shopMediaTransferDefault", tooltip: "crm_fields.shopMediaTransferDefault_help", help: "crm_fields.shopMediaTransferDefault_long" },
     // Adresse von OpensourceERP, unter der eBay die Artikelbilder abholt —
     // für alle eBay-Kanäle dieselbe; Zugang und Richtlinien stehen je
     // eBay-Kanal in seiner Karte
-    { name: "ebay_public_host", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayPublicHost", tooltip: "crm_fields.ebayPublicHost_help" },
+    { name: "ebay_public_host", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.ebayPublicHost", tooltip: "crm_fields.ebayPublicHost_help", help: "crm_fields.ebayPublicHost_long" },
 
     // Kleinanzeigen-Dienst (dev/shop-kleinanzeigen.md, Teil 2): Headless-Chrome
     // auf diesem Server, der die Anzeigen bei kleinanzeigen.de einstellt —
     // für alle Kleinanzeigen-Kanäle derselbe; Zugang des Kontos je Kanal
     { name: "kleinanzeigen_worker", type: "headline", label: "crm_fields.kleinanzeigenWorker" },
 
-    { name: "kleinanzeigen_worker_enabled", type: "checkbox", label: "crm_fields.kleinanzeigenWorkerEnabled", tooltip: "crm_fields.kleinanzeigenWorkerEnabled_help" },
-    { name: "kleinanzeigen_worker_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenWorkerUrl", tooltip: "crm_fields.kleinanzeigenWorkerUrl_help" },
-    { name: "kleinanzeigen_worker_token", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenWorkerToken", tooltip: "crm_fields.kleinanzeigenWorkerToken_help" },
+    { name: "kleinanzeigen_worker_enabled", type: "checkbox", label: "crm_fields.kleinanzeigenWorkerEnabled", tooltip: "crm_fields.kleinanzeigenWorkerEnabled_help", help: "crm_fields.kleinanzeigenWorker_long" },
+    { name: "kleinanzeigen_worker_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenWorkerUrl", tooltip: "crm_fields.kleinanzeigenWorkerUrl_help", help: "crm_fields.kleinanzeigenWorker_long" },
+    { name: "kleinanzeigen_worker_token", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenWorkerToken", tooltip: "crm_fields.kleinanzeigenWorkerToken_help", help: "crm_fields.kleinanzeigenWorker_long" },
     // Das Bildformat der Anzeigen steht seit 2026-11-18 je Kanal in der
     // Kanalkarte (image_format, shopChannelSettingsConfig.js)
 
     { name: "shop_search", type: "headline", label: "crm_fields.shopSearch" },
 
-    { name: "shop_search_weighting", type: "input", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.shopSearchWeighting", tooltip: "crm_fields.shopSearchWeighting_help" },
+    { name: "shop_search_weighting", type: "input", size: 10, fieldstyle: "max-width: 20ch", label: "crm_fields.shopSearchWeighting", tooltip: "crm_fields.shopSearchWeighting_help", help: "crm_fields.shopSearchWeighting_long" },
 ];
 
 export default shopDefaultsConfig;

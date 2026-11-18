@@ -379,7 +379,8 @@ const alleMandantFelder = shopDefaultsConfig.filter(f => f.type !== 'headline' &
 // Im Dialog füllen die Felder ihre Zeile bzw. Rasterspalte (ShopConfigField
 // mit breit): die Breitenbegrenzung aus den Karten der Firmenkonfiguration
 // (fieldstyle, max-width in ch) hielte sie sonst kurz
-const ohneBreite = felder => new Map(felder.map(f => [f.name, { ...f, fieldstyle: undefined }]))
+// help entfällt: Der Dialog ist modal, die Hilfsanzeige (help-panel.vue) läge dahinter
+const ohneBreite = felder => new Map(felder.map(f => [f.name, { ...f, fieldstyle: undefined, help: undefined }]))
 const mandantDialogFelder = ohneBreite(alleMandantFelder)
 function mandantFeld(name) {
     return mandantDialogFelder.get(name) || { name, type: 'input', label: name }
