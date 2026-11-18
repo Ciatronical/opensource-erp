@@ -439,7 +439,7 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     // media_shop — keine Kopie in der Bereitstellung
     // — außer der Kanal überträgt keine Medien (sie liegen bei der Webseite)
     $medienAn = shopMediaTransfer($db, $kanal);
-    if (!$medienAn && '' !== ($grund = shopHugoCmsMediaOffCheck($ergebnis['freigaben']))) {
+    if ('' !== ($grund = shopHugoCmsMediaCheck($ergebnis['freigaben'], $medienAn))) {
         $ergebnis['fehler'] = $grund;
         return $ergebnis;
     }
@@ -524,8 +524,9 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
 // Binärdaten in Stücken (shopmediaupload), nicht über die Bereitstellung —
 // dort läge sonst alles doppelt. Die Prüfsummen stammen aus media_shop; was
 // HugoCMS schon hat, fordert es nicht an. Jede Shop-Webseite bekommt alle
-// Medien (B7) — außer Bildern, die nur ein Marktplatz-Kanal zeigt. Nimmt HugoCMS noch keine Medien an (Version vor 2026-10-15),
-// bleibt es beim alten Verfahren: Vorschaubilder dort, Downloads nur geprüft.
+// Medien (B7) — außer Bildern, die nur ein Marktplatz-Kanal zeigt.
+// Ein HugoCMS, das keine Medien annimmt (Stand vor 2026-10-15), wird
+// abgewiesen (shopHugoCmsMediaCheck).
 
 require_once __DIR__.'/../../customer_vendor/filemanager.php';
 require_once __DIR__.'/media.php';
@@ -570,6 +571,30 @@ function shopHugoCmsMediaOffCheck(array $freigaben): string {
         return 'Für diesen HugoShop ist die Übertragung der Medien abgeschaltet (Kanalkarte), dieses HugoCMS '
             .'löschte dann aber die Medien der Webseite — bitte HugoCMS aktualisieren (Stand ab 2026-11-18) '
             .'oder die Übertragung wieder einschalten.';
+    }
+    return '';
+}
+
+/**
+ * Kann die Lieferung dieses HugoShops hinausgehen, was die Medien angeht?
+ *
+ * Mit Übertragung muss HugoCMS Medien annehmen (seit 2026-10-15). Das frühere
+ * Verfahren für ältere Stände — Vorschaubilder dort erzeugen (shopthumbnails),
+ * Downloads dort prüfen (shopdownloads) — gibt es seit 2026-11-18 nicht mehr
+ * (dev/shop-medienbibliothek.md, Schritt 4). Ohne Übertragung gilt
+ * shopHugoCmsMediaOffCheck().
+ *
+ * @param array $freigaben aus shopHugoCmsGrantsFrom
+ * @param bool $medienAn überträgt der HugoShop Medien (shopMediaTransfer)
+ * @return string Fehlertext, leer = in Ordnung
+ */
+function shopHugoCmsMediaCheck(array $freigaben, bool $medienAn): string {
+    if (!$medienAn) {
+        return shopHugoCmsMediaOffCheck($freigaben);
+    }
+    if (empty($freigaben['medien'])) {
+        return 'Dieses HugoCMS nimmt keine Medien aus der Medienbibliothek an (Stand vor 2026-10-15) — '
+            .'bitte HugoCMS aktualisieren.';
     }
     return '';
 }
@@ -834,152 +859,6 @@ function shopHugoCmsMediaReport($db, int $kanal, array $abgleich, callable $sage
     }
 }
 
-// ── Download-Dateien (HugoCMS ohne Medienübernahme) ──
-//
-// Solange HugoCMS keine Medien aus der Bibliothek annimmt, liegen Datenblätter
-// und Anleitungen wie die Bilder auf dem Webserver (E6); die Produktseiten
-// verlinken sie über downloads_link. Ob die Datei da ist, sieht nur HugoCMS:
-// shopdownloads nennt, was in der Freigabe „Downloads“ fehlt — sonst fände
-// erst ein Kunde den toten Link.
-
-/**
- * Dateinamen der Downloads aller im Shop angebotenen Artikel
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $kanal HugoShop
- * @return array Dateinamen, ohne doppelte
- */
-function shopDownloadSources($db, int $kanal): array {
-    $zeilen = $db->getAll(
-        "SELECT DISTINCT regexp_replace(d.value, '^.*/', '') AS name
-           FROM parts p
-           JOIN parts_channel_shop pc ON pc.parts_id = p.id
-                                     AND pc.channel_id = shop_active_channel_id(CAST(:kanal AS integer))
-                                     AND pc.active
-           JOIN parts_ext pe ON pe.parts_id = p.id
-           CROSS JOIN LATERAL jsonb_each_text(pe.hugoshop_downloads) d
-          WHERE jsonb_typeof(pe.hugoshop_downloads) = 'object'
-            AND btrim(d.value) <> ''
-          ORDER BY 1",
-        [':kanal' => $kanal]
-    );
-    return array_values(array_filter(array_column($zeilen ?: [], 'name'), fn($name) => '' !== (string)$name));
-}
-
-/**
- * Lässt HugoCMS prüfen, welche Download-Dateien auf der Webseite fehlen
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $kanal HugoShop
- * @return array ok, total, missing, invalid, fehler
- */
-function shopHugoCmsDownloadsCheck($db, int $kanal): array {
-    $ergebnis = ['ok' => false, 'total' => 0, 'missing' => [], 'invalid' => [], 'fehler' => ''];
-    $namen = shopDownloadSources($db, $kanal);
-    if (!$namen) {
-        $ergebnis['ok'] = true;
-        return $ergebnis;
-    }
-    $antwort = shopHugoCmsCall($db, $kanal, 'shopdownloads', 'POST', 120, [], ['names' => $namen]);
-    if (!$antwort['ok']) {
-        $ergebnis['fehler'] = $antwort['fehler'];
-        return $ergebnis;
-    }
-    return [
-        'ok'      => true,
-        'total'   => (int)($antwort['data']['total'] ?? count($namen)),
-        'missing' => array_values((array)($antwort['data']['missing'] ?? [])),
-        'invalid' => array_values((array)($antwort['data']['invalid'] ?? [])),
-        'fehler'  => '',
-    ];
-}
-
-// ── Vorschaubilder (HugoCMS ohne Medienübernahme) ──
-//
-// Nimmt HugoCMS keine Medien aus der Bibliothek an, liegen die Produktbilder
-// auf dem Webserver (E6). OSERP nennt dann nur die Namen und die Größe;
-// verkleinert wird in HugoCMS (backend/core/Shop/ShopThumbnails.php).
-
-/** Höchstzahl Abschnitte je Lauf — Schutz gegen eine Antwort, die nie „fertig" meldet */
-const SHOP_HUGOCMS_THUMBNAIL_ROUNDS = 500;
-
-/**
- * Namen der Bilder, zu denen es ein Vorschaubild gibt
- *
- * Das erste Bild jedes Artikels im Shop, ohne Verzeichnis.
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $kanal HugoShop
- * @return array Dateinamen, ohne doppelte
- */
-function shopThumbnailSources($db, int $kanal): array {
-    $zeilen = $db->getAll(
-        "SELECT DISTINCT regexp_replace(pe.hugoshop_images ->> 0, '^.*/', '') AS name
-           FROM parts p
-           JOIN parts_channel_shop pc ON pc.parts_id = p.id
-                                     AND pc.channel_id = shop_active_channel_id(CAST(:kanal AS integer))
-                                     AND pc.active
-           JOIN parts_ext pe ON pe.parts_id = p.id
-          WHERE jsonb_typeof(pe.hugoshop_images) = 'array'
-            AND COALESCE(pe.hugoshop_images ->> 0, '') <> ''
-          ORDER BY 1",
-        [':kanal' => $kanal]
-    );
-    return array_values(array_filter(array_column($zeilen ?: [], 'name'), fn($name) => '' !== (string)$name));
-}
-
-/**
- * Lässt HugoCMS die Vorschaubilder erzeugen
- *
- * HugoCMS arbeitet je Aufruf nur eine begrenzte Zeit und nennt, wo es
- * weitergeht; hier wird aufgerufen, bis alles bearbeitet ist.
- *
- * @param object $db Company-Datenbankverbindung
- * @param int $kanal HugoShop
- * @return array ok, created, current, missing, failed, buildPending, fehler
- */
-function shopHugoCmsThumbnails($db, int $kanal): array {
-    $ergebnis = ['ok' => false, 'created' => 0, 'current' => 0, 'missing' => [], 'failed' => [],
-                 'buildPending' => false, 'fehler' => ''];
-
-    $namen = shopThumbnailSources($db, $kanal);
-    if (!$namen) {
-        $ergebnis['ok'] = true;
-        return $ergebnis;
-    }
-
-    $groesse = shopConfigInt($db, 'shop_thumbnail_size', 200);
-    $weiter = 0;
-    for ($runde = 0; $runde < SHOP_HUGOCMS_THUMBNAIL_ROUNDS; $runde++) {
-        $antwort = shopHugoCmsCall($db, $kanal, 'shopthumbnails', 'POST', 120, [],
-            ['names' => $namen, 'size' => $groesse, 'offset' => $weiter]);
-        if (!$antwort['ok']) {
-            $ergebnis['fehler'] = $antwort['fehler'];
-            return $ergebnis;
-        }
-        $teil = (array)$antwort['data'];
-        $ergebnis['created'] += (int)($teil['created'] ?? 0);
-        $ergebnis['current'] += (int)($teil['current'] ?? 0);
-        $ergebnis['missing'] = array_merge($ergebnis['missing'], (array)($teil['missing'] ?? []));
-        $ergebnis['failed'] = array_merge($ergebnis['failed'], (array)($teil['failed'] ?? []));
-        $ergebnis['buildPending'] = !empty($teil['buildPending']);
-
-        if (!empty($teil['done'])) {
-            $ergebnis['ok'] = true;
-            return $ergebnis;
-        }
-        $naechster = (int)($teil['next'] ?? 0);
-        if ($naechster <= $weiter) {
-            $ergebnis['fehler'] = 'HugoCMS kommt bei den Vorschaubildern nicht voran (bei '.$weiter.' von '.count($namen).')';
-            return $ergebnis;
-        }
-        $weiter = $naechster;
-    }
-
-    $ergebnis['fehler'] = 'Zu viele Abschnitte bei den Vorschaubildern';
-    return $ergebnis;
-}
-
 /**
  * Überträgt an HugoCMS und lässt dort bauen — der Teil des Laufs, der die
  * Webseite eines HugoShops veröffentlicht
@@ -1102,51 +981,11 @@ function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, 
                 $sagen(sprintf('%d Download-Dateien fehlen in der Medienbibliothek: %s', count($fehlt['download']), $liste($fehlt['download'])));
             }
         }
-    } elseif ($abgleich['uebertragen'] && $abgleich['medien']['angenommen']) {
+    } elseif ($abgleich['uebertragen']) {
         // Medien aus der Bibliothek sind mit der Lieferung gegangen
         // (dev/shop-medienbibliothek.md): Vorschaubilder kommen fertig von
         // hier, fehlende Dateien kennt die Bibliothek selbst
         shopHugoCmsMediaReport($db, $kanal, $abgleich, $sagen, $liste);
-    } elseif ($abgleich['uebertragen']) {
-        // HugoCMS ohne Medienübernahme: Vorschaubilder dort erzeugen, Downloads
-        // nur prüfen — die Medien bleiben auf der Webseite maßgeblich
-        $sagen('HugoCMS nimmt noch keine Medien aus der Medienbibliothek an (Version vor 2026-10-15) — '
-            .'Produktbilder und Downloads bleiben auf der Webseite maßgeblich, bis HugoCMS aktualisiert ist.');
-        $vorschau = shopHugoCmsThumbnails($db, $kanal);
-        if (!$vorschau['ok']) {
-            $fehler('Vorschaubilder in HugoCMS fehlgeschlagen: '.$vorschau['fehler']);
-        } else {
-            $bauNoetig = $bauNoetig || $vorschau['buildPending'];
-            $sagen(sprintf('Vorschaubilder in HugoCMS: %d erzeugt, %d aktuell', $vorschau['created'], $vorschau['current']));
-        }
-        if ($vorschau['missing']) {
-            $sagen(sprintf('%d Produktbilder fehlen auf dem Webserver: %s', count($vorschau['missing']), $liste($vorschau['missing'])));
-        }
-        if ($vorschau['failed']) {
-            $fehler(sprintf('%d Vorschaubilder nicht erzeugt (Name ungültig oder Bild nicht lesbar): %s',
-                count($vorschau['failed']), $liste($vorschau['failed'])));
-        }
-
-        // Download-Dateien: fehlt eine, steht ein toter Link auf der
-        // Produktseite — ein Hinweis wie bei fehlenden Produktbildern. Nur,
-        // wenn HugoCMS die Freigabe „Downloads“ kennt.
-        if ('' !== (string)($abgleich['freigaben']['downloads'] ?? '')) {
-            $downloads = shopHugoCmsDownloadsCheck($db, $kanal);
-            if (!$downloads['ok']) {
-                $sagen('Download-Dateien nicht geprüft: '.$downloads['fehler']);
-            } elseif ($downloads['missing'] || $downloads['invalid']) {
-                if ($downloads['missing']) {
-                    $sagen(sprintf('%d Download-Dateien fehlen auf dem Webserver (HugoCMS, Freigabe „Downloads“: %s/): %s',
-                        count($downloads['missing']), $abgleich['freigaben']['downloads'], $liste($downloads['missing'])));
-                }
-                if ($downloads['invalid']) {
-                    $sagen(sprintf('%d Download-Namen unbrauchbar (nur Dateiname, kein Verzeichnis): %s',
-                        count($downloads['invalid']), $liste($downloads['invalid'])));
-                }
-            } elseif ($downloads['total'] > 0) {
-                $sagen(sprintf('Download-Dateien auf dem Webserver: alle %d vorhanden', $downloads['total']));
-            }
-        }
     }
 
     if (!$bauen || (!$bauNoetig && !$erzwingen)) {

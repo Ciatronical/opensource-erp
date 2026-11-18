@@ -46,7 +46,7 @@ Lieferantenimport). Die Regeln für Arbeiten an HugoCMS stehen in
 | E3 | Webshop und HugoCMS laufen zusammen auf einem eigenen Webserver | 2026-09-24 |
 | E4 | Kein zusätzlicher Proxy-Server. Die Aufrufe der Shop-UI gehen über ein Backend auf dem Webserver, das sie an OSERP weiterreicht (Sitzung, Bestellung, Rechnung) | 2026-09-24 |
 | E5 | HugoCMS bekommt neben dem sitzungsbasierten Zugang einen Zugang per API-Schlüssel, über den OSERP Vorgänge auslöst. Jeder Schlüssel gehört zu genau einem Webprojekt | 2026-09-24 |
-| E6 | **Die Medien bleiben auf der Webseiten-Seite**: Produktbilder, Downloads und Vorschaubilder. OSERP kennt nur ihre Dateinamen | 2026-09-24 |
+| E6 | ~~**Die Medien bleiben auf der Webseiten-Seite**: Produktbilder, Downloads und Vorschaubilder. OSERP kennt nur ihre Dateinamen~~ — **zurückgenommen**: seit 2026-10-15 verwaltet OSERP die Medien in der Medienbibliothek und liefert sie an HugoCMS (`dev/shop-medienbibliothek.md`) | 2026-09-24, zurückgenommen 2026-11-18 |
 | E7 | Transport über die HugoCMS-API, von OSERP angestoßen (Weg A unten, vorher Empfehlung R1) | 2026-09-24 |
 | E8 | Die heutige Arbeitsweise bleibt als Betriebsart „lokal" erhalten; „HugoCMS" kommt als zweite Betriebsart hinzu (vorher Empfehlung R2) | 2026-09-24 |
 | E9 | HugoCMS bleibt ohne PHP. Die Paket-Konfiguration wird `oserp-portal/config.json` und reist mit der Übertragung; Weiterleiter und 404-Seite legt man einmal von Hand auf den Webserver. **Abgelöst am 2026-10-08:** beide gehen signiert mit, sobald in HugoCMS der Signaturschlüssel von OpensourceERP hinterlegt ist (`dev/shop-php-signatur.md`); ohne ihn bleibt es beim Weg von Hand | 2026-09-24 |
@@ -161,6 +161,11 @@ Schluss.
 
 ### 4. Medien: bleiben auf der Webseite (E6)
 
+> **Überholt.** E6 ist zurückgenommen: Produktbilder, Vorschaubilder und
+> Downloads liegen in der Medienbibliothek von OSERP und gehen mit der
+> Lieferung an HugoCMS (`dev/shop-medienbibliothek.md`). Der Abschnitt
+> beschreibt den Stand bis 2026-10-15.
+
 - Produktbilder und Downloads kommen auf dem Webserver an, nicht in OSERP.
   **Stufe F** (Lieferantenimport) muss danach entworfen werden: Der Import
   liefert die Bilder dorthin, nicht nach OSERP.
@@ -190,7 +195,7 @@ ohne übersetzten Text.
 | `shopcommit` | Portionen übernehmen, Überzähliges löschen, Vorschaubilder erzeugen, fehlende Bilder melden, Bau-Markierung setzen |
 | `shopbuild` | Bau sofort anstoßen, ohne auf den Cron zu warten |
 | `shopbuildstatus` | Stand: baut, fertig oder fehlgeschlagen; letzte Zeilen der Hugo-Ausgabe |
-| `shopthumbnails` | Vorschaubilder zu den genannten Bildnamen erzeugen, fehlende Bilder melden (umgesetzt als eigener Befehl statt in `shopcommit`, siehe Schritt 3) |
+| ~~`shopthumbnails`~~ | Vorschaubilder zu den genannten Bildnamen erzeugen, fehlende Bilder melden (umgesetzt als eigener Befehl statt in `shopcommit`, siehe Schritt 3) — **entfernt 2026-11-18**, Vorschaubilder kommen fertig aus OSERP |
 
 **Anmeldung.** Der Kopf `Authorization: Bearer <Schlüssel>` (ersatzweise
 `X-HugoCMS-Key`, falls der Webserver `Authorization` nicht an PHP weiterreicht)
@@ -453,6 +458,12 @@ von OSERP, ohne sie meldet er 503. In der Betriebsart HugoCMS kommt
 der Lauf nennt nur die zwei Einstiegspunkte.
 
 ### Schritt 3 (2026-09-24)
+
+> **Abgelöst 2026-11-18.** `shopthumbnails`, `Shop/ShopThumbnails.php`,
+> `shopThumbnailSources()` und `shopHugoCmsThumbnails()` gibt es nicht mehr;
+> die Vorschaubilder erzeugt OSERP in der Medienbibliothek
+> (`dev/shop-medienbibliothek.md`, Schritt 4). Das Folgende ist der Stand
+> von damals.
 
 **Abweichung vom Entwurf: eigener Befehl statt Teil der Übernahme.** Ein erster
 Lauf betrifft über 3600 Bilder; das in `shopcommit` zu rechnen, sprengte die

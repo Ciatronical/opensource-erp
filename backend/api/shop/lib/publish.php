@@ -610,19 +610,6 @@ function shopYamlList(array $werte): string {
 }
 
 /**
- * Setzt einen Dateinamen in ein Adressmuster mit %s
- *
- * Ohne Muster bleibt der Name stehen. Für die Widgets der Webseite gilt
- * shopChannelLink() (leer statt des bloßen Namens).
- */
-function shopLink(string $muster, string $wert): string {
-    if ('' === $muster || false === strpos($muster, '%s')) {
-        return $wert;
-    }
-    return str_replace('%s', rawurlencode($wert), $muster);
-}
-
-/**
  * Maße von Bildern der Medienbibliothek (media_shop)
  *
  * @param object $db Company-Datenbankverbindung

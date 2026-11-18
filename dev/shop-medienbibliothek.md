@@ -1,9 +1,9 @@
 # Shop: Medienbibliothek in OpensourceERP
 
-Stand 2026-11-18. Status: **in Umsetzung** — Entscheidungen B1–B7 wie
+Stand 2026-11-18. Status: **umgesetzt** — Entscheidungen B1–B7 wie
 vorgeschlagen bestätigt; Schritt 1 (Bibliothek), Schritt 2 (Verteilung an
-HugoCMS) und Schritt 3 (Marktplätze auf die Bibliothek) umgesetzt, Schritt 4
-offen. Löst E6 aus `dev/shop-hugocms-trennung.md` ab („die Medien
+HugoCMS), Schritt 3 (Marktplätze auf die Bibliothek) und Schritt 4 (Ablösung
+der alten HugoCMS-Befehle) umgesetzt. Löst E6 aus `dev/shop-hugocms-trennung.md` ab („die Medien
 bleiben auf der Webseite“): Produktbilder, Vorschaubilder und Downloads werden
 künftig in OpensourceERP verwaltet, zentral für alle Verkaufskanäle, mit
 einem Dateimanager in der Shop-Erweiterung.
@@ -259,8 +259,8 @@ Ablauf in HugoCMS (`ShopSync`):
   Vorschaubilder, die HugoCMS früher selbst erzeugt hat, stehen in keiner
   Lieferung und bleiben liegen; die Lieferung ersetzt die der genannten Bilder.
 - `shopbuildstatus` meldet `media` (`accepted`, `chunkBytes`, `maxBytes`,
-  Endungen). Ein älteres OpensourceERP kennt das Feld nicht und arbeitet wie
-  bisher (`shopthumbnails`, `shopdownloads` bleiben bis Schritt 4).
+  Endungen). `shopthumbnails` und `shopdownloads` gibt es seit Schritt 4
+  nicht mehr.
 
 Ablauf in OpensourceERP (`shopHugoCmsSync`):
 
@@ -281,8 +281,8 @@ Ablauf in OpensourceERP (`shopHugoCmsSync`):
   in der Lieferung, … übertragen“), neu erzeugte Vorschaubilder und die in
   den Artikeln genannten Dateien, die in der Bibliothek fehlen (alle Bilder
   eines Artikels, nicht nur das erste) — statt der früheren Meldungen
-  „fehlen auf dem Webserver“. `shopthumbnails` und `shopdownloads` ruft er
-  nur noch gegen ein HugoCMS ohne Medienübernahme auf.
+  „fehlen auf dem Webserver“. Ein HugoCMS ohne Medienübernahme (Stand vor
+  2026-10-15) weist der Lauf seit Schritt 4 ab (`shopHugoCmsMediaCheck`).
 - Scheitert die Übertragung einer Mediendatei (Prüfsumme, Größe), endet der
   Lauf mit einem Fehler — die Übernahme wäre ohnehin unvollständig. Meist
   passt dann `media_shop` nicht zur Datei: in der Ansicht „Medien“ abgleichen.
@@ -437,6 +437,30 @@ Symlink hinaus, Fassung), PHP-Syntax, Probe-Build. Nicht gelaufen: die
 Funktionen gegen eine Datenbank, ein Abgleich über den Bestand von solar-spar
 und ein Lauf gegen HugoCMS.
 
+
+### Schritt 4 (2026-11-18): Ablösung der alten HugoCMS-Befehle
+
+Voraussetzung: kein HugoCMS mit einem Stand vor 2026-10-15 mehr im Einsatz.
+OpensourceERP und HugoCMS arbeiten seither nur zusammen, wenn beide die
+Medienübernahme kennen — beide Seiten gemeinsam aktualisieren.
+
+- **OpensourceERP** (`backend/api/shop/lib/hugocms.php`): Der Rückfall für ein
+  HugoCMS ohne Medienübernahme ist entfernt (`shopHugoCmsThumbnails`,
+  `shopThumbnailSources`, `shopHugoCmsDownloadsCheck`, `shopDownloadSources`
+  und der Zweig im Lauf). Stattdessen prüft `shopHugoCmsMediaCheck()` vor
+  jeder Lieferung — im Lauf und im Haken des Portals: Überträgt der HugoShop
+  Medien und nimmt HugoCMS keine an, endet die Lieferung mit „bitte HugoCMS
+  aktualisieren“.
+- **HugoCMS**: Die Befehle `shopthumbnails` und `shopdownloads`, die Klassen
+  `Shop\ShopThumbnails` und `Shop\ShopDownloads`, die Aufgabe „Vorschaubilder
+  erzeugen“ im Systemstatus und ihre Meldungen sind entfernt. Die Vorgaben
+  der Medien-Freigaben stehen jetzt in `Shop\ShopSync` (`DEFAULT_IMAGES`,
+  `DEFAULT_THUMBNAILS`, `DEFAULT_DOWNLOADS`). Vorschaubilder, die HugoCMS
+  früher selbst erzeugt hat, stehen in keiner Lieferung und bleiben liegen.
+- **Dokumentation**: E6 in `dev/shop-hugocms-trennung.md` zurückgenommen,
+  `dev/shop-hugocms-verzeichnisse.md`, `dev/shop-betrieb.md` und das
+  HugoCMS-README bereinigt.
+
 ## Reihenfolge der Umsetzung
 
 1. Bibliothek: Tabelle, Ablage, Dateimanager mit drei Wurzeln, Verwendung,
@@ -446,4 +470,4 @@ und ein Lauf gegen HugoCMS.
 3. Marktplätze auf die Bibliothek, Kanalkopien übernehmen, Bildformat je
    Kanal. — umgesetzt
 4. Ablösung in HugoCMS (`shopthumbnails`, `shopdownloads`), Dokumentation
-   (E6 zurücknehmen, `shop-betrieb.md`, HugoCMS-README).
+   (E6 zurücknehmen, `shop-betrieb.md`, HugoCMS-README). — umgesetzt

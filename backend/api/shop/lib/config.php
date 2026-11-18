@@ -235,6 +235,25 @@ function shopChannelValue($db, int $kanal, string $key, string $default = ''): s
 }
 
 /**
+ * Setzt einen Dateinamen in ein Adressmuster mit %s
+ *
+ * Ohne Muster bleibt der Name stehen. Für die Widgets der Webseite gilt
+ * shopChannelLink() (leer statt des bloßen Namens). Steht hier und nicht bei
+ * der Veröffentlichung, weil auch die Kanalbilder sie brauchen
+ * (shopChannelImageMedia) — auch im Importwerkzeug, das publish.php nicht lädt.
+ *
+ * @param string $muster Adressmuster, etwa '/images/products/%s'
+ * @param string $wert Dateiname (wird kodiert)
+ * @return string
+ */
+function shopLink(string $muster, string $wert): string {
+    if ('' === $muster || false === strpos($muster, '%s')) {
+        return $wert;
+    }
+    return str_replace('%s', rawurlencode($wert), $muster);
+}
+
+/**
  * Adresse auf der Shop-Webseite aus einem Adressmuster des Kanals
  *
  * Die Muster (products_link, thumbnails_link, …) enthalten %s für den Namen.

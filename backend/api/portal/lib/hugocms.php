@@ -249,8 +249,8 @@ function portalHugoCmsGrantsFrom(array $antwort, array $pflicht = []): array {
     }
 
     $ergebnis = ['package' => trim((string)($freigaben['package'] ?? 'oserp-portal'), '/')];
-    // Downloads: nur zur Prüfung, nicht zum Schreiben — ein älteres HugoCMS
-    // ohne diese Freigabe bleibt brauchbar, die Prüfung entfällt dann
+    // Downloads: Freigabe für die Downloads der Medienbibliothek; fehlt sie,
+    // bleiben die Downloads aus der Lieferung, der Lauf sagt es
     $ergebnis['downloads'] = is_string($freigaben['downloads'] ?? null) ? trim($freigaben['downloads'], '/') : '';
     // Medien aus der Bibliothek (dev/shop-medienbibliothek.md): nimmt HugoCMS
     // sie an (seit 2026-10-15), kommen Produkt- und Vorschaubilder und

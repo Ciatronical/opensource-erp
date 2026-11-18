@@ -136,9 +136,8 @@ Ein Lauf tut der Reihe nach:
    Binärdaten in Stücken, nur was in HugoCMS fehlt oder abweicht; vorher
    erneuert der Lauf Vorschaubilder, die fehlen oder nicht die eingestellte
    Größe haben. Danach nennt er, welche in den Artikeln genannten Dateien in
-   der Bibliothek fehlen. Gegen ein HugoCMS ohne Medienübernahme (vor
-   2026-10-15) bleibt es beim alten Verfahren: Vorschaubilder in HugoCMS und
-   die Prüfung der Download-Dateien auf der Webseite. Gebaut wird mit dem
+   der Bibliothek fehlen. Ein HugoCMS ohne Medienübernahme (Stand vor
+   2026-10-15) weist der Lauf ab: bitte HugoCMS aktualisieren. Gebaut wird mit dem
    Hugo-Programm, das HugoCMS eingerichtet hat; OpensourceERP startet kein
    Programm zum Bauen.
 6. **Prüfung über die Webseite** nach einer Übertragung: Weiterleiter und

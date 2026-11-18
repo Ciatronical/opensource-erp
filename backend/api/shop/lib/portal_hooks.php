@@ -133,7 +133,7 @@ portalHookAdd('publish_entries', function (array $beitrag, $db, int $website, ar
     // Überträgt der HugoShop keine Medien (Kanalkarte), geht auch diese
     // Lieferung ohne sie — HugoCMS lässt die vorhandenen dann stehen
     $medienAn = shopMediaTransfer($db, $kanal);
-    if (!$medienAn && '' !== ($grund = shopHugoCmsMediaOffCheck($freigaben))) {
+    if ('' !== ($grund = shopHugoCmsMediaCheck($freigaben, $medienAn))) {
         throw new ApiError('SHOP_HUGOCMS_MEDIA', $grund);
     }
     $medien = $medienAn ? shopHugoCmsMediaList($db, $freigaben) : shopHugoCmsMediaNone();
