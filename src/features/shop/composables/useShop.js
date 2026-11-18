@@ -178,12 +178,21 @@ export function useShop() {
     /** Nimmt den Artikel aus dem Shop */
     const deletePartShopData = (parts_id) => call('deletePartShopData', { parts_id })
 
-    /** Bild für einen Marktplatz-Kanal hochladen (inhalt als data:-Adresse) */
+    /** Bild für einen Marktplatz-Kanal hochladen (inhalt als data:-Adresse) — es kommt in die Medienbibliothek */
     const uploadChannelImage = (parts_id, channel, filename, data) =>
         call('uploadShopChannelImage', { parts_id, channel, filename, data })
 
-    /** Bild aus einem Marktplatz-Kanal entfernen */
-    const deleteChannelImage = (image_id) => call('deleteShopChannelImage', { image_id })
+    /** Bilder der Medienbibliothek (Dateinamen) einem Marktplatz-Kanal zuordnen */
+    const assignChannelImages = (parts_id, channel, names) =>
+        call('assignShopChannelImages', { parts_id, channel, names })
+
+    /**
+     * Bild aus einem Marktplatz-Kanal entfernen
+     *
+     * keep: Bilder, die die offene Artikelkarte noch führt — sie bleiben in
+     * der Medienbibliothek, auch wenn sie sonst niemand mehr verwendet.
+     */
+    const deleteChannelImage = (image_id, keep = []) => call('deleteShopChannelImage', { image_id, keep })
 
     /** Reihenfolge der Bilder eines Marktplatz-Kanals setzen; das erste ist das Hauptbild */
     const sortChannelImages = (parts_id, channel, ids) => call('sortShopChannelImages', { parts_id, channel, ids })
@@ -282,6 +291,7 @@ export function useShop() {
         savePartShopData,
         deletePartShopData,
         uploadChannelImage,
+        assignChannelImages,
         deleteChannelImage,
         sortChannelImages,
         copyChannelImages,

@@ -14,6 +14,11 @@
 //       [--images=<verzeichnis>] [--downloads=<verzeichnis>]
 //       [--dry-run] [--quiet]
 //
+// Dazu die Kanalbilder der Marktplätze von früher (Schritt 3): Kopien unter
+// backend/data/<db>/parts/<id>/ kommen in die Bibliothek, die Zeilen in
+// parts_channel_image_shop verweisen danach darauf, die Kopien entfallen.
+// Dasselbe erledigt der Läufer von selbst; hier mit Bericht.
+//
 // Ohne --images/--downloads wird nichts kopiert, nur die Bibliothek mit
 // media_shop abgeglichen und der Bericht ausgegeben. Vorhandene Dateien
 // gleichen Namens werden ersetzt, wenn der Inhalt abweicht. Unbrauchbare
@@ -35,6 +40,7 @@ require_once __DIR__.'/../backend/api/database.php';
 require_once __DIR__.'/../backend/api/shop/lib/config.php';
 require_once __DIR__.'/../backend/api/customer_vendor/filemanager.php';
 require_once __DIR__.'/../backend/api/shop/lib/media.php';
+require_once __DIR__.'/../backend/api/shop/lib/channel_images.php';
 
 $argumente = getopt('', ['client:', 'db:', 'images:', 'downloads:', 'dry-run', 'quiet', 'list-clients', 'help']);
 if (isset($argumente['help'])) {
@@ -137,6 +143,22 @@ if (!$probe) {
     $bilanz['unbrauchbar'] = array_merge($bilanz['unbrauchbar'], $abgleich['unbrauchbar']);
 }
 
+// Kanalbilder der Marktplätze von früher: aus den Artikelordnern in die Bibliothek
+$alt = $db->getOne("SELECT count(*) AS anzahl FROM parts_channel_image_shop WHERE media_id IS NULL");
+if ((int)($alt['anzahl'] ?? 0) > 0) {
+    if ($probe) {
+        echo sprintf("Kanalbilder: %d von früher würden in die Bibliothek übernommen\n", (int)$alt['anzahl']);
+    } else {
+        $nicht = [];
+        $uebernommen = shopChannelImagesAdopt($db, 0, function (string $grund) use (&$nicht) { $nicht[] = $grund; });
+        echo sprintf("Kanalbilder: %d von früher in die Bibliothek übernommen, %d nicht\n", $uebernommen, count($nicht));
+        foreach ($nicht as $grund) {
+            echo "  $grund\n";
+        }
+        $bilanz['unbrauchbar'] = array_merge($bilanz['unbrauchbar'], $nicht);
+    }
+}
+
 // Genannte Dateien, die fehlen — und Dateien, die niemand nennt
 $genannt = ['image' => [], 'download' => []];
 foreach ($db->getAll(
@@ -146,7 +168,12 @@ foreach ($db->getAll(
      UNION
      SELECT regexp_replace(d.value, '^.*/', ''), 'download'
        FROM parts_ext pe, jsonb_each_text(pe.hugoshop_downloads) d
-      WHERE jsonb_typeof(pe.hugoshop_downloads) = 'object'") ?: [] as $zeile) {
+      WHERE jsonb_typeof(pe.hugoshop_downloads) = 'object'
+     UNION
+     -- Bilder, die ein Marktplatz-Kanal zeigt
+     SELECT m.filename, 'image'
+       FROM parts_channel_image_shop i
+       JOIN media_shop m ON m.id = i.media_id") ?: [] as $zeile) {
     if ('' !== (string)$zeile['name']) {
         $genannt[$zeile['kind']][$zeile['name']] = true;
     }

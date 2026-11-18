@@ -602,14 +602,11 @@ function getPartShopData($data) {
                        CASE WHEN c.type = 'hugoshop'
                             THEN (SELECT COALESCE(json_agg(row_to_json(v)), '[]'::json)
                                     FROM shop_part_shipping_prices(CAST(:parts_id_preise AS integer), c.id) v) END AS shipping_prices,
-                       -- Bilder der Marktplätze; der HugoShop führt seine in parts_ext
-                       (SELECT COALESCE(json_agg(json_build_object(
-                                   'id', i.id, 'filename', i.filename,
-                                   'url', '/webhook/part-image.php?db=' || current_database()
-                                          || '&id=' || i.parts_id || '&f=' || i.filename)
-                                ORDER BY i.sort, i.id), '[]'::json)
-                          FROM parts_channel_image_shop i
-                         WHERE i.parts_id = :parts_id_bilder AND i.channel_id = c.id) AS images
+                       -- Bilder der Marktplätze aus der Medienbibliothek; der
+                       -- HugoShop führt seine in parts_ext
+                       shop_channel_images(CAST(:parts_id_bilder AS integer), c.id) AS images,
+                       -- Format, in dem der Kanal seine Bilder bekommt (leer = wie die Datei)
+                       COALESCE(NULLIF(lower(btrim(c.settings ->> 'image_format')), 'original'), '') AS image_format
                   FROM sales_channel_shop c
                   LEFT JOIN parts_channel_shop pc ON pc.channel_id = c.id AND pc.parts_id = :parts_id
                  WHERE c.active) k) AS channels,
@@ -1031,6 +1028,10 @@ function shopQueueRemovePage($db, int $kanal, string $partnumber, string $hyperl
 /**
  * Lädt ein Bild für einen Marktplatz-Kanal hoch
  *
+ * Das Bild kommt in die Medienbibliothek (dasselbe Bild nur einmal, der Name
+ * nach der hochgeladenen Datei) und wird dem Kanal zugeordnet; das Format des
+ * Kanals entsteht als Fassung daneben.
+ *
  * @param array $data['parts_id'] Artikel
  * @param array $data['channel'] Kennung des Kanals; die Art (etwa ebay) meint den Standardkanal der Art
  * @param array $data['filename'] ursprünglicher Dateiname
@@ -1059,17 +1060,46 @@ function uploadShopChannelImage($data) {
 }
 
 /**
+ * Ordnet einem Marktplatz-Kanal Bilder des Artikels aus der Medienbibliothek zu
+ *
+ * Für die Auswahl in der Artikelkarte: die Bilder, die der Artikel im
+ * HugoShop oder in einem anderen Kanal zeigt. Schon zugeordnete bleiben, wo
+ * sie sind; neue kommen hinten an.
+ *
+ * @param array $data['parts_id'] Artikel
+ * @param array $data['channel'] Kennung des Kanals oder seine Art
+ * @param array $data['names'] Dateinamen der Medienbibliothek
+ * @return void Bilder des Kanals danach, added (Zahl der neu zugeordneten)
+ * @testdata {"parts_id": 1, "channel": "ebay", "names": ["foto.jpg"]}
+ */
+function assignShopChannelImages($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+
+    $partsId = (int)($data['parts_id'] ?? 0);
+    $kanal = shopChannelParam($db, $data['channel'] ?? '')['id'];
+    $namen = array_slice(array_map('strval', (array)($data['names'] ?? [])), 0, 100);
+    $neu = shopChannelImagesAssign($db, $partsId, $kanal, $namen);
+    resultInfo(true, '', ['images' => shopChannelImages($db, $partsId, $kanal), 'added' => $neu]);
+}
+
+/**
  * Entfernt ein Bild aus einem Marktplatz-Kanal
  *
+ * Verwendet danach kein Artikel das Bild mehr, verschwindet es auch aus der
+ * Medienbibliothek — außer die offene Artikelkarte führt es noch in ihrer
+ * ungespeicherten Liste (keep).
+ *
  * @param array $data['image_id'] Bild
+ * @param array $data['keep'] Dateinamen, die in der Bibliothek bleiben (Bilder der offenen Artikelkarte)
  * @return void Bilder des Kanals danach
- * @testdata {"image_id": 1}
+ * @testdata {"image_id": 1, "keep": []}
  */
 function deleteShopChannelImage($data) {
     permit(['shop_part_edit', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    $bild = shopChannelImageDelete($db, (int)($data['image_id'] ?? 0));
+    $bild = shopChannelImageDelete($db, (int)($data['image_id'] ?? 0), array_map('strval', (array)($data['keep'] ?? [])));
     resultInfo(true, '', ['images' => $bild ? shopChannelImages($db, $bild['parts_id'], $bild['channel_id']) : []]);
 }
 
@@ -1095,8 +1125,9 @@ function sortShopChannelImages($data) {
 /**
  * Übernimmt die Bilder eines Artikels aus einem anderen Kanal (V12, V17)
  *
- * Vom HugoShop in einen Marktplatz und zwischen Marktplätzen. In einen
- * HugoShop nicht: seine Bilder liegen bei HugoCMS auf dem Webserver.
+ * Vom HugoShop in einen Marktplatz und zwischen Marktplätzen — beide zeigen
+ * danach dieselben Bilder der Medienbibliothek, kopiert wird nichts. In einen
+ * HugoShop nicht: seine Liste pflegt die Artikelkarte im Abschnitt Medien.
  *
  * @param array $data['parts_id'] Artikel
  * @param array $data['from'] Quellkanal: Kennung oder Art

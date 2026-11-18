@@ -301,16 +301,26 @@ ALTER TABLE parts_channel_shop ADD COLUMN IF NOT EXISTS unavailable boolean NOT 
 COMMENT ON COLUMN parts_channel_shop.unavailable  IS 'Im Kanal vorübergehend nicht verfügbar: bleibt angeboten, ist aber nicht bestellbar (HugoShop: „Momentan nicht verfügbar“, eBay: Menge 0). Anders als parts.obsolete bleibt der Artikel im ERP nutzbar';
 
 -- Bilder je Kanal (V12). Der HugoShop führt seine Bilder weiter in
--- parts_ext.hugoshop_images (Dateinamen auf der Webseite, E6); diese Tabelle
--- gilt für die Marktplätze. Die Dateien liegen unter data/<db>/parts/<id>/,
--- öffentlich über backend/webhook/part-image.php — wie bei der bisherigen
--- eBay-Anbindung, deren Bilder hierher übernommen werden (V21).
+-- parts_ext.hugoshop_images (Dateinamen der Medienbibliothek); diese Tabelle
+-- gilt für die Marktplätze. Jede Zeile verweist auf ein Bild der
+-- Medienbibliothek (media_id, dev/shop-medienbibliothek.md Schritt 3): die
+-- Datei liegt einmal unter data/<db>/shop/media/images/, welche Bilder ein
+-- Kanal zeigt und in welcher Reihenfolge, bestimmt weiter die Zeile. Das
+-- Format, in dem der Marktplatz das Bild bekommt, legt der Kanal fest
+-- (shop_channel_image_format, Fassungen in media_variant_shop); öffentlich
+-- über backend/webhook/part-image.php.
+--
+-- Zeilen von früher tragen statt media_id einen Dateinamen (filename) im
+-- Artikelordner data/<db>/parts/<id>/; shopChannelImagesAdopt() übernimmt
+-- sie in die Bibliothek. Der Fremdschlüssel auf media_shop folgt im Abschnitt
+-- Medienbibliothek — die Tabelle steht dort.
 CREATE TABLE IF NOT EXISTS parts_channel_image_shop
 (
     id         integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     parts_id   integer NOT NULL,
     channel_id integer NOT NULL,
-    filename   text NOT NULL,
+    filename   text,
+    media_id   integer,
     sort       integer NOT NULL DEFAULT 0,
     itime      timestamp without time zone DEFAULT now(),
     CONSTRAINT parts_channel_image_shop_key UNIQUE (parts_id, channel_id, filename),
@@ -320,8 +330,13 @@ CREATE TABLE IF NOT EXISTS parts_channel_image_shop
         REFERENCES sales_channel_shop (id) ON UPDATE NO ACTION ON DELETE CASCADE
 );
 
-COMMENT ON TABLE  parts_channel_image_shop          IS 'Shop: Bilder eines Artikels je Marktplatz-Kanal; Dateien unter data/<db>/parts/<parts_id>/';
-COMMENT ON COLUMN parts_channel_image_shop.filename IS 'Dateiname im Artikelordner (SHA-1 des Inhalts plus Endung)';
+-- Nachgetragen: in bestehenden Datenbanken gibt es die Tabelle schon.
+ALTER TABLE parts_channel_image_shop ADD COLUMN IF NOT EXISTS media_id integer;
+ALTER TABLE parts_channel_image_shop ALTER COLUMN filename DROP NOT NULL;
+
+COMMENT ON TABLE  parts_channel_image_shop          IS 'Shop: Bilder eines Artikels je Marktplatz-Kanal; Verweis auf die Medienbibliothek (media_shop)';
+COMMENT ON COLUMN parts_channel_image_shop.media_id IS 'Bild der Medienbibliothek (media_shop.id); NULL nur bei Zeilen von früher, bis sie übernommen sind';
+COMMENT ON COLUMN parts_channel_image_shop.filename IS 'Nur Zeilen von früher (media_id NULL): Dateiname im Artikelordner data/<db>/parts/<parts_id>/';
 COMMENT ON COLUMN parts_channel_image_shop.sort     IS 'Reihenfolge, 0 = Hauptbild';
 
 -- Mehrere Kanäle je Art: der eindeutige Index auf type entfällt
@@ -374,7 +389,9 @@ CREATE OR REPLACE FUNCTION shop_channel_default_settings(p_type text) RETURNS js
             'default_condition',                'good',
             'refresh_days',                     '30',
             'lead_mail_folder',                 'INBOX',
-            'text_style',                       'sachlich')
+            'text_style',                       'sachlich',
+            -- Bilder der Anzeigen als JPEG (Kanalkarte: Bildformat)
+            'image_format',                     'jpg')
         ELSE '{}'::jsonb END
 $$;
 
@@ -865,8 +882,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Bilder eines Marktplatz-Kanals (hochgeladen, entfernt, umsortiert): das
--- Angebot neu einstellen, sofern der Artikel dort angeboten wird.
+-- Bilder eines Marktplatz-Kanals (zugeordnet, entfernt, umsortiert, in die
+-- Medienbibliothek übernommen — die Adresse ändert sich): das Angebot neu
+-- einstellen, sofern der Artikel dort angeboten wird.
 CREATE OR REPLACE FUNCTION parts_channel_image_shop_auto_publish() RETURNS trigger AS $$
 DECLARE
     bild parts_channel_image_shop;
@@ -1102,7 +1120,7 @@ END $$;
 DO $$ BEGIN
     DROP TRIGGER IF EXISTS trigger_parts_channel_image_shop_auto_publish ON parts_channel_image_shop;
     CREATE TRIGGER trigger_parts_channel_image_shop_auto_publish
-        AFTER INSERT OR DELETE OR UPDATE OF sort ON parts_channel_image_shop
+        AFTER INSERT OR DELETE OR UPDATE OF sort, media_id ON parts_channel_image_shop
         FOR EACH ROW
         EXECUTE FUNCTION parts_channel_image_shop_auto_publish();
 END $$;
@@ -3120,10 +3138,9 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnail_size', '200') ON
 -- Bildformat beim Hochladen von Produktbildern (Vorbelegung im Dialog):
 -- avif, webp, jpg, png oder original = Format der Datei beibehalten
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_image_format', 'original') ON CONFLICT (key) DO NOTHING;
--- Bildformat des Verkaufskanals Kleinanzeigen (jpg oder png): beim
--- Veröffentlichen werden die Kanalbilder in dieses Format umgewandelt
--- (shopChannelImagesFit); Kleinanzeigen nimmt kein WebP, GIF oder AVIF
-INSERT INTO defaults_oserp (key, value) VALUES ('shop_kleinanzeigen_image_format', 'jpg') ON CONFLICT (key) DO NOTHING;
+-- Das Bildformat der Marktplätze steht seit 2026-11-18 je Kanal in
+-- sales_channel_shop.settings (image_format); shop_kleinanzeigen_image_format
+-- übernimmt der Abschnitt „Abschrift“ unten in die Kleinanzeigen-Kanäle.
 -- Lieferstatus für den Kunden (dev/shop-bestellstatus.md): Anzeige auf der
 -- Rechnungsseite im Shop und Mail bei Änderung, beides per Vorgabe aus
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_delivery_status_show', '0') ON CONFLICT (key) DO NOTHING;
@@ -3321,6 +3338,13 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         ('ebay',     'ebay_page_shipping',                    'page_shipping',                    false),
         ('ebay',     'ebay_page_returns',                     'page_returns',                     false),
         ('ebay',     'ebay_page_about',                       'page_about',                       false),
+        -- Bildformat des Kanals (dev/shop-medienbibliothek.md, Schritt 3):
+        -- leer = Format der Datei beibehalten, sonst das Format, in dem der
+        -- Marktplatz alle Bilder bekommt (shop_channel_image_format). Den
+        -- alten Schlüssel gab es bei eBay nie; bei Kleinanzeigen stand er in
+        -- der Firmenkonfiguration und galt für alle Kanäle der Art.
+        ('ebay',     'ebay_image_format',                     'image_format',                     false),
+        ('kleinanzeigen', 'shop_kleinanzeigen_image_format',   'image_format',        false),
         -- Kleinanzeigen (dev/shop-kleinanzeigen.md): keine Schnittstelle, die
         -- Schlüssel gab es nie in defaults_oserp — die Abschrift findet nichts.
         -- Konto und Standort der Anzeigen
@@ -3349,6 +3373,18 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         ('kleinanzeigen', 'kleinanzeigen_login_cookies',       'login_cookies',       true),
         ('kleinanzeigen', 'kleinanzeigen_contact_name',        'contact_name',        false)
 $$;
+
+-- Bildformat für Kleinanzeigen: galt bis 2026-11-18 für alle Kanäle der Art
+-- (shop_kleinanzeigen_image_format) — jeder Kanal ohne eigenes Format
+-- bekommt den Wert, bevor die Abschrift unten nur den Standardkanal bedient
+-- und der Schlüssel danach verschwindet.
+UPDATE sales_channel_shop c
+   SET settings = COALESCE(c.settings, '{}'::jsonb) || jsonb_build_object('image_format', lower(btrim(d.value)))
+  FROM defaults_oserp d
+ WHERE d.key = 'shop_kleinanzeigen_image_format'
+   AND btrim(COALESCE(d.value, '')) <> ''
+   AND c.type = 'kleinanzeigen'
+   AND NOT jsonb_exists(COALESCE(c.settings, '{}'::jsonb), 'image_format');
 
 -- Abschrift in den Standardkanal der Art: übernimmt die Werte, die bis
 -- Schritt 5 im Reiter „Shop" unter den alten Schlüsseln gepflegt wurden.
@@ -3537,22 +3573,51 @@ COMMENT ON COLUMN media_shop.sha256           IS 'Prüfsumme der Datei, für den
 COMMENT ON COLUMN media_shop.thumbnail_sha256 IS 'Prüfsumme des Vorschaubilds (thumbnails/<filename>), nur bei Bildern';
 COMMENT ON COLUMN media_shop.thumbnail_size   IS 'Größte Seite, mit der das Vorschaubild erzeugt wurde (shop_thumbnail_size)';
 
--- Welche Artikel eine Datei nennen. Die Namen in parts_ext können aus der
--- Bridge noch ein Verzeichnis tragen — verglichen wird der Dateiname.
+-- Fremdschlüssel der Kanalbilder auf die Bibliothek (Schritt 3). Verschwindet
+-- ein Bild aus der Bibliothek, verschwindet es aus den Kanälen — gelöscht wird
+-- es aber nur ohne Verwendung (shop_media_usage). Jedes Bild höchstens einmal
+-- je Artikel und Kanal.
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint
+                    WHERE conrelid = 'parts_channel_image_shop'::regclass
+                      AND conname = 'parts_channel_image_shop_media_id_fk') THEN
+        ALTER TABLE parts_channel_image_shop
+            ADD CONSTRAINT parts_channel_image_shop_media_id_fk FOREIGN KEY (media_id)
+            REFERENCES media_shop (id) ON UPDATE NO ACTION ON DELETE CASCADE;
+    END IF;
+END $$;
+
+CREATE UNIQUE INDEX IF NOT EXISTS parts_channel_image_shop_media_key
+    ON parts_channel_image_shop (parts_id, channel_id, media_id) WHERE media_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS parts_channel_image_shop_media_idx ON parts_channel_image_shop (media_id);
+-- Dasselbe Bild erkennt die Bibliothek an der Prüfsumme (kein zweites Mal ablegen)
+CREATE INDEX IF NOT EXISTS media_shop_sha256_idx ON media_shop (sha256);
+
+-- Welche Artikel eine Datei verwenden: die sie in parts_ext nennen (HugoShop)
+-- und, bei Bildern, die sie in einem Marktplatz-Kanal zeigen. Die Namen in
+-- parts_ext können aus der Bridge noch ein Verzeichnis tragen — verglichen
+-- wird der Dateiname.
 CREATE OR REPLACE FUNCTION shop_media_usage(p_kind text, p_filename text)
 RETURNS TABLE (parts_id integer, partnumber text, description text)
     LANGUAGE sql STABLE AS $$
     SELECT p.id, p.partnumber, p.description
-      FROM parts_ext pe
-      JOIN parts p ON p.id = pe.parts_id
-     WHERE CASE p_kind
-           WHEN 'image' THEN jsonb_typeof(pe.hugoshop_images) = 'array'
-                AND EXISTS (SELECT 1 FROM jsonb_array_elements_text(pe.hugoshop_images) e
-                             WHERE regexp_replace(e, '^.*/', '') = p_filename)
-           WHEN 'download' THEN jsonb_typeof(pe.hugoshop_downloads) = 'object'
-                AND EXISTS (SELECT 1 FROM jsonb_each_text(pe.hugoshop_downloads) d
-                             WHERE regexp_replace(d.value, '^.*/', '') = p_filename)
-           ELSE false END
+      FROM parts p
+     WHERE p.id IN (
+           SELECT pe.parts_id
+             FROM parts_ext pe
+            WHERE CASE p_kind
+                  WHEN 'image' THEN jsonb_typeof(pe.hugoshop_images) = 'array'
+                       AND EXISTS (SELECT 1 FROM jsonb_array_elements_text(pe.hugoshop_images) e
+                                    WHERE regexp_replace(e, '^.*/', '') = p_filename)
+                  WHEN 'download' THEN jsonb_typeof(pe.hugoshop_downloads) = 'object'
+                       AND EXISTS (SELECT 1 FROM jsonb_each_text(pe.hugoshop_downloads) d
+                                    WHERE regexp_replace(d.value, '^.*/', '') = p_filename)
+                  ELSE false END
+           UNION
+           SELECT i.parts_id
+             FROM parts_channel_image_shop i
+             JOIN media_shop m ON m.id = i.media_id
+            WHERE p_kind = 'image' AND m.kind = 'image' AND m.filename = p_filename)
      ORDER BY p.partnumber
 $$;
 
@@ -3587,6 +3652,202 @@ BEGIN
     RETURN anzahl;
 END;
 $$;
+
+-- ----------------------------------------------------------------------------
+-- Bilder der Marktplätze aus der Bibliothek (Schritt 3, 2026-11-18)
+-- ----------------------------------------------------------------------------
+--
+-- Ein Marktplatz bekommt jedes Bild in dem Format, das sein Kanal verlangt
+-- (image_format in sales_channel_shop.settings) und das er annimmt
+-- (channel_image_format_shop). Passt das Format der Datei, liefert
+-- part-image.php das Original aus images/; sonst eine Fassung, die
+-- OpensourceERP daneben ablegt: shop/media/channel/<format>/<media_id>.<format>.
+-- Das Original bleibt maßgeblich — die Fassung ist ein abgeleitetes Erzeugnis
+-- wie das Vorschaubild und entsteht neu, wenn sich das Original ändert
+-- (source_sha256) oder der Kanal ein anderes Format bekommt.
+
+-- Formate, die eine Kanalart annimmt. Kanalarten ohne Zeile (HugoShop) nehmen
+-- alles. fallback = Format, in das gewandelt wird, wenn der Kanal das Format
+-- der Datei beibehalten soll, der Marktplatz es aber nicht nimmt.
+-- eBay holt die Bilder ab — Picture Services nimmt laut Doku auch AVIF und
+-- HEIC, hier bewusst nur, was sicher durchgeht. Kleinanzeigen nennt keine
+-- Formate: JPEG und PNG, wie die Webseite sie zeigt.
+CREATE TABLE IF NOT EXISTS channel_image_format_shop
+(
+    channel_type text NOT NULL,
+    format       text NOT NULL CHECK (format IN ('jpg', 'png', 'gif', 'webp', 'avif')),
+    fallback     boolean NOT NULL DEFAULT false,
+    CONSTRAINT channel_image_format_shop_pkey PRIMARY KEY (channel_type, format)
+);
+
+COMMENT ON TABLE  channel_image_format_shop              IS 'Shop: Bildformate, die eine Kanalart (Marktplatz) annimmt';
+COMMENT ON COLUMN channel_image_format_shop.channel_type IS 'Art des Kanals wie sales_channel_shop.type (ebay, kleinanzeigen, amazon)';
+COMMENT ON COLUMN channel_image_format_shop.format       IS 'jpg, png, gif, webp oder avif';
+COMMENT ON COLUMN channel_image_format_shop.fallback     IS 'Ersatzformat der Kanalart für Bilder in einem Format, das sie nicht annimmt';
+
+INSERT INTO channel_image_format_shop (channel_type, format, fallback) VALUES
+    ('ebay', 'jpg', true), ('ebay', 'png', false), ('ebay', 'gif', false), ('ebay', 'webp', false),
+    ('kleinanzeigen', 'jpg', true), ('kleinanzeigen', 'png', false),
+    ('amazon', 'jpg', true), ('amazon', 'png', false), ('amazon', 'gif', false)
+ON CONFLICT (channel_type, format) DO NOTHING;
+
+-- Fassungen eines Bilds in einem anderen Format, je Bild und Format eine.
+CREATE TABLE IF NOT EXISTS media_variant_shop
+(
+    media_id      integer NOT NULL,
+    format        text NOT NULL,
+    source_sha256 text NOT NULL,
+    sha256        text NOT NULL,
+    size          bigint NOT NULL,
+    mtime         timestamp NOT NULL DEFAULT now(),
+    CONSTRAINT media_variant_shop_pkey PRIMARY KEY (media_id, format),
+    CONSTRAINT media_variant_shop_media_id_fk FOREIGN KEY (media_id)
+        REFERENCES media_shop (id) ON UPDATE NO ACTION ON DELETE CASCADE
+);
+
+COMMENT ON TABLE  media_variant_shop               IS 'Shop: Fassungen eines Bilds der Medienbibliothek im Format eines Marktplatz-Kanals (Datei unter backend/data/<db>/shop/media/channel/<format>/<media_id>.<format>)';
+COMMENT ON COLUMN media_variant_shop.source_sha256 IS 'Prüfsumme des Originals, aus dem die Fassung entstand — weicht media_shop.sha256 ab, ist sie veraltet';
+COMMENT ON COLUMN media_variant_shop.sha256        IS 'Prüfsumme der Fassung; ihr Anfang steht in der öffentlichen Adresse, damit der Marktplatz ein geändertes Bild neu holt';
+
+-- Bildformat aus dem MIME-Typ (image/jpeg → jpg)
+CREATE OR REPLACE FUNCTION shop_media_format(p_mime text) RETURNS text
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE WHEN p_mime = 'image/jpeg' THEN 'jpg' ELSE split_part(COALESCE(p_mime, ''), '/', 2) END
+$$;
+
+-- Prozentkodierung für den Dateinamen in einer Adresse: die Bibliothek
+-- erlaubt Buchstaben aller Sprachen, eBay verlangt eine gültige Adresse.
+CREATE OR REPLACE FUNCTION shop_urlencode(p_text text) RETURNS text
+    LANGUAGE sql IMMUTABLE AS $$
+    SELECT COALESCE(string_agg(CASE WHEN z.zeichen ~ '^[A-Za-z0-9._~-]$' THEN z.zeichen
+                                    ELSE regexp_replace(upper(encode(convert_to(z.zeichen, 'UTF8'), 'hex')), '(..)', '%\1', 'g') END,
+                               '' ORDER BY z.stelle), '')
+      FROM regexp_split_to_table(COALESCE(p_text, ''), '') WITH ORDINALITY AS z(zeichen, stelle)
+$$;
+
+-- Format, in dem ein Kanal ein Bild bekommt, dessen Datei im Format p_format
+-- liegt. Das Wunschformat des Kanals (image_format), wenn die Kanalart es
+-- annimmt; sonst das Format der Datei, wenn die Kanalart es annimmt; sonst
+-- ihr Ersatzformat. Kanalarten ohne Formatliste bekommen die Datei, wie sie ist.
+CREATE OR REPLACE FUNCTION shop_channel_image_format(p_channel_id integer, p_format text) RETURNS text
+    LANGUAGE sql STABLE AS $$
+    SELECT CASE WHEN NOT k.liste THEN p_format
+                WHEN k.wunsch <> '' AND EXISTS (SELECT 1 FROM channel_image_format_shop f
+                                                 WHERE f.channel_type = k.type AND f.format = k.wunsch) THEN k.wunsch
+                WHEN EXISTS (SELECT 1 FROM channel_image_format_shop f
+                              WHERE f.channel_type = k.type AND f.format = p_format) THEN p_format
+                ELSE (SELECT f.format FROM channel_image_format_shop f
+                       WHERE f.channel_type = k.type ORDER BY f.fallback DESC, f.format LIMIT 1) END
+      FROM (SELECT c.type,
+                   COALESCE(NULLIF(lower(btrim(c.settings ->> 'image_format')), 'original'), '') AS wunsch,
+                   EXISTS (SELECT 1 FROM channel_image_format_shop f WHERE f.channel_type = c.type) AS liste
+              FROM sales_channel_shop c WHERE c.id = p_channel_id) k
+$$;
+
+-- Stand der Kanalbilder: je Zeile das Bild der Bibliothek, das Format der
+-- Datei, das Format, das der Kanal verlangt, und — wenn beide abweichen — die
+-- Prüfsumme der aktuellen Fassung (NULL = fehlt oder veraltet). 0 als Artikel
+-- oder Kanal meint alle. legacy: Zeile von früher, Datei im Artikelordner.
+CREATE OR REPLACE FUNCTION shop_channel_image_state(p_parts_id integer, p_channel_id integer)
+RETURNS TABLE (id integer, parts_id integer, channel_id integer, sort integer, media_id integer, filename text,
+               sha256 text, source_format text, format text, variant_sha256 text, legacy boolean)
+    LANGUAGE sql STABLE AS $$
+    SELECT i.id, i.parts_id, i.channel_id, i.sort, m.id, COALESCE(m.filename, i.filename),
+           m.sha256, q.format, z.format, v.sha256, m.id IS NULL
+      FROM parts_channel_image_shop i
+      LEFT JOIN media_shop m ON m.id = i.media_id
+      LEFT JOIN LATERAL (SELECT shop_media_format(m.mime) AS format WHERE m.id IS NOT NULL) q ON true
+      LEFT JOIN LATERAL (SELECT shop_channel_image_format(i.channel_id, q.format) AS format WHERE m.id IS NOT NULL) z ON true
+      LEFT JOIN media_variant_shop v ON v.media_id = m.id AND v.format = z.format
+                                    AND z.format <> q.format AND v.source_sha256 = m.sha256
+     WHERE (COALESCE(p_parts_id, 0) = 0 OR i.parts_id = p_parts_id)
+       AND (COALESCE(p_channel_id, 0) = 0 OR i.channel_id = p_channel_id)
+$$;
+
+-- Bilder eines Artikels in einem Marktplatz-Kanal, in der Reihenfolge des
+-- Kanals — eine Stelle für Artikelkarte, Anzeige, Feed und Abgleich.
+--   path   Datei unter backend/data/<db>/ — die Fassung im Format des Kanals,
+--          sonst das Original
+--   url    öffentliche Adresse (backend/webhook/part-image.php); s ist der
+--          Anfang der Prüfsumme: ein geändertes Bild hat eine neue Adresse
+--   ready  false, solange die Fassung im Format des Kanals noch fehlt
+--          (shopChannelImagesPrepare erzeugt sie) — bis dahin das Original
+CREATE OR REPLACE FUNCTION shop_channel_images(p_parts_id integer, p_channel_id integer) RETURNS jsonb
+    LANGUAGE sql STABLE AS $$
+    SELECT COALESCE(jsonb_agg(jsonb_build_object(
+               'id',       s.id,
+               'media_id', s.media_id,
+               'filename', s.filename,
+               'format',   CASE WHEN s.legacy THEN lower(substring(s.filename FROM '\.([^.]+)$'))
+                                WHEN s.variant_sha256 IS NOT NULL THEN s.format ELSE s.source_format END,
+               'ready',    s.legacy OR s.format = s.source_format OR s.variant_sha256 IS NOT NULL,
+               'path',     CASE WHEN s.legacy THEN 'parts/' || s.parts_id || '/' || s.filename
+                                WHEN s.variant_sha256 IS NOT NULL
+                                THEN 'shop/media/channel/' || s.format || '/' || s.media_id || '.' || s.format
+                                ELSE 'shop/media/images/' || s.filename END,
+               'url',      '/webhook/part-image.php?db=' || current_database()
+                           || CASE WHEN s.legacy THEN '&id=' || s.parts_id || '&f=' || s.filename
+                                   WHEN s.variant_sha256 IS NOT NULL
+                                   THEN '&m=' || s.media_id || '&v=' || s.format || '&s=' || left(s.variant_sha256, 12)
+                                   ELSE '&f=' || shop_urlencode(s.filename) || '&s=' || left(s.sha256, 12) END)
+           ORDER BY s.sort, s.id), '[]'::jsonb)
+      FROM shop_channel_image_state(p_parts_id, p_channel_id) s
+     WHERE p_parts_id > 0 AND p_channel_id > 0
+$$;
+
+-- Ein Bild der Bibliothek hat einen neuen Inhalt (ersetzt, umgewandelt) oder
+-- einen neuen Namen — beides ändert seine öffentliche Adresse: die Angebote
+-- der Marktplätze, die es zeigen, neu einstellen.
+CREATE OR REPLACE FUNCTION media_shop_channel_publish() RETURNS trigger AS $$
+BEGIN
+    IF NOT shop_extension_active() THEN
+        RETURN NULL;
+    END IF;
+    PERFORM shop_queue_job('publish_part', p.partnumber, NULL, c.id)
+       FROM parts_channel_image_shop i
+       JOIN parts_channel_shop pc ON pc.parts_id = i.parts_id AND pc.channel_id = i.channel_id AND pc.active
+       JOIN sales_channel_shop c ON c.id = pc.channel_id AND c.active AND c.type <> 'hugoshop'
+       JOIN parts p ON p.id = pc.parts_id
+      WHERE i.media_id = NEW.id;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    DROP TRIGGER IF EXISTS trigger_media_shop_channel_publish ON media_shop;
+    CREATE TRIGGER trigger_media_shop_channel_publish
+        AFTER UPDATE OF sha256, filename ON media_shop
+        FOR EACH ROW
+        WHEN (OLD.sha256 IS DISTINCT FROM NEW.sha256 OR OLD.filename IS DISTINCT FROM NEW.filename)
+        EXECUTE FUNCTION media_shop_channel_publish();
+END $$;
+
+-- Ein Marktplatz-Kanal bekommt ein anderes Bildformat (Kanalkarte): die
+-- Adressen seiner Bilder ändern sich — seine Angebote mit Bildern neu
+-- einstellen.
+CREATE OR REPLACE FUNCTION sales_channel_shop_image_format_publish() RETURNS trigger AS $$
+BEGIN
+    IF NOT shop_extension_active() OR NOT NEW.active OR NEW.type = 'hugoshop' THEN
+        RETURN NULL;
+    END IF;
+    PERFORM shop_queue_job('publish_part', p.partnumber, NULL, NEW.id)
+       FROM parts_channel_shop pc
+       JOIN parts p ON p.id = pc.parts_id
+      WHERE pc.channel_id = NEW.id AND pc.active
+        AND EXISTS (SELECT 1 FROM parts_channel_image_shop i
+                     WHERE i.parts_id = pc.parts_id AND i.channel_id = pc.channel_id);
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    DROP TRIGGER IF EXISTS trigger_sales_channel_shop_image_format_publish ON sales_channel_shop;
+    CREATE TRIGGER trigger_sales_channel_shop_image_format_publish
+        AFTER UPDATE OF settings ON sales_channel_shop
+        FOR EACH ROW
+        WHEN ((OLD.settings ->> 'image_format') IS DISTINCT FROM (NEW.settings ->> 'image_format'))
+        EXECUTE FUNCTION sales_channel_shop_image_format_publish();
+END $$;
 
 -- ============================================================================
 -- Verkaufskanal Kleinanzeigen (dev/shop-kleinanzeigen.md)
@@ -3766,7 +4027,10 @@ CREATE OR REPLACE FUNCTION shop_channel_image_source(p_parts_id integer, p_chann
                     (SELECT c.id FROM sales_channel_shop c
                        JOIN parts_ext pe ON pe.parts_id = p_parts_id
                       WHERE c.type = 'hugoshop' AND c.active
-                        AND jsonb_typeof(pe.hugoshop_images) = 'array' AND jsonb_array_length(pe.hugoshop_images) > 0
+                        -- CASE: die Reihenfolge von AND ist nicht garantiert, und die
+                        -- Länge eines JSON-null wäre ein Fehler
+                        AND jsonb_array_length(CASE WHEN jsonb_typeof(pe.hugoshop_images) = 'array'
+                                                    THEN pe.hugoshop_images ELSE '[]'::jsonb END) > 0
                       ORDER BY c.sortkey NULLS LAST, c.id LIMIT 1))
            END
 $$;
@@ -3829,13 +4093,8 @@ CREATE OR REPLACE FUNCTION kleinanzeigen_ad(p_parts_id integer, p_channel_id int
                'location',    btrim(concat_ws(' ', z.s ->> 'location_zip', z.s ->> 'location_city')),
                'onhand',      z.onhand,
                'unit',        z.unit,
-               'images',      (SELECT COALESCE(jsonb_agg(jsonb_build_object(
-                                          'id', i.id, 'filename', i.filename,
-                                          'url', '/webhook/part-image.php?db=' || current_database()
-                                                 || '&id=' || i.parts_id || '&f=' || i.filename)
-                                       ORDER BY i.sort, i.id), '[]'::jsonb)
-                                 FROM parts_channel_image_shop i
-                                WHERE i.parts_id = z.id AND i.channel_id = p_channel_id),
+               -- Bilder des Kanals aus der Medienbibliothek, im Format des Kanals
+               'images',      shop_channel_images(z.id, p_channel_id),
                'active',      z.aktiv,
                'sellable',    z.aktiv AND z.kanal_an AND NOT z.obsolete AND NOT z.unavailable AND COALESCE(z.onhand, 0) > 0,
                'sync_status', COALESCE(z.sync_status, 'draft'),
@@ -4103,7 +4362,9 @@ CREATE OR REPLACE FUNCTION shop_channel_default_settings(p_type text) RETURNS js
             'default_condition',                'good',
             'refresh_days',                     '30',
             'lead_mail_folder',                 'INBOX',
-            'text_style',                       'sachlich')
+            'text_style',                       'sachlich',
+            -- Bilder der Anzeigen als JPEG (Kanalkarte: Bildformat)
+            'image_format',                     'jpg')
         ELSE '{}'::jsonb END
 $$;
 

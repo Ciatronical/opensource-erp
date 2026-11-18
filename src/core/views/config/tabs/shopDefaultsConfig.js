@@ -109,11 +109,8 @@ const shopDefaultsConfig = [
     { name: "kleinanzeigen_worker_enabled", type: "checkbox", label: "crm_fields.kleinanzeigenWorkerEnabled", tooltip: "crm_fields.kleinanzeigenWorkerEnabled_help" },
     { name: "kleinanzeigen_worker_url", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenWorkerUrl", tooltip: "crm_fields.kleinanzeigenWorkerUrl_help" },
     { name: "kleinanzeigen_worker_token", type: "password", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.kleinanzeigenWorkerToken", tooltip: "crm_fields.kleinanzeigenWorkerToken_help" },
-    // Bildformat des Kanals: Kleinanzeigen nimmt nur JPEG und PNG; beim
-    // Veröffentlichen werden die Kanalbilder in dieses Format umgewandelt.
-    // Die Auswahl lädt der Tab (quellen.kleinanzeigenImageFormats) — was
-    // der Marktplatz nimmt und der Server schreiben kann, kommt vom Server.
-    { name: "shop_kleinanzeigen_image_format", type: "dynamic-select", source: "kleinanzeigenImageFormats", clearable: false, fieldstyle: "max-width: 40ch", label: "crm_fields.kleinanzeigenImageFormat", tooltip: "crm_fields.kleinanzeigenImageFormat_help" },
+    // Das Bildformat der Anzeigen steht seit 2026-11-18 je Kanal in der
+    // Kanalkarte (image_format, shopChannelSettingsConfig.js)
 
     { name: "shop_search", type: "headline", label: "crm_fields.shopSearch" },
 

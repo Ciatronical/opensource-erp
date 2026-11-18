@@ -1215,12 +1215,13 @@ function shopRunJobs($db, ?callable $melden = null, int $limit = 500, ?array $nu
     $sperren = [];
     $abgeschaltet = [];
 
-    // Kanalbilder ins Format ihres Marktplatzes nachziehen: Kleinanzeigen ins
-    // Zielformat der Firmenkonfiguration, sonst nach JPEG, was der Marktplatz
-    // nicht nimmt (Bestände von früher) — der Feed für Kleinanzeigen liest sie direkt
-    $angepasst = shopChannelImagesFit($db);
+    // Bilder der Marktplätze bereitstellen: Kanalbilder von früher in die
+    // Medienbibliothek übernehmen und die Fassungen im Format ihres Kanals
+    // erzeugen (Kanalkarte: Bildformat) — der Feed für Kleinanzeigen liest
+    // sie direkt
+    $angepasst = shopChannelImagesPrepare($db);
     if ($angepasst) {
-        $sagen(sprintf('%d Kanalbilder in das Format ihres Marktplatzes umgewandelt', $angepasst));
+        $sagen(sprintf('%d Bilder in das Format ihres Marktplatzes umgewandelt', $angepasst));
     }
 
     foreach (shopOpenJobs($db, $limit, $nurIds) as $auftrag) {

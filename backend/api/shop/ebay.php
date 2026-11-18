@@ -482,7 +482,8 @@ function createEbayListingParts($data) {
             try {
                 $inhalt = shopEbayFetchImage((string)$angebot['image_url']);
                 if ('' !== $inhalt) {
-                    shopChannelImageStore($db, $partsId, $kanal, $inhalt, basename(parse_url((string)$angebot['image_url'], PHP_URL_PATH) ?: 'ebay.jpg'));
+                    // ohne Namen: die Medienbibliothek nennt das Bild nach der Artikelnummer
+                    shopChannelImageStore($db, $partsId, $kanal, $inhalt);
                 }
             } catch (\Throwable $e) {
                 writeLog('createEbayListingParts: Bild für Artikel '.$partsId.' nicht übernommen: '.$e->getMessage(), true, DLOG_WRN);

@@ -370,6 +370,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import { shopFehler } from '../composables/useShop.js'
+import { shopMediaApi } from '../composables/shopMediaApi.js'
 import ShopChannelSettings from './shop-channel-settings.vue'
 import ShopDeliveryTermDialog from './shop-delivery-term.dialog.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
@@ -441,7 +442,7 @@ const arten = ref([])
 const artAuswahl = computed(() => arten.value.map(art => ({ value: art, title: artName(art) })))
 
 /** Vorlagensätze der HugoShops und Kategoriebaum von Kleinanzeigen — einmal geladen */
-const quellen = ref({ shopTemplateSets: [], kleinanzeigenCategories: [] })
+const quellen = ref({ shopTemplateSets: [], kleinanzeigenCategories: [], ebayImageFormats: [], kleinanzeigenImageFormats: [] })
 
 /** Der letzte eingeschaltete Kanal lässt sich nicht abschalten (V8) */
 const letzterAktiver = kanal => kanal.active && kanaele.value.filter(k => k.active).length === 1
@@ -787,6 +788,30 @@ async function ladeVorlagensaetze() {
     }
 }
 
+/**
+ * Bildformate für das Feld „Bildformat“ der Marktplatz-Kanäle: „Beibehalten“
+ * und je Kanalart, was der Marktplatz annimmt (channels.<art>.accepted vom
+ * Server); was der Server nicht schreiben kann, steht ausgegraut mit Grund da.
+ */
+async function ladeBildformate() {
+    try {
+        const { formats = [], channels = {} } = await shopMediaApi.formats()
+        const auswahl = art => [
+            { value: '', title: t('crm_fields.shopImageFormatOriginal') },
+            ...formats
+                .filter(f => (channels[art]?.accepted || []).includes(f.value))
+                .map(f => ({
+                    value: f.value,
+                    title: f.title,
+                    props: f.available ? {} : { disabled: true, subtitle: t('crm_fields.shopImageFormatUnavailable') },
+                })),
+        ]
+        quellen.value = { ...quellen.value, ebayImageFormats: auswahl('ebay'), kleinanzeigenImageFormats: auswahl('kleinanzeigen') }
+    } catch {
+        // Ohne Liste bleibt die Auswahl leer — das gespeicherte Format gilt weiter
+    }
+}
+
 /** Kategoriebaum von Kleinanzeigen (Blätter) für die Kanalvorgabe; die Kanalkarte ruft es nach dem Laden erneut */
 async function ladeKleinanzeigenKategorien() {
     try {
@@ -803,6 +828,7 @@ onMounted(() => {
     laden()
     ladeVorlagensaetze()
     ladeKleinanzeigenKategorien()
+    ladeBildformate()
 })
 
 // Ausstehende Änderungen nicht verlieren, wenn der Reiter gewechselt wird

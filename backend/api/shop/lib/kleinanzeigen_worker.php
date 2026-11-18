@@ -209,8 +209,8 @@ function shopKleinanzeigenWorkerHealth($db): array {
  * Die Anzeige eines Artikels als Nutzdaten für /ads/publish
  *
  * Aus kleinanzeigen_ad(): Titel, Text, Preis, Preisart, Versand, Zustand,
- * PLZ. Bilder als Dateipfade im Datenverzeichnis (der Dienst läuft auf
- * demselben Rechner). Kategorie: der Beschriftungspfad („Auto, Rad & Boot >
+ * PLZ. Bilder als Dateipfade im Datenverzeichnis, im Format des Kanals (der
+ * Dienst läuft auf demselben Rechner). Kategorie: der Beschriftungspfad („Auto, Rad & Boot >
  * Autoteile & Reifen > Weitere Autoteile“) für den Dialog der Webseite.
  *
  * @param object $db Company-Datenbankverbindung
@@ -221,18 +221,14 @@ function shopKleinanzeigenWorkerHealth($db): array {
  */
 function shopKleinanzeigenAdPayload($db, int $kanal, int $partsId): array {
     // Ohne eigene Bilder die des Artikels übernehmen (Online-Shop, anderer
-    // Kanal); dann alles ins Zielformat des Kanals
+    // Kanal); dann die Fassungen im Format des Kanals bereitstellen
     shopChannelImagesFill($db, $partsId, $kanal);
-    shopChannelImagesFit($db, $partsId, $kanal);
+    shopChannelImagesPrepare($db, $partsId, $kanal);
     $zeile = $db->getOne(
         "SELECT kleinanzeigen_ad(CAST(:parts_id AS integer), CAST(:kanal AS integer)) AS ad,
-                (SELECT COALESCE(json_agg(i.filename ORDER BY i.sort, i.id), '[]'::json)
-                   FROM parts_channel_image_shop i
-                  WHERE i.parts_id = CAST(:parts_id_bilder AS integer) AND i.channel_id = CAST(:kanal_bilder AS integer)) AS dateien,
                 COALESCE((SELECT c.settings ->> 'location_zip' FROM sales_channel_shop c WHERE c.id = CAST(:kanal_plz AS integer)), '') AS plz,
                 COALESCE((SELECT c.settings ->> 'contact_name' FROM sales_channel_shop c WHERE c.id = CAST(:kanal_name AS integer)), '') AS kontakt",
-        [':parts_id' => $partsId, ':kanal' => $kanal, ':parts_id_bilder' => $partsId, ':kanal_bilder' => $kanal,
-         ':kanal_plz' => $kanal, ':kanal_name' => $kanal]
+        [':parts_id' => $partsId, ':kanal' => $kanal, ':kanal_plz' => $kanal, ':kanal_name' => $kanal]
     );
     $anzeige = json_decode((string)($zeile['ad'] ?? 'null'), true);
     if (!$anzeige) {
@@ -248,11 +244,11 @@ function shopKleinanzeigenAdPayload($db, int $kanal, int $partsId): array {
         throw new ApiError('KLEINANZEIGEN_AD_INCOMPLETE', 'Dem Kanal fehlt die PLZ des Standorts');
     }
 
-    $verzeichnis = shopChannelImageDir($db, $partsId);
+    // Dateien der Bilder im Format des Kanals (Medienbibliothek bzw. ihre Fassungen)
     $bilder = [];
-    foreach (json_decode((string)$zeile['dateien'], true) ?: [] as $datei) {
-        $pfad = $verzeichnis.'/'.basename((string)$datei);
-        if (is_file($pfad)) {
+    foreach ($anzeige['images'] ?? [] as $bild) {
+        $pfad = fmDataDir().'/'.ltrim((string)($bild['path'] ?? ''), '/');
+        if (!in_array('..', explode('/', (string)($bild['path'] ?? '')), true) && is_file($pfad)) {
             $bilder[] = $pfad;
         }
     }

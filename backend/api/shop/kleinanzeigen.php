@@ -849,36 +849,26 @@ function getKleinanzeigenImagesZip($data) {
     $kanal = shopKleinanzeigenChannel($db, $data);
     $partsId = (int)($data['parts_id'] ?? 0);
     shopChannelImagesFill($db, $partsId, $kanal);
-    shopChannelImagesFit($db, $partsId, $kanal);
+    shopChannelImagesPrepare($db, $partsId, $kanal);
 
-    $zeile = $db->getOne(
-        "SELECT p.partnumber,
-                (SELECT COALESCE(json_agg(i.filename ORDER BY i.sort, i.id), '[]'::json)
-                   FROM parts_channel_image_shop i
-                  WHERE i.parts_id = p.id AND i.channel_id = CAST(:kanal AS integer)) AS dateien
-           FROM parts p WHERE p.id = :parts_id",
-        [':parts_id' => $partsId, ':kanal' => $kanal]
-    );
-    $dateien = $zeile ? (json_decode((string)$zeile['dateien'], true) ?: []) : [];
+    // Die Dateien im Format des Kanals, in seiner Reihenfolge
+    $zeile = $db->getOne("SELECT p.partnumber FROM parts p WHERE p.id = :parts_id", [':parts_id' => $partsId]);
+    $dateien = $zeile ? shopChannelImageFiles($db, $partsId, $kanal) : [];
     if (!$dateien) {
         resultInfo(false, 'KLEINANZEIGEN_NO_IMAGES', null, 'Der Artikel hat in diesem Kanal keine Bilder');
         return;
     }
 
-    $verzeichnis = shopChannelImageDir($db, $partsId);
     $zipPfad = tempnam(sys_get_temp_dir(), 'ka-');
     $zip = new ZipArchive();
     if (true !== $zip->open($zipPfad, ZipArchive::OVERWRITE)) {
         throw new ApiError('ZIP_ERROR', 'ZIP-Datei konnte nicht angelegt werden');
     }
     $nummer = 0;
-    foreach ($dateien as $datei) {
-        $pfad = $verzeichnis.'/'.basename((string)$datei);
-        if (is_file($pfad)) {
-            $nummer++;
-            $zip->addFile($pfad, sprintf('%02d-%s.%s', $nummer, preg_replace('/[^A-Za-z0-9_-]+/', '-', (string)$zeile['partnumber']),
-                                                 strtolower(pathinfo($pfad, PATHINFO_EXTENSION))));
-        }
+    foreach ($dateien as $pfad) {
+        $nummer++;
+        $zip->addFile($pfad, sprintf('%02d-%s.%s', $nummer, preg_replace('/[^A-Za-z0-9_-]+/', '-', (string)$zeile['partnumber']),
+                                             strtolower(pathinfo($pfad, PATHINFO_EXTENSION))));
     }
     $zip->close();
     $inhalt = (string)file_get_contents($zipPfad);

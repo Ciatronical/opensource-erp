@@ -1,6 +1,6 @@
 # Erweiterung Shop — Zuschnitt der Fachlogik
 
-Grundlage: `/home/worker/Projekte/dev.hugoshop.dev/kivitendo_bridge/framework/`
+Grundlage: `/home/work/Projekte/dev.hugoshop.dev/kivitendo_bridge/framework/`
 (4.055 Zeilen, 55 Funktionen). Ziel ist ein Backend in der Erweiterung `shop`,
 auf das zwei Zugänge zugreifen — das Admin-Panel im OSERP-Frontend für die
 Mitarbeiter des Betreibers und die Webshop-Webseite (`portal-ui`) für dessen

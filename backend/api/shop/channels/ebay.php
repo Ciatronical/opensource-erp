@@ -519,18 +519,11 @@ function shopEbayImageUrls($db, int $kanal, int $partsId, array $cfg): array {
     }
 
     // Ohne eigene Bilder die des Artikels übernehmen (HugoShop, anderer
-    // Kanal); Formate, die eBay nicht nimmt, vorher als JPEG nachziehen
+    // Kanal); dann die Fassungen im Format des Kanals bereitstellen — was
+    // eBay nicht nimmt, geht im Ersatzformat hinaus
     shopChannelImagesFill($db, $partsId, $kanal);
-    shopChannelImagesFit($db, $partsId, $kanal);
-    $zeilen = $db->getAll(
-        "SELECT '/webhook/part-image.php?db=' || current_database() || '&id=' || i.parts_id
-                || '&f=' || i.filename AS pfad
-           FROM parts_channel_image_shop i
-          WHERE i.parts_id = :parts_id AND i.channel_id = CAST(:kanal AS integer)
-          ORDER BY i.sort, i.id",
-        [':parts_id' => $partsId, ':kanal' => $kanal]
-    );
-    return array_map(fn($zeile) => 'https://'.$host.$zeile['pfad'], $zeilen);
+    shopChannelImagesPrepare($db, $partsId, $kanal);
+    return array_map(fn($bild) => 'https://'.$host.$bild['url'], shopChannelImages($db, $partsId, $kanal));
 }
 
 /**

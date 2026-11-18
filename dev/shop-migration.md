@@ -7,7 +7,7 @@ Bridge: `shop-bridge-abloesung.md`. Widerruf: `shop-widerruf.md`.
 ## Ziel
 
 Das Backend der Kivitendo-Bridge
-(`/home/worker/Projekte/dev.hugoshop.dev/kivitendo_bridge/framework/`, 4.055
+(`/home/work/Projekte/dev.hugoshop.dev/kivitendo_bridge/framework/`, 4.055
 Zeilen, 55 Funktionen) wird zur OSERP-Erweiterung `shop`. Auf dieses eine
 Backend greifen zwei Zugänge zu:
 
@@ -695,7 +695,7 @@ erst der erste Aufruf im Browser.
 ## Stufe 7 — was angelegt wurde
 
 Diese Stufe berührt **das Bridge-Repository**, nicht OpensourceERP:
-`/home/worker/Projekte/dev.hugoshop.dev/kivitendo_bridge/`.
+`/home/work/Projekte/dev.hugoshop.dev/kivitendo_bridge/`.
 
 ### Das `portal-ui` verträgt jetzt beide Backends
 

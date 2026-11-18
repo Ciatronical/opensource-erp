@@ -1,8 +1,9 @@
 # Shop: Medienbibliothek in OpensourceERP
 
-Stand 2026-10-15. Status: **in Umsetzung** — Entscheidungen B1–B7 wie
-vorgeschlagen bestätigt; Schritt 1 (Bibliothek) und Schritt 2 (Verteilung an
-HugoCMS) umgesetzt, Schritte 3–4 offen. Löst E6 aus `dev/shop-hugocms-trennung.md` ab („die Medien
+Stand 2026-11-18. Status: **in Umsetzung** — Entscheidungen B1–B7 wie
+vorgeschlagen bestätigt; Schritt 1 (Bibliothek), Schritt 2 (Verteilung an
+HugoCMS) und Schritt 3 (Marktplätze auf die Bibliothek) umgesetzt, Schritt 4
+offen. Löst E6 aus `dev/shop-hugocms-trennung.md` ab („die Medien
 bleiben auf der Webseite“): Produktbilder, Vorschaubilder und Downloads werden
 künftig in OpensourceERP verwaltet, zentral für alle Verkaufskanäle, mit
 einem Dateimanager in der Shop-Erweiterung.
@@ -44,10 +45,10 @@ Zahlen der Testwebseite sonic24: 7 486 Produktbilder (476 MB), Vorschaubilder
   die Namen sind zugleich die Adressen auf der Webseite. Umbenennen im
   Dateimanager schreibt die Verweise um, Löschen ist nur ohne Verwendung
   möglich („Wo verwendet“ über eine jsonb-Abfrage).
-- eBay (B3): `parts_channel_image_shop` hält heute je Kanal eine Kopie der
-  Datei unter `data/<db>/parts/<id>/`. Künftig verweist die Zeile auf die
-  Bibliothek (`media_id`, Reihenfolge je Kanal bleibt); `webhook/part-image.php`
-  liefert aus der Bibliothek. Die Kopien entfallen nach einer Übernahme.
+- eBay (B3): `parts_channel_image_shop` hielt je Kanal eine Kopie der
+  Datei unter `data/<db>/parts/<id>/`. Seit Schritt 3 verweist die Zeile auf
+  die Bibliothek (`media_id`, Reihenfolge je Kanal bleibt); `webhook/part-image.php`
+  liefert aus der Bibliothek. Die Kopien entfallen mit der Übernahme.
 
 ### Oberfläche
 
@@ -284,12 +285,90 @@ Vorschaubild bei abweichender Größe erneuert, Übertragung in Stücken von
 1 000 Bytes, Löschen aus der Bibliothek entfernt die Datei von der Webseite,
 Ausgabe des Laufs ohne `shopthumbnails`/`shopdownloads`).
 
+### Schritt 3 (2026-11-18): Marktplätze auf die Bibliothek
+
+| Teil | Wo |
+| --- | --- |
+| `parts_channel_image_shop.media_id` (Fremdschlüssel auf `media_shop`), `filename` nur noch für Zeilen von früher | `backend/upstall/shop/company_schema.sql`, Tabelle und Abschnitt Medienbibliothek |
+| Formate je Kanalart (`channel_image_format_shop`), Fassungen (`media_variant_shop`) | ebenda |
+| `shop_channel_image_format()`, `shop_channel_image_state()`, `shop_channel_images()`, `shop_urlencode()` | ebenda |
+| Zuordnen, Hochladen, Übernahme von früher, Fassungen erzeugen, Entfernen | `backend/api/shop/lib/channel_images.php` |
+| Fassungen mit ihrem Bild löschen, Umwandeln zieht die Kanäle nach | `backend/api/shop/lib/media.php` |
+| API: `assignShopChannelImages`, `deleteShopChannelImage` mit `keep` | `backend/api/shop/admin.php` |
+| Öffentliche Auslieferung aus der Bibliothek | `backend/webhook/part-image.php` |
+| Artikelkarte: „Aus den Bildern des Artikels“, Formathinweis | `src/features/shop/components/part-shop.card.vue` |
+| Kanalkarte: Feld „Bildformat für den Marktplatz“ | `shopChannelSettingsConfig.js`, `shop-channels.config.vue` |
+| Übernahme der Kopien mit Bericht | `tools/shop-media-import.php` |
+
+Einzelheiten:
+
+- **Zuordnung je Kanal bleibt.** Jede Zeile in `parts_channel_image_shop`
+  nennt Artikel, Kanal, Bild der Bibliothek und Reihenfolge; ein Bild
+  höchstens einmal je Artikel und Kanal. Verschiedene Bilder und Reihenfolgen
+  je Kanal sind möglich, ebenso Bilder nur für einen Marktplatz. Die Datei
+  liegt in jedem Fall einmal in `images/`.
+- **Bildformat je Kanal** (`image_format` in `sales_channel_shop.settings`,
+  Kanalkarte): leer = jedes Bild, wie es in der Bibliothek liegt; sonst das
+  gewählte Format. Welche Formate eine Kanalart annimmt, steht in
+  `channel_image_format_shop` (mit Ersatzformat für Bilder, die sie nicht
+  annimmt). Die Entscheidung trifft `shop_channel_image_format()`.
+  `shop_kleinanzeigen_image_format` aus der Firmenkonfiguration ist in die
+  Kleinanzeigen-Kanäle übernommen und entfällt. Der HugoShop hat kein
+  Kanalformat: sein Dateiname ist die Adresse auf der Webseite.
+- **Fassungen als Datei.** Weicht das Format des Kanals vom Format der Datei
+  ab, legt `shopChannelImagesPrepare()` eine Fassung unter
+  `shop/media/channel/<format>/<media_id>.<format>` ab und trägt sie mit der
+  Prüfsumme des Originals in `media_variant_shop` ein. Sie entsteht neu, wenn
+  das Original ersetzt wird oder der Kanal ein anderes Format bekommt; der
+  Läufer entfernt Fassungen, die kein Kanal mehr braucht. Die Funktion läuft
+  beim Zuordnen, vor dem Einstellen und im Läufer. Bis eine Fassung da ist,
+  nennt `shop_channel_images()` das Original (`ready` = false).
+- **Öffentliche Adressen** (`part-image.php`, ohne Datenbank):
+  `?db=<db>&f=<datei>` für das Original, `?db=<db>&m=<media_id>&v=<format>`
+  für eine Fassung, dazu `&s=<Anfang der Prüfsumme>` — ein geändertes Bild
+  hat eine neue Adresse, der Marktplatz holt es neu. Die alte Form
+  `?db=<db>&id=<parts_id>&f=<datei>` gilt für Zeilen von früher weiter.
+  Downloads und Vorschaubilder sind dort nicht erreichbar.
+- **Hochladen im Kanal** legt das Bild im Format der Datei in die Bibliothek
+  (Name nach der Datei, belegte Namen bekommen `-2`, `-3` …; dasselbe Bild
+  nach Prüfsumme nur einmal) und ordnet es zu. **Zuordnen** nimmt Bilder, die
+  der Artikel schon hat (HugoShop, andere Kanäle), ohne neue Datei.
+  „Bilder aus … übernehmen“ und „Als neu verwenden“ legen nur Zeilen an.
+- **Verwendung**: `shop_media_usage()` zählt bei Bildern auch die
+  Marktplatz-Kanäle. Ein Bild, das ein Kanal zeigt, lässt sich nicht aus der
+  Bibliothek löschen und wird beim Hochladen gleichen Namens nicht ersetzt.
+  Entfernen aus dem Kanal löscht ein für den Kanal hochgeladenes oder
+  übernommenes Bild aus der Bibliothek, wenn es danach niemand mehr verwendet
+  und die offene Artikelkarte es nicht mehr führt; ein Bild, das schon vorher
+  in der Bibliothek lag, bleibt. Der Abgleich (`shopMediaSync`) entfernt
+  keinen Eintrag, den ein Kanal zeigt, sondern meldet die fehlende Datei.
+- **Webseite**: Bilder, die nur ein Marktplatz zeigt, gehen nicht an HugoCMS
+  (`shopHugoCmsMediaList`). Sonst gilt B7 weiter.
+- **Neu einstellen**: Trigger legen `publish_part` an, wenn ein Kanalbild
+  zugeordnet, entfernt, umsortiert oder übernommen wird, wenn ein gezeigtes
+  Bild einen neuen Inhalt bekommt und wenn ein Kanal ein anderes Bildformat
+  bekommt.
+- **Übernahme von früher**: Zeilen ohne `media_id` nennen eine Kopie unter
+  `data/<db>/parts/<id>/`. `shopChannelImagesAdopt()` legt sie als
+  `<Artikelnummer>-<Kanalart>` in die Bibliothek, hängt die Zeile um und
+  löscht die Kopie, sobald keine Zeile sie mehr nennt. Das geschieht im
+  Läufer, vor jeder Verwendung und mit Bericht in
+  `tools/shop-media-import.php`. Scheitert ein Bild (Datei fehlt), bleibt die
+  Zeile, wie sie ist, und steht im Protokoll.
+
+Geprüft: die neuen Schemateile samt Triggern und 17 Abfragen in einer
+Wegwerf-Instanz (Formatwahl, Bildliste mit und ohne Fassung, veraltete
+Fassung, Verwendung, Kaskade, zweiter Lauf des Schemas), `part-image.php` mit
+gültigen und böswilligen Anfragen, Probe-Build. Der Probelauf der
+PHP-Funktionen gegen eine Datenbank steht aus.
+
 ## Reihenfolge der Umsetzung
 
 1. Bibliothek: Tabelle, Ablage, Dateimanager mit drei Wurzeln, Verwendung,
    Artikelkarte, Vorschaubilder in OpensourceERP, Importwerkzeug. — umgesetzt
 2. Verteilung: Binärübertragung in HugoCMS, Freigaben als Schreibziele,
    Abgleich mit gemerkten Prüfsummen, Lauf in OpensourceERP. — umgesetzt
-3. eBay auf die Bibliothek, Kanalkopien übernehmen.
+3. Marktplätze auf die Bibliothek, Kanalkopien übernehmen, Bildformat je
+   Kanal. — umgesetzt
 4. Ablösung in HugoCMS (`shopthumbnails`, `shopdownloads`), Dokumentation
    (E6 zurücknehmen, `shop-betrieb.md`, HugoCMS-README).

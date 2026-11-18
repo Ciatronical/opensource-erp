@@ -572,10 +572,13 @@
                                     />
                                 </v-col>
 
-                                <!-- Bilder eines Marktplatzes (V12); der HugoShop führt seine unten -->
+                                <!-- Bilder eines Marktplatzes (V12) aus der Medienbibliothek; der HugoShop führt seine unten -->
                                 <v-col v-if="kanal.type !== 'hugoshop'" cols="12" class="py-1">
                                     <div class="text-caption text-medium-emphasis mb-1">
                                         {{ t('ShopView.partCard.channelImages', { kanal: kanalName(kanal) }) }}
+                                        <template v-if="kanal.image_format">
+                                            · {{ t('ShopView.partCard.channelImageFormat', { format: kanal.image_format.toUpperCase() }) }}
+                                        </template>
                                     </div>
                                     <div v-if="!partsId" class="text-caption">
                                         {{ kanal.template_images
@@ -632,6 +635,45 @@
                                             >
                                                 {{ t('ShopView.partCard.addImage') }}
                                             </v-btn>
+                                            <!-- Bilder, die der Artikel schon hat (HugoShop, andere Kanäle): zuordnen statt neu hochladen -->
+                                            <v-menu v-if="bildKandidaten(kanal).length" :close-on-content-click="false" max-height="420">
+                                                <template #activator="{ props: menue }">
+                                                    <v-btn
+                                                        v-bind="menue"
+                                                        size="small"
+                                                        variant="tonal"
+                                                        prepend-icon="mdi-image-multiple-outline"
+                                                        :loading="bildLaedt"
+                                                        :disabled="!darfBearbeiten"
+                                                    >
+                                                        {{ t('ShopView.partCard.addFromPart') }}
+                                                    </v-btn>
+                                                </template>
+                                                <v-list density="compact">
+                                                    <v-list-item
+                                                        prepend-icon="mdi-check-all"
+                                                        :title="t('ShopView.partCard.addFromPartAll')"
+                                                        @click="bilderZuordnen(kanal, bildKandidaten(kanal))"
+                                                    />
+                                                    <v-divider />
+                                                    <v-list-item
+                                                        v-for="name in bildKandidaten(kanal)"
+                                                        :key="name"
+                                                        :title="name"
+                                                        @click="bilderZuordnen(kanal, [name])"
+                                                    >
+                                                        <template #prepend>
+                                                            <v-img
+                                                                :src="mediaPreviewUrl('thumbnails://' + name)"
+                                                                width="40"
+                                                                height="40"
+                                                                cover
+                                                                class="rounded border mr-3"
+                                                            />
+                                                        </template>
+                                                    </v-list-item>
+                                                </v-list>
+                                            </v-menu>
                                             <v-btn
                                                 v-for="quelle in bildQuellen(kanal)"
                                                 :key="quelle.channel_id"
@@ -713,6 +755,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useShop } from '@/features/shop/composables/useShop.js'
+import { mediaPreviewUrl } from '@/features/shop/composables/shopMediaApi.js'
 import * as toasts from '@/core/utils/toasts.js'
 import ShopKeyValueEditor from './shop-key-value.editor.vue'
 import ShopPartMedia from './shop-part-media.vue'
@@ -930,7 +973,10 @@ function alsKanal(zeile) {
         // HugoShop: Versandart und Preis je Zone (nur zum Lesen)
         shipping_prices: Array.isArray(lies(zeile.shipping_prices)) ? lies(zeile.shipping_prices) : [],
         external_id: zeile.external_id || '',
+        // Marktplatz: Bilder aus der Medienbibliothek (id, filename, url) und
+        // das Format, in dem der Kanal sie bekommt (leer = wie die Datei)
         images: Array.isArray(lies(zeile.images)) ? lies(zeile.images) : [],
+        image_format: String(zeile.image_format || ''),
     }
 }
 
@@ -979,16 +1025,49 @@ const bildLaedt = ref(false)
 
 /**
  * Kanäle, aus denen ein Marktplatz Bilder übernehmen kann: die anderen
- * gewählten. In einen HugoShop überträgt OSERP keine Bilder — sie liegen bei
- * HugoCMS auf dem Webserver.
+ * gewählten. Übernommen werden nur Zuordnungen — die Bilder liegen einmal in
+ * der Medienbibliothek. Die Liste des HugoShops pflegt der Abschnitt Medien.
  */
 const bildQuellen = kanal => aktiveKanaele.value.filter(k => k.channel_id !== kanal.channel_id
     && !(k.type === 'hugoshop' && kanal.type === 'hugoshop')
     && (k.type === 'hugoshop' ? daten.value.images.length > 0 : k.images.length > 0))
 
+/** Dateiname ohne Verzeichnis — die Namen in parts_ext können noch eines tragen */
+const bildName = name => String(name || '').trim().replace(/^.*[\\/]/, '')
+
+/**
+ * Bilder des Artikels, die der Kanal noch nicht zeigt: die des HugoShops
+ * (auch frisch hochgeladene, noch ungespeicherte) und die der anderen
+ * Marktplätze. Sie liegen schon in der Medienbibliothek und werden nur
+ * zugeordnet.
+ */
+function bildKandidaten(kanal) {
+    const vorhanden = new Set(kanal.images.map(b => bildName(b.filename)))
+    const namen = [
+        ...daten.value.images.map(bildName),
+        ...daten.value.channels
+            .filter(k => k.channel_id !== kanal.channel_id && k.type !== 'hugoshop')
+            .flatMap(k => k.images.filter(b => b.media_id).map(b => bildName(b.filename))),
+    ]
+    return [...new Set(namen)].filter(name => name && !vorhanden.has(name))
+}
+
 /** Neue Bilderliste eines Kanals aus der Antwort übernehmen */
 function bilderSetzen(kanal, antwort) {
     if (antwort?.images) kanal.images = antwort.images
+}
+
+/** Ordnet dem Kanal Bilder der Medienbibliothek zu */
+async function bilderZuordnen(kanal, namen) {
+    bildLaedt.value = true
+    const antwort = await shop.assignChannelImages(Number(props.partsId), kanal.channel_id, namen)
+    bildLaedt.value = false
+    if (shop.error.value) {
+        toasts.error(shop.error.value)
+        return
+    }
+    bilderSetzen(kanal, antwort)
+    toasts.success(t('ShopView.partCard.imagesAssigned', { anzahl: antwort?.added ?? 0 }))
 }
 
 function bildWaehlen(kanal) {
@@ -1022,7 +1101,9 @@ async function bilderHochladen(kanal, dateien) {
 
 async function bildLoeschen(kanal, bild) {
     bildLaedt.value = true
-    bilderSetzen(kanal, await shop.deleteChannelImage(bild.id))
+    // Bilder, die die Karte für den HugoShop führt, bleiben in der Bibliothek —
+    // auch ungespeichert; sonst ginge ein nur noch dort gezeigtes Bild verloren
+    bilderSetzen(kanal, await shop.deleteChannelImage(bild.id, daten.value.images.map(bildName)))
     bildLaedt.value = false
     if (shop.error.value) toasts.error(shop.error.value)
 }

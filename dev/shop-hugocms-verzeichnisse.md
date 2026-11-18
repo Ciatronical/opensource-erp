@@ -1,7 +1,7 @@
 # Shop: Freigaben für den HugoShop in HugoCMS festlegen
 
 Stand 2026-10-09. Status: **umgesetzt** in OpensourceERP und HugoCMS
-(`/home/worker/Projekte/hugocms-2026`, eigene Richtlinien: `CLAUDE.md` dort —
+(`/home/work/Projekte/hugocms-2026`, eigene Richtlinien: `CLAUDE.md` dort —
 „Mount-Sicherheit ist die Grenze“), Entscheidungen E1–E5 wie vorgeschlagen.
 Getestet mit Wegwerf-Skripten und lesend gegen die lokale Testumgebung, noch
 nicht mit einem vollständigen Lauf gegen eine echte Webseite.

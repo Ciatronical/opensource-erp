@@ -517,7 +517,7 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
 // Binärdaten in Stücken (shopmediaupload), nicht über die Bereitstellung —
 // dort läge sonst alles doppelt. Die Prüfsummen stammen aus media_shop; was
 // HugoCMS schon hat, fordert es nicht an. Jede Shop-Webseite bekommt alle
-// Medien (B7). Nimmt HugoCMS noch keine Medien an (Version vor 2026-10-15),
+// Medien (B7) — außer Bildern, die nur ein Marktplatz-Kanal zeigt. Nimmt HugoCMS noch keine Medien an (Version vor 2026-10-15),
 // bleibt es beim alten Verfahren: Vorschaubilder dort, Downloads nur geprüft.
 
 require_once __DIR__.'/../../customer_vendor/filemanager.php';
@@ -550,7 +550,23 @@ function shopHugoCmsMediaList($db, array $freigaben): array {
     foreach (array_keys($ergebnis['anzahl']) as $bereich) {
         $verzeichnisse[$bereich] = shopMediaDir($db, $bereich);
     }
-    $zeilen = $db->getAll("SELECT kind, filename, sha256, size, thumbnail_sha256 FROM media_shop ORDER BY kind, filename") ?: [];
+    // Bilder, die nur ein Marktplatz-Kanal zeigt (für eBay oder Kleinanzeigen
+    // hochgeladen, von keinem Artikel im HugoShop genannt), gehören nicht auf
+    // die Webseite
+    $zeilen = $db->getAll(
+        "WITH genannt AS (
+             SELECT DISTINCT regexp_replace(e, '^.*/', '') AS name
+               FROM parts_ext pe
+              CROSS JOIN LATERAL jsonb_array_elements_text(
+                        CASE WHEN jsonb_typeof(pe.hugoshop_images) = 'array' THEN pe.hugoshop_images ELSE '[]'::jsonb END) e
+         )
+         SELECT m.kind, m.filename, m.sha256, m.size, m.thumbnail_sha256
+           FROM media_shop m
+          WHERE m.kind <> 'image'
+             OR NOT EXISTS (SELECT 1 FROM parts_channel_image_shop i WHERE i.media_id = m.id)
+             OR m.filename IN (SELECT name FROM genannt)
+          ORDER BY m.kind, m.filename"
+    ) ?: [];
     foreach ($zeilen as $zeile) {
         $ziele = 'image' === $zeile['kind']
             ? [['images', $zeile['sha256'], (int)$zeile['size']], ['thumbnails', $zeile['thumbnail_sha256'], null]]

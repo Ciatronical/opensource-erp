@@ -1,7 +1,7 @@
 # Shop: PHP-Dateien des Pakets signiert an HugoCMS übertragen
 
 Stand 2026-10-08. Status: **umgesetzt** in OpensourceERP und HugoCMS
-(`/home/worker/Projekte/hugocms-2026`, eigene Richtlinien: `CLAUDE.md` dort),
+(`/home/work/Projekte/hugocms-2026`, eigene Richtlinien: `CLAUDE.md` dort),
 nicht gegen eine echte Webseite getestet. Löst E9 aus
 `dev/shop-hugocms-trennung.md` ab. Entscheidungen S1–S3 wie vorgeschlagen.
 

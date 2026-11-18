@@ -8,6 +8,9 @@
 //   images/      Produktbilder (jpg, png, gif, webp, avif)
 //   thumbnails/  Vorschaubilder, von OpensourceERP erzeugt — nicht von Hand
 //   downloads/   Datenblätter, Anleitungen (pdf, zip, txt, auch Bilder)
+//   channel/     Fassungen der Bilder im Format eines Marktplatz-Kanals,
+//                <format>/<media_id>.<format> — von OpensourceERP erzeugt
+//                (lib/channel_images.php, media_variant_shop)
 //
 // Der Dateiname ist der Schlüssel (B2): die Artikel nennen ihn in parts_ext
 // (hugoshop_images, hugoshop_downloads), die Webseite liefert die Datei unter
@@ -500,7 +503,58 @@ function shopMediaThumbnail($db, string $name, int $groesse = 0, ?string &$grund
 }
 
 /**
- * Artikel, die eine Datei nennen
+ * Pfad der Fassung eines Bilds in einem anderen Format
+ *
+ * Fassungen für die Marktplätze (dev/shop-medienbibliothek.md, Schritt 3)
+ * liegen neben der Bibliothek unter shop/media/channel/<format>/ und heißen
+ * nach der Kennung des Bilds — ein Umbenennen des Originals berührt sie nicht.
+ * Welche es gibt, steht in media_variant_shop.
+ *
+ * @param object $db Company-Datenbankverbindung (bestimmt den Mandanten)
+ * @param int $mediaId Bild (media_shop.id)
+ * @param string $format jpg, png, gif, webp oder avif
+ * @param bool $anlegen fehlendes Verzeichnis anlegen
+ * @return string absoluter Pfad
+ * @throws ApiError MEDIA_FORMAT
+ */
+function shopMediaVariantPath($db, int $mediaId, string $format, bool $anlegen = false): string {
+    if (!isset(SHOP_MEDIA_IMAGE_TYPES[$format])) {
+        throw new ApiError('MEDIA_FORMAT', 'Unbekanntes Bildformat: '.$format);
+    }
+    $verzeichnis = dirname(shopMediaDir($db, 'images')).'/channel/'.$format;
+    if ($anlegen && !is_dir($verzeichnis)) {
+        fmMkdir($verzeichnis);
+    }
+    return $verzeichnis.'/'.$mediaId.'.'.$format;
+}
+
+/**
+ * Löscht die Dateien aller Fassungen eines Bilds
+ *
+ * Die Zeilen in media_variant_shop gehen mit dem Bild (Fremdschlüssel) oder
+ * beim Aufrufer; hier nur die Dateien.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $mediaId Bild (media_shop.id)
+ * @return void
+ */
+function shopMediaVariantFilesRemove($db, int $mediaId): void {
+    if ($mediaId <= 0) {
+        return;
+    }
+    foreach (array_keys(SHOP_MEDIA_IMAGE_TYPES) as $format) {
+        $datei = shopMediaVariantPath($db, $mediaId, $format);
+        if (is_file($datei)) {
+            @unlink($datei);
+        }
+    }
+}
+
+/**
+ * Artikel, die eine Datei verwenden
+ *
+ * Die sie in parts_ext nennen (HugoShop) und, bei Bildern, die sie in einem
+ * Marktplatz-Kanal zeigen (shop_media_usage).
  *
  * @param object $db Company-Datenbankverbindung
  * @param string $art image oder download
@@ -714,10 +768,22 @@ function shopMediaConvertFile($db, string $name, string $format): array {
     } finally {
         @unlink($tmp);
     }
+    // Die Marktplatz-Kanäle zeigen auf den Eintrag: sie folgen dem neuen,
+    // bevor der alte geht (sonst nähme der Fremdschlüssel ihre Zeilen mit).
+    // Die Trigger stellen die Angebote neu ein.
+    $db->execute(
+        "UPDATE parts_channel_image_shop i
+            SET media_id = :neu
+          WHERE i.media_id = (SELECT id FROM media_shop WHERE kind = 'image' AND filename = :name)
+            AND NOT EXISTS (SELECT 1 FROM parts_channel_image_shop d
+                             WHERE d.parts_id = i.parts_id AND d.channel_id = i.channel_id AND d.media_id = :neu_gleich)",
+        [':neu' => (int)$zeile['id'], ':name' => $name, ':neu_gleich' => (int)$zeile['id']]
+    );
     // Erst den alten Eintrag weg, dann die Verweise umschreiben — die
     // SQL-Funktion benennt sonst den alten Eintrag auf den schon vergebenen
     // neuen Namen um
-    $db->execute("DELETE FROM media_shop WHERE kind = 'image' AND filename = :name", [':name' => $name]);
+    $alt = $db->getOne("DELETE FROM media_shop WHERE kind = 'image' AND filename = :name RETURNING id", [':name' => $name]);
+    shopMediaVariantFilesRemove($db, (int)($alt['id'] ?? 0));
     $umgeschrieben = $db->getOne("SELECT shop_media_rename('image', :alt, :neu) AS parts", [':alt' => $name, ':neu' => $neu]);
     @unlink($quelle);
     $vorschau = shopMediaDir($db, 'thumbnails').'/'.$name;
@@ -730,7 +796,8 @@ function shopMediaConvertFile($db, string $name, string $format): array {
 }
 
 /**
- * Löscht eine Datei aus der Bibliothek — nur, wenn kein Artikel sie nennt
+ * Löscht eine Datei aus der Bibliothek — nur, wenn kein Artikel sie
+ * verwendet (weder in parts_ext noch in einem Marktplatz-Kanal)
  *
  * @param object $db Company-Datenbankverbindung
  * @param string $art image oder download
@@ -755,7 +822,9 @@ function shopMediaFileDelete($db, string $art, string $name): void {
             @unlink($vorschau);
         }
     }
-    $db->execute("DELETE FROM media_shop WHERE kind = :kind AND filename = :name", [':kind' => $art, ':name' => $name]);
+    $zeile = $db->getOne("DELETE FROM media_shop WHERE kind = :kind AND filename = :name RETURNING id", [':kind' => $art, ':name' => $name]);
+    // Fassungen für die Marktplätze gehen mit ihrem Bild
+    shopMediaVariantFilesRemove($db, (int)($zeile['id'] ?? 0));
 }
 
 /**
@@ -818,7 +887,22 @@ function shopMediaSync($db, ?callable $melden = null): array {
         }
         foreach (array_keys($bekannt) as $name) {
             if (!isset($vorhanden[$name])) {
-                $db->execute("DELETE FROM media_shop WHERE kind = :kind AND filename = :name", [':kind' => $art, ':name' => $name]);
+                // Ein Eintrag, den ein Marktplatz-Kanal zeigt, bleibt: mit ihm
+                // gingen die Zuordnungen der Kanäle (Fremdschlüssel) — ein
+                // vorübergehend nicht lesbares Verzeichnis leerte sonst alle
+                // Bildlisten. Der Bericht nennt die fehlende Datei.
+                $weg = $db->getOne(
+                    "DELETE FROM media_shop m
+                      WHERE m.kind = :kind AND m.filename = :name
+                        AND NOT EXISTS (SELECT 1 FROM parts_channel_image_shop i WHERE i.media_id = m.id)
+                     RETURNING m.id",
+                    [':kind' => $art, ':name' => $name]
+                );
+                if (!$weg) {
+                    $bilanz['unbrauchbar'][] = $bereich.'/'.$name.': Datei fehlt, wird aber in einem Marktplatz-Kanal gezeigt';
+                    continue;
+                }
+                shopMediaVariantFilesRemove($db, (int)$weg['id']);
                 $bilanz['entfernt']++;
             }
         }

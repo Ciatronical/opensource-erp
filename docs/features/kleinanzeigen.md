@@ -87,6 +87,6 @@ Der Shop-Läufer (`tools/shop-publish.php --reconcile-payments`, siehe `dev/shop
 - Verkäufe in `kleinanzeigen_sale_shop`, Anfragen in `kleinanzeigen_lead_shop`
 - SQL: `kleinanzeigen_ad()` (die fertige Anzeige), `kleinanzeigen_suggestions()` (Vorschläge), `kleinanzeigen_board()` (das Board), `kleinanzeigen_plain_text()`
 - Feed: `backend/webhook/kleinanzeigen-feed.php`
-- Bilder: `parts_channel_image_shop` wie bei eBay (`backend/api/shop/lib/channel_images.php`); Zielformat `shop_kleinanzeigen_image_format` (jpg, png), nachgezogen von `shopChannelImagesFit()` vor dem Einstellen, vor dem ZIP und im Läufer
+- Bilder: `parts_channel_image_shop` wie bei eBay (`backend/api/shop/lib/channel_images.php`) — Verweise auf die Medienbibliothek; Bildformat je Kanal in der Kanalkarte (`image_format`: jpg, png oder beibehalten), die Fassungen erzeugt `shopChannelImagesPrepare()` beim Zuordnen, vor dem Einstellen, vor dem ZIP und im Läufer (`dev/shop-medienbibliothek.md`, Schritt 3)
 - Kleinanzeigen-Dienst: `backend/services/kleinanzeigen/kleinanzeigen-worker.py` (Python, nodriver, aiohttp), Anbindung `backend/api/shop/lib/kleinanzeigen_worker.php`, Unit `install/oserp-kleinanzeigen.service`
 - Entwurf und Entscheidungen: `dev/shop-kleinanzeigen.md`

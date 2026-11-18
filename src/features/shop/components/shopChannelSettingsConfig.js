@@ -153,6 +153,11 @@ const ebay = [
             { name: "employee_login", type: "input", size: 30, fieldstyle: "max-width: 30ch", label: "crm_fields.ebayEmployeeLogin", tooltip: "crm_fields.ebayEmployeeLogin_help" },
         ],
     },
+    // Bildformat des Kanals (dev/shop-medienbibliothek.md, Schritt 3): leer =
+    // jedes Bild, wie es in der Medienbibliothek liegt. Die Auswahl lädt die
+    // Kanalverwaltung (quellen.ebayImageFormats) — was eBay annimmt und der
+    // Server schreiben kann, kommt vom Server.
+    { name: "image_format", type: "dynamic-select", source: "ebayImageFormats", clearable: false, fieldstyle: "max-width: 40ch", label: "crm_fields.channelImageFormat", tooltip: "crm_fields.channelImageFormat_help" },
     // Verkäufe mit Prüfung und übernommene Angebote (dev/shop-ebay.md)
     {
         name: "ebay_verkauf",
@@ -226,6 +231,11 @@ const kleinanzeigen = [
     },
 
     { name: "vorgaben", type: "headline", label: "crm_fields.kleinanzeigenDefaults" },
+
+    // Bildformat der Anzeigen: Kleinanzeigen nimmt nur JPEG und PNG. Leer =
+    // Format der Datei beibehalten; was Kleinanzeigen nicht nimmt, geht als
+    // JPEG hinaus (quellen.kleinanzeigenImageFormats, vom Server)
+    { name: "image_format", type: "dynamic-select", source: "kleinanzeigenImageFormats", clearable: false, fieldstyle: "max-width: 40ch", label: "crm_fields.channelImageFormat", tooltip: "crm_fields.channelImageFormat_help" },
 
     {
         name: "price_type", type: "select", fieldstyle: "max-width: 30ch",
