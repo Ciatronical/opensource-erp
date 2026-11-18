@@ -2879,16 +2879,238 @@ CREATE TABLE IF NOT EXISTS hr_vacation_requests (
     approved_by         INTEGER REFERENCES employee(id),
     approved_at         TIMESTAMP WITHOUT TIME ZONE,
     rejection_reason    TEXT,
+    calendar_event_id   INTEGER,
     itime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 
 COMMENT ON TABLE hr_vacation_requests IS 'Urlaubsantraege mit Genehmigungsworkflow';
+COMMENT ON COLUMN hr_vacation_requests.calendar_event_id IS 'Kalendertermin des genehmigten Urlaubs (calendar_events.id), gepflegt vom Trigger hr_vacation_calendar';
 COMMENT ON COLUMN hr_vacation_requests.days IS 'Anzahl Urlaubstage (halbe Tage moeglich)';
 COMMENT ON COLUMN hr_vacation_requests.status IS 'Status: pending=Ausstehend, approved=Genehmigt, rejected=Abgelehnt';
 
 CREATE INDEX IF NOT EXISTS idx_hr_vacation_requests_employee ON hr_vacation_requests(employee_id);
 CREATE INDEX IF NOT EXISTS idx_hr_vacation_requests_dates ON hr_vacation_requests(date_from, date_to);
+
+-- Genehmigter Urlaub steht automatisch im Kalender: ganztägiger, für alle
+-- sichtbarer Termin „Urlaub <Name>" des Mitarbeiters. Der Trigger hält Termin
+-- und Antrag zusammen — genehmigen legt an, Zeitraum ändern zieht nach,
+-- ablehnen/zurücksetzen/löschen entfernt. Bewusst als Trigger und nicht in PHP:
+-- so gilt es für jeden Weg, auf dem sich ein Antrag ändert.
+-- Bemerkungen des Antrags wandern nicht in den Termin (den sieht jeder).
+-- Kategorie: die erste, deren Name mit „Urlaub" beginnt (z. B. „Urlaub /
+-- Krankheit"); gibt es keine, wird „Urlaub" angelegt. dtend ist wie bei allen
+-- Ganztagsterminen der Folgetag 00:00 (exklusiv).
+CREATE OR REPLACE FUNCTION hr_vacation_sync_calendar() RETURNS trigger AS $$
+DECLARE
+    v_category INTEGER;
+    v_title    TEXT;
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        DELETE FROM calendar_events WHERE id = OLD.calendar_event_id;
+        RETURN OLD;
+    END IF;
+
+    IF NEW.status = 'approved' THEN
+        SELECT 'Urlaub ' || COALESCE(NULLIF(name, ''), login) INTO v_title
+        FROM employee WHERE id = NEW.employee_id;
+
+        UPDATE calendar_events
+           SET title = v_title, dtstart = NEW.date_from, dtend = NEW.date_to + 1,
+               "allDay" = TRUE, uid = NEW.employee_id, mtime = NOW()
+         WHERE id = NEW.calendar_event_id;
+
+        IF NOT FOUND THEN
+            SELECT id INTO v_category FROM event_category WHERE label ILIKE 'Urlaub%' ORDER BY id LIMIT 1;
+            IF v_category IS NULL THEN
+                INSERT INTO event_category (label, color, cat_order)
+                SELECT 'Urlaub', '#43A047', COALESCE(MAX(cat_order), 0) + 1 FROM event_category
+                RETURNING id INTO v_category;
+            END IF;
+            INSERT INTO calendar_events (title, dtstart, dtend, "allDay", visibility, uid, category_id)
+            VALUES (v_title, NEW.date_from, NEW.date_to + 1, TRUE, -1, NEW.employee_id, v_category)
+            RETURNING id INTO NEW.calendar_event_id;
+        END IF;
+    ELSIF NEW.calendar_event_id IS NOT NULL THEN
+        DELETE FROM calendar_events WHERE id = NEW.calendar_event_id;
+        NEW.calendar_event_id := NULL;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'hr_vacation_calendar') THEN
+        CREATE TRIGGER hr_vacation_calendar
+            BEFORE INSERT OR UPDATE ON hr_vacation_requests
+            FOR EACH ROW
+            EXECUTE FUNCTION hr_vacation_sync_calendar();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'hr_vacation_calendar_delete') THEN
+        CREATE TRIGGER hr_vacation_calendar_delete
+            AFTER DELETE ON hr_vacation_requests
+            FOR EACH ROW
+            EXECUTE FUNCTION hr_vacation_sync_calendar();
+    END IF;
+END $$;
+
+-- Bereits genehmigte Anträge nachtragen (läuft nur, solange noch kein Termin dranhängt)
+UPDATE hr_vacation_requests SET mtime = mtime WHERE status = 'approved' AND calendar_event_id IS NULL;
+
+-- Regelarbeitszeit (Sollstunden) je Mitarbeiter und Wochentag.
+-- NULL = Firmenstandard (Mo–Fr Netto-Arbeitszeit aus der Konfiguration, Sa/So frei),
+-- 0 = an diesem Wochentag kein Arbeitstag. Ohne Zeile gilt überall der Firmenstandard.
+CREATE TABLE IF NOT EXISTS hr_work_hours (
+    id                  INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id         INTEGER NOT NULL REFERENCES employee(id) ON DELETE CASCADE,
+    hours_mon           NUMERIC(4,2),
+    hours_tue           NUMERIC(4,2),
+    hours_wed           NUMERIC(4,2),
+    hours_thu           NUMERIC(4,2),
+    hours_fri           NUMERIC(4,2),
+    hours_sat           NUMERIC(4,2),
+    hours_sun           NUMERIC(4,2),
+    itime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    UNIQUE(employee_id)
+);
+
+COMMENT ON TABLE hr_work_hours IS 'Regelarbeitszeit (Sollstunden) pro Mitarbeiter und Wochentag; NULL = Firmenstandard';
+
+-- ── Personalverwaltung: Personalfragebogen, Personalakte, Schreiben ─────────
+-- hr_employee_data            Stammdaten aus dem Personalfragebogen (eine Zeile je Mitarbeiter)
+-- hr_document_categories      Ablagefächer der Personalakte (Seed: company_data/hr_document_categories.csv)
+-- hr_documents                Dokumente der Personalakte; Datei liegt unter personal/{employee_id}/
+-- hr_document_template_defaults  mitgelieferte Vorlagen (Seed-CSV, wird beim Update ersetzt)
+-- hr_document_templates       Vorlagen der Firma; default_key gesetzt = überschreibt die mitgelieferte
+
+CREATE TABLE IF NOT EXISTS hr_employee_data (
+    id                      INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id             INTEGER NOT NULL REFERENCES employee(id) ON DELETE CASCADE,
+    personnel_number        TEXT,
+    salutation              TEXT,
+    first_name              TEXT,
+    last_name               TEXT,
+    birth_name              TEXT,
+    birth_date              DATE,
+    birth_place             TEXT,
+    birth_country           TEXT,
+    nationality             TEXT,
+    gender                  TEXT,
+    marital_status          TEXT,
+    street                  TEXT,
+    zipcode                 TEXT,
+    city                    TEXT,
+    country                 TEXT,
+    phone                   TEXT,
+    mobile                  TEXT,
+    email                   TEXT,
+    severely_disabled       BOOLEAN NOT NULL DEFAULT FALSE,
+    iban                    TEXT,
+    bic                     TEXT,
+    bank_name               TEXT,
+    account_holder          TEXT,
+    entry_date              DATE,
+    exit_date               DATE,
+    job_title               TEXT,
+    employment_type         TEXT,
+    weekly_hours            NUMERIC(5,2),
+    probation_end           DATE,
+    limited_until           DATE,
+    notice_period           TEXT,
+    main_employment         BOOLEAN NOT NULL DEFAULT TRUE,
+    other_employments       TEXT,
+    school_degree           TEXT,
+    vocational_training     TEXT,
+    tax_id                  TEXT,
+    child_allowance         NUMERIC(4,1),
+    denomination            TEXT,
+    sv_number               TEXT,
+    health_insurance        TEXT,
+    health_insurance_type   TEXT,
+    has_children            BOOLEAN NOT NULL DEFAULT FALSE,
+    children_count          SMALLINT,
+    emergency_name          TEXT,
+    emergency_phone         TEXT,
+    driving_license         TEXT,
+    notes                   TEXT,
+    itime                   TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime                   TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    UNIQUE(employee_id)
+);
+
+COMMENT ON TABLE hr_employee_data IS 'Personalstammdaten je Mitarbeiter (Personalfragebogen)';
+COMMENT ON COLUMN hr_employee_data.tax_id IS 'Steuerliche Identifikationsnummer (11 Ziffern)';
+COMMENT ON COLUMN hr_employee_data.sv_number IS 'Sozialversicherungsnummer (Rentenversicherungsnummer)';
+COMMENT ON COLUMN hr_employee_data.has_children IS 'Elterneigenschaft (Beitragszuschlag Pflegeversicherung entfällt)';
+COMMENT ON COLUMN hr_employee_data.employment_type IS 'full_time, part_time, minijob, trainee, working_student, temporary';
+
+CREATE TABLE IF NOT EXISTS hr_document_categories (
+    key                 TEXT NOT NULL PRIMARY KEY,
+    name                TEXT NOT NULL,
+    icon                TEXT,
+    per_year            BOOLEAN NOT NULL DEFAULT FALSE,
+    sortkey             INTEGER NOT NULL DEFAULT 0
+);
+
+COMMENT ON TABLE hr_document_categories IS 'Ablagefächer der Personalakte (Seed-CSV)';
+COMMENT ON COLUMN hr_document_categories.per_year IS 'Dokument gehört zu einem Kalenderjahr (z. B. Lohnsteuerbescheinigung)';
+
+CREATE TABLE IF NOT EXISTS hr_documents (
+    id                  INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id         INTEGER NOT NULL REFERENCES employee(id) ON DELETE CASCADE,
+    category            TEXT NOT NULL,
+    title               TEXT NOT NULL,
+    filename            TEXT NOT NULL,
+    original_name       TEXT,
+    filesize            INTEGER,
+    doc_date            DATE,
+    doc_year            SMALLINT,
+    notes               TEXT,
+    subject             TEXT,
+    body                TEXT,
+    created_by          INTEGER REFERENCES employee(id) ON DELETE SET NULL,
+    itime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+
+COMMENT ON TABLE hr_documents IS 'Dokumente der Personalakte (hochgeladen oder aus einer Vorlage erzeugt)';
+COMMENT ON COLUMN hr_documents.filename IS 'Dateiname unter personal/{employee_id}/ im Datenverzeichnis der Firma';
+COMMENT ON COLUMN hr_documents.body IS 'Text eines erzeugten Schreibens (HTML), leer bei hochgeladenen Dateien';
+
+CREATE INDEX IF NOT EXISTS idx_hr_documents_employee ON hr_documents(employee_id);
+
+CREATE TABLE IF NOT EXISTS hr_document_template_defaults (
+    key                 TEXT NOT NULL PRIMARY KEY,
+    category            TEXT NOT NULL,
+    name                TEXT NOT NULL,
+    subject             TEXT,
+    body                TEXT,
+    signature_mode      TEXT NOT NULL DEFAULT 'letter',
+    receipt             BOOLEAN NOT NULL DEFAULT FALSE,
+    sortkey             INTEGER NOT NULL DEFAULT 0
+);
+
+COMMENT ON TABLE hr_document_template_defaults IS 'Mitgelieferte Vorlagen für Personalschreiben (Seed-CSV, nicht bearbeiten)';
+COMMENT ON COLUMN hr_document_template_defaults.signature_mode IS 'letter = Gruß und Unterschrift Arbeitgeber, contract = beide Parteien unterschreiben';
+COMMENT ON COLUMN hr_document_template_defaults.receipt IS 'Empfangsbestätigung des Mitarbeiters am Ende des Schreibens';
+
+CREATE TABLE IF NOT EXISTS hr_document_templates (
+    id                  INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    default_key         TEXT UNIQUE,
+    category            TEXT NOT NULL,
+    name                TEXT NOT NULL,
+    subject             TEXT,
+    body                TEXT,
+    signature_mode      TEXT NOT NULL DEFAULT 'letter',
+    receipt             BOOLEAN NOT NULL DEFAULT FALSE,
+    employee_id         INTEGER,
+    itime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    mtime               TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+
+COMMENT ON TABLE hr_document_templates IS 'Vorlagen der Firma für Personalschreiben; default_key = angepasste mitgelieferte Vorlage';
 
 -- Vorberechnete Lohnsteuertabelle (befuellt via PAP-Algorithmus)
 CREATE TABLE IF NOT EXISTS hr_lohnsteuer_table (

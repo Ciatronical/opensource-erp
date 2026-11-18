@@ -2,6 +2,42 @@
 // backend/api/hr/hr.php
 // HR-Modul: Lohnabrechnung & Urlaubsplanung
 
+// Rechte: Das Recht „hr_management" (Personalverwaltung) öffnet Lohnabrechnung,
+// Gehaltseinstellungen, Steuertabelle, Personalakten und die Verwaltung der
+// Urlaubsanträge aller Mitarbeiter. Ohne das Recht sieht und bearbeitet ein
+// Mitarbeiter nur seine eigenen Urlaubsanträge, solange sie noch offen sind.
+// Wer der Mitarbeiter ist, kommt aus der Sitzung — nicht aus employee_id der
+// Anfrage, die jeder Aufrufer frei setzen kann.
+
+/**
+ * Verlangt das Recht Personalverwaltung.
+ */
+function hrManagementPermit(): void {
+    permit('hr_management');
+}
+
+/**
+ * Hat der Aufrufer das Recht Personalverwaltung?
+ */
+function hrIsManager(): bool {
+    return checkPermissions('hr_management');
+}
+
+/**
+ * Mitarbeiter-ID des angemeldeten Benutzers (0, wenn es zum Login keinen
+ * Mitarbeiter gibt).
+ */
+function hrSessionEmployeeId($db): int {
+    static $id = null;
+    if ($id === null) {
+        $auth = DbhAuth::begin();
+        $auth->fetchSessionData();
+        $row = $db->getOne('SELECT id FROM employee WHERE login = :login', [':login' => (string)$auth->getLogin()]);
+        $id = $row ? intval($row['id']) : 0;
+    }
+    return $id;
+}
+
 // ============================================================================
 // DASHBOARD
 // ============================================================================
@@ -14,14 +50,16 @@
  */
 function getHrDashboard($data) {
     $db = DbhCompany::begin();
-    $employeeId = intval($data['employee_id'] ?? 0);
+    // Ohne Personalverwaltung: nur der eigene Urlaub, keine Firmenkennzahlen
+    $manager = hrIsManager() ? 'TRUE' : 'FALSE';
+    $employeeId = hrSessionEmployeeId($db);
     $year = intval(date('Y'));
 
     $query = <<<SQL
         SELECT json_build_object(
             'active_employees', (
                 SELECT COUNT(*) FROM employee
-                WHERE deleted IS NOT TRUE AND login IS NOT NULL AND login != ''
+                WHERE $manager AND deleted IS NOT TRUE AND login IS NOT NULL AND login != ''
             ),
             'last_payroll_run', (
                 SELECT json_build_object(
@@ -30,11 +68,13 @@ function getHrDashboard($data) {
                     (SELECT COUNT(*) FROM hr_payroll_items WHERE run_id = r.id)
                 )
                 FROM hr_payroll_runs r
+                WHERE $manager
                 ORDER BY r.year DESC, r.month DESC
                 LIMIT 1
             ),
             'pending_vacation_requests', (
-                SELECT COUNT(*) FROM hr_vacation_requests WHERE status = 'pending'
+                SELECT COUNT(*) FROM hr_vacation_requests
+                WHERE status = 'pending' AND ($manager OR employee_id = $employeeId)
             ),
             'my_vacation', (
                 SELECT json_build_object(
@@ -76,6 +116,7 @@ function getHrDashboard($data) {
  * @testdata {"action": "getSalarySettings"}
  */
 function getSalarySettings($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $query = <<<SQL
@@ -126,6 +167,7 @@ function getSalarySettings($data) {
  * @testdata {"action": "saveSalarySettings", "employee_id": 1, "brutto": 3500.00, "steuerklasse": 1}
  */
 function saveSalarySettings($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $employeeId = intval($data['employee_id'] ?? 0);
@@ -180,6 +222,7 @@ function saveSalarySettings($data) {
  * @testdata {"action": "getPayrollRuns"}
  */
 function getPayrollRuns($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $query = <<<SQL
@@ -220,6 +263,7 @@ function getPayrollRuns($data) {
  * @testdata {"action": "getPayrollRun", "id": 1}
  */
 function getPayrollRun($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
     $id = intval($data['id'] ?? 0);
 
@@ -282,11 +326,12 @@ function getPayrollRun($data) {
  * @testdata {"action": "createPayrollRun", "year": 2024, "month": 1, "employee_id": 1}
  */
 function createPayrollRun($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $year = intval($data['year'] ?? date('Y'));
     $month = intval($data['month'] ?? date('n'));
-    $createdBy = intval($data['employee_id'] ?? 0);
+    $createdBy = hrSessionEmployeeId($db);
     $notes = !empty($data['notes']) ? $data['notes'] : null;
 
     if ($month < 1 || $month > 12) {
@@ -387,6 +432,7 @@ function createPayrollRun($data) {
  * @testdata {"action": "updatePayrollItem", "id": 1, "brutto": 3500, "lohnsteuer": 450}
  */
 function updatePayrollItem($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $id = intval($data['id'] ?? 0);
@@ -438,10 +484,11 @@ function updatePayrollItem($data) {
  * @testdata {"action": "finalizePayrollRun", "id": 1, "employee_id": 1}
  */
 function finalizePayrollRun($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $id = intval($data['id'] ?? 0);
-    $employeeId = intval($data['employee_id'] ?? 0);
+    $employeeId = hrSessionEmployeeId($db);
 
     if ($id <= 0) {
         resultInfo(false, 'INVALID_ID', 'Ungueltige ID');
@@ -463,6 +510,7 @@ function finalizePayrollRun($data) {
  * @testdata {"action": "deletePayrollRun", "id": 1}
  */
 function deletePayrollRun($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
     $id = intval($data['id'] ?? 0);
 
@@ -498,6 +546,11 @@ function deletePayrollRun($data) {
 function getVacationOverview($data) {
     $db = DbhCompany::begin();
     $year = intval($data['year'] ?? date('Y'));
+    // Ohne Personalverwaltung: der eigene Urlaub vollständig, von Kollegen nur
+    // der genehmigte Zeitraum — ohne Bemerkungen, Ablehnungsgrund und Urlaubskonto
+    $manager = hrIsManager() ? 'TRUE' : 'FALSE';
+    $selfId = hrSessionEmployeeId($db);
+    $own = "($manager OR e.id = $selfId)";
 
     $query = <<<SQL
         SELECT json_build_object(
@@ -506,12 +559,12 @@ function getVacationOverview($data) {
                 SELECT json_agg(json_build_object(
                     'employee_id', e.id,
                     'name', e.name,
-                    'days_total', COALESCE(ent.days_total, 30),
-                    'days_used', COALESCE((
+                    'days_total', CASE WHEN $own THEN COALESCE(ent.days_total, 30) END,
+                    'days_used', CASE WHEN $own THEN COALESCE((
                         SELECT SUM(r.days) FROM hr_vacation_requests r
                         WHERE r.employee_id = e.id AND r.status = 'approved'
                         AND EXTRACT(YEAR FROM r.date_from) = $year
-                    ), 0),
+                    ), 0) END,
                     'requests', COALESCE((
                         SELECT json_agg(json_build_object(
                             'id', r.id,
@@ -519,15 +572,16 @@ function getVacationOverview($data) {
                             'date_to', r.date_to,
                             'days', r.days,
                             'status', r.status,
-                            'notes', r.notes,
-                            'approved_by_name', ea.name,
-                            'approved_at', r.approved_at,
-                            'rejection_reason', r.rejection_reason,
+                            'notes', CASE WHEN $own THEN r.notes END,
+                            'approved_by_name', CASE WHEN $own THEN ea.name END,
+                            'approved_at', CASE WHEN $own THEN r.approved_at END,
+                            'rejection_reason', CASE WHEN $own THEN r.rejection_reason END,
                             'itime', r.itime
                         ) ORDER BY r.date_from)
                         FROM hr_vacation_requests r
                         LEFT JOIN employee ea ON ea.id = r.approved_by
                         WHERE r.employee_id = e.id
+                        AND ($own OR r.status = 'approved')
                         AND EXTRACT(YEAR FROM r.date_from) = $year
                     ), '[]'::json)
                 ) ORDER BY e.name)
@@ -551,6 +605,7 @@ function getVacationOverview($data) {
                 JOIN employee e ON e.id = r.employee_id
                 WHERE r.status = 'pending'
                 AND EXTRACT(YEAR FROM r.date_from) = $year
+                AND ($manager OR r.employee_id = $selfId)
             ), '[]'::json)
         ) AS result
     SQL;
@@ -574,6 +629,9 @@ function saveVacationRequest($data) {
 
     $id = intval($data['id'] ?? 0);
     $employeeId = intval($data['employee_id'] ?? 0);
+    // Ohne Personalverwaltung: nur für sich selbst und nur, solange der Antrag offen ist
+    $manager = hrIsManager();
+    if (!$manager) $employeeId = hrSessionEmployeeId($db);
     $dateFrom = $data['date_from'] ?? '';
     $dateTo = $data['date_to'] ?? '';
     $days = floatval($data['days'] ?? 1);
@@ -585,15 +643,22 @@ function saveVacationRequest($data) {
     }
 
     if ($id > 0) {
-        $db->execute(
+        $row = $db->getOne(
             "UPDATE hr_vacation_requests
              SET date_from = :df, date_to = :dt, days = :d, notes = :n,
                  status = 'pending', approved_by = NULL, approved_at = NULL,
                  rejection_reason = NULL, mtime = NOW()
-             WHERE id = :id AND employee_id = :eid",
+             WHERE id = :id AND employee_id = :eid
+               AND (:manager::boolean OR status = 'pending')
+             RETURNING id",
             [':df' => $dateFrom, ':dt' => $dateTo, ':d' => $days,
-             ':n' => $notes, ':id' => $id, ':eid' => $employeeId]
+             ':n' => $notes, ':id' => $id, ':eid' => $employeeId,
+             ':manager' => $manager ? 'true' : 'false']
         );
+        if (!$row) {
+            resultInfo(false, 'NO_PERMISSION', 'Dieser Urlaubsantrag kann nicht mehr geändert werden');
+            return;
+        }
         resultInfo(true, '', ['id' => $id]);
     } else {
         $db->execute(
@@ -619,10 +684,11 @@ function saveVacationRequest($data) {
  * @testdata {"action": "approveVacationRequest", "id": 1, "employee_id": 1}
  */
 function approveVacationRequest($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $id = intval($data['id'] ?? 0);
-    $approvedBy = intval($data['employee_id'] ?? 0);
+    $approvedBy = hrSessionEmployeeId($db);
 
     if ($id <= 0) {
         resultInfo(false, 'INVALID_ID', 'Ungueltige ID');
@@ -647,10 +713,11 @@ function approveVacationRequest($data) {
  * @testdata {"action": "rejectVacationRequest", "id": 1, "employee_id": 1, "rejection_reason": "Urlaubssperre"}
  */
 function rejectVacationRequest($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $id = intval($data['id'] ?? 0);
-    $rejectedBy = intval($data['employee_id'] ?? 0);
+    $rejectedBy = hrSessionEmployeeId($db);
     $reason = !empty($data['rejection_reason']) ? $data['rejection_reason'] : null;
 
     if ($id <= 0) {
@@ -684,7 +751,17 @@ function deleteVacationRequest($data) {
         return;
     }
 
-    $db->execute('DELETE FROM hr_vacation_requests WHERE id = :id', [':id' => $id]);
+    // Ohne Personalverwaltung: nur eigene, noch offene Anträge
+    $row = $db->getOne(
+        "DELETE FROM hr_vacation_requests
+          WHERE id = :id AND (:manager::boolean OR (employee_id = :self AND status = 'pending'))
+         RETURNING id",
+        [':id' => $id, ':manager' => hrIsManager() ? 'true' : 'false', ':self' => hrSessionEmployeeId($db)]
+    );
+    if (!$row) {
+        resultInfo(false, 'NO_PERMISSION', 'Dieser Urlaubsantrag kann nicht gelöscht werden');
+        return;
+    }
     resultInfo(true, 'DELETED');
 }
 
@@ -697,6 +774,7 @@ function deleteVacationRequest($data) {
  * @testdata {"action": "saveVacationEntitlement", "employee_id": 1, "year": 2024, "days_total": 30}
  */
 function saveVacationEntitlement($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $employeeId = intval($data['employee_id'] ?? 0);

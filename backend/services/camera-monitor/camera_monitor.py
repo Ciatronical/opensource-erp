@@ -98,6 +98,14 @@ DETECT_LABELS = {
 # Wie oft Konfig aus der DB neu geladen wird (Sekunden)
 CONFIG_RELOAD_INTERVAL = 60
 
+# Aufbewahrung von Snapshots und Clips. Die Frist kommt je Mandant aus
+# defaults_oserp (key 'camera_retention_days', Tage; 0 = nie loeschen) und
+# wird unter Videoueberwachung > Einstellungen gepflegt. Der Standardwert gilt
+# nur, solange der Mandant noch nichts gespeichert hat.
+DEFAULT_RETENTION_DAYS = 30
+RETENTION_INTERVAL = 3600       # Sekunden zwischen zwei Aufraeumlaeufen
+RETENTION_BATCH = 2000          # Ereignisse pro Transaktion
+
 # Mindest-Score fuer Objekterkennung
 DEFAULT_MIN_SCORE = 0.45
 
@@ -1494,6 +1502,165 @@ def load_rules(conn):
 _client_errors = {}
 
 
+def get_retention_days(company_conn):
+    """Aufbewahrungsfrist des Mandanten in Tagen (0 = nie loeschen)."""
+    with company_conn.cursor() as cur:
+        cur.execute("SELECT value FROM defaults_oserp WHERE key = 'camera_retention_days'")
+        row = cur.fetchone()
+    if row is None or row[0] is None or str(row[0]).strip() == '':
+        return DEFAULT_RETENTION_DAYS
+    try:
+        return max(0, int(str(row[0]).strip()))
+    except ValueError:
+        return DEFAULT_RETENTION_DAYS
+
+
+def _remove_media(event_id):
+    """Snapshot und Clip eines Ereignisses loeschen. Gibt Anzahl Dateien zurueck."""
+    removed = 0
+    name = os.path.basename(str(event_id))
+    for directory, ext in ((SNAPSHOT_DIR, '.jpg'), (CLIP_DIR, CLIP_EXT)):
+        try:
+            os.unlink(os.path.join(directory, name + ext))
+            removed += 1
+        except FileNotFoundError:
+            pass
+        except OSError as e:
+            print(f"[Aufbewahrung] {name}{ext} nicht loeschbar: {e}")
+    return removed
+
+
+def cleanup_company_media(client):
+    """
+    Abgelaufene Medien eines Mandanten entfernen.
+
+    Die Ereignisse selbst bleiben als Protokoll erhalten; nur snapshot_url und
+    clip_url werden geleert, damit die Oberflaeche keine toten Medien anbietet.
+    Gibt die Frist in Tagen zurueck (0 = unbegrenzt), oder None wenn der
+    Mandant keine Kamera-Tabellen hat.
+    """
+    conn = connect_company_db(client)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT to_regclass('camera_event') IS NOT NULL "
+                        "AND to_regclass('defaults_oserp') IS NOT NULL")
+            if not cur.fetchone()[0]:
+                return None
+        conn.commit()
+
+        days = get_retention_days(conn)
+        conn.commit()
+        if days <= 0:
+            return 0
+
+        events = files = 0
+        while running:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE camera_event SET snapshot_url = NULL, clip_url = NULL
+                    WHERE id IN (
+                        SELECT id FROM camera_event
+                        WHERE started_at < NOW() - make_interval(days => %s)
+                          AND (snapshot_url IS NOT NULL OR clip_url IS NOT NULL)
+                        ORDER BY started_at
+                        LIMIT %s
+                    )
+                    RETURNING event_id
+                """, (days, RETENTION_BATCH))
+                rows = cur.fetchall()
+            conn.commit()
+            if not rows:
+                break
+            events += len(rows)
+            for (event_id,) in rows:
+                if event_id:
+                    files += _remove_media(event_id)
+
+        if events:
+            print(f"[{client['name']}] Aufbewahrung {days} Tage: "
+                  f"{events} Ereignisse bereinigt, {files} Dateien geloescht.")
+        return days
+    finally:
+        conn.close()
+
+
+def sweep_orphaned_media(max_days):
+    """
+    Dateien entfernen, die aelter als die laengste Frist aller Mandanten sind
+    und damit zu keinem Ereignis mehr gehoeren (z.B. nach einem DB-Restore
+    oder einem abgebrochenen Lauf).
+    """
+    cutoff = time.time() - max_days * 86400
+    removed = 0
+    for directory in (SNAPSHOT_DIR, CLIP_DIR):
+        if not os.path.isdir(directory):
+            continue
+        with os.scandir(directory) as it:
+            for entry in it:
+                if not running:
+                    return removed
+                try:
+                    if entry.is_file(follow_symlinks=False) and entry.stat().st_mtime < cutoff:
+                        os.unlink(entry.path)
+                        removed += 1
+                except OSError:
+                    pass
+    if removed:
+        print(f"[Aufbewahrung] {removed} verwaiste Dateien aelter als {max_days} Tage geloescht.")
+    return removed
+
+
+def run_retention(auth_settings):
+    """Ein Aufraeumlauf ueber alle Mandanten."""
+    auth_conn = psycopg2.connect(**auth_settings)
+    try:
+        auth_conn.autocommit = True
+        clients = get_company_databases(auth_conn)
+    finally:
+        auth_conn.close()
+
+    limits = []
+    complete = True
+    for client in clients:
+        if not running:
+            return
+        try:
+            days = cleanup_company_media(client)
+        except psycopg2.OperationalError as e:
+            # Mandant ohne Datenbank (Altbestand in auth.clients) hat keine Medien.
+            # Alles andere (DB gerade nicht erreichbar) laesst die Frist offen.
+            if 'does not exist' in str(e):
+                continue
+            complete = False
+            print(f"[{client['name']}] Aufbewahrung uebersprungen: {str(e).strip()}")
+            continue
+        except Exception as e:
+            # Frist dieses Mandanten unbekannt -> seine Dateien nicht anfassen
+            complete = False
+            print(f"[{client['name']}] Aufbewahrung uebersprungen: {str(e).strip()}")
+            continue
+        if days is not None:
+            limits.append(days)
+
+    # Verwaiste Dateien nur loeschen, wenn jede Frist bekannt und begrenzt ist:
+    # das Verzeichnis ist mandantenuebergreifend, die laengste Frist gewinnt.
+    if complete and limits and min(limits) > 0:
+        sweep_orphaned_media(max(limits))
+
+
+def retention_loop(auth_settings):
+    """Hintergrund-Thread: raeumt alle RETENTION_INTERVAL Sekunden auf."""
+    while running:
+        try:
+            run_retention(auth_settings)
+        except Exception as e:
+            print(f"[Aufbewahrung] Lauf fehlgeschlagen: {str(e).strip()}")
+        for _ in range(RETENTION_INTERVAL):
+            if not running:
+                return
+            time.sleep(1)
+
+
 def _report_client_error(client_name, message):
     """Fehler nur melden, wenn er sich geaendert hat."""
     if _client_errors.get(client_name) != message:
@@ -1660,6 +1827,9 @@ def main():
     settings = read_settings_ini()
     print(f"Auth-DB: {settings['host']}:{settings['port']}/{settings['dbname']}")
     print(f"Konfiguration wird alle {CONFIG_RELOAD_INTERVAL}s neu eingelesen.\n")
+
+    threading.Thread(target=retention_loop, args=(settings,),
+                     name='retention', daemon=True).start()
 
     supervise(settings)
 

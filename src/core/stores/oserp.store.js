@@ -115,6 +115,15 @@ export const oserpStore = defineStore('oserpStore', () => {
     }
 
     /**
+     * Darf der Benutzer Personal verwalten (Lohn, Gehalt, Personalakten,
+     * Urlaub aller Mitarbeiter)? Recht „hr_management" — das Backend prüft
+     * dasselbe (backend/api/hr/hr.php). Ohne das Recht bleibt der eigene Urlaub.
+     */
+    function canManageHr() {
+        return checkPermission('hr_management');
+    }
+
+    /**
      * Prüft ob ANPR aktiviert ist (Standard: true wenn nicht explizit deaktiviert)
      */
     function isAnprEnabled() {
@@ -990,6 +999,7 @@ export const oserpStore = defineStore('oserpStore', () => {
         hasPortalWebsite,
         isLxCars,
         canSeeMechanicPerformance,
+        canManageHr,
         isAnprEnabled,
         isRecurringEnabled,
         isNvrEnabled,

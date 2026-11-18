@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Redigera alla anställdas tidrapporter",
             "config": "Ändra installationsinställningar (menyn System)",
             "admin": "Klientadministration: konfiguration, utskriftsmallar, bakgrundsjobb",
+            "hr_management": "Personaladministration: personalakter, brev, lönekörning, löner, godkännande av semester",
             "developer": "Visa utvecklarmenyerna",
             "edit_shop_config": "Skapa och redigera webbshoppar",
             "custom_data_export_designer": "Egen dataexport",

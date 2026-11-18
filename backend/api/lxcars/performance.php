@@ -51,9 +51,16 @@ function _performanceAllowed($db) {
  * aufgelöst über die Mitarbeiterliste im Store). Ist die Liste leer, zählt
  * jeder Mitarbeiter, der im Zeitraum Anweisungen erledigt hat.
  *
- * Verfügbare Zeit je Mechaniker = Arbeitstage (Mo–Fr) im Zeitraum abzüglich
- * genehmigter Urlaubstage × Nettominuten pro Tag (Arbeitsbeginn/-ende/Pausen
- * aus der LxCars-Konfiguration).
+ * Regelarbeitszeit (Soll) je Mechaniker und Tag: hinterlegte Stunden des
+ * Wochentags (hr_work_hours), sonst der Firmenstandard (Mo–Fr Nettominuten aus
+ * Arbeitsbeginn/-ende/Pausen der LxCars-Konfiguration, Sa/So frei). Genehmigte
+ * Urlaubstage zählen 0, Tage in der Zukunft zählen noch nicht mit.
+ * Verfügbare Zeit je Mechaniker = Summe der Regelarbeitszeit im Zeitraum.
+ *
+ * days liefert je Mechaniker und Tag Regelarbeitszeit (soll), Vorgabezeit
+ * (planned) und benötigte Zeit (actual), order_days dasselbe je Auftrag und
+ * Arbeitstag samt Tätigkeiten — daraus baut die Oberfläche die Auswertung pro
+ * Tag/Woche/Monat/Fahrzeug und die Auftragsliste.
  *
  * Plausibilität: Jede Anweisung im Zeitraum kommt mit Vergleichswert und
  * Auffälligkeit zurück (items.flag: timer | high | low), dazu alle Tage über
@@ -104,6 +111,14 @@ function getMechanicPerformance($data) {
         $data['pausen'] ?? ''
     );
 
+    // Regelarbeitszeit je Mitarbeiter; fehlt die Tabelle (Schema-Update noch
+    // nicht gelaufen), gilt für alle der Firmenstandard
+    $whCte = existingTables($db, ['hr_work_hours'])
+        ? "SELECT employee_id,
+                  ARRAY[hours_mon, hours_tue, hours_wed, hours_thu, hours_fri, hours_sat, hours_sun] AS h
+           FROM hr_work_hours"
+        : "SELECT NULL::int AS employee_id, NULL::numeric[] AS h WHERE false";
+
     $row = $db->getOne(
         "WITH p AS (
             SELECT :ids::int[]        AS ids,
@@ -141,7 +156,11 @@ function getMechanicPerformance($data) {
         ),
         work AS MATERIALIZED (
             SELECT i.id, i.oe_id,
+                   -- Die Zeit zählt für den, der sie erfasst hat (Timer-Sitzung) — auch wenn
+                   -- im Auftrag ein anderer Mechaniker als „Erledigt von“ steht, etwa weil
+                   -- einer ausbaut und ein anderer am nächsten Tag wieder einbaut
                    COALESCE(w.employee_id, i.employee_id) AS employee_id,
+                   i.employee_id AS done_by_id,
                    i.description, i.planned_minutes, i.actual_minutes, i.done, i.done_at,
                    w.started_at, w.minutes,
                    ROW_NUMBER() OVER (PARTITION BY i.id ORDER BY w.started_at, w.sid) = 1 AS is_first
@@ -169,6 +188,28 @@ function getMechanicPerformance($data) {
             WHERE e.deleted = false
               AND ((cardinality(p.ids) > 0 AND e.id = ANY(p.ids))
                    OR (cardinality(p.ids) = 0 AND EXISTS (SELECT 1 FROM cur WHERE cur.employee_id = e.id)))
+        ),
+        -- Hinterlegte Regelarbeitszeit: Stunden je Wochentag (Index 1 = Montag)
+        wh AS MATERIALIZED (
+            $whCte
+        ),
+        -- Regelarbeitszeit (Minuten) je Mechaniker und Tag, bis einschließlich heute
+        soll_days AS MATERIALIZED (
+            SELECT m.id AS employee_id, d::date AS day,
+                   CASE WHEN EXISTS (
+                            SELECT 1 FROM hr_vacation_requests v
+                            WHERE v.employee_id = m.id AND v.status = 'approved'
+                              AND d::date BETWEEN v.date_from AND v.date_to
+                        ) THEN 0
+                        ELSE COALESCE(
+                            ROUND(wh.h[EXTRACT(isodow FROM d)::int] * 60)::int,
+                            CASE WHEN EXTRACT(isodow FROM d) <= 5 THEN p.avail_per_day ELSE 0 END
+                        )
+                   END AS soll
+            FROM p
+            CROSS JOIN mech m
+            CROSS JOIN generate_series(p.d_from, LEAST(p.d_to, CURRENT_DATE), '1 day') AS d
+            LEFT JOIN wh ON wh.employee_id = m.id
         ),
         -- Arbeitstage Mo–Fr im Zeitraum
         workdays AS MATERIALIZED (
@@ -247,7 +288,8 @@ function getMechanicPerformance($data) {
                    k.last_done_at,
                    ROUND(COALESCE(l.labor_revenue, 0)::numeric, 2) AS labor_revenue,
                    COALESCE(v.days, 0) AS vacation_days,
-                   GREATEST(0, (SELECT n FROM workdays) - COALESCE(v.days, 0)) * (SELECT avail_per_day FROM p) AS avail_minutes,
+                   COALESCE((SELECT SUM(s.soll) FROM soll_days s WHERE s.employee_id = m.id), 0) AS avail_minutes,
+                   (SELECT to_json(wh.h) FROM wh WHERE wh.employee_id = m.id) AS work_hours,
                    json_build_object(
                        'actual',  COALESCE(kp.actual, 0),
                        'planned', COALESCE(kp.planned, 0),
@@ -271,6 +313,40 @@ function getMechanicPerformance($data) {
             FROM cur
             GROUP BY employee_id, 2
             ORDER BY 2
+        ),
+        -- Je Mechaniker und Tag: Regelarbeitszeit, Vorgabezeit, benötigte Zeit
+        day_work AS MATERIALIZED (
+            SELECT employee_id, started_at::date AS day,
+                   SUM(minutes)                                              AS actual,
+                   COALESCE(SUM(planned_minutes) FILTER (WHERE is_first), 0) AS planned
+            FROM cur
+            WHERE employee_id IN (SELECT id FROM mech)
+            GROUP BY employee_id, started_at::date
+        ),
+        days AS (
+            SELECT employee_id, day,
+                   COALESCE(s.soll, 0)    AS soll,
+                   COALESCE(w.planned, 0) AS planned,
+                   COALESCE(w.actual, 0)  AS actual
+            FROM soll_days s
+            FULL JOIN day_work w USING (employee_id, day)
+            WHERE COALESCE(s.soll, 0) > 0 OR COALESCE(w.actual, 0) > 0
+        ),
+        -- Je Mechaniker, Auftrag (Fahrzeug) und Arbeitstag: benötigte Zeit dieses
+        -- Tages, Vorgabezeit (am ersten Arbeitstag der Anweisung) und Tätigkeiten.
+        -- Grundlage der Auftragsliste: auch angefangene, noch nicht erledigte
+        -- Arbeiten erscheinen an jedem Tag, an dem daran gearbeitet wurde
+        order_days AS (
+            SELECT employee_id, oe_id, started_at::date AS day,
+                   SUM(minutes)                                              AS actual,
+                   COALESCE(SUM(planned_minutes) FILTER (WHERE is_first), 0) AS planned,
+                   array_agg(DISTINCT description)                           AS tasks,
+                   -- Im Auftrag steht ein anderer Mechaniker als „Erledigt von“
+                   COALESCE(array_agg(DISTINCT done_by_id) FILTER (
+                       WHERE done_by_id IS NOT NULL AND done_by_id <> employee_id), '{}') AS done_by
+            FROM cur
+            WHERE employee_id IN (SELECT id FROM mech)
+            GROUP BY employee_id, oe_id, started_at::date
         ),
         -- Team-Durchschnitt je Tätigkeit (mind. 3 Erledigungen, 2 Mechaniker)
         team_task AS MATERIALIZED (
@@ -409,6 +485,8 @@ function getMechanicPerformance($data) {
             ),
             'mechanics', COALESCE((SELECT json_agg(m ORDER BY m.actual DESC, m.name) FROM mechanics m), '[]'::json),
             'series',    COALESCE((SELECT json_agg(s ORDER BY s.bucket) FROM series s), '[]'::json),
+            'days',      COALESCE((SELECT json_agg(d ORDER BY d.day) FROM days d), '[]'::json),
+            'order_days', COALESCE((SELECT json_agg(v ORDER BY v.day DESC) FROM order_days v), '[]'::json),
             'tasks',     COALESCE((SELECT json_agg(t) FROM tasks t), '[]'::json),
             'heatmap',   COALESCE((SELECT json_agg(h) FROM heat h), '[]'::json),
             'spread',    COALESCE((SELECT json_agg(s) FROM spread s), '[]'::json),
@@ -436,4 +514,60 @@ function getMechanicPerformance($data) {
 
     $result = $row ? json_decode($row['result'], true) : null;
     resultInfo(true, 'OK', ['result' => $result]);
+}
+
+/**
+ * Speichert die Regelarbeitszeit (Sollstunden) eines Mitarbeiters je Wochentag.
+ *
+ * Ein leerer Wert (null) bedeutet Firmenstandard, 0 bedeutet „kein Arbeitstag".
+ * Sind alle sieben Werte leer, gilt wieder überall der Firmenstandard.
+ *
+ * @param int   $data['employee_id'] Mitarbeiter-ID
+ * @param array $data['hours']       Sieben Werte Mo–So in Stunden (null = Firmenstandard)
+ * @testdata {"employee_id": 1112, "hours": [0, null, null, null, null, null, null]}
+ */
+function saveEmployeeWorkHours($data) {
+    $db = DbhCompany::begin();
+
+    if (!_performanceAllowed($db)) {
+        resultInfo(false, 'NO_PERMISSION', 'Keine Berechtigung für die Leistungsdaten');
+        return;
+    }
+    if (!existingTables($db, ['hr_work_hours'])) {
+        resultInfo(false, 'SCHEMA_UPDATE_REQUIRED', 'Tabelle hr_work_hours fehlt – bitte das Datenbank-Update ausführen');
+        return;
+    }
+
+    $employeeId = intval($data['employee_id'] ?? 0);
+    $hours = array_values((array)($data['hours'] ?? []));
+    if ($employeeId <= 0 || count($hours) !== 7) {
+        resultInfo(false, 'VALIDATION_ERROR', 'Mitarbeiter und sieben Wochentagswerte erforderlich');
+        return;
+    }
+    $params = [':eid' => $employeeId];
+    foreach (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as $i => $day) {
+        $v = $hours[$i];
+        if ($v === null || $v === '') {
+            $params[':' . $day] = null;
+            continue;
+        }
+        if (!is_numeric($v) || $v < 0 || $v > 24) {
+            resultInfo(false, 'VALIDATION_ERROR', 'Stunden müssen zwischen 0 und 24 liegen');
+            return;
+        }
+        $params[':' . $day] = round(floatval($v), 2);
+    }
+
+    $db->execute(
+        "INSERT INTO hr_work_hours
+             (employee_id, hours_mon, hours_tue, hours_wed, hours_thu, hours_fri, hours_sat, hours_sun)
+         VALUES (:eid, :mon, :tue, :wed, :thu, :fri, :sat, :sun)
+         ON CONFLICT (employee_id) DO UPDATE SET
+             hours_mon = EXCLUDED.hours_mon, hours_tue = EXCLUDED.hours_tue,
+             hours_wed = EXCLUDED.hours_wed, hours_thu = EXCLUDED.hours_thu,
+             hours_fri = EXCLUDED.hours_fri, hours_sat = EXCLUDED.hours_sat,
+             hours_sun = EXCLUDED.hours_sun, mtime = NOW()",
+        $params
+    );
+    resultInfo(true, 'OK', ['employee_id' => $employeeId]);
 }

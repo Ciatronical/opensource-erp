@@ -20,6 +20,25 @@ const RUECKFALL = 'de';
 const kataloge = {
   de: async () => ({ default: deutsch }),
   en: () => import('../i18n/en.js'),
+  fr: () => import('../i18n/fr.js'),
+  es: () => import('../i18n/es.js'),
+  it: () => import('../i18n/it.js'),
+  pt: () => import('../i18n/pt.js'),
+  nl: () => import('../i18n/nl.js'),
+  pl: () => import('../i18n/pl.js'),
+  cs: () => import('../i18n/cs.js'),
+  ro: () => import('../i18n/ro.js'),
+  da: () => import('../i18n/da.js'),
+  sv: () => import('../i18n/sv.js'),
+  nb: () => import('../i18n/nb.js'),
+  fi: () => import('../i18n/fi.js'),
+  et: () => import('../i18n/et.js'),
+  lv: () => import('../i18n/lv.js'),
+  lt: () => import('../i18n/lt.js'),
+  ru: () => import('../i18n/ru.js'),
+  uk: () => import('../i18n/uk.js'),
+  tr: () => import('../i18n/tr.js'),
+  zh: () => import('../i18n/zh.js'),
 };
 
 let katalog = null;

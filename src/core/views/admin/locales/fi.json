@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Kaikkien työntekijöiden työaikakirjausten muokkaus",
             "config": "Asennuksen asetusten muuttaminen (Järjestelmä-valikko)",
             "admin": "Yrityksen hallinta: asetukset, tulostuspohjat, taustatyöt",
+            "hr_management": "Henkilöstöhallinto: henkilökansiot, kirjeet, palkanlaskenta, palkat, lomien hyväksyntä",
             "developer": "Kehittäjävalikkojen näyttäminen",
             "edit_shop_config": "Verkkokauppojen luonti ja muokkaus",
             "custom_data_export_designer": "Mukautettu tietojen vienti",

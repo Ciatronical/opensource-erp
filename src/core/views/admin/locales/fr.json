@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Modifier les saisies de temps de tous les collaborateurs",
             "config": "Modifier les paramètres de l'installation (menu Système)",
             "admin": "Administration du mandant : configuration, modèles d'impression, tâches de fond",
+            "hr_management": "Gestion du personnel : dossiers, courriers, paie, salaires, validation des congés",
             "developer": "Afficher les menus destinés aux développeurs",
             "edit_shop_config": "Créer et modifier les boutiques en ligne",
             "custom_data_export_designer": "Export de données personnalisé",

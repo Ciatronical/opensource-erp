@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Edycja wpisów rejestracji czasu pracy wszystkich pracowników",
             "config": "Zmiana ustawień instalacji (menu System)",
             "admin": "Administracja firmy: konfiguracja, szablony wydruku, zadania w tle",
+            "hr_management": "Zarządzanie personelem: akta osobowe, pisma, płace, wynagrodzenia, zatwierdzanie urlopów",
             "developer": "Pokaż menu dla programistów",
             "edit_shop_config": "Zakładanie i edycja sklepów internetowych",
             "custom_data_export_designer": "Własny eksport danych",

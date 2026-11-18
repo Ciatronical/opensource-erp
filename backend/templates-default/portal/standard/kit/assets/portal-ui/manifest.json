@@ -1,94 +1,151 @@
 {
   "_hinweis": "Von portal-ui/scripts/build.mjs geschrieben — Dateien je Widget, Einstieg und Sprache für modulepreload (partials/portal-ui-preload.html).",
+  "i18n-cs": [
+    "chunk-CYBIILV7.js"
+  ],
+  "i18n-da": [
+    "chunk-BO3BZ4MK.js"
+  ],
   "i18n-de": [
-    "chunk-I6KLRKW7.js"
+    "chunk-E4QV7XLZ.js"
   ],
   "i18n-en": [
     "chunk-64KGDQU3.js"
   ],
+  "i18n-es": [
+    "chunk-NGE53INI.js"
+  ],
+  "i18n-et": [
+    "chunk-JVMA42H7.js"
+  ],
+  "i18n-fi": [
+    "chunk-JSGTV6NK.js"
+  ],
+  "i18n-fr": [
+    "chunk-25EKD5LI.js"
+  ],
+  "i18n-it": [
+    "chunk-62XA3QYN.js"
+  ],
+  "i18n-lt": [
+    "chunk-P64ZZHUC.js"
+  ],
+  "i18n-lv": [
+    "chunk-KFPLOAAA.js"
+  ],
+  "i18n-nb": [
+    "chunk-BLGLAMM4.js"
+  ],
+  "i18n-nl": [
+    "chunk-7WQVXK6B.js"
+  ],
+  "i18n-pl": [
+    "chunk-XUS4EMKA.js"
+  ],
+  "i18n-pt": [
+    "chunk-BPH6XAUR.js"
+  ],
+  "i18n-ro": [
+    "chunk-CO6IUMEO.js"
+  ],
+  "i18n-ru": [
+    "chunk-ZDFDORYD.js"
+  ],
+  "i18n-sv": [
+    "chunk-CKQCT32X.js"
+  ],
+  "i18n-tr": [
+    "chunk-Q347GRTR.js"
+  ],
+  "i18n-uk": [
+    "chunk-2GT4XC5T.js"
+  ],
+  "i18n-zh": [
+    "chunk-QBZGOSZL.js"
+  ],
   "portal-account-addresses": [
-    "chunk-CBBIUFFR.js",
-    "chunk-I6KLRKW7.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-PZF7ACMT.js"
   ],
   "portal-account-buttons": [
-    "chunk-I6KLRKW7.js"
+    "chunk-E4QV7XLZ.js"
   ],
   "portal-account-documents": [
-    "chunk-4OHBWC7C.js",
-    "chunk-I6KLRKW7.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-MRVI4CMV.js"
   ],
   "portal-account-nav": [
-    "chunk-I6KLRKW7.js",
-    "chunk-ZLLY3WBG.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-NXGHMDWE.js"
   ],
   "portal-account-overview": [
-    "chunk-BNBZ45Y4.js",
-    "chunk-I6KLRKW7.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-VONQXM3X.js"
   ],
   "portal-account-payment": [
-    "chunk-I6KLRKW7.js",
-    "chunk-LXMEIZIL.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-HFROVBFX.js"
   ],
   "portal-account-profile": [
-    "chunk-I6KLRKW7.js",
-    "chunk-NT2SZLBG.js"
+    "chunk-CRKVRBQX.js",
+    "chunk-E4QV7XLZ.js"
   ],
   "portal-activate": [
-    "chunk-CFWAKE7H.js",
-    "chunk-I6KLRKW7.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-ZQIMCKOH.js"
   ],
   "portal-contact": [
-    "chunk-I6KLRKW7.js",
-    "chunk-VXBRNU3B.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-SX4PGELE.js"
   ],
   "portal-login": [
-    "chunk-I6KLRKW7.js",
-    "chunk-N4MWKFPJ.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-WCJTMF3W.js"
   ],
   "portal-register": [
-    "chunk-BOM6DB44.js",
-    "chunk-I6KLRKW7.js"
+    "chunk-46YUPGG7.js",
+    "chunk-E4QV7XLZ.js"
   ],
   "portal-vehicles": [
-    "chunk-I6KLRKW7.js",
-    "chunk-K6XJTOSY.js"
+    "chunk-BWJRPWQH.js",
+    "chunk-E4QV7XLZ.js"
   ],
   "portal-widgets": [
-    "chunk-I6KLRKW7.js"
+    "chunk-E4QV7XLZ.js"
   ],
   "shop-add-to-cart": [
-    "chunk-I6KLRKW7.js",
-    "chunk-JKHV3M4D.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-FQ4TSAO2.js"
   ],
   "shop-cart": [
-    "chunk-3SHDYJJT.js",
-    "chunk-I6KLRKW7.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-XITAUYES.js"
   ],
   "shop-checkout": [
-    "chunk-3SHDYJJT.js",
-    "chunk-BOM6DB44.js",
-    "chunk-I6KLRKW7.js",
-    "chunk-MF33RKIO.js"
+    "chunk-46YUPGG7.js",
+    "chunk-E4QV7XLZ.js",
+    "chunk-GEHR3SJS.js",
+    "chunk-XITAUYES.js"
   ],
   "shop-invoice": [
-    "chunk-I6KLRKW7.js",
-    "chunk-QNQQBT7J.js"
+    "chunk-2JHVFM6C.js",
+    "chunk-E4QV7XLZ.js"
   ],
   "shop-product-images": [
-    "chunk-EQNVHPCJ.js",
-    "chunk-I6KLRKW7.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-OPKRJ27L.js"
   ],
   "shop-search": [
-    "chunk-I547X4Y7.js",
-    "chunk-I6KLRKW7.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-NRL5TGIO.js"
   ],
   "shop-search-results": [
-    "chunk-B7QXURLO.js",
-    "chunk-I6KLRKW7.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-JKBCKO76.js"
   ],
   "shop-tool-finder": [
-    "chunk-DIAHFCSZ.js",
-    "chunk-I6KLRKW7.js",
-    "chunk-JKHV3M4D.js"
+    "chunk-E4QV7XLZ.js",
+    "chunk-FQ4TSAO2.js",
+    "chunk-VFN7OQBY.js"
   ]
 }

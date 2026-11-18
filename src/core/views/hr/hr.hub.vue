@@ -14,7 +14,7 @@
             <v-tab value="dashboard" prepend-icon="mdi-view-dashboard">
                 {{ t('HrView.tabs.dashboard') }}
             </v-tab>
-            <v-tab value="payroll" prepend-icon="mdi-cash-multiple">
+            <v-tab v-if="canManage" value="payroll" prepend-icon="mdi-cash-multiple">
                 {{ t('HrView.tabs.payroll') }}
             </v-tab>
             <v-tab value="vacation" prepend-icon="mdi-beach">
@@ -27,10 +27,10 @@
                     class="ml-1"
                 />
             </v-tab>
-            <v-tab value="settings" prepend-icon="mdi-cog">
+            <v-tab v-if="canManage" value="settings" prepend-icon="mdi-cog">
                 {{ t('HrView.tabs.settings') }}
             </v-tab>
-            <v-tab value="tax" prepend-icon="mdi-table-cog">
+            <v-tab v-if="canManage" value="tax" prepend-icon="mdi-table-cog">
                 {{ t('HrView.tabs.tax') }}
             </v-tab>
             <v-tab v-if="showPerformance" value="performance" prepend-icon="mdi-speedometer">
@@ -45,8 +45,8 @@
                 <v-progress-linear v-if="dashLoading" indeterminate color="primary" class="mb-4" />
 
                 <v-row v-if="dashboard">
-                    <!-- KPI-Karten -->
-                    <v-col cols="12" sm="6" md="3">
+                    <!-- KPI-Karten (Firmenkennzahlen nur mit Personalverwaltung) -->
+                    <v-col v-if="canManage" cols="12" sm="6" md="3">
                         <v-card variant="tonal" color="primary" class="text-center pa-4">
                             <v-icon size="36" class="mb-2">mdi-account-group</v-icon>
                             <div class="text-h4 font-weight-bold">{{ dashboard.active_employees }}</div>
@@ -67,7 +67,7 @@
                         </v-card>
                     </v-col>
 
-                    <v-col cols="12" sm="6" md="3">
+                    <v-col v-if="canManage" cols="12" sm="6" md="3">
                         <v-card
                             variant="tonal"
                             color="info"
@@ -182,7 +182,7 @@
             </v-tabs-window-item>
 
             <!-- LOHNABRECHNUNG -->
-            <v-tabs-window-item value="payroll">
+            <v-tabs-window-item v-if="canManage" value="payroll">
                 <HrPayrollTab />
             </v-tabs-window-item>
 
@@ -192,12 +192,12 @@
             </v-tabs-window-item>
 
             <!-- EINSTELLUNGEN -->
-            <v-tabs-window-item value="settings">
+            <v-tabs-window-item v-if="canManage" value="settings">
                 <HrSettingsTab />
             </v-tabs-window-item>
 
             <!-- STEUERTABELLE -->
-            <v-tabs-window-item value="tax">
+            <v-tabs-window-item v-if="canManage" value="tax">
                 <HrTaxTab />
             </v-tabs-window-item>
 
@@ -237,7 +237,10 @@ export default {
         const router = useRouter()
 
         const showPerformance = computed(() => oserp.canSeeMechanicPerformance())
+        // Lohn, Mitarbeiterdaten und Steuertabelle: nur mit dem Recht Personalverwaltung
+        const canManage = computed(() => oserp.canManageHr())
         const TABS = ['dashboard', 'payroll', 'vacation', 'settings', 'tax', 'performance']
+        const MANAGER_TABS = ['payroll', 'settings', 'tax']
 
         // Reiter aus der Adresse (?tab=…) übernehmen und dort mitschreiben,
         // damit Menüeinträge und Lesezeichen direkt auf einen Reiter führen
@@ -245,6 +248,7 @@ export default {
             const q = String(route.query.tab || '')
             if (!TABS.includes(q)) return 'dashboard'
             if (q === 'performance' && !showPerformance.value) return 'dashboard'
+            if (MANAGER_TABS.includes(q) && !canManage.value) return 'dashboard'
             return q
         }
         const tab = ref(tabFromRoute())
@@ -303,7 +307,7 @@ export default {
         onMounted(loadDashboard)
 
         return {
-            t, tab, dashboard, dashLoading, currentYear, showPerformance,
+            t, tab, dashboard, dashLoading, currentYear, showPerformance, canManage,
             myVacation, myUsedPercent, pendingCount,
             monthName, statusColor, statusLabel, formatDate,
             goToPayroll, goToVacation

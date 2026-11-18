@@ -191,9 +191,12 @@ export function useNavigationCards() {
         const hrItems = [
             { title: t('HrMenu.hub'), to: { name: 'hr' } },
             '-',
-            { title: t('HrMenu.payroll'), to: { name: 'hr-payroll' } },
             { title: t('HrMenu.vacation'), to: { name: 'hr-vacation' } }
         ]
+        // Lohnabrechnung: nur mit dem Recht Personalverwaltung
+        if (oserp.canManageHr()) {
+            hrItems.splice(2, 0, { title: t('HrMenu.payroll'), to: { name: 'hr-payroll' } })
+        }
         // Leistung der Mechaniker: nur mit LxCars und passendem Recht
         if (oserp.canSeeMechanicPerformance()) {
             hrItems.push({ title: t('HrMenu.performance'), to: { name: 'hr-performance' } })

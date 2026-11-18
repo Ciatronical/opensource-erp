@@ -9,7 +9,7 @@ export const hrStore = defineStore('hrStore', () => {
     async function post(action, payload = {}) {
         const response = await axios.post('/api/hr/', { action, ...payload })
         if (!response.data.success) {
-            throw new ApiError('ApiError', response.data.text)
+            throw new ApiError('ApiError', response.data.text, typeof response.data.payload === 'string' ? response.data.payload : '')
         }
         return response.data.payload
     }
@@ -108,6 +108,81 @@ export const hrStore = defineStore('hrStore', () => {
         return response.data.payload.result
     }
 
+    // Regelarbeitszeit (Sollstunden je Wochentag) eines Mitarbeiters speichern
+    async function saveEmployeeWorkHours(params) {
+        const response = await axios.post('/api/lxcars/', { action: 'saveEmployeeWorkHours', ...params })
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text)
+        }
+        return response.data.payload
+    }
+
+    // ── Personalverwaltung: Fragebogen, Personalakte, Schreiben ──
+    // employee_id ist hier immer der Mitarbeiter, dessen Akte bearbeitet wird.
+
+    async function fetchPersonnelOverview(include_inactive = false) {
+        return (await post('getPersonnelOverview', { include_inactive })).results
+    }
+
+    async function fetchPersonnelFile(employee_id) {
+        return (await post('getPersonnelFile', { employee_id })).results
+    }
+
+    async function savePersonnelData(employee_id, data) {
+        return (await post('savePersonnelData', { employee_id, data })).results
+    }
+
+    async function fetchPersonnelQuestionnairePdf(employee_id, blank = false) {
+        return (await post('getPersonnelQuestionnairePdf', { employee_id, blank })).results
+    }
+
+    // Upload als multipart: der Axios-Interceptor lässt FormData unangetastet
+    async function uploadPersonnelDocument(fields, file) {
+        const formData = new FormData()
+        formData.append('action', 'uploadPersonnelDocument')
+        Object.entries(fields).forEach(([key, value]) => formData.append(key, value ?? ''))
+        formData.append('file', file)
+        const response = await axios.post('/api/hr/', formData)
+        if (!response.data.success) {
+            throw new ApiError('ApiError', response.data.text, typeof response.data.payload === 'string' ? response.data.payload : '')
+        }
+        return response.data.payload.results
+    }
+
+    async function updatePersonnelDocument(data) {
+        return (await post('updatePersonnelDocument', data)).results
+    }
+
+    async function deletePersonnelDocument(id) {
+        return await post('deletePersonnelDocument', { id })
+    }
+
+    function personnelDocumentUrl(id, download = false) {
+        return '/api/hr/?action=getPersonnelDocument&id=' + encodeURIComponent(id) + (download ? '&download=1' : '')
+    }
+
+    async function savePersonnelTemplate(data) {
+        return (await post('savePersonnelTemplate', data)).results
+    }
+
+    async function deletePersonnelTemplate(id) {
+        return await post('deletePersonnelTemplate', { id })
+    }
+
+    async function fetchPersonnelLetterDraft(employee_id, template) {
+        return (await post('getPersonnelLetterDraft', {
+            employee_id, template_id: template.id || 0, default_key: template.id ? '' : template.default_key
+        })).results
+    }
+
+    async function fetchPersonnelLetterPdf(employee_id, letter) {
+        return (await post('getPersonnelLetterPdf', { employee_id, letter })).results
+    }
+
+    async function savePersonnelLetter(employee_id, category, title, letter) {
+        return (await post('savePersonnelLetter', { employee_id, category, title, letter })).results
+    }
+
     return {
         fetchDashboard,
         fetchSalarySettings, saveSalarySettings,
@@ -118,6 +193,10 @@ export const hrStore = defineStore('hrStore', () => {
         saveVacationEntitlement,
         fetchLohnsteuerTableStatus, buildLohnsteuerTable, fetchLohnsteuerTable,
         calculatePayrollTaxes, previewLohnsteuer,
-        fetchMechanicPerformance
+        fetchMechanicPerformance, saveEmployeeWorkHours,
+        fetchPersonnelOverview, fetchPersonnelFile, savePersonnelData, fetchPersonnelQuestionnairePdf,
+        uploadPersonnelDocument, updatePersonnelDocument, deletePersonnelDocument, personnelDocumentUrl,
+        savePersonnelTemplate, deletePersonnelTemplate,
+        fetchPersonnelLetterDraft, fetchPersonnelLetterPdf, savePersonnelLetter
     }
 })

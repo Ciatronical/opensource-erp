@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Zeiterfassung aller Mitarbeiter bearbeiten",
             "config": "Installationseinstellungen ändern (Menü System)",
             "admin": "Mandantenadministration: Konfiguration, Druckvorlagen, Hintergrundjobs",
+            "hr_management": "Personalverwaltung: Personalakten, Schreiben, Lohnabrechnung, Gehälter, Urlaub genehmigen",
             "developer": "Entwickler-Menüs anzeigen",
             "edit_shop_config": "Webshops anlegen und bearbeiten",
             "custom_data_export_designer": "Benutzerdefinierter Datenexport",

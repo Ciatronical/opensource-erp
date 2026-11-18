@@ -12,6 +12,7 @@
  * @testdata {"action": "getLohnsteuerTableStatus"}
  */
 function getLohnsteuerTableStatus($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $query = <<<SQL
@@ -57,6 +58,7 @@ function getLohnsteuerTableStatus($data) {
  * @testdata {"action": "buildLohnsteuerTable", "year": 2025, "employee_id": 1}
  */
 function buildLohnsteuerTable($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $year       = intval($data['year']       ?? date('Y'));
@@ -140,6 +142,7 @@ function buildLohnsteuerTable($data) {
  * @testdata {"action": "getLohnsteuerTable", "year": 2025, "steuerklasse": 1}
  */
 function getLohnsteuerTable($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
     $year = intval($data['year'] ?? date('Y'));
     $stkl = intval($data['steuerklasse'] ?? 0);
@@ -181,6 +184,7 @@ function getLohnsteuerTable($data) {
  * @testdata {"action": "calculatePayrollTaxes", "run_id": 1}
  */
 function calculatePayrollTaxes($data) {
+    hrManagementPermit();
     $db = DbhCompany::begin();
 
     $runId         = intval($data['run_id'] ?? 0);
@@ -270,6 +274,7 @@ function calculatePayrollTaxes($data) {
  * @testdata {"action": "previewLohnsteuer", "brutto_monat": 3500, "steuerklasse": 1}
  */
 function previewLohnsteuer($data) {
+    hrManagementPermit();
     $result = LohnsteuerPAP::berechne(
         floatval($data['brutto_monat'] ?? 0),
         intval($data['steuerklasse']   ?? 1),

@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Labot visu darbinieku darba laika uzskaiti",
             "config": "Mainīt instalācijas iestatījumus (izvēlne „Sistēma“)",
             "admin": "Uzņēmuma administrēšana: konfigurācija, drukas veidnes, fona uzdevumi",
+            "hr_management": "Personāla vadība: personas lietas, vēstules, algu aprēķins, algas, atvaļinājumu apstiprināšana",
             "developer": "Rādīt izstrādātāju izvēlnes",
             "edit_shop_config": "Veidot un labot interneta veikalus",
             "custom_data_export_designer": "Pielāgots datu eksports",

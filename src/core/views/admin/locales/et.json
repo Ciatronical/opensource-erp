@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Kõigi töötajate tööaja kirjete muutmine",
             "config": "Paigalduse seadete muutmine (menüü Süsteem)",
             "admin": "Ettevõtte haldus: seadistus, trükivormid, taustatööd",
+            "hr_management": "Personalihaldus: isikutoimikud, kirjad, palgaarvestus, palgad, puhkuste kinnitamine",
             "developer": "Arendajate menüüde näitamine",
             "edit_shop_config": "E-poodide loomine ja muutmine",
             "custom_data_export_designer": "Kohandatud andmete eksport",

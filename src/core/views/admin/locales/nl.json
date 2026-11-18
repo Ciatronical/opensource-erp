@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Urenregistratie van alle medewerkers bewerken",
             "config": "Installatie-instellingen wijzigen (menu Systeem)",
             "admin": "Bedrijfsbeheer: configuratie, afdruksjablonen, achtergrondtaken",
+            "hr_management": "Personeelsbeheer: personeelsdossiers, brieven, salarisadministratie, salarissen, verlof goedkeuren",
             "developer": "Ontwikkelaarsmenu's tonen",
             "edit_shop_config": "Webshops aanmaken en bewerken",
             "custom_data_export_designer": "Aangepaste gegevensexport",

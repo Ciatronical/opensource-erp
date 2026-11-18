@@ -104,3 +104,4 @@ id,position,name,description,category
 56,21900,crm_master,"Master: Client, Groups",f
 57,22000,crm_admin,"Admin: Label, Category, Messages, Status, KnowHow write",f
 58,22100,crm_user,User,f
+1001,5150,hr_management,"Personnel management: personnel files, letters, payroll, salary settings, vacation approval",f

@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Redaguoti visų darbuotojų darbo laiko apskaitą",
             "config": "Keisti diegimo nustatymus (meniu „Sistema“)",
             "admin": "Įmonės administravimas: konfigūracija, spausdinimo šablonai, foninės užduotys",
+            "hr_management": "Personalo valdymas: asmens bylos, raštai, darbo užmokesčio apskaita, atlyginimai, atostogų tvirtinimas",
             "developer": "Rodyti kūrėjų meniu",
             "edit_shop_config": "Kurti ir redaguoti internetines parduotuves",
             "custom_data_export_designer": "Individualus duomenų eksportas",

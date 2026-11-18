@@ -295,6 +295,17 @@ ls -la backend/data/camera-clips/
 
 Beide Verzeichnisse legt der camera-monitor selbst an — sie müssen dem Service-Benutzer gehören. Ausgeliefert werden die Dateien nur über `media.php` mit gültiger Session.
 
+### Festplatte läuft voll
+
+Snapshots und Clips liegen in `backend/data/camera-snapshots/` und `backend/data/camera-clips/`. Bei mehreren Kameras mit viel Bewegung kommen schnell 20–30 GB pro Tag zusammen.
+
+Die Aufbewahrungsfrist steht unter **Videoüberwachung → Einstellungen → Aufbewahrung** (Tage, Standard 30, `0` = nie löschen) und wird je Mandant in `defaults_oserp` unter `camera_retention_days` gespeichert. Der camera-monitor räumt stündlich auf:
+
+- Ereignisse, die älter als die Frist sind, verlieren Snapshot und Clip; der Eintrag selbst bleibt als Protokoll stehen.
+- Dateien ohne zugehöriges Ereignis werden gelöscht, sobald sie älter als die längste Frist aller Mandanten sind. Hat ein Mandant `0` eingestellt oder ist seine Datenbank nicht erreichbar, entfällt dieser Schritt.
+
+Eine geänderte Frist greift beim nächsten Lauf, spätestens nach einer Stunde; ein Neustart des Dienstes löst den Lauf sofort aus.
+
 ---
 
 ## Umstieg von Frigate

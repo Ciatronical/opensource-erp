@@ -103,6 +103,20 @@ CREATE TABLE auth.master_rights (
 
 COMMENT ON TABLE auth.master_rights IS 'Katalog aller vergebbaren Rechte; category = Überschrift (kein Recht). Seed: auth_data/master_rights.csv';
 
+-- Eigene Rechte von OS-ERP in bestehenden Auth-Datenbanken nachtragen. Die
+-- Seed-CSV füllt nur eine leere Tabelle; eine Installation, die den Katalog
+-- schon hat, bekäme ein neues Recht sonst nie. Auf einer frischen Datenbank
+-- greift die Anweisung bewusst nicht (Tabelle noch leer) — dort bringt die CSV
+-- das Recht mit, und ein vorab eingefügter Eintrag würde ihren Import verhindern.
+--
+-- hr_management: Personalverwaltung (Personalakten, Schreiben, Lohnabrechnung,
+-- Gehälter, Urlaub genehmigen). Das Recht „admin" taugt dafür nicht, es ist in
+-- gewachsenen Installationen an fast jede Gruppe vergeben.
+INSERT INTO auth.master_rights (id, position, name, description, category)
+SELECT 1001, 5150, 'hr_management', 'Personnel management: personnel files, letters, payroll, salary settings, vacation approval', false
+WHERE EXISTS (SELECT 1 FROM auth.master_rights)
+  AND NOT EXISTS (SELECT 1 FROM auth.master_rights WHERE name = 'hr_management');
+
 CREATE TABLE auth.schema_info (
     tag text NOT NULL PRIMARY KEY,
     login text,

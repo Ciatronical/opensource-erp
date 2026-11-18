@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Tüm personelin zaman kayıtlarını düzenleme",
             "config": "Kurulum ayarlarını değiştirme (Sistem menüsü)",
             "admin": "Firma yönetimi: yapılandırma, baskı şablonları, arka plan görevleri",
+            "hr_management": "Personel yönetimi: özlük dosyaları, yazılar, bordro, maaşlar, izin onayı",
             "developer": "Geliştirici menülerini gösterme",
             "edit_shop_config": "Web mağazası oluşturma ve düzenleme",
             "custom_data_export_designer": "Kullanıcı tanımlı veri dışa aktarımı",

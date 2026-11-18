@@ -87,6 +87,23 @@
     {{- $pages = merge $pages (dict "categories" .RelPermalink) -}}
   {{- end -}}
 {{- end -}}
+{{- /*
+  Mehrsprachige Webseite: Hat die Seite in ihrer Sprache eigene Fassungen der
+  Portalseiten (content/kundenportal/<seite>.<sprache>.md unter der Adresse
+  /<sprache>/kundenportal/...), zeigen die Widgets dieser Sprache auf diese
+  Fassungen und auf die Startseite der Sprache statt auf die deutschen
+  Seiten. Die Shop-Seiten (Warenkorb, Kasse, Rechnung) bleiben, wie sie sind. Ohne
+  Fassung der Sprache und in der Hauptsprache ändert sich nichts.
+*/ -}}
+{{- if and (gt (len hugo.Sites) 1) (ne site.Language.Lang hugo.Sites.Default.Language.Lang) (site.GetPage "/kundenportal/anmelden") -}}
+  {{- $vorsatz := printf "/%s" site.Language.Lang -}}
+  {{- $lokal := dict -}}
+  {{- range $key, $value := $pages -}}
+    {{- if or (eq $key "home") (and (hasPrefix $value "/kundenportal/") (ne $key "invoice")) }}{{ $value = printf "%s%s" $vorsatz $value }}{{ end -}}
+    {{- $lokal = merge $lokal (dict $key $value) -}}
+  {{- end -}}
+  {{- $pages = $lokal -}}
+{{- end -}}
 {{- $pathsJson := jsonify (dict "base" $base "site" $site "api" $api "pages" $pages) -}}
 {{- $theme := $cfg.theme | default "bootstrap5" -}}
 {{- $sheet := $cfg.stylesheet | default "" -}}

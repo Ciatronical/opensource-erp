@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Redigere timeregistreringer for alle ansatte",
             "config": "Endre installasjonsinnstillinger (menyen System)",
             "admin": "Klientadministrasjon: konfigurasjon, utskriftsmaler, bakgrunnsjobber",
+            "hr_management": "Personaladministrasjon: personalmapper, brev, lønnskjøring, lønn, godkjenning av ferie",
             "developer": "Vise utviklermenyene",
             "edit_shop_config": "Opprette og redigere nettbutikker",
             "custom_data_export_designer": "Egendefinert dataeksport",

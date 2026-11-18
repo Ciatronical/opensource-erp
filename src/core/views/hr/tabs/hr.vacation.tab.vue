@@ -53,7 +53,7 @@
                         <v-list-item-subtitle v-if="req.notes" class="text-caption">
                             {{ req.notes }}
                         </v-list-item-subtitle>
-                        <template #append>
+                        <template v-if="canManage" #append>
                             <v-btn
                                 size="x-small"
                                 color="success"
@@ -93,8 +93,8 @@
                             <span class="font-weight-medium">{{ emp.name }}</span>
                             <v-spacer />
 
-                            <!-- Urlaubsbalken -->
-                            <div class="d-flex align-center ga-2 mr-2" style="min-width: 180px">
+                            <!-- Urlaubsbalken (Urlaubskonto der Kollegen sieht nur die Personalverwaltung) -->
+                            <div v-if="own(emp)" class="d-flex align-center ga-2 mr-2" style="min-width: 180px">
                                 <v-progress-linear
                                     :model-value="usedPercent(emp)"
                                     :color="usedPercent(emp) >= 100 ? 'error' : 'primary'"
@@ -109,6 +109,7 @@
                             </div>
 
                             <v-btn
+                                v-if="canManage"
                                 size="x-small"
                                 variant="text"
                                 icon="mdi-pencil"
@@ -118,7 +119,7 @@
                         </div>
                     </v-expansion-panel-title>
                     <v-expansion-panel-text>
-                        <div class="d-flex ga-3 mb-3 flex-wrap">
+                        <div v-if="own(emp)" class="d-flex ga-3 mb-3 flex-wrap">
                             <v-chip size="small" color="primary" variant="tonal">
                                 {{ t('HrView.vacation.daysTotal') }}: {{ emp.days_total }}
                             </v-chip>
@@ -171,13 +172,14 @@
                                         {{ statusLabel(req.status) }}
                                     </v-chip>
                                     <v-btn
-                                        v-if="req.status === 'pending'"
+                                        v-if="req.status === 'pending' && own(emp)"
                                         size="x-small"
                                         variant="text"
                                         icon="mdi-pencil"
                                         @click="openEditRequest(req, emp)"
                                     />
                                     <v-btn
+                                        v-if="canManage || (req.status === 'pending' && own(emp))"
                                         size="x-small"
                                         variant="text"
                                         color="error"
@@ -263,6 +265,7 @@
                 </v-card-title>
                 <v-card-text>
                     <v-select
+                        v-if="canManage"
                         v-model="requestForm.employee_id"
                         :label="t('HrView.vacation.employee')"
                         :items="employeeItems"
@@ -402,6 +405,13 @@ export default {
         const { t } = useI18n()
         const hr = hrStore()
         const oserp = oserpStore()
+        // Genehmigen, Ablehnen, Anspruch und Anträge anderer: nur mit Personalverwaltung
+        const canManage = computed(() => oserp.canManageHr())
+        // Eigene Zeile oder Personalverwaltung: Urlaubskonto und Bearbeiten.
+        // Von Kollegen kommt nur der genehmigte Zeitraum (Backend liefert nicht mehr).
+        function own(emp) {
+            return canManage.value || emp.employee_id === (oserp.session?.logged_in_employee?.id || 0)
+        }
 
         const selectedYear = ref(new Date().getFullYear())
         const viewMode = ref('list')
@@ -640,7 +650,7 @@ export default {
         onMounted(load)
 
         return {
-            t, selectedYear, yearItems, viewMode, loading, overview,
+            t, canManage, own, selectedYear, yearItems, viewMode, loading, overview,
             calMonth, calYear, calMonthName, calDays,
             pendingRequests, employeeItems,
             formatDate, usedPercent, remaining, statusColor, statusIcon, statusLabel, statusBg,

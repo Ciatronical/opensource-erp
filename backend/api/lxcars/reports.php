@@ -76,6 +76,9 @@ function _workTimesCte() {
         ),
         work AS MATERIALIZED (
             SELECT i.id, i.oe_id,
+                   -- Die Zeit zählt für den, der sie erfasst hat (Timer-Sitzung) — auch wenn
+                   -- im Auftrag ein anderer Mechaniker als „Erledigt von“ steht, etwa weil
+                   -- einer ausbaut und ein anderer am nächsten Tag wieder einbaut
                    COALESCE(w.employee_id, i.employee_id) AS employee_id,
                    i.description, i.planned_minutes, i.actual_minutes, i.done, i.done_at,
                    w.started_at, w.started_at::date AS work_date, w.minutes,

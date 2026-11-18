@@ -490,6 +490,41 @@
                 </v-col>
             </v-row>
 
+            <!-- Aufbewahrung von Snapshots und Clips -->
+            <v-row class="mt-4">
+                <v-col cols="12">
+                    <section-card :title="t('cam.retentionTitle')" icon="mdi-delete-clock-outline">
+                        <v-row density="compact" align="center">
+                            <v-col cols="12" sm="4" md="3">
+                                <v-text-field
+                                    v-model.number="retention_days"
+                                    type="number" min="0" step="1"
+                                    :label="t('cam.retentionDays')"
+                                    :suffix="t('cam.retentionUnit')"
+                                    :rules="[retentionRule]"
+                                />
+                            </v-col>
+                            <v-col cols="auto">
+                                <v-btn color="primary" variant="tonal" prepend-icon="mdi-content-save-outline"
+                                    :loading="savingRetention"
+                                    :disabled="retentionRule(retention_days) !== true"
+                                    @click="saveRetention">
+                                    {{ t('cam.retentionSave') }}
+                                </v-btn>
+                            </v-col>
+                            <v-col cols="12" sm>
+                                <div class="cam-retention-hint">
+                                    {{ Number(retention_days) === 0 ? t('cam.retentionNever') : t('cam.retentionHint') }}
+                                </div>
+                                <div v-if="stats.media_events > 0" class="cam-retention-hint">
+                                    {{ t('cam.retentionStored', { n: stats.media_events, date: formatDateTime(stats.media_oldest) }) }}
+                                </div>
+                            </v-col>
+                        </v-row>
+                    </section-card>
+                </v-col>
+            </v-row>
+
             <!-- Kamera-Monitor-Dienst -->
             <v-row class="mt-4">
                 <v-col cols="12">
@@ -1038,6 +1073,7 @@ import axios from 'axios'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toast from '@/core/utils/toasts.js'
+import SectionCard from '@/core/components/layout/section-card.vue'
 
 const { t } = useI18n()
 const oserp = oserpStore()
@@ -1049,6 +1085,8 @@ const cameras = ref([])
 const events = ref([])
 const rules = ref([])
 const stats = reactive({})
+const retention_days = ref(null)
+const savingRetention = ref(false)
 const loadingEvents = ref(false)
 const discovering = ref(false)
 const gridCols = ref(4)  // md-Spalten pro Kamera (6=2, 4=3, 3=4)
@@ -1252,8 +1290,31 @@ async function loadRules() {
 async function loadStats() {
     try {
         const res = await axios.post('/api/camera/', { action: 'getCameraStats' })
-        if (res.data.success) Object.assign(stats, res.data.payload.stats)
+        if (res.data.success) {
+            Object.assign(stats, res.data.payload.stats)
+            retention_days.value = Number(stats.retention_days)
+        }
     } catch (e) { console.error('getCameraStats:', e) }
+}
+
+// ── Aufbewahrung ───────────────────────────────────────────────────────────
+
+function retentionRule(v) {
+    return (v !== '' && v !== null && Number.isInteger(Number(v)) && Number(v) >= 0) || t('cam.retentionInvalid')
+}
+
+async function saveRetention() {
+    savingRetention.value = true
+    try {
+        const res = await axios.post('/api/camera/', { action: 'saveCameraRetention', retention_days: retention_days.value })
+        if (res.data.success) {
+            toast.success(t('cam.retentionSaved'))
+            loadStats()
+        } else {
+            toast.error(res.data.text)
+        }
+    } catch (e) { toast.error(e.message) }
+    savingRetention.value = false
 }
 
 async function loadGo2rtcStatus() {
@@ -1968,6 +2029,12 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ── Aufbewahrung ── */
+.cam-retention-hint {
+    color: var(--oserp-text-muted);
+    font-size: var(--oserp-hint-size, 0.8125rem);
+}
+
 /* ── Zonen-Editor ── */
 .zone-canvas-wrap {
     position: relative;

@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Úpravy evidence pracovní doby všech zaměstnanců",
             "config": "Změna nastavení instalace (nabídka Systém)",
             "admin": "Správa mandanta: konfigurace, tiskové šablony, úlohy na pozadí",
+            "hr_management": "Personalistika: osobní spisy, dopisy, mzdy, platy, schvalování dovolené",
             "developer": "Zobrazit nabídky pro vývojáře",
             "edit_shop_config": "Zakládání a úpravy e-shopů",
             "custom_data_export_designer": "Uživatelský export dat",

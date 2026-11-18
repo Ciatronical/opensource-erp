@@ -1,0 +1,13 @@
+key,name,icon,per_year,sortkey
+questionnaire,Personalfragebogen,mdi-clipboard-account-outline,false,10
+contract,Arbeitsvertrag und Zusätze,mdi-file-sign,false,20
+income_tax,Einkommensteuernachweis / Lohnsteuerbescheinigung,mdi-file-percent-outline,true,30
+social_security,Sozialversicherung und Krankenkasse,mdi-shield-account-outline,false,40
+payslip,Lohn- und Gehaltsabrechnung,mdi-cash-multiple,true,50
+sick_note,Krankmeldung,mdi-hospital-box-outline,false,60
+qualification,Zeugnisse und Qualifikationen,mdi-school-outline,false,70
+warning,Abmahnung,mdi-alert-octagon-outline,false,80
+termination,Kündigung,mdi-account-off-outline,false,90
+termination_agreement,Aufhebungsvertrag,mdi-handshake-outline,false,100
+reference,Arbeitszeugnis,mdi-certificate-outline,false,110
+other,Sonstiges,mdi-file-document-outline,false,900

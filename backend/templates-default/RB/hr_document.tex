@@ -1,0 +1,133 @@
+\input{inheaders.tex}
+
+% Personalschreiben (Personal → Mitarbeiterdaten → Schreiben): Abmahnung,
+% Kündigung, Aufhebungsvertrag und eigene Vorlagen der Firma.
+%
+% Aufbau wie der Brief (letter.tex, DIN 5008), Empfänger ist der Mitarbeiter
+% mit seiner Privatanschrift aus dem Personalfragebogen. Der Text kommt als
+% HTML aus dem Editor und enthält die Anrede bereits.
+%
+% Bewusst OHNE Unterschriftsbild: Kündigung und Aufhebungsvertrag brauchen die
+% Schriftform (§ 623 BGB), also eine eigenhändige Unterschrift auf dem Papier.
+% Die Vorlage lässt dafür Platz über der Linie.
+%
+% Variablen: letter_date, subject, body, name, street, zipcode, city, country,
+%            personnel_number, signer_name, company, full_name, preview,
+%            contract (1 = beide Parteien unterschreiben, kein Gruß),
+%            receipt  (1 = Empfangsbestätigung des Mitarbeiters am Ende)
+
+% Variablen, die in settings verwendet werden
+\newcommand{\lxlangcode} {<%template_meta.language.template_code%>}
+\newcommand{\lxmedia} {<%media%>}
+\newcommand{\lxcurrency} {<%currency%>}
+\newcommand{\kivicompany} {<%employee_company%>}
+
+% settings: Einstellungen, Logo, Briefpapier, Kopfzeile, Fusszeile
+\input{insettings.tex}
+
+% Fett und kursiv zugleich, siehe letter.tex
+\usepackage{lmodern}
+\renewcommand{\ourfont}{\fontfamily{lmss}\fontsize{10pt}{12pt}\selectfont}
+
+% Beschriftung im Informationsblock: etwas kleiner und grau, der Wert daneben normal
+\newcommand{\infolabel}[1]{{\footnotesize\color{gray}#1}}
+
+% laufende Kopfzeile (ab Seite 2): nur Datum und Seitenzahl
+\ourhead{}{}{}{}{<%letter_date%>}
+
+% Unterschriftsfeld: Platz zum Unterschreiben, Linie, Beschriftung
+\newcommand{\hrunterschrift}[1]{%
+  \begin{minipage}[t]{7.2cm}
+    \rule{0pt}{1.5cm}\\
+    \rule{6.2cm}{0.3pt}\\[0.1cm]
+    {\footnotesize #1}
+  \end{minipage}}
+
+
+\begin{document}
+
+\ourfont
+
+% Anschrift im Fensterbereich
+\begin{minipage}[t]{8.5cm}
+  \scriptsize
+
+  {\color{gray}\underline{\firma\ $\cdot$ \strasse\ $\cdot$ \ort}}
+  \normalsize
+
+  \vspace*{0.3cm}
+
+  <%name%>
+
+  <%street%>
+
+  ~
+
+  <%if country%><%country%>-<%end if%><%zipcode%> <%city%>
+\end{minipage}
+\hfill
+% Informationsblock
+\begin{minipage}[t]{6.3cm}
+  \vspace*{0.1cm}
+  \begin{tabular}{@{}l@{\hspace{0.5cm}}l@{}}
+    <%if personnel_number%>\infolabel{Personal-Nr.} & <%personnel_number%> \\[0.08cm]<%end if%>
+    \infolabel{\datum}                              & <%letter_date%> \\
+  \end{tabular}
+  <%if preview%>
+
+  \vspace*{0.2cm}
+  {\large\textbf{\color{gray}VORSCHAU}}<%end if%>
+\end{minipage}
+
+\vspace*{1.6cm}
+
+<%if subject%>{\large\textbf{<%subject%>}}
+
+\vspace{0.6cm}
+<%end if%>
+
+\setlength{\parskip}{0.3cm}
+
+<%body%>
+
+\setlength{\parskip}{0cm}
+
+<%if contract%>
+\vspace*{0.8cm}
+
+\begin{minipage}{\textwidth}
+\hrunterschrift{Ort, Datum}\hrunterschrift{Ort, Datum}
+
+\vspace*{0.2cm}
+
+\hrunterschrift{<%company%> (Arbeitgeber)}\hrunterschrift{<%full_name%> (Arbeitnehmer)}
+\end{minipage}
+<%end if%>
+<%if letter_mode%>
+\vspace*{0.7cm}
+
+\begin{minipage}{\textwidth}
+\gruesse
+
+\hrunterschrift{<%if signer_name%><%signer_name%>\\<%end if%><%company%>}
+\end{minipage}
+<%end if%>
+<%if receipt%>
+\vspace*{1cm}
+
+\begin{minipage}{\textwidth}
+{\color{gray}\rule{\textwidth}{0.3pt}}
+
+\vspace*{0.2cm}
+
+\textbf{Empfangsbestätigung}
+
+\vspace*{0.15cm}
+
+Ich habe dieses Schreiben im Original erhalten.
+
+\hrunterschrift{Ort, Datum}\hrunterschrift{<%full_name%>}
+\end{minipage}
+<%end if%>
+
+\end{document}

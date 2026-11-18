@@ -8,8 +8,11 @@
 
     Kennzahlen:
     - Leistungsgrad  = Vorgabezeit / Ist-Zeit (über 100 % = schneller als Vorgabe)
-    - Auslastung     = Ist-Zeit / verfügbare Zeit (Arbeitstage abzüglich
-                       genehmigtem Urlaub × Nettominuten je Tag aus der Konfiguration)
+    - Auslastung     = Ist-Zeit / Regelarbeitszeit (je Mitarbeiter und Wochentag
+                       hinterlegt, sonst Nettominuten je Tag aus der Konfiguration;
+                       Urlaub und künftige Tage zählen nicht)
+    - Arbeitszeit    = Regelarbeitszeit · vorgegebene · benötigte Arbeitszeit pro
+                       Tag/Woche/Monat/Fahrzeug (hr.performance.worktime.vue)
     - Arbeitslohn    = Dienstleistungspositionen der Aufträge, anteilig nach Ist-Minuten
 
     Plausibilität: Tage über der Netto-Arbeitszeit und auffällige Einzelzeiten
@@ -191,6 +194,15 @@
                         </div>
                     </div>
 
+                    <performance-worktime
+                        :days="workDays"
+                        :vehicles="workVehicles"
+                        :orders="orderMap"
+                        :names="nameOf"
+                        :period="period"
+                        @select="select"
+                    />
+
                     <section-card v-if="teamInsights.length" :title="t('HrView.performance.insights')" icon="mdi-lightbulb-on-outline">
                         <ul class="perf__insights">
                             <li v-for="(line, i) in teamInsights" :key="i">{{ line }}</li>
@@ -334,6 +346,14 @@
                             </div>
                         </div>
                         <v-spacer />
+                        <v-btn
+                            variant="tonal"
+                            size="small"
+                            prepend-icon="mdi-clock-edit-outline"
+                            @click="openWorkHours(current)"
+                        >
+                            {{ t('HrView.performance.workHours.button', { h: fmtHours(weeklyMinutes(current.work_hours)) }) }}
+                        </v-btn>
                         <v-chip
                             v-if="current.running"
                             color="success"
@@ -391,6 +411,13 @@
                             </div>
                         </div>
                     </div>
+
+                    <performance-worktime
+                        :days="currentWorkDays"
+                        :vehicles="currentWorkVehicles"
+                        :orders="orderMap"
+                        :period="period"
+                    />
 
                     <section-card v-if="currentInsights.length" :title="t('HrView.performance.insights')" icon="mdi-lightbulb-on-outline">
                         <ul class="perf__insights">
@@ -486,6 +513,9 @@
                                         </td>
                                         <td class="perf__task" :title="o.tasks.join('\n')">
                                             {{ o.tasks.join(' · ') }}
+                                            <div v-if="o.doneBy.length" class="text-caption text-medium-emphasis">
+                                                {{ t('HrView.performance.orders.doneBy', { name: o.doneBy.join(', ') }) }}
+                                            </div>
                                         </td>
                                         <td class="text-right perf__num">{{ fmtMinutes(o.actual) }}</td>
                                         <td class="text-right perf__num text-medium-emphasis">{{ fmtMinutes(o.planned) }}</td>
@@ -580,6 +610,45 @@
                 </template>
             </div>
         </div>
+
+        <!-- Regelarbeitszeit eines Mitarbeiters je Wochentag -->
+        <v-dialog v-model="workHoursDialog" max-width="640">
+            <v-card v-if="workHoursEmployee" rounded="lg">
+                <v-card-title>{{ t('HrView.performance.workHours.title', { name: workHoursEmployee.name }) }}</v-card-title>
+                <v-card-text>
+                    <p class="text-body-2 text-medium-emphasis mb-4">
+                        {{ t('HrView.performance.workHours.hint', { h: fmtHours(threshold) }) }}
+                    </p>
+                    <div class="perf__workhours">
+                        <v-text-field
+                            v-for="(day, i) in weekdayNames"
+                            :key="i"
+                            v-model="workHoursForm[i]"
+                            :label="day"
+                            :placeholder="hoursPlaceholder(i)"
+                            persistent-placeholder
+                            type="number"
+                            min="0"
+                            max="24"
+                            step="0.25"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                        />
+                    </div>
+                    <p class="text-body-2 mt-4 mb-0">
+                        {{ t('HrView.performance.workHours.perWeek', { h: fmtHours(weeklyMinutes(workHoursForm)) }) }}
+                    </p>
+                    <v-alert v-if="workHoursError" type="error" variant="tonal" density="compact" class="mt-3">{{ workHoursError }}</v-alert>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn variant="text" @click="resetWorkHours">{{ t('HrView.performance.workHours.reset') }}</v-btn>
+                    <v-spacer />
+                    <v-btn variant="text" @click="workHoursDialog = false">{{ t('HrView.cancel') }}</v-btn>
+                    <v-btn color="primary" variant="flat" :loading="workHoursSaving" @click="saveWorkHours">{{ t('HrView.save') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </div>
 </template>
 
@@ -596,6 +665,7 @@ import { oserpStore } from '@/core/stores/oserp.store.js'
 import { hrStore } from '@/core/stores/hr.store.js'
 import SectionCard from '@/core/components/layout/section-card.vue'
 import PerformanceChecks from './hr.performance.checks.vue'
+import PerformanceWorktime from './hr.performance.worktime.vue'
 import { entityRoute } from '@/core/constants/routes.js'
 
 ChartJS.register(Tooltip, Legend, BarElement, PointElement, CategoryScale, LinearScale)
@@ -675,7 +745,7 @@ function bucketKeys(from, to, bucket) {
 
 export default {
     name: 'HrPerformanceTab',
-    components: { SectionCard, PerformanceChecks, Bar, Bubble },
+    components: { SectionCard, PerformanceChecks, PerformanceWorktime, Bar, Bubble },
     setup() {
         const { t, locale, n } = useI18n()
         const router = useRouter()
@@ -951,6 +1021,58 @@ export default {
             ref: x.ref === null ? null : Number(x.ref)
         })))
 
+        // ─── Arbeitszeit: Regelarbeitszeit · Vorgabe · benötigt ───
+        const workDays = computed(() => data.value?.days || [])
+        const workVehicles = computed(() => data.value?.order_days || [])
+        const currentWorkDays = computed(() => current.value
+            ? workDays.value.filter(x => x.employee_id === current.value.employee_id) : [])
+        const currentWorkVehicles = computed(() => current.value
+            ? workVehicles.value.filter(x => x.employee_id === current.value.employee_id) : [])
+
+        // Regelarbeitszeit je Wochentag (Mo–So) bearbeiten; leer = Firmenstandard
+        const weekdayNames = computed(() => [1, 2, 3, 4, 5, 6, 7].map(dow =>
+            new Date(2024, 0, dow).toLocaleDateString(locale.value, { weekday: 'long' }))) // 1.1.2024 war ein Montag
+        const workHoursDialog = ref(false)
+        const workHoursEmployee = ref(null)
+        const workHoursForm = ref(Array(7).fill(null))
+        const workHoursSaving = ref(false)
+        const workHoursError = ref('')
+        function defaultHours(i) { return i < 5 ? threshold.value / 60 : 0 }
+        function isEmpty(v) { return v === null || v === undefined || v === '' }
+        function hoursPlaceholder(i) { return n(defaultHours(i), { maximumFractionDigits: 2 }) }
+        // Wochensumme in Minuten; leere Tage zählen mit dem Firmenstandard
+        function weeklyMinutes(hours) {
+            return [0, 1, 2, 3, 4, 5, 6].reduce((s, i) => {
+                const v = hours?.[i]
+                return s + (isEmpty(v) ? defaultHours(i) : Number(v) || 0) * 60
+            }, 0)
+        }
+        function openWorkHours(m) {
+            workHoursEmployee.value = m
+            workHoursForm.value = [0, 1, 2, 3, 4, 5, 6].map(i => isEmpty(m.work_hours?.[i]) ? null : Number(m.work_hours[i]))
+            workHoursError.value = ''
+            workHoursDialog.value = true
+        }
+        function resetWorkHours() { workHoursForm.value = Array(7).fill(null) }
+        async function saveWorkHours() {
+            const hours = workHoursForm.value.map(v => isEmpty(v) ? null : Number(v))
+            if (hours.some(v => v !== null && (!isFinite(v) || v < 0 || v > 24))) {
+                workHoursError.value = t('HrView.performance.workHours.invalid')
+                return
+            }
+            workHoursSaving.value = true
+            workHoursError.value = ''
+            try {
+                await hr.saveEmployeeWorkHours({ employee_id: workHoursEmployee.value.employee_id, hours })
+                workHoursDialog.value = false
+                await load()
+            } catch (e) {
+                workHoursError.value = e?.message || String(e)
+            } finally {
+                workHoursSaving.value = false
+            }
+        }
+
         // Zeilen der Plausibilitätskarte: Tage über der Arbeitszeit, darunter die
         // auffälligen Anweisungen desselben Tages, neueste zuerst
         const checkRows = computed(() => {
@@ -1005,24 +1127,38 @@ export default {
             return i >= 0 ? bucketLabels.value[i] : ''
         })
 
-        // Aufträge des gewählten Mechanikers, optional auf einen Diagramm-Abschnitt gefiltert
+        // Aufträge des gewählten Mechanikers, optional auf einen Diagramm-Abschnitt gefiltert.
+        // Grundlage sind die Arbeitstage je Auftrag (order_days): ein Auftrag erscheint an
+        // jedem Tag, an dem daran gearbeitet wurde — auch wenn er noch nicht erledigt ist
+        // oder die Arbeit schon an einem früheren Tag begonnen hat
+        // Name eines beliebigen Mitarbeiters (auch außerhalb der Mechaniker-Gruppe) aus dem Store
+        function employeeName(id) {
+            return (oserp.session?.company_config?.employees || []).find(e => e.id === id)?.name || ''
+        }
         const currentOrders = computed(() => {
             if (!current.value) return []
             const id = current.value.employee_id
-            const map = new Map()
+            const flags = {}
             for (const x of items.value) {
+                if (x.employee_id === id && x.flag) flags[x.oe_id] = (flags[x.oe_id] || 0) + 1
+            }
+            const map = new Map()
+            for (const x of workVehicles.value) {
                 if (x.employee_id !== id) continue
                 if (orderBucket.value && bucketOf(x.day) !== orderBucket.value) continue
                 let o = map.get(x.oe_id)
                 if (!o) {
-                    o = { oe_id: x.oe_id, ...orderOf(x.oe_id), day: x.day, actual: 0, planned: 0, flags: 0, tasks: [] }
+                    o = { oe_id: x.oe_id, ...orderOf(x.oe_id), day: x.day, actual: 0, planned: 0, flags: flags[x.oe_id] || 0, tasks: [], doneBy: [] }
                     map.set(x.oe_id, o)
                 }
                 if (x.day > o.day) o.day = x.day
-                o.actual += x.actual
-                o.planned += x.planned
-                if (x.flag) o.flags++
-                if (!o.tasks.includes(x.description)) o.tasks.push(x.description)
+                o.actual += Number(x.actual) || 0
+                o.planned += Number(x.planned) || 0
+                for (const task of (x.tasks || [])) if (!o.tasks.includes(task)) o.tasks.push(task)
+                for (const emp of (x.done_by || [])) {
+                    const name = employeeName(emp)
+                    if (name && !o.doneBy.includes(name)) o.doneBy.push(name)
+                }
             }
             return [...map.values()].sort((a, b) => b.day.localeCompare(a.day) || b.actual - a.actual)
         })
@@ -1545,6 +1681,9 @@ export default {
             mechanics, activeMechanics, inactiveCount, listedMechanics, current, team,
             sparkFor, teamSpark, currentTasks, visibleTasks, allTasks, TASK_LIMIT, taskItems, expandedTask, onTaskClick, orderOf, spread, heatmap, heatColor,
             threshold, checkRows, checkCount, currentChecks,
+            orderMap, nameOf, workDays, workVehicles, currentWorkDays, currentWorkVehicles,
+            weekdayNames, workHoursDialog, workHoursEmployee, workHoursForm, workHoursSaving, workHoursError,
+            hoursPlaceholder, weeklyMinutes, openWorkHours, resetWorkHours, saveWorkHours,
             currentOrders, visibleOrders, allOrders, ORDER_LIMIT, orderBucket, orderBucketLabel, ordersAnchor,
             fmtHours, fmtMinutes, fmtInt, fmtCurrency, fmtFactor, pct, fmtTime, fmtDay, initials,
             deltaText, deltaPoints, deltaClass, deltaIcon, efficiencyColor, utilizationColor, openOrder, orderRoute,
@@ -1604,6 +1743,11 @@ export default {
     flex-wrap: wrap;
 }
 .perf__running { cursor: pointer; max-width: 100%; }
+.perf__workhours {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--oserp-gap);
+}
 
 .perf__kpis {
     display: grid;

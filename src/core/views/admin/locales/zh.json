@@ -419,6 +419,7 @@
             "time_recording_edit_all": "编辑所有员工的工时记录",
             "config": "修改系统安装设置（“系统”菜单）",
             "admin": "公司管理：配置、打印模板、后台任务",
+            "hr_management": "人事管理：人事档案、函件、工资核算、薪资、休假审批",
             "developer": "显示开发者菜单",
             "edit_shop_config": "创建和编辑网店",
             "custom_data_export_designer": "自定义数据导出",

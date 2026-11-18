@@ -419,6 +419,7 @@
             "time_recording_edit_all": "Modificare le registrazioni delle ore di tutti i dipendenti",
             "config": "Modificare le impostazioni dell'installazione (menu Sistema)",
             "admin": "Amministrazione del mandante: configurazione, modelli di stampa, processi in background",
+            "hr_management": "Gestione del personale: fascicoli, lettere, buste paga, stipendi, approvazione ferie",
             "developer": "Mostrare i menu per sviluppatori",
             "edit_shop_config": "Creare e modificare i negozi online",
             "custom_data_export_designer": "Esportazione dati personalizzata",

@@ -554,7 +554,10 @@ function getCameraStats($data) {
             (SELECT COUNT(*) FROM camera WHERE active) AS camera_count,
             (SELECT COUNT(*) FROM camera_event WHERE NOT acknowledged) AS unread_events,
             (SELECT COUNT(*) FROM camera_event WHERE started_at >= CURRENT_DATE) AS events_today,
-            (SELECT COUNT(*) FROM camera_rule WHERE active) AS active_rules
+            (SELECT COUNT(*) FROM camera_rule WHERE active) AS active_rules,
+            (SELECT COUNT(*) FROM camera_event WHERE snapshot_url IS NOT NULL OR clip_url IS NOT NULL) AS media_events,
+            (SELECT MIN(started_at) FROM camera_event WHERE snapshot_url IS NOT NULL OR clip_url IS NOT NULL) AS media_oldest,
+            COALESCE((SELECT NULLIF(value, '')::int FROM defaults_oserp WHERE key = 'camera_retention_days'), 30) AS retention_days
     ");
 
     $recentByCamera = $db->getAll("
@@ -579,6 +582,26 @@ function getCameraStats($data) {
         'by_camera' => $recentByCamera,
         'by_label' => $labelStats,
     ]);
+}
+
+/**
+ * Aufbewahrungsfrist für Snapshots und Clips speichern.
+ *
+ * Der camera-monitor-Dienst löscht stündlich alle Medien, die älter sind,
+ * und leert dabei snapshot_url/clip_url der Ereignisse. 0 = nie löschen.
+ * Ohne gespeicherten Wert gelten 30 Tage (DEFAULT_RETENTION_DAYS im Dienst).
+ *
+ * @param int $data['retention_days'] Frist in Tagen (0 = unbegrenzt)
+ * @testdata {"retention_days": 30}
+ */
+function saveCameraRetention($data) {
+    $db = DbhCompany::begin();
+    $db->execute(
+        "INSERT INTO defaults_oserp (key, value) VALUES ('camera_retention_days', GREATEST(:days::int, 0)::text)
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+        [':days' => $data['retention_days']]
+    );
+    resultInfo(true);
 }
 
 /**
