@@ -62,11 +62,97 @@ function shopMediaDir($db, string $bereich, bool $anlegen = false): string {
     if (!isset(SHOP_MEDIA_STORAGES[$bereich])) {
         throw new ApiError('MEDIA_KIND_INVALID', 'Unbekannter Bereich der Medienbibliothek: '.$bereich);
     }
-    $verzeichnis = fmDataDir().'/shop/media/'.$bereich;
-    if ($anlegen && !is_dir($verzeichnis)) {
-        fmMkdir($verzeichnis);
+    $eigen = shopMediaDirConfigured($db, $bereich);
+    if ('' !== $eigen) {
+        // Ein Verzeichnis außerhalb legt OpensourceERP nicht an: es gehört
+        // der Webseite, ein Tippfehler erzeugte sonst still eine zweite Ablage
+        if ('/' !== $eigen[0] || str_contains($eigen, "\0") || in_array('..', explode('/', $eigen), true)) {
+            throw new ApiError('MEDIA_DIR_INVALID', 'Das Verzeichnis der Medienbibliothek ('.$bereich.') muss ein absoluter Pfad sein: '.$eigen);
+        }
+        if (!is_dir($eigen)) {
+            throw new ApiError('MEDIA_DIR_INVALID', 'Das Verzeichnis der Medienbibliothek ('.$bereich.') gibt es nicht oder der Webserver darf es nicht lesen: '.$eigen);
+        }
+        $verzeichnis = $eigen;
+    } else {
+        $verzeichnis = fmDataDir().'/shop/media/'.$bereich;
+        if ($anlegen && !is_dir($verzeichnis)) {
+            fmMkdir($verzeichnis);
+        }
+    }
+    if ('images' === $bereich) {
+        shopMediaImagesPointer($verzeichnis, '' !== $eigen);
     }
     return $verzeichnis;
+}
+
+/**
+ * Eigenes Verzeichnis eines Bereichs aus der Firmenkonfiguration
+ *
+ * shop_media_dir_images, shop_media_dir_thumbnails, shop_media_dir_downloads
+ * (dev/shop-medienbibliothek.md, „Medien außerhalb“): ein absoluter Pfad, auch
+ * außerhalb des Backend-Verzeichnisses — etwa die Verzeichnisse einer
+ * Webseite auf demselben Rechner, die der Webserver direkt ausliefert. Leer =
+ * Vorgabe backend/data/<db>/shop/media/<bereich>.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $bereich images, thumbnails oder downloads
+ * @return string absoluter Pfad ohne Schrägstrich am Ende, leer = Vorgabe
+ */
+function shopMediaDirConfigured($db, string $bereich): string {
+    $pfad = trim(shopConfigValue($db, 'shop_media_dir_'.$bereich, ''));
+    return '' === $pfad ? '' : (rtrim($pfad, '/') ?: '/');
+}
+
+/**
+ * Liegt ein Bereich der Bibliothek in einem eigenen Verzeichnis?
+ *
+ * Dort gelten die vorhandenen Dateien, wie sie sind: keine Höchstgröße beim
+ * Eintragen (sie gilt für Hochladen und Übertragen).
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $bereich images, thumbnails oder downloads
+ * @return bool
+ */
+function shopMediaExternal($db, string $bereich): bool {
+    return '' !== shopMediaDirConfigured($db, $bereich);
+}
+
+/**
+ * Hält den Zeiger auf ein eigenes Verzeichnis der Produktbilder aktuell
+ *
+ * backend/webhook/part-image.php liefert die Bilder der Marktplätze ohne
+ * Datenbank aus und kennt nur backend/data/<db>/. Liegen die Produktbilder
+ * woanders, steht der Pfad in backend/data/<db>/shop/media/images.path; mit
+ * der Vorgabe gibt es die Datei nicht. Je Anfrage und Verzeichnis einmal
+ * geprüft, geschrieben nur bei einer Änderung.
+ *
+ * @param string $verzeichnis Verzeichnis der Produktbilder
+ * @param bool $eigen true = eigenes Verzeichnis aus der Firmenkonfiguration
+ * @return void
+ */
+function shopMediaImagesPointer(string $verzeichnis, bool $eigen): void {
+    static $geprueft = [];
+    $basis = fmDataDir().'/shop/media';
+    if (isset($geprueft[$basis]) && $geprueft[$basis] === $verzeichnis) {
+        return;
+    }
+    $geprueft[$basis] = $verzeichnis;
+    $zeiger = $basis.'/images.path';
+    $steht = is_file($zeiger) ? trim((string)@file_get_contents($zeiger)) : '';
+    if (!$eigen) {
+        if ('' !== $steht || is_file($zeiger)) {
+            @unlink($zeiger);
+        }
+        return;
+    }
+    if ($steht !== $verzeichnis) {
+        if (!is_dir($basis)) {
+            fmMkdir($basis);
+        }
+        if (false === @file_put_contents($zeiger, $verzeichnis."\n", LOCK_EX)) {
+            writeLog('[SHOP] Zeiger auf das Verzeichnis der Produktbilder nicht schreibbar: '.$zeiger, true, DLOG_WRN);
+        }
+    }
 }
 
 /**
@@ -97,7 +183,34 @@ function shopMediaPath($pfad): array {
     if ('' !== $name && (str_contains($name, '/') || str_contains($name, '\\'))) {
         throw new ApiError('MEDIA_NAME_INVALID', 'Die Medienbibliothek hat keine Unterverzeichnisse: '.$name);
     }
-    return ['bereich' => $bereich, 'name' => '' === $name ? '' : shopMediaName($name)];
+    return ['bereich' => $bereich, 'name' => '' === $name ? '' : (shopMediaExistingName($bereich, $name) ?? shopMediaName($name))];
+}
+
+/**
+ * Name einer vorhandenen Datei der Bibliothek, so wie er ist
+ *
+ * Die Bibliothek lässt vorhandene Dateinamen zu, auch wenn sie nicht zum
+ * Muster neuer Namen passen (Leerzeichen, Klammern, Sonderzeichen) — etwa der
+ * Bestand einer Webseite, deren Adressen gleich bleiben sollen. Nur ohne
+ * Schrägstrich und ohne führenden Punkt. Neue Namen (Hochladen, Umbenennen)
+ * bereinigt weiter shopMediaName().
+ *
+ * @param string $bereich images, thumbnails oder downloads
+ * @param string $name Dateiname aus der Anfrage
+ * @return string|null der Name, wenn es die Datei gibt; sonst null
+ */
+function shopMediaExistingName(string $bereich, string $name): ?string {
+    if ('' === $name || '.' === $name[0] || preg_match('#[/\\\\\x00]#', $name)) {
+        return null;
+    }
+    $db = DbhCompany::begin();
+    // Ein Vorschaubild heißt wie sein Produktbild — auch wenn es selbst fehlt
+    foreach ('thumbnails' === $bereich ? ['thumbnails', 'images'] : [$bereich] as $ort) {
+        if (is_file(shopMediaDir($db, $ort).'/'.$name)) {
+            return $name;
+        }
+    }
+    return null;
 }
 
 /**
@@ -131,17 +244,18 @@ function shopMediaName(string $name): string {
  * @param string $datei Pfad der Datei
  * @param string $art image oder download
  * @param string $name Dateiname für die Meldung und die Endung
+ * @param bool $grenze Höchstgröße prüfen — nicht bei vorhandenen Dateien eines eigenen Verzeichnisses
  * @return array mime, width, height, size, extension (die zum Inhalt passende)
  * @throws ApiError MEDIA_TYPE, MEDIA_TOO_LARGE, MEDIA_NOT_FOUND
  */
-function shopMediaInspect(string $datei, string $art, string $name): array {
+function shopMediaInspect(string $datei, string $art, string $name, bool $grenze = true): array {
     if (!is_file($datei)) {
         throw new ApiError('MEDIA_NOT_FOUND', 'Datei nicht gefunden: '.$name);
     }
     $groesse = (int)filesize($datei);
 
     if ('image' === $art) {
-        if ($groesse > SHOP_MEDIA_MAX_IMAGE_BYTES) {
+        if ($grenze && $groesse > SHOP_MEDIA_MAX_IMAGE_BYTES) {
             throw new ApiError('MEDIA_TOO_LARGE', 'Bild ist zu groß (höchstens 20 MB): '.$name);
         }
         $info = @getimagesize($datei);
@@ -153,7 +267,7 @@ function shopMediaInspect(string $datei, string $art, string $name): array {
                 'size' => $groesse, 'extension' => $endung];
     }
 
-    if ($groesse > SHOP_MEDIA_MAX_DOWNLOAD_BYTES) {
+    if ($grenze && $groesse > SHOP_MEDIA_MAX_DOWNLOAD_BYTES) {
         throw new ApiError('MEDIA_TOO_LARGE', 'Datei ist zu groß (höchstens 100 MB): '.$name);
     }
     $endung = strtolower(pathinfo($name, PATHINFO_EXTENSION));
@@ -174,8 +288,10 @@ function shopMediaInspect(string $datei, string $art, string $name): array {
  * @return array Zeile aus media_shop
  */
 function shopMediaRegister($db, string $art, string $name, ?array $vorschau = null): array {
-    $datei = shopMediaDir($db, 'image' === $art ? 'images' : 'downloads').'/'.$name;
-    $info = shopMediaInspect($datei, $art, $name);
+    $bereich = 'image' === $art ? 'images' : 'downloads';
+    $datei = shopMediaDir($db, $bereich).'/'.$name;
+    // In einem eigenen Verzeichnis gilt der Bestand, auch über der Höchstgröße
+    $info = shopMediaInspect($datei, $art, $name, !shopMediaExternal($db, $bereich));
 
     return $db->getOne(
         "INSERT INTO media_shop (kind, filename, sha256, size, mime, width, height, thumbnail_sha256, thumbnail_size)
@@ -527,7 +643,9 @@ function shopMediaVariantPath($db, int $mediaId, string $format, bool $anlegen =
     if (!isset(SHOP_MEDIA_IMAGE_TYPES[$format])) {
         throw new ApiError('MEDIA_FORMAT', 'Unbekanntes Bildformat: '.$format);
     }
-    $verzeichnis = dirname(shopMediaDir($db, 'images')).'/channel/'.$format;
+    // Immer im Datenverzeichnis des Mandanten, auch wenn die Produktbilder
+    // in einem eigenen Verzeichnis liegen
+    $verzeichnis = fmDataDir().'/shop/media/channel/'.$format;
     if ($anlegen && !is_dir($verzeichnis)) {
         fmMkdir($verzeichnis);
     }
@@ -777,6 +895,9 @@ function shopMediaConvertFile($db, string $name, string $format): array {
     } finally {
         @unlink($tmp);
     }
+    // Neue Namen bereinigt die Bibliothek — bei einem Bestandsnamen mit
+    // Leerzeichen oder Sonderzeichen heißt die neue Datei deshalb anders
+    $neu = (string)$zeile['filename'];
     // Die Marktplatz-Kanäle zeigen auf den Eintrag: sie folgen dem neuen,
     // bevor der alte geht (sonst nähme der Fremdschlüssel ihre Zeilen mit).
     // Die Trigger stellen die Angebote neu ein.
@@ -885,16 +1006,22 @@ function shopMediaSync($db, ?callable $melden = null): array {
             }
             $vorhanden[$name] = true;
             $zeile = $bekannt[$name] ?? null;
-            $vorschauFehlt = 'image' === $art
-                && (!is_file(shopMediaDir($db, 'thumbnails').'/'.$name) || (int)($zeile['thumbnail_size'] ?? 0) !== $groesse);
+            $vorschauDatei = 'image' === $art ? shopMediaDir($db, 'thumbnails').'/'.$name : '';
+            // Ein Vorschaubild, das schon da ist, aber noch nicht eingetragen
+            // (Bestand einer Webseite): es gilt, wie es ist — nicht neu erzeugen
+            $uebernehmen = 'image' === $art && is_file($vorschauDatei) && 0 === (int)($zeile['thumbnail_size'] ?? 0);
+            $vorschauFehlt = 'image' === $art && !$uebernehmen
+                && (!is_file($vorschauDatei) || (int)($zeile['thumbnail_size'] ?? 0) !== $groesse);
             $unveraendert = $zeile && (int)$zeile['size'] === filesize($datei)
                 && strtotime((string)$zeile['mtime']) >= filemtime($datei);
-            if ($unveraendert && !$vorschauFehlt) {
+            if ($unveraendert && !$vorschauFehlt && !$uebernehmen) {
                 continue;
             }
             try {
                 $vorschau = null;
-                if ('image' === $art && ($vorschauFehlt || !$unveraendert)) {
+                if ($uebernehmen) {
+                    $vorschau = ['sha256' => hash_file('sha256', $vorschauDatei), 'size' => $groesse];
+                } elseif ('image' === $art && ($vorschauFehlt || !$unveraendert)) {
                     $grund = null;
                     $vorschau = shopMediaThumbnail($db, $name, $groesse, $grund);
                     if ($vorschau) {

@@ -398,7 +398,7 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
     $ergebnis = ['ok' => false, 'uebertragen' => false, 'written' => 0, 'deleted' => 0, 'unchanged' => 0,
                  'buildPending' => false, 'uebersprungen' => [], 'freigaben' => [], 'fehler' => '',
                  'php' => ['hugocms_bereit' => false, 'schluessel' => '' !== shopSigningSecretKey(), 'gesendet' => []],
-                 'medien' => ['angenommen' => false, 'anzahl' => ['images' => 0, 'thumbnails' => 0, 'downloads' => 0],
+                 'medien' => ['abgeschaltet' => false, 'angenommen' => false, 'anzahl' => ['images' => 0, 'thumbnails' => 0, 'downloads' => 0],
                               'fehlend' => [], 'uebertragen' => 0, 'vorschau_neu' => 0, 'vorschau_fehler' => []]];
 
     $stand = shopHugoCmsCall($db, $kanal, 'shopbuildstatus');
@@ -437,8 +437,15 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
 
     // Medien aus der Bibliothek: in die Freigaben, mit den Prüfsummen aus
     // media_shop — keine Kopie in der Bereitstellung
-    $medien = shopHugoCmsMediaList($db, $ergebnis['freigaben']);
+    // — außer der Kanal überträgt keine Medien (sie liegen bei der Webseite)
+    $medienAn = shopMediaTransfer($db, $kanal);
+    if (!$medienAn && '' !== ($grund = shopHugoCmsMediaOffCheck($ergebnis['freigaben']))) {
+        $ergebnis['fehler'] = $grund;
+        return $ergebnis;
+    }
+    $medien = $medienAn ? shopHugoCmsMediaList($db, $ergebnis['freigaben']) : shopHugoCmsMediaNone();
     $ergebnis['medien'] = [
+        'abgeschaltet' => !$medienAn,
         'angenommen'   => !empty($ergebnis['freigaben']['medien']),
         'anzahl'       => $medien['anzahl'],
         'fehlend'      => $medien['fehlend'],
@@ -522,6 +529,50 @@ function shopHugoCmsSync($db, int $kanal, bool $vollstaendig = false): array {
 
 require_once __DIR__.'/../../customer_vendor/filemanager.php';
 require_once __DIR__.'/media.php';
+
+/**
+ * Überträgt dieser HugoShop die Medien der Bibliothek an HugoCMS?
+ *
+ * Schalter der Kanalkarte (media_transfer, Vorgabe an; Vorgabe für neue
+ * HugoShops in der Firmenkonfiguration: shop_media_transfer_default). Aus für
+ * Webseiten, deren Medien im selben Dateisystem liegen wie die Bibliothek
+ * (eigene Verzeichnisse, shop_media_dir_*) und die der Webserver direkt
+ * ausliefert — dort gäbe es nichts zu übertragen, und der Abgleich über
+ * hunderttausend Dateien sprengte die Grenzen von HugoCMS.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop
+ * @return bool
+ */
+function shopMediaTransfer($db, int $kanal): bool {
+    return !in_array(strtolower(trim(shopChannelValue($db, $kanal, 'media_transfer', '1'))), ['0', 'f', 'false', 'n', 'no'], true);
+}
+
+/** Medienliste einer Lieferung ohne Medien (Übertragung abgeschaltet) */
+function shopHugoCmsMediaNone(): array {
+    return ['dateien' => [], 'fehlend' => [], 'anzahl' => ['images' => 0, 'thumbnails' => 0, 'downloads' => 0],
+            'vorschau_neu' => 0, 'vorschau_fehler' => []];
+}
+
+/**
+ * Darf die Lieferung dieses HugoShops ohne Medien hinausgehen?
+ *
+ * Ein HugoCMS, das Medien annimmt, löschte bis 2026-11-18 mit der nächsten
+ * Übernahme alles, was die vorige Lieferung enthielt und diese nicht mehr —
+ * also alle Medien der Webseite. Erst wenn es meldet, dass es sie in diesem
+ * Fall stehen lässt (media.keepWithoutMedia), geht eine Lieferung ohne Medien.
+ *
+ * @param array $freigaben aus shopHugoCmsGrantsFrom
+ * @return string Fehlertext, leer = in Ordnung
+ */
+function shopHugoCmsMediaOffCheck(array $freigaben): string {
+    if (!empty($freigaben['medien']) && empty($freigaben['medien_behalten'])) {
+        return 'Für diesen HugoShop ist die Übertragung der Medien abgeschaltet (Kanalkarte), dieses HugoCMS '
+            .'löschte dann aber die Medien der Webseite — bitte HugoCMS aktualisieren (Stand ab 2026-11-18) '
+            .'oder die Übertragung wieder einschalten.';
+    }
+    return '';
+}
 
 /**
  * Medien der Bibliothek als Einträge der Lieferung
@@ -1034,7 +1085,24 @@ function shopHugoCmsPublish($db, int $kanal, callable $sagen, callable $fehler, 
     // (SHOP_HUGOCMS_RESYNC_SECONDS).
     $bauNoetig = $abgleich['buildPending'];
     $liste = fn(array $namen) => implode(', ', array_slice($namen, 0, 5)).(count($namen) > 5 ? ' …' : '');
-    if ($abgleich['uebertragen'] && $abgleich['medien']['angenommen']) {
+    if (!empty($abgleich['medien']['abgeschaltet'])) {
+        // Medien liegen bei der Webseite (eigene Verzeichnisse der
+        // Bibliothek) und gehen nicht mit — auch keine Vorschaubilder und
+        // keine Prüfung der Downloads in HugoCMS
+        if ($abgleich['uebertragen']) {
+            $sagen('Medien werden für diesen HugoShop nicht übertragen (Kanalkarte: „Medien an HugoCMS übertragen“ ist aus).');
+            // Die Seiten verweisen über die Adressmuster des Kanals auf die
+            // Medien — was ein Artikel nennt, die Bibliothek aber nicht hat,
+            // ist auf der Webseite ein totes Bild oder ein toter Link
+            $fehlt = shopMediaMissingInLibrary($db, $kanal);
+            if ($fehlt['image']) {
+                $sagen(sprintf('%d Produktbilder fehlen in der Medienbibliothek: %s', count($fehlt['image']), $liste($fehlt['image'])));
+            }
+            if ($fehlt['download']) {
+                $sagen(sprintf('%d Download-Dateien fehlen in der Medienbibliothek: %s', count($fehlt['download']), $liste($fehlt['download'])));
+            }
+        }
+    } elseif ($abgleich['uebertragen'] && $abgleich['medien']['angenommen']) {
         // Medien aus der Bibliothek sind mit der Lieferung gegangen
         // (dev/shop-medienbibliothek.md): Vorschaubilder kommen fertig von
         // hier, fehlende Dateien kennt die Bibliothek selbst

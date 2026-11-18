@@ -374,6 +374,69 @@ Fassung, Verwendung, Kaskade, zweiter Lauf des Schemas), `part-image.php` mit
 gültigen und böswilligen Anfragen, Probe-Build. Der Probelauf der
 PHP-Funktionen gegen eine Datenbank steht aus.
 
+### Medien außerhalb (2026-11-18): eigene Verzeichnisse, Übertragung abschaltbar
+
+Anlass: solar-spar.de (Probeumstellung). 91 507 Produktbilder, 45 160
+Vorschaubilder und 35 336 Downloads (107 GB) liegen neben der Webseite
+(`products_images/`, `thumbnails/`, `downloads/`), werden nicht von Hugo
+veröffentlicht, sondern vom Webserver eingebunden (Nginx `alias`, lokal
+Apache `Alias`), und HugoCMS läuft auf demselben Rechner. Eine Übertragung
+verdoppelte den Speicher und scheiterte an der Grenze von 60 000 Dateien je
+Abgleich in HugoCMS.
+
+| Teil | Wo |
+| --- | --- |
+| Verzeichnisse je Bereich: `shop_media_dir_images`, `shop_media_dir_thumbnails`, `shop_media_dir_downloads` (Firmenkonfiguration → Shop, absoluter Pfad, leer = Vorgabe) | `shopMediaDir()`, `shopMediaDirConfigured()` in `backend/api/shop/lib/media.php`; `shopDefaultsConfig.js` |
+| Schalter je HugoShop `media_transfer` (Kanalkarte, Vorgabe an); Vorgabe für neue HugoShops `shop_media_transfer_default` (Firmenkonfiguration) | `shopMediaTransfer()` in `lib/hugocms.php`, `createShopChannel`, `shopChannelSettingsConfig.js` |
+| Lieferung ohne Medien, wenn der Schalter aus ist | `shopHugoCmsSync`, Haken `publish_entries` in `lib/portal_hooks.php` |
+| HugoCMS: eine Lieferung ohne Medien lässt die Medien der vorigen stehen; meldet `media.keepWithoutMedia` | `ShopSync::commit()`, `Connector.php` in HugoCMS |
+| Vorhandene Dateinamen gelten, wie sie sind | `shopMediaExistingName()` |
+| Vorhandene Vorschaubilder gelten, keine Höchstgröße für den Bestand | `shopMediaSync()`, `shopMediaInspect()` |
+| Zeiger für die öffentliche Auslieferung | `shopMediaImagesPointer()`, `backend/webhook/part-image.php` |
+
+Einzelheiten:
+
+- **Verzeichnisse** legt ein Administrator frei fest, auch außerhalb des
+  Backend-Verzeichnisses. OpensourceERP legt ein solches Verzeichnis nicht
+  an; fehlt es oder ist es nicht lesbar, melden die Medienfunktionen
+  `MEDIA_DIR_INVALID`. Der Webserver-Benutzer braucht Lese- und Schreibrechte
+  (Hochladen, Vorschaubilder, Löschen). Die Fassungen für die Marktplätze
+  (`channel/`) bleiben unter `backend/data/<db>/shop/media/`.
+- **Bestand aufnehmen**: `php tools/shop-media-import.php --client=<id>` ohne
+  `--images`/`--downloads` gleicht die Verzeichnisse mit `media_shop` ab. Die
+  Prüfsummen werden einmal über alle Dateien gerechnet (bei 107 GB Stunden).
+  Ein Vorschaubild, das schon da ist, wird übernommen und nicht neu erzeugt;
+  fehlende entstehen in der Größe `shop_thumbnail_size`. Dateien über der
+  Höchstgröße (20 MB Bilder, 100 MB Downloads) werden in einem eigenen
+  Verzeichnis eingetragen — die Grenze gilt für Hochladen und Übertragen.
+  Unterverzeichnisse bleiben außen vor.
+- **Dateinamen**: Eine vorhandene Datei spricht die Bibliothek unter ihrem
+  Namen an, auch mit Leerzeichen oder Sonderzeichen — nur ohne Schrägstrich
+  und ohne führenden Punkt. Neue Namen (Hochladen, Umbenennen, Umwandeln)
+  werden weiter bereinigt.
+- **Schalter aus**: Der Lauf und „Paket installieren“ liefern Produktseiten
+  und Kategorieübersicht, aber keine Medien; Vorschaubilder werden vor dem
+  Lauf nicht erneuert, HugoCMS erzeugt und prüft nichts. Löschen, Umbenennen
+  und Hochladen wirken in den Verzeichnissen sofort — ohne Lauf.
+- **Ausschalten löscht nichts**: HugoCMS löschte bisher, was die vorige
+  Lieferung enthielt und die neue nicht. Seit 2026-11-18 bleiben die Medien
+  stehen, wenn die Lieferung gar keine führt. Ein HugoCMS, das Medien
+  annimmt, das aber noch nicht meldet, bekommt keine Lieferung ohne Medien:
+  der Lauf endet mit einem Fehler („HugoCMS aktualisieren“). Nebenwirkung:
+  Wird die Bibliothek bei eingeschalteter Übertragung vollständig geleert,
+  bleiben die letzten Medien auf der Webseite liegen.
+- **Marktplätze**: `part-image.php` arbeitet ohne Datenbank. Liegen die
+  Produktbilder in einem eigenen Verzeichnis, steht der Pfad in
+  `backend/data/<db>/shop/media/images.path`; die Datei muss direkt in diesem
+  Verzeichnis liegen (keine Symlinks hinaus).
+- **Sicherung**: Eigene Verzeichnisse liegen außerhalb von `backend/data` und
+  gehören eigens gesichert.
+
+Geprüft: `part-image.php` mit eigenem Verzeichnis (Bild, fehlende Datei,
+Symlink hinaus, Fassung), PHP-Syntax, Probe-Build. Nicht gelaufen: die
+Funktionen gegen eine Datenbank, ein Abgleich über den Bestand von solar-spar
+und ein Lauf gegen HugoCMS.
+
 ## Reihenfolge der Umsetzung
 
 1. Bibliothek: Tabelle, Ablage, Dateimanager mit drei Wurzeln, Verwendung,

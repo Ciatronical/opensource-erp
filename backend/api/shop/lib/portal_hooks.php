@@ -130,7 +130,13 @@ portalHookAdd('publish_entries', function (array $beitrag, $db, int $website, ar
         }
     }
 
-    $medien = shopHugoCmsMediaList($db, $freigaben);
+    // Überträgt der HugoShop keine Medien (Kanalkarte), geht auch diese
+    // Lieferung ohne sie — HugoCMS lässt die vorhandenen dann stehen
+    $medienAn = shopMediaTransfer($db, $kanal);
+    if (!$medienAn && '' !== ($grund = shopHugoCmsMediaOffCheck($freigaben))) {
+        throw new ApiError('SHOP_HUGOCMS_MEDIA', $grund);
+    }
+    $medien = $medienAn ? shopHugoCmsMediaList($db, $freigaben) : shopHugoCmsMediaNone();
     foreach ($medien['dateien'] as $pfad => $datei) {
         // Medien tragen ihre Größe: HugoCMS misst die Stücke daran
         $beitrag['eintraege'][$pfad] = ['sha256' => $datei['sha256'], 'size' => $datei['size']];

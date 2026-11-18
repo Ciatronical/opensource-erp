@@ -2635,8 +2635,17 @@ function createShopChannel($data) {
              SELECT :art, :name, false, false,
                     COALESCE((SELECT max(sortkey) FROM sales_channel_shop), 0) + 1,
                     shop_channel_default_settings(:art_vorgabe)
+                    -- HugoShop: ob er die Medien an HugoCMS überträgt, gibt die
+                    -- Firmenkonfiguration vor (shop_media_transfer_default, Vorgabe an)
+                    || CASE WHEN :art_medien = 'hugoshop'
+                            THEN jsonb_build_object('media_transfer',
+                                 CASE WHEN COALESCE((SELECT lower(btrim(value)) FROM defaults_oserp
+                                                      WHERE key = 'shop_media_transfer_default'), '1')
+                                           IN ('0', 'f', 'false', 'n', 'no')
+                                      THEN '0' ELSE '1' END)
+                            ELSE '{}'::jsonb END
              RETURNING id",
-            [':art' => $art, ':name' => $name, ':art_vorgabe' => $art]
+            [':art' => $art, ':name' => $name, ':art_vorgabe' => $art, ':art_medien' => $art]
         );
     } catch (PDOException $e) {
         if ('23505' === $e->getCode()) {

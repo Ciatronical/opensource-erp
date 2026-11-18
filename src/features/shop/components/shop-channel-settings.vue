@@ -489,7 +489,9 @@ function statischesMuster(verzeichnis) {
 
 /** Medienfreigaben, die nicht unter static/ liegen — Hugo liefert sie nicht aus */
 const freigabenAusserhalb = computed(() => {
-    if (!freigaben.value) return []
+    // Überträgt der HugoShop keine Medien, liefert sie der Webserver aus
+    // eigenen Verzeichnissen aus — die Freigaben von HugoCMS zählen dann nicht
+    if (!freigaben.value || !werte.media_transfer) return []
     return FREIGABEN
         .filter(f => ['images', 'thumbnails', 'downloads'].includes(f.feld))
         .filter(f => {
@@ -513,6 +515,9 @@ const musterAbweichungen = computed(() => {
         { feld: 'thumbnails_link', label: 'crm_fields.shopThumbnailsLink', vorschlag: statischesMuster(freigaben.value.thumbnails) },
         { feld: 'downloads_link', label: 'crm_fields.shopDownloadsLink', vorschlag: statischesMuster(freigaben.value.downloads) },
     ]
+        // ohne Übertragung der Medien richten sich deren Adressen nach dem
+        // Webserver, nicht nach den Freigaben — kein Vorschlag
+        .filter(muster => werte.media_transfer || muster.feld === 'products_link')
         .map(muster => ({ ...muster, ist: String(werte[muster.feld] || '').trim() }))
         .filter(muster => muster.vorschlag !== '' && musterPfad(muster.ist) !== muster.vorschlag)
 })

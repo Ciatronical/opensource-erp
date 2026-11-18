@@ -50,6 +50,11 @@ const hugoshop = [
     // Seiten bei Preisänderungen automatisch neu schreiben (V22) und was beim
     // Abschalten des HugoShops mit den Seiten geschieht (V16)
     { name: "auto_publish", type: "checkbox", label: "crm_fields.shopAutoPublish", tooltip: "crm_fields.shopAutoPublish_help" },
+    // Medien der Bibliothek mit dem Lauf an HugoCMS übertragen. Aus für
+    // Webseiten, deren Medien im selben Dateisystem liegen wie die Bibliothek
+    // (Firmenkonfiguration → Shop: Verzeichnisse der Medienbibliothek) und
+    // die der Webserver direkt ausliefert
+    { name: "media_transfer", type: "checkbox", label: "crm_fields.shopMediaTransfer", tooltip: "crm_fields.shopMediaTransfer_help" },
     {
         name: "channel_off_pages", type: "select", fieldstyle: "max-width: 60ch",
         items: [

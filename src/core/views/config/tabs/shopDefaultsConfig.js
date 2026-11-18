@@ -96,6 +96,17 @@ const shopDefaultsConfig = [
     // (original = beibehalten). Welche Formate dieser Server schreiben kann,
     // lädt der Tab (quellen.shopImageFormats) — AVIF braucht GD mit AVIF oder ffmpeg.
     { name: "shop_image_format", type: "dynamic-select", source: "shopImageFormats", clearable: false, fieldstyle: "max-width: 40ch", label: "crm_fields.shopImageFormat", tooltip: "crm_fields.shopImageFormat_help" },
+
+    // Medien außerhalb (dev/shop-medienbibliothek.md): eigene Verzeichnisse
+    // der Medienbibliothek, auch außerhalb des Backend-Verzeichnisses — etwa
+    // die einer Webseite auf demselben Rechner. Leer = Vorgabe
+    // backend/data/<db>/shop/media/<bereich>.
+    { name: "shop_media_dirs", type: "headline", label: "crm_fields.shopMediaDirs" },
+    { name: "shop_media_dir_images", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirImages", tooltip: "crm_fields.shopMediaDir_help" },
+    { name: "shop_media_dir_thumbnails", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirThumbnails", tooltip: "crm_fields.shopMediaDir_help" },
+    { name: "shop_media_dir_downloads", type: "input", size: 80, fieldstyle: "max-width: 80ch", label: "crm_fields.shopMediaDirDownloads", tooltip: "crm_fields.shopMediaDir_help" },
+    // Vorgabe für neu angelegte HugoShops; je HugoShop in der Kanalkarte (media_transfer)
+    { name: "shop_media_transfer_default", type: "checkbox", label: "crm_fields.shopMediaTransferDefault", tooltip: "crm_fields.shopMediaTransferDefault_help" },
     // Adresse von OpensourceERP, unter der eBay die Artikelbilder abholt —
     // für alle eBay-Kanäle dieselbe; Zugang und Richtlinien stehen je
     // eBay-Kanal in seiner Karte

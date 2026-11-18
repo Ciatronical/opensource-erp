@@ -374,7 +374,11 @@ CREATE OR REPLACE FUNCTION shop_channel_default_settings(p_type text) RETURNS js
             'channel_off_pages',                'draft',
             'invoice_mail_subject',             'Ihre Rechnung (%s) vom %s',
             'paypal_sandbox',                   '1',
-            'paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED')
+            'paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED',
+            -- Medien der Bibliothek an HugoCMS übertragen; die Vorgabe für
+            -- neue HugoShops überschreibt createShopChannel aus
+            -- shop_media_transfer_default
+            'media_transfer',                   '1')
         WHEN 'ebay' THEN jsonb_build_object(
             'environment',                      'production',
             'marketplace_id',                   'EBAY_DE',
@@ -3138,6 +3142,12 @@ INSERT INTO defaults_oserp (key, value) VALUES ('shop_thumbnail_size', '200') ON
 -- Bildformat beim Hochladen von Produktbildern (Vorbelegung im Dialog):
 -- avif, webp, jpg, png oder original = Format der Datei beibehalten
 INSERT INTO defaults_oserp (key, value) VALUES ('shop_image_format', 'original') ON CONFLICT (key) DO NOTHING;
+-- Medien außerhalb (dev/shop-medienbibliothek.md, 2026-11-18): Vorgabe für
+-- neue HugoShops, ob sie die Medien der Bibliothek an HugoCMS übertragen
+-- (Schalter je HugoShop in der Kanalkarte: media_transfer). Die Verzeichnisse
+-- der Bibliothek (shop_media_dir_images, _thumbnails, _downloads) sind leer
+-- vorgegeben: backend/data/<db>/shop/media/<bereich>.
+INSERT INTO defaults_oserp (key, value) VALUES ('shop_media_transfer_default', '1') ON CONFLICT (key) DO NOTHING;
 -- Das Bildformat der Marktplätze steht seit 2026-11-18 je Kanal in
 -- sales_channel_shop.settings (image_format); shop_kleinanzeigen_image_format
 -- übernimmt der Abschnitt „Abschrift“ unten in die Kleinanzeigen-Kanäle.
@@ -3295,6 +3305,10 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         ('hugoshop', 'shop_template_set',                     'template_set',                     false),
         ('hugoshop', 'shop_auto_publish',                     'auto_publish',                     false),
         ('hugoshop', 'shop_channel_off_pages',                'channel_off_pages',                false),
+        -- Medien der Bibliothek an HugoCMS übertragen (2026-11-18,
+        -- dev/shop-medienbibliothek.md „Medien außerhalb“); aus für Webseiten,
+        -- deren Medien im selben Dateisystem liegen. Den alten Schlüssel gab es nie.
+        ('hugoshop', 'shop_media_transfer_channel',           'media_transfer',                   false),
         -- HugoShop: Mail und PayPal (M2)
         ('hugoshop', 'shop_invoice_mail_subject',             'invoice_mail_subject',             false),
         ('hugoshop', 'shop_withdrawal_mail_to',               'withdrawal_mail_to',               false),
@@ -3373,6 +3387,14 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         ('kleinanzeigen', 'kleinanzeigen_login_cookies',       'login_cookies',       true),
         ('kleinanzeigen', 'kleinanzeigen_contact_name',        'contact_name',        false)
 $$;
+
+-- Medien übertragen: bestehende HugoShops tun es wie bisher. Ohne den Wert
+-- zeigte die Kanalkarte den Schalter aus und speicherte ihn beim nächsten
+-- Speichern so.
+UPDATE sales_channel_shop c
+   SET settings = COALESCE(c.settings, '{}'::jsonb) || jsonb_build_object('media_transfer', '1')
+ WHERE c.type = 'hugoshop'
+   AND NOT jsonb_exists(COALESCE(c.settings, '{}'::jsonb), 'media_transfer');
 
 -- Bildformat für Kleinanzeigen: galt bis 2026-11-18 für alle Kanäle der Art
 -- (shop_kleinanzeigen_image_format) — jeder Kanal ohne eigenes Format
@@ -4380,7 +4402,11 @@ CREATE OR REPLACE FUNCTION shop_channel_default_settings(p_type text) RETURNS js
             'channel_off_pages',                'draft',
             'invoice_mail_subject',             'Ihre Rechnung (%s) vom %s',
             'paypal_sandbox',                   '1',
-            'paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED')
+            'paypal_payment_method_preference', 'IMMEDIATE_PAYMENT_REQUIRED',
+            -- Medien der Bibliothek an HugoCMS übertragen; die Vorgabe für
+            -- neue HugoShops überschreibt createShopChannel aus
+            -- shop_media_transfer_default
+            'media_transfer',                   '1')
         WHEN 'ebay' THEN jsonb_build_object(
             'environment',                      'production',
             'marketplace_id',                   'EBAY_DE',

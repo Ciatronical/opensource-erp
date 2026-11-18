@@ -258,6 +258,10 @@ function portalHugoCmsGrantsFrom(array $antwort, array $pflicht = []): array {
     $medien = (array)($antwort['data']['media'] ?? []);
     $ergebnis['medien'] = !empty($medien['accepted']);
     $ergebnis['medien_stueck'] = (int)($medien['chunkBytes'] ?? 0);
+    // Eine Lieferung ohne Medien lässt die Medien der vorigen stehen (HugoCMS
+    // seit 2026-11-18) — Voraussetzung dafür, die Übertragung der Medien je
+    // HugoShop abzuschalten, ohne dass HugoCMS die Webseite leert
+    $ergebnis['medien_behalten'] = !empty($medien['keepWithoutMedia']);
     // Online-Shop in HugoCMS nicht freigegeben: dann fehlen die Freigaben des
     // Shops mit Absicht — ein anderer Rat als bei unbrauchbaren Einträgen
     if ($pflicht && array_key_exists('onlineShop', (array)$antwort['data']) && !$antwort['data']['onlineShop']) {
