@@ -3561,10 +3561,29 @@ CREATE TABLE IF NOT EXISTS media_shop
     height           integer,
     thumbnail_sha256 text,
     thumbnail_size   integer,
+    replaced_by      integer,
     itime            timestamp NOT NULL DEFAULT now(),
     mtime            timestamp NOT NULL DEFAULT now(),
     CONSTRAINT media_shop_kind_filename_key UNIQUE (kind, filename)
 );
+
+-- Nachgetragen: in bestehenden Datenbanken gibt es die Tabelle schon.
+-- replaced_by (2026-11-18): Beim Umwandeln in ein anderes Format (etwa WebP
+-- zu AVIF) bleibt die alte Datei liegen, damit Adressen von außen
+-- (Suchmaschinen) nicht ins Leere laufen. Sie verweist auf ihr Nachfolgebild;
+-- darüber bietet die Artikelkarte die alten Bilddateien eines Artikels zum
+-- Löschen an (shop_media_replaced). Geht das Nachfolgebild, bleibt die alte
+-- Datei ohne Verweis zurück.
+ALTER TABLE media_shop ADD COLUMN IF NOT EXISTS replaced_by integer;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint
+                    WHERE conrelid = 'media_shop'::regclass AND conname = 'media_shop_replaced_by_fk') THEN
+        ALTER TABLE media_shop
+            ADD CONSTRAINT media_shop_replaced_by_fk FOREIGN KEY (replaced_by)
+            REFERENCES media_shop (id) ON UPDATE NO ACTION ON DELETE SET NULL;
+    END IF;
+END $$;
+CREATE INDEX IF NOT EXISTS media_shop_replaced_by_idx ON media_shop (replaced_by) WHERE replaced_by IS NOT NULL;
 
 COMMENT ON TABLE  media_shop                  IS 'Medienbibliothek der Shop-Erweiterung: Produktbilder und Downloads (Datei unter backend/data/<db>/shop/media/)';
 COMMENT ON COLUMN media_shop.kind             IS 'image (images/) oder download (downloads/)';
@@ -3572,6 +3591,7 @@ COMMENT ON COLUMN media_shop.filename         IS 'Dateiname ohne Verzeichnis —
 COMMENT ON COLUMN media_shop.sha256           IS 'Prüfsumme der Datei, für den Abgleich mit der Webseite';
 COMMENT ON COLUMN media_shop.thumbnail_sha256 IS 'Prüfsumme des Vorschaubilds (thumbnails/<filename>), nur bei Bildern';
 COMMENT ON COLUMN media_shop.thumbnail_size   IS 'Größte Seite, mit der das Vorschaubild erzeugt wurde (shop_thumbnail_size)';
+COMMENT ON COLUMN media_shop.replaced_by      IS 'Nachfolgebild (media_shop.id), wenn dieses Bild in ein anderes Format umgewandelt wurde und nur noch für alte Adressen liegen bleibt';
 
 -- Fremdschlüssel der Kanalbilder auf die Bibliothek (Schritt 3). Verschwindet
 -- ein Bild aus der Bibliothek, verschwindet es aus den Kanälen — gelöscht wird
@@ -3619,6 +3639,23 @@ RETURNS TABLE (parts_id integer, partnumber text, description text)
              JOIN media_shop m ON m.id = i.media_id
             WHERE p_kind = 'image' AND m.kind = 'image' AND m.filename = p_filename)
      ORDER BY p.partnumber
+$$;
+
+-- Alte Bilddateien zu den Bildern eines Artikels: Bilder, die beim Umwandeln
+-- durch eines der genannten ersetzt wurden (replaced_by) und die niemand mehr
+-- verwendet. p_names sind die Dateinamen, die der Artikel nennt.
+CREATE OR REPLACE FUNCTION shop_media_replaced(p_names jsonb)
+RETURNS TABLE (filename text, size bigint, mime text, mtime timestamp, successor text)
+    LANGUAGE sql STABLE AS $$
+    SELECT alt.filename, alt.size, alt.mime, alt.mtime, neu.filename
+      FROM media_shop alt
+      JOIN media_shop neu ON neu.id = alt.replaced_by
+     WHERE alt.kind = 'image'
+       AND neu.filename IN (SELECT regexp_replace(n, '^.*/', '')
+                              FROM jsonb_array_elements_text(
+                                       CASE WHEN jsonb_typeof(p_names) = 'array' THEN p_names ELSE '[]'::jsonb END) n)
+       AND NOT EXISTS (SELECT 1 FROM shop_media_usage('image', alt.filename))
+     ORDER BY neu.filename, alt.filename
 $$;
 
 -- Umbenennen: die Verweise der Artikel folgen dem neuen Namen. Die Trigger

@@ -123,6 +123,15 @@ export const shopMediaApi = {
     },
 
     /**
+     * Alte Bilddateien zu den Bildern eines Artikels: beim Umwandeln ersetzt,
+     * nur noch für alte Adressen da (basename, path, file_size, successor)
+     */
+    async replaced(names) {
+        const payload = await post('shopMediaReplacedList', { names })
+        return payload.files || []
+    },
+
+    /**
      * Löscht Dateien — nur, was kein Artikel nennt (sonst MEDIA_IN_USE).
      * Mit partsId geht der Verweis dieses Artikels vorher mit.
      */

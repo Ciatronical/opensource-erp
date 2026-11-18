@@ -188,8 +188,20 @@ Einzelheiten:
   geänderter Größe neue Vorschaubilder.
 - Umwandeln (Kontextmenü, nur Produktbilder, `shopMediaConvertFile`): WebP,
   JPEG oder PNG über GD, Qualität 85; die neue Datei trägt den alten Namen mit
-  neuer Endung und ersetzt die alte samt Vorschaubild und Eintrag, die
-  Verweise der Artikel werden wie beim Umbenennen umgeschrieben. JPEG legt
+  neuer Endung, die Verweise der Artikel werden wie beim Umbenennen
+  umgeschrieben, die Marktplatz-Kanäle folgen. Die alte Datei bleibt seit
+  2026-11-18 samt Vorschaubild und Eintrag in der Bibliothek und damit auf
+  der Webseite: Adressen, die Suchmaschinen und fremde Seiten kennen, laufen
+  nach einem Formatwechsel (etwa WebP zu AVIF) nicht ins Leere. Kein Artikel
+  nennt sie danach mehr; ein Zurückwandeln in das alte Format scheitert am
+  belegten Namen (`MEDIA_EXISTS`). Die alte Datei verweist in
+  `media_shop.replaced_by` auf ihr Nachfolgebild. Die Artikelkarte zeigt
+  darüber im Bereich Produktbilder den Knopf „Alte Bilddateien (n)“
+  (`shop_media_replaced`, `shopMediaReplacedList`): eine Liste der Vorgänger
+  der Bilder dieses Artikels, aus der einzelne oder alle gelöscht werden
+  (`shopMediaDelete`). Eine alte Datei, die wieder jemand verwendet, steht
+  nicht in der Liste; wird unter ihrem Namen neu hochgeladen, ist sie kein
+  Vorgänger mehr. JPEG legt
   Transparenz auf Weiß, ein animiertes GIF verliert die Animation.
 - Umbenennen schreibt die Verweise in `parts_ext` um; die Trigger legen dabei
   die Aufträge „Produktseite schreiben“ an. Löschen nur ohne Verwendung.

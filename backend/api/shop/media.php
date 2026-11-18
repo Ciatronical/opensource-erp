@@ -191,6 +191,24 @@ function shopMediaItems($data) {
 }
 
 /**
+ * Artikelkarte: alte Bilddateien zu den Bildern eines Artikels
+ *
+ * Beim Umwandeln in ein anderes Format bleibt die alte Datei liegen, damit
+ * Adressen von außen gültig bleiben. Hier die Liste dieser Dateien; gelöscht
+ * werden sie einzeln oder gesammelt über shopMediaDelete.
+ *
+ * @param array $data['names'] Dateinamen der Bilder, die der Artikel nennt
+ * @return void files (wie shopMediaItems, dazu successor)
+ * @testdata {"names": ["foto.avif"]}
+ */
+function shopMediaReplacedList($data) {
+    permit(['shop_part_edit', 'edit_shop_config'], false);
+    $db = DbhCompany::begin();
+    $namen = array_slice(array_map('strval', (array)($data['names'] ?? [])), 0, 500);
+    resultInfo(true, '', ['files' => shopMediaReplaced($db, $namen)]);
+}
+
+/**
  * Dateimanager: Datei umbenennen — die Verweise der Artikel folgen
  *
  * @param string $data['path'] Bereich

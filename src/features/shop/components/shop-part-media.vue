@@ -71,6 +71,16 @@
                         <v-btn value="grid" icon="mdi-view-grid-outline" size="small" :title="t('ShopView.media.viewGrid')" />
                         <v-btn value="list" icon="mdi-view-list-outline" size="small" :title="t('ShopView.media.viewList')" />
                     </v-btn-toggle>
+                    <!-- Alte Bilddateien: nach dem Umwandeln für alte Adressen liegen geblieben -->
+                    <v-btn
+                        v-if="!readonly && bereich === 'images' && alteBilder.length"
+                        size="small"
+                        variant="text"
+                        prepend-icon="mdi-image-off-outline"
+                        @click="alteBilderOeffnen"
+                    >
+                        {{ t('ShopView.media.oldImages', { count: alteBilder.length }) }}
+                    </v-btn>
                     <v-btn v-if="!readonly" size="small" variant="tonal" prepend-icon="mdi-upload" :loading="hochladung.laeuft" @click="hochladenWaehlen">
                         {{ t('ShopView.media.upload') }}
                     </v-btn>
@@ -472,6 +482,43 @@
             </v-card>
         </v-dialog>
 
+        <!-- Alte Bilddateien des Artikels: einzeln oder alle löschen -->
+        <v-dialog v-model="altDialog.offen" max-width="640" :persistent="altDialog.laeuft">
+            <v-card>
+                <v-card-title class="text-subtitle-1">{{ t('ShopView.media.oldImagesTitle') }}</v-card-title>
+                <v-card-text>
+                    <div class="text-body-2 mb-2">{{ t('ShopView.media.oldImagesHint') }}</div>
+                    <v-list density="compact" select-strategy="classic" v-model:selected="altDialog.auswahl">
+                        <v-list-item v-for="datei in alteBilder" :key="datei.path" :value="datei.path">
+                            <template #prepend="{ isSelected }">
+                                <v-list-item-action start>
+                                    <v-checkbox-btn :model-value="isSelected" />
+                                </v-list-item-action>
+                                <v-img :src="mediaPreviewUrl('thumbnails://' + datei.basename)" width="40" height="40" cover class="partmedien__altbild" />
+                            </template>
+                            <v-list-item-title>{{ datei.basename }}</v-list-item-title>
+                            <v-list-item-subtitle>
+                                {{ groesse(datei.file_size) }} · {{ t('ShopView.media.oldImagesReplacedBy', { name: datei.successor }) }}
+                            </v-list-item-subtitle>
+                        </v-list-item>
+                    </v-list>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn variant="text" :disabled="altDialog.laeuft" @click="altDialog.auswahl = alteBilder.map(d => d.path)">
+                        {{ t('ShopView.media.oldImagesSelectAll') }}
+                    </v-btn>
+                    <v-btn v-if="altDialog.auswahl.length" variant="text" :disabled="altDialog.laeuft" @click="altDialog.auswahl = []">
+                        {{ t('ShopView.media.clearSelection') }}
+                    </v-btn>
+                    <v-spacer />
+                    <v-btn variant="text" :disabled="altDialog.laeuft" @click="altDialog.offen = false">{{ t('ShopView.common.close') }}</v-btn>
+                    <v-btn color="error" variant="flat" :loading="altDialog.laeuft" :disabled="!altDialog.auswahl.length" @click="alteBilderLoeschen">
+                        {{ t('ShopView.media.oldImagesDelete', { count: altDialog.auswahl.length }) }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <input ref="dateiEingabe" type="file" multiple :accept="akzeptiert" class="d-none" @change="dateienGewaehlt">
     </div>
 </template>
@@ -552,6 +599,45 @@ async function laden() {
 
 watch(bereich, () => { auswahl.value = []; filter.value = ''; laden() })
 watch(() => JSON.stringify([namen.value, bereich.value === 'downloads' ? downloads.value.map(p => p?.key) : null]), () => laden(), { immediate: true })
+
+// ── Alte Bilddateien ──
+//
+// Beim Umwandeln (etwa WebP zu AVIF) bleibt die alte Datei in der Bibliothek
+// und auf der Webseite, damit Adressen von außen gültig bleiben. Hier die
+// Vorgänger der Bilder dieses Artikels — einzeln oder alle löschbar.
+const alteBilder = ref([])
+const altDialog = ref({ offen: false, laeuft: false, auswahl: [] })
+async function alteBilderLaden() {
+    if (!bildNamen.value.length) { alteBilder.value = []; return }
+    try {
+        alteBilder.value = await shopMediaApi.replaced(bildNamen.value)
+    } catch {
+        // ohne Liste fehlt nur der Knopf
+        alteBilder.value = []
+    }
+}
+watch(() => JSON.stringify(bildNamen.value), () => alteBilderLaden(), { immediate: true })
+function alteBilderOeffnen() {
+    altDialog.value = { offen: true, laeuft: false, auswahl: [] }
+}
+async function alteBilderLoeschen() {
+    const d = altDialog.value
+    d.laeuft = true
+    let geloescht = 0
+    for (const pfad of [...d.auswahl]) {
+        try {
+            await shopMediaApi.remove('images', [pfad])
+            geloescht++
+        } catch (e) {
+            toast.error(fehlertext(e))
+        }
+    }
+    if (geloescht) toast.success(t('ShopView.media.deleteDone', { count: geloescht }))
+    await alteBilderLaden()
+    d.laeuft = false
+    d.auswahl = []
+    if (!alteBilder.value.length) d.offen = false
+}
 
 const gefiltert = computed(() => {
     const suche = (filter.value || '').trim().toLowerCase()
@@ -940,6 +1026,11 @@ async function umwandeln() {
 </script>
 
 <style scoped>
+.partmedien__altbild {
+    margin-right: var(--oserp-gap-xs);
+    border: 1px solid var(--oserp-border-soft);
+    border-radius: var(--oserp-radius);
+}
 .partmedien__layout {
     display: flex;
     gap: var(--oserp-gap);

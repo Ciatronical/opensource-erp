@@ -247,8 +247,14 @@ function shopMediaStore($db, string $art, string $quelle, string $name, bool $ho
             writeLog('[SHOP] Kein Vorschaubild zu '.$name.': '.$grund, true, DLOG_WRN);
         }
     }
+    $zeile = shopMediaRegister($db, $art, $name, $vorschau);
+    if ($ersetzt) {
+        // Eine neu abgelegte Datei unter dem Namen einer alten Bilddatei ist
+        // kein Vorgänger mehr (replaced_by aus einem früheren Umwandeln)
+        $db->execute("UPDATE media_shop SET replaced_by = NULL WHERE id = :id AND replaced_by IS NOT NULL", [':id' => (int)$zeile['id']]);
+    }
     // thumbnail_error: warum kein Vorschaubild entstand (leer, wenn eines da ist)
-    return shopMediaRegister($db, $art, $name, $vorschau) + ['replaced' => $ersetzt, 'thumbnail_error' => (string)$grund];
+    return $zeile + ['replaced' => $ersetzt, 'thumbnail_error' => (string)$grund];
 }
 
 /**
@@ -734,10 +740,13 @@ function shopMediaImport($db, string $art, string $quelle, string $name, string 
 /**
  * Wandelt ein Produktbild in ein anderes Format um
  *
- * Die neue Datei trägt den alten Namen mit der neuen Endung und ersetzt die
- * alte: Verweise der Artikel werden umgeschrieben (die Trigger legen die
- * Aufträge „Produktseite schreiben“ an), Vorschaubild und Eintrag entstehen
- * neu, die alte Datei geht. JPEG kennt keine Transparenz — sie wird auf Weiß
+ * Die neue Datei trägt den alten Namen mit der neuen Endung und tritt an die
+ * Stelle der alten: Verweise der Artikel werden umgeschrieben (die Trigger
+ * legen die Aufträge „Produktseite schreiben“ an), die Marktplatz-Kanäle
+ * folgen, Vorschaubild und Eintrag entstehen neu. Die alte Datei bleibt in
+ * der Bibliothek und auf der Webseite liegen — etwa nach einem Wechsel von
+ * WebP zu AVIF aus SEO-Gründen bleiben die Adressen gültig, die Suchmaschinen
+ * und fremde Seiten schon kennen. JPEG kennt keine Transparenz — sie wird auf Weiß
  * gelegt; ein animiertes GIF verliert die Animation. Qualität wie bei den
  * Vorschaubildern (shopMediaSave).
  *
@@ -779,17 +788,35 @@ function shopMediaConvertFile($db, string $name, string $format): array {
                              WHERE d.parts_id = i.parts_id AND d.channel_id = i.channel_id AND d.media_id = :neu_gleich)",
         [':neu' => (int)$zeile['id'], ':name' => $name, ':neu_gleich' => (int)$zeile['id']]
     );
-    // Erst den alten Eintrag weg, dann die Verweise umschreiben — die
-    // SQL-Funktion benennt sonst den alten Eintrag auf den schon vergebenen
-    // neuen Namen um
-    $alt = $db->getOne("DELETE FROM media_shop WHERE kind = 'image' AND filename = :name RETURNING id", [':name' => $name]);
+    // Die alte Datei bleibt in der Bibliothek, samt Vorschaubild und Eintrag:
+    // sie geht damit weiter an die Webseite, und Adressen von außen
+    // (Suchmaschinen, fremde Seiten) laufen nicht ins Leere. Kein Artikel und
+    // kein Kanal nennt sie danach mehr.
+    //
+    // Der Eintrag muss für das Umschreiben kurz weg — die SQL-Funktion
+    // benennt sonst den alten Eintrag auf den schon vergebenen neuen Namen
+    // um — und kommt danach mit denselben Angaben wieder.
+    // Ältere Vorgänger (PNG → WebP → AVIF) hängen ab jetzt am neuen Bild
+    $db->execute(
+        "UPDATE media_shop SET replaced_by = :neu
+          WHERE replaced_by = (SELECT id FROM media_shop WHERE kind = 'image' AND filename = :name)",
+        [':neu' => (int)$zeile['id'], ':name' => $name]
+    );
+    $alt = $db->getOne(
+        "DELETE FROM media_shop WHERE kind = 'image' AND filename = :name RETURNING id, thumbnail_sha256, thumbnail_size",
+        [':name' => $name]
+    );
+    // Fassungen für die Marktplätze braucht die alte Datei nicht mehr
     shopMediaVariantFilesRemove($db, (int)($alt['id'] ?? 0));
     $umgeschrieben = $db->getOne("SELECT shop_media_rename('image', :alt, :neu) AS parts", [':alt' => $name, ':neu' => $neu]);
-    @unlink($quelle);
-    $vorschau = shopMediaDir($db, 'thumbnails').'/'.$name;
-    if (is_file($vorschau)) {
-        @unlink($vorschau);
-    }
+    shopMediaRegister($db, 'image', $name, !empty($alt['thumbnail_sha256'])
+        ? ['sha256' => $alt['thumbnail_sha256'], 'size' => $alt['thumbnail_size']] : null);
+    // … und verweist auf ihr Nachfolgebild: darüber bietet die Artikelkarte
+    // sie später zum Löschen an (shopMediaReplaced)
+    $db->execute(
+        "UPDATE media_shop SET replaced_by = :neu WHERE kind = 'image' AND filename = :name",
+        [':neu' => (int)$zeile['id'], ':name' => $name]
+    );
 
     return ['name' => $neu, 'parts' => (int)($umgeschrieben['parts'] ?? 0),
             'size_before' => (int)$info['size'], 'size_after' => (int)$zeile['size']];
@@ -989,6 +1016,38 @@ function shopMediaEntriesFor($db, string $bereich, array $namen): array {
         ];
     }
     return $eintraege;
+}
+
+/**
+ * Alte Bilddateien zu den Bildern eines Artikels
+ *
+ * Bilder, die beim Umwandeln durch eines der genannten ersetzt wurden und
+ * seither nur für alte Adressen liegen bleiben (shop_media_replaced). Bilder,
+ * die wieder jemand verwendet, gehören nicht dazu.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param array $namen Dateinamen, die der Artikel nennt
+ * @return array Einträge wie shopMediaEntries(), dazu successor (Name des Nachfolgebilds)
+ */
+function shopMediaReplaced($db, array $namen): array {
+    $zeilen = $db->getAll(
+        "SELECT filename, size, mime, extract(epoch FROM mtime)::bigint AS geaendert, successor
+           FROM shop_media_replaced(CAST(:namen AS jsonb))",
+        [':namen' => json_encode(array_values(array_map('strval', $namen)), JSON_UNESCAPED_UNICODE)]
+    ) ?: [];
+    return array_map(fn($zeile) => [
+        'type'          => 'file',
+        'storage'       => 'images',
+        'dir'           => 'images://',
+        'basename'      => $zeile['filename'],
+        'path'          => 'images://'.$zeile['filename'],
+        'file_size'     => (int)$zeile['size'],
+        'extension'     => strtolower(pathinfo((string)$zeile['filename'], PATHINFO_EXTENSION)),
+        'mime_type'     => $zeile['mime'],
+        'last_modified' => (int)$zeile['geaendert'],
+        'visibility'    => 'public',
+        'successor'     => $zeile['successor'],
+    ], $zeilen);
 }
 
 /**
