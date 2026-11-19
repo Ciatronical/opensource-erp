@@ -38,6 +38,9 @@
 -- Der Mandant wird auf „Nur Dropshipping“ gestellt, mit einer Lieferbedingung
 -- samt Lieferzeit in Tagen als Vorgabe (Schritt 8).
 --
+-- Die Marketingtexte der Lieferanten-Quelltabellen (Zusammenfassung und
+-- Beschreibung) werden zur Beschreibung des Artikels im HugoShop (Schritt 9).
+--
 -- Es entstehen keine Veröffentlichungsaufträge (shop.ohne_auftraege): die
 -- Seiten werden nach der Einrichtung der Webseite bewusst in einem Lauf
 -- veröffentlicht.
@@ -281,6 +284,109 @@ SELECT 'shop_dropshipping_default', '1'
     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, mtime = now();
 
 -- ----------------------------------------------------------------------------
+-- 9. Marketingtexte
+-- ----------------------------------------------------------------------------
+-- Die Bridge führt Zusammenfassung und Beschreibung nicht am Artikel, sondern
+-- in den Quelltabellen der Lieferanten (Spalte marketing, JSON mit summery
+-- oder summary und description); ihre Veröffentlichung setzt sie in die
+-- Produktseite. In der Erweiterung ist das die Beschreibung des Artikels im
+-- HugoShop (parts_channel_shop.description) — ein Text: der erste Absatz ist
+-- die Zusammenfassung, der Rest die Beschreibung. So liest ihn der
+-- Vorlagensatz des Shops (solarSparTexte in backend/templates/shop/solar-spar).
+--
+-- Umgeformt wie in publish/main.php: Absätze der Beschreibung an Leerzeilen,
+-- einfache Zeilenwechsel als <br />. Fehlt die Zusammenfassung, steht die
+-- Beschreibung allein. Unlesbares JSON wird übergangen.
+--
+-- Nur, wo der Artikel im HugoShop noch keine Beschreibung hat — eine
+-- Wiederholung überschreibt nichts, was inzwischen bearbeitet wurde. Anders
+-- als die übrigen Schritte nicht auf die in diesem Lauf übernommenen Artikel
+-- begrenzt: der Schritt kam am 18.11.2026 dazu und holt auch für früher
+-- übernommene Artikel nach.
+
+CREATE FUNCTION pg_temp.bridge_marketing(p_text text) RETURNS text LANGUAGE plpgsql AS $fn$
+DECLARE
+    m    jsonb;
+    kurz text := '';
+    lang text := '';
+    roh  text;
+BEGIN
+    BEGIN
+        m := p_text::jsonb;
+    EXCEPTION WHEN others THEN
+        RETURN NULL;
+    END;
+    IF m IS NULL OR jsonb_typeof(m) <> 'object' THEN
+        RETURN NULL;
+    END IF;
+
+    IF jsonb_typeof(m -> 'summery') = 'string' THEN
+        kurz := btrim(m ->> 'summery');
+    ELSIF NOT jsonb_exists(m, 'summery') AND jsonb_typeof(m -> 'summary') = 'string' THEN
+        kurz := btrim(m ->> 'summary');
+    END IF;
+
+    IF jsonb_typeof(m -> 'description') = 'string' THEN
+        roh := btrim(regexp_replace(m ->> 'description', E'\r\n|\r', E'\n', 'g'));
+        SELECT string_agg('<p>' || replace(btrim(a.absatz), E'\n', E'<br />\n') || '</p>', '' ORDER BY a.nr)
+          INTO lang
+          FROM regexp_split_to_table(roh, E'\n\n') WITH ORDINALITY AS a(absatz, nr)
+         WHERE btrim(a.absatz) <> '';
+    ELSIF jsonb_typeof(m -> 'description') = 'array' THEN
+        SELECT string_agg(e.wert #>> '{}', '' ORDER BY e.nr) INTO roh
+          FROM jsonb_array_elements(m -> 'description') WITH ORDINALITY AS e(wert, nr)
+         WHERE jsonb_typeof(e.wert) = 'string';
+        lang := CASE WHEN btrim(COALESCE(roh, '')) <> '' THEN '<p>' || btrim(roh) || '</p>' END;
+    ELSIF jsonb_typeof(m -> 'description') = 'object' THEN
+        SELECT string_agg(e.value #>> '{}', '') INTO roh
+          FROM jsonb_each(m -> 'description') e
+         WHERE jsonb_typeof(e.value) = 'string';
+        lang := CASE WHEN btrim(COALESCE(roh, '')) <> '' THEN '<p>' || btrim(roh) || '</p>' END;
+    END IF;
+    lang := COALESCE(lang, '');
+
+    IF kurz = '' THEN
+        RETURN NULLIF(lang, '');
+    END IF;
+    RETURN '<p>' || kurz || '</p>' || lang;
+END
+$fn$;
+
+CREATE TEMPORARY TABLE mit_marketing (parts_id integer PRIMARY KEY) ON COMMIT DROP;
+
+DO $$
+DECLARE
+    q record;
+BEGIN
+    FOR q IN SELECT b.tabelle, b.praefix
+               FROM bridge_quelle b
+              WHERE to_regclass(b.tabelle) IS NOT NULL
+                AND EXISTS (SELECT 1 FROM information_schema.columns c
+                             WHERE c.table_schema = current_schema() AND c.table_name = b.tabelle
+                               AND c.column_name = 'marketing') LOOP
+        EXECUTE format($sql$
+            WITH texte AS (
+                SELECT DISTINCT ON (p.id) p.id AS parts_id, pg_temp.bridge_marketing(s.marketing::text) AS text
+                  FROM %I s
+                  JOIN parts p ON p.partnumber = %L || s.number
+                 WHERE s.marketing IS NOT NULL
+                 ORDER BY p.id
+            ), gesetzt AS (
+                UPDATE parts_channel_shop pc
+                   SET description = t.text
+                  FROM texte t
+                 WHERE pc.parts_id = t.parts_id
+                   AND pc.channel_id = shop_first_channel_id('hugoshop')
+                   AND btrim(COALESCE(pc.description, '')) = ''
+                   AND t.text IS NOT NULL
+                RETURNING pc.parts_id
+            )
+            INSERT INTO mit_marketing SELECT DISTINCT parts_id FROM gesetzt ON CONFLICT DO NOTHING
+        $sql$, q.tabelle, q.praefix);
+    END LOOP;
+END $$;
+
+-- ----------------------------------------------------------------------------
 -- Bericht
 -- ----------------------------------------------------------------------------
 
@@ -292,6 +398,10 @@ SELECT (SELECT count(*) FROM uebernommen)                                       
          WHERE pc.channel_id = shop_first_channel_id('hugoshop') AND pc.active
            AND NOT shop_part_available(pc.parts_id, pc.channel_id))               AS davon_nicht_verfuegbar,
        (SELECT count(*) FROM wieder_gueltig)                                      AS wieder_gueltig,
+       (SELECT count(*) FROM mit_marketing)                                       AS marketingtexte_gesetzt,
+       (SELECT count(*) FROM parts_channel_shop pc
+         WHERE pc.channel_id = shop_first_channel_id('hugoshop') AND pc.active
+           AND btrim(COALESCE(pc.description, '')) = '')                          AS ohne_beschreibung,
        (SELECT count(*) FROM parts_channel_shop pc
          WHERE pc.channel_id = shop_first_channel_id('hugoshop') AND pc.active
            AND shop_part_dropshipping(pc.parts_id))                               AS dropshipping,
