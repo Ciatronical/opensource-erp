@@ -508,6 +508,9 @@ function testEmailConnection($data) {
  * Rückgabe: smtp_max_bytes (null = Server meldet nichts), php_max_bytes,
  * recommended_mb = nutzbare Anhanggröße (kleinere Grenze, Base64-Zuschlag
  * von 37 % abgezogen, auf ganze MB abgerundet).
+ * Ist PHP die engere Grenze, kommt php_fix dazu: die Datei, in der
+ * post_max_size gesetzt ist, und der Befehl, der sie auf die Größe des
+ * SMTP-Servers anhebt (phpLimitFix) — null, wenn er sich nicht bestimmen lässt.
  *
  * @param string $data['email_smtp_host']
  * @param int    $data['email_smtp_port']
@@ -533,11 +536,14 @@ function detectEmailMaxSize($data) {
         // Base64 bläht Anhänge um ein Drittel auf, dazu Kopfzeilen/Trenner
         $recommendedMb = $effective > 0 ? (int)floor($effective / 1.37 / (1024 * 1024)) : 0;
 
+        $limitedBy = ($smtpMax && (!$phpMax || $smtpMax <= $phpMax)) ? 'smtp' : 'php';
+
         resultInfo(true, '', [
             'smtp_max_bytes' => $smtpMax,
             'php_max_bytes' => $phpMax,
             'recommended_mb' => max($recommendedMb, 1),
-            'limited_by' => ($smtpMax && (!$phpMax || $smtpMax <= $phpMax)) ? 'smtp' : 'php',
+            'limited_by' => $limitedBy,
+            'php_fix' => ('php' === $limitedBy && $smtpMax) ? phpLimitFix((int)$smtpMax) : null,
         ]);
     }, $data);
 }

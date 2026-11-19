@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "SMTP-palvelin ei ilmoita enimmäiskokoa",
             "phpLimit": "PHP hyväksyy {size} pyyntöä kohden (post_max_size)",
             "phpIsBottleneck": "PHP on tiukempi raja: nosta post_max_size ja upload_max_filesize php.ini-tiedostossa ja hae uudelleen",
+            "phpFixCommand": "Palvelimella ajettava komento, joka nostaa molemmat arvot arvoon {value} (tiedostossa {file}):",
+            "phpFixWebserver": "Myös verkkopalvelimen on hyväksyttävä tämä koko (nginx: client_max_body_size, Apache: LimitRequestBody), samoin edessä olevan välityspalvelimen.",
+            "phpFixCopy": "Kopioi komento",
             "error": "Rajaa ei voitu hakea"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

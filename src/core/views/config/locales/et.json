@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "SMTP-server ei teata suurimat mahtu",
             "phpLimit": "PHP võtab vastu {size} päringu kohta (post_max_size)",
             "phpIsBottleneck": "PHP on kitsam piir: suurenda php.ini failis post_max_size ja upload_max_filesize ning tuvasta uuesti",
+            "phpFixCommand": "Käsk serveris, mis tõstab mõlemad väärtused väärtuseni {value} (failis {file}):",
+            "phpFixWebserver": "Ka veebiserver peab selle suuruse vastu võtma (nginx: client_max_body_size, Apache: LimitRequestBody), samuti ette paigutatud puhverserver.",
+            "phpFixCopy": "Kopeeri käsk",
             "error": "Piiri ei õnnestunud tuvastada"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

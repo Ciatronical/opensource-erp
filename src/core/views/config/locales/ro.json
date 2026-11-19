@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "Serverul SMTP nu anunță o dimensiune maximă",
             "phpLimit": "PHP acceptă {size} per cerere (post_max_size)",
             "phpIsBottleneck": "PHP este limita mai strictă: măriți post_max_size și upload_max_filesize în php.ini, apoi detectați din nou",
+            "phpFixCommand": "Comandă pe server care ridică ambele valori la {value} (în {file}):",
+            "phpFixWebserver": "Serverul web trebuie să accepte și el această dimensiune (nginx: client_max_body_size, Apache: LimitRequestBody), la fel și un proxy aflat în față.",
+            "phpFixCopy": "Copiază comanda",
             "error": "Limita nu a putut fi detectată"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

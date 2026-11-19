@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "SMTP-servern anger ingen maxstorlek",
             "phpLimit": "PHP tar emot {size} per begäran (post_max_size)",
             "phpIsBottleneck": "PHP är den snävare gränsen: höj post_max_size och upload_max_filesize i php.ini och hämta igen",
+            "phpFixCommand": "Kommando på servern som höjer båda värdena till {value} (i {file}):",
+            "phpFixWebserver": "Webbservern måste också ta emot den här storleken (nginx: client_max_body_size, Apache: LimitRequestBody), liksom en framförliggande proxy.",
+            "phpFixCopy": "Kopiera kommando",
             "error": "Gränsen kunde inte hämtas"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "SMTP sunucusu en büyük boyutu bildirmiyor",
             "phpLimit": "PHP istek başına {size} kabul ediyor (post_max_size)",
             "phpIsBottleneck": "Daha dar sınır PHP: php.ini içinde post_max_size ve upload_max_filesize değerlerini yükseltip yeniden belirleyin",
+            "phpFixCommand": "Sunucuda her iki değeri {value} değerine yükselten komut ({file} içinde):",
+            "phpFixWebserver": "Web sunucusu da bu boyutu kabul etmelidir (nginx: client_max_body_size, Apache: LimitRequestBody); öndeki bir vekil sunucu da öyle.",
+            "phpFixCopy": "Komutu kopyala",
             "error": "Sınır belirlenemedi"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

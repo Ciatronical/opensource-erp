@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "SMTP serveris nenorāda maksimālo izmēru",
             "phpLimit": "PHP pieņem {size} vienam pieprasījumam (post_max_size)",
             "phpIsBottleneck": "PHP ir stingrākā robeža: palieliniet post_max_size un upload_max_filesize failā php.ini un nosakiet vēlreiz",
+            "phpFixCommand": "Komanda serverī, kas abas vērtības palielina līdz {value} (failā {file}):",
+            "phpFixWebserver": "Šis izmērs jāpieņem arī tīmekļa serverim (nginx: client_max_body_size, Apache: LimitRequestBody) un priekšā esošam starpniekserverim.",
+            "phpFixCopy": "Kopēt komandu",
             "error": "Robežu neizdevās noteikt"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

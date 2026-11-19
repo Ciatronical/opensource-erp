@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "SMTP-сервер не сообщает максимальный размер",
             "phpLimit": "PHP принимает {size} на запрос (post_max_size)",
             "phpIsBottleneck": "PHP — более строгий предел: увеличьте post_max_size и upload_max_filesize в php.ini и определите заново",
+            "phpFixCommand": "Команда на сервере, которая увеличивает оба значения до {value} (в {file}):",
+            "phpFixWebserver": "Веб-сервер тоже должен принимать такой размер (nginx: client_max_body_size, Apache: LimitRequestBody), как и стоящий перед ним прокси.",
+            "phpFixCopy": "Скопировать команду",
             "error": "Не удалось определить предел"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

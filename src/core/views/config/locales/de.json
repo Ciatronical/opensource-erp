@@ -1509,6 +1509,9 @@
             "noSmtpLimit": "SMTP-Server meldet keine Höchstgröße",
             "phpLimit": "PHP nimmt {size} je Anfrage an (post_max_size)",
             "phpIsBottleneck": "PHP ist die engere Grenze: post_max_size und upload_max_filesize in der php.ini erhöhen, dann erneut ermitteln",
+            "phpFixCommand": "Befehl auf dem Server, der beide Werte auf {value} anhebt (in {file}):",
+            "phpFixWebserver": "Der Webserver muss diese Größe ebenfalls annehmen (nginx: client_max_body_size, Apache: LimitRequestBody), ebenso ein vorgeschalteter Proxy.",
+            "phpFixCopy": "Befehl kopieren",
             "error": "Die Grenze konnte nicht ermittelt werden"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

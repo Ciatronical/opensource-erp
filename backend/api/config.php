@@ -324,6 +324,86 @@ class OserpConfig {
 }
 
 /**
+ * Befehl, der post_max_size und upload_max_filesize dieser PHP-Instanz anhebt
+ *
+ * Sucht die Datei, in der post_max_size für den laufenden Prozess gesetzt
+ * ist: bei PHP-FPM die Pool-Datei des eigenen Pools (php_admin_value oder
+ * php_value — sie geht der php.ini vor), sonst die zuletzt eingelesene
+ * ini-Datei, die den Wert nennt, sonst die php.ini. Daraus entsteht eine
+ * Befehlszeile für den Administrator; ausgeführt wird hier nichts.
+ *
+ * Kein Befehl (null), wenn sich die Datei nicht bestimmen lässt oder PHP in
+ * einem Container läuft — dort gehört die Änderung in das Image oder die
+ * Compose-Datei, und ein systemctl gibt es nicht.
+ *
+ * @param int $zielBytes Größe, die PHP je Anfrage annehmen soll
+ * @return array{file: string, value: string, command: string}|null
+ */
+function phpLimitFix(int $zielBytes): ?array {
+    if ($zielBytes <= 0 || file_exists('/.dockerenv')) {
+        return null;
+    }
+    $wert  = (int)ceil($zielBytes / (1024 * 1024)).'M';
+    $datei = null;
+    $pool  = false;
+
+    if ('fpm-fcgi' === PHP_SAPI) {
+        // Der Prozesstitel nennt den Pool: „php-fpm: pool www“
+        $titel = (string)@file_get_contents('/proc/self/cmdline');
+        $name  = preg_match('/pool\s+([^\s\0]+)/', $titel, $m) ? $m[1] : '';
+        $verzeichnisse = array_unique(array_filter([
+            '/etc/php/'.PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'/fpm/pool.d',
+            php_ini_loaded_file() ? dirname((string)php_ini_loaded_file()).'/pool.d' : '',
+            '/etc/php-fpm.d',
+        ]));
+        foreach ($verzeichnisse as $verzeichnis) {
+            foreach (glob($verzeichnis.'/*.conf') ?: [] as $kandidat) {
+                $inhalt = (string)@file_get_contents($kandidat);
+                if ('' !== $name && !preg_match('/^\s*\['.preg_quote($name, '/').'\]/m', $inhalt)) {
+                    continue;
+                }
+                if (preg_match('/^\s*php_(admin_)?value\[post_max_size\]/m', $inhalt)) {
+                    $datei = $kandidat;
+                    $pool  = true;
+                    break 2;
+                }
+            }
+        }
+    }
+
+    if (null === $datei) {
+        $kandidaten = array_filter(array_map('trim', explode(',', (string)php_ini_scanned_files())));
+        // Später eingelesene Dateien gewinnen — also von hinten suchen
+        foreach (array_reverse($kandidaten) as $kandidat) {
+            if (preg_match('/^\s*post_max_size\s*=/m', (string)@file_get_contents($kandidat))) {
+                $datei = $kandidat;
+                break;
+            }
+        }
+        if (null === $datei && php_ini_loaded_file()) {
+            $datei = (string)php_ini_loaded_file();
+        }
+    }
+    if (null === $datei) {
+        return null;
+    }
+
+    $muster = $pool
+        ? 's/^(php_(admin_)?value\[(post_max_size|upload_max_filesize)\] *= *).*/\1'.$wert.'/'
+        : 's/^;? *((post_max_size|upload_max_filesize) *= *).*/\1'.$wert.'/';
+    $befehl = 'sudo sed -i -E '.escapeshellarg($muster).' '.escapeshellarg($datei);
+
+    $version = PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;
+    if ('fpm-fcgi' === PHP_SAPI) {
+        $befehl .= ' && sudo systemctl reload php'.$version.'-fpm';
+    } elseif ('apache2handler' === PHP_SAPI) {
+        $befehl .= ' && sudo systemctl reload apache2';
+    }
+
+    return ['file' => $datei, 'value' => $wert, 'command' => $befehl];
+}
+
+/**
  * php.ini-Größenangabe ("8M", "64M", "1G", "524288") in Bytes umrechnen
  */
 function iniBytes(string $value): int {

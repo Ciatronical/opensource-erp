@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "SMTP serveris nenurodo didžiausio dydžio",
             "phpLimit": "PHP priima {size} vienai užklausai (post_max_size)",
             "phpIsBottleneck": "PHP riba griežtesnė: padidinkite post_max_size ir upload_max_filesize faile php.ini ir nustatykite iš naujo",
+            "phpFixCommand": "Komanda serveryje, kuri abi reikšmes padidina iki {value} (faile {file}):",
+            "phpFixWebserver": "Šį dydį turi priimti ir žiniatinklio serveris (nginx: client_max_body_size, Apache: LimitRequestBody), taip pat priekyje esantis tarpinis serveris.",
+            "phpFixCopy": "Kopijuoti komandą",
             "error": "Ribos nustatyti nepavyko"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

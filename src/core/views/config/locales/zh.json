@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "SMTP 服务器未告知最大大小",
             "phpLimit": "PHP 每次请求接受 {size}（post_max_size）",
             "phpIsBottleneck": "PHP 是更严格的限制：请在 php.ini 中提高 post_max_size 和 upload_max_filesize，然后重新检测",
+            "phpFixCommand": "在服务器上将两个值提高到 {value} 的命令（位于 {file}）：",
+            "phpFixWebserver": "Web 服务器也必须接受此大小（nginx：client_max_body_size，Apache：LimitRequestBody），前置代理同样如此。",
+            "phpFixCopy": "复制命令",
             "error": "无法检测限制"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

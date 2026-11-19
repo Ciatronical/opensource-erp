@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "Le serveur SMTP n'annonce pas de taille maximale",
             "phpLimit": "PHP accepte {size} par requête (post_max_size)",
             "phpIsBottleneck": "PHP est la limite la plus stricte : augmentez post_max_size et upload_max_filesize dans php.ini, puis détectez à nouveau",
+            "phpFixCommand": "Commande sur le serveur qui porte les deux valeurs à {value} (dans {file}) :",
+            "phpFixWebserver": "Le serveur web doit lui aussi accepter cette taille (nginx : client_max_body_size, Apache : LimitRequestBody), de même qu'un proxy placé en amont.",
+            "phpFixCopy": "Copier la commande",
             "error": "La limite n'a pas pu être détectée"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

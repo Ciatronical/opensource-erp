@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "SMTP server neuvádí maximální velikost",
             "phpLimit": "PHP přijímá {size} na požadavek (post_max_size)",
             "phpIsBottleneck": "PHP je těsnější limit: zvyšte post_max_size a upload_max_filesize v php.ini a zjistěte znovu",
+            "phpFixCommand": "Příkaz na serveru, který zvýší obě hodnoty na {value} (v {file}):",
+            "phpFixWebserver": "Tuto velikost musí přijímat také webový server (nginx: client_max_body_size, Apache: LimitRequestBody) a případná předřazená proxy.",
+            "phpFixCopy": "Kopírovat příkaz",
             "error": "Limit se nepodařilo zjistit"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",

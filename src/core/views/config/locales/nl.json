@@ -1072,6 +1072,9 @@
             "noSmtpLimit": "SMTP-server meldt geen maximale grootte",
             "phpLimit": "PHP accepteert {size} per aanvraag (post_max_size)",
             "phpIsBottleneck": "PHP is de krappere grens: verhoog post_max_size en upload_max_filesize in php.ini en bepaal opnieuw",
+            "phpFixCommand": "Opdracht op de server die beide waarden verhoogt naar {value} (in {file}):",
+            "phpFixWebserver": "De webserver moet deze grootte ook accepteren (nginx: client_max_body_size, Apache: LimitRequestBody), net als een voorgeschakelde proxy.",
+            "phpFixCopy": "Opdracht kopiëren",
             "error": "De grens kon niet worden bepaald"
         },
         "kleinanzeigenAccount": "Kleinanzeigen",
