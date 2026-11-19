@@ -597,15 +597,14 @@ export class ShopCart extends PortalElement {
     if (this.#isCheckout) return nothing;
     // Ohne passende Versandart kein PayPal von hier — in der Kasse laesst sich
     // die Lieferadresse noch aendern, deshalb bleibt der Weg dorthin offen.
-    // Ohne Kunden in der Sitzung (weder Konto noch Gastangaben) ebenfalls
-    // nicht: das Backend wuesste nicht, wer bezahlt — erst die Kasse mit
-    // Anmeldung oder Gastformular
+    // Ein Kunde in der Sitzung ist nicht noetig (PayPal Express): Name und
+    // Lieferadresse kommen von PayPal, ein Besucher ohne Konto wird auf dem
+    // Rueckweg als Gast angelegt.
     const versandOk = this._cart.totals.shippingStatus === 'ok';
-    const kundeDa = this._cart.customer === true;
     return html`
       <div class="actions">
         <a class=${this.cls('buttonPrimary')} href=${this.checkoutUrl}>${t('cart.checkout')}</a>
-        ${versandOk && kundeDa
+        ${versandOk
           ? html`<a class="paypal" href=${this.#paypalUrl()} aria-label=${t('cart.paypal')}>
               <img src=${this.paypalImage} alt=${t('cart.paypal')}>
             </a>`
@@ -616,8 +615,8 @@ export class ShopCart extends PortalElement {
 
   /**
    * GET-Einstieg des Backends; die Rueckkehr-Seiten kommen vom Shortcode.
-   * checkout: wohin das Backend schickt, wenn doch kein Kunde in der Sitzung
-   * ist (Sitzung inzwischen abgelaufen).
+   * checkout: wohin das Backend schickt, wenn die Zahlung scheitert oder der
+   * Betrag nach der Wahl der Lieferadresse bei PayPal zu bestaetigen ist.
    */
   #paypalUrl() {
     const query = new URLSearchParams({

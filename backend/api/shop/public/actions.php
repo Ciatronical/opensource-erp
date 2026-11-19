@@ -90,8 +90,8 @@ function getCart($db, string $uuid, array $daten) {
         $land = null;
     }
 
-    // customer: Kunde (Konto oder Gast) in der Sitzung — nur dann zeigt der
-    // Warenkorb den PayPal-Knopf; ohne Kunden führt der Weg über die Kasse
+    // customer: Kunde (Konto oder Gast) in der Sitzung. Den PayPal-Knopf zeigt
+    // der Warenkorb seit PayPal Express auch ohne (beginPayment).
     resultInfo(true, '', ['customer' => null !== $customerId] + cartRead($db, $context['cart_uuid'], $customerId, true, $land));
 }
 
@@ -227,42 +227,120 @@ function getInvoiceSummary($db, string $uuid, array $daten, int $website) {
 // ============================================================================
 
 /**
- * Beginnt die Bezahlung und schickt den Kunden zu PayPal
+ * Adresse der Kasse mit einem Hinweis für <shop-checkout>
+ *
+ * @param string $kasse Adresse der Kasse, mit oder ohne #Anker
+ * @param string $name 'payment' (Fehlercode) oder 'paypal' (Bestellung, deren Betrag zu bestätigen ist)
+ * @param string $wert
+ * @return string
+ */
+function shopCheckoutUrl(string $kasse, string $name, string $wert): string {
+    $anker = '';
+    $raute = strpos($kasse, '#');
+    if (false !== $raute) {
+        $anker = substr($kasse, $raute);
+        $kasse = substr($kasse, 0, $raute);
+    }
+    if ('' === trim($kasse)) {
+        $kasse = '/';
+    }
+    return $kasse.(false === strpos($kasse, '?') ? '?' : '&').$name.'='.rawurlencode($wert).$anker;
+}
+
+/**
+ * Beginnt die Bezahlung und schickt den Kunden zu PayPal (Express)
  *
  * Der Aufrufer ist der Browser des Kunden (Link im Warenkorb oder in der
- * Kasse). Ohne Kunden in der Sitzung — Besucher ohne Konto und ohne
- * Gastangaben — geht es zur Kasse (checkout), wo Anmeldung und Gastformular
- * stehen; eine JSON-Fehlermeldung brächte den Kunden nicht weiter.
+ * Kasse). Ein Kunde in der Sitzung ist nicht nötig: die Lieferadresse wählt
+ * der Kunde bei PayPal, ein Besucher ohne Konto wird auf dem Rückweg als Gast
+ * angelegt (paymentEnd). Scheitert der Einstieg, geht es mit dem Fehlercode
+ * zur Kasse — eine JSON-Fehlermeldung brächte den Kunden nicht weiter.
  */
 function beginPayment($db, string $uuid, array $daten) {
     $context = portalContextRequire($db, $uuid);
-    if (empty($context['customer_id'])) {
-        portalRedirect((string)portalVar($daten, 'checkout', '') ?: (string)portalVar($daten, 'canceled', ''));
-        return;
-    }
+    $kasse   = (string)portalVar($daten, 'checkout', '') ?: (string)portalVar($daten, 'canceled', '');
 
-    // Lieferadresse (dev/shop-versand.md, Schritt 6). Aus der Kasse: shipto =
-    // gespeicherte Adresse, 0 = Rechnungsadresse; eine neue Adresse legt die
-    // Kasse vorher an (newDeliveryAddress) und schickt deren Id. Vom Knopf im
-    // Warenkorb ohne shipto: die Standard-Lieferadresse des Kontos — mit ihr
-    // rechnet der Warenkorb auch.
+    // Vorschlag für PayPal (dev/shop-versand.md, „PayPal Express“). Aus der
+    // Kasse: shipto = gespeicherte Adresse, 0 = Rechnungsadresse; eine neue
+    // Adresse legt die Kasse vorher an (newDeliveryAddress) und schickt deren
+    // Id. Vom Knopf im Warenkorb ohne shipto: die Standard-Lieferadresse des
+    // Kontos — mit ihr rechnet der Warenkorb auch.
     $shipto = portalVar($daten, 'shipto', null);
     if (null === $shipto || '' === $shipto) {
         $shipto = (int)($context['shipto_id'] ?? 0);
     }
-    $bezahlt = paymentBegin(
-        $db, $uuid,
-        (string)portalVar($daten, 'bill', ''),
-        (string)portalVar($daten, 'canceled', ''),
-        shopDeliveryAddress(['shipto_id' => (int)$shipto])
-    );
+    try {
+        $bezahlt = paymentBegin(
+            $db, $uuid,
+            (string)portalVar($daten, 'bill', ''),
+            (string)portalVar($daten, 'canceled', ''),
+            shopDeliveryAddress(['shipto_id' => (int)$shipto]),
+            $kasse
+        );
+    } catch (ApiError $e) {
+        paymentLogError('beginPayment', $e);
+        portalRedirect(shopCheckoutUrl($kasse, 'payment', (string)$e->getId()));
+        return;
+    }
     portalRedirect($bezahlt['approval_url']);
 }
 
-/** Rückweg von PayPal: einziehen, Rechnung anlegen, zur Rechnungsseite */
+/**
+ * Rückweg von PayPal: Kunde und Lieferadresse übernehmen, einziehen, Rechnung
+ * anlegen, zur Rechnungsseite
+ *
+ * Kostet der Warenkorb für die bei PayPal gewählte Adresse etwas anderes als
+ * freigegeben, geht es zur Kasse, die den neuen Betrag bestätigen lässt
+ * (confirmPayment). Bei einem Fehler ebenfalls zur Kasse, mit dem Code.
+ */
 function endPayment($db, string $uuid, array $daten, int $website) {
-    $ergebnis = paymentEnd($db, shopChannelOfWebsite($db, $website), (string)portalVar($daten, 'token', ''));
-    portalRedirect((string)portalVar($daten, 'page', '/').'?link='.$ergebnis['ar_link'].'#focus');
+    $kasse = (string)portalVar($daten, 'checkout', '') ?: (string)portalVar($daten, 'failed', '');
+    $token = (string)portalVar($daten, 'token', '');
+    try {
+        $ergebnis = paymentEnd($db, shopChannelOfWebsite($db, $website), $token);
+    } catch (ApiError $e) {
+        paymentLogError('endPayment', $e);
+        portalRedirect(shopCheckoutUrl($kasse, 'payment', (string)$e->getId()));
+        return;
+    }
+    if ($ergebnis['confirm']) {
+        portalRedirect(shopCheckoutUrl($kasse, 'paypal', $ergebnis['order_id']));
+        return;
+    }
+    portalRedirect((string)portalVar($daten, 'page', '/').'?link='.$ergebnis['ar_link']
+                   .('success' === $ergebnis['email_status'] ? '' : '&mail=error').'#focus');
+}
+
+/**
+ * Kasse: Anschrift und Beträge einer bei PayPal freigegebenen Bestellung,
+ * deren Betrag sich mit der Lieferadresse geändert hat
+ */
+function expressPayment($db, string $uuid, array $daten, int $website) {
+    try {
+        resultInfo(true, '', paymentExpressInfo(
+            $db, shopChannelOfWebsite($db, $website), $uuid, (string)portalVar($daten, 'order', '')
+        ));
+    } catch (ApiError $e) {
+        paymentLogError('expressPayment', $e);
+        throw $e;
+    }
+}
+
+/** Kasse: der Kunde bestätigt den geänderten Betrag — anpassen, einziehen, Rechnung */
+function confirmPayment($db, string $uuid, array $daten, int $website) {
+    try {
+        $ergebnis = paymentEnd(
+            $db, shopChannelOfWebsite($db, $website), (string)portalVar($daten, 'order', ''), true, $uuid
+        );
+    } catch (ApiError $e) {
+        paymentLogError('confirmPayment', $e);
+        throw $e;
+    }
+    resultInfo(true, '', [
+        'ar_link'      => $ergebnis['ar_link'],
+        'invnumber'    => $ergebnis['invnumber'],
+        'email_status' => $ergebnis['email_status'],
+    ]);
 }
 
 /** Der Kunde hat bei PayPal abgebrochen */
@@ -347,7 +425,7 @@ function shopPublicActions(): array {
         // Bestellung und Rechnung
         'checkout', 'chooseShipping', 'chooseShippingCountry', 'invoicing', 'getInvoiceSummary',
         // Zahlung
-        'beginPayment', 'endPayment', 'paymentCanceled',
+        'beginPayment', 'endPayment', 'paymentCanceled', 'expressPayment', 'confirmPayment',
         // Auswertung, Widerruf
         'gtmGetProductInfo', 'gtmGetPurchased', 'gtmGetPurchasedProducts', 'submitWiderruf',
         // Webseite

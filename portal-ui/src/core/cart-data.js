@@ -84,8 +84,8 @@ export function normalizeCart(data) {
     currency: data.currency || '',
     positions: (data.positions || []).map(cartPosition),
     totals: cartTotals(data),
-    // Kunde (Konto oder Gast) in der Sitzung — Voraussetzung fuer PayPal
-    // direkt aus dem Warenkorb
+    // Kunde (Konto oder Gast) in der Sitzung. Fuer PayPal aus dem Warenkorb
+    // nicht mehr noetig (PayPal Express, 2026-11-19).
     customer: data.customer === true,
   };
 }

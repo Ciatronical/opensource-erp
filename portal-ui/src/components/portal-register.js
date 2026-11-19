@@ -558,6 +558,25 @@ export class PortalRegister extends PortalElement {
     return true;
   }
 
+  /**
+   * Hat der Kunde noch nichts eingetragen? <shop-checkout> schickt ihn dann
+   * mit dem PayPal-Knopf ohne Formular zu PayPal (Express): Name und Anschrift
+   * kommen von dort. Das Land zaehlt nicht — es ist aus der Laenderwahl
+   * vorbelegt (prefillCountry).
+   *
+   * @return {boolean}
+   */
+  isBlank() {
+    const ids = ['company-name', 'name', 'street', 'city', 'postcode', 'phone', 'email'];
+    if (this._otherDelivery) {
+      ids.push(...this.#shippingFields.map((field) => field.id).filter((id) => id !== 'shipping-country'));
+    }
+    return ids.every((id) => {
+      const element = this.$(id);
+      return !element || !element.value.trim();
+    });
+  }
+
   values() {
     const value = (id) => {
       const element = this.$(id);

@@ -950,3 +950,41 @@ Ein Land kann in mehreren Zonen stehen, etwa „Inland“ (DE) und
 | nur „Inland“ | Inland | nicht lieferbar |
 | nur „Deutschsprachiger Raum“ | Deutschsprachiger Raum | Deutschsprachiger Raum |
 | beide | Inland | Deutschsprachiger Raum |
+
+## PayPal Express (2026-11-19)
+
+Entscheidung P1 (Schritt 6) gab die Lieferadresse fest an PayPal; ein Gast
+musste dafür erst das Adressformular der Kasse ausfüllen. Auf solar-spar.de
+sprang der Knopf „Direkt zu PayPal“ deshalb nur in das Feld „Name“. Jetzt wählt
+der Kunde die Lieferadresse wieder bei PayPal, für Gäste und angemeldete
+Kunden — der Versandpreis je Land bleibt trotzdem richtig:
+
+- **Einstieg** (`beginPayment`, `paymentBegin`): `shipping_preference:
+  GET_FROM_FILE`. Ein Kunde in der Sitzung ist nicht nötig. Gibt es einen, geht
+  die in der Kasse gewählte Adresse als Vorschlag mit; gerechnet wird mit ihrem
+  Land, ohne Kunden mit dem im Warenkorb gewählten Lieferland. Der Knopf im
+  Warenkorb steht jetzt auch ohne Kunden. In der Kasse geht ein Gast mit leerem
+  Formular direkt zu PayPal (`isBlank` in `portal-register.js`); hat er es
+  begonnen, wird es wie bisher geprüft und der Gast vorher angelegt.
+- **Rückweg** (`endPayment`, `paymentEnd`): Bestellung bei PayPal lesen, Kunde
+  und Lieferadresse übernehmen (`paymentExpressCustomer`) — ohne Kunden ein
+  Gast mit der PayPal-Anschrift als Rechnungsadresse, mit Kunden die
+  Rechnungsadresse, eine gleiche gespeicherte oder eine neue Lieferadresse.
+  Dann den Warenkorb für dieses Land rechnen (`paymentExpressTotals`).
+- **Betrag gleich:** einziehen, Rechnung, Rechnungsseite — ohne weiteren Klick.
+- **Betrag anders** (anderes Lieferland): nichts einziehen, zur Kasse mit
+  `?paypal=<Bestellung>`. `<shop-checkout>` zeigt Adresse und neuen Betrag
+  (`expressPayment`); „Jetzt kaufen“ ruft `confirmPayment`, das die Bestellung
+  bei PayPal anpasst (PATCH des Betrags) und einzieht. Lehnt PayPal den neuen
+  Betrag ab, wird nichts eingezogen (`PAYMENT_AMOUNT_CHANGE_FAILED`).
+- **Fehler:** Einstieg und Rückweg leiten mit `?payment=<Code>` zur Kasse statt
+  eine JSON-Antwort zu zeigen, und schreiben den Fehler samt Antwort von PayPal
+  ins Protokoll (`paymentLogError`) — vorher stand dort nichts. Gibt es zur
+  E-Mail-Adresse des PayPal-Kontos schon ein Kundenkonto (`ACCOUNT_EXISTS`),
+  bittet die Kasse um Anmeldung; eingezogen wird nicht.
+
+**Grenzen:** Ob PayPal einen Adressvorschlag bei `GET_FROM_FILE` vorbelegt und
+ob es eine Erhöhung des Betrags nach der Freigabe annimmt, ist nur gegen die
+Dokumentation gebaut, nicht gegen PayPal geprüft. Ein Gast, dessen Lieferland
+nicht beliefert wird, bleibt als Kundenzeile ohne Rechnung zurück (wie bisher
+beim Abbruch nach dem Gastformular).

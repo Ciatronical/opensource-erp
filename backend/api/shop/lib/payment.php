@@ -9,11 +9,19 @@
 // Einstellungen des Kanals (paypal_*, base_url). Jede Funktion bekommt den
 // Kanal deshalb übergeben.
 //
-// ABLAUF
+// ABLAUF (PayPal Express, 2026-11-19)
 //   paymentBegin   legt bei PayPal eine Bestellung an und liefert die Adresse,
-//                  zu der der Kunde geschickt wird
-//   (der Kunde bezahlt bei PayPal)
-//   paymentEnd     zieht den Betrag ein, legt die Rechnung an und schickt sie
+//                  zu der der Kunde geschickt wird. Die Lieferadresse wählt
+//                  der Kunde bei PayPal (GET_FROM_FILE); kennt der Shop schon
+//                  eine, geht sie als Vorschlag mit.
+//   (der Kunde gibt die Zahlung bei PayPal frei)
+//   paymentEnd     liest die Bestellung, übernimmt Kunde und Lieferadresse
+//                  aus PayPal (ein Besucher ohne Konto wird als Gast
+//                  angelegt), rechnet den Warenkorb für dieses Land und
+//                  zieht ein, wenn der Betrag dem freigegebenen entspricht.
+//                  Weicht er ab (anderes Lieferland), bestätigt der Kunde den
+//                  neuen Betrag in der Kasse — erst dann wird die Bestellung
+//                  angepasst und eingezogen (paymentEnd mit $bestaetigt).
 //
 // Der Rückweg von PayPal kommt ohne Kontext-Cookie an — PayPal reicht die
 // Sitzungskennung als reference_id durch. Deshalb bekommt jede Funktion hier
@@ -135,7 +143,7 @@ function paypalMockHeader($db, int $kanal, string $aufruf): array {
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop, dessen PayPal-Zugang gilt
  * @param string $pfad Pfad ab /v1 bzw. /v2
- * @param string $methode GET oder POST
+ * @param string $methode GET, POST oder PATCH
  * @param array|string|null $rumpf Anfragedaten
  * @param array $kopfzeilen Zusätzliche Kopfzeilen
  * @param string|null $aufruf 'create', 'capture' oder 'read' — schaltet den
@@ -153,6 +161,9 @@ function paypalRequest($db, int $kanal, string $pfad, string $methode = 'GET', $
 
     if ('POST' === $methode) {
         curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, is_array($rumpf) ? json_encode($rumpf) : (string)$rumpf);
+    } elseif ('PATCH' === $methode) {
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
         curl_setopt($ch, CURLOPT_POSTFIELDS, is_array($rumpf) ? json_encode($rumpf) : (string)$rumpf);
     }
     $alleKopfzeilen = array_merge($kopfzeilen, $mock);
@@ -249,17 +260,30 @@ function paymentBrandName($db): string {
  * Die Sitzungskennung geht als reference_id mit — sie ist der einzige Faden
  * zurück zum Warenkorb, wenn der Kunde von PayPal zurückkommt.
  *
+ * PayPal Express: Die Lieferadresse legt der Kunde bei PayPal fest
+ * (GET_FROM_FILE). Ein Kunde in der Sitzung ist nicht nötig — ein Besucher
+ * ohne Konto wird auf dem Rückweg aus den Angaben von PayPal als Gast
+ * angelegt (paymentEnd). Gibt es einen Kunden, geht die in der Kasse gewählte
+ * Adresse als Vorschlag mit. Gerechnet wird mit dem Land dieser Adresse, ohne
+ * Kunden mit dem im Warenkorb gewählten Lieferland; nennt PayPal ein anderes
+ * Land, bestätigt der Kunde den neuen Betrag vor dem Einzug in der Kasse.
+ *
  * @param object $db Company-Datenbankverbindung
  * @param string $uuid Wert des Kontext-Cookies
  * @param string $erfolgSeite Adresse der Rechnungsseite im Shop
  * @param string $abbruchSeite Adresse der Abbruchseite im Shop
  * @param array $lieferadresse aus der Kasse (shopDeliveryAddress): ['shipto_id' => …] oder [] = Rechnungsadresse
+ * @param string $kasseSeite Adresse der Kasse: dorthin bei geändertem Betrag oder Fehler
  * @return array{approval_url: string, order_id: string}
  * @throws ShopPaymentError, ApiError CART_EMPTY, CART_NOT_OFFERED, SHIPPING_*
  */
-function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSeite, array $lieferadresse = []): array {
-    $context    = portalContextCustomer($db, $uuid);
-    $customerId = (int)$context['customer_id'];
+function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSeite, array $lieferadresse = [], string $kasseSeite = ''): array {
+    $context    = portalContextRequire($db, $uuid);
+    $customerId = empty($context['customer_id']) ? null : (int)$context['customer_id'];
+    if (null !== $customerId) {
+        // prüft die Sperre des Zugangs
+        portalContextCustomer($db, $uuid);
+    }
     // HugoShop der Webseite: sein PayPal-Zugang; die Rücksprungadresse ist
     // die der Webseite
     $website    = (int)$context['website_id'];
@@ -270,13 +294,12 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
     }
 
     // Der Versand wird hier nur gerechnet, nicht in den Korb gelegt: als
-    // Position entsteht er erst mit der Rechnung (createShopInvoice). Er gilt
-    // fuer die Lieferadresse aus der Kasse; dieselbe Adresse geht fest an
-    // PayPal, damit Betrag, Rechnung und Lieferung zusammenpassen
-    // (dev/shop-versand.md, Schritt 6).
-    $adresse = paymentDeliveryAddress($db, $customerId, $lieferadresse);
-    $korb = cartRead($db, $context['cart_uuid'], $customerId, true, $adresse['land']);
-    $betrag = (float)($korb['incShippingCosts'] ? $korb['totalSumIncShipping'] : $korb['totalSum']);
+    // Position entsteht er erst mit der Rechnung (createShopInvoice). Mit
+    // Kunden gilt die Lieferadresse aus der Kasse, ohne Kunden das im
+    // Warenkorb gewählte Lieferland (cartShippingCountry).
+    $adresse = null === $customerId ? null : paymentDeliveryAddress($db, $customerId, $lieferadresse);
+    $korb = cartRead($db, $context['cart_uuid'], $customerId, true, null === $adresse ? null : $adresse['land']);
+    $betrag = paymentCartAmount($korb);
 
     // Ohne Betrag gibt es nichts zu bezahlen. Die Bridge schickte hier eine
     // Bestellung über 0,00 los und bekam von PayPal MISSING_REQUIRED_PARAMETER.
@@ -298,14 +321,14 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
         'locale'       => 'de-DE',
         'landing_page' => 'LOGIN',
         'user_action'  => 'PAY_NOW',
-        // Die Adresse steht fest — bei PayPal laesst sie sich nicht
-        // aendern, sonst stimmte der Versand je Land nicht mehr
-        'shipping_preference' => 'SET_PROVIDED_ADDRESS',
-        // failed: wohin, wenn die Zahlung zwar zurückkommt, aber scheitert.
-        // Ohne dieses Ziel kannte der Rückweg nur die Erfolgsseite und
-        // endete im Fehlerfall auf einer leeren Antwort.
+        // Express: der Kunde wählt die Lieferadresse bei PayPal. Ob der
+        // Betrag danach noch stimmt, prüft der Rückweg (paymentEnd).
+        'shipping_preference' => 'GET_FROM_FILE',
+        // failed/checkout: wohin, wenn die Zahlung zwar zurückkommt, aber
+        // scheitert oder der Betrag neu bestätigt werden muss.
         'return_url' => $rueckweg.'?action=endPayment&page='.rawurlencode($erfolgSeite)
-                        .'&failed='.rawurlencode($abbruchSeite),
+                        .'&failed='.rawurlencode($abbruchSeite)
+                        .'&checkout='.rawurlencode($kasseSeite),
         'cancel_url' => $rueckweg.'?action=paymentCanceled&page='.rawurlencode($abbruchSeite),
     ];
     $marke = paymentBrandName($db);
@@ -313,19 +336,23 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
         $erlebnis['brand_name'] = $marke;
     }
 
+    $einheit = [
+        'reference_id' => $uuid,
+        // Die vorgeschlagene Lieferadresse; 0 = Rechnungsadresse oder keine
+        'custom_id'    => (string)(int)($adresse['shipto_id'] ?? 0),
+        'amount' => [
+            'currency_code' => $korb['currency'],
+            'value'         => number_format($betrag, 2, '.', ''),
+        ],
+    ];
+    // Vorschlag nur mit vollständiger Anschrift — eine halbe lehnt PayPal ab
+    if (null !== $adresse && paymentAddressComplete($adresse['paypal'])) {
+        $einheit['shipping'] = $adresse['paypal'];
+    }
+
     $antwort = paypalRequest($db, $kanal, '/v2/checkout/orders', 'POST', [
         'intent' => 'CAPTURE',
-        'purchase_units' => [[
-            'reference_id' => $uuid,
-            // Die gewaehlte Lieferadresse kommt so mit der Zahlung zurueck
-            // (paymentEnd); 0 = Rechnungsadresse
-            'custom_id'    => (string)(int)($adresse['shipto_id'] ?? 0),
-            'shipping'     => $adresse['paypal'],
-            'amount' => [
-                'currency_code' => $korb['currency'],
-                'value'         => number_format($betrag, 2, '.', ''),
-            ],
-        ]],
+        'purchase_units' => [$einheit],
         'payment_source' => ['paypal' => ['experience_context' => $erlebnis]],
     ], [
         'Content-Type: application/json',
@@ -348,6 +375,30 @@ function paymentBegin($db, string $uuid, string $erfolgSeite, string $abbruchSei
 
     throw new ShopPaymentError('PAYMENT_NO_APPROVAL_LINK',
                                'PayPal hat keine Adresse zur Freigabe geliefert', $antwort['daten']);
+}
+
+/**
+ * Der Betrag, den der Kunde für diesen Warenkorb zahlt
+ *
+ * @param array $korb Ergebnis von cartRead()
+ * @return float
+ */
+function paymentCartAmount(array $korb): float {
+    return (float)(!empty($korb['incShippingCosts']) ? $korb['totalSumIncShipping'] : $korb['totalSum']);
+}
+
+/**
+ * Ist die Anschrift vollständig genug, um sie PayPal vorzuschlagen?
+ *
+ * @param array $paypal Versandadresse in der Form von PayPal (paymentDeliveryAddress)
+ * @return bool
+ */
+function paymentAddressComplete(array $paypal): bool {
+    $adresse = $paypal['address'] ?? [];
+    return '' !== trim((string)($paypal['name']['full_name'] ?? ''))
+        && '' !== trim((string)($adresse['address_line_1'] ?? ''))
+        && '' !== trim((string)($adresse['admin_area_2'] ?? ''))
+        && '' !== trim((string)($adresse['country_code'] ?? ''));
 }
 
 /**
@@ -378,6 +429,244 @@ function paypalPaymentState(array $bestellung): array {
 }
 
 /**
+ * Liest eine Bestellung bei PayPal
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop, dessen PayPal-Zugang gilt
+ * @param string $token Bestellkennung von PayPal
+ * @return array Bestellung, wie PayPal sie liefert
+ * @throws ShopPaymentError PAYMENT_ORDER_NOT_FOUND
+ */
+function paypalOrderRead($db, int $kanal, string $token): array {
+    $antwort = paypalRequest($db, $kanal, '/v2/checkout/orders/'.rawurlencode($token), 'GET', null, [
+        'Content-Type: application/json',
+        'Authorization: Bearer '.paypalAccessToken($db, $kanal),
+    ], 'read');
+
+    if (200 !== $antwort['status'] || empty($antwort['daten']['id'])) {
+        throw new ShopPaymentError('PAYMENT_ORDER_NOT_FOUND',
+                                   'PayPal kennt diese Bestellung nicht (HTTP '.$antwort['status'].')', $antwort['daten']);
+    }
+    return $antwort['daten'];
+}
+
+/**
+ * Kunde und Lieferadresse, wie PayPal sie zur Bestellung nennt
+ *
+ * @param array $bestellung Antwort von PayPal (paypalOrderRead)
+ * @return array{name: string, street: string, zipcode: string, city: string, country_code: string, email: string}
+ */
+function paymentExpressAddress(array $bestellung): array {
+    $versand = $bestellung['purchase_units'][0]['shipping'] ?? [];
+    $adresse = $versand['address'] ?? [];
+    $zahler  = $bestellung['payer'] ?? [];
+    $konto   = $bestellung['payment_source']['paypal'] ?? [];
+
+    $name = trim((string)($versand['name']['full_name'] ?? ''));
+    if ('' === $name) {
+        $person = $zahler['name'] ?? $konto['name'] ?? [];
+        $name = trim(($person['given_name'] ?? '').' '.($person['surname'] ?? ''));
+    }
+
+    return [
+        'name'         => $name,
+        'street'       => trim(trim((string)($adresse['address_line_1'] ?? '')).' '.trim((string)($adresse['address_line_2'] ?? ''))),
+        'zipcode'      => trim((string)($adresse['postal_code'] ?? '')),
+        'city'         => trim((string)($adresse['admin_area_2'] ?? '')),
+        'country_code' => strtoupper(trim((string)($adresse['country_code'] ?? ''))),
+        'email'        => trim((string)($zahler['email_address'] ?? $konto['email_address'] ?? '')),
+    ];
+}
+
+/**
+ * Name eines Landes für die Anschrift
+ *
+ * PayPal nennt nur den Code, in customer.country und shipto.shiptocountry
+ * steht Freitext. Der Name kommt aus den ICU-Daten (wie die Länderliste des
+ * Shops); verwendet wird er nur, wenn der Shop ihn demselben Land zuordnet
+ * (shop_country_code) — sonst bleibt der Code stehen, den der Shop kennt.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $code ISO-Code
+ * @return string
+ */
+function paymentCountryName($db, string $code): string {
+    $name = class_exists('Locale') ? (string)Locale::getDisplayRegion('-'.$code, 'de') : '';
+    if ('' === $name || $name === $code) {
+        return $code;
+    }
+    $zeile = $db->getOne(
+        "SELECT shop_country_code(:name) = :code AS passt",
+        [':name' => $name, ':code' => $code]
+    );
+    return in_array($zeile['passt'] ?? false, [true, 't', 1, '1'], true) ? $name : $code;
+}
+
+/**
+ * Übernimmt Kunde und Lieferadresse aus der PayPal-Bestellung
+ *
+ * Ohne Kunden in der Sitzung entsteht ein Gast mit der Anschrift von PayPal
+ * als Rechnungsadresse. Mit Kunden wird die Anschrift seine Lieferadresse:
+ * die Rechnungsadresse, wenn sie ihr gleicht, eine gespeicherte gleiche
+ * Lieferadresse, sonst eine neue. Ein zweiter Aufruf mit derselben Bestellung
+ * findet dieselbe Adresse wieder und legt nichts doppelt an.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $uuid Sitzungskennung (reference_id der Bestellung)
+ * @param array $bestellung Antwort von PayPal (paypalOrderRead)
+ * @return array Lieferadresse für createShopInvoice: ['shipto_id' => int] oder [] = Rechnungsadresse
+ * @throws ApiError PAYMENT_ADDRESS_MISSING, ACCOUNT_EXISTS, PORTAL_CONTEXT_ERROR
+ */
+function paymentExpressCustomer($db, string $uuid, array $bestellung): array {
+    $context = portalContextRequire($db, $uuid);
+    $adresse = paymentExpressAddress($bestellung);
+
+    if ('' === $adresse['name'] || '' === $adresse['street'] || '' === $adresse['country_code']) {
+        throw new ShopPaymentError('PAYMENT_ADDRESS_MISSING',
+                                   'PayPal hat keine vollständige Lieferadresse genannt', $bestellung);
+    }
+    $adresse['country'] = paymentCountryName($db, $adresse['country_code']);
+
+    if (empty($context['customer_id'])) {
+        customerRegister($db, $uuid, [
+            'name'         => $adresse['name'],
+            'street'       => $adresse['street'],
+            'zipcode'      => $adresse['zipcode'],
+            'city'         => $adresse['city'],
+            'country'      => $adresse['country'],
+            'email'        => $adresse['email'],
+            'account_type' => 'true',
+            'guest'        => true,
+        ]);
+        return [];
+    }
+
+    $customerId = (int)portalContextCustomer($db, $uuid)['customer_id'];
+    $zeile = $db->getOne(
+        "SELECT CASE
+                    WHEN lower(btrim(c.name)) = lower(:name_a)
+                     AND lower(btrim(COALESCE(c.street, ''))) = lower(:street_a)
+                     AND btrim(COALESCE(c.zipcode, '')) = :zipcode_a
+                     AND lower(btrim(COALESCE(c.city, ''))) = lower(:city_a)
+                     AND shop_country_code(c.country) = :code_a
+                    THEN 0
+                    ELSE (SELECT s.shipto_id FROM shipto s
+                           WHERE s.trans_id = c.id AND COALESCE(s.module, 'CT') = 'CT'
+                             AND lower(btrim(COALESCE(s.shiptoname, ''))) = lower(:name_b)
+                             AND lower(btrim(COALESCE(s.shiptostreet, ''))) = lower(:street_b)
+                             AND btrim(COALESCE(s.shiptozipcode, '')) = :zipcode_b
+                             AND lower(btrim(COALESCE(s.shiptocity, ''))) = lower(:city_b)
+                             AND shop_country_code(s.shiptocountry) = :code_b
+                           ORDER BY s.shipto_id LIMIT 1)
+                END AS shipto_id
+           FROM customer c WHERE c.id = :customer_id",
+        [
+            ':name_a'    => $adresse['name'],         ':name_b'    => $adresse['name'],
+            ':street_a'  => $adresse['street'],       ':street_b'  => $adresse['street'],
+            ':zipcode_a' => $adresse['zipcode'],      ':zipcode_b' => $adresse['zipcode'],
+            ':city_a'    => $adresse['city'],         ':city_b'    => $adresse['city'],
+            ':code_a'    => $adresse['country_code'], ':code_b'    => $adresse['country_code'],
+            ':customer_id' => $customerId,
+        ]
+    );
+
+    $shiptoId = $zeile['shipto_id'] ?? null;
+    if (null === $shiptoId) {
+        return ['shipto_id' => (int)shiptoCreate($db, $customerId, $adresse)['shipto_id']];
+    }
+    return (int)$shiptoId > 0 ? ['shipto_id' => (int)$shiptoId] : [];
+}
+
+/**
+ * Rechnet den Warenkorb für die Lieferadresse der PayPal-Bestellung
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param string $uuid Sitzungskennung
+ * @param array $bestellung Antwort von PayPal (paypalOrderRead)
+ * @param array $lieferadresse Ergebnis von paymentExpressCustomer()
+ * @return array{amount: float, approved: float, currency: string, equal: bool}
+ *               amount = was der Warenkorb für diese Adresse kostet,
+ *               approved = was der Kunde bei PayPal freigegeben hat
+ * @throws ApiError CART_NOT_FOUND, CART_EMPTY, CART_NOT_OFFERED, SHIPPING_*
+ */
+function paymentExpressTotals($db, string $uuid, array $bestellung, array $lieferadresse): array {
+    // Neu lesen: mit dem eben angelegten Gast hat die Sitzung einen Kunden
+    $context    = portalContextCustomer($db, $uuid);
+    $customerId = (int)$context['customer_id'];
+    if (empty($context['cart_uuid'])) {
+        throw new ApiError('CART_NOT_FOUND', 'Zu dieser Sitzung gibt es keinen Warenkorb');
+    }
+
+    $korb = cartRead($db, $context['cart_uuid'], $customerId, true,
+                     shopShippingCountry($db, $customerId, $lieferadresse));
+    $betrag = paymentCartAmount($korb);
+    if (empty($korb['positions']) || 0 >= $betrag) {
+        throw new ApiError('CART_EMPTY', 'Der Warenkorb ist leer');
+    }
+    cartRequireOffered($korb);
+    cartRequireShipping($korb);
+
+    $freigegeben = (float)($bestellung['purchase_units'][0]['amount']['value'] ?? 0);
+
+    return [
+        'amount'   => round($betrag, 2),
+        'approved' => round($freigegeben, 2),
+        'currency' => (string)$korb['currency'],
+        'equal'    => number_format($betrag, 2, '.', '') === number_format($freigegeben, 2, '.', ''),
+    ];
+}
+
+/**
+ * Prüft, dass die Bestellung zur Sitzung gehört und freigegeben ist
+ *
+ * @param array $bestellung Antwort von PayPal (paypalOrderRead)
+ * @param string|null $sitzung Sitzungskennung des Aufrufers; null = nicht prüfen
+ *                             (Rückweg von PayPal, das Cookie kommt nicht sicher mit)
+ * @return string Sitzungskennung aus der Bestellung
+ * @throws ShopPaymentError PAYMENT_NO_REFERENCE, PAYMENT_ORDER_FOREIGN, PAYMENT_NOT_APPROVED
+ */
+function paymentExpressSession(array $bestellung, ?string $sitzung = null): string {
+    $uuid = (string)($bestellung['purchase_units'][0]['reference_id'] ?? '');
+    if ('' === $uuid) {
+        throw new ShopPaymentError('PAYMENT_NO_REFERENCE',
+                                   'PayPal hat keine Sitzungskennung zurückgegeben', $bestellung);
+    }
+    if (null !== $sitzung && $sitzung !== $uuid) {
+        throw new ShopPaymentError('PAYMENT_ORDER_FOREIGN', 'Diese Zahlung gehört nicht zu dieser Sitzung');
+    }
+    if ('APPROVED' !== ($bestellung['status'] ?? '')) {
+        throw new ShopPaymentError('PAYMENT_NOT_APPROVED',
+                                   'Die Zahlung ist bei PayPal nicht (mehr) freigegeben', $bestellung);
+    }
+    return $uuid;
+}
+
+/**
+ * Was die Kasse braucht, um einen geänderten Betrag bestätigen zu lassen
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $kanal HugoShop der Anfrage
+ * @param string $uuid Sitzungskennung des Aufrufers
+ * @param string $token Bestellkennung von PayPal
+ * @return array{address: array, adresses: array, amount: float, approved: float, currency: string, equal: bool}
+ * @throws ShopPaymentError, ApiError
+ */
+function paymentExpressInfo($db, int $kanal, string $uuid, string $token): array {
+    $bestellung = paypalOrderRead($db, $kanal, $token);
+    paymentExpressSession($bestellung, $uuid);
+
+    $lieferadresse = paymentExpressCustomer($db, $uuid, $bestellung);
+    $adresse = paymentExpressAddress($bestellung);
+    $adresse['country'] = paymentCountryName($db, $adresse['country_code']);
+
+    return [
+        'address'  => $adresse,
+        // in der Form der Kasse (adresses.shipping), für den Warenkorb daneben
+        'adresses' => ['shipping' => ['default' => true, 'id' => isset($lieferadresse['shipto_id']) ? (string)$lieferadresse['shipto_id'] : null]],
+    ] + paymentExpressTotals($db, $uuid, $bestellung, $lieferadresse);
+}
+
+/**
  * Zieht die Zahlung ein und legt die Rechnung an
  *
  * Läuft ohne Kontext-Cookie: die Sitzungskennung kommt als reference_id von
@@ -385,27 +674,64 @@ function paypalPaymentState(array $bestellung): array {
  * Webseite, über die PayPal zurückschickt) — sein Zugang zieht ein, bevor die
  * Sitzung bekannt ist.
  *
+ * Express: Kunde und Lieferadresse kommen aus der Bestellung
+ * (paymentExpressCustomer) — vor dem Einzug, damit kein Geld ohne Kunden
+ * unterwegs ist. Kostet der Warenkorb für diese Adresse etwas anderes, als der
+ * Kunde freigegeben hat, wird nicht eingezogen: die Antwort trägt
+ * confirm = true, und die Kasse lässt den neuen Betrag bestätigen. Der zweite
+ * Aufruf mit $bestaetigt passt die Bestellung bei PayPal an und zieht ein.
+ *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop der Anfrage
  * @param string $token Bestellkennung von PayPal (Parameter "token")
- * @return array{ar_link: string, invnumber: string, payment: array}
+ * @param bool $bestaetigt true = der Kunde hat einen geänderten Betrag bestätigt
+ * @param string|null $sitzung Sitzungskennung des Aufrufers, wenn er eine hat (Bestätigung aus der Kasse)
+ * @return array{confirm: bool, order_id: string, ar_link?: string, invnumber?: string, email_status?: string, payment?: array}
  * @throws ShopPaymentError, ApiError
  */
-function paymentEnd($db, int $kanal, string $token): array {
+function paymentEnd($db, int $kanal, string $token, bool $bestaetigt = false, ?string $sitzung = null): array {
+    $bestellung = paypalOrderRead($db, $kanal, $token);
+    $uuid = paymentExpressSession($bestellung, $sitzung);
+
+    $lieferadresse = paymentExpressCustomer($db, $uuid, $bestellung);
+    $summen = paymentExpressTotals($db, $uuid, $bestellung, $lieferadresse);
+
+    if (!$summen['equal']) {
+        if (!$bestaetigt) {
+            return ['confirm' => true, 'order_id' => (string)$bestellung['id']];
+        }
+        $angepasst = paypalRequest($db, $kanal, '/v2/checkout/orders/'.rawurlencode($token), 'PATCH', [[
+            'op'    => 'replace',
+            'path'  => "/purchase_units/@reference_id=='".$uuid."'/amount",
+            'value' => [
+                'currency_code' => $summen['currency'],
+                'value'         => number_format($summen['amount'], 2, '.', ''),
+            ],
+        ]], [
+            'Content-Type: application/json',
+            'Authorization: Bearer '.paypalAccessToken($db, $kanal),
+        ]);
+        if (204 !== $angepasst['status'] && 200 !== $angepasst['status']) {
+            throw new ShopPaymentError('PAYMENT_AMOUNT_CHANGE_FAILED',
+                                       'PayPal hat den geänderten Betrag nicht angenommen (HTTP '.$angepasst['status'].')',
+                                       $angepasst['daten']);
+        }
+    }
+
     $antwort = paypalRequest($db, $kanal, '/v2/checkout/orders/'.rawurlencode($token).'/capture', 'POST', '{}', [
         'Content-Type: application/json',
         'Authorization: Bearer '.paypalAccessToken($db, $kanal),
     ], 'capture');
 
-    $bestellung = $antwort['daten'];
-    $zahlung    = paypalPaymentState($bestellung);
+    $gebucht = $antwort['daten'];
+    $zahlung = paypalPaymentState($gebucht);
 
     // Weder gebucht noch unterwegs: der Warenkorb bleibt stehen. Die Bridge
     // sah hier auf $result['status'] — der meint aber die Bestellung und kann
     // auch bei abgelehnter Buchung COMPLETED sein.
     if ($zahlung['failed']) {
         throw new ShopPaymentError('PAYMENT_NOT_COMPLETED',
-                                   'Die Zahlung wurde nicht abgeschlossen', $bestellung);
+                                   'Die Zahlung wurde nicht abgeschlossen', $gebucht);
     }
 
     if ($zahlung['open']) {
@@ -416,32 +742,45 @@ function paymentEnd($db, int $kanal, string $token): array {
                  .' — Rechnung wird ohne Zahlungseingang angelegt.', true, DLOG_WRN);
     }
 
-    $uuid = (string)($bestellung['purchase_units'][0]['reference_id'] ?? '');
-    if ('' === $uuid) {
-        throw new ShopPaymentError('PAYMENT_NO_REFERENCE',
-                                   'PayPal hat keine Sitzungskennung zurückgegeben', $bestellung);
-    }
-
-    // Lieferadresse wie in der Kasse gewaehlt (custom_id, paymentBegin) —
-    // PayPal hat sie fest bekommen, die Rechnung nimmt dieselbe
-    $einheit = $bestellung['purchase_units'][0] ?? [];
-    $shiptoId = (int)($einheit['custom_id'] ?? $einheit['payments']['captures'][0]['custom_id'] ?? 0);
-    $rechnung = createShopInvoice($db, $uuid, $shiptoId > 0 ? ['shipto_id' => $shiptoId] : [], $zahlung);
-    shopSendInvoiceMail($db, (int)$rechnung['ar_id']);
+    // Dieselbe Lieferadresse, mit der eben gerechnet wurde
+    $rechnung  = createShopInvoice($db, $uuid, $lieferadresse, $zahlung);
+    $versendet = shopSendInvoiceMail($db, (int)$rechnung['ar_id']);
 
     return [
-        'ar_link'   => $rechnung['ar_link'],
-        'invnumber' => $rechnung['invnumber'],
-        'payment'   => $zahlung,
+        'confirm'      => false,
+        'order_id'     => (string)$bestellung['id'],
+        'ar_link'      => $rechnung['ar_link'],
+        'invnumber'    => $rechnung['invnumber'],
+        'email_status' => $versendet ? 'success' : 'error',
+        'payment'      => $zahlung,
     ];
+}
+
+/**
+ * Schreibt einen Fehler im Zahlungsverkehr ins Protokoll
+ *
+ * Ein ApiError landet sonst nur in der Antwort an den Browser — und der
+ * Kunde, der ihn sieht, meldet ihn selten (solar-spar.de, 19.11.2026: im
+ * Protokoll stand zu PayPal nichts). Mit der Antwort von PayPal, wenn der
+ * Fehler eine trägt.
+ *
+ * @param string $wo Aktion, in der der Fehler auftrat
+ * @param ApiError $fehler
+ * @return void
+ */
+function paymentLogError(string $wo, ApiError $fehler): void {
+    $daten = $fehler instanceof ShopPaymentError ? $fehler->getDaten() : null;
+    writeLog('[SHOP] PayPal '.$wo.': '.$fehler->getId().' — '.$fehler->getMessage()
+             .(null === $daten ? '' : ' — '.json_encode($daten, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
+             true, DLOG_ERR);
 }
 
 /**
  * Lieferadresse fuer PayPal und den Versand
  *
  * Die in der Kasse gewaehlte gespeicherte Adresse oder die Rechnungsadresse
- * des Kunden, aufbereitet als PayPal-Versandadresse (shipping_preference
- * SET_PROVIDED_ADDRESS) und mit dem Land fuer den Versand.
+ * des Kunden, aufbereitet als PayPal-Versandadresse (der Vorschlag, den der
+ * Kunde bei PayPal aendern kann) und mit dem Land fuer den Versand.
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $customerId Kunde

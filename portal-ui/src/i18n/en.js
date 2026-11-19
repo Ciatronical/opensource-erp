@@ -338,6 +338,13 @@ export default {
   'checkout.buyNote':
     'By clicking “Buy now” you place a binding order. Your data is transmitted securely and encrypted.',
   'checkout.emptyCart': 'Your cart is empty. There is nothing to order.',
+  'checkout.expressDelivery': 'Delivery address from your PayPal account',
+  'checkout.expressChanged':
+    'A different shipping price applies to this delivery address. You approved {approved} at PayPal, the new total is {amount}. By clicking “Buy now” you confirm the new amount; it will be charged via PayPal.',
+  'checkout.expressAccountExists':
+    'There is already a customer account for the email address of your PayPal account. Please log in and pay with PayPal again. Nothing has been charged.',
+  'checkout.paymentFailed':
+    'The PayPal payment could not be completed. Nothing has been charged. Please try again or choose another payment method.',
   'checkout.createAccount': 'Create a customer account (optional)',
   'checkout.createAccountHint':
     'Create the account first. You can then complete the order as a signed-in customer.',
@@ -373,6 +380,13 @@ export default {
   WRONG_PASSWORD: 'The password is incorrect.',
   ACCOUNT_LOCKED: 'Access to this account has been locked. Please contact us.',
   ACCOUNT_EXISTS: 'This account already exists.',
+  PAYMENT_ADDRESS_MISSING:
+    'PayPal did not provide a complete delivery address. Please enter your address here and pay with PayPal again. Nothing has been charged.',
+  PAYMENT_AMOUNT_CHANGE_FAILED:
+    'PayPal did not accept the changed amount. Nothing has been charged. Please pay with PayPal again.',
+  PAYMENT_NOT_APPROVED:
+    'This payment is no longer approved at PayPal. Please pay with PayPal again.',
+  CART_EMPTY: 'Your cart is empty.',
   PORTAL_CONTEXT_ERROR: 'Your session has expired. Please reload the page.',
   PORTAL_NETWORK_ERROR: 'Could not reach the shop. Please try again.',
   PORTAL_API_ERROR: 'Sorry, something went wrong!',

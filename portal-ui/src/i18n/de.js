@@ -345,6 +345,14 @@ export default {
   'checkout.buyNote':
     'Mit dem Klick auf „Jetzt kaufen“ geben Sie eine zahlungspflichtige Bestellung ab. Ihre Daten werden sicher und verschlüsselt übertragen.',
   'checkout.emptyCart': 'Ihr Warenkorb ist leer. Es gibt nichts zu bestellen.',
+  // PayPal Express: Rueckweg von PayPal in die Kasse
+  'checkout.expressDelivery': 'Lieferadresse aus Ihrem PayPal-Konto',
+  'checkout.expressChanged':
+    'Für diese Lieferadresse gilt ein anderer Versandpreis. Bei PayPal haben Sie {approved} freigegeben, der neue Gesamtbetrag ist {amount}. Mit „Jetzt kaufen“ bestätigen Sie den neuen Betrag; er wird über PayPal abgebucht.',
+  'checkout.expressAccountExists':
+    'Zur E-Mail-Adresse Ihres PayPal-Kontos gibt es bei uns schon ein Kundenkonto. Bitte melden Sie sich an und bezahlen Sie dann erneut mit PayPal. Es wurde nichts abgebucht.',
+  'checkout.paymentFailed':
+    'Die Zahlung mit PayPal konnte nicht abgeschlossen werden. Es wurde nichts abgebucht. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart.',
   'checkout.createAccount': 'Kundenkonto anlegen (optional)',
   'checkout.createAccountHint':
     'Legen Sie zuerst das Kundenkonto an. Danach schließen Sie die Bestellung als angemeldeter Kunde ab.',
@@ -381,6 +389,13 @@ export default {
   WRONG_PASSWORD: 'Das Passwort ist falsch.',
   ACCOUNT_LOCKED: 'Der Zugang zu diesem Kundenkonto ist gesperrt. Bitte wenden Sie sich an uns.',
   ACCOUNT_EXISTS: 'Das Kundenkonto existiert bereits.',
+  PAYMENT_ADDRESS_MISSING:
+    'PayPal hat keine vollständige Lieferadresse übermittelt. Bitte tragen Sie Ihre Adresse hier ein und bezahlen Sie dann erneut mit PayPal. Es wurde nichts abgebucht.',
+  PAYMENT_AMOUNT_CHANGE_FAILED:
+    'PayPal hat den geänderten Betrag nicht angenommen. Es wurde nichts abgebucht. Bitte bezahlen Sie erneut mit PayPal.',
+  PAYMENT_NOT_APPROVED:
+    'Diese Zahlung ist bei PayPal nicht mehr freigegeben. Bitte bezahlen Sie erneut mit PayPal.',
+  CART_EMPTY: 'Ihr Warenkorb ist leer.',
   PORTAL_CONTEXT_ERROR: 'Ihre Sitzung ist abgelaufen. Bitte laden Sie die Seite neu.',
   PORTAL_NETWORK_ERROR: 'Die Verbindung zum Shop ist fehlgeschlagen. Bitte versuchen Sie es erneut.',
   PORTAL_API_ERROR: 'Entschuldigung, es ist ein Fehler aufgetreten!',

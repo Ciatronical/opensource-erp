@@ -1007,6 +1007,10 @@ Für die Konto-Seiten zusätzlich:
 * **`/rechnung/` ohne `?link=`** zeigt den Hinweis, nicht eine leere Seite.
 * **PayPal** — der Knopf steht jetzt neben „Jetzt kaufen" statt über der
   Seite. Der Weg selbst (`/portal-api/?action=beginPayment`) ist unverändert.
+  Seit 2026-11-19 PayPal Express: ohne ausgefülltes Gastformular direkt zu
+  PayPal, Name und Lieferadresse kommen von dort. `?paypal=<Bestellung>` zeigt
+  die Bestätigung eines geänderten Betrags, `?payment=<Code>` eine
+  gescheiterte Zahlung (`../dev/shop-versand.md`, „PayPal Express").
 * **Seitenkopf, abgemeldet und angemeldet** — die Knöpfe wechseln ohne
   Neuladen, wenn man sich auf `/login/` anmeldet oder oben abmeldet. Der
   Warenkorb-Zähler zählt beim Hinzufügen mit. Bei leerem Warenkorb sagt der

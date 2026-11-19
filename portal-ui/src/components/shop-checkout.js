@@ -16,6 +16,7 @@ import { renderShippingOptions, renderShippingCountry, shippingOptionStyles, cou
 import './shop-cart.js';
 import './portal-register.js';
 import { shopPath, apiUrl, sitePath } from '../core/paths.js';
+import { formatPrice } from '../core/money.js';
 
 /**
  * <shop-checkout billing-page="/rechnung/" canceled-page="/bezahlung-abgebrochen/"></shop-checkout>
@@ -42,6 +43,19 @@ import { shopPath, apiUrl, sitePath } from '../core/paths.js';
  * PAYPAL steht jetzt bei "Jetzt kaufen" und nicht mehr ueber der Seite
  * (checkout.html:5). Es ist die zweite Zahlungsart, also gehoert es dorthin,
  * wo ueber die Zahlung entschieden wird.
+ *
+ * PAYPAL EXPRESS (dev/shop-versand.md, 2026-11-19)
+ * Der Knopf fuehrt ohne ausgefuelltes Gastformular direkt zu PayPal: Name und
+ * Lieferadresse kommen von dort, das Backend legt den Gast auf dem Rueckweg
+ * an. Hat der Kunde das Formular begonnen oder ist er angemeldet, geht seine
+ * Adresse als Vorschlag mit; aendern kann er sie bei PayPal. Zwei Rueckwege
+ * enden hier statt auf der Rechnungsseite:
+ *   ?paypal=<Bestellung>  Die bei PayPal gewaehlte Adresse kostet anderen
+ *                         Versand als freigegeben. Die Kasse zeigt Adresse und
+ *                         neuen Betrag; "Jetzt kaufen" bestaetigt
+ *                         (confirmPayment), erst dann wird eingezogen.
+ *   ?payment=<Code>       Die Zahlung ist gescheitert; der Code steht als
+ *                         Meldung ueber den Knoepfen.
  *
  * VERSANDWAHL (dev/shop-versand.md, 2026-10-30)
  * Unter der Lieferadresse stehen alle Versandarten des Shops mit Preis:
@@ -84,6 +98,9 @@ export class ShopCheckout extends PortalElement {
     _busy: { state: true },
     _count: { state: true },
     _accountExists: { state: true },
+    // PayPal Express: freigegebene Bestellung, deren Betrag zu bestaetigen ist
+    // ({order, address, adresses, amount, approved, currency}); null = keine
+    _express: { state: true },
   };
 
   static styles = [
@@ -168,6 +185,9 @@ export class ShopCheckout extends PortalElement {
   #cartAddressesKey = '';
   // Gast: zuletzt aus der Laenderwahl ins Adressformular geschriebenes Land
   #prefilledCountry = '';
+  // Rueckweg von PayPal: Bestellung (?paypal=) und Fehlercode (?payment=)
+  #expressOrder = '';
+  #paymentFailed = '';
 
   constructor() {
     super();
@@ -193,10 +213,20 @@ export class ShopCheckout extends PortalElement {
     this._shipping = null;
     this._shippingBusy = false;
     this._guestShipping = null;
+    this._express = null;
   }
 
   connectedCallback() {
     super.connectedCallback();
+    const query = new URLSearchParams(window.location.search);
+    this.#expressOrder = query.get('paypal') || '';
+    this.#paymentFailed = query.get('payment') || '';
+    if (this.#paymentFailed) {
+      // Die Meldung gilt einmal — nach einem Neuladen staende sie sonst wieder da
+      query.delete('payment');
+      const rest = query.toString();
+      window.history.replaceState(null, '', `${window.location.pathname}${rest ? `?${rest}` : ''}${window.location.hash}`);
+    }
     this.#unsubscribe.push(
       on(SHOP_CART_CHANGED, (event) => this.#cartChanged(event.detail)),
       // Nach dem Anlegen eines Kontos meldet <portal-register> die Anmeldung,
@@ -252,6 +282,54 @@ export class ShopCheckout extends PortalElement {
     } catch (error) {
       this._error = t(error.code || 'PORTAL_API_ERROR');
       this._state = 'error';
+      return;
+    }
+    if (this.#paymentFailed) {
+      this.#showPaymentError(this.#paymentFailed);
+      this.#paymentFailed = '';
+    }
+    await this.#loadExpress();
+  }
+
+  /**
+   * Rueckweg von PayPal mit geaendertem Betrag (?paypal=<Bestellung>): Adresse
+   * und Betraege holen. Scheitert das (Bestellung abgelaufen, fremde Sitzung),
+   * bleibt die gewoehnliche Kasse mit der Meldung.
+   */
+  async #loadExpress() {
+    if (!this.#expressOrder) return;
+    try {
+      const data = await apiRequest('expressPayment', { order: this.#expressOrder });
+      this._express = { order: this.#expressOrder, ...data };
+    } catch (error) {
+      this.#expressOrder = '';
+      this._express = null;
+      this.#showPaymentError(error.code);
+    }
+  }
+
+  /** Fehlercode einer Zahlung als Meldung; unbekannte PayPal-Codes allgemein. */
+  #showPaymentError(code) {
+    this._accountExists = code === 'ACCOUNT_EXISTS';
+    if (this._accountExists) {
+      this._error = t('checkout.expressAccountExists');
+      return;
+    }
+    const text = t(code || 'PORTAL_API_ERROR');
+    this._error = text === code ? t('checkout.paymentFailed') : text;
+  }
+
+  /** Express: den geaenderten Betrag bestaetigen — anpassen, einziehen, Rechnung. */
+  async #confirmExpress() {
+    if (this._busy || !this._express) return;
+    this._error = '';
+    this._busy = true;
+    try {
+      const data = await apiRequest('confirmPayment', { order: this._express.order });
+      window.location.href = this.#invoiceHref(data);
+    } catch (error) {
+      this._busy = false;
+      this.#showPaymentError(error.code);
     }
   }
 
@@ -285,6 +363,9 @@ export class ShopCheckout extends PortalElement {
     let shipping = null;
     if (!this._account) {
       shipping = null;
+    } else if (this._express) {
+      // die bei PayPal gewaehlte Adresse — das Backend hat sie schon angelegt
+      shipping = this._express.adresses.shipping;
     } else if (!this._account.registered) {
       shipping = this._guestShipping;
     } else if (this._mode === 'new') {
@@ -396,8 +477,10 @@ export class ShopCheckout extends PortalElement {
   }
 
   /**
-   * PayPal mit der gewaehlten Lieferadresse: die Adresse geht fest an PayPal.
-   * Eine neue Adresse wird vorher angelegt (newDeliveryAddress).
+   * PayPal Express. Ein Gast, der noch nichts eingetragen hat, geht ohne
+   * Umweg zu PayPal — Name und Lieferadresse kommen von dort. Sonst geht die
+   * gewaehlte Lieferadresse als Vorschlag mit: der Gast wird dafuer angelegt
+   * wie beim Kaufen, eine neue Adresse vorher gespeichert (newDeliveryAddress).
    */
   async #payWithPaypal(event) {
     event.preventDefault();
@@ -411,6 +494,11 @@ export class ShopCheckout extends PortalElement {
     // registerAccount gleich mit an und meldet ihre Id.
     if (this._account && !this._account.registered) {
       const register = this.$('guest');
+      if (register && typeof register.isBlank === 'function' && register.isBlank()) {
+        this._busy = true;
+        window.location.href = this.#paypalUrl('0');
+        return;
+      }
       if (!register || !register.validate()) return;
       this._busy = true;
       try {
@@ -526,7 +614,8 @@ export class ShopCheckout extends PortalElement {
       action: 'beginPayment',
       bill: this.billingPage,
       canceled: this.canceledPage,
-      // ohne Kunden in der Sitzung (abgelaufen) zurueck hierher
+      // hierher zurueck, wenn die Zahlung scheitert oder der Betrag nach der
+      // Wahl der Lieferadresse bei PayPal zu bestaetigen ist
       checkout: shopPath('checkout', '#focus'),
       shipto,
     });
@@ -555,13 +644,41 @@ export class ShopCheckout extends PortalElement {
       <div class="layout">
         <section class="panel" part="addresses">
           <h2 class="section-title ${this.cls('heading')}">${t('checkout.addresses')}</h2>
-          ${this._account.registered ? this.#renderRegistered() : this.#renderGuest()}
+          ${this._express
+            ? this.#renderExpress()
+            : this._account.registered
+              ? this.#renderRegistered()
+              : this.#renderGuest()}
         </section>
         <section part="cart">
           <h2 class="section-title ${this.cls('heading')}">${t('checkout.cart')}</h2>
           <shop-cart id="cart" mode="checkout" continue-url="/" .addresses=${this.#addressesForCart()}></shop-cart>
           ${this.#renderBuy()}
         </section>
+      </div>
+    `;
+  }
+
+  // ---- PayPal Express: geaenderten Betrag bestaetigen ----
+
+  #renderExpress() {
+    const address = this._express.address;
+    const price = (value) => `${formatPrice(value)} ${this._express.currency}`;
+    return html`
+      <div class="block">
+        <p class="block-title">${t('checkout.expressDelivery')}</p>
+        <div class="address">
+          <p>${address.name}</p>
+          <p>${address.street}</p>
+          <p>${cityLine(address)}</p>
+        </div>
+      </div>
+      <div class="block">
+        <p>
+          ${t('checkout.expressChanged')
+            .replace('{approved}', price(this._express.approved))
+            .replace('{amount}', price(this._express.amount))}
+        </p>
       </div>
     `;
   }
@@ -784,7 +901,7 @@ export class ShopCheckout extends PortalElement {
   // ---- Kaufen ----
 
   #renderBuy() {
-    if (this._createAccount) {
+    if (this._createAccount && !this._express) {
       return html`<p class="note ${this.cls('muted')}">${t('checkout.createAccountHint')}</p>`;
     }
     return html`
@@ -816,11 +933,15 @@ export class ShopCheckout extends PortalElement {
                   type="button"
                   class=${this.cls('buttonPrimary')}
                   ?disabled=${this._busy || this._count === null || this.#shippingBlocked}
-                  @click=${() => this.#buy()}
+                  @click=${() => (this._express ? this.#confirmExpress() : this.#buy())}
                 >
                   ${this._busy ? t('checkout.buying') : t('checkout.buy')}
                 </button>
-                ${this.#shippingBlocked
+                ${this._express
+                  ? html`<a class=${this.cls('buttonSecondary')} href=${shopPath('checkout', '#focus')}>
+                      ${t('checkout.cancel')}
+                    </a>`
+                  : this.#shippingBlocked
                   ? nothing
                   : html`<a
                       class="paypal"
