@@ -10,6 +10,7 @@ export default {
   'invoice.deliveryTerms': "Lieferzeiten",
   'cart.shippingMethod': "Versand:",
   'cart.shippingFree': "versandkostenfrei",
+  'cart.freeShippingMissing': "Noch {amount} bis zur versandkostenfreien Lieferung.",
   'cart.minQuantity': "Mindestabnahme:",
   'shipping.country_unknown': "Das Land der Lieferadresse ist unbekannt. Bitte prüfen Sie die Adresse oder wenden Sie sich an uns.",
   'shipping.country_not_delivered': "In dieses Land liefern wir leider nicht.",

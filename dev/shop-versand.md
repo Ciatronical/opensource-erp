@@ -988,3 +988,18 @@ ob es eine Erhöhung des Betrags nach der Freigabe annimmt, ist nur gegen die
 Dokumentation gebaut, nicht gegen PayPal geprüft. Ein Gast, dessen Lieferland
 nicht beliefert wird, bleibt als Kundenzeile ohne Rechnung zurück (wie bisher
 beim Abbruch nach dem Gastformular).
+
+## „Noch … bis versandkostenfrei“ (2026-11-19)
+
+Warenkorb und Kasse nennen, wie viel Warenwert bis zur Freigrenze des Kanals
+fehlt (`cart.freeShippingMissing`). `cartTotals` liefert dazu
+`free_shipping_missing` (API: `freeShippingMissing`): Freigrenze minus
+Bruttowarenwert — nur, wenn die Versandart, mit der gerechnet wird, etwas
+kostet und die Freigrenze gelten lässt (`free_shipping_applies`), sonst NULL.
+Kein Hinweis also bei Selbstabholung, bei Spedition ohne Freigrenze, ohne
+Lieferung in das Land und sobald die Grenze erreicht ist.
+
+**Freigrenze nur für ein Land** braucht kein eigenes Feld: je Land oder Zone
+eine eigene Versandart, „Freigrenze gilt“ nur bei der fürs Inland. Beispiel:
+„Paket Deutschland“ (Preisstufe nur Zone Inland, Freigrenze gilt) und „Paket
+Europa“ (Preisstufe Zone Europa, Freigrenze gilt nicht).

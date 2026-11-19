@@ -82,7 +82,11 @@ function cartOfContext($db, string $uuid): string {
  *               netto_total_sum_inc_shipping: float, shipping_status: string,
  *               shipping_method_id: ?int, shipping_method: string, shipping_parts_id: ?int,
  *               shipping_free: bool, shipping_account: bool, shipping_options: array,
- *               shipping_country: string, shipping_countries: string[]}
+ *               shipping_country: string, shipping_countries: string[],
+ *               free_shipping_missing: ?float}
+ *               free_shipping_missing = Warenwert, der bis zur Freigrenze des
+ *               Kanals noch fehlt; null, wenn die Freigrenze für diese
+ *               Bestellung nicht gilt oder schon erreicht ist
  */
 function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, string $land = ''): array {
     // Gerundet wird je Position, danach summiert. Sonst weicht die Summe von
@@ -181,6 +185,19 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, str
                       AND (NOT EXISTS (SELECT 1 FROM sales_channel_country_shop cc WHERE cc.channel_id = kb.channel_id)
                            OR EXISTS (SELECT 1 FROM sales_channel_country_shop cc
                                        WHERE cc.channel_id = kb.channel_id AND cc.iso_code = l.iso_code))) AS shipping_countries
+                -- „Noch … bis versandkostenfrei“ (2026-11-19): was bis zur
+                -- Freigrenze des Kanals fehlt — nur, wenn die Versandart,
+                -- mit der gerechnet wird, etwas kostet und die Freigrenze
+                -- gelten lässt; sonst NULL
+                , (SELECT c.free_shipping_from - s.total_sum
+                     FROM carts_hugoshop kb
+                     JOIN sales_channel_shop c ON c.id = kb.channel_id
+                     JOIN shipping_method_shop m ON m.id = v.shipping_method_id
+                    WHERE kb.uuid = :cart_uuid
+                      AND v.status = 'ok'
+                      AND COALESCE(v.price, 0) > 0
+                      AND m.free_shipping_applies
+                      AND c.free_shipping_from > s.total_sum) AS free_shipping_missing
            FROM summen s
            CROSS JOIN versand v
            CROSS JOIN betrag b",
@@ -210,6 +227,7 @@ function cartTotals($db, string $cartUuid, float $precision, int $taxzoneId, str
         'shipping_options'             => json_decode((string)($zeile['shipping_options'] ?? '[]'), true) ?: [],
         'shipping_country'             => (string)($zeile['shipping_country'] ?? ''),
         'shipping_countries'           => json_decode((string)($zeile['shipping_countries'] ?? '[]'), true) ?: [],
+        'free_shipping_missing'        => isset($zeile['free_shipping_missing']) ? (float)$zeile['free_shipping_missing'] : null,
     ];
 }
 
@@ -618,6 +636,8 @@ function cartShippingShape(array $summen): array {
         // Länder, unter denen der Kunde das Lieferland wählt (ISO-Codes)
         'shippingCountries' => $summen['shipping_countries'] ?? [],
         'shippingFree'     => $summen['shipping_free'],
+        // Warenwert, der bis zur Freigrenze noch fehlt; null = kein Hinweis
+        'freeShippingMissing' => $summen['free_shipping_missing'] ?? null,
         'shippingOptions'  => array_map(fn($o) => [
             'id'        => (int)$o['id'],
             'name'      => (string)$o['name'],

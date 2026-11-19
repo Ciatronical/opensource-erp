@@ -166,6 +166,9 @@ export class ShopCart extends PortalElement {
         font-weight: 300;
         margin: 1rem 0;
       }
+      .free-shipping-hint {
+        font-weight: 600;
+      }
       .paypal img {
         display: block;
         height: 2.5rem;
@@ -537,7 +540,7 @@ export class ShopCart extends PortalElement {
   }
 
   #renderTotals() {
-    const { shipping, netto, total, shippingStatus, shippingMethod, shippingFree } = this._cart.totals;
+    const { shipping, netto, total, shippingStatus, shippingMethod, shippingFree, freeShippingMissing } = this._cart.totals;
     const currency = this._cart.currency;
     return html`
       <div class="totals">
@@ -579,6 +582,11 @@ export class ShopCart extends PortalElement {
             </p>`}
               </div>
             `
+          : nothing}
+        ${freeShippingMissing > 0
+          ? html`<p class="free-shipping-hint">
+              ${t('cart.freeShippingMissing').replace('{amount}', `${formatPrice(freeShippingMissing)} ${currency}`)}
+            </p>`
           : nothing}
         <p class="note ${this.cls('muted')}">${t('cart.netNote')}</p>
         <p>

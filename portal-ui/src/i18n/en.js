@@ -6,6 +6,7 @@ export default {
   'invoice.deliveryTerms': "Delivery times",
   'cart.shippingMethod': "Shipping:",
   'cart.shippingFree': "free shipping",
+  'cart.freeShippingMissing': "Only {amount} more for free shipping.",
   'cart.minQuantity': "Minimum order quantity:",
   'shipping.country_unknown': "The country of the delivery address is unknown. Please check the address or contact us.",
   'shipping.country_not_delivered': "Unfortunately we do not deliver to this country.",

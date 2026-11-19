@@ -32,6 +32,9 @@ export function cartTotals(data) {
     shippingMethod: data.shippingMethod || '',
     shippingMethodId: data.shippingMethodId === null || data.shippingMethodId === undefined ? null : Number(data.shippingMethodId),
     shippingFree: !!data.shippingFree,
+    // Warenwert, der bis zur Freigrenze noch fehlt („Noch … bis
+    // versandkostenfrei“); 0 = kein Hinweis (gilt nicht, erreicht, aelteres Backend)
+    freeShippingMissing: Math.max(0, toNumber(data.freeShippingMissing || 0)),
     // ISO-Code des Lieferlands, mit dem das Backend gerechnet hat (leer = unbekannt)
     shippingCountry: data.shippingCountry || '',
     // Laender, unter denen der Kunde das Lieferland waehlt (ISO-Codes); leer
