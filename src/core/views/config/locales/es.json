@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "Introdúzcala en HugoCMS en ajustes del proyecto → extensión de la tienda. Así la ejecución transfiere por sí misma el proxy y la página 404. Vale para todas las HugoShops.",
         "shopSigningKeyCopy": "Copiar clave",
         "shopSigningKeyMissing": "Aún no hay clave de firma. Un administrador del sistema la crea en los ajustes del sistema (Extensión de tienda: clave de firma).",
+        "shopSigningKeyOpen": "Crear la clave ahora",
         "shopHugoCmsSignedReady": "La ejecución transfiere el proxy y la página 404 firmados.",
         "shopHugoCmsSignedMissing": "HugoCMS aún no conoce la clave de firma de OpensourceERP: el proxy y la página 404 deben colocarse a mano en el servidor web.",
         "shopHugoCmsSignedNoKey": "Sin clave de firma en OpensourceERP, el proxy y la página 404 deben colocarse a mano en el servidor web.",

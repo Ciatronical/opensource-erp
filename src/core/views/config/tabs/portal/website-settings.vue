@@ -165,6 +165,7 @@
                         </v-text-field>
                         <div v-else class="text-caption text-medium-emphasis mt-4">
                             {{ t('crm_fields.shopSigningKeyMissing') }}
+                            <router-link v-if="oserp.session.is_admin" :to="{ name: 'system-settings', hash: '#shop-signing' }" class="ms-1 text-primary">{{ t('crm_fields.shopSigningKeyOpen') }}</router-link>
                         </div>
                     </template>
                 </v-card-text>

@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "Ievadiet to HugoCMS projekta iestatījumos → veikala paplašinājums. Tad palaišana pati pārsūtīs starpniekserveri un 404 lapu. Attiecas uz visiem HugoShop.",
         "shopSigningKeyCopy": "Kopēt atslēgu",
         "shopSigningKeyMissing": "Paraksta atslēgas vēl nav. Sistēmas administrators to izveido sistēmas iestatījumos (Veikala paplašinājums: paraksta atslēga).",
+        "shopSigningKeyOpen": "Izveidot atslēgu tagad",
         "shopHugoCmsSignedReady": "Palaišana pārsūta starpniekserveri un 404 lapu parakstītus.",
         "shopHugoCmsSignedMissing": "HugoCMS vēl nezina OpensourceERP paraksta atslēgu — starpniekserveris un 404 lapa jāievieto tīmekļa serverī manuāli.",
         "shopHugoCmsSignedNoKey": "Bez paraksta atslēgas OpensourceERP starpniekserveris un 404 lapa jāievieto tīmekļa serverī manuāli.",

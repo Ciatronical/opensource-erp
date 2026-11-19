@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "Įveskite jį HugoCMS projekto nustatymuose → parduotuvės plėtinys. Tada vykdymas pats perkels tarpinį serverį ir 404 puslapį. Galioja visoms HugoShop.",
         "shopSigningKeyCopy": "Kopijuoti raktą",
         "shopSigningKeyMissing": "Parašo rakto dar nėra. Sistemos administratorius jį sukuria sistemos nustatymuose (Parduotuvės plėtinys: parašo raktas).",
+        "shopSigningKeyOpen": "Sukurti raktą dabar",
         "shopHugoCmsSignedReady": "Vykdymas perkelia tarpinį serverį ir 404 puslapį pasirašytus.",
         "shopHugoCmsSignedMissing": "HugoCMS dar nežino OpensourceERP parašo rakto — tarpinį serverį ir 404 puslapį reikia į žiniatinklio serverį įkelti rankiniu būdu.",
         "shopHugoCmsSignedNoKey": "Be parašo rakto OpensourceERP tarpinį serverį ir 404 puslapį reikia į žiniatinklio serverį įkelti rankiniu būdu.",

@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "Introduceți-o în HugoCMS la Setări proiect → Extensie magazin. Atunci rularea transferă singură proxy-ul și pagina 404. Se aplică tuturor HugoShop-urilor.",
         "shopSigningKeyCopy": "Copiază cheia",
         "shopSigningKeyMissing": "Încă nu există cheie de semnătură. Un administrator de sistem o creează în setările de sistem (Extensia magazin: cheie de semnătură).",
+        "shopSigningKeyOpen": "Creează cheia acum",
         "shopHugoCmsSignedReady": "Rularea transferă proxy-ul și pagina 404 semnate.",
         "shopHugoCmsSignedMissing": "HugoCMS nu cunoaște încă cheia de semnătură OpensourceERP — proxy-ul și pagina 404 trebuie puse manual pe serverul web.",
         "shopHugoCmsSignedNoKey": "Fără cheie de semnătură în OpensourceERP, proxy-ul și pagina 404 trebuie puse manual pe serverul web.",

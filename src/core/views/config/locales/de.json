@@ -1409,6 +1409,7 @@
         "shopSigningKey_help": "In HugoCMS unter Projekteinstellungen → Shop-Erweiterung eintragen. Dann überträgt der Lauf Weiterleiter und 404-Seite selbst. Gilt für alle HugoShops.",
         "shopSigningKeyCopy": "Schlüssel kopieren",
         "shopSigningKeyMissing": "Noch kein Signaturschlüssel. Ein Systemadministrator erzeugt ihn in den Systemeinstellungen (Shop-Erweiterung: Signaturschlüssel).",
+        "shopSigningKeyOpen": "Schlüssel jetzt erzeugen",
         "shopHugoCmsSignedReady": "Weiterleiter und 404-Seite überträgt der Lauf signiert.",
         "shopHugoCmsSignedMissing": "HugoCMS kennt den Signaturschlüssel von OpensourceERP noch nicht — Weiterleiter und 404-Seite müssen von Hand auf den Webserver.",
         "shopHugoCmsSignedNoKey": "Ohne Signaturschlüssel in OpensourceERP müssen Weiterleiter und 404-Seite von Hand auf den Webserver.",

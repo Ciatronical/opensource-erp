@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "Indtast den i HugoCMS under projektindstillinger → butiksudvidelse. Så overfører kørslen selv proxyen og 404-siden. Gælder alle HugoShops.",
         "shopSigningKeyCopy": "Kopiér nøgle",
         "shopSigningKeyMissing": "Endnu ingen signaturnøgle. En systemadministrator opretter den i systemindstillingerne (Butiksudvidelse: signaturnøgle).",
+        "shopSigningKeyOpen": "Opret nøgle nu",
         "shopHugoCmsSignedReady": "Kørslen overfører proxyen og 404-siden signeret.",
         "shopHugoCmsSignedMissing": "HugoCMS kender endnu ikke signaturnøglen fra OpensourceERP — proxyen og 404-siden skal lægges på webserveren manuelt.",
         "shopHugoCmsSignedNoKey": "Uden signaturnøgle i OpensourceERP skal proxyen og 404-siden lægges på webserveren manuelt.",

@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "在 HugoCMS 的“项目设置 → 商店扩展”中输入。之后运行会自行传输代理和 404 页面。适用于所有 HugoShop。",
         "shopSigningKeyCopy": "复制密钥",
         "shopSigningKeyMissing": "尚无签名密钥。由系统管理员在系统设置中创建（商店扩展：签名密钥）。",
+        "shopSigningKeyOpen": "立即创建密钥",
         "shopHugoCmsSignedReady": "运行以签名方式传输代理和 404 页面。",
         "shopHugoCmsSignedMissing": "HugoCMS 尚不知道 OpensourceERP 的签名密钥 — 代理和 404 页面必须手动放到 Web 服务器上。",
         "shopHugoCmsSignedNoKey": "OpensourceERP 中没有签名密钥时，代理和 404 页面必须手动放到 Web 服务器上。",

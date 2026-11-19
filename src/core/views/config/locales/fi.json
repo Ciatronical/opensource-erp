@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "Syötä se HugoCMS:ään kohdassa projektin asetukset → kaupan laajennus. Silloin ajo siirtää välityspalvelimen ja 404-sivun itse. Koskee kaikkia HugoShopeja.",
         "shopSigningKeyCopy": "Kopioi avain",
         "shopSigningKeyMissing": "Allekirjoitusavainta ei vielä ole. Järjestelmänvalvoja luo sen järjestelmäasetuksissa (Kauppalaajennus: allekirjoitusavain).",
+        "shopSigningKeyOpen": "Luo avain nyt",
         "shopHugoCmsSignedReady": "Ajo siirtää välityspalvelimen ja 404-sivun allekirjoitettuina.",
         "shopHugoCmsSignedMissing": "HugoCMS ei vielä tunne OpensourceERP:n allekirjoitusavainta — välityspalvelin ja 404-sivu on vietävä verkkopalvelimelle käsin.",
         "shopHugoCmsSignedNoKey": "Ilman OpensourceERP:n allekirjoitusavainta välityspalvelin ja 404-sivu on vietävä verkkopalvelimelle käsin.",

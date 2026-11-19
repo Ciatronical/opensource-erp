@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "Voer hem in HugoCMS in onder Projectinstellingen → Winkeluitbreiding. Dan zet de run de proxy en de 404-pagina zelf over. Geldt voor alle HugoShops.",
         "shopSigningKeyCopy": "Sleutel kopiëren",
         "shopSigningKeyMissing": "Nog geen ondertekeningssleutel. Een systeembeheerder maakt hem aan in de systeeminstellingen (Winkeluitbreiding: ondertekeningssleutel).",
+        "shopSigningKeyOpen": "Sleutel nu aanmaken",
         "shopHugoCmsSignedReady": "De run zet de proxy en de 404-pagina ondertekend over.",
         "shopHugoCmsSignedMissing": "HugoCMS kent de ondertekeningssleutel van OpensourceERP nog niet — de proxy en de 404-pagina moeten handmatig op de webserver worden gezet.",
         "shopHugoCmsSignedNoKey": "Zonder ondertekeningssleutel in OpensourceERP moeten de proxy en de 404-pagina handmatig op de webserver worden gezet.",

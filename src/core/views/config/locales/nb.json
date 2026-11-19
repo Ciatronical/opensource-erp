@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "Legg den inn i HugoCMS under prosjektinnstillinger → butikkutvidelse. Da overfører kjøringen selv mellomtjeneren og 404-siden. Gjelder alle HugoShops.",
         "shopSigningKeyCopy": "Kopier nøkkel",
         "shopSigningKeyMissing": "Ingen signaturnøkkel ennå. En systemadministrator oppretter den i systeminnstillingene (Butikkutvidelse: signaturnøkkel).",
+        "shopSigningKeyOpen": "Opprett nøkkel nå",
         "shopHugoCmsSignedReady": "Kjøringen overfører mellomtjeneren og 404-siden signert.",
         "shopHugoCmsSignedMissing": "HugoCMS kjenner ennå ikke signaturnøkkelen fra OpensourceERP — mellomtjeneren og 404-siden må legges på webserveren manuelt.",
         "shopHugoCmsSignedNoKey": "Uten signaturnøkkel i OpensourceERP må mellomtjeneren og 404-siden legges på webserveren manuelt.",

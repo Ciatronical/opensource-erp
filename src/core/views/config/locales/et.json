@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "Sisestage see HugoCMS-is projekti seadetes → poe laiendus. Siis kannab käivitus vahendaja ja 404-lehe ise üle. Kehtib kõigile HugoShopidele.",
         "shopSigningKeyCopy": "Kopeeri võti",
         "shopSigningKeyMissing": "Allkirjavõtit veel pole. Süsteemiadministraator loob selle süsteemiseadetes (Poe laiendus: allkirjavõti).",
+        "shopSigningKeyOpen": "Loo võti kohe",
         "shopHugoCmsSignedReady": "Käivitus kannab vahendaja ja 404-lehe allkirjastatult üle.",
         "shopHugoCmsSignedMissing": "HugoCMS ei tunne veel OpensourceERP allkirjavõtit — vahendaja ja 404-leht tuleb veebiserverisse käsitsi panna.",
         "shopHugoCmsSignedNoKey": "Ilma OpensourceERP allkirjavõtmeta tuleb vahendaja ja 404-leht veebiserverisse käsitsi panna.",

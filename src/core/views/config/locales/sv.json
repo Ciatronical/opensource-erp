@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "Ange den i HugoCMS under projektinställningar → butikstillägg. Då överför körningen själv proxyn och 404-sidan. Gäller alla HugoShops.",
         "shopSigningKeyCopy": "Kopiera nyckel",
         "shopSigningKeyMissing": "Ingen signeringsnyckel ännu. En systemadministratör skapar den i systeminställningarna (Butikstillägg: signeringsnyckel).",
+        "shopSigningKeyOpen": "Skapa nyckel nu",
         "shopHugoCmsSignedReady": "Körningen överför proxyn och 404-sidan signerade.",
         "shopHugoCmsSignedMissing": "HugoCMS känner ännu inte till signeringsnyckeln från OpensourceERP — proxyn och 404-sidan måste läggas på webbservern manuellt.",
         "shopHugoCmsSignedNoKey": "Utan signeringsnyckel i OpensourceERP måste proxyn och 404-sidan läggas på webbservern manuellt.",

@@ -209,6 +209,7 @@
                         </v-text-field>
                         <div v-else-if="signaturGeladen" class="text-caption text-medium-emphasis mt-4">
                             {{ t('crm_fields.shopSigningKeyMissing') }}
+                            <router-link v-if="oserp.session.is_admin" :to="{ name: 'system-settings', hash: '#shop-signing' }" class="ms-1 text-primary">{{ t('crm_fields.shopSigningKeyOpen') }}</router-link>
                         </div>
                     </template>
                 </v-card-text>
@@ -261,6 +262,7 @@ import ShopConfigField from '@/core/views/config/tabs/shop-config-field.componen
 import shopChannelSettingsConfig, { channelSettingFields } from './shopChannelSettingsConfig.js'
 import { shopFehler } from '../composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
+import { oserpStore } from '@/core/stores/oserp.store.js'
 
 const EbayStatusConfig = defineAsyncComponent(() => import('./shop-ebay-status.vue'))
 const KleinanzeigenStatusConfig = defineAsyncComponent(() => import('./shop-kleinanzeigen-status.vue'))
@@ -288,6 +290,7 @@ const props = defineProps({
 
 const i18n = useI18n()
 const { t } = i18n
+const oserp = oserpStore()
 
 const felder = computed(() => shopChannelSettingsConfig[props.type] || [])
 const alleFelder = computed(() => channelSettingFields(props.type))

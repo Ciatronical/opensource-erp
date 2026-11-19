@@ -1373,6 +1373,7 @@
         "shopSigningKey_help": "Enter it in HugoCMS under project settings → shop extension. The run then transfers the proxy and the 404 page itself. Applies to all HugoShops.",
         "shopSigningKeyCopy": "Copy key",
         "shopSigningKeyMissing": "No signing key yet. A system administrator creates it in the system settings (Shop extension: signing key).",
+        "shopSigningKeyOpen": "Create key now",
         "shopHugoCmsSignedReady": "The run transfers the proxy and the 404 page signed.",
         "shopHugoCmsSignedMissing": "HugoCMS does not know the OpensourceERP signing key yet — the proxy and the 404 page must be placed on the web server by hand.",
         "shopHugoCmsSignedNoKey": "Without a signing key in OpensourceERP the proxy and the 404 page must be placed on the web server by hand.",

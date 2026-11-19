@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "Zadejte jej v HugoCMS v nastavení projektu → rozšíření obchodu. Běh pak sám přenese proxy a stránku 404. Platí pro všechny HugoShopy.",
         "shopSigningKeyCopy": "Kopírovat klíč",
         "shopSigningKeyMissing": "Zatím žádný podpisový klíč. Systémový administrátor jej vytvoří v systémových nastaveních (Rozšíření obchodu: podpisový klíč).",
+        "shopSigningKeyOpen": "Vytvořit klíč nyní",
         "shopHugoCmsSignedReady": "Proxy a stránku 404 přenáší běh podepsané.",
         "shopHugoCmsSignedMissing": "HugoCMS zatím nezná podpisový klíč OpensourceERP — proxy a stránku 404 je nutné umístit na webový server ručně.",
         "shopHugoCmsSignedNoKey": "Bez podpisového klíče v OpensourceERP je nutné proxy a stránku 404 umístit na webový server ručně.",

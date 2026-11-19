@@ -1010,6 +1010,7 @@
         "shopSigningKey_help": "HugoCMS'te Proje ayarları → Mağaza eklentisi altına girin. Böylece çalışma vekil sunucuyu ve 404 sayfasını kendisi aktarır. Tüm HugoShop'lar için geçerlidir.",
         "shopSigningKeyCopy": "Anahtarı kopyala",
         "shopSigningKeyMissing": "Henüz imza anahtarı yok. Bir sistem yöneticisi bunu sistem ayarlarında oluşturur (Mağaza eklentisi: imza anahtarı).",
+        "shopSigningKeyOpen": "Anahtarı şimdi oluştur",
         "shopHugoCmsSignedReady": "Çalışma vekil sunucuyu ve 404 sayfasını imzalı aktarır.",
         "shopHugoCmsSignedMissing": "HugoCMS, OpensourceERP imza anahtarını henüz tanımıyor — vekil sunucu ve 404 sayfası web sunucusuna elle konulmalıdır.",
         "shopHugoCmsSignedNoKey": "OpensourceERP'de imza anahtarı olmadan vekil sunucu ve 404 sayfası web sunucusuna elle konulmalıdır.",

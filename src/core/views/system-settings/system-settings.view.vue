@@ -141,7 +141,7 @@
                 <!-- Signaturschlüssel der Shop-Erweiterung: gehört der Installation,
                      nicht einem Mandanten (dev/shop-php-signatur.md). Liegt neben
                      der settings.ini, nicht in ihr. -->
-                <v-card v-if="signatur" variant="outlined" class="my-4">
+                <v-card v-if="signatur" id="shop-signing" variant="outlined" class="my-4">
                     <v-card-item>
                         <v-card-title class="text-subtitle-1">{{ t('SystemSettingsView.signing.title') }}</v-card-title>
                         <v-card-subtitle class="text-wrap">{{ t('SystemSettingsView.signing.hint') }}</v-card-subtitle>
@@ -260,8 +260,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, h } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick, h } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { VIcon, VTextField, VTooltip } from 'vuetify/components'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
@@ -271,6 +272,7 @@ import * as toasts from '@/core/utils/toasts.js'
 import * as alerts from '@/core/utils/alerts.js'
 
 const { t, te } = useI18n()
+const route = useRoute()
 const store = oserpStore()
 
 /**
@@ -510,7 +512,14 @@ const FeldHilfe = (props) => h(VTooltip, { location: 'top', maxWidth: 360 }, {
 })
 FeldHilfe.props = { text: String }
 
-onMounted(laden)
+onMounted(async () => {
+    await laden()
+    // Sprung aus Kundenportal und Verkaufskanal („Schlüssel jetzt erzeugen“)
+    if (route.hash) {
+        await nextTick()
+        document.querySelector(route.hash)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+})
 </script>
 
 <style scoped>

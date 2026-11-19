@@ -1131,6 +1131,7 @@
         "shopSigningKey_help": "Wpisz go w HugoCMS w ustawieniach projektu → rozszerzenie sklepu. Wtedy uruchomienie samo przeniesie pośrednika i stronę 404. Dotyczy wszystkich HugoShopów.",
         "shopSigningKeyCopy": "Kopiuj klucz",
         "shopSigningKeyMissing": "Brak jeszcze klucza podpisu. Administrator systemu tworzy go w ustawieniach systemu (Rozszerzenie sklepu: klucz podpisu).",
+        "shopSigningKeyOpen": "Utwórz klucz teraz",
         "shopHugoCmsSignedReady": "Uruchomienie przenosi pośrednika i stronę 404 podpisane.",
         "shopHugoCmsSignedMissing": "HugoCMS nie zna jeszcze klucza podpisu OpensourceERP — pośrednika i stronę 404 trzeba umieścić na serwerze WWW ręcznie.",
         "shopHugoCmsSignedNoKey": "Bez klucza podpisu w OpensourceERP pośrednika i stronę 404 trzeba umieścić na serwerze WWW ręcznie.",
