@@ -290,21 +290,26 @@ SELECT 'shop_dropshipping_default', '1'
 -- in den Quelltabellen der Lieferanten (Spalte marketing, JSON mit summery
 -- oder summary und description); ihre Veröffentlichung setzt sie in die
 -- Produktseite. In der Erweiterung ist das die Beschreibung des Artikels im
--- HugoShop (parts_channel_shop.description) — ein Text: der erste Absatz ist
--- die Zusammenfassung, der Rest die Beschreibung. So liest ihn der
--- Vorlagensatz des Shops (solarSparTexte in backend/templates/shop/solar-spar).
+-- HugoShop (parts_channel_shop.description) — ein Text: die Zusammenfassung,
+-- eine Trennlinie (<hr>), die Beschreibung. So liest ihn der Vorlagensatz des
+-- Shops (solarSparTexte in backend/templates/shop/solar-spar). Fehlt die
+-- Zusammenfassung, steht die Beschreibung ohne Trennlinie — die Bridge zeigte
+-- sie dann ganz an der Stelle der Zusammenfassung, der Reiter blieb leer.
 --
 -- Umgeformt wie in publish/main.php: Absätze der Beschreibung an Leerzeilen,
--- einfache Zeilenwechsel als <br />. Fehlt die Zusammenfassung, steht die
--- Beschreibung allein. Unlesbares JSON wird übergangen.
+-- einfache Zeilenwechsel als <br />. Unlesbares JSON wird übergangen.
 --
 -- Nur, wo der Artikel im HugoShop noch keine Beschreibung hat — eine
--- Wiederholung überschreibt nichts, was inzwischen bearbeitet wurde. Anders
+-- Wiederholung überschreibt nichts, was inzwischen bearbeitet wurde.
+-- Ausnahme: Texte in einer der beiden früheren Formen vom 18. und 19.11.2026
+-- werden ersetzt, solange sie unverändert sind (p_form bildet sie zum
+-- Vergleich nach: 1 = erster Absatz als Zusammenfassung, ohne Trennlinie;
+-- 2 = mit Trennlinie, aber Zeilenwechsel am Absatzende als <br />). Anders
 -- als die übrigen Schritte nicht auf die in diesem Lauf übernommenen Artikel
 -- begrenzt: der Schritt kam am 18.11.2026 dazu und holt auch für früher
 -- übernommene Artikel nach.
 
-CREATE FUNCTION pg_temp.bridge_marketing(p_text text) RETURNS text LANGUAGE plpgsql AS $fn$
+CREATE FUNCTION pg_temp.bridge_marketing(p_text text, p_form integer DEFAULT 0) RETURNS text LANGUAGE plpgsql AS $fn$
 DECLARE
     m    jsonb;
     kurz text := '';
@@ -327,11 +332,22 @@ BEGIN
     END IF;
 
     IF jsonb_typeof(m -> 'description') = 'string' THEN
-        roh := btrim(regexp_replace(m ->> 'description', E'\r\n|\r', E'\n', 'g'));
-        SELECT string_agg('<p>' || replace(btrim(a.absatz), E'\n', E'<br />\n') || '</p>', '' ORDER BY a.nr)
-          INTO lang
-          FROM regexp_split_to_table(roh, E'\n\n') WITH ORDINALITY AS a(absatz, nr)
-         WHERE btrim(a.absatz) <> '';
+        IF p_form > 0 THEN
+            roh := btrim(regexp_replace(m ->> 'description', E'\r\n|\r', E'\n', 'g'));
+            SELECT string_agg('<p>' || replace(btrim(a.absatz), E'\n', E'<br />\n') || '</p>', '' ORDER BY a.nr)
+              INTO lang
+              FROM regexp_split_to_table(roh, E'\n\n') WITH ORDINALITY AS a(absatz, nr)
+             WHERE btrim(a.absatz) <> '';
+        ELSE
+            -- wie trim() und nl2br() in PHP: Leerraum samt Zeilenwechsel am
+            -- Rand jedes Absatzes weg; leere Absätze bleiben stehen
+            roh := regexp_replace(btrim(m ->> 'description', E' \t\n\r\x0B'), E'\r\n|\r', E'\n', 'g');
+            IF roh <> '' THEN
+                SELECT string_agg('<p>' || replace(btrim(a.absatz, E' \t\n\r\x0B'), E'\n', E'<br />\n') || '</p>', '' ORDER BY a.nr)
+                  INTO lang
+                  FROM regexp_split_to_table(roh, E'\n\n') WITH ORDINALITY AS a(absatz, nr);
+            END IF;
+        END IF;
     ELSIF jsonb_typeof(m -> 'description') = 'array' THEN
         SELECT string_agg(e.wert #>> '{}', '' ORDER BY e.nr) INTO roh
           FROM jsonb_array_elements(m -> 'description') WITH ORDINALITY AS e(wert, nr)
@@ -348,7 +364,10 @@ BEGIN
     IF kurz = '' THEN
         RETURN NULLIF(lang, '');
     END IF;
-    RETURN '<p>' || kurz || '</p>' || lang;
+    IF p_form = 1 THEN
+        RETURN '<p>' || kurz || '</p>' || lang;
+    END IF;
+    RETURN kurz || CASE WHEN lang <> '' THEN '<hr>' || lang ELSE '' END;
 END
 $fn$;
 
@@ -366,7 +385,9 @@ BEGIN
                                AND c.column_name = 'marketing') LOOP
         EXECUTE format($sql$
             WITH texte AS (
-                SELECT DISTINCT ON (p.id) p.id AS parts_id, pg_temp.bridge_marketing(s.marketing::text) AS text
+                SELECT DISTINCT ON (p.id) p.id AS parts_id, pg_temp.bridge_marketing(s.marketing::text) AS text,
+                       pg_temp.bridge_marketing(s.marketing::text, 1) AS form1,
+                       pg_temp.bridge_marketing(s.marketing::text, 2) AS form2
                   FROM %I s
                   JOIN parts p ON p.partnumber = %L || s.number
                  WHERE s.marketing IS NOT NULL
@@ -377,7 +398,8 @@ BEGIN
                   FROM texte t
                  WHERE pc.parts_id = t.parts_id
                    AND pc.channel_id = shop_first_channel_id('hugoshop')
-                   AND btrim(COALESCE(pc.description, '')) = ''
+                   AND (btrim(COALESCE(pc.description, '')) = ''
+                        OR (pc.description IN (t.form1, t.form2) AND pc.description <> t.text))
                    AND t.text IS NOT NULL
                 RETURNING pc.parts_id
             )

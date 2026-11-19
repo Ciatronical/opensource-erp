@@ -95,7 +95,21 @@
   Seiten. Die Shop-Seiten (Warenkorb, Kasse, Rechnung) bleiben, wie sie sind. Ohne
   Fassung der Sprache und in der Hauptsprache ändert sich nichts.
 */ -}}
-{{- if and (gt (len hugo.Sites) 1) (ne site.Language.Lang hugo.Sites.Default.Language.Lang) (site.GetPage "/kundenportal/anmelden") -}}
+{{- /*
+  Hauptsprache je nach Hugo-Fassung: hugo.Sites gibt es ab 0.156, davor
+  site.Languages und site.Sites (dort abgekündigt). Der nicht zutreffende
+  Zweig wird nicht ausgeführt — kein Fehler, keine Warnung.
+*/ -}}
+{{- $mehrsprachig := false -}}
+{{- $hauptsprache := site.Language.Lang -}}
+{{- if ge hugo.Version "0.156.0" -}}
+  {{- $mehrsprachig = gt (len hugo.Sites) 1 -}}
+  {{- $hauptsprache = hugo.Sites.Default.Language.Lang -}}
+{{- else -}}
+  {{- $mehrsprachig = gt (len site.Languages) 1 -}}
+  {{- if $mehrsprachig }}{{ $hauptsprache = (index site.Sites 0).Language.Lang }}{{ end -}}
+{{- end -}}
+{{- if and $mehrsprachig (ne site.Language.Lang $hauptsprache) (site.GetPage "/kundenportal/anmelden") -}}
   {{- $vorsatz := printf "/%s" site.Language.Lang -}}
   {{- $lokal := dict -}}
   {{- range $key, $value := $pages -}}
