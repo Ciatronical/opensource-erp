@@ -179,6 +179,26 @@
         "zoneNoPolygon": "Nie zdefiniowano obszaru",
         "zoneAdd": "Dodaj strefę",
         "zoneNewName": "Nazwa nowej strefy",
-        "zonesSaved": "Strefy zapisane"
+        "zonesSaved": "Strefy zapisane",
+
+    "archive": "Nagrania",
+    "recDate": "Data",
+    "recShow": "Pokaż",
+    "recTimeline": "Oś czasu",
+    "recTimelineHint": "Kliknięcie w ścieżkę przeskakuje do tej godziny",
+    "recSummary": "{count} nagrań · {duration} materiału",
+    "recNoneTitle": "Brak nagrań w tym okresie",
+    "recNoneHint": "Nagrywanie odbywa się tylko wtedy, gdy kamera wykryje obiekt. Wybierz inny okres lub inną kamerę.",
+    "recInvalidRange": "Podaj datę i prawidłowy okres (Do musi być po Od).",
+    "recLoadError": "Nie udało się wczytać nagrań",
+    "recPlayError": "Nagrań nie można odtworzyć",
+    "recPrev": "Poprzednie nagranie",
+    "recNext": "Następne nagranie",
+    "recSpeed": "Prędkość odtwarzania",
+    "recAutoNext": "Odtwarzaj nagrania jedno po drugim",
+    "recDownload": "Pobierz nagranie",
+    "recSoloHint": "Odtwarzaj tylko tę kamerę",
+    "recPosition": "{index} z {total}",
+    "recPickClip": "Wybierz nagranie na osi czasu lub na liście"
     }
 }

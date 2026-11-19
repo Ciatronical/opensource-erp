@@ -168,6 +168,24 @@ function getCV($data, $withConfig = []) {
     $deliveryOrderType  = $isVendor ? 'purchase_delivery_order' : 'sales_delivery_order';
     $reclamationType    = $isVendor ? 'purchase_reclamation'    : 'sales_reclamation';
 
+    // Spalte „Status“ der Belegkarte: Versand-Kurzfassung je Beleg (record_sent_summary,
+    // Upstall crm). Die Funktion gibt es erst nach dem Schema-Update der Firma — ein
+    // unbekannter Funktionsname scheitert schon beim Parsen, deshalb vorher prüfen
+    // und ohne sie „nichts versendet“ liefern.
+    $hasSentSummary = !empty($mandant->getOne(
+        "SELECT to_regprocedure('record_sent_summary(text,integer)') IS NOT NULL AS ok"
+    )['ok']);
+    $sentSummary = fn(string $table, string $idExpr) => $hasSentSummary
+        ? "record_sent_summary('{$table}', {$idExpr})"
+        : "'[]'::json";
+    // Mahnstufe gibt es nur bei Ausgangsrechnungen (ar.dunning_config_id)
+    $dunningLevelSql = $isVendor
+        ? 'NULL::integer'
+        : '(SELECT dc.dunning_level FROM dunning_config dc WHERE dc.id = inv.dunning_config_id)';
+    $dunningDescriptionSql = $isVendor
+        ? 'NULL::text'
+        : '(SELECT dc.dunning_description FROM dunning_config dc WHERE dc.id = inv.dunning_config_id)';
+
     // LxCars: Kennzeichen des Fahrzeugs ueber record_links auf den referenzierten
     // Auftrag/Rechnung aufloesen. Ohne LxCars leeren String liefern (Spalte wird
     // dann im Frontend ausgeblendet).
@@ -535,6 +553,19 @@ function getCV($data, $withConfig = []) {
                                                 'amount', oe.amount,
                                                 'currency', c.name,
                                                 'number', oe.quonumber,
+                                                -- Status: aus dem Angebot wurde ein Auftrag (record_links
+                                                -- oe → oe) oder direkt eine Rechnung, sonst erledigt,
+                                                -- abgelaufen (Gültigkeit reqdate überschritten) oder offen
+                                                'state', CASE WHEN follow.id IS NOT NULL THEN 'ordered'
+                                                              WHEN (inv.js->>'state') = 'invoiced' THEN 'invoiced'
+                                                              WHEN oe.closed THEN 'closed'
+                                                              WHEN oe.reqdate < current_date THEN 'expired'
+                                                              ELSE 'open' END,
+                                                'valid_until', to_char(oe.reqdate, 'DD.MM.YYYY'),
+                                                'follow_order', CASE WHEN follow.id IS NOT NULL
+                                                                     THEN json_build_object('id', follow.id, 'number', follow.ordnumber) END,
+                                                'invoice_status', inv.js,
+                                                'sent', {$sentSummary('oe', 'oe.id')},
                                                 'id', oe.id
                                             ) AS obj
                                         FROM oe
@@ -546,7 +577,17 @@ function getCV($data, $withConfig = []) {
                                             ORDER BY oi.position
                                             LIMIT 1
                                         ) AS firstpos ON TRUE
-                                        WHERE record_type = '{$quotationType}' AND {$cvForeignKey} = $cv_id
+                                        LEFT JOIN LATERAL (
+                                            SELECT o2.id, o2.ordnumber
+                                            FROM record_links rl
+                                            JOIN oe o2 ON o2.id = rl.to_id
+                                                      AND o2.record_type IN ('sales_order', 'sales_order_intake', 'purchase_order')
+                                            WHERE rl.from_table = 'oe' AND rl.from_id = oe.id AND rl.to_table = 'oe'
+                                            ORDER BY o2.id DESC
+                                            LIMIT 1
+                                        ) AS follow ON TRUE
+                                        CROSS JOIN LATERAL (SELECT oe_invoice_status(oe.id) AS js OFFSET 0) AS inv
+                                        WHERE oe.record_type = '{$quotationType}' AND oe.{$cvForeignKey} = $cv_id
                                     ) AS t
                                 ),
                             'orders',
@@ -564,6 +605,9 @@ function getCV($data, $withConfig = []) {
                                                 'record_type', oe.record_type,
                                                 'license_plate', {$kennzeichenForOrder},
                                                 'invoice_status', oe_invoice_status(oe.id),
+                                                'closed', oe.closed,
+                                                'delivered', oe.delivered,
+                                                'sent', {$sentSummary('oe', 'oe.id')},
                                                 -- offene KI-Vorschläge zur Bestätigung (Zusage/Absage erkannt)
                                                 'confirmation_suggestions', (SELECT count(*) FROM oe_confirmation_oserp s
                                                                               WHERE s.oe_id = oe.id AND s.status = 'suggested'),
@@ -591,7 +635,21 @@ function getCV($data, $withConfig = []) {
                                                 'number', inv.invnumber,
                                                 'id', inv.id,
                                                 'type', inv.type,
-                                                'storno', inv.storno
+                                                'storno', inv.storno,
+                                                -- Zahlungsstatus: bezahlt | überfällig | Teilzahlung | offen
+                                                -- (Storno und Gegenbeleg zeigt die Spalte „Art“)
+                                                'payment_state', CASE WHEN COALESCE(inv.storno, FALSE) THEN 'storno'
+                                                                      WHEN abs(inv.amount - inv.paid) < 0.005 THEN 'paid'
+                                                                      WHEN inv.duedate < current_date THEN 'overdue'
+                                                                      WHEN inv.paid <> 0 THEN 'partial'
+                                                                      ELSE 'open' END,
+                                                'paid', inv.paid,
+                                                'open_amount', inv.amount - inv.paid,
+                                                'duedate', to_char(inv.duedate, 'DD.MM.YYYY'),
+                                                'overdue_days', GREATEST(current_date - inv.duedate, 0),
+                                                'dunning_level', {$dunningLevelSql},
+                                                'dunning_description', {$dunningDescriptionSql},
+                                                'sent', {$sentSummary($invoiceTable, 'inv.id')}
                                             ) AS obj
                                         FROM {$invoiceTable} inv
                                         LEFT JOIN currencies c ON c.id = inv.currency_id
@@ -619,6 +677,7 @@ function getCV($data, $withConfig = []) {
                                                 'closed', dlo.closed,
                                                 'delivered', dlo.delivered,
                                                 'id', dlo.id,
+                                                'sent', {$sentSummary('delivery_orders', 'dlo.id')},
                                                 'license_plate', {$kennzeichenForDeliveryOrder}
                                             ) AS obj
                                         FROM delivery_orders dlo
@@ -648,6 +707,7 @@ function getCV($data, $withConfig = []) {
                                                 'closed', rec.closed,
                                                 'delivered', rec.delivered,
                                                 'id', rec.id,
+                                                'sent', {$sentSummary('reclamations', 'rec.id')},
                                                 'license_plate', {$kennzeichenForReclamation}
                                             ) AS obj
                                         FROM reclamations rec

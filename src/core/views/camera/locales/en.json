@@ -200,6 +200,26 @@
         "zoneNoPolygon": "No area defined",
         "zoneAdd": "Add zone",
         "zoneNewName": "Name of new zone",
-        "zonesSaved": "Zones saved"
+        "zonesSaved": "Zones saved",
+
+    "archive": "Recordings",
+    "recDate": "Date",
+    "recShow": "Show",
+    "recTimeline": "Timeline",
+    "recTimelineHint": "Click a track to jump to that time",
+    "recSummary": "{count} recordings · {duration} of footage",
+    "recNoneTitle": "No recordings in this period",
+    "recNoneHint": "Recording only happens when a camera detects an object. Choose a different period or camera.",
+    "recInvalidRange": "Please enter a date and a valid period (To must be after From).",
+    "recLoadError": "Recordings could not be loaded",
+    "recPlayError": "The recordings cannot be played",
+    "recPrev": "Previous recording",
+    "recNext": "Next recording",
+    "recSpeed": "Playback speed",
+    "recAutoNext": "Play recordings one after another",
+    "recDownload": "Download recording",
+    "recSoloHint": "Play this camera only",
+    "recPosition": "{index} of {total}",
+    "recPickClip": "Choose a recording in the timeline or list"
     }
 }

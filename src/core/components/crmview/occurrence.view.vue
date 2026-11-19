@@ -73,7 +73,7 @@
             <v-tabs-window-item value="offers">
                 <v-data-table
                     v-model="selection.offers"
-                    :headers="baseHeaders"
+                    :headers="offersHeaders"
                     :items="offers"
                     :search="searchText"
                     show-select
@@ -88,6 +88,56 @@
                     <!-- Beschreibung nimmt den Restplatz, höchstens zwei Zeilen, voller Text als Tooltip -->
                     <template #item.description="{ value }">
                         <div class="desc-clamp" :title="value">{{ value }}</div>
+                    </template>
+                    <!-- Status: was aus dem Angebot wurde, dahinter der Versand -->
+                    <template #item.status="{ item }">
+                        <div class="status-cell">
+                            <v-chip
+                                v-if="item.state === 'ordered'"
+                                size="x-small"
+                                variant="tonal"
+                                color="success"
+                                prepend-icon="mdi-clipboard-check-outline"
+                                :title="t('CrmView.openOrder', { number: item.follow_order.number })"
+                                @click.stop="navigateTo('faktura-order-view', item.follow_order.id)"
+                            >
+                                {{ item.follow_order.number }}
+                            </v-chip>
+                            <v-chip
+                                v-else-if="item.state === 'invoiced'"
+                                size="x-small"
+                                variant="tonal"
+                                color="success"
+                                prepend-icon="mdi-file-document-check-outline"
+                                :title="t('CrmView.openInvoice', { number: invoiceOf(item).number })"
+                                @click.stop="openInvoice(invoiceOf(item))"
+                            >
+                                {{ invoiceOf(item).number }}
+                            </v-chip>
+                            <v-chip v-else-if="item.state === 'closed'" size="x-small" variant="tonal" color="grey">
+                                {{ t('CrmView.statusClosed') }}
+                            </v-chip>
+                            <v-chip
+                                v-else-if="item.state === 'expired'"
+                                size="x-small"
+                                variant="tonal"
+                                color="warning"
+                                prepend-icon="mdi-timer-sand-complete"
+                                :title="t('CrmView.validUntil', { date: item.valid_until })"
+                            >
+                                {{ t('CrmView.statusExpired') }}
+                            </v-chip>
+                            <v-chip
+                                v-else
+                                size="x-small"
+                                variant="tonal"
+                                color="info"
+                                :title="item.valid_until ? t('CrmView.validUntil', { date: item.valid_until }) : undefined"
+                            >
+                                {{ t('CrmView.statusOpen') }}
+                            </v-chip>
+                            <occurrence-sent :sent="item.sent" :show-unsent="!isVendor && item.state === 'open'" />
+                        </div>
                     </template>
                     <template #item.amount="{ item }">
                         {{ formatNumber(item.amount, locale, 2) }} {{ item.currency }}
@@ -142,8 +192,9 @@
                             mdi-clock-outline
                         </v-icon>
                     </template>
-                    <!-- Rechnung aus dem Auftrag — Klick öffnet sie -->
+                    <!-- Status: Rechnung aus dem Auftrag (Klick öffnet sie), dahinter der Versand -->
                     <template #item.invoice="{ item }">
+                      <div class="status-cell">
                         <v-chip
                             v-if="invoiceState(item) === 'invoiced'"
                             size="x-small"
@@ -158,7 +209,9 @@
                         <v-chip v-else-if="invoiceState(item) === 'storno'" size="x-small" variant="tonal" color="error" prepend-icon="mdi-file-document-remove-outline">
                             {{ t('CrmView.invoiceStorno') }}
                         </v-chip>
-                        <span v-else class="text-caption text-medium-emphasis text-no-wrap">{{ t('CrmView.noInvoice') }}</span>
+                        <span v-else class="text-caption text-medium-emphasis text-no-wrap">{{ t('CrmView.noInvoiceYet') }}</span>
+                        <occurrence-sent :sent="item.sent" />
+                      </div>
                     </template>
                     <template #item.amount="{ item }">
                         {{ formatNumber(item.amount, locale, 2) }} {{ item.currency }}
@@ -186,17 +239,35 @@
                         <div class="desc-clamp" :title="value">{{ value }}</div>
                     </template>
                     <template #item.status="{ item }">
-                        <v-chip v-if="item.closed" color="grey" size="x-small" variant="flat">{{ t('CrmView.statusClosed') }}</v-chip>
-                        <v-chip v-else-if="item.delivered" color="success" size="x-small" variant="flat">{{ t('CrmView.statusDelivered') }}</v-chip>
-                        <v-chip v-else color="warning" size="x-small" variant="flat">{{ t('CrmView.statusOpen') }}</v-chip>
+                        <div class="status-cell">
+                            <v-chip v-if="item.closed" color="grey" size="x-small" variant="tonal">{{ t('CrmView.statusClosed') }}</v-chip>
+                            <v-chip v-else-if="item.delivered" color="success" size="x-small" variant="tonal">{{ t('CrmView.statusDelivered') }}</v-chip>
+                            <v-chip v-else color="warning" size="x-small" variant="tonal">{{ t('CrmView.statusOpen') }}</v-chip>
+                            <occurrence-sent :sent="item.sent" />
+                        </div>
                     </template>
                 </v-data-table>
             </v-tabs-window-item>
             <v-tabs-window-item value="invoices">
+                <!-- Offene Posten auf einen Blick, Klick filtert darauf -->
+                <div v-if="invoiceFilters.length" class="d-flex flex-wrap align-center ga-2 px-3 pt-2">
+                    <v-chip
+                        v-for="f in invoiceFilters"
+                        :key="f.key"
+                        size="small"
+                        :color="f.color"
+                        :variant="invoiceFilter === f.key ? 'flat' : 'tonal'"
+                        :prepend-icon="invoiceFilter === f.key ? 'mdi-filter-check' : f.icon"
+                        :title="f.hint"
+                        @click="invoiceFilter = invoiceFilter === f.key ? null : f.key"
+                    >
+                        {{ f.label }}
+                    </v-chip>
+                </div>
                 <v-data-table
                     v-model="selection.invoices"
                     :headers="invoicesHeaders"
-                    :items="invoices"
+                    :items="invoicesShown"
                     :search="searchText"
                     show-select
                     return-object
@@ -212,9 +283,34 @@
                     <template #item.description="{ value }">
                         <div class="desc-clamp" :title="value">{{ value }}</div>
                     </template>
-                    <template #item.kind="{ item }">
-                        <v-chip v-if="isStorno(item)" color="error" size="x-small" variant="flat">{{ t('CrmView.storno') }}</v-chip>
-                        <v-chip v-else-if="isCreditNote(item)" color="warning" size="x-small" variant="flat">{{ t('CrmView.creditNote') }}</v-chip>
+                    <!-- Status: Art (Storno/Gutschrift), Zahlung, Mahnstufe, dahinter der Versand -->
+                    <template #item.status="{ item }">
+                        <div class="status-cell">
+                            <v-chip v-if="isStorno(item)" color="error" size="x-small" variant="flat">{{ t('CrmView.storno') }}</v-chip>
+                            <template v-else>
+                                <v-chip v-if="isCreditNote(item)" color="warning" size="x-small" variant="flat">{{ t('CrmView.creditNote') }}</v-chip>
+                                <v-chip
+                                    size="x-small"
+                                    variant="tonal"
+                                    :color="paymentMeta(item).color"
+                                    :prepend-icon="paymentMeta(item).icon"
+                                    :title="paymentTitle(item)"
+                                >
+                                    {{ t(paymentMeta(item).label) }}
+                                </v-chip>
+                                <v-chip
+                                    v-if="item.dunning_level > 0"
+                                    size="x-small"
+                                    variant="flat"
+                                    color="error"
+                                    prepend-icon="mdi-bell-alert-outline"
+                                    :title="item.dunning_description || t('CrmView.dunningLevel', { n: item.dunning_level })"
+                                >
+                                    {{ item.dunning_level }}
+                                </v-chip>
+                            </template>
+                            <occurrence-sent :sent="item.sent" :show-unsent="!isVendor && !isStorno(item)" />
+                        </div>
                     </template>
                     <template #item.amount="{ item }">
                         {{ formatNumber(item.amount, locale, 2) }} {{ item.currency }}
@@ -241,8 +337,11 @@
                         <div class="desc-clamp" :title="value">{{ value }}</div>
                     </template>
                     <template #item.status="{ item }">
-                        <v-chip v-if="item.closed" color="grey" size="x-small" variant="flat">{{ t('CrmView.statusClosed') }}</v-chip>
-                        <v-chip v-else color="warning" size="x-small" variant="flat">{{ t('CrmView.statusOpen') }}</v-chip>
+                        <div class="status-cell">
+                            <v-chip v-if="item.closed" color="grey" size="x-small" variant="tonal">{{ t('CrmView.statusClosed') }}</v-chip>
+                            <v-chip v-else color="warning" size="x-small" variant="tonal">{{ t('CrmView.statusOpen') }}</v-chip>
+                            <occurrence-sent :sent="item.sent" />
+                        </div>
                     </template>
                     <template #item.amount="{ item }">
                         {{ formatNumber(item.amount, locale, 2) }} {{ item.currency }}
@@ -327,6 +426,7 @@ import axios from 'axios'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { formatNumber } from '@/core/utils/numberFormat.js'
 import * as toasts from '@/core/utils/toasts.js'
+import OccurrenceSent from './occurrence.sent.component.vue'
 
 const props = defineProps({
     // Volltextfilter aus der uebergeordneten "Vorgaenge"-Kopfzeile
@@ -356,6 +456,64 @@ const openInvoice = (inv) => {
     if (inv?.id) router.push({ name: 'faktura-invoice-view', params: { id: inv.id } });
 };
 const invoices = computed(() => oserpData.customer_vendor?.invoices || []);
+
+// Zahlungsstatus je Rechnung (payment_state aus getCV: paid | overdue | partial | open | storno)
+const PAYMENT_META = {
+    paid:    { color: 'success', icon: 'mdi-check',              label: 'CrmView.paymentPaid',    rank: 3 },
+    partial: { color: 'warning', icon: 'mdi-circle-half-full',   label: 'CrmView.paymentPartial', rank: 1 },
+    overdue: { color: 'error',   icon: 'mdi-alert-circle-outline', label: 'CrmView.paymentOverdue', rank: 0 },
+    open:    { color: 'info',    icon: 'mdi-clock-outline',      label: 'CrmView.statusOpen',     rank: 2 },
+};
+// Eine Gutschrift wird ausgezahlt oder verrechnet — „überfällig“ gibt es bei ihr nicht
+const paymentState = (item) => (isCreditNote(item) && item.payment_state === 'overdue') ? 'open' : item.payment_state;
+const paymentMeta = (item) => PAYMENT_META[paymentState(item)] || PAYMENT_META.open;
+const isUnpaid = (item) => ['open', 'partial', 'overdue'].includes(item.payment_state);
+const paymentTitle = (item) => {
+    if (!isUnpaid(item)) return undefined;
+    const parts = [];
+    if (paymentState(item) === 'overdue') parts.push(t('CrmView.overdueDays', { n: item.overdue_days }));
+    else if (item.duedate) parts.push(t('CrmView.dueOn', { date: item.duedate }));
+    parts.push(t('CrmView.openAmount', { amount: `${formatNumber(item.open_amount, locale.value, 2)} ${item.currency || ''}`.trim() }));
+    return parts.join(' · ');
+};
+
+// Filter-Chips über der Rechnungsliste: offen (mit Summe), überfällig, nicht versendet
+const invoiceFilter = ref(null);
+const invoiceMatches = {
+    unpaid:  (item) => isUnpaid(item),
+    overdue: (item) => paymentState(item) === 'overdue',
+    unsent:  (item) => !isStorno(item) && !(item.sent?.length),
+};
+const invoiceFilters = computed(() => {
+    const list = invoices.value;
+    const unpaid = list.filter(invoiceMatches.unpaid);
+    const overdue = list.filter(invoiceMatches.overdue);
+    const unsent = isVendor.value ? [] : list.filter(invoiceMatches.unsent);
+    const sum = unpaid.reduce((acc, item) => acc + Number(item.open_amount || 0), 0);
+    const filters = [];
+    if (unpaid.length) filters.push({
+        key: 'unpaid', color: 'info', icon: 'mdi-cash-clock',
+        label: t('CrmView.filterUnpaid', { n: unpaid.length, amount: `${formatNumber(sum, locale.value, 2)} ${unpaid[0].currency || ''}`.trim() }),
+        hint: t('CrmView.filterUnpaidHint'),
+    });
+    if (overdue.length) filters.push({
+        key: 'overdue', color: 'error', icon: 'mdi-alert-circle-outline',
+        label: t('CrmView.filterOverdue', { n: overdue.length }),
+        hint: t('CrmView.filterOverdueHint'),
+    });
+    if (unsent.length) filters.push({
+        key: 'unsent', color: 'warning', icon: 'mdi-send-clock-outline',
+        label: t('CrmView.filterUnsent', { n: unsent.length }),
+        hint: t('CrmView.filterUnsentHint'),
+    });
+    return filters;
+});
+// Trifft der gewählte Filter nichts mehr (Chip verschwunden), gilt er als aus
+const invoicesShown = computed(() => invoiceFilters.value.some(f => f.key === invoiceFilter.value)
+    ? invoices.value.filter(invoiceMatches[invoiceFilter.value])
+    : invoices.value);
+// Beim Wechsel des Kunden den Filter zurücksetzen
+watch(invoices, () => { invoiceFilter.value = null; });
 const deliveryOrders = computed(() => oserpData.customer_vendor?.delivery_orders || []);
 const reclamations = computed(() => oserpData.customer_vendor?.reclamations || []);
 
@@ -380,20 +538,24 @@ watch(occurrenceTab, (val) => {
 // Beschreibung: einzige Spalte, die wachsen und umbrechen darf (CSS .col-description)
 const descriptionHeader = { title: t('CrmView.description'), key: 'description', sortable: false, cellProps: { class: 'col-description' } };
 
-// Basis-Headers für Angebote
-const baseHeaders = [
+// Angebote: Status = was daraus wurde (Auftrag/Rechnung, geschlossen, abgelaufen, offen) + Versand.
+// Sortierung: offene zuerst, dann abgelaufene, dann erledigte.
+const OFFER_RANK = { open: 0, expired: 1, ordered: 2, invoiced: 2, closed: 3 };
+const offersHeaders = [
     { title: t('CrmView.number'), key: 'number', sortable: true },
     { title: t('CrmView.date'), key: 'date', sortable: true },
     descriptionHeader,
+    { title: t('CrmView.status'), key: 'status', value: item => OFFER_RANK[item.state] ?? 0, sortable: true },
     { title: t('CrmView.amount'), key: 'amount', sortable: true, align: 'end' }
 ];
 
-// Rechnungen mit zusätzlicher Spalte "Art" für Gutschrift/Storno-Kennzeichnung
+// Rechnungen: Status = Art (Storno/Gutschrift), Zahlung, Mahnstufe + Versand.
+// Sortierung: überfällige zuerst, dann Teilzahlung, offen, bezahlt, Storno.
 const invoicesHeaders = [
     { title: t('CrmView.number'), key: 'number', sortable: true },
     { title: t('CrmView.date'), key: 'date', sortable: true },
     descriptionHeader,
-    { title: '', key: 'kind', sortable: false, align: 'center', width: '90px' },
+    { title: t('CrmView.status'), key: 'status', value: item => isStorno(item) ? 4 : paymentMeta(item).rank, sortable: true },
     { title: t('CrmView.amount'), key: 'amount', sortable: true, align: 'end' }
 ];
 
@@ -409,7 +571,7 @@ const ordersHeaders = computed(() => {
     }
     cols.push(
         // Sortierung nach der Rechnungsnummer — Aufträge ohne Rechnung stehen zusammen
-        { title: t('CrmView.invoice'), key: 'invoice', value: item => invoiceOf(item)?.number || '', sortable: true, align: 'center' },
+        { title: t('CrmView.status'), key: 'invoice', value: item => invoiceOf(item)?.number || '', sortable: true },
         { title: t('CrmView.confirmed'), key: 'record_type', sortable: true, align: 'center' },
         { title: t('CrmView.amount'), key: 'amount', sortable: true, align: 'end' }
     );
@@ -426,7 +588,7 @@ const deliveryOrdersHeaders = computed(() => {
     if (lxCarsEnabled.value) {
         cols.push({ title: t('CrmView.licensePlate'), key: 'license_plate', sortable: true });
     }
-    cols.push({ title: t('CrmView.status'), key: 'status', sortable: false, align: 'center', width: '100px' });
+    cols.push({ title: t('CrmView.status'), key: 'status', sortable: false });
     return cols;
 });
 
@@ -441,7 +603,7 @@ const reclamationsHeaders = computed(() => {
         cols.push({ title: t('CrmView.licensePlate'), key: 'license_plate', sortable: true });
     }
     cols.push(
-        { title: t('CrmView.status'), key: 'status', sortable: false, align: 'center', width: '100px' },
+        { title: t('CrmView.status'), key: 'status', sortable: false },
         { title: t('CrmView.amount'), key: 'amount', sortable: true, align: 'end' }
     );
     return cols;
@@ -671,6 +833,13 @@ async function exportSelected() {
        innerhalb der Tabelle scrollen als „Fehlerdiagno|se“ zu zeigen */
     min-width: 9em;
     white-space: normal;
+}
+
+/* Statuszelle: Chips und Versand-Symbole in einer Zeile */
+.status-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--oserp-gap-xs);
 }
 
 .desc-clamp {

@@ -361,6 +361,97 @@ function getEvents($data) {
 }
 
 /**
+ * Aufzeichnungen (Clips) eines Zeitraums für die Wiedergabe laden
+ *
+ * Liefert je Kamera die Clips chronologisch. Ereignisse, deren Zeitspanne
+ * vollständig in einem anderen Ereignis derselben Kamera liegt (mehrere
+ * Objekte in derselben Szene), werden zu einem Eintrag zusammengefasst —
+ * sonst liefe dieselbe Szene mehrfach hintereinander.
+ *
+ * @param string $data['date_from'] Beginn, Serverzeit (YYYY-MM-DD HH:MM)
+ * @param string $data['date_to'] Ende, Serverzeit (YYYY-MM-DD HH:MM)
+ * @param int $data['camera_id'] Nur diese Kamera (optional)
+ * @param string $data['label'] Nur dieser Objekttyp (optional)
+ * @testdata {"date_from": "2026-11-16 08:00", "date_to": "2026-11-16 14:00"}
+ */
+function getRecordings($data) {
+    $db = DbhCompany::begin();
+
+    $pattern = '/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?$/';
+    if (!preg_match($pattern, (string)($data['date_from'] ?? '')) ||
+        !preg_match($pattern, (string)($data['date_to'] ?? ''))) {
+        resultInfo(false, 'INVALID_RANGE', 'date_from/date_to fehlen oder sind ungültig');
+        return;
+    }
+
+    $where = '';
+    $params = [':date_from' => $data['date_from'], ':date_to' => $data['date_to']];
+    if (!empty($data['camera_id'])) {
+        $where .= ' AND e.camera_id = :camera_id';
+        $params[':camera_id'] = (int)$data['camera_id'];
+    }
+    if (!empty($data['label'])) {
+        $where .= ' AND e.label = :label';
+        $params[':label'] = $data['label'];
+    }
+
+    // Ein Clip ist höchstens 2 Minuten lang (MAX_CLIP_DURATION im
+    // camera-monitor); der Vorlauf von 10 Minuten hält den Index auf
+    // started_at nutzbar und erfasst trotzdem Clips, die in den Zeitraum
+    // hineinragen.
+    $recordings = $db->getAll("
+        WITH p AS (
+            SELECT CAST(:date_from AS timestamp) AS t_from,
+                   CAST(:date_to AS timestamp) AS t_to
+        ),
+        ev AS (
+            SELECT e.id, e.event_id, COALESCE(e.camera_id, 0) AS camera_id,
+                   e.camera_name, e.label, e.score, e.started_at, e.ended_at,
+                   e.snapshot_url
+            FROM camera_event e, p
+            WHERE e.started_at >= p.t_from - interval '10 minutes'
+              AND e.started_at < p.t_to
+              AND e.ended_at >= p.t_from
+              AND e.clip_url <> ''
+              $where
+        ),
+        marked AS (
+            SELECT ev.*,
+                   COALESCE(ev.ended_at <= MAX(ev.ended_at) OVER (
+                       PARTITION BY ev.camera_id
+                       ORDER BY ev.started_at, ev.ended_at DESC, ev.id
+                       ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+                   ), false) AS contained
+            FROM ev
+        ),
+        grouped AS (
+            SELECT m.*,
+                   SUM(CASE WHEN m.contained THEN 0 ELSE 1 END) OVER (
+                       PARTITION BY m.camera_id
+                       ORDER BY m.started_at, m.ended_at DESC, m.id
+                   ) AS scene
+            FROM marked m
+        )
+        SELECT MAX(g.event_id) FILTER (WHERE NOT g.contained) AS event_id,
+               g.camera_id,
+               COALESCE(c.name, MAX(g.camera_name)) AS camera_name,
+               COALESCE(c.pre_record_secs, 3) AS pre_record_secs,
+               MIN(g.started_at) AS started_at,
+               MAX(g.ended_at) AS ended_at,
+               STRING_AGG(DISTINCT g.label, ',') AS labels,
+               MAX(g.score) AS score,
+               BOOL_OR(g.snapshot_url <> '' AND NOT g.contained) AS has_snapshot
+        FROM grouped g
+        LEFT JOIN camera c ON c.id = g.camera_id
+        GROUP BY g.camera_id, g.scene, c.name, c.pre_record_secs, c.sort_order
+        ORDER BY MIN(g.started_at), c.sort_order
+        LIMIT 20000
+    ", $params);
+
+    resultInfo(true, '', ['recordings' => $recordings]);
+}
+
+/**
  * Event bestätigen (acknowledged)
  *
  * @param array $data['id'] Event-ID

@@ -5916,3 +5916,87 @@ DO $$ BEGIN
             FOR EACH ROW EXECUTE FUNCTION notify_telegram_message();
     END IF;
 END $$;
+
+-- ============================================================================
+-- VERSANDPROTOKOLL EINES BELEGS
+-- ============================================================================
+-- Wie und wann hat ein Beleg den Empfänger erreicht? Genutzt von der Belegkarte
+-- im CRM (Spalte „Status“ je Vorgang, Kurzfassung je Kanal über
+-- record_sent_summary). Die Belegmaske baut ihr sent_log in getFakturaData
+-- noch selbst mit denselben Kanälen — Änderungen an beiden Stellen nachziehen,
+-- bis sie ebenfalls auf record_sent_log umgestellt ist.
+--
+-- Kanäle:
+--   email     record_links Beleg → email_journal
+--   whatsapp  record_links Beleg → whatsapp_messages
+--   sms       record_links Beleg → sms_messages (auch Ausweich-SMS statt WhatsApp)
+--   dhl       dhl_shipments — Etiketten tragen die Belegart, unter der sie
+--             erstellt wurden, deshalb alle Arten der Haupttabelle
+--   post      postal_dispatches (Hybridbrief), ohne gescheiterte Einlieferungen
+--   print     kivitendo-Tabelle status, eine Zeile je Druck aus printToPrinter
+--
+-- p_table: Haupttabelle des Belegs (oe | ar | ap | delivery_orders | reclamations)
+CREATE OR REPLACE FUNCTION record_sent_log(p_table text, p_id integer)
+    RETURNS TABLE (channel text, sent_at timestamptz, recipient text, subject text, status text, employee_name text)
+    LANGUAGE sql
+    STABLE
+AS $function$
+    SELECT 'email', ej.sent_on::timestamptz, ej.recipients::text, ej.subject::text, ej.status::text, e.name::text
+      FROM record_links rl
+      JOIN email_journal ej ON ej.id = rl.to_id
+      LEFT JOIN employee e ON e.id = ej.sender_id
+     WHERE rl.from_table = p_table AND rl.from_id = p_id AND rl.to_table = 'email_journal'
+    UNION ALL
+    SELECT 'whatsapp', wm.itime, wm.phone_number, wm.message_text, wm.status, NULL
+      FROM record_links rl
+      JOIN whatsapp_messages wm ON wm.id = rl.to_id
+     WHERE rl.from_table = p_table AND rl.from_id = p_id AND rl.to_table = 'whatsapp_messages'
+    UNION ALL
+    SELECT 'sms', sm.itime, sm.phone_number, COALESCE(sm.media_name, LEFT(sm.message_text, 80)), sm.status, e.name::text
+      FROM record_links rl
+      JOIN sms_messages sm ON sm.id = rl.to_id
+      LEFT JOIN employee e ON e.id = sm.employee_id
+     WHERE rl.from_table = p_table AND rl.from_id = p_id AND rl.to_table = 'sms_messages'
+    UNION ALL
+    SELECT 'dhl', ds.created_at::timestamptz, ds.shipment_no, ds.product, 'sent', e.name::text
+      FROM dhl_shipments ds
+      LEFT JOIN employee e ON e.id = ds.created_by
+     WHERE ds.record_id = p_id
+       AND ds.record_type = ANY (CASE p_table
+               WHEN 'oe'              THEN ARRAY['order', 'quotation', 'purchase_order', 'request_quotation']
+               WHEN 'ar'              THEN ARRAY['invoice', 'credit_note', 'invoice_storno']
+               WHEN 'ap'              THEN ARRAY['purchase_invoice']
+               WHEN 'delivery_orders' THEN ARRAY['delivery_order', 'purchase_delivery_order']
+               ELSE ARRAY[]::text[] END)
+    UNION ALL
+    SELECT 'post', COALESCE(pd.sent_at, pd.itime)::timestamptz, pd.recipient_name,
+           concat_ws(' · ', pd.filename, pd.tracking_code), pd.status, e.name::text
+      FROM postal_dispatches pd
+      LEFT JOIN employee e ON e.id = pd.employee_id
+     WHERE pd.record_table = p_table AND pd.record_id = p_id AND pd.status <> 'error'
+    UNION ALL
+    SELECT 'print', COALESCE(st.mtime, st.itime)::timestamptz, NULL, NULL, 'sent', NULL
+      FROM status st
+     WHERE st.trans_id = p_id AND st.printed
+$function$;
+
+-- Kurzfassung für Listen: je Kanal der letzte Versand und die Anzahl,
+-- neuester Kanal zuerst. Leeres Array = weder versendet noch gedruckt.
+--   [{channel, count, sent_at, status, recipient}]
+CREATE OR REPLACE FUNCTION record_sent_summary(p_table text, p_id integer)
+    RETURNS json
+    LANGUAGE sql
+    STABLE
+AS $function$
+    SELECT COALESCE(json_agg(json_build_object(
+               'channel', s.channel, 'count', s.count, 'sent_at', s.sent_at,
+               'status', s.status, 'recipient', s.recipient
+           ) ORDER BY s.sent_at DESC), '[]'::json)
+      FROM (
+          SELECT DISTINCT ON (l.channel)
+                 l.channel, count(*) OVER (PARTITION BY l.channel) AS count,
+                 l.sent_at, l.status, l.recipient
+            FROM record_sent_log(p_table, p_id) l
+           ORDER BY l.channel, l.sent_at DESC
+      ) s
+$function$;

@@ -227,6 +227,19 @@ Die Polygone werden als Koordinaten in `camera_zone.coordinates` gespeichert; de
 
 ---
 
+## Aufzeichnungen ansehen
+
+Unter **Videoüberwachung → Aufzeichnungen** lassen sich die gespeicherten Videos eines Zeitraums durchsehen — etwa der 16.11. von 8:00 bis 14:00 Uhr.
+
+- **Datum**, **Von** und **Bis** wählen, optional auf eine Kamera oder einen Objekttyp einschränken, dann **Anzeigen**. Die Pfeile im Datumsfeld blättern tageweise.
+- Die **Zeitleiste** zeigt je Kamera eine Spur; jeder Balken ist eine Aufzeichnung. Ein Klick in eine Spur springt zu dieser Uhrzeit — abgespielt wird die Aufzeichnung, die dort läuft oder als nächste beginnt. Die rote Marke zeigt die aktuelle Position.
+- Die Aufzeichnungen laufen **nacheinander durch**, über alle Kameras in zeitlicher Reihenfolge. Der Knopf vor dem Kameranamen beschränkt die Wiedergabe auf diese eine Kamera.
+- Unter dem Bild: vorherige/nächste Aufzeichnung, Tempo (1× bis 8×), Durchlauf ein/aus und Herunterladen der laufenden Aufzeichnung.
+
+Aufgezeichnet wird nur, wenn eine Kamera ein Objekt erkennt — Lücken in der Zeitleiste sind Zeiten ohne Erkennung, keine Störung. Mehrere gleichzeitig erkannte Objekte derselben Kamera (Person und Auto in einer Szene) erscheinen als eine Aufzeichnung. Wie weit die Aufzeichnungen zurückreichen, bestimmt die Aufbewahrungsfrist (siehe *Festplatte läuft voll*).
+
+---
+
 ## Regeln und Benachrichtigungen
 
 Unter **Videoüberwachung → Regeln** werden Aktionen konfiguriert, die bei Ereignissen ausgelöst werden:

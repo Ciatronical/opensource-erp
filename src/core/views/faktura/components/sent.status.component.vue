@@ -204,6 +204,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { channelMeta, postStatusMeta, waStatusMeta } from './sent.channels.js'
 
 const props = defineProps({
     /** sent_log aus getFakturaData: [{channel, sent_at, recipient, subject, status, employee_name}] */
@@ -256,25 +257,6 @@ function formatDay(value) {
     return d.toLocaleDateString(locale.value, { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-const channelMeta = {
-    email:    { icon: 'mdi-email',          color: 'info',           label: 'FakturaView.faktura.sent.channelEmail' },
-    whatsapp: { icon: 'mdi-whatsapp',       color: 'green-darken-1', label: 'FakturaView.faktura.sent.channelWhatsapp' },
-    sms:      { icon: 'mdi-message-text-outline', color: 'indigo', label: 'FakturaView.faktura.sent.channelSms' },
-    dhl:      { icon: 'mdi-truck-delivery', color: 'amber-darken-2', label: 'FakturaView.faktura.sent.channelDhl' },
-    post:     { icon: 'mdi-mailbox-up-outline', color: 'deep-purple', label: 'FakturaView.faktura.sent.channelPost' },
-    print:    { icon: 'mdi-printer-check',  color: 'blue-grey',      label: 'FakturaView.faktura.sent.channelPrint' },
-}
-
-/** Status einer Posteinlieferung (postal_dispatches.status) */
-function postStatusMeta(status) {
-    switch (status) {
-        case 'done':     return { icon: 'mdi-check-all',      color: 'success', label: 'FakturaView.faktura.sent.postDone' }
-        case 'manual':   return { icon: 'mdi-printer-check',  color: 'grey',    label: 'FakturaView.faktura.sent.postManual' }
-        case 'canceled': return { icon: 'mdi-cancel',         color: 'warning', label: 'FakturaView.faktura.sent.postCanceled' }
-        default:         return { icon: 'mdi-mailbox-up-outline', color: 'grey', label: 'FakturaView.faktura.sent.postSent' }
-    }
-}
-
 /** Letzter Versand je Kanal plus Anzahl — die Einträge kommen neueste zuerst */
 const latestPerChannel = computed(() => {
     const map = new Map()
@@ -286,15 +268,6 @@ const latestPerChannel = computed(() => {
     }
     return [...map.values()]
 })
-
-function waStatusMeta(status) {
-    switch (status) {
-        case 'read':      return { icon: 'mdi-check-all',    color: 'blue',   label: 'FakturaView.faktura.sent.statusRead' }
-        case 'delivered': return { icon: 'mdi-check-all',    color: 'grey',   label: 'FakturaView.faktura.sent.statusDelivered' }
-        case 'failed':    return { icon: 'mdi-alert-circle', color: 'error',  label: 'FakturaView.faktura.sent.statusFailed' }
-        default:          return { icon: 'mdi-check',        color: 'grey',   label: 'FakturaView.faktura.sent.statusSent' }
-    }
-}
 
 function formatWhen(value) {
     if (!value) return ''

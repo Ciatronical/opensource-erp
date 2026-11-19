@@ -179,6 +179,26 @@
         "zoneNoPolygon": "Aucune zone définie",
         "zoneAdd": "Ajouter une zone",
         "zoneNewName": "Nom de la nouvelle zone",
-        "zonesSaved": "Zones enregistrées"
+        "zonesSaved": "Zones enregistrées",
+
+    "archive": "Enregistrements",
+    "recDate": "Date",
+    "recShow": "Afficher",
+    "recTimeline": "Chronologie",
+    "recTimelineHint": "Un clic dans une piste saute à cette heure",
+    "recSummary": "{count} enregistrements · {duration} de vidéo",
+    "recNoneTitle": "Aucun enregistrement sur cette période",
+    "recNoneHint": "L’enregistrement n’a lieu que lorsqu’une caméra détecte un objet. Choisissez une autre période ou une autre caméra.",
+    "recInvalidRange": "Veuillez indiquer une date et une période valide (la fin doit être après le début).",
+    "recLoadError": "Impossible de charger les enregistrements",
+    "recPlayError": "Les enregistrements ne peuvent pas être lus",
+    "recPrev": "Enregistrement précédent",
+    "recNext": "Enregistrement suivant",
+    "recSpeed": "Vitesse de lecture",
+    "recAutoNext": "Lire les enregistrements à la suite",
+    "recDownload": "Télécharger l’enregistrement",
+    "recSoloHint": "Lire uniquement cette caméra",
+    "recPosition": "{index} sur {total}",
+    "recPickClip": "Choisissez un enregistrement dans la chronologie ou la liste"
     }
 }

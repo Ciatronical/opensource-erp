@@ -894,9 +894,13 @@ class HwFrameSource:
             '-hwaccel', 'vaapi', '-hwaccel_device', 'va',
             '-hwaccel_output_format', 'vaapi', '-filter_hw_device', 'va',
             '-rtsp_transport', 'tcp', '-i', self.stream_url,
-            # fps-Drossel VOR hwdownload: so werden ueberzaehlige Frames noch als
-            # GPU-Surface verworfen und nicht erst teuer nach RAM kopiert/konvertiert.
-            '-vf', f'scale_vaapi={self.width}:{self.height},fps={self.fps},hwdownload,format=nv12',
+            # fps-Drossel als ERSTER Filter: ueberzaehlige Frames werden noch als
+            # GPU-Surface verworfen, bevor sie skaliert oder nach RAM kopiert werden.
+            # Die Reihenfolge ist zwingend: mit scale_vaapi VOR fps bricht ffmpeg
+            # (6.1, iHD 24.1) reproduzierbar nach rund 51 s mit "Failed to sync
+            # surface ... operation failed" ab — der Worker verband sich dadurch
+            # etwa einmal pro Minute neu (Frame-Fehler — reconnect).
+            '-vf', f'fps={self.fps},scale_vaapi={self.width}:{self.height},hwdownload,format=nv12',
             '-an', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-',
         ]
         try:

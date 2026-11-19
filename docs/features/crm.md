@@ -57,6 +57,29 @@ Der Reiter **Zeitreise** zeigt, wer wann was am Kunden oder Lieferanten geänder
 | Lieferadressen | Alternative Versandadressen |
 | Preise | Kundenspezifische Preisregeln |
 
+### Vorgänge: Spalte „Status“
+
+Die Karte „Vorgänge“ zeigt in jedem Tab eine Spalte „Status“. Vorne steht, wo
+der Beleg im Ablauf steht, dahinter je Versandkanal ein Symbol (E-Mail,
+WhatsApp, SMS, Post, DHL, gedruckt) — Zeitpunkt, Anzahl, Empfänger und
+Zustellstatus stehen im Tooltip. Ein blasses Uhr-Symbol heißt: weder versendet
+noch gedruckt.
+
+| Tab | Status |
+|-----|--------|
+| Angebote | Auftrags- oder Rechnungsnummer (anklickbar), wenn daraus ein Beleg wurde; sonst geschlossen, abgelaufen (Gültigkeit überschritten) oder offen |
+| Aufträge | Rechnungsnummer (anklickbar), storniert oder „keine Rechnung“ |
+| Lieferscheine | offen, geliefert, geschlossen |
+| Rechnungen | Storno/Gutschrift, bezahlt / offen / Teilzahlung / überfällig (Tooltip: offener Betrag, Fälligkeit, Tage im Verzug), Mahnstufe |
+| Reklamationen | offen, geschlossen |
+
+Über der Rechnungsliste stehen Filter-Chips: offene Rechnungen mit Summe,
+überfällige und (bei Kunden) nicht versendete. Ein Klick filtert die Liste.
+
+Die Versanddaten liefert die SQL-Funktion `record_sent_summary` (Upstall crm).
+Solange das Schema-Update einer Firma noch aussteht, bleibt der Versandteil
+leer; alles andere funktioniert.
+
 ### E-Mail-Adressen und URLs
 
 Alle E-Mail-Adressen und Web-Adressen eines Kunden sind in der Kundenkarte (Erreichbarkeit) und im Bearbeitungsformular direkt klickbar:

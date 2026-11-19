@@ -30,6 +30,7 @@
                         {{ t('cam.events') }}
                         <v-badge v-if="unreadCount > 0" :content="unreadCount" color="error" floating inline class="ml-1" />
                     </v-btn>
+                    <v-btn value="archive" prepend-icon="mdi-filmstrip-box-multiple">{{ t('cam.archive') }}</v-btn>
                     <v-btn value="rules" prepend-icon="mdi-shield-check-outline">{{ t('cam.rules') }}</v-btn>
                     <v-btn value="settings" prepend-icon="mdi-cog-outline">{{ t('cam.settings') }}</v-btn>
                 </v-btn-toggle>
@@ -91,7 +92,7 @@
                                 <!-- RTSP → Snapshot (Fallback ohne cam_key) -->
                                 <img
                                     v-else-if="cam.stream_url"
-                                    :src="snapshotUrls[cam.id] || snapshotUrl(cam)"
+                                    :src="snapshotUrls[cam.id]"
                                     class="cam-video"
                                     :alt="cam.name"
                                 />
@@ -156,6 +157,11 @@
                 </v-row>
             </template>
         </template>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- AUFZEICHNUNGEN                                             -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <camera-recordings v-if="viewMode === 'archive'" :cameras="cameras" />
 
         <!-- ══════════════════════════════════════════════════════════ -->
         <!-- EREIGNISSE                                                 -->
@@ -1074,6 +1080,8 @@ import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import * as toast from '@/core/utils/toasts.js'
 import SectionCard from '@/core/components/layout/section-card.vue'
+import CameraRecordings from './camera.recordings.component.vue'
+import { labelColor, labelIcon } from './camera.labels.js'
 
 const { t } = useI18n()
 const oserp = oserpStore()
@@ -1859,27 +1867,37 @@ function snapshotUrl(cam) {
     return `/api/camera/stream.php?id=${cam.id}&t=${Date.now()}`
 }
 
+// Standbilder laufen über PHP (stream.php) und belegen dort je Abruf einen
+// Arbeitsprozess, bis go2rtc bzw. ffmpeg das Bild geliefert hat. Deshalb:
+// nur Kameras abfragen, deren Standbild auch angezeigt wird (ohne cam_key —
+// alle anderen laufen über WebRTC), je Kamera höchstens ein Abruf gleichzeitig
+// und nicht, solange der Tab im Hintergrund liegt. Früher fragte die Seite
+// alle Kameras alle 500 ms ab und legte damit den PHP-Pool für den Rest der
+// Anwendung lahm.
+const SNAPSHOT_REFRESH_MS = 2000
+const snapshotPending = new Set()
+
+function usesSnapshot(cam) {
+    return !!cam.stream_url && !isWebUrl(cam.stream_url) && !cam.cam_key
+}
+
 function refreshSnapshot(cam) {
-    const url = `/api/camera/stream.php?id=${cam.id}&t=${Date.now()}`
+    if (snapshotPending.has(cam.id)) return
+    snapshotPending.add(cam.id)
+    const url = snapshotUrl(cam)
     const img = new Image()
-    img.onload = () => { snapshotUrls[cam.id] = url }
+    img.onload = () => { snapshotPending.delete(cam.id); snapshotUrls[cam.id] = url }
+    img.onerror = () => { snapshotPending.delete(cam.id) }
     img.src = url
 }
 
 let snapshotInterval = null
 function startSnapshotRefresh() {
     if (snapshotInterval) return
-    cameras.value.forEach(cam => {
-        if (cam.stream_url && !isWebUrl(cam.stream_url))
-            snapshotUrls[cam.id] = snapshotUrl(cam)
-    })
     snapshotInterval = setInterval(() => {
-        if (viewMode.value !== 'live') return
-        cameras.value.forEach(cam => {
-            if (cam.stream_url && !isWebUrl(cam.stream_url))
-                refreshSnapshot(cam)
-        })
-    }, 500)
+        if (viewMode.value !== 'live' || document.hidden) return
+        cameras.value.filter(usesSnapshot).forEach(refreshSnapshot)
+    }, SNAPSHOT_REFRESH_MS)
 }
 
 // ── WebRTC (WHEP via go2rtc) ────────────────────────────────────────────────
@@ -1955,24 +1973,6 @@ function formatDateTime(dt) {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit', second: '2-digit'
     })
-}
-
-function labelColor(label) {
-    const colors = {
-        person: 'red', car: 'blue', dog: 'orange', cat: 'purple',
-        motorcycle: 'teal', bicycle: 'cyan', truck: 'indigo',
-        bird: 'lime', horse: 'brown',
-    }
-    return colors[label] || 'grey'
-}
-
-function labelIcon(label) {
-    const icons = {
-        person: 'mdi-account', car: 'mdi-car', dog: 'mdi-dog',
-        cat: 'mdi-cat', motorcycle: 'mdi-motorbike', bicycle: 'mdi-bicycle',
-        truck: 'mdi-truck', bird: 'mdi-bird', horse: 'mdi-horse',
-    }
-    return icons[label] || 'mdi-eye'
 }
 
 function openClip(event) {

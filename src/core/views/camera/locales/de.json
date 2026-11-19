@@ -200,6 +200,26 @@
         "zoneNoPolygon": "Kein Bereich definiert",
         "zoneAdd": "Zone hinzufügen",
         "zoneNewName": "Name der neuen Zone",
-        "zonesSaved": "Zonen gespeichert"
+        "zonesSaved": "Zonen gespeichert",
+
+    "archive": "Aufzeichnungen",
+    "recDate": "Datum",
+    "recShow": "Anzeigen",
+    "recTimeline": "Zeitleiste",
+    "recTimelineHint": "Klick in eine Spur springt zu dieser Uhrzeit",
+    "recSummary": "{count} Aufzeichnungen · {duration} Videomaterial",
+    "recNoneTitle": "Keine Aufzeichnungen im Zeitraum",
+    "recNoneHint": "Aufgezeichnet wird nur, wenn eine Kamera ein Objekt erkennt. Anderen Zeitraum oder andere Kamera wählen.",
+    "recInvalidRange": "Bitte Datum und einen gültigen Zeitraum angeben (Bis muss nach Von liegen).",
+    "recLoadError": "Aufzeichnungen konnten nicht geladen werden",
+    "recPlayError": "Die Aufzeichnungen lassen sich nicht abspielen",
+    "recPrev": "Vorherige Aufzeichnung",
+    "recNext": "Nächste Aufzeichnung",
+    "recSpeed": "Wiedergabegeschwindigkeit",
+    "recAutoNext": "Aufzeichnungen nacheinander abspielen",
+    "recDownload": "Aufzeichnung herunterladen",
+    "recSoloHint": "Nur diese Kamera abspielen",
+    "recPosition": "{index} von {total}",
+    "recPickClip": "Aufzeichnung in der Zeitleiste oder Liste wählen"
     }
 }
