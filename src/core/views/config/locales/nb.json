@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Nettstedets Hugo-konfigurasjon",
         "shopSiteCheckOk": "Nettstedets Hugo-konfigurasjon passer til pakken og innstillingene.",
         "shopSiteCheckFix": "Oppføring for nettstedets config.json:",
+        "shopSiteCheckFixFile": "Filens innhold:",
         "shopSiteApply": "Overfør til nettstedet ({count})",
         "shopSiteApplyTitle": "Utvid Hugo-konfigurasjonen",
         "shopSiteApplyIntro": "HugoCMS skriver disse oppføringene i nettstedets fil {file}. Først lages en sikkerhetskopi; laster ikke Hugo den nye filen, blir den forrige stående.",

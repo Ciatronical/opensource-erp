@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Web sitesinin Hugo yapılandırması",
         "shopSiteCheckOk": "Web sitesinin Hugo yapılandırması paket ve ayarlarla uyumlu.",
         "shopSiteCheckFix": "Web sitesinin config.json dosyası için kayıt:",
+        "shopSiteCheckFixFile": "Dosyanın içeriği:",
         "shopSiteApply": "Web sitesine aktar ({count})",
         "shopSiteApplyTitle": "Hugo yapılandırmasını tamamla",
         "shopSiteApplyIntro": "HugoCMS bu girdileri web sitesinin {file} dosyasına yazar. Önce bir yedek kopya oluşturulur; Hugo yeni dosyayı yüklemezse önceki dosya kalır.",

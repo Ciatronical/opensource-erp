@@ -16,6 +16,11 @@
 //               die Gruppen aus Wortteilen der Kategorienamen — portiert aus
 //               sonic24.de/publish/category_groups.php. Die Kategorien selbst
 //               kommen auch dann aus dem Sortiment.
+//
+// Die Adresse einer Kategorieseite bildet der Kern, wie Hugo sie aus dem Namen
+// ableitet (shopHugoPath). Ein Satz, der den Namen anders ins Front Matter
+// schreibt — solar-spar ersetzt den Schrägstrich —, nennt in seiner
+// category_groups.php unter 'path' die eigene Regel (shopCategoryPath).
 
 /**
  * Regeln der Gruppierung eines Vorlagensatzes
@@ -28,14 +33,23 @@
  * @throws ApiError SHOP_TEMPLATE_SET_INVALID, SHOP_TEMPLATE_SET_MISSING
  */
 function shopCategoryRules(string $satz): ?array {
+    // Je Aufruf einmal lesen: shopPageData() fragt für jede Produktseite
+    static $gelesen = [];
+    if (array_key_exists($satz, $gelesen)) {
+        return $gelesen[$satz];
+    }
+
     $datei = shopTemplateDir($satz).'/category_groups.php';
     if (!is_file($datei)) {
-        return null;
+        return $gelesen[$satz] = null;
     }
     $eigene = (static fn(string $datei) => require $datei)($datei);
 
-    return array_merge([
+    return $gelesen[$satz] = array_merge([
         'taxonomy'               => 'kategorien',
+        // Eigene Regel für den Adressteil einer Kategorie:
+        // fn(string $name): string. Ohne sie gilt shopHugoPath().
+        'path'                   => null,
         'labels'                 => [],
         'topseller'              => [],
         // Wörter ohne Aussage, die nie eine Gruppe bilden. Standen bis zum
@@ -54,20 +68,36 @@ function shopCategoryRules(string $satz): ?array {
     ], is_array($eigene) ? $eigene : []);
 }
 
+/**
+ * Adressteil einer Kategorie
+ *
+ * Die Regel des Vorlagensatzes ('path' in seiner category_groups.php), sonst
+ * die von Hugo (shopHugoPath). Übersicht, Produktseite und das Zusammenzählen
+ * gleicher Adressen nutzen dieselbe Regel.
+ *
+ * @param array|null $regeln aus shopCategoryRules()
+ * @param string $name Name der Kategorie im Sortiment
+ * @return string
+ */
+function shopCategoryPath(?array $regeln, string $name): string {
+    $eigene = $regeln['path'] ?? null;
+    return is_callable($eigene) ? trim((string)$eigene($name), '/') : shopHugoPath($name);
+}
+
 /** Restgruppe für Kategorien ohne Gruppe — Text der Webseite */
 const SHOP_CATEGORY_REST_NAME = 'Sonstiges';
 
 /**
  * Eintrag einer Kategorie in der Übersicht
  *
- * @param array $kategorie name, productCount
+ * @param array $kategorie name, productCount, path (Adressteil, shopCategoryPath)
  * @param string $muster Adressmuster mit %s (shopChannelCategoryPaths)
  * @return array name, url, productCount
  */
 function shopCategoryEntry(array $kategorie, string $muster): array {
     return [
         'name'         => shopUcfirst($kategorie['name']),
-        'url'          => str_replace('%s', shopHugoPath($kategorie['name']), $muster),
+        'url'          => str_replace('%s', $kategorie['path'] ?? shopHugoPath($kategorie['name']), $muster),
         'productCount' => (int)$kategorie['productCount'],
     ];
 }
@@ -391,10 +421,11 @@ function shopCategoryGroupsFile($db, int $kanal, bool $anlegen = false): string 
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $kanal HugoShop
- * @return array Liste aus name, productCount und aus dem Sortiment group,
+ * @param array|null $regeln aus shopCategoryRules() — für den Adressteil
+ * @return array Liste aus name, path, productCount und aus dem Sortiment group,
  *               group_sort, topseller
  */
-function shopCategoryCounts($db, int $kanal): array {
+function shopCategoryCounts($db, int $kanal, ?array $regeln = null): array {
     $zeilen = $db->getAll(
         "SELECT btrim(c.name) AS name, count(*) AS product_count,
                 g.name AS group_name, g.sortkey AS group_sort, c.topseller
@@ -412,7 +443,7 @@ function shopCategoryCounts($db, int $kanal): array {
     $wahr = fn($wert) => true === $wert || 't' === $wert || '1' === $wert || 1 === $wert;
     $kategorien = [];
     foreach ($zeilen as $zeile) {
-        $pfad = shopHugoPath((string)$zeile['name']);
+        $pfad = shopCategoryPath($regeln, (string)$zeile['name']);
         if ('' === $pfad) {
             continue;
         }
@@ -421,6 +452,7 @@ function shopCategoryCounts($db, int $kanal): array {
         } else {
             $kategorien[$pfad] = [
                 'name'         => (string)$zeile['name'],
+                'path'         => $pfad,
                 'productCount' => (int)$zeile['product_count'],
                 'group'        => (string)($zeile['group_name'] ?? ''),
                 'group_sort'   => null === $zeile['group_sort'] ? null : (int)$zeile['group_sort'],
@@ -458,7 +490,8 @@ function shopWriteCategoryGroups($db, int $kanal): array {
     // eigene Regeln, bestimmen sie die Gruppen, sonst das Sortiment.
     $satz = shopSiteValue($db, $kanal, 'template_set', 'standard');
 
-    $kategorien = shopCategoryCounts($db, $kanal);
+    $regeln = shopCategoryRules($satz);
+    $kategorien = shopCategoryCounts($db, $kanal, $regeln);
     if (!$kategorien) {
         if (is_file($datei)) {
             unlink($datei);
@@ -470,7 +503,6 @@ function shopWriteCategoryGroups($db, int $kanal): array {
     // Die Adressen der Kategorieseiten folgen der Kanalkarte (category_link),
     // nicht dem Satz: sie gehören zur Webseite (shopChannelCategoryPaths)
     $muster = shopChannelCategoryPaths($db, $kanal)['pattern'];
-    $regeln = shopCategoryRules($satz);
     if (null === $regeln) {
         $uebersicht = shopCategoryGroupsFromAssortment($kategorien, $muster);
     } else {

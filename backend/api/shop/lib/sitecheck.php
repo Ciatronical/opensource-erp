@@ -167,10 +167,13 @@ function shopSiteChecks(array $befunde, $db, int $website, array $site, array $s
             ['params' => ['portalui' => ['taxonomy' => $taxonomie]]], ['op' => 'portaluiTaxonomy', 'taxonomy' => $taxonomie]);
     }
 
-    // Übersichtsseite content/<taxonomie>/_index.md: trägt den Titel der Übersicht
+    // Übersichtsseite <contentDir>/<taxonomie>/_index.md: trägt den Titel der
+    // Übersicht. Das contentDir meldet HugoCMS — bei einem Inhaltsverzeichnis
+    // je Sprache ist es das der Standardsprache (content/de).
     $uebersichten = array_change_key_case((array)($site['files']['taxonomyIndex'] ?? []));
     if ($angemeldet && array_key_exists($taxonomie, $uebersichten) && !$uebersichten[$taxonomie]) {
-        $befunde[] = portalSiteFinding('SHOP_TAXONOMY_INDEX', 'warning', ['file' => 'content/'.$taxonomie.'/_index.md'],
+        $inhalte = trim((string)($konfiguration['contentDir'] ?? ''), '/');
+        $befunde[] = portalSiteFinding('SHOP_TAXONOMY_INDEX', 'warning', ['file' => ('' === $inhalte ? 'content' : $inhalte).'/'.$taxonomie.'/_index.md'],
             "---\ntitle: \"".str_replace('"', '\\"', $pfade['title'])."\"\n---\n");
     }
 

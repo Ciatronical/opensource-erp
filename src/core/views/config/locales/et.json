@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Veebilehe Hugo konfiguratsioon",
         "shopSiteCheckOk": "Veebilehe Hugo konfiguratsioon sobib paketi ja seadetega.",
         "shopSiteCheckFix": "Kirje veebilehe config.json-faili:",
+        "shopSiteCheckFixFile": "Faili sisu:",
         "shopSiteApply": "Kanna veebilehele üle ({count})",
         "shopSiteApplyTitle": "Täienda Hugo seadistust",
         "shopSiteApplyIntro": "HugoCMS kirjutab need kirjed veebilehe faili {file}. Enne tehakse varukoopia; kui Hugo uut faili ei laadi, jääb senine alles.",

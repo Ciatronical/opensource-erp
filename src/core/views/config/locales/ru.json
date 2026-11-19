@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Конфигурация Hugo сайта",
         "shopSiteCheckOk": "Конфигурация Hugo сайта соответствует пакету и настройкам.",
         "shopSiteCheckFix": "Запись для config.json сайта:",
+        "shopSiteCheckFixFile": "Содержимое файла:",
         "shopSiteApply": "Перенести на сайт ({count})",
         "shopSiteApplyTitle": "Дополнить конфигурацию Hugo",
         "shopSiteApplyIntro": "HugoCMS запишет эти записи в файл {file} сайта. Перед этим создаётся резервная копия; если Hugo не загрузит новый файл, останется прежний.",

@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Configuration Hugo du site web",
         "shopSiteCheckOk": "La configuration Hugo du site web correspond au paquet et aux réglages.",
         "shopSiteCheckFix": "Entrée pour le config.json du site web :",
+        "shopSiteCheckFixFile": "Contenu du fichier :",
         "shopSiteApply": "Appliquer au site web ({count})",
         "shopSiteApplyTitle": "Compléter la configuration Hugo",
         "shopSiteApplyIntro": "HugoCMS écrit ces entrées dans le fichier {file} du site web. Une copie de sauvegarde est créée au préalable ; si Hugo ne charge pas le nouveau fichier, l'ancien est conservé.",

@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Webbplatsens Hugo-konfiguration",
         "shopSiteCheckOk": "Webbplatsens Hugo-konfiguration passar paketet och inställningarna.",
         "shopSiteCheckFix": "Post för webbplatsens config.json:",
+        "shopSiteCheckFixFile": "Filens innehåll:",
         "shopSiteApply": "Överför till webbplatsen ({count})",
         "shopSiteApplyTitle": "Komplettera Hugo-konfigurationen",
         "shopSiteApplyIntro": "HugoCMS skriver dessa poster i webbplatsens fil {file}. Först skapas en säkerhetskopia; läser Hugo inte in den nya filen behålls den tidigare.",

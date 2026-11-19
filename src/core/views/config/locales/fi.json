@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Verkkosivuston Hugo-kokoonpano",
         "shopSiteCheckOk": "Verkkosivuston Hugo-kokoonpano vastaa pakettia ja asetuksia.",
         "shopSiteCheckFix": "Merkintä verkkosivuston config.json-tiedostoon:",
+        "shopSiteCheckFixFile": "Tiedoston sisältö:",
         "shopSiteApply": "Vie sivustoon ({count})",
         "shopSiteApplyTitle": "Täydennä Hugo-määritystä",
         "shopSiteApplyIntro": "HugoCMS kirjoittaa nämä merkinnät sivuston tiedostoon {file}. Sitä ennen tehdään varmuuskopio; jos Hugo ei lataa uutta tiedostoa, aiempi jää voimaan.",

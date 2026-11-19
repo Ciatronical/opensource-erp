@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Hugo-configuratie van de website",
         "shopSiteCheckOk": "De Hugo-configuratie van de website past bij het pakket en de instellingen.",
         "shopSiteCheckFix": "Vermelding voor de config.json van de website:",
+        "shopSiteCheckFixFile": "Inhoud van het bestand:",
         "shopSiteApply": "Overnemen in de website ({count})",
         "shopSiteApplyTitle": "Hugo-configuratie aanvullen",
         "shopSiteApplyIntro": "HugoCMS schrijft deze regels in het bestand {file} van de website. Vooraf wordt een reservekopie gemaakt; laadt Hugo het nieuwe bestand niet, dan blijft het vorige staan.",

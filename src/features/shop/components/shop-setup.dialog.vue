@@ -243,7 +243,7 @@
                 <v-alert v-for="(befund, nr) in siteBefunde" :key="nr" :type="befund.art" variant="tonal" density="compact" class="mt-2">
                     <div>{{ t(`crm_fields.shopSiteCheck_${befund.code}`, befund.params || {}) }}</div>
                     <template v-if="befund.fix">
-                        <div class="text-caption mt-2">{{ t('crm_fields.shopSiteCheckFix') }}</div>
+                        <div class="text-caption mt-2">{{ t(befund.params?.file ? 'crm_fields.shopSiteCheckFixFile' : 'crm_fields.shopSiteCheckFix') }}</div>
                         <pre class="text-body-2 mt-1" style="white-space: pre-wrap">{{ befund.fix }}</pre>
                     </template>
                 </v-alert>

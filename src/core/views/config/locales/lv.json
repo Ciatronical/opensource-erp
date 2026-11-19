@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Vietnes Hugo konfigurācija",
         "shopSiteCheckOk": "Vietnes Hugo konfigurācija atbilst pakotnei un iestatījumiem.",
         "shopSiteCheckFix": "Ieraksts vietnes config.json failam:",
+        "shopSiteCheckFixFile": "Faila saturs:",
         "shopSiteApply": "Pārņemt vietnē ({count})",
         "shopSiteApplyTitle": "Papildināt Hugo konfigurāciju",
         "shopSiteApplyIntro": "HugoCMS ieraksta šos ierakstus vietnes failā {file}. Pirms tam tiek izveidota rezerves kopija; ja Hugo jauno failu neielādē, paliek iepriekšējais.",

@@ -452,6 +452,8 @@ function shopPageData($db, int $kanal, int $partsId): array {
     // trägt keinen festen Pfad (shopChannelCategoryPaths)
     $kategoriePfade = shopChannelCategoryPaths($db, $kanal);
     $kategorie      = trim((string)($zeile['hugoshop_category'] ?? ''));
+    // Adressteil der Kategorie nach der Regel des Vorlagensatzes (shopCategoryPath)
+    $kategorieRegeln = shopCategoryRules(shopSiteValue($db, $kanal, 'template_set', 'standard'));
     // Maße der Produktbilder aus der Medienbibliothek: die Produktseite
     // schreibt sie als width/height, der Browser reserviert den Platz, bevor
     // das Bild geladen ist (keine Layoutverschiebung). Unbekannte Bilder: null.
@@ -499,7 +501,7 @@ function shopPageData($db, int $kanal, int $partsId): array {
             'taxonomy'       => $kategoriePfade['taxonomy'],
             'categories_url' => $kategoriePfade['index'],
             'categories_title' => $kategoriePfade['title'],
-            'category_url'   => '' === $kategorie ? '' : shopChannelCategoryUrl($kategoriePfade, shopHugoPath($kategorie)),
+            'category_url'   => '' === $kategorie ? '' : shopChannelCategoryUrl($kategoriePfade, shopCategoryPath($kategorieRegeln, $kategorie)),
             'hyperlink'      => (string)($zeile['hugoshop_hyperlink'] ?? ''),
             'breadcrumbs'    => $liste($zeile['hugoshop_breadcrumbs']),
             'images'         => $bilder,

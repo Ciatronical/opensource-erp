@@ -51,6 +51,14 @@ Die **Kategorien** kommen in beiden Fällen aus dem Sortiment; in der Übersicht
 stehen nur Kategorien mit mindestens einem angebotenen Artikel. Die Adressen
 folgen dem Muster der Kanalkarte (`category_link`, dev/shop-veroeffentlichung.md).
 
+Den Adressteil einer Kategorie leitet der Kern aus dem Namen ab, wie Hugo es
+tut (`shopHugoPath`). Ein Satz mit Regeln kann unter `path` eine eigene Regel
+nennen (`fn(string $name): string`, `shopCategoryPath`) — nötig, wenn seine
+Produktvorlage den Namen verändert ins Front Matter schreibt. Der Satz
+`solar-spar` ersetzt so den Schrägstrich durch einen Bindestrich, wie die
+Bridge es tat. Die Regel gilt für die Übersicht, für `shop.category_url` der
+Produktseite und für das Zusammenzählen von Kategorien gleicher Adresse.
+
 `standard/category_groups.php` gibt es nicht mehr. Die Vorgaben für einen Satz
 mit Regeln (Stoppwörter, Schwellen, Restgruppe) stehen in `shopCategoryRules()`.
 

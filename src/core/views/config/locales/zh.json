@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "网站的 Hugo 配置",
         "shopSiteCheckOk": "网站的 Hugo 配置与软件包和设置相符。",
         "shopSiteCheckFix": "网站 config.json 的条目：",
+        "shopSiteCheckFixFile": "文件内容：",
         "shopSiteApply": "应用到网站（{count}）",
         "shopSiteApplyTitle": "补全 Hugo 配置",
         "shopSiteApplyIntro": "HugoCMS 会将这些条目写入网站的 {file} 文件。写入前会创建备份；如果 Hugo 无法加载新文件，则保留原文件。",

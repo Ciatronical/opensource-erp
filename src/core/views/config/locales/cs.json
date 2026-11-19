@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Konfigurace Hugo webu",
         "shopSiteCheckOk": "Konfigurace Hugo webu odpovídá balíčku a nastavení.",
         "shopSiteCheckFix": "Záznam pro config.json webu:",
+        "shopSiteCheckFixFile": "Obsah souboru:",
         "shopSiteApply": "Převzít do webu ({count})",
         "shopSiteApplyTitle": "Doplnit konfiguraci Hugo",
         "shopSiteApplyIntro": "HugoCMS zapíše tyto položky do souboru {file} webu. Předtím vznikne záložní kopie; pokud Hugo nový soubor nenačte, zůstane dosavadní.",

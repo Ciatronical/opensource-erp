@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Svetainės Hugo konfigūracija",
         "shopSiteCheckOk": "Svetainės Hugo konfigūracija atitinka paketą ir nustatymus.",
         "shopSiteCheckFix": "Įrašas svetainės config.json failui:",
+        "shopSiteCheckFixFile": "Failo turinys:",
         "shopSiteApply": "Perkelti į svetainę ({count})",
         "shopSiteApplyTitle": "Papildyti Hugo konfigūraciją",
         "shopSiteApplyIntro": "HugoCMS įrašo šiuos įrašus į svetainės failą {file}. Prieš tai sukuriama atsarginė kopija; jei Hugo neįkelia naujo failo, lieka ankstesnis.",

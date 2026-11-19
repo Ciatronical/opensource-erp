@@ -1287,6 +1287,7 @@
         "shopSiteCheck": "Configurația Hugo a site-ului",
         "shopSiteCheckOk": "Configurația Hugo a site-ului se potrivește cu pachetul și setările.",
         "shopSiteCheckFix": "Intrare pentru config.json al site-ului:",
+        "shopSiteCheckFixFile": "Conținutul fișierului:",
         "shopSiteApply": "Preia în site ({count})",
         "shopSiteApplyTitle": "Completează configurația Hugo",
         "shopSiteApplyIntro": "HugoCMS scrie aceste intrări în fișierul {file} al site-ului. Înainte se creează o copie de siguranță; dacă Hugo nu încarcă noul fișier, rămâne cel anterior.",
