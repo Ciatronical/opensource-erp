@@ -54,6 +54,8 @@ backend/templates/
 backend/tmp/*/
 # Sperre und Stand der Shop-Veröffentlichung (tools/shop-publish.php)
 backend/tmp/shop-publish-*
+# Arbeitsdateien des Artikelabgleichs (backend/cli/vendor-part-sync.php)
+backend/tmp/vendor-part-sync-*
 
 # Demo-Daten (lokal generiert, nicht im Repo)
 backend/api/demo/data/

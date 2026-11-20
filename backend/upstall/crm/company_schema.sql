@@ -3339,6 +3339,324 @@ CREATE INDEX IF NOT EXISTS idx_beleg_quellen_log_source ON beleg_quellen_log(sou
 
 COMMENT ON TABLE beleg_quellen_log IS 'Belegsuche: verarbeitete Elemente je Quelle (Idempotenz + Nachvollziehbarkeit).';
 
+-- ============================================================================
+-- ARTIKELABGLEICH JE LIEFERANT
+-- ============================================================================
+--
+-- Am Lieferanten (Reiter „Belegabruf") startet ein Knopf einen Lauf, der die
+-- Artikeldaten (Preise, Verfügbarkeit, Texte) beim Lieferanten abholt. Das
+-- Abholen erledigt ein Skript ausserhalb dieses Repositorys (settings.ini,
+-- [vendor_part_sync] command); der Läufer backend/cli/vendor-part-sync.php
+-- reicht dessen Zeilen stapelweise an vendor_part_sync_apply() weiter.
+-- Je Lauf eine Zeile; die Oberfläche liest daraus den Stand.
+CREATE TABLE IF NOT EXISTS vendor_part_syncs (
+    id               SERIAL PRIMARY KEY,
+    vendor_id        INTEGER NOT NULL REFERENCES vendor(id) ON DELETE CASCADE,
+    status           VARCHAR(20) NOT NULL DEFAULT 'queued'
+                     CHECK (status IN ('queued', 'running', 'done', 'error', 'cancelled')),
+    dry_run          BOOLEAN NOT NULL DEFAULT FALSE,   -- Probelauf: Änderungen nur ermitteln, nichts schreiben
+    debug            BOOLEAN NOT NULL DEFAULT FALSE,   -- ausführliches Protokoll (jede Zeile des Abrufprogramms)
+    part_limit       INTEGER,                          -- nur so viele Artikel abrufen, NULL = alle
+    cancel_requested BOOLEAN NOT NULL DEFAULT FALSE,   -- von der Oberfläche gesetzt, der Läufer bricht ab
+    pid              INTEGER,                          -- Prozess des Läufers
+    parts_total      INTEGER NOT NULL DEFAULT 0,       -- erwartete Artikel (an das Skript übergeben oder von ihm gemeldet)
+    parts_done       INTEGER NOT NULL DEFAULT 0,       -- verarbeitete Artikel
+    parts_updated    INTEGER NOT NULL DEFAULT 0,       -- geändert (im Probelauf: würde geändert)
+    parts_unchanged  INTEGER NOT NULL DEFAULT 0,
+    parts_unknown    INTEGER NOT NULL DEFAULT 0,       -- vom Skript geliefert, im ERP nicht gefunden
+    parts_error      INTEGER NOT NULL DEFAULT 0,
+    message          TEXT,                             -- letzte Meldung des Skripts bzw. Fehlertext
+    log              TEXT,                             -- Ende des Protokolls (gekürzt)
+    employee_id      INTEGER,
+    started_at       TIMESTAMP,
+    heartbeat_at     TIMESTAMP,                        -- Lebenszeichen des Läufers
+    finished_at      TIMESTAMP,
+    itime            TIMESTAMP DEFAULT NOW()
+);
+
+-- Je Lieferant höchstens ein wartender oder laufender Abgleich
+CREATE UNIQUE INDEX IF NOT EXISTS idx_vendor_part_syncs_active ON vendor_part_syncs(vendor_id) WHERE status IN ('queued', 'running');
+CREATE INDEX IF NOT EXISTS idx_vendor_part_syncs_vendor ON vendor_part_syncs(vendor_id, id DESC);
+
+COMMENT ON TABLE vendor_part_syncs IS 'Artikelabgleich: Läufe je Lieferant mit Stand und Bilanz.';
+
+-- Nachgetragen: Preisbildung und Preisdatei je Lauf
+ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS markup_percent        NUMERIC(8,3);
+ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS markup_random_percent NUMERIC(8,3);
+ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS psychological_prices  BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS input_name            TEXT;
+ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS input_file            TEXT;
+COMMENT ON COLUMN vendor_part_syncs.markup_percent        IS 'Aufschlag in Prozent auf den gelieferten Einkaufspreis; NULL = Verkaufspreis nicht aus dem Einkaufspreis bilden';
+COMMENT ON COLUMN vendor_part_syncs.markup_random_percent IS 'Streuung des Aufschlags in Prozentpunkten (±); je Artikel fest, siehe vendor_part_sync_apply()';
+COMMENT ON COLUMN vendor_part_syncs.psychological_prices  IS 'Verkaufspreis auf eine Endung mit 8 legen (11,98 statt 12,01), siehe vendor_part_sync_psych()';
+COMMENT ON COLUMN vendor_part_syncs.input_name            IS 'Name der hochgeladenen Preisdatei (Excel, CSV), wie der Benutzer sie nannte';
+COMMENT ON COLUMN vendor_part_syncs.input_file            IS 'Dateiname der Preisdatei in backend/tmp, solange der Lauf sie braucht';
+
+-- Je Lauf die Artikel, an denen sich etwas geändert hat, die unbekannt waren
+-- oder scheiterten. Unveränderte Artikel werden nur gezählt.
+CREATE TABLE IF NOT EXISTS vendor_part_sync_items (
+    id          SERIAL PRIMARY KEY,
+    sync_id     INTEGER NOT NULL REFERENCES vendor_part_syncs(id) ON DELETE CASCADE,
+    parts_id    INTEGER REFERENCES parts(id) ON DELETE SET NULL,
+    partnumber  TEXT,
+    result      VARCHAR(20) NOT NULL CHECK (result IN ('updated', 'unknown', 'error')),
+    changes     JSONB,                                 -- {"sellprice": {"old": 10, "new": 12}, "available": {...}, "ext_images": {"changed": true}}
+    message     TEXT,
+    itime       TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_vendor_part_sync_items_sync ON vendor_part_sync_items(sync_id, id DESC);
+
+COMMENT ON TABLE vendor_part_sync_items IS 'Artikelabgleich: geänderte, unbekannte und fehlerhafte Artikel eines Laufs.';
+
+-- Psychologischer Preis: der nächste Preis mit der Endung ,98 (11,98 statt
+-- 12,01). Läge der mehr als 2 % vom Preis entfernt, der nächste mit einer 8 an
+-- der zweiten Nachkommastelle (12,58 statt 12,60); ist auch der zu weit weg
+-- (Centartikel), bleibt der Preis, auf Cent gerundet. So verschiebt die
+-- Rundung nie mehr als 2 % der Spanne.
+CREATE OR REPLACE FUNCTION vendor_part_sync_psych(p_price numeric)
+    RETURNS numeric
+    LANGUAGE sql
+    IMMUTABLE
+AS $function$
+    WITH kandidaten AS (
+        SELECT 1 AS stufe, c FROM (VALUES (floor(p_price) - 0.02), (floor(p_price) + 0.98)) v(c)
+        UNION ALL
+        SELECT 2, c FROM (VALUES (floor(p_price * 10) / 10 - 0.02), (floor(p_price * 10) / 10 + 0.08)) v(c)
+    )
+    SELECT COALESCE(
+        (SELECT c FROM kandidaten
+          WHERE c > 0 AND abs(c - p_price) <= p_price * 0.02
+          ORDER BY stufe, abs(c - p_price), c
+          LIMIT 1),
+        round(p_price, 2))
+$function$;
+
+-- Einen Stapel Artikeldaten des Lieferanten übernehmen.
+--
+-- p_items: JSON-Array, je Artikel
+--   partnumber   Artikelnummer im ERP (oder model)
+--   model        Artikelnummer beim Lieferanten (makemodel.model dieses Lieferanten)
+--   description, sellprice, listprice, lastcost, ean, weight   -> parts
+--   available    true/false -> parts_channel_shop.unavailable (alle Kanäle des Artikels)
+--   ext          Objekt mit breadcrumbs, technical_data, properties, downloads,
+--                images, extra -> parts_ext.hugoshop_*
+-- Preisbildung laut Lauf (vendor_part_syncs):
+--   markup_percent         gesetzt und lastcost geliefert: Verkaufspreis =
+--                          Einkaufspreis + Aufschlag; ein gelieferter sellprice
+--                          zählt dann nicht
+--   markup_random_percent  streut den Aufschlag je Artikel um ± so viele
+--                          Prozentpunkte. Die Abweichung hängt fest an der
+--                          Artikelnummer: derselbe Artikel bekommt in jedem
+--                          Lauf denselben Aufschlag, sonst änderte jeder Lauf
+--                          jeden Preis und stellte jede Shopseite neu ein
+--   psychological_prices   vendor_part_sync_psych() auf den Bruttopreis der
+--                          Standard-Steuerzone, bei Nettopreisen in den
+--                          Stammdaten mit fünf Stellen zurückgerechnet (wie
+--                          shop_channel_price); ohne Shop-Erweiterung auf den
+--                          Preis, wie er in den Stammdaten steht
+-- Fehlende oder leere Angaben lassen den bisherigen Wert stehen. Es werden nur
+-- vorhandene Artikel geändert: neue Artikel, neue parts_ext- oder Kanalzeilen
+-- legt der Abgleich nicht an (eine neue parts_ext-Zeile stellte den Artikel
+-- über den Trigger in die Verkaufskanäle). Geschrieben wird nur, was sich
+-- unterscheidet — die Trigger der Shop-Veröffentlichung laufen also nur für
+-- wirklich geänderte Artikel. Im Probelauf (dry_run) wird nichts geschrieben.
+--
+-- Rückgabe: {updated, unchanged, unknown, error} dieses Stapels; dieselben
+-- Zahlen werden in vendor_part_syncs fortgeschrieben.
+CREATE OR REPLACE FUNCTION vendor_part_sync_apply(p_sync_id integer, p_items jsonb)
+    RETURNS json
+    LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_sync        vendor_part_syncs%ROWTYPE;
+    v_item        jsonb;
+    v_ext         jsonb;
+    v_changes     jsonb;
+    v_parts_id    integer;
+    v_key         text;
+    v_differs     boolean;
+    v_available   boolean;
+    v_has_ext     boolean := to_regclass('parts_ext') IS NOT NULL;
+    v_has_channel boolean := to_regclass('parts_channel_shop') IS NOT NULL;
+    v_has_tax     boolean := to_regproc('shop_tax_rate') IS NOT NULL;
+    v_brutto      boolean;
+    v_zone        text;
+    v_rate        numeric;
+    v_partnumber  text;
+    v_bg          integer;
+    v_lastcost    numeric;
+    v_sellprice   numeric;
+    v_spread      numeric;
+    v_updated     integer := 0;
+    v_unchanged   integer := 0;
+    v_unknown     integer := 0;
+    v_error       integer := 0;
+BEGIN
+    SELECT * INTO v_sync FROM vendor_part_syncs WHERE id = p_sync_id;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Artikelabgleich % gibt es nicht', p_sync_id;
+    END IF;
+
+    -- Stehen die Preise der Stammdaten brutto oder netto, und welche Steuerzone gilt
+    SELECT COALESCE((SELECT lower(btrim(value)) FROM defaults_oserp WHERE key = 'shop_tax_included'), '')
+               IN ('t', 'true', '1', 'y', 'yes'),
+           COALESCE((SELECT value FROM defaults_oserp WHERE key = 'shop_standard_taxzone'), 'Inland')
+      INTO v_brutto, v_zone;
+
+    FOR v_item IN SELECT value FROM jsonb_array_elements(COALESCE(p_items, '[]'::jsonb)) LOOP
+        -- Je Artikel ein eigener Sicherungspunkt: ein unbrauchbarer Wert
+        -- (Text statt Zahl) kostet nur diesen Artikel, nicht den Stapel
+        BEGIN
+            v_parts_id := NULL;
+            SELECT p.id INTO v_parts_id
+              FROM parts p
+             WHERE p.partnumber = v_item->>'partnumber'
+             ORDER BY p.id LIMIT 1;
+
+            IF v_parts_id IS NULL AND COALESCE(v_item->>'model', '') <> '' THEN
+                SELECT m.parts_id INTO v_parts_id
+                  FROM makemodel m
+                 WHERE m.make = v_sync.vendor_id AND lower(m.model) = lower(v_item->>'model')
+                 ORDER BY m.id LIMIT 1;
+            END IF;
+
+            IF v_parts_id IS NULL THEN
+                INSERT INTO vendor_part_sync_items (sync_id, partnumber, result)
+                VALUES (p_sync_id, COALESCE(NULLIF(v_item->>'partnumber', ''), v_item->>'model'), 'unknown');
+                v_unknown := v_unknown + 1;
+                CONTINUE;
+            END IF;
+
+            -- Verkaufspreis bilden: Aufschlag, Streuung, psychologischer Preis
+            SELECT p.partnumber, p.buchungsgruppen_id INTO v_partnumber, v_bg FROM parts p WHERE p.id = v_parts_id;
+            v_lastcost  := round((v_item->>'lastcost')::numeric, 5);
+            v_sellprice := round((v_item->>'sellprice')::numeric, 5);
+            IF v_sync.markup_percent IS NOT NULL AND v_lastcost IS NOT NULL THEN
+                -- Abweichung zwischen -1 und +1, fest je Artikelnummer
+                v_spread := (abs(hashtext(v_partnumber)::bigint) % 2001) / 1000.0 - 1;
+                v_sellprice := round(v_lastcost * (1 + (v_sync.markup_percent
+                                   + COALESCE(v_sync.markup_random_percent, 0) * v_spread) / 100), 5);
+            END IF;
+            IF v_sync.psychological_prices AND v_sellprice > 0 THEN
+                v_rate := 0;
+                IF v_has_tax AND NOT v_brutto THEN
+                    EXECUTE 'SELECT shop_tax_rate($1, $2)' INTO v_rate USING v_bg, v_zone;
+                END IF;
+                IF COALESCE(v_rate, 0) > 0 THEN
+                    v_sellprice := round(vendor_part_sync_psych(round(v_sellprice * (1 + v_rate), 2)) / (1 + v_rate), 5);
+                ELSE
+                    v_sellprice := vendor_part_sync_psych(v_sellprice);
+                END IF;
+            END IF;
+
+            -- Stammdaten: was unterscheidet sich?
+            SELECT jsonb_strip_nulls(jsonb_build_object(
+                       'description', CASE WHEN n.description IS NOT NULL AND n.description IS DISTINCT FROM p.description
+                                           THEN jsonb_build_object('old', p.description, 'new', n.description) END,
+                       'sellprice',   CASE WHEN n.sellprice IS NOT NULL AND n.sellprice IS DISTINCT FROM p.sellprice
+                                           THEN jsonb_build_object('old', p.sellprice, 'new', n.sellprice) END,
+                       'listprice',   CASE WHEN n.listprice IS NOT NULL AND n.listprice IS DISTINCT FROM p.listprice
+                                           THEN jsonb_build_object('old', p.listprice, 'new', n.listprice) END,
+                       'lastcost',    CASE WHEN n.lastcost IS NOT NULL AND n.lastcost IS DISTINCT FROM p.lastcost
+                                           THEN jsonb_build_object('old', p.lastcost, 'new', n.lastcost) END,
+                       'ean',         CASE WHEN n.ean IS NOT NULL AND n.ean IS DISTINCT FROM p.ean
+                                           THEN jsonb_build_object('old', p.ean, 'new', n.ean) END,
+                       'weight',      CASE WHEN n.weight IS NOT NULL AND n.weight IS DISTINCT FROM p.weight
+                                           THEN jsonb_build_object('old', p.weight, 'new', n.weight) END
+                   ))
+              INTO v_changes
+              FROM parts p
+             CROSS JOIN (SELECT NULLIF(btrim(v_item->>'description'), '')    AS description,
+                                v_sellprice                                  AS sellprice,
+                                round((v_item->>'listprice')::numeric, 5)    AS listprice,
+                                v_lastcost                                   AS lastcost,
+                                NULLIF(btrim(v_item->>'ean'), '')            AS ean,
+                                (v_item->>'weight')::real                    AS weight) n
+             WHERE p.id = v_parts_id;
+
+            IF NOT v_sync.dry_run AND v_changes <> '{}'::jsonb THEN
+                UPDATE parts
+                   SET description = COALESCE(v_changes #>> '{description,new}', description),
+                       sellprice   = COALESCE((v_changes #>> '{sellprice,new}')::numeric, sellprice),
+                       listprice   = COALESCE((v_changes #>> '{listprice,new}')::numeric, listprice),
+                       lastcost    = COALESCE((v_changes #>> '{lastcost,new}')::numeric, lastcost),
+                       ean         = COALESCE(v_changes #>> '{ean,new}', ean),
+                       weight      = COALESCE((v_changes #>> '{weight,new}')::real, weight),
+                       priceupdate = CASE WHEN v_changes ?| ARRAY['sellprice', 'listprice', 'lastcost']
+                                          THEN current_date ELSE priceupdate END
+                 WHERE id = v_parts_id;
+            END IF;
+
+            -- Einkaufspreis beim Lieferanten (vorhandene Zuordnung fortschreiben)
+            IF NOT v_sync.dry_run AND (v_item->>'lastcost') IS NOT NULL THEN
+                UPDATE makemodel
+                   SET lastcost = round((v_item->>'lastcost')::numeric, 5), lastupdate = current_date
+                 WHERE parts_id = v_parts_id AND make = v_sync.vendor_id
+                   AND lastcost IS DISTINCT FROM round((v_item->>'lastcost')::numeric, 5);
+            END IF;
+
+            -- Verfügbarkeit beim Lieferanten -> „Momentan nicht verfügbar" in den Kanälen
+            IF v_has_channel AND jsonb_typeof(v_item->'available') = 'boolean' THEN
+                v_available := (v_item->>'available')::boolean;
+                SELECT EXISTS (SELECT 1 FROM parts_channel_shop pc
+                                WHERE pc.parts_id = v_parts_id AND pc.unavailable IS DISTINCT FROM NOT v_available)
+                  INTO v_differs;
+                IF v_differs THEN
+                    v_changes := v_changes || jsonb_build_object('available', jsonb_build_object('old', NOT v_available, 'new', v_available));
+                    IF NOT v_sync.dry_run THEN
+                        UPDATE parts_channel_shop
+                           SET unavailable = NOT v_available, mtime = now()
+                         WHERE parts_id = v_parts_id AND unavailable IS DISTINCT FROM NOT v_available;
+                    END IF;
+                END IF;
+            END IF;
+
+            -- Shop-Angaben (parts_ext): nur vorhandene Zeile, nur gelieferte Felder
+            v_ext := v_item->'ext';
+            IF v_has_ext AND jsonb_typeof(v_ext) = 'object' THEN
+                FOREACH v_key IN ARRAY ARRAY['breadcrumbs', 'technical_data', 'properties', 'downloads', 'images', 'extra'] LOOP
+                    IF jsonb_typeof(v_ext->v_key) IN ('object', 'array') THEN
+                        EXECUTE format('SELECT EXISTS (SELECT 1 FROM parts_ext WHERE parts_id = $1 AND %I IS DISTINCT FROM $2)', 'hugoshop_' || v_key)
+                           INTO v_differs USING v_parts_id, v_ext->v_key;
+                        IF v_differs THEN
+                            v_changes := v_changes || jsonb_build_object('ext_' || v_key, jsonb_build_object('changed', true));
+                            IF NOT v_sync.dry_run THEN
+                                EXECUTE format('UPDATE parts_ext SET %I = $2 WHERE parts_id = $1', 'hugoshop_' || v_key)
+                                  USING v_parts_id, v_ext->v_key;
+                            END IF;
+                        END IF;
+                    END IF;
+                END LOOP;
+            END IF;
+
+            IF v_changes = '{}'::jsonb THEN
+                v_unchanged := v_unchanged + 1;
+            ELSE
+                INSERT INTO vendor_part_sync_items (sync_id, parts_id, partnumber, result, changes)
+                SELECT p_sync_id, p.id, p.partnumber, 'updated', v_changes FROM parts p WHERE p.id = v_parts_id;
+                v_updated := v_updated + 1;
+            END IF;
+        EXCEPTION WHEN OTHERS THEN
+            INSERT INTO vendor_part_sync_items (sync_id, parts_id, partnumber, result, message)
+            VALUES (p_sync_id, v_parts_id, COALESCE(NULLIF(v_item->>'partnumber', ''), v_item->>'model'), 'error', SQLERRM);
+            v_error := v_error + 1;
+        END;
+    END LOOP;
+
+    UPDATE vendor_part_syncs
+       SET parts_done      = parts_done + v_updated + v_unchanged + v_unknown + v_error,
+           parts_updated   = parts_updated + v_updated,
+           parts_unchanged = parts_unchanged + v_unchanged,
+           parts_unknown   = parts_unknown + v_unknown,
+           parts_error     = parts_error + v_error,
+           heartbeat_at    = now()
+     WHERE id = p_sync_id;
+
+    RETURN json_build_object('updated', v_updated, 'unchanged', v_unchanged, 'unknown', v_unknown, 'error', v_error);
+END;
+$function$;
+
 -- eBay-Bestellimport: Idempotenz, Audit und Kaeufer->Kunde-Verknuepfung.
 -- UNIQUE(ebay_order_id) ist die zentrale Sperre gegen doppelte Rechnungen.
 -- buyer_username dient als schnellster Dubletten-Treffer fuer wiederkehrende Kaeufer.

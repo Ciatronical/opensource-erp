@@ -433,6 +433,8 @@
             <v-window-item v-if="cvProfile?.id && cvProfile?.src === 'V'" value="belegabruf">
                 <div class="pa-3">
                     <beleg-quellen-config :vendor-id="Number(cvProfile.id)" :vendor-name="cvProfile.name || ''" />
+                    <!-- Artikelabgleich: Preise und Verfügbarkeit beim Lieferanten abholen -->
+                    <vendor-part-sync-panel class="mt-3" :vendor-id="Number(cvProfile.id)" :vendor-name="cvProfile.name || ''" />
                 </div>
             </v-window-item>
         </v-window>
@@ -455,6 +457,7 @@ import TelegramTab from '@/core/views/customer-vendor/tabs/telegram.tab.vue'
 import { useTelegramConfig } from '@/core/composables/useTelegramConfig.js'
 import PortalTab from '@/core/views/customer-vendor/tabs/portal.tab.vue'
 import BelegQuellenConfig from '@/core/views/config/tabs/beleg-quellen.config.vue'
+import VendorPartSyncPanel from '@/core/views/customer-vendor/tabs/vendor-part-sync.panel.vue'
 import { formatPhone } from '@/core/utils/phoneFormat.js'
 import { collectEmailAddresses } from '@/core/utils/cvContactAddresses.js'
 
