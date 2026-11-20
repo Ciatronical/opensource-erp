@@ -107,6 +107,9 @@ CREATE TABLE IF NOT EXISTS parts_ext
     -- RESTRICT: eine Kategorie mit Artikeln lässt sich nicht löschen, die
     -- Ansicht Sortiment sagt, wie viele noch daran hängen
     hugoshop_category_id    integer REFERENCES category_shop (id) ON DELETE RESTRICT,
+    hugoshop_extra          jsonb,
+    hugoshop_search_terms   text,
+    hugoshop_search         tsvector,
     CONSTRAINT parts_ext_parts_id_key UNIQUE (parts_id),
     CONSTRAINT parts_ext_parts_id_fk FOREIGN KEY (parts_id)
         REFERENCES parts (id) ON UPDATE NO ACTION ON DELETE CASCADE
@@ -121,6 +124,9 @@ COMMENT ON COLUMN parts_ext.hugoshop_images         IS 'JSON-Array: Bilddateinam
 COMMENT ON COLUMN parts_ext.hugoshop_hyperlink      IS 'Zielseite im Shop (ohne Basis-URL)';
 COMMENT ON COLUMN parts_ext.hugoshop_category       IS 'Abgelöst durch hugoshop_category_id (Sortiment); wird beim Speichern geleert und nur noch einmalig übernommen';
 COMMENT ON COLUMN parts_ext.hugoshop_category_id    IS 'Kategorie des Artikels im Sortiment (category_shop)';
+COMMENT ON COLUMN parts_ext.hugoshop_extra          IS 'JSON-Objekt: Zusatzdaten für den Vorlagensatz des Shops (z. B. kompatible Fahrzeuge, OE-Nummern); der Kern reicht sie nur durch';
+COMMENT ON COLUMN parts_ext.hugoshop_search_terms   IS 'Zusätzliche Suchwörter für die Shop-Suche, durch Leerzeichen getrennt (z. B. OE-Nummern)';
+COMMENT ON COLUMN parts_ext.hugoshop_search         IS 'Suchindex der Shop-Suche, von Triggern gepflegt (shop_part_search_vector) — nicht von Hand setzen';
 
 -- Auf einer bestehenden Datenbank legt der Upstall nur fehlende SPALTEN an,
 -- keine Constraints — der eindeutige Index muss deshalb hier nachgezogen
@@ -1044,9 +1050,119 @@ DO $$ BEGIN
               OR OLD.hugoshop_images IS DISTINCT FROM NEW.hugoshop_images
               OR OLD.hugoshop_technical_data IS DISTINCT FROM NEW.hugoshop_technical_data
               OR OLD.hugoshop_properties IS DISTINCT FROM NEW.hugoshop_properties
-              OR OLD.hugoshop_downloads IS DISTINCT FROM NEW.hugoshop_downloads)
+              OR OLD.hugoshop_downloads IS DISTINCT FROM NEW.hugoshop_downloads
+              OR OLD.hugoshop_extra IS DISTINCT FROM NEW.hugoshop_extra)
         EXECUTE FUNCTION parts_ext_shop_auto_publish();
 END $$;
+
+-- Suchindex der Shop-Suche (backend/api/shop/lib/search.php). Bis 20.11.2026
+-- entstand der Index bei jeder Suchanfrage aus allen angebotenen Artikeln;
+-- bei einem großen Sortiment (auto-spar.de: 170.000 Artikel) dauert das zu
+-- lange. Jetzt steht er je Artikel in parts_ext.hugoshop_search, mit einem
+-- GIN-Index.
+--
+-- Durchsucht werden Bezeichnung und Artikelnummer, die Titel des Artikels in
+-- den Verkaufskanälen, Navigationspfad, Kategorie und die zusätzlichen
+-- Suchwörter (hugoshop_search_terms). Die Artikelnummer steht zusätzlich ohne
+-- Sonderzeichen im Index: die Suche reduziert jeden Begriff auf Buchstaben und
+-- Ziffern, „HP/310953“ wird dort zu „HP310953“. Die Kanaltitel aller Kanäle stehen in
+-- einem Index: ein Artikel wird auch über den Titel gefunden, den er in einem
+-- anderen Kanal trägt.
+CREATE OR REPLACE FUNCTION shop_part_search_vector(p_parts_id integer, p_breadcrumbs jsonb,
+                                                   p_category_id integer, p_terms text)
+RETURNS tsvector AS $$
+    SELECT to_tsvector('simple',
+               COALESCE(p.description, '') || ' ' || COALESCE(p.partnumber, '') || ' ' ||
+               regexp_replace(COALESCE(p.partnumber, ''), '[^[:alnum:]]', '', 'g') || ' ' ||
+               COALESCE((SELECT string_agg(pc.title, ' ')
+                           FROM parts_channel_shop pc
+                          WHERE pc.parts_id = p.id
+                            AND btrim(COALESCE(pc.title, '')) <> ''), '') || ' ' ||
+               COALESCE(p_breadcrumbs::text, '') || ' ' ||
+               COALESCE((SELECT btrim(cs.name) FROM category_shop cs WHERE cs.id = p_category_id), '') || ' ' ||
+               COALESCE(p_terms, ''))
+      FROM parts p
+     WHERE p.id = p_parts_id
+$$ LANGUAGE sql STABLE;
+
+-- Jede Änderung an parts_ext rechnet den Index der Zeile neu.
+CREATE OR REPLACE FUNCTION parts_ext_search_refresh() RETURNS trigger AS $$
+BEGIN
+    NEW.hugoshop_search := shop_part_search_vector(NEW.parts_id, NEW.hugoshop_breadcrumbs,
+                                                   NEW.hugoshop_category_id, NEW.hugoshop_search_terms);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Ändert sich eine der Quellen außerhalb von parts_ext, wird die Zeile des
+-- Artikels angefasst; der Trigger oben rechnet neu. Die Veröffentlichung
+-- stößt das nicht an (trigger_parts_ext_shop_auto_publish prüft den
+-- Suchindex nicht).
+CREATE OR REPLACE FUNCTION shop_part_search_touch() RETURNS trigger AS $$
+BEGIN
+    IF TG_TABLE_NAME = 'parts' THEN
+        UPDATE parts_ext SET hugoshop_search = NULL WHERE parts_id = NEW.id;
+    ELSIF TG_TABLE_NAME = 'parts_channel_shop' THEN
+        -- beim Löschen einer Kanalzeile gibt es nur OLD
+        UPDATE parts_ext SET hugoshop_search = NULL
+         WHERE parts_id = CASE WHEN TG_OP = 'DELETE' THEN OLD.parts_id ELSE NEW.parts_id END;
+    ELSIF TG_TABLE_NAME = 'category_shop' THEN
+        UPDATE parts_ext SET hugoshop_search = NULL WHERE hugoshop_category_id = NEW.id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$ BEGIN
+    DROP TRIGGER IF EXISTS trigger_parts_ext_search_refresh ON parts_ext;
+    CREATE TRIGGER trigger_parts_ext_search_refresh
+        BEFORE INSERT OR UPDATE ON parts_ext
+        FOR EACH ROW
+        EXECUTE FUNCTION parts_ext_search_refresh();
+
+    DROP TRIGGER IF EXISTS trigger_parts_shop_search_touch ON parts;
+    CREATE TRIGGER trigger_parts_shop_search_touch
+        AFTER UPDATE OF description, partnumber ON parts
+        FOR EACH ROW
+        WHEN (OLD.description IS DISTINCT FROM NEW.description
+              OR OLD.partnumber IS DISTINCT FROM NEW.partnumber)
+        EXECUTE FUNCTION shop_part_search_touch();
+
+    DROP TRIGGER IF EXISTS trigger_parts_channel_shop_search_insert ON parts_channel_shop;
+    CREATE TRIGGER trigger_parts_channel_shop_search_insert
+        AFTER INSERT ON parts_channel_shop
+        FOR EACH ROW
+        WHEN (btrim(COALESCE(NEW.title, '')) <> '')
+        EXECUTE FUNCTION shop_part_search_touch();
+
+    DROP TRIGGER IF EXISTS trigger_parts_channel_shop_search_update ON parts_channel_shop;
+    CREATE TRIGGER trigger_parts_channel_shop_search_update
+        AFTER UPDATE OF title ON parts_channel_shop
+        FOR EACH ROW
+        WHEN (OLD.title IS DISTINCT FROM NEW.title)
+        EXECUTE FUNCTION shop_part_search_touch();
+
+    -- Mit der Kanalzeile verschwindet ihr Titel aus dem Index
+    DROP TRIGGER IF EXISTS trigger_parts_channel_shop_search_delete ON parts_channel_shop;
+    CREATE TRIGGER trigger_parts_channel_shop_search_delete
+        AFTER DELETE ON parts_channel_shop
+        FOR EACH ROW
+        WHEN (btrim(COALESCE(OLD.title, '')) <> '')
+        EXECUTE FUNCTION shop_part_search_touch();
+
+    DROP TRIGGER IF EXISTS trigger_category_shop_search_touch ON category_shop;
+    CREATE TRIGGER trigger_category_shop_search_touch
+        AFTER UPDATE OF name ON category_shop
+        FOR EACH ROW
+        WHEN (OLD.name IS DISTINCT FROM NEW.name)
+        EXECUTE FUNCTION shop_part_search_touch();
+END $$;
+
+CREATE INDEX IF NOT EXISTS parts_ext_hugoshop_search_idx ON parts_ext USING gin (hugoshop_search);
+
+-- Bestand nachziehen: Zeilen ohne Index anfassen, der Trigger rechnet. Nach
+-- dem ersten Lauf trifft das keine Zeile mehr.
+UPDATE parts_ext SET hugoshop_search = NULL WHERE hugoshop_search IS NULL;
 
 -- Sortiment (dev/shop-sortiment.md). Eine umbenannte Kategorie hat eine neue
 -- Adresse: die Produktseiten ihrer Artikel tragen Name und Adresse im Front

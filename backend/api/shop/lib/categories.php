@@ -210,9 +210,18 @@ function shopHugoPath(string $text): string {
     return mb_strtolower($pfad, 'UTF-8');
 }
 
-/** Klein geschrieben, Umlaute aufgelöst — für Wortvergleich und Sortierung */
+/**
+ * Klein geschrieben, Umlaute und polnische Zeichen aufgelöst — für
+ * Wortvergleich und Sortierung. Polnisch, weil Lieferantendaten polnische
+ * Kategorien mitbringen (auto-spar.de); die Wortteile eines Satzes stehen
+ * deshalb ohne diese Zeichen („narzedz“ für „Narzędzia“).
+ */
 function shopCategoryFold(string $text): string {
-    return str_replace(['ä', 'ö', 'ü', 'ß'], ['ae', 'oe', 'ue', 'ss'], mb_strtolower($text, 'UTF-8'));
+    return str_replace(
+        ['ä', 'ö', 'ü', 'ß', 'ą', 'ć', 'ę', 'ł', 'ń', 'ó', 'ś', 'ź', 'ż'],
+        ['ae', 'oe', 'ue', 'ss', 'a', 'c', 'e', 'l', 'n', 'o', 's', 'z', 'z'],
+        mb_strtolower($text, 'UTF-8')
+    );
 }
 
 /** Erster Buchstabe groß, auch bei Umlauten */

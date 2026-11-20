@@ -26,6 +26,15 @@
 --                   aus dem Dateinamen: ohne Endung, ohne führende Nummer,
 --                   Unterstriche als Leerzeichen.
 --   technical_data  Eine leere Liste wird zum leeren Objekt.
+--   Kfz-Daten       Führt die Bridge-Tabelle kompatible Fahrzeuge, OE-Nummern,
+--                   TecDoc-Eigenschaften und Ersatzteile (auto-spar.de), werden
+--                   sie zu den Zusatzdaten des Artikels (hugoshop_extra, gleiche
+--                   Schlüssel wie die Spalten der Bridge) und die OE-Nummern zu
+--                   Suchwörtern (hugoshop_search_terms): jede Nummer, wie sie
+--                   geschrieben ist, und ohne Leerzeichen.
+--   EAN             Aus der Quelltabelle des Lieferanten nach parts.ean, wo sie
+--                   fehlt (Schritt 10); ebenso die Reihenfolge der
+--                   TecDoc-Eigenschaften in die Zusatzdaten.
 --
 -- Angeboten (Kanalzeile aktiv) werden alle Artikel der Bridge-Tabelle, wie im
 -- Bridge-Shop. Dort setzt die Veröffentlichung ausverkaufte Artikel auf
@@ -85,7 +94,8 @@ WITH quelle AS (
      ORDER BY ph.parts_id, ph.id DESC
 ), neu AS (
     INSERT INTO parts_ext (parts_id, hugoshop_breadcrumbs, hugoshop_technical_data, hugoshop_properties,
-                           hugoshop_downloads, hugoshop_images, hugoshop_hyperlink, hugoshop_category)
+                           hugoshop_downloads, hugoshop_images, hugoshop_hyperlink, hugoshop_category,
+                           hugoshop_extra, hugoshop_search_terms)
     SELECT q.parts_id,
            q.breadcrumbs,
            CASE WHEN jsonb_typeof(q.technical_data) = 'array' AND jsonb_array_length(q.technical_data) = 0
@@ -114,8 +124,26 @@ WITH quelle AS (
                 ELSE q.downloads END,
            q.images,
            NULLIF(btrim(q.hyperlink), ''),
-           NULLIF(btrim(q.category), '')
+           NULLIF(btrim(q.category), ''),
+           -- Kfz-Daten: über die Zeile als JSON gelesen, weil die Spalten nur
+           -- in der Bridge-Tabelle eines Kfz-Shops stehen. Leere Angaben
+           -- ([] und {}) fallen weg, ohne Angaben bleibt die Spalte leer.
+           (SELECT NULLIF(COALESCE(jsonb_object_agg(k.schluessel, z.zeile -> k.schluessel), '{}'::jsonb), '{}'::jsonb)
+              FROM unnest(ARRAY['applicable_cars', 'oe_codes', 'tecdoc_params',
+                                'oe_replacement', 'eq_replacement']) AS k(schluessel)
+             WHERE jsonb_typeof(z.zeile -> k.schluessel) IN ('array', 'object')
+               AND z.zeile -> k.schluessel NOT IN ('[]'::jsonb, '{}'::jsonb)),
+           CASE WHEN jsonb_typeof(z.zeile -> 'oe_codes') = 'array' THEN (
+                    SELECT string_agg(DISTINCT w.wort, ' ')
+                      FROM jsonb_array_elements(z.zeile -> 'oe_codes') AS h(eintrag)
+                     CROSS JOIN LATERAL jsonb_array_elements_text(
+                               CASE WHEN jsonb_typeof(h.eintrag -> 'codes') = 'array'
+                                    THEN h.eintrag -> 'codes' ELSE '[]'::jsonb END) AS c(nummer)
+                     CROSS JOIN LATERAL (VALUES (btrim(c.nummer)), (replace(c.nummer, ' ', ''))) AS w(wort)
+                     WHERE w.wort <> '')
+           END
       FROM quelle q
+     CROSS JOIN LATERAL (SELECT to_jsonb(q) AS zeile) z
       ON CONFLICT (parts_id) DO NOTHING
     RETURNING parts_id
 )
@@ -204,11 +232,16 @@ DELETE FROM carts_hugoshop c
 -- publish/run.*.php der Webseite; je Shop anpassen. Fehlende Tabellen werden
 -- übergangen. Nur für die in diesem Lauf übernommenen Artikel.
 
-CREATE TEMPORARY TABLE bridge_quelle (tabelle text PRIMARY KEY, praefix text NOT NULL) ON COMMIT DROP;
+-- roh: Die Veröffentlichung dieses Lieferanten setzte die Beschreibung
+-- unverändert in die Seite (run.hart.php von auto-spar.de), statt sie in
+-- Absätze zu gliedern (main.php von solar-spar.de) — für Schritt 9.
+CREATE TEMPORARY TABLE bridge_quelle (tabelle text PRIMARY KEY, praefix text NOT NULL,
+                                      roh boolean NOT NULL DEFAULT false) ON COMMIT DROP;
 INSERT INTO bridge_quelle VALUES
-    ('parts_attack_source',            'AT/'),
-    ('parts_mainmetall_source',        'MM/'),
-    ('parts_schliessel_kaelte_source', 'SK/');
+    ('parts_attack_source',            'AT/', false),
+    ('parts_mainmetall_source',        'MM/', false),
+    ('parts_schliessel_kaelte_source', 'SK/', false),
+    ('parts_hart_source',              'HP/', true);
 
 CREATE TEMPORARY TABLE wieder_gueltig (parts_id integer PRIMARY KEY) ON COMMIT DROP;
 
@@ -307,7 +340,8 @@ SELECT 'shop_dropshipping_default', '1'
 -- 2 = mit Trennlinie, aber Zeilenwechsel am Absatzende als <br />). Anders
 -- als die übrigen Schritte nicht auf die in diesem Lauf übernommenen Artikel
 -- begrenzt: der Schritt kam am 18.11.2026 dazu und holt auch für früher
--- übernommene Artikel nach.
+-- übernommene Artikel nach. Form 3 lässt die Beschreibung unverändert (Spalte
+-- roh in bridge_quelle).
 
 CREATE FUNCTION pg_temp.bridge_marketing(p_text text, p_form integer DEFAULT 0) RETURNS text LANGUAGE plpgsql AS $fn$
 DECLARE
@@ -331,7 +365,10 @@ BEGIN
         kurz := btrim(m ->> 'summary');
     END IF;
 
-    IF jsonb_typeof(m -> 'description') = 'string' THEN
+    IF p_form = 3 AND jsonb_typeof(m -> 'description') = 'string' THEN
+        -- roh: unverändert, ohne Absätze
+        lang := m ->> 'description';
+    ELSIF jsonb_typeof(m -> 'description') = 'string' THEN
         IF p_form > 0 THEN
             roh := btrim(regexp_replace(m ->> 'description', E'\r\n|\r', E'\n', 'g'));
             SELECT string_agg('<p>' || replace(btrim(a.absatz), E'\n', E'<br />\n') || '</p>', '' ORDER BY a.nr)
@@ -377,7 +414,7 @@ DO $$
 DECLARE
     q record;
 BEGIN
-    FOR q IN SELECT b.tabelle, b.praefix
+    FOR q IN SELECT b.tabelle, b.praefix, CASE WHEN b.roh THEN 3 ELSE 0 END AS form
                FROM bridge_quelle b
               WHERE to_regclass(b.tabelle) IS NOT NULL
                 AND EXISTS (SELECT 1 FROM information_schema.columns c
@@ -385,7 +422,7 @@ BEGIN
                                AND c.column_name = 'marketing') LOOP
         EXECUTE format($sql$
             WITH texte AS (
-                SELECT DISTINCT ON (p.id) p.id AS parts_id, pg_temp.bridge_marketing(s.marketing::text) AS text,
+                SELECT DISTINCT ON (p.id) p.id AS parts_id, pg_temp.bridge_marketing(s.marketing::text, %s) AS text,
                        pg_temp.bridge_marketing(s.marketing::text, 1) AS form1,
                        pg_temp.bridge_marketing(s.marketing::text, 2) AS form2
                   FROM %I s
@@ -404,7 +441,85 @@ BEGIN
                 RETURNING pc.parts_id
             )
             INSERT INTO mit_marketing SELECT DISTINCT parts_id FROM gesetzt ON CONFLICT DO NOTHING
-        $sql$, q.tabelle, q.praefix);
+        $sql$, q.form, q.tabelle, q.praefix);
+    END LOOP;
+END $$;
+
+-- ----------------------------------------------------------------------------
+-- 10. EAN und Reihenfolge der TecDoc-Eigenschaften
+-- ----------------------------------------------------------------------------
+-- Zwei Angaben standen in der Bridge nur in der Quelltabelle des Lieferanten:
+--
+-- Die EAN (eancode): Die Veröffentlichung schrieb sie als productModel in die
+-- Produktseite, aber nie an den Artikel. Sie kommt nach parts.ean, wo der
+-- Artikel noch keine hat — ohne Leerraum: einzelne Einträge des Lieferanten
+-- tragen Tabulatoren und Zeilenwechsel, an denen Hugo ab 0.170 beim Lesen
+-- des Front Matters scheitert.
+--
+-- Die Reihenfolge der TecDoc-Eigenschaften: Die Quelltabelle führt sie als
+-- json in der Reihenfolge des Lieferanten, die Bridge-Tabelle und die
+-- Zusatzdaten als jsonb — dort geht die Reihenfolge verloren. Die Schlüssel
+-- kommen deshalb in ihrer Reihenfolge als tecdoc_order in die Zusatzdaten;
+-- der Vorlagensatz ordnet die Tabelle der Produktseite danach.
+--
+-- Wiederholbar und nicht auf die in diesem Lauf übernommenen Artikel
+-- begrenzt: gesetzt wird nur, was fehlt.
+
+CREATE TEMPORARY TABLE mit_ean (parts_id integer PRIMARY KEY) ON COMMIT DROP;
+CREATE TEMPORARY TABLE mit_reihenfolge (parts_id integer PRIMARY KEY) ON COMMIT DROP;
+
+DO $$
+DECLARE
+    q record;
+BEGIN
+    FOR q IN SELECT b.tabelle, b.praefix,
+                    EXISTS (SELECT 1 FROM information_schema.columns c
+                             WHERE c.table_schema = current_schema() AND c.table_name = b.tabelle
+                               AND c.column_name = 'eancode') AS ean,
+                    EXISTS (SELECT 1 FROM information_schema.columns c
+                             WHERE c.table_schema = current_schema() AND c.table_name = b.tabelle
+                               AND c.column_name = 'tecdoc_params') AS tecdoc
+               FROM bridge_quelle b
+              WHERE to_regclass(b.tabelle) IS NOT NULL LOOP
+        IF q.ean THEN
+            EXECUTE format($sql$
+                WITH gesetzt AS (
+                    UPDATE parts p
+                       SET ean = regexp_replace(s.eancode, '[[:space:]]+', '', 'g')
+                      FROM %I s
+                     WHERE p.partnumber = %L || s.number
+                       AND btrim(COALESCE(p.ean, '')) = ''
+                       AND regexp_replace(COALESCE(s.eancode, ''), '[[:space:]]+', '', 'g') <> ''
+                       AND EXISTS (SELECT 1 FROM parts_ext pe WHERE pe.parts_id = p.id)
+                    RETURNING p.id
+                )
+                INSERT INTO mit_ean SELECT DISTINCT id FROM gesetzt ON CONFLICT DO NOTHING
+            $sql$, q.tabelle, q.praefix);
+        END IF;
+        IF q.tecdoc THEN
+            EXECUTE format($sql$
+                WITH folge AS (
+                    SELECT DISTINCT ON (p.id) p.id AS parts_id,
+                           (SELECT jsonb_agg(k.schluessel ORDER BY k.nr)
+                              FROM json_object_keys(s.tecdoc_params::json) WITH ORDINALITY AS k(schluessel, nr)) AS schluessel
+                      FROM %I s
+                      JOIN parts p ON p.partnumber = %L || s.number
+                     WHERE s.tecdoc_params IS NOT NULL
+                       AND json_typeof(s.tecdoc_params::json) = 'object'
+                     ORDER BY p.id
+                ), gesetzt AS (
+                    UPDATE parts_ext pe
+                       SET hugoshop_extra = pe.hugoshop_extra || jsonb_build_object('tecdoc_order', f.schluessel)
+                      FROM folge f
+                     WHERE pe.parts_id = f.parts_id
+                       AND f.schluessel IS NOT NULL
+                       AND jsonb_typeof(pe.hugoshop_extra -> 'tecdoc_params') = 'object'
+                       AND NOT jsonb_exists(pe.hugoshop_extra, 'tecdoc_order')
+                    RETURNING pe.parts_id
+                )
+                INSERT INTO mit_reihenfolge SELECT DISTINCT parts_id FROM gesetzt ON CONFLICT DO NOTHING
+            $sql$, q.tabelle, q.praefix);
+        END IF;
     END LOOP;
 END $$;
 
@@ -437,6 +552,11 @@ SELECT (SELECT count(*) FROM uebernommen)                                       
          WHERE hugoshop_downloads IS NOT NULL AND hugoshop_downloads <> '{}'::jsonb) AS mit_downloads,
        (SELECT count(*) FROM parts_ext
          WHERE jsonb_typeof(hugoshop_technical_data) NOT IN ('object', 'null'))   AS technische_daten_pruefen,
+       (SELECT count(*) FROM parts_ext WHERE hugoshop_extra IS NOT NULL)          AS mit_zusatzdaten,
+       (SELECT count(*) FROM mit_ean)                                             AS ean_gesetzt,
+       (SELECT count(*) FROM mit_reihenfolge)                                     AS tecdoc_reihenfolge_gesetzt,
+       (SELECT count(*) FROM parts_ext
+         WHERE btrim(COALESCE(hugoshop_search_terms, '')) <> '')                  AS mit_suchwoertern,
        (SELECT count(*) FROM customer_ext WHERE portal_guest)                     AS gastkunden,
        (SELECT count(*) FROM customer_ext WHERE NOT portal_guest)                 AS kundenkonten,
        (SELECT count(*) FROM invoice_link_oserp)                                  AS rechnungslinks,

@@ -387,7 +387,7 @@ function shopPageData($db, int $kanal, int $partsId): array {
                 (SELECT btrim(cs.name) FROM category_shop cs WHERE cs.id = pe.hugoshop_category_id) AS hugoshop_category,
                 pe.hugoshop_hyperlink, pe.hugoshop_breadcrumbs,
                 pe.hugoshop_images, pe.hugoshop_technical_data,
-                pe.hugoshop_properties, pe.hugoshop_downloads,
+                pe.hugoshop_properties, pe.hugoshop_downloads, pe.hugoshop_extra,
                 (SELECT company FROM defaults LIMIT 1) AS firma,
                 (SELECT free_shipping_from FROM sales_channel_shop WHERE id = CAST(:kanal_frei AS integer)) AS free_shipping_from,
                 -- Versandangaben (dev/shop-versand.md, Schritt 5): Lieferbedingung
@@ -511,6 +511,9 @@ function shopPageData($db, int $kanal, int $partsId): array {
             'thumbnail_url'  => $bilder ? shopLink($vorschauMuster, (string)$bilder[0]) : '',
             'technical_data' => $liste($zeile['hugoshop_technical_data']),
             'properties'     => $liste($zeile['hugoshop_properties']),
+            // Zusatzdaten für den Vorlagensatz (parts_ext.hugoshop_extra), der
+            // Kern reicht sie nur durch — auto-spar führt dort die Kfz-Daten
+            'extra'          => $liste($zeile['hugoshop_extra'] ?? null),
             'downloads'      => $downloads,
             'download_urls'  => array_map(fn($datei) => shopLink($downloadMuster, (string)$datei), $downloads),
         ],
