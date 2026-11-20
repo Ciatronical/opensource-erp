@@ -1927,7 +1927,17 @@ function getAllCallHistory($data) {
 
     if (!empty($data['search'])) {
         $searchVal = $pdo->quote('%' . $data['search'] . '%');
-        $where[] = "(crmti_src ILIKE $searchVal OR crmti_dst ILIKE $searchVal OR crmti_number ILIKE $searchVal)";
+        $searchRaw = $pdo->quote($data['search']);
+        // Nummern stehen national in der DB (0171…, teils 0049…), die Liste zeigt sie aber
+        // international (+49 171 …). Deshalb beide Seiten auf eine Schreibweise bringen:
+        // nur Ziffern, +49/0049 → 0, sonstiges + → 00.
+        $norm = fn($expr) => "regexp_replace(regexp_replace(regexp_replace($expr, '[^0-9+]', '', 'g'), '^(\\+|00)490?', '0'), '^\\+', '00')";
+        $normSearch = "'%' || " . $norm($searchRaw) . " || '%'";
+        $where[] = "(crmti_src ILIKE $searchVal OR crmti_dst ILIKE $searchVal OR crmti_number ILIKE $searchVal"
+            . " OR ($searchRaw ~ '^[0-9+ ()/.-]*[0-9][0-9+ ()/.-]*\$' AND ("
+            . $norm('crmti_number') . " LIKE $normSearch OR "
+            . $norm('crmti_src') . " LIKE $normSearch OR "
+            . $norm('crmti_dst') . " LIKE $normSearch)))";
     }
 
     $whereClause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
