@@ -17,12 +17,12 @@
               <v-text-field
                 id="login-name" v-model="username" :label="t('LoginView.username')" autocomplete="username" autofocus
                 variant="outlined" density="comfortable" class="mb-3"
-                @focus="clearError" @keydown="clearError" @keyup.enter="login"
+                @focus="clearError" @keydown="clearError"
               />
               <password-field
                 id="login-password" v-model="password" :label="t('LoginView.password')" autocomplete="current-password"
                 variant="outlined" density="comfortable"
-                @focus="clearError" @keydown="clearError" @keyup.enter="login"
+                @focus="clearError" @keydown="clearError"
               />
               <v-select
                 id="client" v-model="clientCode" :items="clientItems" item-title="name" item-value="code"
@@ -164,6 +164,9 @@ export default {
     }
 
     const login = async (isRetry = false) => {
+      // Kein zweiter Versuch, solange Anmeldung oder Update laufen — ein
+      // doppelter Klick startete sonst zwei Updates hintereinander
+      if (isRetry !== true && (loading.value || updateLoading.value)) return
       clearError()
       if (!username.value || !password.value) {
         errorMessage.value = t('LoginView.EMPTY_FIELDS')

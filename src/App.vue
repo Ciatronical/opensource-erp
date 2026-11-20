@@ -9,8 +9,12 @@
       </div>
       <!-- Schlüssel aus Mandant und Pfad: nach dem Firmenwechsel landet der
            Benutzer oft auf derselben Seite (Startansicht). Mit dem Pfad allein
-           behielte Vue die Komponente samt den Daten des alten Mandanten -->
-      <router-view v-else :key="`${oserp.session.client}:${route.path}`" />
+           behielte Vue die Komponente samt den Daten des alten Mandanten.
+           Die Anmeldemaske ist ausgenommen: mit der Antwort auf den Login steht
+           der Mandant fest, der Schlüssel wechselte und Vue ersetzte die Maske
+           durch eine frische — mitten im Datenbank-Update, dessen
+           Fortschrittsanzeige damit verschwand -->
+      <router-view v-else :key="route.name === 'login' ? 'login' : `${oserp.session.client}:${route.path}`" />
     </v-main>
     <ToastStack />
   </v-app>

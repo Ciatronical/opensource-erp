@@ -228,11 +228,26 @@ function _updateOneDatabase($data): array {
 
     // Kein zweiter Lauf, solange dieser arbeitet — auch nicht aus einer
     // anderen Anmeldung heraus, denn die Auth-Datenbank ist allen gemeinsam.
+    $sperreAngefragt = microtime(true);
     if (!schemaUpdateLock(isset($data['lock_wait']) ? (int)$data['lock_wait'] : 120)) {
         return ['success' => false, 'text' => 'SCHEMA_UPDATE_RUNNING', 'payload' => 'Ein Schema-Update läuft bereits. Bitte gleich erneut versuchen.'];
     }
+    // Die Sperre gibt es beim ersten Versuch sofort; gewartet wird nur in
+    // ganzen Sekunden auf einen anderen Lauf.
+    $aufAnderenLaufGewartet = (microtime(true) - $sperreAngefragt) >= 1.0;
 
     try {
+        // Hat ein anderer Lauf (zweiter Tab, zweiter Benutzer) die Datenbank
+        // inzwischen aktualisiert, ist nichts mehr zu tun. Ohne diese Prüfung
+        // liefe dasselbe Update samt Voll-Backup direkt noch einmal — die
+        // Anmeldung dauerte doppelt so lange.
+        if ($aufAnderenLaufGewartet && !$dryRun && $updateCompanyDb && !upstallUpdateNeeded($companyDb)) {
+            writeLog('Schema-Update übersprungen: ein paralleler Lauf hat die Datenbank bereits aktualisiert', true, DLOG_INF);
+            return ['success' => true, 'text' => 'Schema-Update erfolgreich', 'payload' => [
+                'success' => true, 'dry_run' => false, 'messages' => [], 'errors' => [], 'skipped' => true
+            ]];
+        }
+
         // Sammle alle zu verarbeitenden Verzeichnisse (crm ist immer dabei)
         $extensionDirs = ['crm'];
 
