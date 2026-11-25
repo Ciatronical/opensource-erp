@@ -117,8 +117,8 @@ function shopSearch($db, int $kanal, string $begriffe, int $limit = 5, int $offs
     return array_map(function ($zeile) use ($db, $kanal) {
         return [
             'id'          => (int)$zeile['id'],
-            'partnumber'  => mb_strtolower((string)$zeile['partnumber']),
-            'description' => mb_strtolower((string)$zeile['description']),
+            'partnumber'  => (string)$zeile['partnumber'],
+            'description' => (string)$zeile['description'],
             'category'    => $zeile['category'],
             'breadcrumbs' => json_decode((string)$zeile['breadcrumbs'], true) ?: [],
             // #focus hinter die fertige Adresse, nicht ins Muster — sonst

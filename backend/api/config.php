@@ -173,6 +173,11 @@ class OserpConfig {
         // Firmen-Administration
         define('COMPANY_ADMIN_USERS', $settings['company']['admin_users'] ?? '');
 
+        // Artikelabgleich je Lieferant: Programm, das die Artikeldaten beim
+        // Lieferanten abholt. Es liegt ausserhalb dieses Repositorys; der
+        // Pfad steht nur hier und geht nie an den Browser.
+        define('VENDOR_PART_SYNC_COMMAND', (string)($settings['vendor_part_sync']['command'] ?? ''));
+
         // Globale Debug-Variable
         global $DEBUG;
         $DEBUG = $settings['system']['debug'] ?? false;

@@ -152,6 +152,26 @@ nicht mehr. Die Übersicht in der Benutzerverwaltung zeigt, über welche Regel
 der angemeldete Benutzer Administrator ist, und listet die Logins aus dieser
 Datei.
 
+### [vendor_part_sync]
+
+| Schlüssel | Vorgabe | Bedeutung |
+| --- | --- | --- |
+| `command` | leer | Absoluter Pfad des Abrufprogramms für den Artikelabgleich, nur in der Datei |
+
+Der Artikelabgleich (Lieferant › Reiter „Belegabruf" › Karte „Artikelabgleich")
+holt Preise, Verfügbarkeit und Artikelangaben beim Lieferanten ab. Das Abholen
+erledigt ein Programm, das nicht zu diesem Repository gehört; hier steht nur,
+wo es liegt. Es muss für den Benutzer des Webservers ausführbar sein. Ohne
+Eintrag zeigt die Karte einen Hinweis, der Knopf ist gesperrt. Der Pfad geht
+nie an den Browser.
+
+Der Läufer `backend/cli/vendor-part-sync.php` startet das Programm ohne Shell,
+übergibt Lieferant und Artikelliste über die Umgebung und liest je Zeile ein
+JSON-Objekt von der Standardausgabe; der Vertrag steht im Kopf des Läufers.
+Übernommen werden die Daten in der Datenbank (`vendor_part_sync_apply()`):
+nur vorhandene Artikel, nur geänderte Werte. Der Läufer braucht Schreibrechte
+in `backend/tmp/`.
+
 ## Shop-Erweiterung
 
 Die Webseiten der Shop-Erweiterung liegen in HugoCMS und werden dort gebaut;
