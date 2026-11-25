@@ -663,7 +663,7 @@ COMMENT ON COLUMN whatsapp_messages.direction IS 'I=Eingehend, O=Ausgehend';
 COMMENT ON COLUMN whatsapp_messages.phone_number IS 'Telefonnummer (internationales Format)';
 COMMENT ON COLUMN whatsapp_messages.customer_id IS 'Zugeordneter Kunde (optional)';
 COMMENT ON COLUMN whatsapp_messages.contact_name IS 'WhatsApp-Profilname';
-COMMENT ON COLUMN whatsapp_messages.message_type IS 'text, image, document, audio, video, location, sticker';
+COMMENT ON COLUMN whatsapp_messages.message_type IS 'text, image, document, audio, video, location, sticker, contacts, template, reaction';
 COMMENT ON COLUMN whatsapp_messages.status IS 'received, sent, delivered, read, failed';
 
 DO $$ BEGIN
@@ -704,6 +704,17 @@ DO $$ BEGIN
             EXECUTE FUNCTION notify_whatsapp_message();
     END IF;
 END $$;
+
+-- Reaktionen (Emoji auf eine Nachricht): eigene Zeile mit message_type = 'reaction',
+-- message_text = Emoji, reaction_to = wa_message_id der Nachricht, auf die reagiert
+-- wurde. Der Chat zeigt sie als Marke an dieser Nachricht, nicht als eigene Blase.
+ALTER TABLE whatsapp_messages ADD COLUMN IF NOT EXISTS reaction_to TEXT;
+COMMENT ON COLUMN whatsapp_messages.reaction_to IS 'Nur message_type = reaction: wa_message_id der Nachricht, auf die reagiert wurde';
+CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_reaction_to ON whatsapp_messages(reaction_to) WHERE reaction_to IS NOT NULL;
+
+-- Altbestand: Reaktionen kamen ohne Emoji und ohne Bezug als "[reaction]" an
+UPDATE whatsapp_messages SET hidden = TRUE
+ WHERE message_type = 'reaction' AND reaction_to IS NULL AND hidden = FALSE;
 
 -- ============================================================================
 -- SPRACHNOTIZEN (Telegram-Sprachnachricht -> Whisper -> Anschlagtafel)
@@ -2387,6 +2398,7 @@ CREATE TABLE camera_rule (
     active BOOLEAN NOT NULL DEFAULT true,
     cooldown_seconds INTEGER NOT NULL DEFAULT 300,
     last_triggered_at TIMESTAMP WITHOUT TIME ZONE,
+    trigger_count INTEGER NOT NULL DEFAULT 0,
     itime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     mtime TIMESTAMP WITHOUT TIME ZONE
 );
@@ -2405,6 +2417,7 @@ COMMENT ON COLUMN camera_rule.action_config IS 'JSON-Konfiguration für die Akti
 COMMENT ON COLUMN camera_rule.active IS 'Regel aktiv/inaktiv';
 COMMENT ON COLUMN camera_rule.cooldown_seconds IS 'Mindestabstand zwischen zwei Auslösungen (Sekunden)';
 COMMENT ON COLUMN camera_rule.last_triggered_at IS 'Letzter Auslösezeitpunkt (für Cooldown)';
+COMMENT ON COLUMN camera_rule.trigger_count IS 'Anzahl der bisherigen Auslösungen';
 
 -- Altinstallationen: Frigate wurde durch den eigenen Kamera-Monitor ersetzt.
 -- frigate_name/frigate_zone/frigate_event_id heissen jetzt cam_key/zone_key/event_id.

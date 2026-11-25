@@ -500,6 +500,31 @@ class ImapClient {
         return $strings;
     }
 
+    /**
+     * Wandelt Text aus einem beliebigen Mail-Charset nach UTF-8.
+     * mbstring kennt etliche gaengige Charsets nicht (z.B. windows-1250) und
+     * wirft dann einen ValueError — daher Rueckfall auf iconv und zuletzt auf
+     * Windows-1252, damit eine einzelne Mail nie die ganze Liste abschiesst.
+     */
+    private function toUtf8(string $text, string $charset): string {
+        $charset = trim($charset, " \t\r\n\"'");
+        if ($text === '') return '';
+        if ($charset === '' || preg_match('/^(utf-?8|us-ascii|ascii)$/i', $charset)) {
+            return mb_check_encoding($text, 'UTF-8') ? $text : mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
+        }
+        try {
+            $out = @mb_convert_encoding($text, 'UTF-8', $charset);
+            if (is_string($out)) return $out;
+        } catch (\Throwable $e) {
+            // unbekanntes Charset fuer mbstring -> iconv versuchen
+        }
+        if (function_exists('iconv')) {
+            $out = @iconv($charset, 'UTF-8//IGNORE', $text);
+            if ($out !== false) return $out;
+        }
+        return mb_check_encoding($text, 'UTF-8') ? $text : mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
+    }
+
     private function decodeMimeHeader(string $s): string {
         // =?UTF-8?B?...?= oder =?UTF-8?Q?...?= dekodieren
         return preg_replace_callback('/=\?([^?]+)\?([BQ])\?([^?]+)\?=/i', function($m) {
@@ -508,7 +533,7 @@ class ImapClient {
             $text = $m[3];
             if ($encoding === 'B') $decoded = base64_decode($text);
             else $decoded = quoted_printable_decode(str_replace('_', ' ', $text));
-            return mb_convert_encoding($decoded, 'UTF-8', $charset);
+            return $this->toUtf8($decoded, $charset);
         }, $s);
     }
 
@@ -557,7 +582,7 @@ class ImapClient {
             $body = $this->decodeBody($bodyStr, $headers['content-transfer-encoding'] ?? '7bit');
             $charset = 'UTF-8';
             if (preg_match('/charset="?([^";]+)"?/i', $contentType, $m)) $charset = $m[1];
-            $body = mb_convert_encoding($body, 'UTF-8', $charset);
+            $body = $this->toUtf8($body, $charset);
 
             if (str_contains($contentType, 'text/html')) {
                 $result['body_html'] = $body;
@@ -633,7 +658,7 @@ class ImapClient {
             // Text-Content
             $charset = 'UTF-8';
             if (preg_match('/charset="?([^";]+)"?/i', $partContentType, $m)) $charset = $m[1];
-            $text = mb_convert_encoding($decoded, 'UTF-8', $charset);
+            $text = $this->toUtf8($decoded, $charset);
 
             if (str_contains($partContentType, 'text/html')) {
                 $result['body_html'] = $text;

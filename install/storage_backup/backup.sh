@@ -250,7 +250,7 @@ clone_test_database() {
   # Das Skript lehnt jede DB ab, die in auth.clients als is_default markiert ist.
   local OSERP_DIR="${PG_CLONE_APP_DIR:-/home/work/opensource-erp}"
   if su - work -c "cd '$OSERP_DIR' && php backend/cli/sanitize-testdb.php '$DST'" >/dev/null 2>&1; then
-    echo "Telegram-Zugangsdaten aus '$DST' entfernt."
+    echo "Telegram-Zugangsdaten aus '$DST' entfernt, Videoüberwachung und alle Dienste dort abgeschaltet."
   else
     # Fehlgeschlagen heisst: '$DST' ist mit gueltigem Bot-Secret erreichbar.
     # Lieber keine Test-Datenbank als eine, die echte Sprachnotizen abfaengt.

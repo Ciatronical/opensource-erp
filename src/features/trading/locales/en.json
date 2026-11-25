@@ -1,0 +1,354 @@
+{
+    "TradingView": {
+        "routes": {
+            "trading": "/ai-trading"
+        },
+        "title": "AI Trading",
+        "subtitle": "Research lab, paper trading and live trading supervised by the risk engine",
+        "refresh": "Refresh",
+        "save": "Save",
+        "saved": "Saved",
+        "cancel": "Cancel",
+        "close": "Close",
+        "tabs": {
+            "overview": "Overview",
+            "strategies": "Strategies",
+            "lab": "Lab",
+            "orders": "Orders",
+            "control": "Safety and settings",
+            "log": "Log"
+        },
+        "mode": {
+            "simulation": "Simulation",
+            "live": "Live",
+            "halted": "Halted"
+        },
+        "ai": {
+            "active": "AI active",
+            "inactive": "AI inactive"
+        },
+        "card": {
+            "open": "Open",
+            "unavailable": "Figures currently unavailable"
+        },
+        "killSwitch": {
+            "button": "Emergency stop",
+            "tooltip": "Halts all automated trading immediately and cancels all open orders. Existing positions are not sold. Only an administrator can lift the lock.",
+            "confirmTitle": "Trigger emergency stop?",
+            "confirmText": "All automated trading is halted and all open orders are cancelled. Existing positions remain unchanged.",
+            "done": "Trading halted, {n} open orders cancelled"
+        },
+        "lock": {
+            "active": "Trading lock",
+            "clear": "Lift lock",
+            "clearTitle": "Lift trading lock?",
+            "clearText": "Please check the cause first. Once lifted, the AI trades on its own again.",
+            "reason": {
+                "kill_switch": "Emergency stop",
+                "drawdown": "Portfolio loss above limit",
+                "critical_errors": "Series of errors",
+                "position_mismatch": "Holdings differ from broker"
+            }
+        },
+        "kpi": {
+            "startCapital": "Virtual starting capital",
+            "startCapitalLive": "Capital deployed",
+            "portfolioValue": "Current portfolio value",
+            "asOf": "As of {ts}",
+            "dayPnl": "Today's profit/loss",
+            "totalPnl": "Total result",
+            "totalReturn": "Total return",
+            "benchmarkHint": "{symbol} over the same period: {pct}",
+            "activeStrategies": "Active strategies",
+            "mode": "Trading mode",
+            "aiStatus": "AI status",
+            "lastRun": "Last run {ts}",
+            "neverRun": "No run yet"
+        },
+        "overview": {
+            "noData": "No data yet. Account values appear here once the engine has run for the first time.",
+            "equityTitle": "Portfolio development",
+            "days": "{n} d",
+            "chartEmpty": "A chart needs at least two days of account values.",
+            "equityNote": "Change in percent since the start of the selected period, portfolio and benchmark on the same axis.",
+            "strategyTitle": "Result per strategy",
+            "noStrategies": "No strategy in forward test",
+            "positions": "Holdings",
+            "noPositions": "No holdings",
+            "portfolio": "Portfolio"
+        },
+        "report": {
+            "title": "Daily summary",
+            "none": "No daily report yet.",
+            "headline": "Portfolio value {value}, today {day}, total return {total}, {n} active strategies.",
+            "best": "Best strategy: {code} ({pct})",
+            "worst": "Worst strategy: {code} ({pct})",
+            "benchmark": "Benchmark {symbol} since start: {pct}",
+            "experiment": "Experiment {id}",
+            "orders": "Orders in the last 24 hours: {filled} filled, {rejected} rejected, fees {fees}",
+            "risks": "Warnings in the last 24 hours: {n}"
+        },
+        "alerts": {
+            "title": "Notifications",
+            "none": "No warnings in the last 7 days"
+        },
+        "events": {
+            "lock_set": "Trading lock set",
+            "lock_cleared": "Trading lock lifted",
+            "order_rejected": "Order rejected by broker",
+            "order_duplicate_blocked": "Duplicate order prevented",
+            "order_uncertain": "Broker response unclear, reconciling",
+            "order_error": "Error placing an order",
+            "order_submitted": "Order submitted",
+            "order_filled": "Order filled",
+            "order_partially_filled": "Order partially filled",
+            "order_canceled": "Order cancelled",
+            "order_expired": "Order expired",
+            "sync_error": "Error reconciling with the broker",
+            "cancel_error": "Error cancelling",
+            "critical_error": "Critical error",
+            "account_error": "Account error",
+            "bar_rejected": "Faulty price bar discarded",
+            "update_error": "Market data unavailable",
+            "quotes_error": "Current quotes unavailable",
+            "portfolio_drawdown": "Portfolio loss above limit",
+            "strategy_retired": "Strategy retired",
+            "strategy_promoted": "Strategy moved to forward test",
+            "strategy_improved": "Strategy improved",
+            "strategy_live_eligible": "Strategy approved for live trading",
+            "allocation_changed": "Capital allocation changed",
+            "cycle_finished": "Research cycle finished",
+            "report_created": "Daily report created",
+            "live_trading_enabled": "Live trading enabled",
+            "live_trading_disabled": "Live trading disabled",
+            "risk_limits_changed": "Risk limits changed",
+            "settings_changed": "Settings changed",
+            "broker_connection_saved": "Broker connection saved",
+            "instrument_changed": "Instrument changed",
+            "engine_run_manual": "Run started manually",
+            "llm_ideas_failed": "AI suggestions unavailable",
+            "kill_switch_error": "Error during emergency stop",
+            "order_risk_rejected": "Order rejected by the risk engine"
+        },
+        "strategies": {
+            "title": "Strategies",
+            "showAll": "Show rejected too",
+            "none": "No strategy has passed the checks yet.",
+            "code": "ID",
+            "family": "Family",
+            "statusCol": "State",
+            "origin": "Origin",
+            "sharpeTrain": "Sharpe training",
+            "sharpeValidation": "Sharpe validation",
+            "sharpeTest": "Sharpe test",
+            "drawdown": "Max. drawdown",
+            "paperReturn": "Forward test",
+            "reason": "Reason",
+            "noCurve": "No equity curve stored",
+            "version": "Version {n}",
+            "segment": "Segment",
+            "benchmark": "Benchmark",
+            "trades": "Trades",
+            "pValue": "Timing p",
+            "dsr": "Deflated Sharpe",
+            "stability": "Stability",
+            "segments": {
+                "train": "Training",
+                "validation": "Validation",
+                "test": "Test",
+                "full": "Full"
+            },
+            "paperCurve": "Forward test (virtual account)",
+            "backtestCurve": "Backtest (full)"
+        },
+        "status": {
+            "candidate": "Candidate",
+            "rejected": "Rejected",
+            "queued": "Waiting",
+            "paper": "Forward test",
+            "live_eligible": "Approved for live",
+            "live": "Live",
+            "retired": "Retired"
+        },
+        "family": {
+            "trend_ema": "Trend following EMA",
+            "donchian": "Donchian breakout",
+            "tsmom": "Time-series momentum",
+            "multi_horizon": "Multi-horizon trend",
+            "xsmom": "Relative strength",
+            "rsi_revert": "RSI pullback",
+            "bollinger": "Bollinger reversion",
+            "keltner": "Keltner breakout"
+        },
+        "origin": {
+            "seed": "Exploration",
+            "mutation": "Mutation",
+            "crossover": "Crossover",
+            "llm": "AI suggestion",
+            "ensemble": "Combination"
+        },
+        "lab": {
+            "versionsTested": "Variants tested",
+            "testEvaluations": "Evaluations on test data",
+            "testEvaluationsHint": "Each evaluation raises the bar for the next (deflated Sharpe)",
+            "passed": "Passed",
+            "families": "Track record per family",
+            "tested": "Tested",
+            "avgSharpe": "Avg. Sharpe validation",
+            "bestSharpe": "Best",
+            "method": "Each variant is simulated on training and validation data, including fees and slippage. Only the best three of a cycle may touch the test data. There, Sharpe, drawdown, a timing test against random time shifts and the Sharpe corrected for the number of all trials decide. Whoever passes must then prove itself on a virtual account with new prices.",
+            "experiments": "Experiments",
+            "runNow": "Start cycle now",
+            "running": "running",
+            "none": "No experiment yet",
+            "runDone": "Run finished"
+        },
+        "orders": {
+            "title": "Orders",
+            "none": "No orders yet",
+            "time": "Time",
+            "account": "Account",
+            "symbol": "Instrument",
+            "sideCol": "Side",
+            "typeCol": "Type",
+            "qty": "Quantity",
+            "price": "Price",
+            "fees": "Fee",
+            "statusCol": "Status",
+            "note": "Note",
+            "side": {
+                "buy": "Buy",
+                "sell": "Sell"
+            },
+            "type": {
+                "market": "Market",
+                "limit": "Limit",
+                "stop": "Stop",
+                "stop_limit": "Stop limit",
+                "trailing_stop": "Trailing stop"
+            },
+            "status": {
+                "new": "New",
+                "risk_rejected": "Rejected by risk engine",
+                "submitting": "Submitting",
+                "submitted": "Open",
+                "partially_filled": "Partially filled",
+                "filled": "Filled",
+                "canceled": "Cancelled",
+                "rejected": "Rejected",
+                "expired": "Expired",
+                "error": "Error"
+            }
+        },
+        "live": {
+            "title": "Live trading",
+            "enabled": "Live trading is permanently enabled",
+            "disabled": "Live trading is disabled",
+            "enableButton": "Enable live trading permanently",
+            "enableTooltip": "Permanently enables fully automated live trading. The AI may then place real buy and sell orders on its own. Individual trades need no further confirmation. There is a risk of losing the entire capital deployed. Trading can be disabled at any time.",
+            "disableButton": "Disable live trading",
+            "disableTooltip": "Stops the submission of new automated live orders. Existing positions are not closed automatically. Open orders are handled according to the defined safety rules.",
+            "confirmTitle": "Safety confirmation",
+            "check1": "I am aware that I can lose the entire capital deployed.",
+            "check2": "The AI buys and sells without asking until I disable trading.",
+            "check3": "I have checked the risk limits and the capital limit of the broker connection.",
+            "typeWord": "To confirm, please type {word}:",
+            "enabledDone": "Live trading is enabled",
+            "disabledDone": "Live trading is disabled",
+            "log": {
+                "enable": "enabled",
+                "disable": "disabled"
+            }
+        },
+        "control": {
+            "adminOnly": "Enabling, limits and broker access are reserved for system administrators."
+        },
+        "limits": {
+            "title": "Risk limits",
+            "note": "The risk engine checks every order against these limits. The AI cannot change them.",
+            "max_order_value": "Maximum order value (live)",
+            "max_position_pct": "Maximum position per instrument",
+            "max_gross_exposure_pct": "Maximum exposure",
+            "max_daily_loss_pct": "Maximum daily loss",
+            "max_portfolio_drawdown_pct": "Maximum portfolio drawdown from peak",
+            "max_open_orders": "Maximum open orders",
+            "max_orders_per_day": "Maximum orders per day",
+            "max_price_age_minutes": "Maximum quote age",
+            "max_price_deviation_pct": "Maximum deviation from last close",
+            "max_consecutive_errors": "Consecutive errors until trading lock",
+            "protective_stop_pct": "Protective stop at broker below entry (0 = off)"
+        },
+        "broker": {
+            "title": "Broker connections",
+            "add": "Add connection",
+            "edit": "Edit connection",
+            "none": "No connection set up. Paper trading needs none.",
+            "note": "Keys are stored encrypted and never shown again. At the broker, allow the key trading and queries only, no withdrawals.",
+            "env": {
+                "sandbox": "Test environment",
+                "live": "Live"
+            },
+            "active": "Active",
+            "inactive": "Inactive",
+            "test": "Test",
+            "testOk": "Connection OK.",
+            "name": "Name",
+            "adapter": "Broker",
+            "environment": "Environment",
+            "apiKey": "API key",
+            "apiSecret": "API secret",
+            "unchanged": "unchanged",
+            "capitalLimit": "Capital limit",
+            "capitalLimitHint": "The AI never deploys more than this amount through this connection."
+        },
+        "settings": {
+            "title": "Settings",
+            "section": {
+                "engine": "Engine",
+                "costs": "Costs in simulation and paper trading",
+                "research": "Research",
+                "gates": "Acceptance criteria"
+            },
+            "engine_enabled": "Engine enabled",
+            "lab_capital": "Virtual starting capital per account",
+            "account_currency": "Account currency",
+            "market_data_source": "Data source",
+            "report_hour": "Daily report from hour (UTC)",
+            "fee_bps": "Fee (basis points)",
+            "slippage_bps": "Slippage (basis points)",
+            "rebalance_threshold_pct": "Rebalance from deviation (%)",
+            "research_enabled": "Research enabled",
+            "research_interval_hours": "Interval between cycles (hours)",
+            "research_population": "Candidates per cycle",
+            "research_llm_enabled": "AI suggestions (language model, paid)",
+            "max_paper_strategies": "Strategies in forward test at once",
+            "split_train_pct": "Share of training data (%)",
+            "split_validation_pct": "Share of validation data (%)",
+            "gate_min_test_sharpe": "Minimum Sharpe on validation and test",
+            "gate_max_test_drawdown_pct": "Maximum drawdown on test data (%)",
+            "gate_max_p_value": "Maximum p-value in timing test",
+            "gate_min_deflated_sharpe": "Minimum deflated Sharpe",
+            "gate_min_stability": "Minimum stability (share of working neighbours)",
+            "gate_min_trades": "Minimum trades in backtest",
+            "gate_live_min_paper_days": "Forward test: minimum duration (days)",
+            "gate_live_min_paper_trades": "Forward test: minimum trades",
+            "gate_live_max_paper_drawdown_pct": "Forward test: maximum drawdown (%)",
+            "gate_live_min_paper_return_pct": "Forward test: minimum result (%)",
+            "retire_drawdown_factor": "Retire from multiple of backtest drawdown"
+        },
+        "instruments": {
+            "title": "Instruments",
+            "benchmark": "Benchmark",
+            "bars": "{n} days of price data"
+        },
+        "log": {
+            "title": "Audit log",
+            "all": "All",
+            "warning": "Warnings",
+            "critical": "Critical",
+            "actor": "Actor",
+            "event": "Event",
+            "details": "Details"
+        }
+    }
+}

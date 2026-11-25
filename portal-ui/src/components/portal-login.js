@@ -49,6 +49,13 @@ export class PortalLogin extends PortalElement {
       .register-link {
         margin-top: 1.5rem;
       }
+      .register-link + .register-link {
+        margin-top: 0.5rem;
+      }
+      .register-link a {
+        font-weight: 600;
+        white-space: nowrap;
+      }
     `,
   ];
 
@@ -122,12 +129,14 @@ export class PortalLogin extends PortalElement {
 
       ${this.registerUrl
         ? html`<div class="register-link">
-            <a href=${this.registerUrl} part="register-link">${t('login.register')}</a>
+            <span class=${this.cls('muted')}>${t('login.registerText')}</span>
+            <a href=${this.registerUrl} part="register-link">${t('login.registerLink')}</a>
           </div>`
         : nothing}
       ${this.activateUrl
         ? html`<div class="register-link">
-            <a href=${this.activateUrl} part="activate-link">${t('login.activate')}</a>
+            <span class=${this.cls('muted')}>${t('login.activateText')}</span>
+            <a href=${this.activateUrl} part="activate-link">${t('login.activateLink')}</a>
           </div>`
         : nothing}
     `;

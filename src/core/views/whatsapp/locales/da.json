@@ -59,7 +59,14 @@
         "deleteMessage": "Slet besked",
         "deleteConfirm": "Vil du virkelig slette denne besked?",
         "deleteSuccess": "Besked slettet lokalt",
-        "deleteError": "Fejl ved sletning af besked"
+        "deleteError": "Fejl ved sletning af besked",
+        "forward": "Videresend",
+        "forwardSearchRecipient": "Søg chat, kunde, leverandør eller telefonnummer …",
+        "forwardToNumber": "Send til {number}",
+        "forwardNoResults": "Ingen modtager fundet",
+        "forwardCustomer": "Kunde",
+        "forwardVendor": "Leverandør",
+        "reaction": "Kundens reaktion"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

@@ -59,7 +59,14 @@
         "deleteMessage": "Ištrinti žinutę",
         "deleteConfirm": "Ar tikrai norite ištrinti šią žinutę?",
         "deleteSuccess": "Žinutė ištrinta lokaliai",
-        "deleteError": "Klaida trinant žinutę"
+        "deleteError": "Klaida trinant žinutę",
+        "forward": "Persiųsti",
+        "forwardSearchRecipient": "Ieškoti pokalbio, kliento, tiekėjo ar numerio …",
+        "forwardToNumber": "Siųsti numeriu {number}",
+        "forwardNoResults": "Gavėjas nerastas",
+        "forwardCustomer": "Klientas",
+        "forwardVendor": "Tiekėjas",
+        "reaction": "Kliento reakcija"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

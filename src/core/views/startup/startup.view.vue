@@ -5,6 +5,12 @@
 
   <CrmView v-if="crmView" />
   <v-container class="pt-5" v-else>
+    <!-- KI-Trading: Kapitalentwicklung auf einen Blick (nur mit aktiver Erweiterung) -->
+    <v-row v-if="tradingEnabled" justify="center" class="mb-2">
+      <v-col cols="12" sm="8" md="8" lg="8" xl="9">
+        <TradingDashboardCard />
+      </v-col>
+    </v-row>
     <v-row justify="center" align="stretch" class="text-center">
       <v-col cols="12" sm="8" md="8" lg="8" xl="3" v-for="card in cards" :key="card.title">
         <v-card
@@ -44,7 +50,7 @@
 <script>
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import CrmView from '@/core/components/crmview/crm.view.vue'
-import { ref } from 'vue'
+import { ref, computed, defineAsyncComponent } from 'vue'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { useNavigationCards } from '@/core/composables/navigation.cards.js'
 import { toggleChatPanel } from '@/core/composables/useChat.js'
@@ -53,7 +59,12 @@ import { entityRoute } from '@/core/constants/routes.js'
 
 export default {
   name: 'StartupView',
-  components: { NavbarView, CrmView },
+  components: {
+    NavbarView,
+    CrmView,
+    // Erst laden, wenn die Erweiterung aktiv ist — sonst bleibt der Code aus dem Start-Bundle
+    TradingDashboardCard: defineAsyncComponent(() => import('@/features/trading/components/trading.dashboard-card.vue'))
+  },
 
   props: {
     // alte API (einzelne Nachricht)
@@ -112,7 +123,9 @@ export default {
       }
     }
 
-    return { cards, toggleChatPanel }
+    const tradingEnabled = computed(() => oserp.isExtensionEnabled('trading'))
+
+    return { cards, toggleChatPanel, tradingEnabled }
   }
 }
 </script>

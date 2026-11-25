@@ -59,7 +59,14 @@
         "deleteMessage": "Dzēst ziņojumu",
         "deleteConfirm": "Vai tiešām vēlaties dzēst šo ziņojumu?",
         "deleteSuccess": "Ziņojums dzēsts lokāli",
-        "deleteError": "Kļūda dzēšot ziņojumu"
+        "deleteError": "Kļūda dzēšot ziņojumu",
+        "forward": "Pārsūtīt",
+        "forwardSearchRecipient": "Meklēt tērzēšanu, klientu, piegādātāju vai numuru …",
+        "forwardToNumber": "Sūtīt uz {number}",
+        "forwardNoResults": "Saņēmējs nav atrasts",
+        "forwardCustomer": "Klients",
+        "forwardVendor": "Piegādātājs",
+        "reaction": "Klienta reakcija"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

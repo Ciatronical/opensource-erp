@@ -59,7 +59,14 @@
         "deleteMessage": "Smazat zprávu",
         "deleteConfirm": "Opravdu chcete tuto zprávu smazat?",
         "deleteSuccess": "Zpráva lokálně smazána",
-        "deleteError": "Chyba při mazání zprávy"
+        "deleteError": "Chyba při mazání zprávy",
+        "forward": "Přeposlat",
+        "forwardSearchRecipient": "Hledat chat, zákazníka, dodavatele nebo číslo …",
+        "forwardToNumber": "Odeslat na {number}",
+        "forwardNoResults": "Žádný příjemce nenalezen",
+        "forwardCustomer": "Zákazník",
+        "forwardVendor": "Dodavatel",
+        "reaction": "Reakce zákazníka"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

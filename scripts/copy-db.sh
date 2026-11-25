@@ -80,6 +80,12 @@ SQL
     rm -f "$LOGO_FILE"
 fi
 
+# Test-DB entschärfen: Telegram-Zugangsdaten entfernen, Videoüberwachung/Erkennung
+# und alle Hintergrunddienste abschalten — sonst erledigt die Kopie dieselbe Arbeit
+# wie die Produktion ein zweites Mal (wie im nächtlichen Klon von backup.sh).
+echo "Schalte Dienste in '$DST_DB' ab ..."
+php "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/backend/cli/sanitize-testdb.php" "$DST_DB"
+
 # Belege/Dateien mitkopieren — liegen pro DB-Name getrennt unter backend/data/<db>/
 # (siehe fmDataDir() in backend/api/customer_vendor/filemanager.php). Ohne diesen
 # Schritt fehlen in der Kopie alle Kunden-/Lieferanten-Belege.

@@ -41,9 +41,10 @@ export default {
   'login.password': 'Password',
   'login.submit': 'Sign in',
   'login.pending': 'Signing in …',
-  'login.register': 'No account yet? Register now',
-  'login.activate': 'Already a customer but no online login yet? Activate it now with your phone number',
-
+  'login.registerText': "No account yet?",
+  'login.registerLink': "Register now",
+  'login.activateText': "Already a customer, but no online access yet?",
+  'login.activateLink': "Activate your access",
   // Access for existing customers (portal-activate)
   'activate.intro': 'Already a customer? Then we will set up access to your customer account in two steps. All you need is the phone number we have on file for you.',
   'activate.steps': 'Step 1: you receive a link via WhatsApp. Step 2: you choose your password.',

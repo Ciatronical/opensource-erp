@@ -59,7 +59,14 @@
         "deleteMessage": "Poista viesti",
         "deleteConfirm": "Haluatko varmasti poistaa tämän viestin?",
         "deleteSuccess": "Viesti poistettu paikallisesti",
-        "deleteError": "Viestin poistaminen epäonnistui"
+        "deleteError": "Viestin poistaminen epäonnistui",
+        "forward": "Välitä",
+        "forwardSearchRecipient": "Hae keskustelua, asiakasta, toimittajaa tai numeroa …",
+        "forwardToNumber": "Lähetä numeroon {number}",
+        "forwardNoResults": "Vastaanottajaa ei löytynyt",
+        "forwardCustomer": "Asiakas",
+        "forwardVendor": "Toimittaja",
+        "reaction": "Asiakkaan reaktio"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

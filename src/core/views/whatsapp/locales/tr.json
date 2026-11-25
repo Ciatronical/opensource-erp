@@ -59,7 +59,14 @@
         "deleteMessage": "Mesajı sil",
         "deleteConfirm": "Bu mesajı gerçekten silmek istiyor musunuz?",
         "deleteSuccess": "Mesaj yerel olarak silindi",
-        "deleteError": "Mesaj silinirken hata oluştu"
+        "deleteError": "Mesaj silinirken hata oluştu",
+        "forward": "İlet",
+        "forwardSearchRecipient": "Sohbet, müşteri, tedarikçi veya numara ara …",
+        "forwardToNumber": "{number} numarasına gönder",
+        "forwardNoResults": "Alıcı bulunamadı",
+        "forwardCustomer": "Müşteri",
+        "forwardVendor": "Tedarikçi",
+        "reaction": "Müşterinin tepkisi"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

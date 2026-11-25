@@ -59,7 +59,14 @@
         "deleteMessage": "Удалить сообщение",
         "deleteConfirm": "Вы действительно хотите удалить это сообщение?",
         "deleteSuccess": "Сообщение удалено локально",
-        "deleteError": "Ошибка при удалении сообщения"
+        "deleteError": "Ошибка при удалении сообщения",
+        "forward": "Переслать",
+        "forwardSearchRecipient": "Поиск чата, клиента, поставщика или номера …",
+        "forwardToNumber": "Отправить на {number}",
+        "forwardNoResults": "Получатель не найден",
+        "forwardCustomer": "Клиент",
+        "forwardVendor": "Поставщик",
+        "reaction": "Реакция клиента"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

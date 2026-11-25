@@ -15,6 +15,19 @@
  *   - telegram_enabled         (0)
  *   - voice_notes              (geleert, inkl. Sequenz-Reset)
  *
+ * Außerdem werden in der Test-DB alle Dienste abgeschaltet, die sonst dieselbe Arbeit
+ * wie in der Produktion ein zweites Mal erledigen würden:
+ *   - Videoüberwachung und Erkennung (feature_nvr, feature_anpr, anpr_enabled) — der
+ *     Kamera-Dienst wertete sonst jede Kamera doppelt aus (doppelte CPU-Last, doppelte Clips)
+ *   - die übrigen Dienst-Schalter (siehe $serviceSwitches)
+ *   - background_services_disabled = 1: Dienste und Cronjobs, die alle Mandanten
+ *     durchlaufen (E-Mail-Eingang, Fahrzeugschein-Eingang, Abo-Rechnungen, Mailings,
+ *     Belegsuche, Post-Status, Auftragsbestätigung), überspringen die Test-DB —
+ *     siehe backgroundServicesDisabled() in backend/api/database.php
+ *   - whatsapp_phone_number_id (leer): der WhatsApp-Webhook ordnet eingehende
+ *     Nachrichten über diese Nummer zu und nimmt den ersten Treffer — mit gleicher
+ *     Nummer könnten echte Nachrichten in der Test-DB landen
+ *
  * Aufruf:
  *   php backend/cli/sanitize-testdb.php lack_db_test
  *
@@ -101,6 +114,29 @@ $upd = $db->prepare(
 $upd->execute();
 echo "  {$upd->rowCount()} Telegram-Konfigurationswerte neutralisiert.\n";
 
+// Dienste abschalten: Schalter, die in der Kopie auf "an" stehen, auf 0 setzen.
+$serviceSwitches = [
+    'feature_nvr', 'feature_anpr', 'anpr_enabled', 'feature_recurring',
+    'kleinanzeigen_worker_enabled', 'whatsapp_reminder_enabled', 'lxcars_hu_whatsapp_enabled',
+    'weroni_enabled', 'belegsuche_enabled', 'ebay_enabled', 'ebay_listing_enabled',
+];
+$in = implode(',', array_fill(0, count($serviceSwitches), '?'));
+$upd = $db->prepare("UPDATE defaults_oserp SET value = '0', mtime = NOW() WHERE key IN ($in) AND COALESCE(value, '') <> '0'");
+$upd->execute($serviceSwitches);
+echo "  {$upd->rowCount()} Dienst-Schalter ausgeschaltet (u. a. Videoüberwachung und Erkennung).\n";
+
+// Zuordnung eingehender WhatsApp-Nachrichten zur Test-DB verhindern.
+$upd = $db->prepare("UPDATE defaults_oserp SET value = '', mtime = NOW() WHERE key = 'whatsapp_phone_number_id' AND COALESCE(value, '') <> ''");
+$upd->execute();
+echo "  WhatsApp-Empfang ".($upd->rowCount() ? 'abgekoppelt' : 'war nicht eingerichtet').".\n";
+
+// Sperre für alle Dienste, die sämtliche Mandanten durchlaufen.
+$db->exec(
+    "INSERT INTO defaults_oserp (key, value) VALUES ('background_services_disabled', '1')
+     ON CONFLICT (key) DO UPDATE SET value = '1', mtime = NOW()"
+);
+echo "  Hintergrunddienste für diese Datenbank gesperrt.\n";
+
 // Sprachnotizen verwerfen — Testdaten, die sonst als echte Einträge auf der Tafel stehen.
 $db->exec("TRUNCATE TABLE voice_notes RESTART IDENTITY");
 echo "  voice_notes geleert.\n";
@@ -119,4 +155,4 @@ if ($rest) {
     exit(1);
 }
 
-echo "Fertig. '{$target}' hat keine Telegram-Zugangsdaten mehr.\n";
+echo "Fertig. '{$target}' hat keine Telegram-Zugangsdaten mehr, alle Dienste sind aus.\n";

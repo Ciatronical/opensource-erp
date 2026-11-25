@@ -59,7 +59,14 @@
         "deleteMessage": "Radera meddelande",
         "deleteConfirm": "Vill du verkligen radera detta meddelande?",
         "deleteSuccess": "Meddelande raderat lokalt",
-        "deleteError": "Fel vid radering av meddelande"
+        "deleteError": "Fel vid radering av meddelande",
+        "forward": "Vidarebefordra",
+        "forwardSearchRecipient": "Sök chatt, kund, leverantör eller telefonnummer …",
+        "forwardToNumber": "Skicka till {number}",
+        "forwardNoResults": "Ingen mottagare hittades",
+        "forwardCustomer": "Kund",
+        "forwardVendor": "Leverantör",
+        "reaction": "Kundens reaktion"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

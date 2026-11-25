@@ -59,7 +59,14 @@
         "deleteMessage": "Șterge mesajul",
         "deleteConfirm": "Sigur doriți să ștergeți acest mesaj?",
         "deleteSuccess": "Mesaj șters local",
-        "deleteError": "Eroare la ștergerea mesajului"
+        "deleteError": "Eroare la ștergerea mesajului",
+        "forward": "Redirecționează",
+        "forwardSearchRecipient": "Caută chat, client, furnizor sau număr …",
+        "forwardToNumber": "Trimite la {number}",
+        "forwardNoResults": "Niciun destinatar găsit",
+        "forwardCustomer": "Client",
+        "forwardVendor": "Furnizor",
+        "reaction": "Reacția clientului"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

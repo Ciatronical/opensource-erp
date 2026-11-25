@@ -195,9 +195,11 @@ function getWhatsAppMessages($data) {
     }
 
     $where = '(' . implode(' OR ', $conditions) . ') AND hidden = FALSE';
+    // Reaktionen sind keine eigenen Blasen, sie hängen an ihrer Nachricht (reaction)
+    $whereChat = $where . " AND message_type <> 'reaction'";
 
     // Total count
-    $countRow = $db->getOne("SELECT COUNT(*) AS cnt FROM whatsapp_messages WHERE $where", $params);
+    $countRow = $db->getOne("SELECT COUNT(*) AS cnt FROM whatsapp_messages WHERE $whereChat", $params);
     $total = (int)($countRow['cnt'] ?? 0);
 
     // Neueste Nachrichten holen, dann chronologisch sortieren
@@ -205,9 +207,13 @@ function getWhatsAppMessages($data) {
         "SELECT * FROM (
             SELECT id, wa_message_id, direction, phone_number, customer_id, contact_name,
                     message_type, message_text, media_url, media_mime_type, media_caption,
+                    (SELECT r.message_text FROM whatsapp_messages r
+                      WHERE r.reaction_to = whatsapp_messages.wa_message_id AND r.message_type = 'reaction'
+                        AND r.hidden = FALSE
+                      ORDER BY r.itime DESC LIMIT 1) AS reaction,
                     status, status_timestamp, error_code, error_message, itime, mtime
              FROM whatsapp_messages
-             WHERE $where
+             WHERE $whereChat
              ORDER BY itime DESC
              LIMIT :limit OFFSET :offset
          ) sub ORDER BY itime ASC",
@@ -337,9 +343,13 @@ function getWhatsAppChat($data) {
         "SELECT * FROM (
             SELECT id, wa_message_id, direction, phone_number, customer_id, contact_name,
                     message_type, message_text, media_url, media_mime_type, media_caption,
+                    (SELECT r.message_text FROM whatsapp_messages r
+                      WHERE r.reaction_to = whatsapp_messages.wa_message_id AND r.message_type = 'reaction'
+                        AND r.hidden = FALSE
+                      ORDER BY r.itime DESC LIMIT 1) AS reaction,
                     status, status_timestamp, error_code, error_message, itime, mtime
              FROM whatsapp_messages
-             WHERE phone_number = :phone AND hidden = FALSE
+             WHERE phone_number = :phone AND hidden = FALSE AND message_type <> 'reaction'
              ORDER BY itime DESC
              LIMIT :limit
          ) sub ORDER BY itime ASC",
@@ -462,6 +472,220 @@ function searchCvPhones($data) {
     }
 
     resultInfo(true, '', $items);
+}
+
+/**
+ * Empfänger für das Weiterleiten suchen: bestehende Chats sowie Kunden und
+ * Lieferanten mit Rufnummer
+ *
+ * Ohne Suchtext kommen die zuletzt genutzten Chats. Rufnummern, zu denen es
+ * schon einen Chat gibt, erscheinen nur als Chat.
+ *
+ * @param string $data['query'] Suchtext (Name oder Rufnummer), optional
+ * @param int    $data['limit'] Höchstzahl der Treffer (Standard 40)
+ * @testdata {"query": "Müller", "limit": 20}
+ */
+function searchWhatsAppRecipients($data) {
+    $db = DbhCompany::begin();
+    $query = trim((string)($data['query'] ?? ''));
+    $limit = min(100, max(1, (int)($data['limit'] ?? 40)));
+
+    $recipients = $db->getAll(
+        "WITH conv AS (
+            SELECT wm.phone_number,
+                   MAX(wm.contact_name) AS contact_name,
+                   MAX(wm.customer_id) AS customer_id,
+                   MAX(wm.itime) AS last_time
+              FROM whatsapp_messages wm
+             WHERE wm.hidden = FALSE
+             GROUP BY wm.phone_number
+         ), chats AS (
+            SELECT conv.phone_number,
+                   COALESCE(c.name, v.name, NULLIF(conv.contact_name, ''), conv.phone_number) AS name,
+                   conv.contact_name,
+                   COALESCE(c.id, v.id) AS customer_id,
+                   CASE WHEN c.id IS NOT NULL THEN 'C' WHEN v.id IS NOT NULL THEN 'V' END AS src,
+                   conv.last_time,
+                   TRUE AS has_chat
+              FROM conv
+              LEFT JOIN customer c ON c.id = conv.customer_id
+              LEFT JOIN vendor v ON v.id = conv.customer_id AND c.id IS NULL
+         ), cv AS (
+            SELECT c.id, c.name, 'C' AS src, c.phone
+              FROM customer c
+             WHERE COALESCE(c.obsolete, FALSE) = FALSE
+            UNION ALL
+            SELECT c.id, c.name, 'C', pn->>'number'
+              FROM customer c
+              JOIN customer_ext ce ON ce.customer_id = c.id
+             CROSS JOIN LATERAL jsonb_array_elements(
+                   CASE WHEN jsonb_typeof(ce.phone_numbers) = 'array' THEN ce.phone_numbers ELSE '[]'::jsonb END) pn
+             WHERE COALESCE(c.obsolete, FALSE) = FALSE
+            UNION ALL
+            SELECT v.id, v.name, 'V', v.phone
+              FROM vendor v
+             WHERE COALESCE(v.obsolete, FALSE) = FALSE
+            UNION ALL
+            SELECT v.id, v.name, 'V', pn->>'number'
+              FROM vendor v
+              JOIN vendor_ext ve ON ve.vendor_id = v.id
+             CROSS JOIN LATERAL jsonb_array_elements(
+                   CASE WHEN jsonb_typeof(ve.phone_numbers) = 'array' THEN ve.phone_numbers ELSE '[]'::jsonb END) pn
+             WHERE COALESCE(v.obsolete, FALSE) = FALSE
+         ), book AS (
+            SELECT DISTINCT ON (cv.id, RIGHT(REGEXP_REPLACE(cv.phone, '[^0-9]', '', 'g'), 8))
+                   cv.phone AS phone_number, cv.name, NULL::text AS contact_name,
+                   cv.id AS customer_id, cv.src, NULL::timestamptz AS last_time, FALSE AS has_chat
+              FROM cv
+             WHERE LENGTH(REGEXP_REPLACE(COALESCE(cv.phone, ''), '[^0-9]', '', 'g')) >= 6
+               AND NOT EXISTS (
+                   SELECT 1 FROM conv
+                    WHERE RIGHT(REGEXP_REPLACE(conv.phone_number, '[^0-9]', '', 'g'), 8)
+                        = RIGHT(REGEXP_REPLACE(cv.phone, '[^0-9]', '', 'g'), 8))
+         )
+         SELECT r.phone_number, r.name, r.contact_name, r.customer_id, r.src, r.has_chat
+           FROM (SELECT * FROM chats UNION ALL SELECT * FROM book) r
+          WHERE (:query = '' AND r.has_chat)
+             OR (:query <> '' AND (
+                    r.name ILIKE :search
+                 OR r.contact_name ILIKE :search
+                 OR r.phone_number ILIKE :search
+                 OR (:digits <> '' AND REGEXP_REPLACE(r.phone_number, '[^0-9]', '', 'g') LIKE '%' || :digits || '%')))
+          ORDER BY r.has_chat DESC, r.last_time DESC NULLS LAST, r.name
+          LIMIT :limit",
+        [
+            ':query' => $query,
+            ':search' => '%' . $query . '%',
+            // führende 0 weglassen: gespeichert ist die Nummer oft international (+49 …)
+            ':digits' => ltrim(preg_replace('/[^0-9]/', '', $query), '0'),
+            ':limit' => $limit,
+        ]
+    );
+
+    resultInfo(true, '', ['recipients' => $recipients]);
+}
+
+/**
+ * Kontaktkarten einer Nachricht (JSON aus dem Webhook) als lesbarer Text
+ */
+function _waContactsAsText(string $json): string {
+    $contacts = json_decode($json, true);
+    if (!is_array($contacts)) return trim($json);
+    $blocks = [];
+    foreach ($contacts as $contact) {
+        $lines = array_filter(array_merge(
+            [(string)($contact['name'] ?? ''), (string)($contact['org'] ?? '')],
+            array_map('strval', (array)($contact['phones'] ?? [])),
+            array_map('strval', (array)($contact['emails'] ?? []))
+        ), fn($line) => trim($line) !== '');
+        if ($lines) $blocks[] = implode("\n", $lines);
+    }
+    return implode("\n\n", $blocks);
+}
+
+/**
+ * Nachricht an einen anderen Empfänger weiterleiten
+ *
+ * Die Cloud API kennt kein Weiterleiten: Text, Standort bzw. Datei werden als
+ * neue Nachricht gesendet. Es gelten dieselben Regeln wie beim Senden im Chat
+ * (24-h-Fenster, sonst Vorlage, Ausweiche SMS).
+ *
+ * @param int    $data['message_id'] ID der Nachricht (whatsapp_messages.id)
+ * @param string $data['to'] Rufnummer des Empfängers
+ * @param int    $data['customer_id'] Kunde/Lieferant des Empfängers (optional)
+ * @param string $data['customer_name'] Name des Empfängers für die Chat-Vorlage (optional)
+ * @testdata {"message_id": 1, "to": "+491234567890", "customer_id": 0, "customer_name": "Max Mustermann"}
+ */
+function forwardWhatsAppMessage($data) {
+    $db = DbhCompany::begin();
+    $messageId = (int)($data['message_id'] ?? 0);
+    $target = [
+        'to' => trim((string)($data['to'] ?? '')),
+        'customer_id' => (int)($data['customer_id'] ?? 0),
+        'customer_name' => trim((string)($data['customer_name'] ?? '')),
+        'employee_id' => $data['employee_id'] ?? null,
+    ];
+
+    if ($messageId <= 0 || $target['to'] === '') {
+        resultInfo(false, 'INVALID_INPUT', 'Nachricht und Empfänger sind erforderlich');
+        return;
+    }
+
+    $msg = $db->getOne(
+        "SELECT message_type, message_text, media_url, media_mime_type, media_caption
+           FROM whatsapp_messages WHERE id = :id AND hidden = FALSE",
+        [':id' => $messageId]
+    );
+    if (!$msg) {
+        resultInfo(false, 'NOT_FOUND', 'Nachricht nicht gefunden');
+        return;
+    }
+
+    $type = (string)$msg['message_type'];
+    $text = trim((string)$msg['message_text']);
+    $mediaUrl = trim((string)$msg['media_url']);
+
+    if (in_array($type, ['reaction', 'unsupported', 'system'], true) || ($type === 'sticker' && $mediaUrl === '')) {
+        resultInfo(false, 'NOT_FORWARDABLE', 'Diese Nachricht lässt sich nicht weiterleiten');
+        return;
+    }
+
+    // Standort: wieder als Standort
+    if ($type === 'location' && preg_match('/(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/', $text, $coords)) {
+        sendWhatsAppLocation($target + ['latitude' => (float)$coords[1], 'longitude' => (float)$coords[2]]);
+        return;
+    }
+
+    // Bild, Dokument, Sprachnachricht, Video: Datei holen und neu senden
+    if ($mediaUrl !== '') {
+        $media = _fetchWhatsAppMediaData($mediaUrl);
+        if (!$media || $media['data'] === '') {
+            resultInfo(false, 'WHATSAPP_MEDIA_ERROR', 'Die Datei dieser Nachricht ist nicht mehr abrufbar');
+            return;
+        }
+
+        // Dateiname: bei Dokumenten der ursprüngliche, sonst der der lokalen Kopie
+        $extByMime = [
+            'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', 'image/gif' => 'gif',
+            'audio/ogg' => 'ogg', 'audio/mpeg' => 'mp3', 'video/mp4' => 'mp4', 'video/3gpp' => '3gp',
+            'application/pdf' => 'pdf',
+        ];
+        $mimeBase = strtolower(trim(explode(';', (string)$media['mime_type'])[0]));
+        $localName = str_contains($mediaUrl, '/') ? basename($mediaUrl) : '';
+        $ext = strtolower(pathinfo($localName, PATHINFO_EXTENSION)) ?: ($extByMime[$mimeBase] ?? 'pdf');
+        $textIsFilename = $text !== '' && !str_contains($text, "\n")
+            && strtolower(pathinfo($text, PATHINFO_EXTENSION)) === $ext;
+        if ($type === 'document' && $textIsFilename) {
+            $filename = basename($text);
+        } else {
+            $filename = $localName !== '' ? $localName : 'weiterleitung_' . $messageId . '.' . $ext;
+        }
+
+        // Begleittext: die Bildunterschrift; bei Vorlagen mit Beleg der Vorlagentext
+        $caption = trim((string)$msg['media_caption']);
+        if (in_array($type, ['audio', 'voice', 'sticker'], true) || $caption === $filename) {
+            $caption = '';
+        } elseif (!in_array($type, ['image', 'video', 'document'], true)) {
+            $caption = $text;
+        }
+
+        sendWhatsAppChatDocument($target + [
+            'message' => mb_substr($caption, 0, 1024),
+            'document_base64' => base64_encode($media['data']),
+            'filename' => $filename,
+        ]);
+        return;
+    }
+
+    if ($type === 'contacts') {
+        $text = _waContactsAsText($text);
+    }
+    if ($text === '') {
+        resultInfo(false, 'NOT_FORWARDABLE', 'Diese Nachricht lässt sich nicht weiterleiten');
+        return;
+    }
+
+    sendWhatsAppMessage($target + ['message' => $text]);
 }
 
 /**
@@ -1156,33 +1380,47 @@ function _sendWhatsAppChatDocumentRaw($data) {
 
     $mediaId = $uploadData['id'];
 
-    // Nachrichtentyp bestimmen (Bild oder Dokument)
+    // Nachrichtentyp bestimmen: Bild, Sprachnachricht/Audio und Video gehen als
+    // solche raus (abspielbar), alles andere als Dokument. Audio kennt keinen
+    // Begleittext und geht deshalb nur ohne Text als Audio.
     $isImage = str_starts_with($mime, 'image/');
-    $msgType = $isImage ? 'image' : 'document';
-
-    $payload = ['messaging_product' => 'whatsapp', 'to' => ltrim($to, '+'), 'type' => $msgType];
     if ($isImage) {
-        $payload['image'] = ['id' => $mediaId];
-        if (!empty($message)) $payload['image']['caption'] = $message;
+        $msgType = 'image';
+    } elseif (str_starts_with($mime, 'audio/') && empty($message)) {
+        $msgType = 'audio';
+    } elseif (str_starts_with($mime, 'video/')) {
+        $msgType = 'video';
     } else {
-        $payload['document'] = ['id' => $mediaId, 'filename' => $filename];
-        if (!empty($message)) $payload['document']['caption'] = $message;
+        $msgType = 'document';
     }
 
     $messageUrl = "https://graph.facebook.com/v21.0/{$phoneNumberId}/messages";
-    $ch = curl_init($messageUrl);
-    curl_setopt_array($ch, [
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => json_encode($payload),
-        CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $accessToken, 'Content-Type: application/json'],
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 30,
-    ]);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    $sendAs = function (string $type) use ($messageUrl, $accessToken, $to, $mediaId, $filename, $message): array {
+        $media = ['id' => $mediaId];
+        if ($type === 'document') $media['filename'] = $filename;
+        if ($type !== 'audio' && !empty($message)) $media['caption'] = $message;
+        $payload = ['messaging_product' => 'whatsapp', 'to' => ltrim($to, '+'), 'type' => $type, $type => $media];
 
-    $responseData = json_decode($response, true);
+        $ch = curl_init($messageUrl);
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($payload),
+            CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $accessToken, 'Content-Type: application/json'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+        ]);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        return [$httpCode, json_decode((string)$response, true)];
+    };
+
+    [$httpCode, $responseData] = $sendAs($msgType);
+    // Nimmt Meta die Datei nicht als Audio/Video an (Codec), dann als Dokument
+    if (($httpCode !== 200 || !isset($responseData['messages'][0]['id'])) && in_array($msgType, ['audio', 'video'], true)) {
+        $msgType = 'document';
+        [$httpCode, $responseData] = $sendAs($msgType);
+    }
     if ($httpCode !== 200 || !isset($responseData['messages'][0]['id'])) {
         $errorMsg = $responseData['error']['message'] ?? 'Unbekannter Fehler';
         resultInfo(false, 'WHATSAPP_API_ERROR', "HTTP {$httpCode}: {$errorMsg}");

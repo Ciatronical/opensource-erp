@@ -59,7 +59,14 @@
         "deleteMessage": "删除消息",
         "deleteConfirm": "确定要删除这条消息吗？",
         "deleteSuccess": "消息已在本地删除",
-        "deleteError": "删除消息时出错"
+        "deleteError": "删除消息时出错",
+        "forward": "转发",
+        "forwardSearchRecipient": "搜索聊天、客户、供应商或号码…",
+        "forwardToNumber": "发送至 {number}",
+        "forwardNoResults": "未找到收件人",
+        "forwardCustomer": "客户",
+        "forwardVendor": "供应商",
+        "reaction": "客户的回应"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

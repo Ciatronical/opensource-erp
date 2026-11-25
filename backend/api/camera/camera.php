@@ -551,11 +551,11 @@ function getRules($data) {
  * @param array $data['time_to'] Zeitfenster bis (optional)
  * @param array $data['days_of_week'] Wochentage als Array (0=So, 1=Mo, ..., 6=Sa)
  * @param array $data['min_score'] Mindest-Score
- * @param array $data['action'] Aktionstyp (notify, whatsapp, email, log)
+ * @param array $data['rule_action'] Aktionstyp (notify, whatsapp, email, log) — nicht 'action', das ist der Name der API-Funktion
  * @param array $data['action_config'] JSON-Konfiguration
  * @param array $data['active'] Aktiv
  * @param array $data['cooldown_seconds'] Cooldown in Sekunden
- * @testdata {"name": "Lager nachts", "labels": ["person"], "time_from": "22:00", "time_to": "06:00", "action": "notify", "active": true, "cooldown_seconds": 300}
+ * @testdata {"name": "Lager nachts", "labels": ["person"], "time_from": "22:00", "time_to": "06:00", "rule_action": "notify", "active": true, "cooldown_seconds": 300}
  */
 function saveRule($data) {
     $db = DbhCompany::begin();
@@ -573,7 +573,7 @@ function saveRule($data) {
         ':time_to' => !empty($data['time_to']) ? $data['time_to'] : null,
         ':days_of_week' => $daysOfWeek,
         ':min_score' => $data['min_score'] ?? 0.7,
-        ':action' => $data['action'] ?? 'notify',
+        ':action' => $data['rule_action'] ?? 'notify',
         ':action_config' => $actionConfig,
         ':active' => ($data['active'] ?? true) ? 't' : 'f',
         ':cooldown_seconds' => $data['cooldown_seconds'] ?? 300,

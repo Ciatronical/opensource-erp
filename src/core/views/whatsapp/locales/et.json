@@ -59,7 +59,14 @@
         "deleteMessage": "Kustuta sõnum",
         "deleteConfirm": "Kas soovite selle sõnumi tõesti kustutada?",
         "deleteSuccess": "Sõnum kustutatud lokaalselt",
-        "deleteError": "Sõnumi kustutamine ebaõnnestus"
+        "deleteError": "Sõnumi kustutamine ebaõnnestus",
+        "forward": "Edasta",
+        "forwardSearchRecipient": "Otsi vestlust, klienti, tarnijat või numbrit …",
+        "forwardToNumber": "Saada numbrile {number}",
+        "forwardNoResults": "Saajat ei leitud",
+        "forwardCustomer": "Klient",
+        "forwardVendor": "Tarnija",
+        "reaction": "Kliendi reaktsioon"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

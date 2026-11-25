@@ -17,6 +17,7 @@ onvif-zeep>=0.2.12
 #   pip install pycoral tflite-runtime
 # Modell wird beim ersten Start automatisch heruntergeladen.
 
-# Intel iGPU / OpenVINO (~40 Inf./s, kostenlos):
+# Intel iGPU / OpenVINO (kostenlos, rund ein Fuenftel der CPU-Last von YOLO auf CPU):
 #   pip install openvino
+# Braucht den OpenCL-Treiber der Intel-Grafik (Paket intel-opencl-icd).
 # YOLO wird automatisch ins OpenVINO-Format exportiert.

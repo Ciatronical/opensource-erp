@@ -131,7 +131,7 @@
 
                                     <div
                                         class="chat-row"
-                                        :class="msg.direction === 'O' ? 'chat-row--out' : 'chat-row--in'"
+                                        :class="[msg.direction === 'O' ? 'chat-row--out' : 'chat-row--in', { 'chat-row--reacted': msg.reaction }]"
                                     >
                                         <div class="chat-bubble chat-msg-card" :class="msg.direction === 'O' ? 'chat-bubble--out' : 'chat-bubble--in'" style="position: relative;">
                                             <!-- Löschen-Button (per Hover sichtbar) -->
@@ -342,11 +342,13 @@
                                             <!-- Zeitstempel + Status + Weiterleiten -->
                                             <div class="chat-bubble__meta">
                                                 <v-btn
+                                                    v-if="canForwardWhatsApp(msg)"
                                                     class="chat-bubble__forward"
                                                     icon="mdi-share"
                                                     size="x-small"
                                                     variant="text"
                                                     density="compact"
+                                                    :title="t('WhatsAppView.forward')"
                                                     @click.stop="openForwardDialog(msg)"
                                                 />
                                                 <span>{{ formatTime(msg.itime) }}</span>
@@ -369,6 +371,9 @@
                                                 <v-icon size="12" color="red" class="mr-1">mdi-alert-circle</v-icon>
                                                 {{ msg.error_message }}
                                             </div>
+
+                                            <!-- Reaktion des Kunden auf diese Nachricht -->
+                                            <div v-if="msg.reaction" class="chat-reaction" :title="t('WhatsAppView.reaction')">{{ msg.reaction }}</div>
                                         </div>
                                     </div>
                                 </template>
@@ -684,59 +689,7 @@
         </v-dialog>
 
         <!-- Weiterleiten-Dialog -->
-        <v-dialog v-model="showForwardDialog" max-width="420">
-            <v-card>
-                <v-card-title class="d-flex align-center">
-                    <v-icon start>mdi-share</v-icon>
-                    {{ t('WhatsAppView.forwardTitle') }}
-                    <v-spacer />
-                    <v-btn icon="mdi-close" size="x-small" variant="text" @click="showForwardDialog = false" />
-                </v-card-title>
-                <v-divider />
-
-                <!-- Vorschau der weitergeleiteten Nachricht -->
-                <div v-if="forwardMessage" class="pa-3 bg-grey-lighten-4">
-                    <div class="text-caption text-medium-emphasis mb-1">{{ t('WhatsAppView.forwardPreview') }}</div>
-                    <div class="text-body-2" style="white-space: pre-wrap; max-height: 80px; overflow: hidden;">
-                        {{ forwardMessage.message_text || '[Medium]' }}
-                    </div>
-                </div>
-
-                <v-divider />
-                <v-text-field
-                    v-model="forwardSearch"
-                    :placeholder="t('WhatsAppView.forwardSearchPlaceholder')"
-                    prepend-inner-icon="mdi-magnify"
-                    variant="solo-filled"
-                    density="compact"
-                    flat
-                    hide-details
-                    class="mx-3 mt-3"
-                />
-                <v-card-text class="pa-0" style="max-height: 350px; overflow-y: auto;">
-                    <v-list density="compact">
-                        <v-list-item
-                            v-for="conv in filteredForwardConversations()"
-                            :key="conv.phone_number"
-                            :disabled="forwardSending"
-                            @click="doForward(conv)"
-                        >
-                            <template #prepend>
-                                <v-avatar size="36" color="green-lighten-4">
-                                    <span class="text-caption font-weight-bold text-green-darken-3">{{ initials(conv.contact_name || conv.customer_name || conv.phone_number) }}</span>
-                                </v-avatar>
-                            </template>
-                            <v-list-item-title class="text-body-2 font-weight-medium">
-                                {{ conv.customer_name || conv.contact_name || conv.phone_number }}
-                            </v-list-item-title>
-                            <v-list-item-subtitle class="text-caption">
-                                {{ conv.phone_number }}
-                            </v-list-item-subtitle>
-                        </v-list-item>
-                    </v-list>
-                </v-card-text>
-            </v-card>
-        </v-dialog>
+        <WhatsappForwardDialog v-model="showForwardDialog" :message="forwardMessage" @forwarded="onForwarded" />
 
         <!-- Löschen-Bestätigungsdialog -->
         <v-dialog v-model="showDeleteConfirm" max-width="400">
@@ -767,6 +720,7 @@ import * as toast from '@/core/utils/toasts.js'
 import { waMediaCache } from '@/core/utils/whatsappMediaCache.js'
 import { pickMobilePhone } from '@/core/utils/phoneFormat.js'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import WhatsappForwardDialog, { canForwardWhatsApp } from '@/core/components/whatsapp-forward.dialog.vue'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 
@@ -775,7 +729,7 @@ const mediaCache = waMediaCache
 
 export default {
     name: 'WhatsAppView',
-    components: { NavbarView, EmojiPicker },
+    components: { NavbarView, EmojiPicker, WhatsappForwardDialog },
 
     setup() {
         const { t } = useI18n()
@@ -842,8 +796,6 @@ export default {
 
         const showForwardDialog = ref(false)
         const forwardMessage = ref(null)
-        const forwardSearch = ref('')
-        const forwardSending = ref(false)
 
         const showCompose = ref(false)
         const composeData = ref({ to: '', message: '' })
@@ -1336,89 +1288,16 @@ export default {
             showEmojiPicker.value = false
         }
 
-        // Weiterleiten
+        // Weiterleiten (Dialog: whatsapp-forward.dialog.vue)
         function openForwardDialog(msg) {
             forwardMessage.value = msg
-            forwardSearch.value = ''
             showForwardDialog.value = true
         }
 
-        const forwardConversations = ref([])
-
-        function filteredForwardConversations() {
-            if (!forwardSearch.value.trim()) return conversations.value
-            const q = forwardSearch.value.toLowerCase()
-            return conversations.value.filter(c =>
-                (c.contact_name || '').toLowerCase().includes(q) ||
-                (c.customer_name || '').toLowerCase().includes(q) ||
-                (c.phone_number || '').includes(q)
-            )
-        }
-
-        async function doForward(targetConv) {
-            if (!forwardMessage.value || forwardSending.value) return
-            forwardSending.value = true
-            try {
-                const msg = forwardMessage.value
-                let success = false
-
-                if (msg.message_type === 'location') {
-                    // Standort als native Location-Message weiterleiten
-                    const coords = parseLocationCoords(msg.message_text)
-                    const [lat, lon] = coords.split(',').map(Number)
-                    const resp = await axios.post('/api/whatsapp/', {
-                        action: 'sendWhatsAppLocation',
-                        to: targetConv.phone_number,
-                        latitude: lat,
-                        longitude: lon,
-                        customer_id: targetConv.customer_id || 0
-                    })
-                    success = resp.data.success
-                } else if (msg.media_url && (msg.message_type === 'image' || msg.message_type === 'document' || msg.message_type === 'audio' || msg.message_type === 'voice' || msg.message_type === 'video')) {
-                    // Mediendatei weiterleiten: erst abrufen, dann senden
-                    const mediaResp = await axios.post('/api/whatsapp/', {
-                        action: 'getWhatsAppMedia',
-                        media_id: msg.media_url
-                    })
-                    if (mediaResp.data.success && mediaResp.data.payload?.data) {
-                        const mimeType = mediaResp.data.payload.mime_type || msg.media_mime_type || 'application/octet-stream'
-                        const extMap = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'audio/ogg': 'ogg', 'audio/mpeg': 'mp3', 'video/mp4': 'mp4', 'application/pdf': 'pdf' }
-                        const ext = extMap[mimeType] || mimeType.split('/').pop() || 'bin'
-                        const filename = `weiterleitung_${msg.id}.${ext}`
-                        const resp = await axios.post('/api/whatsapp/', {
-                            action: 'sendWhatsAppChatDocument',
-                            to: targetConv.phone_number,
-                            message: msg.media_caption || '',
-                            customer_id: targetConv.customer_id || 0,
-                            document_base64: mediaResp.data.payload.data,
-                            filename: filename
-                        })
-                        success = resp.data.success
-                    }
-                } else {
-                    // Textnachricht weiterleiten
-                    const resp = await axios.post('/api/whatsapp/', {
-                        action: 'sendWhatsAppMessage',
-                        to: targetConv.phone_number,
-                        message: msg.message_text || '',
-                        customer_id: targetConv.customer_id || 0,
-                        customer_name: targetConv.customer_name || targetConv.contact_name || ''
-                    })
-                    success = resp.data.success
-                }
-
-                if (success) {
-                    toast.success(t('WhatsAppView.forwardSuccess'))
-                    showForwardDialog.value = false
-                    forwardMessage.value = null
-                } else {
-                    toast.error(t('WhatsAppView.forwardError'))
-                }
-            } catch {
-                toast.error(t('WhatsAppView.forwardError'))
-            } finally {
-                forwardSending.value = false
-            }
+        // Nach dem Weiterleiten: Chatliste auffrischen, der Empfänger rückt nach oben
+        function onForwarded() {
+            forwardMessage.value = null
+            loadConversations()
         }
 
         function parseLocationCoords(text) {
@@ -1586,8 +1465,8 @@ export default {
             showImageViewer, viewerImageSrc, viewerCaption,
             showEmojiPicker, onEmojiSelect,
             showDeleteConfirm, deleting, confirmDeleteMessage, doDeleteMessage,
-            showForwardDialog, forwardMessage, forwardSearch, forwardSending,
-            openForwardDialog, filteredForwardConversations, doForward,
+            showForwardDialog, forwardMessage,
+            openForwardDialog, onForwarded, canForwardWhatsApp,
             loadConversations, selectConversation,
             doSendReply, doSendCompose,
             onCustomerSearch, onCustomerSelect,
@@ -1651,6 +1530,29 @@ export default {
 
 .chat-row--in {
     justify-content: flex-start;
+}
+
+/* Reaktion: Marke am unteren Rand der Blase, die Zeile braucht dafür Platz */
+.chat-row--reacted {
+    margin-bottom: 18px;
+}
+.chat-reaction {
+    position: absolute;
+    bottom: -14px;
+    left: 8px;
+    padding: 0 6px;
+    font-size: 14px;
+    line-height: 22px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    cursor: default;
+    z-index: 1;
+}
+.chat-bubble--out .chat-reaction {
+    left: auto;
+    right: 8px;
 }
 
 /* Chat-Bubble */
@@ -1828,14 +1730,14 @@ export default {
     color: #667781;
 }
 
-/* Weiterleiten-Button */
+/* Weiterleiten-Button: immer sichtbar (auf Touch-Geräten gibt es kein Hover) */
 .chat-bubble__forward {
-    opacity: 0;
+    opacity: 0.45;
     transition: opacity 0.15s;
     margin-right: 4px;
 }
 .chat-bubble:hover .chat-bubble__forward {
-    opacity: 0.6;
+    opacity: 0.75;
 }
 .chat-bubble__forward:hover {
     opacity: 1 !important;

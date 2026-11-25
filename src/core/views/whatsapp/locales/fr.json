@@ -59,7 +59,14 @@
         "deleteMessage": "Supprimer le message",
         "deleteConfirm": "Voulez-vous vraiment supprimer ce message ?",
         "deleteSuccess": "Message supprimé localement",
-        "deleteError": "Erreur lors de la suppression du message"
+        "deleteError": "Erreur lors de la suppression du message",
+        "forward": "Transférer",
+        "forwardSearchRecipient": "Rechercher un chat, client, fournisseur ou numéro …",
+        "forwardToNumber": "Envoyer à {number}",
+        "forwardNoResults": "Aucun destinataire trouvé",
+        "forwardCustomer": "Client",
+        "forwardVendor": "Fournisseur",
+        "reaction": "Réaction du client"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

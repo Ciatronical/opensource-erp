@@ -65,6 +65,8 @@ function aiAssistants() {
         // Auftragsbestätigung: Zusage/Absage aus Anruf, WhatsApp, E-Mail erkennen — Zwischentöne
         // („ja, aber erst nach Rücksprache“) und Bedingungen sicher trennen, daher Sonnet
         'order_confirm'    => ['key' => 'order_confirm_ai_model',    'default' => 'claude-sonnet-5'],
+        // Trading-Forschung: schlägt Parameterkombinationen vor, die danach alle Prüfungen durchlaufen
+        'trading_research' => ['key' => 'trading_research_ai_model', 'default' => 'claude-sonnet-5'],
         // Die Prognose erzwingt den Aufruf ihres Werkzeugs (tool_choice 'any').
         // Claude Fable 5.1 lehnt einen erzwungenen Werkzeugaufruf mit HTTP 400 ab.
         'banking'          => ['key' => 'banking_ai_model',          'default' => 'claude-opus-5',

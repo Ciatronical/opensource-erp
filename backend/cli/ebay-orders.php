@@ -147,6 +147,7 @@ foreach ($clients as $client) {
             }
         }
     } catch (Exception $e) {
+        if (companyDbMissing($e)) continue; // Firma ohne Datenbank: still überspringen
         echo "[{$clientName}] Fehler: " . $e->getMessage() . "\n";
     } finally {
         ebayCronResetCompanyDb();

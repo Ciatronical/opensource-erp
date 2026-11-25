@@ -45,10 +45,11 @@ export default {
   'login.password': 'Passwort',
   'login.submit': 'Einloggen',
   'login.pending': 'Anmeldung läuft …',
-  'login.register': 'Noch kein Kundenkonto? Jetzt registrieren',
+  'login.registerText': "Noch kein Kundenkonto?",
+  'login.registerLink': "Jetzt registrieren",
   'login.missing': 'Bitte geben Sie E-Mail-Adresse und Passwort ein.',
-  'login.activate': 'Schon Kunde bei uns, aber noch kein Online-Zugang? Jetzt mit Ihrer Telefonnummer freischalten',
-
+  'login.activateText': "Sie sind bereits Kunde, haben aber noch keinen Online-Zugang?",
+  'login.activateLink': "Zugang freischalten",
   // Zugang für Bestandskunden (portal-activate)
   'activate.intro': 'Sie sind schon Kunde bei uns? Dann richten wir Ihnen in zwei Schritten einen Zugang zu Ihrem Kundenkonto ein. Sie brauchen dafür nur Ihre Telefonnummer, die wir von Ihnen kennen.',
   'activate.steps': 'Schritt 1: Sie bekommen einen Link per WhatsApp. Schritt 2: Sie wählen Ihr Passwort.',

@@ -85,6 +85,9 @@ del _sys, _devnull
 
 running = True
 detector = None  # YOLO-Modell (lazy init)
+# Zusaetzliche Argumente fuer jeden YOLO-Aufruf (bei OpenVINO: das Rechengeraet).
+_yolo_predict_args = {}
+OPENVINO_DEVICE = 'intel:gpu'   # Intel-Grafik; dieselbe iGPU dekodiert die Streams (VAAPI)
 DETECTOR_LOCK = threading.Lock()
 
 # YOLO-Labels die wir erkennen wollen (COCO-Klassen)
@@ -459,7 +462,7 @@ class ClipRecorder:
 #
 # Kaskade:
 #   1. Google Coral USB TPU   (~100 Inferenzen/s, ~30€ USB-Stick)
-#   2. Intel iGPU / OpenVINO  (~40 Inferenzen/s, kostenlos, in jedem Intel-Chip)
+#   2. Intel iGPU / OpenVINO  (gemessen ~15 Inferenzen/s bei rund 1/5 der CPU-Last, kostenlos)
 #   3. CPU-Fallback            (~10 Inferenzen/s)
 #
 # Keine Konfiguration noetig — wird automatisch erkannt.
@@ -519,11 +522,20 @@ def _detect_openvino_available():
     """Prueft ob OpenVINO installiert und eine Intel-GPU verfuegbar ist."""
     try:
         import openvino
-        print(f"[HW] OpenVINO {openvino.__version__} erkannt")
-        return True
     except ImportError:
-        pass
-    return False
+        return False
+    try:
+        devices = openvino.Core().available_devices
+    except Exception as e:
+        print(f"[HW] OpenVINO {openvino.__version__} erkannt, Geraeteabfrage fehlgeschlagen: {e}")
+        return False
+    print(f"[HW] OpenVINO {openvino.__version__} erkannt, Geraete: {', '.join(devices)}")
+    # Ohne GPU-Geraet (fehlender OpenCL-Treiber intel-opencl-icd) rechnet OpenVINO
+    # auf der CPU — gemessen langsamer als PyTorch direkt. Dann lieber CPU-Backend.
+    if not any(d.startswith('GPU') for d in devices):
+        print("[HW] Keine Intel-GPU fuer OpenVINO verfuegbar (intel-opencl-icd installiert?).")
+        return False
+    return True
 
 
 def _init_coral():
@@ -640,6 +652,7 @@ def _init_yolo(use_openvino=False):
     global detector
 
     from ultralytics import YOLO
+    _yolo_predict_args.clear()
 
     # YOLO/PyTorch sonst mit CPU-Zahl (14) Intra-Op-Threads — deckeln.
     try:
@@ -663,8 +676,11 @@ def _init_yolo(use_openvino=False):
             print("[OPENVINO] Exportiere YOLO -> OpenVINO (einmalig)...")
             model.export(format='openvino')
 
-        detector = YOLO(openvino_path)
-        print("[OPENVINO] YOLO auf Intel iGPU geladen.")
+        detector = YOLO(openvino_path, task='detect')
+        # Das Geraet muss bei JEDEM Aufruf mitgegeben werden: ohne 'intel:gpu'
+        # laesst ultralytics das OpenVINO-Modell auf der CPU rechnen.
+        _yolo_predict_args['device'] = OPENVINO_DEVICE
+        print(f"[OPENVINO] YOLO geladen, Geraet {OPENVINO_DEVICE}.")
     else:
         model_path = os.path.join(SCRIPT_DIR, 'yolov8n.pt')
         if not os.path.exists(model_path):
@@ -677,13 +693,13 @@ def _init_yolo(use_openvino=False):
     # Warmup: einmal mit Dummy-Frame aufrufen damit PyTorch alle internen
     # Strukturen initialisiert bevor Worker-Threads parallel darauf zugreifen.
     _dummy = np.zeros((480, 640, 3), dtype=np.uint8)
-    detector(_dummy, verbose=False)
+    detector(_dummy, verbose=False, **_yolo_predict_args)
     print("[YOLO] Warmup abgeschlossen.")
 
 
 def _detect_with_yolo(frame, min_score=DEFAULT_MIN_SCORE):
     """Objekterkennung mit YOLO (OpenVINO oder CPU)."""
-    results = detector(frame, verbose=False, conf=min_score)
+    results = detector(frame, verbose=False, conf=min_score, **_yolo_predict_args)
     detections = []
     for r in results:
         for box in r.boxes:
@@ -728,10 +744,11 @@ def _init_detection_backend():
         try:
             _init_yolo(use_openvino=True)
             _detection_backend = 'openvino'
-            print("[HW] ✓ Backend: Intel iGPU via OpenVINO (~40 Inf./s)")
+            print("[HW] ✓ Backend: Intel iGPU via OpenVINO")
             return
         except Exception as e:
             print(f"[HW] OpenVINO-Init fehlgeschlagen: {e}")
+            _yolo_predict_args.clear()
 
     # 3. CPU-Fallback (YOLO direkt)
     try:
@@ -983,9 +1000,15 @@ def open_stream(stream_url):
         src = HwFrameSource(stream_url)
         if src.isOpened():
             return src
-        # Hardware-Start scheiterte → sauber schliessen und auf Software zurueckfallen.
+        # Hardware-Start scheiterte (Kamera offline, oder beim Boot starten alle
+        # Streams gleichzeitig und der erste Frame kommt nicht rechtzeitig).
+        # KEIN Rueckfall auf Software: cv2 dekodiert dann den vollen 4K-Stream
+        # mit 25 fps auf der CPU und bleibt dabei, bis der Stream abreisst — das
+        # hat den Rechner lahmgelegt. Die geschlossene Quelle geht zurueck, der
+        # Worker wartet (Backoff) und versucht die Hardware erneut.
         src.release()
-        print("[HW] VAAPI-Start fehlgeschlagen — Software-Dekodierung (cv2).")
+        print("[HW] VAAPI-Start fehlgeschlagen — neuer Versuch nach Wartezeit.")
+        return src
     return cv2.VideoCapture(stream_url, cv2.CAP_FFMPEG)
 
 
@@ -1382,9 +1405,11 @@ class CameraWorker(threading.Thread):
             if rule_days and str(js_dow) not in [str(d) for d in rule_days]:
                 continue
 
-            # Regel matched!
-            print(f"[REGEL] '{rule['name']}' ausgeloest: {ev['label']} an {ev['camera_name']}")
+            # Regel matched! Wartezeit zusaetzlich in der DB pruefen und zaehlen.
             self.rule_cooldowns[rule_id] = now
+            if not self._claim_rule(rule):
+                continue
+            print(f"[REGEL] '{rule['name']}' ausgeloest: {ev['label']} an {ev['camera_name']}")
 
             action = rule.get('action', 'notify')
             self._execute_action(action, rule, ev)
@@ -1425,8 +1450,61 @@ class CameraWorker(threading.Thread):
         elif action == 'log':
             print(f"[LOG] {message}")
 
-        # WhatsApp und Email werden ueber PHP-Webhook gehandhabt
-        # (da die WhatsApp-API-Credentials in PHP verwaltet werden)
+        elif action in ('whatsapp', 'email'):
+            # Versand im Hintergrund, damit die Bildanalyse nicht wartet
+            threading.Thread(
+                target=self._send_via_php, args=(rule, message, ev), daemon=True
+            ).start()
+
+    def _claim_rule(self, rule):
+        """Wartezeit in der DB pruefen, Ausloesung vermerken und zaehlen.
+
+        Ein UPDATE fuer alles: gilt ueber alle Kameras und Neustarts hinweg,
+        und zwei gleichzeitige Ereignisse loesen nicht beide aus.
+        Rueckgabe False = Wartezeit laeuft noch.
+        """
+        conn = self._db()
+        if not conn:
+            return True
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE camera_rule
+                    SET last_triggered_at = NOW(), trigger_count = trigger_count + 1
+                    WHERE id = %s
+                      AND (last_triggered_at IS NULL
+                           OR last_triggered_at + cooldown_seconds * INTERVAL '1 second' <= NOW())
+                    RETURNING id
+                """, (rule['id'],))
+                return cur.fetchone() is not None
+        except psycopg2.errors.UndefinedColumn:
+            # Spalte trigger_count fehlt noch (Schema-Update laeuft erst bei der
+            # naechsten Anmeldung) — Regel trotzdem ausloesen, nur ohne Zaehler.
+            return True
+        except Exception as e:
+            print(f"[REGEL] Zaehler-Fehler: {e}")
+            self._db_conn = None
+            return True
+
+    def _send_via_php(self, rule, message, ev):
+        """WhatsApp oder E-Mail ueber das PHP-CLI senden.
+
+        Zugangsdaten, 24h-Fenster, Vorlagen und SMTP liegen in den PHP-Modulen.
+        """
+        import subprocess
+        cmd = [
+            'php', os.path.join(BACKEND_DIR, 'cli', 'camera-rule-action.php'),
+            f"--db={self.conn_params['database']}",
+            f"--rule={rule['id']}",
+            f"--message={message}",
+            f"--event={ev.get('event_id', '')}",
+        ]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            out = (result.stdout or result.stderr or '').strip()
+            print(f"[REGEL] {out or 'Versand: keine Rueckmeldung'}")
+        except Exception as e:
+            print(f"[REGEL] Versand-Fehler: {e}")
 
 
 # --- Konfiguration aus DB laden -----------------------------------------------
@@ -1485,6 +1563,10 @@ def load_rules(conn):
         rules = []
         for row in cur.fetchall():
             rule = dict(row)
+            # Aendert sich bei jeder Ausloesung — darf nicht in die Signatur
+            # einfliessen, sonst startet der Worker nach jedem Alarm neu.
+            rule.pop('last_triggered_at', None)
+            rule.pop('trigger_count', None)
             # PostgreSQL-Arrays zu Python-Listen
             if isinstance(rule.get('labels'), str):
                 rule['labels'] = [x.strip('" ') for x in rule['labels'].strip('{}').split(',') if x.strip()]
@@ -1550,6 +1632,15 @@ def cleanup_company_media(client):
                         "AND to_regclass('defaults_oserp') IS NOT NULL")
             if not cur.fetchone()[0]:
                 return None
+        conn.commit()
+
+        # Nur Mandanten mit eingeschalteter Videoueberwachung raeumen auf. Das
+        # Medienverzeichnis ist mandantenuebergreifend, und die Test-DB ist ein
+        # Klon der Produktion mit DENSELBEN Ereignis-IDs: mit eigener (kuerzerer)
+        # Frist loeschte sie sonst die Clips, die die Produktion noch behalten will.
+        if not is_camera_enabled(conn):
+            conn.commit()
+            return None
         conn.commit()
 
         days = get_retention_days(conn)

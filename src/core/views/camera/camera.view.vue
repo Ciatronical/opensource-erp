@@ -316,18 +316,30 @@
                         </v-card-text>
                         <v-divider />
                         <v-card-text class="pt-2 pb-2">
-                            <div class="d-flex align-center gap-3 text-caption">
+                            <div class="rule-card-meta text-caption">
                                 <span>
-                                    <v-icon size="12" class="mr-1">mdi-bell-outline</v-icon>
+                                    <v-icon size="12" class="mr-1">{{ actionIcons[rule.action] || 'mdi-bell-outline' }}</v-icon>
                                     {{ t('cam.actions.' + rule.action, rule.action) }}
                                 </span>
                                 <span v-if="rule.time_from && rule.time_to">
                                     <v-icon size="12" class="mr-1">mdi-clock-outline</v-icon>
-                                    {{ rule.time_from }}–{{ rule.time_to }}
+                                    {{ rule.time_from.slice(0, 5) }}–{{ rule.time_to.slice(0, 5) }}
+                                </span>
+                                <span v-if="ruleDaysText(rule)">
+                                    <v-icon size="12" class="mr-1">mdi-calendar-week-outline</v-icon>
+                                    {{ ruleDaysText(rule) }}
                                 </span>
                                 <span>
                                     <v-icon size="12" class="mr-1">mdi-timer-pause-outline</v-icon>
                                     {{ Math.round(rule.cooldown_seconds / 60) }} Min
+                                </span>
+                            </div>
+                            <div class="rule-card-count text-caption">
+                                <v-chip size="x-small" variant="tonal" :color="Number(rule.trigger_count) ? 'primary' : undefined" prepend-icon="mdi-counter">
+                                    {{ t('cam.ruleTriggerCount', { n: Number(rule.trigger_count || 0) }) }}
+                                </v-chip>
+                                <span v-if="rule.last_triggered_at">
+                                    {{ t('cam.ruleLastTriggered', { time: formatDateTime(rule.last_triggered_at) }) }}
                                 </span>
                             </div>
                         </v-card-text>
@@ -375,7 +387,12 @@
                                 rounded="0"
                             >
                                 <template #prepend>
-                                    <v-icon size="16" color="grey" class="mr-1">mdi-cctv</v-icon>
+                                    <div class="cam-thumb">
+                                        <img v-if="previewUrls[cam.id]" :src="previewUrls[cam.id]" :alt="cam.name" />
+                                        <v-progress-circular v-else-if="previewState[cam.id] === 'loading'"
+                                            indeterminate size="16" width="2" />
+                                        <v-icon v-else size="18" :title="t('cam.previewUnavailable')">mdi-cctv-off</v-icon>
+                                    </div>
                                 </template>
                                 <v-list-item-title class="text-body-2">{{ cam.name }}</v-list-item-title>
                                 <v-list-item-subtitle>
@@ -783,6 +800,23 @@
                     <v-window v-model="cameraDialogTab">
                         <!-- Tab: Basis -->
                         <v-window-item value="basic">
+                            <!-- Aktuelles Bild: zeigt, um welche Kamera es geht -->
+                            <div v-if="editingCamera.id" class="cam-preview">
+                                <img v-if="previewUrls[editingCamera.id]" :src="previewUrls[editingCamera.id]"
+                                    :alt="editingCamera.name" />
+                                <div v-else class="cam-preview-empty">
+                                    <v-progress-circular v-if="previewState[editingCamera.id] === 'loading'"
+                                        indeterminate size="28" width="3" />
+                                    <template v-else>
+                                        <v-icon size="32">mdi-cctv-off</v-icon>
+                                        <span>{{ t('cam.previewUnavailable') }}</span>
+                                    </template>
+                                </div>
+                                <v-btn class="cam-preview-reload" icon="mdi-refresh" size="small" variant="tonal"
+                                    :title="t('cam.previewReload')"
+                                    :loading="!!previewUrls[editingCamera.id] && previewState[editingCamera.id] === 'loading'"
+                                    @click="loadPreview(editingCamera)" />
+                            </div>
                             <v-text-field v-model="editingCamera.name" :label="t('cam.cameraName')"
                                 variant="outlined" density="compact" class="mb-3" autofocus />
                             <v-text-field v-model="editingCamera.cam_key" :label="t('cam.camKey')"
@@ -946,54 +980,134 @@
         </v-dialog>
 
         <!-- Regel-Dialog -->
-        <v-dialog v-model="showRuleDialog" max-width="620">
+        <v-dialog v-model="showRuleDialog" max-width="680" scrollable :fullscreen="$vuetify.display.xs">
             <v-card rounded="lg">
-                <v-card-title class="pa-4 pb-2">
-                    {{ editingRule?.id ? t('cam.editRule') : t('cam.newRule') }}
+                <v-card-title class="d-flex align-center rule-dialog-title">
+                    <v-icon class="rule-dialog-icon">mdi-shield-check-outline</v-icon>
+                    <span>{{ editingRule.id ? t('cam.editRule') : t('cam.newRule') }}</span>
+                    <v-spacer />
+                    <v-btn icon="mdi-close" size="x-small" variant="text" :title="t('cam.close')" @click="showRuleDialog = false" />
                 </v-card-title>
-                <v-card-text class="pa-4 pt-2">
-                    <v-text-field v-model="editingRule.name" :label="t('cam.ruleName')" variant="outlined" density="compact" class="mb-3" />
-                    <v-row dense class="mb-1">
-                        <v-col cols="6">
-                            <v-select v-model="editingRule.camera_id" :items="cameraOptions" :label="t('cam.filterCamera')" clearable variant="outlined" density="compact" />
-                        </v-col>
-                        <v-col cols="6">
-                            <v-select v-model="editingRule.zone_id" :items="zoneOptionsForRule" :label="t('cam.ruleZone')" clearable variant="outlined" density="compact" />
-                        </v-col>
-                    </v-row>
-                    <v-select v-model="editingRule.labels" :items="allLabelOptions" :label="t('cam.ruleLabels')" multiple chips closable-chips variant="outlined" density="compact" class="mb-3" />
-                    <v-row dense class="mb-1">
-                        <v-col cols="6">
-                            <v-text-field v-model="editingRule.time_from" :label="t('cam.timeFrom')" type="time" variant="outlined" density="compact" />
-                        </v-col>
-                        <v-col cols="6">
-                            <v-text-field v-model="editingRule.time_to" :label="t('cam.timeTo')" type="time" variant="outlined" density="compact" />
-                        </v-col>
-                    </v-row>
-                    <v-select v-model="editingRule.days_of_week" :items="dayOptions" :label="t('cam.ruleDays')" multiple chips closable-chips variant="outlined" density="compact" class="mb-3" />
-                    <div class="mb-3">
-                        <div class="text-caption text-medium-emphasis mb-1">
-                            {{ t('cam.minScore') }}: {{ Math.round(editingRule.min_score * 100) }}%
-                        </div>
-                        <v-slider v-model="editingRule.min_score" :min="0.1" :max="1" :step="0.05" color="primary" track-color="grey-lighten-2" hide-details />
-                    </div>
-                    <v-select v-model="editingRule.action" :items="actionOptions" :label="t('cam.ruleAction')" variant="outlined" density="compact" class="mb-3" />
-                    <v-text-field v-if="editingRule.action === 'whatsapp'" v-model="editingRule.action_config.phone" :label="t('cam.whatsappPhone')" variant="outlined" density="compact" class="mb-3" />
-                    <v-text-field v-if="editingRule.action === 'email'" v-model="editingRule.action_config.email" :label="t('cam.emailAddress')" variant="outlined" density="compact" class="mb-3" />
-                    <v-text-field v-model="editingRule.action_config.message" :label="t('cam.customMessage')" variant="outlined" density="compact" class="mb-3" />
-                    <v-row dense>
-                        <v-col cols="6">
-                            <v-text-field v-model.number="editingRule.cooldown_seconds" :label="t('cam.cooldown')" type="number" :suffix="t('cam.seconds')" variant="outlined" density="compact" />
-                        </v-col>
-                        <v-col cols="6" class="d-flex align-center">
-                            <v-switch v-model="editingRule.active" :label="t('cam.ruleActive')" color="primary" hide-details />
-                        </v-col>
-                    </v-row>
+                <v-divider />
+                <v-card-text class="rule-dialog-body">
+                    <v-form ref="ruleForm" class="rule-form" @submit.prevent="saveRule">
+
+                        <!-- Auslöser: welche Kamera, welche Zone, welche Objekte -->
+                        <section-card :title="t('cam.ruleSectionTrigger')" icon="mdi-motion-sensor">
+                            <div class="rule-stack">
+                                <v-text-field
+                                    v-model="editingRule.name" :label="t('cam.ruleName')" :rules="[requiredRule]"
+                                    prepend-inner-icon="mdi-tag-outline" autofocus
+                                />
+                                <div class="rule-grid">
+                                    <v-select
+                                        v-model="editingRule.camera_id" :items="cameraOptions" :label="t('cam.filterCamera')"
+                                        :placeholder="t('cam.allCameras')" persistent-placeholder clearable
+                                        prepend-inner-icon="mdi-cctv"
+                                        @update:model-value="editingRule.zone_id = null"
+                                    />
+                                    <v-select
+                                        v-model="editingRule.zone_id" :items="zoneOptionsForRule" :label="t('cam.ruleZone')"
+                                        :disabled="!zoneOptionsForRule.length" clearable
+                                        prepend-inner-icon="mdi-vector-polygon"
+                                    />
+                                </div>
+                                <div>
+                                    <div class="rule-field-label">{{ t('cam.ruleLabels') }}</div>
+                                    <v-chip-group v-model="editingRule.labels" multiple column>
+                                        <v-chip
+                                            v-for="lbl in allLabelOptions" :key="lbl" :value="lbl" size="small"
+                                            :prepend-icon="labelIcon(lbl)"
+                                            :color="editingRule.labels.includes(lbl) ? labelColor(lbl) : undefined"
+                                            :variant="editingRule.labels.includes(lbl) ? 'tonal' : 'outlined'"
+                                            :class="{ 'rule-chip--off': !editingRule.labels.includes(lbl) }"
+                                        >
+                                            {{ t('cam.labels.' + lbl, lbl) }}
+                                        </v-chip>
+                                    </v-chip-group>
+                                </div>
+                                <div>
+                                    <div class="rule-field-label d-flex">
+                                        <span>{{ t('cam.minScore') }}</span>
+                                        <v-spacer />
+                                        <span class="rule-score">{{ Math.round(editingRule.min_score * 100) }}%</span>
+                                    </div>
+                                    <v-slider v-model="editingRule.min_score" :min="0.1" :max="1" :step="0.05" color="primary" hide-details />
+                                </div>
+                            </div>
+                        </section-card>
+
+                        <!-- Zeitraum: Uhrzeit und Wochentage -->
+                        <section-card :title="t('cam.ruleSectionSchedule')" icon="mdi-calendar-clock">
+                            <div class="rule-stack">
+                                <div>
+                                    <div class="rule-field-label">{{ t('cam.ruleDays') }}</div>
+                                    <v-chip-group v-model="editingRule.days_of_week" multiple column>
+                                        <v-chip
+                                            v-for="day in dayOptions" :key="day.value" :value="day.value" size="small"
+                                            :color="editingRule.days_of_week.includes(day.value) ? 'primary' : undefined"
+                                            :variant="editingRule.days_of_week.includes(day.value) ? 'flat' : 'outlined'"
+                                            class="rule-day" :class="{ 'rule-chip--off': !editingRule.days_of_week.includes(day.value) }"
+                                        >
+                                            {{ day.title }}
+                                        </v-chip>
+                                    </v-chip-group>
+                                </div>
+                                <div class="rule-grid">
+                                    <v-text-field
+                                        v-model="editingRule.time_from" :label="t('cam.timeFrom')" type="time" clearable
+                                        prepend-inner-icon="mdi-clock-start"
+                                    />
+                                    <v-text-field
+                                        v-model="editingRule.time_to" :label="t('cam.timeTo')" type="time" clearable
+                                        prepend-inner-icon="mdi-clock-end"
+                                    />
+                                </div>
+                                <div class="rule-hint">{{ t('cam.ruleTimeHint') }}</div>
+                            </div>
+                        </section-card>
+
+                        <!-- Benachrichtigung: Aktion, Empfänger, Text, Wartezeit -->
+                        <section-card :title="t('cam.ruleSectionAction')" icon="mdi-bell-ring-outline">
+                            <div class="rule-stack">
+                                <div class="rule-grid">
+                                    <v-select
+                                        v-model="editingRule.action" :items="actionOptions" :label="t('cam.ruleAction')"
+                                        :prepend-inner-icon="actionIcons[editingRule.action]"
+                                    />
+                                    <v-text-field
+                                        v-if="editingRule.action === 'whatsapp'"
+                                        v-model="editingRule.action_config.phone" :label="t('cam.whatsappPhone')" :rules="[requiredRule]"
+                                        type="tel" prepend-inner-icon="mdi-phone-outline"
+                                    />
+                                    <v-text-field
+                                        v-if="editingRule.action === 'email'"
+                                        v-model="editingRule.action_config.email" :label="t('cam.emailAddress')" :rules="[requiredRule, emailRule]"
+                                        type="email" prepend-inner-icon="mdi-at"
+                                    />
+                                </div>
+                                <v-text-field
+                                    v-model="editingRule.action_config.message" :label="t('cam.customMessage')"
+                                    prepend-inner-icon="mdi-message-text-outline"
+                                />
+                                <v-text-field
+                                    v-model.number="editingRule.cooldown_seconds" :label="t('cam.cooldown')" :hint="t('cam.cooldownHint')"
+                                    type="number" min="0" :suffix="t('cam.seconds')" persistent-hint
+                                    prepend-inner-icon="mdi-timer-pause-outline"
+                                />
+                            </div>
+                        </section-card>
+                    </v-form>
                 </v-card-text>
-                <v-card-actions class="pa-4 pt-0">
+                <v-divider />
+                <v-card-actions class="rule-dialog-actions">
+                    <!-- Schalter in eigener, schmaler Hülle: nur Schalter und Beschriftung reagieren auf Klicks -->
+                    <div class="rule-switch">
+                        <v-switch v-model="editingRule.active" :label="t('cam.ruleActive')" color="primary" density="compact" inset hide-details />
+                    </div>
                     <v-spacer />
                     <v-btn variant="text" @click="showRuleDialog = false">{{ t('cam.cancel') }}</v-btn>
-                    <v-btn color="primary" @click="saveRule" :loading="savingRule">{{ t('cam.save') }}</v-btn>
+                    <v-btn color="primary" variant="flat" prepend-icon="mdi-content-save-outline" @click="saveRule" :loading="savingRule">{{ t('cam.save') }}</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -1146,6 +1260,9 @@ const savingZones = ref(false)
 // Regel-Dialog
 const showRuleDialog = ref(false)
 const savingRule = ref(false)
+const ruleForm = ref(null)
+const requiredRule = v => !!String(v ?? '').trim() || t('cam.fieldRequired')
+const emailRule = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v ?? '').trim()) || t('cam.emailInvalid')
 const editingRule = reactive({
     id: null, name: '', camera_id: null, zone_id: null,
     labels: ['person'], time_from: '', time_to: '',
@@ -1225,6 +1342,13 @@ const dayOptions = [
     { title: t('cam.days.sat'), value: 6 },
     { title: t('cam.days.sun'), value: 0 },
 ]
+
+const actionIcons = {
+    notify: 'mdi-bell-outline',
+    whatsapp: 'mdi-whatsapp',
+    email: 'mdi-email-outline',
+    log: 'mdi-text-box-outline',
+}
 
 const actionOptions = [
     { title: t('cam.actions.notify'), value: 'notify' },
@@ -1478,6 +1602,8 @@ function editCamera(cam) {
             pre_record_secs: 3, post_record_secs: 5 }
     )
     showCameraDialog.value = true
+    // Beim Öffnen ein frisches Bild holen, damit man sieht, was die Kamera gerade zeigt
+    if (cam?.id) loadPreview(cam)
 }
 
 async function saveCamera() {
@@ -1769,23 +1895,41 @@ function onEventPagination({ page, itemsPerPage }) {
 
 // ── Regeln CRUD ────────────────────────────────────────────────────────────
 
+/** Wochentage einer Regel als Namen (Mo, Di, …); leer, wenn die Regel an allen Tagen gilt */
+function ruleDaysText(rule) {
+    const days = (rule.days_of_week || []).map(Number)
+    if (!days.length || days.length === 7) return ''
+    return dayOptions.filter(d => days.includes(d.value)).map(d => d.title).join(', ')
+}
+
 function editRule(rule) {
-    Object.assign(editingRule, rule
-        ? { ...rule, action_config: { ...(rule.action_config || {}) } }
-        : {
-            id: null, name: '', camera_id: null, zone_id: null,
-            labels: ['person'], time_from: '', time_to: '',
-            days_of_week: [1,2,3,4,5], min_score: 0.7,
-            action: 'notify', action_config: {}, active: true, cooldown_seconds: 300
-        }
-    )
+    const r = rule || {}
+    // Die Datenbank liefert Wochentage, Genauigkeit und Uhrzeiten als Text
+    // ("1", "0.700", "22:00:00") — hier auf die Typen der Eingabefelder bringen.
+    Object.assign(editingRule, {
+        id: r.id ?? null,
+        name: r.name ?? '',
+        camera_id: r.camera_id ?? null,
+        zone_id: r.zone_id ?? null,
+        labels: rule ? [...(r.labels || [])] : ['person'],
+        time_from: (r.time_from || '').slice(0, 5),
+        time_to: (r.time_to || '').slice(0, 5),
+        days_of_week: rule ? (r.days_of_week || []).map(Number) : [1, 2, 3, 4, 5],
+        min_score: Number(r.min_score ?? 0.7),
+        action: r.action || 'notify',
+        action_config: { ...(r.action_config || {}) },
+        active: rule ? r.active === true || r.active === 't' : true,
+        cooldown_seconds: Number(r.cooldown_seconds ?? 300),
+    })
     showRuleDialog.value = true
 }
 
 async function saveRule() {
+    const { valid } = await ruleForm.value.validate()
+    if (!valid) return
     savingRule.value = true
     try {
-        const res = await axios.post('/api/camera/', { action: 'saveRule', ...editingRule })
+        const res = await axios.post('/api/camera/', { ...editingRule, rule_action: editingRule.action, action: 'saveRule' })
         if (res.data.success) {
             showRuleDialog.value = false
             toast.success(t('cam.ruleSaved'))
@@ -1891,6 +2035,38 @@ function refreshSnapshot(cam) {
     img.src = url
 }
 
+// ── Vorschaubilder in der Kamera-Verwaltung ─────────────────────────────────
+// Ein Bild je Kamera, damit man beim Benennen sieht, um welche es geht. Die
+// Bilder kommen ebenfalls aus stream.php — deshalb nacheinander laden, nie alle
+// gleichzeitig (siehe Hinweis oben zum PHP-Pool).
+const previewUrls = reactive({})    // cam.id → Bild-URL des letzten geladenen Bildes
+const previewState = reactive({})   // cam.id → 'loading' | 'ok' | 'error'
+
+function loadPreview(cam) {
+    if (!cam?.id || !cam.stream_url || isWebUrl(cam.stream_url)) {
+        if (cam?.id) previewState[cam.id] = 'error'
+        return Promise.resolve()
+    }
+    if (previewState[cam.id] === 'loading') return Promise.resolve()
+    previewState[cam.id] = 'loading'
+    return new Promise(resolve => {
+        const url = snapshotUrl(cam)
+        const img = new Image()
+        img.onload = () => { previewUrls[cam.id] = url; previewState[cam.id] = 'ok'; resolve() }
+        img.onerror = () => { previewState[cam.id] = 'error'; resolve() }
+        img.src = url
+    })
+}
+
+let previewRun = 0
+async function loadAllPreviews() {
+    const run = ++previewRun
+    for (const cam of cameras.value) {
+        if (run !== previewRun || viewMode.value !== 'settings') return
+        if (!previewUrls[cam.id]) await loadPreview(cam)
+    }
+}
+
 let snapshotInterval = null
 function startSnapshotRefresh() {
     if (snapshotInterval) return
@@ -1992,7 +2168,7 @@ function mediaUrl(event, type) {
 watch(viewMode, (mode) => {
     if (mode === 'events') loadEvents()
     if (mode === 'rules') loadRules()
-    if (mode === 'settings') { loadStats(); loadGo2rtcStatus(); loadHardwareInfo(); loadCameraMonitorStatus() }
+    if (mode === 'settings') { loadStats(); loadGo2rtcStatus(); loadHardwareInfo(); loadCameraMonitorStatus(); loadAllPreviews() }
     if (mode !== 'live') stopAllWebRTC()
 })
 
@@ -2029,6 +2205,52 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ── Vorschaubilder der Kamera-Verwaltung ── */
+.cam-thumb {
+    width: 88px;
+    aspect-ratio: 16 / 9;
+    margin-right: var(--oserp-gap);
+    border-radius: var(--oserp-radius-sm);
+    border: 1px solid var(--oserp-border-soft);
+    background: var(--oserp-surface-soft);
+    color: var(--oserp-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.cam-thumb img,
+.cam-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.cam-preview {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    margin-bottom: var(--oserp-gap-lg);
+    border-radius: var(--oserp-radius);
+    border: 1px solid var(--oserp-border-soft);
+    background: var(--oserp-surface-soft);
+    overflow: hidden;
+}
+.cam-preview-empty {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--oserp-gap-sm);
+    color: var(--oserp-text-muted);
+}
+.cam-preview-reload {
+    position: absolute;
+    top: var(--oserp-gap-sm);
+    right: var(--oserp-gap-sm);
+}
+
 /* ── Aufbewahrung ── */
 .cam-retention-hint {
     color: var(--oserp-text-muted);
@@ -2136,6 +2358,62 @@ onUnmounted(() => {
 
 /* ── Regeln ── */
 .rule-card { transition: box-shadow .15s; }
+
+/* ── Regelkarte ── */
+.rule-card-meta,
+.rule-card-count {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--oserp-gap-xs) var(--oserp-gap);
+}
+.rule-card-count {
+    margin-top: var(--oserp-gap-sm);
+    color: var(--oserp-text-muted);
+}
+
+/* ── Regel-Dialog ── */
+.rule-dialog-title {
+    gap: var(--oserp-gap-sm);
+    padding: var(--oserp-gap) var(--oserp-gap-lg);
+    background: var(--oserp-section-head-bg);
+}
+.rule-dialog-icon { color: var(--oserp-primary); }
+.rule-dialog-body {
+    padding: var(--oserp-gap-lg) !important;
+    background: var(--oserp-surface-soft);
+}
+.rule-dialog-actions { padding: var(--oserp-gap-sm) var(--oserp-gap-lg); }
+.rule-form {
+    display: grid;
+    gap: var(--oserp-gap-lg);
+}
+.rule-stack {
+    display: grid;
+    gap: var(--oserp-gap);
+}
+.rule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--oserp-gap);
+}
+.rule-field-label,
+.rule-hint {
+    font-size: 0.75rem;
+    color: var(--oserp-text-muted);
+}
+.rule-field-label { margin-bottom: var(--oserp-gap-xs); }
+.rule-score {
+    font-weight: 600;
+    color: var(--oserp-primary);
+}
+.rule-chip--off { color: var(--oserp-text-muted); }
+.rule-day {
+    min-width: 44px;
+    justify-content: center;
+}
+.rule-switch { display: flex; }
+.rule-switch .v-switch { flex: 0 0 auto; }
 .rule-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12) !important; }
 
 /* ── Terminal-Output ── */

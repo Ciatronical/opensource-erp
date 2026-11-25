@@ -216,6 +216,7 @@ function _processIncomingMessage(PDO $pdo, string $dbname, array $msg, array $co
     $mediaUrl = '';
     $mediaMime = '';
     $mediaCaption = '';
+    $reactionTo = '';
 
     switch ($type) {
         case 'text':
@@ -274,6 +275,12 @@ function _processIncomingMessage(PDO $pdo, string $dbname, array $msg, array $co
         case 'sticker':
             $text = '[Sticker]';
             break;
+        // Reaktion auf eine Nachricht: das Emoji ist der Text, der Bezug steht in
+        // reaction_to. Ohne Emoji hat der Kunde seine Reaktion zurückgenommen.
+        case 'reaction':
+            $reactionTo = (string)($msg['reaction']['message_id'] ?? '');
+            $text = (string)($msg['reaction']['emoji'] ?? '');
+            break;
         // Antwort auf einen Knopf einer Vorlage bzw. einer interaktiven Nachricht:
         // die Beschriftung des gedrückten Knopfs ist die Antwort des Kunden
         case 'button':
@@ -285,6 +292,22 @@ function _processIncomingMessage(PDO $pdo, string $dbname, array $msg, array $co
             break;
         default:
             $text = "[{$type}]";
+    }
+
+    // Je Nachricht gilt nur die letzte Reaktion eines Absenders: die bisherige
+    // ausblenden. Eine zurückgenommene Reaktion ist damit erledigt.
+    if ($type === 'reaction') {
+        try {
+            $stmt = $pdo->prepare(
+                "UPDATE whatsapp_messages SET hidden = TRUE, mtime = NOW()
+                 WHERE message_type = 'reaction' AND reaction_to = :reaction_to
+                   AND phone_number = :phone AND hidden = FALSE"
+            );
+            $stmt->execute([':reaction_to' => $reactionTo, ':phone' => $phone]);
+        } catch (\Exception $e) {
+            error_log('[WHATSAPP WEBHOOK] Reaction reset error: ' . $e->getMessage());
+        }
+        if ($text === '') return;
     }
 
     // Kunden- oder Lieferantenzuordnung über Telefonnummer
@@ -363,6 +386,17 @@ function _processIncomingMessage(PDO $pdo, string $dbname, array $msg, array $co
         ]);
     } catch (\Exception $e) {
         error_log('[WHATSAPP WEBHOOK] Insert error: ' . $e->getMessage());
+    }
+
+    // Bezug der Reaktion in einem eigenen Schritt: fehlt die Spalte noch (Schema
+    // nicht aktualisiert), darf daran kein Nachrichteneingang scheitern
+    if ($type === 'reaction' && $reactionTo !== '') {
+        try {
+            $stmt = $pdo->prepare("UPDATE whatsapp_messages SET reaction_to = :reaction_to WHERE wa_message_id = :wa_id");
+            $stmt->execute([':reaction_to' => $reactionTo, ':wa_id' => $waMessageId]);
+        } catch (\Exception $e) {
+            error_log('[WHATSAPP WEBHOOK] Reaction link error: ' . $e->getMessage());
+        }
     }
 }
 

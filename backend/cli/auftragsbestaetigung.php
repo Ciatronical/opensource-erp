@@ -129,6 +129,8 @@ class AuftragsbestaetigungDienst {
                     // Eigene, nicht persistente Verbindung: LISTEN gehört zur Sitzung
                     $pdo = new PDO("pgsql:host={$row['dbhost']};port={$row['dbport']};dbname={$row['dbname']}",
                                    $row['dbuser'], $row['dbpasswd'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+                    // Test-DB: Dienste aus — gar nicht erst lauschen
+                    if (backgroundServicesDisabled($pdo)) { unset($this->clients[$id]); continue; }
                     $pdo->exec('LISTEN order_confirm_queue');
                     $client['pdo'] = $pdo;
                     $client['scanAt'] = 0;

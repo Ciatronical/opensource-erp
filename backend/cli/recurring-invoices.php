@@ -99,6 +99,7 @@ foreach ($clients as $client) {
             echo "[{$clientName}] übersprungen: Datenbank nicht erreichbar\n";
             continue;
         }
+        if (backgroundServicesDisabled($pdo)) continue; // Test-DB: Dienste aus
         recurringCronSetCompanyDb($pdo);
         $db = DbhCompany::begin();
 

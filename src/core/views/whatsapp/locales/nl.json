@@ -59,7 +59,14 @@
         "deleteMessage": "Bericht verwijderen",
         "deleteConfirm": "Wilt u dit bericht echt verwijderen?",
         "deleteSuccess": "Bericht lokaal verwijderd",
-        "deleteError": "Fout bij het verwijderen van het bericht"
+        "deleteError": "Fout bij het verwijderen van het bericht",
+        "forward": "Doorsturen",
+        "forwardSearchRecipient": "Chat, klant, leverancier of telefoonnummer zoeken …",
+        "forwardToNumber": "Naar {number} sturen",
+        "forwardNoResults": "Geen ontvanger gevonden",
+        "forwardCustomer": "Klant",
+        "forwardVendor": "Leverancier",
+        "reaction": "Reactie van de klant"
     },
     "WhatsAppMenu": {
         "title": "WhatsApp"

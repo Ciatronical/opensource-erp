@@ -22,6 +22,41 @@ function connectPDO($dbHost, $dbPort, $dbName, $dbUser, $dbPass) {
 }
 
 /**
+ * Prüft, ob für diese Mandanten-DB alle Hintergrunddienste gesperrt sind
+ *
+ * Gesetzt wird der Schalter von backend/cli/sanitize-testdb.php nach dem Klon der
+ * Produktiv-DB: die Test-DB trägt sonst dieselben Postfächer, Scan-Eingänge, Abos
+ * und Mailings wie die Produktion, und jeder Dienst würde alles doppelt erledigen.
+ * Dienste und Cronjobs, die alle Mandanten durchlaufen, überspringen eine so
+ * markierte Datenbank.
+ *
+ * @param PDO $pdo Verbindung zur Mandanten-DB
+ * @return bool true, wenn die Dienste für diesen Mandanten aus sind
+ */
+function backgroundServicesDisabled(PDO $pdo): bool {
+    $value = $pdo->query("SELECT value FROM defaults_oserp WHERE key = 'background_services_disabled'")->fetchColumn();
+    return in_array((string)$value, ['1', 't', 'true'], true);
+}
+
+/**
+ * Prüft, ob ein Verbindungsfehler daher kommt, dass die Datenbank der Firma fehlt
+ *
+ * In auth.clients können Firmen stehen, deren Datenbank auf diesem Server nicht
+ * (mehr) liegt, etwa abgeschlossene Altfirmen. Cronjobs, die alle Firmen
+ * durchlaufen, überspringen solche Einträge still, statt bei jedem Lauf einen
+ * Fehler ins Protokoll zu schreiben.
+ *
+ * @param Throwable $e Die beim Verbinden abgefangene Ausnahme
+ * @return bool true, wenn die Datenbank nicht existiert
+ */
+function companyDbMissing(Throwable $e): bool {
+    // PostgreSQL: 3D000 = invalid_catalog_name; PDO meldet beim Verbinden aber
+    // 08006 und nur den Text des Servers (je nach lc_messages englisch oder deutsch)
+    return $e instanceof PDOException
+        && preg_match('/3D000|database ".*" does not exist|Datenbank .* existiert nicht/u', $e->getMessage()) === 1;
+}
+
+/**
  * Übersetzt technische PostgreSQL-Fehler in verständliche Meldungen.
  *
  * Bekannte SQLSTATEs bekommen einen klaren Text; alles andere wird unverändert

@@ -110,6 +110,8 @@ class EmailEingangDienst {
                     $client['pdo'] = connectPDO($row['dbhost'], $row['dbport'], $row['dbname'], $row['dbuser'], $row['dbpasswd']);
                 }
                 $this->clients[$id] = $client;
+                // Test-DB: Dienste aus — ihre Postfächer werden nicht überwacht
+                if (backgroundServicesDisabled($client['pdo'])) continue;
                 foreach ($this->accounts($client['pdo']) as $key => $cfg) {
                     $wanted[$key] ??= ['cfg' => $cfg, 'clients' => []];
                     $wanted[$key]['clients'][] = $id;

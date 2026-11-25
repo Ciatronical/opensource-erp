@@ -114,3 +114,7 @@ promotion/screenshots/login.txt
 promotion/screenshots/out/
 promotion/screenshots/web/
 promotion/screenshots/
+
+# Kamera-Dienst: aus yolov8n.pt erzeugtes OpenVINO-Modell und Treiber-Meldungen
+backend/services/camera-monitor/yolov8n_openvino_model/
+backend/services/camera-monitor/kernel.errors.txt

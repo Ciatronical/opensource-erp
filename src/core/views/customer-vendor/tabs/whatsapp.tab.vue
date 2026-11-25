@@ -43,8 +43,8 @@
               <div
                 v-for="msg in messages"
                 :key="msg.id"
-                class="d-flex mb-2"
-                :class="msg.direction === 'O' ? 'justify-end' : 'justify-start'"
+                class="d-flex"
+                :class="[msg.direction === 'O' ? 'justify-end' : 'justify-start', msg.reaction ? 'mb-5' : 'mb-2']"
               >
                 <v-card
                   :color="msg.direction === 'O' ? 'green-lighten-4' : 'grey-lighten-3'"
@@ -200,6 +200,16 @@
                     <v-icon size="18" color="grey">mdi-download</v-icon>
                   </div>
                   <div class="text-caption text-medium-emphasis text-right mt-1">
+                    <v-btn
+                      v-if="canForwardWhatsApp(msg)"
+                      class="chat-msg-forward"
+                      icon="mdi-share"
+                      size="x-small"
+                      variant="text"
+                      density="compact"
+                      :title="t('WhatsAppView.forward')"
+                      @click.stop="openForwardDialog(msg)"
+                    />
                     {{ formatDate(msg.itime) }}
                     <v-icon
                       v-if="msg.direction === 'O'"
@@ -210,6 +220,13 @@
                       {{ statusIcon(msg.status) }}
                     </v-icon>
                   </div>
+                  <!-- Reaktion des Kunden auf diese Nachricht -->
+                  <div
+                    v-if="msg.reaction"
+                    class="chat-reaction"
+                    :class="msg.direction === 'O' ? 'chat-reaction--out' : ''"
+                    :title="t('WhatsAppView.reaction')"
+                  >{{ msg.reaction }}</div>
                 </v-card>
               </div>
             </template>
@@ -398,6 +415,9 @@
         </v-card>
       </v-dialog>
 
+      <!-- Weiterleiten-Dialog -->
+      <WhatsappForwardDialog v-model="showForwardDialog" :message="forwardMessage" />
+
       <!-- Löschen-Bestätigungsdialog -->
       <v-dialog v-model="showDeleteConfirm" max-width="400">
         <v-card>
@@ -428,6 +448,7 @@ import * as toast from '@/core/utils/toasts.js'
 import { waMediaCache } from '@/core/utils/whatsappMediaCache.js'
 import { pickMobilePhone } from '@/core/utils/phoneFormat.js'
 import EmojiPicker from 'vue3-emoji-picker'
+import WhatsappForwardDialog, { canForwardWhatsApp } from '@/core/components/whatsapp-forward.dialog.vue'
 import 'vue3-emoji-picker/css'
 
 // Gemeinsamer Cache fuer beide WhatsApp-Views (Standalone + Kunden-Tab)
@@ -436,7 +457,7 @@ const imageCache = waMediaCache
 
 export default {
   name: 'WhatsappTab',
-  components: { EmojiPicker },
+  components: { EmojiPicker, WhatsappForwardDialog },
   props: {
     cvId: { type: [Number, String], required: true },
     src: { type: String, default: 'C' },
@@ -468,6 +489,15 @@ export default {
 
     // Emoji-Picker
     const showEmojiPicker = ref(false)
+
+    // Weiterleiten (Dialog: whatsapp-forward.dialog.vue)
+    const showForwardDialog = ref(false)
+    const forwardMessage = ref(null)
+
+    function openForwardDialog(msg) {
+      forwardMessage.value = msg
+      showForwardDialog.value = true
+    }
 
     // Nachricht löschen
     const showDeleteConfirm = ref(false)
@@ -1000,6 +1030,7 @@ export default {
       showSaveDialog, saveCurrentPath, saveFolders, saveFilename, saveFolderLoading, savingToFolder,
       showEmojiPicker, onEmojiSelect,
       showDeleteConfirm, deleting, confirmDeleteMessage, doDeleteMessage,
+      showForwardDialog, forwardMessage, openForwardDialog, canForwardWhatsApp,
       doSend, fetchMessages, formatDate, statusIcon, linkifyText, parseLocationCoords, buildMapEmbedUrl, parseContacts, createFromContact,
       triggerFileUpload, onFileSelected, openDocumentPicker, selectCustomerFile,
       downloadDocument, downloadImage, saveMediaToFolder, navigateSaveFolder, doSaveToFolder, openImageViewer
@@ -1012,4 +1043,25 @@ export default {
 .chat-msg-card { padding-right: 28px !important; }
 .chat-msg-card .chat-msg-delete { position: absolute; top: 2px; right: 2px; opacity: 0; transition: opacity 0.15s; z-index: 1; }
 .chat-msg-card:hover .chat-msg-delete { opacity: 1; }
+/* Weiterleiten: immer sichtbar (auf Touch-Geräten gibt es kein Hover) */
+.chat-msg-forward { opacity: 0.45; transition: opacity 0.15s; }
+.chat-msg-card:hover .chat-msg-forward { opacity: 0.75; }
+.chat-msg-forward:hover { opacity: 1 !important; }
+/* Reaktion: Marke am unteren Rand der Nachricht */
+.chat-msg-card { overflow: visible !important; }
+.chat-reaction {
+  position: absolute;
+  bottom: -14px;
+  left: 8px;
+  padding: 0 6px;
+  font-size: 14px;
+  line-height: 22px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  cursor: default;
+  z-index: 1;
+}
+.chat-reaction--out { left: auto; right: 8px; }
 </style>

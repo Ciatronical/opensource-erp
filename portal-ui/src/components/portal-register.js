@@ -93,6 +93,10 @@ export class PortalRegister extends PortalElement {
       .hint {
         margin-top: 0.5rem;
       }
+      .hint a {
+        font-weight: 600;
+        white-space: nowrap;
+      }
     `,
   ];
 
@@ -332,7 +336,8 @@ export class PortalRegister extends PortalElement {
         : nothing}
       ${this.activateUrl && !this.isGuest
         ? html`<p class="hint ${this.cls('muted')}">
-            <a href=${this.activateUrl} part="activate-link">${t('login.activate')}</a>
+            ${t('login.activateText')}
+            <a href=${this.activateUrl} part="activate-link">${t('login.activateLink')}</a>
           </p>`
         : nothing}
 

@@ -169,6 +169,10 @@ class EingangDienst {
                     $pdo = connectPDO($row['dbhost'], $row['dbport'], $row['dbname'], $row['dbuser'], $row['dbpasswd']);
                     $client = ['row' => $row, 'pdo' => $pdo, 'db' => new ApiDatabase($pdo), 'wd' => null, 'paths' => null];
                 }
+                if (backgroundServicesDisabled($client['pdo'])) {
+                    $this->forget($id, 'Hintergrunddienste für diesen Mandanten aus');
+                    continue;
+                }
                 $this->activate($client);
                 if (!isExtensionActive($client['db'], 'lxcars')) {
                     $this->forget($id, 'LxCars nicht aktiv');

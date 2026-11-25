@@ -110,6 +110,7 @@ foreach ($clients as $client) {
             if (!empty($errorText)) echo "[{$clientName}] Termin-Fehler: {$errorText}\n";
         }
     } catch (Exception $e) {
+        if (companyDbMissing($e)) continue; // Firma ohne Datenbank: still überspringen
         echo "[{$clientName}] Fehler: " . $e->getMessage() . "\n";
     } finally {
         resetCompanyDb();

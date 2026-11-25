@@ -73,6 +73,7 @@ foreach (postalCronGetClients(isset($opt['client']) ? intval($opt['client']) : n
         echo "[{$clientName}] übersprungen: " . $e->getMessage() . "\n";
         continue;
     }
+    if (backgroundServicesDisabled($pdo)) continue; // Test-DB: Dienste aus
     try {
         postalCronSetCompanyDb($pdo);
         $db = DbhCompany::begin();

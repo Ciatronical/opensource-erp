@@ -1,0 +1,6 @@
+{
+    "name": "trading",
+    "title": "KI-Trading",
+    "icon": "mdi-chart-timeline-variant-shimmer",
+    "description": "Autonomes Handelssystem: Forschungslabor mit virtuellem Kapital, Backtests, Paper-Trading, Risk-Engine und Broker-Anbindung (Kraken, Alpaca). Echtgeldhandel nur nach ausdrücklicher Freigabe"
+}

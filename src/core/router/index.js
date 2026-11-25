@@ -259,6 +259,14 @@ const ShopAssortmentView = () => {
         : Promise.resolve(NotFoundView)
 }
 
+// KI-Trading — nur mit aktiver Erweiterung, sonst die Nicht-gefunden-Seite
+const TradingHubView = () => {
+    const oserp = oserpStore()
+    return oserp.isExtensionEnabled('trading')
+        ? import('@/features/trading/views/trading.hub.vue')
+        : Promise.resolve(NotFoundView)
+}
+
 // Banking
 const BankingHubView = () => import('@/features/banking/views/banking.hub.vue')
 const KasseView = () => import('@/features/banking/views/banking.kasse.vue')
@@ -961,6 +969,13 @@ function buildRoutes() {
             ...routePath('ShopView.routes.shopEbay'),
             name: 'shop-ebay',
             component: ShopEbayView,
+            meta: { hideCustomerBar: true },
+        },
+        // ── KI-Trading ──
+        {
+            ...routePath('TradingView.routes.trading'),
+            name: 'trading',
+            component: TradingHubView,
             meta: { hideCustomerBar: true },
         },
         // ── Banking ── (alle Funktionen in einem Hub zusammengefasst)

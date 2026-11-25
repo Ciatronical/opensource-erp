@@ -68,6 +68,7 @@ foreach ($clients as $client) {
     if ($onlyId && intval($client['id']) !== $onlyId) continue;
     try {
         $pdo = connectPDO($client['dbhost'], $client['dbport'], $client['dbname'], $client['dbuser'], $client['dbpasswd']);
+        if (backgroundServicesDisabled($pdo)) continue; // Test-DB: Dienste aus
         belegsucheInitDb($pdo);
         $db = DbhCompany::begin();
 
@@ -99,6 +100,7 @@ foreach ($clients as $client) {
             echo "     [FEHLER] " . ($res['text'] ?? 'unbekannt') . "\n";
         }
     } catch (Throwable $e) {
+        if (companyDbMissing($e)) continue; // Firma ohne Datenbank: still überspringen
         echo "  [{$client['dbname']}] [FEHLER] " . $e->getMessage() . "\n";
     } finally {
         belegsucheResetDb();

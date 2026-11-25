@@ -65,6 +65,7 @@ foreach ($clients as $client) {
     $label = $client['name'] ?? ('ID ' . $client['id']);
     try {
         $pdo = connectPDO($client['dbhost'], $client['dbport'], $client['dbname'], $client['dbuser'], $client['dbpasswd']);
+        if (backgroundServicesDisabled($pdo)) continue; // Test-DB: Dienste aus
         mailingsInitDb($pdo);
         // Mandanten ohne das Modul (Upstall noch nicht gelaufen) still ueberspringen
         $has = $pdo->query("SELECT to_regclass('public.mailings') IS NOT NULL AS ok")->fetch(PDO::FETCH_ASSOC);
@@ -76,6 +77,7 @@ foreach ($clients as $client) {
         }
         foreach ($r as $k => $v) $total[$k] = ($total[$k] ?? 0) + $v;
     } catch (Throwable $e) {
+        if (companyDbMissing($e)) continue; // Firma ohne Datenbank: still überspringen
         echo "[{$start}] [{$label}] Fehler: " . $e->getMessage() . "\n";
     } finally {
         mailingsResetDb();

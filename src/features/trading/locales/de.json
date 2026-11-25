@@ -1,0 +1,354 @@
+{
+    "TradingView": {
+        "routes": {
+            "trading": "/ki-trading"
+        },
+        "title": "KI-Trading",
+        "subtitle": "Forschungslabor, Papierhandel und Echtgeldhandel unter Aufsicht der Risk-Engine",
+        "refresh": "Aktualisieren",
+        "save": "Speichern",
+        "saved": "Gespeichert",
+        "cancel": "Abbrechen",
+        "close": "Schliessen",
+        "tabs": {
+            "overview": "Übersicht",
+            "strategies": "Strategien",
+            "lab": "Labor",
+            "orders": "Orders",
+            "control": "Sicherheit und Einstellungen",
+            "log": "Protokoll"
+        },
+        "mode": {
+            "simulation": "Simulation",
+            "live": "Echtgeld",
+            "halted": "Angehalten"
+        },
+        "ai": {
+            "active": "KI aktiv",
+            "inactive": "KI inaktiv"
+        },
+        "card": {
+            "open": "Öffnen",
+            "unavailable": "Kennzahlen derzeit nicht abrufbar"
+        },
+        "killSwitch": {
+            "button": "Not-Aus",
+            "tooltip": "Hält den gesamten automatischen Handel sofort an und storniert alle offenen Orders. Bestehende Positionen werden nicht verkauft. Die Sperre kann nur ein Administrator wieder aufheben.",
+            "confirmTitle": "Not-Aus auslösen?",
+            "confirmText": "Der gesamte automatische Handel wird angehalten und alle offenen Orders werden storniert. Bestehende Positionen bleiben unverändert.",
+            "done": "Handel angehalten, {n} offene Orders storniert"
+        },
+        "lock": {
+            "active": "Handelssperre",
+            "clear": "Sperre aufheben",
+            "clearTitle": "Handelssperre aufheben?",
+            "clearText": "Bitte erst die Ursache prüfen. Nach dem Aufheben handelt die KI wieder selbstständig.",
+            "reason": {
+                "kill_switch": "Not-Aus",
+                "drawdown": "Portfolioverlust über der Grenze",
+                "critical_errors": "Fehlerserie",
+                "position_mismatch": "Bestand weicht vom Broker ab"
+            }
+        },
+        "kpi": {
+            "startCapital": "Virtuelles Startkapital",
+            "startCapitalLive": "Eingesetztes Kapital",
+            "portfolioValue": "Aktueller Portfoliowert",
+            "asOf": "Stand {ts}",
+            "dayPnl": "Heutiger Gewinn/Verlust",
+            "totalPnl": "Gesamtergebnis",
+            "totalReturn": "Gesamtrendite",
+            "benchmarkHint": "{symbol} im selben Zeitraum: {pct}",
+            "activeStrategies": "Aktive Strategien",
+            "mode": "Handelsmodus",
+            "aiStatus": "KI-Status",
+            "lastRun": "Letzter Lauf {ts}",
+            "neverRun": "Noch kein Lauf"
+        },
+        "overview": {
+            "noData": "Noch keine Daten. Sobald die Engine das erste Mal gelaufen ist, stehen hier die Kontostände.",
+            "equityTitle": "Portfolioentwicklung",
+            "days": "{n} T",
+            "chartEmpty": "Für ein Diagramm braucht es mindestens zwei Tage Kontostände.",
+            "equityNote": "Veränderung in Prozent seit Beginn des gewählten Zeitraums, Portfolio und Vergleichsmaßstab auf derselben Achse.",
+            "strategyTitle": "Ergebnis je Strategie",
+            "noStrategies": "Keine Strategie im Vorwärtstest",
+            "positions": "Bestände",
+            "noPositions": "Keine Bestände",
+            "portfolio": "Portfolio"
+        },
+        "report": {
+            "title": "Tägliche Zusammenfassung",
+            "none": "Noch kein Tagesbericht vorhanden.",
+            "headline": "Portfoliowert {value}, heute {day}, Gesamtrendite {total}, {n} aktive Strategien.",
+            "best": "Beste Strategie: {code} ({pct})",
+            "worst": "Schlechteste Strategie: {code} ({pct})",
+            "benchmark": "Vergleich {symbol} seit Start: {pct}",
+            "experiment": "Experiment {id}",
+            "orders": "Orders der letzten 24 Stunden: {filled} ausgeführt, {rejected} abgelehnt, Gebühren {fees}",
+            "risks": "Warnungen der letzten 24 Stunden: {n}"
+        },
+        "alerts": {
+            "title": "Meldungen",
+            "none": "Keine Warnungen in den letzten 7 Tagen"
+        },
+        "events": {
+            "lock_set": "Handelssperre gesetzt",
+            "lock_cleared": "Handelssperre aufgehoben",
+            "order_rejected": "Order vom Broker abgelehnt",
+            "order_duplicate_blocked": "Doppelte Order verhindert",
+            "order_uncertain": "Antwort des Brokers unklar, wird abgeglichen",
+            "order_error": "Fehler beim Aufgeben einer Order",
+            "order_submitted": "Order übermittelt",
+            "order_filled": "Order ausgeführt",
+            "order_partially_filled": "Order teilweise ausgeführt",
+            "order_canceled": "Order storniert",
+            "order_expired": "Order verfallen",
+            "sync_error": "Fehler beim Abgleich mit dem Broker",
+            "cancel_error": "Fehler beim Stornieren",
+            "critical_error": "Kritischer Fehler",
+            "account_error": "Fehler bei einem Konto",
+            "bar_rejected": "Fehlerhafter Kursbalken verworfen",
+            "update_error": "Marktdaten nicht abrufbar",
+            "quotes_error": "Aktuelle Kurse nicht abrufbar",
+            "portfolio_drawdown": "Portfolioverlust über der Grenze",
+            "strategy_retired": "Strategie ausgemustert",
+            "strategy_promoted": "Strategie in den Vorwärtstest übernommen",
+            "strategy_improved": "Strategie weiterentwickelt",
+            "strategy_live_eligible": "Strategie für Echtgeld zugelassen",
+            "allocation_changed": "Kapitalverteilung geändert",
+            "cycle_finished": "Forschungszyklus abgeschlossen",
+            "report_created": "Tagesbericht erstellt",
+            "live_trading_enabled": "Echtgeldhandel aktiviert",
+            "live_trading_disabled": "Echtgeldhandel deaktiviert",
+            "risk_limits_changed": "Risikogrenzen geändert",
+            "settings_changed": "Einstellungen geändert",
+            "broker_connection_saved": "Broker-Verbindung gespeichert",
+            "instrument_changed": "Instrument geändert",
+            "engine_run_manual": "Lauf von Hand angestossen",
+            "llm_ideas_failed": "KI-Vorschläge nicht abrufbar",
+            "kill_switch_error": "Fehler beim Not-Aus",
+            "order_risk_rejected": "Order von der Risk-Engine abgelehnt"
+        },
+        "strategies": {
+            "title": "Strategien",
+            "showAll": "Auch verworfene zeigen",
+            "none": "Noch keine Strategie hat die Prüfungen bestanden.",
+            "code": "Kennung",
+            "family": "Familie",
+            "statusCol": "Zustand",
+            "origin": "Herkunft",
+            "sharpeTrain": "Sharpe Training",
+            "sharpeValidation": "Sharpe Validierung",
+            "sharpeTest": "Sharpe Test",
+            "drawdown": "Max. Verlust",
+            "paperReturn": "Vorwärtstest",
+            "reason": "Begründung",
+            "noCurve": "Keine Kapitalkurve gespeichert",
+            "version": "Version {n}",
+            "segment": "Abschnitt",
+            "benchmark": "Vergleich",
+            "trades": "Trades",
+            "pValue": "Timing p",
+            "dsr": "Deflated Sharpe",
+            "stability": "Stabilität",
+            "segments": {
+                "train": "Training",
+                "validation": "Validierung",
+                "test": "Test",
+                "full": "Gesamt"
+            },
+            "paperCurve": "Vorwärtstest (virtuelles Konto)",
+            "backtestCurve": "Backtest (Gesamt)"
+        },
+        "status": {
+            "candidate": "Kandidat",
+            "rejected": "Verworfen",
+            "queued": "Wartet",
+            "paper": "Vorwärtstest",
+            "live_eligible": "Für Echtgeld zugelassen",
+            "live": "Echtgeld",
+            "retired": "Ausgemustert"
+        },
+        "family": {
+            "trend_ema": "Trendfolge EMA",
+            "donchian": "Ausbruch Donchian",
+            "tsmom": "Zeitreihen-Momentum",
+            "multi_horizon": "Mehrhorizont-Trend",
+            "xsmom": "Relative Stärke",
+            "rsi_revert": "RSI-Rücksetzer",
+            "bollinger": "Bollinger-Rückkehr",
+            "keltner": "Keltner-Ausbruch"
+        },
+        "origin": {
+            "seed": "Erkundung",
+            "mutation": "Abwandlung",
+            "crossover": "Kreuzung",
+            "llm": "KI-Vorschlag",
+            "ensemble": "Kombination"
+        },
+        "lab": {
+            "versionsTested": "Geprüfte Varianten",
+            "testEvaluations": "Prüfungen auf Testdaten",
+            "testEvaluationsHint": "Jede Prüfung verschärft die Anforderung an die nächste (Deflated Sharpe)",
+            "passed": "Bestanden",
+            "families": "Erfolgsbilanz je Familie",
+            "tested": "Geprüft",
+            "avgSharpe": "Ø Sharpe Validierung",
+            "bestSharpe": "Bester",
+            "method": "Jede Variante wird auf Trainingsdaten und Validierungsdaten simuliert, mit Gebühren und Slippage. Nur die drei besten eines Zyklus dürfen an die Testdaten. Dort zählen Sharpe, Verlust vom Höchststand, ein Timing-Test gegen zufällige Zeitverschiebungen und der um die Zahl aller Versuche korrigierte Sharpe. Wer besteht, muss sich anschliessend auf einem virtuellen Konto mit neuen Kursen bewähren.",
+            "experiments": "Experimente",
+            "runNow": "Zyklus jetzt starten",
+            "running": "läuft",
+            "none": "Noch kein Experiment",
+            "runDone": "Lauf abgeschlossen"
+        },
+        "orders": {
+            "title": "Orders",
+            "none": "Noch keine Orders",
+            "time": "Zeit",
+            "account": "Konto",
+            "symbol": "Instrument",
+            "sideCol": "Richtung",
+            "typeCol": "Art",
+            "qty": "Menge",
+            "price": "Kurs",
+            "fees": "Gebühr",
+            "statusCol": "Status",
+            "note": "Hinweis",
+            "side": {
+                "buy": "Kauf",
+                "sell": "Verkauf"
+            },
+            "type": {
+                "market": "Market",
+                "limit": "Limit",
+                "stop": "Stop",
+                "stop_limit": "Stop-Limit",
+                "trailing_stop": "Trailing-Stop"
+            },
+            "status": {
+                "new": "Neu",
+                "risk_rejected": "Von Risk-Engine abgelehnt",
+                "submitting": "Wird übermittelt",
+                "submitted": "Offen",
+                "partially_filled": "Teilweise ausgeführt",
+                "filled": "Ausgeführt",
+                "canceled": "Storniert",
+                "rejected": "Abgelehnt",
+                "expired": "Verfallen",
+                "error": "Fehler"
+            }
+        },
+        "live": {
+            "title": "Echtgeldhandel",
+            "enabled": "Echtgeldhandel ist dauerhaft aktiviert",
+            "disabled": "Echtgeldhandel ist deaktiviert",
+            "enableButton": "Echtgeldhandel dauerhaft aktivieren",
+            "enableTooltip": "Aktiviert den vollautomatischen Echtgeldhandel dauerhaft. Die KI darf anschließend selbstständig echte Kauf- und Verkaufsorders ausführen. Eine erneute Bestätigung einzelner Trades ist nicht erforderlich. Es besteht das Risiko, das gesamte eingesetzte Kapital zu verlieren. Der Handel kann jederzeit deaktiviert werden.",
+            "disableButton": "Echtgeldhandel deaktivieren",
+            "disableTooltip": "Stoppt die Übermittlung neuer automatischer Echtgeldorders. Bestehende Positionen werden nicht automatisch geschlossen. Offene Orders werden gemäß den festgelegten Sicherheitsregeln behandelt.",
+            "confirmTitle": "Sicherheitsbestätigung",
+            "check1": "Mir ist bewusst, dass ich das gesamte eingesetzte Kapital verlieren kann.",
+            "check2": "Die KI führt Käufe und Verkäufe ohne Rückfrage aus, bis ich den Handel deaktiviere.",
+            "check3": "Ich habe Risikogrenzen und Höchstbetrag der Broker-Verbindung geprüft.",
+            "typeWord": "Zur Bestätigung bitte {word} eintippen:",
+            "enabledDone": "Echtgeldhandel ist aktiviert",
+            "disabledDone": "Echtgeldhandel ist deaktiviert",
+            "log": {
+                "enable": "aktiviert",
+                "disable": "deaktiviert"
+            }
+        },
+        "control": {
+            "adminOnly": "Aktivieren, Grenzen und Broker-Zugänge sind Systemadministratoren vorbehalten."
+        },
+        "limits": {
+            "title": "Risikogrenzen",
+            "note": "Die Risk-Engine prüft jede Order gegen diese Grenzen. Die KI kann sie nicht ändern.",
+            "max_order_value": "Maximales Ordervolumen (Echtgeld)",
+            "max_position_pct": "Maximale Position je Instrument",
+            "max_gross_exposure_pct": "Maximaler Investitionsgrad",
+            "max_daily_loss_pct": "Maximaler Tagesverlust",
+            "max_portfolio_drawdown_pct": "Maximaler Portfolioverlust vom Höchststand",
+            "max_open_orders": "Maximal offene Orders",
+            "max_orders_per_day": "Maximal Orders je Tag",
+            "max_price_age_minutes": "Maximales Kursalter",
+            "max_price_deviation_pct": "Maximale Kursabweichung zum letzten Schluss",
+            "max_consecutive_errors": "Fehler in Folge bis zur Handelssperre",
+            "protective_stop_pct": "Schutzstopp beim Broker unter Einstand (0 = aus)"
+        },
+        "broker": {
+            "title": "Broker-Verbindungen",
+            "add": "Verbindung anlegen",
+            "edit": "Verbindung bearbeiten",
+            "none": "Keine Verbindung eingerichtet. Der Papierhandel braucht keine.",
+            "note": "Schlüssel werden verschlüsselt gespeichert und nie wieder angezeigt. Für den Schlüssel beim Broker nur Handel und Abfrage freigeben, keine Auszahlung.",
+            "env": {
+                "sandbox": "Testumgebung",
+                "live": "Echtgeld"
+            },
+            "active": "Aktiv",
+            "inactive": "Inaktiv",
+            "test": "Prüfen",
+            "testOk": "Verbindung in Ordnung.",
+            "name": "Bezeichnung",
+            "adapter": "Broker",
+            "environment": "Umgebung",
+            "apiKey": "API-Schlüssel",
+            "apiSecret": "API-Secret",
+            "unchanged": "unverändert",
+            "capitalLimit": "Höchstbetrag",
+            "capitalLimitHint": "Mehr als diesen Betrag setzt die KI über diese Verbindung nicht ein."
+        },
+        "settings": {
+            "title": "Einstellungen",
+            "section": {
+                "engine": "Engine",
+                "costs": "Kosten in Simulation und Papierhandel",
+                "research": "Forschung",
+                "gates": "Übernahmekriterien"
+            },
+            "engine_enabled": "Engine eingeschaltet",
+            "lab_capital": "Virtuelles Startkapital je Konto",
+            "account_currency": "Kontowährung",
+            "market_data_source": "Datenquelle",
+            "report_hour": "Tagesbericht ab Stunde (UTC)",
+            "fee_bps": "Gebühr (Basispunkte)",
+            "slippage_bps": "Slippage (Basispunkte)",
+            "rebalance_threshold_pct": "Umschichten ab Abweichung (%)",
+            "research_enabled": "Forschung eingeschaltet",
+            "research_interval_hours": "Abstand der Zyklen (Stunden)",
+            "research_population": "Kandidaten je Zyklus",
+            "research_llm_enabled": "KI-Vorschläge (Sprachmodell, kostenpflichtig)",
+            "max_paper_strategies": "Strategien gleichzeitig im Vorwärtstest",
+            "split_train_pct": "Anteil Trainingsdaten (%)",
+            "split_validation_pct": "Anteil Validierungsdaten (%)",
+            "gate_min_test_sharpe": "Mindest-Sharpe auf Validierung und Test",
+            "gate_max_test_drawdown_pct": "Höchster Verlust auf Testdaten (%)",
+            "gate_max_p_value": "Höchster p-Wert im Timing-Test",
+            "gate_min_deflated_sharpe": "Mindestwert Deflated Sharpe",
+            "gate_min_stability": "Mindest-Stabilität (Anteil tragender Nachbarn)",
+            "gate_min_trades": "Mindestzahl Trades im Backtest",
+            "gate_live_min_paper_days": "Vorwärtstest: Mindestdauer (Tage)",
+            "gate_live_min_paper_trades": "Vorwärtstest: Mindestzahl Trades",
+            "gate_live_max_paper_drawdown_pct": "Vorwärtstest: höchster Verlust (%)",
+            "gate_live_min_paper_return_pct": "Vorwärtstest: Mindestergebnis (%)",
+            "retire_drawdown_factor": "Ausmustern ab Vielfachem des Backtest-Verlusts"
+        },
+        "instruments": {
+            "title": "Instrumente",
+            "benchmark": "Vergleichsmaßstab",
+            "bars": "{n} Tage Kursdaten"
+        },
+        "log": {
+            "title": "Audit-Protokoll",
+            "all": "Alle",
+            "warning": "Warnungen",
+            "critical": "Kritisch",
+            "actor": "Auslöser",
+            "event": "Ereignis",
+            "details": "Einzelheiten"
+        }
+    }
+}
