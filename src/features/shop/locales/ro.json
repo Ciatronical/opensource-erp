@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Magazin",
-            "overview": "Prezentare"
+            "overview": "Prezentare",
+            "vendors": "Furnizori"
         },
         "common": {
             "reload": "Reîncarcă",

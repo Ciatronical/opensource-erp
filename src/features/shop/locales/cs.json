@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Obchod",
-            "overview": "Přehled"
+            "overview": "Přehled",
+            "vendors": "Dodavatelé"
         },
         "common": {
             "reload": "Načíst znovu",

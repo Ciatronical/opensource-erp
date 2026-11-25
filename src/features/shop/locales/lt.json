@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Parduotuvė",
-            "overview": "Apžvalga"
+            "overview": "Apžvalga",
+            "vendors": "Tiekėjai"
         },
         "common": {
             "reload": "Įkelti iš naujo",

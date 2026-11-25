@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Shop",
-            "overview": "Übersicht"
+            "overview": "Übersicht",
+            "vendors": "Lieferanten"
         },
         "common": {
             "reload": "Neu laden",

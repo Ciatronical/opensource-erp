@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Kauppa",
-            "overview": "Yleiskatsaus"
+            "overview": "Yleiskatsaus",
+            "vendors": "Toimittajat"
         },
         "common": {
             "reload": "Lataa uudelleen",

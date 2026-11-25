@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Крамниця",
-            "overview": "Огляд"
+            "overview": "Огляд",
+            "vendors": "Постачальники"
         },
         "common": {
             "reload": "Оновити",

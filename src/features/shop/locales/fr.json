@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Boutique",
-            "overview": "Vue d'ensemble"
+            "overview": "Vue d'ensemble",
+            "vendors": "Fournisseurs"
         },
         "common": {
             "reload": "Recharger",

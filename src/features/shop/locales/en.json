@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Shop",
-            "overview": "Overview"
+            "overview": "Overview",
+            "vendors": "Vendors"
         },
         "common": {
             "reload": "Reload",

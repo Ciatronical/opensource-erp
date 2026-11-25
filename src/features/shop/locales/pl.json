@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Sklep",
-            "overview": "Przegląd"
+            "overview": "Przegląd",
+            "vendors": "Dostawcy"
         },
         "common": {
             "reload": "Odśwież",

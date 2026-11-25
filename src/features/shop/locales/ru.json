@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Магазин",
-            "overview": "Обзор"
+            "overview": "Обзор",
+            "vendors": "Поставщики"
         },
         "common": {
             "reload": "Обновить",

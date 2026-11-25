@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Veikals",
-            "overview": "Pārskats"
+            "overview": "Pārskats",
+            "vendors": "Piegādātāji"
         },
         "common": {
             "reload": "Ielādēt no jauna",

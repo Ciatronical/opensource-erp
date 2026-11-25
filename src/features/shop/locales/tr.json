@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Mağaza",
-            "overview": "Genel bakış"
+            "overview": "Genel bakış",
+            "vendors": "Tedarikçiler"
         },
         "common": {
             "reload": "Yeniden yükle",

@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Winkel",
-            "overview": "Overzicht"
+            "overview": "Overzicht",
+            "vendors": "Leveranciers"
         },
         "common": {
             "reload": "Opnieuw laden",

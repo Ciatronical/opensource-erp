@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Negozio",
-            "overview": "Panoramica"
+            "overview": "Panoramica",
+            "vendors": "Fornitori"
         },
         "common": {
             "reload": "Ricarica",

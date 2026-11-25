@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Butik",
-            "overview": "Översikt"
+            "overview": "Översikt",
+            "vendors": "Leverantörer"
         },
         "common": {
             "reload": "Läs om",

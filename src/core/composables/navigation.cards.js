@@ -51,6 +51,9 @@ export function useNavigationCards() {
             if (oserp.checkPermission('shop_part_edit') || oserp.checkPermission('edit_shop_config')) {
                 shopItems.push({ title: t('ShopView.assortment.title'), to: { name: 'shop-assortment' } })
             }
+            // Lieferanten: Abkürzung in die Suche des Kerns, auf Lieferanten gestellt —
+            // von dort geht es zum Artikelabgleich des Lieferanten
+            shopItems.push({ title: t('ShopView.menu.vendors'), to: { name: 'search', query: { type: 'vendor' } } })
             // Kleinanzeigen-Board (dev/shop-kleinanzeigen.md): lesen wie die
             // Bestellungen, Anzeigen und Verkäufe mit den Rechten der Artikelpflege
             shopItems.push({ title: t('ShopView.kleinanzeigen.title'), to: { name: 'shop-kleinanzeigen' } })

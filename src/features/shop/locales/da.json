@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Butik",
-            "overview": "Oversigt"
+            "overview": "Oversigt",
+            "vendors": "Leverandører"
         },
         "common": {
             "reload": "Genindlæs",

@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Pood",
-            "overview": "Ülevaade"
+            "overview": "Ülevaade",
+            "vendors": "Tarnijad"
         },
         "common": {
             "reload": "Laadi uuesti",

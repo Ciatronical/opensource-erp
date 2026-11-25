@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "商店",
-            "overview": "概览"
+            "overview": "概览",
+            "vendors": "供应商"
         },
         "common": {
             "reload": "重新加载",

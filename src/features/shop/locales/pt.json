@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Loja",
-            "overview": "Resumo"
+            "overview": "Resumo",
+            "vendors": "Fornecedores"
         },
         "common": {
             "reload": "Recarregar",
