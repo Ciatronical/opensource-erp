@@ -85,7 +85,7 @@ function vendorPartSyncFiles(string $datenbank, int $syncId): array {
  * @param int $data['vendor_id'] Lieferant
  * @param int $data['items_page'] Seite der Artikelliste, ab 1 (optional)
  * @param int $data['items_per_page'] Artikel je Seite, 1 bis 200, Vorgabe 25 (optional)
- * @param string $data['items_result'] nur Artikel mit diesem Ergebnis: updated, unknown, error; leer = alle (optional)
+ * @param string $data['items_result'] nur Artikel mit diesem Ergebnis: updated, unchanged, unknown, error; leer = alle (optional)
  * @testdata {"vendor_id": 1, "items_page": 1, "items_per_page": 25, "items_result": ""}
  */
 function getVendorPartSync($data) {
@@ -93,7 +93,7 @@ function getVendorPartSync($data) {
     $vendorId = intval($data['vendor_id'] ?? 0);
     $itemsPerPage = min(200, max(1, intval($data['items_per_page'] ?? 25)));
     $itemsPage = max(1, intval($data['items_page'] ?? 1));
-    $itemsResult = in_array($data['items_result'] ?? '', ['updated', 'unknown', 'error'], true) ? $data['items_result'] : '';
+    $itemsResult = in_array($data['items_result'] ?? '', ['updated', 'unchanged', 'unknown', 'error'], true) ? $data['items_result'] : '';
 
     $query = <<<SQL
         WITH runs AS (
@@ -148,7 +148,7 @@ function getVendorPartSync($data) {
                        ) ORDER BY i.rang, i.id DESC), '[]'::json)
                   FROM (
                       SELECT it.id, it.parts_id, it.partnumber, p.description, it.result, it.changes, it.message,
-                             CASE it.result WHEN 'error' THEN 0 WHEN 'unknown' THEN 1 ELSE 2 END AS rang
+                             CASE it.result WHEN 'error' THEN 0 WHEN 'unknown' THEN 1 WHEN 'updated' THEN 2 ELSE 3 END AS rang
                         FROM vendor_part_sync_items it
                         LEFT JOIN parts p ON p.id = it.parts_id
                        WHERE it.sync_id = (SELECT id FROM cur)
@@ -157,6 +157,17 @@ function getVendorPartSync($data) {
                        LIMIT CAST(:items_per_page AS integer)
                       OFFSET (CAST(:items_page AS integer) - 1) * CAST(:items_per_page_offset AS integer)
                   ) i
+            ),
+            -- Anzahl je Ergebnis aus der Liste selbst: Läufe von früher haben
+            -- unveränderte Artikel nur gezählt, nicht festgehalten
+            'items_counts', (
+                SELECT COALESCE(json_object_agg(z.result, z.anzahl), '{}'::json)
+                  FROM (
+                      SELECT it.result, count(*) AS anzahl
+                        FROM vendor_part_sync_items it
+                       WHERE it.sync_id = (SELECT id FROM cur)
+                       GROUP BY it.result
+                  ) z
             ),
             'items_total', (
                 SELECT count(*)

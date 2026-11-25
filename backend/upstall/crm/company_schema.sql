@@ -3411,14 +3411,14 @@ COMMENT ON COLUMN vendor_part_syncs.input_file            IS 'Dateiname der Prei
 ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS fetch_settings JSONB;
 COMMENT ON COLUMN vendor_part_syncs.fetch_settings IS 'Einstellungen für das Abrufprogramm: active_hours, active_days (1 = Montag), active_from, active_to, delay_min_s, delay_max_s, price_field, available_when, update_description; NULL = Konfiguration des Abrufprogramms';
 
--- Je Lauf die Artikel, an denen sich etwas geändert hat, die unbekannt waren
--- oder scheiterten. Unveränderte Artikel werden nur gezählt.
+-- Je Lauf die geprüften Artikel: geändert, unverändert, unbekannt oder
+-- gescheitert.
 CREATE TABLE IF NOT EXISTS vendor_part_sync_items (
     id          SERIAL PRIMARY KEY,
     sync_id     INTEGER NOT NULL REFERENCES vendor_part_syncs(id) ON DELETE CASCADE,
     parts_id    INTEGER REFERENCES parts(id) ON DELETE SET NULL,
     partnumber  TEXT,
-    result      VARCHAR(20) NOT NULL CHECK (result IN ('updated', 'unknown', 'error')),
+    result      VARCHAR(20) NOT NULL CHECK (result IN ('updated', 'unchanged', 'unknown', 'error')),
     changes     JSONB,                                 -- {"sellprice": {"old": 10, "new": 12}, "available": {...}, "ext_images": {"changed": true}}
     message     TEXT,
     itime       TIMESTAMP DEFAULT NOW()
@@ -3426,7 +3426,13 @@ CREATE TABLE IF NOT EXISTS vendor_part_sync_items (
 
 CREATE INDEX IF NOT EXISTS idx_vendor_part_sync_items_sync ON vendor_part_sync_items(sync_id, id DESC);
 
-COMMENT ON TABLE vendor_part_sync_items IS 'Artikelabgleich: geänderte, unbekannte und fehlerhafte Artikel eines Laufs.';
+-- Nachgetragen: auch unveränderte Artikel stehen in der Liste (Filter in der
+-- Oberfläche). Läufe von vorher haben sie nur gezählt (parts_unchanged).
+ALTER TABLE vendor_part_sync_items DROP CONSTRAINT IF EXISTS vendor_part_sync_items_result_check;
+ALTER TABLE vendor_part_sync_items ADD CONSTRAINT vendor_part_sync_items_result_check
+    CHECK (result IN ('updated', 'unchanged', 'unknown', 'error'));
+
+COMMENT ON TABLE vendor_part_sync_items IS 'Artikelabgleich: geänderte, unveränderte, unbekannte und fehlerhafte Artikel eines Laufs.';
 
 -- Wann ein Artikel zuletzt beim Lieferanten geprüft wurde. Der Läufer stellt
 -- die Artikel in der Reihenfolge „am längsten nicht geprüft zuerst" bereit,
@@ -3677,6 +3683,8 @@ BEGIN
             END IF;
 
             IF v_changes = '{}'::jsonb THEN
+                INSERT INTO vendor_part_sync_items (sync_id, parts_id, partnumber, result)
+                SELECT p_sync_id, p.id, p.partnumber, 'unchanged' FROM parts p WHERE p.id = v_parts_id;
                 v_unchanged := v_unchanged + 1;
             ELSE
                 INSERT INTO vendor_part_sync_items (sync_id, parts_id, partnumber, result, changes)

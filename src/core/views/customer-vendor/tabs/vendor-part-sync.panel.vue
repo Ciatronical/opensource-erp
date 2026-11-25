@@ -233,6 +233,7 @@
                         <td>
                             <span v-if="item.result === 'unknown'" class="text-warning">{{ t('VendorPartSync.itemUnknown') }}</span>
                             <span v-else-if="item.result === 'error'" class="text-error">{{ item.message }}</span>
+                            <span v-else-if="item.result === 'unchanged'" class="vps-muted">{{ t('VendorPartSync.unchanged') }}</span>
                             <template v-else>
                                 <div v-for="line in changeLines(item.changes)" :key="line">{{ line }}</div>
                             </template>
@@ -299,8 +300,10 @@ const partsCount = ref(0)
 const sync = ref(null)
 const items = ref([])
 const itemsTotal = ref(0)
+// Anzahl je Ergebnis, wie sie in der Liste stehen
+const itemsCounts = ref({})
 const itemsPage = ref(1)
-// '' = alle, sonst updated, unknown oder error
+// '' = alle, sonst updated, unchanged, unknown oder error
 const itemsResult = ref('')
 const history = ref([])
 const output = ref([])
@@ -324,14 +327,16 @@ let timer = null
 const running = computed(() => ['queued', 'running'].includes(sync.value?.status))
 const progress = computed(() => sync.value?.parts_total ? Math.min(100, 100 * sync.value.parts_done / sync.value.parts_total) : 0)
 
-// Artikelliste: Anzahl je Ergebnis aus der Bilanz des Laufs, Seiten aus der Anzahl zum gewählten Filter
-const itemsCount = computed(() => (sync.value?.parts_updated || 0) + (sync.value?.parts_unknown || 0) + (sync.value?.parts_error || 0))
+// Artikelliste: Anzahl je Ergebnis aus der Liste selbst (Läufe von früher haben unveränderte
+// Artikel nur gezählt), Seiten aus der Anzahl zum gewählten Filter
+const itemsCount = computed(() => ['updated', 'unchanged', 'unknown', 'error'].reduce((summe, result) => summe + (itemsCounts.value[result] || 0), 0))
 const itemsPages = computed(() => Math.ceil(itemsTotal.value / ITEMS_PER_PAGE))
 const itemsFilters = computed(() => [
     { value: '', title: t('VendorPartSync.itemsAll'), count: itemsCount.value },
-    { value: 'updated', title: sync.value?.dry_run ? t('VendorPartSync.wouldChange') : t('VendorPartSync.changed'), count: sync.value?.parts_updated || 0 },
-    { value: 'unknown', title: t('VendorPartSync.unknown'), count: sync.value?.parts_unknown || 0 },
-    { value: 'error', title: t('VendorPartSync.errors'), count: sync.value?.parts_error || 0 },
+    { value: 'updated', title: sync.value?.dry_run ? t('VendorPartSync.wouldChange') : t('VendorPartSync.changed'), count: itemsCounts.value.updated || 0 },
+    { value: 'unchanged', title: t('VendorPartSync.unchanged'), count: itemsCounts.value.unchanged || 0 },
+    { value: 'unknown', title: t('VendorPartSync.unknown'), count: itemsCounts.value.unknown || 0 },
+    { value: 'error', title: t('VendorPartSync.errors'), count: itemsCounts.value.error || 0 },
 ])
 
 // Bekannte Kennungen des Backends (STALLED) übersetzt, alles andere wörtlich
@@ -478,6 +483,8 @@ async function load() {
         sync.value = stand.sync || null
         items.value = stand.items || []
         itemsTotal.value = stand.items_total || 0
+        // Ohne Einträge kommt aus PHP eine leere Liste statt eines Objekts
+        itemsCounts.value = Array.isArray(stand.items_counts) ? {} : (stand.items_counts || {})
         // Neuer Lauf mit weniger Einträgen: auf die letzte Seite zurück, der Watcher lädt sie
         if (itemsPage.value > Math.max(1, itemsPages.value)) itemsPage.value = Math.max(1, itemsPages.value)
         history.value = stand.history || []
