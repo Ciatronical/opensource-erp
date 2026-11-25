@@ -3628,7 +3628,8 @@ BEGIN
                        lastcost    = COALESCE((v_changes #>> '{lastcost,new}')::numeric, lastcost),
                        ean         = COALESCE(v_changes #>> '{ean,new}', ean),
                        weight      = COALESCE((v_changes #>> '{weight,new}')::real, weight),
-                       priceupdate = CASE WHEN v_changes ?| ARRAY['sellprice', 'listprice', 'lastcost']
+                       -- ohne den jsonb-Operator ?|: PDO hielte das Fragezeichen für einen Platzhalter
+                       priceupdate = CASE WHEN jsonb_exists_any(v_changes, ARRAY['sellprice', 'listprice', 'lastcost'])
                                           THEN current_date ELSE priceupdate END
                  WHERE id = v_parts_id;
             END IF;
