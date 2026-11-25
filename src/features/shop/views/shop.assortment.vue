@@ -152,7 +152,11 @@
                                 </tr>
                                 <tr v-if="!sichtbareKategorien.length">
                                     <td :colspan="darfAendern ? 5 : 4" class="sortiment__leer">
-                                        {{ kategorien.length ? t('ShopView.assortment.noMatch') : t('ShopView.assortment.empty') }}
+                                        <!-- Solange geladen wird, ist die Liste nicht leer, nur noch nicht da -->
+                                        <template v-if="laedt && !kategorien.length">
+                                            <v-progress-circular indeterminate size="16" width="2" class="mr-2" />{{ t('ShopView.assortment.loading') }}
+                                        </template>
+                                        <template v-else>{{ kategorien.length ? t('ShopView.assortment.noMatch') : t('ShopView.assortment.empty') }}</template>
                                     </td>
                                 </tr>
                             </tbody>
