@@ -31,7 +31,8 @@ async function call(action, params = {}, file = null) {
 }
 
 export function useVendorPartSync() {
-    const fetchStatus = (vendor_id) => call('getVendorPartSync', { vendor_id })
+    // items: Seite und Filter der Artikelliste (items_page, items_per_page, items_result)
+    const fetchStatus = (vendor_id, items = {}) => call('getVendorPartSync', { vendor_id, ...items })
     const start = (params, file = null) => call('startVendorPartSync', params, file)
     const cancel = (sync_id) => call('cancelVendorPartSync', { sync_id })
 

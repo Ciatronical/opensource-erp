@@ -317,6 +317,8 @@ Abweichend vom Plan gibt es keinen Auftrag `sitemap`:
 
 Gefehlt hat das Änderungsdatum. Die Produktseite trägt jetzt `lastmod` aus
 `parts.mtime`, ersatzweise `parts.itime`, und Hugo übernimmt es in die Sitemap.
+Ist die Kanalzeile des Artikels jünger (`parts_channel_shop.mtime`, etwa wenn
+der Artikelabgleich nur die Verfügbarkeit ändert), gilt deren Zeitpunkt.
 Die Grenze von 50.000 Adressen je Datei ist bei 3.711 Seiten fern; `gzip` und
 Blöcke entfallen.
 

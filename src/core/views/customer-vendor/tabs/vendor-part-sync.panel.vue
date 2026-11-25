@@ -209,8 +209,13 @@
             <!-- Hängengeblieben: letzte Ausgabe des Läufers -->
             <pre v-if="output.length" class="vps-log">{{ output.join('\n') }}</pre>
 
-            <!-- Geänderte, unbekannte und fehlerhafte Artikel -->
-            <v-table v-if="items.length" density="compact" class="vps-block">
+            <!-- Geänderte, unbekannte und fehlerhafte Artikel: seitenweise, nach Ergebnis gefiltert -->
+            <v-chip-group v-if="itemsCount" v-model="itemsResult" mandatory selected-class="text-primary" class="vps-block">
+                <v-chip v-for="filter in itemsFilters" :key="filter.value" :value="filter.value" size="small" variant="outlined" filter>
+                    {{ filter.title }} ({{ filter.count }})
+                </v-chip>
+            </v-chip-group>
+            <v-table v-if="items.length" density="compact">
                 <thead>
                     <tr>
                         <th>{{ t('VendorPartSync.partnumber') }}</th>
@@ -235,7 +240,8 @@
                     </tr>
                 </tbody>
             </v-table>
-            <div v-if="items.length >= 200" class="vps-muted">{{ t('VendorPartSync.itemsTruncated') }}</div>
+            <div v-else-if="itemsCount" class="vps-muted">{{ t('VendorPartSync.itemsNone') }}</div>
+            <v-pagination v-if="itemsPages > 1" v-model="itemsPage" :length="itemsPages" :total-visible="7" density="compact" size="small" />
 
             <!-- Protokoll -->
             <div v-if="sync.log" class="vps-block">
@@ -284,12 +290,18 @@ const api = useVendorPartSync()
 
 // Abfrageabstand, solange ein Lauf arbeitet
 const POLL_MS = 2000
+// Artikel je Seite in der Liste der geänderten, unbekannten und fehlerhaften Artikel
+const ITEMS_PER_PAGE = 25
 
 const loaded = ref(false)
 const configured = ref(false)
 const partsCount = ref(0)
 const sync = ref(null)
 const items = ref([])
+const itemsTotal = ref(0)
+const itemsPage = ref(1)
+// '' = alle, sonst updated, unknown oder error
+const itemsResult = ref('')
 const history = ref([])
 const output = ref([])
 const starting = ref(false)
@@ -311,6 +323,16 @@ let timer = null
 
 const running = computed(() => ['queued', 'running'].includes(sync.value?.status))
 const progress = computed(() => sync.value?.parts_total ? Math.min(100, 100 * sync.value.parts_done / sync.value.parts_total) : 0)
+
+// Artikelliste: Anzahl je Ergebnis aus der Bilanz des Laufs, Seiten aus der Anzahl zum gewählten Filter
+const itemsCount = computed(() => (sync.value?.parts_updated || 0) + (sync.value?.parts_unknown || 0) + (sync.value?.parts_error || 0))
+const itemsPages = computed(() => Math.ceil(itemsTotal.value / ITEMS_PER_PAGE))
+const itemsFilters = computed(() => [
+    { value: '', title: t('VendorPartSync.itemsAll'), count: itemsCount.value },
+    { value: 'updated', title: sync.value?.dry_run ? t('VendorPartSync.wouldChange') : t('VendorPartSync.changed'), count: sync.value?.parts_updated || 0 },
+    { value: 'unknown', title: t('VendorPartSync.unknown'), count: sync.value?.parts_unknown || 0 },
+    { value: 'error', title: t('VendorPartSync.errors'), count: sync.value?.parts_error || 0 },
+])
 
 // Bekannte Kennungen des Backends (STALLED) übersetzt, alles andere wörtlich
 const messageText = computed(() => {
@@ -439,13 +461,25 @@ function changeLines(changes) {
     return zeilen
 }
 
+// Nur die jüngste Anfrage zählt: Blättern und das regelmäßige Nachfragen überholen sich sonst
+let loadNr = 0
+
 async function load() {
+    const nr = ++loadNr
     try {
-        const stand = await api.fetchStatus(props.vendorId)
+        const stand = await api.fetchStatus(props.vendorId, {
+            items_page: itemsPage.value,
+            items_per_page: ITEMS_PER_PAGE,
+            items_result: itemsResult.value,
+        })
+        if (nr !== loadNr) return
         configured.value = !!stand.configured
         partsCount.value = stand.parts_count || 0
         sync.value = stand.sync || null
         items.value = stand.items || []
+        itemsTotal.value = stand.items_total || 0
+        // Neuer Lauf mit weniger Einträgen: auf die letzte Seite zurück, der Watcher lädt sie
+        if (itemsPage.value > Math.max(1, itemsPages.value)) itemsPage.value = Math.max(1, itemsPages.value)
         history.value = stand.history || []
         output.value = stand.output || []
         // Preisbildung des letzten Laufs als Vorgabe für den nächsten
@@ -543,11 +577,20 @@ watch(() => sync.value?.log, async () => {
     if (logBox.value) logBox.value.scrollTop = logBox.value.scrollHeight
 })
 
+// Blättern und Filtern in der Artikelliste; ein anderer Filter beginnt auf Seite 1
+watch(itemsPage, load)
+watch(itemsResult, () => {
+    if (itemsPage.value === 1) load()
+    else itemsPage.value = 1
+})
+
 // Anderer Lieferant in derselben Ansicht: Stand neu holen
 watch(() => props.vendorId, async () => {
     stopPolling()
     loaded.value = false
     sync.value = null
+    itemsPage.value = 1
+    itemsResult.value = ''
     optionsPrefilled = false
     priceFile.value = null
     await load()
