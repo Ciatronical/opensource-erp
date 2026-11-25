@@ -3409,6 +3409,19 @@ CREATE INDEX IF NOT EXISTS idx_vendor_part_sync_items_sync ON vendor_part_sync_i
 
 COMMENT ON TABLE vendor_part_sync_items IS 'Artikelabgleich: geänderte, unbekannte und fehlerhafte Artikel eines Laufs.';
 
+-- Wann ein Artikel zuletzt beim Lieferanten geprüft wurde. Der Läufer stellt
+-- die Artikel in der Reihenfolge „am längsten nicht geprüft zuerst" bereit,
+-- damit ein begrenzter oder unterbrochener Lauf nicht immer dieselben abruft.
+-- Geschrieben von vendor_part_sync_apply(), nicht im Probelauf.
+CREATE TABLE IF NOT EXISTS vendor_part_sync_checks (
+    vendor_id   INTEGER NOT NULL,
+    parts_id    INTEGER NOT NULL REFERENCES parts(id) ON DELETE CASCADE,
+    checked_at  TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (vendor_id, parts_id)
+);
+
+COMMENT ON TABLE vendor_part_sync_checks IS 'Artikelabgleich: letzte Prüfung je Lieferant und Artikel (auch ohne Änderung oder Treffer).';
+
 -- Psychologischer Preis: der nächste Preis mit der Endung ,98 (11,98 statt
 -- 12,01). Läge der mehr als 2 % vom Preis entfernt, der nächste mit einer 8 an
 -- der zweiten Nachkommastelle (12,58 statt 12,60); ist auch der zu weit weg
@@ -3525,6 +3538,19 @@ BEGIN
                 INSERT INTO vendor_part_sync_items (sync_id, partnumber, result)
                 VALUES (p_sync_id, COALESCE(NULLIF(v_item->>'partnumber', ''), v_item->>'model'), 'unknown');
                 v_unknown := v_unknown + 1;
+                CONTINUE;
+            END IF;
+
+            -- Prüfung vermerken (Reihenfolge des nächsten Laufs), nicht im Probelauf
+            IF NOT v_sync.dry_run THEN
+                INSERT INTO vendor_part_sync_checks (vendor_id, parts_id, checked_at)
+                VALUES (v_sync.vendor_id, v_parts_id, now())
+                ON CONFLICT (vendor_id, parts_id) DO UPDATE SET checked_at = EXCLUDED.checked_at;
+            END IF;
+
+            -- Beim Lieferanten nicht gefunden: geprüft, aber nichts zu übernehmen
+            IF COALESCE((v_item->>'not_found')::boolean, FALSE) THEN
+                v_unchanged := v_unchanged + 1;
                 CONTINUE;
             END IF;
 

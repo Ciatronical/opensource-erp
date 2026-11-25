@@ -36,6 +36,8 @@
  *            "downloads": {…}, "breadcrumbs": […], "extra": {…}}}
  *       Ein Artikel. partnumber oder model genügt, alles andere ist freiwillig;
  *       was fehlt, bleibt im ERP unverändert.
+ *       "not_found": true meldet einen Artikel, den es beim Lieferanten nicht
+ *       (mehr) gibt: er gilt als geprüft, übernommen wird nichts.
  *   {"type": "progress", "total": 1200, "message": "Seite 3 von 40"}
  *       Erwartete Gesamtzahl und/oder Meldung für die Oberfläche.
  *   {"type": "log", "level": "warn", "message": "…"}
@@ -171,7 +173,8 @@ try {
 
     // ── Artikel dieses Lieferanten für das Abrufprogramm bereitstellen ──
     // Zuordnung über makemodel (Lieferant am Artikel); je Artikel die erste
-    // Zeile dieses Lieferanten.
+    // Zeile dieses Lieferanten. Reihenfolge: am längsten nicht geprüft zuerst
+    // (vendor_part_sync_checks), damit eine Begrenzung reihum alle erreicht.
     $artikel = $db->getAll(
         "SELECT json_build_object(
                     'parts_id', p.id, 'partnumber', p.partnumber, 'model', m.model,
@@ -183,9 +186,10 @@ try {
                    FROM makemodel
                   WHERE make = :vendor_id
                   ORDER BY parts_id, sortorder NULLS LAST, id) m ON m.parts_id = p.id
-          ORDER BY p.partnumber
+           LEFT JOIN vendor_part_sync_checks c ON c.vendor_id = :check_vendor_id AND c.parts_id = p.id
+          ORDER BY c.checked_at NULLS FIRST, p.partnumber
           LIMIT NULLIF(CAST(:part_limit AS integer), 0)",
-        [':vendor_id' => intval($sync['vendor_id']), ':part_limit' => $grenze]
+        [':vendor_id' => intval($sync['vendor_id']), ':check_vendor_id' => intval($sync['vendor_id']), ':part_limit' => $grenze]
     );
     $inhalt = '';
     foreach ($artikel as $zeile) {
