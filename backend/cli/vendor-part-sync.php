@@ -26,6 +26,11 @@
  *                      ist bereits entsprechend gekürzt
  *   OSERP_INPUT_FILE   hochgeladene Preisdatei (Excel, CSV), leer wenn keine;
  *                      OSERP_INPUT_NAME ist ihr Name beim Benutzer
+ *   OSERP_SETTINGS     Einstellungen aus der Oberfläche als JSON-Objekt, leer
+ *                      wenn keine: active_hours, active_days (1 = Montag),
+ *                      active_from, active_to, delay_min_s, delay_max_s,
+ *                      price_field, available_when, update_description. Sie
+ *                      gehen vor der Konfiguration des Abrufprogramms.
  *   OSERP_SYNC_ID      Nummer des Laufs
  *
  * Standardausgabe: je Zeile ein JSON-Objekt
@@ -137,7 +142,7 @@ try {
            FROM vendor v
           WHERE s.id = :id AND s.status = 'queued' AND v.id = s.vendor_id
         RETURNING s.id, s.vendor_id, s.dry_run, s.debug, COALESCE(s.part_limit, 0) AS part_limit,
-                  s.input_file, s.input_name, s.employee_id, v.vendornumber, v.name AS vendor_name",
+                  s.input_file, s.input_name, s.employee_id, s.fetch_settings, v.vendornumber, v.name AS vendor_name",
         [':pid' => getmypid(), ':id' => $syncId]
     );
 } catch (Throwable $e) {
@@ -217,6 +222,7 @@ try {
         'OSERP_LIMIT'         => (string)$grenze,
         'OSERP_INPUT_FILE'    => is_file($eingabeDatei) ? $eingabeDatei : '',
         'OSERP_INPUT_NAME'    => (string)($sync['input_name'] ?? ''),
+        'OSERP_SETTINGS'      => (string)($sync['fetch_settings'] ?? ''),
     ]);
     $rohre = [];
     $prozess = proc_open([$befehl], [0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $rohre, dirname($befehl), $umgebung);

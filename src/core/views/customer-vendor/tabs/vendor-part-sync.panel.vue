@@ -14,6 +14,13 @@
     Psychologische Preise: Bruttopreis auf eine Endung mit 8 (11,98 statt 12,01).
     Preisdatei: Excel/CSV des Lieferanten, geht mit dem Start an das Backend;
     das Abrufprogramm entscheidet anhand von Lieferant und Datei, was zu tun ist.
+    Zeitfenster und Pause: wann und in welchem Takt im Portal des Lieferanten
+    abgerufen wird; außerhalb des Fensters ruht der Lauf. Liegt das Ende vor dem
+    Beginn, reicht das Fenster über Mitternacht.
+    Abruf-Optionen: als was der Portalpreis gilt, was als verfügbar zählt und ob
+    die Bezeichnung mitkommt. Alles zusammen geht als fetch_settings an das
+    Backend und von dort an das Abrufprogramm, wo es vor dessen eigener
+    Konfiguration geht; Vorgabe für den nächsten Lauf ist der letzte.
 -->
 <template>
     <section-card :title="t('VendorPartSync.title')" icon="mdi-database-sync-outline">
@@ -99,6 +106,62 @@
             class="vps-block vps-file"
             :disabled="running"
         />
+
+        <!-- Zeitfenster und Takt des Abrufs im Portal -->
+        <div class="vps-options vps-block">
+            <v-switch v-model="options.active_hours" :label="t('VendorPartSync.window')" color="primary" density="compact" hide-details :disabled="running" />
+            <v-chip-group v-model="options.active_days" multiple column filter selected-class="text-primary" :disabled="running || !options.active_hours">
+                <v-chip v-for="day in weekdays" :key="day.value" :value="day.value" size="small" variant="outlined">{{ day.title }}</v-chip>
+            </v-chip-group>
+            <v-text-field
+                v-model="options.active_from"
+                type="time"
+                :label="t('VendorPartSync.windowFrom')"
+                class="vps-time"
+                :disabled="running || !options.active_hours"
+                :rules="[windowRule]"
+            />
+            <v-text-field
+                v-model="options.active_to"
+                type="time"
+                :label="t('VendorPartSync.windowTo')"
+                class="vps-time"
+                :disabled="running || !options.active_hours"
+                :rules="[windowRule]"
+            />
+        </div>
+        <div v-if="options.active_hours && !options.active_days.length" class="vps-hint text-error">{{ t('VendorPartSync.windowDaysInvalid') }}</div>
+        <div class="vps-options vps-block">
+            <v-text-field
+                v-model="options.delay_min_s"
+                type="number"
+                min="0"
+                suffix="s"
+                :label="t('VendorPartSync.delayMin')"
+                class="vps-time"
+                :disabled="running"
+                :rules="[rangeRule]"
+            />
+            <v-text-field
+                v-model="options.delay_max_s"
+                type="number"
+                min="0"
+                suffix="s"
+                :label="t('VendorPartSync.delayMax')"
+                class="vps-time"
+                :disabled="running"
+                :rules="[rangeRule, delayMaxRule]"
+            />
+        </div>
+        <div class="vps-hint">{{ t('VendorPartSync.paceHint') }}</div>
+
+        <!-- Was der Abruf liefert -->
+        <div class="vps-options vps-block">
+            <v-select v-model="options.price_field" :items="priceFieldItems" :label="t('VendorPartSync.priceField')" class="vps-select" :disabled="running" />
+            <v-select v-model="options.available_when" :items="availableWhenItems" :label="t('VendorPartSync.availableWhen')" class="vps-select" :disabled="running" />
+            <v-select v-model="options.update_description" :items="updateDescriptionItems" :label="t('VendorPartSync.updateDescription')" class="vps-select" :disabled="running" />
+        </div>
+        <div class="vps-hint">{{ t('VendorPartSync.fetchHint') }}</div>
 
         <!-- Stand des laufenden bzw. letzten Laufs -->
         <div v-if="sync" class="vps-status">
@@ -216,7 +279,7 @@ const props = defineProps({
     vendorName: { type: String, default: '' },
 })
 
-const { t, te, n } = useI18n()
+const { t, te, n, locale } = useI18n()
 const api = useVendorPartSync()
 
 // Abfrageabstand, solange ein Lauf arbeitet
@@ -233,7 +296,13 @@ const starting = ref(false)
 const cancelling = ref(false)
 const logOpen = ref(false)
 const logBox = ref(null)
-const options = ref({ dry_run: true, debug: false, limit: null, markup_percent: null, random: false, markup_random_percent: 1, psychological_prices: false })
+const options = ref({
+    dry_run: true, debug: false, limit: null, markup_percent: null, random: false, markup_random_percent: 1, psychological_prices: false,
+    // Abruf im Portal: dieselben Vorgaben wie im Abrufprogramm
+    active_hours: true, active_days: [1, 2, 3, 4, 5], active_from: '07:00', active_to: '18:00', delay_min_s: 5, delay_max_s: 15,
+    // '' = Vorgabe des Abrufprogramms
+    price_field: '', available_when: '', update_description: '',
+})
 const priceFile = ref(null)
 // Vorgaben nur einmal aus dem letzten Lauf übernehmen, danach gilt die Eingabe
 let optionsPrefilled = false
@@ -268,6 +337,55 @@ function rangeRule(value) {
 }
 function percent(value) {
     return n(Number(value), { maximumFractionDigits: 3 }) + ' %'
+}
+
+// 1 = Montag … 7 = Sonntag, wie active_days im Abrufprogramm; der 1.1.2024 war ein Montag
+const weekdays = computed(() => {
+    const format = new Intl.DateTimeFormat(locale.value, { weekday: 'short' })
+    return [1, 2, 3, 4, 5, 6, 7].map((day) => ({ value: day, title: format.format(new Date(2024, 0, day)) }))
+})
+
+const fetchDefault = computed(() => ({ value: '', title: t('VendorPartSync.fetchDefault') }))
+const priceFieldItems = computed(() => [
+    fetchDefault.value,
+    ...['lastcost', 'sellprice', 'listprice'].map((value) => ({ value, title: t('VendorPartSync.field_' + value) })),
+])
+const availableWhenItems = computed(() => [
+    fetchDefault.value,
+    ...['in_stock', 'orderable'].map((value) => ({ value, title: t('VendorPartSync.availableWhen_' + value) })),
+])
+const updateDescriptionItems = computed(() => [
+    fetchDefault.value,
+    { value: true, title: t('VendorPartSync.optionYes') },
+    { value: false, title: t('VendorPartSync.optionNo') },
+])
+
+// Beginn und Ende als HH:MM und verschieden; Ende vor Beginn heißt über Mitternacht
+function windowRule() {
+    if (!options.value.active_hours) return true
+    const { active_from, active_to } = options.value
+    const gueltig = [active_from, active_to].every((zeit) => /^\d{2}:\d{2}$/.test(zeit || ''))
+    return (gueltig && active_from !== active_to) || t('VendorPartSync.windowInvalid')
+}
+function delayMaxRule(value) {
+    return Number(value) >= Number(options.value.delay_min_s) || t('VendorPartSync.delayMaxInvalid')
+}
+
+// Was an das Abrufprogramm geht; ohne die Angaben, die bei dessen Vorgabe bleiben
+function fetchSettings() {
+    const o = options.value
+    const settings = {
+        active_hours: o.active_hours,
+        active_days: [...o.active_days].sort(),
+        active_from: o.active_from,
+        active_to: o.active_to,
+        delay_min_s: Number(o.delay_min_s),
+        delay_max_s: Number(o.delay_max_s),
+    }
+    for (const key of ['price_field', 'available_when', 'update_description']) {
+        if (o[key] !== '') settings[key] = o[key]
+    }
+    return settings
 }
 
 function limitRule(value) {
@@ -341,6 +459,11 @@ async function load() {
                 options.value.markup_random_percent = Number(stand.sync.markup_random_percent)
             }
             options.value.psychological_prices = !!stand.sync.psychological_prices
+            // ebenso Zeitfenster, Pause und Abruf-Optionen
+            const settings = stand.sync.fetch_settings || {}
+            for (const key of ['active_hours', 'active_days', 'active_from', 'active_to', 'delay_min_s', 'delay_max_s', 'price_field', 'available_when', 'update_description']) {
+                if (settings[key] !== undefined && settings[key] !== null) options.value[key] = settings[key]
+            }
         }
         loaded.value = true
     } catch (e) {
@@ -366,6 +489,8 @@ async function startRun() {
     if (limitRule(options.value.limit) !== true || percentRule(options.value.markup_percent) !== true) return
     const streuen = options.value.random && hasMarkup.value
     if (streuen && rangeRule(options.value.markup_random_percent) !== true) return
+    if (windowRule() !== true || (options.value.active_hours && !options.value.active_days.length)) return
+    if (rangeRule(options.value.delay_min_s) !== true || rangeRule(options.value.delay_max_s) !== true || delayMaxRule(options.value.delay_max_s) !== true) return
     const datei = Array.isArray(priceFile.value) ? (priceFile.value[0] || null) : (priceFile.value || null)
     // Ein echter Lauf überschreibt Preise — vorher nachfragen
     if (!options.value.dry_run) {
@@ -382,6 +507,7 @@ async function startRun() {
             markup_percent: hasMarkup.value ? Number(options.value.markup_percent) : null,
             markup_random_percent: streuen ? Number(options.value.markup_random_percent) : null,
             psychological_prices: options.value.psychological_prices,
+            fetch_settings: fetchSettings(),
         }, datei)
         // Die Datei gehört zu diesem einen Lauf
         priceFile.value = null
@@ -447,6 +573,12 @@ onBeforeUnmount(stopPolling)
 }
 .vps-limit {
     flex: 0 0 14rem;
+}
+.vps-time {
+    flex: 0 0 9rem;
+}
+.vps-select {
+    flex: 0 0 18rem;
 }
 .vps-file {
     max-width: 32rem;

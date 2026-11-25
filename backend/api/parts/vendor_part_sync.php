@@ -41,6 +41,20 @@ function vendorPartSyncPercent($wert): ?string {
 }
 
 /**
+ * Einstellungen des Abrufs aus dem Request als JSON-Text — per JSON kommt ein
+ * Objekt, per Formular (Aufruf mit Preisdatei) dessen Text
+ *
+ * @param mixed $wert
+ * @return string|null JSON-Objekt als Text oder null
+ */
+function vendorPartSyncSettings($wert): ?string {
+    if (is_string($wert)) {
+        $wert = json_decode($wert, true);
+    }
+    return (is_array($wert) && $wert) ? json_encode($wert, JSON_UNESCAPED_UNICODE) : null;
+}
+
+/**
  * Ist das Abrufprogramm eingerichtet und ausführbar?
  *
  * @return bool
@@ -103,6 +117,7 @@ function getVendorPartSync($data) {
                            'markup_random_percent', c.markup_random_percent,
                            'psychological_prices', c.psychological_prices,
                            'input_name', c.input_name,
+                           'fetch_settings', c.fetch_settings,
                            'cancel_requested', c.cancel_requested,
                            'parts_total', c.parts_total,
                            'parts_done', c.parts_done,
@@ -191,8 +206,9 @@ function getVendorPartSync($data) {
  * @param number $data['markup_percent'] Aufschlag in Prozent auf den Einkaufspreis; leer = Verkaufspreis nicht daraus bilden (optional)
  * @param number $data['markup_random_percent'] Streuung des Aufschlags in Prozentpunkten (±), leer = keine (optional)
  * @param bool $data['psychological_prices'] Verkaufspreis auf eine Endung mit 8 legen (optional)
+ * @param object $data['fetch_settings'] Einstellungen für das Abrufprogramm: active_hours, active_days (1 = Montag), active_from, active_to, delay_min_s, delay_max_s, price_field, available_when, update_description; was fehlt, bestimmt dessen Konfiguration (optional)
  * @param file $_FILES['file'] Preisdatei des Lieferanten (Excel, CSV); der Aufruf kommt dann als Formular (optional)
- * @testdata {"vendor_id": 1, "dry_run": true, "debug": true, "limit": 10, "markup_percent": 20, "markup_random_percent": 1, "psychological_prices": true}
+ * @testdata {"vendor_id": 1, "dry_run": true, "debug": true, "limit": 10, "markup_percent": 20, "markup_random_percent": 1, "psychological_prices": true, "fetch_settings": {"active_hours": true, "active_days": [1, 2, 3, 4, 5], "active_from": "07:00", "active_to": "18:00", "delay_min_s": 5, "delay_max_s": 15}}
  */
 function startVendorPartSync($data) {
     $db = DbhCompany::begin();
@@ -231,11 +247,19 @@ function startVendorPartSync($data) {
 
     $neu = $db->getOne(
         "INSERT INTO vendor_part_syncs (vendor_id, dry_run, debug, part_limit, markup_percent, markup_random_percent,
-                                        psychological_prices, input_name, employee_id)
+                                        psychological_prices, input_name, employee_id, fetch_settings)
          SELECT v.id, CAST(:dry_run AS boolean), CAST(:debug AS boolean),
                 NULLIF(GREATEST(CAST(:part_limit AS integer), 0), 0),
                 CAST(:markup_percent AS numeric), NULLIF(abs(CAST(:markup_random_percent AS numeric)), 0),
-                CAST(:psychological_prices AS boolean), CAST(:input_name AS text), CAST(:employee_id AS integer)
+                CAST(:psychological_prices AS boolean), CAST(:input_name AS text), CAST(:employee_id AS integer),
+                -- Nur diese Schlüssel gehen an das Abrufprogramm: Zugangsdaten
+                -- und Programmpfade lassen sich von hier nicht überschreiben
+                (SELECT jsonb_object_agg(e.key, e.value)
+                   FROM jsonb_each(COALESCE(CAST(:fetch_settings AS jsonb), '{}'::jsonb)) e
+                  WHERE e.key IN ('active_hours', 'active_days', 'active_from', 'active_to',
+                                  'delay_min_s', 'delay_max_s',
+                                  'price_field', 'available_when', 'update_description')
+                    AND jsonb_typeof(e.value) <> 'null')
            FROM vendor v
           WHERE v.id = :vendor_id
             AND NOT EXISTS (SELECT 1 FROM vendor_part_syncs s WHERE s.vendor_id = v.id AND s.status IN ('queued', 'running'))
@@ -249,6 +273,7 @@ function startVendorPartSync($data) {
             ':psychological_prices'  => vendorPartSyncBool($data['psychological_prices'] ?? false) ? 'true' : 'false',
             ':input_name'            => $datei ? mb_substr(basename((string)$datei['name']), 0, 200) : null,
             ':employee_id'           => mitarbeiterId($data),
+            ':fetch_settings'        => vendorPartSyncSettings($data['fetch_settings'] ?? null),
             ':vendor_id'             => $vendorId,
         ]
     );

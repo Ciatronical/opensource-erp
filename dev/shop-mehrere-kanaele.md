@@ -280,6 +280,7 @@ entfernt). `shop_auto_publish_enabled(kanal)` liest nur noch `settings`.
 | Rechnungsseite, PDF über Link, Kaufauswertung | Anfrage | Link gilt nur im eigenen Kanal |
 | PayPal (M2) | Sitzung bzw. Anfrage (Rückweg), Abgleich: Rechnungslink | Zugang, Test-/Echtbetrieb, Fehlertest, Rücksprungadresse |
 | Rechnungsmail | Rechnungslink | Signatur (`base_url`), Betreff |
+| Bestellmeldung an den Betreiber | Rechnungslink | Empfänger (`order_mail_to`), leer = keine Meldung |
 | Kontaktmail, Widerruf | Anfrage | Empfänger (`withdrawal_mail_to`), `withdrawals_hugoshop.channel_id` |
 | Suche, Artikelauswertung | Anfrage | Sortiment, Preis, Adressmuster (`products_link`, `thumbnails_link`) |
 | Umleitungen | Anfrage | `redirect_pages_hugoshop.channel_id` |

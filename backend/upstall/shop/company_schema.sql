@@ -3439,6 +3439,10 @@ RETURNS TABLE (type text, old_key text, key text, secret boolean)
         -- HugoShop: Mail und PayPal (M2)
         ('hugoshop', 'shop_invoice_mail_subject',             'invoice_mail_subject',             false),
         ('hugoshop', 'shop_withdrawal_mail_to',               'withdrawal_mail_to',               false),
+        -- Empfänger der Meldung über eine neue Bestellung (2026-11-25);
+        -- leer = keine Meldung. Den alten Schlüssel gab es nie, die
+        -- Abschrift findet nichts.
+        ('hugoshop', 'shop_order_mail_to',                    'order_mail_to',                    false),
         ('hugoshop', 'shop_paypal_sandbox',                   'paypal_sandbox',                   false),
         ('hugoshop', 'shop_paypal_live_client_id',            'paypal_live_client_id',            false),
         ('hugoshop', 'shop_paypal_live_secret',               'paypal_live_secret',               true),

@@ -451,7 +451,7 @@ die Fehlermeldung den Feldnamen aus der Oberfläche, nicht den Schlüssel.
 | Adressen der Webseite | `base_url`, `invoice_page`, `products_link`, `category_link`, `category_taxonomy`, `category_title`, `images_link`, `thumbnails_link`, `downloads_link` |
 | Veröffentlichung | `backend_url`, `template_set`, `auto_publish`, `channel_off_pages` |
 | HugoCMS | `hugocms_url`, `hugocms_key` (Geheimnis) |
-| Mail | `invoice_mail_subject`, `withdrawal_mail_to` |
+| Mail | `invoice_mail_subject`, `order_mail_to`, `withdrawal_mail_to` |
 | PayPal | `paypal_sandbox`, `paypal_live_client_id`, `paypal_live_secret`, `paypal_sandbox_client_id`, `paypal_sandbox_secret`, `paypal_payment_method_preference`, `paypal_mock_response` |
 
 Preisvorgaben, Freigrenze und Lieferländer sind Spalten des Kanals

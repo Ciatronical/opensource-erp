@@ -71,6 +71,7 @@ const hugoshop = [
     { name: "mail", type: "headline", label: "crm_fields.shopMail" },
 
     { name: "invoice_mail_subject", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopInvoiceMailSubject", tooltip: "crm_fields.shopInvoiceMailSubject_help", help: "crm_fields.shopInvoiceMailSubject_long" },
+    { name: "order_mail_to", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopOrderMailTo", tooltip: "crm_fields.shopOrderMailTo_help", help: "crm_fields.shopOrderMailTo_long" },
     { name: "withdrawal_mail_to", type: "input", size: 60, fieldstyle: "max-width: 60ch", label: "crm_fields.shopWithdrawalMailTo", tooltip: "crm_fields.shopWithdrawalMailTo_help", help: "crm_fields.shopWithdrawalMailTo_long" },
 
     { name: "paypal", type: "headline", label: "crm_fields.shopPaypal" },

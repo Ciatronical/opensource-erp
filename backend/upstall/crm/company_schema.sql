@@ -3405,6 +3405,12 @@ COMMENT ON COLUMN vendor_part_syncs.psychological_prices  IS 'Verkaufspreis auf 
 COMMENT ON COLUMN vendor_part_syncs.input_name            IS 'Name der hochgeladenen Preisdatei (Excel, CSV), wie der Benutzer sie nannte';
 COMMENT ON COLUMN vendor_part_syncs.input_file            IS 'Dateiname der Preisdatei in backend/tmp, solange der Lauf sie braucht';
 
+-- Nachgetragen: Einstellungen des Abrufs je Lauf (Zeitfenster, Pause, was der
+-- Abruf liefert). Sie gehen an das Abrufprogramm und dort vor dessen eigener
+-- Konfiguration; Zugangsdaten bleiben beim Abrufprogramm.
+ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS fetch_settings JSONB;
+COMMENT ON COLUMN vendor_part_syncs.fetch_settings IS 'Einstellungen für das Abrufprogramm: active_hours, active_days (1 = Montag), active_from, active_to, delay_min_s, delay_max_s, price_field, available_when, update_description; NULL = Konfiguration des Abrufprogramms';
+
 -- Je Lauf die Artikel, an denen sich etwas geändert hat, die unbekannt waren
 -- oder scheiterten. Unveränderte Artikel werden nur gezählt.
 CREATE TABLE IF NOT EXISTS vendor_part_sync_items (

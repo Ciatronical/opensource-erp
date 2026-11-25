@@ -14,7 +14,9 @@ async function call(action, params = {}, file = null) {
         body = new FormData()
         body.append('action', action)
         for (const [key, value] of Object.entries(params)) {
-            if (value !== null && value !== undefined) body.append(key, String(value))
+            if (value === null || value === undefined) continue
+            // Objekte (fetch_settings) gehen als JSON-Text ins Formular
+            body.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value))
         }
         body.append('file', file, file.name)
     }

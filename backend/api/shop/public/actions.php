@@ -209,6 +209,7 @@ function invoicing($db, string $uuid, array $daten) {
 
     $rechnung = createShopInvoice($db, $uuid, is_array($lieferadresse) ? $lieferadresse : []);
     $versendet = shopSendInvoiceMail($db, (int)$rechnung['ar_id']);
+    shopSendOrderMail($db, (int)$rechnung['ar_id']);
 
     resultInfo(true, '', [
         'ar_link'      => $rechnung['ar_link'],

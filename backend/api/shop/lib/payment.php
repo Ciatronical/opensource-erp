@@ -745,6 +745,7 @@ function paymentEnd($db, int $kanal, string $token, bool $bestaetigt = false, ?s
     // Dieselbe Lieferadresse, mit der eben gerechnet wurde
     $rechnung  = createShopInvoice($db, $uuid, $lieferadresse, $zahlung);
     $versendet = shopSendInvoiceMail($db, (int)$rechnung['ar_id']);
+    shopSendOrderMail($db, (int)$rechnung['ar_id']);
 
     return [
         'confirm'      => false,

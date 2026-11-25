@@ -172,6 +172,13 @@ JSON-Objekt von der Standardausgabe; der Vertrag steht im Kopf des Läufers.
 nur vorhandene Artikel, nur geänderte Werte. Der Läufer braucht Schreibrechte
 in `backend/tmp/`.
 
+Zeitfenster (Wochentage, Uhrzeit von–bis), Pause zwischen zwei Artikeln und
+die Abruf-Optionen (Preisfeld, Verfügbarkeit, Bezeichnung) stellt der Benutzer
+an der Karte ein. Sie stehen je Lauf in `vendor_part_syncs.fetch_settings` und
+gehen als `OSERP_SETTINGS` an das Programm, wo sie vor dessen eigener
+Konfiguration gelten. Zugangsdaten und Programmpfade lassen sich darüber nicht
+setzen.
+
 ## Shop-Erweiterung
 
 Die Webseiten der Shop-Erweiterung liegen in HugoCMS und werden dort gebaut;

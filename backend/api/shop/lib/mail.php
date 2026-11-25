@@ -1,7 +1,7 @@
 <?php
 // backend/api/shop/lib/mail.php
 //
-// Mails des Shops: Rechnung, Lieferstatus, Widerruf. Versand und Vorlagen-
+// Mails des Shops: Rechnung, Bestellmeldung, Lieferstatus, Widerruf. Versand und Vorlagen-
 // mechanismus gehören dem Kundenportal (backend/api/portal/lib/mail.php:
 // portalMailer, portalMailTemplate); die Vorlagen des Shops liegen unter
 // ../templates/ und sind dort angemeldet (lib/portal_hooks.php). Das
@@ -106,6 +106,74 @@ function shopSendInvoiceMailOrFail($db, int $arId): bool {
         return false;
     } finally {
         @unlink($pdf['path']);
+    }
+}
+
+/**
+ * Meldet dem Betreiber eine neue Bestellung
+ *
+ * Nur für Kanäle mit gesetztem order_mail_to. Ohne Anhang: die Rechnung steht
+ * im ERP, die Mail sagt nur, dass es etwas zu tun gibt.
+ *
+ * Wirft nicht: die Rechnung steht bereits, wenn diese Funktion gerufen wird
+ * (wie shopSendInvoiceMail). Was schiefging, steht im Protokoll.
+ *
+ * @param object $db Company-Datenbankverbindung
+ * @param int $arId Rechnung der Bestellung
+ * @return bool true wenn versendet
+ */
+function shopSendOrderMail($db, int $arId): bool {
+    try {
+        $bestellung = $db->getOne(
+            "SELECT ar.invnumber, TRUNC(ar.amount, 2) AS amount,
+                    c.name, c.email, c.phone, c.customernumber,
+                    (SELECT name FROM currencies WHERE id = ar.currency_id) AS currency,
+                    al.channel_id AS kanal,
+                    CASE WHEN al.payment_status = 'PENDING' THEN 'PayPal – Zahlung schwebt'
+                         WHEN al.payment_status = 'COMPLETED'
+                              OR (al.payment_status IS NULL AND al.paypal IS NOT NULL) THEN 'PayPal – bezahlt'
+                         WHEN al.payment_status IS NOT NULL THEN 'PayPal – ' || al.payment_status
+                         ELSE 'Auf Rechnung – offen'
+                    END AS zahlung
+               FROM ar_link_hugoshop al
+               JOIN ar ON ar.id = al.ar_id
+               JOIN customer c ON c.id = ar.customer_id
+              WHERE al.ar_id = :ar_id
+              ORDER BY al.id
+              LIMIT 1",
+            [':ar_id' => $arId]
+        );
+        if (!$bestellung) {
+            return false;
+        }
+
+        $betreiber = shopChannelValue($db, (int)$bestellung['kanal'], 'order_mail_to');
+        if ('' === $betreiber) {
+            return false;
+        }
+
+        $mailer = portalMailer($db);
+        $mailer['client']->send(
+            $mailer['from'], $mailer['from_name'], [$betreiber],
+            sprintf('Neue Bestellung %s – %s', $bestellung['invnumber'], $bestellung['name']),
+            portalMailTemplate('order-operator.de', [
+                'invnumber'      => $bestellung['invnumber'],
+                'amount'         => $bestellung['amount'],
+                'currency'       => $bestellung['currency'],
+                'name'           => $bestellung['name'],
+                'customernumber' => $bestellung['customernumber'],
+                'email'          => $bestellung['email'],
+                'phone'          => $bestellung['phone'],
+                'zahlung'        => $bestellung['zahlung'],
+                'lieferadresse'  => invoiceShippingAddress($db, $arId) ?: [],
+                'positionen'     => shopInvoiceDeliveryTerms($db, $arId),
+                'signatur'       => websiteValue($db, shopWebsiteOfChannel($db, (int)$bestellung['kanal']), 'base_url'),
+            ])
+        );
+        return true;
+    } catch (Exception $e) {
+        writeLog('[SHOP] Bestellmail an den Betreiber zu '.$arId.' nicht versendet: '.$e->getMessage(), true, DLOG_ERR);
+        return false;
     }
 }
 

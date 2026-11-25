@@ -227,6 +227,7 @@
             <ShopConfigField breit :field="kanalFeld('channel_off_pages')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
             <div class="text-subtitle-2 mt-4">{{ t('crm_fields.shopMail') }}</div>
             <ShopConfigField breit :field="kanalFeld('invoice_mail_subject')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
+            <ShopConfigField breit :field="kanalFeld('order_mail_to')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
             <ShopConfigField breit :field="kanalFeld('withdrawal_mail_to')" :werte="kanalWerte" :quellen="quellen" :gesetzt="kanalGesetzt" />
             <div class="d-flex flex-wrap align-center ga-3 mt-4">
                 <v-btn color="primary" variant="tonal" prepend-icon="mdi-lan-connect" :loading="hugocmsPrueft" @click="hugocmsPruefen">
