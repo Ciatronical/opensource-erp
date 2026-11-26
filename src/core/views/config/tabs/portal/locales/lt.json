@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Netinkamas adresas: {url} — tikėtasi, pvz., https://erp.example.lt/portal/",
             "IS_HUGOCMS": "Tai HugoCMS adresas ({url}). Čia turi būti OpensourceERP portalo prieiga, pvz., https://erp.example.lt/portal/ — vietoje http://localhost:8000/portal/.",
+            "IS_PROXY": "Tai pačios svetainės persiuntėjas ({url}), o ne OpensourceERP prieiga — jis persiųstų užklausas pats sau. Čia turi būti OpensourceERP portalo prieiga, pvz., https://erp.example.lt/portal/ — vietoje http://localhost:8000/portal/.",
             "NO_KEY": "Svetainė dar neturi rakto.",
             "OK": "OpensourceERP portalo prieiga atsako, raktas atitinka „{name}“.",
             "OK_OLD": "OpensourceERP portalo prieiga atsako ir priima raktą; ši versija negali nustatyti svetainės.",

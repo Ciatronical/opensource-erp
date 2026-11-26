@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Adres girilmedi.",
         "shopBackendTest_INVALID": "Geçersiz adres: {url} — örneğin https://erp.example.com.tr/shop/ beklenir",
         "shopBackendTest_IS_HUGOCMS": "Bu HugoCMS adresi ({url}). Buraya OpensourceERP mağaza erişimi girilmeli, örn. https://erp.example.com.tr/shop/ — yerelde http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "Bu, web sitesinin kendi yönlendiricisi ({url}), OpensourceERP erişimi değil — istekleri kendisine iletirdi. Buraya OpensourceERP mağaza erişimi girilmeli, örn. https://erp.example.com.tr/shop/ — yerelde http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "Adres doğru görünüyor: {url}",
         "shopBackendTest_SKIPPED": "Atlandı — önce girişi düzeltin.",
         "shopBackendTest_NO_KEY": "Kanalın henüz mağaza anahtarı yok.",

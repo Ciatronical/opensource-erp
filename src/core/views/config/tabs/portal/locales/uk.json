@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Неприпустима адреса: {url} — очікувалося, наприклад, https://erp.example.ua/portal/",
             "IS_HUGOCMS": "Це адреса HugoCMS ({url}). Тут має бути доступ до порталу OpensourceERP, наприклад https://erp.example.ua/portal/ — локально http://localhost:8000/portal/.",
+            "IS_PROXY": "Це переадресатор самого сайту ({url}), а не доступ OpensourceERP — він пересилав би запити самому собі. Тут має бути доступ до порталу OpensourceERP, наприклад https://erp.example.ua/portal/ — локально http://localhost:8000/portal/.",
             "NO_KEY": "У сайту ще немає ключа.",
             "OK": "Доступ до порталу OpensourceERP відповідає, ключ відповідає «{name}».",
             "OK_OLD": "Доступ до порталу OpensourceERP відповідає і приймає ключ; ця версія не може визначити сайт.",

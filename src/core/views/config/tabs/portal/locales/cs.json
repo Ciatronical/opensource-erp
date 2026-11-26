@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Neplatná adresa: {url} — očekává se například https://erp.example.cz/portal/",
             "IS_HUGOCMS": "To je adresa HugoCMS ({url}). Sem patří portálový přístup OpensourceERP, např. https://erp.example.cz/portal/ — lokálně http://localhost:8000/portal/.",
+            "IS_PROXY": "To je přeposílač samotného webu ({url}), nikoli přístup OpensourceERP — přeposílal by požadavky sám sobě. Sem patří portálový přístup OpensourceERP, např. https://erp.example.cz/portal/ — lokálně http://localhost:8000/portal/.",
             "NO_KEY": "Web ještě nemá klíč.",
             "OK": "Portálový přístup OpensourceERP odpovídá, klíč odpovídá „{name}“.",
             "OK_OLD": "Portálový přístup OpensourceERP odpovídá a klíč přijímá; tato verze neumí určit web.",

@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Není zadána adresa.",
         "shopBackendTest_INVALID": "Neplatná adresa: {url} — očekává se např. https://erp.example.cz/shop/",
         "shopBackendTest_IS_HUGOCMS": "To je adresa HugoCMS ({url}). Sem patří přístup obchodu OpensourceERP, např. https://erp.example.cz/shop/ — lokálně http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "To je přeposílač samotného webu ({url}), nikoli přístup OpensourceERP — přeposílal by požadavky sám sobě. Sem patří přístup obchodu OpensourceERP, např. https://erp.example.cz/shop/ — lokálně http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "Adresa vypadá správně: {url}",
         "shopBackendTest_SKIPPED": "Přeskočeno — nejprve opravte zadání.",
         "shopBackendTest_NO_KEY": "Kanál zatím nemá klíč obchodu.",

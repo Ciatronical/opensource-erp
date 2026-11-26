@@ -557,7 +557,8 @@ function portalApiClassify(array $antwort, int $website): array {
  * Prüft die Adresse des Portal-Zugangs einer Webseite (backend_url)
  *
  * Drei Schritte, jeder mit eigenem Ergebnis:
- *  1. plausibel — gesetzt, http(s), nicht die Adresse von HugoCMS
+ *  1. plausibel — gesetzt, http(s), nicht die Adresse von HugoCMS und nicht
+ *     der Weiterleiter der Webseite selbst (<Basisadresse>/portal-api/)
  *  2. direkt — Aufruf der Adresse von diesem Server mit dem Schlüssel der
  *     Webseite (portalPing): antwortet der Zugang von OpensourceERP, und
  *     gehört der Schlüssel zu dieser Webseite?
@@ -608,6 +609,15 @@ function portalBackendUrlCheck($db, int $website, array $eingaben = []): array {
         $plausibel = false;
     } elseif (('' !== $hugocms && rtrim($adresse, '/') === $hugocms) || str_contains($adresse, '/cms-api')) {
         $melden('plausibel', 'error', 'IS_HUGOCMS', ['url' => $adresse]);
+        $plausibel = false;
+    } elseif ('' !== $basis && strtolower(rtrim($adresse, '/')) === strtolower($basis).'/portal-api') {
+        // Der Weiterleiter der Webseite selbst: er reicht an genau diese
+        // Adresse weiter, und er setzt seinen eigenen Schlüssel ein — der
+        // Schritt „direkt“ prüfte dann nicht den Schlüssel aus dem Formular,
+        // sondern den zuletzt übertragenen (ap24.localhost, 26.11.2026).
+        // Nur die eigene Basisadresse: ein Webserver darf den Zugang von
+        // OpensourceERP durchaus unter /portal-api/ ausliefern.
+        $melden('plausibel', 'error', 'IS_PROXY', ['url' => $adresse]);
         $plausibel = false;
     } else {
         $melden('plausibel', 'success', 'PLAUSIBLE', ['url' => $adresse]);

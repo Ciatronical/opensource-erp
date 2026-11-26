@@ -3393,6 +3393,15 @@ function testShopBackendUrl($data) {
     } elseif (('' !== $hugocms && rtrim($adresse, '/') === $hugocms) || str_contains($adresse, '/cms-api')) {
         $melden('plausibel', 'error', 'IS_HUGOCMS', ['url' => $adresse]);
         $plausibel = false;
+    } elseif ('' !== $basis && strtolower(rtrim($adresse, '/')) === strtolower($basis).'/portal-api') {
+        // Der Weiterleiter der Webseite selbst: er reicht an genau diese
+        // Adresse weiter und setzt seinen eigenen Schlüssel ein — der Schritt
+        // „direkt“ prüfte dann den zuletzt übertragenen Schlüssel, nicht den
+        // aus dem Formular. Wie portalBackendUrlCheck (portal/lib/hugocms.php);
+        // nur die eigene Basisadresse, ein Webserver darf den Zugang von
+        // OpensourceERP unter /portal-api/ ausliefern.
+        $melden('plausibel', 'error', 'IS_PROXY', ['url' => $adresse]);
+        $plausibel = false;
     } else {
         $melden('plausibel', 'success', 'PLAUSIBLE', ['url' => $adresse]);
     }

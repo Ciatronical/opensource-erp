@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Adresă invalidă: {url} — se aștepta de exemplu https://erp.example.ro/portal/",
             "IS_HUGOCMS": "Aceasta este adresa HugoCMS ({url}). Aici trebuie accesul portalului OpensourceERP, de ex. https://erp.example.ro/portal/ — local http://localhost:8000/portal/.",
+            "IS_PROXY": "Acesta este redirecționorul site-ului însuși ({url}), nu accesul OpensourceERP — ar transmite cererile către el însuși. Aici trebuie accesul portalului OpensourceERP, de ex. https://erp.example.ro/portal/ — local http://localhost:8000/portal/.",
             "NO_KEY": "Site-ul nu are încă o cheie.",
             "OK": "Accesul portalului OpensourceERP răspunde, cheia corespunde cu „{name}”.",
             "OK_OLD": "Accesul portalului OpensourceERP răspunde și acceptă cheia; această versiune nu poate determina site-ul.",

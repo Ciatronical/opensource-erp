@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Ingen adress angiven.",
         "shopBackendTest_INVALID": "Ogiltig adress: {url} — förväntat t.ex. https://erp.example.se/shop/",
         "shopBackendTest_IS_HUGOCMS": "Det här är HugoCMS-adressen ({url}). Här hör OpensourceERP:s butiksåtkomst hemma, t.ex. https://erp.example.se/shop/ — lokalt http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "Det är webbplatsens egen vidarebefordrare ({url}), inte OpensourceERP:s åtkomst — den skulle skicka förfrågningar vidare till sig själv. Här hör OpensourceERP:s butiksåtkomst hemma, t.ex. https://erp.example.se/shop/ — lokalt http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "Adressen ser riktig ut: {url}",
         "shopBackendTest_SKIPPED": "Överhoppat — rätta först inmatningen.",
         "shopBackendTest_NO_KEY": "Kanalen har ännu ingen butiksnyckel.",

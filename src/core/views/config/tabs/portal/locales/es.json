@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Dirección no válida: {url}; se esperaba algo como https://erp.example.es/portal/",
             "IS_HUGOCMS": "Esa es la dirección de HugoCMS ({url}). Aquí va el acceso al portal de OpensourceERP, p. ej. https://erp.example.es/portal/; en local http://localhost:8000/portal/.",
+            "IS_PROXY": "Esa es la pasarela del propio sitio web ({url}), no el acceso de OpensourceERP: reenviaría las solicitudes a sí misma. Aquí va el acceso al portal de OpensourceERP, p. ej. https://erp.example.es/portal/; en local http://localhost:8000/portal/.",
             "NO_KEY": "El sitio web aún no tiene clave.",
             "OK": "El acceso al portal de OpensourceERP responde, la clave corresponde a «{name}».",
             "OK_OLD": "El acceso al portal de OpensourceERP responde y acepta la clave; esta versión no puede determinar el sitio web.",
