@@ -29,6 +29,13 @@ import { apiUrl } from '../core/paths.js';
  *
  * Mit der Shop-Erweiterung kommt die Art shop_orders dazu: die Bestellungen
  * des Online-Shops, die dann nicht mehr unter den Rechnungen stehen.
+ *
+ * Mit LxCars trägt ein Auftrag Bilder (images): die Fotos, die die Werkstatt
+ * am Auftrag aufgenommen und für den Kunden freigegeben hat. Die Liste nennt
+ * ihre Anzahl, die Ansicht zeigt sie als Kacheln; ein Klick öffnet das Bild
+ * groß. Die Bilder lädt der Browser selbst per GET über
+ * /portal-api/?action=portalOrderImage — das Backend prüft bei jedem Abruf
+ * Kunde und Freigabe.
  */
 export class PortalAccountDocuments extends PortalAccountElement {
   static properties = {
@@ -41,6 +48,8 @@ export class PortalAccountDocuments extends PortalAccountElement {
     /** Gibt es zur aktuellen Belegart ein PDF? (Antwort des Backends) */
     _pdf: { state: true },
     _detail: { state: true },
+    /** Nummer des groß gezeigten Bildes in _detail.images, null = keins */
+    _viewer: { state: true },
     _busy: { state: true },
   };
 
@@ -154,6 +163,89 @@ export class PortalAccountDocuments extends PortalAccountElement {
       form {
         margin-top: 1rem;
       }
+      /* Bilder am Auftrag (LxCars) */
+      .images {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+      }
+      .image {
+        margin: 0;
+      }
+      .image-button {
+        display: block;
+        width: 100%;
+        padding: 0;
+        border: 1px solid var(--shop-border-color, #dee2e6);
+        border-radius: var(--shop-radius, 0.375rem);
+        background: var(--shop-input-bg, #f8f9fa);
+        overflow: hidden;
+        cursor: zoom-in;
+      }
+      .image-button img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+      }
+      .image figcaption {
+        margin-top: 0.35rem;
+        font-size: 0.9rem;
+        overflow-wrap: anywhere;
+      }
+      .viewer {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #fff;
+        max-width: 100vw;
+        max-height: 100vh;
+        overflow: visible;
+      }
+      .viewer::backdrop {
+        background: rgba(0, 0, 0, 0.88);
+      }
+      .viewer figure {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .viewer img {
+        display: block;
+        max-width: 94vw;
+        max-height: 76vh;
+        border-radius: var(--shop-radius, 0.375rem);
+      }
+      .viewer figcaption {
+        max-width: 94vw;
+        text-align: center;
+        overflow-wrap: anywhere;
+      }
+      .viewer-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .viewer-button {
+        font: inherit;
+        font-size: 1.5rem;
+        line-height: 1;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.4);
+        color: #fff;
+        cursor: pointer;
+      }
+      .viewer-count {
+        min-width: 4rem;
+        text-align: center;
+      }
     `,
   ];
 
@@ -166,6 +258,7 @@ export class PortalAccountDocuments extends PortalAccountElement {
     this._documents = [];
     this._pdf = true;
     this._detail = null;
+    this._viewer = null;
     this._busy = false;
   }
 
@@ -234,6 +327,135 @@ export class PortalAccountDocuments extends PortalAccountElement {
     } finally {
       this._busy = false;
     }
+  }
+
+  // ------------------------------------------------- Bilder am Auftrag
+
+  #images() {
+    return (this._detail && this._detail.images) || [];
+  }
+
+  #imageUrl(id, thumb) {
+    const sep = this.apiUrl.includes('?') ? '&' : '?';
+    return `${this.apiUrl}${sep}action=portalOrderImage&id=${encodeURIComponent(id)}${thumb ? '&thumb=1' : ''}`;
+  }
+
+  /**
+   * Die Großansicht ist ein <dialog>: der Browser hält den Fokus darin, Esc
+   * schließt, und der Rest der Seite ist währenddessen nicht bedienbar.
+   */
+  async #openViewer(index) {
+    this._viewer = index;
+    await this.updateComplete;
+    const dialog = this.renderRoot.querySelector('dialog.viewer');
+    if (dialog && !dialog.open) dialog.showModal();
+  }
+
+  #closeViewer() {
+    const dialog = this.renderRoot.querySelector('dialog.viewer');
+    if (dialog && dialog.open) dialog.close();
+    this._viewer = null;
+  }
+
+  #stepViewer(step) {
+    const count = this.#images().length;
+    if (this._viewer === null || count < 2) return;
+    this._viewer = (this._viewer + step + count) % count;
+  }
+
+  #viewerKey(event) {
+    if (event.key === 'ArrowLeft') this.#stepViewer(-1);
+    if (event.key === 'ArrowRight') this.#stepViewer(1);
+  }
+
+  #renderImages() {
+    const images = this.#images();
+    if (!images.length) return nothing;
+    return html`
+      <div class="section" part="section">${t('documents.images')}</div>
+      <div class="images" part="images">
+        ${repeat(
+          images,
+          (image) => image.id,
+          (image, index) => html`
+            <figure class="image" part="image">
+              <button
+                class="image-button"
+                type="button"
+                aria-label=${image.caption || t('documents.imageOpen')}
+                title=${t('documents.imageOpen')}
+                @click=${() => this.#openViewer(index)}
+              >
+                <img src=${this.#imageUrl(image.id, true)} alt=${image.caption || ''} loading="lazy" />
+              </button>
+              ${image.caption ? html`<figcaption>${image.caption}</figcaption>` : nothing}
+            </figure>
+          `
+        )}
+      </div>
+      ${this.#renderViewer(images)}
+    `;
+  }
+
+  #renderViewer(images) {
+    const image = this._viewer === null ? null : images[this._viewer];
+    return html`
+      <dialog
+        class="viewer"
+        part="viewer"
+        @close=${() => {
+          this._viewer = null;
+        }}
+        @click=${(event) => {
+          // Klick neben das Bild (auf den Dialog selbst) schließt
+          if (event.target === event.currentTarget) this.#closeViewer();
+        }}
+        @keydown=${(event) => this.#viewerKey(event)}
+      >
+        ${image
+          ? html`
+              <figure>
+                <img src=${this.#imageUrl(image.id, false)} alt=${image.caption || ''} />
+                ${image.caption ? html`<figcaption>${image.caption}</figcaption>` : nothing}
+                <div class="viewer-bar">
+                  ${images.length > 1
+                    ? html`
+                        <button
+                          class="viewer-button"
+                          type="button"
+                          aria-label=${t('documents.imagePrev')}
+                          title=${t('documents.imagePrev')}
+                          @click=${() => this.#stepViewer(-1)}
+                        >
+                          ‹
+                        </button>
+                        <span class="viewer-count">${this._viewer + 1} / ${images.length}</span>
+                        <button
+                          class="viewer-button"
+                          type="button"
+                          aria-label=${t('documents.imageNext')}
+                          title=${t('documents.imageNext')}
+                          @click=${() => this.#stepViewer(1)}
+                        >
+                          ›
+                        </button>
+                      `
+                    : nothing}
+                  <button
+                    class="viewer-button"
+                    type="button"
+                    aria-label=${t('documents.imageClose')}
+                    title=${t('documents.imageClose')}
+                    @click=${() => this.#closeViewer()}
+                  >
+                    ×
+                  </button>
+                </div>
+              </figure>
+            `
+          : nothing}
+      </dialog>
+    `;
   }
 
   // -------------------------------------------------------------- Anzeige
@@ -339,6 +561,11 @@ export class PortalAccountDocuments extends PortalAccountElement {
               <div class="document-line ${this.cls('muted')}">
                 ${t('documents.positions')}: ${document.positions}
               </div>
+              ${Number(document.images) > 0
+                ? html`<div class="document-line ${this.cls('muted')}" part="image-count">
+                    ${t('documents.images')}: ${document.images}
+                  </div>`
+                : nothing}
               ${this.#statusLine(document.status)}
               ${this.#deliveryStatusLine(document.delivery_status)}
               ${this.#amountLine(document)}
@@ -409,6 +636,7 @@ export class PortalAccountDocuments extends PortalAccountElement {
           part="back"
           @click=${() => {
             this._detail = null;
+            this._viewer = null;
           }}
         >
           ${t('documents.back')}
@@ -453,6 +681,8 @@ export class PortalAccountDocuments extends PortalAccountElement {
       </div>
 
       ${document.notes ? html`<p class="notes" part="notes">${document.notes}</p>` : nothing}
+
+      ${this.#renderImages()}
 
       ${repeat(
         positions,

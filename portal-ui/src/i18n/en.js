@@ -248,6 +248,12 @@ export default {
   'documents.grossSuffix': 'incl. VAT',
   'documents.download': 'Download PDF',
   'documents.back': 'Back to the list',
+  // Bilder am Auftrag (LxCars), freigegeben von der Werkstatt
+  'documents.images': 'Pictures',
+  'documents.imageOpen': 'Enlarge picture',
+  'documents.imagePrev': 'Previous picture',
+  'documents.imageNext': 'Next picture',
+  'documents.imageClose': 'Close',
   'documents.date': 'Date',
   'documents.customerReference': 'Your reference',
   'documents.status': 'Status',
