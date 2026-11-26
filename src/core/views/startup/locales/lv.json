@@ -221,5 +221,8 @@
         "configSaveError": "Iestatījumus nevarēja saglabāt",
         "whatsappGreeting": "Sveiki {name}",
         "sendSms": "Sūtīt SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Piegādātāja cena par {quantity} {unit}, pārrēķināta × {factor}"
     }
 }

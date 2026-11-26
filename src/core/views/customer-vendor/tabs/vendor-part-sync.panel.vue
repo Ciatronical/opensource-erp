@@ -233,7 +233,8 @@
                         <td>
                             <span v-if="item.result === 'unknown'" class="text-warning">{{ t('VendorPartSync.itemUnknown') }}</span>
                             <span v-else-if="item.result === 'error'" class="text-error">{{ item.message }}</span>
-                            <span v-else-if="item.result === 'unchanged'" class="vps-muted">{{ t('VendorPartSync.unchanged') }}</span>
+                            <!-- Mit Hinweis, etwa „Beim Lieferanten nicht gefunden" -->
+                            <span v-else-if="item.result === 'unchanged'" class="vps-muted">{{ item.message || t('VendorPartSync.unchanged') }}</span>
                             <template v-else>
                                 <div v-for="line in changeLines(item.changes)" :key="line">{{ line }}</div>
                             </template>
@@ -455,6 +456,9 @@ function changeLines(changes) {
             const alt = Number(wert.old), neu = Number(wert.new)
             const prozent = alt ? ` (${neu >= alt ? '+' : ''}${n(100 * (neu - alt) / alt, { maximumFractionDigits: 1 })} %)` : ''
             zeilen.push(`${t('VendorPartSync.field_' + feld)}: ${money(wert.old)} → ${money(wert.new)}${prozent}`)
+        } else if (feld === 'price_unit') {
+            // Preis des Lieferanten je Meter o. Ä., auf die Einheit des Artikels umgerechnet
+            zeilen.push(t('VendorPartSync.priceConverted', { quantity: n(Number(wert.quantity)), unit: wert.unit, factor: n(Number(wert.factor), { maximumFractionDigits: 5 }) }))
         } else if (feld === 'available') {
             zeilen.push(wert.new ? t('VendorPartSync.nowAvailable') : t('VendorPartSync.nowUnavailable'))
         } else if (feld.startsWith('ext_')) {

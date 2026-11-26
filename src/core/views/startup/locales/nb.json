@@ -221,5 +221,8 @@
         "configSaveError": "Innstillinger kunne ikke lagres",
         "whatsappGreeting": "Hei {name}",
         "sendSms": "Send SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Leverandørpris per {quantity} {unit}, omregnet × {factor}"
     }
 }

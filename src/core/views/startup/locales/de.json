@@ -72,6 +72,7 @@
         "field_sellprice": "Verkaufspreis",
         "field_listprice": "Listenpreis",
         "field_lastcost": "Einkaufspreis",
+        "priceConverted": "Lieferantenpreis je {quantity} {unit}, umgerechnet × {factor}",
         "field_description": "Bezeichnung",
         "field_ean": "EAN",
         "field_weight": "Gewicht",

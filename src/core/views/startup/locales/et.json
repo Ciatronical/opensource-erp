@@ -221,5 +221,8 @@
         "configSaveError": "Seadeid ei saanud salvestada",
         "whatsappGreeting": "Tere {name}",
         "sendSms": "Saada SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Tarnija hind {quantity} {unit} kohta, ümber arvestatud × {factor}"
     }
 }
