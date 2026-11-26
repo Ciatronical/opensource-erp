@@ -287,12 +287,12 @@
             "built": "Nettstedet er bygd på nytt.",
             "cleanup": "Rydd opp",
             "cleanupHint": "Sletter jobbene som er fullført uten feil. Feilede og åpne blir stående.",
-            "cleanupConfirm": "Alle jobber som er fullført uten feil, slettes; i denne listen er det {count}.",
+            "cleanupConfirm": "Alle {count} jobber som er fullført uten feil, slettes — også de på de andre sidene.",
             "cleaned": "{count} jobber slettet.",
             "cancel": "Avbryt",
             "messagesClose": "Skjul meldinger",
             "delete": "Slett",
-            "deleteConfirm": "Filene slettes fra denne artikkelen og fra biblioteket. Viser en annen artikkel til en fil, beholdes den der.",
+            "deleteConfirm": "{count} jobber slettes for godt.",
             "deleteHint": "Jobber som ennå ikke er kjørt, slettes også; de står da ikke lenger i kø.",
             "deleted": "{count} jobber slettet.",
             "runBlocked": "Utvalget inneholder en feilet jobb. Bare åpne jobber kan kjøres. Med «Gjenta» kan mislykkede oppgaver kjøres på nytt.",
@@ -314,7 +314,15 @@
             "installUiAsk": "Skal butikkens brukergrensesnitt installeres nå, eller planlegges som oppgave til neste planlagte kjøring?",
             "installUiChannels": "For hvilke salgskanaler?",
             "installUiLater": "Planlegg som oppgave",
-            "installUiNow": "Installer nå"
+            "installUiNow": "Installer nå",
+            "selectPage": "Velg siden",
+            "emptyFilter": "Ingen jobber i denne visningen.",
+            "filter": {
+                "all": "Alle ({count})",
+                "open": "Åpne ({count})",
+                "done": "Fullførte ({count})",
+                "failed": "Mislykkede ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

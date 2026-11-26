@@ -215,8 +215,15 @@ export function useShop() {
     /** Nimmt alle Artikel des Shops in die Veröffentlichung auf */
     const publishAll = (channel_ids = []) => call('publishShopAll', { channel_ids })
 
-    /** Offene und zuletzt erledigte Veröffentlichungs-Aufträge */
-    const fetchPublishJobs = () => call('getShopPublishJobs')
+    /**
+     * Veröffentlichungs-Aufträge, seitenweise
+     *
+     * filter: page (ab 1), per_page, state ('open', 'done', 'failed', leer =
+     * alle) und function (Auftragsart, leer = alle). Liefert jobs, total,
+     * page, per_page und counts (open, done, failed, ok) — die Zähler gelten
+     * über alle Seiten.
+     */
+    const fetchPublishJobs = (filter = {}) => call('getShopPublishJobs', filter)
 
     /**
      * Startet den Läufer im Hintergrund und kehrt sofort zurück

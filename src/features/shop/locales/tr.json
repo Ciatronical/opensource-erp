@@ -287,12 +287,12 @@
             "built": "Web sitesi yeniden oluşturuldu.",
             "cleanup": "Temizle",
             "cleanupHint": "Başarıyla tamamlanan görevleri siler. Başarısız ve açık olanlar kalır.",
-            "cleanupConfirm": "Başarıyla tamamlanan tüm görevler silinecek; bu listede {count} tane var.",
+            "cleanupConfirm": "Başarıyla tamamlanan {count} görevin tümü silinecek; diğer sayfalardakiler de.",
             "cleaned": "{count} görev silindi.",
             "cancel": "İptal",
             "messagesClose": "İletileri gizle",
             "delete": "Sil",
-            "deleteConfirm": "Dosyalar bu üründen ve kitaplıktan silinir. Başka bir ürün bir dosyaya başvuruyorsa orada korunur.",
+            "deleteConfirm": "{count} görev kalıcı olarak silinecek.",
             "deleteHint": "Henüz çalıştırılmamış görevler de silinir; sonrasında sırada beklemezler.",
             "deleted": "{count} görev silindi.",
             "runBlocked": "Seçimde başarısız bir görev var. Yalnızca açık görevler çalıştırılabilir. Başarısız görevler „Yinele“ ile yeniden çalıştırılabilir.",
@@ -314,7 +314,15 @@
             "installUiAsk": "Mağaza kullanıcı arayüzü şimdi mi kurulsun, yoksa bir sonraki planlı çalışma için görev olarak mı planlansın?",
             "installUiChannels": "Hangi satış kanalları için?",
             "installUiLater": "Görev olarak planla",
-            "installUiNow": "Şimdi kur"
+            "installUiNow": "Şimdi kur",
+            "selectPage": "Sayfayı seç",
+            "emptyFilter": "Bu görünümde görev yok.",
+            "filter": {
+                "all": "Tümü ({count})",
+                "open": "Bekleyen ({count})",
+                "done": "Tamamlanan ({count})",
+                "failed": "Başarısız ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

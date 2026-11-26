@@ -287,12 +287,12 @@
             "built": "Svetainė sukurta iš naujo.",
             "cleanup": "Sutvarkyti",
             "cleanupHint": "Ištrina sėkmingai atliktas užduotis. Nepavykusios ir neatliktos lieka.",
-            "cleanupConfirm": "Bus ištrintos visos sėkmingai atliktos užduotys, šiame sąraše jų yra {count}.",
+            "cleanupConfirm": "Bus ištrintos visos sėkmingai atliktos užduotys ({count}), taip pat ir esančios kituose puslapiuose.",
             "cleaned": "Ištrinta užduočių: {count}.",
             "cancel": "Atšaukti",
             "messagesClose": "Slėpti pranešimus",
             "delete": "Ištrinti",
-            "deleteConfirm": "Failai ištrinami iš šios prekės ir iš bibliotekos. Jei failą nurodo kita prekė, jis ten lieka.",
+            "deleteConfirm": "Bus visam laikui ištrinta užduočių: {count}.",
             "deleteHint": "Ištrinamos ir dar neįvykdytos užduotys; po to jos nebėra eilėje.",
             "deleted": "Ištrinta užduočių: {count}.",
             "runBlocked": "Pasirinkime yra nepavykusi užduotis. Vykdyti galima tik tai, kas dar neatlikta. Mygtuku „Kartoti“ nepavykusias užduotis galima vykdyti iš naujo.",
@@ -314,7 +314,15 @@
             "installUiAsk": "Ar įdiegti parduotuvės naudotojo sąsają dabar, ar suplanuoti kaip užduotį kitam planiniam vykdymui?",
             "installUiChannels": "Kuriems pardavimo kanalams?",
             "installUiLater": "Suplanuoti kaip užduotį",
-            "installUiNow": "Įdiegti dabar"
+            "installUiNow": "Įdiegti dabar",
+            "selectPage": "Pažymėti puslapį",
+            "emptyFilter": "Šiame rodinyje užduočių nėra.",
+            "filter": {
+                "all": "Visos ({count})",
+                "open": "Laukia ({count})",
+                "done": "Atliktos ({count})",
+                "failed": "Nepavykusios ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

@@ -287,12 +287,12 @@
             "built": "Website opnieuw gebouwd.",
             "cleanup": "Opruimen",
             "cleanupHint": "Verwijdert de geslaagde taken. Mislukte en openstaande blijven staan.",
-            "cleanupConfirm": "Alle geslaagde taken worden verwijderd; in deze lijst zijn dat er {count}.",
+            "cleanupConfirm": "Alle {count} geslaagde taken worden verwijderd, ook die op de andere pagina’s.",
             "cleaned": "{count} taken verwijderd.",
             "cancel": "Annuleren",
             "messagesClose": "Meldingen verbergen",
             "delete": "Verwijderen",
-            "deleteConfirm": "De bestanden worden uit dit artikel en uit de bibliotheek verwijderd. Verwijst een ander artikel naar een bestand, dan blijft het daar bestaan.",
+            "deleteConfirm": "{count} taken worden definitief verwijderd.",
             "deleteHint": "Ook nog niet uitgevoerde taken worden verwijderd; ze staan daarna niet meer in de wachtrij.",
             "deleted": "{count} taken verwijderd.",
             "runBlocked": "De selectie bevat een mislukte taak. Alleen openstaande taken kunnen worden uitgevoerd. Met „Opnieuw” kunnen mislukte taken opnieuw worden uitgevoerd.",
@@ -314,7 +314,15 @@
             "installUiAsk": "De gebruikersinterface van de winkel nu installeren of als taak plannen voor de volgende geplande run?",
             "installUiChannels": "Voor welke verkoopkanalen?",
             "installUiLater": "Als taak plannen",
-            "installUiNow": "Nu installeren"
+            "installUiNow": "Nu installeren",
+            "selectPage": "Pagina selecteren",
+            "emptyFilter": "Geen taken in deze weergave.",
+            "filter": {
+                "all": "Alle ({count})",
+                "open": "Open ({count})",
+                "done": "Voltooid ({count})",
+                "failed": "Mislukt ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

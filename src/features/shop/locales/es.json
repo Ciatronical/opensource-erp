@@ -287,12 +287,12 @@
             "built": "Sitio web reconstruido.",
             "cleanup": "Limpiar",
             "cleanupHint": "Elimina los trabajos terminados correctamente. Los fallidos y los pendientes se mantienen.",
-            "cleanupConfirm": "Se eliminarán todos los trabajos terminados correctamente; en esta lista hay {count}.",
+            "cleanupConfirm": "Se eliminarán los {count} trabajos terminados correctamente, también los de las demás páginas.",
             "cleaned": "{count} trabajos eliminados.",
             "cancel": "Cancelar",
             "messagesClose": "Ocultar mensajes",
             "delete": "Eliminar",
-            "deleteConfirm": "Los archivos se eliminan de este artículo y de la biblioteca. Si otro artículo hace referencia a un archivo, se conserva allí.",
+            "deleteConfirm": "Se eliminarán definitivamente {count} trabajos.",
             "deleteHint": "También se eliminan los trabajos que aún no se han ejecutado; después ya no están en cola.",
             "deleted": "{count} trabajos eliminados.",
             "runBlocked": "La selección contiene un trabajo fallido. Solo se puede ejecutar lo que está pendiente. Con «Repetir» se pueden volver a ejecutar las tareas fallidas.",
@@ -314,7 +314,15 @@
             "installUiAsk": "¿Instalar ahora la interfaz de usuario de la tienda o programarla como tarea para la próxima ejecución planificada?",
             "installUiChannels": "¿Para qué canales de venta?",
             "installUiLater": "Programar como tarea",
-            "installUiNow": "Instalar ahora"
+            "installUiNow": "Instalar ahora",
+            "selectPage": "Seleccionar página",
+            "emptyFilter": "No hay trabajos en esta vista.",
+            "filter": {
+                "all": "Todos ({count})",
+                "open": "Pendientes ({count})",
+                "done": "Terminados ({count})",
+                "failed": "Fallidos ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",
