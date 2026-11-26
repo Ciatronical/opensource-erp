@@ -223,6 +223,11 @@
         "sendSms": "Enviar SMS"
     },
     "VendorPartSync": {
-        "priceConverted": "Precio del proveedor por {quantity} {unit}, convertido × {factor}"
+        "priceConverted": "Precio del proveedor por {quantity} {unit}, convertido × {factor}",
+        "curve": "Curva de precios",
+        "curveNone": "ninguna — recargo fijo",
+        "curveUsed": "Curva de precios {name}",
+        "curveHint": "Curva de precios: el recargo depende del precio de compra: alto en artículos baratos, bajo en los caros. Entre los puntos de referencia cambia de forma gradual, sin saltos de precio. La dispersión aleatoria y los precios psicológicos se aplican igual que con el recargo fijo.",
+        "field_model": "Número de artículo del proveedor"
     }
 }

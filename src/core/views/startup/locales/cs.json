@@ -223,6 +223,11 @@
         "sendSms": "Odeslat SMS"
     },
     "VendorPartSync": {
-        "priceConverted": "Cena dodavatele za {quantity} {unit}, přepočteno × {factor}"
+        "priceConverted": "Cena dodavatele za {quantity} {unit}, přepočteno × {factor}",
+        "curve": "Cenová křivka",
+        "curveNone": "žádná — pevná přirážka",
+        "curveUsed": "Cenová křivka {name}",
+        "curveHint": "Cenová křivka: přirážka se řídí nákupní cenou — vysoká u levných položek, nízká u drahých. Mezi opěrnými body se mění plynule, cena neskáče. Náhodný rozptyl a psychologické ceny na ni působí stejně jako na pevnou přirážku.",
+        "field_model": "Číslo položky dodavatele"
     }
 }

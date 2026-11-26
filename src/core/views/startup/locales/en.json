@@ -88,7 +88,12 @@
         "never": "No sync has run for this vendor yet.",
         "history": "Earlier runs",
         "historyCounts": "{done} processed, {updated} changed, {unknown} unknown, {errors} errors",
-        "priceConverted": "Supplier price per {quantity} {unit}, converted × {factor}"
+        "priceConverted": "Supplier price per {quantity} {unit}, converted × {factor}",
+        "curve": "Price curve",
+        "curveNone": "none — fixed markup",
+        "curveUsed": "Price curve {name}",
+        "curveHint": "Price curve: the markup depends on the purchase price — high for cheap articles, low for expensive ones. Between the reference points it changes gradually, so prices do not jump. Random spread and psychological prices apply to it just as to the fixed markup.",
+        "field_model": "Supplier article number"
     },
     "CrmView": {
         "nSelected": "{n} selected",

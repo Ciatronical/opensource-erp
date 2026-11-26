@@ -223,6 +223,11 @@
         "sendSms": "Envoyer un SMS"
     },
     "VendorPartSync": {
-        "priceConverted": "Prix fournisseur par {quantity} {unit}, converti × {factor}"
+        "priceConverted": "Prix fournisseur par {quantity} {unit}, converti × {factor}",
+        "curve": "Courbe de prix",
+        "curveNone": "aucune — majoration fixe",
+        "curveUsed": "Courbe de prix {name}",
+        "curveHint": "Courbe de prix : la majoration dépend du prix d’achat — élevée pour les articles bon marché, faible pour les articles chers. Entre les points de référence, elle évolue progressivement, sans saut de prix. La dispersion aléatoire et les prix psychologiques s’y appliquent comme à la majoration fixe.",
+        "field_model": "Référence fournisseur"
     }
 }

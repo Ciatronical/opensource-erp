@@ -47,6 +47,10 @@
  *       um, Meterpreise über die Länge aus den technischen Daten; was sich
  *       nicht umrechnen lässt (je kg, Meter ohne Länge), steht als Fehler in
  *       der Liste und lässt die Preise unverändert.
+ *       "vendor_number": "SCHBIS503" nennt die Artikelnummer, unter der der
+ *       Lieferant den Artikel führt, wenn sie von der gesuchten abweicht; sie
+ *       wird als Lieferanten-Artikelnummer nachgetragen, sofern dort noch
+ *       keine steht.
  *       "not_found": true meldet einen Artikel, den es beim Lieferanten nicht
  *       (mehr) gibt: er gilt als geprüft, übernommen wird nichts.
  *   {"type": "progress", "total": 1200, "message": "Seite 3 von 40"}

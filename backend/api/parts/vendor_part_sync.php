@@ -82,6 +82,9 @@ function vendorPartSyncFiles(string $datenbank, int $syncId): array {
  * Protokoll, dessen geänderte/unbekannte/fehlerhafte Artikel (seitenweise)
  * und die vorherigen Läufe
  *
+ * curves nennt die Preiskurven zur Auswahl, je Kurve mit Rechenbeispielen
+ * (examples: cost, percent, price) aus vendor_part_sync_curve_percent().
+ *
  * @param int $data['vendor_id'] Lieferant
  * @param int $data['items_page'] Seite der Artikelliste, ab 1 (optional)
  * @param int $data['items_per_page'] Artikel je Seite, 1 bis 200, Vorgabe 25 (optional)
@@ -121,6 +124,8 @@ function getVendorPartSync($data) {
                            'part_limit', c.part_limit,
                            'markup_percent', c.markup_percent,
                            'markup_random_percent', c.markup_random_percent,
+                           'markup_curve_id', c.markup_curve_id,
+                           'markup_curve', (SELECT k.name FROM vendor_part_sync_curves k WHERE k.id = c.markup_curve_id),
                            'psychological_prices', c.psychological_prices,
                            'input_name', c.input_name,
                            'fetch_settings', c.fetch_settings,
@@ -139,6 +144,21 @@ function getVendorPartSync($data) {
                            'finished_at', c.finished_at
                        )
                   FROM cur c
+            ),
+            -- Preiskurven zur Auswahl, mit Rechenbeispielen für die Oberfläche
+            'curves', (
+                SELECT COALESCE(json_agg(json_build_object(
+                           'id', k.id, 'name', k.name, 'description', k.description,
+                           'examples', (
+                               SELECT json_agg(json_build_object(
+                                          'cost', b.cost, 'percent', b.percent,
+                                          'price', round(b.cost * (1 + b.percent / 100), 2)
+                                      ) ORDER BY b.cost)
+                                 FROM (SELECT x.cost, vendor_part_sync_curve_percent(k.points, x.cost) AS percent
+                                         FROM unnest(ARRAY[1, 5, 10, 50, 100, 500, 1000, 5000]::numeric[]) AS x(cost)) b
+                           )
+                       ) ORDER BY k.sortkey NULLS LAST, k.id), '[]'::json)
+                  FROM vendor_part_sync_curves k
             ),
             'items', (
                 SELECT COALESCE(json_agg(json_build_object(
@@ -236,11 +256,12 @@ function getVendorPartSync($data) {
  * @param bool $data['debug'] ausführliches Protokoll (optional)
  * @param int $data['limit'] nur so viele Artikel abrufen, 0 oder leer = alle (optional)
  * @param number $data['markup_percent'] Aufschlag in Prozent auf den Einkaufspreis; leer = Verkaufspreis nicht daraus bilden (optional)
+ * @param int $data['markup_curve_id'] Preiskurve (vendor_part_sync_curves): Aufschlag je nach Einkaufspreis, geht vor markup_percent; leer = fester Aufschlag (optional)
  * @param number $data['markup_random_percent'] Streuung des Aufschlags in Prozentpunkten (±), leer = keine (optional)
  * @param bool $data['psychological_prices'] Verkaufspreis auf eine Endung mit 8 legen (optional)
  * @param object $data['fetch_settings'] Einstellungen für das Abrufprogramm: active_hours, active_days (1 = Montag), active_from, active_to, delay_min_s, delay_max_s, price_field, available_when, update_description; was fehlt, bestimmt dessen Konfiguration (optional)
  * @param file $_FILES['file'] Preisdatei des Lieferanten (Excel, CSV); der Aufruf kommt dann als Formular (optional)
- * @testdata {"vendor_id": 1, "dry_run": true, "debug": true, "limit": 10, "markup_percent": 20, "markup_random_percent": 1, "psychological_prices": true, "fetch_settings": {"active_hours": true, "active_days": [1, 2, 3, 4, 5], "active_from": "07:00", "active_to": "18:00", "delay_min_s": 5, "delay_max_s": 15}}
+ * @testdata {"vendor_id": 1, "dry_run": true, "debug": true, "limit": 10, "markup_percent": 20, "markup_curve_id": null, "markup_random_percent": 1, "psychological_prices": true, "fetch_settings": {"active_hours": true, "active_days": [1, 2, 3, 4, 5], "active_from": "07:00", "active_to": "18:00", "delay_min_s": 5, "delay_max_s": 15}}
  */
 function startVendorPartSync($data) {
     $db = DbhCompany::begin();
@@ -278,11 +299,14 @@ function startVendorPartSync($data) {
     );
 
     $neu = $db->getOne(
-        "INSERT INTO vendor_part_syncs (vendor_id, dry_run, debug, part_limit, markup_percent, markup_random_percent,
+        "INSERT INTO vendor_part_syncs (vendor_id, dry_run, debug, part_limit, markup_percent, markup_curve_id, markup_random_percent,
                                         psychological_prices, input_name, employee_id, fetch_settings)
          SELECT v.id, CAST(:dry_run AS boolean), CAST(:debug AS boolean),
                 NULLIF(GREATEST(CAST(:part_limit AS integer), 0), 0),
-                CAST(:markup_percent AS numeric), NULLIF(abs(CAST(:markup_random_percent AS numeric)), 0),
+                CAST(:markup_percent AS numeric),
+                -- nur eine Kurve, die es gibt
+                (SELECT k.id FROM vendor_part_sync_curves k WHERE k.id = CAST(:markup_curve_id AS integer)),
+                NULLIF(abs(CAST(:markup_random_percent AS numeric)), 0),
                 CAST(:psychological_prices AS boolean), CAST(:input_name AS text), CAST(:employee_id AS integer),
                 -- Nur diese Schlüssel gehen an das Abrufprogramm: Zugangsdaten
                 -- und Programmpfade lassen sich von hier nicht überschreiben
@@ -301,6 +325,7 @@ function startVendorPartSync($data) {
             ':debug'                 => vendorPartSyncBool($data['debug'] ?? false) ? 'true' : 'false',
             ':part_limit'            => intval($data['limit'] ?? 0),
             ':markup_percent'        => vendorPartSyncPercent($data['markup_percent'] ?? null),
+            ':markup_curve_id'       => intval($data['markup_curve_id'] ?? 0) ?: null,
             ':markup_random_percent' => vendorPartSyncPercent($data['markup_random_percent'] ?? null),
             ':psychological_prices'  => vendorPartSyncBool($data['psychological_prices'] ?? false) ? 'true' : 'false',
             ':input_name'            => $datei ? mb_substr(basename((string)$datei['name']), 0, 200) : null,

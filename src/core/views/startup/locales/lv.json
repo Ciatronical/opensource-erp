@@ -223,6 +223,11 @@
         "sendSms": "Sūtīt SMS"
     },
     "VendorPartSync": {
-        "priceConverted": "Piegādātāja cena par {quantity} {unit}, pārrēķināta × {factor}"
+        "priceConverted": "Piegādātāja cena par {quantity} {unit}, pārrēķināta × {factor}",
+        "curve": "Cenu līkne",
+        "curveNone": "nav — fiksēts uzcenojums",
+        "curveUsed": "Cenu līkne {name}",
+        "curveHint": "Cenu līkne: uzcenojums ir atkarīgs no iepirkuma cenas — augsts lētām precēm, zems dārgām. Starp atbalsta punktiem tas mainās pakāpeniski, cena nelēkā. Nejaušā izkliede un psiholoģiskās cenas uz to iedarbojas tāpat kā uz fiksēto uzcenojumu.",
+        "field_model": "Piegādātāja preces numurs"
     }
 }

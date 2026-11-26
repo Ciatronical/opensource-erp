@@ -11,6 +11,10 @@
     Begrenzung: nur die ersten N Artikel abrufen (leer = alle).
     Aufschlag: Verkaufspreis = gelieferter Einkaufspreis + Prozent; mit
     „Zufällig" je Artikel um ± die angegebene Spanne gestreut (je Artikel fest).
+    Preiskurve: statt des festen Aufschlags einer, der sich nach dem
+    Einkaufspreis richtet — hoch bei günstigen Artikeln, niedrig bei teuren.
+    Die Kurven samt Rechenbeispielen kommen aus der Datenbank
+    (vendor_part_sync_curves); gerechnet wird nur dort.
     Psychologische Preise: Bruttopreis auf eine Endung mit 8 (11,98 statt 12,01).
     Preisdatei: Excel/CSV des Lieferanten, geht mit dem Start an das Backend;
     das Abrufprogramm entscheidet anhand von Lieferant und Datei, was zu tun ist.
@@ -61,7 +65,15 @@
 
         <!-- Preisbildung -->
         <div class="vps-options vps-block">
+            <v-select
+                v-model="options.markup_curve_id"
+                :items="curveItems"
+                :label="t('VendorPartSync.curve')"
+                class="vps-select"
+                :disabled="running"
+            />
             <v-text-field
+                v-if="!selectedCurve"
                 v-model="options.markup_percent"
                 type="number"
                 step="0.1"
@@ -74,7 +86,7 @@
                 :disabled="running"
                 :rules="[percentRule]"
             />
-            <v-switch v-model="options.random" :label="t('VendorPartSync.random')" color="primary" density="compact" hide-details :disabled="running || !hasMarkup" />
+            <v-switch v-model="options.random" :label="t('VendorPartSync.random')" color="primary" density="compact" hide-details :disabled="running || !hasPricing" />
             <v-text-field
                 v-if="options.random"
                 v-model="options.markup_random_percent"
@@ -85,12 +97,34 @@
                 suffix="%"
                 :label="t('VendorPartSync.randomRange')"
                 class="vps-limit"
-                :disabled="running || !hasMarkup"
+                :disabled="running || !hasPricing"
                 :rules="[rangeRule]"
             />
             <v-switch v-model="options.psychological_prices" :label="t('VendorPartSync.psychological')" color="primary" density="compact" hide-details :disabled="running" />
         </div>
         <div class="vps-hint">{{ t('VendorPartSync.pricingHint') }}</div>
+        <div class="vps-hint">{{ t('VendorPartSync.curveHint') }}</div>
+
+        <!-- Gewählte Preiskurve: kaufmännische Absicht und Rechenbeispiele aus der Datenbank -->
+        <div v-if="selectedCurve" class="vps-block vps-curve">
+            <div>{{ selectedCurve.description }}</div>
+            <v-table density="compact" class="vps-block">
+                <tbody>
+                    <tr>
+                        <th>{{ t('VendorPartSync.field_lastcost') }}</th>
+                        <td v-for="beispiel in selectedCurve.examples" :key="beispiel.cost" class="text-right">{{ money(beispiel.cost) }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ t('VendorPartSync.markup') }}</th>
+                        <td v-for="beispiel in selectedCurve.examples" :key="beispiel.cost" class="text-right">{{ n(Number(beispiel.percent), { maximumFractionDigits: 1 }) }} %</td>
+                    </tr>
+                    <tr>
+                        <th>{{ t('VendorPartSync.field_sellprice') }}</th>
+                        <td v-for="beispiel in selectedCurve.examples" :key="beispiel.cost" class="text-right">{{ money(beispiel.price) }}</td>
+                    </tr>
+                </tbody>
+            </v-table>
+        </div>
 
         <!-- Preisdatei des Lieferanten -->
         <v-file-input
@@ -172,7 +206,10 @@
                 <v-chip v-if="sync.dry_run" size="small" variant="outlined">{{ t('VendorPartSync.dryRun') }}</v-chip>
                 <v-chip v-if="sync.debug" size="small" variant="outlined">{{ t('VendorPartSync.debug') }}</v-chip>
                 <v-chip v-if="sync.part_limit" size="small" variant="outlined">{{ t('VendorPartSync.limited', { n: sync.part_limit }) }}</v-chip>
-                <v-chip v-if="sync.markup_percent !== null && sync.markup_percent !== undefined" size="small" variant="outlined">
+                <v-chip v-if="sync.markup_curve" size="small" variant="outlined" prepend-icon="mdi-chart-bell-curve-cumulative">
+                    {{ t('VendorPartSync.curveUsed', { name: sync.markup_curve }) }}<template v-if="sync.markup_random_percent"> ± {{ percent(sync.markup_random_percent) }}</template>
+                </v-chip>
+                <v-chip v-else-if="sync.markup_percent !== null && sync.markup_percent !== undefined" size="small" variant="outlined">
                     {{ t('VendorPartSync.markupUsed', { p: percent(sync.markup_percent) }) }}<template v-if="sync.markup_random_percent"> ± {{ percent(sync.markup_random_percent) }}</template>
                 </v-chip>
                 <v-chip v-if="sync.psychological_prices" size="small" variant="outlined">{{ t('VendorPartSync.psychological') }}</v-chip>
@@ -312,8 +349,12 @@ const starting = ref(false)
 const cancelling = ref(false)
 const logOpen = ref(false)
 const logBox = ref(null)
+// Preiskurven zur Auswahl (id, name, description, examples), aus getVendorPartSync
+const curves = ref([])
 const options = ref({
     dry_run: true, debug: false, limit: null, markup_percent: null, random: false, markup_random_percent: 1, psychological_prices: false,
+    // 0 = fester Aufschlag (markup_percent), sonst die Preiskurve
+    markup_curve_id: 0,
     // Abruf im Portal: dieselben Vorgaben wie im Abrufprogramm
     active_hours: true, active_days: [1, 2, 3, 4, 5], active_from: '07:00', active_to: '18:00', delay_min_s: 5, delay_max_s: 15,
     // '' = Vorgabe des Abrufprogramms
@@ -356,6 +397,14 @@ const runTimes = computed(() => {
 })
 
 const hasMarkup = computed(() => options.value.markup_percent !== null && options.value.markup_percent !== '' && isFinite(Number(options.value.markup_percent)))
+
+const curveItems = computed(() => [
+    { value: 0, title: t('VendorPartSync.curveNone') },
+    ...curves.value.map((kurve) => ({ value: kurve.id, title: kurve.name })),
+])
+const selectedCurve = computed(() => curves.value.find((kurve) => kurve.id === options.value.markup_curve_id) || null)
+// Der Verkaufspreis wird gebildet: über eine Kurve oder den festen Aufschlag
+const hasPricing = computed(() => !!selectedCurve.value || hasMarkup.value)
 
 function percentRule(value) {
     return value === null || value === '' || isFinite(Number(value)) || t('VendorPartSync.percentInvalid')
@@ -493,11 +542,15 @@ async function load() {
         if (itemsPage.value > Math.max(1, itemsPages.value)) itemsPage.value = Math.max(1, itemsPages.value)
         history.value = stand.history || []
         output.value = stand.output || []
+        curves.value = stand.curves || []
         // Preisbildung des letzten Laufs als Vorgabe für den nächsten
         if (!optionsPrefilled && stand.sync) {
             optionsPrefilled = true
             if (stand.sync.markup_percent !== null && stand.sync.markup_percent !== undefined) {
                 options.value.markup_percent = Number(stand.sync.markup_percent)
+            }
+            if (stand.sync.markup_curve_id) {
+                options.value.markup_curve_id = Number(stand.sync.markup_curve_id)
             }
             if (stand.sync.markup_random_percent) {
                 options.value.random = true
@@ -531,8 +584,8 @@ function poll() {
 }
 
 async function startRun() {
-    if (limitRule(options.value.limit) !== true || percentRule(options.value.markup_percent) !== true) return
-    const streuen = options.value.random && hasMarkup.value
+    if (limitRule(options.value.limit) !== true || (!selectedCurve.value && percentRule(options.value.markup_percent) !== true)) return
+    const streuen = options.value.random && hasPricing.value
     if (streuen && rangeRule(options.value.markup_random_percent) !== true) return
     if (windowRule() !== true || (options.value.active_hours && !options.value.active_days.length)) return
     if (rangeRule(options.value.delay_min_s) !== true || rangeRule(options.value.delay_max_s) !== true || delayMaxRule(options.value.delay_max_s) !== true) return
@@ -549,7 +602,9 @@ async function startRun() {
             dry_run: options.value.dry_run,
             debug: options.value.debug,
             limit: Number(options.value.limit) || 0,
-            markup_percent: hasMarkup.value ? Number(options.value.markup_percent) : null,
+            // Mit Preiskurve gilt sie allein, der feste Aufschlag geht nicht mit
+            markup_percent: !selectedCurve.value && hasMarkup.value ? Number(options.value.markup_percent) : null,
+            markup_curve_id: selectedCurve.value ? selectedCurve.value.id : null,
             markup_random_percent: streuen ? Number(options.value.markup_random_percent) : null,
             psychological_prices: options.value.psychological_prices,
             fetch_settings: fetchSettings(),
@@ -636,6 +691,10 @@ onBeforeUnmount(stopPolling)
 }
 .vps-file {
     max-width: 32rem;
+}
+.vps-curve {
+    max-width: 60rem;
+    font-size: 0.875rem;
 }
 .vps-hint,
 .vps-muted {

@@ -223,6 +223,11 @@
         "sendSms": "Siųsti SMS"
     },
     "VendorPartSync": {
-        "priceConverted": "Tiekėjo kaina už {quantity} {unit}, perskaičiuota × {factor}"
+        "priceConverted": "Tiekėjo kaina už {quantity} {unit}, perskaičiuota × {factor}",
+        "curve": "Kainų kreivė",
+        "curveNone": "nėra — fiksuotas antkainis",
+        "curveUsed": "Kainų kreivė {name}",
+        "curveHint": "Kainų kreivė: antkainis priklauso nuo pirkimo kainos — didelis pigioms prekėms, mažas brangioms. Tarp atraminių taškų jis kinta tolygiai, kaina nešokinėja. Atsitiktinė sklaida ir psichologinės kainos veikia jį taip pat kaip fiksuotą antkainį.",
+        "field_model": "Tiekėjo prekės numeris"
     }
 }

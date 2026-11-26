@@ -223,6 +223,11 @@
         "sendSms": "Enviar SMS"
     },
     "VendorPartSync": {
-        "priceConverted": "Preço do fornecedor por {quantity} {unit}, convertido × {factor}"
+        "priceConverted": "Preço do fornecedor por {quantity} {unit}, convertido × {factor}",
+        "curve": "Curva de preços",
+        "curveNone": "nenhuma — margem fixa",
+        "curveUsed": "Curva de preços {name}",
+        "curveHint": "Curva de preços: a margem depende do preço de compra — alta nos artigos baratos, baixa nos caros. Entre os pontos de referência varia gradualmente, sem saltos de preço. A dispersão aleatória e os preços psicológicos aplicam-se como à margem fixa.",
+        "field_model": "Número de artigo do fornecedor"
     }
 }

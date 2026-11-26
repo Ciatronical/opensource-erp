@@ -223,6 +223,11 @@
         "sendSms": "Saada SMS"
     },
     "VendorPartSync": {
-        "priceConverted": "Tarnija hind {quantity} {unit} kohta, ümber arvestatud × {factor}"
+        "priceConverted": "Tarnija hind {quantity} {unit} kohta, ümber arvestatud × {factor}",
+        "curve": "Hinnakõver",
+        "curveNone": "puudub — kindel juurdehindlus",
+        "curveUsed": "Hinnakõver {name}",
+        "curveHint": "Hinnakõver: juurdehindlus sõltub ostuhinnast — odavatel artiklitel kõrge, kallitel madal. Tugipunktide vahel muutub see sujuvalt, hind ei hüppa. Juhuslik hajutus ja psühholoogilised hinnad mõjuvad sellele samamoodi nagu kindlale juurdehindlusele.",
+        "field_model": "Tarnija artiklinumber"
     }
 }

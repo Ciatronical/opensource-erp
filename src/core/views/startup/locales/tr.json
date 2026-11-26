@@ -223,6 +223,11 @@
         "sendSms": "SMS gönder"
     },
     "VendorPartSync": {
-        "priceConverted": "Tedarikçi fiyatı {quantity} {unit} başına, dönüştürüldü × {factor}"
+        "priceConverted": "Tedarikçi fiyatı {quantity} {unit} başına, dönüştürüldü × {factor}",
+        "curve": "Fiyat eğrisi",
+        "curveNone": "yok — sabit kâr payı",
+        "curveUsed": "Fiyat eğrisi {name}",
+        "curveHint": "Fiyat eğrisi: kâr payı alış fiyatına göre belirlenir — ucuz ürünlerde yüksek, pahalı ürünlerde düşük. Dayanak noktaları arasında kademesiz değişir, fiyat sıçrama yapmaz. Rastgele dağılım ve psikolojik fiyatlar, sabit kâr payında olduğu gibi buna da uygulanır.",
+        "field_model": "Tedarikçi ürün numarası"
     }
 }

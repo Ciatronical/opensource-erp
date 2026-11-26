@@ -223,6 +223,11 @@
         "sendSms": "SMS verzenden"
     },
     "VendorPartSync": {
-        "priceConverted": "Leveranciersprijs per {quantity} {unit}, omgerekend × {factor}"
+        "priceConverted": "Leveranciersprijs per {quantity} {unit}, omgerekend × {factor}",
+        "curve": "Prijscurve",
+        "curveNone": "geen — vaste opslag",
+        "curveUsed": "Prijscurve {name}",
+        "curveHint": "Prijscurve: de opslag hangt af van de inkoopprijs — hoog bij goedkope artikelen, laag bij dure. Tussen de steunpunten verloopt hij geleidelijk, de prijs maakt geen sprongen. Willekeurige spreiding en psychologische prijzen werken hierop net als op de vaste opslag.",
+        "field_model": "Artikelnummer leverancier"
     }
 }

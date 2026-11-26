@@ -223,6 +223,11 @@
         "sendSms": "Send SMS"
     },
     "VendorPartSync": {
-        "priceConverted": "Leverandørpris per {quantity} {unit}, omregnet × {factor}"
+        "priceConverted": "Leverandørpris per {quantity} {unit}, omregnet × {factor}",
+        "curve": "Priskurve",
+        "curveNone": "ingen — fast påslag",
+        "curveUsed": "Priskurve {name}",
+        "curveHint": "Priskurve: påslaget avhenger av innkjøpsprisen — høyt for billige varer, lavt for dyre. Mellom støttepunktene endres det gradvis, slik at prisen ikke hopper. Tilfeldig spredning og psykologiske priser virker på det som på det faste påslaget.",
+        "field_model": "Leverandørens varenummer"
     }
 }

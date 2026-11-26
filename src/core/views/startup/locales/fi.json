@@ -223,6 +223,11 @@
         "sendSms": "Lähetä tekstiviesti"
     },
     "VendorPartSync": {
-        "priceConverted": "Toimittajan hinta / {quantity} {unit}, muunnettu × {factor}"
+        "priceConverted": "Toimittajan hinta / {quantity} {unit}, muunnettu × {factor}",
+        "curve": "Hintakäyrä",
+        "curveNone": "ei mitään — kiinteä lisä",
+        "curveUsed": "Hintakäyrä {name}",
+        "curveHint": "Hintakäyrä: lisä riippuu ostohinnasta — korkea edullisissa tuotteissa, matala kalliissa. Tukipisteiden välillä se muuttuu liukuvasti, joten hinta ei hypi. Satunnainen hajonta ja psykologiset hinnat vaikuttavat siihen samoin kuin kiinteään lisään.",
+        "field_model": "Toimittajan tuotenumero"
     }
 }

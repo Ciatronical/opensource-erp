@@ -223,6 +223,11 @@
         "sendSms": "Trimite SMS"
     },
     "VendorPartSync": {
-        "priceConverted": "Preț furnizor per {quantity} {unit}, convertit × {factor}"
+        "priceConverted": "Preț furnizor per {quantity} {unit}, convertit × {factor}",
+        "curve": "Curbă de preț",
+        "curveNone": "niciuna — adaos fix",
+        "curveUsed": "Curbă de preț {name}",
+        "curveHint": "Curbă de preț: adaosul depinde de prețul de achiziție — mare la articolele ieftine, mic la cele scumpe. Între punctele de referință se modifică treptat, fără salturi de preț. Dispersia aleatorie și prețurile psihologice se aplică la fel ca la adaosul fix.",
+        "field_model": "Număr articol furnizor"
     }
 }

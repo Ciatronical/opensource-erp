@@ -3470,6 +3470,76 @@ AS $function$
         round(p_price, 2))
 $function$;
 
+-- Preiskurven: Aufschlag in Abhängigkeit vom Einkaufspreis.
+--
+-- Ein fester Aufschlag behandelt die Schraube wie den Heizkessel. Kaufmännisch
+-- trägt ein günstiger Artikel dieselben Stückkosten wie ein teurer (Lagern,
+-- Verpacken, Abrechnen) und wird selten verglichen — er verträgt und braucht
+-- einen hohen Aufschlag. Teure Artikel werden verglichen und bringen auch mit
+-- kleinem Aufschlag einen hohen Betrag. Eine Kurve nennt deshalb den Aufschlag
+-- an Stützpunkten des Einkaufspreises; dazwischen wird gleitend gerechnet
+-- (vendor_part_sync_curve_percent), damit der Preis keine Sprünge macht.
+--
+-- points: [{"cost": 10, "percent": 50}, …]. Die mitgelieferten Kurven sind
+-- Vorgaben: sie werden angelegt, wo es sie noch nicht gibt, und danach nicht
+-- mehr überschrieben — die Stützpunkte lassen sich je Mandant anpassen.
+CREATE TABLE IF NOT EXISTS vendor_part_sync_curves (
+    id          SERIAL PRIMARY KEY,
+    name        TEXT NOT NULL UNIQUE,
+    sortkey     INTEGER,
+    description TEXT,                                  -- kaufmännische Absicht der Kurve, steht in der Auswahl
+    points      JSONB NOT NULL,                        -- Stützpunkte: Einkaufspreis je Einheit des Artikels -> Aufschlag in Prozent
+    itime       TIMESTAMP DEFAULT NOW(),
+    mtime       TIMESTAMP DEFAULT NOW()
+);
+
+COMMENT ON TABLE vendor_part_sync_curves IS 'Artikelabgleich: Preiskurven — Aufschlag in Prozent je nach Einkaufspreis, zwischen den Stützpunkten gleitend.';
+
+INSERT INTO vendor_part_sync_curves (name, sortkey, description, points) VALUES
+    ('Ausgewogen', 10, 'Allgemeine Kalkulation für ein gemischtes Sortiment: rund 50 % auf Artikel um 10 €, 30 % um 100 €, 16 % um 1.000 € und 10 % ab 5.000 €. Günstige Artikel tragen ihre Stückkosten für Lagern, Verpacken und Abrechnen, teure bleiben im Preisvergleich bestehen.',
+     '[{"cost": 1, "percent": 75}, {"cost": 5, "percent": 60}, {"cost": 10, "percent": 50}, {"cost": 25, "percent": 42}, {"cost": 50, "percent": 36}, {"cost": 100, "percent": 30}, {"cost": 250, "percent": 24}, {"cost": 500, "percent": 20}, {"cost": 1000, "percent": 16}, {"cost": 2500, "percent": 12}, {"cost": 5000, "percent": 10}, {"cost": 10000, "percent": 8}]'::jsonb),
+    ('Wettbewerb', 20, 'Knappe Kalkulation für Sortimente, die Kunden in Preisportalen vergleichen: 35 % um 10 €, 20 % um 100 €, 10 % um 1.000 € und 6 % ab 5.000 €. Bringt Umsatz und Marktanteil, lässt aber wenig Spielraum für Rabatte, Retouren und Zahlungsgebühren.',
+     '[{"cost": 1, "percent": 50}, {"cost": 10, "percent": 35}, {"cost": 50, "percent": 25}, {"cost": 100, "percent": 20}, {"cost": 500, "percent": 13}, {"cost": 1000, "percent": 10}, {"cost": 5000, "percent": 6}, {"cost": 10000, "percent": 5}]'::jsonb),
+    ('Ertrag', 30, 'Margenstarke Kalkulation für beratungsintensive oder schwer vergleichbare Artikel: 70 % um 10 €, 42 % um 100 €, 22 % um 1.000 € und 14 % ab 5.000 €. Geeignet, wo Verfügbarkeit und Beratung mehr zählen als der letzte Euro.',
+     '[{"cost": 1, "percent": 100}, {"cost": 10, "percent": 70}, {"cost": 50, "percent": 50}, {"cost": 100, "percent": 42}, {"cost": 500, "percent": 28}, {"cost": 1000, "percent": 22}, {"cost": 5000, "percent": 14}, {"cost": 10000, "percent": 12}]'::jsonb),
+    ('Kleinteile', 40, 'Mischkalkulation: hoher Aufschlag auf Kleinteile und Zubehör, die kaum jemand vergleicht (75 % um 10 €, 150 % um 1 €), scharfe Preise bei Geräten und Anlagen (12 % um 1.000 €, 7 % ab 5.000 €). Die Kleinteile verdienen, die großen Artikel bringen die Kunden.',
+     '[{"cost": 1, "percent": 150}, {"cost": 5, "percent": 100}, {"cost": 10, "percent": 75}, {"cost": 25, "percent": 55}, {"cost": 50, "percent": 42}, {"cost": 100, "percent": 32}, {"cost": 250, "percent": 22}, {"cost": 500, "percent": 16}, {"cost": 1000, "percent": 12}, {"cost": 5000, "percent": 7}, {"cost": 10000, "percent": 6}]'::jsonb),
+    ('Kostendeckend', 50, 'Deckungsbeitragsrechnung: jeder Artikel trägt 4 € Stückkosten (Lagern, Verpacken, Zahlungsabwicklung) und 8 % auf den Einkaufspreis. Ergibt 48 % um 10 €, 12 % um 100 € und gut 8 % bei teuren Artikeln — die Untergrenze, unter der ein Verkauf nichts mehr einbringt.',
+     '[{"cost": 1, "percent": 408.0}, {"cost": 1.5, "percent": 274.67}, {"cost": 2, "percent": 208.0}, {"cost": 3, "percent": 141.33}, {"cost": 5, "percent": 88.0}, {"cost": 7, "percent": 65.14}, {"cost": 10, "percent": 48.0}, {"cost": 15, "percent": 34.67}, {"cost": 25, "percent": 24.0}, {"cost": 50, "percent": 16.0}, {"cost": 100, "percent": 12.0}, {"cost": 250, "percent": 9.6}, {"cost": 500, "percent": 8.8}, {"cost": 1000, "percent": 8.4}, {"cost": 5000, "percent": 8.08}]'::jsonb)
+ON CONFLICT (name) DO NOTHING;
+
+ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS markup_curve_id INTEGER REFERENCES vendor_part_sync_curves(id) ON DELETE SET NULL;
+COMMENT ON COLUMN vendor_part_syncs.markup_curve_id IS 'Preiskurve statt des festen Aufschlags: der Aufschlag richtet sich nach dem Einkaufspreis, siehe vendor_part_sync_curve_percent(); NULL = markup_percent gilt';
+
+-- Aufschlag einer Preiskurve für einen Einkaufspreis.
+--
+-- Zwischen zwei Stützpunkten gleitend über den Logarithmus des Preises: von
+-- 10 € auf 100 € ändert sich der Aufschlag so stark wie von 100 € auf 1.000 €.
+-- Unter dem ersten Stützpunkt gilt dessen Aufschlag, über dem letzten der
+-- letzte. NULL ohne Kurve oder ohne Preis.
+CREATE OR REPLACE FUNCTION vendor_part_sync_curve_percent(p_points jsonb, p_cost numeric)
+    RETURNS numeric
+    LANGUAGE sql
+    IMMUTABLE
+AS $function$
+    WITH punkte AS (
+        SELECT CAST(e ->> 'cost' AS numeric) AS cost, CAST(e ->> 'percent' AS numeric) AS percent
+          FROM jsonb_array_elements(CASE WHEN jsonb_typeof(p_points) = 'array' THEN p_points ELSE '[]'::jsonb END) e
+         WHERE CAST(e ->> 'cost' AS numeric) > 0 AND e ->> 'percent' IS NOT NULL
+    ), unten AS (
+        SELECT cost, percent FROM punkte WHERE cost <= p_cost ORDER BY cost DESC LIMIT 1
+    ), oben AS (
+        SELECT cost, percent FROM punkte WHERE cost > p_cost ORDER BY cost LIMIT 1
+    )
+    SELECT CASE
+               WHEN p_cost IS NULL THEN NULL
+               WHEN NOT EXISTS (SELECT 1 FROM unten) THEN (SELECT percent FROM oben)
+               WHEN NOT EXISTS (SELECT 1 FROM oben) THEN (SELECT percent FROM unten)
+               ELSE (SELECT round(u.percent + (o.percent - u.percent) * ln(p_cost / u.cost) / ln(o.cost / u.cost), 3)
+                       FROM unten u, oben o)
+           END
+$function$;
+
 -- Zahl aus einer Angabe der technischen Daten ("100", "2,5"); NULL, wenn
 -- dort etwas anderes steht ("25 / 50", "ca. 3").
 CREATE OR REPLACE FUNCTION vendor_part_sync_number(p_text text)
@@ -3504,12 +3574,21 @@ $function$;
 --                               sie sind, der Artikel steht als Fehler in
 --                               der Liste; Verfügbarkeit und Shop-Angaben
 --                               werden trotzdem übernommen
+--   vendor_number   Artikelnummer, unter der der Lieferant den Artikel führt,
+--                wenn sie von der gesuchten abweicht. Füllt makemodel.model
+--                der Zuordnung zu diesem Lieferanten, aber nur ein leeres
+--                Feld: eine von Hand gepflegte Nummer bleibt stehen
 --   not_found    true: beim Lieferanten nicht (mehr) gefunden — geprüft,
 --                nichts übernommen, steht als unverändert mit Hinweis in der Liste
 --   available    true/false -> parts_channel_shop.unavailable (alle Kanäle des Artikels)
 --   ext          Objekt mit breadcrumbs, technical_data, properties, downloads,
 --                images, extra -> parts_ext.hugoshop_*
 -- Preisbildung laut Lauf (vendor_part_syncs):
+--   markup_curve_id        Preiskurve: der Aufschlag richtet sich nach dem
+--                          (umgerechneten) Einkaufspreis des Artikels,
+--                          vendor_part_sync_curve_percent(); geht vor
+--                          markup_percent. Streuung und psychologische Preise
+--                          wirken darauf wie auf den festen Aufschlag
 --   markup_percent         gesetzt und lastcost geliefert: Verkaufspreis =
 --                          Einkaufspreis + Aufschlag; ein gelieferter sellprice
 --                          zählt dann nicht
@@ -3562,6 +3641,8 @@ DECLARE
     v_factor      numeric;    -- Preis des Lieferanten × v_factor = Preis je Einheit des Artikels
     v_length      numeric;
     v_problem     text;       -- Preise nicht umrechenbar: Grund
+    v_curve       jsonb;      -- Stützpunkte der Preiskurve des Laufs, NULL = fester Aufschlag
+    v_markup      numeric;    -- Aufschlag dieses Artikels in Prozent
     v_spread      numeric;
     v_updated     integer := 0;
     v_unchanged   integer := 0;
@@ -3571,6 +3652,11 @@ BEGIN
     SELECT * INTO v_sync FROM vendor_part_syncs WHERE id = p_sync_id;
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Artikelabgleich % gibt es nicht', p_sync_id;
+    END IF;
+
+    -- Preiskurve des Laufs
+    IF v_sync.markup_curve_id IS NOT NULL THEN
+        SELECT points INTO v_curve FROM vendor_part_sync_curves WHERE id = v_sync.markup_curve_id;
     END IF;
 
     -- Stehen die Preise der Stammdaten brutto oder netto, und welche Steuerzone gilt
@@ -3664,10 +3750,11 @@ BEGIN
                 v_listprice := NULL;
                 v_sellprice := NULL;
             END IF;
-            IF v_sync.markup_percent IS NOT NULL AND v_lastcost IS NOT NULL THEN
+            v_markup := COALESCE(vendor_part_sync_curve_percent(v_curve, v_lastcost), v_sync.markup_percent);
+            IF v_markup IS NOT NULL AND v_lastcost IS NOT NULL THEN
                 -- Abweichung zwischen -1 und +1, fest je Artikelnummer
                 v_spread := (abs(hashtext(v_partnumber)::bigint) % 2001) / 1000.0 - 1;
-                v_sellprice := round(v_lastcost * (1 + (v_sync.markup_percent
+                v_sellprice := round(v_lastcost * (1 + (v_markup
                                    + COALESCE(v_sync.markup_random_percent, 0) * v_spread) / 100), 5);
             END IF;
             IF v_sync.psychological_prices AND v_sellprice > 0 THEN
@@ -3727,6 +3814,24 @@ BEGIN
                    SET lastcost = v_lastcost, lastupdate = current_date
                  WHERE parts_id = v_parts_id AND make = v_sync.vendor_id
                    AND lastcost IS DISTINCT FROM v_lastcost;
+            END IF;
+
+            -- Artikelnummer beim Lieferanten nachtragen: nur ein leeres Feld, und nur an
+            -- der Zuordnung, die der Läufer für diesen Lieferanten nimmt (die erste)
+            IF COALESCE(btrim(v_item->>'vendor_number'), '') <> '' AND EXISTS (
+                   SELECT 1
+                     FROM (SELECT m.model FROM makemodel m
+                            WHERE m.parts_id = v_parts_id AND m.make = v_sync.vendor_id
+                            ORDER BY m.sortorder NULLS LAST, m.id LIMIT 1) erste
+                    WHERE COALESCE(btrim(erste.model), '') = '') THEN
+                v_changes := v_changes || jsonb_build_object('model', jsonb_build_object('new', btrim(v_item->>'vendor_number')));
+                IF NOT v_sync.dry_run THEN
+                    UPDATE makemodel
+                       SET model = btrim(v_item->>'vendor_number')
+                     WHERE id = (SELECT m.id FROM makemodel m
+                                  WHERE m.parts_id = v_parts_id AND m.make = v_sync.vendor_id
+                                  ORDER BY m.sortorder NULLS LAST, m.id LIMIT 1);
+                END IF;
             END IF;
 
             -- Umgerechnete Preise kenntlich machen: die Liste zeigt, woraus sie entstanden
