@@ -221,5 +221,8 @@
         "configSaveError": "设置保存失败",
         "whatsappGreeting": "你好 {name}",
         "sendSms": "发送短信"
+    },
+    "VendorPartSync": {
+        "priceConverted": "供应商价格按每 {quantity} {unit} 计，已换算 × {factor}"
     }
 }

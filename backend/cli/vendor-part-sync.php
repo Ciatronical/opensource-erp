@@ -41,6 +41,12 @@
  *            "downloads": {…}, "breadcrumbs": […], "extra": {…}}}
  *       Ein Artikel. partnumber oder model genügt, alles andere ist freiwillig;
  *       was fehlt, bleibt im ERP unverändert.
+ *       "price_quantity": 1, "price_unit": "m" nennt, wofür die Preise gelten
+ *       („je 1 m", „je 100 Stk."). Fehlt price_unit, gelten sie je Einheit des
+ *       Artikels. vendor_part_sync_apply() rechnet auf die Einheit des Artikels
+ *       um, Meterpreise über die Länge aus den technischen Daten; was sich
+ *       nicht umrechnen lässt (je kg, Meter ohne Länge), steht als Fehler in
+ *       der Liste und lässt die Preise unverändert.
  *       "not_found": true meldet einen Artikel, den es beim Lieferanten nicht
  *       (mehr) gibt: er gilt als geprüft, übernommen wird nichts.
  *   {"type": "progress", "total": 1200, "message": "Seite 3 von 40"}

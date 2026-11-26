@@ -221,5 +221,8 @@
         "configSaveError": "Nepavyko išsaugoti nustatymų",
         "whatsappGreeting": "Sveiki {name}",
         "sendSms": "Siųsti SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Tiekėjo kaina už {quantity} {unit}, perskaičiuota × {factor}"
     }
 }

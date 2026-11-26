@@ -221,5 +221,8 @@
         "configSaveError": "Asetuksia ei voitu tallentaa",
         "whatsappGreeting": "Hei {name}",
         "sendSms": "Lähetä tekstiviesti"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Toimittajan hinta / {quantity} {unit}, muunnettu × {factor}"
     }
 }

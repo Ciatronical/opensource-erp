@@ -221,5 +221,8 @@
         "configSaveError": "Setările nu au putut fi salvate",
         "whatsappGreeting": "Bună ziua {name}",
         "sendSms": "Trimite SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Preț furnizor per {quantity} {unit}, convertit × {factor}"
     }
 }

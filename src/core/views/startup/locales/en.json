@@ -87,7 +87,8 @@
         "log": "Log",
         "never": "No sync has run for this vendor yet.",
         "history": "Earlier runs",
-        "historyCounts": "{done} processed, {updated} changed, {unknown} unknown, {errors} errors"
+        "historyCounts": "{done} processed, {updated} changed, {unknown} unknown, {errors} errors",
+        "priceConverted": "Supplier price per {quantity} {unit}, converted × {factor}"
     },
     "CrmView": {
         "nSelected": "{n} selected",

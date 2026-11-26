@@ -221,5 +221,8 @@
         "configSaveError": "Nastavení se nepodařilo uložit",
         "whatsappGreeting": "Dobrý den {name}",
         "sendSms": "Odeslat SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Cena dodavatele za {quantity} {unit}, přepočteno × {factor}"
     }
 }

@@ -221,5 +221,8 @@
         "configSaveError": "Impossible de sauvegarder les parametres",
         "whatsappGreeting": "Bonjour {name}",
         "sendSms": "Envoyer un SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Prix fournisseur par {quantity} {unit}, converti × {factor}"
     }
 }

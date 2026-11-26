@@ -221,5 +221,8 @@
         "configSaveError": "Instellingen konden niet worden opgeslagen",
         "whatsappGreeting": "Hallo {name}",
         "sendSms": "SMS verzenden"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Leveranciersprijs per {quantity} {unit}, omgerekend × {factor}"
     }
 }

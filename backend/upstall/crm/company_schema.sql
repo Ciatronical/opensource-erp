@@ -3470,12 +3470,42 @@ AS $function$
         round(p_price, 2))
 $function$;
 
+-- Zahl aus einer Angabe der technischen Daten ("100", "2,5"); NULL, wenn
+-- dort etwas anderes steht ("25 / 50", "ca. 3").
+CREATE OR REPLACE FUNCTION vendor_part_sync_number(p_text text)
+    RETURNS numeric
+    LANGUAGE sql
+    IMMUTABLE
+AS $function$
+    SELECT CASE WHEN btrim(p_text) ~ '^[0-9]+([.,][0-9]+)?$'
+                THEN CAST(replace(btrim(p_text), ',', '.') AS numeric) END
+$function$;
+
 -- Einen Stapel Artikeldaten des Lieferanten übernehmen.
 --
 -- p_items: JSON-Array, je Artikel
 --   partnumber   Artikelnummer im ERP (oder model)
 --   model        Artikelnummer beim Lieferanten (makemodel.model dieses Lieferanten)
 --   description, sellprice, listprice, lastcost, ean, weight   -> parts
+--   price_quantity, price_unit   wofür der Lieferant seine Preise nennt
+--                („je 1 m", „je 100 Stk."); fehlt price_unit, gelten sie je
+--                Einheit des Artikels. Umgerechnet wird auf die Einheit des
+--                Artikels, bevor irgendetwas verglichen oder gebildet wird:
+--                  gleiche Einheit oder Zähleinheit (Stk., Paar, Rolle …)
+--                               Preis / price_quantity
+--                  Meter, Artikel als Stück geführt
+--                               Preis / price_quantity × Länge des Artikels
+--                               aus parts_ext.hugoshop_technical_data:
+--                               „Länge (m)", „VPE (m)", „Länge (mm)",
+--                               „Länge (cm)" — der Ring mit 100 m kostet das
+--                               Hundertfache des Meterpreises
+--                  Gewicht, Fläche, Volumen, oder Meter ohne Längenangabe
+--                               nicht umrechenbar: die Preise bleiben, wie
+--                               sie sind, der Artikel steht als Fehler in
+--                               der Liste; Verfügbarkeit und Shop-Angaben
+--                               werden trotzdem übernommen
+--   not_found    true: beim Lieferanten nicht (mehr) gefunden — geprüft,
+--                nichts übernommen, steht als unverändert mit Hinweis in der Liste
 --   available    true/false -> parts_channel_shop.unavailable (alle Kanäle des Artikels)
 --   ext          Objekt mit breadcrumbs, technical_data, properties, downloads,
 --                images, extra -> parts_ext.hugoshop_*
@@ -3524,7 +3554,14 @@ DECLARE
     v_partnumber  text;
     v_bg          integer;
     v_lastcost    numeric;
+    v_listprice   numeric;
     v_sellprice   numeric;
+    v_part_unit   text;
+    v_unit        text;       -- Preiseinheit des Lieferanten, klein geschrieben
+    v_qty         numeric;    -- Menge, für die sein Preis gilt
+    v_factor      numeric;    -- Preis des Lieferanten × v_factor = Preis je Einheit des Artikels
+    v_length      numeric;
+    v_problem     text;       -- Preise nicht umrechenbar: Grund
     v_spread      numeric;
     v_updated     integer := 0;
     v_unchanged   integer := 0;
@@ -3575,14 +3612,58 @@ BEGIN
 
             -- Beim Lieferanten nicht gefunden: geprüft, aber nichts zu übernehmen
             IF COALESCE((v_item->>'not_found')::boolean, FALSE) THEN
+                INSERT INTO vendor_part_sync_items (sync_id, parts_id, partnumber, result, message)
+                SELECT p_sync_id, p.id, p.partnumber, 'unchanged', 'Beim Lieferanten nicht gefunden' FROM parts p WHERE p.id = v_parts_id;
                 v_unchanged := v_unchanged + 1;
                 CONTINUE;
             END IF;
 
+            SELECT p.partnumber, p.buchungsgruppen_id, p.unit INTO v_partnumber, v_bg, v_part_unit FROM parts p WHERE p.id = v_parts_id;
+
+            -- Preiseinheit des Lieferanten auf die Einheit des Artikels umrechnen
+            v_factor  := 1;
+            v_problem := NULL;
+            v_unit    := lower(btrim(COALESCE(v_item->>'price_unit', ''), ' .'));
+            v_qty     := COALESCE(NULLIF((v_item->>'price_quantity')::numeric, 0), 1);
+            IF v_unit <> '' THEN
+                IF v_unit = lower(btrim(COALESCE(v_part_unit, ''), ' .')) THEN
+                    v_factor := 1 / v_qty;
+                ELSIF v_unit IN ('m', 'lfm', 'lfdm', 'mtr', 'meter') THEN
+                    v_length := NULL;
+                    IF v_has_ext THEN
+                        SELECT COALESCE(vendor_part_sync_number(pe.hugoshop_technical_data ->> 'Länge (m)'),
+                                        vendor_part_sync_number(pe.hugoshop_technical_data ->> 'VPE (m)'),
+                                        vendor_part_sync_number(pe.hugoshop_technical_data ->> 'Länge (mm)') / 1000,
+                                        vendor_part_sync_number(pe.hugoshop_technical_data ->> 'Länge (cm)') / 100)
+                          INTO v_length
+                          FROM parts_ext pe
+                         WHERE pe.parts_id = v_parts_id AND jsonb_typeof(pe.hugoshop_technical_data) = 'object';
+                    END IF;
+                    IF COALESCE(v_length, 0) > 0 THEN
+                        v_factor := v_length / v_qty;
+                    ELSE
+                        v_problem := format('Der Preis des Lieferanten gilt je %s %s, am Artikel steht keine Länge (technische Daten „Länge (m)") — Preise nicht übernommen',
+                                            trim_scale(v_qty), v_item->>'price_unit');
+                    END IF;
+                ELSIF v_unit IN ('kg', 'g', 't', 'l', 'ml', 'm²', 'm2', 'qm', 'm³', 'm3', 'cbm') THEN
+                    v_problem := format('Der Preis des Lieferanten gilt je %s %s und lässt sich nicht auf %s umrechnen — Preise nicht übernommen',
+                                        trim_scale(v_qty), v_item->>'price_unit', COALESCE(NULLIF(v_part_unit, ''), 'die Einheit des Artikels'));
+                ELSE
+                    -- Zähleinheit (Stk., Paar, Satz, Rolle …): eine davon ist ein Stück des Artikels
+                    v_factor := 1 / v_qty;
+                END IF;
+            END IF;
+
             -- Verkaufspreis bilden: Aufschlag, Streuung, psychologischer Preis
-            SELECT p.partnumber, p.buchungsgruppen_id INTO v_partnumber, v_bg FROM parts p WHERE p.id = v_parts_id;
-            v_lastcost  := round((v_item->>'lastcost')::numeric, 5);
-            v_sellprice := round((v_item->>'sellprice')::numeric, 5);
+            IF v_problem IS NULL THEN
+                v_lastcost  := round((v_item->>'lastcost')::numeric * v_factor, 5);
+                v_listprice := round((v_item->>'listprice')::numeric * v_factor, 5);
+                v_sellprice := round((v_item->>'sellprice')::numeric * v_factor, 5);
+            ELSE
+                v_lastcost  := NULL;
+                v_listprice := NULL;
+                v_sellprice := NULL;
+            END IF;
             IF v_sync.markup_percent IS NOT NULL AND v_lastcost IS NOT NULL THEN
                 -- Abweichung zwischen -1 und +1, fest je Artikelnummer
                 v_spread := (abs(hashtext(v_partnumber)::bigint) % 2001) / 1000.0 - 1;
@@ -3620,7 +3701,7 @@ BEGIN
               FROM parts p
              CROSS JOIN (SELECT NULLIF(btrim(v_item->>'description'), '')    AS description,
                                 v_sellprice                                  AS sellprice,
-                                round((v_item->>'listprice')::numeric, 5)    AS listprice,
+                                v_listprice                                  AS listprice,
                                 v_lastcost                                   AS lastcost,
                                 NULLIF(btrim(v_item->>'ean'), '')            AS ean,
                                 (v_item->>'weight')::real                    AS weight) n
@@ -3641,11 +3722,17 @@ BEGIN
             END IF;
 
             -- Einkaufspreis beim Lieferanten (vorhandene Zuordnung fortschreiben)
-            IF NOT v_sync.dry_run AND (v_item->>'lastcost') IS NOT NULL THEN
+            IF NOT v_sync.dry_run AND v_lastcost IS NOT NULL THEN
                 UPDATE makemodel
-                   SET lastcost = round((v_item->>'lastcost')::numeric, 5), lastupdate = current_date
+                   SET lastcost = v_lastcost, lastupdate = current_date
                  WHERE parts_id = v_parts_id AND make = v_sync.vendor_id
-                   AND lastcost IS DISTINCT FROM round((v_item->>'lastcost')::numeric, 5);
+                   AND lastcost IS DISTINCT FROM v_lastcost;
+            END IF;
+
+            -- Umgerechnete Preise kenntlich machen: die Liste zeigt, woraus sie entstanden
+            IF v_factor <> 1 AND jsonb_exists_any(v_changes, ARRAY['sellprice', 'listprice', 'lastcost']) THEN
+                v_changes := v_changes || jsonb_build_object('price_unit', jsonb_build_object(
+                                 'quantity', trim_scale(v_qty), 'unit', v_item->>'price_unit', 'factor', trim_scale(round(v_factor, 5))));
             END IF;
 
             -- Verfügbarkeit beim Lieferanten -> „Momentan nicht verfügbar" in den Kanälen
@@ -3682,7 +3769,11 @@ BEGIN
                 END LOOP;
             END IF;
 
-            IF v_changes = '{}'::jsonb THEN
+            IF v_problem IS NOT NULL THEN
+                INSERT INTO vendor_part_sync_items (sync_id, parts_id, partnumber, result, changes, message)
+                SELECT p_sync_id, p.id, p.partnumber, 'error', NULLIF(v_changes, '{}'::jsonb), v_problem FROM parts p WHERE p.id = v_parts_id;
+                v_error := v_error + 1;
+            ELSIF v_changes = '{}'::jsonb THEN
                 INSERT INTO vendor_part_sync_items (sync_id, parts_id, partnumber, result)
                 SELECT p_sync_id, p.id, p.partnumber, 'unchanged' FROM parts p WHERE p.id = v_parts_id;
                 v_unchanged := v_unchanged + 1;

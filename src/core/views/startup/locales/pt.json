@@ -221,5 +221,8 @@
         "configSaveError": "Não foi possível guardar as definições",
         "whatsappGreeting": "Olá {name}",
         "sendSms": "Enviar SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Preço do fornecedor por {quantity} {unit}, convertido × {factor}"
     }
 }

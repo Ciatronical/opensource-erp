@@ -221,5 +221,8 @@
         "configSaveError": "Не удалось сохранить настройки",
         "whatsappGreeting": "Привет {name}",
         "sendSms": "Отправить SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Цена поставщика за {quantity} {unit}, пересчитано × {factor}"
     }
 }

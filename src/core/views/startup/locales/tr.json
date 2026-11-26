@@ -221,5 +221,8 @@
         "configSaveError": "Ayarlar kaydedilemedi",
         "whatsappGreeting": "Merhaba {name}",
         "sendSms": "SMS gönder"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Tedarikçi fiyatı {quantity} {unit} başına, dönüştürüldü × {factor}"
     }
 }

@@ -221,5 +221,8 @@
         "configSaveError": "Indstillinger kunne ikke gemmes",
         "whatsappGreeting": "Hej {name}",
         "sendSms": "Send SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Leverandørpris pr. {quantity} {unit}, omregnet × {factor}"
     }
 }

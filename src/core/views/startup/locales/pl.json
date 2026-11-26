@@ -236,5 +236,8 @@
         "configSaveError": "Nie udało się zapisać ustawień",
         "whatsappGreeting": "Cześć {name}",
         "sendSms": "Wyślij SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Cena dostawcy za {quantity} {unit}, przeliczona × {factor}"
     }
 }

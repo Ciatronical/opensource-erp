@@ -221,5 +221,8 @@
         "configSaveError": "Installningar kunde inte sparas",
         "whatsappGreeting": "Hej {name}",
         "sendSms": "Skicka SMS"
+    },
+    "VendorPartSync": {
+        "priceConverted": "Leverantörspris per {quantity} {unit}, omräknat × {factor}"
     }
 }
