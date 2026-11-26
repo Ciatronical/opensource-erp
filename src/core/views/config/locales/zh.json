@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "未输入地址。",
         "shopBackendTest_INVALID": "地址无效：{url} — 应类似 https://erp.example.cn/shop/",
         "shopBackendTest_IS_HUGOCMS": "这是 HugoCMS 的地址（{url}）。这里应填写 OpensourceERP 的商店访问地址，例如 https://erp.example.cn/shop/ — 本地为 http://localhost:8000/shop/。",
+        "shopBackendTest_IS_PROXY": "这是网站自身的转发器（{url}），不是 OpensourceERP 的访问端——它会把请求转发给自己。这里应填写 OpensourceERP 的商店访问地址，例如 https://erp.example.cn/shop/ — 本地为 http://localhost:8000/shop/。",
         "shopBackendTest_PLAUSIBLE": "地址看起来正确：{url}",
         "shopBackendTest_SKIPPED": "已跳过 — 请先更正输入。",
         "shopBackendTest_NO_KEY": "该渠道还没有商店密钥。",

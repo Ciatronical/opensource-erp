@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Adrese nav ievadīta.",
         "shopBackendTest_INVALID": "Nederīga adrese: {url} — sagaidāms, piem., https://erp.example.lv/shop/",
         "shopBackendTest_IS_HUGOCMS": "Šī ir HugoCMS adrese ({url}). Šeit jābūt OpensourceERP veikala piekļuvei, piem., https://erp.example.lv/shop/ — lokāli http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "Tas ir pašas tīmekļa vietnes pārsūtītājs ({url}), nevis OpensourceERP piekļuve — tas pārsūtītu pieprasījumus pats sev. Šeit jābūt OpensourceERP veikala piekļuvei, piem., https://erp.example.lv/shop/ — lokāli http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "Adrese izskatās pareiza: {url}",
         "shopBackendTest_SKIPPED": "Izlaists — vispirms izlabojiet ievadi.",
         "shopBackendTest_NO_KEY": "Kanālam vēl nav veikala atslēgas.",

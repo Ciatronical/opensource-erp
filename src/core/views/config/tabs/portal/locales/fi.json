@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Virheellinen osoite: {url} – odotettiin esimerkiksi https://erp.example.fi/portal/",
             "IS_HUGOCMS": "Tämä on HugoCMS:n osoite ({url}). Tähän kuuluu OpensourceERP:n portaalipääsy, esim. https://erp.example.fi/portal/ – paikallisesti http://localhost:8000/portal/.",
+            "IS_PROXY": "Tämä on verkkosivuston oma välittäjä ({url}), ei OpensourceERP:n pääsy – se välittäisi pyynnöt itselleen. Tähän kuuluu OpensourceERP:n portaalipääsy, esim. https://erp.example.fi/portal/ – paikallisesti http://localhost:8000/portal/.",
             "NO_KEY": "Verkkosivustolla ei ole vielä avainta.",
             "OK": "OpensourceERP:n portaalipääsy vastaa, avain täsmää sivustoon ”{name}”.",
             "OK_OLD": "OpensourceERP:n portaalipääsy vastaa ja hyväksyy avaimen; tämä versio ei pysty tunnistamaan sivustoa.",

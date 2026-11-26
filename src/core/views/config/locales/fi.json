@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Osoitetta ei ole annettu.",
         "shopBackendTest_INVALID": "Virheellinen osoite: {url} — odotetaan esim. https://erp.example.fi/shop/",
         "shopBackendTest_IS_HUGOCMS": "Tämä on HugoCMS:n osoite ({url}). Tähän kuuluu OpensourceERP:n kauppayhteys, esim. https://erp.example.fi/shop/ — paikallisesti http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "Tämä on verkkosivuston oma välittäjä ({url}), ei OpensourceERP:n pääsy – se välittäisi pyynnöt itselleen. Tähän kuuluu OpensourceERP:n kauppayhteys, esim. https://erp.example.fi/shop/ — paikallisesti http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "Osoite näyttää oikealta: {url}",
         "shopBackendTest_SKIPPED": "Ohitettu — korjaa ensin syöte.",
         "shopBackendTest_NO_KEY": "Kanavalla ei ole vielä kauppa-avainta.",

@@ -210,7 +210,9 @@ function documentInvoiceRows(array $rechnungen): array {
  *
  * Rechnungen kommen aus customerInvoice() (Positionen mit Produktlinks des
  * Shops, Steueranteile); die anderen Belege in derselben Form: document,
- * positions, shipping — taxes nur bei Rechnungen.
+ * positions, shipping — taxes nur bei Rechnungen. Über den Haken
+ * document_view ergänzen Erweiterungen die Ansicht eines Belegs des Kerns
+ * (LxCars: images, die freigegebenen Bilder am Auftrag).
  *
  * @param object $db Company-Datenbankverbindung
  * @param int $customerId Kunde
@@ -222,7 +224,8 @@ function documentInvoiceRows(array $rechnungen): array {
  */
 function customerDocument($db, int $customerId, string $typ, int $id, int $website = 0): array {
     if ('invoices' === $typ) {
-        return documentInvoiceDetail($db, $customerId, $typ, $id, $website);
+        return portalHookFilter('document_view',
+            documentInvoiceDetail($db, $customerId, $typ, $id, $website), $db, $customerId, $typ, $id, $website);
     }
     if (!isset(PORTAL_DOCUMENT_TYPES[$typ])) {
         // Art einer Erweiterung: der Haken liefert die fertige Ansicht
@@ -240,13 +243,15 @@ function customerDocument($db, int $customerId, string $typ, int $id, int $websi
     $kopf['status'] = documentStatus($kopf);
     unset($kopf['rt']);
 
-    return [
+    // Der Beleg gehört dem Kunden (documentHead). Erweiterungen hängen hier an,
+    // was sie zum Beleg haben — LxCars die Bilder am Auftrag (images).
+    return portalHookFilter('document_view', [
         'type'      => $typ,
         'document'  => $kopf,
         'positions' => documentPositions($db, $typ, $id),
         'shipping'  => documentShippingAddress($db, $typ, $id),
         'taxes'     => [],
-    ];
+    ], $db, $customerId, $typ, $id, $website);
 }
 
 /**

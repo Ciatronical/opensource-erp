@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Shop",
-            "overview": "Overview"
+            "overview": "Overview",
+            "vendors": "Vendors"
         },
         "common": {
             "reload": "Reload",
@@ -286,12 +287,12 @@
             "built": "Website rebuilt.",
             "cleanup": "Clean up",
             "cleanupHint": "Deletes the successfully completed jobs. Failed and pending ones remain.",
-            "cleanupConfirm": "All successfully completed jobs will be deleted, {count} of them in this list.",
+            "cleanupConfirm": "All {count} successfully completed jobs will be deleted — including those on other pages.",
             "cleaned": "{count} jobs deleted.",
             "cancel": "Cancel",
             "messagesClose": "Hide messages",
             "delete": "Delete",
-            "deleteConfirm": "The files are deleted from this article and from the library. If another article references a file, it is kept there.",
+            "deleteConfirm": "{count} jobs will be deleted permanently.",
             "deleteHint": "Jobs that have not run yet are deleted as well; they are then no longer queued.",
             "deleted": "{count} jobs deleted.",
             "runBlocked": "The selection contains a failed job. Only pending jobs can be run. Use “Retry” to run failed jobs again.",
@@ -313,7 +314,15 @@
             "installUiAsk": "Install the shop user interface now, or schedule it as a job for the next planned run?",
             "installUiChannels": "For which sales channels?",
             "installUiLater": "Schedule as job",
-            "installUiNow": "Install now"
+            "installUiNow": "Install now",
+            "selectPage": "Select page",
+            "emptyFilter": "No jobs in this view.",
+            "filter": {
+                "all": "All ({count})",
+                "open": "Pending ({count})",
+                "done": "Completed ({count})",
+                "failed": "Failed ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Negozio",
-            "overview": "Panoramica"
+            "overview": "Panoramica",
+            "vendors": "Fornitori"
         },
         "common": {
             "reload": "Ricarica",
@@ -286,12 +287,12 @@
             "built": "Sito ricostruito.",
             "cleanup": "Pulisci",
             "cleanupHint": "Elimina le attività completate con successo. Quelle non riuscite e quelle aperte restano.",
-            "cleanupConfirm": "Verranno eliminate tutte le attività completate con successo; in questo elenco sono {count}.",
+            "cleanupConfirm": "Verranno eliminate tutte le {count} attività completate con successo, anche quelle nelle altre pagine.",
             "cleaned": "{count} attività eliminate.",
             "cancel": "Annulla",
             "messagesClose": "Nascondi i messaggi",
             "delete": "Elimina",
-            "deleteConfirm": "I file vengono eliminati da questo articolo e dalla libreria. Se un altro articolo fa riferimento a un file, viene conservato.",
+            "deleteConfirm": "{count} attività verranno eliminate definitivamente.",
             "deleteHint": "Vengono eliminate anche le attività non ancora eseguite; dopo non sono più in coda.",
             "deleted": "{count} attività eliminate.",
             "runBlocked": "La selezione contiene un'attività non riuscita. Si possono eseguire solo quelle aperte. Con «Ripeti» le attività non riuscite possono essere rieseguite.",
@@ -313,7 +314,15 @@
             "installUiAsk": "Installare subito l’interfaccia utente del negozio o pianificarla come attività per la prossima esecuzione programmata?",
             "installUiChannels": "Per quali canali di vendita?",
             "installUiLater": "Pianifica come attività",
-            "installUiNow": "Installa subito"
+            "installUiNow": "Installa subito",
+            "selectPage": "Seleziona pagina",
+            "emptyFilter": "Nessuna attività in questa vista.",
+            "filter": {
+                "all": "Tutte ({count})",
+                "open": "In attesa ({count})",
+                "done": "Completate ({count})",
+                "failed": "Non riuscite ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

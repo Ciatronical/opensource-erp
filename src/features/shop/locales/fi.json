@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Kauppa",
-            "overview": "Yleiskatsaus"
+            "overview": "Yleiskatsaus",
+            "vendors": "Toimittajat"
         },
         "common": {
             "reload": "Lataa uudelleen",
@@ -286,12 +287,12 @@
             "built": "Sivusto rakennettiin uudelleen.",
             "cleanup": "Siivoa",
             "cleanupHint": "Poistaa onnistuneesti suoritetut tehtävät. Epäonnistuneet ja avoimet säilyvät.",
-            "cleanupConfirm": "Kaikki onnistuneesti suoritetut tehtävät poistetaan, tässä luettelossa niitä on {count}.",
+            "cleanupConfirm": "Kaikki {count} onnistuneesti suoritettua tehtävää poistetaan, myös muilla sivuilla olevat.",
             "cleaned": "Poistettiin {count} tehtävää.",
             "cancel": "Peruuta",
             "messagesClose": "Piilota viestit",
             "delete": "Poista",
-            "deleteConfirm": "Tiedostot poistetaan tästä tuotteesta ja kirjastosta. Jos toinen tuote viittaa tiedostoon, se säilyy siellä.",
+            "deleteConfirm": "{count} tehtävää poistetaan pysyvästi.",
             "deleteHint": "Myös vielä suorittamattomat tehtävät poistetaan; ne eivät sen jälkeen ole jonossa.",
             "deleted": "Poistettiin {count} tehtävää.",
             "runBlocked": "Valinnassa on epäonnistunut tehtävä. Vain avoimia tehtäviä voi suorittaa. Epäonnistuneet tehtävät voi suorittaa uudelleen painikkeella ”Toista”.",
@@ -313,7 +314,15 @@
             "installUiAsk": "Asennetaanko kaupan käyttöliittymä heti vai ajoitetaanko se tehtäväksi seuraavaan suunniteltuun ajoon?",
             "installUiChannels": "Mille myyntikanaville?",
             "installUiLater": "Ajoita tehtäväksi",
-            "installUiNow": "Asenna heti"
+            "installUiNow": "Asenna heti",
+            "selectPage": "Valitse sivu",
+            "emptyFilter": "Tässä näkymässä ei ole tehtäviä.",
+            "filter": {
+                "all": "Kaikki ({count})",
+                "open": "Avoimet ({count})",
+                "done": "Valmiit ({count})",
+                "failed": "Epäonnistuneet ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

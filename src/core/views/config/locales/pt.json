@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Nenhum endereço introduzido.",
         "shopBackendTest_INVALID": "Endereço inválido: {url} — esperado p. ex. https://erp.example.pt/shop/",
         "shopBackendTest_IS_HUGOCMS": "Este é o endereço do HugoCMS ({url}). Aqui vai o acesso da loja do OpensourceERP, p. ex. https://erp.example.pt/shop/ — localmente http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "Este é o reencaminhador do próprio site ({url}), não o acesso do OpensourceERP — reencaminharia os pedidos para si mesmo. Aqui vai o acesso da loja do OpensourceERP, p. ex. https://erp.example.pt/shop/ — localmente http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "O endereço parece correto: {url}",
         "shopBackendTest_SKIPPED": "Ignorado — corrija primeiro a entrada.",
         "shopBackendTest_NO_KEY": "O canal ainda não tem chave da loja.",

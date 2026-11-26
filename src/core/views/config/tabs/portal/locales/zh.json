@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "地址无效：{url} — 应类似 https://erp.example.com/portal/",
             "IS_HUGOCMS": "这是 HugoCMS 的地址（{url}）。此处应填写 OpensourceERP 的门户访问端，例如 https://erp.example.com/portal/ — 本地为 http://localhost:8000/portal/。",
+            "IS_PROXY": "这是网站自身的转发器（{url}），不是 OpensourceERP 的访问端——它会把请求转发给自己。此处应填写 OpensourceERP 的门户访问端，例如 https://erp.example.com/portal/ — 本地为 http://localhost:8000/portal/。",
             "NO_KEY": "网站尚无密钥。",
             "OK": "OpensourceERP 门户访问端有响应，密钥与“{name}”匹配。",
             "OK_OLD": "OpensourceERP 门户访问端有响应并接受密钥；此版本无法确定网站。",

@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Butik",
-            "overview": "Oversigt"
+            "overview": "Oversigt",
+            "vendors": "Leverandører"
         },
         "common": {
             "reload": "Genindlæs",
@@ -286,12 +287,12 @@
             "built": "Websitet er bygget på ny.",
             "cleanup": "Ryd op",
             "cleanupHint": "Sletter de job, der er udført uden fejl. Fejlede og åbne bliver stående.",
-            "cleanupConfirm": "Alle job, der er udført uden fejl, slettes; i denne liste er der {count}.",
+            "cleanupConfirm": "Alle {count} job, der er udført uden fejl, slettes — også dem på de andre sider.",
             "cleaned": "{count} job slettet.",
             "cancel": "Annuller",
             "messagesClose": "Skjul meddelelser",
             "delete": "Slet",
-            "deleteConfirm": "Filerne slettes fra denne artikel og fra biblioteket. Henviser en anden artikel til en fil, bevares den der.",
+            "deleteConfirm": "{count} job slettes permanent.",
             "deleteHint": "Job, der endnu ikke er kørt, slettes også; de er derefter ikke længere i kø.",
             "deleted": "{count} job slettet.",
             "runBlocked": "Udvalget indeholder et fejlet job. Kun åbne job kan køres. Med „Gentag“ kan mislykkede opgaver køres igen.",
@@ -313,7 +314,15 @@
             "installUiAsk": "Skal butikkens brugerflade installeres med det samme eller planlægges som opgave til næste planlagte kørsel?",
             "installUiChannels": "For hvilke salgskanaler?",
             "installUiLater": "Planlæg som opgave",
-            "installUiNow": "Installer nu"
+            "installUiNow": "Installer nu",
+            "selectPage": "Vælg siden",
+            "emptyFilter": "Ingen job i denne visning.",
+            "filter": {
+                "all": "Alle ({count})",
+                "open": "Åbne ({count})",
+                "done": "Udførte ({count})",
+                "failed": "Mislykkede ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

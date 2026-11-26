@@ -374,7 +374,9 @@ function shopPageData($db, int $kanal, int $partsId): array {
                 p.unit, p.ean,
                 TRUNC(p.onhand) AS onhand, p.obsolete,
                 shop_part_available(p.id, CAST(:kanal_verfuegbar AS integer)) AS available,
-                COALESCE(p.mtime, p.itime) AS mtime,
+                -- lastmod der Seite: auch eine Änderung nur im Kanal (Verfügbarkeit,
+                -- Titel, Aufschlag) zählt, nicht bloß die der Stammdaten
+                GREATEST(COALESCE(p.mtime, p.itime), pc.mtime) AS mtime,
                 COALESCE(st.rate, 0) AS taxrate,
                 CASE WHEN :inklusive_netto = 1
                      THEN ROUND(k.preis / (1 + COALESCE(st.rate, 0)), 2)

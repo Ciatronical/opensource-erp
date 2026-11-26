@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Geçersiz adres: {url} — örneğin https://erp.example.com/portal/ bekleniyordu",
             "IS_HUGOCMS": "Bu HugoCMS’nin adresi ({url}). Buraya OpensourceERP portal erişimi girilmeli, örn. https://erp.example.com/portal/ — yerelde http://localhost:8000/portal/.",
+            "IS_PROXY": "Bu, web sitesinin kendi yönlendiricisi ({url}), OpensourceERP erişimi değil — istekleri kendisine iletirdi. Buraya OpensourceERP portal erişimi girilmeli, örn. https://erp.example.com/portal/ — yerelde http://localhost:8000/portal/.",
             "NO_KEY": "Web sitesinin henüz anahtarı yok.",
             "OK": "OpensourceERP portal erişimi yanıt veriyor, anahtar “{name}” ile eşleşiyor.",
             "OK_OLD": "OpensourceERP portal erişimi yanıt veriyor ve anahtarı kabul ediyor; bu sürüm web sitesini belirleyemiyor.",

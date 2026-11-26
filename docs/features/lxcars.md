@@ -147,7 +147,10 @@ Fotos zum Auftrag – Schadstellen, verschlissene Teile, der Zustand bei Annahme
 - **Bilder wählen** öffnet die Galerie bzw. den Dateidialog (mehrere Bilder auf einmal)
 - Jedes Bild wird im Browser auf höchstens 2000 Pixel Kante verkleinert (JPEG, Drehung nach EXIF) und sofort hochgeladen – auch mit der üblichen 2-MB-Grenze von php-fpm
 - **Ablage** im Dokumentenordner des Kunden unter `auftraege/{Auftragsnummer}/` mit neutralem Dateinamen (Zeitstempel); die Bilder erscheinen damit auch im Reiter **Dateien** der Kundenakte. Ein Auftrag ohne Kunde kann keine Bilder aufnehmen
-- Klick auf ein Bild öffnet den Betrachter mit **Bildunterschrift** und, sobald ein Kundenportal eingeschaltet ist, dem Schalter **Für den Kunden sichtbar**; die Freigabe ist für den späteren Abruf im Kundenportal vorbereitet
+- Klick auf ein Bild öffnet den Betrachter mit **Bildunterschrift** und, sobald ein Kundenportal eingeschaltet ist, dem Schalter **Für den Kunden sichtbar**
+- **Kundenportal**: Der angemeldete Kunde sieht die Bilder im Kundenkonto unter **Belege → Aufträge** – in der Liste die Anzahl, in der Ansicht des Auftrags die Bilder als Kacheln mit Unterschrift, ein Klick zeigt das Bild groß. Voraussetzung: Die Webseite zeigt Aufträge im Kundenkonto (Firmenkonfiguration → Kundenportal → Belege im Kundenkonto → **Aufträge**). An Rechnungen erscheinen die Bilder nicht
+- **Jedes neue Bild ist für den Kunden freigegeben.** Soll der Kunde ein Bild nicht sehen (interne Notiz, fremdes Kennzeichen im Bild), den Schalter **Für den Kunden sichtbar** im Betrachter abschalten. Bilder, die vor dieser Regel hochgeladen wurden, bleiben, wie sie waren
+- Der Kunde bekommt nur Bilder seiner eigenen Aufträge: Kunde und Freigabe werden bei jedem Abruf geprüft
 - Tabelle `oe_images_lxcars` hält je Bild Unterschrift, Freigabe und Uploader; Vorschaubilder liegen versteckt unter `.thumbs/` neben dem Original
 - Lädt der Mechaniker am Tablet ein Bild hoch, lädt die im Büro offene Auftragsmaske die Karte automatisch nach (SSE)
 

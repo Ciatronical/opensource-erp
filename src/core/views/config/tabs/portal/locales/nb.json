@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Ugyldig adresse: {url} — forventet for eksempel https://erp.example.no/portal/",
             "IS_HUGOCMS": "Dette er adressen til HugoCMS ({url}). Her hører OpensourceERP sin portaltilgang hjemme, f.eks. https://erp.example.no/portal/ — lokalt http://localhost:8000/portal/.",
+            "IS_PROXY": "Dette er nettstedets egen videresender ({url}), ikke tilgangen til OpensourceERP — den ville sendt forespørsler videre til seg selv. Her hører OpensourceERP sin portaltilgang hjemme, f.eks. https://erp.example.no/portal/ — lokalt http://localhost:8000/portal/.",
             "NO_KEY": "Nettstedet har ingen nøkkel ennå.",
             "OK": "OpensourceERP sin portaltilgang svarer, nøkkelen passer til «{name}».",
             "OK_OLD": "OpensourceERP sin portaltilgang svarer og godtar nøkkelen; denne versjonen kan ikke avgjøre nettstedet.",

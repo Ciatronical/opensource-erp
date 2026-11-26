@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Sklep",
-            "overview": "Przegląd"
+            "overview": "Przegląd",
+            "vendors": "Dostawcy"
         },
         "common": {
             "reload": "Odśwież",
@@ -286,12 +287,12 @@
             "built": "Witryna została przebudowana.",
             "cleanup": "Uporządkuj",
             "cleanupHint": "Usuwa pomyślnie wykonane zadania. Nieudane i otwarte pozostają.",
-            "cleanupConfirm": "Zostaną usunięte wszystkie pomyślnie wykonane zadania, na tej liście jest ich {count}.",
+            "cleanupConfirm": "Zostaną usunięte wszystkie pomyślnie wykonane zadania ({count}), także te na pozostałych stronach.",
             "cleaned": "Usunięto zadania: {count}.",
             "cancel": "Anuluj",
             "messagesClose": "Ukryj komunikaty",
             "delete": "Usuń",
-            "deleteConfirm": "Pliki zostaną usunięte z tego artykułu i z biblioteki. Jeśli inny artykuł odwołuje się do pliku, pozostanie on tam zachowany.",
+            "deleteConfirm": "Zostanie trwale usuniętych zadań: {count}.",
             "deleteHint": "Usuwane są także zadania jeszcze niewykonane; potem nie są już zaplanowane.",
             "deleted": "Usunięto zadania: {count}.",
             "runBlocked": "W zaznaczeniu jest nieudane zadanie. Uruchomić można tylko to, co jest otwarte. Przyciskiem „Powtórz” można ponownie uruchomić nieudane zadania.",
@@ -313,7 +314,15 @@
             "installUiAsk": "Zainstalować interfejs użytkownika sklepu od razu czy zaplanować jako zadanie na następne zaplanowane uruchomienie?",
             "installUiChannels": "Dla których kanałów sprzedaży?",
             "installUiLater": "Zaplanuj jako zadanie",
-            "installUiNow": "Zainstaluj teraz"
+            "installUiNow": "Zainstaluj teraz",
+            "selectPage": "Zaznacz stronę",
+            "emptyFilter": "Brak zadań w tym widoku.",
+            "filter": {
+                "all": "Wszystkie ({count})",
+                "open": "Otwarte ({count})",
+                "done": "Wykonane ({count})",
+                "failed": "Nieudane ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

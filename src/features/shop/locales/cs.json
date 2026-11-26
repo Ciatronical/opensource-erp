@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Obchod",
-            "overview": "Přehled"
+            "overview": "Přehled",
+            "vendors": "Dodavatelé"
         },
         "common": {
             "reload": "Načíst znovu",
@@ -286,12 +287,12 @@
             "built": "Web byl znovu sestaven.",
             "cleanup": "Uklidit",
             "cleanupHint": "Smaže úspěšně dokončené úlohy. Neúspěšné a otevřené zůstanou.",
-            "cleanupConfirm": "Budou smazány všechny úspěšně dokončené úlohy, v tomto seznamu jich je {count}.",
+            "cleanupConfirm": "Budou smazány všechny úspěšně dokončené úlohy ({count}), i ty na ostatních stránkách.",
             "cleaned": "Smazáno úloh: {count}.",
             "cancel": "Zrušit",
             "messagesClose": "Skrýt zprávy",
             "delete": "Smazat",
-            "deleteConfirm": "Soubory budou smazány z tohoto artiklu i z knihovny. Pokud na soubor odkazuje jiný artikl, zůstane tam zachován.",
+            "deleteConfirm": "Bude trvale smazáno úloh: {count}.",
             "deleteHint": "Smažou se i dosud neprovedené úlohy; poté už nejsou naplánované.",
             "deleted": "Smazáno úloh: {count}.",
             "runBlocked": "Ve výběru je neúspěšná úloha. Spustit lze jen to, co je dosud otevřené. Neúspěšné úlohy lze znovu spustit tlačítkem „Opakovat“.",
@@ -313,7 +314,15 @@
             "installUiAsk": "Má se uživatelské rozhraní obchodu nainstalovat ihned, nebo naplánovat jako úloha pro příští plánovaný běh?",
             "installUiChannels": "Pro které prodejní kanály?",
             "installUiLater": "Naplánovat jako úlohu",
-            "installUiNow": "Nainstalovat ihned"
+            "installUiNow": "Nainstalovat ihned",
+            "selectPage": "Vybrat stránku",
+            "emptyFilter": "V tomto zobrazení nejsou žádné úlohy.",
+            "filter": {
+                "all": "Vše ({count})",
+                "open": "Otevřené ({count})",
+                "done": "Dokončené ({count})",
+                "failed": "Neúspěšné ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

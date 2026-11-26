@@ -38,16 +38,26 @@ function getShopAssortment($data) {
             (SELECT COALESCE(json_agg(json_build_object('id', g.id, 'name', g.name, 'sortkey', g.sortkey)
                                       ORDER BY g.sortkey NULLS LAST, lower(g.name)), '[]')
                FROM category_group_shop g) AS groups,
+            -- Die Artikel einmal je Kategorie zählen, nicht je Kategorie die ganze
+            -- Tabelle durchsuchen: bei 1300 Kategorien 0,1 s statt einer halben Minute
             (SELECT COALESCE(json_agg(json_build_object(
                         'id', c.id, 'name', c.name, 'group_id', c.group_id, 'topseller', c.topseller,
-                        'parts', (SELECT count(*) FROM parts_ext pe WHERE pe.hugoshop_category_id = c.id),
-                        'offered', (SELECT count(DISTINCT pe.parts_id)
-                                      FROM parts_ext pe
-                                      JOIN parts_channel_shop pc ON pc.parts_id = pe.parts_id AND pc.active
-                                      JOIN sales_channel_shop k ON k.id = pc.channel_id AND k.active AND k.type = 'hugoshop'
-                                     WHERE pe.hugoshop_category_id = c.id))
+                        'parts', COALESCE(z.parts, 0),
+                        'offered', COALESCE(z.offered, 0))
                         ORDER BY lower(c.name)), '[]')
-               FROM category_shop c) AS categories"
+               FROM category_shop c
+               LEFT JOIN (
+                   SELECT pe.hugoshop_category_id AS category_id,
+                          count(*) AS parts,
+                          count(*) FILTER (WHERE EXISTS (
+                              SELECT 1
+                                FROM parts_channel_shop pc
+                                JOIN sales_channel_shop k ON k.id = pc.channel_id AND k.active AND k.type = 'hugoshop'
+                               WHERE pc.parts_id = pe.parts_id AND pc.active)) AS offered
+                     FROM parts_ext pe
+                    WHERE pe.hugoshop_category_id IS NOT NULL
+                    GROUP BY pe.hugoshop_category_id
+               ) z ON z.category_id = c.id) AS categories"
     );
 
     resultInfo(true, '', [

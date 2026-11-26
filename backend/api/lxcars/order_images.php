@@ -10,8 +10,8 @@
 // trägt Bildunterschrift, Freigabe für das Kundenportal und den Uploader.
 //
 // Der Ordner wird in SQL aus dem Auftrag abgeleitet (OI_REL_DIR_SQL), nicht
-// vom Frontend übergeben: das Kundenportal kann denselben Ausdruck später mit
-// seiner Kundenprüfung nutzen.
+// vom Frontend übergeben: das Kundenportal nutzt denselben Ausdruck mit seiner
+// Kundenprüfung (public/actions.php, portalOrderImage).
 
 define('OI_MAX_FILESIZE', 20 * 1024 * 1024); // 20 MB
 define('OI_THUMB_WIDTH', 480);
@@ -169,6 +169,8 @@ function getOrderImages($data) {
  * Ablage unter customers/{customer_id}/auftraege/{ordnumber}/ mit neutralem
  * Dateinamen (Zeitstempel), weil der Kunde ihn später im Kundenportal sieht.
  * Erlaubt sind JPEG, PNG und WebP bis 20 MB; das Frontend verkleinert vorher.
+ * Ein neues Bild ist für den Kunden freigegeben (portal_visible); wer es
+ * zurückhalten will, schaltet die Freigabe im Betrachter ab.
  *
  * @param int $data['oe_id'] Auftrag
  * @param string $data['caption'] Bildunterschrift (optional)
@@ -236,8 +238,8 @@ function uploadOrderImage($data) {
     try {
         $row = $db->getOne(
             "WITH ins AS (
-                INSERT INTO oe_images_lxcars (oe_id, filename, caption, employee_id)
-                VALUES (:oe_id, :filename, :caption, :employee_id)
+                INSERT INTO oe_images_lxcars (oe_id, filename, caption, portal_visible, employee_id)
+                VALUES (:oe_id, :filename, :caption, true, :employee_id)
                 RETURNING *
              ) " . _oiSelectSql('true', 'ins'),
             [

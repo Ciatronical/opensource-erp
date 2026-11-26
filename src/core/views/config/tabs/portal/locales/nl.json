@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Geen geldig adres: {url} — verwacht bijvoorbeeld https://erp.example.nl/portal/",
             "IS_HUGOCMS": "Dit is het adres van HugoCMS ({url}). Hier hoort de portaaltoegang van OpensourceERP, bijv. https://erp.example.nl/portal/ — lokaal http://localhost:8000/portal/.",
+            "IS_PROXY": "Dit is de doorstuurder van de website zelf ({url}), niet de toegang van OpensourceERP — hij zou verzoeken naar zichzelf doorsturen. Hier hoort de portaaltoegang van OpensourceERP, bijv. https://erp.example.nl/portal/ — lokaal http://localhost:8000/portal/.",
             "NO_KEY": "De website heeft nog geen sleutel.",
             "OK": "De portaaltoegang van OpensourceERP antwoordt, de sleutel hoort bij „{name}“.",
             "OK_OLD": "De portaaltoegang van OpensourceERP antwoordt en accepteert de sleutel; deze versie kan de website niet bepalen.",

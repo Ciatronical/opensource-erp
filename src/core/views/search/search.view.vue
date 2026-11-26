@@ -728,6 +728,23 @@ watch(activeTab, (tab) => {
     }
 });
 
+// URL → Typ (?type=vendor): Menüpunkt „Lieferanten“ des Shops, während die Suche offen ist
+watch(() => router.currentRoute.value.query.type, (type) => {
+    if (router.currentRoute.value.name === 'search' && ['customer', 'vendor'].includes(type)) {
+        typeFilter.value = type;
+    }
+});
+
+// Typ → URL: steht ein Typ in der URL, folgt er der Auswahl — sonst bliebe ein
+// erneuter Klick auf den Menüpunkt ohne Wirkung
+watch(typeFilter, (type) => {
+    const query = { ...router.currentRoute.value.query };
+    if (router.currentRoute.value.name !== 'search' || !query.type || query.type === type) return;
+    if (['customer', 'vendor'].includes(type)) query.type = type;
+    else delete query.type;
+    router.replace({ query });
+});
+
 /**
  * Setzt Suchkriterien zurück und lädt erste Seite bei Type-Filter-Wechsel
  */

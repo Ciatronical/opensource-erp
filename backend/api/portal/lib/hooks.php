@@ -10,6 +10,7 @@
 //   invoice_list       ($orders, $db, $customerId)      Rechnungsliste — Zahlstand, Lieferstatus
 //   invoice            ($rechnung, $db, $arId)          Kopf einer Rechnung
 //   invoice_positions  ($positionen, $db, $arId, $website)  Positionen — Produktlinks, Vorschaubilder
+//   document_view      ($ansicht, $db, $customerId, $typ, $id, $website)  Ansicht eines Belegs des Kerns — LxCars hängt die Bilder am Auftrag an
 //   publish_files      ($dateien, $db, $website, $satz) Dateien des Pakets einer Webseite
 //   publish_media      ($medien, $db, $website)         Medien, die zur Webseite gehören
 //   site_checks        ($befunde, $db, $website, $site, $stand)  Konfigurationsprüfung der Webseite — der Shop prüft Taxonomie und Adressen der Kategorien

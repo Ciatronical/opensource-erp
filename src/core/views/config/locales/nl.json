@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Geen adres ingevoerd.",
         "shopBackendTest_INVALID": "Geen geldig adres: {url} — verwacht bijv. https://erp.example.nl/shop/",
         "shopBackendTest_IS_HUGOCMS": "Dit is het adres van HugoCMS ({url}). Hier hoort de winkeltoegang van OpensourceERP, bijv. https://erp.example.nl/shop/ — lokaal http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "Dit is de doorstuurder van de website zelf ({url}), niet de toegang van OpensourceERP — hij zou verzoeken naar zichzelf doorsturen. Hier hoort de winkeltoegang van OpensourceERP, bijv. https://erp.example.nl/shop/ — lokaal http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "Adres lijkt juist: {url}",
         "shopBackendTest_SKIPPED": "Overgeslagen — eerst de invoer corrigeren.",
         "shopBackendTest_NO_KEY": "Het kanaal heeft nog geen winkelsleutel.",

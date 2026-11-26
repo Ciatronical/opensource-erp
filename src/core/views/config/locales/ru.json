@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Адрес не указан.",
         "shopBackendTest_INVALID": "Недопустимый адрес: {url} — ожидается, например, https://erp.example.ru/shop/",
         "shopBackendTest_IS_HUGOCMS": "Это адрес HugoCMS ({url}). Здесь должен быть доступ магазина OpensourceERP, например https://erp.example.ru/shop/ — локально http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "Это переадресатор самого сайта ({url}), а не доступ OpensourceERP — он пересылал бы запросы самому себе. Здесь должен быть доступ магазина OpensourceERP, например https://erp.example.ru/shop/ — локально http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "Адрес выглядит правильно: {url}",
         "shopBackendTest_SKIPPED": "Пропущено — сначала исправьте ввод.",
         "shopBackendTest_NO_KEY": "У канала ещё нет ключа магазина.",

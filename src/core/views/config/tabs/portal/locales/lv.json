@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Nederīga adrese: {url} — gaidīts, piemēram, https://erp.example.lv/portal/",
             "IS_HUGOCMS": "Tā ir HugoCMS adrese ({url}). Šeit jābūt OpensourceERP portāla piekļuvei, piem., https://erp.example.lv/portal/ — lokāli http://localhost:8000/portal/.",
+            "IS_PROXY": "Tas ir pašas tīmekļa vietnes pārsūtītājs ({url}), nevis OpensourceERP piekļuve — tas pārsūtītu pieprasījumus pats sev. Šeit jābūt OpensourceERP portāla piekļuvei, piem., https://erp.example.lv/portal/ — lokāli http://localhost:8000/portal/.",
             "NO_KEY": "Vietnei vēl nav atslēgas.",
             "OK": "OpensourceERP portāla piekļuve atbild, atslēga atbilst „{name}“.",
             "OK_OLD": "OpensourceERP portāla piekļuve atbild un pieņem atslēgu; šī versija nevar noteikt vietni.",

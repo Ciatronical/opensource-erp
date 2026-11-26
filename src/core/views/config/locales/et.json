@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Aadressi pole sisestatud.",
         "shopBackendTest_INVALID": "Kehtetu aadress: {url} — oodatakse nt https://erp.example.ee/shop/",
         "shopBackendTest_IS_HUGOCMS": "See on HugoCMS-i aadress ({url}). Siia käib OpensourceERP poe ligipääs, nt https://erp.example.ee/shop/ — kohalikult http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "See on veebilehe enda edastaja ({url}), mitte OpensourceERP juurdepääs — see edastaks päringud iseendale. Siia käib OpensourceERP poe ligipääs, nt https://erp.example.ee/shop/ — kohalikult http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "Aadress näib õige: {url}",
         "shopBackendTest_SKIPPED": "Vahele jäetud — parandage esmalt sisend.",
         "shopBackendTest_NO_KEY": "Kanalil pole veel poe võtit.",

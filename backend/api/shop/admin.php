@@ -3393,6 +3393,15 @@ function testShopBackendUrl($data) {
     } elseif (('' !== $hugocms && rtrim($adresse, '/') === $hugocms) || str_contains($adresse, '/cms-api')) {
         $melden('plausibel', 'error', 'IS_HUGOCMS', ['url' => $adresse]);
         $plausibel = false;
+    } elseif ('' !== $basis && strtolower(rtrim($adresse, '/')) === strtolower($basis).'/portal-api') {
+        // Der Weiterleiter der Webseite selbst: er reicht an genau diese
+        // Adresse weiter und setzt seinen eigenen Schlüssel ein — der Schritt
+        // „direkt“ prüfte dann den zuletzt übertragenen Schlüssel, nicht den
+        // aus dem Formular. Wie portalBackendUrlCheck (portal/lib/hugocms.php);
+        // nur die eigene Basisadresse, ein Webserver darf den Zugang von
+        // OpensourceERP unter /portal-api/ ausliefern.
+        $melden('plausibel', 'error', 'IS_PROXY', ['url' => $adresse]);
+        $plausibel = false;
     } else {
         $melden('plausibel', 'success', 'PLAUSIBLE', ['url' => $adresse]);
     }
@@ -3493,59 +3502,111 @@ function cleanupShopPublishJobs($data) {
 }
 
 /**
- * Offene und zuletzt erledigte Aufträge
+ * Aufträge der Veröffentlichung, seitenweise
  *
- * Nur Auftragsarten der Kanalmodule (shopChannelJobPairs), mit Kanal.
+ * Offene zuerst, darunter die erledigten, jeweils die jüngsten oben. Nur
+ * Auftragsarten der Kanalmodule (shopChannelJobPairs), mit Kanal.
+ *
+ * counts zählt über alle Seiten und unabhängig vom Filter: open, failed
+ * (Ergebnis beginnt mit „Fehler“), done (alle übrigen erledigten) und ok —
+ * das, was „Aufräumen“ löscht (shopCleanupJobs). total ist die Zahl der
+ * Aufträge im gewählten Filter. Liegt die verlangte Seite hinter der letzten
+ * (nach Löschen oder Aufräumen), kommt die letzte; page nennt sie.
  *
  * Offene Aufträge eines HugoShops, dem etwas zum Veröffentlichen fehlt,
  * tragen in suspended die Gründe (shopChannelPublishBlockers) — der Läufer
  * setzt sie aus, bis die Einrichtung stimmt.
  *
- * @return void
- * @testdata {}
+ * @param int $data['page'] Seite, ab 1 (optional)
+ * @param int $data['per_page'] Aufträge je Seite, 1 bis 200, Vorgabe 25 (optional)
+ * @param string $data['state'] nur Aufträge in diesem Zustand: open, done, failed; leer = alle (optional)
+ * @param string $data['function'] nur diese Auftragsart, etwa publish_all; leer = alle (optional)
+ * @return void jobs, total, page, per_page, counts (open, done, failed, ok)
+ * @testdata {"page": 1, "per_page": 25, "state": "", "function": ""}
  */
 function getShopPublishJobs($data) {
     permit(['shop_order', 'shop_part_edit', 'edit_shop_config'], false);
     $db = DbhCompany::begin();
 
-    // Die Sortierung der Teilabfragen gilt nur für deren Auswahl — die
-    // Reihenfolge der Vereinigung muss aussen stehen.
-    $auftraege = $db->getAll(
+    $jeSeite = min(200, max(1, intval($data['per_page'] ?? 25)));
+    $seite = max(1, intval($data['page'] ?? 1));
+    $zustand = in_array($data['state'] ?? '', ['open', 'done', 'failed'], true) ? $data['state'] : '';
+    $art = preg_match('/^[a-z_]+$/', (string)($data['function'] ?? '')) ? (string)$data['function'] : '';
+
+    $zeile = $db->getOne(
         "WITH eigene AS (
              SELECT b.id, b.itime, b.function, b.partnumber, b.param, b.result, b.run_id,
                     c.type AS channel, b.channel_id, c.name AS channel_name,
+                    CASE WHEN b.result IS NULL THEN 'open'
+                         WHEN b.result LIKE 'Fehler%' THEN 'failed'
+                         ELSE 'done' END AS state
+               FROM batchjob_hugoshop b
+               JOIN sales_channel_shop c ON c.id = b.channel_id
+              WHERE (c.type || ':' || b.function) = ANY(string_to_array(:paare, ','))
+         ), zahlen AS (
+             SELECT count(*) FILTER (WHERE state = 'open') AS open,
+                    count(*) FILTER (WHERE state = 'done') AS done,
+                    count(*) FILTER (WHERE state = 'failed') AS failed,
+                    count(*) FILTER (WHERE result LIKE 'ok%') AS ok,
+                    count(*) FILTER (WHERE (CAST(:state AS text) = '' OR state = CAST(:state_is AS text))
+                                       AND (CAST(:art AS text) = '' OR function = CAST(:art_is AS text))) AS total
+               FROM eigene
+         ), blatt AS (
+             -- Hinter der letzten Seite gilt die letzte
+             SELECT LEAST(CAST(:page AS integer),
+                          GREATEST(1, CEIL(total / CAST(:per_page AS numeric))::integer)) AS page
+               FROM zahlen
+         ), seite AS (
+             SELECT e.*, (e.state = 'open') AS open,
                     -- Für den Verweis auf den Artikel. Die Artikelnummer ist in
                     -- parts nicht eindeutig erzwungen: der aktive vor dem
                     -- veralteten, sonst der älteste.
                     (SELECT p.id FROM parts p
-                      WHERE b.partnumber <> '' AND p.partnumber = b.partnumber
+                      WHERE e.partnumber <> '' AND p.partnumber = e.partnumber
                       ORDER BY COALESCE(p.obsolete, false), p.id
                       LIMIT 1) AS parts_id
-               FROM batchjob_hugoshop b
-               JOIN sales_channel_shop c ON c.id = b.channel_id
-              WHERE (c.type || ':' || b.function) = ANY(string_to_array(:paare, ','))
+               FROM eigene e
+              WHERE (CAST(:state_seite AS text) = '' OR e.state = CAST(:state_seite_is AS text))
+                AND (CAST(:art_seite AS text) = '' OR e.function = CAST(:art_seite_is AS text))
+              ORDER BY (e.state = 'open') DESC, e.id DESC
+              LIMIT CAST(:per_page_limit AS integer)
+             OFFSET ((SELECT page FROM blatt) - 1) * CAST(:per_page_offset AS integer)
          )
-         SELECT * FROM (
-             (SELECT *, true AS open FROM eigene WHERE result IS NULL
-               ORDER BY id LIMIT 50)
-             UNION ALL
-             (SELECT *, false AS open FROM eigene WHERE result IS NOT NULL
-               ORDER BY id DESC LIMIT 20)
-         ) auftraege
-         ORDER BY open DESC, id DESC",
+         SELECT json_build_object(
+                    'jobs',     (SELECT COALESCE(json_agg(s ORDER BY s.open DESC, s.id DESC), '[]'::json) FROM seite s),
+                    'total',    z.total,
+                    'page',     (SELECT page FROM blatt),
+                    'per_page', CAST(:per_page_out AS integer),
+                    'counts',   json_build_object('open', z.open, 'done', z.done, 'failed', z.failed, 'ok', z.ok)
+                ) AS result
+           FROM zahlen z",
         [
-            ':paare' => shopChannelJobPairs(),
+            ':paare'           => shopChannelJobPairs(),
+            ':state'           => $zustand,
+            ':state_is'        => $zustand,
+            ':state_seite'     => $zustand,
+            ':state_seite_is'  => $zustand,
+            ':art'             => $art,
+            ':art_is'          => $art,
+            ':art_seite'       => $art,
+            ':art_seite_is'    => $art,
+            ':page'            => $seite,
+            ':per_page'        => $jeSeite,
+            ':per_page_limit'  => $jeSeite,
+            ':per_page_offset' => $jeSeite,
+            ':per_page_out'    => $jeSeite,
         ]
-    ) ?: [];
+    );
+    $liste = json_decode($zeile['result'] ?? '{}', true) ?: [];
+    $liste['jobs'] ??= [];
 
     // Ausgesetzt: je HugoShop mit offenen Aufträgen einmal prüfen
     $sperren = [];
-    foreach ($auftraege as &$auftrag) {
-        $offen = in_array($auftrag['open'], [true, 't', 1, '1'], true);
+    foreach ($liste['jobs'] as &$auftrag) {
         $auftrag['suspended'] = [];
         // Abgeschaltete HugoShops nicht: deren Aufträge erledigt der nächste
         // Lauf ohne Zugang als übersprungen (shopRunJobs)
-        if ($offen && 'hugoshop' === $auftrag['channel']) {
+        if ($auftrag['open'] && 'hugoshop' === $auftrag['channel']) {
             $kanal = (int)$auftrag['channel_id'];
             $sperren[$kanal] ??= shopChannelHugoshopActive($db, $kanal) ? shopChannelPublishBlockers($db, $kanal) : [];
             $auftrag['suspended'] = $sperren[$kanal];
@@ -3553,7 +3614,7 @@ function getShopPublishJobs($data) {
     }
     unset($auftrag);
 
-    resultInfo(true, '', $auftraege);
+    resultInfo(true, '', $liste);
 }
 
 /**

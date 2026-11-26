@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Magazin",
-            "overview": "Prezentare"
+            "overview": "Prezentare",
+            "vendors": "Furnizori"
         },
         "common": {
             "reload": "Reîncarcă",
@@ -286,12 +287,12 @@
             "built": "Site reconstruit.",
             "cleanup": "Curăță",
             "cleanupHint": "Șterge sarcinile finalizate cu succes. Cele eșuate și cele deschise rămân.",
-            "cleanupConfirm": "Vor fi șterse toate sarcinile finalizate cu succes; în această listă sunt {count}.",
+            "cleanupConfirm": "Vor fi șterse toate cele {count} sarcini finalizate cu succes, inclusiv cele de pe celelalte pagini.",
             "cleaned": "{count} sarcini șterse.",
             "cancel": "Anulează",
             "messagesClose": "Ascunde mesajele",
             "delete": "Șterge",
-            "deleteConfirm": "Fișierele sunt șterse din acest articol și din bibliotecă. Dacă un alt articol face referire la un fișier, acesta rămâne acolo.",
+            "deleteConfirm": "{count} sarcini vor fi șterse definitiv.",
             "deleteHint": "Se șterg și sarcinile neexecutate încă; după aceea nu mai sunt programate.",
             "deleted": "{count} sarcini șterse.",
             "runBlocked": "Selecția conține o sarcină eșuată. Se pot executa doar cele deschise. Cu „Repetă” sarcinile eșuate pot fi rulate din nou.",
@@ -313,7 +314,15 @@
             "installUiAsk": "Instalați acum interfața de utilizator a magazinului sau o planificați ca sarcină pentru următoarea rulare programată?",
             "installUiChannels": "Pentru ce canale de vânzare?",
             "installUiLater": "Planifică ca sarcină",
-            "installUiNow": "Instalează acum"
+            "installUiNow": "Instalează acum",
+            "selectPage": "Selectează pagina",
+            "emptyFilter": "Nicio sarcină în această vizualizare.",
+            "filter": {
+                "all": "Toate ({count})",
+                "open": "În așteptare ({count})",
+                "done": "Finalizate ({count})",
+                "failed": "Eșuate ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

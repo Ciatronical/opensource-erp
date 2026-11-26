@@ -1146,6 +1146,7 @@
         "shopBackendTest_EMPTY": "Nie podano adresu.",
         "shopBackendTest_INVALID": "Nieprawidłowy adres: {url} — oczekiwano np. https://erp.example.pl/shop/",
         "shopBackendTest_IS_HUGOCMS": "To jest adres HugoCMS ({url}). Tu należy wpisać dostęp sklepu OpensourceERP, np. https://erp.example.pl/shop/ — lokalnie http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "To jest przekierowanie samej strony internetowej ({url}), a nie dostęp OpensourceERP — przekazywałoby zapytania do samego siebie. Tu należy wpisać dostęp sklepu OpensourceERP, np. https://erp.example.pl/shop/ — lokalnie http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "Adres wygląda poprawnie: {url}",
         "shopBackendTest_SKIPPED": "Pominięto — najpierw popraw dane.",
         "shopBackendTest_NO_KEY": "Kanał nie ma jeszcze klucza sklepu.",

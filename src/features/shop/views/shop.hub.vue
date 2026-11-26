@@ -12,14 +12,8 @@
     <v-container fluid>
         <ShopSetupDialog v-model="setupOffen" @done="laden" />
 
-        <v-row align="center" class="mb-3">
-            <v-col>
-                <h1 class="text-h5">
-                    <v-icon start>mdi-storefront</v-icon>
-                    {{ t('ShopView.menu.title') }}
-                </h1>
-            </v-col>
-            <v-col cols="auto" class="d-flex align-center ga-2">
+        <page-header :title="t('ShopView.menu.title')">
+            <template #actions>
                 <!-- Einrichtung Schritt für Schritt (shop-setup.dialog.vue); ?setup=1 öffnet
                      sie gleich — so kommt man nach dem Einschalten der Erweiterung hierher -->
                 <v-btn
@@ -36,8 +30,8 @@
                     <v-icon start>mdi-refresh</v-icon>
                     {{ t('ShopView.common.reload') }}
                 </v-btn>
-            </v-col>
-        </v-row>
+            </template>
+        </page-header>
 
         <v-alert v-if="shop.error.value" type="error" variant="tonal" density="compact" class="mb-3">
             {{ shop.error.value }}
@@ -237,76 +231,69 @@
         <!-- Veröffentlichung: die Anwendung legt nur Aufträge an, geschrieben
              und gebaut wird von tools/shop-publish.php -->
         <h2 class="text-subtitle-1 font-weight-medium mt-4 mb-2">{{ t('ShopView.sections.jobs') }}</h2>
-        <v-card variant="outlined">
-            <v-card-item>
-                <template #prepend>
-                    <v-icon icon="mdi-cloud-upload-outline" />
-                </template>
-                <v-card-title class="text-subtitle-1">{{ t('ShopView.publish.title') }}</v-card-title>
-                <v-card-subtitle>{{ t('ShopView.publish.hint') }}</v-card-subtitle>
-                <template #append>
-                    <div class="d-flex flex-wrap ga-2">
-                        <!-- Alle offenen Aufträge sofort, ohne sie einzeln auszuwählen -->
-                        <v-btn
-                            color="primary"
-                            variant="tonal"
-                            size="small"
-                            prepend-icon="mdi-play-circle-outline"
-                            :loading="offeneStarten"
-                            :disabled="!offeneAuftraege || veroeffentlicht || sofort || laeuft"
-                            :title="t('ShopView.publish.runOpenHint')"
-                            @click="offeneAusfuehren"
-                        >
-                            {{ t('ShopView.publish.runOpen') }}
-                        </v-btn>
-                        <v-btn
-                            color="primary"
-                            variant="flat"
-                            size="small"
-                            prepend-icon="mdi-cloud-upload-outline"
-                            :loading="veroeffentlicht"
-                            :disabled="sofort || laeuft"
-                            @click="kanaeleWaehlen('queue')"
-                        >
-                            {{ t('ShopView.publish.all') }}
-                        </v-btn>
-                        <!-- Abkürzung: Auftrag anlegen, auswählen, sofort ausführen -->
-                        <v-btn
-                            color="primary"
-                            variant="tonal"
-                            size="small"
-                            prepend-icon="mdi-flash"
-                            :loading="sofort"
-                            :disabled="veroeffentlicht || laeuft"
-                            :title="t('ShopView.publish.allNowHint')"
-                            @click="kanaeleWaehlen('sofort')"
-                        >
-                            {{ t('ShopView.publish.allNow') }}
-                        </v-btn>
-                        <!-- Paket in die Webseite und bauen — ohne auf den Cron zu warten -->
-                        <v-btn
-                            variant="tonal"
-                            size="small"
-                            prepend-icon="mdi-package-down"
-                            :loading="installiert"
-                            :disabled="veroeffentlicht || sofort || laeuft"
-                            :title="t('ShopView.publish.installUiHint')"
-                            @click="installierenFragen"
-                        >
-                            {{ t('ShopView.publish.installUi') }}
-                        </v-btn>
-                    </div>
-                </template>
-            </v-card-item>
+        <section-card :title="t('ShopView.publish.title')" icon="mdi-cloud-upload-outline">
+            <template #actions>
+                <!-- Alle offenen Aufträge sofort, ohne sie einzeln auszuwählen -->
+                <v-btn
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="mdi-play-circle-outline"
+                    :loading="offeneStarten"
+                    :disabled="!offeneAuftraege || veroeffentlicht || sofort || laeuft"
+                    :title="t('ShopView.publish.runOpenHint')"
+                    @click="offeneAusfuehren"
+                >
+                    {{ t('ShopView.publish.runOpen') }}
+                </v-btn>
+                <v-btn
+                    color="primary"
+                    variant="flat"
+                    size="small"
+                    prepend-icon="mdi-cloud-upload-outline"
+                    :loading="veroeffentlicht"
+                    :disabled="sofort || laeuft"
+                    @click="kanaeleWaehlen('queue')"
+                >
+                    {{ t('ShopView.publish.all') }}
+                </v-btn>
+                <!-- Abkürzung: Auftrag anlegen, auswählen, sofort ausführen -->
+                <v-btn
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="mdi-flash"
+                    :loading="sofort"
+                    :disabled="veroeffentlicht || laeuft"
+                    :title="t('ShopView.publish.allNowHint')"
+                    @click="kanaeleWaehlen('sofort')"
+                >
+                    {{ t('ShopView.publish.allNow') }}
+                </v-btn>
+                <!-- Paket in die Webseite und bauen — ohne auf den Cron zu warten -->
+                <v-btn
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="mdi-package-down"
+                    :loading="installiert"
+                    :disabled="veroeffentlicht || sofort || laeuft"
+                    :title="t('ShopView.publish.installUiHint')"
+                    @click="installierenFragen"
+                >
+                    {{ t('ShopView.publish.installUi') }}
+                </v-btn>
+            </template>
+
+            <div class="abschnittshinweis">{{ t('ShopView.publish.hint') }}</div>
 
             <!-- Ein Lauf arbeitet im Hintergrund; die Seite bleibt bedienbar -->
             <template v-if="laeuft">
                 <v-progress-linear indeterminate color="primary" />
-                <v-card-text class="py-2 text-body-2">
+                <div class="laufhinweis text-body-2">
                     {{ t('ShopView.publish.inProgress') }}
-                </v-card-text>
+                </div>
             </template>
-            <v-alert v-if="zuLange" type="info" variant="tonal" density="compact" class="mx-4 my-2">
+            <v-alert v-if="zuLange" type="info" variant="tonal" density="compact" class="laufmeldung">
                 {{ t('ShopView.publish.tooLong') }}
             </v-alert>
 
@@ -320,7 +307,7 @@
                 type="error"
                 variant="tonal"
                 density="compact"
-                class="mx-4 my-2"
+                class="laufmeldung"
                 closable
                 :close-label="t('ShopView.publish.messagesClose')"
                 @click:close="laufAbgebrochen = false"
@@ -336,7 +323,7 @@
                 type="error"
                 variant="tonal"
                 density="compact"
-                class="mx-4 my-2"
+                class="laufmeldung"
                 closable
                 :close-label="t('ShopView.publish.messagesClose')"
                 @click:close="laufFehler = []"
@@ -345,20 +332,37 @@
                 <pre class="text-caption mt-1 mb-0 laufausgabe">{{ laufFehler.join('\n') }}</pre>
             </v-alert>
 
-            <v-card-text v-if="auftraege.length">
+            <template v-if="auftraegeGesamt">
+                <!-- Filter nach Zustand; die Zahlen zählen über alle Seiten -->
+                <v-chip-group
+                    :model-value="zustand"
+                    mandatory
+                    selected-class="text-primary"
+                    class="mb-2"
+                    @update:model-value="zustandWechseln"
+                >
+                    <v-chip
+                        v-for="filter in zustandsFilter"
+                        :key="filter.wert"
+                        :value="filter.wert"
+                        size="small"
+                        variant="tonal"
+                        filter
+                    >
+                        {{ filter.titel }}
+                    </v-chip>
+                </v-chip-group>
                 <div class="d-flex align-center ga-4 mb-2">
+                    <!-- Die Auswahl gilt für die sichtbare Seite -->
                     <v-checkbox-btn
                         :model-value="alleGewaehlt"
                         :indeterminate="teilsGewaehlt"
                         :disabled="!auftraege.length"
-                        :label="t('ShopView.publish.selectAll')"
+                        :label="t('ShopView.publish.selectPage')"
                         density="compact"
                         hide-details
                         @update:model-value="alleUmschalten"
                     />
-                    <div class="text-caption text-medium-emphasis">
-                        {{ t('ShopView.publish.open', { count: offeneAuftraege }) }}
-                    </div>
                     <v-spacer />
                     <v-btn
                         color="primary"
@@ -421,7 +425,7 @@
                         {{ t('ShopView.publish.cleanup') }}
                     </v-btn>
                 </div>
-                <v-table density="compact">
+                <v-table v-if="auftraege.length" density="compact">
                     <tbody>
                         <!-- Klick auf die Zeile wählt aus; das Ankreuzfeld
                              behält seinen eigenen Klick (sonst höbe die Zeile
@@ -432,7 +436,7 @@
                             class="auftragszeile"
                             @click="auswahlUmschalten(auftrag.id)"
                         >
-                            <td style="width: 1%" @click.stop>
+                            <td class="schmal" @click.stop>
                                 <v-checkbox-btn
                                     v-model="auswahl"
                                     :value="auftrag.id"
@@ -440,7 +444,7 @@
                                     hide-details
                                 />
                             </td>
-                            <td style="width: 1%">
+                            <td class="schmal">
                                 <v-icon
                                     size="small"
                                     :color="symbol(auftrag).farbe"
@@ -483,11 +487,24 @@
                         </tr>
                     </tbody>
                 </v-table>
-            </v-card-text>
-            <v-card-text v-else class="text-caption text-medium-emphasis">
+                <div v-else class="text-caption text-medium-emphasis">
+                    {{ t('ShopView.publish.emptyFilter') }}
+                </div>
+                <v-pagination
+                    v-if="seiten > 1"
+                    :model-value="seite"
+                    :length="seiten"
+                    :total-visible="7"
+                    density="compact"
+                    size="small"
+                    class="mt-2"
+                    @update:model-value="seiteWechseln"
+                />
+            </template>
+            <div v-else class="text-caption text-medium-emphasis">
                 {{ t('ShopView.publish.empty') }}
-            </v-card-text>
-        </v-card>
+            </div>
+        </section-card>
 
         <!-- Ausgabe des Laufs, in dem ein Auftrag erledigt wurde -->
         <v-dialog v-model="ausgabeOffen" max-width="1000" scrollable>
@@ -648,6 +665,8 @@ import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
 import ShopSetupDialog from '@/features/shop/components/shop-setup.dialog.vue'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import PageHeader from '@/core/components/layout/page-header.vue'
+import SectionCard from '@/core/components/layout/section-card.vue'
 import { useShop } from '@/features/shop/composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
 import { entityRoute } from '@/core/constants/routes.js'
@@ -663,6 +682,15 @@ const status = ref(null)
 /** Einrichtung Schritt für Schritt offen */
 const setupOffen = ref(false)
 const auftraege = ref([])
+/** Aufträge je Seite der Liste */
+const AUFTRAEGE_JE_SEITE = 25
+/** Zähler je Zustand über alle Seiten (counts aus getShopPublishJobs) */
+const zahlen = ref({ open: 0, done: 0, failed: 0, ok: 0 })
+/** Aufträge im gewählten Filter — daraus die Zahl der Seiten */
+const treffer = ref(0)
+const seite = ref(1)
+/** Filter der Liste: all, open, done oder failed */
+const zustand = ref('all')
 const veroeffentlicht = ref(false)
 const sofort = ref(false)
 const offeneStarten = ref(false)
@@ -755,22 +783,32 @@ const auftragsart = (name) => te(`ShopView.publish.functions.${name}`)
     ? t(`ShopView.publish.functions.${name}`)
     : name
 
-const offeneAuftraege = computed(() => auftraege.value.filter(istOffen).length)
+/** Offene Aufträge über alle Seiten — „Offene ausführen" nimmt sie alle */
+const offeneAuftraege = computed(() => zahlen.value.open)
 
 /**
- * Erfolgreich erledigte Aufträge in der Liste
+ * Erfolgreich erledigte Aufträge über alle Seiten
  *
- * Nur sie werden aufgeräumt. Die Liste zeigt die letzten 20 erledigten; in der
- * Tabelle können mehr stehen, gelöscht werden immer alle erfolgreichen.
+ * Nur sie werden aufgeräumt, und zwar alle — nicht nur die der sichtbaren Seite.
  */
-const erledigteAuftraege = computed(
-    () => auftraege.value.filter((auftrag) => !istOffen(auftrag) && !fehlgeschlagen(auftrag)).length)
+const erledigteAuftraege = computed(() => zahlen.value.ok)
+
+const auftraegeGesamt = computed(() => zahlen.value.open + zahlen.value.done + zahlen.value.failed)
+const seiten = computed(() => Math.max(1, Math.ceil(treffer.value / AUFTRAEGE_JE_SEITE)))
+
+const zustandsFilter = computed(() => [
+    { wert: 'all', titel: t('ShopView.publish.filter.all', { count: auftraegeGesamt.value }) },
+    { wert: 'open', titel: t('ShopView.publish.filter.open', { count: zahlen.value.open }) },
+    { wert: 'done', titel: t('ShopView.publish.filter.done', { count: zahlen.value.done }) },
+    { wert: 'failed', titel: t('ShopView.publish.filter.failed', { count: zahlen.value.failed }) },
+])
 
 /**
- * Auswählen lässt sich jede Zeile
+ * Auswählen lässt sich jede Zeile der sichtbaren Seite
  *
  * Die offenen für „Jetzt ausführen", die erledigten zum Löschen — deshalb
- * zwei Teilmengen statt einer.
+ * zwei Teilmengen statt einer. Über alle Seiten wirken nur „Offene ausführen"
+ * und „Aufräumen"; sie brauchen keine Auswahl.
  */
 const alleIds = computed(() => auftraege.value.map((auftrag) => auftrag.id))
 const offeneIds = computed(() => auftraege.value.filter(istOffen).map((auftrag) => auftrag.id))
@@ -919,11 +957,56 @@ const ziele = computed(() => [
     }] : []),
 ])
 
+/** Laufende Nummer der Abfragen der Liste — nur die Antwort der jüngsten zählt */
+let auftraegeAnfrage = 0
+
+/**
+ * Lädt die sichtbare Seite der Auftragsliste samt Zählern
+ *
+ * Die Auswahl gilt nur für sichtbare Zeilen: was gelöscht wurde oder auf eine
+ * andere Seite gerutscht ist, fällt heraus. Scheitert die Abfrage, bleibt die
+ * Liste stehen.
+ *
+ * @param {object} quelle useShop-Instanz — die Abfrageschleife nimmt ihre eigene
+ */
+async function auftraegeLaden(quelle = shop) {
+    const anfrage = ++auftraegeAnfrage
+    const liste = await quelle.fetchPublishJobs({
+        page: seite.value,
+        per_page: AUFTRAEGE_JE_SEITE,
+        state: zustand.value === 'all' ? '' : zustand.value,
+    })
+    // Überholt: inzwischen wurde geblättert oder gefiltert — die Antwort der
+    // Abfrageschleife setzte sonst Seite und Liste zurück
+    if (!liste || anfrage !== auftraegeAnfrage) {
+        return
+    }
+    auftraege.value = liste.jobs || []
+    zahlen.value = liste.counts || { open: 0, done: 0, failed: 0, ok: 0 }
+    treffer.value = liste.total ?? 0
+    // Hinter der letzten Seite (nach Löschen, Aufräumen) liefert das Backend die letzte
+    seite.value = liste.page ?? 1
+    auswahl.value = auswahl.value.filter((id) => alleIds.value.includes(id))
+}
+
+/** Blättern: die Auswahl der bisherigen Seite verfällt */
+async function seiteWechseln(nummer) {
+    seite.value = nummer
+    auswahl.value = []
+    await auftraegeLaden()
+}
+
+/** Filter wechseln: wieder ab der ersten Seite, ohne Auswahl */
+async function zustandWechseln(wert) {
+    zustand.value = wert
+    seite.value = 1
+    auswahl.value = []
+    await auftraegeLaden()
+}
+
 async function laden() {
     status.value = await shop.fetchStatus()
-    auftraege.value = await shop.fetchPublishJobs() || []
-    // Gelöschte Aufträge fallen aus der Auswahl
-    auswahl.value = auswahl.value.filter((id) => alleIds.value.includes(id))
+    await auftraegeLaden()
 }
 
 /**
@@ -988,13 +1071,14 @@ async function offeneAusfuehren() {
  * Gemeinsam für „Jetzt ausführen" und „Alle sofort veröffentlichen".
  *
  * @param {number[]} ids Auftragsnummern
+ * @param {boolean} nachOben zur ersten Seite wechseln (siehe gestartet)
  */
-async function ausfuehren(ids) {
+async function ausfuehren(ids, nachOben = false) {
     const antwort = await shop.runPublishJobs(ids)
     if (shop.error.value) {
         return
     }
-    gestartet(antwort)
+    gestartet(antwort, nachOben)
 }
 
 const installierenGefragt = ref(false)
@@ -1028,7 +1112,7 @@ async function portalUiInstallieren(jetzt) {
         }
         if (!jetzt) {
             toasts.success(t('ShopView.publish.queued'))
-            auftraege.value = await shop.fetchPublishJobs() || []
+            await auftraegeLaden()
             return
         }
         // Je eingeschaltetem HugoShop ein Auftrag (dev/shop-mehrere-kanaele.md)
@@ -1037,7 +1121,7 @@ async function portalUiInstallieren(jetzt) {
         } else if (antwort?.job_id) {
             auswahl.value = [antwort.job_id]
         }
-        gestartet(antwort)
+        gestartet(antwort, true)
     } finally {
         installiert.value = false
     }
@@ -1047,8 +1131,17 @@ async function portalUiInstallieren(jetzt) {
  * Ein Lauf wurde angestoßen: melden und beobachten
  *
  * @param {object|null} antwort Antwort von runShopPublishJobs bzw. installPortalUi
+ * @param {boolean} nachOben zur ersten Seite wechseln: neu angelegte und wieder
+ *                           geöffnete Aufträge stehen dort, in den Filtern
+ *                           „Erledigt" und „Fehlgeschlagen" aber gar nicht
  */
-function gestartet(antwort) {
+function gestartet(antwort, nachOben = false) {
+    if (nachOben) {
+        seite.value = 1
+        if (zustand.value !== 'open') {
+            zustand.value = 'all'
+        }
+    }
     // Der Läufer arbeitet jetzt im Hintergrund; die Antwort kommt sofort.
     // Lief schon einer, nimmt der die Aufträge mit — beobachtet wird so oder so.
     toasts.info(antwort?.started === false ? t('ShopView.publish.running') : t('ShopView.publish.started'))
@@ -1095,7 +1188,7 @@ async function abfragen() {
     standUebernehmen(stand)
     // Die Liste gleich mit — jede Zeile wechselt von „nicht ausgeführt" zu
     // ihrem Ergebnis, sobald der Läufer sie erledigt hat
-    auftraege.value = await beobachter.fetchPublishJobs() || auftraege.value
+    await auftraegeLaden(beobachter)
 
     if (!stand.running) {
         await laufBeendet(stand)
@@ -1156,7 +1249,7 @@ async function ausgewaehlteWiederholen() {
         return
     }
     auswahl.value = []
-    gestartet(antwort)
+    gestartet(antwort, true)
 }
 
 /**
@@ -1262,9 +1355,10 @@ async function alleSofortVeroeffentlichen(kanaele = []) {
         // legt das Backend nicht doppelt an — dann werden die offenen ausgeführt
         let ids = angelegt?.job_ids?.length ? [...angelegt.job_ids] : (angelegt?.job_id ? [angelegt.job_id] : [])
         if (!ids.length) {
-            auftraege.value = await shop.fetchPublishJobs() || []
-            ids = auftraege.value
-                .filter((auftrag) => istOffen(auftrag) && auftrag.function === 'publish_all' && auftrag.channel === 'hugoshop'
+            // Unabhängig von Seite und Filter der Liste
+            const offene = await shop.fetchPublishJobs({ state: 'open', function: 'publish_all', per_page: 200 })
+            ids = (offene?.jobs || [])
+                .filter((auftrag) => auftrag.channel === 'hugoshop'
                     && (!kanaele.length || kanaele.includes(Number(auftrag.channel_id))))
                 .map((auftrag) => auftrag.id)
         }
@@ -1277,7 +1371,7 @@ async function alleSofortVeroeffentlichen(kanaele = []) {
 
         // Ausgewählt wie von Hand — die Zeilen sind während des Laufs markiert
         auswahl.value = ids
-        await ausfuehren(ids)
+        await ausfuehren(ids, true)
     } finally {
         sofort.value = false
     }
@@ -1299,7 +1393,7 @@ async function alleVeroeffentlichen(kanaele = []) {
             ? t('ShopView.publish.already')
             : t('ShopView.publish.queued'))
     }
-    auftraege.value = await shop.fetchPublishJobs() || []
+    await auftraegeLaden()
 }
 
 /**
@@ -1333,8 +1427,28 @@ onBeforeUnmount(beobachtenBeenden)
 </script>
 
 <style scoped>
+/* Abstände aus den Tokens (src/core/styles/tokens.css) */
+.abschnittshinweis {
+    color: var(--oserp-text-muted);
+    font-size: 0.875rem;
+    margin-bottom: var(--oserp-gap);
+}
+
+.laufhinweis {
+    padding: var(--oserp-gap-sm) 0;
+}
+
+.laufmeldung {
+    margin-bottom: var(--oserp-gap);
+}
+
 .auftragszeile {
     cursor: pointer;
+}
+
+/* Ankreuzfeld und Symbol: nur so breit wie ihr Inhalt */
+.schmal {
+    width: 1%;
 }
 
 .artikelverweis {

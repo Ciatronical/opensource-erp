@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Loja",
-            "overview": "Resumo"
+            "overview": "Resumo",
+            "vendors": "Fornecedores"
         },
         "common": {
             "reload": "Recarregar",
@@ -286,12 +287,12 @@
             "built": "Site reconstruído.",
             "cleanup": "Limpar",
             "cleanupHint": "Elimina as tarefas concluídas com êxito. As falhadas e as pendentes permanecem.",
-            "cleanupConfirm": "Serão eliminadas todas as tarefas concluídas com êxito; nesta lista são {count}.",
+            "cleanupConfirm": "Serão eliminadas todas as {count} tarefas concluídas com êxito, incluindo as das outras páginas.",
             "cleaned": "{count} tarefas eliminadas.",
             "cancel": "Cancelar",
             "messagesClose": "Ocultar mensagens",
             "delete": "Eliminar",
-            "deleteConfirm": "Os arquivos são excluídos deste artigo e da biblioteca. Se outro artigo referenciar um arquivo, ele é mantido lá.",
+            "deleteConfirm": "{count} tarefas serão eliminadas definitivamente.",
             "deleteHint": "As tarefas ainda não executadas também são eliminadas; depois já não estão em fila.",
             "deleted": "{count} tarefas eliminadas.",
             "runBlocked": "A seleção contém uma tarefa falhada. Só é possível executar as pendentes. Com «Repetir» é possível executar novamente as tarefas falhadas.",
@@ -313,7 +314,15 @@
             "installUiAsk": "Instalar já a interface de utilizador da loja ou agendá-la como tarefa para a próxima execução planeada?",
             "installUiChannels": "Para que canais de venda?",
             "installUiLater": "Agendar como tarefa",
-            "installUiNow": "Instalar agora"
+            "installUiNow": "Instalar agora",
+            "selectPage": "Selecionar página",
+            "emptyFilter": "Sem tarefas nesta vista.",
+            "filter": {
+                "all": "Todas ({count})",
+                "open": "Pendentes ({count})",
+                "done": "Concluídas ({count})",
+                "failed": "Falhadas ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

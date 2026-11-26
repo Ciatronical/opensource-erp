@@ -12,7 +12,8 @@
         },
         "menu": {
             "title": "Veikals",
-            "overview": "Pārskats"
+            "overview": "Pārskats",
+            "vendors": "Piegādātāji"
         },
         "common": {
             "reload": "Ielādēt no jauna",
@@ -286,12 +287,12 @@
             "built": "Vietne pārbūvēta.",
             "cleanup": "Sakārtot",
             "cleanupHint": "Dzēš veiksmīgi pabeigtos uzdevumus. Neizdevušies un atvērtie paliek.",
-            "cleanupConfirm": "Tiks dzēsti visi veiksmīgi pabeigtie uzdevumi, šajā sarakstā to ir {count}.",
+            "cleanupConfirm": "Tiks dzēsti visi {count} veiksmīgi pabeigtie uzdevumi, arī tie, kas atrodas citās lapās.",
             "cleaned": "Dzēsti {count} uzdevumi.",
             "cancel": "Atcelt",
             "messagesClose": "Paslēpt ziņojumus",
             "delete": "Dzēst",
-            "deleteConfirm": "Faili tiek dzēsti no šīs preces un no bibliotēkas. Ja uz failu atsaucas cita prece, tas tur paliek.",
+            "deleteConfirm": "Tiks neatgriezeniski dzēsti {count} uzdevumi.",
             "deleteHint": "Tiek dzēsti arī vēl neizpildītie uzdevumi; pēc tam tie vairs nav rindā.",
             "deleted": "Dzēsti {count} uzdevumi.",
             "runBlocked": "Atlasē ir neizdevies uzdevums. Izpildīt var tikai to, kas vēl ir atvērts. Ar “Atkārtot” neveiksmīgos uzdevumus var izpildīt vēlreiz.",
@@ -313,7 +314,15 @@
             "installUiAsk": "Vai instalēt veikala lietotāja saskarni tūlīt vai ieplānot kā uzdevumu nākamajai plānotajai palaišanai?",
             "installUiChannels": "Kuriem pārdošanas kanāliem?",
             "installUiLater": "Ieplānot kā uzdevumu",
-            "installUiNow": "Instalēt tūlīt"
+            "installUiNow": "Instalēt tūlīt",
+            "selectPage": "Atlasīt lapu",
+            "emptyFilter": "Šajā skatā uzdevumu nav.",
+            "filter": {
+                "all": "Visi ({count})",
+                "open": "Gaida ({count})",
+                "done": "Pabeigti ({count})",
+                "failed": "Neizdevušies ({count})"
+            }
         },
         "channels": {
             "hugoshop": "HugoShop",

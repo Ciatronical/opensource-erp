@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Nieprawidłowy adres: {url} — oczekiwano np. https://erp.example.pl/portal/",
             "IS_HUGOCMS": "To adres HugoCMS ({url}). Tutaj należy wpisać dostęp portalowy OpensourceERP, np. https://erp.example.pl/portal/ — lokalnie http://localhost:8000/portal/.",
+            "IS_PROXY": "To jest przekierowanie samej strony internetowej ({url}), a nie dostęp OpensourceERP — przekazywałoby zapytania do samego siebie. Tutaj należy wpisać dostęp portalowy OpensourceERP, np. https://erp.example.pl/portal/ — lokalnie http://localhost:8000/portal/.",
             "NO_KEY": "Witryna nie ma jeszcze klucza.",
             "OK": "Dostęp portalowy OpensourceERP odpowiada, klucz pasuje do „{name}”.",
             "OK_OLD": "Dostęp portalowy OpensourceERP odpowiada i przyjmuje klucz; ta wersja nie potrafi określić witryny.",

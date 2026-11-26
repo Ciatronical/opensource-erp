@@ -509,12 +509,22 @@ function installWebsitePackage($data) {
 
     $meldungen = [];
     $fehler = 0;
-    $ok = portalPublishWebsite(
-        $db, $website,
-        function (string $text) use (&$meldungen): void { $meldungen[] = ['art' => 'info', 'text' => $text]; },
-        function (string $text) use (&$meldungen, &$fehler): void { $meldungen[] = ['art' => 'error', 'text' => $text]; $fehler++; }
-    );
-    portalPublishUnlock($db);
+    $ok = false;
+    try {
+        $ok = portalPublishWebsite(
+            $db, $website,
+            function (string $text) use (&$meldungen): void { $meldungen[] = ['art' => 'info', 'text' => $text]; },
+            function (string $text) use (&$meldungen, &$fehler): void { $meldungen[] = ['art' => 'error', 'text' => $text]; $fehler++; }
+        );
+    } catch (ApiError $e) {
+        // Eine Erweiterung lehnt die Lieferung ab (Haken publish_entries, etwa
+        // SHOP_HUGOCMS_GRANTS): der Grund gehört zu den Meldungen, sonst
+        // zeigt die Oberfläche nur „Grund:“ ohne Text
+        $meldungen[] = ['art' => 'error', 'text' => $e->getMessage()];
+        $fehler++;
+    } finally {
+        portalPublishUnlock($db);
+    }
     resultInfo(true, '', ['ok' => $ok && 0 === $fehler, 'messages' => $meldungen]);
 }
 

@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Adresas neįvestas.",
         "shopBackendTest_INVALID": "Neteisingas adresas: {url} — tikimasi pvz. https://erp.example.lt/shop/",
         "shopBackendTest_IS_HUGOCMS": "Tai HugoCMS adresas ({url}). Čia turi būti OpensourceERP parduotuvės prieiga, pvz. https://erp.example.lt/shop/ — vietoje http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "Tai pačios svetainės persiuntėjas ({url}), o ne OpensourceERP prieiga — jis persiųstų užklausas pats sau. Čia turi būti OpensourceERP parduotuvės prieiga, pvz. https://erp.example.lt/shop/ — vietoje http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "Adresas atrodo teisingas: {url}",
         "shopBackendTest_SKIPPED": "Praleista — pirmiausia pataisykite įvestį.",
         "shopBackendTest_NO_KEY": "Kanalas dar neturi parduotuvės rakto.",

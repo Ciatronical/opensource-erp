@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "No se ha introducido ninguna dirección.",
         "shopBackendTest_INVALID": "Dirección no válida: {url} — se espera algo como https://erp.example.es/shop/",
         "shopBackendTest_IS_HUGOCMS": "Esta es la dirección de HugoCMS ({url}). Aquí va el acceso de tienda de OpensourceERP, p. ej. https://erp.example.es/shop/ — en local http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "Esa es la pasarela del propio sitio web ({url}), no el acceso de OpensourceERP: reenviaría las solicitudes a sí misma. Aquí va el acceso de tienda de OpensourceERP, p. ej. https://erp.example.es/shop/ — en local http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "La dirección parece correcta: {url}",
         "shopBackendTest_SKIPPED": "Omitido: corrija primero la entrada.",
         "shopBackendTest_NO_KEY": "El canal aún no tiene clave de tienda.",

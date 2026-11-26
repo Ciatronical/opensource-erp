@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Nessun indirizzo inserito.",
         "shopBackendTest_INVALID": "Indirizzo non valido: {url} — atteso ad es. https://erp.example.it/shop/",
         "shopBackendTest_IS_HUGOCMS": "Questo è l’indirizzo di HugoCMS ({url}). Qui va l’accesso negozio di OpensourceERP, ad es. https://erp.example.it/shop/ — in locale http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "Questo è l’inoltro del sito web stesso ({url}), non l’accesso di OpensourceERP — inoltrerebbe le richieste a sé stesso. Qui va l’accesso negozio di OpensourceERP, ad es. https://erp.example.it/shop/ — in locale http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "L’indirizzo sembra corretto: {url}",
         "shopBackendTest_SKIPPED": "Saltato — correggete prima l’inserimento.",
         "shopBackendTest_NO_KEY": "Il canale non ha ancora una chiave del negozio.",

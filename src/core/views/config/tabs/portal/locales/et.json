@@ -105,6 +105,7 @@
         "backendTest": {
             "INVALID": "Vigane aadress: {url} — oodati näiteks https://erp.example.ee/portal/",
             "IS_HUGOCMS": "See on HugoCMS-i aadress ({url}). Siia kuulub OpensourceERP portaali juurdepääs, nt https://erp.example.ee/portal/ — kohalikult http://localhost:8000/portal/.",
+            "IS_PROXY": "See on veebilehe enda edastaja ({url}), mitte OpensourceERP juurdepääs — see edastaks päringud iseendale. Siia kuulub OpensourceERP portaali juurdepääs, nt https://erp.example.ee/portal/ — kohalikult http://localhost:8000/portal/.",
             "NO_KEY": "Veebisaidil pole veel võtit.",
             "OK": "OpensourceERP portaali juurdepääs vastab, võti sobib saidile „{name}“.",
             "OK_OLD": "OpensourceERP portaali juurdepääs vastab ja võtab võtme vastu; see versioon ei suuda veebisaiti määrata.",

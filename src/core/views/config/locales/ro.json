@@ -1025,6 +1025,7 @@
         "shopBackendTest_EMPTY": "Nu este introdusă nicio adresă.",
         "shopBackendTest_INVALID": "Adresă nevalidă: {url} — se așteaptă de ex. https://erp.example.ro/shop/",
         "shopBackendTest_IS_HUGOCMS": "Aceasta este adresa HugoCMS ({url}). Aici trebuie accesul magazin al OpensourceERP, de ex. https://erp.example.ro/shop/ — local http://localhost:8000/shop/.",
+        "shopBackendTest_IS_PROXY": "Acesta este redirecționorul site-ului însuși ({url}), nu accesul OpensourceERP — ar transmite cererile către el însuși. Aici trebuie accesul magazin al OpensourceERP, de ex. https://erp.example.ro/shop/ — local http://localhost:8000/shop/.",
         "shopBackendTest_PLAUSIBLE": "Adresa pare corectă: {url}",
         "shopBackendTest_SKIPPED": "Omis — corectați mai întâi introducerea.",
         "shopBackendTest_NO_KEY": "Canalul nu are încă o cheie de magazin.",
