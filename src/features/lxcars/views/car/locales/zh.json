@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "从扫描创建车辆",
+        "anprPlateHint": "识别到的车牌 {plate} – 扫描件中没有车牌时将采用。",
         "scanList": {
             "title": "最近的行驶证扫描",
             "loading": "正在加载扫描...",

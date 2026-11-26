@@ -1,0 +1,11 @@
+api:
+  listen: ":1984"
+
+webrtc:
+  ice_servers:
+    - urls: [stun:stun.l.google.com:19302]
+
+# Streams trägt das ERP selbst ein, sobald eine Kamera gespeichert wird.
+# Diese Vorlage nach go2rtc.yaml kopieren; go2rtc.yaml wird NICHT versioniert,
+# weil dort die Zugangsdaten der Kameras stehen.
+streams:

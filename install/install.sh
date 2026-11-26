@@ -56,8 +56,8 @@ OSERP_USER="${OSERP_USER:-$(stat -c '%U' "$OSERP_ROOT")}"
 OSERP_HOME="$(getent passwd "$OSERP_USER" | cut -d: -f6)"
 OSERP_HOME="${OSERP_HOME:-/home/$OSERP_USER}"
 
-# Node-Major (nodesource). Vite 7 braucht >= 20.19; Projekt läuft auf 25.
-NODE_MAJOR="${NODE_MAJOR:-25}"
+# Node-Major (nodesource). Vite 7 braucht >= 20.19; Projekt läuft auf 26.
+NODE_MAJOR="${NODE_MAJOR:-26}"
 # Modell, das Ollama nach der Installation vorlädt (überschreibbar).
 OLLAMA_MODEL="${OLLAMA_MODEL:-qwen2.5:7b}"
 # Externer kivitendo-Installer.

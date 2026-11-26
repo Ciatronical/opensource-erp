@@ -26,6 +26,7 @@ import time
 # "could not execute a primitive". Dieser Lock serialisiert alle OCR-Aufrufe.
 _ocr_lock = threading.Lock()
 import re
+import select
 import signal
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import cv2
@@ -173,6 +174,16 @@ DEFAULT_POLL_INTERVAL = 60  # Config alle 60s neu laden
 MERGE_X_THRESHOLD = 50
 MERGE_Y_THRESHOLD = 15
 
+VAAPI_DEVICE = '/dev/dri/renderD128'  # Intel-Grafik für die Hardware-Dekodierung
+LOGICAL_WIDTH = 1280          # Bezugsbreite: Boxen, Raster und Pixel-Schwellen gelten für diese Breite
+NATIVE_MAX_WIDTH = 3840       # so breit darf das Kamerabild für die Texterkennung höchstens bleiben
+OCR_DET_LIMIT = 1440          # längste Bildseite, bis zu der PaddleOCR nicht verkleinert
+ROI_PAD = 0.4                 # bewegten Bereich um diesen Anteil je Seite erweitern
+ROI_MIN = 0.3                 # Mindestgröße des Ausschnitts (Anteil an Bildbreite/-höhe)
+MOTION_W, MOTION_H = 160, 90 # Größe des Vergleichsbilds der Bewegungsschleuse
+MOTION_PIXEL_DIFF = 18       # Helligkeitsänderung, ab der ein Bildpunkt als bewegt zählt
+MOTION_MIN_PIXELS = 12       # bewegte Bildpunkte im Vergleichsbild (≈ 0,1 %)
+MOTION_HOLD_SECS = 4         # nach der letzten Bewegung noch so lange weiter erkennen
 MAX_SNAPSHOTS = 3            # Snapshots pro Erkennung: weit, mittel, nah
 MIN_MOVEMENT_PX = 20         # Mindest-Pixelbewegung des Box-Mittelpunkts
 DIRECTION_SIZE_RATIO = 1.20  # 20% Größenwachstum = Annäherung (war 1.15)
@@ -697,10 +708,11 @@ class FrameReader(threading.Thread):
     sofort das Vorherige), der Verarbeitungs-Thread holt immer den aktuellen Frame.
     """
 
-    def __init__(self, rtsp_url, max_width=1280):
+    def __init__(self, rtsp_url, max_width=1280, fps=5):
         super().__init__(daemon=True)
         self.rtsp_url = rtsp_url
         self.max_width = max_width
+        self.fps = int(fps)
         self._frame = None
         self._ts = 0.0
         self._opened = False
@@ -708,6 +720,8 @@ class FrameReader(threading.Thread):
         self.running = True
 
     def run(self):
+        if os.path.exists(VAAPI_DEVICE) and self._run_hw():
+            return
         cap = cv2.VideoCapture(self.rtsp_url, cv2.CAP_FFMPEG)
         cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         self._opened = cap.isOpened()
@@ -730,6 +744,84 @@ class FrameReader(threading.Thread):
             # werden gepufferte Frames im Burst verarbeitet, was den CPU-Verbrauch verdoppelt.
             time.sleep(0.033)
         cap.release()
+
+    def _probe_size(self):
+        """Bildgröße des Streams per ffprobe ermitteln. (0, 0) bei Fehler."""
+        try:
+            out = subprocess.run(
+                ['ffprobe', '-v', 'error', '-rtsp_transport', 'tcp', '-select_streams', 'v:0',
+                 '-show_entries', 'stream=width,height', '-of', 'csv=p=0', self.rtsp_url],
+                capture_output=True, text=True, timeout=15).stdout.strip().splitlines()
+            w, h = out[0].split(',')[:2]
+            return int(w), int(h)
+        except Exception:
+            return 0, 0
+
+    def _run_hw(self):
+        """Stream auf der Intel-Grafik dekodieren (VAAPI) statt in Software.
+
+        Ein 4-Megapixel-Stream mit 25 Bildern/s kostet in Software über einen
+        ganzen Prozessorkern — nur fürs Dekodieren und Verkleinern, obwohl die
+        Erkennung nur wenige Bilder pro Sekunde auswertet. ffmpeg verwirft die
+        überzähligen Bilder deshalb schon auf der Grafikkarte, skaliert dort und
+        liefert fertige BGR-Bilder über eine Pipe.
+
+        Rückgabe True, wenn mindestens ein Bild kam (danach ist der Stream
+        beendet → Reconnect durch den Worker); False, wenn die Hardware-Strecke
+        gar nicht anlief → Software-Rückfall in run().
+        """
+        src_w, src_h = self._probe_size()
+        if not src_w or not src_h:
+            return False
+        w = min(src_w, self.max_width or src_w)
+        w -= w % 2
+        h = int(round(src_h * w / src_w))
+        h -= h % 2
+        cmd = [
+            'ffmpeg', '-hide_banner', '-loglevel', 'error', '-nostdin',
+            '-init_hw_device', f'vaapi=va:{VAAPI_DEVICE}',
+            '-hwaccel', 'vaapi', '-hwaccel_device', 'va',
+            '-hwaccel_output_format', 'vaapi', '-filter_hw_device', 'va',
+            '-rtsp_transport', 'tcp', '-i', self.rtsp_url,
+            # fps zwingend VOR scale_vaapi (siehe camera_monitor.py: sonst bricht
+            # ffmpeg nach rund 51 s mit "Failed to sync surface" ab)
+            '-vf', f'fps={self.fps},scale_vaapi={w}:{h},hwdownload,format=nv12',
+            '-an', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-',
+        ]
+        try:
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=0)
+        except Exception as e:
+            print(f"[FrameReader] ffmpeg-Start fehlgeschlagen: {e}")
+            return False
+        fd = proc.stdout.fileno()
+        frame_bytes = w * h * 3
+        got_frame = False
+        try:
+            while self.running:
+                chunks, remaining = [], frame_bytes
+                while remaining > 0:
+                    ready, _, _ = select.select([fd], [], [], 15)
+                    part = os.read(fd, remaining) if ready else b''
+                    if not part:
+                        break   # Timeout oder ffmpeg beendet
+                    chunks.append(part)
+                    remaining -= len(part)
+                if remaining > 0:
+                    break
+                frame = np.frombuffer(b''.join(chunks), np.uint8).reshape(h, w, 3).copy()
+                with self._lock:
+                    self._frame = frame
+                    self._ts = time.time()
+                got_frame = True
+                self._opened = True
+        finally:
+            self._opened = False
+            try:
+                proc.terminate()
+                proc.wait(timeout=3)
+            except Exception:
+                proc.kill()
+        return got_frame
 
     def get_latest(self):
         """Gibt (frame_copy, timestamp) des neuesten Frames zurück, oder (None, 0.0)."""
@@ -779,6 +871,78 @@ class CameraWorker(threading.Thread):
         self._stats = {'frames': 0, 'detections': 0, 'skipped': 0}
         self._last_heartbeat = time.time()
 
+        # Bewegungsschleuse: Texterkennung nur, solange sich im Bild etwas tut
+        self._motion_ref = None
+        self._motion_until = 0.0
+        self._motion_mask_key = None   # Einstellungen, aus denen die Maske gebaut wurde
+        self._motion_mask = None
+        self._motion_roi = None        # bewegter Bildbereich (x0, y0, x1, y1), Anteile 0..1
+
+    def _build_motion_mask(self):
+        """Maske fürs Vergleichsbild: ausgeschlossene Rasterzellen zählen nicht.
+
+        In den per Raster ausgeschlossenen Bereichen (z. B. die Straße im
+        Hintergrund) werden ohnehin keine Kennzeichen gewertet — Bewegung dort
+        soll die Texterkennung deshalb auch nicht anwerfen.
+        """
+        mask = np.full((MOTION_H, MOTION_W), 255, dtype=np.uint8)
+        try:
+            cells = json.loads(self.config.get('excluded_cells') or '[]')
+            per_axis = max(1, int(100 / max(1, int(self.config.get('grid_size') or 10))))
+            for row, col in cells:
+                y0, y1 = int(row * MOTION_H / per_axis), int((row + 1) * MOTION_H / per_axis)
+                x0, x1 = int(col * MOTION_W / per_axis), int((col + 1) * MOTION_W / per_axis)
+                mask[y0:y1, x0:x1] = 0
+        except (ValueError, TypeError):
+            pass
+        left = int(MOTION_W * int(self.config.get('ignore_left_pct') or 0) / 100)
+        right = int(MOTION_W * int(self.config.get('ignore_right_pct') or 0) / 100)
+        if left:
+            mask[:, :left] = 0
+        if right:
+            mask[:, MOTION_W - right:] = 0
+        # Alles ausgeschlossen wäre eine Fehlkonfiguration — dann lieber ohne Maske
+        return mask if cv2.countNonZero(mask) else None
+
+    def _has_motion(self, frame, now):
+        """True, solange sich im Bild etwas bewegt (plus Nachlaufzeit).
+
+        Die Texterkennung kostet pro Durchlauf mehrere hundert Millisekunden
+        Rechenzeit. Ohne diese Schleuse lief sie ununterbrochen auch auf dem
+        leeren Hof — ein dauerhaft voll ausgelasteter Prozessorkern. Der
+        Bildvergleich auf einem stark verkleinerten Graubild kostet dagegen
+        praktisch nichts.
+        """
+        small = cv2.cvtColor(cv2.resize(frame, (MOTION_W, MOTION_H), interpolation=cv2.INTER_AREA),
+                             cv2.COLOR_BGR2GRAY)
+        small = cv2.GaussianBlur(small, (5, 5), 0)
+        # Raster-Einstellungen werden im laufenden Betrieb übernommen (kein
+        # Worker-Neustart) — die Maske deshalb bei Änderung neu aufbauen.
+        mask_key = tuple(str(self.config.get(k)) for k in
+                         ('excluded_cells', 'grid_size', 'ignore_left_pct', 'ignore_right_pct'))
+        if mask_key != self._motion_mask_key:
+            self._motion_mask_key = mask_key
+            self._motion_mask = self._build_motion_mask()
+        ref, self._motion_ref = self._motion_ref, small
+        if ref is None:
+            self._motion_until = now + MOTION_HOLD_SECS
+            return True
+        diff = cv2.threshold(cv2.absdiff(ref, small), MOTION_PIXEL_DIFF, 255, cv2.THRESH_BINARY)[1]
+        if self._motion_mask is not None:
+            diff = cv2.bitwise_and(diff, self._motion_mask)
+        changed = cv2.countNonZero(diff)
+        if changed >= MOTION_MIN_PIXELS:
+            self._motion_until = now + MOTION_HOLD_SECS
+            # Bewegten Bereich merken (grosszügig erweitert): nur dieser Ausschnitt
+            # geht in voller Kameraauflösung in die Texterkennung.
+            x, y, w, h = cv2.boundingRect(diff)
+            cx, cy = (x + w / 2) / MOTION_W, (y + h / 2) / MOTION_H
+            half_w = max(ROI_MIN, w / MOTION_W * (1 + 2 * ROI_PAD)) / 2
+            half_h = max(ROI_MIN, h / MOTION_H * (1 + 2 * ROI_PAD)) / 2
+            self._motion_roi = (max(0.0, cx - half_w), max(0.0, cy - half_h),
+                                min(1.0, cx + half_w), min(1.0, cy + half_h))
+        return now < self._motion_until
+
     def _write_health(self, event, message=None, frames=None, detections=None, skipped=None):
         """Health-Ereignis in die DB schreiben (non-blocking, ignoriert DB-Fehler)."""
         try:
@@ -802,7 +966,9 @@ class CameraWorker(threading.Thread):
     def run(self):
         self._write_health('start', message=self.rtsp_url[:100])
         print(f"[{self.name_str}] Starte Stream: {self.rtsp_url}")
+        fails = 0
         while self.running:
+            started = time.time()
             try:
                 self._process_stream()
             except Exception as e:
@@ -810,15 +976,24 @@ class CameraWorker(threading.Thread):
                 print(f"[{self.name_str}] Fehler: {e}")
                 self._write_health('error', message=msg)
             if self.running:
-                print(f"[{self.name_str}] Reconnect in 5s...")
+                # Lief der Stream länger, war die Kamera erreichbar → wieder zügig
+                # verbinden. Bei toter Kamera die Pause bis auf 2 min strecken,
+                # statt alle 5 s einen neuen Verbindungsaufbau zu starten.
+                fails = 0 if time.time() - started > 60 else fails + 1
+                delay = min(120, 5 * 2 ** min(fails, 5))
+                print(f"[{self.name_str}] Reconnect in {delay}s...")
                 self._write_health('reconnect')
-                time.sleep(5)
+                deadline = time.time() + delay
+                while self.running and time.time() < deadline:
+                    time.sleep(1)
 
     def stop(self):
         self.running = False
 
     def _process_stream(self):
-        reader = FrameReader(self.rtsp_url)
+        # Mehr Bilder als die Erkennung auswertet, braucht der Leser nicht zu liefern
+        reader = FrameReader(self.rtsp_url, max_width=NATIVE_MAX_WIDTH,
+                             fps=max(2, min(10, int(1 / self.interval) + 1)))
         reader.start()
 
         # Warten bis der erste Frame ankommt (max. 15s)
@@ -838,24 +1013,31 @@ class CameraWorker(threading.Thread):
             reader.running = False
             return
 
-        # Kamera-Auflösung beim ersten Frame merken
-        self._source_size = (frame.shape[1], frame.shape[0])
-        print(f"[{self.name_str}] Auflösung: {frame.shape[1]}x{frame.shape[0]}")
+        # Kamera-Auflösung beim ersten Frame merken. Gerechnet wird durchgehend im
+        # verkleinerten Bezugsbild (LOGICAL_WIDTH) — daran hängen Raster, Boxen und
+        # Pixel-Schwellen. Nur die Texterkennung selbst liest aus dem nativen Bild.
+        native_size = (frame.shape[1], frame.shape[0])
+        self._source_size = self._to_logical(frame).shape[1::-1]
+        print(f"[{self.name_str}] Auflösung: {native_size[0]}x{native_size[1]} "
+              f"(Bezugsbild {self._source_size[0]}x{self._source_size[1]})")
 
         last_process = 0.0
         while self.running:
             if not reader.stream_ok:
                 break
 
-            frame, frame_ts = reader.get_latest()
-            if frame is None:
-                time.sleep(0.1)
-                continue
-
-            now = time.time()
-            if now - last_process < self.interval:
+            # Erst die Wartezeit prüfen: get_latest() kopiert das volle Kamerabild
+            if time.time() - last_process < self.interval:
                 time.sleep(min(0.05, self.interval / 4))
                 continue
+
+            native, frame_ts = reader.get_latest()
+            if native is None:
+                time.sleep(0.1)
+                continue
+            frame = self._to_logical(native)
+
+            now = time.time()
 
             # Stream-Stall erkennen: Frame älter als 10s
             if frame_ts > 0 and now - frame_ts > 10:
@@ -877,10 +1059,15 @@ class CameraWorker(threading.Thread):
                 self._stats = {'frames': 0, 'detections': 0, 'skipped': 0}
                 self._last_heartbeat = now
 
-            enhanced = preprocess_frame(frame)
-            plates = self._recognize(enhanced)
+            if not self._has_motion(frame, now):
+                self._detected_boxes = []
+                continue
+
+            # Erst mit Kontrastanhebung, dann ohne — jeweils im bewegten Ausschnitt
+            # des nativen Bildes (siehe _recognize)
+            plates = self._recognize(frame, native, self._motion_roi, enhance=True)
             if not plates:
-                plates = self._recognize(frame)
+                plates = self._recognize(frame, native, self._motion_roi, enhance=False)
 
             # Erkannte Boxen fuer MJPEG-Overlay aktualisieren
             self._detected_boxes = [
@@ -1022,14 +1209,43 @@ class CameraWorker(threading.Thread):
 
         reader.running = False
 
-    def _recognize(self, frame):
+    @staticmethod
+    def _to_logical(native):
+        """Natives Kamerabild auf die Bezugsbreite verkleinern (kleinere bleiben)."""
+        h, w = native.shape[:2]
+        if w <= LOGICAL_WIDTH:
+            return native
+        return cv2.resize(native, (LOGICAL_WIDTH, int(round(h * LOGICAL_WIDTH / w))),
+                          interpolation=cv2.INTER_AREA)
+
+    def _recognize(self, frame, native=None, roi=None, enhance=False):
+        """Kennzeichen im Bild suchen.
+
+        frame ist das Bezugsbild; alle Boxen, Rasterzellen und Pixel-Schwellen
+        beziehen sich darauf. Gelesen wird aber — wenn vorhanden — aus dem
+        bewegten Ausschnitt (roi, Anteile 0..1) des nativen Kamerabilds: ein
+        Kennzeichen, das im Bezugsbild 22 px hoch ist, hat dort rund 46 px und
+        wird deutlich sicherer gelesen. Die gefundenen Boxen werden anschliessend
+        ins Bezugsbild zurückgerechnet.
+        """
+        source, scale, off_x, off_y = frame, 1.0, 0, 0
+        if native is not None and roi is not None and native.shape[1] > frame.shape[1]:
+            nh, nw = native.shape[:2]
+            x0, y0 = int(roi[0] * nw), int(roi[1] * nh)
+            x1, y1 = int(roi[2] * nw), int(roi[3] * nh)
+            if x1 - x0 >= 32 and y1 - y0 >= 32:
+                source, scale, off_x, off_y = native[y0:y1, x0:x1], nw / frame.shape[1], x0, y0
+        if enhance:
+            source = preprocess_frame(source)
         with _ocr_lock:
-            result = self.ocr.ocr(frame, cls=True)
+            result = self.ocr.ocr(source, cls=True)
         detections = []
         if not result or not result[0]:
             return detections
 
-        lines = [(line[0], line[1]) for line in result[0]]
+        # Boxen aus dem Ausschnitt zurück ins Bezugsbild rechnen
+        lines = [([[(px + off_x) / scale, (py + off_y) / scale] for px, py in line[0]], line[1])
+                 for line in result[0]]
 
         # Plakette-Filter: Die runde Prüfplakette auf dem Kennzeichen ist deutlich
         # kleiner als die echten Buchstaben. PaddleOCR erkennt sie als 'O' und fügt
@@ -1856,6 +2072,9 @@ class AnprService:
             show_log=False,
             use_gpu=False,            # Kein CUDA/NVIDIA noetig
             use_openvino=_openvino_available,  # Intel iGPU wenn verfuegbar
+            # Standard waere 960: groessere Bilder verkleinert PaddleOCR vor der
+            # Textsuche — dann ginge die Aufloesung des nativen Ausschnitts verloren.
+            det_limit_side_len=OCR_DET_LIMIT, det_limit_type='max',
         )
 
         if _openvino_available:

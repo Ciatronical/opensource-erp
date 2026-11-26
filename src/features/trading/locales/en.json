@@ -4,8 +4,9 @@
             "trading": "/ai-trading"
         },
         "title": "AI Trading",
-        "subtitle": "Research lab, paper trading and live trading supervised by the risk engine",
+        "subtitle": "Your own trading system: research lab, paper trading and live trading supervised by the risk engine",
         "refresh": "Refresh",
+        "guide": "Guide",
         "save": "Save",
         "saved": "Saved",
         "cancel": "Cancel",
@@ -33,7 +34,7 @@
         },
         "killSwitch": {
             "button": "Emergency stop",
-            "tooltip": "Halts all automated trading immediately and cancels all open orders. Existing positions are not sold. Only an administrator can lift the lock.",
+            "tooltip": "Halts all of your automated trading immediately and cancels all open orders. Existing positions are not sold. Only you can lift the lock.",
             "confirmTitle": "Trigger emergency stop?",
             "confirmText": "All automated trading is halted and all open orders are cancelled. Existing positions remain unchanged.",
             "done": "Trading halted, {n} open orders cancelled"
@@ -261,7 +262,8 @@
             }
         },
         "control": {
-            "adminOnly": "Enabling, limits and broker access are reserved for system administrators."
+            "adminOnly": "Instruments and the market data source apply to the whole company and are reserved for system administrators.",
+            "ownOnly": "Authorization, limits, locks and broker access apply to your own trading system only. Every employee has their own."
         },
         "limits": {
             "title": "Risk limits",
@@ -334,7 +336,8 @@
             "gate_live_min_paper_trades": "Forward test: minimum trades",
             "gate_live_max_paper_drawdown_pct": "Forward test: maximum drawdown (%)",
             "gate_live_min_paper_return_pct": "Forward test: minimum result (%)",
-            "retire_drawdown_factor": "Retire from multiple of backtest drawdown"
+            "retire_drawdown_factor": "Retire from multiple of backtest drawdown",
+            "companyWide": "Applies to the whole company"
         },
         "instruments": {
             "title": "Instruments",

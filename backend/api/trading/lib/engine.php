@@ -6,7 +6,8 @@
  *
  * Ein Lauf (alle paar Minuten per Cron, backend/cli/trading-engine.php):
  *
- *   1. Marktdaten nachholen und prüfen
+ *   1. Marktdaten nachholen und prüfen (gemeinsam), danach je Mitarbeiter
+ *      mit eigenem Handelssystem:
  *   2. je Konto: offene Orders mit dem Broker abgleichen
  *   3. je Konto: bei neuem Tagesbalken Zielgewichte bilden und umschichten
  *   4. Konten bewerten, Risiko überwachen
@@ -24,93 +25,143 @@ class TradingEngine {
     public static $sleep = null;
 
     /**
-     * Führt einen Lauf aus
+     * Führt einen Lauf aus: Marktdaten einmal, danach jeder Benutzer für sich
+     *
+     * Jeder Mitarbeiter mit eigenem Handelssystem (users_trading) wird getrennt
+     * bearbeitet; ein Fehler bei einem Benutzer hält die übrigen nicht auf.
      *
      * @param object $db   ApiDatabase
-     * @param array  $opts force_research (bool), skip_research (bool), skip_report (bool)
-     * @return array Zusammenfassung des Laufs
+     * @param array  $opts force_research (bool), skip_research (bool), skip_report (bool),
+     *                     only_user (int) — nur dieser Mitarbeiter
+     * @return array Zusammenfassung des Laufs (Summen über alle Benutzer, Einzelheiten unter "users")
      */
     public static function run($db, array $opts = []): array {
-        $settings = TradingConfig::settings($db);
-        if (($settings['engine_enabled'] ?? '1') !== '1') {
-            return ['skipped' => 'engine_disabled'];
-        }
         // Nie zwei Läufe gleichzeitig auf derselben Firmen-Datenbank
         $lock = $db->getOne("SELECT pg_try_advisory_lock(hashtext('oserp_trading_engine')) AS ok", []);
         if (!$lock || !$lock['ok']) {
             return ['skipped' => 'already_running'];
         }
 
-        $summary = ['bars' => 0, 'orders' => 0, 'errors' => []];
+        $before = TradingScope::id($db);
+        $summary = ['bars' => 0, 'orders' => 0, 'errors' => [], 'users' => []];
         try {
-            TradingState::set($db, 'engine_heartbeat', gmdate('c'));
+            $users = TradingScope::users($db);
+            if (!empty($opts['only_user'])) {
+                $users = array_values(array_intersect($users, [(int)$opts['only_user']]));
+            }
+            if (!$users) {
+                $summary['skipped'] = 'no_users';
+                return $summary;
+            }
+            TradingState::setGlobal($db, 'engine_heartbeat', gmdate('c'));
 
-            // 1. Marktdaten
+            // 1. Marktdaten (gemeinsam für alle Benutzer)
             $md = TradingMarketData::update($db);
             $summary['bars'] = $md['inserted'];
+            $notices = [];
             foreach ($md['errors'] as $err) {
                 $summary['errors'][] = 'Marktdaten: ' . $err;
-                TradingAudit::log($db, 'marketdata', 'update_error', ['message' => $err], 'warning');
+                $notices[] = ['update_error', $err];
             }
             $panel = TradingMarketData::panel($db);
             if (count($panel['ts']) < 50) {
                 $summary['skipped'] = 'no_market_data';
                 return $summary;
             }
-            $lastBar = end($panel['ts']);
-            $dataFresh = (time() - $lastBar) < 4 * 86400;
-
             $quotes = [];
             try {
                 $quotes = TradingMarketData::quotes($db);
             } catch (Throwable $e) {
                 $summary['errors'][] = 'Kurse: ' . $e->getMessage();
-                TradingAudit::log($db, 'marketdata', 'quotes_error', ['message' => $e->getMessage()], 'warning');
+                $notices[] = ['quotes_error', $e->getMessage()];
             }
 
-            // 5a. Lebenszyklus und Kapitalverteilung einmal je Tag, VOR dem Handel:
-            // eine heute ausgemusterte Strategie soll heute nicht mehr kaufen
-            if (TradingState::get($db, 'lifecycle_day') !== gmdate('Y-m-d')) {
-                $summary['lifecycle'] = TradingResearch::lifecycle($db);
-                TradingState::set($db, 'lifecycle_day', gmdate('Y-m-d'));
-            }
-            TradingPortfolio::ensureAccounts($db);
-            TradingPortfolio::allocate($db);
-
-            // 2.–4. Konten
-            foreach (TradingPortfolio::accounts($db) as $account) {
+            foreach ($users as $uid) {
+                TradingScope::set($db, $uid);
                 try {
-                    $summary['orders'] += self::processAccount($db, $account, $panel, $quotes, $lastBar, $dataFresh);
-                } catch (Throwable $e) {
-                    $summary['errors'][] = $account['name'] . ': ' . $e->getMessage();
-                    if (in_array($account['kind'], TradingPortfolio::BROKER_KINDS, true)) {
-                        TradingRisk::recordError($db, $account['name'] . ': ' . $e->getMessage());
-                    } else {
-                        TradingAudit::log($db, 'engine', 'account_error', ['message' => $e->getMessage()], 'warning', (int)$account['id']);
+                    // Störungen der Marktdaten gehören in das Protokoll jedes Benutzers
+                    foreach ($notices as [$event, $message]) {
+                        TradingAudit::log($db, 'marketdata', $event, ['message' => $message], 'warning');
                     }
+                    $result = self::runUser($db, $panel, $quotes, $opts);
+                } catch (Throwable $e) {
+                    $result = ['orders' => 0, 'errors' => [$e->getMessage()]];
                 }
-            }
-            TradingRisk::monitor($db);
-            if (!$summary['errors']) TradingRisk::recordSuccess($db);
-
-            // 5b. Forschung
-            $researchDue = ($settings['research_enabled'] ?? '1') === '1'
-                && (time() - (int)TradingState::get($db, 'research_last_ts', '0')) >= (float)($settings['research_interval_hours'] ?? 24) * 3600;
-            if (empty($opts['skip_research']) && ($researchDue || !empty($opts['force_research']))) {
-                TradingState::set($db, 'research_last_ts', (string)time());
-                $summary['research'] = TradingResearch::cycle($db, $panel);
-                TradingPortfolio::ensureAccounts($db);
-            }
-
-            // 5c. Tagesbericht
-            if (empty($opts['skip_report']) && (int)gmdate('G') >= (int)($settings['report_hour'] ?? 6)
-                && TradingState::get($db, 'report_day') !== gmdate('Y-m-d')) {
-                TradingReport::generate($db, $panel);
-                TradingState::set($db, 'report_day', gmdate('Y-m-d'));
-                $summary['report'] = true;
+                $summary['orders'] += (int)($result['orders'] ?? 0);
+                foreach ($result['errors'] ?? [] as $err) {
+                    $summary['errors'][] = 'Benutzer ' . $uid . ': ' . $err;
+                }
+                foreach (['research', 'report', 'lifecycle'] as $k) {
+                    if (isset($result[$k])) $summary[$k] = true;
+                }
+                $summary['users'][$uid] = $result;
             }
         } finally {
+            TradingScope::set($db, $before ?: null);
             $db->execute("SELECT pg_advisory_unlock(hashtext('oserp_trading_engine'))", []);
+        }
+        return $summary;
+    }
+
+    /**
+     * Bearbeitet das Handelssystem des Mitarbeiters der Sitzung
+     *
+     * @param object $db     ApiDatabase (Sitzung steht auf dem Mitarbeiter, TradingScope::set)
+     * @param array  $panel  Kurspanel
+     * @param array  $quotes Aktuelle Kurse
+     * @param array  $opts   wie run()
+     * @return array orders, errors und — wenn gelaufen — lifecycle, research, report
+     */
+    public static function runUser($db, array $panel, array $quotes, array $opts = []): array {
+        TradingScope::requireId($db);
+        $settings = TradingConfig::settings($db);
+        if (($settings['engine_enabled'] ?? '1') !== '1') {
+            return ['skipped' => 'engine_disabled'];
+        }
+        $summary = ['orders' => 0, 'errors' => []];
+        $lastBar = end($panel['ts']);
+        $dataFresh = (time() - $lastBar) < 4 * 86400;
+
+        // 5a. Lebenszyklus und Kapitalverteilung einmal je Tag, VOR dem Handel:
+        // eine heute ausgemusterte Strategie soll heute nicht mehr kaufen
+        if (TradingState::get($db, 'lifecycle_day') !== gmdate('Y-m-d')) {
+            $summary['lifecycle'] = TradingResearch::lifecycle($db);
+            TradingState::set($db, 'lifecycle_day', gmdate('Y-m-d'));
+        }
+        TradingPortfolio::ensureAccounts($db);
+        TradingPortfolio::allocate($db);
+
+        // 2.–4. Konten
+        foreach (TradingPortfolio::accounts($db) as $account) {
+            try {
+                $summary['orders'] += self::processAccount($db, $account, $panel, $quotes, $lastBar, $dataFresh);
+            } catch (Throwable $e) {
+                $summary['errors'][] = $account['name'] . ': ' . $e->getMessage();
+                if (in_array($account['kind'], TradingPortfolio::BROKER_KINDS, true)) {
+                    TradingRisk::recordError($db, $account['name'] . ': ' . $e->getMessage());
+                } else {
+                    TradingAudit::log($db, 'engine', 'account_error', ['message' => $e->getMessage()], 'warning', (int)$account['id']);
+                }
+            }
+        }
+        TradingRisk::monitor($db);
+        if (!$summary['errors']) TradingRisk::recordSuccess($db);
+
+        // 5b. Forschung
+        $researchDue = ($settings['research_enabled'] ?? '1') === '1'
+            && (time() - (int)TradingState::get($db, 'research_last_ts', '0')) >= (float)($settings['research_interval_hours'] ?? 24) * 3600;
+        if (empty($opts['skip_research']) && ($researchDue || !empty($opts['force_research']))) {
+            TradingState::set($db, 'research_last_ts', (string)time());
+            $summary['research'] = TradingResearch::cycle($db, $panel);
+            TradingPortfolio::ensureAccounts($db);
+        }
+
+        // 5c. Tagesbericht
+        if (empty($opts['skip_report']) && (int)gmdate('G') >= (int)($settings['report_hour'] ?? 6)
+            && TradingState::get($db, 'report_day') !== gmdate('Y-m-d')) {
+            TradingReport::generate($db, $panel);
+            TradingState::set($db, 'report_day', gmdate('Y-m-d'));
+            $summary['report'] = true;
         }
         return $summary;
     }
@@ -137,7 +188,7 @@ class TradingEngine {
             $blocked = TradingRisk::tradingBlocked($db, $account);
             if ($blocked === null) {
                 $orders = self::rebalance($db, $account, $broker, $panel, $quotes, $lastBar);
-                $db->execute("UPDATE accounts_trading SET last_signal_ts = to_timestamp(:ts) AT TIME ZONE 'UTC' WHERE id = :id",
+                $db->execute("UPDATE my_accounts_trading SET last_signal_ts = to_timestamp(:ts) AT TIME ZONE 'UTC' WHERE id = :id",
                     [':ts' => $lastBar, ':id' => $account['id']]);
             }
         }
@@ -254,7 +305,7 @@ class TradingEngine {
         foreach ($buys as $iid => $diff) {
             $q = $quotes[$iid];
             $ins = $instruments[$iid];
-            $cash = (float)$db->getOne("SELECT cash FROM accounts_trading WHERE id = :id", [':id' => $account['id']])['cash'];
+            $cash = (float)$db->getOne("SELECT cash FROM my_accounts_trading WHERE id = :id", [':id' => $account['id']])['cash'];
             // Puffer für Gebühr, Slippage und Kursbewegung bis zur Ausführung
             $spend = min($diff, $cash / (1 + $feeRate) * 0.995);
             if ($account['kind'] === 'live') $spend = min($spend, (float)($limits['max_order_value'] ?? 0));
@@ -289,10 +340,10 @@ class TradingEngine {
 
         $rows = $db->getAll(
             "SELECT p.instrument_id, p.qty, p.avg_price, i.qty_decimals, s.venue_symbol,
-                    (SELECT COALESCE(sum(o.qty - o.filled_qty), 0) FROM orders_trading o
+                    (SELECT COALESCE(sum(o.qty - o.filled_qty), 0) FROM my_orders_trading o
                       WHERE o.account_id = p.account_id AND o.instrument_id = p.instrument_id AND o.side = 'sell'
                         AND o.order_type IN ('stop', 'stop_limit') AND o.status IN ('submitting', 'submitted', 'partially_filled')) AS stop_qty
-             FROM positions_trading p
+             FROM my_positions_trading p
              JOIN instruments_trading i ON i.id = p.instrument_id
              JOIN instrument_symbols_trading s ON s.instrument_id = p.instrument_id AND s.venue = :venue
              WHERE p.account_id = :aid AND p.qty > 0",

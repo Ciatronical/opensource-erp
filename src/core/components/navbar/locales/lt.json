@@ -75,6 +75,7 @@
         "markOrdered": "Pažymėti {count} kaip užsakytus",
         "yesterday": "Vakar",
         "noOrder": "nėra užsakymo",
+        "anprOrder": "Užsakymas {number}",
         "smsFallbackToast": "WhatsApp žinutė {name} nepasiekė – išsiųsta SMS",
         "smsFallbackFailed": "WhatsApp žinutė {name} nepasiekė, atsarginė SMS taip pat nepavyko: {error}",
         "telegramFile": "Failas",

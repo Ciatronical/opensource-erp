@@ -44,7 +44,7 @@ interface TradingBroker {
      */
     public function placeOrder(array $order): array;
 
-    /** Aktuellen Zustand einer aufgegebenen Order abfragen ($order = Zeile aus orders_trading + venue_symbol) */
+    /** Aktuellen Zustand einer aufgegebenen Order abfragen ($order = Zeile aus my_orders_trading + venue_symbol) */
     public function getOrder(array $order): array;
 
     /** Order anhand unserer Kennung suchen — null, wenn der Broker sie nicht kennt */
@@ -80,7 +80,7 @@ class TradingBrokers {
      * 'broker_paper' = Testumgebung des Brokers) — und im Testmodus überhaupt nicht.
      *
      * @param object $db      ApiDatabase
-     * @param array  $account Zeile aus accounts_trading
+     * @param array  $account Zeile aus my_accounts_trading
      * @param array  $quotes  Aktuelle Kurse [instrument_id => quote] für den Simulator
      * @return TradingBroker
      */
@@ -95,7 +95,7 @@ class TradingBrokers {
             throw new RuntimeException('Testmodus: echte Broker-Adapter sind gesperrt');
         }
         $conn = $db->getOne(
-            "SELECT * FROM broker_connections_trading WHERE id = :id AND active",
+            "SELECT * FROM my_broker_connections_trading WHERE id = :id AND active",
             [':id' => $account['broker_connection_id']]
         );
         if (!$conn) throw new RuntimeException('Keine aktive Broker-Verbindung für Konto ' . $account['id']);
@@ -105,7 +105,7 @@ class TradingBrokers {
     /**
      * Baut einen Adapter aus einer Verbindungszeile
      *
-     * @param array $conn Zeile aus broker_connections_trading
+     * @param array $conn Zeile aus my_broker_connections_trading
      * @return TradingBroker
      */
     public static function fromConnection(array $conn): TradingBroker {
@@ -147,7 +147,7 @@ class TradingPaperBroker implements TradingBroker {
     }
 
     public function getPositionQty(string $venueSymbol): float {
-        return INF;   // Der Simulator führt keinen eigenen Bestand; massgeblich ist positions_trading
+        return INF;   // Der Simulator führt keinen eigenen Bestand; massgeblich ist my_positions_trading
     }
 
     public function getQuote(string $venueSymbol): array {
@@ -229,7 +229,7 @@ class TradingPaperBroker implements TradingBroker {
                 // Bezugskurs nachziehen (Verkauf: Höchstkurs seit Aufgabe), Stopp im Abstand trail_percent
                 $ref = (float)($order['trail_ref_price'] ?? 0);
                 $ref = $buy ? ($ref > 0 ? min($ref, $touch) : $touch) : max($ref, $touch);
-                $this->db->execute("UPDATE orders_trading SET trail_ref_price = :ref WHERE id = :id", [':ref' => $ref, ':id' => $order['id']]);
+                $this->db->execute("UPDATE my_orders_trading SET trail_ref_price = :ref WHERE id = :id", [':ref' => $ref, ':id' => $order['id']]);
                 $stop = $ref * ($buy ? 1 + $order['trail_percent'] / 100 : 1 - $order['trail_percent'] / 100);
                 if ($buy ? $touch >= $stop : $touch <= $stop) {
                     $fillPrice = $touch * ($buy ? 1 + $this->slip : 1 - $this->slip);

@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
+        "anprPlateHint": "Rozpoznaná SPZ {plate} – použije se, pokud sken SPZ neobsahuje.",
         "scanList": {
             "title": "Letzte Fahrzeugschein-Scans",
             "loading": "Scans werden geladen...",

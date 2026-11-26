@@ -130,7 +130,7 @@ Die manuellen Einzelschritte unten dienen als Referenz / für Sonderfälle.
 sudo apt update && sudo apt upgrade -y
 
 # Node.js und npm
-curl -fsSL https://deb.nodesource.com/setup_25.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash -
 sudo apt install -y nodejs
 
 # PostgreSQL

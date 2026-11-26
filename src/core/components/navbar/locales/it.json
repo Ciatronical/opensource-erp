@@ -75,6 +75,7 @@
         "markOrdered": "Segna {count} come ordinati",
         "yesterday": "Ieri",
         "noOrder": "nessun ordine",
+        "anprOrder": "Ordine {number}",
         "smsFallbackToast": "Il WhatsApp a {name} non è arrivato – inviato come SMS",
         "smsFallbackFailed": "Il WhatsApp a {name} non è arrivato e anche l'SMS sostitutivo è fallito: {error}",
         "telegramFile": "File",

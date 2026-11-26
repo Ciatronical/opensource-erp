@@ -77,6 +77,8 @@
         "cameraName": "Display name",
         "previewUnavailable": "No image available",
         "previewReload": "Reload image",
+        "offline": "Offline",
+        "offlineSince": "no image since {time}",
         "camKey": "Camera key",
         "camKeyHint": "Unique identifier without spaces (e.g. warehouse_entrance) — used as stream name in go2rtc",
         "streamUrl": "Stream URL",
@@ -204,7 +206,7 @@
 
         "editZones": "Configure zones",
         "zoneEditorTitle": "Detection zones",
-        "zoneEditorHint": "Select a zone, then click on the camera image to draw a polygon.",
+        "zoneEditorHint": "Select a zone, then click on the camera image to draw a polygon. Once a zone is drawn, only objects inside the zones are reported and recorded.",
         "zoneSelectHint": "Select a zone from the list to start drawing",
         "zoneDrawHint": "Click = add point · Double-click = finish · Right-click = remove point",
         "zonePoints": "points",

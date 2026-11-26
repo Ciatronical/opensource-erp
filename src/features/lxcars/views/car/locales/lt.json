@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
+        "anprPlateHint": "Atpažintas numeris {plate} – naudojamas, jei skenuotame dokumente numerio nėra.",
         "scanList": {
             "title": "Letzte Fahrzeugschein-Scans",
             "loading": "Scans werden geladen...",

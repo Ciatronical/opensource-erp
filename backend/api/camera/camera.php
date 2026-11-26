@@ -27,20 +27,72 @@ function _slugify(string $str): string {
 }
 
 define('GO2RTC_YAML', __DIR__ . '/../../../backend/services/go2rtc/go2rtc.yaml');
+// Breite des nach H.264 umgewandelten Livebilds (Höhe folgt dem Seitenverhältnis)
+define('GO2RTC_TRANSCODE_WIDTH', 1920);
 
-function _go2rtcYamlSetStream(string $camKey, string $streamUrl): void {
-    if (!file_exists(GO2RTC_YAML)) return;
-    $yaml = file_get_contents(GO2RTC_YAML);
+/**
+ * Eintrag eines Streams samt seiner Folgezeilen aus der go2rtc.yaml entfernen
+ *
+ * go2rtc schreibt Streams auch selbst in die Datei, und zwar als Liste
+ * (Schlüsselzeile, darunter eingerückte "- rtsp://…"-Zeilen). Wer nur die
+ * Schlüsselzeile ersetzt oder löscht, lässt diese Listenzeilen stehen — die
+ * Datei ist dann kein gültiges YAML mehr und go2rtc startet beim nächsten
+ * Neustart ohne einen einzigen Stream (alle Livebilder weg).
+ *
+ * @param string $yaml Inhalt der go2rtc.yaml
+ * @param string $camKey Name des Streams
+ * @return array [bereinigtes YAML, Einrückung des entfernten Eintrags oder null]
+ */
+function _go2rtcYamlDropStream(string $yaml, string $camKey): array {
+    $lines = explode("\n", $yaml);
+    $out = [];
+    $indent = null;
+    $skip = false;
+    foreach ($lines as $line) {
+        if (preg_match('/^(\s+)' . preg_quote($camKey, '/') . '\s*:/', $line, $m)) {
+            $indent = $m[1];
+            $skip = true;      // Schlüsselzeile weg, Folgezeilen prüfen
+            continue;
+        }
+        if ($skip) {
+            // Zum Eintrag gehört alles, was tiefer eingerückt ist als der Schlüssel
+            if (trim($line) !== '' && preg_match('/^(\s*)/', $line, $m) && strlen($m[1]) > strlen($indent)) {
+                continue;
+            }
+            $skip = false;
+        }
+        $out[] = $line;
+    }
+    return [implode("\n", $out), $indent];
+}
 
-    $escaped = str_replace('"', '\\"', $streamUrl);
-    $line = $camKey . ': "' . $escaped . '"';
+/**
+ * Stream in die go2rtc.yaml schreiben (ersetzt einen vorhandenen Eintrag vollständig)
+ *
+ * @param string $camKey Name des Streams
+ * @param array $sources Quellen in Reihenfolge; mehrere werden als YAML-Liste geschrieben
+ */
+function _go2rtcYamlSetStream(string $camKey, array $sources): void {
+    // Die Datei enthält Kamera-Zugangsdaten und ist deshalb nicht versioniert —
+    // auf einer frischen Installation gibt es sie noch nicht.
+    if (!file_exists(GO2RTC_YAML)) {
+        if (!is_dir(dirname(GO2RTC_YAML))) return;
+        file_put_contents(GO2RTC_YAML, "api:\n  listen: \":1984\"\n\nstreams:\n");
+    }
+    [$yaml] = _go2rtcYamlDropStream(file_get_contents(GO2RTC_YAML), $camKey);
 
-    if (preg_match('/^(\s+)' . preg_quote($camKey, '/') . '\s*:/m', $yaml, $m)) {
-        $yaml = preg_replace('/^(\s+)' . preg_quote($camKey, '/') . '\s*:.*$/m', $m[1] . $line, $yaml);
-    } elseif (preg_match('/^streams\s*:/m', $yaml)) {
-        $yaml = preg_replace('/(^streams\s*:)/m', "$1\n  $line", $yaml);
+    $quote = fn($v) => '"' . str_replace('"', '\\"', $v) . '"';
+    if (count($sources) === 1) {
+        $line = $camKey . ': ' . $quote($sources[0]);
     } else {
-        $yaml .= "\nstreams:\n  $line\n";
+        $line = $camKey . ':';
+        foreach ($sources as $src) $line .= "\n    - " . $quote($src);
+    }
+
+    if (preg_match('/^streams\s*:/m', $yaml)) {
+        $yaml = preg_replace('/(^streams\s*:.*$)/m', "$1\n  $line", $yaml, 1);
+    } else {
+        $yaml = rtrim($yaml, "\n") . "\nstreams:\n  $line\n";
     }
 
     file_put_contents(GO2RTC_YAML, $yaml);
@@ -48,24 +100,66 @@ function _go2rtcYamlSetStream(string $camKey, string $streamUrl): void {
 
 function _go2rtcYamlRemoveStream(string $camKey): void {
     if (!file_exists(GO2RTC_YAML)) return;
-    $yaml = file_get_contents(GO2RTC_YAML);
-    $yaml = preg_replace('/^\s+' . preg_quote($camKey, '/') . '\s*:.*\n?/m', '', $yaml);
+    [$yaml] = _go2rtcYamlDropStream(file_get_contents(GO2RTC_YAML), $camKey);
     file_put_contents(GO2RTC_YAML, $yaml);
 }
 
 function _syncGo2rtc(?string $camKey, string $streamUrl): void {
     if (empty($camKey) || empty($streamUrl)) return;
 
-    _go2rtcYamlSetStream($camKey, $streamUrl);
+    $sources = [$streamUrl];
+    _go2rtcYamlSetStream($camKey, $sources);
 
     $db = DbhCompany::begin();
     $row = $db->getOne("SELECT value FROM defaults_oserp WHERE key = 'camera_go2rtc_url'");
     $go2rtcUrl = $row ? rtrim($row['value'], '/') : '';
     if (empty($go2rtcUrl)) return;
 
-    $url = $go2rtcUrl . '/api/streams?' . http_build_query(['name' => $camKey, 'src' => $streamUrl]);
+    _go2rtcPutStream($go2rtcUrl, $camKey, $sources);
+
+    // Livebilder laufen im Browser über WebRTC, und das kann kein H.265. Liefert
+    // die Kamera kein H.264 (z. B. Reolink-Hauptstream), bleibt das Bild schwarz.
+    // Dann bekommt der Stream eine zweite Quelle: go2rtc wandelt bei Bedarf über
+    // die Grafikkarte nach H.264 um — nur solange jemand zuschaut. Kameras mit
+    // H.264 bleiben bei einer Quelle, sonst liefe die Umwandlung unnötig an.
+    $codecs = _go2rtcVideoCodecs($go2rtcUrl, $camKey);
+    if ($codecs && !in_array('H264', $codecs, true)) {
+        $sources[] = 'ffmpeg:' . $camKey . '#video=h264#hardware#width=' . GO2RTC_TRANSCODE_WIDTH;
+        _go2rtcYamlSetStream($camKey, $sources);
+        _go2rtcPutStream($go2rtcUrl, $camKey, $sources);
+    }
+}
+
+/**
+ * Stream mit seinen Quellen bei go2rtc anmelden
+ */
+function _go2rtcPutStream(string $go2rtcUrl, string $camKey, array $sources): void {
+    $query = 'name=' . rawurlencode($camKey);
+    foreach ($sources as $src) $query .= '&src=' . rawurlencode($src);
     $ctx = stream_context_create(['http' => ['method' => 'PUT', 'timeout' => 5, 'ignore_errors' => true]]);
-    @file_get_contents($url, false, $ctx);
+    @file_get_contents($go2rtcUrl . '/api/streams?' . $query, false, $ctx);
+}
+
+/**
+ * Videoformate ermitteln, die eine Kamera liefert (go2rtc verbindet sich dafür kurz)
+ *
+ * @return array Formatnamen in Grossbuchstaben, z. B. ['H265']; leer, wenn die Kamera nicht antwortet
+ */
+function _go2rtcVideoCodecs(string $go2rtcUrl, string $camKey): array {
+    $ctx = stream_context_create(['http' => ['timeout' => 10, 'ignore_errors' => true]]);
+    $body = @file_get_contents($go2rtcUrl . '/api/streams?src=' . rawurlencode($camKey) . '&video=all', false, $ctx);
+    $info = $body ? json_decode($body, true) : null;
+    $codecs = [];
+    foreach ($info['producers'] ?? [] as $producer) {
+        foreach ($producer['medias'] ?? [] as $media) {
+            // Format: "video, recvonly, H265"
+            $parts = array_map('trim', explode(',', (string)$media));
+            if (($parts[0] ?? '') === 'video' && isset($parts[2])) {
+                $codecs[] = strtoupper(explode('/', $parts[2])[0]);
+            }
+        }
+    }
+    return $codecs;
 }
 
 /**

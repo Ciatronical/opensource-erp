@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
+        "anprPlateHint": "Număr recunoscut {plate} – se preia dacă scanarea nu conține numărul de înmatriculare.",
         "scanList": {
             "title": "Letzte Fahrzeugschein-Scans",
             "loading": "Scans werden geladen...",

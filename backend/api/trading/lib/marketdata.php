@@ -244,7 +244,11 @@ class TradingMarketData {
     }
 
     /**
-     * Kopfzeilen für die Alpaca-Daten-API aus der ersten aktiven Alpaca-Verbindung
+     * Kopfzeilen für die Alpaca-Daten-API aus der ältesten aktiven Alpaca-Verbindung der Firma
+     *
+     * Die Kurse sind für alle Mitarbeiter gemeinsam, der Abruf läuft ausserhalb
+     * eines Benutzers — deshalb hier bewusst die Tabelle statt der Sicht. Der
+     * Zugang wird nur lesend für Kursdaten benutzt, nie für Orders.
      *
      * @param object $db ApiDatabase
      * @return array

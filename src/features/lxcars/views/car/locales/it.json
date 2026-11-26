@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "Crea veicolo da scansione",
+        "anprPlateHint": "Targa riconosciuta {plate} – viene usata se la scansione non contiene la targa.",
         "scanList": {
             "title": "Ultime scansioni carte di circolazione",
             "loading": "Caricamento scansioni...",

@@ -99,14 +99,24 @@ class T {
         TradingGuard::asUser(self::$db, fn($db) => $db->execute($sql, $p));
     }
 
-    /** Leert alle Bewegungsdaten; Stammdaten und Grenzen bleiben */
+    /** Wechselt auf das Handelssystem eines Mitarbeiters (1 = chef, 2 = mitarbeiter) */
+    public static function user(int $employeeId): void {
+        TradingScope::set(self::$db, $employeeId);
+    }
+
+    /**
+     * Leert alle Bewegungsdaten; Stammdaten und Vorgaben bleiben
+     *
+     * Danach hat nur Mitarbeiter 1 ein Handelssystem und die Sitzung steht auf ihm —
+     * die Tests arbeiten direkt auf den Tabellen, der Besitzer-Trigger trägt ihn ein.
+     */
     public static function reset(): void {
         self::$db->execute("TRUNCATE orders_trading, fills_trading, positions_trading, equity_trading, allocations_trading, accounts_trading,
             backtests_trading, experiments_trading, strategy_versions_trading, strategies_trading, audit_trading, state_trading,
-            reports_trading, regimes_trading RESTART IDENTITY CASCADE", []);
-        self::asUser("DELETE FROM locks_trading");
-        self::asUser("DELETE FROM live_authorizations_trading");
-        self::asUser("DELETE FROM broker_connections_trading");
+            reports_trading, regimes_trading, locks_trading, live_authorizations_trading, broker_connections_trading,
+            users_trading, user_limits_trading, user_settings_trading RESTART IDENTITY CASCADE", []);
+        self::user(1);
+        self::asUser("INSERT INTO users_trading (employee_id) VALUES (1)");
         TradingBrokers::$factory = null;
         TradingHttp::$transport = null;
     }
@@ -799,6 +809,69 @@ $tests['Forschungszyklus'] = function () {
     mt_srand();
 };
 
+$tests['Benutzertrennung in der Datenbank'] = function () {
+    T::reset();
+    T::seedBars(400, 3);
+    T::$prices = [];
+    T::mockMarket();
+    T::user(2);
+    T::asUser("INSERT INTO users_trading (employee_id) VALUES (2)");
+    T::user(1);
+    $sid = T::strategy('tsmom', ['lookback' => 10, 'threshold' => 0]);
+    T::eq((int)T::val("SELECT employee_id FROM strategies_trading WHERE id = :s", [':s' => $sid]), 1, 'Neue Zeilen bekommen den Mitarbeiter der Sitzung als Besitzer');
+    T::eq((int)T::val("SELECT count(*) FROM my_strategies_trading"), 1, 'Besitzer sieht seine Strategie');
+
+    T::user(2);
+    T::eq((int)T::val("SELECT count(*) FROM my_strategies_trading"), 0, 'Anderer Mitarbeiter sieht sie nicht');
+    T::eq((int)T::val("SELECT count(*) FROM my_strategy_versions_trading"), 0, 'Auch nicht ihre Versionen');
+    T::$db->execute("UPDATE my_strategies_trading SET status = 'live' WHERE id = :s", [':s' => $sid]);
+    T::$db->execute("DELETE FROM my_strategies_trading WHERE id = :s", [':s' => $sid]);
+    T::eq(T::val("SELECT status FROM strategies_trading WHERE id = :s", [':s' => $sid]), 'paper', 'Fremde Zeilen lassen sich über die Sicht weder ändern noch löschen');
+    T::throws(fn() => T::$db->execute("INSERT INTO my_locks_trading (employee_id, scope, reason_code, set_by) VALUES (1, 'all', 'x', 'test')", []),
+        'check option', 'Über die Sicht lässt sich nichts für einen anderen Mitarbeiter anlegen');
+    T::throws(fn() => T::$db->execute("UPDATE strategies_trading SET employee_id = 2 WHERE id = :s", [':s' => $sid]), 'TRADING_OWNER', 'Der Besitzer einer Zeile ist unveränderlich');
+
+    // Geschützte Tabellen: auch mit Benutzerfreigabe nur die eigenen Zeilen
+    T::user(1);
+    TradingRisk::lock(T::$db, 'all', 'kill_switch', 'Test', 'user:chef');
+    T::asUser("INSERT INTO user_limits_trading (employee_id, key, value) VALUES (1, 'max_order_value', 250)");
+    T::user(2);
+    T::throws(fn() => T::asUser("UPDATE locks_trading SET cleared_at = now()"), 'TRADING_GUARD', 'Fremde Sperre lässt sich nicht aufheben');
+    T::throws(fn() => T::asUser("UPDATE user_limits_trading SET value = 999999"), 'TRADING_GUARD', 'Fremde Grenze lässt sich nicht ändern');
+    T::throws(fn() => T::asUser("INSERT INTO live_authorizations_trading (employee_id, action, login) VALUES (1, 'enable', 'mitarbeiter')"), 'TRADING_GUARD', 'Echtgeldfreigabe für einen anderen lässt sich nicht eintragen');
+    T::eq(TradingRisk::tradingBlocked(T::$db, ['kind' => 'portfolio_paper']), null, 'Die Sperre des einen hält den anderen nicht an');
+    T::eq(TradingConfig::limits(T::$db)['max_order_value'], 1000.0, 'Eigene Grenze des einen ändert die des anderen nicht (Vorgabe)');
+    T::user(1);
+    T::eq(TradingConfig::limits(T::$db)['max_order_value'], 250.0, 'Wirksam ist die eigene Grenze');
+    T::ok(TradingRisk::tradingBlocked(T::$db, ['kind' => 'portfolio_paper']) !== null, 'Sperre gilt für ihren Besitzer');
+    T::asUser("UPDATE locks_trading SET cleared_at = now(), cleared_by = 'chef' WHERE employee_id = 1");
+
+    // Ohne Mitarbeiter in der Sitzung: leer und kein Einfügen
+    T::user(0);
+    T::eq((int)T::val("SELECT count(*) FROM my_strategies_trading"), 0, 'Ohne Mitarbeiter in der Sitzung sind die Sichten leer');
+    T::throws(fn() => T::$db->execute("INSERT INTO accounts_trading (kind, name, start_capital, cash) VALUES ('portfolio_paper', 'x', 1, 1)", []),
+        'TRADING_OWNER', 'Ohne Mitarbeiter entsteht kein herrenloses Konto');
+    T::throws(fn() => TradingState::set(T::$db, 'x', '1'), 'kein Mitarbeiter', 'Benutzerzustand verlangt einen Mitarbeiter');
+
+    // Engine: ein Lauf bearbeitet beide Systeme getrennt
+    T::user(1);
+    $run = TradingEngine::run(T::$db, ['skip_research' => true]);
+    T::eq(array_keys($run['users']), [1, 2], 'Engine bearbeitet jeden Mitarbeiter mit Handelssystem');
+    T::eq((int)TradingScope::id(T::$db), 1, 'Nach dem Lauf steht die Sitzung wieder auf dem Aufrufer');
+    T::eq((int)T::val("SELECT count(*) FROM accounts_trading WHERE kind = 'portfolio_paper' AND employee_id = 1"), 1, 'Virtuelles Portfolio für Mitarbeiter 1');
+    T::eq((int)T::val("SELECT count(*) FROM accounts_trading WHERE kind = 'portfolio_paper' AND employee_id = 2"), 1, 'Eigenes virtuelles Portfolio für Mitarbeiter 2');
+    T::eq((int)T::val("SELECT count(*) FROM accounts_trading WHERE kind = 'strategy_paper' AND employee_id = 2"), 0, 'Mitarbeiter 2 bekommt kein Testkonto für die fremde Strategie');
+    T::eq((int)T::val("SELECT count(*) FROM orders_trading o JOIN accounts_trading a ON a.id = o.account_id WHERE o.employee_id <> a.employee_id"), 0, 'Jede Order gehört dem Besitzer ihres Kontos');
+    T::ok((int)T::val("SELECT count(*) FROM orders_trading WHERE employee_id = 1") > 0 && (int)T::val("SELECT count(*) FROM orders_trading WHERE employee_id = 2") === 0,
+        'Gehandelt wird nur im System mit Strategie');
+    T::eq((int)T::val("SELECT count(*) FROM state_trading WHERE key LIKE 'u2:%'") > 0, true, 'Laufzeitzustand je Mitarbeiter');
+    $only = TradingEngine::run(T::$db, ['skip_research' => true, 'only_user' => 2]);
+    T::eq(array_keys($only['users']), [2], 'Lauf nur für einen Mitarbeiter');
+    T::$db->execute("UPDATE employee SET deleted = true WHERE id = 2", []);
+    T::eq(array_keys(TradingEngine::run(T::$db, ['skip_research' => true])['users']), [1], 'Gelöschte Mitarbeiter werden nicht mehr bearbeitet');
+    T::$db->execute("UPDATE employee SET deleted = false WHERE id = 2", []);
+};
+
 $tests['API: Abfragen, Rechte, Freigabe'] = function () {
     T::reset();
     T::seedBars(400, 3);
@@ -825,8 +898,11 @@ $tests['API: Abfragen, Rechte, Freigabe'] = function () {
         }
         return $out;
     };
+    // Anmelden: Login, Administratorrecht und — wie DbhCompany je Request — der Mitarbeiter der DB-Sitzung
+    $chef = function () { TradingApi::$testUser = ['login' => 'chef', 'admin' => true]; T::user(1); };
+    $mitarbeiter = function () { TradingApi::$testUser = ['login' => 'mitarbeiter', 'admin' => false]; T::user(2); };
 
-    TradingApi::$testUser = ['login' => 'mitarbeiter', 'admin' => false];
+    $chef();
     $dash = $call('getTradingDashboard', ['days' => 90]);
     T::ok($dash['success'] && $dash['payload']['results']['summary']['has_data'], 'Dashboard liefert Kennzahlen');
     T::eq((float)$dash['payload']['results']['summary']['start_capital'], 10000.0, 'Dashboard: virtuelles Startkapital aus der Datenbank');
@@ -841,44 +917,109 @@ $tests['API: Abfragen, Rechte, Freigabe'] = function () {
     T::ok(strpos(json_encode($control), 'api_key_enc') === false && strpos(json_encode($control), 'api_secret') === false, 'Schlüssel verlassen den Server nicht');
     $detail = $call('getTradingStrategy', ['id' => $sid])['payload']['results'];
     T::eq(count($detail['versions'][0]['backtests']), 4, 'Strategie-Detail: Backtests je Abschnitt');
+    $chefOrders = count($call('getTradingOrders', ['limit' => 100])['payload']['results']);
+    T::ok($chefOrders > 0, 'Orders des eigenen Systems');
 
-    // Ohne Administratorrecht: lesen ja, konfigurieren nein
-    foreach (['saveTradingRiskLimits' => ['limits' => ['max_order_value' => 999999]], 'saveTradingSettings' => ['settings' => ['gate_min_test_sharpe' => '0']],
-              'enableLiveTrading' => ['confirmation' => 'ECHTGELD'], 'clearTradingLock' => ['id' => 1], 'runTradingEngine' => [],
-              'saveTradingBrokerConnection' => ['adapter' => 'kraken', 'api_key' => 'a', 'api_secret' => 'b'], 'saveTradingInstrument' => ['id' => 1, 'active' => false]] as $action => $data) {
-        T::eq($call($action, $data)['text'] ?? '', 'NO_PERMISSION', "$action nur für Administratoren");
-    }
-    T::eq((float)T::val("SELECT value FROM risk_limits_trading WHERE key = 'max_order_value'"), 1000.0, 'Grenze blieb unverändert');
-    // Not-Aus darf jeder
-    T::ok($call('triggerTradingKillSwitch')['success'], 'Not-Aus darf jeder Mitarbeiter auslösen');
+    // Zweiter Mitarbeiter: eigenes, leeres System — nichts vom ersten
+    $mitarbeiter();
+    T::eq((int)T::val("SELECT count(*) FROM users_trading WHERE employee_id = 2"), 0, 'Vor dem ersten Öffnen kein Handelssystem');
+    T::ok($call('getTradingSummary')['success'], 'Kachel antwortet auch ohne eigenes System');
+    T::eq((int)T::val("SELECT count(*) FROM users_trading WHERE employee_id = 2"), 0, 'Die Kachel richtet kein System ein');
+    $own = $call('getTradingDashboard', ['days' => 90]);
+    T::ok($own['success'], 'Erstes Öffnen der Seite');
+    T::eq((int)T::val("SELECT count(*) FROM users_trading WHERE employee_id = 2"), 1, 'Erstes Öffnen richtet das eigene System ein');
+    T::eq((float)T::val("SELECT start_capital FROM accounts_trading WHERE employee_id = 2 AND kind = 'portfolio_paper'"), 10000.0, 'Eigenes virtuelles Portfolio');
+    T::eq(count($own['payload']['results']['strategies']), 0, 'Dashboard: keine fremden Strategien');
+    T::eq($own['payload']['results']['report'], null, 'Dashboard: kein fremder Tagesbericht');
+    T::eq($own['payload']['results']['research']['tested'], 0, 'Dashboard: keine fremde Forschung');
+    T::eq($call('getTradingStrategy', ['id' => $sid])['payload']['results']['strategy'], null, 'Fremde Strategie ist nicht abrufbar');
+    T::eq(count($call('getTradingStrategy', ['id' => $sid])['payload']['results']['versions']), 0, 'Fremde Versionen sind nicht abrufbar');
+    T::eq(count($call('getTradingStrategies', ['scope' => 'all'])['payload']['results']), 0, 'Liste: keine fremden Strategien');
+    T::eq(count($call('getTradingOrders', ['limit' => 100])['payload']['results']), 0, 'Keine fremden Orders');
+    T::eq(count($call('getTradingExperiments')['payload']['results']['experiments']), 0, 'Keine fremden Experimente');
+    T::eq(count($call('getTradingReports')['payload']['results']), 0, 'Keine fremden Berichte');
+    T::eq(count(array_filter($call('getTradingAudit', ['limit' => 2000])['payload']['results'], fn($a) => (int)$a['employee_id'] !== 2)), 0, 'Protokoll: nur eigene Einträge');
+    T::eq(count($call('getTradingControl')['payload']['results']['accounts']), 1, 'Konten: nur das eigene');
+
+    // Firmenweites bleibt Administratoren vorbehalten
+    T::eq($call('saveTradingInstrument', ['id' => 1, 'active' => false])['text'] ?? '', 'NO_PERMISSION', 'Instrumente nur für Administratoren');
+    T::eq($call('saveTradingSettings', ['settings' => ['market_data_source' => 'kraken']])['text'] ?? '', 'NO_PERMISSION', 'Datenquelle der Kurse nur für Administratoren');
+    T::eq(T::val("SELECT value FROM settings_trading WHERE key = 'market_data_source'"), 'binance', 'Datenquelle blieb unverändert');
+
+    // Eigene Grenzen und Einstellungen wirken nur im eigenen System
+    T::ok($call('saveTradingRiskLimits', ['limits' => ['max_order_value' => 500]])['success'], 'Mitarbeiter ändert seine eigene Grenze');
+    T::eq(TradingConfig::limits(T::$db)['max_order_value'], 500.0, 'Eigene Grenze gespeichert');
+    T::eq(T::val("SELECT modified_by FROM user_limits_trading WHERE employee_id = 2 AND key = 'max_order_value'"), 'mitarbeiter', 'Änderung ist dem Benutzer zugeordnet');
+    T::eq((float)T::val("SELECT value FROM risk_limits_trading WHERE key = 'max_order_value'"), 1000.0, 'Vorgabe der Firma blieb unverändert');
+    T::eq($call('saveTradingRiskLimits', ['limits' => ['max_order_value' => -5]])['text'], 'VALIDATION_ERROR', 'Negative Grenze wird abgelehnt');
+    T::ok($call('saveTradingRiskLimits', ['limits' => ['gibt_es_nicht' => 5]])['success'] && (int)T::val("SELECT count(*) FROM user_limits_trading WHERE key = 'gibt_es_nicht'") === 0, 'Unbekannte Grenzen werden nicht angelegt');
+    T::ok($call('saveTradingSettings', ['settings' => ['research_population' => 30, 'fee_bps' => 'abc']])['success'], 'Einstellungen speichern');
+    $mine = TradingConfig::settings(T::$db);
+    T::eq($mine['research_population'], '30', 'Eigene Einstellung gespeichert');
+    T::eq($mine['fee_bps'], '40', 'Nichtnumerischer Wert für eine Zahl wird verworfen');
+    $chef();
+    T::eq(TradingConfig::limits(T::$db)['max_order_value'], 1000.0, 'Grenze des anderen Mitarbeiters blieb unverändert');
+    T::eq(TradingConfig::settings(T::$db)['research_population'], '24', 'Einstellung des anderen Mitarbeiters blieb unverändert');
+
+    // Not-Aus und Sperren: je Mitarbeiter
+    $mitarbeiter();
+    T::ok($call('triggerTradingKillSwitch')['success'], 'Not-Aus im eigenen System');
     T::eq($call('getTradingSummary')['payload']['results']['mode'], 'halted', 'Nach Not-Aus: Modus angehalten');
+    $lockId = (int)T::val("SELECT id FROM locks_trading WHERE cleared_at IS NULL AND employee_id = 2");
+    $chef();
+    T::eq($call('getTradingSummary')['payload']['results']['mode'], 'simulation', 'Not-Aus des einen hält das System des anderen nicht an');
+    T::ok($call('clearTradingLock', ['id' => $lockId])['success'] && T::val("SELECT cleared_at FROM locks_trading WHERE id = :id", [':id' => $lockId]) === null,
+        'Fremde Sperre lässt sich nicht aufheben');
 
-    TradingApi::$testUser = ['login' => 'chef', 'admin' => true];
+    // Echtgeldfreigabe: je Mitarbeiter, mit Bestätigung, Live-Verbindung und ohne Sperre
+    $mitarbeiter();
     T::eq($call('enableLiveTrading', ['confirmation' => 'ja'])['text'], 'CONFIRMATION_REQUIRED', 'Freigabe ohne Bestätigungswort wird abgelehnt');
     T::eq($call('enableLiveTrading', ['confirmation' => 'ECHTGELD'])['text'], 'NO_LIVE_CONNECTION', 'Freigabe ohne Live-Verbindung wird abgelehnt');
     $conn = $call('saveTradingBrokerConnection', ['name' => 'Kraken', 'adapter' => 'kraken', 'environment' => 'live', 'api_key' => 'KEY123', 'api_secret' => 'SECRET456', 'capital_limit' => 2000]);
     T::ok($conn['success'], 'Broker-Verbindung anlegen');
     $row = T::$db->getOne("SELECT * FROM broker_connections_trading", []);
+    T::eq((int)$row['employee_id'], 2, 'Verbindung gehört dem Mitarbeiter, der sie anlegt');
     T::ok($row['api_secret_enc'] !== 'SECRET456' && strpos($row['api_secret_enc'], 'SECRET') === false && secretDecrypt($row['api_secret_enc']) === 'SECRET456', 'Secret liegt verschlüsselt in der Datenbank');
-    T::eq(T::val("SELECT kind || '/' || start_capital::int FROM accounts_trading WHERE broker_connection_id = :c", [':c' => $row['id']]), 'live/2000', 'Zur Verbindung gehört ein Echtgeldkonto mit dem Höchstbetrag als Kapital');
+    T::eq(T::val("SELECT kind || '/' || start_capital::int || '/' || employee_id FROM accounts_trading WHERE broker_connection_id = :c", [':c' => $row['id']]), 'live/2000/2', 'Zur Verbindung gehört ein eigenes Echtgeldkonto mit dem Höchstbetrag als Kapital');
     T::eq($call('enableLiveTrading', ['confirmation' => 'ECHTGELD'])['text'], 'TRADING_LOCKED', 'Freigabe bei aktiver Sperre wird abgelehnt');
-    T::ok($call('clearTradingLock', ['id' => (int)T::val("SELECT id FROM locks_trading WHERE cleared_at IS NULL")])['success'], 'Administrator hebt die Sperre auf');
+    T::ok($call('clearTradingLock', ['id' => $lockId])['success'] && T::val("SELECT cleared_by FROM locks_trading WHERE id = :id", [':id' => $lockId]) === 'mitarbeiter', 'Besitzer hebt seine Sperre auf');
+    $chef();
+    T::eq($call('enableLiveTrading', ['confirmation' => 'ECHTGELD'])['text'], 'NO_LIVE_CONNECTION', 'Die Live-Verbindung eines anderen genügt nicht für die eigene Freigabe');
+    T::eq($call('saveTradingBrokerConnection', ['id' => (int)$row['id'], 'name' => 'gekapert', 'adapter' => 'kraken', 'capital_limit' => 999999])['text'] ?? '', 'DATA_NOT_FOUND', 'Fremde Verbindung lässt sich nicht ändern');
+    T::eq(T::val("SELECT name || '/' || capital_limit::int FROM broker_connections_trading WHERE id = :id", [':id' => $row['id']]), 'Kraken/2000', 'Fremde Verbindung blieb unverändert');
+    T::eq($call('testTradingBrokerConnection', ['id' => (int)$row['id']])['text'] ?? '', 'DATA_NOT_FOUND', 'Fremde Verbindung lässt sich nicht benutzen');
+    T::eq(count($call('getTradingControl')['payload']['results']['connections']), 0, 'Fremde Verbindungen sind nicht sichtbar');
+    $mitarbeiter();
     T::ok($call('enableLiveTrading', ['confirmation' => 'ECHTGELD'])['success'], 'Freigabe mit Bestätigung, Verbindung und ohne Sperre');
     T::eq($call('getTradingSummary')['payload']['results']['mode'], 'live', 'Modus: Echtgeld');
-    T::eq(T::val("SELECT login FROM live_authorizations_trading ORDER BY id DESC LIMIT 1"), 'chef', 'Freigabe ist mit Benutzer protokolliert');
-    TradingApi::$testUser = ['login' => 'mitarbeiter', 'admin' => false];
-    T::ok($call('disableLiveTrading')['success'], 'Deaktivieren darf jeder Mitarbeiter');
+    T::eq(T::val("SELECT login || '/' || employee_id FROM live_authorizations_trading ORDER BY id DESC LIMIT 1"), 'mitarbeiter/2', 'Freigabe ist mit Benutzer protokolliert');
+    $chef();
+    T::ok(!TradingRisk::liveAuthorized(T::$db), 'Die Freigabe des einen gilt nicht für den anderen');
+    T::eq($call('getTradingSummary')['payload']['results']['mode'], 'simulation', 'Anderer Mitarbeiter bleibt in der Simulation');
+    T::ok($call('disableLiveTrading')['success'], 'Deaktivieren im eigenen System');
+    $mitarbeiter();
+    T::ok(TradingRisk::liveAuthorized(T::$db), 'Deaktivieren des einen widerruft nicht die Freigabe des anderen');
+    T::ok($call('disableLiveTrading')['success'], 'Besitzer deaktiviert den Echtgeldhandel');
     T::eq($call('getTradingSummary')['payload']['results']['mode'], 'simulation', 'Modus wieder Simulation');
-    TradingApi::$testUser = ['login' => 'chef', 'admin' => true];
-    T::ok($call('saveTradingRiskLimits', ['limits' => ['max_order_value' => 500]])['success'], 'Administrator ändert eine Grenze');
-    T::eq((float)T::val("SELECT value FROM risk_limits_trading WHERE key = 'max_order_value'"), 500.0, 'Grenze gespeichert');
-    T::eq(T::val("SELECT modified_by FROM risk_limits_trading WHERE key = 'max_order_value'"), 'chef', 'Änderung ist dem Benutzer zugeordnet');
-    T::eq($call('saveTradingRiskLimits', ['limits' => ['max_order_value' => -5]])['text'], 'VALIDATION_ERROR', 'Negative Grenze wird abgelehnt');
-    $call('saveTradingRiskLimits', ['limits' => ['max_order_value' => 1000]]);
-    T::ok($call('saveTradingSettings', ['settings' => ['research_population' => 30, 'fee_bps' => 'abc']])['success'], 'Einstellungen speichern');
-    T::eq(T::val("SELECT value FROM settings_trading WHERE key = 'research_population'"), '30', 'Einstellung gespeichert');
-    T::eq(T::val("SELECT value FROM settings_trading WHERE key = 'fee_bps'"), '40', 'Nichtnumerischer Wert für eine Zahl wird verworfen');
-    T::asUser("UPDATE settings_trading SET value = '24' WHERE key = 'research_population'");
+
+    // Eigener Lauf: nur das eigene System
+    $before = (int)T::val("SELECT count(*) FROM audit_trading WHERE employee_id = 1");
+    $run = $call('runTradingEngine', ['research' => false]);
+    T::ok($run['success'] && array_keys($run['payload']['results']['users']) === [2], 'Lauf anstossen bearbeitet nur das eigene System');
+    T::eq((int)T::val("SELECT count(*) FROM audit_trading WHERE employee_id = 1"), $before, 'Der Lauf schreibt nichts in das System des anderen');
+
+    // Administrator: firmenweite Einstellung
+    $chef();
+    T::ok($call('saveTradingSettings', ['settings' => ['market_data_source' => 'kraken']])['success'], 'Administrator ändert die Datenquelle der Kurse');
+    T::eq(T::val("SELECT value FROM settings_trading WHERE key = 'market_data_source'"), 'kraken', 'Datenquelle gespeichert');
+    $mitarbeiter();
+    T::eq(TradingConfig::settings(T::$db)['market_data_source'], 'kraken', 'Datenquelle gilt für alle Mitarbeiter');
+    T::asUser("UPDATE settings_trading SET value = 'binance' WHERE key = 'market_data_source'");
+
+    // Anmeldung ohne Mitarbeiter in der Firma
+    T::user(0);
+    T::eq($call('getTradingSummary')['text'] ?? '', 'NO_EMPLOYEE', 'Ohne Mitarbeiter in der Firma antwortet die API nicht');
+    $chef();
     T::$db->execute("UPDATE extensions_oserp SET active = false WHERE extension = 'trading'", []);
     T::eq($call('getTradingSummary')['text'] ?? '', 'EXTENSION_INACTIVE', 'Ohne aktive Erweiterung antwortet die API nicht');
     T::$db->execute("UPDATE extensions_oserp SET active = true WHERE extension = 'trading'", []);

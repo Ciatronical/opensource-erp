@@ -17,6 +17,9 @@
 
         <!-- ========== ANSICHT 1: Scan-Liste ========== -->
         <template v-if="step === 'list'">
+            <v-alert v-if="anprPlate" type="info" variant="tonal" density="compact" class="mb-3" icon="mdi-car-side">
+                {{ t('CarScanView.anprPlateHint', { plate: anprPlate }) }}
+            </v-alert>
             <v-alert v-if="scanError" type="error" variant="tonal" density="compact" class="mb-3" closable @click:close="scanError = ''">
                 {{ t('CarScanView.errors.scanFailed') }}: {{ scanError }}
             </v-alert>
@@ -922,7 +925,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 import { lxcarsStore } from '@/features/lxcars/stores/lxcars.store.js'
 import { onServerEvent } from '@/core/composables/sseClient.js'
@@ -937,6 +940,14 @@ export default {
     setup() {
         const { t } = useI18n()
         const router = useRouter()
+        const route = useRoute()
+        // Von der Kennzeichenerkennung (Infoleiste) mitgegebenes Kennzeichen:
+        // füllt das Feld, wenn der Scan selbst kein Kennzeichen liefert.
+        const anprPlate = computed(() => String(route.query.plate || '').trim().toUpperCase().substring(0, 10))
+        function applyAnprPlate() {
+            const car = scanResult.value?.car
+            if (car && !car.c_ln && anprPlate.value) car.c_ln = anprPlate.value
+        }
         const oserpData = oserpStore()
         const carsStore = lxcarsStore()
 
@@ -1611,6 +1622,7 @@ export default {
                 // aus backend/tmp/{scan_id}/ via getScanTempCrop zu laden
                 raw: { scan_id: scan.scan_id, scan_detail_id: scan.scan_detail_id }
             }
+            applyAnprPlate()
 
             // Duplikat-Info aus bereits geladenem scanCarStatus nutzen
             const status = getScanStatus(scan)
@@ -1735,6 +1747,7 @@ export default {
                 normalizeScanResult(result)
                 pendingDetailPromise = null // Upload hat Bilder sofort, kein Detail-Load noetig
                 scanResult.value = result
+                applyAnprPlate()
                 applyHuExtrapolation()
 
                 // Anrede ermitteln (awaiten, damit sie vor Anzeige gesetzt ist)
@@ -2590,7 +2603,7 @@ export default {
         })
 
         return {
-            t, step,
+            t, step, anprPlate,
             // Scan-Liste
             scanList, loadingScans, scanListError, scanCarStatus, scanPage, scanTotalPages, scanTotal, scanSearch,
             loadScans, formatTimestamp, selectScan, scanRowClass, onScanRowClick, getScanIcon, getScanStatus, openCar, openOwner,

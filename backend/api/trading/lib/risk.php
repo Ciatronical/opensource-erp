@@ -10,13 +10,13 @@
  * Broker-Adapter anspricht, und sie ruft die Prüfung selbst.
  *
  * Die Risk-Engine kann Sperren SETZEN (lock), aber nicht aufheben — das
- * verhindert der Trigger auf locks_trading. Grenzen liest sie nur.
+ * verhindert der Trigger auf my_locks_trading. Grenzen liest sie nur.
  *
  * Zwei Arten von Stopps:
  *   - vorübergehend (Tagesverlust): wird bei jeder Prüfung neu berechnet und
  *     endet von selbst mit dem nächsten Handelstag
  *   - dauerhaft (Portfolioverlust, Fehlerserie, Bestandsabweichung, Not-Aus):
- *     Zeile in locks_trading, bleibt bis ein Administrator sie aufhebt
+ *     Zeile in my_locks_trading, bleibt bis ein Administrator sie aufhebt
  */
 class TradingRisk {
 
@@ -24,10 +24,10 @@ class TradingRisk {
      * Aktive Sperren
      *
      * @param object $db ApiDatabase
-     * @return array Zeilen aus locks_trading
+     * @return array Zeilen aus my_locks_trading
      */
     public static function activeLocks($db): array {
-        return $db->getAll("SELECT * FROM locks_trading WHERE cleared_at IS NULL ORDER BY set_at", []) ?: [];
+        return $db->getAll("SELECT * FROM my_locks_trading WHERE cleared_at IS NULL ORDER BY set_at", []) ?: [];
     }
 
     /**
@@ -41,12 +41,12 @@ class TradingRisk {
      */
     public static function lock($db, string $scope, string $code, string $message, string $setBy = 'risk'): void {
         $exists = $db->getOne(
-            "SELECT id FROM locks_trading WHERE cleared_at IS NULL AND scope = :scope AND reason_code = :code",
+            "SELECT id FROM my_locks_trading WHERE cleared_at IS NULL AND scope = :scope AND reason_code = :code",
             [':scope' => $scope, ':code' => $code]
         );
         if ($exists) return;
         $db->execute(
-            "INSERT INTO locks_trading (scope, reason_code, message, set_by) VALUES (:scope, :code, :message, :set_by)",
+            "INSERT INTO my_locks_trading (scope, reason_code, message, set_by) VALUES (:scope, :code, :message, :set_by)",
             [':scope' => $scope, ':code' => $code, ':message' => $message, ':set_by' => $setBy]
         );
         TradingAudit::log($db, $setBy, 'lock_set', ['scope' => $scope, 'code' => $code, 'message' => $message], 'critical');
@@ -59,7 +59,7 @@ class TradingRisk {
      * @return bool
      */
     public static function liveAuthorized($db): bool {
-        $row = $db->getOne("SELECT action FROM live_authorizations_trading ORDER BY id DESC LIMIT 1", []);
+        $row = $db->getOne("SELECT action FROM my_live_authorizations_trading ORDER BY id DESC LIMIT 1", []);
         return $row && $row['action'] === 'enable';
     }
 
@@ -67,7 +67,7 @@ class TradingRisk {
      * Darf dieses Konto gerade handeln?
      *
      * @param object $db      ApiDatabase
-     * @param array  $account Zeile aus accounts_trading
+     * @param array  $account Zeile aus my_accounts_trading
      * @return string|null Hinderungsgrund oder null, wenn der Handel erlaubt ist
      */
     public static function tradingBlocked($db, array $account): ?string {
@@ -86,7 +86,7 @@ class TradingRisk {
      * Prüft eine Order gegen alle Grenzen
      *
      * @param object $db      ApiDatabase
-     * @param array  $account Zeile aus accounts_trading
+     * @param array  $account Zeile aus my_accounts_trading
      * @param array  $order   instrument_id, side, qty, order_type
      * @param array  $ctx     quote [price, ts], equity, position_value (dieses Instruments),
      *                        positions_value (alle), position_qty, last_close, day_start_equity
@@ -123,7 +123,7 @@ class TradingRisk {
         $counts = $db->getOne(
             "SELECT count(*) FILTER (WHERE status IN ('submitting', 'submitted', 'partially_filled')) AS open,
                     count(*) FILTER (WHERE itime >= date_trunc('day', now()) AND status <> 'risk_rejected') AS today
-             FROM orders_trading WHERE account_id = :aid AND id <> :oid",
+             FROM my_orders_trading WHERE account_id = :aid AND id <> :oid",
             [':aid' => $account['id'], ':oid' => (int)($order['id'] ?? 0)]
         );
         $add('open_orders', (int)$counts['open'] < ($limits['max_open_orders'] ?? 20), (int)$counts['open'], $limits['max_open_orders'] ?? 20);
@@ -171,8 +171,8 @@ class TradingRisk {
         // Portfolioverlust vom Höchststand: Echtgeld und virtuelles Gesamtportfolio
         $accounts = $db->getAll(
             "SELECT a.id, a.kind, a.name, a.peak_equity,
-                    (SELECT e.equity FROM equity_trading e WHERE e.account_id = a.id ORDER BY e.day DESC LIMIT 1) AS equity
-             FROM accounts_trading a
+                    (SELECT e.equity FROM my_equity_trading e WHERE e.account_id = a.id ORDER BY e.day DESC LIMIT 1) AS equity
+             FROM my_accounts_trading a
              WHERE a.active AND a.closed_at IS NULL AND a.kind IN ('live', 'portfolio_paper')", []
         ) ?: [];
         foreach ($accounts as $a) {

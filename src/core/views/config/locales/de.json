@@ -1963,7 +1963,7 @@
         "phaseStart": "Service starten",
         "phaseWait": "Bereit",
         "openOrderSkip": "Fahrzeuge mit offenem Auftrag überspringen",
-        "openOrderSkip_help": "Wenn aktiv: Fahrzeuge mit laufendem Werkstattauftrag werden nicht in der Infoleiste angezeigt und öffnen kein Tor. Standard: deaktiviert (alle Fahrzeuge werden angezeigt).",
+        "openOrderSkip_help": "Wenn aktiv: Fahrzeuge mit laufendem Werkstattauftrag werden nur bei der ersten Einfahrt seit Anlage des Auftrags in der Infoleiste angezeigt (ein Klick öffnet den Auftrag); weitere Einfahrten werden nicht mehr gemeldet. Das Tor wird für sie nicht geöffnet. Standard: deaktiviert (alle Fahrzeuge werden angezeigt).",
         "health": "Dienst-Diagnose",
         "healthRefresh": "Aktualisieren",
         "healthNoData": "Noch keine Daten — der Dienst schreibt nach dem ersten Start Heartbeats",

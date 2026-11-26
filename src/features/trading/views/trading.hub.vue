@@ -17,6 +17,10 @@
                 {{ engineActive ? t('TradingView.ai.active') : t('TradingView.ai.inactive') }}
             </v-chip>
             <template #actions>
+                <v-btn variant="outlined" prepend-icon="mdi-book-open-page-variant-outline"
+                       :to="{ name: 'docs', params: { slug: 'trading' } }">
+                    {{ t('TradingView.guide') }}
+                </v-btn>
                 <v-tooltip location="bottom" max-width="360">
                     <template #activator="{ props: tip }">
                         <v-btn v-bind="tip" color="error" variant="flat" prepend-icon="mdi-alert-octagon" @click="killSwitch">
@@ -34,7 +38,7 @@
             <strong>{{ t('TradingView.lock.active') }}:</strong>
             {{ t('TradingView.lock.reason.' + lock.reason_code, lock.reason_code) }} — {{ lock.message }}
             <span class="trading-muted">({{ fmtDateTime(lock.set_at) }}, {{ lock.set_by }})</span>
-            <template v-if="isAdmin" #append>
+            <template #append>
                 <v-btn size="small" variant="outlined" @click="clearLock(lock)">{{ t('TradingView.lock.clear') }}</v-btn>
             </template>
         </v-alert>
@@ -184,7 +188,7 @@
                     </v-col>
                     <v-col cols="12" lg="7">
                         <section-card :title="t('TradingView.lab.experiments')" icon="mdi-flask-outline" plain>
-                            <template v-if="isAdmin" #actions>
+                            <template #actions>
                                 <v-btn size="small" variant="tonal" prepend-icon="mdi-play" :loading="running" @click="runEngine(true)">{{ t('TradingView.lab.runNow') }}</v-btn>
                             </template>
                             <v-list density="compact" lines="three">
@@ -231,7 +235,7 @@
                             <v-tooltip v-if="!control?.live_authorized" location="bottom" max-width="420">
                                 <template #activator="{ props: tip }">
                                     <span v-bind="tip">
-                                        <v-btn color="error" variant="outlined" prepend-icon="mdi-cash-lock-open" :disabled="!isAdmin" @click="liveDialog = true">
+                                        <v-btn color="error" variant="outlined" prepend-icon="mdi-cash-lock-open" @click="liveDialog = true">
                                             {{ t('TradingView.live.enableButton') }}
                                         </v-btn>
                                     </span>
@@ -246,7 +250,7 @@
                                 </template>
                                 {{ t('TradingView.live.disableTooltip') }}
                             </v-tooltip>
-                            <p v-if="!isAdmin" class="trading-muted mt-2">{{ t('TradingView.control.adminOnly') }}</p>
+                            <p class="trading-muted mt-2">{{ t('TradingView.control.ownOnly') }}</p>
                             <v-table v-if="(control?.authorizations || []).length" density="compact" class="mt-3">
                                 <tbody>
                                     <tr v-for="(a, i) in control.authorizations" :key="i">
@@ -263,10 +267,10 @@
                             <v-row density="compact">
                                 <v-col v-for="l in control?.limits || []" :key="l.key" cols="12" sm="6">
                                     <v-text-field v-model="limitEdit[l.key]" type="number" min="0" :label="t('TradingView.limits.' + l.key, l.key)"
-                                                  :suffix="unitText(l.unit)" :readonly="!isAdmin" />
+                                                  :suffix="unitText(l.unit)" />
                                 </v-col>
                             </v-row>
-                            <template v-if="isAdmin" #actions>
+                            <template #actions>
                                 <v-btn size="small" variant="tonal" prepend-icon="mdi-content-save" @click="saveLimits">{{ t('TradingView.save') }}</v-btn>
                             </template>
                         </section-card>
@@ -274,7 +278,7 @@
 
                     <v-col cols="12" lg="6">
                         <section-card :title="t('TradingView.broker.title')" icon="mdi-bank-transfer">
-                            <template v-if="isAdmin" #actions>
+                            <template #actions>
                                 <v-btn size="small" variant="tonal" prepend-icon="mdi-plus" @click="editConnection()">{{ t('TradingView.broker.add') }}</v-btn>
                             </template>
                             <v-table density="compact">
@@ -283,7 +287,7 @@
                                         <td>{{ c.name }}<div class="trading-muted">{{ c.adapter }} · {{ t('TradingView.broker.env.' + c.environment) }}</div></td>
                                         <td class="text-right">{{ fmtNum(c.capital_limit, 0) }}</td>
                                         <td><v-chip size="x-small" variant="tonal" :color="c.active ? 'success' : 'default'">{{ c.active ? t('TradingView.broker.active') : t('TradingView.broker.inactive') }}</v-chip></td>
-                                        <td v-if="isAdmin" class="text-right text-no-wrap">
+                                        <td class="text-right text-no-wrap">
                                             <v-btn size="x-small" variant="text" :loading="testing === c.id" @click="testConnection(c)">{{ t('TradingView.broker.test') }}</v-btn>
                                             <v-btn size="x-small" variant="text" icon="mdi-pencil" :aria-label="t('TradingView.broker.edit')" @click="editConnection(c)" />
                                         </td>
@@ -300,18 +304,21 @@
                                 <v-row density="compact">
                                     <v-col v-for="s in (control?.settings || []).filter(x => x.section === section)" :key="s.key" cols="12" sm="6">
                                         <v-switch v-if="s.value_type === 'bool'" v-model="settingEdit[s.key]" true-value="1" false-value="0" color="primary" density="compact" hide-details
-                                                  :label="t('TradingView.settings.' + s.key, s.key)" :readonly="!isAdmin" />
+                                                  :label="t('TradingView.settings.' + s.key, s.key)" :readonly="s.company_wide && !isAdmin"
+                                                  :hint="s.company_wide ? t('TradingView.settings.companyWide') : undefined" :persistent-hint="s.company_wide" />
                                         <v-text-field v-else v-model="settingEdit[s.key]" :type="s.value_type === 'number' ? 'number' : 'text'"
-                                                      :label="t('TradingView.settings.' + s.key, s.key)" :readonly="!isAdmin" />
+                                                      :label="t('TradingView.settings.' + s.key, s.key)" :readonly="s.company_wide && !isAdmin"
+                                                  :hint="s.company_wide ? t('TradingView.settings.companyWide') : undefined" :persistent-hint="s.company_wide" />
                                     </v-col>
                                 </v-row>
                             </template>
-                            <template v-if="isAdmin" #actions>
+                            <template #actions>
                                 <v-btn size="small" variant="tonal" prepend-icon="mdi-content-save" @click="saveSettings">{{ t('TradingView.save') }}</v-btn>
                             </template>
                         </section-card>
 
                         <section-card :title="t('TradingView.instruments.title')" icon="mdi-format-list-bulleted" plain class="mt-3">
+                            <p class="trading-muted">{{ t('TradingView.control.adminOnly') }}</p>
                             <v-table density="compact">
                                 <tbody>
                                     <tr v-for="i in control?.instruments || []" :key="i.id">
@@ -693,7 +700,10 @@ async function saveLimits() {
 }
 async function saveSettings() {
     await guarded(async () => {
-        await store.call('saveTradingSettings', { settings: settingEdit.value })
+        // Firmenweite Einstellungen schickt nur ein Administrator mit — sonst lehnt die API alles ab
+        const company_wide = (control.value?.settings || []).filter(s => s.company_wide).map(s => s.key)
+        const settings = Object.fromEntries(Object.entries(settingEdit.value).filter(([key]) => isAdmin.value || !company_wide.includes(key)))
+        await store.call('saveTradingSettings', { settings })
         notify(t('TradingView.saved'))
     })
     loadControl()

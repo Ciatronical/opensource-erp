@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "Voertuig aanmaken van scan",
+        "anprPlateHint": "Herkend kenteken {plate} – wordt overgenomen als de scan geen kenteken bevat.",
         "scanList": {
             "title": "Laatste kentekenbewijs-scans",
             "loading": "Scans worden geladen...",

@@ -75,6 +75,7 @@
         "markOrdered": "{count} als bestellt markieren",
         "yesterday": "Gestern",
         "noOrder": "kein Auftrag",
+        "anprOrder": "Auftrag {number}",
         "mailingDone": "Rundschreiben „{title}“ abgeschlossen: {sent} gesendet",
         "mailingFailed": "{n} fehlgeschlagen",
         "mailingExtras": "zusätzlich {emails} E-Mails, {letters} Briefe",

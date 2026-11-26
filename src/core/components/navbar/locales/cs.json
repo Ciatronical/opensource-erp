@@ -75,6 +75,7 @@
         "markOrdered": "Označit {count} jako objednané",
         "yesterday": "Včera",
         "noOrder": "bez zakázky",
+        "anprOrder": "Zakázka {number}",
         "smsFallbackToast": "WhatsApp zpráva pro {name} nebyla doručena – odesláno jako SMS",
         "smsFallbackFailed": "WhatsApp zpráva pro {name} nebyla doručena a náhradní SMS také selhala: {error}",
         "telegramFile": "Soubor",

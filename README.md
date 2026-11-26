@@ -12,7 +12,7 @@
 |---|---|
 | Frontend | Vue 3, Vuetify 3, Vite 7, Pinia, Vue Router 4 |
 | Backend | PHP 8, PostgreSQL 16 |
-| Echtzeit | Node.js 25 SSE-Server |
+| Echtzeit | Node.js 26 SSE-Server |
 | Kalender | FullCalendar v6 |
 | Editor | Tiptap (Rich Text) |
 | Charts | Chart.js |
@@ -265,11 +265,11 @@ sudo apt install -y \
   postgresql postgresql-contrib qrencode \
   gnome-terminal
 
-# Node.js 25 via nvm (Vite 8 braucht mindestens Node 20.19)
+# Node.js 26 via nvm (Vite 8 braucht mindestens Node 20.19)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 source ~/.bashrc
-nvm install 25
-nvm alias default 25
+nvm install 26
+nvm alias default 26
 ```
 
 ### 2. Repository klonen

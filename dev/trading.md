@@ -1,12 +1,16 @@
 # KI-Trading (Erweiterung `trading`)
 
 Autonomes Handelssystem innerhalb des ERP: Forschungslabor mit virtuellem
-Kapital, Backtests, Papierhandel, Risk-Engine und Broker-Anbindung. Echtgeld
-gibt es nur nach ausdrücklicher, dauerhafter Freigabe durch einen
-Systemadministrator.
+Kapital, Backtests, Papierhandel, Risk-Engine und Broker-Anbindung. **Jeder
+Mitarbeiter hat sein eigenes Handelssystem** (siehe „Je Mitarbeiter“). Echtgeld
+gibt es nur nach ausdrücklicher, dauerhafter Freigabe durch den Mitarbeiter
+selbst, und nur für sein eigenes System.
 
 **Gewinne sind nicht garantiert.** Das System sucht Strategien und prüft sie
 streng; ob es welche findet, hängt vom Markt ab (siehe „Stand der Forschung“).
+
+Anleitung für Anwender (erste Schritte, Brokerwahl): `docs/features/trading.md`,
+im System über den Knopf „Anleitung“ auf der Seite.
 
 ## Einschalten
 
@@ -17,10 +21,47 @@ streng; ob es welche findet, hängt vom Markt ab (siehe „Stand der Forschung�
 
        0,10,20,30,40,50 * * * * cd /home/work/opensource-erp && php backend/cli/trading-engine.php >> log/trading-engine.log 2>&1
 
-3. Menü „KI-Trading“. Die Kachel auf der Startseite zeigt die Kennzahlen.
+3. Benutzermenü (Kopfzeile, oben rechts) → „KI-Trading“, unter „Auswertung“.
+   Beim ersten Öffnen entsteht das eigene Handelssystem des Mitarbeiters; ab
+   dann bearbeitet es die Engine. Die Kachel auf der Startseite zeigt die
+   eigenen Kennzahlen.
 
 Mehr ist für die Simulation nicht nötig: Kursdaten kommen ohne Zugang von der
 öffentlichen Binance-Schnittstelle, gehandelt wird auf virtuellen Konten.
+
+## Je Mitarbeiter
+
+Jeder Mitarbeiter hat eigene Strategien, Konten, Orders, Grenzen, Sperren,
+Broker-Zugänge, Berichte und eine eigene Echtgeldfreigabe. Gemeinsam sind nur
+die Märkte (Instrumente, Kurse, Marktphasen) und die Vorgabewerte.
+
+- **Wer:** `users_trading`. Eingetragen wird ein Mitarbeiter beim ersten
+  Öffnen der Seite; die Kachel auf der Startseite allein richtet nichts ein.
+  Die Engine arbeitet diese Liste je Lauf ab, gelöschte Mitarbeiter fallen heraus.
+- **Trennung in der Datenbank:** jede benutzerbezogene Tabelle trägt
+  `employee_id`. Ein Trigger trägt beim Einfügen den Mitarbeiter der DB-Sitzung
+  ein (`oserp.employee_id` — setzt `DbhCompany` je Request aus dem Login, die
+  Engine je Benutzer über `TradingScope::set`) und macht den Besitzer
+  unveränderlich. Ohne Mitarbeiter in der Sitzung wird das Einfügen abgelehnt.
+- **Sichten `my_<tabelle>`:** zeigen nur die Zeilen dieses Mitarbeiters
+  (`WITH CHECK OPTION`). Der PHP-Code benutzt ausschliesslich diese Sichten —
+  eine Abfrage braucht keinen Filter und kann keinen vergessen. Neue Abfragen
+  deshalb immer gegen `my_…_trading` schreiben, nie gegen die Tabelle.
+  Ausnahme: der Kursabruf über Alpaca nimmt den ältesten aktiven
+  Alpaca-Zugang der Firma (nur lesend, läuft ausserhalb eines Benutzers).
+- **Grenzen und Einstellungen:** `risk_limits_trading` und `settings_trading`
+  sind die Vorgaben der Firma, eigene Werte stehen in `user_limits_trading`
+  und `user_settings_trading`; wirksam ist `my_risk_limits_trading` bzw.
+  `my_settings_trading` (eigener Wert, sonst Vorgabe). Firmenweit bleibt nur
+  die Datenquelle der Kurse (`market_data_source`).
+- **Laufzeitzustand:** `state_trading`, Schlüssel `u<employee_id>:…` je
+  Mitarbeiter (`TradingState::get/set`), alles andere firmenweit
+  (`getGlobal/setGlobal`, z. B. der Herzschlag der Engine).
+- **Rechte:** der Mitarbeiter bedient sein System selbst (Grenzen,
+  Einstellungen, Broker-Zugänge, Sperren aufheben, Echtgeldfreigabe, Lauf
+  anstossen). Systemadministratoren vorbehalten ist nur Firmenweites:
+  Instrumente und Datenquelle der Kurse. Ein Administrator sieht und steuert
+  die Systeme anderer Mitarbeiter nicht.
 
 ## Aufbau
 
@@ -116,19 +157,22 @@ nächsten gehandelt; jeder Handel kostet Gebühr (Vorgabe 40 Basispunkte) und
 Slippage (10 Basispunkte). Ein Test prüft für jede Familie, dass die Gewichte
 bis zum Tag t nicht von Daten nach t abhängen.
 
-Alle Grenzwerte stehen in `settings_trading` (Reiter „Sicherheit und
-Einstellungen“), änderbar nur durch Administratoren.
+Die Vorgaben aller Grenzwerte stehen in `settings_trading`; jeder Mitarbeiter
+kann sie für sein System im Reiter „Sicherheit und Einstellungen“ überschreiben
+(die Engine kann das nicht, siehe „Sicherheit“).
 
 ## Sicherheit
 
 **Was die KI nicht kann — technisch, nicht nur per Vereinbarung:**
 
 - Risikogrenzen, Übernahmekriterien, Broker-Zugänge und die Echtgeldfreigabe
-  ändern. Auf `risk_limits_trading`, `settings_trading`,
-  `broker_connections_trading` und `live_authorizations_trading` liegt ein
-  Trigger, der Schreibzugriffe nur zulässt, wenn die Transaktion
-  `oserp.trading_actor = 'user'` gesetzt hat. Das tun ausschliesslich die
-  API-Aktionen nach bestandener Administratorprüfung (`TradingGuard::asUser`).
+  ändern. Auf `risk_limits_trading`, `settings_trading`, `user_limits_trading`,
+  `user_settings_trading`, `users_trading`, `broker_connections_trading` und
+  `live_authorizations_trading` liegt ein Trigger, der Schreibzugriffe nur
+  zulässt, wenn die Transaktion `oserp.trading_actor = 'user'` gesetzt hat — und
+  bei Zeilen mit Besitzer nur auf die des Mitarbeiters der Sitzung. Das tun
+  ausschliesslich die API-Aktionen des angemeldeten Mitarbeiters
+  (`TradingGuard::asUser`).
 - Sperren aufheben. Setzen darf die Engine, `UPDATE`/`DELETE` auf
   `locks_trading` nur der Benutzer.
 - An der Risk-Engine vorbei handeln. `TradingOrders::submit()` ist die einzige
@@ -147,16 +191,17 @@ eindeutig; und der Zustand `submitting` wird vor dem Broker-Aufruf gespeichert �
 reisst die Verbindung ab, wird über unsere Kennung beim Broker nachgesehen statt
 wiederholt.
 
-**Not-Aus** (jeder Mitarbeiter): setzt eine Sperre über alles und storniert alle
-offenen Orders, auch beim Broker. Bestände werden nicht verkauft. Aufheben kann
-nur ein Administrator.
+**Not-Aus** (für das eigene System): setzt eine Sperre über alles und storniert
+alle offenen Orders, auch beim Broker. Bestände werden nicht verkauft. Aufheben
+kann nur der Mitarbeiter selbst, nie die Engine.
 
-**Echtgeldfreigabe** (nur Administratoren): drei Bestätigungen plus Eintippen
-von `ECHTGELD`; setzt eine aktive Live-Verbindung und keine Sperre voraus.
-Danach dauerhaft — der letzte Eintrag in `live_authorizations_trading` gilt,
-über Neustarts und Sitzungen hinweg. Deaktivieren darf jeder Mitarbeiter: neue
-Echtgeldorders unterbleiben, offene werden storniert, Bestände und Schutzstopps
-bleiben.
+**Echtgeldfreigabe** (für das eigene System): drei Bestätigungen plus Eintippen
+von `ECHTGELD`; setzt eine eigene aktive Live-Verbindung und keine Sperre
+voraus. Danach dauerhaft — der letzte eigene Eintrag in
+`live_authorizations_trading` gilt, über Neustarts und Sitzungen hinweg.
+Deaktivieren: neue Echtgeldorders unterbleiben, offene werden storniert,
+Bestände und Schutzstopps bleiben. Freigabe und Widerruf eines Mitarbeiters
+wirken nicht auf die Systeme der anderen.
 
 **Schutzstopp**: für jeden Bestand eines Brokerkontos liegt ein Stop beim Broker
 (Vorgabe 25 % unter Einstand, 0 = aus). Er greift auch, wenn die Engine ausfällt.
@@ -260,7 +305,9 @@ Schutz-Trigger, fehlerhafte Marktdaten, Risikoprüfung, doppelte Orders,
 Teilausführungen, Verbindungsabbruch, Serverneustart, automatische Sperre nach
 Fehlerserie, alle Orderarten des Simulators, Freigabe/Sperren/Not-Aus,
 Papierhandel von Ende zu Ende, Lebenszyklus, Schutzstopp, Kraken- und
-Alpaca-Adapter, Forschungszyklus, KI-Vorschläge, API samt Rechten.
+Alpaca-Adapter, Forschungszyklus, KI-Vorschläge, API samt Rechten, Trennung
+zwischen zwei Mitarbeitern (Sichten, Besitzer-Trigger, Grenzen, Sperren,
+Freigabe, Broker-Zugänge, Lauf der Engine).
 
 ## Offen
 

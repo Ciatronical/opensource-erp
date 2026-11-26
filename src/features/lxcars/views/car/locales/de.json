@@ -394,6 +394,7 @@
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
+        "anprPlateHint": "Erkanntes Kennzeichen {plate} – wird übernommen, wenn der Scan kein Kennzeichen enthält.",
         "scanList": {
             "title": "Letzte Fahrzeugschein-Scans",
             "loading": "Scans werden geladen...",

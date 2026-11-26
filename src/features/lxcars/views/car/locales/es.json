@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "Crear vehículo desde escaneo",
+        "anprPlateHint": "Matrícula reconocida {plate} – se usa si el escaneo no contiene matrícula.",
         "scanList": {
             "title": "Últimos escaneos de permisos",
             "loading": "Cargando escaneos...",

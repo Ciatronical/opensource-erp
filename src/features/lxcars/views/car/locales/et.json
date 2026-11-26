@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "Fahrzeug vom Scan anlegen",
+        "anprPlateHint": "Tuvastatud numbrimärk {plate} – kasutatakse, kui skannis numbrimärk puudub.",
         "scanList": {
             "title": "Letzte Fahrzeugschein-Scans",
             "loading": "Scans werden geladen...",

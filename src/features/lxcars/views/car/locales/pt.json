@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "Criar veículo a partir de digitalização",
+        "anprPlateHint": "Matrícula reconhecida {plate} – é usada se a digitalização não contiver matrícula.",
         "scanList": {
             "title": "Últimas digitalizações de documentos",
             "loading": "A carregar digitalizações...",

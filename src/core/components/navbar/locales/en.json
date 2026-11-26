@@ -75,6 +75,7 @@
         "markOrdered": "Mark {count} as ordered",
         "yesterday": "Yesterday",
         "noOrder": "no order",
+        "anprOrder": "Order {number}",
         "mailingDone": "Mailing “{title}” finished: {sent} sent",
         "mailingFailed": "{n} failed",
         "mailingExtras": "plus {emails} emails, {letters} letters",

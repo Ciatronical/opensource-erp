@@ -333,20 +333,33 @@ function reportAnprDetection($data) {
     $c_id = $car ? intval($car['c_id']) : null;
     $customer_id = $car ? intval($car['customer_id']) : null;
 
-    // Offenen Auftrag prüfen (nur wenn anpr_open_order_skip aktiv)
+    // Offenen Auftrag prüfen (nur wenn anpr_open_order_skip aktiv).
+    // first_arrival: seit Anlage des Auftrags wurde das Fahrzeug noch nicht bei der
+    // Einfahrt erkannt — diese erste Ankunft wird trotz offenem Auftrag gemeldet.
     $has_open_order = false;
+    $first_arrival = false;
     $skip_row = $db->getOne("SELECT value FROM defaults_oserp WHERE key = 'anpr_open_order_skip'");
     $open_order_skip = $skip_row && in_array($skip_row['value'], ['1', 't', 'true']);
 
     if ($c_id && $open_order_skip) {
         $open = $db->getOne(
-            "SELECT 1 FROM oe
+            "SELECT oe.id,
+                    NOT EXISTS (
+                        SELECT 1 FROM anpr_detections_lxcars d
+                        WHERE d.c_id = oe_ext.c_id
+                          AND d.direction = 'in'
+                          AND d.detected_at >= oe.itime
+                    ) AS first_arrival
+             FROM oe
              JOIN oe_ext ON oe.id = oe_ext.oe_id
              WHERE oe_ext.c_id = :c_id AND oe.closed IS NOT TRUE
+             ORDER BY oe.itime DESC
              LIMIT 1",
             [':c_id' => $c_id]
         );
         $has_open_order = !!$open;
+        $first_arrival = $open && $direction === 'in'
+            && in_array($open['first_arrival'], [true, 't', 'true', 1, '1'], true);
     }
 
     // Kamera-Aktion ermitteln
@@ -368,6 +381,9 @@ function reportAnprDetection($data) {
         if (($action_type === 'actuator' || $action_type === 'both') && $cam && !empty($cam['actuator_id'])) {
             $action_taken = ($action_taken === 'infobar') ? 'both' : 'gate_open';
         }
+    } elseif ($first_arrival && ($action_type === 'infobar' || $action_type === 'both')) {
+        // Erste Ankunft zum offenen Auftrag: nur Infoleiste, kein Tor
+        $action_taken = 'infobar';
     }
 
     // Erkennung speichern
@@ -407,7 +423,8 @@ function reportAnprDetection($data) {
 /**
  * Ausstehende ANPR-Erkennungen fuer die Infoleiste laden
  *
- * Nur Einfahrten ohne offenen Auftrag, nicht-dismissed, innerhalb TTL
+ * Nur Einfahrten, nicht-dismissed, innerhalb TTL. Bei offenem Auftrag liefert
+ * die Abfrage oe_id/ordnumber mit — die Infoleiste öffnet dann direkt den Auftrag.
  *
  * @testdata {}
  */
@@ -421,11 +438,20 @@ function getPendingAnprDetections() {
                 d.detected_at, d.action_taken, d.camera_id,
                 c.name AS customer_name,
                 car.c_id AS vehicle_id,
-                cam.name AS camera_name
+                cam.name AS camera_name,
+                o.oe_id, o.ordnumber
          FROM anpr_detections_lxcars d
          LEFT JOIN customer c ON d.customer_id = c.id
          LEFT JOIN cars_lxcars car ON d.c_id = car.c_id
          LEFT JOIN anpr_cameras_lxcars cam ON d.camera_id = cam.id
+         LEFT JOIN LATERAL (
+             SELECT oe.id AS oe_id, oe.ordnumber
+             FROM oe
+             JOIN oe_ext ON oe.id = oe_ext.oe_id
+             WHERE oe_ext.c_id = d.c_id AND oe.closed IS NOT TRUE
+             ORDER BY oe.itime DESC
+             LIMIT 1
+         ) o ON true
          WHERE d.dismissed IS NOT TRUE
            AND d.direction = 'in'
            AND d.action_taken IN ('infobar', 'both')

@@ -47,6 +47,9 @@ class TradingTestDb {
         $db->execute("CREATE TABLE IF NOT EXISTS defaults_oserp (key text PRIMARY KEY, value text)", []);
         $db->execute("CREATE TABLE IF NOT EXISTS extensions_oserp (id serial PRIMARY KEY, extension text UNIQUE, active boolean DEFAULT true)", []);
         $db->execute("INSERT INTO extensions_oserp (extension, active) VALUES ('trading', true) ON CONFLICT DO NOTHING", []);
+        // Zwei Mitarbeiter: jeder bekommt sein eigenes Handelssystem
+        $db->execute("CREATE TABLE IF NOT EXISTS employee (id integer PRIMARY KEY, login text UNIQUE, name text, deleted boolean DEFAULT false)", []);
+        $db->execute("INSERT INTO employee (id, login, name) VALUES (1, 'chef', 'Chef'), (2, 'mitarbeiter', 'Mitarbeiter') ON CONFLICT DO NOTHING", []);
         self::applySchema($db);
         return $db;
     }

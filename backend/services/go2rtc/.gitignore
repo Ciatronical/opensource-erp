@@ -2,3 +2,6 @@
 go2rtc
 go2rtc_*
 *.log
+# Enthält Kamera-Zugangsdaten (rtsp://benutzer:passwort@…) und wird vom ERP im
+# Betrieb umgeschrieben — niemals einchecken. Vorlage: go2rtc.yaml.example
+go2rtc.yaml

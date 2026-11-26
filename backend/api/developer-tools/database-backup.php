@@ -137,10 +137,15 @@ function createAutoBackupForClient($dbCredentials, $backupName = null) {
 function ensureBackupDir($dbName) {
     $backupDir = BACKUP_BASE_DIR . $dbName . '/';
     if (!file_exists($backupDir)) {
-        if (!mkdir($backupDir, 0755, true)) {
+        if (!mkdir($backupDir, 0775, true)) {
             // writeLog("ERROR: Backup-Verzeichnis konnte nicht erstellt werden: $backupDir");
             return false;
         }
+        // Gruppe muss schreiben dürfen: Backups legt sowohl der Webserver (www-data)
+        // als auch die Kommandozeile (Upstall, Cron) an. mkdir() beachtet die umask,
+        // deshalb ausdrücklich setzen; die Gruppe erbt der Ordner vom setgid-Bit
+        // auf backups/ (install/install.sh).
+        @chmod($backupDir, 0775);
         // writeLog("INFO: Backup-Verzeichnis erstellt: $backupDir");
     }
     return $backupDir;

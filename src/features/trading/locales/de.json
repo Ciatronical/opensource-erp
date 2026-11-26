@@ -4,8 +4,9 @@
             "trading": "/ki-trading"
         },
         "title": "KI-Trading",
-        "subtitle": "Forschungslabor, Papierhandel und Echtgeldhandel unter Aufsicht der Risk-Engine",
+        "subtitle": "Ihr eigenes Handelssystem: Forschungslabor, Papierhandel und Echtgeldhandel unter Aufsicht der Risk-Engine",
         "refresh": "Aktualisieren",
+        "guide": "Anleitung",
         "save": "Speichern",
         "saved": "Gespeichert",
         "cancel": "Abbrechen",
@@ -33,7 +34,7 @@
         },
         "killSwitch": {
             "button": "Not-Aus",
-            "tooltip": "Hält den gesamten automatischen Handel sofort an und storniert alle offenen Orders. Bestehende Positionen werden nicht verkauft. Die Sperre kann nur ein Administrator wieder aufheben.",
+            "tooltip": "Hält Ihren gesamten automatischen Handel sofort an und storniert alle offenen Orders. Bestehende Positionen werden nicht verkauft. Die Sperre können nur Sie selbst wieder aufheben.",
             "confirmTitle": "Not-Aus auslösen?",
             "confirmText": "Der gesamte automatische Handel wird angehalten und alle offenen Orders werden storniert. Bestehende Positionen bleiben unverändert.",
             "done": "Handel angehalten, {n} offene Orders storniert"
@@ -261,7 +262,8 @@
             }
         },
         "control": {
-            "adminOnly": "Aktivieren, Grenzen und Broker-Zugänge sind Systemadministratoren vorbehalten."
+            "adminOnly": "Die Instrumente und die Datenquelle der Kurse gelten für die ganze Firma und sind Systemadministratoren vorbehalten.",
+            "ownOnly": "Freigabe, Grenzen, Sperren und Broker-Zugänge gelten nur für Ihr eigenes Handelssystem. Jeder Mitarbeiter hat sein eigenes."
         },
         "limits": {
             "title": "Risikogrenzen",
@@ -334,7 +336,8 @@
             "gate_live_min_paper_trades": "Vorwärtstest: Mindestzahl Trades",
             "gate_live_max_paper_drawdown_pct": "Vorwärtstest: höchster Verlust (%)",
             "gate_live_min_paper_return_pct": "Vorwärtstest: Mindestergebnis (%)",
-            "retire_drawdown_factor": "Ausmustern ab Vielfachem des Backtest-Verlusts"
+            "retire_drawdown_factor": "Ausmustern ab Vielfachem des Backtest-Verlusts",
+            "companyWide": "Gilt für die ganze Firma"
         },
         "instruments": {
             "title": "Instrumente",

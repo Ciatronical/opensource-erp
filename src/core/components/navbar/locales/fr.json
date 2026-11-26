@@ -75,6 +75,7 @@
         "markOrdered": "Marquer {count} comme commande",
         "yesterday": "Hier",
         "noOrder": "sans commande",
+        "anprOrder": "Commande {number}",
         "smsFallbackToast": "Le WhatsApp à {name} n'est pas arrivé – envoyé par SMS",
         "smsFallbackFailed": "Le WhatsApp à {name} n'est pas arrivé, le SMS de secours a lui aussi échoué : {error}",
         "telegramFile": "Fichier",

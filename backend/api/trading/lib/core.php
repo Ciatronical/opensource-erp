@@ -28,9 +28,11 @@ class TradingGuard {
      *
      * Setzt oserp.trading_actor = 'user' nur für die Dauer der Transaktion
      * (die Verbindungen sind persistent — ein sitzungsweiter Wert bliebe für
-     * spätere Requests stehen). Darf ausschliesslich aus API-Aktionen gerufen
-     * werden, die vorher die Administratorrechte geprüft haben. Die Engine
-     * ruft das nie; ihre Schreibversuche scheitern am Trigger.
+     * spätere Requests stehen). Darf ausschliesslich aus API-Aktionen des
+     * angemeldeten Mitarbeiters gerufen werden. Der Trigger lässt nur Zeilen
+     * dieses Mitarbeiters zu (und die Vorgabetabellen, deren Änderung die API
+     * Administratoren vorbehält). Die Engine ruft das nie; ihre Schreibversuche
+     * scheitern am Trigger.
      *
      * @param object   $db ApiDatabase
      * @param callable $fn Schreibzugriffe
@@ -51,7 +53,74 @@ class TradingGuard {
 }
 
 /**
+ * Wessen Handelssystem gerade bearbeitet wird
+ *
+ * Jeder Mitarbeiter hat sein eigenes Handelssystem. Die Trennung macht die
+ * Datenbank: alle Abfragen laufen über die Sichten my_*_trading, die nur die
+ * Zeilen des Mitarbeiters der DB-Sitzung zeigen (oserp.employee_id). In der
+ * API setzt DbhCompany diesen Wert je Request aus dem Login der Sitzung; die
+ * Engine setzt ihn hier, bevor sie einen Benutzer bearbeitet.
+ */
+class TradingScope {
+
+    /**
+     * Mitarbeiter der DB-Sitzung (0 = keiner)
+     *
+     * @param object $db ApiDatabase
+     * @return int employee.id
+     */
+    public static function id($db): int {
+        $row = $db->getOne("SELECT NULLIF(current_setting('oserp.employee_id', true), '') AS id", []);
+        return (int)($row['id'] ?? 0);
+    }
+
+    /**
+     * Mitarbeiter der DB-Sitzung; bricht ab, wenn keiner gesetzt ist
+     *
+     * @param object $db ApiDatabase
+     * @return int employee.id
+     */
+    public static function requireId($db): int {
+        $id = self::id($db);
+        if ($id <= 0) {
+            throw new RuntimeException('Handelssystem: kein Mitarbeiter in der Sitzung');
+        }
+        return $id;
+    }
+
+    /**
+     * Wechselt auf das Handelssystem eines Mitarbeiters (nur Engine und Tests)
+     *
+     * @param object   $db         ApiDatabase
+     * @param int|null $employeeId employee.id, null = kein Mitarbeiter (Sichten leer)
+     */
+    public static function set($db, ?int $employeeId): void {
+        $db->execute("SELECT set_config('oserp.employee_id', :id, false)", [':id' => $employeeId ? (string)$employeeId : '']);
+    }
+
+    /**
+     * Mitarbeiter mit eigenem Handelssystem, in fester Reihenfolge
+     *
+     * Gelöschte Mitarbeiter fallen heraus: ihr System wird nicht mehr
+     * bearbeitet, die Daten bleiben erhalten.
+     *
+     * @param object $db ApiDatabase
+     * @return int[] employee.id
+     */
+    public static function users($db): array {
+        $rows = $db->getAll(
+            "SELECT u.employee_id FROM users_trading u
+             JOIN employee e ON e.id = u.employee_id AND NOT COALESCE(e.deleted, false)
+             ORDER BY u.employee_id", []
+        ) ?: [];
+        return array_map(fn($r) => (int)$r['employee_id'], $rows);
+    }
+}
+
+/**
  * Einstellungen und Risikogrenzen (nur lesend — geändert wird über die API)
+ *
+ * Wirksam ist der eigene Wert des Mitarbeiters, sonst die Vorgabe der Firma.
  */
 class TradingConfig {
 
@@ -63,7 +132,7 @@ class TradingConfig {
      */
     public static function settings($db): array {
         $out = [];
-        foreach ($db->getAll("SELECT key, value FROM settings_trading", []) ?: [] as $row) {
+        foreach ($db->getAll("SELECT key, value FROM my_settings_trading", []) ?: [] as $row) {
             $out[$row['key']] = $row['value'];
         }
         return $out;
@@ -77,7 +146,7 @@ class TradingConfig {
      */
     public static function limits($db): array {
         $out = [];
-        foreach ($db->getAll("SELECT key, value FROM risk_limits_trading", []) ?: [] as $row) {
+        foreach ($db->getAll("SELECT key, value FROM my_risk_limits_trading", []) ?: [] as $row) {
             $out[$row['key']] = (float)$row['value'];
         }
         return $out;
@@ -101,11 +170,14 @@ class TradingConfig {
 
 /**
  * Laufzeitzustand der Engine (state_trading)
+ *
+ * get/set gelten für den Mitarbeiter der Sitzung (Schlüssel u<id>:…),
+ * getGlobal/setGlobal für die ganze Firma (z. B. der Herzschlag der Engine).
  */
 class TradingState {
 
     /**
-     * Liest einen Zustandswert
+     * Liest einen Zustandswert des Mitarbeiters der Sitzung
      *
      * @param object      $db      ApiDatabase
      * @param string      $key     Schlüssel
@@ -113,18 +185,41 @@ class TradingState {
      * @return string|null
      */
     public static function get($db, string $key, ?string $default = null): ?string {
-        $row = $db->getOne("SELECT value FROM state_trading WHERE key = :k", [':k' => $key]);
-        return $row ? $row['value'] : $default;
+        return self::getGlobal($db, 'u' . TradingScope::requireId($db) . ':' . $key, $default);
     }
 
     /**
-     * Schreibt einen Zustandswert
+     * Schreibt einen Zustandswert des Mitarbeiters der Sitzung
      *
      * @param object $db    ApiDatabase
      * @param string $key   Schlüssel
      * @param string $value Wert
      */
     public static function set($db, string $key, string $value): void {
+        self::setGlobal($db, 'u' . TradingScope::requireId($db) . ':' . $key, $value);
+    }
+
+    /**
+     * Liest einen firmenweiten Zustandswert
+     *
+     * @param object      $db      ApiDatabase
+     * @param string      $key     Schlüssel
+     * @param string|null $default Vorgabe
+     * @return string|null
+     */
+    public static function getGlobal($db, string $key, ?string $default = null): ?string {
+        $row = $db->getOne("SELECT value FROM state_trading WHERE key = :k", [':k' => $key]);
+        return $row ? $row['value'] : $default;
+    }
+
+    /**
+     * Schreibt einen firmenweiten Zustandswert
+     *
+     * @param object $db    ApiDatabase
+     * @param string $key   Schlüssel
+     * @param string $value Wert
+     */
+    public static function setGlobal($db, string $key, string $value): void {
         $db->execute(
             "INSERT INTO state_trading (key, value, mtime) VALUES (:k, :v, now())
              ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, mtime = now()",
@@ -151,7 +246,7 @@ class TradingAudit {
      */
     public static function log($db, string $actor, string $event, array $details = [], string $severity = 'info', ?int $accountId = null, ?int $orderId = null): void {
         $db->execute(
-            "INSERT INTO audit_trading (actor, event, severity, account_id, order_id, details)
+            "INSERT INTO my_audit_trading (actor, event, severity, account_id, order_id, details)
              VALUES (:actor, :event, :severity, :account_id, :order_id, :details::jsonb)",
             [
                 ':actor' => $actor, ':event' => $event, ':severity' => $severity,

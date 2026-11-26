@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "Fordon vom Scan anlegen",
+        "anprPlateHint": "Igenkänd registreringsskylt {plate} – används om skanningen saknar registreringsnummer.",
         "scanList": {
             "title": "Letzte Fordonschein-Scans",
             "loading": "Scans werden geladen...",

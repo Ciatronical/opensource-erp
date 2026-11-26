@@ -197,7 +197,7 @@ nicht mitgeliefert.
 |---|---|---|
 | PostgreSQL 16 | PostgreSQL License | Datenbank |
 | PHP 8.3 | PHP License 3.01 | Backend-Laufzeit |
-| Node.js 25 | MIT | Build, SSE-Server, Portal-Runner |
+| Node.js 26 | MIT | Build, SSE-Server, Portal-Runner |
 | Apache httpd | Apache-2.0 | Webserver (Installer) |
 | Composer | MIT | PHP-Paketverwaltung |
 | Hugo | Apache-2.0 | Generator für Webseite, Shop und Kundenportal |
@@ -214,7 +214,7 @@ nicht mitgeliefert.
 | miniupnpc | BSD-3-Clause | Portfreigabe |
 | Perl | Artistic / GPL | kivitendo-Basis |
 | kivitendo (optional, externer Installer) | GPL-2.0-or-later | Datenbankkompatibilität; `backend/upstall/crm/auth_schema.sql` bildet das Auth-Schema von kivitendo 4.0 nach |
-| Docker-Images: node:25-alpine, php:8.3-fpm-bookworm, postgres:16-alpine, certbot/certbot | siehe jeweilige Komponente | Test/Demo |
+| Docker-Images: node:26-alpine, php:8.3-fpm-bookworm, postgres:16-alpine, certbot/certbot | siehe jeweilige Komponente | Test/Demo |
 
 ## Externe Dienste
 

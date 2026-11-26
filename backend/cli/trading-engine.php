@@ -4,7 +4,8 @@
  * CLI-Script: KI-Trading-Engine
  *
  * Durchläuft alle Mandanten mit aktiver Erweiterung „trading“ und führt je
- * Mandant einen Lauf der Engine aus: Marktdaten nachholen, Orders abgleichen,
+ * Mandant einen Lauf der Engine aus — darin jeder Mitarbeiter mit eigenem
+ * Handelssystem (users_trading) für sich: Marktdaten nachholen, Orders abgleichen,
  * bei neuem Tagesbalken umschichten, Risiko überwachen; dazu die fälligen
  * Arbeiten (Forschungszyklus, Lebenszyklus der Strategien, Tagesbericht).
  * Was fällig ist, entscheidet die Engine selbst anhand ihres Zustands
@@ -90,7 +91,7 @@ foreach ($clients as $client) {
         TradingCron::setCompanyDb($pdo);
         $db = DbhCompany::begin();
         if (!hasExtensionsTable($db) || !isExtensionActive($db, 'trading')) continue;
-        if (!existingTables($db, ['settings_trading'])) continue;   // Schema-Update steht noch aus
+        if (!existingTables($db, ['settings_trading', 'users_trading'])) continue;   // Schema-Update steht noch aus
         if (backgroundServicesDisabled($pdo)) continue;
 
         $summary = TradingEngine::run($db, [

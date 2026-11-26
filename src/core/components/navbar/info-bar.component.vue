@@ -159,7 +159,8 @@ export default {
       }
       if (item.type === 'anpr') {
         const cust = item.data.customer_name ? ' — ' + item.data.customer_name : ''
-        return item.data.c_ln + cust + ' (' + formatDateTime(item.timestamp) + ')'
+        const order = item.data.ordnumber ? ' — ' + t('InfoBar.anprOrder', { number: item.data.ordnumber }) : ''
+        return item.data.c_ln + cust + order + ' (' + formatDateTime(item.timestamp) + ')'
       }
       if (item.type === 'missing_order') {
         const owner = item.data.owner_name ? ' — ' + item.data.owner_name : ''
@@ -236,10 +237,15 @@ export default {
     }
 
     function openAnprDetection(det) {
-      if (det.vehicle_id) {
+      if (det.oe_id) {
+        router.push({ name: 'faktura-order-view', params: { id: det.oe_id } })
+      } else if (det.vehicle_id) {
         router.push({ name: 'car', params: { id: det.vehicle_id } })
       } else if (det.customer_id) {
         router.push({ name: 'change-customer', params: { id: det.customer_id } })
+      } else {
+        // Kennzeichen unbekannt: Fahrzeugscheinscanner zum Anlegen öffnen
+        router.push({ name: 'car-new-from-scan', query: { plate: det.c_ln } })
       }
     }
 

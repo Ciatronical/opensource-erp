@@ -75,6 +75,7 @@
         "markOrdered": "Markér {count} som bestilt",
         "yesterday": "I går",
         "noOrder": "ingen ordre",
+        "anprOrder": "Ordre {number}",
         "smsFallbackToast": "WhatsApp til {name} blev ikke leveret – sendt som SMS i stedet",
         "smsFallbackFailed": "WhatsApp til {name} blev ikke leveret, og reserve-SMS'en mislykkedes også: {error}",
         "telegramFile": "Fil",

@@ -390,6 +390,7 @@
     },
     "CarScanView": {
         "title": "Creer un vehicule a partir du scan",
+        "anprPlateHint": "Plaque reconnue {plate} – reprise si le scan ne contient pas de plaque.",
         "scanList": {
             "title": "Derniers scans de cartes grises",
             "loading": "Chargement des scans...",

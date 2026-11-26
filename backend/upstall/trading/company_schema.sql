@@ -13,14 +13,31 @@
 --   Sicherheit    risk_limits_trading, settings_trading, locks_trading,
 --                 live_authorizations_trading, broker_connections_trading
 --   Betrieb       state_trading, audit_trading, reports_trading
+--   Benutzer      users_trading, user_limits_trading, user_settings_trading
+--
+-- Jeder Mitarbeiter hat sein eigenes Handelssystem: eigene Strategien, Konten,
+-- Orders, Grenzen, Sperren, Broker-Zugänge und eine eigene Echtgeldfreigabe.
+-- Gemeinsam sind nur die Märkte (Instrumente, Kurse, Marktphasen) und die
+-- Vorgabewerte der Grenzen und Einstellungen.
+--
+-- Die Trennung erzwingt die Datenbank, nicht der PHP-Code:
+--   * Jede benutzerbezogene Tabelle trägt employee_id. Ein Trigger trägt beim
+--     Einfügen den Mitarbeiter der DB-Sitzung ein (oserp.employee_id, gesetzt
+--     von DbhCompany je Request bzw. von der Engine je Benutzer) und verbietet,
+--     den Besitzer später zu ändern.
+--   * Zu jeder dieser Tabellen gibt es die Sicht my_<tabelle>, die nur die
+--     Zeilen dieses Mitarbeiters zeigt. Der gesamte PHP-Code liest und schreibt
+--     ausschliesslich über diese Sichten — eine Abfrage kann fremde Daten gar
+--     nicht erreichen. Ohne Mitarbeiter in der Sitzung sind die Sichten leer.
 --
 -- Sicherheitsgrundsatz: Die Engine (Cron, Forschung, KI) handelt selbstständig,
 -- darf aber weder Limits noch Sperren noch die Echtgeldfreigabe verändern. Das
 -- ist nicht nur Konvention im PHP-Code: die Tabellen der Gruppe „Sicherheit“
 -- tragen einen Trigger, der Schreibzugriffe nur zulässt, wenn die Transaktion
--- oserp.trading_actor = 'user' gesetzt hat. Das tun ausschliesslich die
--- API-Aktionen eines angemeldeten Administrators (backend/api/trading/trading.php,
--- TradingGuard::asUser). Sperren darf die Engine setzen, aber nicht aufheben.
+-- oserp.trading_actor = 'user' gesetzt hat, und nur auf Zeilen des angemeldeten
+-- Mitarbeiters. Das tun ausschliesslich die API-Aktionen des Besitzers
+-- (backend/api/trading/trading.php, TradingGuard::asUser). Sperren darf die
+-- Engine setzen, aber nicht aufheben.
 --
 -- Reihenfolge beachten: der Upstall-Parser verarbeitet erst alle
 -- CREATE TABLE (...) getrennt, danach alles Übrige in Dateireihenfolge.
@@ -73,6 +90,7 @@ CREATE TABLE IF NOT EXISTS bars_trading
 CREATE TABLE IF NOT EXISTS strategies_trading
 (
     id                 integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     code               text NOT NULL,
     name               text NOT NULL,
     family             text NOT NULL,
@@ -90,6 +108,7 @@ CREATE TABLE IF NOT EXISTS strategies_trading
 CREATE TABLE IF NOT EXISTS strategy_versions_trading
 (
     id             integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     strategy_id    integer NOT NULL REFERENCES strategies_trading (id) ON DELETE CASCADE,
     version        integer NOT NULL DEFAULT 1,
     params         jsonb NOT NULL,
@@ -108,6 +127,7 @@ CREATE TABLE IF NOT EXISTS strategy_versions_trading
 CREATE TABLE IF NOT EXISTS experiments_trading
 (
     id                integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     kind              text NOT NULL,
     hypothesis        text,
     status            text NOT NULL DEFAULT 'running',
@@ -122,6 +142,7 @@ CREATE TABLE IF NOT EXISTS experiments_trading
 CREATE TABLE IF NOT EXISTS backtests_trading
 (
     id                  integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     strategy_version_id integer NOT NULL REFERENCES strategy_versions_trading (id) ON DELETE CASCADE,
     experiment_id       integer REFERENCES experiments_trading (id) ON DELETE SET NULL,
     segment             text NOT NULL,
@@ -168,6 +189,7 @@ CREATE TABLE IF NOT EXISTS regimes_trading
 CREATE TABLE IF NOT EXISTS broker_connections_trading
 (
     id             integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     name           text NOT NULL,
     adapter        text NOT NULL,
     environment    text NOT NULL DEFAULT 'sandbox',
@@ -182,6 +204,7 @@ CREATE TABLE IF NOT EXISTS broker_connections_trading
 CREATE TABLE IF NOT EXISTS accounts_trading
 (
     id                   integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     kind                 text NOT NULL,
     name                 text NOT NULL,
     strategy_id          integer REFERENCES strategies_trading (id) ON DELETE SET NULL,
@@ -199,6 +222,7 @@ CREATE TABLE IF NOT EXISTS accounts_trading
 CREATE TABLE IF NOT EXISTS positions_trading
 (
     id            integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     account_id    integer NOT NULL REFERENCES accounts_trading (id) ON DELETE CASCADE,
     instrument_id integer NOT NULL REFERENCES instruments_trading (id),
     qty           numeric(28,10) NOT NULL DEFAULT 0,
@@ -210,6 +234,7 @@ CREATE TABLE IF NOT EXISTS positions_trading
 CREATE TABLE IF NOT EXISTS equity_trading
 (
     account_id      integer NOT NULL REFERENCES accounts_trading (id) ON DELETE CASCADE,
+    employee_id integer,
     day             date NOT NULL,
     equity          numeric(20,8) NOT NULL,
     cash            numeric(20,8) NOT NULL,
@@ -220,6 +245,7 @@ CREATE TABLE IF NOT EXISTS equity_trading
 CREATE TABLE IF NOT EXISTS allocations_trading
 (
     id          integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     day         date NOT NULL,
     strategy_id integer NOT NULL REFERENCES strategies_trading (id) ON DELETE CASCADE,
     weight      numeric(10,6) NOT NULL,
@@ -234,6 +260,7 @@ CREATE TABLE IF NOT EXISTS allocations_trading
 CREATE TABLE IF NOT EXISTS orders_trading
 (
     id                  integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     account_id          integer NOT NULL REFERENCES accounts_trading (id) ON DELETE CASCADE,
     strategy_version_id integer REFERENCES strategy_versions_trading (id) ON DELETE SET NULL,
     instrument_id       integer NOT NULL REFERENCES instruments_trading (id),
@@ -262,6 +289,7 @@ CREATE TABLE IF NOT EXISTS orders_trading
 CREATE TABLE IF NOT EXISTS fills_trading
 (
     id             integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     order_id       integer NOT NULL REFERENCES orders_trading (id) ON DELETE CASCADE,
     broker_fill_id text NOT NULL,
     ts             timestamp without time zone NOT NULL DEFAULT now(),
@@ -298,6 +326,7 @@ CREATE TABLE IF NOT EXISTS settings_trading
 CREATE TABLE IF NOT EXISTS locks_trading
 (
     id          integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     scope       text NOT NULL DEFAULT 'all',
     reason_code text NOT NULL,
     message     text,
@@ -310,6 +339,7 @@ CREATE TABLE IF NOT EXISTS locks_trading
 CREATE TABLE IF NOT EXISTS live_authorizations_trading
 (
     id           integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     action       text NOT NULL,
     login        text NOT NULL,
     confirmation text,
@@ -330,6 +360,7 @@ CREATE TABLE IF NOT EXISTS state_trading
 CREATE TABLE IF NOT EXISTS audit_trading
 (
     id         bigint NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     ts         timestamp without time zone NOT NULL DEFAULT now(),
     actor      text NOT NULL,
     event      text NOT NULL,
@@ -342,10 +373,41 @@ CREATE TABLE IF NOT EXISTS audit_trading
 CREATE TABLE IF NOT EXISTS reports_trading
 (
     id        integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer,
     day       date NOT NULL,
     data      jsonb NOT NULL,
     narrative text,
     itime     timestamp without time zone DEFAULT now()
+);
+
+-- ============================================================================
+-- BENUTZER
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS users_trading
+(
+    employee_id integer NOT NULL PRIMARY KEY,
+    itime       timestamp without time zone DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS user_limits_trading
+(
+    id          integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer NOT NULL,
+    key         text NOT NULL,
+    value       numeric(20,8) NOT NULL,
+    mtime       timestamp without time zone DEFAULT now(),
+    modified_by text
+);
+
+CREATE TABLE IF NOT EXISTS user_settings_trading
+(
+    id          integer NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id integer NOT NULL,
+    key         text NOT NULL,
+    value       text NOT NULL,
+    mtime       timestamp without time zone DEFAULT now(),
+    modified_by text
 );
 
 -- ============================================================================
@@ -371,7 +433,16 @@ CREATE INDEX idx_orders_trading_status ON orders_trading (status);
 CREATE UNIQUE INDEX idx_fills_trading_broker_fill ON fills_trading (order_id, broker_fill_id);
 CREATE INDEX idx_locks_trading_active ON locks_trading (cleared_at);
 CREATE INDEX idx_audit_trading_ts ON audit_trading (ts);
-CREATE UNIQUE INDEX idx_reports_trading_day ON reports_trading (day);
+-- Der Tagesbericht war zuerst je Firma eindeutig, jetzt je Mitarbeiter
+DROP INDEX IF EXISTS idx_reports_trading_day;
+CREATE UNIQUE INDEX idx_reports_trading_owner_day ON reports_trading (employee_id, day);
+CREATE UNIQUE INDEX idx_user_limits_trading_key ON user_limits_trading (employee_id, key);
+CREATE UNIQUE INDEX idx_user_settings_trading_key ON user_settings_trading (employee_id, key);
+CREATE INDEX idx_strategies_trading_owner ON strategies_trading (employee_id, status);
+CREATE INDEX idx_accounts_trading_owner ON accounts_trading (employee_id);
+CREATE INDEX idx_orders_trading_owner ON orders_trading (employee_id, itime);
+CREATE INDEX idx_audit_trading_owner ON audit_trading (employee_id, ts);
+CREATE INDEX idx_locks_trading_owner ON locks_trading (employee_id, cleared_at);
 CREATE UNIQUE INDEX idx_accounts_trading_strategy ON accounts_trading (strategy_id) WHERE kind = 'strategy_paper' AND closed_at IS NULL;
 
 -- ============================================================================
@@ -406,12 +477,16 @@ COMMENT ON TABLE allocations_trading IS 'Trading: Gewicht je Strategie im Gesamt
 COMMENT ON TABLE orders_trading IS 'Trading: Orders aller Konten samt Ergebnis der Risikoprüfung';
 COMMENT ON COLUMN orders_trading.status IS 'new, risk_rejected, submitted, partially_filled, filled, canceled, rejected, expired, error';
 COMMENT ON TABLE fills_trading IS 'Trading: Ausführungen; (order_id, broker_fill_id) eindeutig — doppelt gemeldete Teilausführungen zählen einmal';
-COMMENT ON TABLE risk_limits_trading IS 'Trading: Risikogrenzen der Risk-Engine — nur durch Administratoren änderbar (Trigger)';
-COMMENT ON TABLE settings_trading IS 'Trading: Einstellungen (Gebühren, Forschungstakt, Übernahmekriterien) — nur durch Administratoren änderbar (Trigger)';
-COMMENT ON TABLE locks_trading IS 'Trading: Handelssperren; aktiv solange cleared_at leer. Setzen darf jeder, aufheben nur ein Administrator (Trigger)';
+COMMENT ON TABLE risk_limits_trading IS 'Trading: Vorgabewerte der Risikogrenzen für alle Mitarbeiter; eigene Werte stehen in user_limits_trading, wirksam ist my_risk_limits_trading';
+COMMENT ON TABLE settings_trading IS 'Trading: Vorgabewerte der Einstellungen (Gebühren, Forschungstakt, Übernahmekriterien); eigene Werte in user_settings_trading, wirksam ist my_settings_trading';
+COMMENT ON TABLE locks_trading IS 'Trading: Handelssperren je Mitarbeiter; aktiv solange cleared_at leer. Setzen darf auch die Engine, aufheben nur der Besitzer (Trigger)';
+COMMENT ON TABLE users_trading IS 'Trading: Mitarbeiter mit eigenem Handelssystem — die Engine arbeitet genau diese der Reihe nach ab';
+COMMENT ON TABLE user_limits_trading IS 'Trading: eigene Risikogrenzen eines Mitarbeiters (überschreiben die Vorgabe) — nur durch ihn selbst änderbar (Trigger)';
+COMMENT ON TABLE user_settings_trading IS 'Trading: eigene Einstellungen eines Mitarbeiters (überschreiben die Vorgabe) — nur durch ihn selbst änderbar (Trigger)';
+COMMENT ON COLUMN strategies_trading.employee_id IS 'Besitzer (employee.id); wird vom Trigger aus oserp.employee_id gesetzt und ist unveränderlich — so in allen benutzerbezogenen Tabellen';
 COMMENT ON COLUMN locks_trading.scope IS 'all = gesamter Handel, live = nur Echtgeld';
-COMMENT ON TABLE live_authorizations_trading IS 'Trading: Protokoll der Echtgeldfreigabe (enable/disable); der letzte Eintrag gilt, dauerhaft über Neustarts';
-COMMENT ON TABLE state_trading IS 'Trading: Laufzeitzustand der Engine (letzter Lauf, letzter Forschungszyklus …)';
+COMMENT ON TABLE live_authorizations_trading IS 'Trading: Protokoll der Echtgeldfreigabe je Mitarbeiter (enable/disable); sein letzter Eintrag gilt, dauerhaft über Neustarts';
+COMMENT ON TABLE state_trading IS 'Trading: Laufzeitzustand der Engine; Schlüssel u<employee_id>:… gehören einem Mitarbeiter (letzter Forschungszyklus …), alle übrigen der Firma (Herzschlag)';
 COMMENT ON TABLE audit_trading IS 'Trading: Audit-Protokoll aller Entscheidungen, Orders, Sperren und Freigaben';
 COMMENT ON TABLE reports_trading IS 'Trading: tägliche Zusammenfassung, berechnet aus den gespeicherten Handels- und Marktdaten';
 
@@ -420,9 +495,22 @@ COMMENT ON TABLE reports_trading IS 'Trading: tägliche Zusammenfassung, berechn
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION trading_guard_user_only() RETURNS trigger AS $$
+DECLARE
+    owner text;
 BEGIN
     IF COALESCE(current_setting('oserp.trading_actor', true), '') <> 'user' THEN
-        RAISE EXCEPTION 'TRADING_GUARD: % auf % ist nur durch einen angemeldeten Administrator erlaubt', TG_OP, TG_TABLE_NAME
+        RAISE EXCEPTION 'TRADING_GUARD: % auf % ist nur durch den angemeldeten Besitzer erlaubt', TG_OP, TG_TABLE_NAME
+            USING ERRCODE = '42501';
+    END IF;
+    -- Zeilen mit Besitzer: nur der Mitarbeiter der Sitzung selbst. Die
+    -- Vorgabetabellen haben keine Spalte employee_id (owner bleibt leer).
+    IF TG_OP = 'DELETE' THEN
+        owner := to_jsonb(OLD)->>'employee_id';
+    ELSE
+        owner := to_jsonb(NEW)->>'employee_id';
+    END IF;
+    IF owner IS NOT NULL AND owner IS DISTINCT FROM NULLIF(current_setting('oserp.employee_id', true), '') THEN
+        RAISE EXCEPTION 'TRADING_GUARD: % auf % betrifft das Handelssystem eines anderen Mitarbeiters', TG_OP, TG_TABLE_NAME
             USING ERRCODE = '42501';
     END IF;
     IF TG_OP = 'DELETE' THEN
@@ -432,12 +520,36 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Besitzer eintragen und festschreiben. Argument 'required': ohne Mitarbeiter in
+-- der Sitzung wird das Einfügen abgelehnt (keine herrenlosen Konten oder Orders).
+CREATE OR REPLACE FUNCTION trading_stamp_owner() RETURNS trigger AS $$
+BEGIN
+    IF TG_OP = 'UPDATE' THEN
+        IF NEW.employee_id IS DISTINCT FROM OLD.employee_id THEN
+            RAISE EXCEPTION 'TRADING_OWNER: der Besitzer einer Zeile in % ist unveränderlich', TG_TABLE_NAME
+                USING ERRCODE = '42501';
+        END IF;
+        RETURN NEW;
+    END IF;
+    IF NEW.employee_id IS NULL THEN
+        NEW.employee_id := NULLIF(current_setting('oserp.employee_id', true), '')::integer;
+    END IF;
+    IF NEW.employee_id IS NULL AND TG_ARGV[0] = 'required' THEN
+        RAISE EXCEPTION 'TRADING_OWNER: Einfügen in % ohne Mitarbeiter in der Sitzung (oserp.employee_id)', TG_TABLE_NAME
+            USING ERRCODE = '42501';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 DO $$
 DECLARE
     t text;
+    scope constant text := 'NULLIF(current_setting(''oserp.employee_id'', true), '''')::integer';
 BEGIN
     -- Vollschutz: jede Änderung nur durch den Benutzer
-    FOREACH t IN ARRAY ARRAY['risk_limits_trading', 'settings_trading', 'live_authorizations_trading', 'broker_connections_trading'] LOOP
+    FOREACH t IN ARRAY ARRAY['risk_limits_trading', 'settings_trading', 'live_authorizations_trading', 'broker_connections_trading',
+                             'users_trading', 'user_limits_trading', 'user_settings_trading'] LOOP
         IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = t || '_guard') THEN
             EXECUTE format('CREATE TRIGGER %I BEFORE INSERT OR UPDATE OR DELETE ON %I FOR EACH ROW EXECUTE FUNCTION trading_guard_user_only()', t || '_guard', t);
         END IF;
@@ -447,6 +559,34 @@ BEGIN
         CREATE TRIGGER locks_trading_guard BEFORE UPDATE OR DELETE ON locks_trading
             FOR EACH ROW EXECUTE FUNCTION trading_guard_user_only();
     END IF;
+
+    -- Benutzerbezogene Tabellen: Besitzer-Trigger und Sicht my_<tabelle>.
+    -- CREATE OR REPLACE bei jedem Update, damit neue Spalten in der Sicht ankommen.
+    FOREACH t IN ARRAY ARRAY['strategies_trading', 'strategy_versions_trading', 'experiments_trading', 'backtests_trading',
+                             'broker_connections_trading', 'accounts_trading', 'positions_trading', 'equity_trading',
+                             'allocations_trading', 'orders_trading', 'fills_trading', 'locks_trading',
+                             'live_authorizations_trading', 'reports_trading', 'audit_trading'] LOOP
+        IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = t || '_owner') THEN
+            -- Das Audit-Protokoll nimmt auch Meldungen ohne Mitarbeiter an (Marktdaten, Systemereignisse)
+            EXECUTE format('CREATE TRIGGER %I BEFORE INSERT OR UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION trading_stamp_owner(%L)',
+                           t || '_owner', t, CASE WHEN t = 'audit_trading' THEN 'optional' ELSE 'required' END);
+        END IF;
+        EXECUTE format('CREATE OR REPLACE VIEW %I AS SELECT * FROM %I WHERE employee_id = %s WITH CASCADED CHECK OPTION', 'my_' || t, t, scope);
+    END LOOP;
+
+    -- Wirksame Grenzen und Einstellungen: eigener Wert, sonst die Vorgabe.
+    -- market_data_source gilt für die ganze Firma (die Kurse sind gemeinsam).
+    EXECUTE 'CREATE OR REPLACE VIEW my_risk_limits_trading AS
+             SELECT d.key, COALESCE(u.value, d.value) AS value, d.unit, d.sortkey,
+                    COALESCE(u.mtime, d.mtime) AS mtime, u.modified_by, d.value AS default_value
+             FROM risk_limits_trading d
+             LEFT JOIN user_limits_trading u ON u.key = d.key AND u.employee_id = ' || scope;
+    EXECUTE 'CREATE OR REPLACE VIEW my_settings_trading AS
+             SELECT d.key, COALESCE(u.value, d.value) AS value, d.value_type, d.section, d.sortkey,
+                    COALESCE(u.mtime, d.mtime) AS mtime, u.modified_by, d.value AS default_value,
+                    d.key = ''market_data_source'' AS company_wide
+             FROM settings_trading d
+             LEFT JOIN user_settings_trading u ON u.key = d.key AND d.key <> ''market_data_source'' AND u.employee_id = ' || scope;
 END $$;
 
 -- ============================================================================

@@ -248,6 +248,16 @@
               <v-list-item-title>{{ $t('NavbarView.reports') }}</v-list-item-title>
             </v-list-item>
           </template>
+          <!-- KI-Trading: das eigene Handelssystem des angemeldeten Mitarbeiters -->
+          <template v-if="oserpData.isExtensionEnabled('trading')">
+            <v-divider v-if="!oserpData.isLxCars()" class="my-1" />
+            <v-list-item :to="{ name: 'trading' }" @click="accountMenuOpen = false">
+              <template #prepend>
+                <v-icon size="small" class="me-2">mdi-robot-outline</v-icon>
+              </template>
+              <v-list-item-title>{{ $t('TradingView.title') }}</v-list-item-title>
+            </v-list-item>
+          </template>
         </v-list>
       </v-card>
     </v-menu>

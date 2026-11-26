@@ -75,6 +75,7 @@
         "markOrdered": "Merkitse {count} tilatuksi",
         "yesterday": "Eilen",
         "noOrder": "ei tilausta",
+        "anprOrder": "Tilaus {number}",
         "smsFallbackToast": "WhatsApp-viesti vastaanottajalle {name} ei mennyt perille – lähetetty tekstiviestinä",
         "smsFallbackFailed": "WhatsApp-viesti vastaanottajalle {name} ei mennyt perille, eikä varatekstiviestikään onnistunut: {error}",
         "telegramFile": "Tiedosto",

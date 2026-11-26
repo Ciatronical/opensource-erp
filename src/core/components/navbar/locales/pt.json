@@ -75,6 +75,7 @@
         "markOrdered": "Marcar {count} como encomendados",
         "yesterday": "Ontem",
         "noOrder": "sem ordem",
+        "anprOrder": "Ordem {number}",
         "smsFallbackToast": "O WhatsApp para {name} não chegou – enviado como SMS",
         "smsFallbackFailed": "O WhatsApp para {name} não chegou e o SMS alternativo também falhou: {error}",
         "telegramFile": "Ficheiro",

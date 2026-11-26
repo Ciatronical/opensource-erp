@@ -75,6 +75,7 @@
         "markOrdered": "Oznacz {count} jako zamówione",
         "yesterday": "Wczoraj",
         "noOrder": "brak zlecenia",
+        "anprOrder": "Zlecenie {number}",
         "smsFallbackToast": "WhatsApp do {name} nie dotarł – wysłano jako SMS",
         "smsFallbackFailed": "WhatsApp do {name} nie dotarł, zapasowy SMS również się nie powiódł: {error}",
         "telegramFile": "Plik",

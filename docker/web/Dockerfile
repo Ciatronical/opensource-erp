@@ -1,7 +1,7 @@
 # ============================================
 # Stage 1: Vue.js Frontend bauen
 # ============================================
-FROM node:25-alpine AS builder
+FROM node:26-alpine AS builder
 
 WORKDIR /build
 
@@ -85,7 +85,7 @@ RUN docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
     zip
 
 # Node.js fuer SSE-Server
-RUN curl -fsSL https://deb.nodesource.com/setup_25.x | bash - \
+RUN curl -fsSL https://deb.nodesource.com/setup_26.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 

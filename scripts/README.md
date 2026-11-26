@@ -156,7 +156,7 @@ Backend-Entwicklung mit Hot-Reload.
 ### Voraussetzungen
 
 - PHP >= 8.0 mit Extensions: `pgsql`, `mbstring`, `xml`, `curl`
-- Node.js 25
+- Node.js 26
 - Lokale PostgreSQL auf Port 5432
 - `backend/config/settings.ini` muss konfiguriert sein
 - `gnome-terminal` (GNOME-Desktop)

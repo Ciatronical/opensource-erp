@@ -75,6 +75,7 @@
         "markOrdered": "Позначити {count} як замовлені",
         "yesterday": "Вчора",
         "noOrder": "немає замовлення",
+        "anprOrder": "Замовлення {number}",
         "smsFallbackToast": "WhatsApp для {name} не дійшов – надіслано як SMS",
         "smsFallbackFailed": "WhatsApp для {name} не дійшов, резервне SMS також не вдалося: {error}",
         "telegramFile": "Файл",

@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "Kjoeretoeyer vom Scan anlegen",
+        "anprPlateHint": "Gjenkjent skilt {plate} – brukes hvis skanningen ikke inneholder registreringsnummer.",
         "scanList": {
             "title": "Letzte Kjoeretoeyerschein-Scans",
             "loading": "Scans werden geladen...",

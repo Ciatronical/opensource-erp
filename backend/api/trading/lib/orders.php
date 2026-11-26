@@ -34,7 +34,7 @@ class TradingOrders {
      * Legt eine Order an (noch ohne Übermittlung)
      *
      * @param object $db           ApiDatabase
-     * @param array  $account      Zeile aus accounts_trading
+     * @param array  $account      Zeile aus my_accounts_trading
      * @param int    $instrumentId Instrument
      * @param string $side         buy | sell
      * @param string $type         market, limit, stop, stop_limit, trailing_stop
@@ -46,7 +46,7 @@ class TradingOrders {
     public static function create($db, array $account, int $instrumentId, string $side, string $type, float $qty, string $signalKey, array $opts = []): ?array {
         $clientId = sprintf('oserp-%d-%d-%s-%s', $account['id'], $instrumentId, $signalKey, $side[0]);
         $row = $db->getOne(
-            "INSERT INTO orders_trading (account_id, strategy_version_id, instrument_id, client_order_id, side, order_type, qty,
+            "INSERT INTO my_orders_trading (account_id, strategy_version_id, instrument_id, client_order_id, side, order_type, qty,
                                          limit_price, stop_price, trail_percent, reference_price, reason)
              VALUES (:aid, :svid, :iid, :cid, :side, :type, :qty, :limit, :stop, :trail, :ref, :reason)
              ON CONFLICT (client_order_id) DO NOTHING
@@ -72,8 +72,8 @@ class TradingOrders {
      * Prüft eine Order und übermittelt sie an den Broker
      *
      * @param object        $db      ApiDatabase
-     * @param array         $account Zeile aus accounts_trading
-     * @param array         $order   Zeile aus orders_trading (Status new)
+     * @param array         $account Zeile aus my_accounts_trading
+     * @param array         $order   Zeile aus my_orders_trading (Status new)
      * @param TradingBroker $broker  Adapter des Kontos
      * @param array         $ctx     Kontext der Risikoprüfung (TradingRisk::checkOrder) + venue_symbol
      * @return array Aktuelle Orderzeile
@@ -82,7 +82,7 @@ class TradingOrders {
         if ($order['status'] !== 'new') return $order;
 
         // Kontostand frisch lesen: vorherige Orders desselben Laufs haben ihn verändert
-        $account = $db->getOne("SELECT * FROM accounts_trading WHERE id = :id", [':id' => $account['id']]);
+        $account = $db->getOne("SELECT * FROM my_accounts_trading WHERE id = :id", [':id' => $account['id']]);
         $risk = TradingRisk::checkOrder($db, $account, $order, $ctx);
         if ($risk['ok'] && !in_array($order['order_type'], $broker->capabilities($ctx['venue_symbol'] ?? ''), true)) {
             $risk['ok'] = false;
@@ -90,7 +90,7 @@ class TradingOrders {
         }
         if (!$risk['ok']) {
             $db->execute(
-                "UPDATE orders_trading SET status = 'risk_rejected', error = :reason, risk_check = :risk::jsonb, mtime = now() WHERE id = :id",
+                "UPDATE my_orders_trading SET status = 'risk_rejected', error = :reason, risk_check = :risk::jsonb, mtime = now() WHERE id = :id",
                 [':reason' => $risk['reason'], ':risk' => json_encode($risk['checks']), ':id' => $order['id']]
             );
             TradingAudit::log($db, 'risk', 'order_risk_rejected', ['reason' => $risk['reason'], 'checks' => $risk['checks']], 'warning', (int)$account['id'], (int)$order['id']);
@@ -99,7 +99,7 @@ class TradingOrders {
 
         // Zustand VOR dem Aufruf festhalten — siehe Klassenkommentar
         $db->execute(
-            "UPDATE orders_trading SET status = 'submitting', submitted_at = now(), risk_check = :risk::jsonb, mtime = now() WHERE id = :id",
+            "UPDATE my_orders_trading SET status = 'submitting', submitted_at = now(), risk_check = :risk::jsonb, mtime = now() WHERE id = :id",
             [':risk' => json_encode($risk['checks']), ':id' => $order['id']]
         );
         $order = self::load($db, (int)$order['id']);
@@ -110,7 +110,7 @@ class TradingOrders {
             TradingAudit::log($db, 'broker', 'order_uncertain', ['message' => $e->getMessage()], 'warning', (int)$account['id'], (int)$order['id']);
             return $order;
         } catch (Throwable $e) {
-            $db->execute("UPDATE orders_trading SET status = 'error', error = :err, mtime = now() WHERE id = :id",
+            $db->execute("UPDATE my_orders_trading SET status = 'error', error = :err, mtime = now() WHERE id = :id",
                 [':err' => $e->getMessage(), ':id' => $order['id']]);
             TradingAudit::log($db, 'broker', 'order_error', ['message' => $e->getMessage()], 'critical', (int)$account['id'], (int)$order['id']);
             if ($account['kind'] !== 'strategy_paper' && $account['kind'] !== 'portfolio_paper') TradingRisk::recordError($db, 'Order ' . $order['id'] . ': ' . $e->getMessage());
@@ -127,7 +127,7 @@ class TradingOrders {
      * Verbucht einen vom Broker gemeldeten Orderzustand
      *
      * @param object $db    ApiDatabase
-     * @param array  $order Zeile aus orders_trading
+     * @param array  $order Zeile aus my_orders_trading
      * @param array  $state Einheitlicher Orderzustand des Adapters (kumuliert)
      * @return array Aktuelle Orderzeile
      */
@@ -136,7 +136,7 @@ class TradingOrders {
         $ownTx = !$pdo->inTransaction();
         if ($ownTx) $db->beginTransaction();
         try {
-            $cur = $db->getOne("SELECT * FROM orders_trading WHERE id = :id FOR UPDATE", [':id' => $order['id']]);
+            $cur = $db->getOne("SELECT * FROM my_orders_trading WHERE id = :id FOR UPDATE", [':id' => $order['id']]);
             $prevQty = (float)$cur['filled_qty'];
             // Nie mehr als die Ordermenge verbuchen, was auch immer gemeldet wird
             $cumQty = min((float)$state['filled_qty'], (float)$cur['qty']);
@@ -147,7 +147,7 @@ class TradingOrders {
                 $price = max(($cumQty * (float)$state['avg_price'] - $prevCost) / $delta, 0.0);
                 $fee = max((float)$state['fee'] - (float)$cur['fees'], 0.0);
                 $fill = $db->getOne(
-                    "INSERT INTO fills_trading (order_id, broker_fill_id, qty, price, fee)
+                    "INSERT INTO my_fills_trading (order_id, broker_fill_id, qty, price, fee)
                      VALUES (:oid, :fid, :qty, :price, :fee)
                      ON CONFLICT (order_id, broker_fill_id) DO NOTHING RETURNING id",
                     [':oid' => $cur['id'], ':fid' => 'cum:' . self::dec($cumQty), ':qty' => self::dec($delta), ':price' => self::dec($price), ':fee' => self::dec($fee)]
@@ -162,7 +162,7 @@ class TradingOrders {
             $status = in_array($cur['status'], $final, true) ? $cur['status'] : $state['status'];
             if ($cumQty >= (float)$cur['qty'] * 0.9999999 && $cumQty > 0) $status = 'filled';
             $db->execute(
-                "UPDATE orders_trading SET status = :status, broker_order_id = COALESCE(NULLIF(:boid, ''), broker_order_id),
+                "UPDATE my_orders_trading SET status = :status, broker_order_id = COALESCE(NULLIF(:boid, ''), broker_order_id),
                         filled_qty = :filled, avg_fill_price = COALESCE(:avg, avg_fill_price), fees = GREATEST(fees, :fees),
                         error = COALESCE(NULLIF(:msg, ''), error), mtime = now()
                  WHERE id = :id",
@@ -196,21 +196,21 @@ class TradingOrders {
     private static function book($db, array $order, float $qty, float $price, float $fee): void {
         $value = $qty * $price;
         if ($order['side'] === 'buy') {
-            $db->execute("UPDATE accounts_trading SET cash = cash - :v WHERE id = :id", [':v' => self::dec($value + $fee), ':id' => $order['account_id']]);
+            $db->execute("UPDATE my_accounts_trading SET cash = cash - :v WHERE id = :id", [':v' => self::dec($value + $fee), ':id' => $order['account_id']]);
             $db->execute(
-                "INSERT INTO positions_trading (account_id, instrument_id, qty, avg_price, mtime)
+                "INSERT INTO my_positions_trading (account_id, instrument_id, qty, avg_price, mtime)
                  VALUES (:aid, :iid, :qty, :price, now())
                  ON CONFLICT (account_id, instrument_id) DO UPDATE SET
-                    avg_price = CASE WHEN positions_trading.qty + EXCLUDED.qty > 0
-                                     THEN (positions_trading.qty * positions_trading.avg_price + EXCLUDED.qty * EXCLUDED.avg_price)
-                                          / (positions_trading.qty + EXCLUDED.qty) ELSE 0 END,
-                    qty = positions_trading.qty + EXCLUDED.qty, mtime = now()",
+                    avg_price = CASE WHEN my_positions_trading.qty + EXCLUDED.qty > 0
+                                     THEN (my_positions_trading.qty * my_positions_trading.avg_price + EXCLUDED.qty * EXCLUDED.avg_price)
+                                          / (my_positions_trading.qty + EXCLUDED.qty) ELSE 0 END,
+                    qty = my_positions_trading.qty + EXCLUDED.qty, mtime = now()",
                 [':aid' => $order['account_id'], ':iid' => $order['instrument_id'], ':qty' => self::dec($qty), ':price' => self::dec(($value + $fee) / $qty)]
             );
         } else {
-            $db->execute("UPDATE accounts_trading SET cash = cash + :v WHERE id = :id", [':v' => self::dec($value - $fee), ':id' => $order['account_id']]);
+            $db->execute("UPDATE my_accounts_trading SET cash = cash + :v WHERE id = :id", [':v' => self::dec($value - $fee), ':id' => $order['account_id']]);
             $db->execute(
-                "UPDATE positions_trading SET
+                "UPDATE my_positions_trading SET
                     realized_pnl = realized_pnl + (:value::numeric - avg_price * LEAST(qty, :qty::numeric)),
                     qty = GREATEST(qty - :qty2::numeric, 0), mtime = now()
                  WHERE account_id = :aid AND instrument_id = :iid",
@@ -226,14 +226,14 @@ class TradingOrders {
      * stehen blieb, wird über unsere Kennung beim Broker gesucht.
      *
      * @param object        $db      ApiDatabase
-     * @param array         $account Zeile aus accounts_trading
+     * @param array         $account Zeile aus my_accounts_trading
      * @param TradingBroker $broker  Adapter des Kontos
      * @return int Zahl der abgeglichenen Orders
      */
     public static function sync($db, array $account, TradingBroker $broker): int {
         $orders = $db->getAll(
             "SELECT o.*, s.venue_symbol, EXTRACT(EPOCH FROM (now() - o.submitted_at)) AS age
-             FROM orders_trading o
+             FROM my_orders_trading o
              LEFT JOIN instrument_symbols_trading s ON s.instrument_id = o.instrument_id AND s.venue = :venue
              WHERE o.account_id = :aid AND o.status IN ('submitting', 'submitted', 'partially_filled')
              ORDER BY o.id",
@@ -271,7 +271,7 @@ class TradingOrders {
      * Storniert offene Orders eines Kontos
      *
      * @param object        $db           ApiDatabase
-     * @param array         $account      Zeile aus accounts_trading
+     * @param array         $account      Zeile aus my_accounts_trading
      * @param TradingBroker $broker       Adapter des Kontos
      * @param string        $reason       Grund fürs Protokoll
      * @param int|null      $instrumentId nur dieses Instrument
@@ -280,7 +280,7 @@ class TradingOrders {
      */
     public static function cancelOpen($db, array $account, TradingBroker $broker, string $reason, ?int $instrumentId = null, ?string $side = null): int {
         $orders = $db->getAll(
-            "SELECT * FROM orders_trading
+            "SELECT * FROM my_orders_trading
              WHERE account_id = :aid AND status IN ('submitting', 'submitted', 'partially_filled')
                AND (:iid::int IS NULL OR instrument_id = :iid2::int)
                AND (:side::text IS NULL OR side = :side2::text)",
@@ -294,7 +294,7 @@ class TradingOrders {
                     // Bis zum Storno kann noch etwas ausgeführt worden sein — erst verbuchen
                     self::applyState($db, $order, $broker->getOrder($order));
                 }
-                $db->execute("UPDATE orders_trading SET status = 'canceled', error = :reason, mtime = now() WHERE id = :id AND status IN ('submitting', 'submitted', 'partially_filled')",
+                $db->execute("UPDATE my_orders_trading SET status = 'canceled', error = :reason, mtime = now() WHERE id = :id AND status IN ('submitting', 'submitted', 'partially_filled')",
                     [':reason' => $reason, ':id' => $order['id']]);
                 TradingAudit::log($db, 'orders', 'order_canceled', ['reason' => $reason], 'info', (int)$account['id'], (int)$order['id']);
                 $n++;
@@ -313,7 +313,7 @@ class TradingOrders {
      * @return array
      */
     public static function load($db, int $id): array {
-        return $db->getOne("SELECT * FROM orders_trading WHERE id = :id", [':id' => $id]);
+        return $db->getOne("SELECT * FROM my_orders_trading WHERE id = :id", [':id' => $id]);
     }
 
     /**

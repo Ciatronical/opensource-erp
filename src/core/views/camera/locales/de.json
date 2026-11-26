@@ -77,6 +77,8 @@
         "cameraName": "Anzeigename",
         "previewUnavailable": "Kein Bild verfügbar",
         "previewReload": "Bild neu laden",
+        "offline": "Ausgefallen",
+        "offlineSince": "kein Bild seit {time} Uhr",
         "camKey": "Kamera-Schlüssel",
         "camKeyHint": "Eindeutiger Bezeichner ohne Leerzeichen (z.B. lager_eingang) — wird als Stream-Name in go2rtc verwendet",
         "streamUrl": "Stream-URL",
@@ -204,7 +206,7 @@
 
         "editZones": "Zonen konfigurieren",
         "zoneEditorTitle": "Erkennungszonen",
-        "zoneEditorHint": "Zone auswählen, dann auf das Kamerabild klicken um Polygon zu zeichnen.",
+        "zoneEditorHint": "Zone auswählen, dann auf das Kamerabild klicken um Polygon zu zeichnen. Sobald eine Zone gezeichnet ist, werden nur noch Objekte innerhalb der Zonen gemeldet und aufgenommen.",
         "zoneSelectHint": "Zone aus der Liste wählen um zu zeichnen",
         "zoneDrawHint": "Klicken = Punkt · Doppelklick = fertig · Rechtsklick = Punkt entfernen",
         "zonePoints": "Punkte",

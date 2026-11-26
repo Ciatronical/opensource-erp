@@ -75,6 +75,7 @@
         "markOrdered": "{count} als besteld markeren",
         "yesterday": "Gisteren",
         "noOrder": "geen order",
+        "anprOrder": "Order {number}",
         "smsFallbackToast": "WhatsApp aan {name} is niet aangekomen – als SMS verzonden",
         "smsFallbackFailed": "WhatsApp aan {name} is niet aangekomen, ook de alternatieve SMS is mislukt: {error}",
         "telegramFile": "Bestand",

@@ -30,10 +30,10 @@ class TradingPortfolio {
         return $db->getAll(
             "SELECT a.*, COALESCE(c.adapter, '') AS venue, s.status AS strategy_status,
                     s.family, v.id AS version_id, v.params, v.instrument_ids
-             FROM accounts_trading a
-             LEFT JOIN broker_connections_trading c ON c.id = a.broker_connection_id
-             LEFT JOIN strategies_trading s ON s.id = a.strategy_id
-             LEFT JOIN strategy_versions_trading v ON v.id = s.current_version_id
+             FROM my_accounts_trading a
+             LEFT JOIN my_broker_connections_trading c ON c.id = a.broker_connection_id
+             LEFT JOIN my_strategies_trading s ON s.id = a.strategy_id
+             LEFT JOIN my_strategy_versions_trading v ON v.id = s.current_version_id
              WHERE a.active AND a.closed_at IS NULL
                AND (a.broker_connection_id IS NULL OR c.active)
              ORDER BY a.id", []
@@ -51,17 +51,17 @@ class TradingPortfolio {
         $currency = $settings['account_currency'] ?? 'EUR';
 
         $db->execute(
-            "INSERT INTO accounts_trading (kind, name, currency, start_capital, cash, peak_equity)
+            "INSERT INTO my_accounts_trading (kind, name, currency, start_capital, cash, peak_equity)
              SELECT 'portfolio_paper', 'KI-Portfolio (virtuell)', :cur, :cap, :cap2, :cap3
-             WHERE NOT EXISTS (SELECT 1 FROM accounts_trading WHERE kind = 'portfolio_paper' AND closed_at IS NULL)",
+             WHERE NOT EXISTS (SELECT 1 FROM my_accounts_trading WHERE kind = 'portfolio_paper' AND closed_at IS NULL)",
             [':cur' => $currency, ':cap' => $capital, ':cap2' => $capital, ':cap3' => $capital]
         );
         $db->execute(
-            "INSERT INTO accounts_trading (kind, name, strategy_id, currency, start_capital, cash, peak_equity)
+            "INSERT INTO my_accounts_trading (kind, name, strategy_id, currency, start_capital, cash, peak_equity)
              SELECT 'strategy_paper', 'Testkonto ' || s.code, s.id, :cur, :cap, :cap2, :cap3
-             FROM strategies_trading s
+             FROM my_strategies_trading s
              WHERE s.status IN ('paper', 'live_eligible', 'live')
-               AND NOT EXISTS (SELECT 1 FROM accounts_trading a WHERE a.strategy_id = s.id AND a.kind = 'strategy_paper' AND a.closed_at IS NULL)",
+               AND NOT EXISTS (SELECT 1 FROM my_accounts_trading a WHERE a.strategy_id = s.id AND a.kind = 'strategy_paper' AND a.closed_at IS NULL)",
             [':cur' => $currency, ':cap' => $capital, ':cap2' => $capital, ':cap3' => $capital]
         );
     }
@@ -75,7 +75,7 @@ class TradingPortfolio {
      */
     public static function positions($db, int $accountId): array {
         $out = [];
-        foreach ($db->getAll("SELECT instrument_id, qty, avg_price FROM positions_trading WHERE account_id = :id AND qty > 0", [':id' => $accountId]) ?: [] as $p) {
+        foreach ($db->getAll("SELECT instrument_id, qty, avg_price FROM my_positions_trading WHERE account_id = :id AND qty > 0", [':id' => $accountId]) ?: [] as $p) {
             $out[(int)$p['instrument_id']] = ['qty' => (float)$p['qty'], 'avg_price' => (float)$p['avg_price']];
         }
         return $out;
@@ -87,13 +87,13 @@ class TradingPortfolio {
      * Fehlt ein aktueller Kurs, zählt der letzte Schlusskurs.
      *
      * @param object $db      ApiDatabase
-     * @param array  $account Zeile aus accounts_trading
+     * @param array  $account Zeile aus my_accounts_trading
      * @param array  $quotes  [instrument_id => quote]
      * @param array  $panel   Kurspanel (für den letzten Schlusskurs)
      * @return array equity, cash, positions_value, by_instrument [id => Wert]
      */
     public static function value($db, array $account, array $quotes, array $panel): array {
-        $cash = (float)$db->getOne("SELECT cash FROM accounts_trading WHERE id = :id", [':id' => $account['id']])['cash'];
+        $cash = (float)$db->getOne("SELECT cash FROM my_accounts_trading WHERE id = :id", [':id' => $account['id']])['cash'];
         $by = [];
         $last = count($panel['ts']) - 1;
         foreach (self::positions($db, (int)$account['id']) as $iid => $p) {
@@ -113,13 +113,13 @@ class TradingPortfolio {
      */
     public static function snapshot($db, int $accountId, array $value): void {
         $db->execute(
-            "INSERT INTO equity_trading (account_id, day, equity, cash, positions_value, mtime)
+            "INSERT INTO my_equity_trading (account_id, day, equity, cash, positions_value, mtime)
              VALUES (:id, CURRENT_DATE, :eq, :cash, :pos, now())
              ON CONFLICT (account_id, day) DO UPDATE SET equity = EXCLUDED.equity, cash = EXCLUDED.cash,
                     positions_value = EXCLUDED.positions_value, mtime = now()",
             [':id' => $accountId, ':eq' => TradingOrders::dec($value['equity']), ':cash' => TradingOrders::dec($value['cash']), ':pos' => TradingOrders::dec($value['positions_value'])]
         );
-        $db->execute("UPDATE accounts_trading SET peak_equity = GREATEST(COALESCE(peak_equity, 0), :eq) WHERE id = :id",
+        $db->execute("UPDATE my_accounts_trading SET peak_equity = GREATEST(COALESCE(peak_equity, 0), :eq) WHERE id = :id",
             [':eq' => TradingOrders::dec($value['equity']), ':id' => $accountId]);
     }
 
@@ -127,11 +127,11 @@ class TradingPortfolio {
      * Kontowert zu Beginn des Tages (letzter Stand vor heute, sonst Startkapital)
      *
      * @param object $db      ApiDatabase
-     * @param array  $account Zeile aus accounts_trading
+     * @param array  $account Zeile aus my_accounts_trading
      * @return float
      */
     public static function dayStartEquity($db, array $account): float {
-        $row = $db->getOne("SELECT equity FROM equity_trading WHERE account_id = :id AND day < CURRENT_DATE ORDER BY day DESC LIMIT 1", [':id' => $account['id']]);
+        $row = $db->getOne("SELECT equity FROM my_equity_trading WHERE account_id = :id AND day < CURRENT_DATE ORDER BY day DESC LIMIT 1", [':id' => $account['id']]);
         return $row ? (float)$row['equity'] : (float)$account['start_capital'];
     }
 
@@ -145,10 +145,10 @@ class TradingPortfolio {
     public static function members($db, array $statuses): array {
         return $db->getAll(
             "SELECT s.id, s.code, s.family, s.status, v.id AS version_id, v.params, v.instrument_ids,
-                    (SELECT b.equity_curve FROM backtests_trading b WHERE b.strategy_version_id = v.id AND b.segment = 'full' ORDER BY b.id DESC LIMIT 1) AS equity_curve,
-                    (SELECT b.sharpe FROM backtests_trading b WHERE b.strategy_version_id = v.id AND b.segment = 'test' ORDER BY b.id DESC LIMIT 1) AS test_sharpe
-             FROM strategies_trading s
-             JOIN strategy_versions_trading v ON v.id = s.current_version_id
+                    (SELECT b.equity_curve FROM my_backtests_trading b WHERE b.strategy_version_id = v.id AND b.segment = 'full' ORDER BY b.id DESC LIMIT 1) AS equity_curve,
+                    (SELECT b.sharpe FROM my_backtests_trading b WHERE b.strategy_version_id = v.id AND b.segment = 'test' ORDER BY b.id DESC LIMIT 1) AS test_sharpe
+             FROM my_strategies_trading s
+             JOIN my_strategy_versions_trading v ON v.id = s.current_version_id
              WHERE s.status = ANY (string_to_array(:st, ','))
              ORDER BY s.id",
             [':st' => implode(',', $statuses)]
@@ -202,9 +202,9 @@ class TradingPortfolio {
             if (abs(($current[$sid] ?? -1) - $w) > 0.02) $changed = true;
         }
         if ($changed) {
-            $db->execute("DELETE FROM allocations_trading WHERE day = CURRENT_DATE", []);
+            $db->execute("DELETE FROM my_allocations_trading WHERE day = CURRENT_DATE", []);
             foreach ($weights as $sid => $w) {
-                $db->execute("INSERT INTO allocations_trading (day, strategy_id, weight, reason) VALUES (CURRENT_DATE, :sid, :w, 'risk_parity_corr')",
+                $db->execute("INSERT INTO my_allocations_trading (day, strategy_id, weight, reason) VALUES (CURRENT_DATE, :sid, :w, 'risk_parity_corr')",
                     [':sid' => $sid, ':w' => round($w, 6)]);
             }
             TradingAudit::log($db, 'engine', 'allocation_changed', ['weights' => $weights]);
@@ -249,7 +249,7 @@ class TradingPortfolio {
     public static function allocation($db): array {
         $out = [];
         foreach ($db->getAll(
-            "SELECT strategy_id, weight FROM allocations_trading WHERE day = (SELECT max(day) FROM allocations_trading)", []
+            "SELECT strategy_id, weight FROM my_allocations_trading WHERE day = (SELECT max(day) FROM my_allocations_trading)", []
         ) ?: [] as $r) {
             $out[(int)$r['strategy_id']] = (float)$r['weight'];
         }

@@ -75,6 +75,7 @@
         "markOrdered": "Marchează {count} ca comandate",
         "yesterday": "Ieri",
         "noOrder": "fără comandă",
+        "anprOrder": "Comandă {number}",
         "smsFallbackToast": "WhatsApp către {name} nu a ajuns – trimis ca SMS",
         "smsFallbackFailed": "WhatsApp către {name} nu a ajuns, iar SMS-ul alternativ a eșuat și el: {error}",
         "telegramFile": "Fișier",

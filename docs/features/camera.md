@@ -214,7 +214,7 @@ Das ERP erkennt den Stick per USB-ID auch ohne installiertes `pycoral` und weist
 
 ## Zonen
 
-Zonen begrenzen Regeln auf Bildbereiche — etwa nur der Hofeinfahrt statt der ganzen Strasse dahinter.
+Zonen begrenzen die Überwachung auf Bildbereiche — etwa nur den Hof statt der ganzen Strasse dahinter. Sobald für eine Kamera mindestens eine Zone gezeichnet ist, erzeugen nur noch Objekte innerhalb einer Zone Ereignisse und Aufnahmen; Kameras ohne Zonen überwachen das ganze Bild. Regeln lassen sich zusätzlich auf einzelne Zonen einschränken.
 
 Unter **Einstellungen → Kameras → Zonen konfigurieren** öffnet sich der Zoneneditor mit dem Live-Bild der Kamera:
 
@@ -223,7 +223,7 @@ Unter **Einstellungen → Kameras → Zonen konfigurieren** öffnet sich der Zon
 - Doppelklick schliesst das Polygon ab
 - Rechtsklick entfernt den letzten Punkt
 
-Die Polygone werden als Koordinaten in `camera_zone.coordinates` gespeichert; der camera-monitor prüft für jedes erkannte Objekt, in welchen Zonen sein Mittelpunkt liegt, und schreibt sie ins Ereignis. Eine Konfiguration ausserhalb des ERP gibt es nicht.
+Die Polygone werden als Koordinaten in `camera_zone.coordinates` gespeichert; der camera-monitor prüft für jedes erkannte Objekt, in welchen Zonen sein Fusspunkt (Mitte der Unterkante) liegt, und schreibt sie ins Ereignis. Eine Konfiguration ausserhalb des ERP gibt es nicht.
 
 ---
 

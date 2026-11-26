@@ -362,6 +362,7 @@
     },
     "CarScanView": {
         "title": "Koeretoej vom Scan anlegen",
+        "anprPlateHint": "Genkendt nummerplade {plate} – bruges, hvis scanningen ikke indeholder en nummerplade.",
         "scanList": {
             "title": "Letzte Koeretoejschein-Scans",
             "loading": "Scans werden geladen...",

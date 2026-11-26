@@ -1659,7 +1659,7 @@
         "clearYes": "Tak, usuń",
         "uptime": "Działa od",
         "openOrderSkip": "Pomijaj pojazdy z otwartym zleceniem",
-        "openOrderSkip_help": "Gdy włączone: pojazdy z trwającym zleceniem warsztatowym nie są pokazywane na pasku informacyjnym i nie otwierają bramy. Domyślnie: wyłączone.",
+        "openOrderSkip_help": "Gdy włączone: pojazdy z trwającym zleceniem warsztatowym są pokazywane na pasku informacyjnym tylko przy pierwszym wjeździe od utworzenia zlecenia (kliknięcie otwiera zlecenie); kolejne wjazdy nie są już zgłaszane. Brama nie jest dla nich otwierana. Domyślnie: wyłączone.",
         "healthNoData": "Brak danych — usługa zapisuje sygnały życia po pierwszym uruchomieniu",
         "healthSkipped": "Pominięte",
         "eventError": "Błąd",

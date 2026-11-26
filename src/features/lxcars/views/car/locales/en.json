@@ -392,6 +392,7 @@
     },
     "CarScanView": {
         "title": "Create vehicle from scan",
+        "anprPlateHint": "Recognised licence plate {plate} – used if the scan contains no licence plate.",
         "scanList": {
             "title": "Recent registration document scans",
             "loading": "Loading scans...",

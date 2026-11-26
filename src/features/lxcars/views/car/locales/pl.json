@@ -390,6 +390,7 @@
     },
     "CarScanView": {
         "title": "Utwórz pojazd ze skanu",
+        "anprPlateHint": "Rozpoznana tablica {plate} – zostanie użyta, jeśli skan nie zawiera numeru rejestracyjnego.",
         "scanList": {
             "title": "Ostatnie skany dowodów rejestracyjnych",
             "loading": "Ładowanie skanów...",

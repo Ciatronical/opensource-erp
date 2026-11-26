@@ -69,21 +69,8 @@ export function useNavigationCards() {
             })
         }
 
-        // KI-Trading-Erweiterung: eine Seite mit Reitern, die Karte springt direkt hinein
-        if (oserp.isExtensionEnabled('trading')) {
-            result.push({
-                title: t('TradingView.title'),
-                icon: 'mdi-chart-timeline-variant-shimmer',
-                items: [
-                    { title: t('TradingView.tabs.overview'), to: { name: 'trading' } },
-                    { title: t('TradingView.tabs.strategies'), to: { name: 'trading', query: { tab: 'strategies' } } },
-                    { title: t('TradingView.tabs.lab'), to: { name: 'trading', query: { tab: 'lab' } } },
-                    { title: t('TradingView.tabs.orders'), to: { name: 'trading', query: { tab: 'orders' } } },
-                    '-',
-                    { title: t('TradingView.tabs.control'), to: { name: 'trading', query: { tab: 'control' } } },
-                ]
-            })
-        }
+        // KI-Trading steht im Benutzermenü der Kopfzeile (navbar.view.vue) —
+        // jeder Mitarbeiter hat sein eigenes Handelssystem
 
         // Stammdaten-Menü
         result.push(

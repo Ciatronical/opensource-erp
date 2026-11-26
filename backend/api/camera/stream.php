@@ -53,7 +53,9 @@ if ($go2rtcUrl && $camera['cam_key']) {
     $ctx = stream_context_create(['http' => ['timeout' => 5, 'ignore_errors' => true]]);
     $img = @file_get_contents($frameUrl, false, $ctx);
 
-    if ($img !== false && strlen($img) > 0) {
+    // Nur echte JPEG-Daten ausliefern: ist die Kamera nicht erreichbar, antwortet
+    // go2rtc mit einer Fehlermeldung im Klartext (ignore_errors liefert sie durch).
+    if ($img !== false && strncmp($img, "\xFF\xD8", 2) === 0) {
         file_put_contents($snapshotPath, $img);
         header('Content-Type: image/jpeg');
         header('Cache-Control: no-cache, no-store, must-revalidate');

@@ -75,6 +75,7 @@
         "markOrdered": "{count} adet sipariş edildi olarak işaretle",
         "yesterday": "Dün",
         "noOrder": "sipariş yok",
+        "anprOrder": "Sipariş {number}",
         "smsFallbackToast": "{name} adlı kişiye WhatsApp ulaşmadı – SMS olarak gönderildi",
         "smsFallbackFailed": "{name} adlı kişiye WhatsApp ulaşmadı, yedek SMS de başarısız oldu: {error}",
         "telegramFile": "Dosya",

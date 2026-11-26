@@ -49,6 +49,12 @@
 | [eBay](ebay.md) | Verkaufskanal eBay: Angebote übernehmen, Käufer ohne Dubletten, unklare prüfen, Rechnungen automatisch, Versand melden, Produktseiten mit KI |
 | [Kleinanzeigen](kleinanzeigen.md) | Verkaufskanal Kleinanzeigen.de: Ladenhüter finden, Anzeigen vorbereiten und einstellen, Anfragen und Verkäufe |
 
+### KI-Trading
+
+| Feature | Beschreibung |
+|---------|-------------|
+| [KI-Trading](trading.md) | Erste Schritte: eigenes Handelssystem je Mitarbeiter, Papierhandel, Brokerwahl, Echtgeldfreigabe |
+
 ## Einrichtung & Setup
 
 - [WhatsApp einrichten](../whatsapp-setup.md)

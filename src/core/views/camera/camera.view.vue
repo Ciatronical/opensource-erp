@@ -84,7 +84,7 @@
                                 />
                                 <!-- RTSP → WebRTC via go2rtc WHEP -->
                                 <video
-                                    v-else-if="cam.stream_url && cam.cam_key"
+                                    v-else-if="cam.stream_url && cam.cam_key && !webrtcFailed[cam.id]"
                                     :ref="el => registerVideoEl(el, cam)"
                                     class="cam-video"
                                     autoplay muted playsinline
@@ -100,6 +100,13 @@
                                 <div v-else class="cam-no-stream d-flex flex-column align-center justify-center">
                                     <v-icon size="40" color="grey">mdi-video-off-outline</v-icon>
                                     <span class="text-caption text-medium-emphasis mt-2">{{ t('cam.noStream') }}</span>
+                                </div>
+
+                                <!-- Ausfall: es kommen keine neuen Bilder mehr -->
+                                <div v-if="isCameraDown(cam)" class="cam-down">
+                                    <v-icon size="28">mdi-video-off</v-icon>
+                                    <span class="cam-down-title">{{ t('cam.offline') }}</span>
+                                    <span class="cam-down-since">{{ t('cam.offlineSince', { time: formatTime(lastFrameAt[cam.id]) }) }}</span>
                                 </div>
 
                                 <!-- Overlay: Name + Badge -->
@@ -1197,7 +1204,7 @@ import SectionCard from '@/core/components/layout/section-card.vue'
 import CameraRecordings from './camera.recordings.component.vue'
 import { labelColor, labelIcon } from './camera.labels.js'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const oserp = oserpStore()
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -2022,17 +2029,28 @@ const SNAPSHOT_REFRESH_MS = 2000
 const snapshotPending = new Set()
 
 function usesSnapshot(cam) {
-    return !!cam.stream_url && !isWebUrl(cam.stream_url) && !cam.cam_key
+    return !!cam.stream_url && !isWebUrl(cam.stream_url) && (!cam.cam_key || !!webrtcFailed[cam.id])
 }
 
-function refreshSnapshot(cam) {
+// Abruf per fetch statt <img>: nur so ist die Kopfzeile X-Snapshot-Stale lesbar,
+// mit der stream.php ein altes Bild einer nicht erreichbaren Kamera kennzeichnet.
+async function refreshSnapshot(cam) {
     if (snapshotPending.has(cam.id)) return
     snapshotPending.add(cam.id)
-    const url = snapshotUrl(cam)
-    const img = new Image()
-    img.onload = () => { snapshotPending.delete(cam.id); snapshotUrls[cam.id] = url }
-    img.onerror = () => { snapshotPending.delete(cam.id) }
-    img.src = url
+    try {
+        const res = await fetch(snapshotUrl(cam), { credentials: 'same-origin' })
+        if (!res.ok) return
+        const stale = res.headers.get('X-Snapshot-Stale') === '1'
+        const blob = await res.blob()
+        const old = snapshotUrls[cam.id]
+        snapshotUrls[cam.id] = URL.createObjectURL(blob)
+        if (old) setTimeout(() => URL.revokeObjectURL(old), 1000)
+        if (!stale) markSnapshotFresh(cam)
+    } catch {
+        // Netzfehler: kein neues Bild — die Ausfall-Erkennung greift von selbst
+    } finally {
+        snapshotPending.delete(cam.id)
+    }
 }
 
 // ── Vorschaubilder in der Kamera-Verwaltung ─────────────────────────────────
@@ -2073,15 +2091,140 @@ function startSnapshotRefresh() {
     snapshotInterval = setInterval(() => {
         if (viewMode.value !== 'live' || document.hidden) return
         cameras.value.filter(usesSnapshot).forEach(refreshSnapshot)
+        checkCameraLiveness()
     }, SNAPSHOT_REFRESH_MS)
+}
+
+// ── Ausfall-Erkennung ───────────────────────────────────────────────────────
+// Fällt eine Kamera aus, bleibt das letzte Bild einfach stehen — man sieht der
+// Kachel nicht an, dass sie nicht mehr live ist. Deshalb wird je Kamera gemerkt,
+// wann zuletzt ein neues Bild kam; bleibt es länger aus, erscheint „Ausgefallen".
+const CAM_DOWN_AFTER_MS = 20000     // so lange ohne neues Bild gilt als Ausfall
+const CAM_RECONNECT_MS = 30000      // Abstand der Verbindungsversuche während des Ausfalls
+const lastFrameAt = reactive({})    // cam.id → Zeitpunkt des letzten neuen Bildes (ms)
+const nowTick = ref(Date.now())
+const videoEls = {}                 // cam.id → <video>-Element des Livebilds
+const videoByteCount = {}           // cam.id → zuletzt gesehene empfangene Datenmenge
+const lastReconnectAt = {}
+
+function isMonitored(cam) {
+    return !!cam.stream_url && !isWebUrl(cam.stream_url)
+}
+
+function isCameraDown(cam) {
+    const last = lastFrameAt[cam.id]
+    return isMonitored(cam) && !!last && nowTick.value - last > CAM_DOWN_AFTER_MS
+}
+
+function formatTime(ts) {
+    return ts ? new Date(ts).toLocaleTimeString(locale.value, { hour: '2-digit', minute: '2-digit' }) : ''
+}
+
+// Bisher empfangene Videodaten der WebRTC-Verbindung. Gemessen wird an der
+// Verbindung, nicht am <video>-Element: dessen Bildzähler
+// (getVideoPlaybackQuality) bleibt in Firefox bei Livestreams auf 0 stehen und
+// meldete deshalb jede Kamera als ausgefallen.
+async function receivedVideoBytes(pc) {
+    let bytes = null
+    const stats = await pc.getStats()
+    stats.forEach(report => {
+        if (report.type === 'inbound-rtp' && (report.kind || report.mediaType) === 'video')
+            bytes = (bytes || 0) + (report.bytesReceived || 0)
+    })
+    return bytes
+}
+
+function markSnapshotFresh(cam) {
+    const wasDown = isCameraDown(cam)
+    lastFrameAt[cam.id] = Date.now()
+    // Kamera ist zurück: das Livebild wieder versuchen statt beim Standbild zu bleiben
+    if (wasDown && webrtcFailed[cam.id] && cam.cam_key) {
+        webrtcRetries[cam.id] = 0
+        delete webrtcFailed[cam.id]
+    }
+}
+
+async function checkCameraLiveness() {
+    const now = Date.now()
+    nowTick.value = now
+    for (const cam of cameras.value) {
+        if (!isMonitored(cam)) continue
+        if (!lastFrameAt[cam.id]) lastFrameAt[cam.id] = now   // Schonfrist ab Beobachtungsbeginn
+        const videoEl = videoEls[cam.id]
+        if (!videoEl || !videoEl.isConnected || webrtcFailed[cam.id]) continue
+        const pc = peerConnections[cam.id]
+        let bytes = null
+        try {
+            if (pc) bytes = await receivedVideoBytes(pc)
+        } catch {
+            bytes = null
+        }
+        // Lebenszeichen: die Datenmenge derselben Verbindung wächst. Nach einem
+        // Neuaufbau zählt erst, was über die neue Verbindung tatsächlich ankommt.
+        const seen = videoByteCount[cam.id]
+        const alive = bytes !== null && (seen && seen.pc === pc ? bytes > seen.bytes : bytes > 0)
+        if (bytes !== null) videoByteCount[cam.id] = { pc, bytes }
+        if (alive) {
+            lastFrameAt[cam.id] = Date.now()
+        } else if (now - lastFrameAt[cam.id] > CAM_DOWN_AFTER_MS
+                && now - (lastReconnectAt[cam.id] || 0) > CAM_RECONNECT_MS) {
+            // Es kommen keine Daten mehr: Verbindung neu aufbauen — kommt die
+            // Kamera zurück, läuft das Livebild von selbst wieder an.
+            lastReconnectAt[cam.id] = now
+            if (peerConnections[cam.id] === pc && pc) { pc.close(); delete peerConnections[cam.id] }
+            webrtcRetries[cam.id] = 0
+            if (!peerConnections[cam.id]) startWebRTC(videoEl, cam)
+        }
+    }
+}
+
+// Im Hintergrund-Tab hält der Browser die Videos an — beim Zurückkehren nicht
+// fälschlich „Ausgefallen" melden, sondern die Frist neu beginnen lassen.
+function resetLiveness() {
+    const now = Date.now()
+    nowTick.value = now
+    Object.keys(lastFrameAt).forEach(id => { lastFrameAt[id] = now })
+}
+
+function handleVisibilityChange() {
+    if (!document.hidden) resetLiveness()
 }
 
 // ── WebRTC (WHEP via go2rtc) ────────────────────────────────────────────────
 
 const peerConnections = {}
 
+// Bleibt ein Livebild schwarz, wird die Verbindung neu aufgebaut: entweder hat
+// go2rtc die Anfrage abgelehnt (Kamera gerade nicht erreichbar) oder die
+// Verbindung steht, aber der Browser zeigt kein Bild (Decoder nicht gestartet,
+// Schlüsselbild verpasst). Früher blieb die Kachel dann bis zum Neuladen schwarz.
+const WEBRTC_RETRY_MS = 5000        // Wartezeit vor einem neuen Versuch
+const WEBRTC_FIRST_FRAME_MS = 20000 // so lange darf das erste Bild auf sich warten lassen (Firefox braucht bei 4K rund 10 s)
+const WEBRTC_MAX_RETRIES = 2
+const webrtcRetries = {}
+// Kameras, deren Livebild der Browser nicht darstellt (z. B. Firefox bei einzelnen
+// Streams, die Chrome problemlos zeigt): sie laufen als Standbild weiter, das
+// alle paar Sekunden erneuert wird — besser als eine schwarze Kachel.
+const webrtcFailed = reactive({})
+
+function retryWebRTC(videoEl, cam, pc) {
+    if (peerConnections[cam.id] !== pc) return   // schon ersetzt oder Ansicht verlassen
+    pc.close()
+    delete peerConnections[cam.id]
+    webrtcRetries[cam.id] = (webrtcRetries[cam.id] || 0) + 1
+    if (webrtcRetries[cam.id] > WEBRTC_MAX_RETRIES) {
+        webrtcFailed[cam.id] = true
+        refreshSnapshot(cam)
+        return
+    }
+    setTimeout(() => {
+        if (viewMode.value === 'live' && !peerConnections[cam.id] && videoEl.isConnected) startWebRTC(videoEl, cam)
+    }, WEBRTC_RETRY_MS)
+}
+
 function registerVideoEl(el, cam) {
     if (!el || !cam.cam_key) return
+    videoEls[cam.id] = el
     if (peerConnections[cam.id]) return
     startWebRTC(el, cam)
 }
@@ -2131,16 +2274,25 @@ async function startWebRTC(videoEl, cam) {
         if (!res.ok) throw new Error(`WHEP ${res.status}`)
         const sdp = await res.text()
         await pc.setRemoteDescription({ type: 'answer', sdp })
+        // Kommt trotz Verbindung kein Bild an, neu verbinden
+        setTimeout(() => {
+            if (peerConnections[cam.id] !== pc) return
+            if (videoEl.videoWidth > 0) webrtcRetries[cam.id] = 0
+            else retryWebRTC(videoEl, cam, pc)
+        }, WEBRTC_FIRST_FRAME_MS)
     } catch {
-        pc.close()
-        delete peerConnections[cam.id]
-        // Fallback: Snapshot weiterhin aktiv
+        retryWebRTC(videoEl, cam, pc)
     }
 }
 
 function stopAllWebRTC() {
     Object.values(peerConnections).forEach(pc => pc.close())
     Object.keys(peerConnections).forEach(k => delete peerConnections[k])
+    Object.keys(webrtcRetries).forEach(k => delete webrtcRetries[k])
+    Object.keys(webrtcFailed).forEach(k => delete webrtcFailed[k])
+    Object.keys(videoEls).forEach(k => delete videoEls[k])
+    Object.keys(videoByteCount).forEach(k => delete videoByteCount[k])
+    Object.keys(lastFrameAt).forEach(k => delete lastFrameAt[k])
 }
 
 function formatDateTime(dt) {
@@ -2194,13 +2346,16 @@ onMounted(() => {
     loadStats()
     startSnapshotRefresh()
     window.addEventListener('camera-sse', handleSSE)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
     clearInterval(snapshotInterval)
     snapshotInterval = null
     stopAllWebRTC()
+    Object.values(snapshotUrls).forEach(url => URL.revokeObjectURL(url))
     window.removeEventListener('camera-sse', handleSSE)
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 </script>
 
@@ -2317,6 +2472,32 @@ onUnmounted(() => {
     align-items: flex-end;
     padding: 8px;
     background: linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 60%);
+}
+
+.cam-down {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--oserp-gap-xs);
+    background: rgba(0, 0, 0, .6);
+    color: #fff;
+}
+
+.cam-down-title {
+    padding: var(--oserp-gap-xs) var(--oserp-gap);
+    border-radius: var(--oserp-radius-sm);
+    background: rgb(var(--v-theme-error));
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.cam-down-since {
+    font-size: 12px;
+    opacity: .85;
 }
 
 .cam-overlay-left {

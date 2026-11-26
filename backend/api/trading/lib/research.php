@@ -77,7 +77,7 @@ class TradingResearch {
 
         $candidates = self::generate($db, (int)($settings['research_population'] ?? 24), $settings, $panel);
         $experiment = $db->getOne(
-            "INSERT INTO experiments_trading (kind, hypothesis) VALUES ('evolution', :h) RETURNING id",
+            "INSERT INTO my_experiments_trading (kind, hypothesis) VALUES ('evolution', :h) RETURNING id",
             [':h' => self::describeGeneration($candidates)]
         );
         $expId = (int)$experiment['id'];
@@ -89,7 +89,7 @@ class TradingResearch {
         $signatures = [];
         foreach ($candidates as $c) {
             $hash = TradingStrategies::hash($c['family'], $c['params'], $panel['ids']);
-            if ($db->getOne("SELECT 1 AS x FROM strategy_versions_trading WHERE params_hash = :h LIMIT 1", [':h' => $hash])) continue;
+            if ($db->getOne("SELECT 1 AS x FROM my_strategy_versions_trading WHERE params_hash = :h LIMIT 1", [':h' => $hash])) continue;
 
             $weights = TradingStrategies::weights($c['family'], $c['params'], $panel, $cap);
             $train = TradingBacktest::run($panel, $weights, $split['start'], $split['train_end'], $costs);
@@ -99,7 +99,7 @@ class TradingResearch {
             // kein neuer Versuch: nicht speichern, nicht zählen
             $signature = sprintf('%.6f|%.6f|%d|%d', $train['total_return'], $val['total_return'], $train['trades'], $val['trades']);
             if (isset($signatures[$signature]) || $db->getOne(
-                    "SELECT 1 AS x FROM backtests_trading t JOIN backtests_trading v ON v.strategy_version_id = t.strategy_version_id AND v.segment = 'validation'
+                    "SELECT 1 AS x FROM my_backtests_trading t JOIN my_backtests_trading v ON v.strategy_version_id = t.strategy_version_id AND v.segment = 'validation'
                      WHERE t.segment = 'train' AND t.total_return = :tr::numeric AND v.total_return = :vr::numeric AND t.trades = :tt AND v.trades = :vt LIMIT 1",
                     [':tr' => self::r($train['total_return']), ':vr' => self::r($val['total_return']), ':tt' => (int)$train['trades'], ':vt' => (int)$val['trades']])) {
                 continue;
@@ -145,7 +145,7 @@ class TradingResearch {
         $best = $evaluated ? max(array_map(fn($c) => $c['score'], $evaluated)) : null;
         $summary = sprintf('%d Varianten geprüft, %d in der Endprüfung, %d bestanden', count($evaluated), min(count($finalists), 3), count($passed));
         $db->execute(
-            "UPDATE experiments_trading SET status = 'finished', finished_at = now(), candidates_tested = :t, candidates_passed = :p,
+            "UPDATE my_experiments_trading SET status = 'finished', finished_at = now(), candidates_tested = :t, candidates_passed = :p,
                     summary = :s, result = :r::jsonb WHERE id = :id",
             [':t' => count($evaluated), ':p' => count($passed), ':s' => $summary, ':id' => $expId,
              ':r' => json_encode([
@@ -190,7 +190,7 @@ class TradingResearch {
         $stability = $neighbors ? $good / count($neighbors) : 0.0;
         if ($stability < (float)($settings['gate_min_stability'] ?? 0.6)) {
             // Schon hier verworfen: die Testdaten bleiben für diese Variante unberührt
-            $db->execute("UPDATE backtests_trading SET stability = :s WHERE strategy_version_id = :v AND segment = 'validation'",
+            $db->execute("UPDATE my_backtests_trading SET stability = :s WHERE strategy_version_id = :v AND segment = 'validation'",
                 [':s' => round($stability, 4), ':v' => $c['version_id']]);
             return ['passed' => false, 'failed' => [sprintf('Instabil: nur %d %% der Parameter-Nachbarn tragen', $stability * 100)], 'stability' => $stability];
         }
@@ -204,7 +204,7 @@ class TradingResearch {
         $pValue = TradingStats::timingPValue($oosWeights, $oosReturns);
 
         // Deflated Sharpe über alle bisherigen Prüfungen auf den Testdaten
-        $trialRows = $db->getAll("SELECT sharpe FROM backtests_trading WHERE segment = 'test' AND sharpe IS NOT NULL", []) ?: [];
+        $trialRows = $db->getAll("SELECT sharpe FROM my_backtests_trading WHERE segment = 'test' AND sharpe IS NOT NULL", []) ?: [];
         $trialSharpes = array_map(fn($r) => (float)$r['sharpe'] / sqrt($ppy), $trialRows);
         $trialSharpes[] = TradingStats::sharpeRaw($test['returns']);
         $sd = TradingStats::sd($trialSharpes);
@@ -258,30 +258,30 @@ class TradingResearch {
         if (!empty($c['parent_id']) && $c['origin'] === 'mutation') {
             $parent = $db->getOne(
                 "SELECT s.id, s.code, s.status,
-                        (SELECT b.sharpe FROM backtests_trading b WHERE b.strategy_version_id = s.current_version_id AND b.segment = 'test' ORDER BY b.id DESC LIMIT 1) AS test_sharpe,
-                        (SELECT max(version) FROM strategy_versions_trading WHERE strategy_id = s.id) AS max_version
-                 FROM strategies_trading s WHERE s.id = :id",
+                        (SELECT b.sharpe FROM my_backtests_trading b WHERE b.strategy_version_id = s.current_version_id AND b.segment = 'test' ORDER BY b.id DESC LIMIT 1) AS test_sharpe,
+                        (SELECT max(version) FROM my_strategy_versions_trading WHERE strategy_id = s.id) AS max_version
+                 FROM my_strategies_trading s WHERE s.id = :id",
                 [':id' => $c['parent_id']]
             );
-            $newSharpe = (float)$db->getOne("SELECT sharpe FROM backtests_trading WHERE strategy_version_id = :v AND segment = 'test' ORDER BY id DESC LIMIT 1", [':v' => $c['version_id']])['sharpe'];
+            $newSharpe = (float)$db->getOne("SELECT sharpe FROM my_backtests_trading WHERE strategy_version_id = :v AND segment = 'test' ORDER BY id DESC LIMIT 1", [':v' => $c['version_id']])['sharpe'];
             if ($parent && in_array($parent['status'], ['paper', 'live_eligible', 'live'], true) && $newSharpe > (float)$parent['test_sharpe'] + 0.1) {
                 $version = (int)$parent['max_version'] + 1;
-                $db->execute("UPDATE strategy_versions_trading SET strategy_id = :sid, version = :ver, change_note = :note WHERE id = :vid",
+                $db->execute("UPDATE my_strategy_versions_trading SET strategy_id = :sid, version = :ver, change_note = :note WHERE id = :vid",
                     [':sid' => $parent['id'], ':ver' => $version, ':vid' => $c['version_id'],
                      ':note' => sprintf('Weiterentwicklung: Test-Sharpe %.2f statt %.2f', $newSharpe, $parent['test_sharpe'])]);
-                $db->execute("UPDATE strategies_trading SET current_version_id = :vid, status = 'paper', paper_since = now(), mtime = now(),
+                $db->execute("UPDATE my_strategies_trading SET current_version_id = :vid, status = 'paper', paper_since = now(), mtime = now(),
                                      status_reason = :reason WHERE id = :sid",
                     [':vid' => $c['version_id'], ':sid' => $parent['id'], ':reason' => 'Version ' . $version . ' übernommen, Bewährungsfrist beginnt neu']);
-                $db->execute("DELETE FROM strategies_trading WHERE id = :id", [':id' => $c['strategy_id']]);
+                $db->execute("DELETE FROM my_strategies_trading WHERE id = :id", [':id' => $c['strategy_id']]);
                 TradingAudit::log($db, 'research', 'strategy_improved', ['strategy' => $parent['code'], 'version' => $version, 'test_sharpe' => $newSharpe]);
                 return;
             }
         }
 
-        $running = (int)$db->getOne("SELECT count(*) AS n FROM strategies_trading WHERE status IN ('paper', 'live_eligible', 'live')", [])['n'];
+        $running = (int)$db->getOne("SELECT count(*) AS n FROM my_strategies_trading WHERE status IN ('paper', 'live_eligible', 'live')", [])['n'];
         $slot = $running < (int)($settings['max_paper_strategies'] ?? 8);
         self::setStatus($db, $c['strategy_id'], $slot ? 'paper' : 'queued', $slot ? 'Alle Prüfungen bestanden — Vorwärtstest auf virtuellem Konto' : 'Alle Prüfungen bestanden — wartet auf ein freies Testkonto');
-        if ($slot) $db->execute("UPDATE strategies_trading SET paper_since = now() WHERE id = :id", [':id' => $c['strategy_id']]);
+        if ($slot) $db->execute("UPDATE my_strategies_trading SET paper_since = now() WHERE id = :id", [':id' => $c['strategy_id']]);
         TradingAudit::log($db, 'research', 'strategy_promoted', ['strategy_id' => $c['strategy_id'], 'family' => $c['family'], 'status' => $slot ? 'paper' : 'queued']);
     }
 
@@ -301,9 +301,9 @@ class TradingResearch {
         $stats = [];
         foreach ($db->getAll(
             "SELECT s.family, count(*) AS tested, count(*) FILTER (WHERE b.sharpe >= :min) AS good
-             FROM strategies_trading s
-             JOIN strategy_versions_trading v ON v.strategy_id = s.id
-             JOIN backtests_trading b ON b.strategy_version_id = v.id AND b.segment = 'validation'
+             FROM my_strategies_trading s
+             JOIN my_strategy_versions_trading v ON v.strategy_id = s.id
+             JOIN my_backtests_trading b ON b.strategy_version_id = v.id AND b.segment = 'validation'
              GROUP BY s.family",
             [':min' => (string)(float)($settings['gate_min_test_sharpe'] ?? 0.5)]
         ) ?: [] as $r) {
@@ -327,14 +327,14 @@ class TradingResearch {
         // Ausgangspunkte für Abwandlung und Kreuzung: laufende Strategien und die besten Verworfenen
         $parents = $db->getAll(
             "SELECT s.id, s.family, v.params, s.status
-             FROM strategies_trading s
-             JOIN strategy_versions_trading v ON v.id = s.current_version_id
+             FROM my_strategies_trading s
+             JOIN my_strategy_versions_trading v ON v.id = s.current_version_id
              WHERE s.status IN ('paper', 'live_eligible', 'live', 'queued')
              UNION ALL
              (SELECT s.id, s.family, v.params, s.status
-              FROM strategies_trading s
-              JOIN strategy_versions_trading v ON v.id = s.current_version_id
-              JOIN backtests_trading b ON b.strategy_version_id = v.id AND b.segment = 'validation'
+              FROM my_strategies_trading s
+              JOIN my_strategy_versions_trading v ON v.id = s.current_version_id
+              JOIN my_backtests_trading b ON b.strategy_version_id = v.id AND b.segment = 'validation'
               WHERE s.status = 'rejected' AND b.sharpe > 0
               ORDER BY b.sharpe DESC LIMIT 10)", []
         ) ?: [];
@@ -420,9 +420,9 @@ class TradingResearch {
 
             $best = $db->getAll(
                 "SELECT s.family, v.params, b.sharpe AS validation_sharpe, s.status, s.status_reason
-                 FROM strategies_trading s
-                 JOIN strategy_versions_trading v ON v.id = s.current_version_id
-                 JOIN backtests_trading b ON b.strategy_version_id = v.id AND b.segment = 'validation'
+                 FROM my_strategies_trading s
+                 JOIN my_strategy_versions_trading v ON v.id = s.current_version_id
+                 JOIN my_backtests_trading b ON b.strategy_version_id = v.id AND b.segment = 'validation'
                  ORDER BY b.sharpe DESC LIMIT 15", []
             ) ?: [];
 
@@ -472,16 +472,16 @@ class TradingResearch {
         $rows = $db->getAll(
             "SELECT s.id, s.code, s.status, a.id AS account_id, a.start_capital, a.peak_equity,
                     EXTRACT(EPOCH FROM (now() - s.paper_since)) / 86400 AS paper_days,
-                    (SELECT e.equity FROM equity_trading e WHERE e.account_id = a.id ORDER BY e.day DESC LIMIT 1) AS equity,
-                    (SELECT count(*) FROM orders_trading o WHERE o.account_id = a.id AND o.status = 'filled' AND o.itime >= s.paper_since) AS trades,
-                    (SELECT b.max_drawdown FROM backtests_trading b WHERE b.strategy_version_id = s.current_version_id AND b.segment = 'full' ORDER BY b.id DESC LIMIT 1) AS backtest_drawdown
-             FROM strategies_trading s
-             JOIN accounts_trading a ON a.strategy_id = s.id AND a.kind = 'strategy_paper' AND a.closed_at IS NULL
+                    (SELECT e.equity FROM my_equity_trading e WHERE e.account_id = a.id ORDER BY e.day DESC LIMIT 1) AS equity,
+                    (SELECT count(*) FROM my_orders_trading o WHERE o.account_id = a.id AND o.status = 'filled' AND o.itime >= s.paper_since) AS trades,
+                    (SELECT b.max_drawdown FROM my_backtests_trading b WHERE b.strategy_version_id = s.current_version_id AND b.segment = 'full' ORDER BY b.id DESC LIMIT 1) AS backtest_drawdown
+             FROM my_strategies_trading s
+             JOIN my_accounts_trading a ON a.strategy_id = s.id AND a.kind = 'strategy_paper' AND a.closed_at IS NULL
              WHERE s.status IN ('paper', 'live_eligible', 'live')", []
         ) ?: [];
 
         $liveActive = TradingRisk::liveAuthorized($db)
-            && $db->getOne("SELECT 1 AS x FROM accounts_trading WHERE kind = 'live' AND active AND closed_at IS NULL LIMIT 1", []);
+            && $db->getOne("SELECT 1 AS x FROM my_accounts_trading WHERE kind = 'live' AND active AND closed_at IS NULL LIMIT 1", []);
 
         foreach ($rows as $r) {
             if ($r['equity'] === null) continue;
@@ -519,24 +519,24 @@ class TradingResearch {
 
         // Geleerte Testkonten ausgemusterter Strategien schliessen
         $db->execute(
-            "UPDATE accounts_trading a SET closed_at = now(), active = false
-             FROM strategies_trading s
+            "UPDATE my_accounts_trading a SET closed_at = now(), active = false
+             FROM my_strategies_trading s
              WHERE a.strategy_id = s.id AND a.kind = 'strategy_paper' AND a.closed_at IS NULL AND s.status IN ('retired', 'rejected')
-               AND NOT EXISTS (SELECT 1 FROM positions_trading p WHERE p.account_id = a.id AND p.qty > 0)
-               AND NOT EXISTS (SELECT 1 FROM orders_trading o WHERE o.account_id = a.id AND o.status IN ('submitting', 'submitted', 'partially_filled'))", []
+               AND NOT EXISTS (SELECT 1 FROM my_positions_trading p WHERE p.account_id = a.id AND p.qty > 0)
+               AND NOT EXISTS (SELECT 1 FROM my_orders_trading o WHERE o.account_id = a.id AND o.status IN ('submitting', 'submitted', 'partially_filled'))", []
         );
 
         // Wartende Strategien nachrücken lassen
-        $running = (int)$db->getOne("SELECT count(*) AS n FROM strategies_trading WHERE status IN ('paper', 'live_eligible', 'live')", [])['n'];
+        $running = (int)$db->getOne("SELECT count(*) AS n FROM my_strategies_trading WHERE status IN ('paper', 'live_eligible', 'live')", [])['n'];
         $free = (int)($settings['max_paper_strategies'] ?? 8) - $running;
         if ($free > 0) {
             foreach ($db->getAll(
-                "SELECT s.id FROM strategies_trading s
-                 LEFT JOIN backtests_trading b ON b.strategy_version_id = s.current_version_id AND b.segment = 'test'
+                "SELECT s.id FROM my_strategies_trading s
+                 LEFT JOIN my_backtests_trading b ON b.strategy_version_id = s.current_version_id AND b.segment = 'test'
                  WHERE s.status = 'queued' ORDER BY b.sharpe DESC NULLS LAST LIMIT " . (int)$free, []
             ) ?: [] as $q) {
                 self::setStatus($db, (int)$q['id'], 'paper', 'Nachgerückt — Vorwärtstest auf virtuellem Konto');
-                $db->execute("UPDATE strategies_trading SET paper_since = now() WHERE id = :id", [':id' => $q['id']]);
+                $db->execute("UPDATE my_strategies_trading SET paper_since = now() WHERE id = :id", [':id' => $q['id']]);
             }
         }
         return $result;
@@ -622,18 +622,18 @@ class TradingResearch {
                   'multi_horizon' => 'Mehrhorizont-Trend', 'xsmom' => 'Relative Stärke', 'rsi_revert' => 'RSI-Rücksetzer',
                   'bollinger' => 'Bollinger-Rückkehr', 'keltner' => 'Keltner-Ausbruch'];
         $s = $db->getOne(
-            "INSERT INTO strategies_trading (code, name, family, status, origin, parent_id, hypothesis)
+            "INSERT INTO my_strategies_trading (code, name, family, status, origin, parent_id, hypothesis)
              VALUES ('tmp-' || md5(random()::text || clock_timestamp()::text), :name, :family, 'candidate', :origin, :parent, :hyp) RETURNING id",
             [':name' => $names[$c['family']] ?? $c['family'], ':family' => $c['family'], ':origin' => $c['origin'], ':parent' => $c['parent_id'], ':hyp' => $c['hypothesis']]
         );
         $sid = (int)$s['id'];
         $v = $db->getOne(
-            "INSERT INTO strategy_versions_trading (strategy_id, version, params, instrument_ids, params_hash, created_by)
+            "INSERT INTO my_strategy_versions_trading (strategy_id, version, params, instrument_ids, params_hash, created_by)
              VALUES (:sid, 1, :params::jsonb, :ids::int[], :hash, :by) RETURNING id",
             [':sid' => $sid, ':params' => json_encode($c['params']), ':ids' => '{' . implode(',', array_map('intval', $instrumentIds)) . '}',
              ':hash' => $c['hash'], ':by' => $c['origin'] === 'llm' ? 'llm' : 'research']
         );
-        $db->execute("UPDATE strategies_trading SET code = 'S-' || lpad(id::text, 4, '0'), current_version_id = :vid WHERE id = :sid",
+        $db->execute("UPDATE my_strategies_trading SET code = 'S-' || lpad(id::text, 4, '0'), current_version_id = :vid WHERE id = :sid",
             [':vid' => $v['id'], ':sid' => $sid]);
         return [$sid, (int)$v['id']];
     }
@@ -655,7 +655,7 @@ class TradingResearch {
     private static function storeBacktest($db, int $versionId, int $expId, string $segment, array $panel, int $from, int $to, array $m, array $extra = [], bool $curve = false): void {
         $bench = TradingBacktest::buyAndHold($panel, $panel['benchmark_id'], $from, $to);
         $db->execute(
-            "INSERT INTO backtests_trading (strategy_version_id, experiment_id, segment, from_ts, to_ts, bars, total_return, cagr, volatility,
+            "INSERT INTO my_backtests_trading (strategy_version_id, experiment_id, segment, from_ts, to_ts, bars, total_return, cagr, volatility,
                     sharpe, sortino, max_drawdown, trades, win_rate, profit_factor, fees_paid, turnover, exposure, benchmark_return,
                     p_value, deflated_sharpe, stability, passed, gate_details, equity_curve)
              VALUES (:vid, :eid, :seg, to_timestamp(:from) AT TIME ZONE 'UTC', to_timestamp(:to) AT TIME ZONE 'UTC', :bars, :tr, :cagr, :vol,
@@ -688,7 +688,7 @@ class TradingResearch {
      * @param string $reason Begründung
      */
     public static function setStatus($db, int $id, string $status, string $reason): void {
-        $db->execute("UPDATE strategies_trading SET status = :s, status_reason = :r, mtime = now() WHERE id = :id",
+        $db->execute("UPDATE my_strategies_trading SET status = :s, status_reason = :r, mtime = now() WHERE id = :id",
             [':s' => $status, ':r' => $reason, ':id' => $id]);
     }
 

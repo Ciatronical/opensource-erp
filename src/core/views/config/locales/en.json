@@ -1956,7 +1956,7 @@
         "phaseStart": "Starting service",
         "phaseWait": "Ready",
         "openOrderSkip": "Skip vehicles with open work orders",
-        "openOrderSkip_help": "When active: vehicles with an ongoing workshop order are not shown in the info bar and do not open the gate. Default: disabled (all vehicles are shown).",
+        "openOrderSkip_help": "When active: vehicles with an ongoing workshop order are shown in the info bar only on their first entry since the order was created (a click opens the order); further entries are no longer reported. The gate is not opened for them. Default: disabled (all vehicles are shown).",
         "health": "Service diagnostics",
         "healthRefresh": "Refresh",
         "healthNoData": "No data yet — the service writes heartbeats after the first start",

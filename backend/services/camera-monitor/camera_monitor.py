@@ -869,12 +869,16 @@ def box_center(box):
 
 def detection_in_zone(detection_box, zone_coords, frame_w, frame_h):
     """
-    Prueft ob der Mittelpunkt einer Erkennung in der Zone liegt.
+    Prueft ob eine Erkennung in der Zone liegt.
     Zone-Koordinaten sind normalisiert (0.0-1.0).
+
+    Massgeblich ist der Fusspunkt (Mitte der Unterkante), nicht der Mittelpunkt
+    der Box: eine Zone beschreibt eine Bodenflaeche, und dort steht das Objekt.
+    Der Mittelpunkt einer stehenden Person liegt im Bild deutlich hoeher und
+    damit oft schon ausserhalb der Flaeche, auf der sie steht.
     """
-    cx, cy = box_center(detection_box)
-    # Normalisieren
-    nx, ny = cx / frame_w, cy / frame_h
+    x1, _, x2, y2 = detection_box
+    nx, ny = ((x1 + x2) / 2) / frame_w, y2 / frame_h
     return point_in_polygon(nx, ny, zone_coords)
 
 
@@ -1186,6 +1190,13 @@ class CameraWorker(threading.Thread):
             for zone in self.zones:
                 if zone.get('coordinates') and detection_in_zone(box, zone['coordinates'], frame_w, frame_h):
                     matched_zones.append(zone['zone_key'])
+
+            # Hat die Kamera gezeichnete Zonen, zaehlt nur, was in einer davon
+            # steht — so loesen z. B. die Strasse hinter dem Hof oder geparkte
+            # Autos am Rand keine Ereignisse und Aufnahmen aus. Kameras ohne
+            # Zonen ueberwachen weiterhin das ganze Bild.
+            if not matched_zones and any(z.get('coordinates') for z in self.zones):
+                continue
 
             event_key = f"{label}"
             now = datetime.now()
