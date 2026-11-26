@@ -12,14 +12,8 @@
     <v-container fluid>
         <ShopSetupDialog v-model="setupOffen" @done="laden" />
 
-        <v-row align="center" class="mb-3">
-            <v-col>
-                <h1 class="text-h5">
-                    <v-icon start>mdi-storefront</v-icon>
-                    {{ t('ShopView.menu.title') }}
-                </h1>
-            </v-col>
-            <v-col cols="auto" class="d-flex align-center ga-2">
+        <page-header :title="t('ShopView.menu.title')">
+            <template #actions>
                 <!-- Einrichtung Schritt für Schritt (shop-setup.dialog.vue); ?setup=1 öffnet
                      sie gleich — so kommt man nach dem Einschalten der Erweiterung hierher -->
                 <v-btn
@@ -36,8 +30,8 @@
                     <v-icon start>mdi-refresh</v-icon>
                     {{ t('ShopView.common.reload') }}
                 </v-btn>
-            </v-col>
-        </v-row>
+            </template>
+        </page-header>
 
         <v-alert v-if="shop.error.value" type="error" variant="tonal" density="compact" class="mb-3">
             {{ shop.error.value }}
@@ -237,76 +231,69 @@
         <!-- Veröffentlichung: die Anwendung legt nur Aufträge an, geschrieben
              und gebaut wird von tools/shop-publish.php -->
         <h2 class="text-subtitle-1 font-weight-medium mt-4 mb-2">{{ t('ShopView.sections.jobs') }}</h2>
-        <v-card variant="outlined">
-            <v-card-item>
-                <template #prepend>
-                    <v-icon icon="mdi-cloud-upload-outline" />
-                </template>
-                <v-card-title class="text-subtitle-1">{{ t('ShopView.publish.title') }}</v-card-title>
-                <v-card-subtitle>{{ t('ShopView.publish.hint') }}</v-card-subtitle>
-                <template #append>
-                    <div class="d-flex flex-wrap ga-2">
-                        <!-- Alle offenen Aufträge sofort, ohne sie einzeln auszuwählen -->
-                        <v-btn
-                            color="primary"
-                            variant="tonal"
-                            size="small"
-                            prepend-icon="mdi-play-circle-outline"
-                            :loading="offeneStarten"
-                            :disabled="!offeneAuftraege || veroeffentlicht || sofort || laeuft"
-                            :title="t('ShopView.publish.runOpenHint')"
-                            @click="offeneAusfuehren"
-                        >
-                            {{ t('ShopView.publish.runOpen') }}
-                        </v-btn>
-                        <v-btn
-                            color="primary"
-                            variant="flat"
-                            size="small"
-                            prepend-icon="mdi-cloud-upload-outline"
-                            :loading="veroeffentlicht"
-                            :disabled="sofort || laeuft"
-                            @click="kanaeleWaehlen('queue')"
-                        >
-                            {{ t('ShopView.publish.all') }}
-                        </v-btn>
-                        <!-- Abkürzung: Auftrag anlegen, auswählen, sofort ausführen -->
-                        <v-btn
-                            color="primary"
-                            variant="tonal"
-                            size="small"
-                            prepend-icon="mdi-flash"
-                            :loading="sofort"
-                            :disabled="veroeffentlicht || laeuft"
-                            :title="t('ShopView.publish.allNowHint')"
-                            @click="kanaeleWaehlen('sofort')"
-                        >
-                            {{ t('ShopView.publish.allNow') }}
-                        </v-btn>
-                        <!-- Paket in die Webseite und bauen — ohne auf den Cron zu warten -->
-                        <v-btn
-                            variant="tonal"
-                            size="small"
-                            prepend-icon="mdi-package-down"
-                            :loading="installiert"
-                            :disabled="veroeffentlicht || sofort || laeuft"
-                            :title="t('ShopView.publish.installUiHint')"
-                            @click="installierenFragen"
-                        >
-                            {{ t('ShopView.publish.installUi') }}
-                        </v-btn>
-                    </div>
-                </template>
-            </v-card-item>
+        <section-card :title="t('ShopView.publish.title')" icon="mdi-cloud-upload-outline">
+            <template #actions>
+                <!-- Alle offenen Aufträge sofort, ohne sie einzeln auszuwählen -->
+                <v-btn
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="mdi-play-circle-outline"
+                    :loading="offeneStarten"
+                    :disabled="!offeneAuftraege || veroeffentlicht || sofort || laeuft"
+                    :title="t('ShopView.publish.runOpenHint')"
+                    @click="offeneAusfuehren"
+                >
+                    {{ t('ShopView.publish.runOpen') }}
+                </v-btn>
+                <v-btn
+                    color="primary"
+                    variant="flat"
+                    size="small"
+                    prepend-icon="mdi-cloud-upload-outline"
+                    :loading="veroeffentlicht"
+                    :disabled="sofort || laeuft"
+                    @click="kanaeleWaehlen('queue')"
+                >
+                    {{ t('ShopView.publish.all') }}
+                </v-btn>
+                <!-- Abkürzung: Auftrag anlegen, auswählen, sofort ausführen -->
+                <v-btn
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="mdi-flash"
+                    :loading="sofort"
+                    :disabled="veroeffentlicht || laeuft"
+                    :title="t('ShopView.publish.allNowHint')"
+                    @click="kanaeleWaehlen('sofort')"
+                >
+                    {{ t('ShopView.publish.allNow') }}
+                </v-btn>
+                <!-- Paket in die Webseite und bauen — ohne auf den Cron zu warten -->
+                <v-btn
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="mdi-package-down"
+                    :loading="installiert"
+                    :disabled="veroeffentlicht || sofort || laeuft"
+                    :title="t('ShopView.publish.installUiHint')"
+                    @click="installierenFragen"
+                >
+                    {{ t('ShopView.publish.installUi') }}
+                </v-btn>
+            </template>
+
+            <div class="abschnittshinweis">{{ t('ShopView.publish.hint') }}</div>
 
             <!-- Ein Lauf arbeitet im Hintergrund; die Seite bleibt bedienbar -->
             <template v-if="laeuft">
                 <v-progress-linear indeterminate color="primary" />
-                <v-card-text class="py-2 text-body-2">
+                <div class="laufhinweis text-body-2">
                     {{ t('ShopView.publish.inProgress') }}
-                </v-card-text>
+                </div>
             </template>
-            <v-alert v-if="zuLange" type="info" variant="tonal" density="compact" class="mx-4 my-2">
+            <v-alert v-if="zuLange" type="info" variant="tonal" density="compact" class="laufmeldung">
                 {{ t('ShopView.publish.tooLong') }}
             </v-alert>
 
@@ -320,7 +307,7 @@
                 type="error"
                 variant="tonal"
                 density="compact"
-                class="mx-4 my-2"
+                class="laufmeldung"
                 closable
                 :close-label="t('ShopView.publish.messagesClose')"
                 @click:close="laufAbgebrochen = false"
@@ -336,7 +323,7 @@
                 type="error"
                 variant="tonal"
                 density="compact"
-                class="mx-4 my-2"
+                class="laufmeldung"
                 closable
                 :close-label="t('ShopView.publish.messagesClose')"
                 @click:close="laufFehler = []"
@@ -345,7 +332,7 @@
                 <pre class="text-caption mt-1 mb-0 laufausgabe">{{ laufFehler.join('\n') }}</pre>
             </v-alert>
 
-            <v-card-text v-if="auftraegeGesamt">
+            <template v-if="auftraegeGesamt">
                 <!-- Filter nach Zustand; die Zahlen zählen über alle Seiten -->
                 <v-chip-group
                     :model-value="zustand"
@@ -449,7 +436,7 @@
                             class="auftragszeile"
                             @click="auswahlUmschalten(auftrag.id)"
                         >
-                            <td style="width: 1%" @click.stop>
+                            <td class="schmal" @click.stop>
                                 <v-checkbox-btn
                                     v-model="auswahl"
                                     :value="auftrag.id"
@@ -457,7 +444,7 @@
                                     hide-details
                                 />
                             </td>
-                            <td style="width: 1%">
+                            <td class="schmal">
                                 <v-icon
                                     size="small"
                                     :color="symbol(auftrag).farbe"
@@ -513,11 +500,11 @@
                     class="mt-2"
                     @update:model-value="seiteWechseln"
                 />
-            </v-card-text>
-            <v-card-text v-else class="text-caption text-medium-emphasis">
+            </template>
+            <div v-else class="text-caption text-medium-emphasis">
                 {{ t('ShopView.publish.empty') }}
-            </v-card-text>
-        </v-card>
+            </div>
+        </section-card>
 
         <!-- Ausgabe des Laufs, in dem ein Auftrag erledigt wurde -->
         <v-dialog v-model="ausgabeOffen" max-width="1000" scrollable>
@@ -678,6 +665,8 @@ import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
 import ShopSetupDialog from '@/features/shop/components/shop-setup.dialog.vue'
 import NavbarView from '@/core/components/navbar/navbar.view.vue'
+import PageHeader from '@/core/components/layout/page-header.vue'
+import SectionCard from '@/core/components/layout/section-card.vue'
 import { useShop } from '@/features/shop/composables/useShop.js'
 import * as toasts from '@/core/utils/toasts.js'
 import { entityRoute } from '@/core/constants/routes.js'
@@ -1438,8 +1427,28 @@ onBeforeUnmount(beobachtenBeenden)
 </script>
 
 <style scoped>
+/* Abstände aus den Tokens (src/core/styles/tokens.css) */
+.abschnittshinweis {
+    color: var(--oserp-text-muted);
+    font-size: 0.875rem;
+    margin-bottom: var(--oserp-gap);
+}
+
+.laufhinweis {
+    padding: var(--oserp-gap-sm) 0;
+}
+
+.laufmeldung {
+    margin-bottom: var(--oserp-gap);
+}
+
 .auftragszeile {
     cursor: pointer;
+}
+
+/* Ankreuzfeld und Symbol: nur so breit wie ihr Inhalt */
+.schmal {
+    width: 1%;
 }
 
 .artikelverweis {
