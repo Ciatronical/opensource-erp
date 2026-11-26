@@ -110,6 +110,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 # Backend kopieren (settings.ini ist im .dockerignore ausgeschlossen)
 COPY backend/ ./backend/
 
+# Schema-Update von der Kommandozeile — braucht ./scripts/docker.sh demo-reseed
+COPY tools/oserp-upstall.php ./tools/
+
 # Lizenz und Lizenzhinweise der Drittkomponenten (Pflicht bei Weitergabe)
 COPY LICENSE THIRD_PARTY_LICENSES.md ./
 

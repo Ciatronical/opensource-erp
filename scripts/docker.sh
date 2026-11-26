@@ -142,6 +142,10 @@ cmd_help() {
     echo "    demo-restart-db     DB-Container neu starten (spielt Seed neu ein)"
     echo "    demo-idle-watch     DB nur zuruecksetzen, wenn seit DEMO_INACTIVITY_MINUTES"
     echo "                        keine HTTP-Anfrage mehr kam (fuer Host-Cron alle 2-5 min)"
+    echo "    demo-reseed         Seed-Dumps auf den Schema-Stand des Programms bringen"
+    echo "                        (frischer Seed -> Schema-Update -> neue Dumps -> Probelauf)"
+    echo "    demo-update [--force]  git pull, Web-Image neu bauen, Seeds erneuern, falls sich"
+    echo "                        backend/upstall/ geändert hat (--force: in jedem Fall)"
     echo ""
     echo -e "  ${BOLD}Sonstiges:${NC}"
     echo "    status              Status aller Container anzeigen"
@@ -803,6 +807,13 @@ cmd_demo_idle_watch() {
         exit 1
     fi
 
+    # Läuft gerade eine Seed-Erneuerung, würde ein Reset mitten hinein einen
+    # halben Stand in die Seed-Dateien bringen.
+    if ! demo_lock 0; then
+        info "Seed-Erneuerung läuft - kein Reset."
+        exit 0
+    fi
+
     info "Idle ${idle}s >= ${idle_seconds}s - starte DB-Reset..."
     if dc_demo restart db; then
         reload_php_fpm
@@ -812,6 +823,293 @@ cmd_demo_idle_watch() {
         error "DB-Reset fehlgeschlagen - Marker nicht gesetzt."
         exit 1
     fi
+}
+
+# ------ Hilfsfunktionen der Seed-Erneuerung --------------------------------
+DEMO_LOCK_FILE="$COMPOSE_DIR/.demo-lock"
+DEMO_SEED_STAND_FILE="$COMPOSE_DIR/.demo-seed-stand"
+
+# Gemeinsame Sperre von demo-idle-watch und demo-reseed. Sie hängt am
+# Dateideskriptor 9 und fällt mit dem Ende des Skripts von selbst.
+#   $1 = Sekunden, die auf die Sperre gewartet wird (0 = nicht warten)
+demo_lock() {
+    exec 9>"$DEMO_LOCK_FILE"
+    if [[ "$1" == 0 ]]; then
+        flock -n 9
+    else
+        flock -w "$1" 9
+    fi
+}
+
+# Prüfsumme über backend/upstall/ — der Schema-Stand, den das Programm erwartet
+demo_upstall_stand() {
+    (cd "$PROJECT_ROOT/backend/upstall" \
+        && find . -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)
+}
+
+# Eine Abfrage im DB-Container; Ausgabe ohne Rahmen
+#   $1 = Datenbank, $2 = SQL
+demo_psql() {
+    docker exec "$DB_CONTAINER" psql -v ON_ERROR_STOP=1 -h 127.0.0.1 \
+        -U "$POSTGRES_USER" -d "$1" -Atc "$2"
+}
+
+# Wartet, bis die Company-Datenbank über TCP antwortet. Während des Seeds
+# lauscht Postgres nur auf dem Unix-Socket — antwortet 127.0.0.1, sind die
+# Init-Skripte durchgelaufen.
+wait_demo_db() {
+    local timeout="${1:-180}" waited=0
+    while (( waited < timeout )); do
+        if demo_psql "$DB_COMPANY_NAME" 'SELECT 1' >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 2
+        waited=$(( waited + 2 ))
+    done
+    return 1
+}
+
+# DB-Container neu starten und prüfen, ob der Seed vollständig eingespielt ist
+demo_fresh_seed() {
+    local since log zeilen
+    since=$(date +%s)
+    dc_demo restart db || return 1
+    if ! wait_demo_db 180; then
+        error "Datenbank nach dem Neustart nicht erreichbar."
+        docker logs --tail 20 "$DB_CONTAINER" 2>&1 | sed 's/^/    /' >&2 || true
+        return 1
+    fi
+    log=$(docker logs --since "$since" "$DB_CONTAINER" 2>&1 || true)
+    if grep -q 'ueberspringe' <<<"$log"; then
+        error "Der Seed hat eine Dump-Datei nicht gefunden."
+        return 1
+    fi
+    zeilen=$(grep -c '\[demo-seed\]' <<<"$log" || true)
+    if (( zeilen < 4 )); then
+        error "Seed unvollständig: $zeilen von 4 [demo-seed]-Zeilen im Protokoll."
+        echo "  Ist das Datenvolume ein tmpfs? Start nur mit ./scripts/docker.sh demo-up" >&2
+        return 1
+    fi
+    return 0
+}
+
+demo_is_gzip() {
+    [[ "$(od -An -N2 -tx1 "$1" 2>/dev/null | tr -d ' \n')" == "1f8b" ]]
+}
+
+# Sichert eine Datenbank als SQL-Datei und prüft, ob der Dump vollständig ist
+#   $1 = Datenbank, $2 = Zieldatei
+demo_dump_to() {
+    docker exec "$DB_CONTAINER" pg_dump -h 127.0.0.1 -U "$POSTGRES_USER" -d "$1" > "$2" || return 1
+    tail -n 5 "$2" | grep -q 'PostgreSQL database dump complete'
+}
+
+# Überschreibt eine Seed-Datei an Ort und Stelle. Kein mv: Die Dumps sind als
+# einzelne Dateien eingehängt, der Container sähe sonst weiter die alte Datei.
+#   $1 = neue SQL-Datei, $2 = Seed-Datei
+demo_write_seed() {
+    if demo_is_gzip "$2"; then
+        gzip -c "$1" > "$2.gz-neu" && cat "$2.gz-neu" > "$2" && rm -f "$2.gz-neu"
+    else
+        cat "$1" > "$2"
+    fi
+}
+
+# Aufräumen beim Verlassen von demo-reseed, auch nach einem Abbruch
+DEMO_RESEED_TMP=()
+DEMO_RESEED_DB_DIRTY=false
+demo_reseed_cleanup() {
+    rm -f "${DEMO_RESEED_TMP[@]}" 2>/dev/null || true
+    if [[ "$DEMO_RESEED_DB_DIRTY" == true ]]; then
+        warn "Abbruch mitten im Lauf - stelle die Datenbank aus dem Seed wieder her..."
+        dc_demo restart db || true
+        reload_php_fpm || true
+    fi
+}
+
+# ------ demo-reseed -------------------------------------------------------
+# Bringt die Seed-Dumps auf den Schema-Stand des Programms:
+#   1. DB-Container neu starten      -> Datenbank entspricht exakt dem alten Seed
+#   2. Schema-Update im Web-Container (tools/oserp-upstall.php)
+#   3. beide Datenbanken sichern, alte Seeds aufheben, Dateien überschreiben
+#   4. DB-Container zur Probe neu starten; schlägt der neue Seed fehl, kommen
+#      die alten Dateien zurück
+#
+# Meldet sich währenddessen ein Besucher an, wird der Lauf wiederholt — seine
+# Daten sollen nicht im Seed landen.
+cmd_demo_reseed() {
+    check_env
+    load_db_vars
+
+    if ! dc_demo config >/dev/null 2>&1; then
+        error "Demo-Overlay nicht ladbar (DEMO_AUTH_DUMP/DEMO_COMPANY_DUMP in docker/.env?)."
+        exit 1
+    fi
+    local c
+    for c in "$DB_CONTAINER" "$WEB_CONTAINER"; do
+        if ! is_running "$c"; then
+            error "Container '$c' läuft nicht. Starte mit: ./scripts/docker.sh demo-up"
+            exit 1
+        fi
+    done
+
+    local auth_seed="$DEMO_AUTH_DUMP" company_seed="$DEMO_COMPANY_DUMP" f
+    for f in "$auth_seed" "$company_seed"; do
+        if [[ ! -f "$f" || ! -w "$f" || ! -w "$(dirname "$f")" ]]; then
+            error "Seed-Datei fehlt oder ist nicht beschreibbar: $f"
+            exit 1
+        fi
+    done
+
+    local tool="/var/www/html/tools/oserp-upstall.php"
+    if ! docker exec "$WEB_CONTAINER" test -f "$tool"; then
+        error "tools/oserp-upstall.php fehlt im Web-Image."
+        echo "  Das Image ist älter als dieser Befehl. Neu bauen mit: ./scripts/docker.sh demo-up"
+        exit 1
+    fi
+
+    if ! demo_lock 300; then
+        error "Sperre nicht erhalten - läuft bereits ein Reset oder eine Seed-Erneuerung?"
+        exit 1
+    fi
+
+    local stamp
+    stamp="$(date +%Y%m%d-%H%M%S)"
+    local auth_tmp="$auth_seed.neu-$stamp" company_tmp="$company_seed.neu-$stamp"
+    DEMO_RESEED_TMP=("$auth_tmp" "$company_tmp")
+    trap demo_reseed_cleanup EXIT
+
+    local versuch fertig=false vorher nachher
+    for versuch in 1 2 3; do
+        info "Spiele den bisherigen Seed frisch ein (Versuch $versuch von 3)..."
+        demo_fresh_seed || exit 1
+        DEMO_RESEED_DB_DIRTY=true
+        reload_php_fpm
+
+        # Anmeldungen erkennt man an auth.session_oserp. Fehlt die Tabelle im
+        # alten Seed noch, gab es dort auch keine Sitzungen.
+        vorher=$(demo_psql "$DB_AUTH_NAME" 'SELECT count(*) FROM auth.session_oserp' 2>/dev/null || echo 0)
+
+        info "Schema-Update..."
+        if ! docker exec -u www-data "$WEB_CONTAINER" php "$tool"; then
+            error "Schema-Update fehlgeschlagen - die Seed-Dateien bleiben unverändert."
+            exit 1
+        fi
+
+        info "Sichere $DB_COMPANY_NAME..."
+        if ! demo_dump_to "$DB_COMPANY_NAME" "$company_tmp"; then
+            error "Dump von $DB_COMPANY_NAME unvollständig."
+            exit 1
+        fi
+
+        nachher=$(demo_psql "$DB_AUTH_NAME" 'SELECT count(*) FROM auth.session_oserp')
+        if [[ "$vorher" != "$nachher" ]]; then
+            warn "Während des Laufs hat sich ein Besucher angemeldet - wiederhole."
+            continue
+        fi
+
+        # Das Kennwort des Containers gehört nicht in die Seed-Datei;
+        # 99-patch-clients.sh setzt es bei jedem Seed neu.
+        demo_psql "$DB_AUTH_NAME" "UPDATE auth.clients SET dbpasswd = ''" >/dev/null
+        info "Sichere $DB_AUTH_NAME..."
+        if ! demo_dump_to "$DB_AUTH_NAME" "$auth_tmp"; then
+            error "Dump von $DB_AUTH_NAME unvollständig."
+            exit 1
+        fi
+        fertig=true
+        break
+    done
+
+    if [[ "$fertig" != true ]]; then
+        error "Drei Versuche durch Anmeldungen gestört - die Seed-Dateien bleiben unverändert."
+        exit 1
+    fi
+
+    # Ein Dump, der auf weniger als die Hälfte schrumpft, ist kein Schema-Update
+    local alt neu
+    if ! demo_is_gzip "$company_seed"; then
+        alt=$(stat -c %s "$company_seed")
+        neu=$(stat -c %s "$company_tmp")
+        if (( neu * 2 < alt )); then
+            error "Neuer Company-Dump ist auffällig klein ($neu statt $alt Bytes) - Abbruch."
+            exit 1
+        fi
+    fi
+
+    # ── Alte Seeds aufheben, neue an Ort und Stelle schreiben ──
+    cp -p "$auth_seed" "$auth_seed.reseed-$stamp"
+    cp -p "$company_seed" "$company_seed.reseed-$stamp"
+    demo_write_seed "$auth_tmp" "$auth_seed"
+    demo_write_seed "$company_tmp" "$company_seed"
+
+    info "Probelauf mit den neuen Seeds..."
+    if ! demo_fresh_seed; then
+        error "Die neuen Seeds lassen sich nicht einspielen - stelle die alten wieder her."
+        cat "$auth_seed.reseed-$stamp" > "$auth_seed"
+        cat "$company_seed.reseed-$stamp" > "$company_seed"
+        exit 1
+    fi
+    DEMO_RESEED_DB_DIRTY=false
+    reload_php_fpm
+
+    # Die Datenbank ist frisch: Der Watcher muss nicht noch einmal zurücksetzen.
+    touch "$COMPOSE_DIR/.demo-last-reset"
+    demo_upstall_stand > "$DEMO_SEED_STAND_FILE"
+
+    # Von den aufgehobenen Seeds bleiben die letzten fünf
+    for f in "$auth_seed" "$company_seed"; do
+        ls -1t "$f".reseed-* 2>/dev/null | tail -n +6 | xargs -r rm -f
+    done
+
+    success "Seeds erneuert:"
+    echo "    $auth_seed"
+    echo "    $company_seed"
+    echo "  Vorheriger Stand: *.reseed-$stamp"
+}
+
+# ------ demo-update -------------------------------------------------------
+# Aktualisiert eine Demo-Instanz in einem Zug: git pull, Web-Image neu bauen,
+# Seeds erneuern — Letzteres nur, wenn sich backend/upstall/ seit der letzten
+# Erneuerung geändert hat (--force erzwingt es).
+#
+# Nach dem Pull startet sich das Skript neu: Der Pull kann diese Datei selbst
+# ändern, und bash liest ein laufendes Skript stückweise von der Platte.
+cmd_demo_update() {
+    check_env
+    info "Hole den aktuellen Stand..."
+    git -C "$PROJECT_ROOT" pull --ff-only
+    exec "$SCRIPT_DIR/docker.sh" demo-update-fortsetzen "$@"
+}
+
+cmd_demo_update_fortsetzen() {
+    local force=false
+    [[ "${1:-}" == "--force" ]] && force=true
+
+    cmd_demo_up --yes
+
+    info "Warte auf den Web-Container..."
+    local waited=0 status=""
+    while (( waited < 300 )); do
+        status=$(docker inspect -f '{{.State.Health.Status}}' "$WEB_CONTAINER" 2>/dev/null || true)
+        [[ "$status" == "healthy" ]] && break
+        sleep 5
+        waited=$(( waited + 5 ))
+    done
+    if [[ "$status" != "healthy" ]]; then
+        error "Web-Container wird nicht gesund (Status: ${status:-unbekannt})."
+        echo "  Protokoll: docker logs --tail 50 $WEB_CONTAINER"
+        exit 1
+    fi
+
+    local stand_seed=""
+    [[ -f "$DEMO_SEED_STAND_FILE" ]] && stand_seed="$(cat "$DEMO_SEED_STAND_FILE")"
+    if [[ "$force" != true && "$stand_seed" == "$(demo_upstall_stand)" ]]; then
+        success "Demo aktualisiert. Die Seeds sind auf dem Schema-Stand - keine Erneuerung nötig."
+        return 0
+    fi
+
+    cmd_demo_reseed
+    success "Demo aktualisiert."
 }
 
 # ------ shell -------------------------------------------------------------
@@ -864,6 +1162,9 @@ case "$command" in
     demo-up)             cmd_demo_up "$@" ;;
     demo-restart-db)     cmd_demo_restart_db "$@" ;;
     demo-idle-watch)     cmd_demo_idle_watch "$@" ;;
+    demo-reseed)         cmd_demo_reseed "$@" ;;
+    demo-update)         cmd_demo_update "$@" ;;
+    demo-update-fortsetzen) cmd_demo_update_fortsetzen "$@" ;;
     help|--help|-h) cmd_help ;;
     *)
         error "Unbekannter Befehl: $command"

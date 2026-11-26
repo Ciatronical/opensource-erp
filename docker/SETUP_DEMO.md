@@ -568,8 +568,10 @@ Beide Dumps müssen auf dem **Schema-Stand des Programms** sein. Ist ein Dump
 jedem Reset erneut, weil der Reset wieder den alten Dump einspielt. Ein
 veraltetes Auth-Schema kann die Anmeldung ganz verhindern.
 
-Dumps aktualisieren: lokal in eine Datenbank laden, mit dem aktuellen
-Programmstand anmelden (das Schema-Update läuft dabei), Beispieldaten
+Den Schema-Stand der Dumps zieht `./scripts/docker.sh demo-reseed` auf dem
+Server nach (siehe unten, „Seeds erneuern“). Von Hand sind die Dumps nur noch
+anzufassen, wenn sich die **Beispieldaten** ändern sollen: lokal in eine
+Datenbank laden, mit dem aktuellen Programmstand anmelden, Beispieldaten
 anpassen und neu dumpen:
 
 ```bash
@@ -635,6 +637,38 @@ keine Verbindungen zur alten Datenbank bestehen bleiben. Unmittelbar nach
 `demo-up` meldet der Befehl „PHP-FPM konnte nicht neu geladen werden“, weil
 der Web-Container zu diesem Zeitpunkt PHP-FPM noch nicht gestartet hat. Das
 ist dann unkritisch.
+
+### Seeds erneuern
+
+```bash
+./scripts/docker.sh demo-reseed
+```
+
+Bringt beide Dumps auf den Schema-Stand des Programms, ohne dass jemand sie
+von Hand anfasst:
+
+1. DB-Container neu starten — die Datenbank entspricht exakt dem alten Seed
+2. Schema-Update im Web-Container (`tools/oserp-upstall.php`)
+3. Beide Datenbanken sichern, die alten Dumps als `*.reseed-<Zeitstempel>`
+   aufheben (die letzten fünf bleiben) und die Dump-Dateien überschreiben
+4. DB-Container zur Probe neu starten. Lassen sich die neuen Dumps nicht
+   einspielen, kommen die alten zurück
+
+Schlägt ein Schritt fehl, bleiben die Dumps unverändert und die Datenbank wird
+aus dem alten Seed wiederhergestellt. Meldet sich während des Laufs ein
+Besucher an, beginnt der Lauf von vorn (höchstens dreimal) — seine Daten sollen
+nicht im Seed landen. `demo-idle-watch` setzt währenddessen nicht zurück; beide
+Befehle teilen sich die Sperre `docker/.demo-lock`.
+
+Die Demo ist während des Laufs für ein bis zwei Minuten nicht benutzbar.
+
+> **Jede Instanz braucht eigene Dump-Dateien, auch für die Auth-Datenbank.**
+> Zeigen zwei Instanzen mit `DEMO_AUTH_DUMP` auf dieselbe Datei, überschreibt
+> die eine den Stand der anderen — und Erweiterungen können das Auth-Schema je
+> Instanz verschieden erweitern.
+
+Im Normalfall ruft man `demo-reseed` nicht selbst auf, sondern aktualisiert
+die Instanz mit `demo-update` (Abschnitt 15).
 
 ### Dumps austauschen
 
@@ -738,17 +772,23 @@ am Datenbankschema spielt die Anwendung beim nächsten Login selbst ein.
 
 ```bash
 cd /var/www/docker/demo.example.com
-git pull
-./scripts/docker.sh demo-up
+./scripts/docker.sh demo-update
 ```
 
-`demo-up` baut das Web-Image neu und startet den Web-Container damit. Der
-DB-Container läuft dabei weiter, solange sich seine Konfiguration nicht
-geändert hat.
+`demo-update` erledigt drei Schritte in einem Zug:
 
-Bringt die neue Version Schemaänderungen mit, sind anschließend die
-Seed-Dumps zu erneuern (siehe [Abschnitt 12](#12-demo-modus), „Die
-Dump-Dateien“). Sonst läuft das Schema-Update nach jedem Reset erneut beim
+1. `git pull --ff-only`
+2. `demo-up` — baut das Web-Image neu und startet den Web-Container damit. Der
+   DB-Container läuft dabei weiter, solange sich seine Konfiguration nicht
+   geändert hat
+3. `demo-reseed` — nur wenn sich `backend/upstall/` seit der letzten
+   Erneuerung geändert hat (siehe [Abschnitt 12](#12-demo-modus), „Seeds
+   erneuern“). Den Vergleichsstand hält `docker/.demo-seed-stand` fest
+
+`./scripts/docker.sh demo-update --force` erneuert die Seeds in jedem Fall —
+etwa nachdem ein Dump von Hand ausgetauscht wurde.
+
+Ohne erneuerte Seeds liefe das Schema-Update nach jedem Reset erneut beim
 ersten Login.
 
 ---

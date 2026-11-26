@@ -43,6 +43,8 @@ backend/config/shop-signing.key.tmp
 docker/.env
 # Marker des Demo-Reset (nur die mtime zaehlt) — reiner Laufzeitzustand pro Server
 docker/.demo-last-reset
+docker/.demo-lock
+docker/.demo-seed-stand
 
 # Private Features
 special/
