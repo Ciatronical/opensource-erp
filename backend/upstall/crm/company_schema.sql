@@ -3409,6 +3409,8 @@ COMMENT ON COLUMN vendor_part_syncs.input_file            IS 'Dateiname der Prei
 -- Abruf liefert). Sie gehen an das Abrufprogramm und dort vor dessen eigener
 -- Konfiguration; Zugangsdaten bleiben beim Abrufprogramm.
 ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS fetch_settings JSONB;
+-- Ruhephase des Abrufprogramms (Zeitfenster): bis dahin ruht der Lauf, NULL = er arbeitet
+ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS resting_until TIMESTAMP;
 COMMENT ON COLUMN vendor_part_syncs.fetch_settings IS 'Einstellungen für das Abrufprogramm: active_hours, active_days (1 = Montag), active_from, active_to, delay_min_s, delay_max_s, price_field, available_when, update_description; NULL = Konfiguration des Abrufprogramms';
 
 -- Je Lauf die geprüften Artikel: geändert, unverändert, unbekannt oder

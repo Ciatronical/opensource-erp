@@ -228,6 +228,11 @@
         "curveNone": "žádná — pevná přirážka",
         "curveUsed": "Cenová křivka {name}",
         "curveHint": "Cenová křivka: přirážka se řídí nákupní cenou — vysoká u levných položek, nízká u drahých. Mezi opěrnými body se mění plynule, cena neskáče. Náhodný rozptyl a psychologické ceny na ni působí stejně jako na pevnou přirážku.",
-        "field_model": "Číslo položky dodavatele"
+        "field_model": "Číslo položky dodavatele",
+        "overviewStarted": "Spuštěno {time}",
+        "overviewFinished": "Ukončeno {time}",
+        "overviewCounts": "{updated} změněno, {unchanged} beze změny, {errors} chyb",
+        "status_resting": "Odpočívá",
+        "restingUntil": "Odpočívá do {time}"
     }
 }

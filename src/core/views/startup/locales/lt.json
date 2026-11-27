@@ -228,6 +228,11 @@
         "curveNone": "nėra — fiksuotas antkainis",
         "curveUsed": "Kainų kreivė {name}",
         "curveHint": "Kainų kreivė: antkainis priklauso nuo pirkimo kainos — didelis pigioms prekėms, mažas brangioms. Tarp atraminių taškų jis kinta tolygiai, kaina nešokinėja. Atsitiktinė sklaida ir psichologinės kainos veikia jį taip pat kaip fiksuotą antkainį.",
-        "field_model": "Tiekėjo prekės numeris"
+        "field_model": "Tiekėjo prekės numeris",
+        "overviewStarted": "Pradėta {time}",
+        "overviewFinished": "Baigta {time}",
+        "overviewCounts": "{updated} pakeista, {unchanged} nepakeista, {errors} klaidų",
+        "status_resting": "Ilsisi",
+        "restingUntil": "Ilsisi iki {time}"
     }
 }

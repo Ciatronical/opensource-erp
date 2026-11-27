@@ -228,6 +228,11 @@
         "curveNone": "nessuna — ricarico fisso",
         "curveUsed": "Curva dei prezzi {name}",
         "curveHint": "Curva dei prezzi: il ricarico dipende dal prezzo di acquisto — alto per gli articoli economici, basso per quelli costosi. Tra i punti di riferimento varia gradualmente, senza salti di prezzo. La dispersione casuale e i prezzi psicologici si applicano come al ricarico fisso.",
-        "field_model": "Codice articolo del fornitore"
+        "field_model": "Codice articolo del fornitore",
+        "overviewStarted": "Avviato {time}",
+        "overviewFinished": "Terminato {time}",
+        "overviewCounts": "{updated} modificati, {unchanged} invariati, {errors} errori",
+        "status_resting": "In pausa",
+        "restingUntil": "In pausa fino a {time}"
     }
 }

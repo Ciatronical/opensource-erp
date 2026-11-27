@@ -201,7 +201,7 @@
         <div v-if="sync" class="vps-status">
             <div class="vps-status__head">
                 <v-chip size="small" variant="tonal" :color="statusColor(sync.status)" :prepend-icon="statusIcon(sync.status)">
-                    {{ t('VendorPartSync.status_' + sync.status) }}
+                    {{ statusText(sync) }}
                 </v-chip>
                 <v-chip v-if="sync.dry_run" size="small" variant="outlined">{{ t('VendorPartSync.dryRun') }}</v-chip>
                 <v-chip v-if="sync.debug" size="small" variant="outlined">{{ t('VendorPartSync.debug') }}</v-chip>
@@ -324,7 +324,7 @@ const props = defineProps({
     vendorName: { type: String, default: '' },
 })
 
-const { t, te, n, locale } = useI18n()
+const { t, te, n, d, locale } = useI18n()
 const api = useVendorPartSync()
 
 // Abfrageabstand, solange ein Lauf arbeitet
@@ -366,7 +366,8 @@ let optionsPrefilled = false
 
 let timer = null
 
-const running = computed(() => ['queued', 'running'].includes(sync.value?.status))
+// resting: der Lauf arbeitet nicht, ist aber unterwegs — er ruht außerhalb seines Zeitfensters
+const running = computed(() => ['queued', 'running', 'resting'].includes(sync.value?.status))
 const progress = computed(() => sync.value?.parts_total ? Math.min(100, 100 * sync.value.parts_done / sync.value.parts_total) : 0)
 
 // Artikelliste: Anzahl je Ergebnis aus der Liste selbst (Läufe von früher haben unveränderte
@@ -486,11 +487,20 @@ function duration(from, to) {
          : `${s} s`
 }
 
+// Zustand als Text; ruht der Lauf, mit dem Zeitpunkt, an dem er fortsetzt
+function statusText(lauf) {
+    if (lauf.status === 'resting' && lauf.resting_until) {
+        const datum = new Date(String(lauf.resting_until).replace(' ', 'T'))
+        if (!isNaN(datum)) return t('VendorPartSync.restingUntil', { time: d(datum, { dateStyle: 'short', timeStyle: 'short' }) })
+    }
+    return t('VendorPartSync.status_' + lauf.status)
+}
+
 function statusColor(status) {
-    return { queued: 'info', running: 'info', done: 'success', error: 'error', stalled: 'error', cancelled: 'warning' }[status] || undefined
+    return { queued: 'info', running: 'info', resting: 'secondary', done: 'success', error: 'error', stalled: 'error', cancelled: 'warning' }[status] || undefined
 }
 function statusIcon(status) {
-    return { queued: 'mdi-timer-sand', running: 'mdi-sync', done: 'mdi-check', error: 'mdi-alert-circle-outline', stalled: 'mdi-alert-circle-outline', cancelled: 'mdi-stop' }[status] || undefined
+    return { queued: 'mdi-timer-sand', running: 'mdi-sync', resting: 'mdi-sleep', done: 'mdi-check', error: 'mdi-alert-circle-outline', stalled: 'mdi-alert-circle-outline', cancelled: 'mdi-stop' }[status] || undefined
 }
 
 function money(value) {

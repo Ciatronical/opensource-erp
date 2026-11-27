@@ -243,6 +243,11 @@
         "curveNone": "brak — stała marża",
         "curveUsed": "Krzywa cen {name}",
         "curveHint": "Krzywa cen: narzut zależy od ceny zakupu — wysoki przy tanich artykułach, niski przy drogich. Między punktami odniesienia zmienia się płynnie, cena nie skacze. Losowy rozrzut i ceny psychologiczne działają tak samo jak przy stałym narzucie.",
-        "field_model": "Numer artykułu dostawcy"
+        "field_model": "Numer artykułu dostawcy",
+        "overviewStarted": "Rozpoczęto {time}",
+        "overviewFinished": "Zakończono {time}",
+        "overviewCounts": "{updated} zmienionych, {unchanged} bez zmian, {errors} błędów",
+        "status_resting": "Wstrzymany",
+        "restingUntil": "Wstrzymany do {time}"
     }
 }

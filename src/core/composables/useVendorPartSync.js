@@ -35,6 +35,8 @@ export function useVendorPartSync() {
     const fetchStatus = (vendor_id, items = {}) => call('getVendorPartSync', { vendor_id, ...items })
     const start = (params, file = null) => call('startVendorPartSync', params, file)
     const cancel = (sync_id) => call('cancelVendorPartSync', { sync_id })
+    // Laufende Abgleiche aller Lieferanten, sonst der zuletzt beendete (Shop-Übersicht)
+    const fetchOverview = () => call('getVendorPartSyncOverview')
 
-    return { fetchStatus, start, cancel }
+    return { fetchStatus, start, cancel, fetchOverview }
 }

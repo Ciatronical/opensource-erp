@@ -52,6 +52,8 @@
         "confirmText": "Der Lauf überschreibt Preise und Verfügbarkeit der Artikel von {name}. Ein Probelauf zeigt vorher, was sich ändern würde.",
         "status_queued": "Wartet auf Start",
         "status_running": "Läuft",
+        "status_resting": "Ruht",
+        "restingUntil": "Ruht bis {time}",
         "status_done": "Abgeschlossen",
         "status_error": "Fehler",
         "status_stalled": "Hängengeblieben",
@@ -93,6 +95,9 @@
         "log": "Protokoll",
         "never": "Für diesen Lieferanten ist noch kein Abgleich gelaufen.",
         "history": "Frühere Läufe",
+        "overviewStarted": "Gestartet {time}",
+        "overviewFinished": "Beendet {time}",
+        "overviewCounts": "{updated} geändert, {unchanged} unverändert, {errors} Fehler",
         "historyCounts": "{done} verarbeitet, {updated} geändert, {unknown} unbekannt, {errors} Fehler"
     },
     "CrmView": {

@@ -228,6 +228,11 @@
         "curveNone": "nav — fiksēts uzcenojums",
         "curveUsed": "Cenu līkne {name}",
         "curveHint": "Cenu līkne: uzcenojums ir atkarīgs no iepirkuma cenas — augsts lētām precēm, zems dārgām. Starp atbalsta punktiem tas mainās pakāpeniski, cena nelēkā. Nejaušā izkliede un psiholoģiskās cenas uz to iedarbojas tāpat kā uz fiksēto uzcenojumu.",
-        "field_model": "Piegādātāja preces numurs"
+        "field_model": "Piegādātāja preces numurs",
+        "overviewStarted": "Sākts {time}",
+        "overviewFinished": "Pabeigts {time}",
+        "overviewCounts": "{updated} mainīti, {unchanged} nemainīti, {errors} kļūdas",
+        "status_resting": "Gaida",
+        "restingUntil": "Gaida līdz {time}"
     }
 }

@@ -93,7 +93,12 @@
         "curveNone": "none — fixed markup",
         "curveUsed": "Price curve {name}",
         "curveHint": "Price curve: the markup depends on the purchase price — high for cheap articles, low for expensive ones. Between the reference points it changes gradually, so prices do not jump. Random spread and psychological prices apply to it just as to the fixed markup.",
-        "field_model": "Supplier article number"
+        "field_model": "Supplier article number",
+        "overviewStarted": "Started {time}",
+        "overviewFinished": "Finished {time}",
+        "overviewCounts": "{updated} changed, {unchanged} unchanged, {errors} errors",
+        "status_resting": "Resting",
+        "restingUntil": "Resting until {time}"
     },
     "CrmView": {
         "nSelected": "{n} selected",

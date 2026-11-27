@@ -228,6 +228,11 @@
         "curveNone": "无 — 固定加价",
         "curveUsed": "价格曲线 {name}",
         "curveHint": "价格曲线：加价幅度取决于进货价——低价商品加价高，高价商品加价低。在各参考点之间平滑过渡，价格不会跳变。随机浮动和心理定价对它的作用与固定加价相同。",
-        "field_model": "供应商货号"
+        "field_model": "供应商货号",
+        "overviewStarted": "开始于 {time}",
+        "overviewFinished": "结束于 {time}",
+        "overviewCounts": "{updated} 已更改，{unchanged} 未更改，{errors} 个错误",
+        "status_resting": "休眠中",
+        "restingUntil": "休眠至 {time}"
     }
 }

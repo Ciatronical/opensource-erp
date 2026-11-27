@@ -228,6 +228,11 @@
         "curveNone": "geen — vaste opslag",
         "curveUsed": "Prijscurve {name}",
         "curveHint": "Prijscurve: de opslag hangt af van de inkoopprijs — hoog bij goedkope artikelen, laag bij dure. Tussen de steunpunten verloopt hij geleidelijk, de prijs maakt geen sprongen. Willekeurige spreiding en psychologische prijzen werken hierop net als op de vaste opslag.",
-        "field_model": "Artikelnummer leverancier"
+        "field_model": "Artikelnummer leverancier",
+        "overviewStarted": "Gestart {time}",
+        "overviewFinished": "Beëindigd {time}",
+        "overviewCounts": "{updated} gewijzigd, {unchanged} ongewijzigd, {errors} fouten",
+        "status_resting": "Rust",
+        "restingUntil": "Rust tot {time}"
     }
 }

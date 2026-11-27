@@ -228,6 +228,11 @@
         "curveNone": "ingen — fast påslag",
         "curveUsed": "Priskurva {name}",
         "curveHint": "Priskurva: påslaget beror på inköpspriset — högt för billiga artiklar, lågt för dyra. Mellan stödpunkterna ändras det gradvis, så priset hoppar inte. Slumpmässig spridning och psykologiska priser verkar på det som på det fasta påslaget.",
-        "field_model": "Leverantörens artikelnummer"
+        "field_model": "Leverantörens artikelnummer",
+        "overviewStarted": "Startad {time}",
+        "overviewFinished": "Avslutad {time}",
+        "overviewCounts": "{updated} ändrade, {unchanged} oförändrade, {errors} fel",
+        "status_resting": "Vilar",
+        "restingUntil": "Vilar till {time}"
     }
 }

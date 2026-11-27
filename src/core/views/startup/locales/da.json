@@ -228,6 +228,11 @@
         "curveNone": "ingen — fast avance",
         "curveUsed": "Priskurve {name}",
         "curveHint": "Priskurve: avancen afhænger af indkøbsprisen — høj for billige varer, lav for dyre. Mellem støttepunkterne ændrer den sig gradvist, så prisen ikke springer. Tilfældig spredning og psykologiske priser virker på den som på den faste avance.",
-        "field_model": "Leverandørens varenummer"
+        "field_model": "Leverandørens varenummer",
+        "overviewStarted": "Startet {time}",
+        "overviewFinished": "Afsluttet {time}",
+        "overviewCounts": "{updated} ændret, {unchanged} uændret, {errors} fejl",
+        "status_resting": "Hviler",
+        "restingUntil": "Hviler indtil {time}"
     }
 }

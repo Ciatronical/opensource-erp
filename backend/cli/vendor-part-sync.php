@@ -55,6 +55,9 @@
  *       (mehr) gibt: er gilt als geprüft, übernommen wird nichts.
  *   {"type": "progress", "total": 1200, "message": "Seite 3 von 40"}
  *       Erwartete Gesamtzahl und/oder Meldung für die Oberfläche.
+ *       "resting_until": "2026-11-28T06:00:00.000Z" meldet eine Ruhephase
+ *       (Zeitfenster): bis dahin zeigt die Oberfläche den Lauf als ruhend.
+ *       "resting_until": null beendet sie; ein gelieferter Artikel ebenso.
  *   {"type": "log", "level": "warn", "message": "…"}
  *       Zeile für das Protokoll.
  * Alles andere, auch die Fehlerausgabe, landet im Protokoll. Rückgabewert 0
@@ -84,6 +87,8 @@ const VPS_FLUSH_SECS   = 3;      // spätestens so oft Stand schreiben und Abbru
 const VPS_LOG_LINE_MAX = 500;    // längere Protokollzeilen werden gekürzt
 const VPS_LOG_CHARS       = 20000;   // so viel vom Ende des Protokolls bleibt am Lauf stehen
 const VPS_LOG_CHARS_DEBUG = 200000;  // im Debug-Lauf entsprechend mehr
+const VPS_RECONNECT_SECS  = 150;     // so lange wird eine verlorene Datenbankverbindung neu aufgebaut (unter der Hänge-Frist der Oberfläche)
+const VPS_RECONNECT_PAUSE = 5;       // Sekunden zwischen zwei Versuchen
 
 $argumente = [];
 foreach (array_slice($argv, 1) as $arg) {
@@ -113,16 +118,25 @@ try {
         fwrite(STDERR, "Kein Mandant mit der Datenbank $datenbank.\n");
         exit(1);
     }
-    $pdo = new PDO(
-        sprintf('pgsql:host=%s;port=%s;dbname=%s', $mandant['dbhost'], $mandant['dbport'], $mandant['dbname']),
-        $mandant['dbuser'], $mandant['dbpasswd'],
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
-    DbhCompany::begin($pdo);
+    DbhCompany::begin(vpsConnect($mandant));
     $db = DbhCompany::begin();
 } catch (Throwable $e) {
     fwrite(STDERR, "Die Datenbank ist nicht erreichbar: ".$e->getMessage()."\n");
     exit(1);
+}
+
+/**
+ * Verbindung zur Firmen-Datenbank aufbauen
+ *
+ * @param array $mandant Zeile aus auth.clients (dbhost, dbport, dbname, dbuser, dbpasswd)
+ * @return PDO
+ */
+function vpsConnect(array $mandant): PDO {
+    return new PDO(
+        sprintf('pgsql:host=%s;port=%s;dbname=%s', $mandant['dbhost'], $mandant['dbport'], $mandant['dbname']),
+        $mandant['dbuser'], $mandant['dbpasswd'],
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+    );
 }
 
 /**
@@ -246,6 +260,7 @@ try {
     $protokoll  = '';      // neue Protokollzeilen seit dem letzten Schreiben
     $meldung    = null;    // letzte Meldung des Abrufprogramms
     $gesamt     = 0;       // vom Abrufprogramm gemeldete Gesamtzahl
+    $ruhtBis    = null;    // Ruhephase des Abrufprogramms: Zeitpunkt mit Zeitzone, null = arbeitet
     $abgebrochen = false;
     $zuletzt    = microtime(true);
     $puffer     = [1 => '', 2 => ''];
@@ -255,7 +270,7 @@ try {
     };
 
     // Eine Zeile der Standardausgabe einordnen
-    $verarbeiten = function (string $zeile) use (&$stapel, &$meldung, &$gesamt, $notieren, $debug) {
+    $verarbeiten = function (string $zeile) use (&$stapel, &$meldung, &$gesamt, &$ruhtBis, $notieren, $debug) {
         $zeile = trim($zeile);
         if ('' === $zeile) {
             return;
@@ -273,9 +288,14 @@ try {
         if ('part' === $typ) {
             unset($daten['type']);
             $stapel[] = $daten;
+            $ruhtBis = null;
         } elseif ('progress' === $typ) {
             if (isset($daten['total'])) {
                 $gesamt = max($gesamt, intval($daten['total']));
+            }
+            if (array_key_exists('resting_until', $daten)) {
+                $zeit = is_string($daten['resting_until']) ? strtotime($daten['resting_until']) : false;
+                $ruhtBis = false !== $zeit ? date('c', $zeit) : null;
             }
             if (isset($daten['message']) && '' !== trim((string)$daten['message'])) {
                 $meldung = mb_strimwidth(trim((string)$daten['message']), 0, VPS_LOG_LINE_MAX, '…');
@@ -289,27 +309,66 @@ try {
 
     // Stapel übernehmen, Stand schreiben, Abbruchwunsch lesen
     $protokollLaenge = $debug ? VPS_LOG_CHARS_DEBUG : VPS_LOG_CHARS;
-    $schreiben = function () use ($db, $syncId, &$stapel, &$protokoll, &$meldung, &$gesamt, &$zuletzt, $protokollLaenge): bool {
+    $speichern = function () use (&$db, $syncId, &$stapel, &$protokoll, &$meldung, &$gesamt, &$ruhtBis, &$zuletzt, $protokollLaenge): bool {
         while ($stapel) {
-            $teil = array_splice($stapel, 0, VPS_BATCH_SIZE);
+            // Erst nach der Übernahme aus dem Stapel nehmen: scheitert der Aufruf, bleibt der Teil erhalten
+            $teil = array_slice($stapel, 0, VPS_BATCH_SIZE);
             $db->getOne(
                 "SELECT vendor_part_sync_apply(CAST(:id AS integer), CAST(:items AS jsonb)) AS bilanz",
                 [':id' => $syncId, ':items' => json_encode($teil, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE)]
             );
+            array_splice($stapel, 0, count($teil));
         }
         $stand = $db->getOne(
             "UPDATE vendor_part_syncs
                 SET heartbeat_at = now(),
+                    resting_until = CAST(CAST(:resting_until AS timestamptz) AS timestamp),
                     parts_total  = GREATEST(parts_total, CAST(:total AS integer), parts_done),
                     message      = COALESCE(CAST(:message AS text), message),
                     log          = right(COALESCE(log, '') || CAST(:log AS text), CAST(:log_chars AS integer))
               WHERE id = :id
             RETURNING cancel_requested",
-            [':total' => $gesamt, ':message' => $meldung, ':log' => $protokoll, ':log_chars' => $protokollLaenge, ':id' => $syncId]
+            [':total' => $gesamt, ':resting_until' => $ruhtBis, ':message' => $meldung, ':log' => $protokoll, ':log_chars' => $protokollLaenge, ':id' => $syncId]
         );
         $protokoll = '';
         $zuletzt = microtime(true);
         return in_array($stand['cancel_requested'] ?? false, [true, 't', 'true', '1', 1], true);
+    };
+
+    // Wie $speichern, übersteht aber einen Neustart der Datenbank (etwa nach
+    // einem Paket-Update in der Nacht): Antwortet die Verbindung nicht mehr,
+    // wird sie neu aufgebaut und das Schreiben wiederholt. Jeder andere
+    // Fehler beendet den Lauf wie bisher.
+    $schreiben = function () use (&$db, $speichern, $notieren, $mandant, $sync): bool {
+        try {
+            return $speichern();
+        } catch (Throwable $e) {
+            $lebt = true;
+            try {
+                $db->getPDO()->query('SELECT 1');
+            } catch (Throwable $tot) {
+                $lebt = false;
+            }
+            if ($lebt) {
+                throw $e;   // Verbindung steht — der Fehler liegt an der Abfrage
+            }
+            $frist = microtime(true) + VPS_RECONNECT_SECS;
+            while (true) {
+                try {
+                    $neu = new ApiDatabase(vpsConnect($mandant));
+                    DbhCompany::setActor($neu, $sync['employee_id'], 'cron:vendor-part-sync');
+                    break;
+                } catch (Throwable $e2) {
+                    if (microtime(true) >= $frist) {
+                        throw $e;
+                    }
+                    sleep(VPS_RECONNECT_PAUSE);
+                }
+            }
+            $db = $neu;
+            $notieren('[warn] Verbindung zur Datenbank war unterbrochen — neu aufgebaut, der Lauf geht weiter.');
+            return $speichern();
+        }
     };
 
     // ── Ausgabe lesen, bis das Abrufprogramm beide Kanäle schließt ──

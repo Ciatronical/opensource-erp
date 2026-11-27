@@ -228,6 +228,11 @@
         "curveNone": "ei mitään — kiinteä lisä",
         "curveUsed": "Hintakäyrä {name}",
         "curveHint": "Hintakäyrä: lisä riippuu ostohinnasta — korkea edullisissa tuotteissa, matala kalliissa. Tukipisteiden välillä se muuttuu liukuvasti, joten hinta ei hypi. Satunnainen hajonta ja psykologiset hinnat vaikuttavat siihen samoin kuin kiinteään lisään.",
-        "field_model": "Toimittajan tuotenumero"
+        "field_model": "Toimittajan tuotenumero",
+        "overviewStarted": "Aloitettu {time}",
+        "overviewFinished": "Päättynyt {time}",
+        "overviewCounts": "{updated} muutettu, {unchanged} ennallaan, {errors} virhettä",
+        "status_resting": "Lepää",
+        "restingUntil": "Lepää {time} asti"
     }
 }

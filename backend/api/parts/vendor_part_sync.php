@@ -118,7 +118,10 @@ function getVendorPartSync($data) {
             'sync', (
                 SELECT json_build_object(
                            'id', c.id,
-                           'status', CASE WHEN c.stalled THEN 'stalled' ELSE c.status END,
+                           'status', CASE WHEN c.stalled THEN 'stalled'
+                                          WHEN c.status = 'running' AND c.resting_until > now() THEN 'resting'
+                                          ELSE c.status END,
+                           'resting_until', c.resting_until,
                            'dry_run', c.dry_run,
                            'debug', c.debug,
                            'part_limit', c.part_limit,
@@ -198,7 +201,9 @@ function getVendorPartSync($data) {
             'history', (
                 SELECT COALESCE(json_agg(json_build_object(
                            'id', r.id,
-                           'status', CASE WHEN r.stalled THEN 'stalled' ELSE r.status END,
+                           'status', CASE WHEN r.stalled THEN 'stalled'
+                                          WHEN r.status = 'running' AND r.resting_until > now() THEN 'resting'
+                                          ELSE r.status END,
                            'dry_run', r.dry_run,
                            'debug', r.debug,
                            'part_limit', r.part_limit,
@@ -245,6 +250,71 @@ function getVendorPartSync($data) {
     $stand['configured'] = vendorPartSyncConfigured();
 
     resultInfo(true, '', $stand);
+}
+
+/**
+ * Artikelabgleiche über alle Lieferanten: was gerade läuft oder wartet;
+ * läuft nichts, der zuletzt beendete Lauf (Shop-Übersicht).
+ *
+ * Je Lauf Lieferant, Zustand (stalled statt queued/running, wenn das
+ * Lebenszeichen des Läufers ausbleibt; resting mit resting_until, solange das
+ * Abrufprogramm außerhalb seines Zeitfensters ruht), Zähler, letzte Meldung und
+ * Preiskurve. active sagt, ob der Lauf noch arbeitet oder wartet.
+ *
+ * @testdata {}
+ */
+function getVendorPartSyncOverview($data) {
+    $db = DbhCompany::begin();
+
+    $query = <<<SQL
+        WITH runs AS (
+            SELECT s.id, s.vendor_id, v.name AS vendor_name, s.status, s.dry_run,
+                   s.parts_total, s.parts_done, s.parts_updated, s.parts_unchanged, s.parts_unknown, s.parts_error,
+                   s.message, s.resting_until, e.name AS employee_name, k.name AS markup_curve,
+                   COALESCE(s.started_at, s.itime) AS started_at, s.finished_at,
+                   s.status IN ('queued', 'running') AS active,
+                   (s.status IN ('queued', 'running')
+                    AND COALESCE(s.heartbeat_at, s.itime) < now() - make_interval(mins => CAST(:stall_minutes AS integer))) AS stalled
+              FROM vendor_part_syncs s
+              JOIN vendor v ON v.id = s.vendor_id
+              LEFT JOIN employee e ON e.id = s.employee_id
+              LEFT JOIN vendor_part_sync_curves k ON k.id = s.markup_curve_id
+        ),
+        shown AS (
+            SELECT * FROM runs WHERE active
+            UNION ALL
+            (SELECT * FROM runs
+              WHERE NOT active AND NOT EXISTS (SELECT 1 FROM runs a WHERE a.active)
+              ORDER BY id DESC
+              LIMIT 1)
+        )
+        SELECT COALESCE(json_agg(json_build_object(
+                   'id', r.id,
+                   'vendor_id', r.vendor_id,
+                   'vendor_name', r.vendor_name,
+                   'status', CASE WHEN r.stalled THEN 'stalled'
+                                  WHEN r.status = 'running' AND r.resting_until > now() THEN 'resting'
+                                  ELSE r.status END,
+                   'resting_until', r.resting_until,
+                   'active', r.active AND NOT r.stalled,
+                   'dry_run', r.dry_run,
+                   'markup_curve', r.markup_curve,
+                   'parts_total', r.parts_total,
+                   'parts_done', r.parts_done,
+                   'parts_updated', r.parts_updated,
+                   'parts_unchanged', r.parts_unchanged,
+                   'parts_unknown', r.parts_unknown,
+                   'parts_error', r.parts_error,
+                   'message', r.message,
+                   'employee_name', r.employee_name,
+                   'started_at', r.started_at,
+                   'finished_at', r.finished_at
+               ) ORDER BY r.id DESC), '[]'::json) AS result
+          FROM shown r
+        SQL;
+
+    $zeile = $db->getOne($query, [':stall_minutes' => VENDOR_PART_SYNC_STALL_MINUTES]);
+    resultInfo(true, '', ['syncs' => json_decode($zeile['result'] ?? '[]', true) ?: []]);
 }
 
 /**

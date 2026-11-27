@@ -228,6 +228,11 @@
         "curveNone": "aucune — majoration fixe",
         "curveUsed": "Courbe de prix {name}",
         "curveHint": "Courbe de prix : la majoration dépend du prix d’achat — élevée pour les articles bon marché, faible pour les articles chers. Entre les points de référence, elle évolue progressivement, sans saut de prix. La dispersion aléatoire et les prix psychologiques s’y appliquent comme à la majoration fixe.",
-        "field_model": "Référence fournisseur"
+        "field_model": "Référence fournisseur",
+        "overviewStarted": "Démarré {time}",
+        "overviewFinished": "Terminé {time}",
+        "overviewCounts": "{updated} modifiés, {unchanged} inchangés, {errors} erreurs",
+        "status_resting": "En pause",
+        "restingUntil": "En pause jusqu’au {time}"
     }
 }

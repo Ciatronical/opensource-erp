@@ -228,6 +228,50 @@
             </v-col>
         </v-row>
 
+        <!-- Artikelabgleich: was bei den Lieferanten gerade abgerufen wird; läuft
+             nichts, der zuletzt beendete Lauf. Gestartet und abgebrochen wird am
+             Lieferanten (Reiter Belegabruf), hierher führt nur der Verweis -->
+        <section-card v-if="abgleiche.length" :title="t('VendorPartSync.title')" icon="mdi-sync" class="mt-4">
+            <div v-for="lauf in abgleiche" :key="lauf.id" class="abgleich">
+                <div class="abgleich__kopf">
+                    <router-link v-if="abgleichZiel(lauf)" :to="abgleichZiel(lauf)" class="abgleich__lieferant">{{ lauf.vendor_name }}</router-link>
+                    <span v-else class="abgleich__lieferant">{{ lauf.vendor_name }}</span>
+                    <v-chip size="small" variant="tonal" :color="abgleichFarbe(lauf.status)">
+                        {{ lauf.status === 'resting' && lauf.resting_until
+                            ? t('VendorPartSync.restingUntil', { time: zeitpunkt(lauf.resting_until) })
+                            : t('VendorPartSync.status_' + lauf.status) }}
+                    </v-chip>
+                    <v-chip v-if="lauf.dry_run" size="small" variant="outlined">{{ t('VendorPartSync.dryRun') }}</v-chip>
+                    <v-chip v-if="lauf.markup_curve" size="small" variant="outlined">
+                        {{ t('VendorPartSync.curveUsed', { name: lauf.markup_curve }) }}
+                    </v-chip>
+                    <v-spacer />
+                    <span class="abgleich__zeit">
+                        {{ lauf.finished_at
+                            ? t('VendorPartSync.overviewFinished', { time: zeitpunkt(lauf.finished_at) })
+                            : t('VendorPartSync.overviewStarted', { time: zeitpunkt(lauf.started_at) }) }}<template v-if="lauf.employee_name"> · {{ lauf.employee_name }}</template>
+                    </span>
+                </div>
+                <v-progress-linear
+                    v-if="lauf.active"
+                    :model-value="abgleichFortschritt(lauf)"
+                    :color="lauf.status === 'resting' ? 'secondary' : 'primary'"
+                    :indeterminate="!Number(lauf.parts_total)"
+                    height="8"
+                    rounded
+                />
+                <div class="abgleich__stand">
+                    {{ t('VendorPartSync.progress', { done: n(Number(lauf.parts_done) || 0), total: n(Number(lauf.parts_total) || 0) }) }}
+                    · {{ t('VendorPartSync.overviewCounts', {
+                        updated: n(Number(lauf.parts_updated) || 0),
+                        unchanged: n(Number(lauf.parts_unchanged) || 0),
+                        errors: n((Number(lauf.parts_error) || 0) + (Number(lauf.parts_unknown) || 0)),
+                    }) }}
+                </div>
+                <div v-if="abgleichMeldung(lauf)" class="abgleich__meldung">{{ abgleichMeldung(lauf) }}</div>
+            </div>
+        </section-card>
+
         <!-- Veröffentlichung: die Anwendung legt nur Aufträge an, geschrieben
              und gebaut wird von tools/shop-publish.php -->
         <h2 class="text-subtitle-1 font-weight-medium mt-4 mb-2">{{ t('ShopView.sections.jobs') }}</h2>
@@ -668,11 +712,12 @@ import NavbarView from '@/core/components/navbar/navbar.view.vue'
 import PageHeader from '@/core/components/layout/page-header.vue'
 import SectionCard from '@/core/components/layout/section-card.vue'
 import { useShop } from '@/features/shop/composables/useShop.js'
+import { useVendorPartSync } from '@/core/composables/useVendorPartSync.js'
 import * as toasts from '@/core/utils/toasts.js'
 import { entityRoute } from '@/core/constants/routes.js'
 import { oserpStore } from '@/core/stores/oserp.store.js'
 
-const { t, te, locale } = useI18n()
+const { t, te, n, locale } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const oserp = oserpStore()
@@ -731,6 +776,56 @@ const ABFRAGE_HOECHSTENS_MS = 15 * 60000
 let abfrageTimer = null
 let abfrageBeginn = 0
 const aufraeumenGefragt = ref(false)
+
+/** Artikelabgleiche: laufende aller Lieferanten, sonst der zuletzt beendete (getVendorPartSyncOverview) */
+const abgleiche = ref([])
+const abgleichApi = useVendorPartSync()
+// Ein Abgleich läuft Stunden bis Tage — hier genügt ein ruhiger Takt
+const ABGLEICH_ABFRAGE_MS = 10000
+let abgleichTimer = null
+
+/**
+ * Stand der Artikelabgleiche holen; solange einer läuft, wieder
+ *
+ * Scheitert die Abfrage, bleibt die Karte, wie sie ist: sie ist Beiwerk
+ * dieser Seite und soll deren Fehlerzeile nicht belegen.
+ */
+async function abgleicheLaden() {
+    abgleichTimer = null
+    try {
+        // Im Hintergrund-Tab nicht abfragen, nur den Takt halten
+        if (!document.hidden || !abgleiche.value.length) {
+            abgleiche.value = (await abgleichApi.fetchOverview())?.syncs || []
+        }
+    } catch (e) {
+        return
+    }
+    if (abgleiche.value.some(lauf => lauf.active)) {
+        abgleichTimer = setTimeout(abgleicheLaden, ABGLEICH_ABFRAGE_MS)
+    }
+}
+
+function abgleicheBeenden() {
+    if (abgleichTimer) {
+        clearTimeout(abgleichTimer)
+        abgleichTimer = null
+    }
+}
+
+/** Zum Lieferanten, gleich in den Reiter mit dem Artikelabgleich */
+function abgleichZiel(lauf) {
+    const ziel = entityRoute('vendor', lauf.vendor_id)
+    return ziel ? { ...ziel, query: { tab: 'belegabruf' } } : null
+}
+
+const abgleichFarbe = (status) =>
+    ({ queued: 'info', running: 'info', resting: 'secondary', done: 'success', error: 'error', stalled: 'error', cancelled: 'warning' })[status]
+
+const abgleichFortschritt = (lauf) =>
+    Number(lauf.parts_total) ? Math.min(100, 100 * Number(lauf.parts_done) / Number(lauf.parts_total)) : 0
+
+/** Letzte Meldung des Laufs; die Kennung STALLED sagt schon der Zustand */
+const abgleichMeldung = (lauf) => (lauf.message && lauf.message !== 'STALLED') ? lauf.message : ''
 const loescht = ref(false)
 const wiederholt = ref(false)
 const wiederGeoeffnet = ref(false)
@@ -1005,6 +1100,8 @@ async function zustandWechseln(wert) {
 }
 
 async function laden() {
+    abgleicheBeenden()
+    abgleicheLaden()
     status.value = await shop.fetchStatus()
     await auftraegeLaden()
 }
@@ -1423,7 +1520,10 @@ onMounted(async () => {
     }
 })
 
-onBeforeUnmount(beobachtenBeenden)
+onBeforeUnmount(() => {
+    beobachtenBeenden()
+    abgleicheBeenden()
+})
 </script>
 
 <style scoped>
@@ -1432,6 +1532,35 @@ onBeforeUnmount(beobachtenBeenden)
     color: var(--oserp-text-muted);
     font-size: 0.875rem;
     margin-bottom: var(--oserp-gap);
+}
+
+.abgleich + .abgleich {
+    margin-top: var(--oserp-gap);
+    padding-top: var(--oserp-gap);
+    border-top: 1px solid var(--oserp-border);
+}
+
+.abgleich__kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--oserp-gap-sm);
+    margin-bottom: var(--oserp-gap-sm);
+}
+
+.abgleich__lieferant {
+    font-weight: 500;
+}
+
+.abgleich__zeit,
+.abgleich__stand,
+.abgleich__meldung {
+    color: var(--oserp-text-muted);
+    font-size: 0.875rem;
+}
+
+.abgleich__stand {
+    margin-top: var(--oserp-gap-sm);
 }
 
 .laufhinweis {

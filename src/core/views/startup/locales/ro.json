@@ -228,6 +228,11 @@
         "curveNone": "niciuna — adaos fix",
         "curveUsed": "Curbă de preț {name}",
         "curveHint": "Curbă de preț: adaosul depinde de prețul de achiziție — mare la articolele ieftine, mic la cele scumpe. Între punctele de referință se modifică treptat, fără salturi de preț. Dispersia aleatorie și prețurile psihologice se aplică la fel ca la adaosul fix.",
-        "field_model": "Număr articol furnizor"
+        "field_model": "Număr articol furnizor",
+        "overviewStarted": "Pornit {time}",
+        "overviewFinished": "Încheiat {time}",
+        "overviewCounts": "{updated} modificate, {unchanged} nemodificate, {errors} erori",
+        "status_resting": "În repaus",
+        "restingUntil": "În repaus până la {time}"
     }
 }
