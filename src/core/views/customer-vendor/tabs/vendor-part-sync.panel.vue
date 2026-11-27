@@ -72,6 +72,10 @@
                 class="vps-select"
                 :disabled="running"
             />
+            <!-- Kurven anlegen und ändern; geht auch während eines Laufs -->
+            <v-btn size="small" variant="text" prepend-icon="mdi-pencil-outline" @click="curvesOpen = true">
+                {{ t('VendorPartSync.curvesEdit') }}
+            </v-btn>
             <v-text-field
                 v-if="!selectedCurve"
                 v-model="options.markup_percent"
@@ -309,6 +313,13 @@
                 </tbody>
             </v-table>
         </div>
+
+        <vendor-part-sync-curves-dialog
+            v-model="curvesOpen"
+            :curves="curves"
+            :curve-id="Number(options.markup_curve_id) || 0"
+            @saved="load"
+        />
     </section-card>
 </template>
 
@@ -318,6 +329,7 @@ import { useI18n } from 'vue-i18n'
 import SectionCard from '@/core/components/layout/section-card.vue'
 import { useVendorPartSync } from '@/core/composables/useVendorPartSync.js'
 import * as alerts from '@/core/utils/alerts.js'
+import VendorPartSyncCurvesDialog from './vendor-part-sync-curves.dialog.vue'
 
 const props = defineProps({
     vendorId:   { type: Number, required: true },
@@ -351,6 +363,8 @@ const logOpen = ref(false)
 const logBox = ref(null)
 // Preiskurven zur Auswahl (id, name, description, examples), aus getVendorPartSync
 const curves = ref([])
+// Dialog „Preiskurven bearbeiten"
+const curvesOpen = ref(false)
 const options = ref({
     dry_run: true, debug: false, limit: null, markup_percent: null, random: false, markup_random_percent: 1, psychological_prices: false,
     // 0 = fester Aufschlag (markup_percent), sonst die Preiskurve

@@ -82,8 +82,9 @@ function vendorPartSyncFiles(string $datenbank, int $syncId): array {
  * Protokoll, dessen geänderte/unbekannte/fehlerhafte Artikel (seitenweise)
  * und die vorherigen Läufe
  *
- * curves nennt die Preiskurven zur Auswahl, je Kurve mit Rechenbeispielen
- * (examples: cost, percent, price) aus vendor_part_sync_curve_percent().
+ * curves nennt die Preiskurven zur Auswahl, je Kurve mit Stützpunkten
+ * (points: cost, percent) und Rechenbeispielen (examples: cost, percent,
+ * price) aus vendor_part_sync_curve_percent().
  *
  * @param int $data['vendor_id'] Lieferant
  * @param int $data['items_page'] Seite der Artikelliste, ab 1 (optional)
@@ -151,7 +152,7 @@ function getVendorPartSync($data) {
             -- Preiskurven zur Auswahl, mit Rechenbeispielen für die Oberfläche
             'curves', (
                 SELECT COALESCE(json_agg(json_build_object(
-                           'id', k.id, 'name', k.name, 'description', k.description,
+                           'id', k.id, 'name', k.name, 'description', k.description, 'points', k.points,
                            'examples', (
                                SELECT json_agg(json_build_object(
                                           'cost', b.cost, 'percent', b.percent,
@@ -463,4 +464,118 @@ function cancelVendorPartSync($data) {
         [':id' => intval($data['sync_id'] ?? 0)]
     );
     resultInfo(true, '', ['sync_id' => intval($data['sync_id'] ?? 0)]);
+}
+
+// Einkaufspreise, für die eine Preiskurve Rechenbeispiele zeigt — dieselben wie in getVendorPartSync
+const VENDOR_PART_SYNC_CURVE_EXAMPLES = '{1,5,10,50,100,500,1000,5000}';
+
+/**
+ * Rechenbeispiele für die Stützpunkte einer Preiskurve, ohne sie zu speichern
+ * (Vorschau beim Bearbeiten). Gerechnet wird wie beim Abgleich mit
+ * vendor_part_sync_curve_percent().
+ *
+ * @param array $data['points'] Stützpunkte: Einkaufspreis (cost, größer 0) und Aufschlag in Prozent (percent)
+ * @testdata {"points": [{"cost": 10, "percent": 50}, {"cost": 1000, "percent": 15}]}
+ */
+function getVendorPartSyncCurvePreview($data) {
+    $db = DbhCompany::begin();
+    $zeile = $db->getOne(
+        "SELECT COALESCE(json_agg(json_build_object(
+                    'cost', b.cost, 'percent', b.percent,
+                    'price', round(b.cost * (1 + b.percent / 100), 2)
+                ) ORDER BY b.cost), '[]'::json) AS result
+           FROM (SELECT x.cost, vendor_part_sync_curve_percent(vendor_part_sync_curve_points(CAST(:points AS jsonb)), x.cost) AS percent
+                   FROM unnest(CAST(:costs AS numeric[])) AS x(cost)) b
+          WHERE b.percent IS NOT NULL",
+        [
+            ':points' => json_encode(is_array($data['points'] ?? null) ? $data['points'] : []),
+            ':costs'  => VENDOR_PART_SYNC_CURVE_EXAMPLES,
+        ]
+    );
+    resultInfo(true, '', ['examples' => json_decode($zeile['result'] ?? '[]', true) ?: []]);
+}
+
+/**
+ * Preiskurve anlegen oder ändern. Die Stützpunkte bereinigt die Datenbank
+ * (vendor_part_sync_curve_points): nur Zahlen, Einkaufspreis größer 0,
+ * Aufschlag ab 0, je Einkaufspreis ein Punkt, aufsteigend sortiert.
+ *
+ * Eine geänderte Kurve gilt sofort, auch für einen laufenden Abgleich —
+ * vendor_part_sync_apply() liest sie bei jedem Stapel.
+ *
+ * @param int $data['id'] Preiskurve; 0 oder leer legt eine neue an (optional)
+ * @param string $data['name'] Name, eindeutig
+ * @param string $data['description'] kaufmännische Absicht, steht in der Auswahl (optional)
+ * @param array $data['points'] Stützpunkte: Einkaufspreis (cost) und Aufschlag in Prozent (percent), mindestens einer
+ * @testdata {"id": 0, "name": "Testkurve", "description": "Nur zum Ausprobieren", "points": [{"cost": 10, "percent": 50}, {"cost": 1000, "percent": 15}]}
+ */
+function saveVendorPartSyncCurve($data) {
+    $db = DbhCompany::begin();
+    try {
+        $zeile = $db->getOne(
+            "WITH eingabe AS (
+                 SELECT CAST(:id AS integer) AS id,
+                        btrim(CAST(:name AS text)) AS name,
+                        NULLIF(btrim(CAST(:description AS text)), '') AS description,
+                        vendor_part_sync_curve_points(CAST(:points AS jsonb)) AS points
+             ), gueltig AS (
+                 SELECT * FROM eingabe WHERE name <> '' AND jsonb_array_length(points) > 0
+             ), geaendert AS (
+                 UPDATE vendor_part_sync_curves k
+                    SET name = g.name, description = g.description, points = g.points, mtime = now()
+                   FROM gueltig g
+                  WHERE k.id = g.id
+                 RETURNING k.id
+             ), angelegt AS (
+                 INSERT INTO vendor_part_sync_curves (name, description, points, sortkey)
+                 SELECT g.name, g.description, g.points, (SELECT COALESCE(max(sortkey), 0) + 10 FROM vendor_part_sync_curves)
+                   FROM gueltig g
+                  WHERE g.id = 0
+                 RETURNING id
+             )
+             SELECT id FROM geaendert UNION ALL SELECT id FROM angelegt",
+            [
+                ':id'          => max(0, intval($data['id'] ?? 0)),
+                ':name'        => (string)($data['name'] ?? ''),
+                ':description' => (string)($data['description'] ?? ''),
+                ':points'      => json_encode(is_array($data['points'] ?? null) ? $data['points'] : []),
+            ]
+        );
+    } catch (Throwable $e) {
+        // Der Name ist eindeutig (vendor_part_sync_curves_name_key)
+        if (str_contains($e->getMessage(), 'vendor_part_sync_curves_name_key') || '23505' === (string)$e->getCode()) {
+            resultInfo(false, 'VENDOR_PART_SYNC_CURVE_NAME', 'Eine Preiskurve mit diesem Namen gibt es schon.');
+            return;
+        }
+        throw $e;
+    }
+    if (!$zeile) {
+        resultInfo(false, 'VENDOR_PART_SYNC_CURVE_INVALID', 'Die Preiskurve braucht einen Namen und mindestens einen gültigen Stützpunkt.');
+        return;
+    }
+    resultInfo(true, '', ['id' => intval($zeile['id'])]);
+}
+
+/**
+ * Preiskurve löschen. Solange ein wartender oder laufender Abgleich sie
+ * verwendet, bleibt sie; frühere Läufe verlieren nur den Verweis auf sie.
+ *
+ * @param int $data['id'] Preiskurve
+ * @testdata {"id": 0}
+ */
+function deleteVendorPartSyncCurve($data) {
+    $db = DbhCompany::begin();
+    $zeile = $db->getOne(
+        "DELETE FROM vendor_part_sync_curves k
+          WHERE k.id = CAST(:id AS integer)
+            AND NOT EXISTS (SELECT 1 FROM vendor_part_syncs s
+                             WHERE s.markup_curve_id = k.id AND s.status IN ('queued', 'running'))
+         RETURNING k.id",
+        [':id' => intval($data['id'] ?? 0)]
+    );
+    if (!$zeile) {
+        resultInfo(false, 'VENDOR_PART_SYNC_CURVE_IN_USE', 'Die Preiskurve gibt es nicht (mehr) oder ein laufender Abgleich verwendet sie.');
+        return;
+    }
+    resultInfo(true, '', ['id' => intval($zeile['id'])]);
 }

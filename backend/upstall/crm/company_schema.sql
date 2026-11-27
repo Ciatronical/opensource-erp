@@ -3511,6 +3511,7 @@ INSERT INTO vendor_part_sync_curves (name, sortkey, description, points) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS markup_curve_id INTEGER REFERENCES vendor_part_sync_curves(id) ON DELETE SET NULL;
+COMMENT ON COLUMN vendor_part_syncs.markup_curve_id IS 'Preiskurve statt des festen Aufschlags: der Aufschlag richtet sich nach dem Einkaufspreis, siehe vendor_part_sync_curve_percent(); NULL = markup_percent gilt';
 
 -- Automatischer Wiederanlauf: der Lauf, den dieser fortsetzt (backend/cli/vendor-part-sync-watch.php)
 ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS resumed_from INTEGER REFERENCES vendor_part_syncs(id) ON DELETE SET NULL;
@@ -3568,7 +3569,6 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
-COMMENT ON COLUMN vendor_part_syncs.markup_curve_id IS 'Preiskurve statt des festen Aufschlags: der Aufschlag richtet sich nach dem Einkaufspreis, siehe vendor_part_sync_curve_percent(); NULL = markup_percent gilt';
 
 -- Aufschlag einer Preiskurve für einen Einkaufspreis.
 --
@@ -3597,6 +3597,30 @@ AS $function$
                ELSE (SELECT round(u.percent + (o.percent - u.percent) * ln(p_cost / u.cost) / ln(o.cost / u.cost), 3)
                        FROM unten u, oben o)
            END
+$function$;
+
+-- Stützpunkte einer Preiskurve aus einer Eingabe bereinigen (Maske
+-- „Preiskurven bearbeiten"): nur Zahlen, Einkaufspreis größer 0, Aufschlag
+-- ab 0, je Einkaufspreis ein Punkt, aufsteigend sortiert. Was nicht passt,
+-- entfällt; '[]' bei einer Eingabe, die keine Liste ist.
+CREATE OR REPLACE FUNCTION vendor_part_sync_curve_points(p_points jsonb)
+    RETURNS jsonb
+    LANGUAGE sql
+    IMMUTABLE
+AS $function$
+    SELECT COALESCE(jsonb_agg(jsonb_build_object('cost', p.cost, 'percent', p.percent) ORDER BY p.cost), '[]'::jsonb)
+      FROM (
+          SELECT DISTINCT ON (z.cost) z.cost, z.percent
+            FROM (
+                SELECT CAST(e ->> 'cost' AS numeric) AS cost, CAST(e ->> 'percent' AS numeric) AS percent
+                  FROM jsonb_array_elements(CASE WHEN jsonb_typeof(p_points) = 'array' THEN p_points ELSE '[]'::jsonb END) e
+                 WHERE jsonb_typeof(e) = 'object'
+                   AND e ->> 'cost' ~ '^[0-9]+([.][0-9]+)?$'
+                   AND e ->> 'percent' ~ '^[0-9]+([.][0-9]+)?$'
+            ) z
+           WHERE z.cost > 0
+           ORDER BY z.cost
+      ) p
 $function$;
 
 -- Zahl aus einer Angabe der technischen Daten ("100", "2,5"); NULL, wenn

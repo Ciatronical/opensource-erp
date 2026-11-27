@@ -38,5 +38,10 @@ export function useVendorPartSync() {
     // Laufende Abgleiche aller Lieferanten, sonst der zuletzt beendete (Shop-Übersicht)
     const fetchOverview = () => call('getVendorPartSyncOverview')
 
-    return { fetchStatus, start, cancel, fetchOverview }
+    // Preiskurven: Rechenbeispiele für ungespeicherte Stützpunkte, speichern, löschen
+    const previewCurve = (points) => call('getVendorPartSyncCurvePreview', { points })
+    const saveCurve = (curve) => call('saveVendorPartSyncCurve', curve)
+    const deleteCurve = (id) => call('deleteVendorPartSyncCurve', { id })
+
+    return { fetchStatus, start, cancel, fetchOverview, previewCurve, saveCurve, deleteCurve }
 }
