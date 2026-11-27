@@ -3511,6 +3511,63 @@ INSERT INTO vendor_part_sync_curves (name, sortkey, description, points) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS markup_curve_id INTEGER REFERENCES vendor_part_sync_curves(id) ON DELETE SET NULL;
+
+-- Automatischer Wiederanlauf: der Lauf, den dieser fortsetzt (backend/cli/vendor-part-sync-watch.php)
+ALTER TABLE vendor_part_syncs ADD COLUMN IF NOT EXISTS resumed_from INTEGER REFERENCES vendor_part_syncs(id) ON DELETE SET NULL;
+
+-- Hängengebliebene Läufe abschließen und fortsetzen
+--
+-- Ein Lauf ohne Lebenszeichen seines Läufers (Neustart des Servers, längerer
+-- Ausfall der Datenbank, abgestürzter Prozess) wird als Fehler STALLED
+-- abgeschlossen. Dafür entsteht ein neuer, wartender Lauf mit denselben
+-- Einstellungen; er setzt bei den am längsten nicht geprüften Artikeln fort
+-- (vendor_part_sync_checks), verloren geht also nichts. Den Läufer dazu
+-- startet der Aufrufer.
+--
+-- Nicht fortgesetzt wird ein Lauf,
+--   - dessen Abbruch schon gewünscht war,
+--   - der aus einer hochgeladenen Preisdatei las (die Datei gilt nur einmal),
+--   - dessen Begrenzung schon ausgeschöpft ist (die Fortsetzung bekommt den Rest),
+--   - der selbst eine Fortsetzung war und keinen Artikel geschafft hat: dann
+--     liegt der Fehler nicht am Neustart, und die Kette endet hier.
+--
+-- Liefert je abgeschlossenem Lauf dessen Nummer, den Prozess des alten
+-- Läufers und die Nummer der Fortsetzung (NULL = keine).
+CREATE OR REPLACE FUNCTION vendor_part_sync_resume(p_stall_minutes integer)
+RETURNS TABLE (old_id integer, old_pid integer, new_id integer) AS $$
+DECLARE
+    v_dead vendor_part_syncs%ROWTYPE;
+BEGIN
+    FOR v_dead IN
+        UPDATE vendor_part_syncs s
+           SET status = 'error', message = 'STALLED', finished_at = now()
+         WHERE s.status IN ('queued', 'running')
+           AND COALESCE(s.heartbeat_at, s.itime) < now() - make_interval(mins => p_stall_minutes)
+        RETURNING s.*
+    LOOP
+        old_id := v_dead.id;
+        old_pid := v_dead.pid;
+        new_id := NULL;
+        IF NOT v_dead.cancel_requested
+           AND v_dead.input_file IS NULL
+           AND (v_dead.part_limit IS NULL OR v_dead.part_limit > v_dead.parts_done)
+           AND NOT (v_dead.resumed_from IS NOT NULL AND v_dead.parts_done = 0)
+           AND NOT EXISTS (SELECT 1 FROM vendor_part_syncs a
+                            WHERE a.vendor_id = v_dead.vendor_id AND a.status IN ('queued', 'running')) THEN
+            INSERT INTO vendor_part_syncs (vendor_id, dry_run, debug, part_limit, markup_percent, markup_curve_id,
+                                           markup_random_percent, psychological_prices, employee_id, fetch_settings,
+                                           resumed_from, log)
+            VALUES (v_dead.vendor_id, v_dead.dry_run, v_dead.debug, v_dead.part_limit - v_dead.parts_done,
+                    v_dead.markup_percent, v_dead.markup_curve_id, v_dead.markup_random_percent,
+                    v_dead.psychological_prices, v_dead.employee_id, v_dead.fetch_settings, v_dead.id,
+                    to_char(now(), 'HH24:MI:SS') || '  [info] Automatische Fortsetzung von Lauf ' || v_dead.id
+                        || ': dessen Läufer gab kein Lebenszeichen mehr.' || E'\n')
+            RETURNING id INTO new_id;
+        END IF;
+        RETURN NEXT;
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
 COMMENT ON COLUMN vendor_part_syncs.markup_curve_id IS 'Preiskurve statt des festen Aufschlags: der Aufschlag richtet sich nach dem Einkaufspreis, siehe vendor_part_sync_curve_percent(); NULL = markup_percent gilt';
 
 -- Aufschlag einer Preiskurve für einen Einkaufspreis.
