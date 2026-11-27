@@ -51,6 +51,10 @@
  *       Lieferant den Artikel führt, wenn sie von der gesuchten abweicht; sie
  *       wird als Lieferanten-Artikelnummer nachgetragen, sofern dort noch
  *       keine steht.
+ *       "price_problem": "Staffelpreis …" meldet, dass sich der Preis beim
+ *       Lieferanten nicht einordnen ließ: Preise bleiben unverändert, der
+ *       Artikel erscheint mit diesem Text als Fehlerzeile; alles andere
+ *       (Verfügbarkeit, Artikelangaben) wird übernommen.
  *       "not_found": true meldet einen Artikel, den es beim Lieferanten nicht
  *       (mehr) gibt: er gilt als geprüft, übernommen wird nichts.
  *   {"type": "progress", "total": 1200, "message": "Seite 3 von 40"}

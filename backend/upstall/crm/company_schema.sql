@@ -3799,6 +3799,12 @@ BEGIN
                 END IF;
             END IF;
 
+            -- Das Abrufprogramm konnte den Preis nicht einordnen (etwa ein Staffelpreis
+            -- „ab 0,45 EUR"): Preise bleiben, der Artikel erscheint als Fehlerzeile
+            IF COALESCE(btrim(v_item->>'price_problem'), '') <> '' THEN
+                v_problem := btrim(v_item->>'price_problem');
+            END IF;
+
             -- Verkaufspreis bilden: Aufschlag, Streuung, psychologischer Preis
             IF v_problem IS NULL THEN
                 v_lastcost  := round((v_item->>'lastcost')::numeric * v_factor, 5);
